@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.ui.chat.ChatStyles;
-import cafe.woden.ircclient.ui.chat.ChatTranscriptStore;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.util.PopupMenuThemeSupport;
 import java.awt.Color;
 import java.lang.reflect.InvocationTargetException;

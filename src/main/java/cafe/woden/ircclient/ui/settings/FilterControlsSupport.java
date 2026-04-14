@@ -2,7 +2,7 @@ package cafe.woden.ircclient.ui.settings;
 
 import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
-import cafe.woden.ircclient.ui.chat.TranscriptRebuildService;
+import cafe.woden.ircclient.ui.chat.transcript.TranscriptRebuildService;
 import cafe.woden.ircclient.ui.filter.FilterSettings;
 import cafe.woden.ircclient.ui.filter.FilterSettingsBus;
 import cafe.woden.ircclient.ui.util.MouseWheelDecorator;

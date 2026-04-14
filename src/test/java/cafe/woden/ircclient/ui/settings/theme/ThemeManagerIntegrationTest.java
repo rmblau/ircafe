@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import cafe.woden.ircclient.ui.chat.ChatStyles;
-import cafe.woden.ircclient.ui.chat.ChatTranscriptStore;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;

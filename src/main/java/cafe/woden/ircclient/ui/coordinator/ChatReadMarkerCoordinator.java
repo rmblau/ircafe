@@ -3,7 +3,7 @@ package cafe.woden.ircclient.ui.coordinator;
 import cafe.woden.ircclient.app.api.Ircv3ReadMarkerFeatureSupport;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.ChatDockable;
-import cafe.woden.ircclient.ui.chat.ChatTranscriptStore;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Locale;

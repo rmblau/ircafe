@@ -3,7 +3,7 @@ package cafe.woden.ircclient.ui.util;
 import cafe.woden.ircclient.logging.viewer.ChatRedactionAuditRecord;
 import cafe.woden.ircclient.logging.viewer.ChatRedactionAuditService;
 import cafe.woden.ircclient.model.TargetRef;
-import cafe.woden.ircclient.ui.chat.ChatTranscriptStore;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.util.VirtualThreads;
 import java.awt.Component;
 import java.time.Instant;

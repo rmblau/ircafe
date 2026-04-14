@@ -1,8 +1,8 @@
 package cafe.woden.ircclient.ui.nickcolors;
 
 import cafe.woden.ircclient.config.api.NickColorOverridesConfigPort;
-import cafe.woden.ircclient.ui.chat.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.chat.NickColorService;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.BorderLayout;

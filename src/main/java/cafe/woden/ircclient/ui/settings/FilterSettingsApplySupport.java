@@ -4,7 +4,7 @@ import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.model.FilterScopeOverride;
 import cafe.woden.ircclient.model.TargetRef;
-import cafe.woden.ircclient.ui.chat.TranscriptRebuildService;
+import cafe.woden.ircclient.ui.chat.transcript.TranscriptRebuildService;
 import cafe.woden.ircclient.ui.filter.FilterSettings;
 import cafe.woden.ircclient.ui.filter.FilterSettingsBus;
 import java.util.List;

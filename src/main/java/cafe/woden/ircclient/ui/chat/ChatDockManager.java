@@ -15,6 +15,8 @@ import cafe.woden.ircclient.ui.backend.BackendUiProfileProvider;
 import cafe.woden.ircclient.ui.bus.ActiveInputRouter;
 import cafe.woden.ircclient.ui.bus.OutboundLineBus;
 import cafe.woden.ircclient.ui.bus.TargetActivationBus;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
+import cafe.woden.ircclient.ui.chat.view.PinnedChatDockable;
 import cafe.woden.ircclient.ui.coordinator.MessageActionCapabilityPolicy;
 import cafe.woden.ircclient.ui.servertree.ServerTreeDockable;
 import cafe.woden.ircclient.ui.settings.SpellcheckSettingsBus;
