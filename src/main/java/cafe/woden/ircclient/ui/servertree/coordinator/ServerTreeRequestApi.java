@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.coordinator;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.app.api.Ircv3CapabilityToggleRequest;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.servertree.ServerTreeDockable;
@@ -12,6 +13,7 @@ import java.util.function.Function;
 import org.springframework.stereotype.Component;
 
 /** Public-facing request stream API composed from tree request and interaction collaborators. */
+@InterfaceLayer
 @Component
 public final class ServerTreeRequestApi {
 

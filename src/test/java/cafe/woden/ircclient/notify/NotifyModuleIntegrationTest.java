@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.notify;
 
+import cafe.woden.ircclient.notify.api.PushyNotificationPort;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -72,7 +73,7 @@ class NotifyModuleIntegrationTest {
     assertNotNull(pushySettingsBus.get());
     assertFalse(Boolean.TRUE.equals(pushySettingsBus.get().enabled()));
 
-    PushyNotificationService.PushResult result =
+    PushyNotificationPort.PushResult result =
         pushyNotificationService.sendTestNotification(pushySettingsBus.get(), "Test", "Body");
 
     assertFalse(result.success());

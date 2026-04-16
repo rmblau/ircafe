@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.mutation;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.servertree.model.ServerNodes;
 import cafe.woden.ircclient.ui.servertree.model.ServerTreeNodeData;
@@ -8,6 +9,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import org.springframework.stereotype.Component;
 
 /** Ensures each server root has a channel-list leaf with stable insert positioning. */
+@InterfaceLayer
 @Component
 public final class ServerTreeChannelListNodeEnsurer {
 

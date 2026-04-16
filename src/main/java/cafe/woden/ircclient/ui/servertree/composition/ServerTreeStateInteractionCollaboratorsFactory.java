@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.composition;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.config.api.IrcSessionRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ServerTreeChannelStateConfigPort;
 import cafe.woden.ircclient.interceptors.InterceptorStore;
@@ -31,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /** Factory that assembles state/interaction collaborators for server tree construction. */
+@InterfaceLayer
 @Component
 @RequiredArgsConstructor
 public final class ServerTreeStateInteractionCollaboratorsFactory {

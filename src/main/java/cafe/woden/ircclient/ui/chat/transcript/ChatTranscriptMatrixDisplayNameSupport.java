@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.chat.transcript;
 
-import cafe.woden.ircclient.irc.roster.UserListStore;
+import cafe.woden.ircclient.irc.roster.UserListPort;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.settings.UiSettings;
@@ -19,7 +19,7 @@ final class ChatTranscriptMatrixDisplayNameSupport {
 
   record Context(
       UiSettingsBus uiSettings,
-      UserListStore userListStore,
+      UserListPort userListStore,
       Function<TargetRef, StyledDocument> documentForTarget) {
     Context {
       Objects.requireNonNull(documentForTarget, "documentForTarget");

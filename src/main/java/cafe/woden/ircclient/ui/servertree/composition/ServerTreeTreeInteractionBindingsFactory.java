@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.composition;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.servertree.interaction.ServerTreeKeyBindingsInstaller;
 import cafe.woden.ircclient.ui.servertree.interaction.ServerTreeNodeActionsFactory;
@@ -17,6 +18,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /** Factory that assembles tree interaction bindings used by the server tree UI. */
+@InterfaceLayer
 @Component
 @RequiredArgsConstructor
 public final class ServerTreeTreeInteractionBindingsFactory {

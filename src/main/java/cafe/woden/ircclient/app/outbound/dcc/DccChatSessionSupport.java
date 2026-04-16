@@ -2,7 +2,7 @@ package cafe.woden.ircclient.app.outbound.dcc;
 
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.config.ExecutorConfig;
-import cafe.woden.ircclient.dcc.DccTransferStore;
+import cafe.woden.ircclient.dcc.api.DccActionHint;
 import cafe.woden.ircclient.irc.port.IrcMediatorInteractionPort;
 import cafe.woden.ircclient.model.TargetRef;
 import java.io.BufferedReader;
@@ -95,7 +95,7 @@ final class DccChatSessionSupport {
           "Connected",
           "",
           null,
-          DccTransferStore.ActionHint.NONE);
+          DccActionHint.NONE);
     }
     if (connectedText != null && connectedText.contains("incoming")) {
       dccCommandSupport.upsertTransfer(
@@ -106,7 +106,7 @@ final class DccChatSessionSupport {
           "Connected",
           "",
           null,
-          DccTransferStore.ActionHint.NONE);
+          DccActionHint.NONE);
     }
     dccCommandSupport.upsertTransfer(
         sid,
@@ -116,7 +116,7 @@ final class DccChatSessionSupport {
         "Active",
         connectedText,
         null,
-        DccTransferStore.ActionHint.CLOSE_CHAT);
+        DccActionHint.CLOSE_CHAT);
 
     io.execute(() -> readDccChatLoop(key, session));
   }
@@ -140,7 +140,7 @@ final class DccChatSessionSupport {
         "Closed",
         "",
         null,
-        DccTransferStore.ActionHint.NONE);
+        DccActionHint.NONE);
     return true;
   }
 
@@ -180,7 +180,7 @@ final class DccChatSessionSupport {
             "Peer closed",
             "",
             null,
-            DccTransferStore.ActionHint.NONE);
+            DccActionHint.NONE);
       }
     } catch (Exception e) {
       if (!session.closing().get()) {
@@ -193,7 +193,7 @@ final class DccChatSessionSupport {
             "Connection lost",
             e.getMessage(),
             null,
-            DccTransferStore.ActionHint.NONE);
+            DccActionHint.NONE);
       }
     } finally {
       chatSessions.remove(key, session);

@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.interaction;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.servertree.model.ServerTreeNodeData;
 import cafe.woden.ircclient.ui.servertree.policy.ServerTreeNodeReorderPolicy;
@@ -14,6 +15,7 @@ import javax.swing.tree.DefaultTreeModel;
 import org.springframework.stereotype.Component;
 
 /** Factory for building server-tree node actions wiring. */
+@InterfaceLayer
 @Component
 public final class ServerTreeNodeActionsFactory {
 

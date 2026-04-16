@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.chat.render;
 
-import cafe.woden.ircclient.irc.roster.UserListStore;
+import cafe.woden.ircclient.irc.roster.UserListPort;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.MentionPatternRegistry;
@@ -38,13 +38,13 @@ public class ChatRichTextRenderer {
   private static final Pattern URL_PATTERN = Pattern.compile("(https?://\\S+|www\\.\\S+)");
 
   private final MentionPatternRegistry mentions;
-  private final UserListStore userLists;
+  private final UserListPort userLists;
   private final ChatStyles styles;
   private final NickColorService nickColors;
 
   public ChatRichTextRenderer(
       MentionPatternRegistry mentions,
-      UserListStore userLists,
+      UserListPort userLists,
       ChatStyles styles,
       NickColorService nickColors) {
     this.mentions = mentions;

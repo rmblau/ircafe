@@ -2,7 +2,7 @@ package cafe.woden.ircclient.ui.settings;
 
 import cafe.woden.ircclient.model.BuiltInSound;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
-import cafe.woden.ircclient.notify.sound.NotificationSoundService;
+import cafe.woden.ircclient.notify.api.NotificationSoundPort;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.Dimension;
 import java.awt.Window;
@@ -32,7 +32,7 @@ final class IrcEventNotificationRuleDialogSupport {
       Window owner,
       String title,
       IrcEventNotificationRule seed,
-      NotificationSoundService notificationSoundService,
+      NotificationSoundPort notificationSoundService,
       SoundFileImporter soundFileImporter) {
     IrcEventNotificationRule base =
         seed != null

@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.coordinator;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.model.TargetRef;
 import java.util.List;
 import java.util.Objects;
@@ -12,6 +13,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import org.springframework.stereotype.Component;
 
 /** Orchestrates built-in leaf visibility sync and selected-target fallback behavior. */
+@InterfaceLayer
 @Component
 public final class ServerTreeUiLeafVisibilitySynchronizer {
 

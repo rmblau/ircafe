@@ -1,11 +1,13 @@
 package cafe.woden.ircclient.ui.servertree.mutation;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import java.util.Set;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import org.springframework.stereotype.Component;
 
 /** Removes target tree nodes and publishes precise model removal events. */
+@InterfaceLayer
 @Component
 public final class ServerTreeTargetNodeRemovalMutator {
 

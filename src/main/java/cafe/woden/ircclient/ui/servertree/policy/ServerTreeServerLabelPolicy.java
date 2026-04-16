@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.policy;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.bouncer.BouncerAutoConnectStore;
 import cafe.woden.ircclient.ui.servertree.ServerTreeBouncerBackends;
 import java.util.LinkedHashMap;
@@ -9,6 +10,7 @@ import java.util.Set;
 import org.springframework.stereotype.Component;
 
 /** Encapsulates display-label and ephemeral server badge policy. */
+@InterfaceLayer
 @Component
 public final class ServerTreeServerLabelPolicy {
 

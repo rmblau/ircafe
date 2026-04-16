@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.policy;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.model.TargetRef;
 import java.util.Objects;
 import java.util.function.Function;
@@ -9,6 +10,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import org.springframework.stereotype.Component;
 
 /** Resolves the current best-effort selection used for persistence. */
+@InterfaceLayer
 @Component
 public final class ServerTreeSelectionPersistencePolicy {
 

@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.query;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.servertree.model.ServerNodes;
 import java.util.Map;
@@ -10,6 +11,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import org.springframework.stereotype.Component;
 
 /** Resolves server-scoped tree nodes and first-server selection candidates. */
+@InterfaceLayer
 @Component
 public final class ServerTreeServerNodeResolver {
   public interface Context {

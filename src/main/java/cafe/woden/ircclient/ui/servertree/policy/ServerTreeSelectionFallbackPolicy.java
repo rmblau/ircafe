@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.policy;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.servertree.model.ServerBuiltInNodesVisibility;
 import cafe.woden.ircclient.ui.servertree.model.ServerNodes;
@@ -13,6 +14,7 @@ import javax.swing.tree.TreePath;
 import org.springframework.stereotype.Component;
 
 /** Encapsulates fallback and startup target-selection policy for a server tree. */
+@InterfaceLayer
 @Component
 public final class ServerTreeSelectionFallbackPolicy {
 

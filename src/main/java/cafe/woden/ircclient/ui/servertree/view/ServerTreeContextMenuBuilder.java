@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.view;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.ui.servertree.model.ServerTreeNodeData;
 import cafe.woden.ircclient.ui.servertree.model.ServerTreeQuasselNetworkNodeData;
 import java.util.Objects;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /** Builds context menus for server tree nodes. */
+@InterfaceLayer
 @Component
 @RequiredArgsConstructor
 public final class ServerTreeContextMenuBuilder {

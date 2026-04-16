@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.composition;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayout;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeRootSiblingOrder;
 import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
@@ -7,7 +8,7 @@ import cafe.woden.ircclient.diagnostics.JfrRuntimeEventsService;
 import cafe.woden.ircclient.interceptors.InterceptorStore;
 import cafe.woden.ircclient.model.InterceptorDefinition;
 import cafe.woden.ircclient.model.TargetRef;
-import cafe.woden.ircclient.notifications.NotificationStore;
+import cafe.woden.ircclient.notifications.api.NotificationQueryPort;
 import cafe.woden.ircclient.ui.servertree.actions.ServerTreeInterceptorActions;
 import cafe.woden.ircclient.ui.servertree.builder.ServerTreeServerNodeBuilder;
 import cafe.woden.ircclient.ui.servertree.coordinator.ServerTreeChannelStateCoordinator;
@@ -40,6 +41,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 /** Factory that assembles lifecycle and settings collaborators for server tree construction. */
+@InterfaceLayer
 @Component
 @RequiredArgsConstructor
 public final class ServerTreeLifecycleSettingsCollaboratorsFactory {
@@ -83,7 +85,7 @@ public final class ServerTreeLifecycleSettingsCollaboratorsFactory {
                                 in.statusLabelManagerContext(), "statusLabelManagerContext"),
                             serverId),
                 serverId -> {
-                  NotificationStore store = in.notificationStore();
+                  NotificationQueryPort store = in.notificationStore();
                   return store == null ? 0 : store.count(serverId);
                 },
                 serverId -> {
@@ -190,7 +192,7 @@ public final class ServerTreeLifecycleSettingsCollaboratorsFactory {
       BooleanSupplier isDccTransfersNodesVisible,
       ServerTreeStatusLabelManager statusLabelManager,
       ServerTreeStatusLabelManager.Context statusLabelManagerContext,
-      NotificationStore notificationStore,
+      NotificationQueryPort notificationStore,
       InterceptorStore interceptorStore,
       Map<TargetRef, DefaultMutableTreeNode> leaves,
       Function<String, ServerTreeBuiltInLayout> builtInLayout,

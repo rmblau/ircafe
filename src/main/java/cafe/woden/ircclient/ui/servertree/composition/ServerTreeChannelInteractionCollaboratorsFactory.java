@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.composition;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.servertree.coordinator.ServerTreeChannelDisconnectStateManager;
 import cafe.woden.ircclient.ui.servertree.coordinator.ServerTreeChannelInteractionApi;
@@ -25,6 +26,7 @@ import javax.swing.tree.TreePath;
 import org.springframework.stereotype.Component;
 
 /** Factory that assembles channel-interaction collaborators for server tree construction. */
+@InterfaceLayer
 @Component
 public final class ServerTreeChannelInteractionCollaboratorsFactory {
 

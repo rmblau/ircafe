@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.mutation;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.servertree.model.ServerTreeNodeData;
 import cafe.woden.ircclient.ui.servertree.state.ServerTreePrivateMessageOnlineStateStore;
@@ -11,6 +12,7 @@ import javax.swing.tree.DefaultTreeModel;
 import org.springframework.stereotype.Component;
 
 /** Inserts ensured leaves into the tree model and updates default PM-online state. */
+@InterfaceLayer
 @Component
 public final class ServerTreeEnsureNodeLeafInserter {
 

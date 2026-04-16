@@ -3,6 +3,9 @@ package cafe.woden.ircclient.dcc;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cafe.woden.ircclient.dcc.api.DccActionHint;
+import cafe.woden.ircclient.dcc.api.DccTransferChange;
+import cafe.woden.ircclient.dcc.api.DccTransferEntry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -25,27 +28,27 @@ class DccTransferStoreTest {
         "Sending",
         "50%",
         120,
-        DccTransferStore.ActionHint.GET_FILE);
+        DccActionHint.GET_FILE);
 
-    List<DccTransferStore.Entry> entries = store.listAll("libera");
+    List<DccTransferEntry> entries = store.listAll("libera");
     assertEquals(2, entries.size());
 
-    DccTransferStore.Entry newest = entries.get(0);
+    DccTransferEntry newest = entries.get(0);
     assertEquals("id-2", newest.entryId());
     assertEquals(Integer.valueOf(100), newest.progressPercent());
-    assertEquals(DccTransferStore.ActionHint.GET_FILE, newest.actionHint());
+    assertEquals(DccActionHint.GET_FILE, newest.actionHint());
 
-    DccTransferStore.Entry older = entries.get(1);
+    DccTransferEntry older = entries.get(1);
     assertEquals("id-1", older.entryId());
     assertEquals("libera", older.serverId());
     assertEquals(Integer.valueOf(0), older.progressPercent());
-    assertEquals(DccTransferStore.ActionHint.NONE, older.actionHint());
+    assertEquals(DccActionHint.NONE, older.actionHint());
   }
 
   @Test
   void removeAndClearEmitChangesOnlyWhenStateMutates() {
     DccTransferStore store = new DccTransferStore();
-    List<DccTransferStore.Change> changes = new ArrayList<>();
+    List<DccTransferChange> changes = new ArrayList<>();
     var sub = store.changes().subscribe(changes::add);
     try {
       store.remove("libera", "missing");
@@ -61,10 +64,10 @@ class DccTransferStoreTest {
 
     assertEquals(
         List.of(
-            new DccTransferStore.Change("libera"),
-            new DccTransferStore.Change("libera"),
-            new DccTransferStore.Change("libera"),
-            new DccTransferStore.Change("libera")),
+            new DccTransferChange("libera"),
+            new DccTransferChange("libera"),
+            new DccTransferChange("libera"),
+            new DccTransferChange("libera")),
         changes);
   }
 
@@ -80,14 +83,14 @@ class DccTransferStoreTest {
           "Sending",
           "entry-" + i,
           i % 101,
-          DccTransferStore.ActionHint.NONE);
+          DccActionHint.NONE);
     }
 
-    List<DccTransferStore.Entry> entries = store.listAll("libera");
+    List<DccTransferEntry> entries = store.listAll("libera");
     assertEquals(50, entries.size());
 
     Set<String> ids =
-        entries.stream().map(DccTransferStore.Entry::entryId).collect(Collectors.toSet());
+        entries.stream().map(DccTransferEntry::entryId).collect(Collectors.toSet());
     for (int i = 0; i < 5; i++) {
       assertTrue(!ids.contains("id-" + i), "oldest entries should be trimmed first");
     }

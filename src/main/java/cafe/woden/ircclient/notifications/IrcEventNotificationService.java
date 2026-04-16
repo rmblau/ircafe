@@ -4,7 +4,7 @@ import cafe.woden.ircclient.app.api.IrcEventNotifierPort;
 import cafe.woden.ircclient.app.api.TrayNotificationsPort;
 import cafe.woden.ircclient.config.ExecutorConfig;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
-import cafe.woden.ircclient.notify.pushy.PushyNotificationService;
+import cafe.woden.ircclient.notify.api.PushyNotificationPort;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +36,7 @@ public class IrcEventNotificationService implements IrcEventNotifierPort {
   private final IrcEventNotificationRulesBus rulesBus;
   private final TrayNotificationsPort trayNotificationService;
   private final NotificationStore notificationStore;
-  private final PushyNotificationService pushyNotificationService;
+  private final PushyNotificationPort pushyNotificationService;
 
   @Qualifier(ExecutorConfig.IRC_EVENT_SCRIPT_EXECUTOR)
   private final ExecutorService scriptExecutor;

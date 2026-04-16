@@ -30,6 +30,7 @@ import cafe.woden.ircclient.app.api.ZncPlaybackEventsPort;
 import cafe.woden.ircclient.app.commands.BackendNamedCommandHandler;
 import cafe.woden.ircclient.app.commands.FilterCommand;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesBus;
+import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
 import cafe.woden.ircclient.app.core.IrcMediator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.app.outbound.OutboundCommandDispatcher;
@@ -70,6 +71,8 @@ import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UserCommandAliasesConfigPort;
 import cafe.woden.ircclient.dcc.DccTransferStore;
+import cafe.woden.ircclient.dcc.api.DccTransferCommandPort;
+import cafe.woden.ircclient.dcc.api.DccTransferQueryPort;
 import cafe.woden.ircclient.diagnostics.ApplicationDiagnosticsService;
 import cafe.woden.ircclient.diagnostics.AssertjSwingDiagnosticsService;
 import cafe.woden.ircclient.diagnostics.JfrRuntimeEventsService;
@@ -115,7 +118,7 @@ import cafe.woden.ircclient.irc.port.IrcShutdownPort;
 import cafe.woden.ircclient.irc.port.IrcTargetMembershipPort;
 import cafe.woden.ircclient.irc.port.IrcTypingPort;
 import cafe.woden.ircclient.irc.presence.IsonParsers;
-import cafe.woden.ircclient.irc.roster.UserListStore;
+import cafe.woden.ircclient.irc.roster.UserListPort;
 import cafe.woden.ircclient.irc.roster.UserhostQueryService;
 import cafe.woden.ircclient.irc.soju.SojuAutoConnectStore;
 import cafe.woden.ircclient.irc.znc.ZncAutoConnectStore;
@@ -134,6 +137,16 @@ import cafe.woden.ircclient.notifications.IrcEventNotificationRulesBus;
 import cafe.woden.ircclient.notifications.IrcEventNotificationService;
 import cafe.woden.ircclient.notifications.NotificationRuleMatcher;
 import cafe.woden.ircclient.notifications.NotificationStore;
+import cafe.woden.ircclient.notifications.api.HighlightEvent;
+import cafe.woden.ircclient.notifications.api.IrcEventNotificationRulesPort;
+import cafe.woden.ircclient.notifications.api.IrcEventRuleEvent;
+import cafe.woden.ircclient.notifications.api.NotificationChange;
+import cafe.woden.ircclient.notifications.api.NotificationCommandPort;
+import cafe.woden.ircclient.notifications.api.NotificationQueryPort;
+import cafe.woden.ircclient.notifications.api.NotificationStorePort;
+import cafe.woden.ircclient.notifications.api.RuleMatchEvent;
+import cafe.woden.ircclient.notify.api.NotificationSoundPort;
+import cafe.woden.ircclient.notify.api.PushyNotificationPort;
 import cafe.woden.ircclient.notify.pushy.PushyNotificationService;
 import cafe.woden.ircclient.notify.sound.NotificationSoundService;
 import cafe.woden.ircclient.perform.PerformOnConnectService;
@@ -295,10 +308,22 @@ class SpringModulithIncrementalAdoptionTest {
         .isEqualTo(notificationsModule);
     assertThat(notificationsModule.getBasePackage().getName())
         .isEqualTo("cafe.woden.ircclient.notifications");
+    assertNamedInterfaceContains(
+        notificationsModule,
+        "api",
+        NotificationQueryPort.class,
+        NotificationCommandPort.class,
+        NotificationStorePort.class,
+        NotificationChange.class,
+        HighlightEvent.class,
+        RuleMatchEvent.class,
+        IrcEventRuleEvent.class,
+        IrcEventNotificationRulesPort.class);
 
     ApplicationModule dccModule = moduleFor(modules, DccTransferStore.class);
     assertThat(dccModule).isNotEqualTo(appModule);
     assertThat(dccModule.getBasePackage().getName()).isEqualTo("cafe.woden.ircclient.dcc");
+    assertNamedInterfaceContains(dccModule, "api", DccTransferQueryPort.class, DccTransferCommandPort.class);
 
     ApplicationModule ircModule = moduleFor(modules, IrcClientService.class);
     assertThat(ircModule).isNotEqualTo(appModule);
@@ -311,7 +336,7 @@ class SpringModulithIncrementalAdoptionTest {
     assertNamedInterfaceContains(
         ircModule, "ircv3", Ircv3CapabilityCatalog.class, Ircv3DraftNormalizer.class);
     assertNamedInterfaceContains(
-        ircModule, "roster", UserListStore.class, UserhostQueryService.class);
+        ircModule, "roster", UserListPort.class, UserhostQueryService.class);
     assertNamedInterfaceContains(
         ircModule,
         "playback",
@@ -357,6 +382,7 @@ class SpringModulithIncrementalAdoptionTest {
     assertThat(notifyModule).isNotEqualTo(appModule);
     assertThat(moduleFor(modules, PushyNotificationService.class)).isEqualTo(notifyModule);
     assertThat(notifyModule.getBasePackage().getName()).isEqualTo("cafe.woden.ircclient.notify");
+    assertNamedInterfaceContains(notifyModule, "api", NotificationSoundPort.class, PushyNotificationPort.class);
     assertNamedInterfaceContains(notifyModule, "sound", NotificationSoundService.class);
     assertNamedInterfaceContains(notifyModule, "pushy", PushyNotificationService.class);
 
@@ -394,7 +420,7 @@ class SpringModulithIncrementalAdoptionTest {
         .containsExactlyInAnyOrder(
             "config",
             "config::api",
-            "dcc",
+            "dcc::api",
             "ignore::api",
             "irc",
             "irc::backend",
@@ -417,7 +443,7 @@ class SpringModulithIncrementalAdoptionTest {
             "bouncer",
             "config",
             "config::api",
-            "dcc",
+            "dcc::api",
             "diagnostics",
             "ignore",
             "ignore::api",
@@ -437,7 +463,8 @@ class SpringModulithIncrementalAdoptionTest {
             "model",
             "monitor",
             "net",
-            "notifications",
+            "notifications::api",
+            "notify::api",
             "notify::pushy",
             "notify::sound",
             "state::api",
@@ -524,6 +551,9 @@ class SpringModulithIncrementalAdoptionTest {
     assertThat(InterceptorIngestPort.class.isAnnotationPresent(SecondaryPort.class)).isTrue();
     assertThat(IrcEventNotifierPort.class.isAnnotationPresent(SecondaryPort.class)).isTrue();
     assertThat(ZncPlaybackEventsPort.class.isAnnotationPresent(SecondaryPort.class)).isTrue();
+    assertThat(UserListPort.class.isAnnotationPresent(PrimaryPort.class)).isTrue();
+    assertThat(NotificationSoundPort.class.isAnnotationPresent(PrimaryPort.class)).isTrue();
+    assertThat(PushyNotificationPort.class.isAnnotationPresent(PrimaryPort.class)).isTrue();
 
     assertThat(IrcMediator.class.isAnnotationPresent(Application.class)).isTrue();
     assertThat(TargetCoordinator.class.isAnnotationPresent(Application.class)).isTrue();
@@ -607,7 +637,7 @@ class SpringModulithIncrementalAdoptionTest {
         MonitorRosterPort.class,
         TrayNotificationsPort.class);
     assertNamedInterfaceContains(
-        appModule, "commands", UserCommandAliasesBus.class, FilterCommand.class);
+        appModule, "commands", UserCommandAliasesPort.class, UserCommandAliasesBus.class, FilterCommand.class);
     assertNamedInterfaceContains(appModule, "outbound-filter", LocalFilterCommandHandler.class);
   }
 

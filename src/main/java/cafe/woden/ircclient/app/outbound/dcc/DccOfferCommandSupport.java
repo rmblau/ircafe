@@ -3,7 +3,7 @@ package cafe.woden.ircclient.app.outbound.dcc;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.config.ExecutorConfig;
-import cafe.woden.ircclient.dcc.DccTransferStore;
+import cafe.woden.ircclient.dcc.api.DccActionHint;
 import cafe.woden.ircclient.irc.port.IrcMediatorInteractionPort;
 import cafe.woden.ircclient.model.TargetRef;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -110,7 +110,7 @@ final class DccOfferCommandSupport {
           "Offering",
           advertised.getHostAddress() + ":" + port,
           null,
-          DccTransferStore.ActionHint.NONE);
+          DccActionHint.NONE);
 
       disposables.add(
           mediatorIrc
@@ -127,7 +127,7 @@ final class DccOfferCommandSupport {
                         "Waiting for peer",
                         advertised.getHostAddress() + ":" + port,
                         null,
-                        DccTransferStore.ActionHint.NONE);
+                        DccActionHint.NONE);
                     io.execute(
                         () -> awaitOutgoingChatConnection(sid, normalizedNick, key, listener));
                   },
@@ -142,7 +142,7 @@ final class DccOfferCommandSupport {
                         "Failed to send offer",
                         String.valueOf(err),
                         null,
-                        DccTransferStore.ActionHint.NONE);
+                        DccActionHint.NONE);
                   }));
     } catch (Exception e) {
       ui.appendError(pm, DCC_ERR_TAG, "Could not start DCC chat listener: " + e.getMessage());
@@ -154,7 +154,7 @@ final class DccOfferCommandSupport {
           "Failed to listen",
           e.getMessage(),
           null,
-          DccTransferStore.ActionHint.NONE);
+          DccActionHint.NONE);
     }
   }
 
@@ -236,7 +236,7 @@ final class DccOfferCommandSupport {
           "Offering",
           fileName + " (" + DccCommandSupport.formatBytes(size) + ")",
           0,
-          DccTransferStore.ActionHint.NONE);
+          DccActionHint.NONE);
 
       disposables.add(
           mediatorIrc
@@ -253,7 +253,7 @@ final class DccOfferCommandSupport {
                         "Waiting for peer",
                         fileName + " (" + DccCommandSupport.formatBytes(size) + ")",
                         0,
-                        DccTransferStore.ActionHint.NONE);
+                        DccActionHint.NONE);
                     io.execute(
                         () ->
                             awaitOutgoingSendConnection(
@@ -270,7 +270,7 @@ final class DccOfferCommandSupport {
                         "Failed to send offer",
                         String.valueOf(err),
                         0,
-                        DccTransferStore.ActionHint.NONE);
+                        DccActionHint.NONE);
                   }));
     } catch (Exception e) {
       ui.appendError(pm, DCC_ERR_TAG, "Could not start DCC send listener: " + e.getMessage());
@@ -282,7 +282,7 @@ final class DccOfferCommandSupport {
           "Failed to listen",
           e.getMessage(),
           0,
-          DccTransferStore.ActionHint.NONE);
+          DccActionHint.NONE);
     }
   }
 
@@ -313,7 +313,7 @@ final class DccOfferCommandSupport {
         "Connecting",
         offer.host().getHostAddress() + ":" + offer.port(),
         null,
-        DccTransferStore.ActionHint.NONE);
+        DccActionHint.NONE);
 
     io.execute(
         () -> {
@@ -334,7 +334,7 @@ final class DccOfferCommandSupport {
                 "Failed",
                 e.getMessage(),
                 null,
-                DccTransferStore.ActionHint.NONE);
+                DccActionHint.NONE);
           }
         });
   }
@@ -377,7 +377,7 @@ final class DccOfferCommandSupport {
         offer.fileName() + " -> " + destination.getFileName(),
         localPath,
         0,
-        DccTransferStore.ActionHint.NONE);
+        DccActionHint.NONE);
 
     io.execute(
         () -> {
@@ -410,7 +410,7 @@ final class DccOfferCommandSupport {
                     + ")",
                 localPath,
                 100,
-                DccTransferStore.ActionHint.NONE);
+                DccActionHint.NONE);
           } catch (Exception e) {
             ui.appendError(pm, DCC_ERR_TAG, "DCC GET failed: " + e.getMessage());
             dccCommandSupport.upsertTransfer(
@@ -422,7 +422,7 @@ final class DccOfferCommandSupport {
                 e.getMessage(),
                 localPath,
                 null,
-                DccTransferStore.ActionHint.NONE);
+                DccActionHint.NONE);
           } finally {
             if (!completed) {
               try {
@@ -439,7 +439,7 @@ final class DccOfferCommandSupport {
                   offer.fileName() + " (" + DccCommandSupport.formatBytes(offer.size()) + ")",
                   localPath,
                   0,
-                  DccTransferStore.ActionHint.GET_FILE);
+                  DccActionHint.GET_FILE);
             }
           }
         });
@@ -533,7 +533,7 @@ final class DccOfferCommandSupport {
           "Timed out",
           "",
           null,
-          DccTransferStore.ActionHint.NONE);
+          DccActionHint.NONE);
     } catch (Exception e) {
       ui.appendError(pm, DCC_ERR_TAG, "DCC CHAT accept failed: " + e.getMessage());
       dccCommandSupport.upsertTransfer(
@@ -544,7 +544,7 @@ final class DccOfferCommandSupport {
           "Failed",
           e.getMessage(),
           null,
-          DccTransferStore.ActionHint.NONE);
+          DccActionHint.NONE);
     } finally {
       removeListener(outgoingChatListeners(), key, listener);
     }
@@ -571,7 +571,7 @@ final class DccOfferCommandSupport {
           "Transferring",
           displayName + " (" + DccCommandSupport.formatBytes(size) + ")",
           0,
-          DccTransferStore.ActionHint.NONE);
+          DccActionHint.NONE);
       dccFileTransferIoSupport.sendFileToSocket(sid, nick, pm, socket, source, displayName, size);
       ui.appendStatus(
           pm,
@@ -585,7 +585,7 @@ final class DccOfferCommandSupport {
           "Completed",
           displayName + " (" + DccCommandSupport.formatBytes(size) + ")",
           100,
-          DccTransferStore.ActionHint.NONE);
+          DccActionHint.NONE);
     } catch (SocketTimeoutException e) {
       ui.appendStatus(pm, DCC_TAG, "DCC SEND offer to " + nick + " timed out.");
       dccCommandSupport.upsertTransfer(
@@ -596,7 +596,7 @@ final class DccOfferCommandSupport {
           "Timed out",
           displayName + " (" + DccCommandSupport.formatBytes(size) + ")",
           null,
-          DccTransferStore.ActionHint.NONE);
+          DccActionHint.NONE);
     } catch (Exception e) {
       ui.appendError(pm, DCC_ERR_TAG, "DCC SEND failed: " + e.getMessage());
       dccCommandSupport.upsertTransfer(
@@ -607,7 +607,7 @@ final class DccOfferCommandSupport {
           "Failed",
           e.getMessage(),
           null,
-          DccTransferStore.ActionHint.NONE);
+          DccActionHint.NONE);
     } finally {
       removeListener(outgoingSendListeners(), key, listener);
     }

@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.coordinator;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.model.TargetRef;
 import java.util.Objects;
 import java.util.Set;
@@ -12,6 +13,7 @@ import javax.swing.tree.TreePath;
 import org.springframework.stereotype.Component;
 
 /** Orchestrates showing/hiding the application root while preserving selection and expansion. */
+@InterfaceLayer
 @Component
 public final class ServerTreeApplicationRootVisibilityCoordinator {
 

@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.policy;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.app.api.ConnectionState;
 import cafe.woden.ircclient.ui.servertree.ServerTreeConventions;
 import java.util.HashMap;
@@ -11,6 +12,7 @@ import java.util.function.Function;
 import org.springframework.stereotype.Component;
 
 /** Encapsulates bouncer-detach eligibility policy for server/channel actions. */
+@InterfaceLayer
 @Component
 public final class ServerTreeBouncerDetachPolicy {
 

@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.ui.settings;
 
 import cafe.woden.ircclient.app.api.ActiveTargetPort;
-import cafe.woden.ircclient.app.commands.UserCommandAliasesBus;
+import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
 import cafe.woden.ircclient.config.ExecutorConfig;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.LogProperties;
@@ -19,10 +19,10 @@ import cafe.woden.ircclient.model.UserCommandAlias;
 import cafe.woden.ircclient.net.NetHeartbeatContext;
 import cafe.woden.ircclient.net.NetProxyContext;
 import cafe.woden.ircclient.net.NetTlsContext;
-import cafe.woden.ircclient.notifications.IrcEventNotificationRulesBus;
-import cafe.woden.ircclient.notify.pushy.PushyNotificationService;
+import cafe.woden.ircclient.notifications.api.IrcEventNotificationRulesPort;
+import cafe.woden.ircclient.notify.api.PushyNotificationPort;
 import cafe.woden.ircclient.notify.pushy.PushySettingsBus;
-import cafe.woden.ircclient.notify.sound.NotificationSoundService;
+import cafe.woden.ircclient.notify.api.NotificationSoundPort;
 import cafe.woden.ircclient.notify.sound.NotificationSoundSettings;
 import cafe.woden.ircclient.notify.sound.NotificationSoundSettingsBus;
 import cafe.woden.ircclient.ui.SwingEdt;
@@ -158,10 +158,10 @@ public class PreferencesDialog {
   private final GnomeDbusNotificationBackend gnomeDbusBackend;
   private final NotificationSoundSettingsBus notificationSoundSettingsBus;
   private final PushySettingsBus pushySettingsBus;
-  private final PushyNotificationService pushyNotificationService;
-  private final IrcEventNotificationRulesBus ircEventNotificationRulesBus;
-  private final UserCommandAliasesBus userCommandAliasesBus;
-  private final NotificationSoundService notificationSoundService;
+  private final PushyNotificationPort pushyNotificationService;
+  private final IrcEventNotificationRulesPort ircEventNotificationRulesBus;
+  private final UserCommandAliasesPort userCommandAliasesBus;
+  private final NotificationSoundPort notificationSoundService;
   private final ServerDialogs serverDialogs;
   private final ExecutorService pushyTestExecutor;
   private final ExecutorService notificationRuleTestExecutor;
@@ -195,10 +195,10 @@ public class PreferencesDialog {
       GnomeDbusNotificationBackend gnomeDbusBackend,
       NotificationSoundSettingsBus notificationSoundSettingsBus,
       PushySettingsBus pushySettingsBus,
-      PushyNotificationService pushyNotificationService,
-      IrcEventNotificationRulesBus ircEventNotificationRulesBus,
-      UserCommandAliasesBus userCommandAliasesBus,
-      NotificationSoundService notificationSoundService,
+      PushyNotificationPort pushyNotificationService,
+      IrcEventNotificationRulesPort ircEventNotificationRulesBus,
+      UserCommandAliasesPort userCommandAliasesBus,
+      NotificationSoundPort notificationSoundService,
       ServerDialogs serverDialogs,
       @Qualifier(ExecutorConfig.PREFERENCES_PUSHY_TEST_EXECUTOR) ExecutorService pushyTestExecutor,
       @Qualifier(ExecutorConfig.PREFERENCES_NOTIFICATION_RULE_TEST_EXECUTOR)
@@ -266,10 +266,10 @@ public class PreferencesDialog {
       GnomeDbusNotificationBackend gnomeDbusBackend,
       NotificationSoundSettingsBus notificationSoundSettingsBus,
       PushySettingsBus pushySettingsBus,
-      PushyNotificationService pushyNotificationService,
-      IrcEventNotificationRulesBus ircEventNotificationRulesBus,
-      UserCommandAliasesBus userCommandAliasesBus,
-      NotificationSoundService notificationSoundService,
+      PushyNotificationPort pushyNotificationService,
+      IrcEventNotificationRulesPort ircEventNotificationRulesBus,
+      UserCommandAliasesPort userCommandAliasesBus,
+      NotificationSoundPort notificationSoundService,
       ServerDialogs serverDialogs,
       @Qualifier(ExecutorConfig.PREFERENCES_PUSHY_TEST_EXECUTOR) ExecutorService pushyTestExecutor,
       @Qualifier(ExecutorConfig.PREFERENCES_NOTIFICATION_RULE_TEST_EXECUTOR)

@@ -1,11 +1,11 @@
 package cafe.woden.ircclient.ui.notifications;
 
 import cafe.woden.ircclient.model.TargetRef;
-import cafe.woden.ircclient.notifications.NotificationStore;
-import cafe.woden.ircclient.notifications.NotificationStore.HighlightEvent;
-import cafe.woden.ircclient.notifications.NotificationStore.IrcEventRuleEvent;
-import cafe.woden.ircclient.notifications.NotificationStore.NotificationEvent;
-import cafe.woden.ircclient.notifications.NotificationStore.RuleMatchEvent;
+import cafe.woden.ircclient.notifications.api.HighlightEvent;
+import cafe.woden.ircclient.notifications.api.IrcEventRuleEvent;
+import cafe.woden.ircclient.notifications.api.NotificationEvent;
+import cafe.woden.ircclient.notifications.api.NotificationStorePort;
+import cafe.woden.ircclient.notifications.api.RuleMatchEvent;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.util.PopupMenuThemeSupport;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -54,7 +54,7 @@ public class NotificationsPanel extends JPanel implements AutoCloseable {
   private static final int COL_MATCH = 3;
   private static final int COL_SNIPPET = 4;
 
-  private final NotificationStore store;
+  private final NotificationStorePort store;
   private final CompositeDisposable disposables = new CompositeDisposable();
   private final NotificationsTableModel model = new NotificationsTableModel();
 
@@ -71,12 +71,12 @@ public class NotificationsPanel extends JPanel implements AutoCloseable {
   private volatile Consumer<TargetRef> onSelectTarget;
   private volatile BiConsumer<TargetRef, String> onJumpToMessage = (target, messageId) -> {};
 
-  public NotificationsPanel(NotificationStore store) {
+  public NotificationsPanel(NotificationStorePort store) {
     this(store, null, null);
   }
 
   public NotificationsPanel(
-      NotificationStore store, String serverId, Consumer<TargetRef> onSelectTarget) {
+      NotificationStorePort store, String serverId, Consumer<TargetRef> onSelectTarget) {
     super(new BorderLayout());
     this.store = Objects.requireNonNull(store, "store");
     this.serverId = serverId;

@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.composition;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayout;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayoutNode;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Component;
 /**
  * Factory that assembles target lifecycle coordinator dependencies for server tree construction.
  */
+@InterfaceLayer
 @Component
 public final class ServerTreeTargetLifecycleCoordinatorFactory {
 

@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.view;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.app.api.ConnectionState;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.icons.SvgIcons.Palette;
@@ -20,6 +21,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import org.springframework.stereotype.Component;
 
 /** Stateless presentation policy for server-tree cell labels, icons, badges, and typing state. */
+@InterfaceLayer
 @Component
 public final class ServerTreeCellPresentationPolicy {
 

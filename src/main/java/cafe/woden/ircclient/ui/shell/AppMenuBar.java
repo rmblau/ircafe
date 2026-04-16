@@ -7,8 +7,8 @@ import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
 import cafe.woden.ircclient.diagnostics.RuntimeJfrService;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.model.TargetRef;
-import cafe.woden.ircclient.notify.pushy.PushyNotificationService;
-import cafe.woden.ircclient.notify.sound.NotificationSoundService;
+import cafe.woden.ircclient.notify.api.PushyNotificationPort;
+import cafe.woden.ircclient.notify.api.NotificationSoundPort;
 import cafe.woden.ircclient.ui.ChatDockable;
 import cafe.woden.ircclient.ui.UserListDockable;
 import cafe.woden.ircclient.ui.bus.ActiveInputRouter;
@@ -146,8 +146,8 @@ public class AppMenuBar extends JMenuBar {
   private final UiSettingsBus settingsBus;
   private final UiShellRuntimeConfigPort runtimeConfig;
   private final TrayNotificationService trayNotificationService;
-  private final PushyNotificationService pushyNotificationService;
-  private final NotificationSoundService notificationSoundService;
+  private final PushyNotificationPort pushyNotificationService;
+  private final NotificationSoundPort notificationSoundService;
   private final RuntimeJfrService runtimeJfrService;
   private final ThemeManager themeManager;
   private final ChatDockable chat;
@@ -189,8 +189,8 @@ public class AppMenuBar extends JMenuBar {
       UiSettingsBus settingsBus,
       UiShellRuntimeConfigPort runtimeConfig,
       TrayNotificationService trayNotificationService,
-      PushyNotificationService pushyNotificationService,
-      NotificationSoundService notificationSoundService,
+      PushyNotificationPort pushyNotificationService,
+      NotificationSoundPort notificationSoundService,
       RuntimeJfrService runtimeJfrService,
       ServerDialogs serverDialogs,
       UiProperties uiProps,

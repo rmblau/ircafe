@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -8,6 +9,7 @@ import javax.swing.SwingUtilities;
 import org.springframework.stereotype.Component;
 
 /** Small helper for marshaling reads/writes onto the Swing EDT. */
+@InterfaceLayer
 @Component
 public final class ServerTreeEdtExecutor {
 

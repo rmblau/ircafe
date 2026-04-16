@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.query;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.ui.servertree.ServerTreeDockable;
 import cafe.woden.ircclient.ui.servertree.ServerTreeEdtExecutor;
 import cafe.woden.ircclient.ui.servertree.coordinator.ServerTreeChannelStateCoordinator;
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /** Provides channel-related tree queries and mutations with EDT-safe execution. */
+@InterfaceLayer
 @Component
 @RequiredArgsConstructor
 public final class ServerTreeChannelQueryService {

@@ -2,7 +2,7 @@ package cafe.woden.ircclient.ignore;
 
 import cafe.woden.ircclient.ignore.api.IgnoreLevels;
 import cafe.woden.ircclient.ignore.api.IgnoreTextPatternMode;
-import cafe.woden.ircclient.irc.roster.UserListStore;
+import cafe.woden.ircclient.irc.roster.UserListPort;
 import cafe.woden.ircclient.model.TargetRef;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import jakarta.annotation.PreDestroy;
@@ -39,12 +39,12 @@ public class IgnoreStatusService {
       Map<String, Boolean> hardMaskReplies) {}
 
   private final IgnoreListService ignoreListService;
-  private final UserListStore userListStore;
+  private final UserListPort userListStore;
 
   private final ConcurrentHashMap<String, Masks> cacheByServer = new ConcurrentHashMap<>();
   private final CompositeDisposable disposables = new CompositeDisposable();
 
-  public IgnoreStatusService(IgnoreListService ignoreListService, UserListStore userListStore) {
+  public IgnoreStatusService(IgnoreListService ignoreListService, UserListPort userListStore) {
     this.ignoreListService = ignoreListService;
     this.userListStore = userListStore;
 

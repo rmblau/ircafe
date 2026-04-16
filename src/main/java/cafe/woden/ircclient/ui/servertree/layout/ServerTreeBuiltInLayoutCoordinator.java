@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.layout;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayout;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayoutNode;
@@ -13,6 +14,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import org.springframework.stereotype.Component;
 
 /** Coordinates per-server built-in node layout state and runtime-config persistence. */
+@InterfaceLayer
 @Component
 public final class ServerTreeBuiltInLayoutCoordinator {
 

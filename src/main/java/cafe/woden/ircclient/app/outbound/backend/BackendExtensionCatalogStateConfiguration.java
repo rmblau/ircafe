@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.app.outbound.backend;
 
+import org.jmolecules.architecture.layered.InfrastructureLayer;
 import cafe.woden.ircclient.app.outbound.backend.spi.BackendExtension;
 import cafe.woden.ircclient.config.InstalledPluginServices;
 import java.util.List;
@@ -8,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+@InfrastructureLayer
 @Configuration(proxyBeanMethods = false)
 @RequiredArgsConstructor
 class BackendExtensionCatalogStateConfiguration {

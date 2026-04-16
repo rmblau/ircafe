@@ -10,7 +10,7 @@ import cafe.woden.ircclient.app.api.UiViewStatePort;
 import cafe.woden.ircclient.irc.IrcEvent.NickInfo;
 import cafe.woden.ircclient.irc.quassel.control.QuasselCoreControlPort;
 import cafe.woden.ircclient.model.TargetRef;
-import cafe.woden.ircclient.notifications.NotificationStore;
+import cafe.woden.ircclient.notifications.api.NotificationStorePort;
 import cafe.woden.ircclient.ui.bus.ActiveInputRouter;
 import cafe.woden.ircclient.ui.bus.OutboundLineBus;
 import cafe.woden.ircclient.ui.bus.TargetActivationBus;
@@ -56,7 +56,7 @@ public class SwingUiPort implements UiPort {
       ChatDockable chat,
       ChatTranscriptStore transcripts,
       MentionPatternRegistry mentions,
-      NotificationStore notificationStore,
+      NotificationStorePort notificationStore,
       UserListDockable users,
       StatusBar statusBar,
       ConnectButton connectBtn,

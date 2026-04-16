@@ -5,7 +5,7 @@ import cafe.woden.ircclient.app.api.UiEventPort;
 import cafe.woden.ircclient.app.api.UiPromptPort;
 import cafe.woden.ircclient.app.api.UiTranscriptPort;
 import cafe.woden.ircclient.app.api.UiViewStatePort;
-import cafe.woden.ircclient.notifications.NotificationStore;
+import cafe.woden.ircclient.notifications.api.NotificationStorePort;
 import cafe.woden.ircclient.ui.bus.ActiveInputRouter;
 import cafe.woden.ircclient.ui.bus.OutboundLineBus;
 import cafe.woden.ircclient.ui.bus.TargetActivationBus;
@@ -36,7 +36,7 @@ final class SwingUiPortDelegates {
       ChatDockable chat,
       ChatTranscriptStore transcripts,
       MentionPatternRegistry mentions,
-      NotificationStore notificationStore,
+      NotificationStorePort notificationStore,
       UserListDockable users,
       StatusBar statusBar,
       ConnectButton connectBtn,

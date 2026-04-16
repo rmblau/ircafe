@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.query;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.servertree.model.ServerTreeNodeData;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import org.springframework.stereotype.Component;
 
 /** Provides tree and leaf snapshots for target-based queries. */
+@InterfaceLayer
 @Component
 public final class ServerTreeTargetSnapshotProvider {
 

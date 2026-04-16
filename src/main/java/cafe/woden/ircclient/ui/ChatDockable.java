@@ -8,7 +8,7 @@ import cafe.woden.ircclient.app.commands.SlashCommandPresentationCatalog;
 import cafe.woden.ircclient.config.ExecutorConfig;
 import cafe.woden.ircclient.config.api.InstalledPluginProblem;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
-import cafe.woden.ircclient.dcc.DccTransferStore;
+import cafe.woden.ircclient.dcc.api.DccTransferQueryPort;
 import cafe.woden.ircclient.diagnostics.ApplicationDiagnosticsService;
 import cafe.woden.ircclient.diagnostics.JfrRuntimeEventsService;
 import cafe.woden.ircclient.diagnostics.RuntimeDiagnosticEvent;
@@ -18,7 +18,7 @@ import cafe.woden.ircclient.ignore.IgnoreStatusService;
 import cafe.woden.ircclient.interceptors.InterceptorStore;
 import cafe.woden.ircclient.irc.IrcClientService;
 import cafe.woden.ircclient.irc.port.IrcTypingPort;
-import cafe.woden.ircclient.irc.roster.UserListStore;
+import cafe.woden.ircclient.irc.roster.UserListPort;
 import cafe.woden.ircclient.logging.history.ChatHistoryService;
 import cafe.woden.ircclient.logging.viewer.ChatLogViewerService;
 import cafe.woden.ircclient.logging.viewer.ChatRedactionAuditService;
@@ -26,7 +26,7 @@ import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.monitor.MonitorListService;
 import cafe.woden.ircclient.net.ProxyPlan;
 import cafe.woden.ircclient.net.ServerProxyResolver;
-import cafe.woden.ircclient.notifications.NotificationStore;
+import cafe.woden.ircclient.notifications.api.NotificationStorePort;
 import cafe.woden.ircclient.state.api.ModeRoutingPort;
 import cafe.woden.ircclient.state.api.ServerIsupportStatePort;
 import cafe.woden.ircclient.ui.application.InboundDedupDiagnosticsPanel;
@@ -208,7 +208,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
   public ChatDockable(
       ChatTranscriptStore transcripts,
       ServerTreeDockable serverTree,
-      NotificationStore notificationStore,
+      NotificationStorePort notificationStore,
       TargetActivationBus activationBus,
       OutboundLineBus outboundBus,
       IrcClientService irc,
@@ -222,7 +222,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
       IgnoreStatusService ignoreStatusService,
       IgnoreListDialog ignoreListDialog,
       MonitorListService monitorListService,
-      UserListStore userListStore,
+      UserListPort userListStore,
       UserListDockable usersDock,
       NickContextMenuFactory nickContextMenuFactory,
       ServerProxyResolver proxyResolver,
@@ -231,7 +231,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
       ChatLogViewerService chatLogViewerService,
       ChatRedactionAuditService redactionAuditService,
       InterceptorStore interceptorStore,
-      DccTransferStore dccTransferStore,
+      DccTransferQueryPort dccTransferStore,
       TerminalDockable terminalDockable,
       @Lazy ApplicationDiagnosticsService applicationDiagnosticsService,
       JfrRuntimeEventsService jfrRuntimeEventsService,
@@ -582,7 +582,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
   }
 
   private TopicCoordinatorBundle createTopicCoordinatorBundle(
-      NotificationStore notificationStore, ChannelMetadataPort channelMetadata) {
+      NotificationStorePort notificationStore, ChannelMetadataPort channelMetadata) {
     ChannelMetadataPort metadata =
         java.util.Objects.requireNonNull(channelMetadata, "channelMetadata");
     // Insert an optional topic panel above the transcript.
@@ -610,7 +610,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
     return new TopicCoordinatorBundle(topicCoordinator, banListCoordinator);
   }
 
-  private void bindTopicNotificationIndicatorUpdates(NotificationStore notificationStore) {
+  private void bindTopicNotificationIndicatorUpdates(NotificationStorePort notificationStore) {
     if (notificationStore == null) return;
     disposables.add(
         notificationStore
@@ -630,17 +630,17 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
   }
 
   private CenterViewCoordinatorBundle createCenterViewCoordinatorBundle(
-      NotificationStore notificationStore,
+      NotificationStorePort notificationStore,
       ServerTreeDockable serverTree,
       OutboundLineBus outboundBus,
       IrcClientService irc,
       ModeRoutingPort modeRoutingState,
       BackendUiProfileProvider backendUiProfileProvider,
-      UserListStore userListStore,
+      UserListPort userListStore,
       UserListDockable usersDock,
       IgnoreListDialog ignoreListDialog,
       MonitorListService monitorListService,
-      DccTransferStore dccTransferStore,
+      DccTransferQueryPort dccTransferStore,
       ChatLogViewerService chatLogViewerService,
       TargetActivationBus activationBus,
       ExecutorService logViewerExecutor,
@@ -693,7 +693,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
       ServerTreeDockable serverTree,
       OutboundLineBus outboundBus,
       BackendUiProfileProvider backendUiProfileProvider,
-      UserListStore userListStore,
+      UserListPort userListStore,
       UserListDockable usersDock,
       IrcClientService irc,
       ModeRoutingPort modeRoutingState) {
@@ -993,7 +993,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
     }
   }
 
-  private NotificationsPanel createNotificationsPanel(NotificationStore notificationStore) {
+  private NotificationsPanel createNotificationsPanel(NotificationStorePort notificationStore) {
     // Notifications panel is a UI-only target view (selected from the server tree).
     NotificationsPanel panel =
         new NotificationsPanel(
@@ -1049,7 +1049,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
   private ChatNickContextCoordinator createNickContextCoordinator(
       IgnoreListService ignoreListService,
       IgnoreStatusService ignoreStatusService,
-      UserListStore userListStore) {
+      UserListPort userListStore) {
     return new ChatNickContextCoordinator(
         ignoreListService,
         ignoreStatusService,
@@ -1060,7 +1060,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
   }
 
   private DccTransfersPanel createDccTransfersPanel(
-      DccTransferStore dccTransferStore,
+      DccTransferQueryPort dccTransferStore,
       TargetActivationBus activationBus,
       OutboundLineBus outboundBus) {
     DccTransfersPanel panel =

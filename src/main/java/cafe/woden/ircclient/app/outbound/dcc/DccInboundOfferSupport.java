@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.app.outbound.dcc;
 
-import cafe.woden.ircclient.dcc.DccTransferStore;
+import cafe.woden.ircclient.dcc.api.DccActionHint;
 import cafe.woden.ircclient.model.TargetRef;
 import java.net.InetAddress;
 import java.time.Instant;
@@ -69,7 +69,7 @@ final class DccInboundOfferSupport {
         "RESUME received",
         fileName + " (port " + port + ", offset " + DccCommandSupport.formatBytes(offset) + ")",
         null,
-        DccTransferStore.ActionHint.NONE);
+        DccActionHint.NONE);
     postInboundDccStatus(
         at,
         sid,
@@ -110,7 +110,7 @@ final class DccInboundOfferSupport {
         "ACCEPT received",
         fileName + " (port " + port + ", offset " + DccCommandSupport.formatBytes(offset) + ")",
         null,
-        DccTransferStore.ActionHint.NONE);
+        DccActionHint.NONE);
     postInboundDccStatus(
         at,
         sid,
@@ -169,7 +169,7 @@ final class DccInboundOfferSupport {
         "Offer received",
         host.getHostAddress() + ":" + port,
         null,
-        DccTransferStore.ActionHint.ACCEPT_CHAT);
+        DccActionHint.ACCEPT_CHAT);
     postInboundDccStatus(
         at,
         sid,
@@ -215,7 +215,7 @@ final class DccInboundOfferSupport {
         "Offer received",
         fileName + " (" + DccCommandSupport.formatBytes(size) + ")",
         0,
-        DccTransferStore.ActionHint.GET_FILE);
+        DccActionHint.GET_FILE);
 
     postInboundDccStatus(
         at,

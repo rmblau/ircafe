@@ -6,7 +6,7 @@ import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptMessageMetad
 import cafe.woden.ircclient.app.api.ChatTranscriptHistoryPort;
 import cafe.woden.ircclient.app.api.PresenceEvent;
 import cafe.woden.ircclient.app.api.PresenceKind;
-import cafe.woden.ircclient.irc.roster.UserListStore;
+import cafe.woden.ircclient.irc.roster.UserListPort;
 import cafe.woden.ircclient.model.FilterAction;
 import cafe.woden.ircclient.model.LogDirection;
 import cafe.woden.ircclient.model.LogKind;
@@ -117,7 +117,7 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
       ChatLinkPreviewEmbedder linkPreviews,
       UiSettingsBus uiSettings,
       FilterEngine filterEngine,
-      UserListStore userListStore) {
+      UserListPort userListStore) {
     this.styles = styles;
     this.renderer = renderer;
     this.ts = ts;

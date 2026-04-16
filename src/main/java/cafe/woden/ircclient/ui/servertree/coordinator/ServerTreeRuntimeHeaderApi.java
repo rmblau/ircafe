@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.coordinator;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.app.api.ConnectionState;
 import cafe.woden.ircclient.ui.servertree.state.ServerTreeServerRuntimeUiUpdater;
 import java.time.Instant;
@@ -9,6 +10,7 @@ import java.util.function.Consumer;
 import org.springframework.stereotype.Component;
 
 /** Public-facing runtime metadata and header controls API used by the dockable. */
+@InterfaceLayer
 @Component
 public final class ServerTreeRuntimeHeaderApi {
   public interface Context {

@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.model.TargetRef;
-import cafe.woden.ircclient.notify.sound.NotificationSoundService;
+import cafe.woden.ircclient.notify.api.NotificationSoundPort;
 import cafe.woden.ircclient.ui.settings.MemoryUsageDisplayMode;
 import cafe.woden.ircclient.ui.settings.NotificationBackendMode;
 import cafe.woden.ircclient.ui.settings.UiSettings;
@@ -161,7 +161,7 @@ class TrayNotificationServiceTest {
         gnomeDbusProvider = mock(ObjectProvider.class);
     when(gnomeDbusProvider.getIfAvailable()).thenReturn(null);
 
-    NotificationSoundService soundService = mock(NotificationSoundService.class);
+    NotificationSoundPort soundService = mock(NotificationSoundPort.class);
 
     return new TrayNotificationService(
         settingsBus,

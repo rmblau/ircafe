@@ -11,7 +11,7 @@ import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.app.api.TrayNotificationsPort;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
-import cafe.woden.ircclient.notify.pushy.PushyNotificationService;
+import cafe.woden.ircclient.notify.api.PushyNotificationPort;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -24,7 +24,7 @@ class IrcEventNotificationServiceTest {
     IrcEventNotificationRulesBus rulesBus = mock(IrcEventNotificationRulesBus.class);
     TrayNotificationsPort tray = mock(TrayNotificationsPort.class);
     NotificationStore store = mock(NotificationStore.class);
-    PushyNotificationService pushy = null;
+    PushyNotificationPort pushy = null;
 
     IrcEventNotificationRule statusRule =
         new IrcEventNotificationRule(
@@ -112,7 +112,7 @@ class IrcEventNotificationServiceTest {
     IrcEventNotificationRulesBus rulesBus = mock(IrcEventNotificationRulesBus.class);
     TrayNotificationsPort tray = mock(TrayNotificationsPort.class);
     NotificationStore store = mock(NotificationStore.class);
-    PushyNotificationService pushy = null;
+    PushyNotificationPort pushy = null;
 
     IrcEventNotificationRule activeOnlyRule =
         new IrcEventNotificationRule(
@@ -188,7 +188,7 @@ class IrcEventNotificationServiceTest {
     IrcEventNotificationRulesBus rulesBus = mock(IrcEventNotificationRulesBus.class);
     TrayNotificationsPort tray = mock(TrayNotificationsPort.class);
     NotificationStore store = mock(NotificationStore.class);
-    PushyNotificationService pushy = null;
+    PushyNotificationPort pushy = null;
 
     IrcEventNotificationRule ctcpRule =
         new IrcEventNotificationRule(

@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.view;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.app.api.ConnectionState;
 import cafe.woden.ircclient.config.ServerEntry;
 import cafe.woden.ircclient.interceptors.InterceptorScope;
@@ -26,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /** Builds server-node and interceptor-group context menus for server tree. */
+@InterfaceLayer
 @Component
 public final class ServerTreeServerNodeMenuBuilder {
 

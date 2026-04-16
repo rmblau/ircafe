@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.view;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.app.api.ConnectionState;
 import cafe.woden.ircclient.config.api.IrcSessionRuntimeConfigPort;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionCatalog;
@@ -43,6 +44,7 @@ import net.miginfocom.swing.MigLayout;
 import org.springframework.stereotype.Component;
 
 /** Builds and shows the server "Network Info" dialog for {@link ServerTreeDockable}. */
+@InterfaceLayer
 @Component
 @RequiredArgsConstructor
 public final class ServerTreeNetworkInfoDialogBuilder {

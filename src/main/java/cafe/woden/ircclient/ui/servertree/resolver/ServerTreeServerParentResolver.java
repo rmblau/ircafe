@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.resolver;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.ui.servertree.ServerTreeBouncerBackends;
 import cafe.woden.ircclient.ui.servertree.ServerTreeConventions;
 import cafe.woden.ircclient.ui.servertree.coordinator.ServerTreeNetworkGroupManager;
@@ -13,6 +14,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import org.springframework.stereotype.Component;
 
 /** Resolves where a server root should be attached in the tree hierarchy. */
+@InterfaceLayer
 @Component
 public final class ServerTreeServerParentResolver {
 

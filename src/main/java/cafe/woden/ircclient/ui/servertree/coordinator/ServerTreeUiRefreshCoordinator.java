@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.coordinator;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import java.awt.Font;
 import java.util.Objects;
 import java.util.Set;
@@ -15,6 +16,7 @@ import javax.swing.tree.TreePath;
 import org.springframework.stereotype.Component;
 
 /** Refreshes tree renderer/layout state after UI defaults or look-and-feel changes. */
+@InterfaceLayer
 @Component
 public final class ServerTreeUiRefreshCoordinator {
 

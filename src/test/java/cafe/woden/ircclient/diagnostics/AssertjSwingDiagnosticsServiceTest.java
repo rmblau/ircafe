@@ -12,7 +12,7 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.app.api.TrayNotificationsPort;
 import cafe.woden.ircclient.config.UiProperties;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
-import cafe.woden.ircclient.notify.sound.NotificationSoundService;
+import cafe.woden.ircclient.notify.api.NotificationSoundPort;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.concurrent.ScheduledExecutorService;
@@ -30,7 +30,7 @@ class AssertjSwingDiagnosticsServiceTest {
     UiProperties uiProps = mock(UiProperties.class);
     DiagnosticsRuntimeConfigPort runtimeConfig = mock(DiagnosticsRuntimeConfigPort.class);
     @SuppressWarnings("unchecked")
-    ObjectProvider<NotificationSoundService> soundProvider = mock(ObjectProvider.class);
+    ObjectProvider<NotificationSoundPort> soundProvider = mock(ObjectProvider.class);
     @SuppressWarnings("unchecked")
     ObjectProvider<TrayNotificationsPort> trayProvider = mock(ObjectProvider.class);
     ScheduledExecutorService watchdogExec = mock(ScheduledExecutorService.class);
@@ -56,7 +56,7 @@ class AssertjSwingDiagnosticsServiceTest {
     UiProperties uiProps = mock(UiProperties.class);
     DiagnosticsRuntimeConfigPort runtimeConfig = mock(DiagnosticsRuntimeConfigPort.class);
     @SuppressWarnings("unchecked")
-    ObjectProvider<NotificationSoundService> soundProvider = mock(ObjectProvider.class);
+    ObjectProvider<NotificationSoundPort> soundProvider = mock(ObjectProvider.class);
     @SuppressWarnings("unchecked")
     ObjectProvider<TrayNotificationsPort> trayProvider = mock(ObjectProvider.class);
     ScheduledExecutorService watchdogExec = mock(ScheduledExecutorService.class);
@@ -80,7 +80,7 @@ class AssertjSwingDiagnosticsServiceTest {
     UiProperties uiProps = mock(UiProperties.class);
     DiagnosticsRuntimeConfigPort runtimeConfig = mock(DiagnosticsRuntimeConfigPort.class);
     @SuppressWarnings("unchecked")
-    ObjectProvider<NotificationSoundService> soundProvider = mock(ObjectProvider.class);
+    ObjectProvider<NotificationSoundPort> soundProvider = mock(ObjectProvider.class);
     @SuppressWarnings("unchecked")
     ObjectProvider<TrayNotificationsPort> trayProvider = mock(ObjectProvider.class);
     ScheduledExecutorService watchdogExec = mock(ScheduledExecutorService.class);

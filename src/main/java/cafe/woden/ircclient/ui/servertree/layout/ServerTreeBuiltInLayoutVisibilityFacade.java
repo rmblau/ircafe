@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.layout;
 
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayout;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayoutNode;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeRootSiblingNode;
@@ -16,6 +17,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import org.springframework.stereotype.Component;
 
 /** Facade for built-in node visibility, layout ordering, and associated persistence operations. */
+@InterfaceLayer
 @Component
 public final class ServerTreeBuiltInLayoutVisibilityFacade {
 
