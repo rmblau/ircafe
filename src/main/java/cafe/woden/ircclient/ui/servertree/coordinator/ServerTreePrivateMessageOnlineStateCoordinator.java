@@ -1,6 +1,5 @@
 package cafe.woden.ircclient.ui.servertree.coordinator;
 
-import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.servertree.state.ServerTreePrivateMessageOnlineStateStore;
 import java.util.List;
@@ -8,6 +7,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Coordinates private-message online-state updates and affected tree node refreshes. */

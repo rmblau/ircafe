@@ -323,7 +323,8 @@ class SpringModulithIncrementalAdoptionTest {
     ApplicationModule dccModule = moduleFor(modules, DccTransferStore.class);
     assertThat(dccModule).isNotEqualTo(appModule);
     assertThat(dccModule.getBasePackage().getName()).isEqualTo("cafe.woden.ircclient.dcc");
-    assertNamedInterfaceContains(dccModule, "api", DccTransferQueryPort.class, DccTransferCommandPort.class);
+    assertNamedInterfaceContains(
+        dccModule, "api", DccTransferQueryPort.class, DccTransferCommandPort.class);
 
     ApplicationModule ircModule = moduleFor(modules, IrcClientService.class);
     assertThat(ircModule).isNotEqualTo(appModule);
@@ -382,7 +383,8 @@ class SpringModulithIncrementalAdoptionTest {
     assertThat(notifyModule).isNotEqualTo(appModule);
     assertThat(moduleFor(modules, PushyNotificationService.class)).isEqualTo(notifyModule);
     assertThat(notifyModule.getBasePackage().getName()).isEqualTo("cafe.woden.ircclient.notify");
-    assertNamedInterfaceContains(notifyModule, "api", NotificationSoundPort.class, PushyNotificationPort.class);
+    assertNamedInterfaceContains(
+        notifyModule, "api", NotificationSoundPort.class, PushyNotificationPort.class);
     assertNamedInterfaceContains(notifyModule, "sound", NotificationSoundService.class);
     assertNamedInterfaceContains(notifyModule, "pushy", PushyNotificationService.class);
 
@@ -637,7 +639,11 @@ class SpringModulithIncrementalAdoptionTest {
         MonitorRosterPort.class,
         TrayNotificationsPort.class);
     assertNamedInterfaceContains(
-        appModule, "commands", UserCommandAliasesPort.class, UserCommandAliasesBus.class, FilterCommand.class);
+        appModule,
+        "commands",
+        UserCommandAliasesPort.class,
+        UserCommandAliasesBus.class,
+        FilterCommand.class);
     assertNamedInterfaceContains(appModule, "outbound-filter", LocalFilterCommandHandler.class);
   }
 

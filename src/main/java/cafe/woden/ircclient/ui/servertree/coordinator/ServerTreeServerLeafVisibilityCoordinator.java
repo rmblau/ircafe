@@ -1,6 +1,5 @@
 package cafe.woden.ircclient.ui.servertree.coordinator;
 
-import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayout;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeRootSiblingOrder;
 import cafe.woden.ircclient.model.TargetRef;
@@ -14,6 +13,7 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Applies per-server built-in leaf/group visibility and reapplies persisted layout/order. */

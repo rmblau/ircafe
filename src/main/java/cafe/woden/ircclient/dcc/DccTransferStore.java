@@ -25,8 +25,8 @@ public class DccTransferStore implements DccTransferQueryPort, DccTransferComman
   public static final int DEFAULT_MAX_ENTRIES_PER_SERVER = 400;
 
   private final int maxEntriesPerServer;
-  private final ConcurrentHashMap<String, ConcurrentHashMap<String, DccTransferEntry>> entriesByServer =
-      new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<String, ConcurrentHashMap<String, DccTransferEntry>>
+      entriesByServer = new ConcurrentHashMap<>();
   private final FlowableProcessor<DccTransferChange> changes =
       PublishProcessor.<DccTransferChange>create().toSerialized();
 
@@ -95,7 +95,8 @@ public class DccTransferStore implements DccTransferQueryPort, DccTransferComman
     Integer pct = normalizeProgress(progressPercent);
     DccActionHint hint = (actionHint == null) ? DccActionHint.NONE : actionHint;
 
-    DccTransferEntry next = new DccTransferEntry(id, sid, n, k, st, d, path, pct, hint, Instant.now());
+    DccTransferEntry next =
+        new DccTransferEntry(id, sid, n, k, st, d, path, pct, hint, Instant.now());
     ConcurrentHashMap<String, DccTransferEntry> map =
         entriesByServer.computeIfAbsent(sid, __ -> new ConcurrentHashMap<>());
     map.put(id, next);

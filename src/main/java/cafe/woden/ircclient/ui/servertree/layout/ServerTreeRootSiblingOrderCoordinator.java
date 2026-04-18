@@ -1,6 +1,5 @@
 package cafe.woden.ircclient.ui.servertree.layout;
 
-import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeRootSiblingNode;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeRootSiblingOrder;
@@ -11,6 +10,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Coordinates per-server root sibling order state and runtime-config persistence. */

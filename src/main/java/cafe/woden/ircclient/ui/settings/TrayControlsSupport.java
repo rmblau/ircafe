@@ -3,8 +3,8 @@ package cafe.woden.ircclient.ui.settings;
 import cafe.woden.ircclient.config.PushyProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.model.BuiltInSound;
-import cafe.woden.ircclient.notify.api.PushyNotificationPort;
 import cafe.woden.ircclient.notify.api.NotificationSoundPort;
+import cafe.woden.ircclient.notify.api.PushyNotificationPort;
 import cafe.woden.ircclient.notify.sound.NotificationSoundSettings;
 import cafe.woden.ircclient.ui.tray.TrayNotificationService;
 import cafe.woden.ircclient.ui.tray.dbus.GnomeDbusNotificationBackend;
@@ -364,8 +364,7 @@ final class TrayControlsSupport {
                     pushyNotificationService != null
                         ? pushyNotificationService.sendTestNotification(
                             draft, "IRCafe Test", "This is a Pushy test notification from IRCafe.")
-                        : PushyNotificationPort.PushResult.failed(
-                            "Pushy service is unavailable.");
+                        : PushyNotificationPort.PushResult.failed("Pushy service is unavailable.");
                 SwingUtilities.invokeLater(
                     () -> {
                       pushyTestStatus.setText(

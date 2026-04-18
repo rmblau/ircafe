@@ -1,6 +1,5 @@
 package cafe.woden.ircclient.ui.servertree.view;
 
-import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.app.api.ConnectionState;
 import cafe.woden.ircclient.ui.servertree.ServerTreeBouncerBackends;
 import cafe.woden.ircclient.ui.servertree.model.ServerTreeNodeData;
@@ -8,6 +7,7 @@ import cafe.woden.ircclient.ui.servertree.model.ServerTreeQuasselNetworkNodeData
 import cafe.woden.ircclient.ui.servertree.viewmodel.ServerTreeConnectionStateViewModel;
 import java.util.Objects;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Stateless tooltip text policy for server-tree nodes once a concrete tree node is known. */

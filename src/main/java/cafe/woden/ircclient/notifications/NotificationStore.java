@@ -1,13 +1,13 @@
 package cafe.woden.ircclient.notifications;
 
 import cafe.woden.ircclient.app.api.UiSettingsPort;
+import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.notifications.api.HighlightEvent;
 import cafe.woden.ircclient.notifications.api.IrcEventRuleEvent;
 import cafe.woden.ircclient.notifications.api.NotificationChange;
 import cafe.woden.ircclient.notifications.api.NotificationEvent;
 import cafe.woden.ircclient.notifications.api.NotificationStorePort;
 import cafe.woden.ircclient.notifications.api.RuleMatchEvent;
-import cafe.woden.ircclient.model.TargetRef;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.processors.FlowableProcessor;
 import io.reactivex.rxjava3.processors.PublishProcessor;

@@ -1,6 +1,5 @@
 package cafe.woden.ircclient.ui.servertree.coordinator;
 
-import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.servertree.ServerTreeConventions;
 import cafe.woden.ircclient.ui.servertree.ServerTreeEdtExecutor;
@@ -12,6 +11,7 @@ import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Encapsulates channel-target-only state mutations, requests, and policy checks. */

@@ -1,6 +1,5 @@
 package cafe.woden.ircclient.ui.servertree.coordinator;
 
-import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.app.api.Ircv3CapabilityToggleRequest;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.servertree.ServerTreeDockable;
@@ -10,6 +9,7 @@ import io.github.andrewauclair.moderndocking.Dockable;
 import io.reactivex.rxjava3.core.Flowable;
 import java.util.Objects;
 import java.util.function.Function;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Public-facing request stream API composed from tree request and interaction collaborators. */

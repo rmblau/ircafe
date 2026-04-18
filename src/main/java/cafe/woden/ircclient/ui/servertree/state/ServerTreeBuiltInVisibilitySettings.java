@@ -1,10 +1,10 @@
 package cafe.woden.ircclient.ui.servertree.state;
 
-import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.ui.servertree.model.ServerBuiltInNodesVisibility;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Encapsulates default and per-server built-in visibility settings mutations. */

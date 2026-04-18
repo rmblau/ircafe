@@ -1,6 +1,5 @@
 package cafe.woden.ircclient.ui.servertree.composition;
 
-import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.config.api.ServerTreeBuiltInVisibilityConfigPort;
 import cafe.woden.ircclient.ui.servertree.layout.ServerTreeBuiltInLayoutCoordinator;
 import cafe.woden.ircclient.ui.servertree.layout.ServerTreeBuiltInLayoutOrchestrator;
@@ -11,6 +10,7 @@ import cafe.woden.ircclient.ui.servertree.state.ServerTreeBuiltInVisibilityCoord
 import java.util.Objects;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Composition helper for creating layout/visibility collaborators used by server tree. */

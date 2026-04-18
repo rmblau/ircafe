@@ -1,8 +1,8 @@
 package cafe.woden.ircclient.ui.servertree.view;
 
-import org.jmolecules.architecture.layered.InterfaceLayer;
 import java.awt.event.MouseEvent;
 import java.util.Objects;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Resolves tree tooltip text by prioritizing overlay action-button tooltips over node tooltips. */

@@ -64,6 +64,27 @@ final class ChatTranscriptManualPreviewSupport {
     }
   }
 
+  void appendBlockedPreviewMarkersForAppend(
+      TargetRef ref,
+      StyledDocument doc,
+      int lineEndOffset,
+      String messageText,
+      String fromNick,
+      Map<String, String> ircv3Tags,
+      LineMeta meta,
+      FilterEngine.Match match,
+      boolean imageEmbedsEnabled,
+      boolean linkPreviewsEnabled,
+      BiFunction<AttributeSet, FilterEngine.Match, SimpleAttributeSet> filterMatchApplier) {
+    List<String> blockedUrls =
+        collectBlockedPreviewUrlsForAppend(
+            ref, doc, messageText, fromNick, ircv3Tags, imageEmbedsEnabled, linkPreviewsEnabled);
+    if (blockedUrls.isEmpty()) {
+      return;
+    }
+    insertManualPreviewMarkers(doc, lineEndOffset, meta, match, blockedUrls, filterMatchApplier);
+  }
+
   List<String> collectBlockedPreviewUrlsForAppend(
       TargetRef ref,
       StyledDocument doc,

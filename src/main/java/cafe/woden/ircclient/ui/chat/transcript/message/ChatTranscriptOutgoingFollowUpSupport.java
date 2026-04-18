@@ -3,9 +3,11 @@ package cafe.woden.ircclient.ui.chat.transcript;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptMessageMetadataSupport.firstIrcv3TagValue;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptMessageMetadataSupport.normalizeMessageId;
 
+import cafe.woden.ircclient.model.TargetRef;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import javax.swing.text.StyledDocument;
 
 /** Shared helpers for outgoing transcript follow-up triggered by IRCv3 message tags. */
 final class ChatTranscriptOutgoingFollowUpSupport {
@@ -39,6 +41,36 @@ final class ChatTranscriptOutgoingFollowUpSupport {
       if (callback != null && hasReplyReaction()) {
         callback.run();
       }
+    }
+
+    void applyPostAppend(
+        TargetRef ref,
+        StyledDocument doc,
+        ChatTranscriptReactionSummarySupport reactionSummarySupport,
+        ChatTranscriptReactionSummarySupport.State reactionSummaryState,
+        String fromNick,
+        long tsEpochMs) {
+      if (ref == null
+          || doc == null
+          || reactionSummarySupport == null
+          || reactionSummaryState == null) {
+        return;
+      }
+
+      runPendingMaterialization(
+          () ->
+              reactionSummarySupport.materializePendingReactionsForMessage(
+                  ref, doc, reactionSummaryState, normalizedMessageId, tsEpochMs));
+      runReplyReaction(
+          () ->
+              reactionSummarySupport.applyMessageReaction(
+                  ref,
+                  doc,
+                  reactionSummaryState,
+                  replyToMessageId,
+                  reactionToken,
+                  fromNick,
+                  tsEpochMs));
     }
   }
 

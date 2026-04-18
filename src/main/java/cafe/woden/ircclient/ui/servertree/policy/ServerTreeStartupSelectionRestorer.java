@@ -1,6 +1,5 @@
 package cafe.woden.ircclient.ui.servertree.policy;
 
-import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
 import cafe.woden.ircclient.model.TargetRef;
 import java.util.Objects;
@@ -9,6 +8,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Restores and consumes startup remembered tree selection when it becomes selectable. */

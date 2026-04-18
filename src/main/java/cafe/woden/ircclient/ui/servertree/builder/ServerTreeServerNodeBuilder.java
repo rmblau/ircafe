@@ -1,6 +1,5 @@
 package cafe.woden.ircclient.ui.servertree.builder;
 
-import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.model.InterceptorDefinition;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.servertree.model.ServerTreeNodeData;
@@ -9,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Builds server tree nodes/leaves before dockable-specific layout placement is applied. */

@@ -1,6 +1,5 @@
 package cafe.woden.ircclient.ui.servertree.state;
 
-import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.notifications.api.NotificationQueryPort;
 import cafe.woden.ircclient.ui.servertree.ServerTreeBouncerBackends;
@@ -12,6 +11,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Updates dynamic node badges/labels driven by notifications and auto-connect state. */

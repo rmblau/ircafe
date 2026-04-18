@@ -76,6 +76,46 @@ class ChatTranscriptManualPreviewSupportTest {
   }
 
   @Test
+  void appendBlockedPreviewMarkersForAppendCollectsAndInsertsMarkers() throws Exception {
+    ChatImageEmbedder imageEmbeds = mock(ChatImageEmbedder.class);
+    ChatLinkPreviewEmbedder linkPreviews = mock(ChatLinkPreviewEmbedder.class);
+    ChatTranscriptManualPreviewSupport support =
+        new ChatTranscriptManualPreviewSupport(new ChatStyles(null), imageEmbeds, linkPreviews);
+    DefaultStyledDocument doc = new DefaultStyledDocument();
+    TargetRef ref = new TargetRef("srv", "#chan");
+    doc.insertString(0, "hello\n", new SimpleAttributeSet());
+
+    when(imageEmbeds.appendEmbeds(any(), any(), anyString(), anyString(), any()))
+        .thenReturn(new ChatImageEmbedder.AppendResult(0, List.of("https://blocked.example/a")));
+    when(linkPreviews.appendPreviews(any(), any(), anyString(), anyString(), any()))
+        .thenReturn(
+            new ChatLinkPreviewEmbedder.AppendResult(0, List.of("https://blocked.example/a")));
+
+    support.appendBlockedPreviewMarkersForAppend(
+        ref,
+        doc,
+        "hello".length(),
+        "hello",
+        "alice",
+        Map.of(),
+        lineMeta(),
+        null,
+        true,
+        true,
+        (attrs, match) -> new SimpleAttributeSet(attrs));
+
+    String text = doc.getText(0, doc.getLength());
+    int marker = text.indexOf("👁");
+    assertTrue(marker >= 0);
+    assertEquals(-1, text.indexOf("👁", marker + 1));
+    assertEquals(
+        "https://blocked.example/a",
+        doc.getCharacterElement(marker)
+            .getAttributes()
+            .getAttribute(ChatStyles.ATTR_MANUAL_PREVIEW_URL));
+  }
+
+  @Test
   void insertManualPreviewAtFallsBackToLinkPreviewWhenImageInsertDeclines() {
     ChatImageEmbedder imageEmbeds = mock(ChatImageEmbedder.class);
     ChatLinkPreviewEmbedder linkPreviews = mock(ChatLinkPreviewEmbedder.class);

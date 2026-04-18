@@ -46,14 +46,7 @@ class DccModuleIntegrationTest extends AbstractApplicationModuleIntegrationTest 
         100,
         DccActionHint.CLOSE_CHAT);
     dccTransferStore.upsert(
-        serverId,
-        "send:bob",
-        "bob",
-        "File",
-        "Sending",
-        "48%",
-        48,
-        DccActionHint.NONE);
+        serverId, "send:bob", "bob", "File", "Sending", "48%", 48, DccActionHint.NONE);
 
     Set<String> entryIds =
         dccTransferStore.listAll(serverId).stream()

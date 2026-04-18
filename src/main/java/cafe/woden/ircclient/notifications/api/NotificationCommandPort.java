@@ -15,21 +15,12 @@ public interface NotificationCommandPort {
   void recordRuleMatch(TargetRef channelTarget, String fromNick, String ruleLabel, String snippet);
 
   void recordRuleMatch(
-      TargetRef channelTarget,
-      String fromNick,
-      String ruleLabel,
-      String snippet,
-      String messageId);
+      TargetRef channelTarget, String fromNick, String ruleLabel, String snippet, String messageId);
 
   void recordIrcEvent(String serverId, String target, String fromNick, String title, String body);
 
   void recordIrcEvent(
-      String serverId,
-      String target,
-      String fromNick,
-      String title,
-      String body,
-      String messageId);
+      String serverId, String target, String fromNick, String title, String body, String messageId);
 
   void clearChannel(TargetRef channelTarget);
 

@@ -1,6 +1,5 @@
 package cafe.woden.ircclient.ui.servertree.coordinator;
 
-import org.jmolecules.architecture.layered.InterfaceLayer;
 import cafe.woden.ircclient.ui.servertree.ServerTreeBouncerBackends;
 import cafe.woden.ircclient.ui.servertree.ServerTreeConventions;
 import java.util.HashMap;
@@ -10,6 +9,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Manages lifecycle and lookup of bouncer-network grouping nodes beneath origin servers. */

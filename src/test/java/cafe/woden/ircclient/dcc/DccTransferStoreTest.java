@@ -20,15 +20,7 @@ class DccTransferStoreTest {
 
     store.upsert(" libera ", " id-1 ", " alice ", " Chat ", " Open ", " detail ", -5, null);
     Thread.sleep(2L);
-    store.upsert(
-        "libera",
-        "id-2",
-        "bob",
-        "File",
-        "Sending",
-        "50%",
-        120,
-        DccActionHint.GET_FILE);
+    store.upsert("libera", "id-2", "bob", "File", "Sending", "50%", 120, DccActionHint.GET_FILE);
 
     List<DccTransferEntry> entries = store.listAll("libera");
     assertEquals(2, entries.size());
@@ -89,8 +81,7 @@ class DccTransferStoreTest {
     List<DccTransferEntry> entries = store.listAll("libera");
     assertEquals(50, entries.size());
 
-    Set<String> ids =
-        entries.stream().map(DccTransferEntry::entryId).collect(Collectors.toSet());
+    Set<String> ids = entries.stream().map(DccTransferEntry::entryId).collect(Collectors.toSet());
     for (int i = 0; i < 5; i++) {
       assertTrue(!ids.contains("id-" + i), "oldest entries should be trimmed first");
     }
