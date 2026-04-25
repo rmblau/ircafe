@@ -49,8 +49,6 @@ import cafe.woden.ircclient.ui.chat.transcript.style.ChatTranscriptStyleRoutingS
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import jakarta.annotation.PreDestroy;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.Map;
 import java.util.OptionalLong;
 import javax.swing.text.AttributeSet;
@@ -71,8 +69,6 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
   private static final int REPLY_PREVIEW_TEXT_MAX_CHARS = 120;
   private static final String REDACTED_MESSAGE_PLACEHOLDER = "[message redacted]";
 
-  private final NickColorSettingsBus nickColorSettings;
-
   private final ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator;
   private final ChatTranscriptMatrixDisplayNameCoordinator matrixDisplayNameCoordinator;
   private final ChatTranscriptReplyFlowCoordinator replyFlowCoordinator;
@@ -81,8 +77,6 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
   private final ChatTranscriptPlainSpoilerCoordinator plainSpoilerCoordinator;
   private final ChatTranscriptRuntimeFlowCoordinator runtimeFlowCoordinator;
   private final ChatTranscriptTargetRuntimeCoordinator targetRuntimeCoordinator;
-
-  private final PropertyChangeListener nickColorSettingsListener = this::onNickColorSettingsChanged;
 
   @FunctionalInterface
   public interface ReactionChipActionHandler {
@@ -102,7 +96,6 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
       FilterEngine filterEngine,
       UserListPort userListStore) {
 
-    this.nickColorSettings = nickColorSettings;
     this.runtimeFlowCoordinator = new ChatTranscriptRuntimeFlowCoordinator(this, styles);
 
     ChatTranscriptRuntimeSettingsSupport runtimeSettingsSupport =
@@ -134,7 +127,8 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
             180,
             restyleSupportContext,
             runtimeSettingsSupport::safeSettings,
-            runtimeSettingsSupport::configuredOutgoingLineColor);
+            runtimeSettingsSupport::configuredOutgoingLineColor,
+            nickColorSettings);
 
     ChatTranscriptFilteredRunSupport.Context filteredRunSupportContext =
         new ChatTranscriptFilteredRunSupport.Context(styles, ChatTranscriptLineMetaSupport::bind);
@@ -345,17 +339,11 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
         targetRuntimeCoordinator::newTranscriptState,
         auxiliaryRowsSupport,
         filteredFlowCoordinator::endAppendRun);
-
-    if (this.nickColorSettings != null) {
-      this.nickColorSettings.addListener(nickColorSettingsListener);
-    }
   }
 
   @PreDestroy
   void shutdown() {
-    if (nickColorSettings != null) {
-      nickColorSettings.removeListener(nickColorSettingsListener);
-    }
+    targetRuntimeCoordinator.shutdown();
   }
 
   public record RedactedMessageContent(
@@ -787,11 +775,6 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
   public synchronized int prependSpoilerChatFromHistory(
       TargetRef ref, String from, String text, long tsEpochMs) {
     return insertSpoilerChatFromHistoryAt(ref, 0, from, text, tsEpochMs);
-  }
-
-  private void onNickColorSettingsChanged(PropertyChangeEvent evt) {
-    if (!NickColorSettingsBus.PROP_NICK_COLOR_SETTINGS.equals(evt.getPropertyName())) return;
-    restyleAllDocumentsCoalesced();
   }
 
   public void appendSpoilerChat(TargetRef ref, String from, String text) {

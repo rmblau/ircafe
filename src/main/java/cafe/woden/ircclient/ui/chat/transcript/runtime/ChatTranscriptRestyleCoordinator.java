@@ -1,7 +1,10 @@
 package cafe.woden.ircclient.ui.chat.transcript.runtime;
 
+import cafe.woden.ircclient.ui.chat.NickColorSettingsBus;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import java.awt.Color;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -15,6 +18,8 @@ public final class ChatTranscriptRestyleCoordinator {
   private final Supplier<UiSettings> settingsSupplier;
   private final Function<UiSettings, Color> outgoingColorResolver;
   private final Supplier<List<StyledDocument>> documentSnapshotSupplier;
+  private final NickColorSettingsBus nickColorSettingsBus;
+  private final PropertyChangeListener nickColorSettingsListener = this::onNickColorSettingsChanged;
 
   private List<StyledDocument> restylePassDocs = List.of();
   private int restylePassDocIndex = 0;
@@ -27,12 +32,17 @@ public final class ChatTranscriptRestyleCoordinator {
       ChatTranscriptRestyleSupport.Context restyleSupportContext,
       Supplier<UiSettings> settingsSupplier,
       Function<UiSettings, Color> outgoingColorResolver,
-      Supplier<List<StyledDocument>> documentSnapshotSupplier) {
+      Supplier<List<StyledDocument>> documentSnapshotSupplier,
+      NickColorSettingsBus nickColorSettingsBus) {
     this.restyleElementsPerSlice = restyleElementsPerSlice;
     this.restyleSupportContext = restyleSupportContext;
     this.settingsSupplier = settingsSupplier;
     this.outgoingColorResolver = outgoingColorResolver;
     this.documentSnapshotSupplier = documentSnapshotSupplier;
+    this.nickColorSettingsBus = nickColorSettingsBus;
+    if (this.nickColorSettingsBus != null) {
+      this.nickColorSettingsBus.addListener(nickColorSettingsListener);
+    }
   }
 
   public synchronized void restyleAllDocuments() {
@@ -58,6 +68,12 @@ public final class ChatTranscriptRestyleCoordinator {
     }
     if (schedule) {
       SwingUtilities.invokeLater(this::runRestylePassSliceSafely);
+    }
+  }
+
+  public void shutdown() {
+    if (nickColorSettingsBus != null) {
+      nickColorSettingsBus.removeListener(nickColorSettingsListener);
     }
   }
 
@@ -141,5 +157,12 @@ public final class ChatTranscriptRestyleCoordinator {
     if (scheduleNext) {
       SwingUtilities.invokeLater(this::runRestylePassSliceSafely);
     }
+  }
+
+  private void onNickColorSettingsChanged(PropertyChangeEvent evt) {
+    if (!NickColorSettingsBus.PROP_NICK_COLOR_SETTINGS.equals(evt.getPropertyName())) {
+      return;
+    }
+    restyleAllDocumentsCoalesced();
   }
 }

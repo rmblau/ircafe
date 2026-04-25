@@ -24,7 +24,8 @@ class ChatTranscriptTargetRuntimeCoordinatorTest {
             new ChatTranscriptRestyleSupport.Context(
                 new ChatStyles(null), null, (attrs, action) -> {}),
             () -> null,
-            settings -> null);
+            settings -> null,
+            null);
     TargetRef ref = new TargetRef("srv", "#chan");
 
     assertNotNull(coordinator.document(ref));

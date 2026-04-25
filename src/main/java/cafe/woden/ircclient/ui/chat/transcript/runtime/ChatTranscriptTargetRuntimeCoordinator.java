@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.chat.transcript.runtime;
 
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.chat.NickColorSettingsBus;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import java.awt.Color;
@@ -25,7 +26,8 @@ public final class ChatTranscriptTargetRuntimeCoordinator {
       int restyleElementsPerSlice,
       ChatTranscriptRestyleSupport.Context restyleSupportContext,
       Supplier<UiSettings> settingsSupplier,
-      Function<UiSettings, Color> outgoingColorResolver) {
+      Function<UiSettings, Color> outgoingColorResolver,
+      NickColorSettingsBus nickColorSettingsBus) {
     this.targetStateSupport =
         new ChatTranscriptTargetStateSupport(
             docs, stateByTarget, messageCatalogStateSupplier, snapshotLock);
@@ -35,7 +37,8 @@ public final class ChatTranscriptTargetRuntimeCoordinator {
             restyleSupportContext,
             settingsSupplier,
             outgoingColorResolver,
-            targetStateSupport::snapshotDocuments);
+            targetStateSupport::snapshotDocuments,
+            nickColorSettingsBus);
   }
 
   public Map<TargetRef, StyledDocument> docs() {
@@ -72,5 +75,9 @@ public final class ChatTranscriptTargetRuntimeCoordinator {
 
   public void restyleAllDocumentsCoalesced() {
     restyleCoordinator.restyleAllDocumentsCoalesced();
+  }
+
+  public void shutdown() {
+    restyleCoordinator.shutdown();
   }
 }
