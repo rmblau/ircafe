@@ -1,18 +1,19 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.message;
 
-import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptMessageMetadataSupport.normalizePendingId;
+import static cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageMetadataSupport.normalizePendingId;
 
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptDocumentSupport;
 import java.util.function.LongSupplier;
 import javax.swing.text.StyledDocument;
 
 /** Shared helpers for replacing a pending outgoing transcript line in place. */
-final class ChatTranscriptPendingReplacementSupport {
+public final class ChatTranscriptPendingReplacementSupport {
 
-  record ReplacementPlan(int lineStart, long effectiveEpochMs) {}
+  public record ReplacementPlan(int lineStart, long effectiveEpochMs) {}
 
   private ChatTranscriptPendingReplacementSupport() {}
 
-  static ReplacementPlan prepareReplacement(
+  public static ReplacementPlan prepareReplacement(
       StyledDocument doc, String pendingId, long tsEpochMs, LongSupplier currentTimeMillis) {
     if (doc == null || currentTimeMillis == null) return null;
     String normalizedPendingId = normalizePendingId(pendingId);

@@ -1,8 +1,9 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.line;
 
 import cafe.woden.ircclient.app.api.PresenceEvent;
 import cafe.woden.ircclient.model.LogDirection;
 import cafe.woden.ircclient.model.LogKind;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageMetadataSupport;
 import java.util.LinkedHashSet;
 import java.util.Locale;
 import java.util.Map;

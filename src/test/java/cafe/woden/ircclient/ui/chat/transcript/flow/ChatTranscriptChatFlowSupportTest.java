@@ -12,6 +12,17 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.model.FilterAction;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
+import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilterRoutingSupport;
+import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredLinesSupport;
+import cafe.woden.ircclient.ui.chat.transcript.flow.ChatTranscriptChatFlowSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptOutgoingChatSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPresenceFoldSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageStateSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReactionSummarySupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptSenderStyleSupport;
+import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptState;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,12 +59,12 @@ class ChatTranscriptChatFlowSupportTest {
     assertEquals("m-1", fixture.replyContextTarget.get());
     verify(reactionSummarySupport)
         .materializePendingReactionsForMessage(
-            fixture.ref, fixture.document(), fixture.state().reactionSummary, "m-2", 2_000L);
+            fixture.ref, fixture.document(), fixture.state().reactionSummary(), "m-2", 2_000L);
     verify(reactionSummarySupport)
         .applyMessageReaction(
             fixture.ref,
             fixture.document(),
-            fixture.state().reactionSummary,
+            fixture.state().reactionSummary(),
             "m-1",
             ":+1:",
             "bob",
@@ -84,7 +95,9 @@ class ChatTranscriptChatFlowSupportTest {
 
   @Test
   void appendChatAtSkipsDuplicateMessageIdsAlreadyPresentInTranscript() throws Exception {
-    Fixture fixture = new Fixture(mock(ChatTranscriptReactionSummarySupport.class), newFilterRoutingSupport(null));
+    Fixture fixture =
+        new Fixture(
+            mock(ChatTranscriptReactionSummarySupport.class), newFilterRoutingSupport(null));
     LineMeta meta =
         ChatTranscriptLineMetaSupport.create(
             fixture.ref,
@@ -147,9 +160,14 @@ class ChatTranscriptChatFlowSupportTest {
     assertEquals(0, fixture.insertCapture.calls.get());
   }
 
-  private static ChatTranscriptFilterRoutingSupport newFilterRoutingSupport(FilterEngine filterEngine) {
+  private static ChatTranscriptFilterRoutingSupport newFilterRoutingSupport(
+      FilterEngine filterEngine) {
     return new ChatTranscriptFilterRoutingSupport(
-        filterEngine, (ref, preview, meta, match) -> {}, (ref, insertAt, preview, meta, match) -> insertAt, ref -> {}, ref -> {});
+        filterEngine,
+        (ref, preview, meta, match) -> {},
+        (ref, insertAt, preview, meta, match) -> insertAt,
+        ref -> {},
+        ref -> {});
   }
 
   private static ChatTranscriptSenderStyleSupport.Context senderStyleContext() {

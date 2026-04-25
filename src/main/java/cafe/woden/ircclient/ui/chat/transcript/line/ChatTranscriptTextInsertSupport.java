@@ -1,47 +1,50 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.line;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTimestampFormatter;
+import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import java.util.Objects;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyledDocument;
 
-final class ChatTranscriptTextInsertSupport {
+public final class ChatTranscriptTextInsertSupport {
 
   @FunctionalInterface
-  interface RenderedFromResolver {
+  public interface RenderedFromResolver {
     String render(TargetRef ref, String from);
   }
 
   @FunctionalInterface
-  interface FilterMatchStyler {
+  public interface FilterMatchStyler {
     SimpleAttributeSet apply(AttributeSet base, FilterEngine.Match match);
   }
 
   @FunctionalInterface
-  interface InsertAtNormalizer {
+  public interface InsertAtNormalizer {
     int normalize(StyledDocument doc, int insertAt);
   }
 
   @FunctionalInterface
-  interface InsertLineStartEnsurer {
+  public interface InsertLineStartEnsurer {
     int ensure(StyledDocument doc, int insertAt);
   }
 
   @FunctionalInterface
-  interface PresenceBlockShifter {
+  public interface PresenceBlockShifter {
     void shift(TargetRef ref, int insertAt, int delta);
   }
 
   @FunctionalInterface
-  interface TranscriptLineCapEnforcer {
+  public interface TranscriptLineCapEnforcer {
     int enforce(TargetRef ref, StyledDocument doc);
   }
 
-  record Context(
+  public record Context(
       ChatStyles styles,
       ChatTimestampFormatter timestamps,
       ChatRichTextRenderer renderer,
@@ -52,7 +55,7 @@ final class ChatTranscriptTextInsertSupport {
       InsertLineStartEnsurer insertLineStartEnsurer,
       PresenceBlockShifter presenceBlockShifter,
       TranscriptLineCapEnforcer transcriptLineCapEnforcer) {
-    Context {
+    public Context {
       Objects.requireNonNull(styles, "styles");
       Objects.requireNonNull(renderer, "renderer");
       Objects.requireNonNull(messageCatalogSupport, "messageCatalogSupport");
@@ -67,7 +70,7 @@ final class ChatTranscriptTextInsertSupport {
 
   private ChatTranscriptTextInsertSupport() {}
 
-  static int insertVisibleLine(
+  public static int insertVisibleLine(
       Context context,
       TargetRef ref,
       StyledDocument doc,

@@ -1,9 +1,11 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.runtime;
 
 import cafe.woden.ircclient.model.FilterAction;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.NickColorService;
 import cafe.woden.ircclient.ui.chat.render.IrcFormatting;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
+import cafe.woden.ircclient.ui.chat.transcript.style.ChatTranscriptAttrSupport;
 import cafe.woden.ircclient.ui.util.EmojiFontSupport;
 import java.awt.Color;
 import java.util.function.BiConsumer;
@@ -13,18 +15,18 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-final class ChatTranscriptRestyleSupport {
+public final class ChatTranscriptRestyleSupport {
 
-  record Context(
+  public record Context(
       ChatStyles styles,
       NickColorService nickColors,
       BiConsumer<SimpleAttributeSet, FilterAction> filterActionStyleApplier) {}
 
-  record SliceOutcome(int processedElements, int nextOffset, boolean done) {}
+  public record SliceOutcome(int processedElements, int nextOffset, boolean done) {}
 
   private ChatTranscriptRestyleSupport() {}
 
-  static void restyleDocument(
+  public static void restyleDocument(
       Context context, StyledDocument doc, boolean outgoingColorEnabled, Color outgoingColor) {
     if (doc == null) return;
 
@@ -39,7 +41,7 @@ final class ChatTranscriptRestyleSupport {
     }
   }
 
-  static SliceOutcome restyleDocumentSlice(
+  public static SliceOutcome restyleDocumentSlice(
       Context context,
       StyledDocument doc,
       int startOffset,

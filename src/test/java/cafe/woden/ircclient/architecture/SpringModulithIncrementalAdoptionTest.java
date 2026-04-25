@@ -392,6 +392,7 @@ class SpringModulithIncrementalAdoptionTest {
     assertThat(uiModule).isNotEqualTo(appModule);
     assertThat(uiModule.getBasePackage().getName()).startsWith("cafe.woden.ircclient.ui");
     assertNamedInterfaceContains(uiModule, "chat", ChatDockManager.class);
+    assertNamedInterfaceContains(uiModule, "chat-transcript", ChatTranscriptStore.class);
     assertNamedInterfaceContains(uiModule, "chat-fold", LoadOlderMessagesComponent.class);
     assertNamedInterfaceContains(uiModule, "filter", FilterEngine.class);
     assertNamedInterfaceContains(uiModule, "settings", UiSettingsBus.class);

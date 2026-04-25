@@ -1,10 +1,11 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.spoiler;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.NickColorService;
 import cafe.woden.ircclient.ui.chat.fold.SpoilerMessageComponent;
 import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import javax.swing.text.AttributeSet;
@@ -15,9 +16,9 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-final class ChatTranscriptSpoilerRevealSupport {
+public final class ChatTranscriptSpoilerRevealSupport {
 
-  record Context(
+  public record Context(
       ChatStyles styles,
       ChatRichTextRenderer renderer,
       NickColorService nickColors,

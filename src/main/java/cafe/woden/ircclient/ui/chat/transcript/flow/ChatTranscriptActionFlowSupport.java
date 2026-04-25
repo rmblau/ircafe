@@ -1,8 +1,17 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.flow;
 
 import cafe.woden.ircclient.model.LogDirection;
 import cafe.woden.ircclient.model.LogKind;
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
+import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptAppendGuardSupport;
+import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilterRoutingSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptActionAppendSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptActionHistoryInsertSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptOutgoingFollowUpSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReactionSummarySupport;
+import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptState;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import java.util.Map;
 import java.util.Objects;
@@ -11,32 +20,30 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import javax.swing.text.StyledDocument;
 
-/**
- * Shared action-line flow orchestration for live append and history insert paths.
- */
-final class ChatTranscriptActionFlowSupport {
+/** Shared action-line flow orchestration for live append and history insert paths. */
+public final class ChatTranscriptActionFlowSupport {
 
   @FunctionalInterface
-  interface EnsureTargetExistsHandler {
+  public interface EnsureTargetExistsHandler {
     void ensure(TargetRef ref);
   }
 
   @FunctionalInterface
-  interface EpochNoteHandler {
+  public interface EpochNoteHandler {
     void note(TargetRef ref, Long epochMs);
   }
 
   @FunctionalInterface
-  interface ReplyContextAppender {
+  public interface ReplyContextAppender {
     void append(TargetRef ref, String fromNick, String replyToMsgId, long tsEpochMs);
   }
 
   @FunctionalInterface
-  interface FilteredInsertRunBreaker {
+  public interface FilteredInsertRunBreaker {
     void breakRun(TargetRef ref);
   }
 
-  record Context(
+  public record Context(
       ChatTranscriptFilterRoutingSupport filterRoutingSupport,
       ChatTranscriptActionAppendSupport.Context actionAppendSupportContext,
       ChatTranscriptActionHistoryInsertSupport.Context actionHistoryInsertSupportContext,
@@ -51,10 +58,11 @@ final class ChatTranscriptActionFlowSupport {
       BooleanSupplier timestampsIncludeChatMessages,
       BooleanSupplier imageEmbedsEnabled,
       BooleanSupplier linkPreviewsEnabled) {
-    Context {
+    public Context {
       Objects.requireNonNull(filterRoutingSupport, "filterRoutingSupport");
       Objects.requireNonNull(actionAppendSupportContext, "actionAppendSupportContext");
-      Objects.requireNonNull(actionHistoryInsertSupportContext, "actionHistoryInsertSupportContext");
+      Objects.requireNonNull(
+          actionHistoryInsertSupportContext, "actionHistoryInsertSupportContext");
       Objects.requireNonNull(reactionSummarySupport, "reactionSummarySupport");
       Objects.requireNonNull(documentLookup, "documentLookup");
       Objects.requireNonNull(stateLookup, "stateLookup");
@@ -93,11 +101,11 @@ final class ChatTranscriptActionFlowSupport {
     }
   }
 
-  void appendAction(Context context, TargetRef ref, String from, String action) {
+  public void appendAction(Context context, TargetRef ref, String from, String action) {
     appendAction(context, ref, from, action, false);
   }
 
-  void appendAction(
+  public void appendAction(
       Context context, TargetRef ref, String from, String action, boolean outgoingLocalEcho) {
     appendActionInternal(
         context,
@@ -112,7 +120,7 @@ final class ChatTranscriptActionFlowSupport {
         null);
   }
 
-  void appendActionFromHistory(
+  public void appendActionFromHistory(
       Context context,
       TargetRef ref,
       String from,
@@ -134,7 +142,7 @@ final class ChatTranscriptActionFlowSupport {
         null);
   }
 
-  void appendActionAt(
+  public void appendActionAt(
       Context context,
       TargetRef ref,
       String from,
@@ -157,7 +165,7 @@ final class ChatTranscriptActionFlowSupport {
         notificationRuleHighlightColor);
   }
 
-  int insertActionFromHistoryAt(
+  public int insertActionFromHistoryAt(
       Context context,
       TargetRef ref,
       int insertAt,
@@ -183,7 +191,9 @@ final class ChatTranscriptActionFlowSupport {
         ChatTranscriptLineMetaSupport.create(
             ref, LogKind.ACTION, dir, from, tsEpochMs, null, messageId, safeTags);
     FilterEngine.Match match =
-        context.filterRoutingSupport().firstMatch(ref, LogKind.ACTION, dir, from, action, meta.tags());
+        context
+            .filterRoutingSupport()
+            .firstMatch(ref, LogKind.ACTION, dir, from, action, meta.tags());
     ChatTranscriptFilterRoutingSupport.HistoryDecision hidden =
         context
             .filterRoutingSupport()
@@ -198,7 +208,7 @@ final class ChatTranscriptActionFlowSupport {
         context.actionHistoryInsertSupportContext(),
         ref,
         doc,
-        state == null ? null : state.messageCatalog,
+        state == null ? null : state.messageCatalog(),
         insertAt,
         from,
         action,
@@ -208,6 +218,43 @@ final class ChatTranscriptActionFlowSupport {
         match,
         context.includeChatTimestamps(),
         context.shouldDeferRichTextDuringHistoryBatch(ref));
+  }
+
+  public void insertReplacementAction(
+      Context context,
+      TargetRef ref,
+      int insertAt,
+      String from,
+      String action,
+      boolean outgoingLocalEcho,
+      LineMeta meta) {
+    context.ensureTargetExists().ensure(ref);
+    StyledDocument doc = context.document(ref);
+    context.noteEpochMs().note(ref, meta != null ? meta.epochMs() : null);
+    if (doc == null) {
+      return;
+    }
+
+    long tsEpochMs =
+        meta != null && meta.epochMs() != null && meta.epochMs() > 0
+            ? meta.epochMs()
+            : System.currentTimeMillis();
+    ChatTranscriptActionHistoryInsertSupport.insertVisibleAction(
+        context.actionHistoryInsertSupportContext(),
+        ref,
+        doc,
+        null,
+        insertAt,
+        from,
+        action,
+        outgoingLocalEcho,
+        tsEpochMs,
+        meta,
+        null,
+        context.includeChatTimestamps(),
+        false,
+        false,
+        false);
   }
 
   private void appendActionInternal(
@@ -244,7 +291,8 @@ final class ChatTranscriptActionFlowSupport {
         ChatTranscriptOutgoingFollowUpSupport.plan(messageId, safeTags);
     if (allowEmbeds) {
       followUp.runReplyContext(
-          replyToMsgId -> context.appendReplyContextLine().append(ref, from, replyToMsgId, tsEpochMs));
+          replyToMsgId ->
+              context.appendReplyContextLine().append(ref, from, replyToMsgId, tsEpochMs));
     }
 
     ChatTranscriptState state = context.state(ref);
@@ -252,7 +300,7 @@ final class ChatTranscriptActionFlowSupport {
         context.actionAppendSupportContext(),
         ref,
         doc,
-        state == null ? null : state.messageCatalog,
+        state == null ? null : state.messageCatalog(),
         from,
         action,
         outgoingLocalEcho,
@@ -273,7 +321,7 @@ final class ChatTranscriptActionFlowSupport {
         ref,
         doc,
         context.reactionSummarySupport(),
-        state == null ? null : state.reactionSummary,
+        state == null ? null : state.reactionSummary(),
         from,
         tsEpochMs);
   }

@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.filter;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
@@ -6,6 +6,7 @@ import cafe.woden.ircclient.ui.chat.fold.FilteredFoldComponent;
 import cafe.woden.ircclient.ui.chat.fold.FilteredHintComponent;
 import cafe.woden.ircclient.ui.chat.fold.FilteredLineComponent;
 import cafe.woden.ircclient.ui.chat.fold.FilteredOverflowComponent;
+import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import java.awt.Font;
 import java.util.LinkedHashSet;
@@ -19,24 +20,24 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-final class ChatTranscriptFilteredLinesSupport {
+public final class ChatTranscriptFilteredLinesSupport {
 
   @FunctionalInterface
-  interface PresenceRunBreakHandler {
+  public interface PresenceRunBreakHandler {
     void breakRun(TargetRef ref);
   }
 
   @FunctionalInterface
-  interface PresenceBlockShiftHandler {
+  public interface PresenceBlockShiftHandler {
     void shift(TargetRef ref, int insertAt, int delta);
   }
 
   @FunctionalInterface
-  interface TranscriptLineCapEnforcer {
+  public interface TranscriptLineCapEnforcer {
     int enforce(TargetRef ref, StyledDocument doc);
   }
 
-  static final class State {
+  public static final class State {
     private FilteredRun currentFilteredRun;
     private FilteredHintRun currentFilteredHintRun;
     private FilteredRun currentFilteredRunInsert;
@@ -93,7 +94,7 @@ final class ChatTranscriptFilteredLinesSupport {
    * Common base for filtered-line run trackers. Each run tracks a contiguous group of hidden lines
    * that share a single visible placeholder, hint, or overflow component in the transcript.
    */
-  abstract static class AbstractFilteredRun<C extends FilteredLineComponent> {
+  public abstract static class AbstractFilteredRun<C extends FilteredLineComponent> {
     final Position pos;
     final C component;
 
@@ -103,12 +104,12 @@ final class ChatTranscriptFilteredLinesSupport {
     LineMeta lastHiddenMeta;
     final LinkedHashSet<String> unionTags = new LinkedHashSet<>();
 
-    AbstractFilteredRun(Position pos, C component) {
+    protected AbstractFilteredRun(Position pos, C component) {
       this.pos = pos;
       this.component = component;
     }
 
-    void observe(FilterEngine.Match match, LineMeta hiddenMeta) {
+    public void observe(FilterEngine.Match match, LineMeta hiddenMeta) {
       if (hiddenMeta != null) {
         lastHiddenMeta = hiddenMeta;
         try {
@@ -137,19 +138,20 @@ final class ChatTranscriptFilteredLinesSupport {
     }
   }
 
-  static final class FilteredRun extends AbstractFilteredRun<FilteredFoldComponent> {
+  public static final class FilteredRun extends AbstractFilteredRun<FilteredFoldComponent> {
     private FilteredRun(Position pos, FilteredFoldComponent component) {
       super(pos, component);
     }
   }
 
-  static final class FilteredHintRun extends AbstractFilteredRun<FilteredHintComponent> {
+  public static final class FilteredHintRun extends AbstractFilteredRun<FilteredHintComponent> {
     private FilteredHintRun(Position pos, FilteredHintComponent component) {
       super(pos, component);
     }
   }
 
-  static final class FilteredOverflowRun extends AbstractFilteredRun<FilteredOverflowComponent> {
+  public static final class FilteredOverflowRun
+      extends AbstractFilteredRun<FilteredOverflowComponent> {
     private FilteredOverflowRun(Position pos, FilteredOverflowComponent component) {
       super(pos, component);
     }
@@ -166,7 +168,7 @@ final class ChatTranscriptFilteredLinesSupport {
   private final PresenceBlockShiftHandler shiftPresenceBlock;
   private final TranscriptLineCapEnforcer enforceTranscriptLineCap;
 
-  ChatTranscriptFilteredLinesSupport(
+  public ChatTranscriptFilteredLinesSupport(
       ChatStyles styles,
       ChatTranscriptFilteredRunSupport.Context filteredRunSupportContext,
       Supplier<Font> transcriptFontSupplier,
@@ -194,45 +196,45 @@ final class ChatTranscriptFilteredLinesSupport {
         Objects.requireNonNull(enforceTranscriptLineCap, "enforceTranscriptLineCap");
   }
 
-  void endAppendRun(State state) {
+  public void endAppendRun(State state) {
     if (state != null) {
       state.endAppendRun();
     }
   }
 
-  void endInsertRun(State state) {
+  public void endInsertRun(State state) {
     if (state != null) {
       state.endInsertRun();
     }
   }
 
-  void beginHistoryInsertBatch(State state, boolean forceDeferRichText) {
+  public void beginHistoryInsertBatch(State state, boolean forceDeferRichText) {
     if (state != null) {
       state.beginHistoryInsertBatch(forceDeferRichText);
     }
   }
 
-  void endHistoryInsertBatch(State state) {
+  public void endHistoryInsertBatch(State state) {
     if (state != null) {
       state.endHistoryInsertBatch();
     }
   }
 
-  boolean historyInsertBatchActive(State state) {
+  public boolean historyInsertBatchActive(State state) {
     return state != null && state.historyInsertBatchActive();
   }
 
-  boolean forceDeferRichTextDuringHistoryBatch(State state) {
+  public boolean forceDeferRichTextDuringHistoryBatch(State state) {
     return state != null && state.forceDeferRichTextDuringHistoryBatch();
   }
 
-  void reset(State state) {
+  public void reset(State state) {
     if (state != null) {
       state.reset();
     }
   }
 
-  void onFilteredLineAppend(
+  public void onFilteredLineAppend(
       TargetRef ref,
       StyledDocument doc,
       State state,
@@ -309,7 +311,7 @@ final class ChatTranscriptFilteredLinesSupport {
     enforceTranscriptLineCap.enforce(ref, doc);
   }
 
-  int onFilteredLineInsertAt(
+  public int onFilteredLineInsertAt(
       TargetRef ref,
       StyledDocument doc,
       State state,

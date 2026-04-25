@@ -1,8 +1,9 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.line;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTimestampFormatter;
 import java.util.Objects;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
@@ -11,13 +12,13 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
 /** Shared document-writing helpers for standard timestamp/from/message transcript lines. */
-final class ChatTranscriptTextLineSupport {
+public final class ChatTranscriptTextLineSupport {
 
-  record WriteResult(int nextOffset, int lineEndOffset) {}
+  public record WriteResult(int nextOffset, int lineEndOffset) {}
 
   private ChatTranscriptTextLineSupport() {}
 
-  static WriteResult writeLineAt(
+  public static WriteResult writeLineAt(
       StyledDocument doc,
       TargetRef ref,
       int insertAt,

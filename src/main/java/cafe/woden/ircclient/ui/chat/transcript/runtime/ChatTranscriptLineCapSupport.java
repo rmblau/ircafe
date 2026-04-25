@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.runtime;
 
 import cafe.woden.ircclient.model.TargetRef;
 import java.util.Objects;
@@ -7,13 +7,13 @@ import java.util.function.IntSupplier;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 
-final class ChatTranscriptLineCapSupport {
+public final class ChatTranscriptLineCapSupport {
 
   private final IntSupplier maxLinesSupplier;
   private final Consumer<TargetRef> headTrimReset;
   private final Consumer<TargetRef> postTrimHandler;
 
-  ChatTranscriptLineCapSupport(
+  public ChatTranscriptLineCapSupport(
       IntSupplier maxLinesSupplier,
       Consumer<TargetRef> headTrimReset,
       Consumer<TargetRef> postTrimHandler) {
@@ -22,7 +22,7 @@ final class ChatTranscriptLineCapSupport {
     this.postTrimHandler = Objects.requireNonNull(postTrimHandler, "postTrimHandler");
   }
 
-  int enforceTranscriptLineCap(TargetRef ref, StyledDocument doc) {
+  public int enforceTranscriptLineCap(TargetRef ref, StyledDocument doc) {
     if (ref == null || doc == null) {
       return 0;
     }
@@ -65,7 +65,7 @@ final class ChatTranscriptLineCapSupport {
     }
   }
 
-  static int logicalLineCount(StyledDocument doc) {
+  public static int logicalLineCount(StyledDocument doc) {
     if (doc == null) {
       return 0;
     }

@@ -1,6 +1,10 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.flow;
 
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
+import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilterRoutingSupport;
+import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredLinesSupport;
+import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptState;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import java.util.Map;
 import java.util.Objects;
@@ -8,19 +12,19 @@ import java.util.function.BooleanSupplier;
 import javax.swing.text.StyledDocument;
 
 /** Shared orchestration for filtered placeholder runs and history-batch rich-text deferral. */
-final class ChatTranscriptFilteredFlowSupport {
+public final class ChatTranscriptFilteredFlowSupport {
 
   @FunctionalInterface
-  interface EnsureTargetExistsHandler {
+  public interface EnsureTargetExistsHandler {
     void ensure(TargetRef ref);
   }
 
   @FunctionalInterface
-  interface EpochNoteHandler {
+  public interface EpochNoteHandler {
     void note(TargetRef ref, Long epochMs);
   }
 
-  record Context(
+  public record Context(
       ChatTranscriptFilteredLinesSupport filteredLinesSupport,
       ChatTranscriptFilterRoutingSupport filterRoutingSupport,
       Map<TargetRef, StyledDocument> docs,
@@ -28,7 +32,7 @@ final class ChatTranscriptFilteredFlowSupport {
       EnsureTargetExistsHandler ensureTargetExists,
       EpochNoteHandler noteEpochMs,
       BooleanSupplier defaultDeferRichTextDuringHistoryBatch) {
-    Context {
+    public Context {
       Objects.requireNonNull(filteredLinesSupport, "filteredLinesSupport");
       Objects.requireNonNull(filterRoutingSupport, "filterRoutingSupport");
       Objects.requireNonNull(docs, "docs");
@@ -52,56 +56,61 @@ final class ChatTranscriptFilteredFlowSupport {
     }
   }
 
-  void endAppendRun(Context context, TargetRef ref) {
+  public void endAppendRun(Context context, TargetRef ref) {
     if (ref == null) {
       return;
     }
     ChatTranscriptState state = context.state(ref);
     if (state != null) {
-      context.filteredLinesSupport().endAppendRun(state.filteredLines);
+      context.filteredLinesSupport().endAppendRun(state.filteredLines());
     }
   }
 
-  void endInsertRun(Context context, TargetRef ref) {
+  public void endInsertRun(Context context, TargetRef ref) {
     if (ref == null) {
       return;
     }
     ChatTranscriptState state = context.state(ref);
     if (state != null) {
-      context.filteredLinesSupport().endInsertRun(state.filteredLines);
+      context.filteredLinesSupport().endInsertRun(state.filteredLines());
     }
   }
 
-  void beginHistoryInsertBatch(Context context, TargetRef ref, boolean forceDeferRichText) {
+  public void beginHistoryInsertBatch(Context context, TargetRef ref, boolean forceDeferRichText) {
     if (ref == null) {
       return;
     }
     context.ensureTargetExists().ensure(ref);
     ChatTranscriptState state = context.state(ref);
     if (state != null) {
-      context.filteredLinesSupport().beginHistoryInsertBatch(state.filteredLines, forceDeferRichText);
+      context
+          .filteredLinesSupport()
+          .beginHistoryInsertBatch(state.filteredLines(), forceDeferRichText);
     }
   }
 
-  void endHistoryInsertBatch(Context context, TargetRef ref) {
+  public void endHistoryInsertBatch(Context context, TargetRef ref) {
     if (ref == null) {
       return;
     }
     ChatTranscriptState state = context.state(ref);
     if (state != null) {
-      context.filteredLinesSupport().endHistoryInsertBatch(state.filteredLines);
+      context.filteredLinesSupport().endHistoryInsertBatch(state.filteredLines());
     }
   }
 
-  boolean shouldDeferRichTextDuringHistoryBatch(Context context, TargetRef ref) {
+  public boolean shouldDeferRichTextDuringHistoryBatch(Context context, TargetRef ref) {
     if (ref == null) {
       return false;
     }
     ChatTranscriptState state = context.state(ref);
-    if (state == null || !context.filteredLinesSupport().historyInsertBatchActive(state.filteredLines)) {
+    if (state == null
+        || !context.filteredLinesSupport().historyInsertBatchActive(state.filteredLines())) {
       return false;
     }
-    if (context.filteredLinesSupport().forceDeferRichTextDuringHistoryBatch(state.filteredLines)) {
+    if (context
+        .filteredLinesSupport()
+        .forceDeferRichTextDuringHistoryBatch(state.filteredLines())) {
       return true;
     }
     try {
@@ -111,7 +120,7 @@ final class ChatTranscriptFilteredFlowSupport {
     }
   }
 
-  void onFilteredLineAppend(
+  public void onFilteredLineAppend(
       Context context,
       TargetRef ref,
       String previewText,
@@ -130,14 +139,14 @@ final class ChatTranscriptFilteredFlowSupport {
         .onFilteredLineAppend(
             ref,
             doc,
-            state == null ? null : state.filteredLines,
+            state == null ? null : state.filteredLines(),
             context.filterRoutingSupport().effectiveFor(ref),
             previewText,
             hiddenMeta,
             match);
   }
 
-  int onFilteredLineInsertAt(
+  public int onFilteredLineInsertAt(
       Context context,
       TargetRef ref,
       int insertAt,
@@ -157,7 +166,7 @@ final class ChatTranscriptFilteredFlowSupport {
         .onFilteredLineInsertAt(
             ref,
             doc,
-            state == null ? null : state.filteredLines,
+            state == null ? null : state.filteredLines(),
             context.filterRoutingSupport().effectiveFor(ref),
             insertAt,
             previewText,

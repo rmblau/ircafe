@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.message;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -11,6 +11,8 @@ import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.SimpleAttributeSet;
 import org.junit.jupiter.api.Test;
@@ -117,5 +119,40 @@ class ChatTranscriptMatrixDisplayNameSupportTest {
         0,
         ChatTranscriptMatrixDisplayNameSupport.refreshMatrixDisplayNames(
             context, new TargetRef("matrix", "#room:matrix.org"), "alice"));
+  }
+
+  @Test
+  void refreshMatrixDisplayNamesAcrossServerFiltersServerAndMatrixUser() throws Exception {
+    UserListStore userListStore = new UserListStore();
+    userListStore.updateRealNameAcrossChannels("matrix", "@alice:matrix.org", "Alice");
+    TargetRef matrixRef = new TargetRef("matrix", "#room:matrix.org");
+    TargetRef otherServerRef = new TargetRef("other", "#room:matrix.org");
+    Map<TargetRef, DefaultStyledDocument> docs = new HashMap<>();
+    docs.put(matrixRef, documentWithFrom("@alice:matrix.org"));
+    docs.put(otherServerRef, documentWithFrom("@alice:matrix.org"));
+
+    ChatTranscriptMatrixDisplayNameSupport.Context context =
+        new ChatTranscriptMatrixDisplayNameSupport.Context(null, userListStore, docs::get);
+
+    int changed =
+        ChatTranscriptMatrixDisplayNameSupport.refreshMatrixDisplayNamesAcrossServer(
+            context, docs, "matrix", "@alice:matrix.org");
+
+    assertEquals(1, changed);
+    assertTrue(docs.get(matrixRef).getText(0, docs.get(matrixRef).getLength()).contains("Alice:"));
+    assertTrue(
+        docs.get(otherServerRef)
+            .getText(0, docs.get(otherServerRef).getLength())
+            .contains("@alice:matrix.org:"));
+  }
+
+  private static DefaultStyledDocument documentWithFrom(String from) throws Exception {
+    DefaultStyledDocument doc = new DefaultStyledDocument();
+    SimpleAttributeSet attrs = new SimpleAttributeSet();
+    attrs.addAttribute(ChatStyles.ATTR_STYLE, ChatStyles.STYLE_FROM);
+    attrs.addAttribute(ChatStyles.ATTR_META_FROM, from);
+    doc.insertString(0, from + ": ", attrs);
+    doc.insertString(doc.getLength(), "hello\n", new SimpleAttributeSet());
+    return doc;
   }
 }

@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.runtime;
 
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import java.awt.Color;
@@ -8,7 +8,7 @@ import java.util.function.Supplier;
 import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
 
-final class ChatTranscriptRestyleCoordinator {
+public final class ChatTranscriptRestyleCoordinator {
 
   private final int restyleElementsPerSlice;
   private final ChatTranscriptRestyleSupport.Context restyleSupportContext;
@@ -22,7 +22,7 @@ final class ChatTranscriptRestyleCoordinator {
   private boolean restylePassRunning = false;
   private boolean restylePassRestartRequested = false;
 
-  ChatTranscriptRestyleCoordinator(
+  public ChatTranscriptRestyleCoordinator(
       int restyleElementsPerSlice,
       ChatTranscriptRestyleSupport.Context restyleSupportContext,
       Supplier<UiSettings> settingsSupplier,
@@ -35,7 +35,7 @@ final class ChatTranscriptRestyleCoordinator {
     this.documentSnapshotSupplier = documentSnapshotSupplier;
   }
 
-  synchronized void restyleAllDocuments() {
+  public synchronized void restyleAllDocuments() {
     UiSettings settings = settingsSupplier.get();
     Color outgoingColor = outgoingColorResolver.apply(settings);
     boolean outgoingColorEnabled = outgoingColor != null;
@@ -45,7 +45,7 @@ final class ChatTranscriptRestyleCoordinator {
     }
   }
 
-  void restyleAllDocumentsCoalesced() {
+  public void restyleAllDocumentsCoalesced() {
     boolean schedule = false;
     synchronized (this) {
       if (restylePassRunning) {

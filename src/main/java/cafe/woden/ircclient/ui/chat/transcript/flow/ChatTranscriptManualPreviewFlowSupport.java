@@ -1,36 +1,38 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.flow;
 
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptManualPreviewSupport;
+import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptLineCapSupport;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 import javax.swing.text.StyledDocument;
 
-final class ChatTranscriptManualPreviewFlowSupport {
+public final class ChatTranscriptManualPreviewFlowSupport {
 
   @FunctionalInterface
-  interface PresenceBlockShiftHandler {
+  public interface PresenceBlockShiftHandler {
     void shift(TargetRef ref, int insertAt, int delta);
   }
 
-  record Context(
+  public record Context(
       Map<TargetRef, StyledDocument> docs,
       Consumer<TargetRef> ensureTargetExists,
       ChatTranscriptManualPreviewSupport manualPreviewSupport,
       PresenceBlockShiftHandler presenceBlockShiftHandler,
       ChatTranscriptLineCapSupport lineCapSupport) {
 
-    Context {
-      docs = Objects.requireNonNull(docs, "docs");
-      ensureTargetExists = Objects.requireNonNull(ensureTargetExists, "ensureTargetExists");
-      manualPreviewSupport = Objects.requireNonNull(manualPreviewSupport, "manualPreviewSupport");
-      presenceBlockShiftHandler =
-          Objects.requireNonNull(presenceBlockShiftHandler, "presenceBlockShiftHandler");
-      lineCapSupport = Objects.requireNonNull(lineCapSupport, "lineCapSupport");
+    public Context {
+      Objects.requireNonNull(docs, "docs");
+      Objects.requireNonNull(ensureTargetExists, "ensureTargetExists");
+      Objects.requireNonNull(manualPreviewSupport, "manualPreviewSupport");
+      Objects.requireNonNull(presenceBlockShiftHandler, "presenceBlockShiftHandler");
+      Objects.requireNonNull(lineCapSupport, "lineCapSupport");
     }
   }
 
-  boolean insertManualPreviewAt(Context context, TargetRef ref, int insertAt, String rawUrl) {
+  public boolean insertManualPreviewAt(
+      Context context, TargetRef ref, int insertAt, String rawUrl) {
     if (context == null || ref == null) return false;
 
     context.ensureTargetExists().accept(ref);

@@ -3,7 +3,6 @@ package cafe.woden.ircclient.ui.chat.transcript;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -13,6 +12,15 @@ import cafe.woden.ircclient.model.LogDirection;
 import cafe.woden.ircclient.model.LogKind;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
+import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilterRoutingSupport;
+import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredLinesSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPresenceFoldSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptSystemLineSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageStateSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReactionSummarySupport;
+import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptState;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import java.util.Map;
 import java.util.UUID;
@@ -33,13 +41,7 @@ class ChatTranscriptSystemLineSupportTest {
 
     int nextInsertAt =
         fixture.support.insertNoticeFromHistoryAt(
-            fixture.ref,
-            3,
-            "nick",
-            "historic notice",
-            2_000L,
-            "m-2",
-            Map.of("msgid", "m-2"));
+            fixture.ref, 3, "nick", "historic notice", 2_000L, "m-2", Map.of("msgid", "m-2"));
 
     assertEquals(8, nextInsertAt);
     assertEquals(1, fixture.ensureCalls.get());
@@ -101,19 +103,14 @@ class ChatTranscriptSystemLineSupportTest {
 
     int nextInsertAt =
         fixture.support.insertNoticeFromHistoryAt(
-            fixture.ref,
-            2,
-            "nick",
-            "duplicate",
-            2_000L,
-            "m-1",
-            Map.of("msgid", "m-1"));
+            fixture.ref, 2, "nick", "duplicate", 2_000L, "m-1", Map.of("msgid", "m-1"));
 
     assertEquals(2, nextInsertAt);
     assertFalse(fixture.insertCalled.get());
   }
 
-  private static ChatTranscriptFilterRoutingSupport newFilterRoutingSupport(FilterEngine filterEngine) {
+  private static ChatTranscriptFilterRoutingSupport newFilterRoutingSupport(
+      FilterEngine filterEngine) {
     return new ChatTranscriptFilterRoutingSupport(
         filterEngine,
         (ref, preview, meta, match) -> {},

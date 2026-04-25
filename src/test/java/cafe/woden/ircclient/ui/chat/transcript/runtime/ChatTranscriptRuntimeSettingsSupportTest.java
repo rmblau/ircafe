@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.runtime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.ui.chat.ChatStyles;
+import cafe.woden.ircclient.ui.chat.transcript.style.ChatTranscriptColorSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import java.awt.Color;
@@ -50,6 +51,9 @@ class ChatTranscriptRuntimeSettingsSupportTest {
     assertTrue(support.presenceFoldsEnabled());
     assertFalse(support.timestampsIncludeChatMessages());
     assertFalse(support.timestampsIncludePresenceMessages());
+    assertFalse(support.chatHistoryDeferRichTextDuringBatch());
+    assertFalse(support.imageEmbedsEnabled());
+    assertFalse(support.linkPreviewsEnabled());
   }
 
   @Test
@@ -61,7 +65,9 @@ class ChatTranscriptRuntimeSettingsSupportTest {
     ChatTranscriptRuntimeSettingsSupport support =
         new ChatTranscriptRuntimeSettingsSupport(bus, new ChatStyles(null));
 
-    assertEquals(ChatTranscriptRuntimeSettingsSupport.MAX_TRANSCRIPT_LINES_PER_TARGET, support.transcriptMaxLinesPerTarget());
+    assertEquals(
+        ChatTranscriptRuntimeSettingsSupport.MAX_TRANSCRIPT_LINES_PER_TARGET,
+        support.transcriptMaxLinesPerTarget());
 
     when(settings.chatTranscriptMaxLinesPerTarget()).thenReturn(-1);
     assertEquals(0, support.transcriptMaxLinesPerTarget());
@@ -92,6 +98,9 @@ class ChatTranscriptRuntimeSettingsSupportTest {
     when(settings.presenceFoldsEnabled()).thenReturn(false);
     when(settings.timestampsIncludeChatMessages()).thenReturn(true);
     when(settings.timestampsIncludePresenceMessages()).thenReturn(true);
+    when(settings.chatHistoryDeferRichTextDuringBatch()).thenReturn(true);
+    when(settings.imageEmbedsEnabled()).thenReturn(true);
+    when(settings.linkPreviewsEnabled()).thenReturn(true);
     ChatTranscriptRuntimeSettingsSupport support =
         new ChatTranscriptRuntimeSettingsSupport(bus, new ChatStyles(null));
 
@@ -99,5 +108,8 @@ class ChatTranscriptRuntimeSettingsSupportTest {
     assertFalse(support.presenceFoldsEnabled());
     assertTrue(support.timestampsIncludeChatMessages());
     assertTrue(support.timestampsIncludePresenceMessages());
+    assertTrue(support.chatHistoryDeferRichTextDuringBatch());
+    assertTrue(support.imageEmbedsEnabled());
+    assertTrue(support.linkPreviewsEnabled());
   }
 }

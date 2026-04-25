@@ -1,21 +1,22 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.spoiler;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.fold.SpoilerMessageComponent;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTimestampFormatter;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 
-final class ChatTranscriptSpoilerRuntimeSupport {
+public final class ChatTranscriptSpoilerRuntimeSupport {
 
-  record Context(
+  public record Context(
       ChatTimestampFormatter timestamps,
       BooleanSupplier includeChatMessageTimestamps,
       ChatTranscriptSpoilerRevealSupport.Context revealSupportContext,
       Object revealLock) {
-    Context {
+    public Context {
       Objects.requireNonNull(includeChatMessageTimestamps, "includeChatMessageTimestamps");
       Objects.requireNonNull(revealSupportContext, "revealSupportContext");
       Objects.requireNonNull(revealLock, "revealLock");
@@ -24,7 +25,7 @@ final class ChatTranscriptSpoilerRuntimeSupport {
 
   private ChatTranscriptSpoilerRuntimeSupport() {}
 
-  static String timestampPrefix(Context context, Long tsEpochMs) {
+  public static String timestampPrefix(Context context, Long tsEpochMs) {
     if (context == null
         || context.timestamps() == null
         || !context.includeChatMessageTimestamps().getAsBoolean()
@@ -36,7 +37,7 @@ final class ChatTranscriptSpoilerRuntimeSupport {
         : context.timestamps().prefixNow();
   }
 
-  static boolean revealInPlace(
+  public static boolean revealInPlace(
       Context context,
       StyledDocument doc,
       TargetRef ref,

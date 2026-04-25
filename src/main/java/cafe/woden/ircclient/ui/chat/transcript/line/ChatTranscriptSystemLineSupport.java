@@ -1,28 +1,34 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.line;
 
-import cafe.woden.ircclient.ui.filter.FilterEngine;
 import cafe.woden.ircclient.model.LogDirection;
 import cafe.woden.ircclient.model.LogKind;
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
+import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptAppendGuardSupport;
+import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilterRoutingSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptOutgoingFollowUpSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReactionSummarySupport;
+import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptState;
+import cafe.woden.ircclient.ui.filter.FilterEngine;
 import java.util.Map;
 import java.util.Objects;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyledDocument;
 
-final class ChatTranscriptSystemLineSupport {
+public final class ChatTranscriptSystemLineSupport {
 
   @FunctionalInterface
-  interface EnsureTargetExistsHandler {
+  public interface EnsureTargetExistsHandler {
     void ensure(TargetRef ref);
   }
 
   @FunctionalInterface
-  interface EpochNoteHandler {
+  public interface EpochNoteHandler {
     void note(TargetRef ref, Long epochMs);
   }
 
   @FunctionalInterface
-  interface AppendLineHandler {
+  public interface AppendLineHandler {
     void append(
         TargetRef ref,
         String from,
@@ -34,7 +40,7 @@ final class ChatTranscriptSystemLineSupport {
   }
 
   @FunctionalInterface
-  interface InsertLineHandler {
+  public interface InsertLineHandler {
     int insert(
         TargetRef ref,
         int insertAt,
@@ -46,34 +52,34 @@ final class ChatTranscriptSystemLineSupport {
   }
 
   @FunctionalInterface
-  interface ReplyContextAppender {
+  public interface ReplyContextAppender {
     void append(TargetRef ref, String from, String replyToMsgId, long tsEpochMs);
   }
 
   @FunctionalInterface
-  interface DocumentLookup {
+  public interface DocumentLookup {
     StyledDocument get(TargetRef ref);
   }
 
   @FunctionalInterface
-  interface StateLookup {
+  public interface StateLookup {
     ChatTranscriptState get(TargetRef ref);
   }
 
   @FunctionalInterface
-  interface TimeSource {
+  public interface TimeSource {
     long now();
   }
 
-  record LineStyles(AttributeSet fromStyle, AttributeSet messageStyle) {
-    LineStyles {
+  public record LineStyles(AttributeSet fromStyle, AttributeSet messageStyle) {
+    public LineStyles {
       Objects.requireNonNull(fromStyle, "fromStyle");
       Objects.requireNonNull(messageStyle, "messageStyle");
     }
   }
 
   @FunctionalInterface
-  interface LineStylesResolver {
+  public interface LineStylesResolver {
     LineStyles resolve(TargetRef ref);
   }
 
@@ -91,7 +97,7 @@ final class ChatTranscriptSystemLineSupport {
   private final LineStylesResolver errorStyles;
   private final TimeSource timeSource;
 
-  ChatTranscriptSystemLineSupport(
+  public ChatTranscriptSystemLineSupport(
       ChatTranscriptFilterRoutingSupport filterRoutingSupport,
       EnsureTargetExistsHandler ensureTargetExists,
       EpochNoteHandler noteEpochMs,
@@ -105,7 +111,8 @@ final class ChatTranscriptSystemLineSupport {
       LineStylesResolver statusStyles,
       LineStylesResolver errorStyles,
       TimeSource timeSource) {
-    this.filterRoutingSupport = Objects.requireNonNull(filterRoutingSupport, "filterRoutingSupport");
+    this.filterRoutingSupport =
+        Objects.requireNonNull(filterRoutingSupport, "filterRoutingSupport");
     this.ensureTargetExists = Objects.requireNonNull(ensureTargetExists, "ensureTargetExists");
     this.noteEpochMs = Objects.requireNonNull(noteEpochMs, "noteEpochMs");
     this.appendLine = Objects.requireNonNull(appendLine, "appendLine");
@@ -121,7 +128,7 @@ final class ChatTranscriptSystemLineSupport {
     this.timeSource = Objects.requireNonNull(timeSource, "timeSource");
   }
 
-  void appendNotice(TargetRef ref, String from, String text) {
+  public void appendNotice(TargetRef ref, String from, String text) {
     LineMeta meta =
         filterRoutingSupport.prepareVisibleTextAppend(
             ref, LogKind.NOTICE, LogDirection.IN, from, text, timeSource.now(), "", Map.of());
@@ -132,17 +139,10 @@ final class ChatTranscriptSystemLineSupport {
     appendLine.append(ref, from, text, styles.fromStyle(), styles.messageStyle(), true, meta);
   }
 
-  void appendStatus(TargetRef ref, String from, String text) {
+  public void appendStatus(TargetRef ref, String from, String text) {
     LineMeta meta =
         filterRoutingSupport.prepareVisibleTextAppend(
-            ref,
-            LogKind.STATUS,
-            LogDirection.SYSTEM,
-            from,
-            text,
-            timeSource.now(),
-            "",
-            Map.of());
+            ref, LogKind.STATUS, LogDirection.SYSTEM, from, text, timeSource.now(), "", Map.of());
     if (meta == null) {
       return;
     }
@@ -150,17 +150,10 @@ final class ChatTranscriptSystemLineSupport {
     appendLine.append(ref, from, text, styles.fromStyle(), styles.messageStyle(), true, meta);
   }
 
-  void appendError(TargetRef ref, String from, String text) {
+  public void appendError(TargetRef ref, String from, String text) {
     LineMeta meta =
         filterRoutingSupport.prepareVisibleTextAppend(
-            ref,
-            LogKind.ERROR,
-            LogDirection.SYSTEM,
-            from,
-            text,
-            timeSource.now(),
-            "",
-            Map.of());
+            ref, LogKind.ERROR, LogDirection.SYSTEM, from, text, timeSource.now(), "", Map.of());
     if (meta == null) {
       return;
     }
@@ -168,11 +161,11 @@ final class ChatTranscriptSystemLineSupport {
     appendLine.append(ref, from, text, styles.fromStyle(), styles.messageStyle(), true, meta);
   }
 
-  void appendNoticeFromHistory(TargetRef ref, String from, String text, long tsEpochMs) {
+  public void appendNoticeFromHistory(TargetRef ref, String from, String text, long tsEpochMs) {
     appendNoticeFromHistory(ref, from, text, tsEpochMs, "", Map.of());
   }
 
-  void appendNoticeFromHistory(
+  public void appendNoticeFromHistory(
       TargetRef ref,
       String from,
       String text,
@@ -195,7 +188,7 @@ final class ChatTranscriptSystemLineSupport {
     appendLine.append(ref, from, text, styles.fromStyle(), styles.messageStyle(), false, meta);
   }
 
-  void appendStatusFromHistory(TargetRef ref, String from, String text, long tsEpochMs) {
+  public void appendStatusFromHistory(TargetRef ref, String from, String text, long tsEpochMs) {
     ensureTargetExists.ensure(ref);
     noteEpochMs.note(ref, tsEpochMs);
     LineMeta meta =
@@ -208,7 +201,7 @@ final class ChatTranscriptSystemLineSupport {
     appendLine.append(ref, from, text, styles.fromStyle(), styles.messageStyle(), false, meta);
   }
 
-  void appendErrorFromHistory(TargetRef ref, String from, String text, long tsEpochMs) {
+  public void appendErrorFromHistory(TargetRef ref, String from, String text, long tsEpochMs) {
     ensureTargetExists.ensure(ref);
     noteEpochMs.note(ref, tsEpochMs);
     LineMeta meta =
@@ -221,7 +214,7 @@ final class ChatTranscriptSystemLineSupport {
     appendLine.append(ref, from, text, styles.fromStyle(), styles.messageStyle(), false, meta);
   }
 
-  int insertNoticeFromHistoryAt(
+  public int insertNoticeFromHistoryAt(
       TargetRef ref,
       int insertAt,
       String from,
@@ -242,7 +235,7 @@ final class ChatTranscriptSystemLineSupport {
         noticeStyles);
   }
 
-  int insertStatusFromHistoryAt(
+  public int insertStatusFromHistoryAt(
       TargetRef ref, int insertAt, String from, String text, long tsEpochMs) {
     return insertFromHistoryAt(
         ref,
@@ -257,7 +250,7 @@ final class ChatTranscriptSystemLineSupport {
         statusStyles);
   }
 
-  int insertErrorFromHistoryAt(
+  public int insertErrorFromHistoryAt(
       TargetRef ref, int insertAt, String from, String text, long tsEpochMs) {
     return insertFromHistoryAt(
         ref,
@@ -306,14 +299,15 @@ final class ChatTranscriptSystemLineSupport {
     }
 
     LineStyles styles = styleResolver.resolve(ref);
-    return insertLine.insert(ref, insertAt, from, text, styles.fromStyle(), styles.messageStyle(), meta);
+    return insertLine.insert(
+        ref, insertAt, from, text, styles.fromStyle(), styles.messageStyle(), meta);
   }
 
-  void appendNoticeAt(TargetRef ref, String from, String text, long tsEpochMs) {
+  public void appendNoticeAt(TargetRef ref, String from, String text, long tsEpochMs) {
     appendNoticeAt(ref, from, text, tsEpochMs, "", Map.of());
   }
 
-  void appendNoticeAt(
+  public void appendNoticeAt(
       TargetRef ref,
       String from,
       String text,
@@ -346,12 +340,12 @@ final class ChatTranscriptSystemLineSupport {
         ref,
         doc,
         reactionSummarySupport,
-        st == null ? null : st.reactionSummary,
+        st == null ? null : st.reactionSummary(),
         from,
         tsEpochMs);
   }
 
-  void appendStatusAt(
+  public void appendStatusAt(
       TargetRef ref,
       String from,
       String text,
@@ -374,11 +368,11 @@ final class ChatTranscriptSystemLineSupport {
     appendLine.append(ref, from, text, styles.fromStyle(), styles.messageStyle(), true, meta);
   }
 
-  void appendStatusAt(TargetRef ref, String from, String text, long tsEpochMs) {
+  public void appendStatusAt(TargetRef ref, String from, String text, long tsEpochMs) {
     appendStatusAt(ref, from, text, tsEpochMs, "", Map.of());
   }
 
-  void appendErrorAt(TargetRef ref, String from, String text, long tsEpochMs) {
+  public void appendErrorAt(TargetRef ref, String from, String text, long tsEpochMs) {
     ensureTargetExists.ensure(ref);
     noteEpochMs.note(ref, tsEpochMs);
     LineMeta meta =

@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.message;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -9,11 +9,11 @@ import java.util.Map;
 import java.util.Objects;
 
 /** Shared transcript reaction-state bookkeeping helpers. */
-final class ChatTranscriptReactionStateSupport {
+public final class ChatTranscriptReactionStateSupport {
 
   private ChatTranscriptReactionStateSupport() {}
 
-  static void observe(
+  public static void observe(
       Map<String, LinkedHashSet<String>> nicksByReaction, String reaction, String nick) {
     if (nicksByReaction == null) return;
     String token = Objects.toString(reaction, "").trim();
@@ -22,7 +22,7 @@ final class ChatTranscriptReactionStateSupport {
     nicksByReaction.computeIfAbsent(token, k -> new LinkedHashSet<>()).add(n);
   }
 
-  static void forget(
+  public static void forget(
       Map<String, LinkedHashSet<String>> nicksByReaction, String reaction, String nick) {
     if (nicksByReaction == null) return;
     String token = Objects.toString(reaction, "").trim();
@@ -36,7 +36,7 @@ final class ChatTranscriptReactionStateSupport {
     }
   }
 
-  static boolean hasReactionFromNick(
+  public static boolean hasReactionFromNick(
       Map<String, LinkedHashSet<String>> nicksByReaction, String reaction, String normalizedNick) {
     if (nicksByReaction == null) return false;
     String token = Objects.toString(reaction, "").trim();
@@ -52,7 +52,7 @@ final class ChatTranscriptReactionStateSupport {
     return false;
   }
 
-  static Map<String, Collection<String>> reactionsSnapshot(
+  public static Map<String, Collection<String>> reactionsSnapshot(
       Map<String, LinkedHashSet<String>> nicksByReaction) {
     LinkedHashMap<String, Collection<String>> out = new LinkedHashMap<>();
     if (nicksByReaction == null) return out;
@@ -62,7 +62,7 @@ final class ChatTranscriptReactionStateSupport {
     return out;
   }
 
-  static String normalizeReactionNickKey(String rawNick) {
+  public static String normalizeReactionNickKey(String rawNick) {
     String nick = Objects.toString(rawNick, "").trim();
     return nick.isEmpty() ? "" : nick.toLowerCase(Locale.ROOT);
   }

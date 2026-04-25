@@ -1,9 +1,16 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.line;
 
 import cafe.woden.ircclient.model.LogDirection;
 import cafe.woden.ircclient.model.LogKind;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
+import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
+import cafe.woden.ircclient.ui.chat.transcript.OutgoingSendIndicator;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageMetadataSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptOutgoingFollowUpSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptPendingOutgoingSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReactionSummarySupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptSenderStyleSupport;
 import java.awt.Color;
 import java.awt.Component;
 import java.util.Map;
@@ -12,25 +19,25 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyledDocument;
 
-final class ChatTranscriptOutgoingChatSupport {
+public final class ChatTranscriptOutgoingChatSupport {
 
   @FunctionalInterface
-  interface EnsureTargetExistsHandler {
+  public interface EnsureTargetExistsHandler {
     void ensure(TargetRef ref);
   }
 
   @FunctionalInterface
-  interface EpochNoteHandler {
+  public interface EpochNoteHandler {
     void note(TargetRef ref, Long epochMs);
   }
 
   @FunctionalInterface
-  interface PresenceRunBreakHandler {
+  public interface PresenceRunBreakHandler {
     void breakRun(TargetRef ref);
   }
 
   @FunctionalInterface
-  interface AppendLineHandler {
+  public interface AppendLineHandler {
     void append(
         TargetRef ref,
         String from,
@@ -43,7 +50,7 @@ final class ChatTranscriptOutgoingChatSupport {
   }
 
   @FunctionalInterface
-  interface InsertLineHandler {
+  public interface InsertLineHandler {
     int insert(
         TargetRef ref,
         int insertAt,
@@ -55,7 +62,7 @@ final class ChatTranscriptOutgoingChatSupport {
   }
 
   @FunctionalInterface
-  interface ConfirmedDotAppender {
+  public interface ConfirmedDotAppender {
     void append(TargetRef ref, int after, SimpleAttributeSet messageStyle, LineMeta meta);
   }
 
@@ -68,7 +75,7 @@ final class ChatTranscriptOutgoingChatSupport {
   private final InsertLineHandler insertLine;
   private final ConfirmedDotAppender confirmedDotAppender;
 
-  ChatTranscriptOutgoingChatSupport(
+  public ChatTranscriptOutgoingChatSupport(
       ChatStyles styles,
       ChatTranscriptSenderStyleSupport.Context senderStyleSupportContext,
       EnsureTargetExistsHandler ensureTargetExists,
@@ -89,7 +96,7 @@ final class ChatTranscriptOutgoingChatSupport {
         Objects.requireNonNull(confirmedDotAppender, "confirmedDotAppender");
   }
 
-  void appendPendingOutgoingChat(
+  public void appendPendingOutgoingChat(
       TargetRef ref,
       String pendingId,
       String from,
@@ -132,7 +139,7 @@ final class ChatTranscriptOutgoingChatSupport {
     appendLine.append(ref, from, body, fromStyle, messageStyle, meta, spinner, tailAttrs);
   }
 
-  void insertCanonicalOutgoingChatLineAt(
+  public void insertCanonicalOutgoingChatLineAt(
       TargetRef ref,
       StyledDocument doc,
       ChatTranscriptReactionSummarySupport reactionSummarySupport,
@@ -167,7 +174,7 @@ final class ChatTranscriptOutgoingChatSupport {
         ref, doc, reactionSummarySupport, reactionSummaryState, from, tsEpochMs);
   }
 
-  void insertFailedOutgoingChatLineAt(
+  public void insertFailedOutgoingChatLineAt(
       TargetRef ref, int insertAt, String from, String text, long tsEpochMs, String reason) {
     ensureTargetExists.ensure(ref);
     noteEpochMs.note(ref, tsEpochMs);

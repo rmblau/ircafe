@@ -1,6 +1,9 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.flow;
 
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReactionSummarySupport;
+import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptState;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -8,14 +11,14 @@ import java.util.function.Consumer;
 import javax.swing.text.StyledDocument;
 
 /** Reaction summary orchestration bound to per-target transcript state. */
-final class ChatTranscriptReactionFlowSupport {
+public final class ChatTranscriptReactionFlowSupport {
 
-  record Context(
+  public record Context(
       Map<TargetRef, StyledDocument> docs,
       Map<TargetRef, ChatTranscriptState> stateByTarget,
       Consumer<TargetRef> ensureTargetExists,
       ChatTranscriptReactionSummarySupport reactionSummarySupport) {
-    Context {
+    public Context {
       Objects.requireNonNull(docs, "docs");
       Objects.requireNonNull(stateByTarget, "stateByTarget");
       Objects.requireNonNull(ensureTargetExists, "ensureTargetExists");
@@ -23,29 +26,29 @@ final class ChatTranscriptReactionFlowSupport {
     }
   }
 
-  boolean hasReactionFromNick(
+  public boolean hasReactionFromNick(
       Context context, TargetRef ref, String messageId, String reaction, String nick) {
     if (context == null) return false;
     ChatTranscriptState st = context.stateByTarget().get(ref);
     return context
         .reactionSummarySupport()
-        .hasReactionFromNick(st == null ? null : st.reactionSummary, messageId, reaction, nick);
+        .hasReactionFromNick(st == null ? null : st.reactionSummary(), messageId, reaction, nick);
   }
 
-  void setReactionChipActionHandler(
+  public void setReactionChipActionHandler(
       Context context, ChatTranscriptStore.ReactionChipActionHandler handler) {
     if (context == null) return;
     Map<TargetRef, ChatTranscriptReactionSummarySupport.State> statesByTarget = new HashMap<>();
     for (Map.Entry<TargetRef, ChatTranscriptState> entry : context.stateByTarget().entrySet()) {
       ChatTranscriptState st = entry.getValue();
       if (st != null) {
-        statesByTarget.put(entry.getKey(), st.reactionSummary);
+        statesByTarget.put(entry.getKey(), st.reactionSummary());
       }
     }
     context.reactionSummarySupport().setReactionChipActionHandler(handler, statesByTarget);
   }
 
-  void applyMessageReaction(
+  public void applyMessageReaction(
       Context context,
       TargetRef ref,
       String targetMessageId,
@@ -59,10 +62,11 @@ final class ChatTranscriptReactionFlowSupport {
     if (doc == null || st == null) return;
     context
         .reactionSummarySupport()
-        .applyMessageReaction(ref, doc, st.reactionSummary, targetMessageId, reaction, fromNick, tsEpochMs);
+        .applyMessageReaction(
+            ref, doc, st.reactionSummary(), targetMessageId, reaction, fromNick, tsEpochMs);
   }
 
-  void removeMessageReaction(
+  public void removeMessageReaction(
       Context context,
       TargetRef ref,
       String targetMessageId,
@@ -76,6 +80,7 @@ final class ChatTranscriptReactionFlowSupport {
     if (doc == null || st == null) return;
     context
         .reactionSummarySupport()
-        .removeMessageReaction(ref, doc, st.reactionSummary, targetMessageId, reaction, fromNick, tsEpochMs);
+        .removeMessageReaction(
+            ref, doc, st.reactionSummary(), targetMessageId, reaction, fromNick, tsEpochMs);
   }
 }

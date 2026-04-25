@@ -1,29 +1,30 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.flow;
 
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageMutationSupport;
+import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptState;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 import javax.swing.text.StyledDocument;
 
-final class ChatTranscriptMessageMutationFlowSupport {
+public final class ChatTranscriptMessageMutationFlowSupport {
 
-  record Context(
+  public record Context(
       Map<TargetRef, StyledDocument> docs,
       Map<TargetRef, ChatTranscriptState> stateByTarget,
       Consumer<TargetRef> ensureTargetExists,
       ChatTranscriptMessageMutationSupport messageMutationSupport) {
 
-    Context {
-      docs = Objects.requireNonNull(docs, "docs");
-      stateByTarget = Objects.requireNonNull(stateByTarget, "stateByTarget");
-      ensureTargetExists = Objects.requireNonNull(ensureTargetExists, "ensureTargetExists");
-      messageMutationSupport =
-          Objects.requireNonNull(messageMutationSupport, "messageMutationSupport");
+    public Context {
+      Objects.requireNonNull(docs, "docs");
+      Objects.requireNonNull(stateByTarget, "stateByTarget");
+      Objects.requireNonNull(ensureTargetExists, "ensureTargetExists");
+      Objects.requireNonNull(messageMutationSupport, "messageMutationSupport");
     }
   }
 
-  boolean applyMessageEdit(
+  public boolean applyMessageEdit(
       Context context,
       TargetRef ref,
       String targetMessageId,
@@ -41,7 +42,7 @@ final class ChatTranscriptMessageMutationFlowSupport {
         .applyMessageEdit(
             ref,
             doc,
-            state == null ? null : state.messageCatalog,
+            state == null ? null : state.messageCatalog(),
             targetMessageId,
             editedText,
             tsEpochMs,
@@ -49,7 +50,7 @@ final class ChatTranscriptMessageMutationFlowSupport {
             replacementIrcv3Tags);
   }
 
-  boolean applyMessageRedaction(
+  public boolean applyMessageRedaction(
       Context context,
       TargetRef ref,
       String targetMessageId,
@@ -66,8 +67,8 @@ final class ChatTranscriptMessageMutationFlowSupport {
         .applyMessageRedaction(
             ref,
             doc,
-            state == null ? null : state.messageCatalog,
-            state == null ? null : state.reactionSummary,
+            state == null ? null : state.messageCatalog(),
+            state == null ? null : state.reactionSummary(),
             targetMessageId,
             fromNick,
             tsEpochMs,

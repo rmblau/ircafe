@@ -1,11 +1,14 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.message;
 
-import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptMessageMetadataSupport.normalizeMessageId;
+import static cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageMetadataSupport.normalizeMessageId;
 
 import cafe.woden.ircclient.model.LogDirection;
 import cafe.woden.ircclient.model.LogKind;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTimestampFormatter;
+import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
@@ -13,18 +16,18 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyledDocument;
 
-final class ChatTranscriptReplyContextSupport {
+public final class ChatTranscriptReplyContextSupport {
 
   @FunctionalInterface
-  interface TranscriptFromRenderer {
+  public interface TranscriptFromRenderer {
     String render(TargetRef ref, String fromNick);
   }
 
-  record Context(
+  public record Context(
       ChatStyles styles,
       ChatTimestampFormatter timestamps,
       TranscriptFromRenderer transcriptFromRenderer) {
-    Context {
+    public Context {
       Objects.requireNonNull(styles, "styles");
       Objects.requireNonNull(transcriptFromRenderer, "transcriptFromRenderer");
     }
@@ -32,7 +35,7 @@ final class ChatTranscriptReplyContextSupport {
 
   private ChatTranscriptReplyContextSupport() {}
 
-  static void appendReplyContextLine(
+  public static void appendReplyContextLine(
       Context context,
       StyledDocument doc,
       TargetRef ref,

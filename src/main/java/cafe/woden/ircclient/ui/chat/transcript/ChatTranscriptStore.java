@@ -1,12 +1,8 @@
 package cafe.woden.ircclient.ui.chat.transcript;
 
-import cafe.woden.ircclient.ui.chat.transcript.style.ChatTranscriptColorSupport;
-import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptMessageMetadataSupport.normalizeMessageId;
-
 import cafe.woden.ircclient.app.api.ChatTranscriptHistoryPort;
 import cafe.woden.ircclient.app.api.PresenceEvent;
 import cafe.woden.ircclient.irc.roster.UserListPort;
-import cafe.woden.ircclient.model.FilterAction;
 import cafe.woden.ircclient.model.LogDirection;
 import cafe.woden.ircclient.model.LogKind;
 import cafe.woden.ircclient.model.TargetRef;
@@ -18,28 +14,46 @@ import cafe.woden.ircclient.ui.chat.embed.ChatLinkPreviewEmbedder;
 import cafe.woden.ircclient.ui.chat.fold.HistoryDividerComponent;
 import cafe.woden.ircclient.ui.chat.fold.LoadOlderMessagesComponent;
 import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
+import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilterRoutingSupport;
+import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredLinesSupport;
+import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredRunSupport;
+import cafe.woden.ircclient.ui.chat.transcript.flow.ChatTranscriptFilteredFlowCoordinator;
+import cafe.woden.ircclient.ui.chat.transcript.flow.ChatTranscriptMessageInteractionCoordinator;
+import cafe.woden.ircclient.ui.chat.transcript.flow.ChatTranscriptMessageLineCoordinator;
+import cafe.woden.ircclient.ui.chat.transcript.flow.ChatTranscriptPlainSpoilerCoordinator;
+import cafe.woden.ircclient.ui.chat.transcript.flow.ChatTranscriptReplyFlowCoordinator;
+import cafe.woden.ircclient.ui.chat.transcript.flow.ChatTranscriptRuntimeFlowCoordinator;
+import cafe.woden.ircclient.ui.chat.transcript.flow.ChatTranscriptSpoilerFlowSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptAuxiliaryRowsSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptDocumentLineSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPlainAppendSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPresenceFoldSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMatrixDisplayNameCoordinator;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageStateSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReactionSummarySupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReplyContextSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptSenderStyleSupport;
+import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptLineCapSupport;
+import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRestyleSupport;
+import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeSettingsSupport;
+import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptTargetRuntimeCoordinator;
+import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptSpoilerAppendSupport;
+import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptSpoilerComponentSupport;
+import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptSpoilerHistoryInsertSupport;
+import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptSpoilerRevealSupport;
+import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptSpoilerRuntimeSupport;
+import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptSpoilerWriteSupport;
+import cafe.woden.ircclient.ui.chat.transcript.style.ChatTranscriptStyleRoutingSupport;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
-import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
-import cafe.woden.ircclient.ui.util.EmojiFontSupport;
 import jakarta.annotation.PreDestroy;
-import java.awt.Color;
-import java.awt.Font;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.OptionalLong;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.text.AttributeSet;
-import javax.swing.text.DefaultStyledDocument;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
 import org.jmolecules.architecture.layered.InterfaceLayer;
@@ -57,72 +71,18 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
   private static final int REPLY_PREVIEW_TEXT_MAX_CHARS = 120;
   private static final String REDACTED_MESSAGE_PLACEHOLDER = "[message redacted]";
 
-  private final ChatStyles styles;
-
-  private final UiSettingsBus uiSettings;
   private final NickColorSettingsBus nickColorSettings;
 
-  private final ChatTranscriptRuntimeSettingsSupport runtimeSettingsSupport;
-  private final ChatTranscriptLineCapSupport lineCapSupport;
-  private final ChatTranscriptFilterRoutingSupport filterRoutingSupport;
-  private final ChatTranscriptFilteredFlowSupport filteredFlowSupport = new ChatTranscriptFilteredFlowSupport();
-  private final ChatTranscriptFilteredRunSupport.Context filteredRunSupportContext;
-  private final ChatTranscriptFilteredLinesSupport filteredLinesSupport;
-  private final ChatTranscriptDocumentLineSupport documentLineSupport;
-  private final ChatTranscriptPresenceFoldSupport presenceFoldSupport;
-  private final ChatTranscriptMatrixDisplayNameSupport.Context matrixDisplayNameContext;
-  private final ChatTranscriptSpoilerComponentSupport.Context spoilerComponentSupportContext;
-  private final ChatTranscriptSpoilerWriteSupport.Context spoilerWriteSupportContext;
-  private final ChatTranscriptSpoilerRevealSupport.Context spoilerRevealSupportContext;
-  private final ChatTranscriptSpoilerRuntimeSupport.Context spoilerRuntimeSupportContext;
-  private final ChatTranscriptSpoilerFlowSupport.Context spoilerFlowSupportContext;
-  private final ChatTranscriptSpoilerAppendSupport.Context spoilerAppendSupportContext;
-  private final ChatTranscriptSpoilerHistoryInsertSupport.Context
-      spoilerHistoryInsertSupportContext;
-  private final ChatTranscriptRestyleSupport.Context restyleSupportContext;
-  private final ChatTranscriptReplyContextSupport.Context replyContextSupportContext;
-  private final ChatTranscriptMessageStateSupport.Context messageStateSupportContext;
-  private final ChatTranscriptMessageCatalogSupport messageCatalogSupport;
-  private final ChatTranscriptMessageQuerySupport messageQuerySupport =
-      new ChatTranscriptMessageQuerySupport();
-  private final ChatTranscriptSenderStyleSupport.Context senderStyleSupportContext;
-  private final ChatTranscriptOutgoingChatSupport outgoingChatSupport;
-  private final ChatTranscriptSystemLineSupport systemLineSupport;
-  private final ChatTranscriptChatFlowSupport chatFlowSupport = new ChatTranscriptChatFlowSupport();
-  private final ChatTranscriptActionFlowSupport actionFlowSupport = new ChatTranscriptActionFlowSupport();
-  private final ChatTranscriptPresenceFlowSupport presenceFlowSupport;
-  private final ChatTranscriptActionAppendSupport.Context actionAppendSupportContext;
-  private final ChatTranscriptTextAppendSupport.Context textAppendSupportContext;
-  private final ChatTranscriptActionHistoryInsertSupport.Context actionHistoryInsertSupportContext;
-  private final ChatTranscriptTextInsertSupport.Context textInsertSupportContext;
-  private final ChatTranscriptAuxiliaryRowsSupport auxiliaryRowsSupport;
-  private final ChatTranscriptReactionSummarySupport reactionSummarySupport;
-  private final ChatTranscriptReactionFlowSupport reactionFlowSupport =
-      new ChatTranscriptReactionFlowSupport();
-  private final ChatTranscriptMessageReplacementSupport messageReplacementSupport;
-  private final ChatTranscriptMessageMutationSupport messageMutationSupport;
-  private final ChatTranscriptMessageMutationFlowSupport messageMutationFlowSupport =
-      new ChatTranscriptMessageMutationFlowSupport();
-  private final ChatTranscriptManualPreviewSupport manualPreviewSupport;
-  private final ChatTranscriptManualPreviewFlowSupport manualPreviewFlowSupport =
-      new ChatTranscriptManualPreviewFlowSupport();
-  private final ChatTranscriptLifecycleSupport lifecycleSupport = new ChatTranscriptLifecycleSupport();
+  private final ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator;
+  private final ChatTranscriptMatrixDisplayNameCoordinator matrixDisplayNameCoordinator;
+  private final ChatTranscriptReplyFlowCoordinator replyFlowCoordinator;
+  private final ChatTranscriptMessageInteractionCoordinator messageInteractionCoordinator;
+  private final ChatTranscriptMessageLineCoordinator messageLineCoordinator;
+  private final ChatTranscriptPlainSpoilerCoordinator plainSpoilerCoordinator;
+  private final ChatTranscriptRuntimeFlowCoordinator runtimeFlowCoordinator;
+  private final ChatTranscriptTargetRuntimeCoordinator targetRuntimeCoordinator;
 
   private final PropertyChangeListener nickColorSettingsListener = this::onNickColorSettingsChanged;
-
-  private final Map<TargetRef, StyledDocument> docs = new HashMap<>();
-  private final Map<TargetRef, ChatTranscriptState> stateByTarget = new HashMap<>();
-  private final ChatTranscriptMessageQuerySupport.Context messageQuerySupportContext;
-  private final ChatTranscriptReactionFlowSupport.Context reactionFlowSupportContext;
-  private final ChatTranscriptMessageMutationFlowSupport.Context
-      messageMutationFlowSupportContext;
-  private final ChatTranscriptManualPreviewFlowSupport.Context manualPreviewFlowSupportContext;
-  private final ChatTranscriptChatFlowSupport.Context chatFlowSupportContext;
-  private final ChatTranscriptActionFlowSupport.Context actionFlowSupportContext;
-  private final ChatTranscriptPresenceFlowSupport.Context presenceFlowSupportContext;
-  private final ChatTranscriptFilteredFlowSupport.Context filteredFlowSupportContext;
-  private final ChatTranscriptLifecycleSupport.Context lifecycleSupportContext;
-  private final ChatTranscriptRestyleCoordinator restyleCoordinator;
 
   @FunctionalInterface
   public interface ReactionChipActionHandler {
@@ -141,202 +101,145 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
       UiSettingsBus uiSettings,
       FilterEngine filterEngine,
       UserListPort userListStore) {
-    this.styles = styles;
 
     this.nickColorSettings = nickColorSettings;
-    this.uiSettings = uiSettings;
-    this.runtimeSettingsSupport = new ChatTranscriptRuntimeSettingsSupport(uiSettings, styles);
-    this.lineCapSupport =
+    this.runtimeFlowCoordinator = new ChatTranscriptRuntimeFlowCoordinator(this, styles);
+
+    ChatTranscriptRuntimeSettingsSupport runtimeSettingsSupport =
+        new ChatTranscriptRuntimeSettingsSupport(uiSettings, styles);
+    ChatTranscriptStyleRoutingSupport styleRoutingSupport =
+        new ChatTranscriptStyleRoutingSupport(
+            styles,
+            runtimeSettingsSupport::safeSettings,
+            runtimeSettingsSupport::configuredOutgoingLineColor);
+    ChatTranscriptLineCapSupport lineCapSupport =
         new ChatTranscriptLineCapSupport(
             runtimeSettingsSupport::transcriptMaxLinesPerTarget,
-            this::resetStateAfterHeadTrim,
-            ref -> maybeRenderPendingReadMarker(ref, null));
-    this.filterRoutingSupport =
-        new ChatTranscriptFilterRoutingSupport(
-            filterEngine,
-            this::onFilteredLineAppend,
-            this::onFilteredLineInsertAt,
-            this::endFilteredInsertRun,
-            this::breakPresenceRun);
+            runtimeFlowCoordinator::resetAfterHeadTrim,
+            ref -> runtimeFlowCoordinator.maybeRenderPendingReadMarker(ref, null));
+    ChatTranscriptRestyleSupport.Context restyleSupportContext =
+        new ChatTranscriptRestyleSupport.Context(
+            styles, nickColors, styleRoutingSupport::applyFilterActionStyle);
+    ChatTranscriptMessageStateSupport.Context messageStateSupportContext =
+        new ChatTranscriptMessageStateSupport.Context(
+            REPLY_PREVIEW_TEXT_MAX_CHARS, REDACTED_MESSAGE_PLACEHOLDER, System::currentTimeMillis);
+    ChatTranscriptMessageCatalogSupport messageCatalogSupport =
+        new ChatTranscriptMessageCatalogSupport(messageStateSupportContext);
+    this.targetRuntimeCoordinator =
+        new ChatTranscriptTargetRuntimeCoordinator(
+            () ->
+                messageCatalogSupport.createState(
+                    REPLY_PREVIEW_CACHE_LIMIT_PER_TARGET, REDACTED_MESSAGE_CACHE_LIMIT_PER_TARGET),
+            this,
+            180,
+            restyleSupportContext,
+            runtimeSettingsSupport::safeSettings,
+            runtimeSettingsSupport::configuredOutgoingLineColor);
 
-    this.filteredRunSupportContext =
+    ChatTranscriptFilteredRunSupport.Context filteredRunSupportContext =
         new ChatTranscriptFilteredRunSupport.Context(styles, ChatTranscriptLineMetaSupport::bind);
-    this.documentLineSupport = new ChatTranscriptDocumentLineSupport(styles);
-    this.filteredLinesSupport =
+    ChatTranscriptDocumentLineSupport documentLineSupport =
+        new ChatTranscriptDocumentLineSupport(styles);
+    ChatTranscriptFilteredLinesSupport filteredLinesSupport =
         new ChatTranscriptFilteredLinesSupport(
             styles,
             filteredRunSupportContext,
-            this::safeTranscriptFont,
+            styleRoutingSupport::safeTranscriptFont,
             ChatTranscriptLineMetaSupport::bind,
             documentLineSupport::ensureAtLineStart,
             documentLineSupport::normalizeInsertAtLineStart,
             documentLineSupport::ensureAtLineStartForInsert,
-            this::breakPresenceRun,
-            this::shiftCurrentPresenceBlock,
+            runtimeFlowCoordinator::breakPresenceRun,
+            runtimeFlowCoordinator::shiftCurrentBlock,
             lineCapSupport::enforceTranscriptLineCap);
-    this.filteredFlowSupportContext =
-        new ChatTranscriptFilteredFlowSupport.Context(
-            filteredLinesSupport,
-            filterRoutingSupport,
-            docs,
-            stateByTarget,
-            this::ensureTargetExists,
-            this::noteEpochMs,
-            () -> {
-              UiSettings settings = uiSettings != null ? uiSettings.get() : null;
-              return settings != null && settings.chatHistoryDeferRichTextDuringBatch();
-            });
-    this.presenceFoldSupport =
+    this.filteredFlowCoordinator = new ChatTranscriptFilteredFlowCoordinator(filteredLinesSupport);
+    ChatTranscriptFilterRoutingSupport filterRoutingSupport =
+        new ChatTranscriptFilterRoutingSupport(
+            filterEngine,
+            filteredFlowCoordinator::onFilteredLineAppend,
+            filteredFlowCoordinator::onFilteredLineInsertAt,
+            filteredFlowCoordinator::endInsertRun,
+            runtimeFlowCoordinator::breakPresenceRun);
+    filteredFlowCoordinator.bindContext(
+        filterRoutingSupport,
+        targetRuntimeCoordinator.docs(),
+        targetRuntimeCoordinator.stateByTarget(),
+        targetRuntimeCoordinator::ensureTargetExists,
+        targetRuntimeCoordinator::noteEpochMs,
+        runtimeSettingsSupport::chatHistoryDeferRichTextDuringBatch);
+    ChatTranscriptPresenceFoldSupport presenceFoldSupport =
         new ChatTranscriptPresenceFoldSupport(
             styles,
             renderer,
             ts,
             ChatTranscriptLineMetaSupport::bind,
             ChatTranscriptLineMetaSupport::withExistingMeta,
-            this::withFilterMatch,
+            styleRoutingSupport::withFilterMatch,
             documentLineSupport::ensureAtLineStart,
             lineCapSupport::enforceTranscriptLineCap);
-    this.matrixDisplayNameContext =
-        new ChatTranscriptMatrixDisplayNameSupport.Context(uiSettings, userListStore, docs::get);
-    this.spoilerComponentSupportContext =
+    this.matrixDisplayNameCoordinator =
+        new ChatTranscriptMatrixDisplayNameCoordinator(
+            uiSettings, userListStore, targetRuntimeCoordinator.docs());
+    ChatTranscriptSpoilerComponentSupport.Context spoilerComponentSupportContext =
         new ChatTranscriptSpoilerComponentSupport.Context(
-            uiSettings,
-            nickColors,
-            (ref, fromNick) ->
-                ChatTranscriptMatrixDisplayNameSupport.renderTranscriptFrom(
-                    matrixDisplayNameContext, ref, fromNick));
-    this.spoilerWriteSupportContext =
+            uiSettings, nickColors, matrixDisplayNameCoordinator::renderTranscriptFrom);
+    ChatTranscriptSpoilerWriteSupport.Context spoilerWriteSupportContext =
         new ChatTranscriptSpoilerWriteSupport.Context(
-            styles, spoilerComponentSupportContext, this::withFilterMatch);
-    this.spoilerRevealSupportContext =
+            styles, spoilerComponentSupportContext, styleRoutingSupport::withFilterMatch);
+    ChatTranscriptSpoilerRevealSupport.Context spoilerRevealSupportContext =
         new ChatTranscriptSpoilerRevealSupport.Context(
-            styles,
-            renderer,
-            nickColors,
-            (ref, fromNick) ->
-                ChatTranscriptMatrixDisplayNameSupport.renderTranscriptFrom(
-                    matrixDisplayNameContext, ref, fromNick));
-    this.spoilerRuntimeSupportContext =
+            styles, renderer, nickColors, matrixDisplayNameCoordinator::renderTranscriptFrom);
+    ChatTranscriptSpoilerRuntimeSupport.Context spoilerRuntimeSupportContext =
         new ChatTranscriptSpoilerRuntimeSupport.Context(
-            ts, runtimeSettingsSupport::timestampsIncludeChatMessages, spoilerRevealSupportContext, this);
-    this.spoilerAppendSupportContext =
+            ts,
+            runtimeSettingsSupport::timestampsIncludeChatMessages,
+            spoilerRevealSupportContext,
+            this);
+    ChatTranscriptSpoilerAppendSupport.Context spoilerAppendSupportContext =
         new ChatTranscriptSpoilerAppendSupport.Context(
             styles,
             spoilerWriteSupportContext,
             documentLineSupport::ensureAtLineStart,
             lineCapSupport::enforceTranscriptLineCap);
-    this.spoilerHistoryInsertSupportContext =
+    ChatTranscriptSpoilerHistoryInsertSupport.Context spoilerHistoryInsertSupportContext =
         new ChatTranscriptSpoilerHistoryInsertSupport.Context(
             spoilerWriteSupportContext,
             documentLineSupport::normalizeInsertAtLineStart,
             documentLineSupport::ensureAtLineStartForInsert,
-            this::shiftCurrentPresenceBlock,
+            runtimeFlowCoordinator::shiftCurrentBlock,
             lineCapSupport::enforceTranscriptLineCap);
-    this.spoilerFlowSupportContext =
+    ChatTranscriptSpoilerFlowSupport.Context spoilerFlowSupportContext =
         new ChatTranscriptSpoilerFlowSupport.Context(
+            targetRuntimeCoordinator.docs(),
+            targetRuntimeCoordinator::ensureTargetExists,
+            targetRuntimeCoordinator::noteEpochMs,
             filterRoutingSupport,
             spoilerRuntimeSupportContext,
             spoilerAppendSupportContext,
             spoilerHistoryInsertSupportContext,
-            this::endFilteredInsertRun);
-    this.restyleSupportContext =
-        new ChatTranscriptRestyleSupport.Context(styles, nickColors, this::applyFilterActionStyle);
-    this.replyContextSupportContext =
+            filteredFlowCoordinator::endInsertRun);
+    ChatTranscriptReplyContextSupport.Context replyContextSupportContext =
         new ChatTranscriptReplyContextSupport.Context(
-            styles,
-            ts,
-            (ref, fromNick) ->
-                ChatTranscriptMatrixDisplayNameSupport.renderTranscriptFrom(
-                    matrixDisplayNameContext, ref, fromNick));
-    this.messageStateSupportContext =
-        new ChatTranscriptMessageStateSupport.Context(
-            REPLY_PREVIEW_TEXT_MAX_CHARS, REDACTED_MESSAGE_PLACEHOLDER, System::currentTimeMillis);
-    this.messageCatalogSupport =
-        new ChatTranscriptMessageCatalogSupport(messageStateSupportContext);
-    this.senderStyleSupportContext =
+            styles, ts, matrixDisplayNameCoordinator::renderTranscriptFrom);
+    this.replyFlowCoordinator =
+        new ChatTranscriptReplyFlowCoordinator(
+            targetRuntimeCoordinator.docs(),
+            targetRuntimeCoordinator.stateByTarget(),
+            targetRuntimeCoordinator::ensureTargetExists,
+            documentLineSupport,
+            replyContextSupportContext,
+            messageCatalogSupport);
+    ChatTranscriptSenderStyleSupport.Context senderStyleSupportContext =
         new ChatTranscriptSenderStyleSupport.Context(
             styles,
             nickColors,
             ChatTranscriptLineMetaSupport::bind,
-            this::applyOutgoingLineColor,
-            this::applyNotificationRuleHighlightColor);
-    this.manualPreviewSupport =
-        new ChatTranscriptManualPreviewSupport(styles, imageEmbeds, linkPreviews);
-    this.outgoingChatSupport =
-        new ChatTranscriptOutgoingChatSupport(
-            styles,
-            senderStyleSupportContext,
-            this::ensureTargetExists,
-            this::noteEpochMs,
-            this::breakPresenceRun,
-            (ref, from, text, fromStyle, messageStyle, meta, tailComponent, tailAttrs) ->
-                appendLineInternal(
-                    ref, from, text, fromStyle, messageStyle, true, meta, tailComponent, tailAttrs),
-            (ref, insertAt, from, text, fromStyle, messageStyle, meta) ->
-                insertLineInternalAt(ref, insertAt, from, text, fromStyle, messageStyle, meta),
-            this::insertConfirmedDot);
-    this.actionAppendSupportContext =
-        new ChatTranscriptActionAppendSupport.Context(
-            styles,
-            senderStyleSupportContext,
-            ts,
-            renderer,
-            manualPreviewSupport,
-            messageCatalogSupport,
-            (ref, fromNick) ->
-                ChatTranscriptMatrixDisplayNameSupport.renderTranscriptFrom(
-                    matrixDisplayNameContext, ref, fromNick),
-            this::withFilterMatch,
-            documentLineSupport::ensureAtLineStart,
-            lineCapSupport::enforceTranscriptLineCap,
-            this::maybeRenderPendingReadMarker);
-    this.textAppendSupportContext =
-        new ChatTranscriptTextAppendSupport.Context(
-            styles,
-            ts,
-            renderer,
-            messageCatalogSupport,
-            manualPreviewSupport,
-            (ref, fromNick) ->
-                ChatTranscriptMatrixDisplayNameSupport.renderTranscriptFrom(
-                    matrixDisplayNameContext, ref, fromNick),
-            this::withFilterMatch,
-            lineCapSupport::enforceTranscriptLineCap,
-            this::maybeRenderPendingReadMarker);
-    this.actionHistoryInsertSupportContext =
-        new ChatTranscriptActionHistoryInsertSupport.Context(
-            styles,
-            senderStyleSupportContext,
-            ts,
-            renderer,
-            messageCatalogSupport,
-            (ref, fromNick) ->
-                ChatTranscriptMatrixDisplayNameSupport.renderTranscriptFrom(
-                    matrixDisplayNameContext, ref, fromNick),
-            this::withFilterMatch,
-            documentLineSupport::normalizeInsertAtLineStart,
-            documentLineSupport::ensureAtLineStartForInsert,
-            this::shiftCurrentPresenceBlock,
-            lineCapSupport::enforceTranscriptLineCap,
-            this::maybeRenderPendingReadMarker);
-    this.textInsertSupportContext =
-        new ChatTranscriptTextInsertSupport.Context(
-            styles,
-            ts,
-            renderer,
-            messageCatalogSupport,
-            (ref, fromNick) ->
-                ChatTranscriptMatrixDisplayNameSupport.renderTranscriptFrom(
-                    matrixDisplayNameContext, ref, fromNick),
-            this::withFilterMatch,
-            documentLineSupport::normalizeInsertAtLineStart,
-            documentLineSupport::ensureAtLineStartForInsert,
-            this::shiftCurrentPresenceBlock,
-            lineCapSupport::enforceTranscriptLineCap);
-    this.auxiliaryRowsSupport =
+            styleRoutingSupport::applyOutgoingLineColor,
+            styleRoutingSupport::applyNotificationRuleHighlightColor);
+    ChatTranscriptAuxiliaryRowsSupport auxiliaryRowsSupport =
         new ChatTranscriptAuxiliaryRowsSupport(
             styles,
-            this::safeTranscriptFont,
+            styleRoutingSupport::safeTranscriptFont,
             (ref, epochMs) ->
                 ChatTranscriptLineMetaSupport.create(
                     ref, LogKind.STATUS, LogDirection.SYSTEM, null, epochMs, null),
@@ -345,11 +248,11 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
             ChatTranscriptLineMetaSupport::withExistingMeta,
             documentLineSupport::normalizeInsertAtLineStart,
             documentLineSupport::ensureAtLineStartForInsert,
-            this::shiftCurrentPresenceBlock);
-    this.reactionSummarySupport =
+            runtimeFlowCoordinator::shiftCurrentBlock);
+    ChatTranscriptReactionSummarySupport reactionSummarySupport =
         new ChatTranscriptReactionSummarySupport(
             styles,
-            this::safeTranscriptFont,
+            styleRoutingSupport::safeTranscriptFont,
             (ref, epochMs, targetMessageId) ->
                 ChatTranscriptLineMetaSupport.create(
                     ref,
@@ -364,150 +267,84 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
             ChatTranscriptLineMetaSupport::withAuxiliaryRowKind,
             documentLineSupport::normalizeInsertAtLineStart,
             documentLineSupport::ensureAtLineStartForInsert,
-            this::shiftCurrentPresenceBlock);
-    this.messageQuerySupportContext =
-        new ChatTranscriptMessageQuerySupport.Context(docs, stateByTarget, messageCatalogSupport);
-    this.reactionFlowSupportContext =
-        new ChatTranscriptReactionFlowSupport.Context(
-            docs, stateByTarget, this::ensureTargetExists, reactionSummarySupport);
-    this.manualPreviewFlowSupportContext =
-        new ChatTranscriptManualPreviewFlowSupport.Context(
-            docs,
-            this::ensureTargetExists,
-            manualPreviewSupport,
-            this::shiftCurrentPresenceBlock,
-            lineCapSupport);
-    this.chatFlowSupportContext =
-        new ChatTranscriptChatFlowSupport.Context(
-            filterRoutingSupport,
-            senderStyleSupportContext,
-            outgoingChatSupport,
-            reactionSummarySupport,
-            docs::get,
-            stateByTarget::get,
-            this::ensureTargetExists,
-            this::noteEpochMs,
-            (ref, from, text, fromStyle, msgStyle, allowEmbeds, meta) ->
-                appendLineInternal(ref, from, text, fromStyle, msgStyle, allowEmbeds, meta),
-            this::insertLineInternalAt,
-            this::appendReplyContextLine,
-            runtimeSettingsSupport::outgoingDeliveryIndicatorsEnabled);
-    this.actionFlowSupportContext =
-        new ChatTranscriptActionFlowSupport.Context(
-            filterRoutingSupport,
-            actionAppendSupportContext,
-            actionHistoryInsertSupportContext,
-            reactionSummarySupport,
-            docs::get,
-            stateByTarget::get,
-            this::ensureTargetExists,
-            this::noteEpochMs,
-            this::appendReplyContextLine,
-            this::endFilteredInsertRun,
-            this::shouldDeferRichTextDuringHistoryBatch,
-            runtimeSettingsSupport::timestampsIncludeChatMessages,
-            () -> uiSettings != null && uiSettings.get().imageEmbedsEnabled(),
-            () -> uiSettings != null && uiSettings.get().linkPreviewsEnabled());
-    this.systemLineSupport =
-        new ChatTranscriptSystemLineSupport(
-            filterRoutingSupport,
-            this::ensureTargetExists,
-            this::noteEpochMs,
-            this::appendLineInternal,
-            this::insertLineInternalAt,
-            this::appendReplyContextLine,
-            docs::get,
-            stateByTarget::get,
-            reactionSummarySupport,
-            ref ->
-                new ChatTranscriptSystemLineSupport.LineStyles(
-                    styles.noticeFrom(), styles.noticeMessage()),
-            ref ->
-                new ChatTranscriptSystemLineSupport.LineStyles(
-                    statusFromStyleFor(ref), styles.status()),
-            ref ->
-                new ChatTranscriptSystemLineSupport.LineStyles(
-                    errorFromStyleFor(ref), styles.error()),
-            System::currentTimeMillis);
-    this.presenceFlowSupport = new ChatTranscriptPresenceFlowSupport(styles);
-    this.presenceFlowSupportContext =
-        new ChatTranscriptPresenceFlowSupport.Context(
-            filterRoutingSupport,
-            presenceFoldSupport,
-            filteredLinesSupport,
+            runtimeFlowCoordinator::shiftCurrentBlock);
+    this.messageLineCoordinator =
+        new ChatTranscriptMessageLineCoordinator(
+            this,
+            styles,
+            ts,
+            renderer,
+            imageEmbeds,
+            linkPreviews,
+            styleRoutingSupport,
             runtimeSettingsSupport,
-            docs,
-            stateByTarget,
-            this::ensureTargetExists,
-            this::noteEpochMs,
-            this::appendLineInternal,
-            this::insertLineInternalAt,
-            System::currentTimeMillis);
-    this.lifecycleSupportContext =
-        new ChatTranscriptLifecycleSupport.Context(
-            docs,
-            stateByTarget,
-            this::newTranscriptState,
-            auxiliaryRowsSupport,
-            this::ensureTargetExists,
-            this::endFilteredRun);
-    this.messageReplacementSupport =
-        new ChatTranscriptMessageReplacementSupport(
-            messageCatalogSupport,
+            filterRoutingSupport,
+            documentLineSupport,
+            lineCapSupport,
+            runtimeFlowCoordinator,
             senderStyleSupportContext,
-            (ref, kind, direction, fromNick, epochMs, messageId, ircv3Tags) ->
-                ChatTranscriptLineMetaSupport.create(
-                    ref, kind, direction, fromNick, epochMs, null, messageId, ircv3Tags),
-            (ref, fromNick) ->
-                ChatTranscriptMatrixDisplayNameSupport.renderTranscriptFrom(
-                    matrixDisplayNameContext, ref, fromNick),
-            (ref, insertAt, from, action, outgoingLocalEcho, meta) -> {
-              ensureTargetExists(ref);
-              StyledDocument doc = docs.get(ref);
-              noteEpochMs(ref, meta != null ? meta.epochMs() : null);
-              if (doc == null) {
-                return;
-              }
-              long tsEpochMs =
-                  meta != null && meta.epochMs() != null && meta.epochMs() > 0
-                      ? meta.epochMs()
-                      : System.currentTimeMillis();
-              ChatTranscriptActionHistoryInsertSupport.insertVisibleAction(
-                  actionHistoryInsertSupportContext,
-                  ref,
-                  doc,
-                  null,
-                  insertAt,
-                  from,
-                  action,
-                  outgoingLocalEcho,
-                  tsEpochMs,
-                  meta,
-                  null,
-                  runtimeSettingsSupport.timestampsIncludeChatMessages(),
-                  false,
-                  false,
-                  false);
-            },
-            (ref, insertAt, from, text, fromStyle, messageStyle, meta) ->
-                insertLineInternalAt(ref, insertAt, from, text, fromStyle, messageStyle, meta),
-            this::noteEpochMs);
-    this.messageMutationSupport =
-        new ChatTranscriptMessageMutationSupport(
             messageCatalogSupport,
-            messageReplacementSupport,
             reactionSummarySupport,
+            targetRuntimeCoordinator.docs(),
+            targetRuntimeCoordinator.stateByTarget(),
+            targetRuntimeCoordinator::ensureTargetExists,
+            targetRuntimeCoordinator::noteEpochMs,
+            replyFlowCoordinator::appendReplyContextLine,
+            matrixDisplayNameCoordinator::renderTranscriptFrom,
+            filteredFlowCoordinator::endInsertRun,
+            filteredFlowCoordinator::shouldDeferRichTextDuringHistoryBatch);
+    this.messageInteractionCoordinator =
+        new ChatTranscriptMessageInteractionCoordinator(
+            targetRuntimeCoordinator.docs(),
+            targetRuntimeCoordinator.stateByTarget(),
+            targetRuntimeCoordinator::ensureTargetExists,
+            targetRuntimeCoordinator::noteEpochMs,
+            messageCatalogSupport,
+            reactionSummarySupport,
+            senderStyleSupportContext,
+            matrixDisplayNameCoordinator::renderTranscriptFrom,
+            messageLineCoordinator::insertReplacementAction,
+            (ref, insertAt, from, text, fromStyle, messageStyle, meta) ->
+                runtimeFlowCoordinator.insertLineAt(
+                    ref, insertAt, from, text, fromStyle, messageStyle, meta),
             REDACTED_MESSAGE_PLACEHOLDER);
-    this.messageMutationFlowSupportContext =
-        new ChatTranscriptMessageMutationFlowSupport.Context(
-            docs, stateByTarget, this::ensureTargetExists, messageMutationSupport);
-    this.restyleCoordinator =
-        new ChatTranscriptRestyleCoordinator(
-            180,
-            restyleSupportContext,
-            runtimeSettingsSupport::safeSettings,
-            runtimeSettingsSupport::configuredOutgoingLineColor,
-            this::snapshotDocumentsForRestyle);
+    runtimeFlowCoordinator.bindPresenceContext(
+        presenceFoldSupport,
+        filterRoutingSupport,
+        filteredFlowCoordinator.filteredLinesSupport(),
+        runtimeSettingsSupport,
+        targetRuntimeCoordinator.docs(),
+        targetRuntimeCoordinator.stateByTarget(),
+        targetRuntimeCoordinator::ensureTargetExists,
+        targetRuntimeCoordinator::noteEpochMs,
+        System::currentTimeMillis);
+    ChatTranscriptPlainAppendSupport.Context plainAppendSupportContext =
+        new ChatTranscriptPlainAppendSupport.Context(
+            targetRuntimeCoordinator.docs(),
+            styles,
+            targetRuntimeCoordinator::ensureTargetExists,
+            runtimeFlowCoordinator::breakPresenceRun,
+            lineCapSupport::enforceTranscriptLineCap);
+    this.plainSpoilerCoordinator =
+        new ChatTranscriptPlainSpoilerCoordinator(
+            plainAppendSupportContext, spoilerFlowSupportContext);
+    runtimeFlowCoordinator.bindLineLifecycleContexts(
+        targetRuntimeCoordinator.docs(),
+        targetRuntimeCoordinator.stateByTarget(),
+        targetRuntimeCoordinator::ensureTargetExists,
+        targetRuntimeCoordinator::noteEpochMs,
+        filterRoutingSupport,
+        filteredFlowCoordinator::endInsertRun,
+        filteredFlowCoordinator::shouldDeferRichTextDuringHistoryBatch,
+        documentLineSupport,
+        messageLineCoordinator.textAppendSupportContext(),
+        messageLineCoordinator.textInsertSupportContext(),
+        runtimeSettingsSupport,
+        runtimeSettingsSupport::imageEmbedsEnabled,
+        runtimeSettingsSupport::linkPreviewsEnabled,
+        targetRuntimeCoordinator::newTranscriptState,
+        auxiliaryRowsSupport,
+        filteredFlowCoordinator::endAppendRun);
 
     if (this.nickColorSettings != null) {
       this.nickColorSettings.addListener(nickColorSettingsListener);
@@ -530,105 +367,11 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
       String redactedBy,
       Long redactedAtEpochMs) {}
 
-  record MessageContentSnapshot(LogKind kind, String fromNick, String renderedText, Long epochMs) {}
-
-  private SimpleAttributeSet withFilterMatch(AttributeSet base, FilterEngine.Match match) {
-    SimpleAttributeSet out = new SimpleAttributeSet(base);
-    if (match == null || match.action() == null) return out;
-
-    if (match.ruleId() != null) {
-      out.addAttribute(ChatStyles.ATTR_META_FILTER_RULE_ID, match.ruleId().toString());
-    }
-    String ruleName = Objects.toString(match.ruleName(), "").trim();
-    if (!ruleName.isEmpty()) {
-      out.addAttribute(ChatStyles.ATTR_META_FILTER_RULE_NAME, ruleName);
-    }
-    out.addAttribute(
-        ChatStyles.ATTR_META_FILTER_ACTION, match.action().name().toLowerCase(Locale.ROOT));
-
-    applyFilterActionStyle(out, match.action());
-    return out;
-  }
-
-  private void applyFilterActionStyle(SimpleAttributeSet attrs, FilterAction action) {
-    if (attrs == null || action == null) return;
-
-    switch (action) {
-      case HIDE -> {
-        // HIDE actions are rendered via placeholders; no visible style override.
-      }
-      case DIM -> {
-        Color muted = UIManager.getColor("Label.disabledForeground");
-        if (muted == null) muted = UIManager.getColor("Component.disabledForeground");
-        if (muted != null) {
-          StyleConstants.setForeground(attrs, muted);
-        }
-        StyleConstants.setItalic(attrs, true);
-      }
-      case HIGHLIGHT -> {
-        AttributeSet mention = styles.mention();
-        Color mentionFg = StyleConstants.getForeground(mention);
-        Color mentionBg = StyleConstants.getBackground(mention);
-        if (mentionFg != null) {
-          StyleConstants.setForeground(attrs, mentionFg);
-        }
-        if (mentionBg != null) {
-          StyleConstants.setBackground(attrs, mentionBg);
-        }
-        StyleConstants.setBold(attrs, true);
-      }
-    }
-  }
+  public record MessageContentSnapshot(
+      LogKind kind, String fromNick, String renderedText, Long epochMs) {}
 
   public synchronized void ensureTargetExists(TargetRef ref) {
-    docs.computeIfAbsent(ref, r -> new DefaultStyledDocument());
-    stateByTarget.computeIfAbsent(ref, r -> newTranscriptState());
-  }
-
-  private ChatTranscriptState newTranscriptState() {
-    return new ChatTranscriptState(
-        messageCatalogSupport.createState(
-            REPLY_PREVIEW_CACHE_LIMIT_PER_TARGET, REDACTED_MESSAGE_CACHE_LIMIT_PER_TARGET),
-        new ChatTranscriptFilteredLinesSupport.State(),
-        new ChatTranscriptPresenceFoldSupport.State());
-  }
-
-  private void noteEpochMs(TargetRef ref, Long epochMs) {
-    if (ref == null || epochMs == null) return;
-    ChatTranscriptState st = stateByTarget.get(ref);
-    if (st == null) return;
-    Long cur = st.earliestEpochMsSeen;
-    if (cur == null || epochMs < cur) {
-      st.earliestEpochMsSeen = epochMs;
-    }
-  }
-
-  private void endFilteredRun(TargetRef ref) {
-    filteredFlowSupport.endAppendRun(filteredFlowSupportContext, ref);
-  }
-
-  private void endFilteredInsertRun(TargetRef ref) {
-    filteredFlowSupport.endInsertRun(filteredFlowSupportContext, ref);
-  }
-
-  private boolean shouldDeferRichTextDuringHistoryBatch(TargetRef ref) {
-    return filteredFlowSupport.shouldDeferRichTextDuringHistoryBatch(filteredFlowSupportContext, ref);
-  }
-
-  private void onFilteredLineAppend(
-      TargetRef ref, String previewText, LineMeta hiddenMeta, FilterEngine.Match match) {
-    filteredFlowSupport.onFilteredLineAppend(
-        filteredFlowSupportContext, ref, previewText, hiddenMeta, match);
-  }
-
-  private int onFilteredLineInsertAt(
-      TargetRef ref,
-      int insertAt,
-      String previewText,
-      LineMeta hiddenMeta,
-      FilterEngine.Match match) {
-    return filteredFlowSupport.onFilteredLineInsertAt(
-        filteredFlowSupportContext, ref, insertAt, previewText, hiddenMeta, match);
+    targetRuntimeCoordinator.ensureTargetExists(ref);
   }
 
   /**
@@ -645,8 +388,7 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
   }
 
   public synchronized void beginHistoryInsertBatch(TargetRef ref, boolean forceDeferRichText) {
-    filteredFlowSupport.beginHistoryInsertBatch(
-        filteredFlowSupportContext, ref, forceDeferRichText);
+    filteredFlowCoordinator.beginHistoryInsertBatch(ref, forceDeferRichText);
   }
 
   /**
@@ -656,7 +398,7 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
    * #beginHistoryInsertBatch(TargetRef)} before each subsequent batch.
    */
   public synchronized void endHistoryInsertBatch(TargetRef ref) {
-    filteredFlowSupport.endHistoryInsertBatch(filteredFlowSupportContext, ref);
+    filteredFlowCoordinator.endHistoryInsertBatch(ref);
   }
 
   /**
@@ -669,8 +411,7 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
    * @return number of sender-label runs updated
    */
   public synchronized int refreshMatrixDisplayNames(TargetRef ref) {
-    return ChatTranscriptMatrixDisplayNameSupport.refreshMatrixDisplayNames(
-        matrixDisplayNameContext, ref, "");
+    return matrixDisplayNameCoordinator.refreshMatrixDisplayNames(ref);
   }
 
   /**
@@ -681,60 +422,25 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
    */
   public synchronized int refreshMatrixDisplayNameAcrossServer(
       String serverId, String matrixUserId) {
-    String sid = Objects.toString(serverId, "").trim();
-    String userId = Objects.toString(matrixUserId, "").trim();
-    if (sid.isEmpty() || !ChatTranscriptMatrixDisplayNameSupport.looksLikeMatrixUserId(userId)) {
-      return 0;
-    }
-
-    int updated = 0;
-    ArrayList<TargetRef> refs = new ArrayList<>(docs.keySet());
-    for (TargetRef ref : refs) {
-      if (ref == null) continue;
-      if (!Objects.equals(ref.serverId(), sid)) continue;
-      updated +=
-          ChatTranscriptMatrixDisplayNameSupport.refreshMatrixDisplayNames(
-              matrixDisplayNameContext, ref, userId);
-    }
-    return updated;
-  }
-
-  private String previewForMessageId(ChatTranscriptState st, String messageId) {
-    return messageCatalogSupport.previewForMessageId(
-        st == null ? null : st.messageCatalog, messageId);
-  }
-
-  private Font safeTranscriptFont() {
-    try {
-      if (uiSettings != null && uiSettings.get() != null) {
-        UiSettings us = uiSettings.get();
-        Font preferred = new Font(us.chatFontFamily(), Font.PLAIN, us.chatFontSize());
-        return EmojiFontSupport.resolveTranscriptComponentFont(preferred);
-      }
-    } catch (Exception ignored) {
-    }
-    return null;
+    return matrixDisplayNameCoordinator.refreshMatrixDisplayNamesAcrossServer(
+        serverId, matrixUserId);
   }
 
   public synchronized StyledDocument document(TargetRef ref) {
-    ensureTargetExists(ref);
-    return docs.get(ref);
+    return targetRuntimeCoordinator.document(ref);
   }
 
   public synchronized OptionalLong earliestTimestampEpochMs(TargetRef ref) {
-    if (ref == null) return OptionalLong.empty();
-    ChatTranscriptState st = stateByTarget.get(ref);
-    if (st == null || st.earliestEpochMsSeen == null) return OptionalLong.empty();
-    return OptionalLong.of(st.earliestEpochMsSeen);
+    return targetRuntimeCoordinator.earliestTimestampEpochMs(ref);
   }
 
   public synchronized LoadOlderMessagesComponent ensureLoadOlderMessagesControl(TargetRef ref) {
-    return lifecycleSupport.ensureLoadOlderMessagesControl(lifecycleSupportContext, ref);
+    return runtimeFlowCoordinator.ensureLoadOlderMessagesControl(ref);
   }
 
   public synchronized HistoryDividerComponent ensureHistoryDivider(
       TargetRef ref, int insertAt, String labelText) {
-    return lifecycleSupport.ensureHistoryDivider(lifecycleSupportContext, ref, insertAt, labelText);
+    return runtimeFlowCoordinator.ensureHistoryDivider(ref, insertAt, labelText);
   }
 
   /**
@@ -742,70 +448,65 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
    * This is used when history is loaded into an otherwise-empty transcript.
    */
   public synchronized void markHistoryDividerPending(TargetRef ref, String labelText) {
-    lifecycleSupport.markHistoryDividerPending(lifecycleSupportContext, ref, labelText);
+    runtimeFlowCoordinator.markHistoryDividerPending(ref, labelText);
   }
 
   /** Returns true if there is content after the given offset in the transcript document. */
   public synchronized boolean hasContentAfterOffset(TargetRef ref, int offset) {
-    return lifecycleSupport.hasContentAfterOffset(lifecycleSupportContext, ref, offset);
-  }
-
-  private void flushPendingHistoryDividerIfNeeded(TargetRef ref, StyledDocument doc) {
-    lifecycleSupport.flushPendingHistoryDividerIfNeeded(lifecycleSupportContext, ref, doc);
+    return runtimeFlowCoordinator.hasContentAfterOffset(ref, offset);
   }
 
   public synchronized void updateReadMarker(TargetRef ref, long markerEpochMs) {
-    lifecycleSupport.updateReadMarker(lifecycleSupportContext, ref, markerEpochMs);
+    runtimeFlowCoordinator.updateReadMarker(ref, markerEpochMs);
   }
 
   public synchronized void clearReadMarker(TargetRef ref) {
-    lifecycleSupport.clearReadMarker(lifecycleSupportContext, ref);
+    runtimeFlowCoordinator.clearReadMarker(ref);
   }
 
   public synchronized void clearReadMarkersForServer(String serverId) {
-    lifecycleSupport.clearReadMarkersForServer(lifecycleSupportContext, serverId);
+    runtimeFlowCoordinator.clearReadMarkersForServer(serverId);
   }
 
   public synchronized int readMarkerJumpOffset(TargetRef ref) {
-    return lifecycleSupport.readMarkerJumpOffset(lifecycleSupportContext, ref);
+    return runtimeFlowCoordinator.readMarkerJumpOffset(ref);
   }
 
   public synchronized int messageOffsetById(TargetRef ref, String messageId) {
-    return messageQuerySupport.messageOffsetById(messageQuerySupportContext, ref, messageId);
+    return messageInteractionCoordinator.messageOffsetById(ref, messageId);
   }
 
   public synchronized String messagePreviewById(TargetRef ref, String messageId) {
-    return messageQuerySupport.messagePreviewById(messageQuerySupportContext, ref, messageId);
+    return messageInteractionCoordinator.messagePreviewById(ref, messageId);
   }
 
   public synchronized RedactedMessageContent redactedOriginalById(TargetRef ref, String messageId) {
-    return messageQuerySupport.redactedOriginalById(messageQuerySupportContext, ref, messageId);
+    return messageInteractionCoordinator.redactedOriginalById(ref, messageId);
   }
 
   public synchronized boolean hasReactionFromNick(
       TargetRef ref, String messageId, String reaction, String nick) {
-    return reactionFlowSupport.hasReactionFromNick(
-        reactionFlowSupportContext, ref, messageId, reaction, nick);
+    return messageInteractionCoordinator.hasReactionFromNick(ref, messageId, reaction, nick);
   }
 
   public synchronized void setReactionChipActionHandler(ReactionChipActionHandler handler) {
-    reactionFlowSupport.setReactionChipActionHandler(reactionFlowSupportContext, handler);
+    messageInteractionCoordinator.setReactionChipActionHandler(handler);
   }
 
   public synchronized boolean isOwnMessage(TargetRef ref, String messageId) {
-    return messageQuerySupport.isOwnMessage(messageQuerySupportContext, ref, messageId);
+    return messageInteractionCoordinator.isOwnMessage(ref, messageId);
   }
 
   public synchronized void applyMessageReaction(
       TargetRef ref, String targetMessageId, String reaction, String fromNick, long tsEpochMs) {
-    reactionFlowSupport.applyMessageReaction(
-        reactionFlowSupportContext, ref, targetMessageId, reaction, fromNick, tsEpochMs);
+    messageInteractionCoordinator.applyMessageReaction(
+        ref, targetMessageId, reaction, fromNick, tsEpochMs);
   }
 
   public synchronized void removeMessageReaction(
       TargetRef ref, String targetMessageId, String reaction, String fromNick, long tsEpochMs) {
-    reactionFlowSupport.removeMessageReaction(
-        reactionFlowSupportContext, ref, targetMessageId, reaction, fromNick, tsEpochMs);
+    messageInteractionCoordinator.removeMessageReaction(
+        ref, targetMessageId, reaction, fromNick, tsEpochMs);
   }
 
   public synchronized boolean applyMessageEdit(
@@ -816,8 +517,7 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
       long tsEpochMs,
       String replacementMessageId,
       Map<String, String> replacementIrcv3Tags) {
-    return messageMutationFlowSupport.applyMessageEdit(
-        messageMutationFlowSupportContext,
+    return messageInteractionCoordinator.applyMessageEdit(
         ref,
         targetMessageId,
         editedText,
@@ -834,139 +534,55 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
       long tsEpochMs,
       String replacementMessageId,
       Map<String, String> replacementIrcv3Tags) {
-    return messageMutationFlowSupport.applyMessageRedaction(
-        messageMutationFlowSupportContext,
-        ref,
-        targetMessageId,
-        fromNick,
-        tsEpochMs,
-        replacementMessageId,
-        replacementIrcv3Tags);
+    return messageInteractionCoordinator.applyMessageRedaction(
+        ref, targetMessageId, fromNick, tsEpochMs, replacementMessageId, replacementIrcv3Tags);
   }
 
   public synchronized int loadOlderInsertOffset(TargetRef ref) {
-    return lifecycleSupport.loadOlderInsertOffset(lifecycleSupportContext, ref);
+    return runtimeFlowCoordinator.loadOlderInsertOffset(ref);
   }
 
   public synchronized void setLoadOlderMessagesControlState(
       TargetRef ref, LoadOlderMessagesComponent.State s) {
-    lifecycleSupport.setLoadOlderMessagesControlState(lifecycleSupportContext, ref, s);
+    runtimeFlowCoordinator.setLoadOlderMessagesControlState(ref, s);
   }
 
   public synchronized void setLoadOlderMessagesControlHandler(
       TargetRef ref, java.util.function.BooleanSupplier onLoad) {
-    lifecycleSupport.setLoadOlderMessagesControlHandler(lifecycleSupportContext, ref, onLoad);
+    runtimeFlowCoordinator.setLoadOlderMessagesControlHandler(ref, onLoad);
   }
 
   public synchronized void appendPlain(TargetRef ref, String text) {
-    ensureTargetExists(ref);
-    breakPresenceRun(ref);
-    StyledDocument doc = docs.get(ref);
-    try {
-      ChatRichTextRenderer.insertStyledTextAt(doc, text, styles.message(), doc.getLength());
-      lineCapSupport.enforceTranscriptLineCap(ref, doc);
-    } catch (Exception ignored) {
-    }
+    plainSpoilerCoordinator.appendPlain(ref, text);
   }
 
   public synchronized void closeTarget(TargetRef ref) {
-    lifecycleSupport.closeTarget(lifecycleSupportContext, ref);
+    runtimeFlowCoordinator.closeTarget(ref);
   }
 
   public synchronized void clearTarget(TargetRef ref) {
-    lifecycleSupport.clearTarget(lifecycleSupportContext, ref);
+    runtimeFlowCoordinator.clearTarget(ref);
   }
 
   public synchronized void appendPresence(TargetRef ref, PresenceEvent event) {
-    presenceFlowSupport.appendPresence(presenceFlowSupportContext, ref, event);
+    runtimeFlowCoordinator.appendPresence(ref, event);
   }
 
   public synchronized void appendLine(
       TargetRef ref, String from, String text, AttributeSet fromStyle, AttributeSet msgStyle) {
-    appendLineInternal(ref, from, text, fromStyle, msgStyle, true, null);
-  }
-
-  private synchronized void appendLineInternal(
-      TargetRef ref,
-      String from,
-      String text,
-      AttributeSet fromStyle,
-      AttributeSet msgStyle,
-      boolean allowEmbeds,
-      LineMeta meta) {
-    appendLineInternal(ref, from, text, fromStyle, msgStyle, allowEmbeds, meta, null, null);
-  }
-
-  /**
-   * Like {@link #appendLineInternal(TargetRef, String, String, AttributeSet, AttributeSet, boolean,
-   * LineMeta)} but optionally inserts an inline Swing component at the end of the line (before the
-   * newline).
-   */
-  private synchronized void appendLineInternal(
-      TargetRef ref,
-      String from,
-      String text,
-      AttributeSet fromStyle,
-      AttributeSet msgStyle,
-      boolean allowEmbeds,
-      LineMeta meta,
-      java.awt.Component tailComponent,
-      AttributeSet tailAttrs) {
-    ensureTargetExists(ref);
-    StyledDocument doc = docs.get(ref);
-
-    // If history was loaded into an otherwise-empty transcript (e.g. transcript rebuild), we defer
-    // inserting the history divider until the next live append so it doesn't appear as a dangling
-    // row at the bottom.
-    if (allowEmbeds) {
-      flushPendingHistoryDividerIfNeeded(ref, doc);
-    }
-
-    noteEpochMs(ref, (meta != null) ? meta.epochMs() : null);
-    documentLineSupport.ensureAtLineStart(doc);
-
-    FilterEngine.Match match = null;
-    if (meta != null) {
-      match = filterRoutingSupport.matchFor(ref, meta, from, text);
-      if (filterRoutingSupport.handleHiddenTextAppend(ref, from, text, meta, match)) {
-        return;
-      }
-    }
-    ChatTranscriptState st = stateByTarget.get(ref);
-    boolean imageEmbedsEnabled = uiSettings != null && uiSettings.get().imageEmbedsEnabled();
-    boolean linkPreviewsEnabled = uiSettings != null && uiSettings.get().linkPreviewsEnabled();
-    ChatTranscriptTextAppendSupport.appendVisibleLine(
-        textAppendSupportContext,
-        ref,
-        doc,
-        st == null ? null : st.messageCatalog,
-        from,
-        text,
-        fromStyle,
-        msgStyle,
-        allowEmbeds,
-        meta,
-        match,
-        tailComponent,
-        tailAttrs,
-        runtimeSettingsSupport.timestampsIncludeChatMessages(),
-        runtimeSettingsSupport.timestampsIncludePresenceMessages(),
-        filteredFlowSupport.shouldDeferRichTextDuringHistoryBatch(filteredFlowSupportContext, ref),
-        imageEmbedsEnabled,
-        linkPreviewsEnabled);
+    runtimeFlowCoordinator.appendLine(ref, from, text, fromStyle, msgStyle, true, null);
   }
 
   public synchronized boolean insertManualPreviewAt(TargetRef ref, int insertAt, String rawUrl) {
-    return manualPreviewFlowSupport.insertManualPreviewAt(
-        manualPreviewFlowSupportContext, ref, insertAt, rawUrl);
+    return messageLineCoordinator.insertManualPreviewAt(ref, insertAt, rawUrl);
   }
 
   public void appendChat(TargetRef ref, String from, String text) {
-    chatFlowSupport.appendChat(chatFlowSupportContext, ref, from, text);
+    messageLineCoordinator.appendChat(ref, from, text);
   }
 
   public void appendChat(TargetRef ref, String from, String text, boolean outgoingLocalEcho) {
-    chatFlowSupport.appendChat(chatFlowSupportContext, ref, from, text, outgoingLocalEcho);
+    messageLineCoordinator.appendChat(ref, from, text, outgoingLocalEcho);
   }
 
   public void appendChatFromHistory(
@@ -982,15 +598,8 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
       long tsEpochMs,
       String messageId,
       Map<String, String> ircv3Tags) {
-    chatFlowSupport.appendChatFromHistory(
-        chatFlowSupportContext,
-        ref,
-        from,
-        text,
-        outgoingLocalEcho,
-        tsEpochMs,
-        messageId,
-        ircv3Tags);
+    messageLineCoordinator.appendChatFromHistory(
+        ref, from, text, outgoingLocalEcho, tsEpochMs, messageId, ircv3Tags);
   }
 
   /**
@@ -1024,8 +633,7 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
       String messageId,
       Map<String, String> ircv3Tags,
       String notificationRuleHighlightColor) {
-    chatFlowSupport.appendChatAt(
-        chatFlowSupportContext,
+    messageLineCoordinator.appendChatAt(
         ref,
         from,
         text,
@@ -1038,8 +646,7 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
 
   public synchronized void appendPendingOutgoingChat(
       TargetRef ref, String pendingId, String from, String text, long tsEpochMs) {
-    chatFlowSupport.appendPendingOutgoingChat(
-        chatFlowSupportContext, ref, pendingId, from, text, tsEpochMs);
+    messageLineCoordinator.appendPendingOutgoingChat(ref, pendingId, from, text, tsEpochMs);
   }
 
   public synchronized boolean resolvePendingOutgoingChat(
@@ -1050,14 +657,14 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
       long tsEpochMs,
       String messageId,
       Map<String, String> ircv3Tags) {
-    return chatFlowSupport.resolvePendingOutgoingChat(
-        chatFlowSupportContext, ref, pendingId, from, text, tsEpochMs, messageId, ircv3Tags);
+    return messageLineCoordinator.resolvePendingOutgoingChat(
+        ref, pendingId, from, text, tsEpochMs, messageId, ircv3Tags);
   }
 
   public synchronized boolean failPendingOutgoingChat(
       TargetRef ref, String pendingId, String from, String text, long tsEpochMs, String reason) {
-    return chatFlowSupport.failPendingOutgoingChat(
-        chatFlowSupportContext, ref, pendingId, from, text, tsEpochMs, reason);
+    return messageLineCoordinator.failPendingOutgoingChat(
+        ref, pendingId, from, text, tsEpochMs, reason);
   }
 
   public synchronized int insertChatFromHistoryAt(
@@ -1080,16 +687,8 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
       long tsEpochMs,
       String messageId,
       Map<String, String> ircv3Tags) {
-    return chatFlowSupport.insertChatFromHistoryAt(
-        chatFlowSupportContext,
-        ref,
-        insertAt,
-        from,
-        text,
-        outgoingLocalEcho,
-        tsEpochMs,
-        messageId,
-        ircv3Tags);
+    return messageLineCoordinator.insertChatFromHistoryAt(
+        ref, insertAt, from, text, outgoingLocalEcho, tsEpochMs, messageId, ircv3Tags);
   }
 
   public synchronized int prependChatFromHistory(
@@ -1117,16 +716,8 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
       long tsEpochMs,
       String messageId,
       Map<String, String> ircv3Tags) {
-    return actionFlowSupport.insertActionFromHistoryAt(
-        actionFlowSupportContext,
-        ref,
-        insertAt,
-        from,
-        action,
-        outgoingLocalEcho,
-        tsEpochMs,
-        messageId,
-        ircv3Tags);
+    return messageLineCoordinator.insertActionFromHistoryAt(
+        ref, insertAt, from, action, outgoingLocalEcho, tsEpochMs, messageId, ircv3Tags);
   }
 
   public synchronized int prependActionFromHistory(
@@ -1147,7 +738,7 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
       long tsEpochMs,
       String messageId,
       Map<String, String> ircv3Tags) {
-    return systemLineSupport.insertNoticeFromHistoryAt(
+    return messageLineCoordinator.insertNoticeFromHistoryAt(
         ref, insertAt, from, text, tsEpochMs, messageId, ircv3Tags);
   }
 
@@ -1156,25 +747,9 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
     return insertNoticeFromHistoryAt(ref, 0, from, text, tsEpochMs);
   }
 
-  private AttributeSet statusFromStyleFor(TargetRef ref) {
-    if (ref != null && ref.isApplicationUi()) {
-      // Application diagnostics read better when the source tag is visually distinct.
-      return styles.noticeFrom();
-    }
-    return styles.status();
-  }
-
-  private AttributeSet errorFromStyleFor(TargetRef ref) {
-    if (ref != null && ref.isApplicationUi()) {
-      // Keep source tags consistent across status/error lines in diagnostics buffers.
-      return styles.noticeFrom();
-    }
-    return styles.error();
-  }
-
   public synchronized int insertStatusFromHistoryAt(
       TargetRef ref, int insertAt, String from, String text, long tsEpochMs) {
-    return systemLineSupport.insertStatusFromHistoryAt(ref, insertAt, from, text, tsEpochMs);
+    return messageLineCoordinator.insertStatusFromHistoryAt(ref, insertAt, from, text, tsEpochMs);
   }
 
   public synchronized int prependStatusFromHistory(
@@ -1184,7 +759,7 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
 
   public synchronized int insertErrorFromHistoryAt(
       TargetRef ref, int insertAt, String from, String text, long tsEpochMs) {
-    return systemLineSupport.insertErrorFromHistoryAt(ref, insertAt, from, text, tsEpochMs);
+    return messageLineCoordinator.insertErrorFromHistoryAt(ref, insertAt, from, text, tsEpochMs);
   }
 
   public synchronized int prependErrorFromHistory(
@@ -1194,8 +769,8 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
 
   public synchronized int insertPresenceFromHistoryAt(
       TargetRef ref, int insertAt, String displayText, long tsEpochMs) {
-    return presenceFlowSupport.insertPresenceFromHistoryAt(
-        presenceFlowSupportContext, ref, insertAt, displayText, tsEpochMs);
+    return runtimeFlowCoordinator.insertPresenceFromHistoryAt(
+        ref, insertAt, displayText, tsEpochMs);
   }
 
   public synchronized int prependPresenceFromHistory(
@@ -1205,161 +780,13 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
 
   public synchronized int insertSpoilerChatFromHistoryAt(
       TargetRef ref, int insertAt, String from, String text, long tsEpochMs) {
-    ensureTargetExists(ref);
-    StyledDocument doc = docs.get(ref);
-    noteEpochMs(ref, tsEpochMs);
-    if (doc == null) return Math.max(0, insertAt);
-    return ChatTranscriptSpoilerFlowSupport.insertSpoilerFromHistory(
-        spoilerFlowSupportContext, doc, ref, insertAt, from, text, tsEpochMs);
+    return plainSpoilerCoordinator.insertSpoilerChatFromHistoryAt(
+        ref, insertAt, from, text, tsEpochMs);
   }
 
   public synchronized int prependSpoilerChatFromHistory(
       TargetRef ref, String from, String text, long tsEpochMs) {
     return insertSpoilerChatFromHistoryAt(ref, 0, from, text, tsEpochMs);
-  }
-
-  private int insertLineInternalAt(
-      TargetRef ref,
-      int insertAt,
-      String from,
-      String text,
-      AttributeSet fromStyle,
-      AttributeSet msgStyle,
-      LineMeta meta) {
-    ensureTargetExists(ref);
-    StyledDocument doc = docs.get(ref);
-    noteEpochMs(ref, (meta != null) ? meta.epochMs() : null);
-    if (doc == null) return Math.max(0, insertAt);
-
-    FilterEngine.Match match = null;
-    if (meta != null) {
-      match = filterRoutingSupport.matchFor(ref, meta, from, text);
-      ChatTranscriptFilterRoutingSupport.HistoryDecision hidden =
-          filterRoutingSupport.handleHiddenTextHistoryInsert(
-              ref, insertAt, from, text, meta, match);
-      if (hidden.handled()) {
-        return hidden.nextInsertAt();
-      }
-    }
-
-    // Visible history inserts should break any active filtered run created by prior hidden lines.
-    filteredFlowSupport.endInsertRun(filteredFlowSupportContext, ref);
-    ChatTranscriptState st = stateByTarget.get(ref);
-    return ChatTranscriptTextInsertSupport.insertVisibleLine(
-        textInsertSupportContext,
-        ref,
-        doc,
-        st == null ? null : st.messageCatalog,
-        insertAt,
-        from,
-        text,
-        fromStyle,
-        msgStyle,
-        meta,
-        match,
-        runtimeSettingsSupport.timestampsIncludeChatMessages(),
-        runtimeSettingsSupport.timestampsIncludePresenceMessages(),
-        filteredFlowSupport.shouldDeferRichTextDuringHistoryBatch(filteredFlowSupportContext, ref));
-  }
-
-  private void shiftCurrentPresenceBlock(TargetRef ref, int insertAt, int delta) {
-    presenceFlowSupport.shiftCurrentBlock(presenceFlowSupportContext, ref, insertAt, delta);
-  }
-
-  private void maybeRenderPendingReadMarker(TargetRef ref, Long lineEpochMs) {
-    ChatTranscriptState st = stateByTarget.get(ref);
-    StyledDocument doc = docs.get(ref);
-    auxiliaryRowsSupport.maybeRenderPendingReadMarker(
-        ref, doc, st == null ? null : st.auxiliaryRows, lineEpochMs);
-  }
-
-  private void appendReplyContextLine(
-      TargetRef ref, String fromNick, String replyToMsgId, long tsEpochMs) {
-    ensureTargetExists(ref);
-    StyledDocument doc = docs.get(ref);
-    ChatTranscriptState st = stateByTarget.get(ref);
-    if (doc == null) return;
-
-    documentLineSupport.ensureAtLineStart(doc);
-    ChatTranscriptReplyContextSupport.appendReplyContextLine(
-        replyContextSupportContext,
-        doc,
-        ref,
-        fromNick,
-        replyToMsgId,
-        tsEpochMs,
-        messageId -> previewForMessageId(st, messageId));
-  }
-
-  /**
-   * Removes a single embedded Swing component placeholder character from a transcript document.
-   * Used by the outbound delivery indicator once its fade-out completes.
-   */
-  private boolean removeInlineComponentNear(StyledDocument doc, java.awt.Component expected) {
-    if (doc == null || expected == null) return false;
-    if (!SwingUtilities.isEventDispatchThread()) {
-      final boolean[] ok = new boolean[] {false};
-      try {
-        SwingUtilities.invokeAndWait(() -> ok[0] = removeInlineComponentNear(doc, expected));
-      } catch (Exception ignored) {
-        return false;
-      }
-      return ok[0];
-    }
-
-    synchronized (ChatTranscriptStore.this) {
-      return ChatTranscriptDeliveryIndicatorSupport.removeInlineComponent(doc, expected);
-    }
-  }
-
-  private void insertConfirmedDot(
-      TargetRef ref, int after, SimpleAttributeSet messageStyle, LineMeta meta) {
-    try {
-      StyledDocument doc = docs.get(ref);
-      if (doc == null) {
-        return;
-      }
-      SimpleAttributeSet attrs = new SimpleAttributeSet(messageStyle);
-      attrs = ChatTranscriptLineMetaSupport.bind(attrs, meta);
-      ChatTranscriptDeliveryIndicatorSupport.insertConfirmedDot(
-          doc, after, attrs, component -> removeInlineComponentNear(doc, component));
-    } catch (Exception ignored) {
-    }
-  }
-
-  private void applyOutgoingLineColor(
-      SimpleAttributeSet fromStyle, SimpleAttributeSet msgStyle, boolean outgoingLocalEcho) {
-    if (!outgoingLocalEcho) return;
-    if (fromStyle != null) fromStyle.addAttribute(ChatStyles.ATTR_OUTGOING, Boolean.TRUE);
-    if (msgStyle != null) msgStyle.addAttribute(ChatStyles.ATTR_OUTGOING, Boolean.TRUE);
-
-    UiSettings s = runtimeSettingsSupport.safeSettings();
-    Color c = runtimeSettingsSupport.configuredOutgoingLineColor(s);
-    if (c == null) return;
-
-    if (fromStyle != null) {
-      fromStyle.addAttribute(ChatStyles.ATTR_OVERRIDE_FG, c);
-      StyleConstants.setForeground(fromStyle, c);
-    }
-    if (msgStyle != null) {
-      msgStyle.addAttribute(ChatStyles.ATTR_OVERRIDE_FG, c);
-      StyleConstants.setForeground(msgStyle, c);
-    }
-  }
-
-  private void applyNotificationRuleHighlightColor(
-      SimpleAttributeSet fromStyle, SimpleAttributeSet msgStyle, String rawColor) {
-    Color c = ChatTranscriptColorSupport.parseHexColor(rawColor);
-    if (c == null) return;
-
-    if (fromStyle != null) {
-      fromStyle.addAttribute(ChatStyles.ATTR_NOTIFICATION_RULE_BG, c);
-      StyleConstants.setBackground(fromStyle, c);
-    }
-    if (msgStyle != null) {
-      msgStyle.addAttribute(ChatStyles.ATTR_NOTIFICATION_RULE_BG, c);
-      StyleConstants.setBackground(msgStyle, c);
-    }
   }
 
   private void onNickColorSettingsChanged(PropertyChangeEvent evt) {
@@ -1368,32 +795,20 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
   }
 
   public void appendSpoilerChat(TargetRef ref, String from, String text) {
-    appendSpoilerInternal(ref, from, text, null);
+    plainSpoilerCoordinator.appendSpoilerChat(ref, from, text);
   }
 
   public void appendSpoilerChatFromHistory(
       TargetRef ref, String from, String text, long tsEpochMs) {
-    appendSpoilerInternal(ref, from, text, tsEpochMs);
-  }
-
-  private void appendSpoilerInternal(TargetRef ref, String from, String text, Long tsEpochMs) {
-    ensureTargetExists(ref);
-    if (tsEpochMs != null) {
-      noteEpochMs(ref, tsEpochMs);
-    }
-
-    StyledDocument doc = docs.get(ref);
-    if (doc == null) return;
-    ChatTranscriptSpoilerFlowSupport.appendSpoiler(
-        spoilerFlowSupportContext, doc, ref, from, text, tsEpochMs);
+    plainSpoilerCoordinator.appendSpoilerChatFromHistory(ref, from, text, tsEpochMs);
   }
 
   public void appendAction(TargetRef ref, String from, String action) {
-    actionFlowSupport.appendAction(actionFlowSupportContext, ref, from, action);
+    messageLineCoordinator.appendAction(ref, from, action);
   }
 
   public void appendAction(TargetRef ref, String from, String action, boolean outgoingLocalEcho) {
-    actionFlowSupport.appendAction(actionFlowSupportContext, ref, from, action, outgoingLocalEcho);
+    messageLineCoordinator.appendAction(ref, from, action, outgoingLocalEcho);
   }
 
   public void appendActionFromHistory(
@@ -1409,15 +824,8 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
       long tsEpochMs,
       String messageId,
       Map<String, String> ircv3Tags) {
-    actionFlowSupport.appendActionFromHistory(
-        actionFlowSupportContext,
-        ref,
-        from,
-        action,
-        outgoingLocalEcho,
-        tsEpochMs,
-        messageId,
-        ircv3Tags);
+    messageLineCoordinator.appendActionFromHistory(
+        ref, from, action, outgoingLocalEcho, tsEpochMs, messageId, ircv3Tags);
   }
 
   /** Append an action (/me) with a timestamp, allowing embeds. */
@@ -1446,8 +854,7 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
       String messageId,
       Map<String, String> ircv3Tags,
       String notificationRuleHighlightColor) {
-    actionFlowSupport.appendActionAt(
-        actionFlowSupportContext,
+    messageLineCoordinator.appendActionAt(
         ref,
         from,
         action,
@@ -1459,19 +866,19 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
   }
 
   public void appendNotice(TargetRef ref, String from, String text) {
-    systemLineSupport.appendNotice(ref, from, text);
+    messageLineCoordinator.appendNotice(ref, from, text);
   }
 
   public void appendStatus(TargetRef ref, String from, String text) {
-    systemLineSupport.appendStatus(ref, from, text);
+    messageLineCoordinator.appendStatus(ref, from, text);
   }
 
   public void appendError(TargetRef ref, String from, String text) {
-    systemLineSupport.appendError(ref, from, text);
+    messageLineCoordinator.appendError(ref, from, text);
   }
 
   public void appendNoticeFromHistory(TargetRef ref, String from, String text, long tsEpochMs) {
-    systemLineSupport.appendNoticeFromHistory(ref, from, text, tsEpochMs);
+    messageLineCoordinator.appendNoticeFromHistory(ref, from, text, tsEpochMs, "", Map.of());
   }
 
   public void appendNoticeFromHistory(
@@ -1481,20 +888,21 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
       long tsEpochMs,
       String messageId,
       Map<String, String> ircv3Tags) {
-    systemLineSupport.appendNoticeFromHistory(ref, from, text, tsEpochMs, messageId, ircv3Tags);
+    messageLineCoordinator.appendNoticeFromHistory(
+        ref, from, text, tsEpochMs, messageId, ircv3Tags);
   }
 
   public void appendStatusFromHistory(TargetRef ref, String from, String text, long tsEpochMs) {
-    systemLineSupport.appendStatusFromHistory(ref, from, text, tsEpochMs);
+    messageLineCoordinator.appendStatusFromHistory(ref, from, text, tsEpochMs);
   }
 
   public void appendErrorFromHistory(TargetRef ref, String from, String text, long tsEpochMs) {
-    systemLineSupport.appendErrorFromHistory(ref, from, text, tsEpochMs);
+    messageLineCoordinator.appendErrorFromHistory(ref, from, text, tsEpochMs);
   }
 
   /** Append a notice with a timestamp, allowing embeds. */
   public void appendNoticeAt(TargetRef ref, String from, String text, long tsEpochMs) {
-    systemLineSupport.appendNoticeAt(ref, from, text, tsEpochMs);
+    messageLineCoordinator.appendNoticeAt(ref, from, text, tsEpochMs);
   }
 
   public void appendNoticeAt(
@@ -1504,12 +912,12 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
       long tsEpochMs,
       String messageId,
       Map<String, String> ircv3Tags) {
-    systemLineSupport.appendNoticeAt(ref, from, text, tsEpochMs, messageId, ircv3Tags);
+    messageLineCoordinator.appendNoticeAt(ref, from, text, tsEpochMs, messageId, ircv3Tags);
   }
 
   /** Append a status line with a timestamp, allowing embeds. */
   public void appendStatusAt(TargetRef ref, String from, String text, long tsEpochMs) {
-    systemLineSupport.appendStatusAt(ref, from, text, tsEpochMs);
+    messageLineCoordinator.appendStatusAt(ref, from, text, tsEpochMs);
   }
 
   public void appendStatusAt(
@@ -1519,43 +927,23 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
       long tsEpochMs,
       String messageId,
       Map<String, String> ircv3Tags) {
-    systemLineSupport.appendStatusAt(ref, from, text, tsEpochMs, messageId, ircv3Tags);
+    messageLineCoordinator.appendStatusAt(ref, from, text, tsEpochMs, messageId, ircv3Tags);
   }
 
   /** Append an error line with a timestamp, allowing embeds. */
   public void appendErrorAt(TargetRef ref, String from, String text, long tsEpochMs) {
-    systemLineSupport.appendErrorAt(ref, from, text, tsEpochMs);
+    messageLineCoordinator.appendErrorAt(ref, from, text, tsEpochMs);
   }
 
   public void appendPresenceFromHistory(TargetRef ref, String displayText, long tsEpochMs) {
-    presenceFlowSupport.appendPresenceFromHistory(
-        presenceFlowSupportContext, ref, displayText, tsEpochMs);
-  }
-
-  private void breakPresenceRun(TargetRef ref) {
-    presenceFlowSupport.breakPresenceRun(presenceFlowSupportContext, ref);
-  }
-
-
-
-
-  private void resetStateAfterHeadTrim(TargetRef ref) {
-    ChatTranscriptState st = stateByTarget.get(ref);
-    if (st == null) return;
-    st.resetAfterHeadTrim(presenceFoldSupport, filteredLinesSupport);
-  }
-
-  private List<StyledDocument> snapshotDocumentsForRestyle() {
-    synchronized (this) {
-      return new ArrayList<>(docs.values());
-    }
+    runtimeFlowCoordinator.appendPresenceFromHistory(ref, displayText, tsEpochMs);
   }
 
   public synchronized void restyleAllDocuments() {
-    restyleCoordinator.restyleAllDocuments();
+    targetRuntimeCoordinator.restyleAllDocuments();
   }
 
   public void restyleAllDocumentsCoalesced() {
-    restyleCoordinator.restyleAllDocumentsCoalesced();
+    targetRuntimeCoordinator.restyleAllDocumentsCoalesced();
   }
 }

@@ -1,13 +1,13 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.message;
 
 import java.util.Objects;
 
 /** Shared helpers for rendering edited transcript message text. */
-final class ChatTranscriptMessageEditSupport {
+public final class ChatTranscriptMessageEditSupport {
 
   private ChatTranscriptMessageEditSupport() {}
 
-  static String renderEditedText(String text) {
+  public static String renderEditedText(String text) {
     String normalized = Objects.toString(text, "");
     if (normalized.isBlank()) {
       return "(edited)";

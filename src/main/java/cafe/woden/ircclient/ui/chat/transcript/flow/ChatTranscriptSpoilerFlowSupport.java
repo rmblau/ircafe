@@ -1,22 +1,35 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.flow;
 
 import cafe.woden.ircclient.model.LogDirection;
 import cafe.woden.ircclient.model.LogKind;
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
+import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilterRoutingSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
+import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptSpoilerAppendSupport;
+import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptSpoilerHistoryInsertSupport;
+import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptSpoilerRuntimeSupport;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.ObjLongConsumer;
 import javax.swing.text.StyledDocument;
 
-final class ChatTranscriptSpoilerFlowSupport {
+public final class ChatTranscriptSpoilerFlowSupport {
 
-  record Context(
+  public record Context(
+      Map<TargetRef, StyledDocument> docs,
+      Consumer<TargetRef> targetEnsureHandler,
+      ObjLongConsumer<TargetRef> epochNoteHandler,
       ChatTranscriptFilterRoutingSupport filterRoutingSupport,
       ChatTranscriptSpoilerRuntimeSupport.Context spoilerRuntimeSupportContext,
       ChatTranscriptSpoilerAppendSupport.Context spoilerAppendSupportContext,
       ChatTranscriptSpoilerHistoryInsertSupport.Context spoilerHistoryInsertSupportContext,
       Consumer<TargetRef> filteredInsertRunEndHandler) {
-    Context {
+    public Context {
+      Objects.requireNonNull(docs, "docs");
+      Objects.requireNonNull(targetEnsureHandler, "targetEnsureHandler");
+      Objects.requireNonNull(epochNoteHandler, "epochNoteHandler");
       Objects.requireNonNull(filterRoutingSupport, "filterRoutingSupport");
       Objects.requireNonNull(spoilerRuntimeSupportContext, "spoilerRuntimeSupportContext");
       Objects.requireNonNull(spoilerAppendSupportContext, "spoilerAppendSupportContext");
@@ -28,7 +41,21 @@ final class ChatTranscriptSpoilerFlowSupport {
 
   private ChatTranscriptSpoilerFlowSupport() {}
 
-  static void appendSpoiler(
+  public static void appendSpoiler(
+      Context context, TargetRef ref, String fromNick, String text, Long tsEpochMs) {
+    if (context == null) {
+      return;
+    }
+
+    context.targetEnsureHandler().accept(ref);
+    if (tsEpochMs != null) {
+      context.epochNoteHandler().accept(ref, tsEpochMs);
+    }
+    StyledDocument doc = context.docs().get(ref);
+    appendSpoiler(context, doc, ref, fromNick, text, tsEpochMs);
+  }
+
+  public static void appendSpoiler(
       Context context,
       StyledDocument doc,
       TargetRef ref,
@@ -81,7 +108,19 @@ final class ChatTranscriptSpoilerFlowSupport {
                     msg));
   }
 
-  static int insertSpoilerFromHistory(
+  public static int insertSpoilerFromHistory(
+      Context context, TargetRef ref, int insertAt, String fromNick, String text, long tsEpochMs) {
+    if (context == null) {
+      return Math.max(0, insertAt);
+    }
+
+    context.targetEnsureHandler().accept(ref);
+    context.epochNoteHandler().accept(ref, tsEpochMs);
+    StyledDocument doc = context.docs().get(ref);
+    return insertSpoilerFromHistory(context, doc, ref, insertAt, fromNick, text, tsEpochMs);
+  }
+
+  public static int insertSpoilerFromHistory(
       Context context,
       StyledDocument doc,
       TargetRef ref,

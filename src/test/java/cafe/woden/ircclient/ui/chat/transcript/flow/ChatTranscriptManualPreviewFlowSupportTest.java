@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.flow;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -7,6 +7,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptManualPreviewSupport;
+import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptLineCapSupport;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -19,7 +21,8 @@ class ChatTranscriptManualPreviewFlowSupportTest {
 
   @Test
   void insertManualPreviewShiftsPresenceAndEnforcesLineCapAfterInsert() throws Exception {
-    ChatTranscriptManualPreviewSupport manualPreviewSupport = mock(ChatTranscriptManualPreviewSupport.class);
+    ChatTranscriptManualPreviewSupport manualPreviewSupport =
+        mock(ChatTranscriptManualPreviewSupport.class);
     ChatTranscriptLineCapSupport lineCapSupport = mock(ChatTranscriptLineCapSupport.class);
     ChatTranscriptManualPreviewFlowSupport support = new ChatTranscriptManualPreviewFlowSupport();
     TargetRef ref = new TargetRef("srv", "#chan");
@@ -57,14 +60,19 @@ class ChatTranscriptManualPreviewFlowSupportTest {
 
   @Test
   void insertManualPreviewReturnsFalseWhenPreviewSupportRejectsInsert() {
-    ChatTranscriptManualPreviewSupport manualPreviewSupport = mock(ChatTranscriptManualPreviewSupport.class);
+    ChatTranscriptManualPreviewSupport manualPreviewSupport =
+        mock(ChatTranscriptManualPreviewSupport.class);
     ChatTranscriptLineCapSupport lineCapSupport = mock(ChatTranscriptLineCapSupport.class);
     ChatTranscriptManualPreviewFlowSupport support = new ChatTranscriptManualPreviewFlowSupport();
     TargetRef ref = new TargetRef("srv", "#chan");
     StyledDocument doc = new DefaultStyledDocument();
     ChatTranscriptManualPreviewFlowSupport.Context context =
         new ChatTranscriptManualPreviewFlowSupport.Context(
-            Map.of(ref, doc), target -> {}, manualPreviewSupport, (target, insertAt, delta) -> {}, lineCapSupport);
+            Map.of(ref, doc),
+            target -> {},
+            manualPreviewSupport,
+            (target, insertAt, delta) -> {},
+            lineCapSupport);
     when(manualPreviewSupport.insertManualPreviewAt(ref, doc, 0, "https://example.test"))
         .thenReturn(false);
 

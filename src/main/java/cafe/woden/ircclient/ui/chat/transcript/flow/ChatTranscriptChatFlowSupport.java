@@ -1,8 +1,18 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.flow;
 
 import cafe.woden.ircclient.model.LogDirection;
 import cafe.woden.ircclient.model.LogKind;
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
+import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptAppendGuardSupport;
+import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilterRoutingSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptOutgoingChatSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptOutgoingFollowUpSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptPendingReplacementSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReactionSummarySupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptSenderStyleSupport;
+import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptState;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import java.util.Map;
 import java.util.Objects;
@@ -12,11 +22,14 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyledDocument;
 
-/** Shared chat-line flow orchestration for live append, history append/insert, and pending send resolution. */
-final class ChatTranscriptChatFlowSupport {
+/**
+ * Shared chat-line flow orchestration for live append, history append/insert, and pending send
+ * resolution.
+ */
+public final class ChatTranscriptChatFlowSupport {
 
   @FunctionalInterface
-  interface AppendVisibleLineHandler {
+  public interface AppendVisibleLineHandler {
     void append(
         TargetRef ref,
         String from,
@@ -28,7 +41,7 @@ final class ChatTranscriptChatFlowSupport {
   }
 
   @FunctionalInterface
-  interface InsertVisibleLineHandler {
+  public interface InsertVisibleLineHandler {
     int insert(
         TargetRef ref,
         int insertAt,
@@ -40,11 +53,11 @@ final class ChatTranscriptChatFlowSupport {
   }
 
   @FunctionalInterface
-  interface ReplyContextAppender {
+  public interface ReplyContextAppender {
     void append(TargetRef ref, String fromNick, String replyToMsgId, long tsEpochMs);
   }
 
-  record Context(
+  public record Context(
       ChatTranscriptFilterRoutingSupport filterRoutingSupport,
       ChatTranscriptSenderStyleSupport.Context senderStyleSupportContext,
       ChatTranscriptOutgoingChatSupport outgoingChatSupport,
@@ -57,7 +70,7 @@ final class ChatTranscriptChatFlowSupport {
       InsertVisibleLineHandler insertVisibleLine,
       ReplyContextAppender appendReplyContextLine,
       BooleanSupplier outgoingDeliveryIndicatorsEnabled) {
-    Context {
+    public Context {
       Objects.requireNonNull(filterRoutingSupport, "filterRoutingSupport");
       Objects.requireNonNull(senderStyleSupportContext, "senderStyleSupportContext");
       Objects.requireNonNull(outgoingChatSupport, "outgoingChatSupport");
@@ -69,7 +82,8 @@ final class ChatTranscriptChatFlowSupport {
       Objects.requireNonNull(appendVisibleLine, "appendVisibleLine");
       Objects.requireNonNull(insertVisibleLine, "insertVisibleLine");
       Objects.requireNonNull(appendReplyContextLine, "appendReplyContextLine");
-      Objects.requireNonNull(outgoingDeliveryIndicatorsEnabled, "outgoingDeliveryIndicatorsEnabled");
+      Objects.requireNonNull(
+          outgoingDeliveryIndicatorsEnabled, "outgoingDeliveryIndicatorsEnabled");
     }
 
     StyledDocument document(TargetRef ref) {
@@ -85,11 +99,12 @@ final class ChatTranscriptChatFlowSupport {
     }
   }
 
-  void appendChat(Context context, TargetRef ref, String from, String text) {
+  public void appendChat(Context context, TargetRef ref, String from, String text) {
     appendChat(context, ref, from, text, false);
   }
 
-  void appendChat(Context context, TargetRef ref, String from, String text, boolean outgoingLocalEcho) {
+  public void appendChat(
+      Context context, TargetRef ref, String from, String text, boolean outgoingLocalEcho) {
     appendChatInternal(
         context,
         ref,
@@ -103,7 +118,7 @@ final class ChatTranscriptChatFlowSupport {
         null);
   }
 
-  void appendChatFromHistory(
+  public void appendChatFromHistory(
       Context context,
       TargetRef ref,
       String from,
@@ -113,19 +128,10 @@ final class ChatTranscriptChatFlowSupport {
       String messageId,
       Map<String, String> ircv3Tags) {
     appendChatInternal(
-        context,
-        ref,
-        from,
-        text,
-        outgoingLocalEcho,
-        false,
-        tsEpochMs,
-        messageId,
-        ircv3Tags,
-        null);
+        context, ref, from, text, outgoingLocalEcho, false, tsEpochMs, messageId, ircv3Tags, null);
   }
 
-  void appendChatAt(
+  public void appendChatAt(
       Context context,
       TargetRef ref,
       String from,
@@ -148,7 +154,7 @@ final class ChatTranscriptChatFlowSupport {
         notificationRuleHighlightColor);
   }
 
-  int insertChatFromHistoryAt(
+  public int insertChatFromHistoryAt(
       Context context,
       TargetRef ref,
       int insertAt,
@@ -176,8 +182,9 @@ final class ChatTranscriptChatFlowSupport {
     FilterEngine.Match match =
         context.filterRoutingSupport().hideMatch(ref, LogKind.CHAT, dir, from, text, meta.tags());
     ChatTranscriptFilterRoutingSupport.HistoryDecision hidden =
-        context.filterRoutingSupport().handleHiddenTextHistoryInsert(
-            ref, insertAt, from, text, meta, match);
+        context
+            .filterRoutingSupport()
+            .handleHiddenTextHistoryInsert(ref, insertAt, from, text, meta, match);
     if (hidden.handled()) {
       return hidden.nextInsertAt();
     }
@@ -187,23 +194,20 @@ final class ChatTranscriptChatFlowSupport {
             context.senderStyleSupportContext(), meta, from, outgoingLocalEcho, null);
     SimpleAttributeSet fromStyle = preparedStyles.fromStyle();
     SimpleAttributeSet messageStyle = preparedStyles.messageStyle();
-    return context.insertVisibleLine().insert(ref, insertAt, from, text, fromStyle, messageStyle, meta);
+    return context
+        .insertVisibleLine()
+        .insert(ref, insertAt, from, text, fromStyle, messageStyle, meta);
   }
 
-  void appendPendingOutgoingChat(
+  public void appendPendingOutgoingChat(
       Context context, TargetRef ref, String pendingId, String from, String text, long tsEpochMs) {
     context
         .outgoingChatSupport()
         .appendPendingOutgoingChat(
-            ref,
-            pendingId,
-            from,
-            text,
-            tsEpochMs,
-            context.deliveryIndicatorsEnabled());
+            ref, pendingId, from, text, tsEpochMs, context.deliveryIndicatorsEnabled());
   }
 
-  boolean resolvePendingOutgoingChat(
+  public boolean resolvePendingOutgoingChat(
       Context context,
       TargetRef ref,
       String pendingId,
@@ -230,7 +234,7 @@ final class ChatTranscriptChatFlowSupport {
             ref,
             doc,
             context.reactionSummarySupport(),
-            state == null ? null : state.reactionSummary,
+            state == null ? null : state.reactionSummary(),
             replacement.lineStart(),
             from,
             text,
@@ -241,7 +245,7 @@ final class ChatTranscriptChatFlowSupport {
     return true;
   }
 
-  boolean failPendingOutgoingChat(
+  public boolean failPendingOutgoingChat(
       Context context,
       TargetRef ref,
       String pendingId,
@@ -290,7 +294,8 @@ final class ChatTranscriptChatFlowSupport {
     LineMeta meta =
         context
             .filterRoutingSupport()
-            .prepareVisibleTextAppend(ref, LogKind.CHAT, dir, from, text, tsEpochMs, messageId, safeTags);
+            .prepareVisibleTextAppend(
+                ref, LogKind.CHAT, dir, from, text, tsEpochMs, messageId, safeTags);
     if (meta == null) {
       return;
     }
@@ -309,7 +314,8 @@ final class ChatTranscriptChatFlowSupport {
         ChatTranscriptOutgoingFollowUpSupport.plan(messageId, safeTags);
     if (allowEmbeds) {
       followUp.runReplyContext(
-          replyToMsgId -> context.appendReplyContextLine().append(ref, from, replyToMsgId, tsEpochMs));
+          replyToMsgId ->
+              context.appendReplyContextLine().append(ref, from, replyToMsgId, tsEpochMs));
     }
 
     context.appendVisibleLine().append(ref, from, text, fromStyle, messageStyle, allowEmbeds, meta);
@@ -322,7 +328,7 @@ final class ChatTranscriptChatFlowSupport {
         ref,
         context.document(ref),
         context.reactionSummarySupport(),
-        state == null ? null : state.reactionSummary,
+        state == null ? null : state.reactionSummary(),
         from,
         tsEpochMs);
   }

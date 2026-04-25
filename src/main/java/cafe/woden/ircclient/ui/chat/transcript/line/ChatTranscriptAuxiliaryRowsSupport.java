@@ -1,9 +1,11 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.line;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.fold.HistoryDividerComponent;
 import cafe.woden.ircclient.ui.chat.fold.LoadOlderMessagesComponent;
+import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
+import cafe.woden.ircclient.ui.chat.transcript.style.ChatTranscriptAttrSupport;
 import java.awt.Font;
 import java.util.Objects;
 import java.util.function.BiFunction;
@@ -16,30 +18,30 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-final class ChatTranscriptAuxiliaryRowsSupport {
+public final class ChatTranscriptAuxiliaryRowsSupport {
 
   private static final String AUX_ROW_KIND_HISTORY_DIVIDER = "history-divider";
   private static final String AUX_ROW_KIND_LOAD_OLDER = "load-older";
   private static final String AUX_ROW_KIND_READ_MARKER = "read-marker";
 
   @FunctionalInterface
-  interface AuxiliaryMetaFactory {
+  public interface AuxiliaryMetaFactory {
     LineMeta create(TargetRef ref, long epochMs);
   }
 
   @FunctionalInterface
-  interface PresenceBlockShiftHandler {
+  public interface PresenceBlockShiftHandler {
     void shift(TargetRef ref, int insertAt, int delta);
   }
 
-  static final class State {
+  public static final class State {
     private LoadOlderControl loadOlderControl;
     private HistoryDividerControl historyDivider;
     private String pendingHistoryDividerLabel;
     private ReadMarkerControl readMarker;
     private Long readMarkerEpochMs;
 
-    void reset() {
+    public void reset() {
       loadOlderControl = null;
       historyDivider = null;
       pendingHistoryDividerLabel = null;
@@ -84,7 +86,7 @@ final class ChatTranscriptAuxiliaryRowsSupport {
   private final BiFunction<StyledDocument, Integer, Integer> ensureAtLineStartForInsert;
   private final PresenceBlockShiftHandler shiftPresenceBlock;
 
-  ChatTranscriptAuxiliaryRowsSupport(
+  public ChatTranscriptAuxiliaryRowsSupport(
       ChatStyles styles,
       Supplier<Font> transcriptFontSupplier,
       AuxiliaryMetaFactory auxiliaryMetaFactory,
@@ -110,7 +112,7 @@ final class ChatTranscriptAuxiliaryRowsSupport {
     this.shiftPresenceBlock = Objects.requireNonNull(shiftPresenceBlock, "shiftPresenceBlock");
   }
 
-  LoadOlderMessagesComponent ensureLoadOlderMessagesControl(
+  public LoadOlderMessagesComponent ensureLoadOlderMessagesControl(
       TargetRef ref, StyledDocument doc, State state) {
     if (ref == null || doc == null || state == null) return null;
     if (state.loadOlderControl != null) {
@@ -147,7 +149,7 @@ final class ChatTranscriptAuxiliaryRowsSupport {
     return component;
   }
 
-  HistoryDividerComponent ensureHistoryDivider(
+  public HistoryDividerComponent ensureHistoryDivider(
       TargetRef ref, StyledDocument doc, State state, int insertAt, String labelText) {
     if (ref == null || doc == null || state == null) return null;
     if (state.historyDivider != null) {
@@ -189,12 +191,12 @@ final class ChatTranscriptAuxiliaryRowsSupport {
     return component;
   }
 
-  void markHistoryDividerPending(State state, String labelText) {
+  public void markHistoryDividerPending(State state, String labelText) {
     if (state == null || state.historyDivider != null) return;
     state.pendingHistoryDividerLabel = labelText;
   }
 
-  void flushPendingHistoryDividerIfNeeded(TargetRef ref, StyledDocument doc, State state) {
+  public void flushPendingHistoryDividerIfNeeded(TargetRef ref, StyledDocument doc, State state) {
     if (ref == null || doc == null || state == null) return;
     if (state.historyDivider != null) {
       state.pendingHistoryDividerLabel = null;
@@ -206,7 +208,7 @@ final class ChatTranscriptAuxiliaryRowsSupport {
     state.pendingHistoryDividerLabel = null;
   }
 
-  void updateReadMarker(TargetRef ref, StyledDocument doc, State state, long markerEpochMs) {
+  public void updateReadMarker(TargetRef ref, StyledDocument doc, State state, long markerEpochMs) {
     if (ref == null || doc == null || state == null) return;
     long markerMs = markerEpochMs > 0 ? markerEpochMs : System.currentTimeMillis();
     state.readMarkerEpochMs = markerMs;
@@ -214,13 +216,13 @@ final class ChatTranscriptAuxiliaryRowsSupport {
     tryInsertReadMarkerControl(ref, doc, state, markerMs);
   }
 
-  void clearReadMarker(TargetRef ref, StyledDocument doc, State state) {
+  public void clearReadMarker(TargetRef ref, StyledDocument doc, State state) {
     if (ref == null || doc == null || state == null) return;
     removeReadMarkerControl(ref, doc, state);
     state.readMarkerEpochMs = null;
   }
 
-  void maybeRenderPendingReadMarker(
+  public void maybeRenderPendingReadMarker(
       TargetRef ref, StyledDocument doc, State state, Long lineEpochMs) {
     if (ref == null || doc == null || state == null || state.readMarker != null) return;
     Long markerEpochMs = state.readMarkerEpochMs;
@@ -229,21 +231,21 @@ final class ChatTranscriptAuxiliaryRowsSupport {
     tryInsertReadMarkerControl(ref, doc, state, markerEpochMs);
   }
 
-  int readMarkerJumpOffset(StyledDocument doc, State state) {
+  public int readMarkerJumpOffset(StyledDocument doc, State state) {
     if (doc == null || state == null || state.readMarker == null) return -1;
     int base = state.readMarker.pos.getOffset();
     int off = base + 2;
     return Math.max(0, Math.min(off, doc.getLength()));
   }
 
-  int loadOlderInsertOffset(StyledDocument doc, State state) {
+  public int loadOlderInsertOffset(StyledDocument doc, State state) {
     if (doc == null || state == null || state.loadOlderControl == null) return 0;
     int base = state.loadOlderControl.pos.getOffset();
     int off = base + 2;
     return Math.max(0, Math.min(off, doc.getLength()));
   }
 
-  void setLoadOlderMessagesControlState(
+  public void setLoadOlderMessagesControlState(
       State state, LoadOlderMessagesComponent.State controlState) {
     if (state == null || state.loadOlderControl == null) return;
     try {
@@ -252,7 +254,7 @@ final class ChatTranscriptAuxiliaryRowsSupport {
     }
   }
 
-  void setLoadOlderMessagesControlHandler(State state, BooleanSupplier onLoad) {
+  public void setLoadOlderMessagesControlHandler(State state, BooleanSupplier onLoad) {
     if (state == null || state.loadOlderControl == null) return;
     try {
       state.loadOlderControl.component.setOnLoadRequested(onLoad);

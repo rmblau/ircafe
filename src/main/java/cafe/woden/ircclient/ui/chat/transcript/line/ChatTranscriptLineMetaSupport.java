@@ -1,10 +1,10 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.line;
 
-import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptMessageMetadataSupport.formatIrcv3Tags;
-import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptMessageMetadataSupport.mergeIrcv3Tags;
-import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptMessageMetadataSupport.normalizeIrcv3Tags;
-import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptMessageMetadataSupport.normalizeMessageId;
-import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptMessageMetadataSupport.parseIrcv3TagsDisplay;
+import static cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageMetadataSupport.formatIrcv3Tags;
+import static cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageMetadataSupport.mergeIrcv3Tags;
+import static cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageMetadataSupport.normalizeIrcv3Tags;
+import static cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageMetadataSupport.normalizeMessageId;
+import static cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageMetadataSupport.parseIrcv3TagsDisplay;
 
 import cafe.woden.ircclient.app.api.PresenceEvent;
 import cafe.woden.ircclient.model.FilterAction;
@@ -12,6 +12,8 @@ import cafe.woden.ircclient.model.LogDirection;
 import cafe.woden.ircclient.model.LogKind;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
+import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
+import cafe.woden.ircclient.ui.chat.transcript.style.ChatTranscriptAttrSupport;
 import java.awt.Color;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -23,9 +25,9 @@ import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 
 /** Shared transcript line metadata carry-forward and replacement planning helpers. */
-final class ChatTranscriptLineMetaSupport {
+public final class ChatTranscriptLineMetaSupport {
 
-  record ReplacementPlan(
+  public record ReplacementPlan(
       LogKind kind,
       LogDirection direction,
       String fromNick,
@@ -36,12 +38,12 @@ final class ChatTranscriptLineMetaSupport {
 
   private ChatTranscriptLineMetaSupport() {}
 
-  static String bufferKey(TargetRef ref) {
+  public static String bufferKey(TargetRef ref) {
     if (ref == null) return "*/status";
     return ref.serverId() + "/" + ref.key();
   }
 
-  static LineMeta create(
+  public static LineMeta create(
       TargetRef ref,
       LogKind kind,
       LogDirection dir,
@@ -51,7 +53,7 @@ final class ChatTranscriptLineMetaSupport {
     return create(ref, kind, dir, fromNick, epochMs, presenceEvent, "", Map.of());
   }
 
-  static LineMeta create(
+  public static LineMeta create(
       TargetRef ref,
       LogKind kind,
       LogDirection dir,
@@ -64,7 +66,7 @@ final class ChatTranscriptLineMetaSupport {
         bufferKey(ref), kind, dir, fromNick, epochMs, presenceEvent, messageId, ircv3Tags);
   }
 
-  static LineMeta create(
+  public static LineMeta create(
       String bufferKey,
       LogKind kind,
       LogDirection dir,
@@ -82,7 +84,7 @@ final class ChatTranscriptLineMetaSupport {
         bufferKey, kind, dir, fromNick, epochMs, tags, msgId, formatIrcv3Tags(tagsMap), tagsMap);
   }
 
-  static SimpleAttributeSet bind(AttributeSet base, LineMeta meta) {
+  public static SimpleAttributeSet bind(AttributeSet base, LineMeta meta) {
     SimpleAttributeSet attrs = new SimpleAttributeSet(base);
     if (meta == null) return attrs;
 
@@ -113,7 +115,8 @@ final class ChatTranscriptLineMetaSupport {
     return attrs;
   }
 
-  static SimpleAttributeSet withAuxiliaryRowKind(AttributeSet base, String auxiliaryRowKind) {
+  public static SimpleAttributeSet withAuxiliaryRowKind(
+      AttributeSet base, String auxiliaryRowKind) {
     SimpleAttributeSet attrs = new SimpleAttributeSet(base);
     String kind = Objects.toString(auxiliaryRowKind, "").trim();
     if (!kind.isEmpty()) {
@@ -122,7 +125,7 @@ final class ChatTranscriptLineMetaSupport {
     return attrs;
   }
 
-  static SimpleAttributeSet withExistingMeta(AttributeSet base, AttributeSet existing) {
+  public static SimpleAttributeSet withExistingMeta(AttributeSet base, AttributeSet existing) {
     SimpleAttributeSet attrs = new SimpleAttributeSet(base);
     copyPreservedMetaAttrs(existing, attrs);
     return attrs;
@@ -148,7 +151,7 @@ final class ChatTranscriptLineMetaSupport {
     copyMetaAttr(src, dst, ChatStyles.ATTR_NOTIFICATION_RULE_BG);
   }
 
-  static void copyRestyleMetaAttrs(AttributeSet src, MutableAttributeSet dst) {
+  public static void copyRestyleMetaAttrs(AttributeSet src, MutableAttributeSet dst) {
     if (src == null || dst == null) return;
     copyMetaAttr(src, dst, ChatStyles.ATTR_META_BUFFER_KEY);
     copyMetaAttr(src, dst, ChatStyles.ATTR_META_KIND);
@@ -187,7 +190,7 @@ final class ChatTranscriptLineMetaSupport {
     }
   }
 
-  static ReplacementPlan planReplacement(
+  public static ReplacementPlan planReplacement(
       AttributeSet existingAttrs,
       long tsEpochMs,
       String replacementMessageId,

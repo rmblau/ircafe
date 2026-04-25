@@ -1,6 +1,7 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.runtime;
 
 import cafe.woden.ircclient.ui.chat.ChatStyles;
+import cafe.woden.ircclient.ui.chat.transcript.style.ChatTranscriptColorSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import java.awt.Color;
@@ -8,20 +9,20 @@ import java.util.Objects;
 import javax.swing.UIManager;
 import javax.swing.text.StyleConstants;
 
-final class ChatTranscriptRuntimeSettingsSupport {
+public final class ChatTranscriptRuntimeSettingsSupport {
 
-  static final int DEFAULT_TRANSCRIPT_MAX_LINES_PER_TARGET = 4000;
-  static final int MAX_TRANSCRIPT_LINES_PER_TARGET = 200_000;
+  public static final int DEFAULT_TRANSCRIPT_MAX_LINES_PER_TARGET = 4000;
+  public static final int MAX_TRANSCRIPT_LINES_PER_TARGET = 200_000;
 
   private final UiSettingsBus uiSettings;
   private final ChatStyles styles;
 
-  ChatTranscriptRuntimeSettingsSupport(UiSettingsBus uiSettings, ChatStyles styles) {
+  public ChatTranscriptRuntimeSettingsSupport(UiSettingsBus uiSettings, ChatStyles styles) {
     this.uiSettings = uiSettings;
     this.styles = Objects.requireNonNull(styles, "styles");
   }
 
-  UiSettings safeSettings() {
+  public UiSettings safeSettings() {
     try {
       return uiSettings != null ? uiSettings.get() : null;
     } catch (Exception ignored) {
@@ -29,27 +30,42 @@ final class ChatTranscriptRuntimeSettingsSupport {
     }
   }
 
-  boolean outgoingDeliveryIndicatorsEnabled() {
+  public boolean outgoingDeliveryIndicatorsEnabled() {
     UiSettings settings = safeSettings();
     return settings == null || settings.outgoingDeliveryIndicatorsEnabled();
   }
 
-  boolean timestampsIncludeChatMessages() {
+  public boolean timestampsIncludeChatMessages() {
     UiSettings settings = safeSettings();
     return settings != null && settings.timestampsIncludeChatMessages();
   }
 
-  boolean timestampsIncludePresenceMessages() {
+  public boolean timestampsIncludePresenceMessages() {
     UiSettings settings = safeSettings();
     return settings != null && settings.timestampsIncludePresenceMessages();
   }
 
-  boolean presenceFoldsEnabled() {
+  public boolean presenceFoldsEnabled() {
     UiSettings settings = safeSettings();
     return settings == null || settings.presenceFoldsEnabled();
   }
 
-  int transcriptMaxLinesPerTarget() {
+  public boolean chatHistoryDeferRichTextDuringBatch() {
+    UiSettings settings = safeSettings();
+    return settings != null && settings.chatHistoryDeferRichTextDuringBatch();
+  }
+
+  public boolean imageEmbedsEnabled() {
+    UiSettings settings = safeSettings();
+    return settings != null && settings.imageEmbedsEnabled();
+  }
+
+  public boolean linkPreviewsEnabled() {
+    UiSettings settings = safeSettings();
+    return settings != null && settings.linkPreviewsEnabled();
+  }
+
+  public int transcriptMaxLinesPerTarget() {
     UiSettings settings = safeSettings();
     int configured =
         settings != null
@@ -61,7 +77,7 @@ final class ChatTranscriptRuntimeSettingsSupport {
     return Math.min(MAX_TRANSCRIPT_LINES_PER_TARGET, configured);
   }
 
-  Color configuredOutgoingLineColor(UiSettings settings) {
+  public Color configuredOutgoingLineColor(UiSettings settings) {
     if (settings == null || !settings.clientLineColorEnabled()) {
       return null;
     }
@@ -86,8 +102,7 @@ final class ChatTranscriptRuntimeSettingsSupport {
 
     for (int i = 1; i <= 24; i++) {
       double keepRequested = i / 24.0;
-      Color adjusted =
-          ChatTranscriptColorSupport.blendToward(fallback, requested, keepRequested);
+      Color adjusted = ChatTranscriptColorSupport.blendToward(fallback, requested, keepRequested);
       if (ChatTranscriptColorSupport.contrastRatio(adjusted, background) >= 4.5) {
         return adjusted;
       }

@@ -1,18 +1,23 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.runtime;
 
+import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredLinesSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptAuxiliaryRowsSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPresenceFoldSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReactionSummarySupport;
 import java.util.Objects;
 
-final class ChatTranscriptState {
+public final class ChatTranscriptState {
 
-  final ChatTranscriptMessageCatalogSupport.State messageCatalog;
-  final ChatTranscriptFilteredLinesSupport.State filteredLines;
-  final ChatTranscriptPresenceFoldSupport.State presenceFolds;
-  final ChatTranscriptAuxiliaryRowsSupport.State auxiliaryRows;
-  final ChatTranscriptReactionSummarySupport.State reactionSummary;
+  private final ChatTranscriptMessageCatalogSupport.State messageCatalog;
+  private final ChatTranscriptFilteredLinesSupport.State filteredLines;
+  private final ChatTranscriptPresenceFoldSupport.State presenceFolds;
+  private final ChatTranscriptAuxiliaryRowsSupport.State auxiliaryRows;
+  private final ChatTranscriptReactionSummarySupport.State reactionSummary;
 
-  Long earliestEpochMsSeen;
+  private Long earliestEpochMsSeen;
 
-  ChatTranscriptState(
+  public ChatTranscriptState(
       ChatTranscriptMessageCatalogSupport.State messageCatalog,
       ChatTranscriptFilteredLinesSupport.State filteredLines,
       ChatTranscriptPresenceFoldSupport.State presenceFolds) {
@@ -23,7 +28,39 @@ final class ChatTranscriptState {
     this.reactionSummary = new ChatTranscriptReactionSummarySupport.State();
   }
 
-  void resetAfterHeadTrim(
+  public ChatTranscriptMessageCatalogSupport.State messageCatalog() {
+    return messageCatalog;
+  }
+
+  public ChatTranscriptFilteredLinesSupport.State filteredLines() {
+    return filteredLines;
+  }
+
+  public ChatTranscriptPresenceFoldSupport.State presenceFolds() {
+    return presenceFolds;
+  }
+
+  public ChatTranscriptAuxiliaryRowsSupport.State auxiliaryRows() {
+    return auxiliaryRows;
+  }
+
+  public ChatTranscriptReactionSummarySupport.State reactionSummary() {
+    return reactionSummary;
+  }
+
+  public Long earliestEpochMsSeen() {
+    return earliestEpochMsSeen;
+  }
+
+  public void noteEpochMs(Long epochMs) {
+    if (epochMs == null) return;
+    Long current = earliestEpochMsSeen;
+    if (current == null || epochMs < current) {
+      earliestEpochMsSeen = epochMs;
+    }
+  }
+
+  public void resetAfterHeadTrim(
       ChatTranscriptPresenceFoldSupport presenceFoldSupport,
       ChatTranscriptFilteredLinesSupport filteredLinesSupport) {
     earliestEpochMsSeen = null;

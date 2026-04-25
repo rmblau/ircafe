@@ -1,7 +1,7 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.line;
 
-import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptMessageMetadataSupport.normalizeMessageId;
-import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptMessageMetadataSupport.normalizePendingId;
+import static cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageMetadataSupport.normalizeMessageId;
+import static cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageMetadataSupport.normalizePendingId;
 
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import java.awt.Component;
@@ -13,13 +13,13 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
 /** Shared transcript document scan and low-level mutation helpers. */
-final class ChatTranscriptDocumentSupport {
+public final class ChatTranscriptDocumentSupport {
 
-  record MessageLine(String targetMessageId, int lineStart, AttributeSet attrs) {}
+  public record MessageLine(String targetMessageId, int lineStart, AttributeSet attrs) {}
 
   private ChatTranscriptDocumentSupport() {}
 
-  static int findLineStartByMessageId(StyledDocument doc, String messageId) {
+  public static int findLineStartByMessageId(StyledDocument doc, String messageId) {
     if (doc == null) return -1;
     String want = normalizeMessageId(messageId);
     if (want.isEmpty()) return -1;
@@ -41,7 +41,7 @@ final class ChatTranscriptDocumentSupport {
     return -1;
   }
 
-  static int lineEndOffsetForLineStart(StyledDocument doc, int lineStart) {
+  public static int lineEndOffsetForLineStart(StyledDocument doc, int lineStart) {
     if (doc == null) return Math.max(0, lineStart);
     try {
       Element root = doc.getDefaultRootElement();
@@ -56,7 +56,7 @@ final class ChatTranscriptDocumentSupport {
     }
   }
 
-  static MessageLine findMessageLine(StyledDocument doc, String messageId) {
+  public static MessageLine findMessageLine(StyledDocument doc, String messageId) {
     if (doc == null) return null;
     String targetMsgId = normalizeMessageId(messageId);
     if (targetMsgId.isEmpty()) return null;
@@ -68,7 +68,7 @@ final class ChatTranscriptDocumentSupport {
     return attrs == null ? null : new MessageLine(targetMsgId, lineStart, attrs);
   }
 
-  static int findLineStartByPendingId(StyledDocument doc, String pendingId) {
+  public static int findLineStartByPendingId(StyledDocument doc, String pendingId) {
     if (doc == null) return -1;
     String want = normalizePendingId(pendingId);
     if (want.isEmpty()) return -1;
@@ -119,7 +119,7 @@ final class ChatTranscriptDocumentSupport {
     return -1;
   }
 
-  static void markLineRangeRedacted(StyledDocument doc, int lineStart) {
+  public static void markLineRangeRedacted(StyledDocument doc, int lineStart) {
     if (doc == null || lineStart < 0) return;
     int lineEnd = lineEndOffsetForLineStart(doc, lineStart);
     int len = Math.max(0, lineEnd - lineStart);

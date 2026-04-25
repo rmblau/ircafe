@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.style;
 
 import java.awt.Color;
 
@@ -7,7 +7,7 @@ import java.awt.Color;
  *
  * <p>All methods are stateless; they operate only on their parameters.
  */
-final class ChatTranscriptColorSupport {
+public final class ChatTranscriptColorSupport {
 
   private ChatTranscriptColorSupport() {}
 
@@ -17,7 +17,7 @@ final class ChatTranscriptColorSupport {
    * <p>A weight of {@code 1.0} returns {@code source} unchanged; {@code 0.0} returns {@code
    * target}.
    */
-  static Color blendToward(Color target, Color source, double sourceWeight) {
+  public static Color blendToward(Color target, Color source, double sourceWeight) {
     if (target == null) return source;
     if (source == null) return target;
 
@@ -33,7 +33,7 @@ final class ChatTranscriptColorSupport {
    * Returns {@link Color#BLACK} or {@link Color#WHITE}, whichever contrasts more against {@code
    * bg}.
    */
-  static Color bestTextColorForBackground(Color bg) {
+  public static Color bestTextColorForBackground(Color bg) {
     if (bg == null) return Color.BLACK;
     double blackContrast = contrastRatio(Color.BLACK, bg);
     double whiteContrast = contrastRatio(Color.WHITE, bg);
@@ -41,7 +41,7 @@ final class ChatTranscriptColorSupport {
   }
 
   /** WCAG 2.1 contrast ratio between two colours (range 1–21). */
-  static double contrastRatio(Color a, Color b) {
+  public static double contrastRatio(Color a, Color b) {
     if (a == null || b == null) return 0.0;
     double l1 = relativeLuminance(a);
     double l2 = relativeLuminance(b);
@@ -54,7 +54,7 @@ final class ChatTranscriptColorSupport {
   }
 
   /** WCAG 2.1 relative luminance of a colour. */
-  static double relativeLuminance(Color c) {
+  public static double relativeLuminance(Color c) {
     double r = srgbToLinear(c.getRed());
     double g = srgbToLinear(c.getGreen());
     double b = srgbToLinear(c.getBlue());
@@ -77,7 +77,7 @@ final class ChatTranscriptColorSupport {
    *
    * @return the parsed {@link Color}, or {@code null} if the input is null, blank, or malformed
    */
-  static Color parseHexColor(String raw) {
+  public static Color parseHexColor(String raw) {
     if (raw == null) return null;
     String s = raw.trim();
     if (s.isEmpty()) return null;

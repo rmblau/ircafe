@@ -1,17 +1,20 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.message;
 
 import cafe.woden.ircclient.model.LogDirection;
 import cafe.woden.ircclient.model.LogKind;
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptDocumentSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
 import java.util.Map;
 import java.util.Objects;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyledDocument;
 
-final class ChatTranscriptMessageReplacementSupport {
+public final class ChatTranscriptMessageReplacementSupport {
 
   @FunctionalInterface
-  interface LineMetaFactory {
+  public interface LineMetaFactory {
     LineMeta create(
         TargetRef ref,
         LogKind kind,
@@ -23,12 +26,12 @@ final class ChatTranscriptMessageReplacementSupport {
   }
 
   @FunctionalInterface
-  interface TranscriptFromRenderer {
+  public interface TranscriptFromRenderer {
     String render(TargetRef ref, String fromNick);
   }
 
   @FunctionalInterface
-  interface ActionLineInserter {
+  public interface ActionLineInserter {
     void insert(
         TargetRef ref,
         int insertAt,
@@ -39,7 +42,7 @@ final class ChatTranscriptMessageReplacementSupport {
   }
 
   @FunctionalInterface
-  interface StandardLineInserter {
+  public interface StandardLineInserter {
     void insert(
         TargetRef ref,
         int insertAt,
@@ -51,7 +54,7 @@ final class ChatTranscriptMessageReplacementSupport {
   }
 
   @FunctionalInterface
-  interface EpochRecorder {
+  public interface EpochRecorder {
     void record(TargetRef ref, Long epochMs);
   }
 
@@ -63,7 +66,7 @@ final class ChatTranscriptMessageReplacementSupport {
   private final StandardLineInserter standardLineInserter;
   private final EpochRecorder epochRecorder;
 
-  ChatTranscriptMessageReplacementSupport(
+  public ChatTranscriptMessageReplacementSupport(
       ChatTranscriptMessageCatalogSupport messageCatalogSupport,
       ChatTranscriptSenderStyleSupport.Context senderStyleSupportContext,
       LineMetaFactory lineMetaFactory,

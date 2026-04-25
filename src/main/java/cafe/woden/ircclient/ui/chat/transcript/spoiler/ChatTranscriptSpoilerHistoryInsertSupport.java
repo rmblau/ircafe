@@ -1,39 +1,40 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.spoiler;
 
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import java.util.Objects;
 import javax.swing.text.StyledDocument;
 
-final class ChatTranscriptSpoilerHistoryInsertSupport {
+public final class ChatTranscriptSpoilerHistoryInsertSupport {
 
   @FunctionalInterface
-  interface InsertAtNormalizer {
+  public interface InsertAtNormalizer {
     int normalize(StyledDocument doc, int insertAt);
   }
 
   @FunctionalInterface
-  interface InsertLineStartEnsurer {
+  public interface InsertLineStartEnsurer {
     int ensure(StyledDocument doc, int insertAt);
   }
 
   @FunctionalInterface
-  interface PresenceBlockShifter {
+  public interface PresenceBlockShifter {
     void shift(TargetRef ref, int insertAt, int delta);
   }
 
   @FunctionalInterface
-  interface TranscriptLineCapEnforcer {
+  public interface TranscriptLineCapEnforcer {
     int enforce(TargetRef ref, StyledDocument doc);
   }
 
-  record Context(
+  public record Context(
       ChatTranscriptSpoilerWriteSupport.Context spoilerWriteSupportContext,
       InsertAtNormalizer insertAtNormalizer,
       InsertLineStartEnsurer insertLineStartEnsurer,
       PresenceBlockShifter presenceBlockShifter,
       TranscriptLineCapEnforcer transcriptLineCapEnforcer) {
-    Context {
+    public Context {
       Objects.requireNonNull(spoilerWriteSupportContext, "spoilerWriteSupportContext");
       Objects.requireNonNull(insertAtNormalizer, "insertAtNormalizer");
       Objects.requireNonNull(insertLineStartEnsurer, "insertLineStartEnsurer");
@@ -44,7 +45,7 @@ final class ChatTranscriptSpoilerHistoryInsertSupport {
 
   private ChatTranscriptSpoilerHistoryInsertSupport() {}
 
-  static int insertVisibleSpoiler(
+  public static int insertVisibleSpoiler(
       Context context,
       StyledDocument doc,
       TargetRef ref,

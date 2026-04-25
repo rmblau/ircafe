@@ -10,13 +10,21 @@ import cafe.woden.ircclient.model.LogKind;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.fold.FilteredFoldComponent;
+import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilterRoutingSupport;
+import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredLinesSupport;
+import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredRunSupport;
+import cafe.woden.ircclient.ui.chat.transcript.flow.ChatTranscriptFilteredFlowSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPresenceFoldSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageStateSupport;
+import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptState;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.swing.text.AttributeSet;
 import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.Element;
 import javax.swing.text.SimpleAttributeSet;
@@ -81,7 +89,7 @@ class ChatTranscriptFilteredFlowSupportTest {
         hiddenMeta,
         new FilterEngine.Match(UUID.randomUUID(), "Rule A", FilterAction.HIDE));
 
-    assertEquals(1_234L, fixture.state(ref).earliestEpochMsSeen);
+    assertEquals(1_234L, fixture.state(ref).earliestEpochMsSeen());
     assertEquals(1, inlineComponentCount(fixture.document(ref), FilteredFoldComponent.class));
   }
 
@@ -110,7 +118,7 @@ class ChatTranscriptFilteredFlowSupportTest {
             new FilterEngine.Match(UUID.randomUUID(), "Rule B", FilterAction.HIDE));
 
     assertTrue(nextInsertAt > 0);
-    assertEquals(2_468L, fixture.state(ref).earliestEpochMsSeen);
+    assertEquals(2_468L, fixture.state(ref).earliestEpochMsSeen());
     assertEquals(1, inlineComponentCount(fixture.document(ref), FilteredFoldComponent.class));
   }
 
@@ -130,7 +138,8 @@ class ChatTranscriptFilteredFlowSupportTest {
       if (start >= len) {
         continue;
       }
-      Object component = StyleConstants.getComponent(doc.getCharacterElement(start).getAttributes());
+      Object component =
+          StyleConstants.getComponent(doc.getCharacterElement(start).getAttributes());
       if (componentType.isInstance(component)) {
         count++;
       }
@@ -210,10 +219,7 @@ class ChatTranscriptFilteredFlowSupportTest {
       if (state == null || epochMs == null) {
         return;
       }
-      Long current = state.earliestEpochMsSeen;
-      if (current == null || epochMs < current) {
-        state.earliestEpochMsSeen = epochMs;
-      }
+      state.noteEpochMs(epochMs);
     }
 
     ChatTranscriptState state(TargetRef ref) {

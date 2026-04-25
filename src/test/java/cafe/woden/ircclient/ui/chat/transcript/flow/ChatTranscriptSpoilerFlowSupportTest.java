@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.flow;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -9,10 +9,23 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.model.FilterAction;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
+import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilterRoutingSupport;
+import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptSpoilerAppendSupport;
+import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptSpoilerComponentSupport;
+import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptSpoilerHistoryInsertSupport;
+import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptSpoilerRevealSupport;
+import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptSpoilerRuntimeSupport;
+import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptSpoilerWriteSupport;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
+import java.util.function.ObjLongConsumer;
 import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.StyledDocument;
 import org.junit.jupiter.api.Test;
 
 class ChatTranscriptSpoilerFlowSupportTest {
@@ -48,6 +61,42 @@ class ChatTranscriptSpoilerFlowSupportTest {
   }
 
   @Test
+  void appendSpoilerEnsuresTargetAndNotesHistoryEpochBeforeWriting() throws Exception {
+    TargetRef ref = new TargetRef("srv", "#chan");
+    Map<TargetRef, StyledDocument> docs = new HashMap<>();
+    DefaultStyledDocument doc = new DefaultStyledDocument();
+    AtomicInteger targetEnsures = new AtomicInteger();
+    AtomicLong notedEpoch = new AtomicLong(-1L);
+    ChatTranscriptSpoilerFlowSupport.Context context =
+        newContext(
+            docs,
+            target -> {
+              assertEquals(ref, target);
+              targetEnsures.incrementAndGet();
+              docs.put(target, doc);
+            },
+            (target, epochMs) -> {
+              assertEquals(ref, target);
+              notedEpoch.set(epochMs);
+            },
+            new ChatTranscriptFilterRoutingSupport(
+                null,
+                (target, previewText, hiddenMeta, match) -> {},
+                (target, insertAt, previewText, hiddenMeta, match) -> insertAt,
+                target -> {},
+                target -> {}),
+            appendContext(),
+            historyInsertContext(),
+            target -> {});
+
+    ChatTranscriptSpoilerFlowSupport.appendSpoiler(context, ref, "alice", "secret", 1_000L);
+
+    assertEquals(" \n", doc.getText(0, doc.getLength()));
+    assertEquals(1, targetEnsures.get());
+    assertEquals(1_000L, notedEpoch.get());
+  }
+
+  @Test
   void insertSpoilerFromHistoryReturnsHiddenInsertOffsetWhenHidePlaceholderHandled() {
     FilterEngine filterEngine = mock(FilterEngine.class);
     when(filterEngine.firstMatch(any()))
@@ -76,6 +125,47 @@ class ChatTranscriptSpoilerFlowSupportTest {
     assertEquals(41, nextInsertAt);
     assertEquals(0, doc.getLength());
     assertEquals(0, filteredRunEnds.get());
+  }
+
+  @Test
+  void insertSpoilerFromHistoryEnsuresTargetAndNotesEpochBeforeWriting() throws Exception {
+    TargetRef ref = new TargetRef("srv", "#chan");
+    Map<TargetRef, StyledDocument> docs = new HashMap<>();
+    DefaultStyledDocument doc = new DefaultStyledDocument();
+    AtomicInteger targetEnsures = new AtomicInteger();
+    AtomicLong notedEpoch = new AtomicLong(-1L);
+    AtomicInteger filteredRunEnds = new AtomicInteger();
+    ChatTranscriptSpoilerFlowSupport.Context context =
+        newContext(
+            docs,
+            target -> {
+              assertEquals(ref, target);
+              targetEnsures.incrementAndGet();
+              docs.put(target, doc);
+            },
+            (target, epochMs) -> {
+              assertEquals(ref, target);
+              notedEpoch.set(epochMs);
+            },
+            new ChatTranscriptFilterRoutingSupport(
+                null,
+                (target, previewText, hiddenMeta, match) -> {},
+                (target, insertAt, previewText, hiddenMeta, match) -> insertAt,
+                target -> filteredRunEnds.incrementAndGet(),
+                target -> {}),
+            appendContext(),
+            historyInsertContext(),
+            target -> filteredRunEnds.incrementAndGet());
+
+    int nextInsertAt =
+        ChatTranscriptSpoilerFlowSupport.insertSpoilerFromHistory(
+            context, ref, 0, "alice", "secret", 1_000L);
+
+    assertTrue(nextInsertAt > 0);
+    assertEquals(" \n", doc.getText(0, doc.getLength()));
+    assertEquals(1, targetEnsures.get());
+    assertEquals(1_000L, notedEpoch.get());
+    assertEquals(1, filteredRunEnds.get());
   }
 
   @Test
@@ -108,7 +198,28 @@ class ChatTranscriptSpoilerFlowSupportTest {
       ChatTranscriptSpoilerAppendSupport.Context spoilerAppendSupportContext,
       ChatTranscriptSpoilerHistoryInsertSupport.Context spoilerHistoryInsertSupportContext,
       java.util.function.Consumer<TargetRef> filteredInsertRunEndHandler) {
+    return newContext(
+        new HashMap<>(),
+        target -> {},
+        (target, epochMs) -> {},
+        filterRoutingSupport,
+        spoilerAppendSupportContext,
+        spoilerHistoryInsertSupportContext,
+        filteredInsertRunEndHandler);
+  }
+
+  private static ChatTranscriptSpoilerFlowSupport.Context newContext(
+      Map<TargetRef, StyledDocument> docs,
+      Consumer<TargetRef> targetEnsureHandler,
+      ObjLongConsumer<TargetRef> epochNoteHandler,
+      ChatTranscriptFilterRoutingSupport filterRoutingSupport,
+      ChatTranscriptSpoilerAppendSupport.Context spoilerAppendSupportContext,
+      ChatTranscriptSpoilerHistoryInsertSupport.Context spoilerHistoryInsertSupportContext,
+      java.util.function.Consumer<TargetRef> filteredInsertRunEndHandler) {
     return new ChatTranscriptSpoilerFlowSupport.Context(
+        docs,
+        targetEnsureHandler,
+        epochNoteHandler,
         filterRoutingSupport,
         new ChatTranscriptSpoilerRuntimeSupport.Context(
             null,

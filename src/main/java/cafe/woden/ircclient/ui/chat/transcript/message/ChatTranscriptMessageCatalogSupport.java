@@ -1,16 +1,19 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.message;
 
-import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptMessageMetadataSupport.normalizeMessageId;
+import static cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageMetadataSupport.normalizeMessageId;
 
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
+import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptReplyPreviewSupport;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import javax.swing.text.AttributeSet;
 
 /** Owns per-target preview/current-message/redaction transcript caches. */
-final class ChatTranscriptMessageCatalogSupport {
+public final class ChatTranscriptMessageCatalogSupport {
 
-  static final class State {
+  public static final class State {
     private final Map<String, String> messagePreviewByMsgId;
     private final Map<String, ChatTranscriptStore.MessageContentSnapshot>
         currentMessageContentByMsgId;
@@ -26,50 +29,52 @@ final class ChatTranscriptMessageCatalogSupport {
 
   private final ChatTranscriptMessageStateSupport.Context messageStateSupportContext;
 
-  ChatTranscriptMessageCatalogSupport(
+  public ChatTranscriptMessageCatalogSupport(
       ChatTranscriptMessageStateSupport.Context messageStateSupportContext) {
     this.messageStateSupportContext =
         Objects.requireNonNull(messageStateSupportContext, "messageStateSupportContext");
   }
 
-  State createState(int replyPreviewCacheLimit, int redactedMessageCacheLimit) {
+  public State createState(int replyPreviewCacheLimit, int redactedMessageCacheLimit) {
     return new State(replyPreviewCacheLimit, redactedMessageCacheLimit);
   }
 
-  String previewForMessageId(State state, String messageId) {
+  public String previewForMessageId(State state, String messageId) {
     return ChatTranscriptReplyPreviewSupport.previewForMessageId(
         state == null ? null : state.messagePreviewByMsgId, messageId);
   }
 
-  ChatTranscriptStore.RedactedMessageContent redactedOriginalById(State state, String messageId) {
+  public ChatTranscriptStore.RedactedMessageContent redactedOriginalById(
+      State state, String messageId) {
     if (state == null) return null;
     String msgId = normalizeMessageId(messageId);
     if (msgId.isEmpty()) return null;
     return state.redactedOriginalByMsgId.get(msgId);
   }
 
-  void rememberMessagePreview(
+  public void rememberMessagePreview(
       State state, LineMeta meta, String renderedFrom, String renderedText) {
     if (state == null) return;
     ChatTranscriptMessageStateSupport.rememberMessagePreview(
         messageStateSupportContext, state.messagePreviewByMsgId, meta, renderedFrom, renderedText);
   }
 
-  void recordInsertedMessage(State state, LineMeta meta, String renderedFrom, String renderedText) {
+  public void recordInsertedMessage(
+      State state, LineMeta meta, String renderedFrom, String renderedText) {
     if (state == null) return;
     rememberMessagePreview(state, meta, renderedFrom, renderedText);
     ChatTranscriptMessageStateSupport.rememberCurrentMessageContent(
         state.currentMessageContentByMsgId, meta, renderedFrom, renderedText);
   }
 
-  void rememberEditedCurrentMessageContent(
+  public void rememberEditedCurrentMessageContent(
       State state, String targetMessageId, AttributeSet existingAttrs, String renderedEditedText) {
     if (state == null) return;
     ChatTranscriptMessageStateSupport.rememberEditedCurrentMessageContent(
         state.currentMessageContentByMsgId, targetMessageId, existingAttrs, renderedEditedText);
   }
 
-  void rememberRedactedOriginal(
+  public void rememberRedactedOriginal(
       State state,
       String targetMessageId,
       AttributeSet existingAttrs,
@@ -86,7 +91,7 @@ final class ChatTranscriptMessageCatalogSupport {
         redactedAtEpochMs);
   }
 
-  void clearCurrentMessageContent(State state, String targetMessageId) {
+  public void clearCurrentMessageContent(State state, String targetMessageId) {
     if (state == null) return;
     String msgId = normalizeMessageId(targetMessageId);
     if (msgId.isEmpty()) return;

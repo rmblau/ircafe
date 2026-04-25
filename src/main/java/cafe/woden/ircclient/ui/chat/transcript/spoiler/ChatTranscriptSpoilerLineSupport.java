@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.spoiler;
 
 import cafe.woden.ircclient.ui.chat.fold.SpoilerMessageComponent;
 import java.util.function.Function;
@@ -8,12 +8,13 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-final class ChatTranscriptSpoilerLineSupport {
+public final class ChatTranscriptSpoilerLineSupport {
 
   @FunctionalInterface
-  interface RevealHandlerFactory extends Function<Position, java.util.function.BooleanSupplier> {}
+  public interface RevealHandlerFactory
+      extends Function<Position, java.util.function.BooleanSupplier> {}
 
-  record WriteResult(int lineEndOffset, int nextOffset) {}
+  public record WriteResult(int lineEndOffset, int nextOffset) {}
 
   private ChatTranscriptSpoilerLineSupport() {}
 

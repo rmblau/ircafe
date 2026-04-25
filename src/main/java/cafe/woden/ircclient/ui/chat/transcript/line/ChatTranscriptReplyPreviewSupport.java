@@ -1,15 +1,16 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.line;
 
 import cafe.woden.ircclient.model.LogKind;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageMetadataSupport;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 
-final class ChatTranscriptReplyPreviewSupport {
+public final class ChatTranscriptReplyPreviewSupport {
 
   private ChatTranscriptReplyPreviewSupport() {}
 
-  static LinkedHashMap<String, String> createBoundedReplyPreviewCache(int maxEntries) {
+  public static LinkedHashMap<String, String> createBoundedReplyPreviewCache(int maxEntries) {
     return new LinkedHashMap<>() {
       @Override
       protected boolean removeEldestEntry(Map.Entry<String, String> eldest) {
@@ -18,14 +19,15 @@ final class ChatTranscriptReplyPreviewSupport {
     };
   }
 
-  static String previewForMessageId(Map<String, String> previews, String messageId) {
+  public static String previewForMessageId(Map<String, String> previews, String messageId) {
     if (previews == null) return "";
     String msgId = ChatTranscriptMessageMetadataSupport.normalizeMessageId(messageId);
     if (msgId.isEmpty()) return "";
     return Objects.toString(previews.get(msgId), "").trim();
   }
 
-  static String formatReplyPreviewSnippet(LogKind kind, String from, String text, int maxChars) {
+  public static String formatReplyPreviewSnippet(
+      LogKind kind, String from, String text, int maxChars) {
     String body = normalizeReplyPreviewText(text, maxChars);
     if (body.isEmpty()) return "";
     String nick = Objects.toString(from, "").trim();
@@ -36,7 +38,7 @@ final class ChatTranscriptReplyPreviewSupport {
     };
   }
 
-  static String normalizeReplyPreviewText(String rawText, int maxChars) {
+  public static String normalizeReplyPreviewText(String rawText, int maxChars) {
     String raw = Objects.toString(rawText, "");
     if (raw.isEmpty()) return "";
 

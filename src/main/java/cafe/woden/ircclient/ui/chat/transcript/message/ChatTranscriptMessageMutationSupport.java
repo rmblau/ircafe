@@ -1,17 +1,18 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.message;
 
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptDocumentSupport;
 import java.util.Map;
 import java.util.Objects;
 import javax.swing.text.StyledDocument;
 
-final class ChatTranscriptMessageMutationSupport {
+public final class ChatTranscriptMessageMutationSupport {
   private final ChatTranscriptMessageCatalogSupport messageCatalogSupport;
   private final ChatTranscriptMessageReplacementSupport messageReplacementSupport;
   private final ChatTranscriptReactionSummarySupport reactionSummarySupport;
   private final String redactedMessagePlaceholder;
 
-  ChatTranscriptMessageMutationSupport(
+  public ChatTranscriptMessageMutationSupport(
       ChatTranscriptMessageCatalogSupport messageCatalogSupport,
       ChatTranscriptMessageReplacementSupport messageReplacementSupport,
       ChatTranscriptReactionSummarySupport reactionSummarySupport,
@@ -26,7 +27,7 @@ final class ChatTranscriptMessageMutationSupport {
         Objects.requireNonNull(redactedMessagePlaceholder, "redactedMessagePlaceholder");
   }
 
-  boolean applyMessageEdit(
+  public boolean applyMessageEdit(
       TargetRef ref,
       StyledDocument doc,
       ChatTranscriptMessageCatalogSupport.State messageCatalog,
@@ -58,7 +59,7 @@ final class ChatTranscriptMessageMutationSupport {
     return replaced;
   }
 
-  boolean applyMessageRedaction(
+  public boolean applyMessageRedaction(
       TargetRef ref,
       StyledDocument doc,
       ChatTranscriptMessageCatalogSupport.State messageCatalog,

@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.spoiler;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.NickColorService;
@@ -11,9 +11,9 @@ import java.util.Objects;
 import java.util.function.BiFunction;
 import javax.swing.UIManager;
 
-final class ChatTranscriptSpoilerComponentSupport {
+public final class ChatTranscriptSpoilerComponentSupport {
 
-  record Context(
+  public record Context(
       UiSettingsBus uiSettings,
       NickColorService nickColors,
       BiFunction<TargetRef, String, String> renderTranscriptFrom) {}

@@ -1,10 +1,12 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.line;
 
 import cafe.woden.ircclient.app.api.PresenceEvent;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.fold.PresenceFoldComponent;
 import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTimestampFormatter;
+import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,26 +18,26 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-final class ChatTranscriptPresenceFoldSupport {
+public final class ChatTranscriptPresenceFoldSupport {
 
   @FunctionalInterface
-  interface FilterMatchStyler {
+  public interface FilterMatchStyler {
     SimpleAttributeSet apply(AttributeSet base, FilterEngine.Match match);
   }
 
   @FunctionalInterface
-  interface TranscriptLineCapEnforcer {
+  public interface TranscriptLineCapEnforcer {
     int enforce(TargetRef ref, StyledDocument doc);
   }
 
-  static final class State {
+  public static final class State {
     private PresenceBlock currentBlock;
 
-    void clearCurrentBlock() {
+    public void clearCurrentBlock() {
       currentBlock = null;
     }
 
-    void reset() {
+    public void reset() {
       clearCurrentBlock();
     }
   }
@@ -62,7 +64,7 @@ final class ChatTranscriptPresenceFoldSupport {
   private final Consumer<StyledDocument> ensureAtLineStart;
   private final TranscriptLineCapEnforcer transcriptLineCapEnforcer;
 
-  ChatTranscriptPresenceFoldSupport(
+  public ChatTranscriptPresenceFoldSupport(
       ChatStyles styles,
       ChatRichTextRenderer renderer,
       ChatTimestampFormatter timestamps,
@@ -82,7 +84,7 @@ final class ChatTranscriptPresenceFoldSupport {
         Objects.requireNonNull(transcriptLineCapEnforcer, "transcriptLineCapEnforcer");
   }
 
-  void appendPresence(
+  public void appendPresence(
       TargetRef ref,
       StyledDocument doc,
       State state,
@@ -137,13 +139,13 @@ final class ChatTranscriptPresenceFoldSupport {
     transcriptLineCapEnforcer.enforce(ref, doc);
   }
 
-  void clearCurrentBlock(State state) {
+  public void clearCurrentBlock(State state) {
     if (state != null) {
       state.clearCurrentBlock();
     }
   }
 
-  void shiftCurrentBlock(State state, int insertAt, int delta) {
+  public void shiftCurrentBlock(State state, int insertAt, int delta) {
     if (state == null || delta == 0 || state.currentBlock == null) {
       return;
     }
@@ -154,7 +156,7 @@ final class ChatTranscriptPresenceFoldSupport {
     }
   }
 
-  void reset(State state) {
+  public void reset(State state) {
     if (state != null) {
       state.reset();
     }

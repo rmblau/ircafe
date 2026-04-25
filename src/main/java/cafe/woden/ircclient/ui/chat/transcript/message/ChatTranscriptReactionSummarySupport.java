@@ -1,10 +1,13 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.message;
 
-import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptMessageMetadataSupport.normalizeMessageId;
+import static cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageMetadataSupport.normalizeMessageId;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.fold.MessageReactionsComponent;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
+import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptDocumentSupport;
 import java.awt.Font;
 import java.util.Collection;
 import java.util.HashMap;
@@ -20,24 +23,24 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
-final class ChatTranscriptReactionSummarySupport {
+public final class ChatTranscriptReactionSummarySupport {
 
   private static final String AUX_ROW_KIND_REACTION_SUMMARY = "reaction-summary";
 
   @FunctionalInterface
-  interface ReactionSummaryMetaFactory {
+  public interface ReactionSummaryMetaFactory {
     LineMeta create(TargetRef ref, long epochMs, String targetMessageId);
   }
 
   @FunctionalInterface
-  interface PresenceBlockShiftHandler {
+  public interface PresenceBlockShiftHandler {
     void shift(TargetRef ref, int insertAt, int delta);
   }
 
-  static final class State {
+  public static final class State {
     private final Map<String, ReactionState> reactionsByTargetMsgId = new HashMap<>();
 
-    void clear() {
+    public void clear() {
       reactionsByTargetMsgId.clear();
     }
   }
@@ -90,7 +93,7 @@ final class ChatTranscriptReactionSummarySupport {
   private volatile ChatTranscriptStore.ReactionChipActionHandler reactionChipActionHandler =
       (target, messageId, reactionToken, unreactRequested) -> {};
 
-  ChatTranscriptReactionSummarySupport(
+  public ChatTranscriptReactionSummarySupport(
       ChatStyles styles,
       Supplier<Font> transcriptFontSupplier,
       ReactionSummaryMetaFactory reactionSummaryMetaFactory,
@@ -114,7 +117,7 @@ final class ChatTranscriptReactionSummarySupport {
     this.shiftPresenceBlock = Objects.requireNonNull(shiftPresenceBlock, "shiftPresenceBlock");
   }
 
-  boolean hasReactionFromNick(State state, String messageId, String reaction, String nick) {
+  public boolean hasReactionFromNick(State state, String messageId, String reaction, String nick) {
     if (state == null) return false;
     String msgId = normalizeMessageId(messageId);
     String token = Objects.toString(reaction, "").trim();
@@ -125,7 +128,7 @@ final class ChatTranscriptReactionSummarySupport {
     return reactionState.hasReactionFromNick(token, normalizedNick);
   }
 
-  void setReactionChipActionHandler(
+  public void setReactionChipActionHandler(
       ChatTranscriptStore.ReactionChipActionHandler handler, Map<TargetRef, State> statesByTarget) {
     reactionChipActionHandler =
         handler != null ? handler : (target, messageId, reactionToken, unreactRequested) -> {};
@@ -148,7 +151,7 @@ final class ChatTranscriptReactionSummarySupport {
     }
   }
 
-  void applyMessageReaction(
+  public void applyMessageReaction(
       TargetRef ref,
       StyledDocument doc,
       State state,
@@ -180,7 +183,7 @@ final class ChatTranscriptReactionSummarySupport {
         ref, doc, state, targetMsgId, lineStart, reactionState, tsEpochMs);
   }
 
-  void removeMessageReaction(
+  public void removeMessageReaction(
       TargetRef ref,
       StyledDocument doc,
       State state,
@@ -217,7 +220,7 @@ final class ChatTranscriptReactionSummarySupport {
         ref, doc, state, targetMsgId, lineStart, reactionState, tsEpochMs);
   }
 
-  void materializePendingReactionsForMessage(
+  public void materializePendingReactionsForMessage(
       TargetRef ref, StyledDocument doc, State state, String messageId, long tsEpochMs) {
     if (ref == null || doc == null || state == null) return;
     String msgId = normalizeMessageId(messageId);
@@ -231,7 +234,7 @@ final class ChatTranscriptReactionSummarySupport {
     insertReactionControlForMessage(ref, doc, state, msgId, lineStart, reactionState, tsEpochMs);
   }
 
-  void clearReactionStateForMessage(
+  public void clearReactionStateForMessage(
       TargetRef ref, StyledDocument doc, State state, String targetMessageId) {
     if (ref == null || doc == null || state == null) return;
     String targetMsgId = normalizeMessageId(targetMessageId);

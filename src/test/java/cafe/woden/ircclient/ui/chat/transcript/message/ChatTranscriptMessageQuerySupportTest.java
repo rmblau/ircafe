@@ -7,6 +7,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import cafe.woden.ircclient.model.LogDirection;
 import cafe.woden.ircclient.model.LogKind;
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredLinesSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPresenceFoldSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageQuerySupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageStateSupport;
+import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptState;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.text.DefaultStyledDocument;
@@ -50,14 +57,15 @@ class ChatTranscriptMessageQuerySupportTest {
     TargetRef ref = new TargetRef("srv", "#chan");
     ChatTranscriptState state = newState();
     messageCatalogSupport.recordInsertedMessage(
-        state.messageCatalog,
+        state.messageCatalog(),
         ChatTranscriptLineMetaSupport.create(
             ref, LogKind.CHAT, LogDirection.IN, "alice", 321L, null, "m-2", Map.of()),
         "alice",
         "hello there");
 
     ChatTranscriptMessageQuerySupport.Context context =
-        new ChatTranscriptMessageQuerySupport.Context(Map.of(), Map.of(ref, state), messageCatalogSupport);
+        new ChatTranscriptMessageQuerySupport.Context(
+            Map.of(), Map.of(ref, state), messageCatalogSupport);
 
     assertEquals("alice: hello there", support.messagePreviewById(context, ref, "m-2"));
     assertEquals("", support.messagePreviewById(context, ref, "missing"));

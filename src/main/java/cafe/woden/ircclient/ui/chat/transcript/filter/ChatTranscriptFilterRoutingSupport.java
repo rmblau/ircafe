@@ -1,26 +1,28 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.filter;
 
 import cafe.woden.ircclient.model.LogDirection;
 import cafe.woden.ircclient.model.LogKind;
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
 import cafe.woden.ircclient.ui.filter.FilterContext;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-final class ChatTranscriptFilterRoutingSupport {
+public final class ChatTranscriptFilterRoutingSupport {
 
   private static final FilterEngine.Effective DEFAULT_EFFECTIVE =
       new FilterEngine.Effective(false, true, true, 3, 250, 12, 10, true);
 
   @FunctionalInterface
-  interface HiddenAppendHandler {
+  public interface HiddenAppendHandler {
     void append(TargetRef ref, String previewText, LineMeta hiddenMeta, FilterEngine.Match match);
   }
 
   @FunctionalInterface
-  interface HiddenInsertHandler {
+  public interface HiddenInsertHandler {
     int insert(
         TargetRef ref,
         int insertAt,
@@ -30,16 +32,16 @@ final class ChatTranscriptFilterRoutingSupport {
   }
 
   @FunctionalInterface
-  interface FilteredInsertRunEndHandler {
+  public interface FilteredInsertRunEndHandler {
     void end(TargetRef ref);
   }
 
   @FunctionalInterface
-  interface PresenceRunBreakHandler {
+  public interface PresenceRunBreakHandler {
     void breakRun(TargetRef ref);
   }
 
-  record HistoryDecision(boolean handled, int nextInsertAt) {
+  public record HistoryDecision(boolean handled, int nextInsertAt) {
     static HistoryDecision unhandled(int nextInsertAt) {
       return new HistoryDecision(false, nextInsertAt);
     }
@@ -49,7 +51,7 @@ final class ChatTranscriptFilterRoutingSupport {
     }
   }
 
-  record VisibleAppend(LineMeta meta, FilterEngine.Match match) {}
+  public record VisibleAppend(LineMeta meta, FilterEngine.Match match) {}
 
   private final FilterEngine filterEngine;
   private final HiddenAppendHandler hiddenAppendHandler;
@@ -57,7 +59,7 @@ final class ChatTranscriptFilterRoutingSupport {
   private final FilteredInsertRunEndHandler filteredInsertRunEndHandler;
   private final PresenceRunBreakHandler presenceRunBreakHandler;
 
-  ChatTranscriptFilterRoutingSupport(
+  public ChatTranscriptFilterRoutingSupport(
       FilterEngine filterEngine,
       HiddenAppendHandler hiddenAppendHandler,
       HiddenInsertHandler hiddenInsertHandler,
@@ -72,7 +74,7 @@ final class ChatTranscriptFilterRoutingSupport {
         Objects.requireNonNull(presenceRunBreakHandler, "presenceRunBreakHandler");
   }
 
-  FilterEngine.Effective effectiveFor(TargetRef ref) {
+  public FilterEngine.Effective effectiveFor(TargetRef ref) {
     if (filterEngine == null) {
       return DEFAULT_EFFECTIVE;
     }
@@ -84,7 +86,7 @@ final class ChatTranscriptFilterRoutingSupport {
     }
   }
 
-  FilterEngine.Match firstMatch(
+  public FilterEngine.Match firstMatch(
       TargetRef ref,
       LogKind kind,
       LogDirection direction,
@@ -102,7 +104,8 @@ final class ChatTranscriptFilterRoutingSupport {
     }
   }
 
-  FilterEngine.Match matchFor(TargetRef ref, LineMeta meta, String fallbackFromNick, String text) {
+  public FilterEngine.Match matchFor(
+      TargetRef ref, LineMeta meta, String fallbackFromNick, String text) {
     if (meta == null) {
       return null;
     }
@@ -111,7 +114,7 @@ final class ChatTranscriptFilterRoutingSupport {
     return firstMatch(ref, meta.kind(), meta.direction(), filterFrom, text, meta.tags());
   }
 
-  FilterEngine.Match hideMatch(
+  public FilterEngine.Match hideMatch(
       TargetRef ref,
       LogKind kind,
       LogDirection direction,
@@ -122,7 +125,7 @@ final class ChatTranscriptFilterRoutingSupport {
     return (match != null && match.isHide()) ? match : null;
   }
 
-  LineMeta prepareVisibleTextAppend(
+  public LineMeta prepareVisibleTextAppend(
       TargetRef ref,
       LogKind kind,
       LogDirection direction,
@@ -149,7 +152,7 @@ final class ChatTranscriptFilterRoutingSupport {
     return meta;
   }
 
-  VisibleAppend prepareVisibleTextAppendWithMatch(
+  public VisibleAppend prepareVisibleTextAppendWithMatch(
       TargetRef ref,
       LogKind kind,
       LogDirection direction,
@@ -176,7 +179,7 @@ final class ChatTranscriptFilterRoutingSupport {
     return new VisibleAppend(meta, match);
   }
 
-  VisibleAppend prepareVisibleActionAppend(
+  public VisibleAppend prepareVisibleActionAppend(
       TargetRef ref,
       LogDirection direction,
       String fromNick,
@@ -203,7 +206,7 @@ final class ChatTranscriptFilterRoutingSupport {
     return new VisibleAppend(meta, match);
   }
 
-  boolean handleHiddenAppend(
+  public boolean handleHiddenAppend(
       TargetRef ref, String previewText, LineMeta hiddenMeta, FilterEngine.Match match) {
     if (ref == null || match == null || !match.isHide()) {
       return false;
@@ -212,7 +215,7 @@ final class ChatTranscriptFilterRoutingSupport {
     return true;
   }
 
-  boolean handleHiddenTextAppend(
+  public boolean handleHiddenTextAppend(
       TargetRef ref, String fromNick, String text, LineMeta hiddenMeta, FilterEngine.Match match) {
     return handleHiddenAppend(
         ref,
@@ -221,7 +224,7 @@ final class ChatTranscriptFilterRoutingSupport {
         match);
   }
 
-  boolean handleHiddenActionAppend(
+  public boolean handleHiddenActionAppend(
       TargetRef ref,
       String fromNick,
       String action,
@@ -234,7 +237,7 @@ final class ChatTranscriptFilterRoutingSupport {
         match);
   }
 
-  HistoryDecision handleHiddenHistoryInsert(
+  public HistoryDecision handleHiddenHistoryInsert(
       TargetRef ref,
       int insertAt,
       String previewText,
@@ -254,7 +257,7 @@ final class ChatTranscriptFilterRoutingSupport {
     return HistoryDecision.handled(Math.max(0, insertAt));
   }
 
-  HistoryDecision handleHiddenTextHistoryInsert(
+  public HistoryDecision handleHiddenTextHistoryInsert(
       TargetRef ref,
       int insertAt,
       String fromNick,
@@ -269,7 +272,7 @@ final class ChatTranscriptFilterRoutingSupport {
         match);
   }
 
-  HistoryDecision handleHiddenActionHistoryInsert(
+  public HistoryDecision handleHiddenActionHistoryInsert(
       TargetRef ref,
       int insertAt,
       String fromNick,

@@ -10,6 +10,16 @@ import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.fold.PresenceFoldComponent;
 import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
+import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilterRoutingSupport;
+import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredLinesSupport;
+import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredRunSupport;
+import cafe.woden.ircclient.ui.chat.transcript.flow.ChatTranscriptPresenceFlowSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPresenceFoldSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageStateSupport;
+import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeSettingsSupport;
+import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptState;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import java.util.HashMap;
 import java.util.Map;
@@ -201,15 +211,11 @@ class ChatTranscriptPresenceFlowSupportTest {
       if (state == null || epochMs == null) {
         return;
       }
-      Long current = state.earliestEpochMsSeen;
-      if (current == null || epochMs < current) {
-        state.earliestEpochMsSeen = epochMs;
-      }
+      state.noteEpochMs(epochMs);
     }
 
     StyledDocument document(TargetRef ref) {
       return docs.get(ref);
     }
-
   }
 }

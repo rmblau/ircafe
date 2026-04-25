@@ -5,7 +5,7 @@ import cafe.woden.ircclient.model.LogKind;
 import java.util.Map;
 import java.util.Set;
 
-record LineMeta(
+public record LineMeta(
     String bufferKey,
     LogKind kind,
     LogDirection direction,
@@ -16,16 +16,16 @@ record LineMeta(
     String ircv3Tags,
     Map<String, String> ircv3TagsMap) {
 
-  String tagsDisplay() {
+  public String tagsDisplay() {
     if (tags == null || tags.isEmpty()) return "";
     return String.join(" ", tags);
   }
 
-  String messageIdDisplay() {
+  public String messageIdDisplay() {
     return messageId == null ? "" : messageId;
   }
 
-  String ircv3TagsDisplay() {
+  public String ircv3TagsDisplay() {
     return ircv3Tags == null ? "" : ircv3Tags;
   }
 }

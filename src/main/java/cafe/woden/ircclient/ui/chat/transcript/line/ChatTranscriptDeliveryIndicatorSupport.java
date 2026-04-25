@@ -1,5 +1,6 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.line;
 
+import cafe.woden.ircclient.ui.chat.transcript.OutgoingSendIndicator;
 import java.awt.Color;
 import java.awt.Component;
 import java.util.function.Consumer;
@@ -10,7 +11,7 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
 /** Shared helpers for inline outbound delivery indicators in transcript documents. */
-final class ChatTranscriptDeliveryIndicatorSupport {
+public final class ChatTranscriptDeliveryIndicatorSupport {
 
   private static final Color CONFIRMED_DOT_COLOR = new Color(0x2ecc71);
   private static final int CONFIRMED_DOT_HOLD_MS = 200;
@@ -18,7 +19,7 @@ final class ChatTranscriptDeliveryIndicatorSupport {
 
   private ChatTranscriptDeliveryIndicatorSupport() {}
 
-  static boolean insertConfirmedDot(
+  public static boolean insertConfirmedDot(
       StyledDocument doc, int after, AttributeSet baseAttrs, Consumer<Component> removeCallback) {
     if (doc == null || baseAttrs == null || removeCallback == null) return false;
     int insertPos = Math.max(0, Math.min(after - 1, doc.getLength()));
@@ -47,7 +48,7 @@ final class ChatTranscriptDeliveryIndicatorSupport {
     }
   }
 
-  static boolean removeInlineComponent(StyledDocument doc, Component expected) {
+  public static boolean removeInlineComponent(StyledDocument doc, Component expected) {
     if (doc == null || expected == null) return false;
     try {
       int len = doc.getLength();
@@ -68,7 +69,7 @@ final class ChatTranscriptDeliveryIndicatorSupport {
     }
   }
 
-  static int inlineComponentCount(StyledDocument doc, Class<?> componentType) {
+  public static int inlineComponentCount(StyledDocument doc, Class<?> componentType) {
     if (doc == null || componentType == null) return 0;
     int count = 0;
     int len = doc.getLength();

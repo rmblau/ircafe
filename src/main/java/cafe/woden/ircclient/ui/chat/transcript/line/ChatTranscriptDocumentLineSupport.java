@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.line;
 
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import java.util.Objects;
@@ -6,15 +6,15 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 
-final class ChatTranscriptDocumentLineSupport {
+public final class ChatTranscriptDocumentLineSupport {
 
   private final ChatStyles styles;
 
-  ChatTranscriptDocumentLineSupport(ChatStyles styles) {
+  public ChatTranscriptDocumentLineSupport(ChatStyles styles) {
     this.styles = Objects.requireNonNull(styles, "styles");
   }
 
-  void ensureAtLineStart(StyledDocument doc) {
+  public void ensureAtLineStart(StyledDocument doc) {
     if (doc == null) {
       return;
     }
@@ -40,7 +40,7 @@ final class ChatTranscriptDocumentLineSupport {
     }
   }
 
-  int normalizeInsertAtLineStart(StyledDocument doc, int insertAt) {
+  public int normalizeInsertAtLineStart(StyledDocument doc, int insertAt) {
     if (doc == null) {
       return 0;
     }
@@ -70,7 +70,7 @@ final class ChatTranscriptDocumentLineSupport {
     }
   }
 
-  int ensureAtLineStartForInsert(StyledDocument doc, int pos) {
+  public int ensureAtLineStartForInsert(StyledDocument doc, int pos) {
     if (doc == null) {
       return Math.max(0, pos);
     }

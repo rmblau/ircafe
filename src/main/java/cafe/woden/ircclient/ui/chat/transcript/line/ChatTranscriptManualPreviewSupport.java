@@ -1,9 +1,10 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.line;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.embed.ChatImageEmbedder;
 import cafe.woden.ircclient.ui.chat.embed.ChatLinkPreviewEmbedder;
+import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -15,22 +16,22 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyledDocument;
 
-final class ChatTranscriptManualPreviewSupport {
+public final class ChatTranscriptManualPreviewSupport {
 
-  static final String MANUAL_PREVIEW_MARKER = " \uD83D\uDC41";
+  public static final String MANUAL_PREVIEW_MARKER = " \uD83D\uDC41";
 
   private final ChatStyles styles;
   private final ChatImageEmbedder imageEmbeds;
   private final ChatLinkPreviewEmbedder linkPreviews;
 
-  ChatTranscriptManualPreviewSupport(
+  public ChatTranscriptManualPreviewSupport(
       ChatStyles styles, ChatImageEmbedder imageEmbeds, ChatLinkPreviewEmbedder linkPreviews) {
     this.styles = Objects.requireNonNull(styles, "styles");
     this.imageEmbeds = imageEmbeds;
     this.linkPreviews = linkPreviews;
   }
 
-  void insertManualPreviewMarkers(
+  public void insertManualPreviewMarkers(
       StyledDocument doc,
       int lineEndOffset,
       LineMeta meta,
@@ -64,7 +65,7 @@ final class ChatTranscriptManualPreviewSupport {
     }
   }
 
-  void appendBlockedPreviewMarkersForAppend(
+  public void appendBlockedPreviewMarkersForAppend(
       TargetRef ref,
       StyledDocument doc,
       int lineEndOffset,
@@ -85,7 +86,7 @@ final class ChatTranscriptManualPreviewSupport {
     insertManualPreviewMarkers(doc, lineEndOffset, meta, match, blockedUrls, filterMatchApplier);
   }
 
-  List<String> collectBlockedPreviewUrlsForAppend(
+  public List<String> collectBlockedPreviewUrlsForAppend(
       TargetRef ref,
       StyledDocument doc,
       String messageText,
@@ -120,7 +121,8 @@ final class ChatTranscriptManualPreviewSupport {
     return List.copyOf(blocked);
   }
 
-  boolean insertManualPreviewAt(TargetRef ref, StyledDocument doc, int insertAt, String rawUrl) {
+  public boolean insertManualPreviewAt(
+      TargetRef ref, StyledDocument doc, int insertAt, String rawUrl) {
     if (ref == null || ref.isUiOnly() || doc == null) return false;
     String url = normalizeManualPreviewUrl(rawUrl);
     if (url.isEmpty()) return false;
@@ -136,7 +138,7 @@ final class ChatTranscriptManualPreviewSupport {
     return inserted;
   }
 
-  static String normalizeManualPreviewUrl(String rawUrl) {
+  public static String normalizeManualPreviewUrl(String rawUrl) {
     return Objects.toString(rawUrl, "").trim();
   }
 }

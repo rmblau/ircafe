@@ -1,38 +1,39 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.message;
 
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.NickColorService;
+import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
 import java.util.Objects;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 
 /** Shared sender-line style preparation helpers for chat, notice, and action rows. */
-final class ChatTranscriptSenderStyleSupport {
+public final class ChatTranscriptSenderStyleSupport {
 
   @FunctionalInterface
-  interface LineMetaBinder {
+  public interface LineMetaBinder {
     SimpleAttributeSet bind(AttributeSet base, LineMeta meta);
   }
 
   @FunctionalInterface
-  interface OutgoingColorApplier {
+  public interface OutgoingColorApplier {
     void apply(
         SimpleAttributeSet fromStyle, SimpleAttributeSet messageStyle, boolean outgoingLocalEcho);
   }
 
   @FunctionalInterface
-  interface NotificationHighlightApplier {
+  public interface NotificationHighlightApplier {
     void apply(
         SimpleAttributeSet fromStyle, SimpleAttributeSet messageStyle, String rawNotificationColor);
   }
 
-  record Context(
+  public record Context(
       ChatStyles styles,
       NickColorService nickColors,
       LineMetaBinder lineMetaBinder,
       OutgoingColorApplier outgoingColorApplier,
       NotificationHighlightApplier notificationHighlightApplier) {
-    Context {
+    public Context {
       Objects.requireNonNull(styles, "styles");
       Objects.requireNonNull(lineMetaBinder, "lineMetaBinder");
       Objects.requireNonNull(outgoingColorApplier, "outgoingColorApplier");
@@ -40,11 +41,11 @@ final class ChatTranscriptSenderStyleSupport {
     }
   }
 
-  record PreparedStyles(SimpleAttributeSet fromStyle, SimpleAttributeSet messageStyle) {}
+  public record PreparedStyles(SimpleAttributeSet fromStyle, SimpleAttributeSet messageStyle) {}
 
   private ChatTranscriptSenderStyleSupport() {}
 
-  static PreparedStyles prepare(
+  public static PreparedStyles prepare(
       Context context,
       LineMeta meta,
       String from,
@@ -53,7 +54,7 @@ final class ChatTranscriptSenderStyleSupport {
     return prepareChat(context, meta, from, outgoingLocalEcho, notificationRuleHighlightColor);
   }
 
-  static PreparedStyles prepareChat(
+  public static PreparedStyles prepareChat(
       Context context,
       LineMeta meta,
       String from,
@@ -70,7 +71,7 @@ final class ChatTranscriptSenderStyleSupport {
         notificationRuleHighlightColor);
   }
 
-  static PreparedStyles prepareAction(
+  public static PreparedStyles prepareAction(
       Context context,
       LineMeta meta,
       String from,
@@ -87,7 +88,7 @@ final class ChatTranscriptSenderStyleSupport {
         notificationRuleHighlightColor);
   }
 
-  static PreparedStyles prepare(
+  public static PreparedStyles prepare(
       Context context,
       AttributeSet baseFromStyle,
       AttributeSet baseMessageStyle,

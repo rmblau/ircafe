@@ -1,8 +1,11 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.line;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTimestampFormatter;
+import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import java.awt.Component;
 import java.util.Map;
@@ -11,29 +14,29 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyledDocument;
 
-final class ChatTranscriptTextAppendSupport {
+public final class ChatTranscriptTextAppendSupport {
 
   @FunctionalInterface
-  interface RenderedFromResolver {
+  public interface RenderedFromResolver {
     String render(TargetRef ref, String from);
   }
 
   @FunctionalInterface
-  interface FilterMatchStyler {
+  public interface FilterMatchStyler {
     SimpleAttributeSet apply(AttributeSet base, FilterEngine.Match match);
   }
 
   @FunctionalInterface
-  interface TranscriptLineCapEnforcer {
+  public interface TranscriptLineCapEnforcer {
     int enforce(TargetRef ref, StyledDocument doc);
   }
 
   @FunctionalInterface
-  interface PendingReadMarkerRenderer {
+  public interface PendingReadMarkerRenderer {
     void render(TargetRef ref, Long lineEpochMs);
   }
 
-  record Context(
+  public record Context(
       ChatStyles styles,
       ChatTimestampFormatter timestamps,
       ChatRichTextRenderer renderer,
@@ -43,7 +46,7 @@ final class ChatTranscriptTextAppendSupport {
       FilterMatchStyler filterMatchStyler,
       TranscriptLineCapEnforcer transcriptLineCapEnforcer,
       PendingReadMarkerRenderer pendingReadMarkerRenderer) {
-    Context {
+    public Context {
       Objects.requireNonNull(styles, "styles");
       Objects.requireNonNull(messageCatalogSupport, "messageCatalogSupport");
       Objects.requireNonNull(manualPreviewSupport, "manualPreviewSupport");
@@ -56,7 +59,7 @@ final class ChatTranscriptTextAppendSupport {
 
   private ChatTranscriptTextAppendSupport() {}
 
-  static void appendVisibleLine(
+  public static void appendVisibleLine(
       Context context,
       TargetRef ref,
       StyledDocument doc,

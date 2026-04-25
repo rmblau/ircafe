@@ -1,9 +1,10 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.filter;
 
 import cafe.woden.ircclient.model.LogDirection;
 import cafe.woden.ircclient.model.LogKind;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.fold.FilteredLineComponent;
+import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -16,11 +17,11 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
 /** Shared metadata and document-update helpers for filtered transcript runs. */
-final class ChatTranscriptFilteredRunSupport {
+public final class ChatTranscriptFilteredRunSupport {
 
-  record Context(
+  public record Context(
       ChatStyles styles, BiFunction<AttributeSet, LineMeta, SimpleAttributeSet> withLineMeta) {
-    Context {
+    public Context {
       Objects.requireNonNull(styles, "styles");
       Objects.requireNonNull(withLineMeta, "withLineMeta");
     }
@@ -28,7 +29,7 @@ final class ChatTranscriptFilteredRunSupport {
 
   private ChatTranscriptFilteredRunSupport() {}
 
-  static LineMeta buildFilteredMeta(
+  public static LineMeta buildFilteredMeta(
       LineMeta base, long tsEpochMs, boolean hint, Set<String> unionTags) {
     if (base == null) {
       base =
@@ -58,7 +59,8 @@ final class ChatTranscriptFilteredRunSupport {
         base.ircv3TagsMap());
   }
 
-  static LineMeta buildFilteredOverflowMeta(LineMeta base, long tsEpochMs, Set<String> unionTags) {
+  public static LineMeta buildFilteredOverflowMeta(
+      LineMeta base, long tsEpochMs, Set<String> unionTags) {
     if (base == null) {
       base =
           new LineMeta(
@@ -87,7 +89,7 @@ final class ChatTranscriptFilteredRunSupport {
         base.ircv3TagsMap());
   }
 
-  static void attachFilterMatch(
+  public static void attachFilterMatch(
       SimpleAttributeSet attrs, FilterEngine.Match match, boolean multiple) {
     if (attrs == null) return;
 
@@ -111,7 +113,7 @@ final class ChatTranscriptFilteredRunSupport {
     }
   }
 
-  static <C extends FilteredLineComponent> void updateFilteredRunAttributes(
+  public static <C extends FilteredLineComponent> void updateFilteredRunAttributes(
       Context context,
       StyledDocument doc,
       ChatTranscriptFilteredLinesSupport.AbstractFilteredRun<C> run,
@@ -131,7 +133,7 @@ final class ChatTranscriptFilteredRunSupport {
     applyFilteredRunAttributesToDoc(context, doc, run, meta);
   }
 
-  static void updateFilteredOverflowRunAttributes(
+  public static void updateFilteredOverflowRunAttributes(
       Context context,
       StyledDocument doc,
       ChatTranscriptFilteredLinesSupport.AbstractFilteredRun<?> run) {

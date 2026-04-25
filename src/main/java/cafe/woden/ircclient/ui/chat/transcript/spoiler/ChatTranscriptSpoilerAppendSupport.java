@@ -1,28 +1,29 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.spoiler;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
+import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
 import java.util.Objects;
 import javax.swing.text.StyledDocument;
 
-final class ChatTranscriptSpoilerAppendSupport {
+public final class ChatTranscriptSpoilerAppendSupport {
 
   @FunctionalInterface
-  interface TranscriptLineStartEnsurer {
+  public interface TranscriptLineStartEnsurer {
     void ensure(StyledDocument doc);
   }
 
   @FunctionalInterface
-  interface TranscriptLineCapEnforcer {
+  public interface TranscriptLineCapEnforcer {
     int enforce(TargetRef ref, StyledDocument doc);
   }
 
-  record Context(
+  public record Context(
       ChatStyles styles,
       ChatTranscriptSpoilerWriteSupport.Context spoilerWriteSupportContext,
       TranscriptLineStartEnsurer transcriptLineStartEnsurer,
       TranscriptLineCapEnforcer transcriptLineCapEnforcer) {
-    Context {
+    public Context {
       Objects.requireNonNull(styles, "styles");
       Objects.requireNonNull(spoilerWriteSupportContext, "spoilerWriteSupportContext");
       Objects.requireNonNull(transcriptLineStartEnsurer, "transcriptLineStartEnsurer");
@@ -32,7 +33,7 @@ final class ChatTranscriptSpoilerAppendSupport {
 
   private ChatTranscriptSpoilerAppendSupport() {}
 
-  static void appendVisibleSpoiler(
+  public static void appendVisibleSpoiler(
       Context context,
       StyledDocument doc,
       TargetRef ref,

@@ -1,22 +1,26 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.message;
 
-import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptMessageMetadataSupport.normalizeMessageId;
+import static cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageMetadataSupport.normalizeMessageId;
 
 import cafe.woden.ircclient.model.LogKind;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
+import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptReplyPreviewSupport;
+import cafe.woden.ircclient.ui.chat.transcript.style.ChatTranscriptAttrSupport;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.LongSupplier;
 import javax.swing.text.AttributeSet;
 
 /** Shared transcript message-preview and snapshot state update helpers. */
-final class ChatTranscriptMessageStateSupport {
+public final class ChatTranscriptMessageStateSupport {
 
-  record Context(
+  public record Context(
       int replyPreviewTextMaxChars,
       String redactedMessagePlaceholder,
       LongSupplier currentTimeMillis) {
-    Context {
+    public Context {
       Objects.requireNonNull(redactedMessagePlaceholder, "redactedMessagePlaceholder");
       Objects.requireNonNull(currentTimeMillis, "currentTimeMillis");
     }
@@ -24,7 +28,7 @@ final class ChatTranscriptMessageStateSupport {
 
   private ChatTranscriptMessageStateSupport() {}
 
-  static void rememberMessagePreview(
+  public static void rememberMessagePreview(
       Context context,
       Map<String, String> messagePreviewByMsgId,
       LineMeta meta,
@@ -43,7 +47,7 @@ final class ChatTranscriptMessageStateSupport {
     messagePreviewByMsgId.put(msgId, preview);
   }
 
-  static void rememberCurrentMessageContent(
+  public static void rememberCurrentMessageContent(
       Map<String, ChatTranscriptStore.MessageContentSnapshot> currentMessageContentByMsgId,
       LineMeta meta,
       String from,
@@ -63,7 +67,7 @@ final class ChatTranscriptMessageStateSupport {
             meta.epochMs()));
   }
 
-  static void rememberEditedCurrentMessageContent(
+  public static void rememberEditedCurrentMessageContent(
       Map<String, ChatTranscriptStore.MessageContentSnapshot> currentMessageContentByMsgId,
       String targetMsgId,
       AttributeSet existingAttrs,
@@ -96,7 +100,7 @@ final class ChatTranscriptMessageStateSupport {
             kind, Objects.toString(fromNick, "").trim(), renderedEditedText, epochMs));
   }
 
-  static void rememberRedactedOriginal(
+  public static void rememberRedactedOriginal(
       Context context,
       Map<String, ChatTranscriptStore.MessageContentSnapshot> currentMessageContentByMsgId,
       Map<String, ChatTranscriptStore.RedactedMessageContent> redactedOriginalByMsgId,

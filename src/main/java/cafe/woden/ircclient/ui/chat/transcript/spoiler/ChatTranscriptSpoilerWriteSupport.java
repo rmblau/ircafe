@@ -1,8 +1,10 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.spoiler;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.fold.SpoilerMessageComponent;
+import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import java.util.function.BiFunction;
 import java.util.function.BooleanSupplier;
@@ -11,14 +13,14 @@ import javax.swing.text.Position;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyledDocument;
 
-final class ChatTranscriptSpoilerWriteSupport {
+public final class ChatTranscriptSpoilerWriteSupport {
 
   @FunctionalInterface
-  interface RevealHandlerFactory {
+  public interface RevealHandlerFactory {
     BooleanSupplier create(Position spoilerPos, SpoilerMessageComponent component);
   }
 
-  record Context(
+  public record Context(
       ChatStyles styles,
       ChatTranscriptSpoilerComponentSupport.Context componentContext,
       BiFunction<AttributeSet, FilterEngine.Match, SimpleAttributeSet> filterMatchApplier) {}

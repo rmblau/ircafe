@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.message;
 
 import cafe.woden.ircclient.irc.roster.UserListPort;
 import cafe.woden.ircclient.model.TargetRef;
@@ -7,6 +7,7 @@ import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import javax.swing.text.AttributeSet;
@@ -15,13 +16,13 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyledDocument;
 
 /** Shared Matrix-specific sender-label rendering and relabeling helpers for transcripts. */
-final class ChatTranscriptMatrixDisplayNameSupport {
+public final class ChatTranscriptMatrixDisplayNameSupport {
 
-  record Context(
+  public record Context(
       UiSettingsBus uiSettings,
       UserListPort userListStore,
       Function<TargetRef, StyledDocument> documentForTarget) {
-    Context {
+    public Context {
       Objects.requireNonNull(documentForTarget, "documentForTarget");
     }
   }
@@ -31,7 +32,7 @@ final class ChatTranscriptMatrixDisplayNameSupport {
 
   private ChatTranscriptMatrixDisplayNameSupport() {}
 
-  static String renderTranscriptFrom(Context context, TargetRef ref, String from) {
+  public static String renderTranscriptFrom(Context context, TargetRef ref, String from) {
     String raw = Objects.toString(from, "").trim();
     if (raw.isEmpty()) return raw;
     if (!looksLikeMatrixUserId(raw)) return raw;
@@ -49,7 +50,7 @@ final class ChatTranscriptMatrixDisplayNameSupport {
         : realName;
   }
 
-  static String matrixTranscriptNameDisplayMode(Context context) {
+  public static String matrixTranscriptNameDisplayMode(Context context) {
     try {
       UiSettings settings =
           context != null && context.uiSettings() != null ? context.uiSettings().get() : null;
@@ -60,14 +61,14 @@ final class ChatTranscriptMatrixDisplayNameSupport {
     }
   }
 
-  static boolean looksLikeMatrixUserId(String token) {
+  public static boolean looksLikeMatrixUserId(String token) {
     String value = Objects.toString(token, "").trim();
     if (!value.startsWith("@")) return false;
     int colon = value.indexOf(':');
     return colon > 1 && colon < value.length() - 1;
   }
 
-  static String normalizeMatrixUserListNameDisplayMode(String raw) {
+  public static String normalizeMatrixUserListNameDisplayMode(String raw) {
     String value = Objects.toString(raw, "").trim().toLowerCase(Locale.ROOT);
     if (value.isEmpty()) return "compact";
     return switch (value) {
@@ -77,7 +78,8 @@ final class ChatTranscriptMatrixDisplayNameSupport {
     };
   }
 
-  static int refreshMatrixDisplayNames(Context context, TargetRef ref, String matrixUserIdFilter) {
+  public static int refreshMatrixDisplayNames(
+      Context context, TargetRef ref, String matrixUserIdFilter) {
     if (context == null || ref == null) return 0;
     String userIdFilter = Objects.toString(matrixUserIdFilter, "").trim();
     if (!userIdFilter.isEmpty() && !looksLikeMatrixUserId(userIdFilter)) return 0;
@@ -152,13 +154,31 @@ final class ChatTranscriptMatrixDisplayNameSupport {
     return replacements.size();
   }
 
-  static boolean isMatrixTranscriptFromStyle(String styleId) {
+  public static int refreshMatrixDisplayNamesAcrossServer(
+      Context context, Map<TargetRef, ?> targetsByRef, String serverId, String matrixUserId) {
+    String sid = Objects.toString(serverId, "").trim();
+    String userId = Objects.toString(matrixUserId, "").trim();
+    if (targetsByRef == null || sid.isEmpty() || !looksLikeMatrixUserId(userId)) {
+      return 0;
+    }
+
+    int updated = 0;
+    ArrayList<TargetRef> refs = new ArrayList<>(targetsByRef.keySet());
+    for (TargetRef ref : refs) {
+      if (ref == null) continue;
+      if (!Objects.equals(ref.serverId(), sid)) continue;
+      updated += refreshMatrixDisplayNames(context, ref, userId);
+    }
+    return updated;
+  }
+
+  public static boolean isMatrixTranscriptFromStyle(String styleId) {
     return ChatStyles.STYLE_FROM.equals(styleId)
         || ChatStyles.STYLE_NOTICE_FROM.equals(styleId)
         || ChatStyles.STYLE_ACTION_FROM.equals(styleId);
   }
 
-  static String matrixFromSuffix(String styleId, String existingText) {
+  public static String matrixFromSuffix(String styleId, String existingText) {
     if (ChatStyles.STYLE_ACTION_FROM.equals(styleId)) return "";
 
     String existing = Objects.toString(existingText, "");

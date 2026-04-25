@@ -1,8 +1,12 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.line;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTimestampFormatter;
+import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptSenderStyleSupport;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import java.util.Map;
 import java.util.Objects;
@@ -11,29 +15,29 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyledDocument;
 
-final class ChatTranscriptActionAppendSupport {
+public final class ChatTranscriptActionAppendSupport {
 
   @FunctionalInterface
-  interface RenderedFromResolver {
+  public interface RenderedFromResolver {
     String render(TargetRef ref, String from);
   }
 
   @FunctionalInterface
-  interface FilterMatchStyler {
+  public interface FilterMatchStyler {
     SimpleAttributeSet apply(AttributeSet base, FilterEngine.Match match);
   }
 
   @FunctionalInterface
-  interface TranscriptLineCapEnforcer {
+  public interface TranscriptLineCapEnforcer {
     int enforce(TargetRef ref, StyledDocument doc);
   }
 
   @FunctionalInterface
-  interface PendingReadMarkerRenderer {
+  public interface PendingReadMarkerRenderer {
     void render(TargetRef ref, Long lineEpochMs);
   }
 
-  record Context(
+  public record Context(
       ChatStyles styles,
       ChatTranscriptSenderStyleSupport.Context senderStyleSupportContext,
       ChatTimestampFormatter timestamps,
@@ -45,7 +49,7 @@ final class ChatTranscriptActionAppendSupport {
       Consumer<StyledDocument> ensureAtLineStart,
       TranscriptLineCapEnforcer transcriptLineCapEnforcer,
       PendingReadMarkerRenderer pendingReadMarkerRenderer) {
-    Context {
+    public Context {
       Objects.requireNonNull(styles, "styles");
       Objects.requireNonNull(senderStyleSupportContext, "senderStyleSupportContext");
       Objects.requireNonNull(renderer, "renderer");
@@ -61,7 +65,7 @@ final class ChatTranscriptActionAppendSupport {
 
   private ChatTranscriptActionAppendSupport() {}
 
-  static void appendVisibleAction(
+  public static void appendVisibleAction(
       Context context,
       TargetRef ref,
       StyledDocument doc,

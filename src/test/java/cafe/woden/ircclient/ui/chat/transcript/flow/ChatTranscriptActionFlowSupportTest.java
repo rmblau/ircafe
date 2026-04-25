@@ -1,7 +1,6 @@
 package cafe.woden.ircclient.ui.chat.transcript;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -17,6 +16,19 @@ import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.embed.ChatImageEmbedder;
 import cafe.woden.ircclient.ui.chat.embed.ChatLinkPreviewEmbedder;
 import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
+import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilterRoutingSupport;
+import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredLinesSupport;
+import cafe.woden.ircclient.ui.chat.transcript.flow.ChatTranscriptActionFlowSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptActionAppendSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptActionHistoryInsertSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptManualPreviewSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPresenceFoldSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageStateSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReactionSummarySupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptSenderStyleSupport;
+import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptState;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,12 +64,12 @@ class ChatTranscriptActionFlowSupportTest {
     assertEquals("m-1", fixture.replyContextTarget.get());
     verify(reactionSummarySupport)
         .materializePendingReactionsForMessage(
-            fixture.ref, fixture.document(), fixture.state().reactionSummary, "m-2", 2_000L);
+            fixture.ref, fixture.document(), fixture.state().reactionSummary(), "m-2", 2_000L);
     verify(reactionSummarySupport)
         .applyMessageReaction(
             fixture.ref,
             fixture.document(),
-            fixture.state().reactionSummary,
+            fixture.state().reactionSummary(),
             "m-1",
             ":+1:",
             "bob",
@@ -87,7 +99,9 @@ class ChatTranscriptActionFlowSupportTest {
 
   @Test
   void appendActionAtSkipsDuplicateMessageIdsAlreadyPresentInTranscript() throws Exception {
-    Fixture fixture = new Fixture(mock(ChatTranscriptReactionSummarySupport.class), newFilterRoutingSupport(null));
+    Fixture fixture =
+        new Fixture(
+            mock(ChatTranscriptReactionSummarySupport.class), newFilterRoutingSupport(null));
     LineMeta meta =
         ChatTranscriptLineMetaSupport.create(
             fixture.ref,
@@ -154,7 +168,9 @@ class ChatTranscriptActionFlowSupportTest {
 
   @Test
   void insertActionFromHistoryAtBreaksFilteredInsertRunForVisibleLines() {
-    Fixture fixture = new Fixture(mock(ChatTranscriptReactionSummarySupport.class), newFilterRoutingSupport(null));
+    Fixture fixture =
+        new Fixture(
+            mock(ChatTranscriptReactionSummarySupport.class), newFilterRoutingSupport(null));
 
     int nextInsertAt =
         fixture.support.insertActionFromHistoryAt(
@@ -173,7 +189,32 @@ class ChatTranscriptActionFlowSupportTest {
     assertTrue(fixture.documentText().contains("* alice visible action"));
   }
 
-  private static ChatTranscriptFilterRoutingSupport newFilterRoutingSupport(FilterEngine filterEngine) {
+  @Test
+  void insertReplacementActionEnsuresTargetAndWritesVisibleAction() {
+    Fixture fixture =
+        new Fixture(
+            mock(ChatTranscriptReactionSummarySupport.class), newFilterRoutingSupport(null));
+    TargetRef replacementRef = new TargetRef("srv", "#other");
+    LineMeta meta =
+        ChatTranscriptLineMetaSupport.create(
+            replacementRef,
+            LogKind.ACTION,
+            LogDirection.IN,
+            "alice",
+            7_000L,
+            null,
+            "m-replacement",
+            Map.of("msgid", "m-replacement"));
+
+    fixture.support.insertReplacementAction(
+        fixture.context, replacementRef, 0, "alice", "replacement wave", false, meta);
+
+    assertTrue(fixture.documentText(replacementRef).contains("* alice replacement wave"));
+    assertEquals(Long.valueOf(7_000L), fixture.notedEpoch.get());
+  }
+
+  private static ChatTranscriptFilterRoutingSupport newFilterRoutingSupport(
+      FilterEngine filterEngine) {
     return new ChatTranscriptFilterRoutingSupport(
         filterEngine,
         (ref, preview, meta, match) -> {},
@@ -252,6 +293,7 @@ class ChatTranscriptActionFlowSupportTest {
     private final Map<TargetRef, StyledDocument> docs = new HashMap<>();
     private final Map<TargetRef, ChatTranscriptState> states = new HashMap<>();
     private final AtomicReference<String> replyContextTarget = new AtomicReference<>();
+    private final AtomicReference<Long> notedEpoch = new AtomicReference<>();
     private final AtomicInteger filteredInsertRunBreaks = new AtomicInteger();
     private final ChatTranscriptActionFlowSupport.Context context;
 
@@ -267,7 +309,7 @@ class ChatTranscriptActionFlowSupportTest {
               docs::get,
               states::get,
               this::ensureTargetExists,
-              (target, epochMs) -> {},
+              (target, epochMs) -> notedEpoch.set(epochMs),
               (target, fromNick, replyToMsgId, tsEpochMs) -> replyContextTarget.set(replyToMsgId),
               target -> filteredInsertRunBreaks.incrementAndGet(),
               target -> false,
@@ -291,8 +333,13 @@ class ChatTranscriptActionFlowSupportTest {
     }
 
     private String documentText() {
+      return documentText(ref);
+    }
+
+    private String documentText(TargetRef target) {
       try {
-        return document().getText(0, document().getLength());
+        StyledDocument doc = docs.get(target);
+        return doc.getText(0, doc.getLength());
       } catch (Exception ignored) {
         return "";
       }

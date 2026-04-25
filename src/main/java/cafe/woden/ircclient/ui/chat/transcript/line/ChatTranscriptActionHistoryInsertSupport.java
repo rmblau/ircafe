@@ -1,52 +1,56 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.line;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTimestampFormatter;
+import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptSenderStyleSupport;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import java.util.Objects;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyledDocument;
 
-final class ChatTranscriptActionHistoryInsertSupport {
+public final class ChatTranscriptActionHistoryInsertSupport {
 
   @FunctionalInterface
-  interface RenderedFromResolver {
+  public interface RenderedFromResolver {
     String render(TargetRef ref, String from);
   }
 
   @FunctionalInterface
-  interface FilterMatchStyler {
+  public interface FilterMatchStyler {
     SimpleAttributeSet apply(AttributeSet base, FilterEngine.Match match);
   }
 
   @FunctionalInterface
-  interface InsertAtNormalizer {
+  public interface InsertAtNormalizer {
     int normalize(StyledDocument doc, int insertAt);
   }
 
   @FunctionalInterface
-  interface InsertLineStartEnsurer {
+  public interface InsertLineStartEnsurer {
     int ensure(StyledDocument doc, int insertAt);
   }
 
   @FunctionalInterface
-  interface PresenceBlockShifter {
+  public interface PresenceBlockShifter {
     void shift(TargetRef ref, int insertAt, int delta);
   }
 
   @FunctionalInterface
-  interface TranscriptLineCapEnforcer {
+  public interface TranscriptLineCapEnforcer {
     int enforce(TargetRef ref, StyledDocument doc);
   }
 
   @FunctionalInterface
-  interface PendingReadMarkerRenderer {
+  public interface PendingReadMarkerRenderer {
     void render(TargetRef ref, Long lineEpochMs);
   }
 
-  record Context(
+  public record Context(
       ChatStyles styles,
       ChatTranscriptSenderStyleSupport.Context senderStyleSupportContext,
       ChatTimestampFormatter timestamps,
@@ -59,7 +63,7 @@ final class ChatTranscriptActionHistoryInsertSupport {
       PresenceBlockShifter presenceBlockShifter,
       TranscriptLineCapEnforcer transcriptLineCapEnforcer,
       PendingReadMarkerRenderer pendingReadMarkerRenderer) {
-    Context {
+    public Context {
       Objects.requireNonNull(styles, "styles");
       Objects.requireNonNull(senderStyleSupportContext, "senderStyleSupportContext");
       Objects.requireNonNull(renderer, "renderer");
@@ -76,7 +80,7 @@ final class ChatTranscriptActionHistoryInsertSupport {
 
   private ChatTranscriptActionHistoryInsertSupport() {}
 
-  static int insertVisibleAction(
+  public static int insertVisibleAction(
       Context context,
       TargetRef ref,
       StyledDocument doc,
@@ -108,7 +112,7 @@ final class ChatTranscriptActionHistoryInsertSupport {
         true);
   }
 
-  static int insertVisibleAction(
+  public static int insertVisibleAction(
       Context context,
       TargetRef ref,
       StyledDocument doc,
