@@ -115,38 +115,21 @@ public final class ChatTranscriptStoreComposition {
             runtimeSettingsSupport::configuredOutgoingLineColor,
             nickColorSettings);
 
-    ChatTranscriptFilteredRunSupport.Context filteredRunSupportContext =
-        new ChatTranscriptFilteredRunSupport.Context(styles, ChatTranscriptLineMetaSupport::bind);
     ChatTranscriptDocumentLineSupport documentLineSupport =
         new ChatTranscriptDocumentLineSupport(styles);
-    ChatTranscriptFilteredLinesSupport filteredLinesSupport =
-        new ChatTranscriptFilteredLinesSupport(
+    FilterComposition filterComposition =
+        createFilterComposition(
             styles,
-            filteredRunSupportContext,
-            styleRoutingSupport::safeTranscriptFont,
-            ChatTranscriptLineMetaSupport::bind,
-            documentLineSupport::ensureAtLineStart,
-            documentLineSupport::normalizeInsertAtLineStart,
-            documentLineSupport::ensureAtLineStartForInsert,
-            runtimeFlowCoordinator::breakPresenceRun,
-            runtimeFlowCoordinator::shiftCurrentBlock,
-            lineCapSupport::enforceTranscriptLineCap);
-    ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator =
-        new ChatTranscriptFilteredFlowCoordinator(filteredLinesSupport);
-    ChatTranscriptFilterRoutingSupport filterRoutingSupport =
-        new ChatTranscriptFilterRoutingSupport(
             filterEngine,
-            filteredFlowCoordinator::onFilteredLineAppend,
-            filteredFlowCoordinator::onFilteredLineInsertAt,
-            filteredFlowCoordinator::endInsertRun,
-            runtimeFlowCoordinator::breakPresenceRun);
-    filteredFlowCoordinator.bindContext(
-        filterRoutingSupport,
-        targetRuntimeCoordinator.docs(),
-        targetRuntimeCoordinator.stateByTarget(),
-        targetRuntimeCoordinator::ensureTargetExists,
-        targetRuntimeCoordinator::noteEpochMs,
-        runtimeSettingsSupport::chatHistoryDeferRichTextDuringBatch);
+            styleRoutingSupport,
+            documentLineSupport,
+            runtimeFlowCoordinator,
+            lineCapSupport,
+            targetRuntimeCoordinator,
+            runtimeSettingsSupport);
+    ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator =
+        filterComposition.filteredFlowCoordinator();
+    ChatTranscriptFilterRoutingSupport filterRoutingSupport = filterComposition.filterRoutingSupport();
     ChatTranscriptPresenceFoldSupport presenceFoldSupport =
         new ChatTranscriptPresenceFoldSupport(
             styles,
@@ -333,5 +316,51 @@ public final class ChatTranscriptStoreComposition {
         plainSpoilerCoordinator,
         runtimeFlowCoordinator,
         targetRuntimeCoordinator);
+  }
+
+  private record FilterComposition(
+      ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator,
+      ChatTranscriptFilterRoutingSupport filterRoutingSupport) {}
+
+  private static FilterComposition createFilterComposition(
+      ChatStyles styles,
+      FilterEngine filterEngine,
+      ChatTranscriptStyleRoutingSupport styleRoutingSupport,
+      ChatTranscriptDocumentLineSupport documentLineSupport,
+      ChatTranscriptRuntimeFlowCoordinator runtimeFlowCoordinator,
+      ChatTranscriptLineCapSupport lineCapSupport,
+      ChatTranscriptTargetRuntimeCoordinator targetRuntimeCoordinator,
+      ChatTranscriptRuntimeSettingsSupport runtimeSettingsSupport) {
+    ChatTranscriptFilteredRunSupport.Context filteredRunSupportContext =
+        new ChatTranscriptFilteredRunSupport.Context(styles, ChatTranscriptLineMetaSupport::bind);
+    ChatTranscriptFilteredLinesSupport filteredLinesSupport =
+        new ChatTranscriptFilteredLinesSupport(
+            styles,
+            filteredRunSupportContext,
+            styleRoutingSupport::safeTranscriptFont,
+            ChatTranscriptLineMetaSupport::bind,
+            documentLineSupport::ensureAtLineStart,
+            documentLineSupport::normalizeInsertAtLineStart,
+            documentLineSupport::ensureAtLineStartForInsert,
+            runtimeFlowCoordinator::breakPresenceRun,
+            runtimeFlowCoordinator::shiftCurrentBlock,
+            lineCapSupport::enforceTranscriptLineCap);
+    ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator =
+        new ChatTranscriptFilteredFlowCoordinator(filteredLinesSupport);
+    ChatTranscriptFilterRoutingSupport filterRoutingSupport =
+        new ChatTranscriptFilterRoutingSupport(
+            filterEngine,
+            filteredFlowCoordinator::onFilteredLineAppend,
+            filteredFlowCoordinator::onFilteredLineInsertAt,
+            filteredFlowCoordinator::endInsertRun,
+            runtimeFlowCoordinator::breakPresenceRun);
+    filteredFlowCoordinator.bindContext(
+        filterRoutingSupport,
+        targetRuntimeCoordinator.docs(),
+        targetRuntimeCoordinator.stateByTarget(),
+        targetRuntimeCoordinator::ensureTargetExists,
+        targetRuntimeCoordinator::noteEpochMs,
+        runtimeSettingsSupport::chatHistoryDeferRichTextDuringBatch);
+    return new FilterComposition(filteredFlowCoordinator, filterRoutingSupport);
   }
 }
