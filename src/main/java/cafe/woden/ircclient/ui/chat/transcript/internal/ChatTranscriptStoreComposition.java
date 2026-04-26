@@ -80,40 +80,19 @@ public final class ChatTranscriptStoreComposition {
       FilterEngine filterEngine,
       UserListPort userListStore) {
 
+    RuntimeComposition runtimeComposition =
+        createRuntimeComposition(store, styles, nickColors, nickColorSettings, uiSettings);
     ChatTranscriptRuntimeFlowCoordinator runtimeFlowCoordinator =
-        new ChatTranscriptRuntimeFlowCoordinator(store, styles);
-
+        runtimeComposition.runtimeFlowCoordinator();
     ChatTranscriptRuntimeSettingsSupport runtimeSettingsSupport =
-        new ChatTranscriptRuntimeSettingsSupport(uiSettings, styles);
+        runtimeComposition.runtimeSettingsSupport();
     ChatTranscriptStyleRoutingSupport styleRoutingSupport =
-        new ChatTranscriptStyleRoutingSupport(
-            styles,
-            runtimeSettingsSupport::safeSettings,
-            runtimeSettingsSupport::configuredOutgoingLineColor);
-    ChatTranscriptLineCapSupport lineCapSupport =
-        new ChatTranscriptLineCapSupport(
-            runtimeSettingsSupport::transcriptMaxLinesPerTarget,
-            runtimeFlowCoordinator::resetAfterHeadTrim,
-            ref -> runtimeFlowCoordinator.maybeRenderPendingReadMarker(ref, null));
-    ChatTranscriptRestyleSupport.Context restyleSupportContext =
-        new ChatTranscriptRestyleSupport.Context(
-            styles, nickColors, styleRoutingSupport::applyFilterActionStyle);
-    ChatTranscriptMessageStateSupport.Context messageStateSupportContext =
-        new ChatTranscriptMessageStateSupport.Context(
-            REPLY_PREVIEW_TEXT_MAX_CHARS, REDACTED_MESSAGE_PLACEHOLDER, System::currentTimeMillis);
+        runtimeComposition.styleRoutingSupport();
+    ChatTranscriptLineCapSupport lineCapSupport = runtimeComposition.lineCapSupport();
     ChatTranscriptMessageCatalogSupport messageCatalogSupport =
-        new ChatTranscriptMessageCatalogSupport(messageStateSupportContext);
+        runtimeComposition.messageCatalogSupport();
     ChatTranscriptTargetRuntimeCoordinator targetRuntimeCoordinator =
-        new ChatTranscriptTargetRuntimeCoordinator(
-            () ->
-                messageCatalogSupport.createState(
-                    REPLY_PREVIEW_CACHE_LIMIT_PER_TARGET, REDACTED_MESSAGE_CACHE_LIMIT_PER_TARGET),
-            store,
-            180,
-            restyleSupportContext,
-            runtimeSettingsSupport::safeSettings,
-            runtimeSettingsSupport::configuredOutgoingLineColor,
-            nickColorSettings);
+        runtimeComposition.targetRuntimeCoordinator();
 
     ChatTranscriptDocumentLineSupport documentLineSupport =
         new ChatTranscriptDocumentLineSupport(styles);
@@ -234,6 +213,62 @@ public final class ChatTranscriptStoreComposition {
         messageLineCoordinator,
         plainSpoilerCoordinator,
         runtimeFlowCoordinator,
+        targetRuntimeCoordinator);
+  }
+
+  private record RuntimeComposition(
+      ChatTranscriptRuntimeFlowCoordinator runtimeFlowCoordinator,
+      ChatTranscriptRuntimeSettingsSupport runtimeSettingsSupport,
+      ChatTranscriptStyleRoutingSupport styleRoutingSupport,
+      ChatTranscriptLineCapSupport lineCapSupport,
+      ChatTranscriptMessageCatalogSupport messageCatalogSupport,
+      ChatTranscriptTargetRuntimeCoordinator targetRuntimeCoordinator) {}
+
+  private static RuntimeComposition createRuntimeComposition(
+      ChatTranscriptStore store,
+      ChatStyles styles,
+      NickColorService nickColors,
+      NickColorSettingsBus nickColorSettings,
+      UiSettingsBus uiSettings) {
+    ChatTranscriptRuntimeFlowCoordinator runtimeFlowCoordinator =
+        new ChatTranscriptRuntimeFlowCoordinator(store, styles);
+    ChatTranscriptRuntimeSettingsSupport runtimeSettingsSupport =
+        new ChatTranscriptRuntimeSettingsSupport(uiSettings, styles);
+    ChatTranscriptStyleRoutingSupport styleRoutingSupport =
+        new ChatTranscriptStyleRoutingSupport(
+            styles,
+            runtimeSettingsSupport::safeSettings,
+            runtimeSettingsSupport::configuredOutgoingLineColor);
+    ChatTranscriptLineCapSupport lineCapSupport =
+        new ChatTranscriptLineCapSupport(
+            runtimeSettingsSupport::transcriptMaxLinesPerTarget,
+            runtimeFlowCoordinator::resetAfterHeadTrim,
+            ref -> runtimeFlowCoordinator.maybeRenderPendingReadMarker(ref, null));
+    ChatTranscriptRestyleSupport.Context restyleSupportContext =
+        new ChatTranscriptRestyleSupport.Context(
+            styles, nickColors, styleRoutingSupport::applyFilterActionStyle);
+    ChatTranscriptMessageStateSupport.Context messageStateSupportContext =
+        new ChatTranscriptMessageStateSupport.Context(
+            REPLY_PREVIEW_TEXT_MAX_CHARS, REDACTED_MESSAGE_PLACEHOLDER, System::currentTimeMillis);
+    ChatTranscriptMessageCatalogSupport messageCatalogSupport =
+        new ChatTranscriptMessageCatalogSupport(messageStateSupportContext);
+    ChatTranscriptTargetRuntimeCoordinator targetRuntimeCoordinator =
+        new ChatTranscriptTargetRuntimeCoordinator(
+            () ->
+                messageCatalogSupport.createState(
+                    REPLY_PREVIEW_CACHE_LIMIT_PER_TARGET, REDACTED_MESSAGE_CACHE_LIMIT_PER_TARGET),
+            store,
+            180,
+            restyleSupportContext,
+            runtimeSettingsSupport::safeSettings,
+            runtimeSettingsSupport::configuredOutgoingLineColor,
+            nickColorSettings);
+    return new RuntimeComposition(
+        runtimeFlowCoordinator,
+        runtimeSettingsSupport,
+        styleRoutingSupport,
+        lineCapSupport,
+        messageCatalogSupport,
         targetRuntimeCoordinator);
   }
 
