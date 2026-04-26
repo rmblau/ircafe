@@ -18,6 +18,7 @@ import cafe.woden.ircclient.ui.chat.transcript.flow.ChatTranscriptMessageLineCoo
 import cafe.woden.ircclient.ui.chat.transcript.flow.ChatTranscriptPlainSpoilerCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.flow.ChatTranscriptReplyFlowCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.flow.ChatTranscriptRuntimeFlowCoordinator;
+import cafe.woden.ircclient.ui.chat.transcript.internal.ChatTranscriptStoreComposition;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMatrixDisplayNameCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.message.ReactionChipActionHandler;
 import cafe.woden.ircclient.ui.chat.transcript.message.RedactedMessageContent;

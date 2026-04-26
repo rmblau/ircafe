@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.internal;
 
 import cafe.woden.ircclient.irc.roster.UserListPort;
 import cafe.woden.ircclient.model.LogDirection;
@@ -9,6 +9,7 @@ import cafe.woden.ircclient.ui.chat.NickColorSettingsBus;
 import cafe.woden.ircclient.ui.chat.embed.ChatImageEmbedder;
 import cafe.woden.ircclient.ui.chat.embed.ChatLinkPreviewEmbedder;
 import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilterRoutingSupport;
 import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredLinesSupport;
 import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredRunSupport;
@@ -47,14 +48,14 @@ import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import java.util.Map;
 
 /** Wires the transcript helper graph used by {@link ChatTranscriptStore}. */
-final class ChatTranscriptStoreComposition {
+public final class ChatTranscriptStoreComposition {
 
   private static final int REPLY_PREVIEW_CACHE_LIMIT_PER_TARGET = 512;
   private static final int REDACTED_MESSAGE_CACHE_LIMIT_PER_TARGET = 512;
   private static final int REPLY_PREVIEW_TEXT_MAX_CHARS = 120;
   private static final String REDACTED_MESSAGE_PLACEHOLDER = "[message redacted]";
 
-  record Components(
+  public record Components(
       ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator,
       ChatTranscriptMatrixDisplayNameCoordinator matrixDisplayNameCoordinator,
       ChatTranscriptReplyFlowCoordinator replyFlowCoordinator,
@@ -66,7 +67,7 @@ final class ChatTranscriptStoreComposition {
 
   private ChatTranscriptStoreComposition() {}
 
-  static Components create(
+  public static Components create(
       ChatTranscriptStore store,
       ChatStyles styles,
       ChatRichTextRenderer renderer,
@@ -130,7 +131,8 @@ final class ChatTranscriptStoreComposition {
             runtimeFlowCoordinator::breakPresenceRun,
             runtimeFlowCoordinator::shiftCurrentBlock,
             lineCapSupport::enforceTranscriptLineCap);
-    ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator = new ChatTranscriptFilteredFlowCoordinator(filteredLinesSupport);
+    ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator =
+        new ChatTranscriptFilteredFlowCoordinator(filteredLinesSupport);
     ChatTranscriptFilterRoutingSupport filterRoutingSupport =
         new ChatTranscriptFilterRoutingSupport(
             filterEngine,

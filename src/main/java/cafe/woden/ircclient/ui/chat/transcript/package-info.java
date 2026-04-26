@@ -5,7 +5,7 @@
  * especially {@link cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore} and {@link
  * cafe.woden.ircclient.ui.chat.transcript.ChatHistoryTranscriptPortAdapter}. Lower-level helpers
  * live in focused internal subpackages such as {@code message}, {@code filter}, {@code runtime},
- * {@code spoiler}, {@code style}, {@code flow}, and {@code line}.
+ * {@code spoiler}, {@code style}, {@code flow}, {@code line}, and {@code internal}.
  */
 @NamedInterface("chat-transcript")
 package cafe.woden.ircclient.ui.chat.transcript;
