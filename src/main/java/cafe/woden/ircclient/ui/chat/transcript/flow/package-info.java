@@ -1,9 +1,10 @@
 /**
- * Flow-level orchestration helpers for transcript rendering paths.
+ * Cross-cutting transcript flow coordinators that still span multiple ownership packages.
  *
- * <p>These classes coordinate lower-level line, filter, runtime, spoiler, and message helpers
- * without serving as externally exposed Spring Modulith interfaces. Message-specific line
- * orchestration lives in the {@code message} package, manual-preview insertion lives with line
- * helpers, and spoiler-specific flow support lives with spoiler helpers.
+ * <p>Domain-specific orchestration should live with the package that owns the behavior where that
+ * boundary is stable: message-specific chat/action/reply flow lives in {@code message}, hidden-line
+ * flow lives in {@code filter}, manual-preview insertion lives in {@code line}, and spoiler flow
+ * lives in {@code spoiler}. The remaining classes here coordinate broader lifecycle, presence,
+ * line, and runtime paths until those seams are small enough for their own package moves.
  */
 package cafe.woden.ircclient.ui.chat.transcript.flow;
