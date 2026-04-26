@@ -1,6 +1,5 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.message;
 
-import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -10,12 +9,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
 import cafe.woden.ircclient.model.FilterAction;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilterRoutingSupport;
 import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredLinesSupport;
-import cafe.woden.ircclient.ui.chat.transcript.flow.ChatTranscriptChatFlowSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptOutgoingChatSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPresenceFoldSupport;

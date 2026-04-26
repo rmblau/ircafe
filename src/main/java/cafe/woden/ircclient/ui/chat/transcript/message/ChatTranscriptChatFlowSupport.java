@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.transcript.flow;
+package cafe.woden.ircclient.ui.chat.transcript.message;
 
 import cafe.woden.ircclient.model.LogDirection;
 import cafe.woden.ircclient.model.LogKind;
@@ -8,10 +8,6 @@ import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptAppendGuardS
 import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilterRoutingSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptOutgoingChatSupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptOutgoingFollowUpSupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptPendingReplacementSupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReactionSummarySupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptSenderStyleSupport;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptState;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import java.util.Map;
