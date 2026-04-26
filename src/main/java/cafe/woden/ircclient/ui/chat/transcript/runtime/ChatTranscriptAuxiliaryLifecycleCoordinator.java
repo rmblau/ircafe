@@ -4,6 +4,7 @@ import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.fold.HistoryDividerComponent;
 import cafe.woden.ircclient.ui.chat.fold.LoadOlderMessagesComponent;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptAuxiliaryRowsSupport;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -13,9 +14,7 @@ import javax.swing.text.StyledDocument;
 public final class ChatTranscriptAuxiliaryLifecycleCoordinator {
 
   private final Object mutationLock;
-  private final ChatTranscriptLifecycleSupport lifecycleSupport =
-      new ChatTranscriptLifecycleSupport();
-  private ChatTranscriptLifecycleSupport.Context lifecycleContext;
+  private Context lifecycleContext;
 
   public ChatTranscriptAuxiliaryLifecycleCoordinator(Object mutationLock) {
     this.mutationLock = Objects.requireNonNull(mutationLock, "mutationLock");
@@ -28,99 +27,179 @@ public final class ChatTranscriptAuxiliaryLifecycleCoordinator {
       Consumer<TargetRef> ensureTargetExists,
       Consumer<TargetRef> endFilteredRun) {
     this.lifecycleContext =
-        new ChatTranscriptLifecycleSupport.Context(
-            docs,
-            stateByTarget,
-            auxiliaryRowsSupport,
-            ensureTargetExists,
-            endFilteredRun);
+        new Context(docs, stateByTarget, auxiliaryRowsSupport, ensureTargetExists, endFilteredRun);
   }
 
   public LoadOlderMessagesComponent ensureLoadOlderMessagesControl(TargetRef ref) {
     synchronized (mutationLock) {
-      return lifecycleSupport.ensureLoadOlderMessagesControl(requireLifecycleContext(), ref);
+      Context context = requireLifecycleContext();
+      context.ensureTargetExists().accept(ref);
+      context.endFilteredRun().accept(ref);
+      StyledDocument doc = context.docs().get(ref);
+      ChatTranscriptState state = context.stateByTarget().get(ref);
+      return context
+          .auxiliaryRowsSupport()
+          .ensureLoadOlderMessagesControl(ref, doc, state == null ? null : state.auxiliaryRows());
     }
   }
 
   public HistoryDividerComponent ensureHistoryDivider(
       TargetRef ref, int insertAt, String labelText) {
     synchronized (mutationLock) {
-      return lifecycleSupport.ensureHistoryDivider(
-          requireLifecycleContext(), ref, insertAt, labelText);
+      Context context = requireLifecycleContext();
+      context.ensureTargetExists().accept(ref);
+      StyledDocument doc = context.docs().get(ref);
+      ChatTranscriptState state = context.stateByTarget().get(ref);
+      return context
+          .auxiliaryRowsSupport()
+          .ensureHistoryDivider(
+              ref, doc, state == null ? null : state.auxiliaryRows(), insertAt, labelText);
     }
   }
 
   public void markHistoryDividerPending(TargetRef ref, String labelText) {
     synchronized (mutationLock) {
-      lifecycleSupport.markHistoryDividerPending(requireLifecycleContext(), ref, labelText);
+      if (ref == null) return;
+      Context context = requireLifecycleContext();
+      context.ensureTargetExists().accept(ref);
+      ChatTranscriptState state = context.stateByTarget().get(ref);
+      context
+          .auxiliaryRowsSupport()
+          .markHistoryDividerPending(state == null ? null : state.auxiliaryRows(), labelText);
     }
   }
 
   public boolean hasContentAfterOffset(TargetRef ref, int offset) {
     synchronized (mutationLock) {
-      return lifecycleSupport.hasContentAfterOffset(requireLifecycleContext(), ref, offset);
+      if (ref == null) return false;
+      Context context = requireLifecycleContext();
+      context.ensureTargetExists().accept(ref);
+      StyledDocument doc = context.docs().get(ref);
+      return doc != null && doc.getLength() > Math.max(0, offset);
     }
   }
 
   public void flushPendingHistoryDividerIfNeeded(TargetRef ref, StyledDocument doc) {
     synchronized (mutationLock) {
-      lifecycleSupport.flushPendingHistoryDividerIfNeeded(requireLifecycleContext(), ref, doc);
+      if (ref == null || doc == null) return;
+      Context context = requireLifecycleContext();
+      ChatTranscriptState state = context.stateByTarget().get(ref);
+      context
+          .auxiliaryRowsSupport()
+          .flushPendingHistoryDividerIfNeeded(
+              ref, doc, state == null ? null : state.auxiliaryRows());
     }
   }
 
   public void updateReadMarker(TargetRef ref, long markerEpochMs) {
     synchronized (mutationLock) {
-      lifecycleSupport.updateReadMarker(requireLifecycleContext(), ref, markerEpochMs);
+      if (ref == null) return;
+      Context context = requireLifecycleContext();
+      context.ensureTargetExists().accept(ref);
+      StyledDocument doc = context.docs().get(ref);
+      ChatTranscriptState state = context.stateByTarget().get(ref);
+      context
+          .auxiliaryRowsSupport()
+          .updateReadMarker(ref, doc, state == null ? null : state.auxiliaryRows(), markerEpochMs);
     }
   }
 
   public void clearReadMarker(TargetRef ref) {
     synchronized (mutationLock) {
-      lifecycleSupport.clearReadMarker(requireLifecycleContext(), ref);
+      if (ref == null) return;
+      Context context = requireLifecycleContext();
+      context.ensureTargetExists().accept(ref);
+      StyledDocument doc = context.docs().get(ref);
+      ChatTranscriptState state = context.stateByTarget().get(ref);
+      context
+          .auxiliaryRowsSupport()
+          .clearReadMarker(ref, doc, state == null ? null : state.auxiliaryRows());
     }
   }
 
   public void clearReadMarkersForServer(String serverId) {
     synchronized (mutationLock) {
-      lifecycleSupport.clearReadMarkersForServer(requireLifecycleContext(), serverId);
+      Context context = requireLifecycleContext();
+      String sid = Objects.toString(serverId, "").trim();
+      if (sid.isEmpty()) return;
+      ArrayList<TargetRef> targets = new ArrayList<>(context.stateByTarget().keySet());
+      for (TargetRef ref : targets) {
+        if (ref == null || !sid.equals(Objects.toString(ref.serverId(), "").trim())) continue;
+        StyledDocument doc = context.docs().get(ref);
+        ChatTranscriptState state = context.stateByTarget().get(ref);
+        context
+            .auxiliaryRowsSupport()
+            .clearReadMarker(ref, doc, state == null ? null : state.auxiliaryRows());
+      }
     }
   }
 
   public int readMarkerJumpOffset(TargetRef ref) {
     synchronized (mutationLock) {
-      return lifecycleSupport.readMarkerJumpOffset(requireLifecycleContext(), ref);
+      Context context = requireLifecycleContext();
+      StyledDocument doc = context.docs().get(ref);
+      ChatTranscriptState state = context.stateByTarget().get(ref);
+      return context
+          .auxiliaryRowsSupport()
+          .readMarkerJumpOffset(doc, state == null ? null : state.auxiliaryRows());
     }
   }
 
   public void maybeRenderPendingReadMarker(TargetRef ref, Long lineEpochMs) {
     synchronized (mutationLock) {
-      lifecycleSupport.maybeRenderPendingReadMarker(requireLifecycleContext(), ref, lineEpochMs);
+      Context context = requireLifecycleContext();
+      ChatTranscriptState state = context.stateByTarget().get(ref);
+      StyledDocument doc = context.docs().get(ref);
+      context
+          .auxiliaryRowsSupport()
+          .maybeRenderPendingReadMarker(
+              ref, doc, state == null ? null : state.auxiliaryRows(), lineEpochMs);
     }
   }
 
   public int loadOlderInsertOffset(TargetRef ref) {
     synchronized (mutationLock) {
-      return lifecycleSupport.loadOlderInsertOffset(requireLifecycleContext(), ref);
+      Context context = requireLifecycleContext();
+      StyledDocument doc = context.docs().get(ref);
+      ChatTranscriptState state = context.stateByTarget().get(ref);
+      return context
+          .auxiliaryRowsSupport()
+          .loadOlderInsertOffset(doc, state == null ? null : state.auxiliaryRows());
     }
   }
 
   public void setLoadOlderMessagesControlState(TargetRef ref, LoadOlderMessagesComponent.State s) {
     synchronized (mutationLock) {
-      lifecycleSupport.setLoadOlderMessagesControlState(requireLifecycleContext(), ref, s);
+      Context context = requireLifecycleContext();
+      ChatTranscriptState state = context.stateByTarget().get(ref);
+      context
+          .auxiliaryRowsSupport()
+          .setLoadOlderMessagesControlState(state == null ? null : state.auxiliaryRows(), s);
     }
   }
 
   public void setLoadOlderMessagesControlHandler(
       TargetRef ref, java.util.function.BooleanSupplier onLoad) {
     synchronized (mutationLock) {
-      lifecycleSupport.setLoadOlderMessagesControlHandler(requireLifecycleContext(), ref, onLoad);
+      Context context = requireLifecycleContext();
+      ChatTranscriptState state = context.stateByTarget().get(ref);
+      context
+          .auxiliaryRowsSupport()
+          .setLoadOlderMessagesControlHandler(state == null ? null : state.auxiliaryRows(), onLoad);
     }
   }
 
-  private ChatTranscriptLifecycleSupport.Context requireLifecycleContext() {
+  private Context requireLifecycleContext() {
     if (lifecycleContext == null) {
       throw new IllegalStateException("Auxiliary lifecycle coordinator context not bound");
     }
     return lifecycleContext;
   }
+
+  private record Context(
+      Map<TargetRef, StyledDocument> docs,
+      Map<TargetRef, ChatTranscriptState> stateByTarget,
+      ChatTranscriptAuxiliaryRowsSupport auxiliaryRowsSupport,
+      Consumer<TargetRef> ensureTargetExists,
+      Consumer<TargetRef> endFilteredRun) {}
 }

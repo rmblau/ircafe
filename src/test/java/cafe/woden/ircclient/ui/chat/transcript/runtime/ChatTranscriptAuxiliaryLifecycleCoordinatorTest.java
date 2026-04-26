@@ -2,6 +2,8 @@ package cafe.woden.ircclient.ui.chat.transcript.runtime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import cafe.woden.ircclient.model.LogDirection;
 import cafe.woden.ircclient.model.LogKind;
@@ -51,6 +53,32 @@ class ChatTranscriptAuxiliaryLifecycleCoordinatorTest {
     assertEquals(1, inlineComponentCount(doc, HistoryDividerComponent.class));
   }
 
+  @Test
+  void maybeRenderPendingReadMarkerDelegatesWithTargetDocumentAndAuxiliaryState() {
+    TargetRef ref = new TargetRef("srv", "#chan");
+    StyledDocument doc = new DefaultStyledDocument();
+    ChatTranscriptState state = newTranscriptState();
+    Map<TargetRef, StyledDocument> docs = new HashMap<>();
+    docs.put(ref, doc);
+    Map<TargetRef, ChatTranscriptState> states = new HashMap<>();
+    states.put(ref, state);
+    ChatTranscriptAuxiliaryRowsSupport auxiliaryRowsSupport =
+        mock(ChatTranscriptAuxiliaryRowsSupport.class);
+    ChatTranscriptAuxiliaryLifecycleCoordinator coordinator =
+        new ChatTranscriptAuxiliaryLifecycleCoordinator(new Object());
+    coordinator.bindContext(
+        docs,
+        states,
+        auxiliaryRowsSupport,
+        target -> {},
+        target -> {});
+
+    coordinator.maybeRenderPendingReadMarker(ref, 2_000L);
+
+    verify(auxiliaryRowsSupport)
+        .maybeRenderPendingReadMarker(ref, doc, state.auxiliaryRows(), 2_000L);
+  }
+
   private static int inlineComponentCount(StyledDocument doc, Class<?> componentType) {
     Element root = doc.getDefaultRootElement();
     if (root == null) {
@@ -74,6 +102,16 @@ class ChatTranscriptAuxiliaryLifecycleCoordinatorTest {
       }
     }
     return count;
+  }
+
+  private static ChatTranscriptState newTranscriptState() {
+    ChatTranscriptMessageCatalogSupport messageCatalogSupport =
+        new ChatTranscriptMessageCatalogSupport(
+            new ChatTranscriptMessageStateSupport.Context(120, "[message redacted]", () -> 1L));
+    return new ChatTranscriptState(
+        messageCatalogSupport.createState(8, 8),
+        new ChatTranscriptFilteredLinesSupport.State(),
+        new ChatTranscriptPresenceFoldSupport.State());
   }
 
   private static final class TestFixture {
