@@ -29,10 +29,13 @@ import javax.swing.text.StyledDocument;
 public final class ChatTranscriptRuntimeFlowCoordinator {
 
   private final ChatTranscriptLineLifecycleCoordinator lineLifecycleCoordinator;
+  private final ChatTranscriptAuxiliaryLifecycleCoordinator auxiliaryLifecycleCoordinator;
   private final ChatTranscriptPresenceFlowCoordinator presenceFlowCoordinator;
 
   public ChatTranscriptRuntimeFlowCoordinator(Object mutationLock, ChatStyles styles) {
     this.lineLifecycleCoordinator = new ChatTranscriptLineLifecycleCoordinator(mutationLock);
+    this.auxiliaryLifecycleCoordinator =
+        new ChatTranscriptAuxiliaryLifecycleCoordinator(mutationLock);
     this.presenceFlowCoordinator = new ChatTranscriptPresenceFlowCoordinator(styles);
   }
 
@@ -76,6 +79,8 @@ public final class ChatTranscriptRuntimeFlowCoordinator {
       BooleanSupplier linkPreviewsEnabled,
       ChatTranscriptAuxiliaryRowsSupport auxiliaryRowsSupport,
       Consumer<TargetRef> endFilteredRun) {
+    auxiliaryLifecycleCoordinator.bindContext(
+        docs, stateByTarget, auxiliaryRowsSupport, ensureTargetExists, endFilteredRun);
     lineLifecycleCoordinator.bindContexts(
         docs,
         stateByTarget,
@@ -90,8 +95,7 @@ public final class ChatTranscriptRuntimeFlowCoordinator {
         runtimeSettingsSupport,
         imageEmbedsEnabled,
         linkPreviewsEnabled,
-        auxiliaryRowsSupport,
-        endFilteredRun);
+        auxiliaryLifecycleCoordinator::flushPendingHistoryDividerIfNeeded);
   }
 
   public void appendLine(
@@ -131,7 +135,7 @@ public final class ChatTranscriptRuntimeFlowCoordinator {
   }
 
   public void maybeRenderPendingReadMarker(TargetRef ref, Long lineEpochMs) {
-    lineLifecycleCoordinator.maybeRenderPendingReadMarker(ref, lineEpochMs);
+    auxiliaryLifecycleCoordinator.maybeRenderPendingReadMarker(ref, lineEpochMs);
   }
 
   public void breakPresenceRun(TargetRef ref) {
@@ -147,51 +151,50 @@ public final class ChatTranscriptRuntimeFlowCoordinator {
   }
 
   public LoadOlderMessagesComponent ensureLoadOlderMessagesControl(TargetRef ref) {
-    return lineLifecycleCoordinator.ensureLoadOlderMessagesControl(ref);
+    return auxiliaryLifecycleCoordinator.ensureLoadOlderMessagesControl(ref);
   }
 
   public HistoryDividerComponent ensureHistoryDivider(
       TargetRef ref, int insertAt, String labelText) {
-    return lineLifecycleCoordinator.ensureHistoryDivider(ref, insertAt, labelText);
+    return auxiliaryLifecycleCoordinator.ensureHistoryDivider(ref, insertAt, labelText);
   }
 
   public void markHistoryDividerPending(TargetRef ref, String labelText) {
-    lineLifecycleCoordinator.markHistoryDividerPending(ref, labelText);
+    auxiliaryLifecycleCoordinator.markHistoryDividerPending(ref, labelText);
   }
 
   public boolean hasContentAfterOffset(TargetRef ref, int offset) {
-    return lineLifecycleCoordinator.hasContentAfterOffset(ref, offset);
+    return auxiliaryLifecycleCoordinator.hasContentAfterOffset(ref, offset);
   }
 
   public void updateReadMarker(TargetRef ref, long markerEpochMs) {
-    lineLifecycleCoordinator.updateReadMarker(ref, markerEpochMs);
+    auxiliaryLifecycleCoordinator.updateReadMarker(ref, markerEpochMs);
   }
 
   public void clearReadMarker(TargetRef ref) {
-    lineLifecycleCoordinator.clearReadMarker(ref);
+    auxiliaryLifecycleCoordinator.clearReadMarker(ref);
   }
 
   public void clearReadMarkersForServer(String serverId) {
-    lineLifecycleCoordinator.clearReadMarkersForServer(serverId);
+    auxiliaryLifecycleCoordinator.clearReadMarkersForServer(serverId);
   }
 
   public int readMarkerJumpOffset(TargetRef ref) {
-    return lineLifecycleCoordinator.readMarkerJumpOffset(ref);
+    return auxiliaryLifecycleCoordinator.readMarkerJumpOffset(ref);
   }
 
   public int loadOlderInsertOffset(TargetRef ref) {
-    return lineLifecycleCoordinator.loadOlderInsertOffset(ref);
+    return auxiliaryLifecycleCoordinator.loadOlderInsertOffset(ref);
   }
 
   public void setLoadOlderMessagesControlState(TargetRef ref, LoadOlderMessagesComponent.State s) {
-    lineLifecycleCoordinator.setLoadOlderMessagesControlState(ref, s);
+    auxiliaryLifecycleCoordinator.setLoadOlderMessagesControlState(ref, s);
   }
 
   public void setLoadOlderMessagesControlHandler(
       TargetRef ref, java.util.function.BooleanSupplier onLoad) {
-    lineLifecycleCoordinator.setLoadOlderMessagesControlHandler(ref, onLoad);
+    auxiliaryLifecycleCoordinator.setLoadOlderMessagesControlHandler(ref, onLoad);
   }
-
 
   public void appendPresence(TargetRef ref, PresenceEvent event) {
     presenceFlowCoordinator.appendPresence(ref, event);

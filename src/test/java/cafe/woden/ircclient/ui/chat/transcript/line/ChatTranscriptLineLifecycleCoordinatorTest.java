@@ -15,6 +15,7 @@ import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredLine
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageStateSupport;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTimestampFormatter;
+import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptAuxiliaryLifecycleCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeSettingsSupport;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptState;
 import java.util.HashMap;
@@ -41,20 +42,7 @@ class ChatTranscriptLineLifecycleCoordinatorTest {
                 coordinator.appendLine(
                     new TargetRef("srv", "#chan"), "alice", "hello", null, null, true, null));
 
-    assertEquals("Line/lifecycle coordinator contexts not bound", error.getMessage());
-  }
-
-  @Test
-  void requiresBoundContextsBeforeLifecycleUse() {
-    ChatTranscriptLineLifecycleCoordinator coordinator =
-        new ChatTranscriptLineLifecycleCoordinator(new Object());
-
-    IllegalStateException error =
-        assertThrows(
-            IllegalStateException.class,
-            () -> coordinator.ensureLoadOlderMessagesControl(new TargetRef("srv", "#chan")));
-
-    assertEquals("Line/lifecycle coordinator contexts not bound", error.getMessage());
+    assertEquals("Line coordinator context not bound", error.getMessage());
   }
 
   @Test
@@ -62,7 +50,7 @@ class ChatTranscriptLineLifecycleCoordinatorTest {
     TestFixture fixture = new TestFixture();
     TargetRef ref = new TargetRef("srv", "#chan");
 
-    fixture.coordinator.markHistoryDividerPending(ref, "Earlier");
+    fixture.auxiliaryLifecycleCoordinator.markHistoryDividerPending(ref, "Earlier");
     fixture.coordinator.appendLine(
         ref,
         "alice",
@@ -104,8 +92,11 @@ class ChatTranscriptLineLifecycleCoordinatorTest {
 
   private static final class TestFixture {
     private final ChatStyles styles = new ChatStyles(null);
+    private final Object mutationLock = new Object();
     private final ChatTranscriptLineLifecycleCoordinator coordinator =
-        new ChatTranscriptLineLifecycleCoordinator(new Object());
+        new ChatTranscriptLineLifecycleCoordinator(mutationLock);
+    private final ChatTranscriptAuxiliaryLifecycleCoordinator auxiliaryLifecycleCoordinator =
+        new ChatTranscriptAuxiliaryLifecycleCoordinator(mutationLock);
     private final ChatTranscriptRuntimeSettingsSupport runtimeSettingsSupport =
         new ChatTranscriptRuntimeSettingsSupport(null, styles);
     private final ChatTranscriptDocumentLineSupport documentLineSupport =
@@ -134,7 +125,7 @@ class ChatTranscriptLineLifecycleCoordinatorTest {
               (ref, from) -> from,
               (base, match) -> new SimpleAttributeSet(base),
               (ref, doc) -> 0,
-              coordinator::maybeRenderPendingReadMarker);
+              auxiliaryLifecycleCoordinator::maybeRenderPendingReadMarker);
       ChatTranscriptTextInsertSupport.Context textInsertSupportContext =
           new ChatTranscriptTextInsertSupport.Context(
               styles,
@@ -160,6 +151,8 @@ class ChatTranscriptLineLifecycleCoordinatorTest {
               documentLineSupport::normalizeInsertAtLineStart,
               documentLineSupport::ensureAtLineStartForInsert,
               (ref, insertAt, delta) -> {});
+      auxiliaryLifecycleCoordinator.bindContext(
+          docs, stateByTarget, auxiliaryRowsSupport, this::ensureTarget, target -> {});
       coordinator.bindContexts(
           docs,
           stateByTarget,
@@ -174,8 +167,7 @@ class ChatTranscriptLineLifecycleCoordinatorTest {
           runtimeSettingsSupport,
           () -> false,
           () -> false,
-          auxiliaryRowsSupport,
-          target -> {});
+          auxiliaryLifecycleCoordinator::flushPendingHistoryDividerIfNeeded);
     }
 
     private ChatTranscriptState newTranscriptState() {
