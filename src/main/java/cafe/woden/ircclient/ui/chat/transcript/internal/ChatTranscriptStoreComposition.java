@@ -14,7 +14,7 @@ import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilterRoutin
 import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredLinesSupport;
 import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredRunSupport;
 import cafe.woden.ircclient.ui.chat.transcript.flow.ChatTranscriptFilteredFlowCoordinator;
-import cafe.woden.ircclient.ui.chat.transcript.flow.ChatTranscriptMessageInteractionCoordinator;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageInteractionCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.flow.ChatTranscriptMessageLineCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.flow.ChatTranscriptPlainSpoilerCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.flow.ChatTranscriptReplyFlowCoordinator;

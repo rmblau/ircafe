@@ -1,15 +1,7 @@
-package cafe.woden.ircclient.ui.chat.transcript.flow;
+package cafe.woden.ircclient.ui.chat.transcript.message;
 
 import cafe.woden.ircclient.model.TargetRef;
-import cafe.woden.ircclient.ui.chat.transcript.message.ReactionChipActionHandler;
-import cafe.woden.ircclient.ui.chat.transcript.message.RedactedMessageContent;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageMutationSupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageQuerySupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageReplacementSupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReactionSummarySupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptSenderStyleSupport;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptState;
 import java.util.Map;
 import java.util.Objects;

@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.message;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.anyMap;
@@ -8,12 +8,7 @@ import static org.mockito.Mockito.verify;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredLinesSupport;
-import cafe.woden.ircclient.ui.chat.transcript.flow.ChatTranscriptReactionFlowSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPresenceFoldSupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageStateSupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReactionSummarySupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ReactionChipActionHandler;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptState;
 import java.util.HashMap;
 import java.util.Map;
