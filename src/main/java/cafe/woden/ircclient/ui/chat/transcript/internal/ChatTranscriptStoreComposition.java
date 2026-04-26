@@ -94,8 +94,10 @@ public final class ChatTranscriptStoreComposition {
     ChatTranscriptTargetRuntimeCoordinator targetRuntimeCoordinator =
         runtimeComposition.targetRuntimeCoordinator();
 
-    ChatTranscriptDocumentLineSupport documentLineSupport =
-        new ChatTranscriptDocumentLineSupport(styles);
+    LineComposition lineComposition =
+        createLineComposition(
+            styles, renderer, ts, styleRoutingSupport, runtimeFlowCoordinator, lineCapSupport);
+    ChatTranscriptDocumentLineSupport documentLineSupport = lineComposition.documentLineSupport();
     FilterComposition filterComposition =
         createFilterComposition(
             styles,
@@ -109,16 +111,7 @@ public final class ChatTranscriptStoreComposition {
     ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator =
         filterComposition.filteredFlowCoordinator();
     ChatTranscriptFilterRoutingSupport filterRoutingSupport = filterComposition.filterRoutingSupport();
-    ChatTranscriptPresenceFoldSupport presenceFoldSupport =
-        new ChatTranscriptPresenceFoldSupport(
-            styles,
-            renderer,
-            ts,
-            ChatTranscriptLineMetaSupport::bind,
-            ChatTranscriptLineMetaSupport::withExistingMeta,
-            styleRoutingSupport::withFilterMatch,
-            documentLineSupport::ensureAtLineStart,
-            lineCapSupport::enforceTranscriptLineCap);
+    ChatTranscriptPresenceFoldSupport presenceFoldSupport = lineComposition.presenceFoldSupport();
     ChatTranscriptMatrixDisplayNameCoordinator matrixDisplayNameCoordinator =
         new ChatTranscriptMatrixDisplayNameCoordinator(
             uiSettings, userListStore, targetRuntimeCoordinator.docs());
@@ -141,19 +134,7 @@ public final class ChatTranscriptStoreComposition {
             filteredFlowCoordinator);
     ChatTranscriptPlainSpoilerCoordinator plainSpoilerCoordinator =
         spoilerComposition.plainSpoilerCoordinator();
-    ChatTranscriptAuxiliaryRowsSupport auxiliaryRowsSupport =
-        new ChatTranscriptAuxiliaryRowsSupport(
-            styles,
-            styleRoutingSupport::safeTranscriptFont,
-            (ref, epochMs) ->
-                ChatTranscriptLineMetaSupport.create(
-                    ref, LogKind.STATUS, LogDirection.SYSTEM, null, epochMs, null),
-            ChatTranscriptLineMetaSupport::bind,
-            ChatTranscriptLineMetaSupport::withAuxiliaryRowKind,
-            ChatTranscriptLineMetaSupport::withExistingMeta,
-            documentLineSupport::normalizeInsertAtLineStart,
-            documentLineSupport::ensureAtLineStartForInsert,
-            runtimeFlowCoordinator::shiftCurrentBlock);
+    ChatTranscriptAuxiliaryRowsSupport auxiliaryRowsSupport = lineComposition.auxiliaryRowsSupport();
     MessageComposition messageComposition =
         createMessageComposition(
             store,
@@ -270,6 +251,46 @@ public final class ChatTranscriptStoreComposition {
         lineCapSupport,
         messageCatalogSupport,
         targetRuntimeCoordinator);
+  }
+
+  private record LineComposition(
+      ChatTranscriptDocumentLineSupport documentLineSupport,
+      ChatTranscriptPresenceFoldSupport presenceFoldSupport,
+      ChatTranscriptAuxiliaryRowsSupport auxiliaryRowsSupport) {}
+
+  private static LineComposition createLineComposition(
+      ChatStyles styles,
+      ChatRichTextRenderer renderer,
+      ChatTimestampFormatter ts,
+      ChatTranscriptStyleRoutingSupport styleRoutingSupport,
+      ChatTranscriptRuntimeFlowCoordinator runtimeFlowCoordinator,
+      ChatTranscriptLineCapSupport lineCapSupport) {
+    ChatTranscriptDocumentLineSupport documentLineSupport =
+        new ChatTranscriptDocumentLineSupport(styles);
+    ChatTranscriptPresenceFoldSupport presenceFoldSupport =
+        new ChatTranscriptPresenceFoldSupport(
+            styles,
+            renderer,
+            ts,
+            ChatTranscriptLineMetaSupport::bind,
+            ChatTranscriptLineMetaSupport::withExistingMeta,
+            styleRoutingSupport::withFilterMatch,
+            documentLineSupport::ensureAtLineStart,
+            lineCapSupport::enforceTranscriptLineCap);
+    ChatTranscriptAuxiliaryRowsSupport auxiliaryRowsSupport =
+        new ChatTranscriptAuxiliaryRowsSupport(
+            styles,
+            styleRoutingSupport::safeTranscriptFont,
+            (ref, epochMs) ->
+                ChatTranscriptLineMetaSupport.create(
+                    ref, LogKind.STATUS, LogDirection.SYSTEM, null, epochMs, null),
+            ChatTranscriptLineMetaSupport::bind,
+            ChatTranscriptLineMetaSupport::withAuxiliaryRowKind,
+            ChatTranscriptLineMetaSupport::withExistingMeta,
+            documentLineSupport::normalizeInsertAtLineStart,
+            documentLineSupport::ensureAtLineStartForInsert,
+            runtimeFlowCoordinator::shiftCurrentBlock);
+    return new LineComposition(documentLineSupport, presenceFoldSupport, auxiliaryRowsSupport);
   }
 
   private record MessageComposition(
