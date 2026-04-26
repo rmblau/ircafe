@@ -1,8 +1,7 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.filter;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredPreviewSupport;
 import org.junit.jupiter.api.Test;
 
 class ChatTranscriptFilteredPreviewSupportTest {
