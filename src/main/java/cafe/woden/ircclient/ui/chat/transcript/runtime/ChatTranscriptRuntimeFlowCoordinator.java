@@ -17,8 +17,6 @@ import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPresenceFlowSu
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptTextAppendSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptTextInsertSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
-import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeSettingsSupport;
-import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptState;
 import java.awt.Component;
 import java.util.Map;
 import java.util.function.BooleanSupplier;

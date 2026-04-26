@@ -45,6 +45,19 @@ class ChatTranscriptLineLifecycleCoordinatorTest {
   }
 
   @Test
+  void requiresBoundContextsBeforeLifecycleUse() {
+    ChatTranscriptLineLifecycleCoordinator coordinator =
+        new ChatTranscriptLineLifecycleCoordinator(new Object());
+
+    IllegalStateException error =
+        assertThrows(
+            IllegalStateException.class,
+            () -> coordinator.ensureLoadOlderMessagesControl(new TargetRef("srv", "#chan")));
+
+    assertEquals("Line/lifecycle coordinator contexts not bound", error.getMessage());
+  }
+
+  @Test
   void appendLineFlushesPendingHistoryDividerBeforeVisibleText() throws Exception {
     TestFixture fixture = new TestFixture();
     TargetRef ref = new TargetRef("srv", "#chan");

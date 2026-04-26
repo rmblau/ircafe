@@ -229,16 +229,18 @@ public final class ChatTranscriptLineLifecycleCoordinator {
   }
 
   private ChatTranscriptLineFlowSupport.Context requireLineFlowContext() {
-    if (lineFlowContext == null || lifecycleContext == null) {
-      throw new IllegalStateException("Line/lifecycle coordinator contexts not bound");
-    }
+    requireContextsBound();
     return lineFlowContext;
   }
 
   private ChatTranscriptLifecycleSupport.Context requireLifecycleContext() {
+    requireContextsBound();
+    return lifecycleContext;
+  }
+
+  private void requireContextsBound() {
     if (lineFlowContext == null || lifecycleContext == null) {
       throw new IllegalStateException("Line/lifecycle coordinator contexts not bound");
     }
-    return lifecycleContext;
   }
 }
