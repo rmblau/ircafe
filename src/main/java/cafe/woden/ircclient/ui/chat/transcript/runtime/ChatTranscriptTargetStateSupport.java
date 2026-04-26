@@ -64,6 +64,26 @@ public final class ChatTranscriptTargetStateSupport {
     return OptionalLong.of(state.earliestEpochMsSeen());
   }
 
+  public void closeTarget(TargetRef ref) {
+    if (ref == null) return;
+    docs.remove(ref);
+    stateByTarget.remove(ref);
+  }
+
+  public void clearTarget(TargetRef ref) {
+    if (ref == null) return;
+    ensureTargetExists(ref);
+
+    StyledDocument doc = docs.get(ref);
+    if (doc == null) return;
+
+    try {
+      doc.remove(0, doc.getLength());
+    } catch (Exception ignored) {
+    }
+    stateByTarget.put(ref, newTranscriptState());
+  }
+
   public List<StyledDocument> snapshotDocuments() {
     synchronized (snapshotLock) {
       return new ArrayList<>(docs.values());

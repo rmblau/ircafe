@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 import javax.swing.text.StyledDocument;
 
 public final class ChatTranscriptLifecycleSupport {
@@ -16,7 +15,6 @@ public final class ChatTranscriptLifecycleSupport {
   public record Context(
       Map<TargetRef, StyledDocument> docs,
       Map<TargetRef, ChatTranscriptState> stateByTarget,
-      Supplier<ChatTranscriptState> newTranscriptState,
       ChatTranscriptAuxiliaryRowsSupport auxiliaryRowsSupport,
       Consumer<TargetRef> ensureTargetExists,
       Consumer<TargetRef> endFilteredRun) {}
@@ -142,23 +140,4 @@ public final class ChatTranscriptLifecycleSupport {
         .setLoadOlderMessagesControlHandler(state == null ? null : state.auxiliaryRows(), onLoad);
   }
 
-  public void closeTarget(Context context, TargetRef ref) {
-    if (ref == null) return;
-    context.docs().remove(ref);
-    context.stateByTarget().remove(ref);
-  }
-
-  public void clearTarget(Context context, TargetRef ref) {
-    if (ref == null) return;
-    context.ensureTargetExists().accept(ref);
-
-    StyledDocument doc = context.docs().get(ref);
-    if (doc == null) return;
-
-    try {
-      doc.remove(0, doc.getLength());
-    } catch (Exception ignored) {
-    }
-    context.stateByTarget().put(ref, context.newTranscriptState().get());
-  }
 }

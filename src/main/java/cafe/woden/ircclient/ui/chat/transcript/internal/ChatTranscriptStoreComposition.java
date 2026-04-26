@@ -322,7 +322,6 @@ public final class ChatTranscriptStoreComposition {
         runtimeSettingsSupport,
         runtimeSettingsSupport::imageEmbedsEnabled,
         runtimeSettingsSupport::linkPreviewsEnabled,
-        targetRuntimeCoordinator::newTranscriptState,
         auxiliaryRowsSupport,
         filteredFlowCoordinator::endAppendRun);
     return new Components(

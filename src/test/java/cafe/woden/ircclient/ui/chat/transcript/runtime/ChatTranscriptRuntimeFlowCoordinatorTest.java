@@ -223,7 +223,6 @@ class ChatTranscriptRuntimeFlowCoordinatorTest {
           runtimeSettingsSupport,
           () -> false,
           () -> false,
-          this::newTranscriptState,
           auxiliaryRowsSupport,
           target -> {});
       coordinator.bindPresenceContext(

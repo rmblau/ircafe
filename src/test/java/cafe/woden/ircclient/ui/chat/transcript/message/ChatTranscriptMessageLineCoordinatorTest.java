@@ -203,7 +203,6 @@ class ChatTranscriptMessageLineCoordinatorTest {
           runtimeSettingsSupport,
           () -> false,
           () -> false,
-          this::newTranscriptState,
           auxiliaryRowsSupport,
           filteredFlowCoordinator::endAppendRun);
     }

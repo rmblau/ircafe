@@ -278,11 +278,11 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
   }
 
   public synchronized void closeTarget(TargetRef ref) {
-    runtimeFlowCoordinator.closeTarget(ref);
+    targetRuntimeCoordinator.closeTarget(ref);
   }
 
   public synchronized void clearTarget(TargetRef ref) {
-    runtimeFlowCoordinator.clearTarget(ref);
+    targetRuntimeCoordinator.clearTarget(ref);
   }
 
   public synchronized void appendPresence(TargetRef ref, PresenceEvent event) {

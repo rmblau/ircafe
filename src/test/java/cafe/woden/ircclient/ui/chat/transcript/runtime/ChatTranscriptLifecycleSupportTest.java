@@ -32,7 +32,6 @@ class ChatTranscriptLifecycleSupportTest {
         new ChatTranscriptLifecycleSupport.Context(
             docs,
             states,
-            ChatTranscriptLifecycleSupportTest::newTranscriptState,
             auxiliaryRowsSupport,
             target -> {},
             target -> {});

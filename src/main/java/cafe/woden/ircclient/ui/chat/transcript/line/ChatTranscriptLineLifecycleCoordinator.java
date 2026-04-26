@@ -13,7 +13,6 @@ import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyledDocument;
 
@@ -45,14 +44,12 @@ public final class ChatTranscriptLineLifecycleCoordinator {
       ChatTranscriptRuntimeSettingsSupport runtimeSettingsSupport,
       BooleanSupplier imageEmbedsEnabled,
       BooleanSupplier linkPreviewsEnabled,
-      Supplier<ChatTranscriptState> newTranscriptState,
       ChatTranscriptAuxiliaryRowsSupport auxiliaryRowsSupport,
       Consumer<TargetRef> endFilteredRun) {
     this.lifecycleContext =
         new ChatTranscriptLifecycleSupport.Context(
             docs,
             stateByTarget,
-            newTranscriptState,
             auxiliaryRowsSupport,
             ensureTargetExists,
             endFilteredRun);
@@ -216,17 +213,6 @@ public final class ChatTranscriptLineLifecycleCoordinator {
     }
   }
 
-  public void closeTarget(TargetRef ref) {
-    synchronized (mutationLock) {
-      lifecycleSupport.closeTarget(requireLifecycleContext(), ref);
-    }
-  }
-
-  public void clearTarget(TargetRef ref) {
-    synchronized (mutationLock) {
-      lifecycleSupport.clearTarget(requireLifecycleContext(), ref);
-    }
-  }
 
   private ChatTranscriptLineFlowSupport.Context requireLineFlowContext() {
     requireContextsBound();

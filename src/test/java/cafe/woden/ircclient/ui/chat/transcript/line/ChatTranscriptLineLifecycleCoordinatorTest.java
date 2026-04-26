@@ -174,7 +174,6 @@ class ChatTranscriptLineLifecycleCoordinatorTest {
           runtimeSettingsSupport,
           () -> false,
           () -> false,
-          this::newTranscriptState,
           auxiliaryRowsSupport,
           target -> {});
     }

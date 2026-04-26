@@ -22,7 +22,6 @@ import java.util.Map;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.StyledDocument;
 
@@ -75,7 +74,6 @@ public final class ChatTranscriptRuntimeFlowCoordinator {
       ChatTranscriptRuntimeSettingsSupport runtimeSettingsSupport,
       BooleanSupplier imageEmbedsEnabled,
       BooleanSupplier linkPreviewsEnabled,
-      Supplier<ChatTranscriptState> newTranscriptState,
       ChatTranscriptAuxiliaryRowsSupport auxiliaryRowsSupport,
       Consumer<TargetRef> endFilteredRun) {
     lineLifecycleCoordinator.bindContexts(
@@ -92,7 +90,6 @@ public final class ChatTranscriptRuntimeFlowCoordinator {
         runtimeSettingsSupport,
         imageEmbedsEnabled,
         linkPreviewsEnabled,
-        newTranscriptState,
         auxiliaryRowsSupport,
         endFilteredRun);
   }
@@ -195,13 +192,6 @@ public final class ChatTranscriptRuntimeFlowCoordinator {
     lineLifecycleCoordinator.setLoadOlderMessagesControlHandler(ref, onLoad);
   }
 
-  public void closeTarget(TargetRef ref) {
-    lineLifecycleCoordinator.closeTarget(ref);
-  }
-
-  public void clearTarget(TargetRef ref) {
-    lineLifecycleCoordinator.clearTarget(ref);
-  }
 
   public void appendPresence(TargetRef ref, PresenceEvent event) {
     presenceFlowCoordinator.appendPresence(ref, event);

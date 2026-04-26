@@ -53,10 +53,6 @@ public final class ChatTranscriptTargetRuntimeCoordinator {
     targetStateSupport.ensureTargetExists(ref);
   }
 
-  public ChatTranscriptState newTranscriptState() {
-    return targetStateSupport.newTranscriptState();
-  }
-
   public void noteEpochMs(TargetRef ref, Long epochMs) {
     targetStateSupport.noteEpochMs(ref, epochMs);
   }
@@ -67,6 +63,14 @@ public final class ChatTranscriptTargetRuntimeCoordinator {
 
   public OptionalLong earliestTimestampEpochMs(TargetRef ref) {
     return targetStateSupport.earliestTimestampEpochMs(ref);
+  }
+
+  public void closeTarget(TargetRef ref) {
+    targetStateSupport.closeTarget(ref);
+  }
+
+  public void clearTarget(TargetRef ref) {
+    targetStateSupport.clearTarget(ref);
   }
 
   public void restyleAllDocuments() {
