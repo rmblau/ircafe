@@ -9,7 +9,7 @@ import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTimestampFormatter;
 import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
 import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilterRoutingSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptManualPreviewFlowSupport;
-import cafe.woden.ircclient.ui.chat.transcript.flow.ChatTranscriptRuntimeFlowCoordinator;
+import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeFlowCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptActionAppendSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptActionHistoryInsertSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptDocumentLineSupport;

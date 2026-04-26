@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.transcript.flow;
+package cafe.woden.ircclient.ui.chat.transcript.spoiler;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPlainAppendSupport;

@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.transcript.flow;
+package cafe.woden.ircclient.ui.chat.transcript.runtime;
 
 import cafe.woden.ircclient.app.api.PresenceEvent;
 import cafe.woden.ircclient.model.TargetRef;
