@@ -4,6 +4,7 @@ import cafe.woden.ircclient.logging.viewer.ChatRedactionAuditRecord;
 import cafe.woden.ircclient.logging.viewer.ChatRedactionAuditService;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
+import cafe.woden.ircclient.ui.chat.transcript.message.RedactedMessageContent;
 import cafe.woden.ircclient.util.VirtualThreads;
 import java.awt.Component;
 import java.time.Instant;
@@ -31,8 +32,7 @@ public final class ChatRedactedMessageRevealSupport {
     String msgId = Objects.toString(messageId, "").trim();
     if (msgId.isEmpty()) return;
 
-    ChatTranscriptStore.RedactedMessageContent live =
-        transcripts.redactedOriginalById(target, msgId);
+    RedactedMessageContent live = transcripts.redactedOriginalById(target, msgId);
     if (live != null) {
       ChatLineInspectorDialog.showReadOnlyTextDialog(
           owner, "Redacted Message", formatLiveRevealText(target, live));
@@ -61,7 +61,7 @@ public final class ChatRedactedMessageRevealSupport {
   }
 
   private static String formatLiveRevealText(
-      TargetRef target, ChatTranscriptStore.RedactedMessageContent content) {
+      TargetRef target, RedactedMessageContent content) {
     StringBuilder sb = new StringBuilder();
     sb.append("Source: live transcript cache\n");
     appendCommonHeader(

@@ -1,7 +1,8 @@
 package cafe.woden.ircclient.ui.chat.transcript.flow;
 
 import cafe.woden.ircclient.model.TargetRef;
-import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
+import cafe.woden.ircclient.ui.chat.transcript.message.ReactionChipActionHandler;
+import cafe.woden.ircclient.ui.chat.transcript.message.RedactedMessageContent;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageMutationSupport;
@@ -89,8 +90,7 @@ public final class ChatTranscriptMessageInteractionCoordinator {
     return messageQuerySupport.messagePreviewById(messageQueryContext, ref, messageId);
   }
 
-  public ChatTranscriptStore.RedactedMessageContent redactedOriginalById(
-      TargetRef ref, String messageId) {
+  public RedactedMessageContent redactedOriginalById(TargetRef ref, String messageId) {
     return messageQuerySupport.redactedOriginalById(messageQueryContext, ref, messageId);
   }
 
@@ -104,7 +104,7 @@ public final class ChatTranscriptMessageInteractionCoordinator {
         reactionFlowContext, ref, messageId, reaction, nick);
   }
 
-  public void setReactionChipActionHandler(ChatTranscriptStore.ReactionChipActionHandler handler) {
+  public void setReactionChipActionHandler(ReactionChipActionHandler handler) {
     reactionFlowSupport.setReactionChipActionHandler(reactionFlowContext, handler);
   }
 

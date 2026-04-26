@@ -5,7 +5,6 @@ import static cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMess
 import cafe.woden.ircclient.model.LogDirection;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
-import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptDocumentSupport;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptState;
 import cafe.woden.ircclient.ui.chat.transcript.style.ChatTranscriptAttrSupport;
@@ -46,7 +45,7 @@ public final class ChatTranscriptMessageQuerySupport {
     return context.messageCatalogSupport().previewForMessageId(st.messageCatalog(), msgId);
   }
 
-  public ChatTranscriptStore.RedactedMessageContent redactedOriginalById(
+  public RedactedMessageContent redactedOriginalById(
       Context context, TargetRef ref, String messageId) {
     if (context == null || ref == null) return null;
     String msgId = normalizeMessageId(messageId);

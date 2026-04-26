@@ -35,6 +35,8 @@ import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageStat
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReactionSummarySupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReplyContextSupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptSenderStyleSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ReactionChipActionHandler;
+import cafe.woden.ircclient.ui.chat.transcript.message.RedactedMessageContent;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTimestampFormatter;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptLineCapSupport;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRestyleSupport;
@@ -78,12 +80,6 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
   private final ChatTranscriptPlainSpoilerCoordinator plainSpoilerCoordinator;
   private final ChatTranscriptRuntimeFlowCoordinator runtimeFlowCoordinator;
   private final ChatTranscriptTargetRuntimeCoordinator targetRuntimeCoordinator;
-
-  @FunctionalInterface
-  public interface ReactionChipActionHandler {
-    void onReactionAction(
-        TargetRef target, String messageId, String reactionToken, boolean unreactRequested);
-  }
 
   public ChatTranscriptStore(
       ChatStyles styles,
@@ -346,18 +342,6 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
   void shutdown() {
     targetRuntimeCoordinator.shutdown();
   }
-
-  public record RedactedMessageContent(
-      String messageId,
-      LogKind originalKind,
-      String originalFromNick,
-      String originalText,
-      Long originalEpochMs,
-      String redactedBy,
-      Long redactedAtEpochMs) {}
-
-  public record MessageContentSnapshot(
-      LogKind kind, String fromNick, String renderedText, Long epochMs) {}
 
   public synchronized void ensureTargetExists(TargetRef ref) {
     targetRuntimeCoordinator.ensureTargetExists(ref);

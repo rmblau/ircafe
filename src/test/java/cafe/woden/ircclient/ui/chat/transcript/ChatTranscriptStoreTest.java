@@ -23,6 +23,7 @@ import cafe.woden.ircclient.ui.chat.fold.MessageReactionsComponent;
 import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptDeliveryIndicatorSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.OutgoingSendIndicator;
+import cafe.woden.ircclient.ui.chat.transcript.message.RedactedMessageContent;
 import cafe.woden.ircclient.ui.settings.MemoryUsageDisplayMode;
 import cafe.woden.ircclient.ui.settings.NotificationBackendMode;
 import cafe.woden.ircclient.ui.settings.UiSettings;
@@ -253,7 +254,7 @@ class ChatTranscriptStoreTest {
     assertTrue(text.contains("[message redacted]"));
     assertFalse(text.contains("alice: before"));
 
-    ChatTranscriptStore.RedactedMessageContent reveal = store.redactedOriginalById(ref, "m-1");
+    RedactedMessageContent reveal = store.redactedOriginalById(ref, "m-1");
     assertNotNull(reveal);
     assertEquals("before", reveal.originalText());
     assertEquals("alice", reveal.originalFromNick());
@@ -270,7 +271,7 @@ class ChatTranscriptStoreTest {
     assertTrue(store.applyMessageEdit(ref, "m-1", "after", "alice", 6_020L, "", Map.of()));
     assertTrue(store.applyMessageRedaction(ref, "m-1", "alice", 6_050L, "", Map.of()));
 
-    ChatTranscriptStore.RedactedMessageContent reveal = store.redactedOriginalById(ref, "m-1");
+    RedactedMessageContent reveal = store.redactedOriginalById(ref, "m-1");
     assertNotNull(reveal);
     assertEquals("after (edited)", reveal.originalText());
     assertEquals("alice: [message redacted]", store.messagePreviewById(ref, "m-1"));

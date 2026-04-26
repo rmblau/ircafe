@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.ui.chat.transcript.flow;
 
 import cafe.woden.ircclient.model.TargetRef;
-import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
+import cafe.woden.ircclient.ui.chat.transcript.message.ReactionChipActionHandler;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReactionSummarySupport;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptState;
 import java.util.HashMap;
@@ -36,7 +36,7 @@ public final class ChatTranscriptReactionFlowSupport {
   }
 
   public void setReactionChipActionHandler(
-      Context context, ChatTranscriptStore.ReactionChipActionHandler handler) {
+      Context context, ReactionChipActionHandler handler) {
     if (context == null) return;
     Map<TargetRef, ChatTranscriptReactionSummarySupport.State> statesByTarget = new HashMap<>();
     for (Map.Entry<TargetRef, ChatTranscriptState> entry : context.stateByTarget().entrySet()) {

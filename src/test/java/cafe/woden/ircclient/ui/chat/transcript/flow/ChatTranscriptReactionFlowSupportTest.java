@@ -13,6 +13,7 @@ import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPresenceFoldSu
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageStateSupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReactionSummarySupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ReactionChipActionHandler;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptState;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,7 +37,7 @@ class ChatTranscriptReactionFlowSupportTest {
         new ChatTranscriptReactionFlowSupport.Context(
             docs, states, r -> {}, reactionSummarySupport);
 
-    ChatTranscriptStore.ReactionChipActionHandler handler =
+    ReactionChipActionHandler handler =
         (target, messageId, reactionToken, unreactRequested) -> {};
     support.setReactionChipActionHandler(context, handler);
 

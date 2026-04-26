@@ -4,7 +4,6 @@ import static cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMess
 
 import cafe.woden.ircclient.model.LogKind;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
-import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptReplyPreviewSupport;
 import cafe.woden.ircclient.ui.chat.transcript.style.ChatTranscriptAttrSupport;
@@ -48,7 +47,7 @@ public final class ChatTranscriptMessageStateSupport {
   }
 
   public static void rememberCurrentMessageContent(
-      Map<String, ChatTranscriptStore.MessageContentSnapshot> currentMessageContentByMsgId,
+      Map<String, MessageContentSnapshot> currentMessageContentByMsgId,
       LineMeta meta,
       String from,
       String renderedText) {
@@ -60,7 +59,7 @@ public final class ChatTranscriptMessageStateSupport {
 
     currentMessageContentByMsgId.put(
         msgId,
-        new ChatTranscriptStore.MessageContentSnapshot(
+        new MessageContentSnapshot(
             kind,
             Objects.toString(from, "").trim(),
             Objects.toString(renderedText, ""),
@@ -68,7 +67,7 @@ public final class ChatTranscriptMessageStateSupport {
   }
 
   public static void rememberEditedCurrentMessageContent(
-      Map<String, ChatTranscriptStore.MessageContentSnapshot> currentMessageContentByMsgId,
+      Map<String, MessageContentSnapshot> currentMessageContentByMsgId,
       String targetMsgId,
       AttributeSet existingAttrs,
       String renderedEditedText) {
@@ -76,7 +75,7 @@ public final class ChatTranscriptMessageStateSupport {
     String msgId = normalizeMessageId(targetMsgId);
     if (msgId.isEmpty()) return;
 
-    ChatTranscriptStore.MessageContentSnapshot existing = currentMessageContentByMsgId.get(msgId);
+    MessageContentSnapshot existing = currentMessageContentByMsgId.get(msgId);
     LogKind kind =
         (existing != null && existing.kind() != null)
             ? existing.kind()
@@ -96,14 +95,14 @@ public final class ChatTranscriptMessageStateSupport {
 
     currentMessageContentByMsgId.put(
         msgId,
-        new ChatTranscriptStore.MessageContentSnapshot(
+        new MessageContentSnapshot(
             kind, Objects.toString(fromNick, "").trim(), renderedEditedText, epochMs));
   }
 
   public static void rememberRedactedOriginal(
       Context context,
-      Map<String, ChatTranscriptStore.MessageContentSnapshot> currentMessageContentByMsgId,
-      Map<String, ChatTranscriptStore.RedactedMessageContent> redactedOriginalByMsgId,
+      Map<String, MessageContentSnapshot> currentMessageContentByMsgId,
+      Map<String, RedactedMessageContent> redactedOriginalByMsgId,
       String targetMsgId,
       AttributeSet existingAttrs,
       String redactedBy,
@@ -116,7 +115,7 @@ public final class ChatTranscriptMessageStateSupport {
     String msgId = normalizeMessageId(targetMsgId);
     if (msgId.isEmpty()) return;
 
-    ChatTranscriptStore.MessageContentSnapshot current = currentMessageContentByMsgId.get(msgId);
+    MessageContentSnapshot current = currentMessageContentByMsgId.get(msgId);
     LogKind originalKind =
         current != null && current.kind() != null
             ? current.kind()
@@ -146,7 +145,7 @@ public final class ChatTranscriptMessageStateSupport {
 
     redactedOriginalByMsgId.put(
         msgId,
-        new ChatTranscriptStore.RedactedMessageContent(
+        new RedactedMessageContent(
             msgId,
             originalKind,
             originalFromNick,

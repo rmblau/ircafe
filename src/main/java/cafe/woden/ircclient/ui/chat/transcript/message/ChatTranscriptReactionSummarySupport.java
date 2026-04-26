@@ -5,7 +5,6 @@ import static cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMess
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.fold.MessageReactionsComponent;
-import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptDocumentSupport;
 import java.awt.Font;
@@ -90,7 +89,7 @@ public final class ChatTranscriptReactionSummarySupport {
   private final BiFunction<StyledDocument, Integer, Integer> ensureAtLineStartForInsert;
   private final PresenceBlockShiftHandler shiftPresenceBlock;
 
-  private volatile ChatTranscriptStore.ReactionChipActionHandler reactionChipActionHandler =
+  private volatile ReactionChipActionHandler reactionChipActionHandler =
       (target, messageId, reactionToken, unreactRequested) -> {};
 
   public ChatTranscriptReactionSummarySupport(
@@ -129,7 +128,7 @@ public final class ChatTranscriptReactionSummarySupport {
   }
 
   public void setReactionChipActionHandler(
-      ChatTranscriptStore.ReactionChipActionHandler handler, Map<TargetRef, State> statesByTarget) {
+      ReactionChipActionHandler handler, Map<TargetRef, State> statesByTarget) {
     reactionChipActionHandler =
         handler != null ? handler : (target, messageId, reactionToken, unreactRequested) -> {};
     for (Map.Entry<TargetRef, State> entry : statesByTarget.entrySet()) {
@@ -326,7 +325,7 @@ public final class ChatTranscriptReactionSummarySupport {
     String msgId = normalizeMessageId(targetMsgId);
     String token = Objects.toString(reactionToken, "").trim();
     if (msgId.isEmpty() || token.isEmpty()) return;
-    ChatTranscriptStore.ReactionChipActionHandler handler = reactionChipActionHandler;
+    ReactionChipActionHandler handler = reactionChipActionHandler;
     if (handler == null) return;
     try {
       handler.onReactionAction(ref, msgId, token, unreactRequested);

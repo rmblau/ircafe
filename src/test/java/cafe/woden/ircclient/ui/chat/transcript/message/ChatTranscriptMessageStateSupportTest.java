@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import cafe.woden.ircclient.model.LogDirection;
 import cafe.woden.ircclient.model.LogKind;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
-import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,12 +35,12 @@ class ChatTranscriptMessageStateSupportTest {
 
   @Test
   void rememberCurrentMessageContentStoresTrimmedFromNickAndEpoch() {
-    Map<String, ChatTranscriptStore.MessageContentSnapshot> current = new HashMap<>();
+    Map<String, MessageContentSnapshot> current = new HashMap<>();
 
     ChatTranscriptMessageStateSupport.rememberCurrentMessageContent(
         current, lineMeta(LogKind.ACTION, "m-1", 1_234L), " alice ", "* waves");
 
-    ChatTranscriptStore.MessageContentSnapshot snapshot = current.get("m-1");
+    MessageContentSnapshot snapshot = current.get("m-1");
     assertEquals(LogKind.ACTION, snapshot.kind());
     assertEquals("alice", snapshot.fromNick());
     assertEquals("* waves", snapshot.renderedText());
@@ -50,7 +49,7 @@ class ChatTranscriptMessageStateSupportTest {
 
   @Test
   void rememberEditedCurrentMessageContentFallsBackToAttrsWhenNoSnapshotExists() {
-    Map<String, ChatTranscriptStore.MessageContentSnapshot> current = new HashMap<>();
+    Map<String, MessageContentSnapshot> current = new HashMap<>();
     SimpleAttributeSet attrs = new SimpleAttributeSet();
     attrs.addAttribute(ChatStyles.ATTR_META_KIND, "notice");
     attrs.addAttribute(ChatStyles.ATTR_META_FROM, "server");
@@ -59,7 +58,7 @@ class ChatTranscriptMessageStateSupportTest {
     ChatTranscriptMessageStateSupport.rememberEditedCurrentMessageContent(
         current, "m-2", attrs, "edited text");
 
-    ChatTranscriptStore.MessageContentSnapshot snapshot = current.get("m-2");
+    MessageContentSnapshot snapshot = current.get("m-2");
     assertEquals(LogKind.NOTICE, snapshot.kind());
     assertEquals("server", snapshot.fromNick());
     assertEquals("edited text", snapshot.renderedText());
@@ -68,10 +67,10 @@ class ChatTranscriptMessageStateSupportTest {
 
   @Test
   void rememberEditedCurrentMessageContentPrefersExistingSnapshot() {
-    Map<String, ChatTranscriptStore.MessageContentSnapshot> current = new HashMap<>();
+    Map<String, MessageContentSnapshot> current = new HashMap<>();
     current.put(
         "m-2",
-        new ChatTranscriptStore.MessageContentSnapshot(
+        new MessageContentSnapshot(
             LogKind.CHAT, "alice", "original text", 1_111L));
     SimpleAttributeSet attrs = new SimpleAttributeSet();
     attrs.addAttribute(ChatStyles.ATTR_META_KIND, "notice");
@@ -81,7 +80,7 @@ class ChatTranscriptMessageStateSupportTest {
     ChatTranscriptMessageStateSupport.rememberEditedCurrentMessageContent(
         current, " m-2 ", attrs, "edited text");
 
-    ChatTranscriptStore.MessageContentSnapshot snapshot = current.get("m-2");
+    MessageContentSnapshot snapshot = current.get("m-2");
     assertTrue(current.containsKey("m-2"));
     assertEquals(LogKind.CHAT, snapshot.kind());
     assertEquals("alice", snapshot.fromNick());
@@ -91,16 +90,16 @@ class ChatTranscriptMessageStateSupportTest {
 
   @Test
   void rememberRedactedOriginalUsesCurrentSnapshotAndFallbackClock() {
-    Map<String, ChatTranscriptStore.MessageContentSnapshot> current = new HashMap<>();
+    Map<String, MessageContentSnapshot> current = new HashMap<>();
     current.put(
         "m-3",
-        new ChatTranscriptStore.MessageContentSnapshot(LogKind.CHAT, "alice", "hello", 3_333L));
-    Map<String, ChatTranscriptStore.RedactedMessageContent> redacted = new HashMap<>();
+        new MessageContentSnapshot(LogKind.CHAT, "alice", "hello", 3_333L));
+    Map<String, RedactedMessageContent> redacted = new HashMap<>();
 
     ChatTranscriptMessageStateSupport.rememberRedactedOriginal(
         CONTEXT, current, redacted, "m-3", null, "mod", 0L);
 
-    ChatTranscriptStore.RedactedMessageContent content = redacted.get("m-3");
+    RedactedMessageContent content = redacted.get("m-3");
     assertEquals(LogKind.CHAT, content.originalKind());
     assertEquals("alice", content.originalFromNick());
     assertEquals("hello", content.originalText());
@@ -111,7 +110,7 @@ class ChatTranscriptMessageStateSupportTest {
 
   @Test
   void rememberRedactedOriginalSkipsPlaceholderOnlyFallback() {
-    Map<String, ChatTranscriptStore.RedactedMessageContent> redacted = new HashMap<>();
+    Map<String, RedactedMessageContent> redacted = new HashMap<>();
     SimpleAttributeSet attrs = new SimpleAttributeSet();
     attrs.addAttribute(ChatStyles.ATTR_META_KIND, "chat");
     attrs.addAttribute(ChatStyles.ATTR_META_FROM, "alice");
