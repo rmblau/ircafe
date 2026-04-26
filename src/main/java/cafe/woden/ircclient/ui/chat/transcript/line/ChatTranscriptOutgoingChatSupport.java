@@ -5,7 +5,7 @@ import cafe.woden.ircclient.model.LogKind;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
-import cafe.woden.ircclient.ui.chat.transcript.OutgoingSendIndicator;
+import cafe.woden.ircclient.ui.chat.transcript.line.OutgoingSendIndicator;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageMetadataSupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptOutgoingFollowUpSupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptPendingOutgoingSupport;

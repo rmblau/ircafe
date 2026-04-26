@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.line;
 
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
