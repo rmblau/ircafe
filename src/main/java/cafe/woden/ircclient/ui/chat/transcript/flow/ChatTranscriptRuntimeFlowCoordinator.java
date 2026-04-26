@@ -11,6 +11,8 @@ import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredLine
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptAuxiliaryRowsSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptDocumentLineSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPresenceFoldSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPresenceFlowCoordinator;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPresenceFlowSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptTextAppendSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptTextInsertSupport;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeSettingsSupport;
