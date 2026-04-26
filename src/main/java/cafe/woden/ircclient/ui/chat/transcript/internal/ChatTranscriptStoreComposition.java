@@ -162,6 +162,104 @@ public final class ChatTranscriptStoreComposition {
             filteredFlowCoordinator);
     ChatTranscriptPlainSpoilerCoordinator plainSpoilerCoordinator =
         spoilerComposition.plainSpoilerCoordinator();
+    ChatTranscriptAuxiliaryRowsSupport auxiliaryRowsSupport =
+        new ChatTranscriptAuxiliaryRowsSupport(
+            styles,
+            styleRoutingSupport::safeTranscriptFont,
+            (ref, epochMs) ->
+                ChatTranscriptLineMetaSupport.create(
+                    ref, LogKind.STATUS, LogDirection.SYSTEM, null, epochMs, null),
+            ChatTranscriptLineMetaSupport::bind,
+            ChatTranscriptLineMetaSupport::withAuxiliaryRowKind,
+            ChatTranscriptLineMetaSupport::withExistingMeta,
+            documentLineSupport::normalizeInsertAtLineStart,
+            documentLineSupport::ensureAtLineStartForInsert,
+            runtimeFlowCoordinator::shiftCurrentBlock);
+    MessageComposition messageComposition =
+        createMessageComposition(
+            store,
+            styles,
+            renderer,
+            ts,
+            nickColors,
+            imageEmbeds,
+            linkPreviews,
+            matrixDisplayNameCoordinator,
+            styleRoutingSupport,
+            filterRoutingSupport,
+            documentLineSupport,
+            lineCapSupport,
+            runtimeFlowCoordinator,
+            targetRuntimeCoordinator,
+            runtimeSettingsSupport,
+            messageCatalogSupport,
+            filteredFlowCoordinator);
+    ChatTranscriptReplyFlowCoordinator replyFlowCoordinator =
+        messageComposition.replyFlowCoordinator();
+    ChatTranscriptMessageLineCoordinator messageLineCoordinator =
+        messageComposition.messageLineCoordinator();
+    ChatTranscriptMessageInteractionCoordinator messageInteractionCoordinator =
+        messageComposition.messageInteractionCoordinator();
+    runtimeFlowCoordinator.bindPresenceContext(
+        presenceFoldSupport,
+        filterRoutingSupport,
+        filteredFlowCoordinator.filteredLinesSupport(),
+        runtimeSettingsSupport,
+        targetRuntimeCoordinator.docs(),
+        targetRuntimeCoordinator.stateByTarget(),
+        targetRuntimeCoordinator::ensureTargetExists,
+        targetRuntimeCoordinator::noteEpochMs,
+        System::currentTimeMillis);
+    runtimeFlowCoordinator.bindLineLifecycleContexts(
+        targetRuntimeCoordinator.docs(),
+        targetRuntimeCoordinator.stateByTarget(),
+        targetRuntimeCoordinator::ensureTargetExists,
+        targetRuntimeCoordinator::noteEpochMs,
+        filterRoutingSupport,
+        filteredFlowCoordinator::endInsertRun,
+        filteredFlowCoordinator::shouldDeferRichTextDuringHistoryBatch,
+        documentLineSupport,
+        messageLineCoordinator.textAppendSupportContext(),
+        messageLineCoordinator.textInsertSupportContext(),
+        runtimeSettingsSupport,
+        runtimeSettingsSupport::imageEmbedsEnabled,
+        runtimeSettingsSupport::linkPreviewsEnabled,
+        auxiliaryRowsSupport,
+        filteredFlowCoordinator::endAppendRun);
+    return new Components(
+        filteredFlowCoordinator,
+        matrixDisplayNameCoordinator,
+        replyFlowCoordinator,
+        messageInteractionCoordinator,
+        messageLineCoordinator,
+        plainSpoilerCoordinator,
+        runtimeFlowCoordinator,
+        targetRuntimeCoordinator);
+  }
+
+  private record MessageComposition(
+      ChatTranscriptReplyFlowCoordinator replyFlowCoordinator,
+      ChatTranscriptMessageLineCoordinator messageLineCoordinator,
+      ChatTranscriptMessageInteractionCoordinator messageInteractionCoordinator) {}
+
+  private static MessageComposition createMessageComposition(
+      ChatTranscriptStore store,
+      ChatStyles styles,
+      ChatRichTextRenderer renderer,
+      ChatTimestampFormatter ts,
+      NickColorService nickColors,
+      ChatImageEmbedder imageEmbeds,
+      ChatLinkPreviewEmbedder linkPreviews,
+      ChatTranscriptMatrixDisplayNameCoordinator matrixDisplayNameCoordinator,
+      ChatTranscriptStyleRoutingSupport styleRoutingSupport,
+      ChatTranscriptFilterRoutingSupport filterRoutingSupport,
+      ChatTranscriptDocumentLineSupport documentLineSupport,
+      ChatTranscriptLineCapSupport lineCapSupport,
+      ChatTranscriptRuntimeFlowCoordinator runtimeFlowCoordinator,
+      ChatTranscriptTargetRuntimeCoordinator targetRuntimeCoordinator,
+      ChatTranscriptRuntimeSettingsSupport runtimeSettingsSupport,
+      ChatTranscriptMessageCatalogSupport messageCatalogSupport,
+      ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator) {
     ChatTranscriptReplyContextSupport.Context replyContextSupportContext =
         new ChatTranscriptReplyContextSupport.Context(
             styles, ts, matrixDisplayNameCoordinator::renderTranscriptFrom);
@@ -180,19 +278,6 @@ public final class ChatTranscriptStoreComposition {
             ChatTranscriptLineMetaSupport::bind,
             styleRoutingSupport::applyOutgoingLineColor,
             styleRoutingSupport::applyNotificationRuleHighlightColor);
-    ChatTranscriptAuxiliaryRowsSupport auxiliaryRowsSupport =
-        new ChatTranscriptAuxiliaryRowsSupport(
-            styles,
-            styleRoutingSupport::safeTranscriptFont,
-            (ref, epochMs) ->
-                ChatTranscriptLineMetaSupport.create(
-                    ref, LogKind.STATUS, LogDirection.SYSTEM, null, epochMs, null),
-            ChatTranscriptLineMetaSupport::bind,
-            ChatTranscriptLineMetaSupport::withAuxiliaryRowKind,
-            ChatTranscriptLineMetaSupport::withExistingMeta,
-            documentLineSupport::normalizeInsertAtLineStart,
-            documentLineSupport::ensureAtLineStartForInsert,
-            runtimeFlowCoordinator::shiftCurrentBlock);
     ChatTranscriptReactionSummarySupport reactionSummarySupport =
         new ChatTranscriptReactionSummarySupport(
             styles,
@@ -252,41 +337,8 @@ public final class ChatTranscriptStoreComposition {
                 runtimeFlowCoordinator.insertLineAt(
                     ref, insertAt, from, text, fromStyle, messageStyle, meta),
             REDACTED_MESSAGE_PLACEHOLDER);
-    runtimeFlowCoordinator.bindPresenceContext(
-        presenceFoldSupport,
-        filterRoutingSupport,
-        filteredFlowCoordinator.filteredLinesSupport(),
-        runtimeSettingsSupport,
-        targetRuntimeCoordinator.docs(),
-        targetRuntimeCoordinator.stateByTarget(),
-        targetRuntimeCoordinator::ensureTargetExists,
-        targetRuntimeCoordinator::noteEpochMs,
-        System::currentTimeMillis);
-    runtimeFlowCoordinator.bindLineLifecycleContexts(
-        targetRuntimeCoordinator.docs(),
-        targetRuntimeCoordinator.stateByTarget(),
-        targetRuntimeCoordinator::ensureTargetExists,
-        targetRuntimeCoordinator::noteEpochMs,
-        filterRoutingSupport,
-        filteredFlowCoordinator::endInsertRun,
-        filteredFlowCoordinator::shouldDeferRichTextDuringHistoryBatch,
-        documentLineSupport,
-        messageLineCoordinator.textAppendSupportContext(),
-        messageLineCoordinator.textInsertSupportContext(),
-        runtimeSettingsSupport,
-        runtimeSettingsSupport::imageEmbedsEnabled,
-        runtimeSettingsSupport::linkPreviewsEnabled,
-        auxiliaryRowsSupport,
-        filteredFlowCoordinator::endAppendRun);
-    return new Components(
-        filteredFlowCoordinator,
-        matrixDisplayNameCoordinator,
-        replyFlowCoordinator,
-        messageInteractionCoordinator,
-        messageLineCoordinator,
-        plainSpoilerCoordinator,
-        runtimeFlowCoordinator,
-        targetRuntimeCoordinator);
+    return new MessageComposition(
+        replyFlowCoordinator, messageLineCoordinator, messageInteractionCoordinator);
   }
 
   private record SpoilerComposition(
