@@ -35,6 +35,7 @@ import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageStat
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReactionSummarySupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReplyContextSupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptSenderStyleSupport;
+import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTimestampFormatter;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptLineCapSupport;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRestyleSupport;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeSettingsSupport;

@@ -3,7 +3,7 @@ package cafe.woden.ircclient.ui.chat.transcript.line;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
-import cafe.woden.ircclient.ui.chat.transcript.ChatTimestampFormatter;
+import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTimestampFormatter;
 import java.util.Objects;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;

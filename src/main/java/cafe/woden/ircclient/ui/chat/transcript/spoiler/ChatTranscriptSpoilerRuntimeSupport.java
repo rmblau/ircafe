@@ -2,7 +2,7 @@ package cafe.woden.ircclient.ui.chat.transcript.spoiler;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.fold.SpoilerMessageComponent;
-import cafe.woden.ircclient.ui.chat.transcript.ChatTimestampFormatter;
+import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTimestampFormatter;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import javax.swing.SwingUtilities;

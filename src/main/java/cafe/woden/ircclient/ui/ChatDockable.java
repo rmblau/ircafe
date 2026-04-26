@@ -38,7 +38,7 @@ import cafe.woden.ircclient.ui.bus.OutboundLineBus;
 import cafe.woden.ircclient.ui.bus.TargetActivationBus;
 import cafe.woden.ircclient.ui.channellist.ChannelListPanel;
 import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
-import cafe.woden.ircclient.ui.chat.transcript.MessageReactionToggleSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.MessageReactionToggleSupport;
 import cafe.woden.ircclient.ui.chat.view.ChatViewPanel;
 import cafe.woden.ircclient.ui.coordinator.ChatActiveTargetCoordinator;
 import cafe.woden.ircclient.ui.coordinator.ChatBanListCoordinator;

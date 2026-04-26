@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.runtime;
 
 import cafe.woden.ircclient.config.UiProperties;
 import cafe.woden.ircclient.ui.settings.UiSettings;
