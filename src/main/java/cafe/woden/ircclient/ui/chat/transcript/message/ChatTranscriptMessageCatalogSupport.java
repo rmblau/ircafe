@@ -3,7 +3,7 @@ package cafe.woden.ircclient.ui.chat.transcript.message;
 import static cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageMetadataSupport.normalizeMessageId;
 
 import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
-import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
+import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptReplyPreviewSupport;
 import java.util.LinkedHashMap;
 import java.util.Map;

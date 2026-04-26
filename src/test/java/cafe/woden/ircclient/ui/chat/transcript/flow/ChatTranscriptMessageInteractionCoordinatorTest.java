@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.chat.transcript.flow;
 
+import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
@@ -156,7 +157,7 @@ class ChatTranscriptMessageInteractionCoordinatorTest {
         String text,
         javax.swing.text.AttributeSet fromStyle,
         javax.swing.text.AttributeSet messageStyle,
-        cafe.woden.ircclient.ui.chat.transcript.LineMeta meta) {
+        cafe.woden.ircclient.ui.chat.transcript.line.LineMeta meta) {
       StyledDocument doc = document(ref);
       try {
         doc.insertString(

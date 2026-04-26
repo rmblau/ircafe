@@ -6,7 +6,7 @@ import cafe.woden.ircclient.ui.chat.fold.FilteredFoldComponent;
 import cafe.woden.ircclient.ui.chat.fold.FilteredHintComponent;
 import cafe.woden.ircclient.ui.chat.fold.FilteredLineComponent;
 import cafe.woden.ircclient.ui.chat.fold.FilteredOverflowComponent;
-import cafe.woden.ircclient.ui.chat.transcript.LineMeta;
+import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import java.awt.Font;
 import java.util.LinkedHashSet;
