@@ -9,8 +9,6 @@ import cafe.woden.ircclient.ui.chat.embed.ChatLinkPreviewEmbedder;
 import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
 import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilterRoutingSupport;
-import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredLinesSupport;
-import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredRunSupport;
 import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredFlowCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageInteractionCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageLineCoordinator;
@@ -20,7 +18,6 @@ import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeFlow
 import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptSpoilerFlowSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptAuxiliaryRowsSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptDocumentLineSupport;
-import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPresenceFoldSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPlainAppendSupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMatrixDisplayNameCoordinator;
@@ -86,8 +83,8 @@ public final class ChatTranscriptStoreComposition {
         ChatTranscriptLineComposition.create(
             styles, renderer, ts, styleRoutingSupport, runtimeFlowCoordinator, lineCapSupport);
     ChatTranscriptDocumentLineSupport documentLineSupport = lineComposition.documentLineSupport();
-    FilterComposition filterComposition =
-        createFilterComposition(
+    ChatTranscriptFilterComposition.Components filterComposition =
+        ChatTranscriptFilterComposition.create(
             styles,
             filterEngine,
             styleRoutingSupport,
@@ -256,49 +253,5 @@ public final class ChatTranscriptStoreComposition {
             plainAppendSupportContext, spoilerFlowSupportContext));
   }
 
-  private record FilterComposition(
-      ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator,
-      ChatTranscriptFilterRoutingSupport filterRoutingSupport) {}
 
-  private static FilterComposition createFilterComposition(
-      ChatStyles styles,
-      FilterEngine filterEngine,
-      ChatTranscriptStyleRoutingSupport styleRoutingSupport,
-      ChatTranscriptDocumentLineSupport documentLineSupport,
-      ChatTranscriptRuntimeFlowCoordinator runtimeFlowCoordinator,
-      ChatTranscriptLineCapSupport lineCapSupport,
-      ChatTranscriptTargetRuntimeCoordinator targetRuntimeCoordinator,
-      ChatTranscriptRuntimeSettingsSupport runtimeSettingsSupport) {
-    ChatTranscriptFilteredRunSupport.Context filteredRunSupportContext =
-        new ChatTranscriptFilteredRunSupport.Context(styles, ChatTranscriptLineMetaSupport::bind);
-    ChatTranscriptFilteredLinesSupport filteredLinesSupport =
-        new ChatTranscriptFilteredLinesSupport(
-            styles,
-            filteredRunSupportContext,
-            styleRoutingSupport::safeTranscriptFont,
-            ChatTranscriptLineMetaSupport::bind,
-            documentLineSupport::ensureAtLineStart,
-            documentLineSupport::normalizeInsertAtLineStart,
-            documentLineSupport::ensureAtLineStartForInsert,
-            runtimeFlowCoordinator::breakPresenceRun,
-            runtimeFlowCoordinator::shiftCurrentBlock,
-            lineCapSupport::enforceTranscriptLineCap);
-    ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator =
-        new ChatTranscriptFilteredFlowCoordinator(filteredLinesSupport);
-    ChatTranscriptFilterRoutingSupport filterRoutingSupport =
-        new ChatTranscriptFilterRoutingSupport(
-            filterEngine,
-            filteredFlowCoordinator::onFilteredLineAppend,
-            filteredFlowCoordinator::onFilteredLineInsertAt,
-            filteredFlowCoordinator::endInsertRun,
-            runtimeFlowCoordinator::breakPresenceRun);
-    filteredFlowCoordinator.bindContext(
-        filterRoutingSupport,
-        targetRuntimeCoordinator.docs(),
-        targetRuntimeCoordinator.stateByTarget(),
-        targetRuntimeCoordinator::ensureTargetExists,
-        targetRuntimeCoordinator::noteEpochMs,
-        runtimeSettingsSupport::chatHistoryDeferRichTextDuringBatch);
-    return new FilterComposition(filteredFlowCoordinator, filterRoutingSupport);
-  }
 }
