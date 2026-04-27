@@ -58,7 +58,7 @@ final class ChatTranscriptSpoilerComposition {
             runtimeSettingsSupport,
             filteredFlowCoordinator);
     ChatTranscriptSpoilerSupportComponents spoilerSupportComposition =
-        ChatTranscriptSpoilerSupportGraphComposition.create(inputs);
+        ChatTranscriptSpoilerSupportComponentsGraphComposition.create(inputs);
     return ChatTranscriptSpoilerComponentsComposition.create(spoilerSupportComposition);
   }
 }
