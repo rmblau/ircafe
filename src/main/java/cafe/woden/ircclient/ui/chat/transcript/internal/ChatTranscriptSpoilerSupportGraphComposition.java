@@ -7,21 +7,6 @@ final class ChatTranscriptSpoilerSupportGraphComposition {
 
   static ChatTranscriptSpoilerSupportComposition.Components create(
       ChatTranscriptSpoilerCompositionInputs inputs) {
-    return ChatTranscriptSpoilerSupportComposition.create(
-        inputs.store(),
-        inputs.styles(),
-        inputs.renderer(),
-        inputs.ts(),
-        inputs.nickColors(),
-        inputs.uiSettings(),
-        inputs.matrixDisplayNameCoordinator(),
-        inputs.documentLineSupport(),
-        inputs.styleRoutingSupport(),
-        inputs.filterRoutingSupport(),
-        inputs.runtimeFlowCoordinator(),
-        inputs.lineCapSupport(),
-        inputs.targetRuntimeCoordinator(),
-        inputs.runtimeSettingsSupport(),
-        inputs.filteredFlowCoordinator());
+    return ChatTranscriptSpoilerSupportComposition.create(inputs);
   }
 }
