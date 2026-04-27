@@ -1,0 +1,27 @@
+package cafe.woden.ircclient.ui.chat.transcript;
+
+import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
+import cafe.woden.ircclient.ui.settings.UiSettingsBus;
+
+/** Groups the small transcript history adapters used by the history port adapter. */
+record ChatHistoryTranscriptAdapters(
+    ChatHistoryTranscriptDocumentAdapter document,
+    ChatHistoryTranscriptLoadOlderControlAdapter loadOlderControls,
+    ChatHistoryTranscriptBatchAdapter batch,
+    ChatHistoryTranscriptInsertAdapter insert,
+    ChatHistoryTranscriptAppendAdapter append,
+    ChatHistoryTranscriptSettingsReader settings) {
+
+  static ChatHistoryTranscriptAdapters create(
+      ChatTranscriptStore transcripts,
+      UiSettingsBus settingsBus,
+      UiSettingsRuntimeConfigPort runtimeConfig) {
+    return new ChatHistoryTranscriptAdapters(
+        new ChatHistoryTranscriptDocumentAdapter(transcripts),
+        new ChatHistoryTranscriptLoadOlderControlAdapter(transcripts),
+        new ChatHistoryTranscriptBatchAdapter(transcripts),
+        new ChatHistoryTranscriptInsertAdapter(transcripts),
+        new ChatHistoryTranscriptAppendAdapter(transcripts),
+        new ChatHistoryTranscriptSettingsReader(settingsBus, runtimeConfig));
+  }
+}

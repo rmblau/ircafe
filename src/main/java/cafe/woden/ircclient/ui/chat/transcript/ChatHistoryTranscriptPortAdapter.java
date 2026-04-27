@@ -20,83 +20,73 @@ import org.springframework.stereotype.Component;
 @Lazy
 public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPort {
 
-  private final ChatHistoryTranscriptDocumentAdapter documentAdapter;
-  private final ChatHistoryTranscriptLoadOlderControlAdapter loadOlderControls;
-  private final ChatHistoryTranscriptBatchAdapter batchAdapter;
-  private final ChatHistoryTranscriptInsertAdapter insertAdapter;
-  private final ChatHistoryTranscriptAppendAdapter appendAdapter;
-  private final ChatHistoryTranscriptSettingsReader settingsReader;
+  private final ChatHistoryTranscriptAdapters adapters;
 
   public ChatHistoryTranscriptPortAdapter(
       ChatTranscriptStore transcripts,
       UiSettingsBus settingsBus,
       UiSettingsRuntimeConfigPort runtimeConfig) {
-    this.documentAdapter = new ChatHistoryTranscriptDocumentAdapter(transcripts);
-    this.loadOlderControls = new ChatHistoryTranscriptLoadOlderControlAdapter(transcripts);
-    this.batchAdapter = new ChatHistoryTranscriptBatchAdapter(transcripts);
-    this.insertAdapter = new ChatHistoryTranscriptInsertAdapter(transcripts);
-    this.appendAdapter = new ChatHistoryTranscriptAppendAdapter(transcripts);
-    this.settingsReader = new ChatHistoryTranscriptSettingsReader(settingsBus, runtimeConfig);
+    this.adapters = ChatHistoryTranscriptAdapters.create(transcripts, settingsBus, runtimeConfig);
   }
 
   @Override
   public StyledDocument document(TargetRef ref) {
-    return documentAdapter.document(ref);
+    return adapters.document().document(ref);
   }
 
   @Override
   public OptionalLong earliestTimestampEpochMs(TargetRef ref) {
-    return documentAdapter.earliestTimestampEpochMs(ref);
+    return adapters.document().earliestTimestampEpochMs(ref);
   }
 
   @Override
   public java.awt.Component ensureLoadOlderMessagesControl(TargetRef ref) {
-    return loadOlderControls.ensure(ref);
+    return adapters.loadOlderControls().ensure(ref);
   }
 
   @Override
   public void setLoadOlderMessagesControlState(TargetRef ref, LoadOlderControlState state) {
-    loadOlderControls.setState(ref, state);
+    adapters.loadOlderControls().setState(ref, state);
   }
 
   @Override
   public void setLoadOlderMessagesControlHandler(TargetRef ref, BooleanSupplier onLoad) {
-    loadOlderControls.setHandler(ref, onLoad);
+    adapters.loadOlderControls().setHandler(ref, onLoad);
   }
 
   @Override
   public void beginHistoryInsertBatch(TargetRef ref) {
-    batchAdapter.begin(ref);
+    adapters.batch().begin(ref);
   }
 
   @Override
   public void beginHistoryInsertBatch(TargetRef ref, boolean forceDeferRichText) {
-    batchAdapter.begin(ref, forceDeferRichText);
+    adapters.batch().begin(ref, forceDeferRichText);
   }
 
   @Override
   public void endHistoryInsertBatch(TargetRef ref) {
-    batchAdapter.end(ref);
+    adapters.batch().end(ref);
   }
 
   @Override
   public int loadOlderInsertOffset(TargetRef ref) {
-    return batchAdapter.loadOlderInsertOffset(ref);
+    return adapters.batch().loadOlderInsertOffset(ref);
   }
 
   @Override
   public boolean hasContentAfterOffset(TargetRef ref, int offset) {
-    return batchAdapter.hasContentAfterOffset(ref, offset);
+    return adapters.batch().hasContentAfterOffset(ref, offset);
   }
 
   @Override
   public void ensureHistoryDivider(TargetRef ref, int insertAt, String labelText) {
-    batchAdapter.ensureHistoryDivider(ref, insertAt, labelText);
+    adapters.batch().ensureHistoryDivider(ref, insertAt, labelText);
   }
 
   @Override
   public void markHistoryDividerPending(TargetRef ref, String labelText) {
-    batchAdapter.markHistoryDividerPending(ref, labelText);
+    adapters.batch().markHistoryDividerPending(ref, labelText);
   }
 
   @Override
@@ -107,7 +97,7 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
       String text,
       boolean outgoingLocalEcho,
       long tsEpochMs) {
-    return insertAdapter.insertChat(ref, insertAt, from, text, outgoingLocalEcho, tsEpochMs);
+    return adapters.insert().insertChat(ref, insertAt, from, text, outgoingLocalEcho, tsEpochMs);
   }
 
   @Override
@@ -120,7 +110,7 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
       long tsEpochMs,
       String messageId,
       Map<String, String> ircv3Tags) {
-    return insertAdapter.insertChat(
+    return adapters.insert().insertChat(
         ref, insertAt, from, text, outgoingLocalEcho, tsEpochMs, messageId, ircv3Tags);
   }
 
@@ -132,7 +122,7 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
       String text,
       boolean outgoingLocalEcho,
       long tsEpochMs) {
-    return insertAdapter.insertAction(ref, insertAt, from, text, outgoingLocalEcho, tsEpochMs);
+    return adapters.insert().insertAction(ref, insertAt, from, text, outgoingLocalEcho, tsEpochMs);
   }
 
   @Override
@@ -145,14 +135,14 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
       long tsEpochMs,
       String messageId,
       Map<String, String> ircv3Tags) {
-    return insertAdapter.insertAction(
+    return adapters.insert().insertAction(
         ref, insertAt, from, text, outgoingLocalEcho, tsEpochMs, messageId, ircv3Tags);
   }
 
   @Override
   public int insertNoticeFromHistoryAt(
       TargetRef ref, int insertAt, String from, String text, long tsEpochMs) {
-    return insertAdapter.insertNotice(ref, insertAt, from, text, tsEpochMs);
+    return adapters.insert().insertNotice(ref, insertAt, from, text, tsEpochMs);
   }
 
   @Override
@@ -164,37 +154,37 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
       long tsEpochMs,
       String messageId,
       Map<String, String> ircv3Tags) {
-    return insertAdapter.insertNotice(
+    return adapters.insert().insertNotice(
         ref, insertAt, from, text, tsEpochMs, messageId, ircv3Tags);
   }
 
   @Override
   public int insertStatusFromHistoryAt(
       TargetRef ref, int insertAt, String from, String text, long tsEpochMs) {
-    return insertAdapter.insertStatus(ref, insertAt, from, text, tsEpochMs);
+    return adapters.insert().insertStatus(ref, insertAt, from, text, tsEpochMs);
   }
 
   @Override
   public int insertErrorFromHistoryAt(
       TargetRef ref, int insertAt, String from, String text, long tsEpochMs) {
-    return insertAdapter.insertError(ref, insertAt, from, text, tsEpochMs);
+    return adapters.insert().insertError(ref, insertAt, from, text, tsEpochMs);
   }
 
   @Override
   public int insertPresenceFromHistoryAt(TargetRef ref, int insertAt, String text, long tsEpochMs) {
-    return insertAdapter.insertPresence(ref, insertAt, text, tsEpochMs);
+    return adapters.insert().insertPresence(ref, insertAt, text, tsEpochMs);
   }
 
   @Override
   public int insertSpoilerChatFromHistoryAt(
       TargetRef ref, int insertAt, String from, String text, long tsEpochMs) {
-    return insertAdapter.insertSpoilerChat(ref, insertAt, from, text, tsEpochMs);
+    return adapters.insert().insertSpoilerChat(ref, insertAt, from, text, tsEpochMs);
   }
 
   @Override
   public void appendChatFromHistory(
       TargetRef ref, String from, String text, boolean outgoingLocalEcho, long tsEpochMs) {
-    appendAdapter.appendChat(ref, from, text, outgoingLocalEcho, tsEpochMs);
+    adapters.append().appendChat(ref, from, text, outgoingLocalEcho, tsEpochMs);
   }
 
   @Override
@@ -206,14 +196,14 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
       long tsEpochMs,
       String messageId,
       Map<String, String> ircv3Tags) {
-    appendAdapter.appendChat(
+    adapters.append().appendChat(
         ref, from, text, outgoingLocalEcho, tsEpochMs, messageId, ircv3Tags);
   }
 
   @Override
   public void appendActionFromHistory(
       TargetRef ref, String from, String text, boolean outgoingLocalEcho, long tsEpochMs) {
-    appendAdapter.appendAction(ref, from, text, outgoingLocalEcho, tsEpochMs);
+    adapters.append().appendAction(ref, from, text, outgoingLocalEcho, tsEpochMs);
   }
 
   @Override
@@ -225,13 +215,13 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
       long tsEpochMs,
       String messageId,
       Map<String, String> ircv3Tags) {
-    appendAdapter.appendAction(
+    adapters.append().appendAction(
         ref, from, text, outgoingLocalEcho, tsEpochMs, messageId, ircv3Tags);
   }
 
   @Override
   public void appendNoticeFromHistory(TargetRef ref, String from, String text, long tsEpochMs) {
-    appendAdapter.appendNotice(ref, from, text, tsEpochMs);
+    adapters.append().appendNotice(ref, from, text, tsEpochMs);
   }
 
   @Override
@@ -242,77 +232,77 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
       long tsEpochMs,
       String messageId,
       Map<String, String> ircv3Tags) {
-    appendAdapter.appendNotice(ref, from, text, tsEpochMs, messageId, ircv3Tags);
+    adapters.append().appendNotice(ref, from, text, tsEpochMs, messageId, ircv3Tags);
   }
 
   @Override
   public void appendStatusFromHistory(TargetRef ref, String from, String text, long tsEpochMs) {
-    appendAdapter.appendStatus(ref, from, text, tsEpochMs);
+    adapters.append().appendStatus(ref, from, text, tsEpochMs);
   }
 
   @Override
   public void appendErrorFromHistory(TargetRef ref, String from, String text, long tsEpochMs) {
-    appendAdapter.appendError(ref, from, text, tsEpochMs);
+    adapters.append().appendError(ref, from, text, tsEpochMs);
   }
 
   @Override
   public void appendPresenceFromHistory(TargetRef ref, String text, long tsEpochMs) {
-    appendAdapter.appendPresence(ref, text, tsEpochMs);
+    adapters.append().appendPresence(ref, text, tsEpochMs);
   }
 
   @Override
   public void appendSpoilerChatFromHistory(
       TargetRef ref, String from, String text, long tsEpochMs) {
-    appendAdapter.appendSpoilerChat(ref, from, text, tsEpochMs);
+    adapters.append().appendSpoilerChat(ref, from, text, tsEpochMs);
   }
 
   @Override
   public int chatHistoryInitialLoadLines() {
-    return settingsReader.initialLoadLines();
+    return adapters.settings().initialLoadLines();
   }
 
   @Override
   public int chatHistoryPageSize() {
-    return settingsReader.pageSize();
+    return adapters.settings().pageSize();
   }
 
   @Override
   public int chatHistoryAutoLoadWheelDebounceMs() {
-    return settingsReader.autoLoadWheelDebounceMs();
+    return adapters.settings().autoLoadWheelDebounceMs();
   }
 
   @Override
   public int chatHistoryLoadOlderChunkSize() {
-    return settingsReader.loadOlderChunkSize();
+    return adapters.settings().loadOlderChunkSize();
   }
 
   @Override
   public int chatHistoryLoadOlderChunkDelayMs() {
-    return settingsReader.loadOlderChunkDelayMs();
+    return adapters.settings().loadOlderChunkDelayMs();
   }
 
   @Override
   public int chatHistoryLoadOlderChunkEdtBudgetMs() {
-    return settingsReader.loadOlderChunkEdtBudgetMs();
+    return adapters.settings().loadOlderChunkEdtBudgetMs();
   }
 
   @Override
   public boolean chatHistoryLockViewportDuringLoadOlder() {
-    return settingsReader.lockViewportDuringLoadOlder();
+    return adapters.settings().lockViewportDuringLoadOlder();
   }
 
   @Override
   public int chatHistoryRemoteRequestTimeoutSeconds() {
-    return settingsReader.remoteRequestTimeoutSeconds();
+    return adapters.settings().remoteRequestTimeoutSeconds();
   }
 
   @Override
   public int chatHistoryRemoteZncPlaybackTimeoutSeconds() {
-    return settingsReader.remoteZncPlaybackTimeoutSeconds();
+    return adapters.settings().remoteZncPlaybackTimeoutSeconds();
   }
 
   @Override
   public int chatHistoryRemoteZncPlaybackWindowMinutes() {
-    return settingsReader.remoteZncPlaybackWindowMinutes();
+    return adapters.settings().remoteZncPlaybackWindowMinutes();
   }
 }
