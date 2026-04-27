@@ -9,7 +9,7 @@ final class ChatTranscriptSpoilerSupportComponentsGraphComposition {
       ChatTranscriptSpoilerCompositionInputs inputs) {
     ChatTranscriptSpoilerSupportContextGraphComposition.Contexts supportContexts =
         ChatTranscriptSpoilerSupportContextGraphComposition.create(inputs);
-    return ChatTranscriptSpoilerSupportComponentsComposition.create(
+    return new ChatTranscriptSpoilerSupportComponents(
         supportContexts.plainAppendSupportContext(),
         supportContexts.spoilerFlowSupportContext());
   }
