@@ -20,7 +20,7 @@ import org.springframework.stereotype.Component;
 @Lazy
 public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPort {
 
-  private final ChatTranscriptStore transcripts;
+  private final ChatHistoryTranscriptDocumentAdapter documentAdapter;
   private final ChatHistoryTranscriptLoadOlderControlAdapter loadOlderControls;
   private final ChatHistoryTranscriptBatchAdapter batchAdapter;
   private final ChatHistoryTranscriptInsertAdapter insertAdapter;
@@ -31,7 +31,7 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
       ChatTranscriptStore transcripts,
       UiSettingsBus settingsBus,
       UiSettingsRuntimeConfigPort runtimeConfig) {
-    this.transcripts = transcripts;
+    this.documentAdapter = new ChatHistoryTranscriptDocumentAdapter(transcripts);
     this.loadOlderControls = new ChatHistoryTranscriptLoadOlderControlAdapter(transcripts);
     this.batchAdapter = new ChatHistoryTranscriptBatchAdapter(transcripts);
     this.insertAdapter = new ChatHistoryTranscriptInsertAdapter(transcripts);
@@ -41,12 +41,12 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
 
   @Override
   public StyledDocument document(TargetRef ref) {
-    return transcripts.document(ref);
+    return documentAdapter.document(ref);
   }
 
   @Override
   public OptionalLong earliestTimestampEpochMs(TargetRef ref) {
-    return transcripts.earliestTimestampEpochMs(ref);
+    return documentAdapter.earliestTimestampEpochMs(ref);
   }
 
   @Override
