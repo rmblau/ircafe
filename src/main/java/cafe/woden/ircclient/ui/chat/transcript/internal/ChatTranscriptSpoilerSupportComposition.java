@@ -14,9 +14,7 @@ import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptLineCapSupp
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeFlowCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeSettingsSupport;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptTargetRuntimeCoordinator;
-import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptSpoilerAppendSupport;
 import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptSpoilerFlowSupport;
-import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptSpoilerHistoryInsertSupport;
 import cafe.woden.ircclient.ui.chat.transcript.style.ChatTranscriptStyleRoutingSupport;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 
@@ -56,29 +54,16 @@ final class ChatTranscriptSpoilerSupportComposition {
             matrixDisplayNameCoordinator,
             styleRoutingSupport,
             runtimeSettingsSupport);
-    ChatTranscriptSpoilerAppendSupport.Context spoilerAppendSupportContext =
-        new ChatTranscriptSpoilerAppendSupport.Context(
-            styles,
-            spoilerRuntimeComposition.spoilerWriteSupportContext(),
-            documentLineSupport::ensureAtLineStart,
-            lineCapSupport::enforceTranscriptLineCap);
-    ChatTranscriptSpoilerHistoryInsertSupport.Context spoilerHistoryInsertSupportContext =
-        new ChatTranscriptSpoilerHistoryInsertSupport.Context(
-            spoilerRuntimeComposition.spoilerWriteSupportContext(),
-            documentLineSupport::normalizeInsertAtLineStart,
-            documentLineSupport::ensureAtLineStartForInsert,
-            runtimeFlowCoordinator::shiftCurrentBlock,
-            lineCapSupport::enforceTranscriptLineCap);
     ChatTranscriptSpoilerFlowSupport.Context spoilerFlowSupportContext =
-        new ChatTranscriptSpoilerFlowSupport.Context(
-            targetRuntimeCoordinator.docs(),
-            targetRuntimeCoordinator::ensureTargetExists,
-            targetRuntimeCoordinator::noteEpochMs,
+        ChatTranscriptSpoilerFlowComposition.create(
+            styles,
+            spoilerRuntimeComposition,
+            documentLineSupport,
             filterRoutingSupport,
-            spoilerRuntimeComposition.spoilerRuntimeSupportContext(),
-            spoilerAppendSupportContext,
-            spoilerHistoryInsertSupportContext,
-            filteredFlowCoordinator::endInsertRun);
+            runtimeFlowCoordinator,
+            lineCapSupport,
+            targetRuntimeCoordinator,
+            filteredFlowCoordinator);
     ChatTranscriptPlainAppendSupport.Context plainAppendSupportContext =
         new ChatTranscriptPlainAppendSupport.Context(
             targetRuntimeCoordinator.docs(),
