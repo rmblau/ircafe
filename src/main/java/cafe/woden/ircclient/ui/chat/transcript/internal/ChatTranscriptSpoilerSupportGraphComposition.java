@@ -13,18 +13,15 @@ import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptLineCapSupp
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeFlowCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeSettingsSupport;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptTargetRuntimeCoordinator;
-import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptPlainSpoilerCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.style.ChatTranscriptStyleRoutingSupport;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 
-/** Builds spoiler-related transcript collaborators for the store composition. */
-final class ChatTranscriptSpoilerComposition {
+/** Builds the spoiler support graph from top-level transcript collaborators. */
+final class ChatTranscriptSpoilerSupportGraphComposition {
 
-  record Components(ChatTranscriptPlainSpoilerCoordinator plainSpoilerCoordinator) {}
+  private ChatTranscriptSpoilerSupportGraphComposition() {}
 
-  private ChatTranscriptSpoilerComposition() {}
-
-  static Components create(
+  static ChatTranscriptSpoilerSupportComposition.Components create(
       ChatTranscriptStore store,
       ChatStyles styles,
       ChatRichTextRenderer renderer,
@@ -40,23 +37,21 @@ final class ChatTranscriptSpoilerComposition {
       ChatTranscriptTargetRuntimeCoordinator targetRuntimeCoordinator,
       ChatTranscriptRuntimeSettingsSupport runtimeSettingsSupport,
       ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator) {
-    ChatTranscriptSpoilerSupportComposition.Components spoilerSupportComposition =
-        ChatTranscriptSpoilerSupportGraphComposition.create(
-            store,
-            styles,
-            renderer,
-            ts,
-            nickColors,
-            uiSettings,
-            matrixDisplayNameCoordinator,
-            documentLineSupport,
-            styleRoutingSupport,
-            filterRoutingSupport,
-            runtimeFlowCoordinator,
-            lineCapSupport,
-            targetRuntimeCoordinator,
-            runtimeSettingsSupport,
-            filteredFlowCoordinator);
-    return ChatTranscriptSpoilerComponentsComposition.create(spoilerSupportComposition);
+    return ChatTranscriptSpoilerSupportComposition.create(
+        store,
+        styles,
+        renderer,
+        ts,
+        nickColors,
+        uiSettings,
+        matrixDisplayNameCoordinator,
+        documentLineSupport,
+        styleRoutingSupport,
+        filterRoutingSupport,
+        runtimeFlowCoordinator,
+        lineCapSupport,
+        targetRuntimeCoordinator,
+        runtimeSettingsSupport,
+        filteredFlowCoordinator);
   }
 }
