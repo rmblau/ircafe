@@ -4,20 +4,18 @@ import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilterRoutin
 import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredFlowCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptAuxiliaryRowsSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptDocumentLineSupport;
-import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPresenceFoldSupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageLineCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeFlowCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeSettingsSupport;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptTargetRuntimeCoordinator;
 
-/** Binds runtime flow contexts after the transcript helper graph has been assembled. */
-final class ChatTranscriptRuntimeContextBinding {
+/** Binds visible-line lifecycle runtime context after transcript collaborators exist. */
+final class ChatTranscriptLineLifecycleContextBinding {
 
-  private ChatTranscriptRuntimeContextBinding() {}
+  private ChatTranscriptLineLifecycleContextBinding() {}
 
   static void bind(
       ChatTranscriptRuntimeFlowCoordinator runtimeFlowCoordinator,
-      ChatTranscriptPresenceFoldSupport presenceFoldSupport,
       ChatTranscriptFilterRoutingSupport filterRoutingSupport,
       ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator,
       ChatTranscriptRuntimeSettingsSupport runtimeSettingsSupport,
@@ -25,21 +23,21 @@ final class ChatTranscriptRuntimeContextBinding {
       ChatTranscriptDocumentLineSupport documentLineSupport,
       ChatTranscriptMessageLineCoordinator messageLineCoordinator,
       ChatTranscriptAuxiliaryRowsSupport auxiliaryRowsSupport) {
-    ChatTranscriptPresenceContextBinding.bind(
-        runtimeFlowCoordinator,
-        presenceFoldSupport,
+    runtimeFlowCoordinator.bindLineLifecycleContexts(
+        targetRuntimeCoordinator.docs(),
+        targetRuntimeCoordinator.stateByTarget(),
+        targetRuntimeCoordinator::ensureTargetExists,
+        targetRuntimeCoordinator::noteEpochMs,
         filterRoutingSupport,
-        filteredFlowCoordinator,
-        runtimeSettingsSupport,
-        targetRuntimeCoordinator);
-    ChatTranscriptLineLifecycleContextBinding.bind(
-        runtimeFlowCoordinator,
-        filterRoutingSupport,
-        filteredFlowCoordinator,
-        runtimeSettingsSupport,
-        targetRuntimeCoordinator,
+        filteredFlowCoordinator::endInsertRun,
+        filteredFlowCoordinator::shouldDeferRichTextDuringHistoryBatch,
         documentLineSupport,
-        messageLineCoordinator,
-        auxiliaryRowsSupport);
+        messageLineCoordinator.textAppendSupportContext(),
+        messageLineCoordinator.textInsertSupportContext(),
+        runtimeSettingsSupport,
+        runtimeSettingsSupport::imageEmbedsEnabled,
+        runtimeSettingsSupport::linkPreviewsEnabled,
+        auxiliaryRowsSupport,
+        filteredFlowCoordinator::endAppendRun);
   }
 }
