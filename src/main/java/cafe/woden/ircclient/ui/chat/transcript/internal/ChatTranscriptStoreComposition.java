@@ -23,8 +23,8 @@ import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptSpoilerFlow
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptAuxiliaryRowsSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptDocumentLineSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
-import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPlainAppendSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPresenceFoldSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPlainAppendSupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMatrixDisplayNameCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReactionSummarySupport;
@@ -90,8 +90,8 @@ public final class ChatTranscriptStoreComposition {
     ChatTranscriptTargetRuntimeCoordinator targetRuntimeCoordinator =
         runtimeComposition.targetRuntimeCoordinator();
 
-    LineComposition lineComposition =
-        createLineComposition(
+    ChatTranscriptLineComposition.Components lineComposition =
+        ChatTranscriptLineComposition.create(
             styles, renderer, ts, styleRoutingSupport, runtimeFlowCoordinator, lineCapSupport);
     ChatTranscriptDocumentLineSupport documentLineSupport = lineComposition.documentLineSupport();
     FilterComposition filterComposition =
@@ -191,46 +191,6 @@ public final class ChatTranscriptStoreComposition {
         plainSpoilerCoordinator,
         runtimeFlowCoordinator,
         targetRuntimeCoordinator);
-  }
-
-  private record LineComposition(
-      ChatTranscriptDocumentLineSupport documentLineSupport,
-      ChatTranscriptPresenceFoldSupport presenceFoldSupport,
-      ChatTranscriptAuxiliaryRowsSupport auxiliaryRowsSupport) {}
-
-  private static LineComposition createLineComposition(
-      ChatStyles styles,
-      ChatRichTextRenderer renderer,
-      ChatTimestampFormatter ts,
-      ChatTranscriptStyleRoutingSupport styleRoutingSupport,
-      ChatTranscriptRuntimeFlowCoordinator runtimeFlowCoordinator,
-      ChatTranscriptLineCapSupport lineCapSupport) {
-    ChatTranscriptDocumentLineSupport documentLineSupport =
-        new ChatTranscriptDocumentLineSupport(styles);
-    ChatTranscriptPresenceFoldSupport presenceFoldSupport =
-        new ChatTranscriptPresenceFoldSupport(
-            styles,
-            renderer,
-            ts,
-            ChatTranscriptLineMetaSupport::bind,
-            ChatTranscriptLineMetaSupport::withExistingMeta,
-            styleRoutingSupport::withFilterMatch,
-            documentLineSupport::ensureAtLineStart,
-            lineCapSupport::enforceTranscriptLineCap);
-    ChatTranscriptAuxiliaryRowsSupport auxiliaryRowsSupport =
-        new ChatTranscriptAuxiliaryRowsSupport(
-            styles,
-            styleRoutingSupport::safeTranscriptFont,
-            (ref, epochMs) ->
-                ChatTranscriptLineMetaSupport.create(
-                    ref, LogKind.STATUS, LogDirection.SYSTEM, null, epochMs, null),
-            ChatTranscriptLineMetaSupport::bind,
-            ChatTranscriptLineMetaSupport::withAuxiliaryRowKind,
-            ChatTranscriptLineMetaSupport::withExistingMeta,
-            documentLineSupport::normalizeInsertAtLineStart,
-            documentLineSupport::ensureAtLineStartForInsert,
-            runtimeFlowCoordinator::shiftCurrentBlock);
-    return new LineComposition(documentLineSupport, presenceFoldSupport, auxiliaryRowsSupport);
   }
 
   private record MessageComposition(
