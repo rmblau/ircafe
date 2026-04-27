@@ -1,8 +1,6 @@
 package cafe.woden.ircclient.ui.chat.transcript.internal;
 
 import cafe.woden.ircclient.irc.roster.UserListPort;
-import cafe.woden.ircclient.model.LogDirection;
-import cafe.woden.ircclient.model.LogKind;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.NickColorService;
 import cafe.woden.ircclient.ui.chat.embed.ChatImageEmbedder;
@@ -12,15 +10,11 @@ import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilterRoutingSupport;
 import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredFlowCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptDocumentLineSupport;
-import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMatrixDisplayNameCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageInteractionCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageLineCoordinator;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReactionSummarySupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReplyContextSupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReplyFlowCoordinator;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptSenderStyleSupport;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTimestampFormatter;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptLineCapSupport;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeFlowCoordinator;
@@ -28,7 +22,6 @@ import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeSett
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptTargetRuntimeCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.style.ChatTranscriptStyleRoutingSupport;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
-import java.util.Map;
 
 /** Builds message-oriented collaborators for the transcript store composition. */
 final class ChatTranscriptMessageComposition {
@@ -65,43 +58,23 @@ final class ChatTranscriptMessageComposition {
     ChatTranscriptMatrixDisplayNameCoordinator matrixDisplayNameCoordinator =
         new ChatTranscriptMatrixDisplayNameCoordinator(
             uiSettings, userListStore, targetRuntimeCoordinator.docs());
-    ChatTranscriptReplyContextSupport.Context replyContextSupportContext =
-        new ChatTranscriptReplyContextSupport.Context(
-            styles, ts, matrixDisplayNameCoordinator::renderTranscriptFrom);
+    ChatTranscriptMessageSupportComposition.Components messageSupportComposition =
+        ChatTranscriptMessageSupportComposition.create(
+            styles,
+            ts,
+            nickColors,
+            matrixDisplayNameCoordinator,
+            styleRoutingSupport,
+            documentLineSupport,
+            runtimeFlowCoordinator);
     ChatTranscriptReplyFlowCoordinator replyFlowCoordinator =
         new ChatTranscriptReplyFlowCoordinator(
             targetRuntimeCoordinator.docs(),
             targetRuntimeCoordinator.stateByTarget(),
             targetRuntimeCoordinator::ensureTargetExists,
             documentLineSupport,
-            replyContextSupportContext,
+            messageSupportComposition.replyContextSupportContext(),
             messageCatalogSupport);
-    ChatTranscriptSenderStyleSupport.Context senderStyleSupportContext =
-        new ChatTranscriptSenderStyleSupport.Context(
-            styles,
-            nickColors,
-            ChatTranscriptLineMetaSupport::bind,
-            styleRoutingSupport::applyOutgoingLineColor,
-            styleRoutingSupport::applyNotificationRuleHighlightColor);
-    ChatTranscriptReactionSummarySupport reactionSummarySupport =
-        new ChatTranscriptReactionSummarySupport(
-            styles,
-            styleRoutingSupport::safeTranscriptFont,
-            (ref, epochMs, targetMessageId) ->
-                ChatTranscriptLineMetaSupport.create(
-                    ref,
-                    LogKind.STATUS,
-                    LogDirection.SYSTEM,
-                    null,
-                    epochMs,
-                    null,
-                    targetMessageId,
-                    Map.of("draft/react", "1")),
-            ChatTranscriptLineMetaSupport::bind,
-            ChatTranscriptLineMetaSupport::withAuxiliaryRowKind,
-            documentLineSupport::normalizeInsertAtLineStart,
-            documentLineSupport::ensureAtLineStartForInsert,
-            runtimeFlowCoordinator::shiftCurrentBlock);
     ChatTranscriptMessageLineCoordinator messageLineCoordinator =
         new ChatTranscriptMessageLineCoordinator(
             store,
@@ -116,9 +89,9 @@ final class ChatTranscriptMessageComposition {
             documentLineSupport,
             lineCapSupport,
             runtimeFlowCoordinator,
-            senderStyleSupportContext,
+            messageSupportComposition.senderStyleSupportContext(),
             messageCatalogSupport,
-            reactionSummarySupport,
+            messageSupportComposition.reactionSummarySupport(),
             targetRuntimeCoordinator.docs(),
             targetRuntimeCoordinator.stateByTarget(),
             targetRuntimeCoordinator::ensureTargetExists,
@@ -134,8 +107,8 @@ final class ChatTranscriptMessageComposition {
             targetRuntimeCoordinator::ensureTargetExists,
             targetRuntimeCoordinator::noteEpochMs,
             messageCatalogSupport,
-            reactionSummarySupport,
-            senderStyleSupportContext,
+            messageSupportComposition.reactionSummarySupport(),
+            messageSupportComposition.senderStyleSupportContext(),
             matrixDisplayNameCoordinator::renderTranscriptFrom,
             messageLineCoordinator::insertReplacementAction,
             (ref, insertAt, from, text, fromStyle, messageStyle, meta) ->
