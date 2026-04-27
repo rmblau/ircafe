@@ -26,11 +26,7 @@ final class ChatTranscriptSpoilerSupportComposition {
             inputs.targetRuntimeCoordinator(),
             inputs.filteredFlowCoordinator());
     ChatTranscriptPlainAppendSupport.Context plainAppendSupportContext =
-        ChatTranscriptPlainAppendComposition.create(
-            inputs.styles(),
-            inputs.runtimeFlowCoordinator(),
-            inputs.lineCapSupport(),
-            inputs.targetRuntimeCoordinator());
+        ChatTranscriptPlainAppendGraphComposition.create(inputs);
     return ChatTranscriptSpoilerSupportComponentsComposition.create(
         plainAppendSupportContext, spoilerFlowSupportContext);
   }
