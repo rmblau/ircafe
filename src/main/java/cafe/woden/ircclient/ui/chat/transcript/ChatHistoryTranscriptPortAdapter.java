@@ -4,12 +4,10 @@ import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
 import cafe.woden.ircclient.logging.history.ChatHistoryTranscriptPort;
 import cafe.woden.ircclient.logging.history.LoadOlderControlState;
 import cafe.woden.ircclient.model.TargetRef;
-import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import java.util.Map;
 import java.util.OptionalLong;
 import java.util.function.BooleanSupplier;
-import java.util.function.ToIntFunction;
 import javax.swing.text.StyledDocument;
 import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
 import org.jmolecules.architecture.layered.InterfaceLayer;
@@ -23,16 +21,14 @@ import org.springframework.stereotype.Component;
 public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPort {
 
   private final ChatTranscriptStore transcripts;
-  private final UiSettingsBus settingsBus;
-  private final UiSettingsRuntimeConfigPort runtimeConfig;
+  private final ChatHistoryTranscriptSettingsReader settingsReader;
 
   public ChatHistoryTranscriptPortAdapter(
       ChatTranscriptStore transcripts,
       UiSettingsBus settingsBus,
       UiSettingsRuntimeConfigPort runtimeConfig) {
     this.transcripts = transcripts;
-    this.settingsBus = settingsBus;
-    this.runtimeConfig = runtimeConfig;
+    this.settingsReader = new ChatHistoryTranscriptSettingsReader(settingsBus, runtimeConfig);
   }
 
   @Override
@@ -267,66 +263,51 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
 
   @Override
   public int chatHistoryInitialLoadLines() {
-    return intSetting(UiSettings::chatHistoryInitialLoadLines);
+    return settingsReader.initialLoadLines();
   }
 
   @Override
   public int chatHistoryPageSize() {
-    return intSetting(UiSettings::chatHistoryPageSize);
+    return settingsReader.pageSize();
   }
 
   @Override
   public int chatHistoryAutoLoadWheelDebounceMs() {
-    return intSetting(UiSettings::chatHistoryAutoLoadWheelDebounceMs);
+    return settingsReader.autoLoadWheelDebounceMs();
   }
 
   @Override
   public int chatHistoryLoadOlderChunkSize() {
-    return intSetting(UiSettings::chatHistoryLoadOlderChunkSize);
+    return settingsReader.loadOlderChunkSize();
   }
 
   @Override
   public int chatHistoryLoadOlderChunkDelayMs() {
-    return intSetting(UiSettings::chatHistoryLoadOlderChunkDelayMs);
+    return settingsReader.loadOlderChunkDelayMs();
   }
 
   @Override
   public int chatHistoryLoadOlderChunkEdtBudgetMs() {
-    return intSetting(UiSettings::chatHistoryLoadOlderChunkEdtBudgetMs);
+    return settingsReader.loadOlderChunkEdtBudgetMs();
   }
 
   @Override
   public boolean chatHistoryLockViewportDuringLoadOlder() {
-    return booleanRuntimeConfig(
-        UiSettingsRuntimeConfigPort::readChatHistoryLockViewportDuringLoadOlder, true);
+    return settingsReader.lockViewportDuringLoadOlder();
   }
 
   @Override
   public int chatHistoryRemoteRequestTimeoutSeconds() {
-    return intSetting(UiSettings::chatHistoryRemoteRequestTimeoutSeconds);
+    return settingsReader.remoteRequestTimeoutSeconds();
   }
 
   @Override
   public int chatHistoryRemoteZncPlaybackTimeoutSeconds() {
-    return intSetting(UiSettings::chatHistoryRemoteZncPlaybackTimeoutSeconds);
+    return settingsReader.remoteZncPlaybackTimeoutSeconds();
   }
 
   @Override
   public int chatHistoryRemoteZncPlaybackWindowMinutes() {
-    return intSetting(UiSettings::chatHistoryRemoteZncPlaybackWindowMinutes);
-  }
-
-  private int intSetting(ToIntFunction<UiSettings> extractor) {
-    UiSettings s = settingsBus != null ? settingsBus.get() : null;
-    return s != null ? extractor.applyAsInt(s) : 0;
-  }
-
-  private boolean booleanRuntimeConfig(RuntimeBooleanReader reader, boolean defaultValue) {
-    return runtimeConfig != null ? reader.read(runtimeConfig, defaultValue) : defaultValue;
-  }
-
-  @FunctionalInterface
-  private interface RuntimeBooleanReader {
-    boolean read(UiSettingsRuntimeConfigPort config, boolean defaultValue);
+    return settingsReader.remoteZncPlaybackWindowMinutes();
   }
 }
