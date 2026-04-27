@@ -14,16 +14,7 @@ final class ChatTranscriptSpoilerSupportComposition {
 
   static Components create(ChatTranscriptSpoilerCompositionInputs inputs) {
     ChatTranscriptSpoilerRuntimeComposition.Components spoilerRuntimeComposition =
-        ChatTranscriptSpoilerRuntimeComposition.create(
-            inputs.store(),
-            inputs.styles(),
-            inputs.renderer(),
-            inputs.ts(),
-            inputs.nickColors(),
-            inputs.uiSettings(),
-            inputs.matrixDisplayNameCoordinator(),
-            inputs.styleRoutingSupport(),
-            inputs.runtimeSettingsSupport());
+        ChatTranscriptSpoilerRuntimeGraphComposition.create(inputs);
     ChatTranscriptSpoilerFlowSupport.Context spoilerFlowSupportContext =
         ChatTranscriptSpoilerFlowComposition.create(
             inputs.styles(),
