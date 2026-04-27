@@ -4,7 +4,6 @@ import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
 import cafe.woden.ircclient.logging.history.ChatHistoryTranscriptPort;
 import cafe.woden.ircclient.logging.history.LoadOlderControlState;
 import cafe.woden.ircclient.model.TargetRef;
-import cafe.woden.ircclient.ui.chat.fold.LoadOlderMessagesComponent;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import java.util.Map;
@@ -53,7 +52,8 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
 
   @Override
   public void setLoadOlderMessagesControlState(TargetRef ref, LoadOlderControlState state) {
-    transcripts.setLoadOlderMessagesControlState(ref, toUiState(state));
+    transcripts.setLoadOlderMessagesControlState(
+        ref, ChatHistoryTranscriptLoadOlderStateMapper.toUiState(state));
   }
 
   @Override
@@ -328,15 +328,5 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
   @FunctionalInterface
   private interface RuntimeBooleanReader {
     boolean read(UiSettingsRuntimeConfigPort config, boolean defaultValue);
-  }
-
-  private static LoadOlderMessagesComponent.State toUiState(LoadOlderControlState state) {
-    if (state == null) return LoadOlderMessagesComponent.State.READY;
-    return switch (state) {
-      case READY -> LoadOlderMessagesComponent.State.READY;
-      case LOADING -> LoadOlderMessagesComponent.State.LOADING;
-      case EXHAUSTED -> LoadOlderMessagesComponent.State.EXHAUSTED;
-      case UNAVAILABLE -> LoadOlderMessagesComponent.State.UNAVAILABLE;
-    };
   }
 }
