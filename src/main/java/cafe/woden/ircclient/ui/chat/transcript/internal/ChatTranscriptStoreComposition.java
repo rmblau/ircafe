@@ -139,32 +139,16 @@ public final class ChatTranscriptStoreComposition {
         messageComposition.messageLineCoordinator();
     ChatTranscriptMessageInteractionCoordinator messageInteractionCoordinator =
         messageComposition.messageInteractionCoordinator();
-    runtimeFlowCoordinator.bindPresenceContext(
+    ChatTranscriptRuntimeContextBinding.bind(
+        runtimeFlowCoordinator,
         presenceFoldSupport,
         filterRoutingSupport,
-        filteredFlowCoordinator.filteredLinesSupport(),
+        filteredFlowCoordinator,
         runtimeSettingsSupport,
-        targetRuntimeCoordinator.docs(),
-        targetRuntimeCoordinator.stateByTarget(),
-        targetRuntimeCoordinator::ensureTargetExists,
-        targetRuntimeCoordinator::noteEpochMs,
-        System::currentTimeMillis);
-    runtimeFlowCoordinator.bindLineLifecycleContexts(
-        targetRuntimeCoordinator.docs(),
-        targetRuntimeCoordinator.stateByTarget(),
-        targetRuntimeCoordinator::ensureTargetExists,
-        targetRuntimeCoordinator::noteEpochMs,
-        filterRoutingSupport,
-        filteredFlowCoordinator::endInsertRun,
-        filteredFlowCoordinator::shouldDeferRichTextDuringHistoryBatch,
+        targetRuntimeCoordinator,
         documentLineSupport,
-        messageLineCoordinator.textAppendSupportContext(),
-        messageLineCoordinator.textInsertSupportContext(),
-        runtimeSettingsSupport,
-        runtimeSettingsSupport::imageEmbedsEnabled,
-        runtimeSettingsSupport::linkPreviewsEnabled,
-        auxiliaryRowsSupport,
-        filteredFlowCoordinator::endAppendRun);
+        messageLineCoordinator,
+        auxiliaryRowsSupport);
     return new Components(
         filteredFlowCoordinator,
         matrixDisplayNameCoordinator,
