@@ -297,8 +297,8 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
 
   @Override
   public boolean chatHistoryLockViewportDuringLoadOlder() {
-    if (runtimeConfig == null) return true;
-    return runtimeConfig.readChatHistoryLockViewportDuringLoadOlder(true);
+    return booleanRuntimeConfig(
+        UiSettingsRuntimeConfigPort::readChatHistoryLockViewportDuringLoadOlder, true);
   }
 
   @Override
@@ -319,6 +319,15 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
   private int intSetting(ToIntFunction<UiSettings> extractor) {
     UiSettings s = settingsBus != null ? settingsBus.get() : null;
     return s != null ? extractor.applyAsInt(s) : 0;
+  }
+
+  private boolean booleanRuntimeConfig(RuntimeBooleanReader reader, boolean defaultValue) {
+    return runtimeConfig != null ? reader.read(runtimeConfig, defaultValue) : defaultValue;
+  }
+
+  @FunctionalInterface
+  private interface RuntimeBooleanReader {
+    boolean read(UiSettingsRuntimeConfigPort config, boolean defaultValue);
   }
 
   private static LoadOlderMessagesComponent.State toUiState(LoadOlderControlState state) {
