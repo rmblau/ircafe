@@ -31,62 +31,62 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
 
   @Override
   public StyledDocument document(TargetRef ref) {
-    return adapters.document().document(ref);
+    return document().document(ref);
   }
 
   @Override
   public OptionalLong earliestTimestampEpochMs(TargetRef ref) {
-    return adapters.document().earliestTimestampEpochMs(ref);
+    return document().earliestTimestampEpochMs(ref);
   }
 
   @Override
   public java.awt.Component ensureLoadOlderMessagesControl(TargetRef ref) {
-    return adapters.loadOlderControls().ensure(ref);
+    return loadOlderControls().ensure(ref);
   }
 
   @Override
   public void setLoadOlderMessagesControlState(TargetRef ref, LoadOlderControlState state) {
-    adapters.loadOlderControls().setState(ref, state);
+    loadOlderControls().setState(ref, state);
   }
 
   @Override
   public void setLoadOlderMessagesControlHandler(TargetRef ref, BooleanSupplier onLoad) {
-    adapters.loadOlderControls().setHandler(ref, onLoad);
+    loadOlderControls().setHandler(ref, onLoad);
   }
 
   @Override
   public void beginHistoryInsertBatch(TargetRef ref) {
-    adapters.batch().begin(ref);
+    batch().begin(ref);
   }
 
   @Override
   public void beginHistoryInsertBatch(TargetRef ref, boolean forceDeferRichText) {
-    adapters.batch().begin(ref, forceDeferRichText);
+    batch().begin(ref, forceDeferRichText);
   }
 
   @Override
   public void endHistoryInsertBatch(TargetRef ref) {
-    adapters.batch().end(ref);
+    batch().end(ref);
   }
 
   @Override
   public int loadOlderInsertOffset(TargetRef ref) {
-    return adapters.batch().loadOlderInsertOffset(ref);
+    return batch().loadOlderInsertOffset(ref);
   }
 
   @Override
   public boolean hasContentAfterOffset(TargetRef ref, int offset) {
-    return adapters.batch().hasContentAfterOffset(ref, offset);
+    return batch().hasContentAfterOffset(ref, offset);
   }
 
   @Override
   public void ensureHistoryDivider(TargetRef ref, int insertAt, String labelText) {
-    adapters.batch().ensureHistoryDivider(ref, insertAt, labelText);
+    batch().ensureHistoryDivider(ref, insertAt, labelText);
   }
 
   @Override
   public void markHistoryDividerPending(TargetRef ref, String labelText) {
-    adapters.batch().markHistoryDividerPending(ref, labelText);
+    batch().markHistoryDividerPending(ref, labelText);
   }
 
   @Override
@@ -258,52 +258,68 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
 
   @Override
   public int chatHistoryInitialLoadLines() {
-    return adapters.settings().initialLoadLines();
+    return settings().initialLoadLines();
   }
 
   @Override
   public int chatHistoryPageSize() {
-    return adapters.settings().pageSize();
+    return settings().pageSize();
   }
 
   @Override
   public int chatHistoryAutoLoadWheelDebounceMs() {
-    return adapters.settings().autoLoadWheelDebounceMs();
+    return settings().autoLoadWheelDebounceMs();
   }
 
   @Override
   public int chatHistoryLoadOlderChunkSize() {
-    return adapters.settings().loadOlderChunkSize();
+    return settings().loadOlderChunkSize();
   }
 
   @Override
   public int chatHistoryLoadOlderChunkDelayMs() {
-    return adapters.settings().loadOlderChunkDelayMs();
+    return settings().loadOlderChunkDelayMs();
   }
 
   @Override
   public int chatHistoryLoadOlderChunkEdtBudgetMs() {
-    return adapters.settings().loadOlderChunkEdtBudgetMs();
+    return settings().loadOlderChunkEdtBudgetMs();
   }
 
   @Override
   public boolean chatHistoryLockViewportDuringLoadOlder() {
-    return adapters.settings().lockViewportDuringLoadOlder();
+    return settings().lockViewportDuringLoadOlder();
   }
 
   @Override
   public int chatHistoryRemoteRequestTimeoutSeconds() {
-    return adapters.settings().remoteRequestTimeoutSeconds();
+    return settings().remoteRequestTimeoutSeconds();
   }
 
   @Override
   public int chatHistoryRemoteZncPlaybackTimeoutSeconds() {
-    return adapters.settings().remoteZncPlaybackTimeoutSeconds();
+    return settings().remoteZncPlaybackTimeoutSeconds();
   }
 
   @Override
   public int chatHistoryRemoteZncPlaybackWindowMinutes() {
-    return adapters.settings().remoteZncPlaybackWindowMinutes();
+    return settings().remoteZncPlaybackWindowMinutes();
+  }
+
+  private ChatHistoryTranscriptDocumentAdapter document() {
+    return adapters.document();
+  }
+
+  private ChatHistoryTranscriptLoadOlderControlAdapter loadOlderControls() {
+    return adapters.loadOlderControls();
+  }
+
+  private ChatHistoryTranscriptBatchAdapter batch() {
+    return adapters.batch();
+  }
+
+  private ChatHistoryTranscriptSettingsReader settings() {
+    return adapters.settings();
   }
 
   private ChatHistoryTranscriptInsertAdapter insert() {
