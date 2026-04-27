@@ -54,8 +54,8 @@ final class ChatTranscriptMessageComposition {
       ChatTranscriptMessageCatalogSupport messageCatalogSupport,
       ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator) {
     ChatTranscriptMatrixDisplayNameCoordinator matrixDisplayNameCoordinator =
-        new ChatTranscriptMatrixDisplayNameCoordinator(
-            uiSettings, userListStore, targetRuntimeCoordinator.docs());
+        ChatTranscriptMessageDisplayNameComposition.create(
+            uiSettings, userListStore, targetRuntimeCoordinator);
     ChatTranscriptMessageSupportComposition.Components messageSupportComposition =
         ChatTranscriptMessageSupportComposition.create(
             styles,
