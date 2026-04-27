@@ -74,11 +74,11 @@ final class ChatTranscriptMessageComposition {
             messageSupportComposition.replyContextSupportContext(),
             messageCatalogSupport);
     ChatTranscriptMessageLineCoordinator messageLineCoordinator =
-        new ChatTranscriptMessageLineCoordinator(
+        ChatTranscriptMessageLineComposition.create(
             store,
             styles,
-            ts,
             renderer,
+            ts,
             imageEmbeds,
             linkPreviews,
             styleRoutingSupport,
@@ -90,14 +90,10 @@ final class ChatTranscriptMessageComposition {
             messageSupportComposition.senderStyleSupportContext(),
             messageCatalogSupport,
             messageSupportComposition.reactionSummarySupport(),
-            targetRuntimeCoordinator.docs(),
-            targetRuntimeCoordinator.stateByTarget(),
-            targetRuntimeCoordinator::ensureTargetExists,
-            targetRuntimeCoordinator::noteEpochMs,
-            replyFlowCoordinator::appendReplyContextLine,
-            matrixDisplayNameCoordinator::renderTranscriptFrom,
-            filteredFlowCoordinator::endInsertRun,
-            filteredFlowCoordinator::shouldDeferRichTextDuringHistoryBatch);
+            targetRuntimeCoordinator,
+            replyFlowCoordinator,
+            matrixDisplayNameCoordinator,
+            filteredFlowCoordinator);
     ChatTranscriptMessageInteractionCoordinator messageInteractionCoordinator =
         ChatTranscriptMessageInteractionComposition.create(
             targetRuntimeCoordinator,
