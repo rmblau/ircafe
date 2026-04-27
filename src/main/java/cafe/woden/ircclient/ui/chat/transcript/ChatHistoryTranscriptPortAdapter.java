@@ -10,6 +10,7 @@ import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import java.util.Map;
 import java.util.OptionalLong;
 import java.util.function.BooleanSupplier;
+import java.util.function.ToIntFunction;
 import javax.swing.text.StyledDocument;
 import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
 import org.jmolecules.architecture.layered.InterfaceLayer;
@@ -266,38 +267,32 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
 
   @Override
   public int chatHistoryInitialLoadLines() {
-    UiSettings s = settingsBus != null ? settingsBus.get() : null;
-    return s != null ? s.chatHistoryInitialLoadLines() : 0;
+    return intSetting(UiSettings::chatHistoryInitialLoadLines);
   }
 
   @Override
   public int chatHistoryPageSize() {
-    UiSettings s = settingsBus != null ? settingsBus.get() : null;
-    return s != null ? s.chatHistoryPageSize() : 0;
+    return intSetting(UiSettings::chatHistoryPageSize);
   }
 
   @Override
   public int chatHistoryAutoLoadWheelDebounceMs() {
-    UiSettings s = settingsBus != null ? settingsBus.get() : null;
-    return s != null ? s.chatHistoryAutoLoadWheelDebounceMs() : 0;
+    return intSetting(UiSettings::chatHistoryAutoLoadWheelDebounceMs);
   }
 
   @Override
   public int chatHistoryLoadOlderChunkSize() {
-    UiSettings s = settingsBus != null ? settingsBus.get() : null;
-    return s != null ? s.chatHistoryLoadOlderChunkSize() : 0;
+    return intSetting(UiSettings::chatHistoryLoadOlderChunkSize);
   }
 
   @Override
   public int chatHistoryLoadOlderChunkDelayMs() {
-    UiSettings s = settingsBus != null ? settingsBus.get() : null;
-    return s != null ? s.chatHistoryLoadOlderChunkDelayMs() : 0;
+    return intSetting(UiSettings::chatHistoryLoadOlderChunkDelayMs);
   }
 
   @Override
   public int chatHistoryLoadOlderChunkEdtBudgetMs() {
-    UiSettings s = settingsBus != null ? settingsBus.get() : null;
-    return s != null ? s.chatHistoryLoadOlderChunkEdtBudgetMs() : 0;
+    return intSetting(UiSettings::chatHistoryLoadOlderChunkEdtBudgetMs);
   }
 
   @Override
@@ -308,20 +303,22 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
 
   @Override
   public int chatHistoryRemoteRequestTimeoutSeconds() {
-    UiSettings s = settingsBus != null ? settingsBus.get() : null;
-    return s != null ? s.chatHistoryRemoteRequestTimeoutSeconds() : 0;
+    return intSetting(UiSettings::chatHistoryRemoteRequestTimeoutSeconds);
   }
 
   @Override
   public int chatHistoryRemoteZncPlaybackTimeoutSeconds() {
-    UiSettings s = settingsBus != null ? settingsBus.get() : null;
-    return s != null ? s.chatHistoryRemoteZncPlaybackTimeoutSeconds() : 0;
+    return intSetting(UiSettings::chatHistoryRemoteZncPlaybackTimeoutSeconds);
   }
 
   @Override
   public int chatHistoryRemoteZncPlaybackWindowMinutes() {
+    return intSetting(UiSettings::chatHistoryRemoteZncPlaybackWindowMinutes);
+  }
+
+  private int intSetting(ToIntFunction<UiSettings> extractor) {
     UiSettings s = settingsBus != null ? settingsBus.get() : null;
-    return s != null ? s.chatHistoryRemoteZncPlaybackWindowMinutes() : 0;
+    return s != null ? extractor.applyAsInt(s) : 0;
   }
 
   private static LoadOlderMessagesComponent.State toUiState(LoadOlderControlState state) {
