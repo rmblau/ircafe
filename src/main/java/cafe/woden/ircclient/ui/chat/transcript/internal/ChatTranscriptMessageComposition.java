@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.chat.transcript.internal;
 
+import cafe.woden.ircclient.irc.roster.UserListPort;
 import cafe.woden.ircclient.model.LogDirection;
 import cafe.woden.ircclient.model.LogKind;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
@@ -26,6 +27,7 @@ import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeFlow
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeSettingsSupport;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptTargetRuntimeCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.style.ChatTranscriptStyleRoutingSupport;
+import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import java.util.Map;
 
 /** Builds message-oriented collaborators for the transcript store composition. */
@@ -34,6 +36,7 @@ final class ChatTranscriptMessageComposition {
   private static final String REDACTED_MESSAGE_PLACEHOLDER = "[message redacted]";
 
   record Components(
+      ChatTranscriptMatrixDisplayNameCoordinator matrixDisplayNameCoordinator,
       ChatTranscriptReplyFlowCoordinator replyFlowCoordinator,
       ChatTranscriptMessageLineCoordinator messageLineCoordinator,
       ChatTranscriptMessageInteractionCoordinator messageInteractionCoordinator) {}
@@ -48,7 +51,8 @@ final class ChatTranscriptMessageComposition {
       NickColorService nickColors,
       ChatImageEmbedder imageEmbeds,
       ChatLinkPreviewEmbedder linkPreviews,
-      ChatTranscriptMatrixDisplayNameCoordinator matrixDisplayNameCoordinator,
+      UiSettingsBus uiSettings,
+      UserListPort userListStore,
       ChatTranscriptStyleRoutingSupport styleRoutingSupport,
       ChatTranscriptFilterRoutingSupport filterRoutingSupport,
       ChatTranscriptDocumentLineSupport documentLineSupport,
@@ -58,6 +62,9 @@ final class ChatTranscriptMessageComposition {
       ChatTranscriptRuntimeSettingsSupport runtimeSettingsSupport,
       ChatTranscriptMessageCatalogSupport messageCatalogSupport,
       ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator) {
+    ChatTranscriptMatrixDisplayNameCoordinator matrixDisplayNameCoordinator =
+        new ChatTranscriptMatrixDisplayNameCoordinator(
+            uiSettings, userListStore, targetRuntimeCoordinator.docs());
     ChatTranscriptReplyContextSupport.Context replyContextSupportContext =
         new ChatTranscriptReplyContextSupport.Context(
             styles, ts, matrixDisplayNameCoordinator::renderTranscriptFrom);
@@ -136,6 +143,9 @@ final class ChatTranscriptMessageComposition {
                     ref, insertAt, from, text, fromStyle, messageStyle, meta),
             REDACTED_MESSAGE_PLACEHOLDER);
     return new Components(
-        replyFlowCoordinator, messageLineCoordinator, messageInteractionCoordinator);
+        matrixDisplayNameCoordinator,
+        replyFlowCoordinator,
+        messageLineCoordinator,
+        messageInteractionCoordinator);
   }
 }

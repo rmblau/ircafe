@@ -90,9 +90,36 @@ public final class ChatTranscriptStoreComposition {
     ChatTranscriptFilterRoutingSupport filterRoutingSupport =
         filterComposition.filterRoutingSupport();
     ChatTranscriptPresenceFoldSupport presenceFoldSupport = lineComposition.presenceFoldSupport();
+    ChatTranscriptAuxiliaryRowsSupport auxiliaryRowsSupport =
+        lineComposition.auxiliaryRowsSupport();
+    ChatTranscriptMessageComposition.Components messageComposition =
+        ChatTranscriptMessageComposition.create(
+            store,
+            styles,
+            renderer,
+            ts,
+            nickColors,
+            imageEmbeds,
+            linkPreviews,
+            uiSettings,
+            userListStore,
+            styleRoutingSupport,
+            filterRoutingSupport,
+            documentLineSupport,
+            lineCapSupport,
+            runtimeFlowCoordinator,
+            targetRuntimeCoordinator,
+            runtimeSettingsSupport,
+            messageCatalogSupport,
+            filteredFlowCoordinator);
     ChatTranscriptMatrixDisplayNameCoordinator matrixDisplayNameCoordinator =
-        new ChatTranscriptMatrixDisplayNameCoordinator(
-            uiSettings, userListStore, targetRuntimeCoordinator.docs());
+        messageComposition.matrixDisplayNameCoordinator();
+    ChatTranscriptReplyFlowCoordinator replyFlowCoordinator =
+        messageComposition.replyFlowCoordinator();
+    ChatTranscriptMessageLineCoordinator messageLineCoordinator =
+        messageComposition.messageLineCoordinator();
+    ChatTranscriptMessageInteractionCoordinator messageInteractionCoordinator =
+        messageComposition.messageInteractionCoordinator();
     ChatTranscriptSpoilerComposition.Components spoilerComposition =
         ChatTranscriptSpoilerComposition.create(
             store,
@@ -112,33 +139,6 @@ public final class ChatTranscriptStoreComposition {
             filteredFlowCoordinator);
     ChatTranscriptPlainSpoilerCoordinator plainSpoilerCoordinator =
         spoilerComposition.plainSpoilerCoordinator();
-    ChatTranscriptAuxiliaryRowsSupport auxiliaryRowsSupport =
-        lineComposition.auxiliaryRowsSupport();
-    ChatTranscriptMessageComposition.Components messageComposition =
-        ChatTranscriptMessageComposition.create(
-            store,
-            styles,
-            renderer,
-            ts,
-            nickColors,
-            imageEmbeds,
-            linkPreviews,
-            matrixDisplayNameCoordinator,
-            styleRoutingSupport,
-            filterRoutingSupport,
-            documentLineSupport,
-            lineCapSupport,
-            runtimeFlowCoordinator,
-            targetRuntimeCoordinator,
-            runtimeSettingsSupport,
-            messageCatalogSupport,
-            filteredFlowCoordinator);
-    ChatTranscriptReplyFlowCoordinator replyFlowCoordinator =
-        messageComposition.replyFlowCoordinator();
-    ChatTranscriptMessageLineCoordinator messageLineCoordinator =
-        messageComposition.messageLineCoordinator();
-    ChatTranscriptMessageInteractionCoordinator messageInteractionCoordinator =
-        messageComposition.messageInteractionCoordinator();
     ChatTranscriptRuntimeContextBinding.bind(
         runtimeFlowCoordinator,
         presenceFoldSupport,
