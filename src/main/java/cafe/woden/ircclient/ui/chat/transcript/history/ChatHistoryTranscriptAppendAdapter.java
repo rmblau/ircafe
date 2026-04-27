@@ -1,6 +1,7 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.history;
 
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import java.util.Map;
 
 /** Adapts history append operations onto the transcript store API. */

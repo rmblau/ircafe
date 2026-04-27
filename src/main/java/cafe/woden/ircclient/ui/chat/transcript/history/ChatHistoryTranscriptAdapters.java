@@ -1,6 +1,7 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.history;
 
 import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 
 /** Groups the small transcript history adapters used by the history port adapter. */

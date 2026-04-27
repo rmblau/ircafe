@@ -1,4 +1,6 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.history;
+
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 
 /** Groups history message append/insert adapters. */
 record ChatHistoryTranscriptMessageAdapters(

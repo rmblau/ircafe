@@ -1,8 +1,9 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.history;
 
 import cafe.woden.ircclient.logging.history.LoadOlderControlState;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.fold.LoadOlderMessagesComponent;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import java.util.function.BooleanSupplier;
 
 /** Adapts history load-older controls onto the transcript store UI control API. */

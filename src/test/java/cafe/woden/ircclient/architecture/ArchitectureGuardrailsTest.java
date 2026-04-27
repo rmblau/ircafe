@@ -782,7 +782,7 @@ class ArchitectureGuardrailsTest {
           noClasses()
               .that()
               .haveFullyQualifiedName(
-                  "cafe.woden.ircclient.ui.chat.transcript.ChatHistoryTranscriptPortAdapter")
+                  "cafe.woden.ircclient.ui.chat.transcript.history.ChatHistoryTranscriptPortAdapter")
               .should()
               .dependOnClassesThat(RUNTIME_CONFIG_STORE_TYPES)
               .because(

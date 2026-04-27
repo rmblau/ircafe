@@ -1,9 +1,10 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.history;
 
 import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
 import cafe.woden.ircclient.logging.history.ChatHistoryTranscriptPort;
 import cafe.woden.ircclient.logging.history.LoadOlderControlState;
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import java.util.Map;
 import java.util.OptionalLong;

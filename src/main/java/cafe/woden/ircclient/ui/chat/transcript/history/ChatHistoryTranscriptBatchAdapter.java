@@ -1,6 +1,7 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.history;
 
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 
 /** Adapts history insert batch and divider operations onto the transcript store API. */
 final class ChatHistoryTranscriptBatchAdapter {

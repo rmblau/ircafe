@@ -169,7 +169,7 @@ import cafe.woden.ircclient.ui.SwingUiPort;
 import cafe.woden.ircclient.ui.application.RuntimeEventsPanel;
 import cafe.woden.ircclient.ui.chat.ChatDockManager;
 import cafe.woden.ircclient.ui.chat.fold.LoadOlderMessagesComponent;
-import cafe.woden.ircclient.ui.chat.transcript.ChatHistoryTranscriptPortAdapter;
+import cafe.woden.ircclient.ui.chat.transcript.history.ChatHistoryTranscriptPortAdapter;
 import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.chat.transcript.TranscriptRebuildService;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
@@ -395,7 +395,7 @@ class SpringModulithIncrementalAdoptionTest {
     assertNamedInterfaceContains(uiModule, "chat", ChatDockManager.class);
     assertNamedInterfaceContains(uiModule, "chat-transcript", ChatTranscriptStore.class);
     assertNamedInterfaceContains(
-        uiModule, "chat-transcript", ChatHistoryTranscriptPortAdapter.class);
+        uiModule, "chat-transcript-history", ChatHistoryTranscriptPortAdapter.class);
     assertNamedInterfaceContains(uiModule, "chat-transcript", TranscriptRebuildService.class);
     assertNamedInterfaceContains(uiModule, "chat-fold", LoadOlderMessagesComponent.class);
     assertNamedInterfaceContains(uiModule, "filter", FilterEngine.class);

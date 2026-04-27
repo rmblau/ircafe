@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
+import cafe.woden.ircclient.ui.chat.transcript.history.ChatHistoryTranscriptPortAdapter;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import org.junit.jupiter.api.Test;
 
