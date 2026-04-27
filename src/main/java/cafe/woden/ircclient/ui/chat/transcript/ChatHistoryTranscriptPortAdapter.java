@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPort {
 
   private final ChatTranscriptStore transcripts;
+  private final ChatHistoryTranscriptLoadOlderControlAdapter loadOlderControls;
   private final ChatHistoryTranscriptSettingsReader settingsReader;
 
   public ChatHistoryTranscriptPortAdapter(
@@ -28,6 +29,7 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
       UiSettingsBus settingsBus,
       UiSettingsRuntimeConfigPort runtimeConfig) {
     this.transcripts = transcripts;
+    this.loadOlderControls = new ChatHistoryTranscriptLoadOlderControlAdapter(transcripts);
     this.settingsReader = new ChatHistoryTranscriptSettingsReader(settingsBus, runtimeConfig);
   }
 
@@ -43,18 +45,17 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
 
   @Override
   public java.awt.Component ensureLoadOlderMessagesControl(TargetRef ref) {
-    return transcripts.ensureLoadOlderMessagesControl(ref);
+    return loadOlderControls.ensure(ref);
   }
 
   @Override
   public void setLoadOlderMessagesControlState(TargetRef ref, LoadOlderControlState state) {
-    transcripts.setLoadOlderMessagesControlState(
-        ref, ChatHistoryTranscriptLoadOlderStateMapper.toUiState(state));
+    loadOlderControls.setState(ref, state);
   }
 
   @Override
   public void setLoadOlderMessagesControlHandler(TargetRef ref, BooleanSupplier onLoad) {
-    transcripts.setLoadOlderMessagesControlHandler(ref, onLoad);
+    loadOlderControls.setHandler(ref, onLoad);
   }
 
   @Override
