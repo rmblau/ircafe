@@ -66,10 +66,8 @@ final class ChatTranscriptMessageComposition {
             documentLineSupport,
             runtimeFlowCoordinator);
     ChatTranscriptReplyFlowCoordinator replyFlowCoordinator =
-        new ChatTranscriptReplyFlowCoordinator(
-            targetRuntimeCoordinator.docs(),
-            targetRuntimeCoordinator.stateByTarget(),
-            targetRuntimeCoordinator::ensureTargetExists,
+        ChatTranscriptMessageReplyComposition.create(
+            targetRuntimeCoordinator,
             documentLineSupport,
             messageSupportComposition.replyContextSupportContext(),
             messageCatalogSupport);
