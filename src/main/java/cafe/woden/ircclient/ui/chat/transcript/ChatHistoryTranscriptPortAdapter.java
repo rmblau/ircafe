@@ -22,6 +22,7 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
 
   private final ChatTranscriptStore transcripts;
   private final ChatHistoryTranscriptLoadOlderControlAdapter loadOlderControls;
+  private final ChatHistoryTranscriptAppendAdapter appendAdapter;
   private final ChatHistoryTranscriptSettingsReader settingsReader;
 
   public ChatHistoryTranscriptPortAdapter(
@@ -30,6 +31,7 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
       UiSettingsRuntimeConfigPort runtimeConfig) {
     this.transcripts = transcripts;
     this.loadOlderControls = new ChatHistoryTranscriptLoadOlderControlAdapter(transcripts);
+    this.appendAdapter = new ChatHistoryTranscriptAppendAdapter(transcripts);
     this.settingsReader = new ChatHistoryTranscriptSettingsReader(settingsBus, runtimeConfig);
   }
 
@@ -190,7 +192,7 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
   @Override
   public void appendChatFromHistory(
       TargetRef ref, String from, String text, boolean outgoingLocalEcho, long tsEpochMs) {
-    transcripts.appendChatFromHistory(ref, from, text, outgoingLocalEcho, tsEpochMs);
+    appendAdapter.appendChat(ref, from, text, outgoingLocalEcho, tsEpochMs);
   }
 
   @Override
@@ -202,14 +204,14 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
       long tsEpochMs,
       String messageId,
       Map<String, String> ircv3Tags) {
-    transcripts.appendChatFromHistory(
+    appendAdapter.appendChat(
         ref, from, text, outgoingLocalEcho, tsEpochMs, messageId, ircv3Tags);
   }
 
   @Override
   public void appendActionFromHistory(
       TargetRef ref, String from, String text, boolean outgoingLocalEcho, long tsEpochMs) {
-    transcripts.appendActionFromHistory(ref, from, text, outgoingLocalEcho, tsEpochMs);
+    appendAdapter.appendAction(ref, from, text, outgoingLocalEcho, tsEpochMs);
   }
 
   @Override
@@ -221,13 +223,13 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
       long tsEpochMs,
       String messageId,
       Map<String, String> ircv3Tags) {
-    transcripts.appendActionFromHistory(
+    appendAdapter.appendAction(
         ref, from, text, outgoingLocalEcho, tsEpochMs, messageId, ircv3Tags);
   }
 
   @Override
   public void appendNoticeFromHistory(TargetRef ref, String from, String text, long tsEpochMs) {
-    transcripts.appendNoticeFromHistory(ref, from, text, tsEpochMs);
+    appendAdapter.appendNotice(ref, from, text, tsEpochMs);
   }
 
   @Override
@@ -238,28 +240,28 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
       long tsEpochMs,
       String messageId,
       Map<String, String> ircv3Tags) {
-    transcripts.appendNoticeFromHistory(ref, from, text, tsEpochMs, messageId, ircv3Tags);
+    appendAdapter.appendNotice(ref, from, text, tsEpochMs, messageId, ircv3Tags);
   }
 
   @Override
   public void appendStatusFromHistory(TargetRef ref, String from, String text, long tsEpochMs) {
-    transcripts.appendStatusFromHistory(ref, from, text, tsEpochMs);
+    appendAdapter.appendStatus(ref, from, text, tsEpochMs);
   }
 
   @Override
   public void appendErrorFromHistory(TargetRef ref, String from, String text, long tsEpochMs) {
-    transcripts.appendErrorFromHistory(ref, from, text, tsEpochMs);
+    appendAdapter.appendError(ref, from, text, tsEpochMs);
   }
 
   @Override
   public void appendPresenceFromHistory(TargetRef ref, String text, long tsEpochMs) {
-    transcripts.appendPresenceFromHistory(ref, text, tsEpochMs);
+    appendAdapter.appendPresence(ref, text, tsEpochMs);
   }
 
   @Override
   public void appendSpoilerChatFromHistory(
       TargetRef ref, String from, String text, long tsEpochMs) {
-    transcripts.appendSpoilerChatFromHistory(ref, from, text, tsEpochMs);
+    appendAdapter.appendSpoilerChat(ref, from, text, tsEpochMs);
   }
 
   @Override
