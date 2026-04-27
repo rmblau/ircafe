@@ -5,9 +5,7 @@ import cafe.woden.ircclient.ui.chat.NickColorService;
 import cafe.woden.ircclient.ui.chat.NickColorSettingsBus;
 import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageStateSupport;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptLineCapSupport;
-import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRestyleSupport;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeFlowCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeSettingsSupport;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptTargetRuntimeCoordinator;
@@ -19,9 +17,6 @@ final class ChatTranscriptRuntimeComposition {
 
   private static final int REPLY_PREVIEW_CACHE_LIMIT_PER_TARGET = 512;
   private static final int REDACTED_MESSAGE_CACHE_LIMIT_PER_TARGET = 512;
-  private static final int REPLY_PREVIEW_TEXT_MAX_CHARS = 120;
-  private static final String REDACTED_MESSAGE_PLACEHOLDER = "[message redacted]";
-
   record Components(
       ChatTranscriptRuntimeFlowCoordinator runtimeFlowCoordinator,
       ChatTranscriptRuntimeSettingsSupport runtimeSettingsSupport,
@@ -40,26 +35,16 @@ final class ChatTranscriptRuntimeComposition {
       UiSettingsBus uiSettings) {
     ChatTranscriptRuntimeFlowCoordinator runtimeFlowCoordinator =
         new ChatTranscriptRuntimeFlowCoordinator(store, styles);
+    ChatTranscriptRuntimeSupportComposition.Components runtimeSupportComposition =
+        ChatTranscriptRuntimeSupportComposition.create(
+            styles, nickColors, uiSettings, runtimeFlowCoordinator);
     ChatTranscriptRuntimeSettingsSupport runtimeSettingsSupport =
-        new ChatTranscriptRuntimeSettingsSupport(uiSettings, styles);
+        runtimeSupportComposition.runtimeSettingsSupport();
     ChatTranscriptStyleRoutingSupport styleRoutingSupport =
-        new ChatTranscriptStyleRoutingSupport(
-            styles,
-            runtimeSettingsSupport::safeSettings,
-            runtimeSettingsSupport::configuredOutgoingLineColor);
-    ChatTranscriptLineCapSupport lineCapSupport =
-        new ChatTranscriptLineCapSupport(
-            runtimeSettingsSupport::transcriptMaxLinesPerTarget,
-            runtimeFlowCoordinator::resetAfterHeadTrim,
-            ref -> runtimeFlowCoordinator.maybeRenderPendingReadMarker(ref, null));
-    ChatTranscriptRestyleSupport.Context restyleSupportContext =
-        new ChatTranscriptRestyleSupport.Context(
-            styles, nickColors, styleRoutingSupport::applyFilterActionStyle);
-    ChatTranscriptMessageStateSupport.Context messageStateSupportContext =
-        new ChatTranscriptMessageStateSupport.Context(
-            REPLY_PREVIEW_TEXT_MAX_CHARS, REDACTED_MESSAGE_PLACEHOLDER, System::currentTimeMillis);
+        runtimeSupportComposition.styleRoutingSupport();
+    ChatTranscriptLineCapSupport lineCapSupport = runtimeSupportComposition.lineCapSupport();
     ChatTranscriptMessageCatalogSupport messageCatalogSupport =
-        new ChatTranscriptMessageCatalogSupport(messageStateSupportContext);
+        runtimeSupportComposition.messageCatalogSupport();
     ChatTranscriptTargetRuntimeCoordinator targetRuntimeCoordinator =
         new ChatTranscriptTargetRuntimeCoordinator(
             () ->
@@ -67,7 +52,7 @@ final class ChatTranscriptRuntimeComposition {
                     REPLY_PREVIEW_CACHE_LIMIT_PER_TARGET, REDACTED_MESSAGE_CACHE_LIMIT_PER_TARGET),
             store,
             180,
-            restyleSupportContext,
+            runtimeSupportComposition.restyleSupportContext(),
             runtimeSettingsSupport::safeSettings,
             runtimeSettingsSupport::configuredOutgoingLineColor,
             nickColorSettings);
