@@ -22,6 +22,7 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
 
   private final ChatTranscriptStore transcripts;
   private final ChatHistoryTranscriptLoadOlderControlAdapter loadOlderControls;
+  private final ChatHistoryTranscriptInsertAdapter insertAdapter;
   private final ChatHistoryTranscriptAppendAdapter appendAdapter;
   private final ChatHistoryTranscriptSettingsReader settingsReader;
 
@@ -31,6 +32,7 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
       UiSettingsRuntimeConfigPort runtimeConfig) {
     this.transcripts = transcripts;
     this.loadOlderControls = new ChatHistoryTranscriptLoadOlderControlAdapter(transcripts);
+    this.insertAdapter = new ChatHistoryTranscriptInsertAdapter(transcripts);
     this.appendAdapter = new ChatHistoryTranscriptAppendAdapter(transcripts);
     this.settingsReader = new ChatHistoryTranscriptSettingsReader(settingsBus, runtimeConfig);
   }
@@ -103,8 +105,7 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
       String text,
       boolean outgoingLocalEcho,
       long tsEpochMs) {
-    return transcripts.insertChatFromHistoryAt(
-        ref, insertAt, from, text, outgoingLocalEcho, tsEpochMs);
+    return insertAdapter.insertChat(ref, insertAt, from, text, outgoingLocalEcho, tsEpochMs);
   }
 
   @Override
@@ -117,7 +118,7 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
       long tsEpochMs,
       String messageId,
       Map<String, String> ircv3Tags) {
-    return transcripts.insertChatFromHistoryAt(
+    return insertAdapter.insertChat(
         ref, insertAt, from, text, outgoingLocalEcho, tsEpochMs, messageId, ircv3Tags);
   }
 
@@ -129,8 +130,7 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
       String text,
       boolean outgoingLocalEcho,
       long tsEpochMs) {
-    return transcripts.insertActionFromHistoryAt(
-        ref, insertAt, from, text, outgoingLocalEcho, tsEpochMs);
+    return insertAdapter.insertAction(ref, insertAt, from, text, outgoingLocalEcho, tsEpochMs);
   }
 
   @Override
@@ -143,14 +143,14 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
       long tsEpochMs,
       String messageId,
       Map<String, String> ircv3Tags) {
-    return transcripts.insertActionFromHistoryAt(
+    return insertAdapter.insertAction(
         ref, insertAt, from, text, outgoingLocalEcho, tsEpochMs, messageId, ircv3Tags);
   }
 
   @Override
   public int insertNoticeFromHistoryAt(
       TargetRef ref, int insertAt, String from, String text, long tsEpochMs) {
-    return transcripts.insertNoticeFromHistoryAt(ref, insertAt, from, text, tsEpochMs);
+    return insertAdapter.insertNotice(ref, insertAt, from, text, tsEpochMs);
   }
 
   @Override
@@ -162,31 +162,31 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
       long tsEpochMs,
       String messageId,
       Map<String, String> ircv3Tags) {
-    return transcripts.insertNoticeFromHistoryAt(
+    return insertAdapter.insertNotice(
         ref, insertAt, from, text, tsEpochMs, messageId, ircv3Tags);
   }
 
   @Override
   public int insertStatusFromHistoryAt(
       TargetRef ref, int insertAt, String from, String text, long tsEpochMs) {
-    return transcripts.insertStatusFromHistoryAt(ref, insertAt, from, text, tsEpochMs);
+    return insertAdapter.insertStatus(ref, insertAt, from, text, tsEpochMs);
   }
 
   @Override
   public int insertErrorFromHistoryAt(
       TargetRef ref, int insertAt, String from, String text, long tsEpochMs) {
-    return transcripts.insertErrorFromHistoryAt(ref, insertAt, from, text, tsEpochMs);
+    return insertAdapter.insertError(ref, insertAt, from, text, tsEpochMs);
   }
 
   @Override
   public int insertPresenceFromHistoryAt(TargetRef ref, int insertAt, String text, long tsEpochMs) {
-    return transcripts.insertPresenceFromHistoryAt(ref, insertAt, text, tsEpochMs);
+    return insertAdapter.insertPresence(ref, insertAt, text, tsEpochMs);
   }
 
   @Override
   public int insertSpoilerChatFromHistoryAt(
       TargetRef ref, int insertAt, String from, String text, long tsEpochMs) {
-    return transcripts.insertSpoilerChatFromHistoryAt(ref, insertAt, from, text, tsEpochMs);
+    return insertAdapter.insertSpoilerChat(ref, insertAt, from, text, tsEpochMs);
   }
 
   @Override
