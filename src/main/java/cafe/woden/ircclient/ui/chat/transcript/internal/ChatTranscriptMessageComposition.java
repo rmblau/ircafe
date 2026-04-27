@@ -26,8 +26,6 @@ import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 /** Builds message-oriented collaborators for the transcript store composition. */
 final class ChatTranscriptMessageComposition {
 
-  private static final String REDACTED_MESSAGE_PLACEHOLDER = "[message redacted]";
-
   record Components(
       ChatTranscriptMatrixDisplayNameCoordinator matrixDisplayNameCoordinator,
       ChatTranscriptReplyFlowCoordinator replyFlowCoordinator,
@@ -101,20 +99,14 @@ final class ChatTranscriptMessageComposition {
             filteredFlowCoordinator::endInsertRun,
             filteredFlowCoordinator::shouldDeferRichTextDuringHistoryBatch);
     ChatTranscriptMessageInteractionCoordinator messageInteractionCoordinator =
-        new ChatTranscriptMessageInteractionCoordinator(
-            targetRuntimeCoordinator.docs(),
-            targetRuntimeCoordinator.stateByTarget(),
-            targetRuntimeCoordinator::ensureTargetExists,
-            targetRuntimeCoordinator::noteEpochMs,
+        ChatTranscriptMessageInteractionComposition.create(
+            targetRuntimeCoordinator,
             messageCatalogSupport,
             messageSupportComposition.reactionSummarySupport(),
             messageSupportComposition.senderStyleSupportContext(),
-            matrixDisplayNameCoordinator::renderTranscriptFrom,
-            messageLineCoordinator::insertReplacementAction,
-            (ref, insertAt, from, text, fromStyle, messageStyle, meta) ->
-                runtimeFlowCoordinator.insertLineAt(
-                    ref, insertAt, from, text, fromStyle, messageStyle, meta),
-            REDACTED_MESSAGE_PLACEHOLDER);
+            matrixDisplayNameCoordinator,
+            messageLineCoordinator,
+            runtimeFlowCoordinator);
     return new Components(
         matrixDisplayNameCoordinator,
         replyFlowCoordinator,
