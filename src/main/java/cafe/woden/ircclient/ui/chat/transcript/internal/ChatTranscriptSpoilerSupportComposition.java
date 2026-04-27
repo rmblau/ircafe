@@ -67,6 +67,7 @@ final class ChatTranscriptSpoilerSupportComposition {
     ChatTranscriptPlainAppendSupport.Context plainAppendSupportContext =
         ChatTranscriptPlainAppendComposition.create(
             styles, runtimeFlowCoordinator, lineCapSupport, targetRuntimeCoordinator);
-    return new Components(plainAppendSupportContext, spoilerFlowSupportContext);
+    return ChatTranscriptSpoilerSupportComponentsComposition.create(
+        plainAppendSupportContext, spoilerFlowSupportContext);
   }
 }
