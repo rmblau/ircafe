@@ -40,8 +40,8 @@ final class ChatTranscriptSpoilerComposition {
       ChatTranscriptTargetRuntimeCoordinator targetRuntimeCoordinator,
       ChatTranscriptRuntimeSettingsSupport runtimeSettingsSupport,
       ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator) {
-    ChatTranscriptSpoilerSupportComposition.Components spoilerSupportComposition =
-        ChatTranscriptSpoilerSupportGraphComposition.create(
+    ChatTranscriptSpoilerCompositionInputs inputs =
+        new ChatTranscriptSpoilerCompositionInputs(
             store,
             styles,
             renderer,
@@ -57,6 +57,8 @@ final class ChatTranscriptSpoilerComposition {
             targetRuntimeCoordinator,
             runtimeSettingsSupport,
             filteredFlowCoordinator);
+    ChatTranscriptSpoilerSupportComposition.Components spoilerSupportComposition =
+        ChatTranscriptSpoilerSupportGraphComposition.create(inputs);
     return ChatTranscriptSpoilerComponentsComposition.create(spoilerSupportComposition);
   }
 }
