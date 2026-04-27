@@ -58,8 +58,6 @@ final class ChatTranscriptSpoilerComposition {
             runtimeSettingsSupport,
             filteredFlowCoordinator);
     return new Components(
-        new ChatTranscriptPlainSpoilerCoordinator(
-            spoilerSupportComposition.plainAppendSupportContext(),
-            spoilerSupportComposition.spoilerFlowSupportContext()));
+        ChatTranscriptPlainSpoilerCoordinatorComposition.create(spoilerSupportComposition));
   }
 }
