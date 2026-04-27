@@ -8,8 +8,7 @@ record ChatHistoryTranscriptAdapters(
     ChatHistoryTranscriptDocumentAdapter document,
     ChatHistoryTranscriptLoadOlderControlAdapter loadOlderControls,
     ChatHistoryTranscriptBatchAdapter batch,
-    ChatHistoryTranscriptInsertAdapter insert,
-    ChatHistoryTranscriptAppendAdapter append,
+    ChatHistoryTranscriptMessageAdapters messages,
     ChatHistoryTranscriptSettingsReader settings) {
 
   static ChatHistoryTranscriptAdapters create(
@@ -20,8 +19,7 @@ record ChatHistoryTranscriptAdapters(
         new ChatHistoryTranscriptDocumentAdapter(transcripts),
         new ChatHistoryTranscriptLoadOlderControlAdapter(transcripts),
         new ChatHistoryTranscriptBatchAdapter(transcripts),
-        new ChatHistoryTranscriptInsertAdapter(transcripts),
-        new ChatHistoryTranscriptAppendAdapter(transcripts),
+        ChatHistoryTranscriptMessageAdapters.create(transcripts),
         new ChatHistoryTranscriptSettingsReader(settingsBus, runtimeConfig));
   }
 }
