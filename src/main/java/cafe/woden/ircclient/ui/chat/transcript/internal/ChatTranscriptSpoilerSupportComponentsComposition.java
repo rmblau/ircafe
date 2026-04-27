@@ -8,10 +8,10 @@ final class ChatTranscriptSpoilerSupportComponentsComposition {
 
   private ChatTranscriptSpoilerSupportComponentsComposition() {}
 
-  static ChatTranscriptSpoilerSupportComposition.Components create(
+  static ChatTranscriptSpoilerSupportComponents create(
       ChatTranscriptPlainAppendSupport.Context plainAppendSupportContext,
       ChatTranscriptSpoilerFlowSupport.Context spoilerFlowSupportContext) {
-    return new ChatTranscriptSpoilerSupportComposition.Components(
+    return new ChatTranscriptSpoilerSupportComponents(
         plainAppendSupportContext, spoilerFlowSupportContext);
   }
 }

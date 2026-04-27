@@ -8,7 +8,7 @@ final class ChatTranscriptPlainSpoilerCoordinatorComposition {
   private ChatTranscriptPlainSpoilerCoordinatorComposition() {}
 
   static ChatTranscriptPlainSpoilerCoordinator create(
-      ChatTranscriptSpoilerSupportComposition.Components spoilerSupportComposition) {
+      ChatTranscriptSpoilerSupportComponents spoilerSupportComposition) {
     return new ChatTranscriptPlainSpoilerCoordinator(
         spoilerSupportComposition.plainAppendSupportContext(),
         spoilerSupportComposition.spoilerFlowSupportContext());

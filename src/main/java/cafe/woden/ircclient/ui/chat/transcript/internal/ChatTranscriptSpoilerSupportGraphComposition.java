@@ -5,7 +5,7 @@ final class ChatTranscriptSpoilerSupportGraphComposition {
 
   private ChatTranscriptSpoilerSupportGraphComposition() {}
 
-  static ChatTranscriptSpoilerSupportComposition.Components create(
+  static ChatTranscriptSpoilerSupportComponents create(
       ChatTranscriptSpoilerCompositionInputs inputs) {
     return ChatTranscriptSpoilerSupportComposition.create(inputs);
   }

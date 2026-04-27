@@ -6,7 +6,7 @@ final class ChatTranscriptSpoilerComponentsComposition {
   private ChatTranscriptSpoilerComponentsComposition() {}
 
   static ChatTranscriptSpoilerComposition.Components create(
-      ChatTranscriptSpoilerSupportComposition.Components spoilerSupportComposition) {
+      ChatTranscriptSpoilerSupportComponents spoilerSupportComposition) {
     return new ChatTranscriptSpoilerComposition.Components(
         ChatTranscriptPlainSpoilerCoordinatorComposition.create(spoilerSupportComposition));
   }
