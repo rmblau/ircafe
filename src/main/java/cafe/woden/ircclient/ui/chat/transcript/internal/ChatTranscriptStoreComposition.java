@@ -1,8 +1,6 @@
 package cafe.woden.ircclient.ui.chat.transcript.internal;
 
 import cafe.woden.ircclient.irc.roster.UserListPort;
-import cafe.woden.ircclient.model.LogDirection;
-import cafe.woden.ircclient.model.LogKind;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.NickColorService;
 import cafe.woden.ircclient.ui.chat.NickColorSettingsBus;
@@ -27,9 +25,6 @@ import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPresenceFoldSu
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPlainAppendSupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMatrixDisplayNameCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReactionSummarySupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReplyContextSupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptSenderStyleSupport;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTimestampFormatter;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptLineCapSupport;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeSettingsSupport;
@@ -43,12 +38,9 @@ import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptSpoilerWrit
 import cafe.woden.ircclient.ui.chat.transcript.style.ChatTranscriptStyleRoutingSupport;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
-import java.util.Map;
 
 /** Wires the transcript helper graph used by {@link ChatTranscriptStore}. */
 public final class ChatTranscriptStoreComposition {
-
-  private static final String REDACTED_MESSAGE_PLACEHOLDER = "[message redacted]";
 
   public record Components(
       ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator,
@@ -106,7 +98,8 @@ public final class ChatTranscriptStoreComposition {
             runtimeSettingsSupport);
     ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator =
         filterComposition.filteredFlowCoordinator();
-    ChatTranscriptFilterRoutingSupport filterRoutingSupport = filterComposition.filterRoutingSupport();
+    ChatTranscriptFilterRoutingSupport filterRoutingSupport =
+        filterComposition.filterRoutingSupport();
     ChatTranscriptPresenceFoldSupport presenceFoldSupport = lineComposition.presenceFoldSupport();
     ChatTranscriptMatrixDisplayNameCoordinator matrixDisplayNameCoordinator =
         new ChatTranscriptMatrixDisplayNameCoordinator(
@@ -130,9 +123,10 @@ public final class ChatTranscriptStoreComposition {
             filteredFlowCoordinator);
     ChatTranscriptPlainSpoilerCoordinator plainSpoilerCoordinator =
         spoilerComposition.plainSpoilerCoordinator();
-    ChatTranscriptAuxiliaryRowsSupport auxiliaryRowsSupport = lineComposition.auxiliaryRowsSupport();
-    MessageComposition messageComposition =
-        createMessageComposition(
+    ChatTranscriptAuxiliaryRowsSupport auxiliaryRowsSupport =
+        lineComposition.auxiliaryRowsSupport();
+    ChatTranscriptMessageComposition.Components messageComposition =
+        ChatTranscriptMessageComposition.create(
             store,
             styles,
             renderer,
@@ -191,110 +185,6 @@ public final class ChatTranscriptStoreComposition {
         plainSpoilerCoordinator,
         runtimeFlowCoordinator,
         targetRuntimeCoordinator);
-  }
-
-  private record MessageComposition(
-      ChatTranscriptReplyFlowCoordinator replyFlowCoordinator,
-      ChatTranscriptMessageLineCoordinator messageLineCoordinator,
-      ChatTranscriptMessageInteractionCoordinator messageInteractionCoordinator) {}
-
-  private static MessageComposition createMessageComposition(
-      ChatTranscriptStore store,
-      ChatStyles styles,
-      ChatRichTextRenderer renderer,
-      ChatTimestampFormatter ts,
-      NickColorService nickColors,
-      ChatImageEmbedder imageEmbeds,
-      ChatLinkPreviewEmbedder linkPreviews,
-      ChatTranscriptMatrixDisplayNameCoordinator matrixDisplayNameCoordinator,
-      ChatTranscriptStyleRoutingSupport styleRoutingSupport,
-      ChatTranscriptFilterRoutingSupport filterRoutingSupport,
-      ChatTranscriptDocumentLineSupport documentLineSupport,
-      ChatTranscriptLineCapSupport lineCapSupport,
-      ChatTranscriptRuntimeFlowCoordinator runtimeFlowCoordinator,
-      ChatTranscriptTargetRuntimeCoordinator targetRuntimeCoordinator,
-      ChatTranscriptRuntimeSettingsSupport runtimeSettingsSupport,
-      ChatTranscriptMessageCatalogSupport messageCatalogSupport,
-      ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator) {
-    ChatTranscriptReplyContextSupport.Context replyContextSupportContext =
-        new ChatTranscriptReplyContextSupport.Context(
-            styles, ts, matrixDisplayNameCoordinator::renderTranscriptFrom);
-    ChatTranscriptReplyFlowCoordinator replyFlowCoordinator =
-        new ChatTranscriptReplyFlowCoordinator(
-            targetRuntimeCoordinator.docs(),
-            targetRuntimeCoordinator.stateByTarget(),
-            targetRuntimeCoordinator::ensureTargetExists,
-            documentLineSupport,
-            replyContextSupportContext,
-            messageCatalogSupport);
-    ChatTranscriptSenderStyleSupport.Context senderStyleSupportContext =
-        new ChatTranscriptSenderStyleSupport.Context(
-            styles,
-            nickColors,
-            ChatTranscriptLineMetaSupport::bind,
-            styleRoutingSupport::applyOutgoingLineColor,
-            styleRoutingSupport::applyNotificationRuleHighlightColor);
-    ChatTranscriptReactionSummarySupport reactionSummarySupport =
-        new ChatTranscriptReactionSummarySupport(
-            styles,
-            styleRoutingSupport::safeTranscriptFont,
-            (ref, epochMs, targetMessageId) ->
-                ChatTranscriptLineMetaSupport.create(
-                    ref,
-                    LogKind.STATUS,
-                    LogDirection.SYSTEM,
-                    null,
-                    epochMs,
-                    null,
-                    targetMessageId,
-                    Map.of("draft/react", "1")),
-            ChatTranscriptLineMetaSupport::bind,
-            ChatTranscriptLineMetaSupport::withAuxiliaryRowKind,
-            documentLineSupport::normalizeInsertAtLineStart,
-            documentLineSupport::ensureAtLineStartForInsert,
-            runtimeFlowCoordinator::shiftCurrentBlock);
-    ChatTranscriptMessageLineCoordinator messageLineCoordinator =
-        new ChatTranscriptMessageLineCoordinator(
-            store,
-            styles,
-            ts,
-            renderer,
-            imageEmbeds,
-            linkPreviews,
-            styleRoutingSupport,
-            runtimeSettingsSupport,
-            filterRoutingSupport,
-            documentLineSupport,
-            lineCapSupport,
-            runtimeFlowCoordinator,
-            senderStyleSupportContext,
-            messageCatalogSupport,
-            reactionSummarySupport,
-            targetRuntimeCoordinator.docs(),
-            targetRuntimeCoordinator.stateByTarget(),
-            targetRuntimeCoordinator::ensureTargetExists,
-            targetRuntimeCoordinator::noteEpochMs,
-            replyFlowCoordinator::appendReplyContextLine,
-            matrixDisplayNameCoordinator::renderTranscriptFrom,
-            filteredFlowCoordinator::endInsertRun,
-            filteredFlowCoordinator::shouldDeferRichTextDuringHistoryBatch);
-    ChatTranscriptMessageInteractionCoordinator messageInteractionCoordinator =
-        new ChatTranscriptMessageInteractionCoordinator(
-            targetRuntimeCoordinator.docs(),
-            targetRuntimeCoordinator.stateByTarget(),
-            targetRuntimeCoordinator::ensureTargetExists,
-            targetRuntimeCoordinator::noteEpochMs,
-            messageCatalogSupport,
-            reactionSummarySupport,
-            senderStyleSupportContext,
-            matrixDisplayNameCoordinator::renderTranscriptFrom,
-            messageLineCoordinator::insertReplacementAction,
-            (ref, insertAt, from, text, fromStyle, messageStyle, meta) ->
-                runtimeFlowCoordinator.insertLineAt(
-                    ref, insertAt, from, text, fromStyle, messageStyle, meta),
-            REDACTED_MESSAGE_PLACEHOLDER);
-    return new MessageComposition(
-        replyFlowCoordinator, messageLineCoordinator, messageInteractionCoordinator);
   }
 
   private record SpoilerComposition(
