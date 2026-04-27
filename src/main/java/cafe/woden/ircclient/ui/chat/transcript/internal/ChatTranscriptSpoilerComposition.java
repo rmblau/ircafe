@@ -60,6 +60,8 @@ final class ChatTranscriptSpoilerComposition {
     ChatTranscriptSpoilerSupportComponents spoilerSupportComposition =
         ChatTranscriptSpoilerSupportComponentsGraphComposition.create(inputs);
     return new Components(
-        ChatTranscriptPlainSpoilerCoordinatorComposition.create(spoilerSupportComposition));
+        new ChatTranscriptPlainSpoilerCoordinator(
+            spoilerSupportComposition.plainAppendSupportContext(),
+            spoilerSupportComposition.spoilerFlowSupportContext()));
   }
 }
