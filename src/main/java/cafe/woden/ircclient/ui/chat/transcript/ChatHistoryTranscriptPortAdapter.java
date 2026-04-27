@@ -22,6 +22,7 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
 
   private final ChatTranscriptStore transcripts;
   private final ChatHistoryTranscriptLoadOlderControlAdapter loadOlderControls;
+  private final ChatHistoryTranscriptBatchAdapter batchAdapter;
   private final ChatHistoryTranscriptInsertAdapter insertAdapter;
   private final ChatHistoryTranscriptAppendAdapter appendAdapter;
   private final ChatHistoryTranscriptSettingsReader settingsReader;
@@ -32,6 +33,7 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
       UiSettingsRuntimeConfigPort runtimeConfig) {
     this.transcripts = transcripts;
     this.loadOlderControls = new ChatHistoryTranscriptLoadOlderControlAdapter(transcripts);
+    this.batchAdapter = new ChatHistoryTranscriptBatchAdapter(transcripts);
     this.insertAdapter = new ChatHistoryTranscriptInsertAdapter(transcripts);
     this.appendAdapter = new ChatHistoryTranscriptAppendAdapter(transcripts);
     this.settingsReader = new ChatHistoryTranscriptSettingsReader(settingsBus, runtimeConfig);
@@ -64,37 +66,37 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
 
   @Override
   public void beginHistoryInsertBatch(TargetRef ref) {
-    transcripts.beginHistoryInsertBatch(ref);
+    batchAdapter.begin(ref);
   }
 
   @Override
   public void beginHistoryInsertBatch(TargetRef ref, boolean forceDeferRichText) {
-    transcripts.beginHistoryInsertBatch(ref, forceDeferRichText);
+    batchAdapter.begin(ref, forceDeferRichText);
   }
 
   @Override
   public void endHistoryInsertBatch(TargetRef ref) {
-    transcripts.endHistoryInsertBatch(ref);
+    batchAdapter.end(ref);
   }
 
   @Override
   public int loadOlderInsertOffset(TargetRef ref) {
-    return transcripts.loadOlderInsertOffset(ref);
+    return batchAdapter.loadOlderInsertOffset(ref);
   }
 
   @Override
   public boolean hasContentAfterOffset(TargetRef ref, int offset) {
-    return transcripts.hasContentAfterOffset(ref, offset);
+    return batchAdapter.hasContentAfterOffset(ref, offset);
   }
 
   @Override
   public void ensureHistoryDivider(TargetRef ref, int insertAt, String labelText) {
-    transcripts.ensureHistoryDivider(ref, insertAt, labelText);
+    batchAdapter.ensureHistoryDivider(ref, insertAt, labelText);
   }
 
   @Override
   public void markHistoryDividerPending(TargetRef ref, String labelText) {
-    transcripts.markHistoryDividerPending(ref, labelText);
+    batchAdapter.markHistoryDividerPending(ref, labelText);
   }
 
   @Override
