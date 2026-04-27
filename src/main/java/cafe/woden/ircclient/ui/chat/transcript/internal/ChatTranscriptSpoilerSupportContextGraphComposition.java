@@ -25,7 +25,15 @@ final class ChatTranscriptSpoilerSupportContextGraphComposition {
             inputs.styleRoutingSupport(),
             inputs.runtimeSettingsSupport());
     ChatTranscriptSpoilerFlowSupport.Context spoilerFlowSupportContext =
-        ChatTranscriptSpoilerFlowGraphComposition.create(inputs, spoilerRuntimeComposition);
+        ChatTranscriptSpoilerFlowComposition.create(
+            inputs.styles(),
+            spoilerRuntimeComposition,
+            inputs.documentLineSupport(),
+            inputs.filterRoutingSupport(),
+            inputs.runtimeFlowCoordinator(),
+            inputs.lineCapSupport(),
+            inputs.targetRuntimeCoordinator(),
+            inputs.filteredFlowCoordinator());
     ChatTranscriptPlainAppendSupport.Context plainAppendSupportContext =
         ChatTranscriptPlainAppendComposition.create(
             inputs.styles(),
