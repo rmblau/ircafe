@@ -65,12 +65,8 @@ final class ChatTranscriptSpoilerSupportComposition {
             targetRuntimeCoordinator,
             filteredFlowCoordinator);
     ChatTranscriptPlainAppendSupport.Context plainAppendSupportContext =
-        new ChatTranscriptPlainAppendSupport.Context(
-            targetRuntimeCoordinator.docs(),
-            styles,
-            targetRuntimeCoordinator::ensureTargetExists,
-            runtimeFlowCoordinator::breakPresenceRun,
-            lineCapSupport::enforceTranscriptLineCap);
+        ChatTranscriptPlainAppendComposition.create(
+            styles, runtimeFlowCoordinator, lineCapSupport, targetRuntimeCoordinator);
     return new Components(plainAppendSupportContext, spoilerFlowSupportContext);
   }
 }
