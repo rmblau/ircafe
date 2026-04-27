@@ -15,8 +15,6 @@ import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 /** Builds runtime and target-state collaborators for the transcript store composition. */
 final class ChatTranscriptRuntimeComposition {
 
-  private static final int REPLY_PREVIEW_CACHE_LIMIT_PER_TARGET = 512;
-  private static final int REDACTED_MESSAGE_CACHE_LIMIT_PER_TARGET = 512;
   record Components(
       ChatTranscriptRuntimeFlowCoordinator runtimeFlowCoordinator,
       ChatTranscriptRuntimeSettingsSupport runtimeSettingsSupport,
@@ -46,15 +44,11 @@ final class ChatTranscriptRuntimeComposition {
     ChatTranscriptMessageCatalogSupport messageCatalogSupport =
         runtimeSupportComposition.messageCatalogSupport();
     ChatTranscriptTargetRuntimeCoordinator targetRuntimeCoordinator =
-        new ChatTranscriptTargetRuntimeCoordinator(
-            () ->
-                messageCatalogSupport.createState(
-                    REPLY_PREVIEW_CACHE_LIMIT_PER_TARGET, REDACTED_MESSAGE_CACHE_LIMIT_PER_TARGET),
+        ChatTranscriptTargetRuntimeComposition.create(
             store,
-            180,
+            messageCatalogSupport,
             runtimeSupportComposition.restyleSupportContext(),
-            runtimeSettingsSupport::safeSettings,
-            runtimeSettingsSupport::configuredOutgoingLineColor,
+            runtimeSettingsSupport,
             nickColorSettings);
     return new Components(
         runtimeFlowCoordinator,
