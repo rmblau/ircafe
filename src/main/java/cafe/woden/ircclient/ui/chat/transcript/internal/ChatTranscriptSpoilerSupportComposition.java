@@ -13,10 +13,6 @@ final class ChatTranscriptSpoilerSupportComposition {
   private ChatTranscriptSpoilerSupportComposition() {}
 
   static Components create(ChatTranscriptSpoilerCompositionInputs inputs) {
-    ChatTranscriptSpoilerSupportContextGraphComposition.Contexts supportContexts =
-        ChatTranscriptSpoilerSupportContextGraphComposition.create(inputs);
-    return ChatTranscriptSpoilerSupportComponentsComposition.create(
-        supportContexts.plainAppendSupportContext(),
-        supportContexts.spoilerFlowSupportContext());
+    return ChatTranscriptSpoilerSupportComponentsGraphComposition.create(inputs);
   }
 }
