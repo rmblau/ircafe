@@ -10,6 +10,9 @@ import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreDocumen
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreDocumentTestSupport.reactionComponent;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreDocumentTestSupport.transcriptText;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreDocumentTestSupport.transcriptTextUnchecked;
+import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreTargetRefTestSupport.channelRef;
+import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreTargetRefTestSupport.matrixRoomRef;
+import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreTargetRefTestSupport.statusRef;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -51,7 +54,7 @@ class ChatTranscriptStoreTest {
   @Test
   void appendChatAtWithDuplicateMessageIdIsIgnored() throws Exception {
     ChatTranscriptStore store = newStore();
-    TargetRef ref = new TargetRef("srv", "#chan");
+    TargetRef ref = channelRef();
 
     store.appendChatAt(ref, "alice", "first", false, 1_000L, "m-1", Map.of("msgid", "m-1"));
     StyledDocument doc = store.document(ref);
@@ -68,7 +71,7 @@ class ChatTranscriptStoreTest {
   @Test
   void appendActionAtWithDuplicateMessageIdIsIgnored() throws Exception {
     ChatTranscriptStore store = newStore();
-    TargetRef ref = new TargetRef("srv", "#chan");
+    TargetRef ref = channelRef();
 
     store.appendActionAt(ref, "alice", "waves", false, 2_000L, "act-1", Map.of("msgid", "act-1"));
     StyledDocument doc = store.document(ref);
@@ -84,7 +87,7 @@ class ChatTranscriptStoreTest {
   @Test
   void appendNoticeAtWithDuplicateMessageIdIsIgnored() throws Exception {
     ChatTranscriptStore store = newStore();
-    TargetRef ref = new TargetRef("srv", "status");
+    TargetRef ref = statusRef();
 
     store.appendNoticeAt(
         ref, "(notice) server", "maintenance", 3_000L, "n-1", Map.of("msgid", "n-1"));
@@ -101,7 +104,7 @@ class ChatTranscriptStoreTest {
   @Test
   void appendStatusAtWithDuplicateMessageIdIsIgnored() throws Exception {
     ChatTranscriptStore store = newStore();
-    TargetRef ref = new TargetRef("srv", "status");
+    TargetRef ref = statusRef();
 
     store.appendStatusAt(
         ref, "(server)", "421 NO_SUCH_COMMAND", 4_000L, "s-1", Map.of("msgid", "s-1"));
@@ -119,7 +122,7 @@ class ChatTranscriptStoreTest {
   @Test
   void blankMessageIdDoesNotSuppressRepeatedMessages() {
     ChatTranscriptStore store = newStore();
-    TargetRef ref = new TargetRef("srv", "#chan");
+    TargetRef ref = channelRef();
 
     store.appendChatAt(ref, "alice", "same", false, 5_000L, "", Map.of());
     store.appendChatAt(ref, "alice", "same", false, 5_010L, "", Map.of());
@@ -130,7 +133,7 @@ class ChatTranscriptStoreTest {
   @Test
   void appendChatFromHistoryWithDuplicateMessageIdIsIgnored() throws Exception {
     ChatTranscriptStore store = newStore();
-    TargetRef ref = new TargetRef("srv", "#chan");
+    TargetRef ref = channelRef();
 
     store.appendChatFromHistory(
         ref, "alice", "first", false, 5_000L, "m-h1", Map.of("msgid", "m-h1"));
@@ -148,7 +151,7 @@ class ChatTranscriptStoreTest {
   @Test
   void removeMessageReactionRemovesRenderedReactionSummaryWhenLastReactionIsCleared() {
     ChatTranscriptStore store = newStore();
-    TargetRef ref = new TargetRef("srv", "#chan");
+    TargetRef ref = channelRef();
 
     store.appendChatAt(ref, "alice", "hello", false, 6_000L, "m-42", Map.of("msgid", "m-42"));
     int baseLines = lineCount(store.document(ref));
@@ -166,7 +169,7 @@ class ChatTranscriptStoreTest {
   @Test
   void hasReactionFromNickMatchesObservedReactorCaseInsensitively() {
     ChatTranscriptStore store = newStore();
-    TargetRef ref = new TargetRef("srv", "#chan");
+    TargetRef ref = channelRef();
 
     store.appendChatAt(ref, "alice", "hello", false, 6_000L, "m-42", Map.of("msgid", "m-42"));
     store.applyMessageReaction(ref, "m-42", ":+1:", "Bob", 6_050L);
@@ -179,7 +182,7 @@ class ChatTranscriptStoreTest {
   @Test
   void replyContextLineShowsCachedSnippetWhenReferencedMessageIsKnown() throws Exception {
     ChatTranscriptStore store = newStore();
-    TargetRef ref = new TargetRef("srv", "#chan");
+    TargetRef ref = channelRef();
 
     store.appendChatAt(
         ref, "alice", "original message text", false, 6_000L, "m-1", Map.of("msgid", "m-1"));
@@ -199,7 +202,7 @@ class ChatTranscriptStoreTest {
   @Test
   void replyContextLineUsesEditedTextPreviewAfterMessageEdit() throws Exception {
     ChatTranscriptStore store = newStore();
-    TargetRef ref = new TargetRef("srv", "#chan");
+    TargetRef ref = channelRef();
 
     store.appendChatAt(ref, "alice", "before", false, 6_000L, "m-1", Map.of("msgid", "m-1"));
     assertTrue(store.applyMessageEdit(ref, "m-1", "after", "alice", 6_030L, "", Map.of()));
@@ -220,7 +223,7 @@ class ChatTranscriptStoreTest {
   @Test
   void applyMessageEditWithBlankTextFallsBackToEditedMarker() throws Exception {
     ChatTranscriptStore store = newStore();
-    TargetRef ref = new TargetRef("srv", "#chan");
+    TargetRef ref = channelRef();
 
     store.appendChatAt(ref, "alice", "before", false, 6_000L, "m-1", Map.of("msgid", "m-1"));
 
@@ -233,7 +236,7 @@ class ChatTranscriptStoreTest {
   @Test
   void applyMessageEditReplacesActionLineAndUpdatesPreview() throws Exception {
     ChatTranscriptStore store = newStore();
-    TargetRef ref = new TargetRef("srv", "#chan");
+    TargetRef ref = channelRef();
 
     store.appendActionAt(ref, "alice", "waves", false, 6_000L, "a-1", Map.of("msgid", "a-1"));
 
@@ -249,7 +252,7 @@ class ChatTranscriptStoreTest {
   void applyMessageRedactionPreservesRevealableOriginalWithoutLeakingIntoTranscript()
       throws Exception {
     ChatTranscriptStore store = newStore();
-    TargetRef ref = new TargetRef("srv", "#chan");
+    TargetRef ref = channelRef();
 
     store.appendChatAt(ref, "alice", "before", false, 6_000L, "m-1", Map.of("msgid", "m-1"));
 
@@ -270,7 +273,7 @@ class ChatTranscriptStoreTest {
   @Test
   void applyMessageRedactionKeepsEditedTextForRevealAfterEdit() {
     ChatTranscriptStore store = newStore();
-    TargetRef ref = new TargetRef("srv", "#chan");
+    TargetRef ref = channelRef();
 
     store.appendChatAt(ref, "alice", "before", false, 6_000L, "m-1", Map.of("msgid", "m-1"));
     assertTrue(store.applyMessageEdit(ref, "m-1", "after", "alice", 6_020L, "", Map.of()));
@@ -285,7 +288,7 @@ class ChatTranscriptStoreTest {
   @Test
   void redactedMessageMetadataSurvivesTranscriptRestyle() {
     ChatTranscriptStore store = newStore();
-    TargetRef ref = new TargetRef("srv", "#chan");
+    TargetRef ref = channelRef();
 
     store.appendChatAt(ref, "alice", "before", false, 6_000L, "m-1", Map.of("msgid", "m-1"));
     assertTrue(store.applyMessageRedaction(ref, "m-1", "alice", 6_050L, "", Map.of()));
@@ -301,7 +304,7 @@ class ChatTranscriptStoreTest {
   @Test
   void messagePreviewByIdReturnsCachedReplySnippet() {
     ChatTranscriptStore store = newStore();
-    TargetRef ref = new TargetRef("srv", "#chan");
+    TargetRef ref = channelRef();
 
     store.appendChatAt(ref, "alice", "hello from preview cache", false, 6_000L, "m-1", Map.of());
 
@@ -311,7 +314,7 @@ class ChatTranscriptStoreTest {
   @Test
   void reactionChipClickDispatchesConfiguredActionHandler() {
     ChatTranscriptStore store = newStore();
-    TargetRef ref = new TargetRef("srv", "#chan");
+    TargetRef ref = channelRef();
     AtomicReference<TargetRef> clickedTarget = new AtomicReference<>();
     AtomicReference<String> clickedMsgId = new AtomicReference<>();
     AtomicReference<String> clickedReaction = new AtomicReference<>();
@@ -355,7 +358,7 @@ class ChatTranscriptStoreTest {
   @Test
   void setReactionChipActionHandlerRebindsExistingReactionChipCallbacks() {
     ChatTranscriptStore store = newStore();
-    TargetRef ref = new TargetRef("srv", "#chan");
+    TargetRef ref = channelRef();
     AtomicReference<TargetRef> clickedTarget = new AtomicReference<>();
     AtomicReference<String> clickedMsgId = new AtomicReference<>();
     AtomicReference<String> clickedReaction = new AtomicReference<>();
@@ -399,7 +402,7 @@ class ChatTranscriptStoreTest {
   @Test
   void appendChatAtMarksEmojiGlyphRunsInTranscript() throws Exception {
     ChatTranscriptStore store = newStore();
-    TargetRef ref = new TargetRef("srv", "#chan");
+    TargetRef ref = channelRef();
 
     store.appendChatAt(ref, "alice", "hello 😀 world", false, 6_500L);
 
@@ -416,7 +419,7 @@ class ChatTranscriptStoreTest {
   @Test
   void appendChatAtTrimsOldestLinesWhenTranscriptCapIsExceeded() throws Exception {
     ChatTranscriptStore store = newStoreWithTranscriptCap(2);
-    TargetRef ref = new TargetRef("srv", "#chan");
+    TargetRef ref = channelRef();
 
     store.appendChatAt(ref, "alice", "line-1", false, 7_000L);
     store.appendChatAt(ref, "alice", "line-2", false, 7_010L);
@@ -433,7 +436,7 @@ class ChatTranscriptStoreTest {
   @Test
   void transcriptCapZeroDisablesHeadTrimming() throws Exception {
     ChatTranscriptStore store = newStoreWithTranscriptCap(0);
-    TargetRef ref = new TargetRef("srv", "#chan");
+    TargetRef ref = channelRef();
 
     store.appendChatAt(ref, "alice", "line-1", false, 8_000L);
     store.appendChatAt(ref, "alice", "line-2", false, 8_010L);
@@ -450,7 +453,7 @@ class ChatTranscriptStoreTest {
   @Test
   void readMarkerPersistsWhenSetBeforeUnreadLinesExist() {
     ChatTranscriptStore store = newStore();
-    TargetRef ref = new TargetRef("srv", "#chan");
+    TargetRef ref = channelRef();
 
     store.updateReadMarker(ref, 1_000L);
     assertEquals(-1, store.readMarkerJumpOffset(ref));
@@ -465,7 +468,7 @@ class ChatTranscriptStoreTest {
   @Test
   void clearReadMarkersForServerRemovesMarkerStateWithoutAffectingOtherServers() {
     ChatTranscriptStore store = newStore();
-    TargetRef onServer = new TargetRef("srv", "#chan");
+    TargetRef onServer = channelRef();
     TargetRef otherServer = new TargetRef("other", "#chan");
 
     store.appendChatAt(onServer, "alice", "older", false, 900L);
@@ -505,7 +508,7 @@ class ChatTranscriptStoreTest {
     ChatTranscriptStore store =
         new ChatTranscriptStore(
             styles, renderer, null, null, null, imageEmbeds, linkPreviews, settingsBus, null, null);
-    TargetRef ref = new TargetRef("srv", "#chan");
+    TargetRef ref = channelRef();
 
     store.appendChatAt(ref, "alice", "https://blocked.example/a.png", false, 9_000L);
 
@@ -530,7 +533,7 @@ class ChatTranscriptStoreTest {
     ChatTranscriptStore store =
         new ChatTranscriptStore(
             styles, renderer, null, null, null, imageEmbeds, linkPreviews, null, null, null);
-    TargetRef ref = new TargetRef("srv", "#chan");
+    TargetRef ref = channelRef();
     store.appendChat(ref, "alice", "line");
 
     when(imageEmbeds.insertEmbedForUrlAt(any(), any(), anyString(), anyInt())).thenReturn(false);
@@ -544,7 +547,7 @@ class ChatTranscriptStoreTest {
   @Test
   void appendPendingOutgoingChatSkipsSpinnerWhenDeliveryIndicatorsAreDisabled() {
     ChatTranscriptStore store = newStoreWithTranscriptCapAndDeliveryIndicators(0, false);
-    TargetRef ref = new TargetRef("srv", "#chan");
+    TargetRef ref = channelRef();
 
     store.appendPendingOutgoingChat(ref, "pending-1", "me", "hello", 10_000L);
 
@@ -556,7 +559,7 @@ class ChatTranscriptStoreTest {
   @Test
   void resolvePendingOutgoingChatSkipsConfirmedDotWhenDeliveryIndicatorsAreDisabled() {
     ChatTranscriptStore store = newStoreWithTranscriptCapAndDeliveryIndicators(0, false);
-    TargetRef ref = new TargetRef("srv", "#chan");
+    TargetRef ref = channelRef();
 
     store.appendPendingOutgoingChat(ref, "pending-2", "me", "hello", 10_000L);
     boolean resolved =
@@ -572,7 +575,7 @@ class ChatTranscriptStoreTest {
   @Test
   void resolvePendingOutgoingChatAddsConfirmedDotWhenDeliveryIndicatorsAreEnabled() {
     ChatTranscriptStore store = newStoreWithTranscriptCapAndDeliveryIndicators(0, true);
-    TargetRef ref = new TargetRef("srv", "#chan");
+    TargetRef ref = channelRef();
 
     store.appendPendingOutgoingChat(ref, "pending-2", "me", "hello", 10_000L);
     boolean resolved =
@@ -588,7 +591,7 @@ class ChatTranscriptStoreTest {
   @Test
   void resolvePendingOutgoingChatAppliesReplyReactionToReferencedMessage() {
     ChatTranscriptStore store = newStoreWithTranscriptCapAndDeliveryIndicators(0, false);
-    TargetRef ref = new TargetRef("srv", "#chan");
+    TargetRef ref = channelRef();
 
     store.appendChatAt(ref, "alice", "hello", false, 9_000L, "m-1", Map.of("msgid", "m-1"));
     store.appendPendingOutgoingChat(ref, "pending-4", "bob", "react", 9_100L);
@@ -610,7 +613,7 @@ class ChatTranscriptStoreTest {
   @Test
   void failPendingOutgoingChatReplacesSpinnerLineWithFailedSuffix() {
     ChatTranscriptStore store = newStoreWithTranscriptCapAndDeliveryIndicators(0, true);
-    TargetRef ref = new TargetRef("srv", "#chan");
+    TargetRef ref = channelRef();
 
     store.appendPendingOutgoingChat(ref, "pending-3", "me", "hello", 10_000L);
 
@@ -626,7 +629,7 @@ class ChatTranscriptStoreTest {
   @Test
   void appendChatAtRendersMatrixDisplayNameInCompactModeAndPreservesRawMetaFrom() throws Exception {
     UserListStore userListStore = new UserListStore();
-    TargetRef ref = new TargetRef("matrix", "#ircafe:matrix.example.org");
+    TargetRef ref = matrixRoomRef();
     userListStore.put(
         "matrix",
         "#ircafe:matrix.example.org",
@@ -660,7 +663,7 @@ class ChatTranscriptStoreTest {
   void appendChatAtRendersMatrixDisplayNameFromRosterSnapshotWithoutSetnameEvents()
       throws Exception {
     UserListStore userListStore = new UserListStore();
-    TargetRef ref = new TargetRef("matrix", "#ircafe:matrix.example.org");
+    TargetRef ref = matrixRoomRef();
     userListStore.put(
         "matrix",
         "#ircafe:matrix.example.org",
@@ -694,7 +697,7 @@ class ChatTranscriptStoreTest {
   void refreshMatrixDisplayNamesRelabelsExistingHistoryLinesAfterRosterSnapshotArrives()
       throws Exception {
     UserListStore userListStore = new UserListStore();
-    TargetRef ref = new TargetRef("matrix", "#ircafe:matrix.example.org");
+    TargetRef ref = matrixRoomRef();
     ChatTranscriptStore store = newStoreWithTranscriptCapAndUserList(0, userListStore);
 
     store.appendChatFromHistory(
