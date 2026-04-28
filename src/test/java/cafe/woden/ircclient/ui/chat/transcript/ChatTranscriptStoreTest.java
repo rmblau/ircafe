@@ -10,6 +10,11 @@ import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreDocumen
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreDocumentTestSupport.reactionComponent;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreDocumentTestSupport.transcriptText;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreDocumentTestSupport.transcriptTextUnchecked;
+import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreMatrixTestSupport.MATRIX_ALICE_USER_ID;
+import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreMatrixTestSupport.MATRIX_BRIDGED_WODENCAFE_USER_ID;
+import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreMatrixTestSupport.MATRIX_SERVER;
+import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreMatrixTestSupport.putMatrixBridgedNick;
+import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreMatrixTestSupport.userListWithMatrixDisplayName;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreTargetRefTestSupport.channelRef;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreTargetRefTestSupport.matrixRoomRef;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreTargetRefTestSupport.statusRef;
@@ -24,9 +29,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import cafe.woden.ircclient.irc.IrcEvent.AccountState;
-import cafe.woden.ircclient.irc.IrcEvent.AwayState;
-import cafe.woden.ircclient.irc.IrcEvent.NickInfo;
 import cafe.woden.ircclient.irc.roster.UserListStore;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
@@ -628,18 +630,13 @@ class ChatTranscriptStoreTest {
 
   @Test
   void appendChatAtRendersMatrixDisplayNameInCompactModeAndPreservesRawMetaFrom() throws Exception {
-    UserListStore userListStore = new UserListStore();
+    UserListStore userListStore = userListWithMatrixDisplayName(MATRIX_ALICE_USER_ID, "Alice");
     TargetRef ref = matrixRoomRef();
-    userListStore.put(
-        "matrix",
-        "#ircafe:matrix.example.org",
-        List.of(new NickInfo("@alice:matrix.example.org", "", "")));
-    userListStore.updateRealNameAcrossChannels("matrix", "@alice:matrix.example.org", "Alice");
 
     ChatTranscriptStore store = newStoreWithTranscriptCapAndUserList(0, userListStore);
     store.appendChatAt(
         ref,
-        "@alice:matrix.example.org",
+        MATRIX_ALICE_USER_ID,
         "hello matrix",
         false,
         11_000L,
@@ -649,14 +646,14 @@ class ChatTranscriptStoreTest {
     StyledDocument doc = store.document(ref);
     String text = transcriptText(doc);
     assertTrue(text.contains("Alice: hello matrix"));
-    assertFalse(text.contains("@alice:matrix.example.org: hello matrix"));
+    assertFalse(text.contains(MATRIX_ALICE_USER_ID + ": hello matrix"));
 
     Element firstLine = doc.getDefaultRootElement().getElement(0);
     Object metaFrom =
         doc.getCharacterElement(firstLine.getStartOffset())
             .getAttributes()
             .getAttribute(ChatStyles.ATTR_META_FROM);
-    assertEquals("@alice:matrix.example.org", String.valueOf(metaFrom));
+    assertEquals(MATRIX_ALICE_USER_ID, String.valueOf(metaFrom));
   }
 
   @Test
@@ -664,24 +661,12 @@ class ChatTranscriptStoreTest {
       throws Exception {
     UserListStore userListStore = new UserListStore();
     TargetRef ref = matrixRoomRef();
-    userListStore.put(
-        "matrix",
-        "#ircafe:matrix.example.org",
-        List.of(
-            new NickInfo(
-                "@irc_libera_wodencafe:matrix.zimmedon.com",
-                "",
-                "",
-                AwayState.UNKNOWN,
-                null,
-                AccountState.UNKNOWN,
-                null,
-                "wodencafe")));
+    putMatrixBridgedNick(userListStore, MATRIX_BRIDGED_WODENCAFE_USER_ID, "wodencafe");
 
     ChatTranscriptStore store = newStoreWithTranscriptCapAndUserList(0, userListStore);
     store.appendChatAt(
         ref,
-        "@irc_libera_wodencafe:matrix.zimmedon.com",
+        MATRIX_BRIDGED_WODENCAFE_USER_ID,
         "hi all",
         false,
         12_000L,
@@ -690,7 +675,7 @@ class ChatTranscriptStoreTest {
 
     String text = transcriptText(store.document(ref));
     assertTrue(text.contains("wodencafe: hi all"));
-    assertFalse(text.contains("@irc_libera_wodencafe:matrix.zimmedon.com: hi all"));
+    assertFalse(text.contains(MATRIX_BRIDGED_WODENCAFE_USER_ID + ": hi all"));
   }
 
   @Test
@@ -702,7 +687,7 @@ class ChatTranscriptStoreTest {
 
     store.appendChatFromHistory(
         ref,
-        "@irc_libera_wodencafe:matrix.zimmedon.com",
+        MATRIX_BRIDGED_WODENCAFE_USER_ID,
         "hi from local scrollback",
         false,
         12_500L,
@@ -710,29 +695,15 @@ class ChatTranscriptStoreTest {
         Map.of("msgid", "m-refresh"));
 
     String before = transcriptText(store.document(ref));
-    assertTrue(
-        before.contains("@irc_libera_wodencafe:matrix.zimmedon.com: hi from local scrollback"));
+    assertTrue(before.contains(MATRIX_BRIDGED_WODENCAFE_USER_ID + ": hi from local scrollback"));
 
-    userListStore.put(
-        "matrix",
-        "#ircafe:matrix.example.org",
-        List.of(
-            new NickInfo(
-                "@irc_libera_wodencafe:matrix.zimmedon.com",
-                "",
-                "",
-                AwayState.UNKNOWN,
-                null,
-                AccountState.UNKNOWN,
-                null,
-                "wodencafe")));
+    putMatrixBridgedNick(userListStore, MATRIX_BRIDGED_WODENCAFE_USER_ID, "wodencafe");
 
     assertEquals(1, store.refreshMatrixDisplayNames(ref));
 
     String after = transcriptText(store.document(ref));
     assertTrue(after.contains("wodencafe: hi from local scrollback"));
-    assertFalse(
-        after.contains("@irc_libera_wodencafe:matrix.zimmedon.com: hi from local scrollback"));
+    assertFalse(after.contains(MATRIX_BRIDGED_WODENCAFE_USER_ID + ": hi from local scrollback"));
     assertEquals(0, store.refreshMatrixDisplayNames(ref));
   }
 
@@ -740,13 +711,13 @@ class ChatTranscriptStoreTest {
   void refreshMatrixDisplayNameAcrossServerRelabelsOnlyMatchingMatrixUserId() throws Exception {
     UserListStore userListStore = new UserListStore();
     ChatTranscriptStore store = newStoreWithTranscriptCapAndUserList(0, userListStore);
-    TargetRef roomA = new TargetRef("matrix", "#room-a:matrix.example.org");
-    TargetRef roomB = new TargetRef("matrix", "#room-b:matrix.example.org");
+    TargetRef roomA = new TargetRef(MATRIX_SERVER, "#room-a:matrix.example.org");
+    TargetRef roomB = new TargetRef(MATRIX_SERVER, "#room-b:matrix.example.org");
     TargetRef otherServer = new TargetRef("other", "#room:other.example.org");
 
     store.appendChatFromHistory(
         roomA,
-        "@alice:matrix.example.org",
+        MATRIX_ALICE_USER_ID,
         "hello a",
         false,
         1_000L,
@@ -754,7 +725,7 @@ class ChatTranscriptStoreTest {
         Map.of("msgid", "m-a"));
     store.appendChatFromHistory(
         roomB,
-        "@alice:matrix.example.org",
+        MATRIX_ALICE_USER_ID,
         "hello b",
         false,
         1_100L,
@@ -770,28 +741,28 @@ class ChatTranscriptStoreTest {
         Map.of("msgid", "m-bob"));
     store.appendChatFromHistory(
         otherServer,
-        "@alice:matrix.example.org",
+        MATRIX_ALICE_USER_ID,
         "hello other",
         false,
         1_300L,
         "m-other",
         Map.of("msgid", "m-other"));
 
-    userListStore.updateRealNameAcrossChannels("matrix", "@alice:matrix.example.org", "Alice");
+    userListStore.updateRealNameAcrossChannels(MATRIX_SERVER, MATRIX_ALICE_USER_ID, "Alice");
 
-    int changed = store.refreshMatrixDisplayNameAcrossServer("matrix", "@alice:matrix.example.org");
+    int changed = store.refreshMatrixDisplayNameAcrossServer(MATRIX_SERVER, MATRIX_ALICE_USER_ID);
     assertEquals(2, changed);
 
     String textA = transcriptText(store.document(roomA));
     assertTrue(textA.contains("Alice: hello a"));
-    assertFalse(textA.contains("@alice:matrix.example.org: hello a"));
+    assertFalse(textA.contains(MATRIX_ALICE_USER_ID + ": hello a"));
 
     String textB = transcriptText(store.document(roomB));
     assertTrue(textB.contains("Alice: hello b"));
     assertTrue(textB.contains("@bob:matrix.example.org: hello bob"));
 
     String textOther = transcriptText(store.document(otherServer));
-    assertTrue(textOther.contains("@alice:matrix.example.org: hello other"));
+    assertTrue(textOther.contains(MATRIX_ALICE_USER_ID + ": hello other"));
   }
 
 }
