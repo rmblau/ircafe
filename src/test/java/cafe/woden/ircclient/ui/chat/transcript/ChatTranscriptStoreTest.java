@@ -4,7 +4,6 @@ import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreTestFac
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreTestFactory.newStoreWithTranscriptCap;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreTestFactory.newStoreWithTranscriptCapAndDeliveryIndicators;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreTestFactory.newStoreWithTranscriptCapAndUserList;
-import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreTestFactory.settingsWithTranscriptCap;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreDocumentTestSupport.inlineComponentCount;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreDocumentTestSupport.lineCount;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreDocumentTestSupport.reactionComponent;
@@ -15,6 +14,9 @@ import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreMatrixT
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreMatrixTestSupport.MATRIX_SERVER;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreMatrixTestSupport.putMatrixBridgedNick;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreMatrixTestSupport.userListWithMatrixDisplayName;
+import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreManualPreviewTestSupport.newManualPreviewFallbackFixture;
+import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreManualPreviewTestSupport.newStoreWithBlockedImagePreview;
+import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreManualPreviewTestSupport.verifyManualPreviewFallbackAttempted;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreReactionTestSupport.REACTION_MESSAGE_ID;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreReactionTestSupport.THUMBS_UP_REACTION;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreReactionTestSupport.bindReactionChipActionHandler;
@@ -26,24 +28,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.irc.roster.UserListStore;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
-import cafe.woden.ircclient.ui.chat.embed.ChatImageEmbedder;
-import cafe.woden.ircclient.ui.chat.embed.ChatLinkPreviewEmbedder;
-import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
 import cafe.woden.ircclient.ui.chat.transcript.line.OutgoingSendIndicator;
 import cafe.woden.ircclient.ui.chat.transcript.message.RedactedMessageContent;
-import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import cafe.woden.ircclient.ui.util.EmojiFontSupport;
-import java.util.List;
 import java.util.Map;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
@@ -457,22 +448,7 @@ class ChatTranscriptStoreTest {
 
   @Test
   void appendChatAtAddsManualPreviewMarkerForPolicyBlockedUrls() throws Exception {
-    ChatStyles styles = new ChatStyles(null);
-    ChatRichTextRenderer renderer = new ChatRichTextRenderer(null, null, styles, null);
-    UiSettingsBus settingsBus = mock(UiSettingsBus.class);
-    when(settingsBus.get()).thenReturn(settingsWithTranscriptCap(0));
-
-    ChatImageEmbedder imageEmbeds = mock(ChatImageEmbedder.class);
-    ChatLinkPreviewEmbedder linkPreviews = mock(ChatLinkPreviewEmbedder.class);
-    when(imageEmbeds.appendEmbeds(any(), any(), anyString(), anyString(), any()))
-        .thenReturn(
-            new ChatImageEmbedder.AppendResult(0, List.of("https://blocked.example/a.png")));
-    when(linkPreviews.appendPreviews(any(), any(), anyString(), anyString(), any()))
-        .thenReturn(new ChatLinkPreviewEmbedder.AppendResult(0, List.of()));
-
-    ChatTranscriptStore store =
-        new ChatTranscriptStore(
-            styles, renderer, null, null, null, imageEmbeds, linkPreviews, settingsBus, null, null);
+    ChatTranscriptStore store = newStoreWithBlockedImagePreview("https://blocked.example/a.png");
     TargetRef ref = channelRef();
 
     store.appendChatAt(ref, "alice", "https://blocked.example/a.png", false, 9_000L);
@@ -490,23 +466,14 @@ class ChatTranscriptStoreTest {
 
   @Test
   void insertManualPreviewAtFallsBackToLinkPreviewWhenImageInsertDeclines() {
-    ChatStyles styles = new ChatStyles(null);
-    ChatRichTextRenderer renderer = new ChatRichTextRenderer(null, null, styles, null);
-    ChatImageEmbedder imageEmbeds = mock(ChatImageEmbedder.class);
-    ChatLinkPreviewEmbedder linkPreviews = mock(ChatLinkPreviewEmbedder.class);
-
-    ChatTranscriptStore store =
-        new ChatTranscriptStore(
-            styles, renderer, null, null, null, imageEmbeds, linkPreviews, null, null, null);
+    ChatTranscriptStoreManualPreviewTestSupport.ManualPreviewFallbackFixture fixture =
+        newManualPreviewFallbackFixture();
+    ChatTranscriptStore store = fixture.store();
     TargetRef ref = channelRef();
     store.appendChat(ref, "alice", "line");
 
-    when(imageEmbeds.insertEmbedForUrlAt(any(), any(), anyString(), anyInt())).thenReturn(false);
-    when(linkPreviews.insertPreviewForUrlAt(any(), any(), anyString(), anyInt())).thenReturn(true);
-
     assertTrue(store.insertManualPreviewAt(ref, 0, "https://example.com/x"));
-    verify(imageEmbeds).insertEmbedForUrlAt(any(), any(), anyString(), anyInt());
-    verify(linkPreviews).insertPreviewForUrlAt(any(), any(), anyString(), anyInt());
+    verifyManualPreviewFallbackAttempted(fixture);
   }
 
   @Test
