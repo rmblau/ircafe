@@ -15,6 +15,10 @@ import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreMatrixT
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreMatrixTestSupport.MATRIX_SERVER;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreMatrixTestSupport.putMatrixBridgedNick;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreMatrixTestSupport.userListWithMatrixDisplayName;
+import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreReactionTestSupport.REACTION_MESSAGE_ID;
+import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreReactionTestSupport.THUMBS_UP_REACTION;
+import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreReactionTestSupport.bindReactionChipActionHandler;
+import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreReactionTestSupport.clickFirstReactionChip;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreTargetRefTestSupport.channelRef;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreTargetRefTestSupport.matrixRoomRef;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreTargetRefTestSupport.statusRef;
@@ -34,19 +38,13 @@ import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.embed.ChatImageEmbedder;
 import cafe.woden.ircclient.ui.chat.embed.ChatLinkPreviewEmbedder;
-import cafe.woden.ircclient.ui.chat.fold.MessageReactionsComponent;
 import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
 import cafe.woden.ircclient.ui.chat.transcript.line.OutgoingSendIndicator;
 import cafe.woden.ircclient.ui.chat.transcript.message.RedactedMessageContent;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import cafe.woden.ircclient.ui.util.EmojiFontSupport;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-import javax.swing.JLabel;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 import org.junit.jupiter.api.Test;
@@ -317,88 +315,53 @@ class ChatTranscriptStoreTest {
   void reactionChipClickDispatchesConfiguredActionHandler() {
     ChatTranscriptStore store = newStore();
     TargetRef ref = channelRef();
-    AtomicReference<TargetRef> clickedTarget = new AtomicReference<>();
-    AtomicReference<String> clickedMsgId = new AtomicReference<>();
-    AtomicReference<String> clickedReaction = new AtomicReference<>();
-    AtomicBoolean unreact = new AtomicBoolean();
+    ChatTranscriptStoreReactionTestSupport.ReactionClickCapture clickCapture =
+        bindReactionChipActionHandler(store);
 
-    store.setReactionChipActionHandler(
-        (target, messageId, reactionToken, unreactRequested) -> {
-          clickedTarget.set(target);
-          clickedMsgId.set(messageId);
-          clickedReaction.set(reactionToken);
-          unreact.set(unreactRequested);
-        });
+    store.appendChatAt(
+        ref,
+        "alice",
+        "hello",
+        false,
+        6_000L,
+        REACTION_MESSAGE_ID,
+        Map.of("msgid", REACTION_MESSAGE_ID));
+    store.applyMessageReaction(ref, REACTION_MESSAGE_ID, THUMBS_UP_REACTION, "bob", 6_050L);
 
-    store.appendChatAt(ref, "alice", "hello", false, 6_000L, "m-42", Map.of("msgid", "m-42"));
-    store.applyMessageReaction(ref, "m-42", ":+1:", "bob", 6_050L);
+    assertNotNull(reactionComponent(store.document(ref)));
+    clickFirstReactionChip(store.document(ref));
 
-    MessageReactionsComponent reactions = reactionComponent(store.document(ref));
-    assertNotNull(reactions);
-    JLabel chip = (JLabel) reactions.getComponent(0);
-    MouseEvent click =
-        new MouseEvent(
-            chip,
-            MouseEvent.MOUSE_RELEASED,
-            System.currentTimeMillis(),
-            0,
-            4,
-            4,
-            1,
-            false,
-            MouseEvent.BUTTON1);
-    for (MouseListener listener : chip.getMouseListeners()) {
-      listener.mouseReleased(click);
-    }
-
-    assertEquals(ref, clickedTarget.get());
-    assertEquals("m-42", clickedMsgId.get());
-    assertEquals(":+1:", clickedReaction.get());
-    assertFalse(unreact.get());
+    assertEquals(ref, clickCapture.target());
+    assertEquals(REACTION_MESSAGE_ID, clickCapture.messageId());
+    assertEquals(THUMBS_UP_REACTION, clickCapture.reaction());
+    assertFalse(clickCapture.unreactRequested());
   }
 
   @Test
   void setReactionChipActionHandlerRebindsExistingReactionChipCallbacks() {
     ChatTranscriptStore store = newStore();
     TargetRef ref = channelRef();
-    AtomicReference<TargetRef> clickedTarget = new AtomicReference<>();
-    AtomicReference<String> clickedMsgId = new AtomicReference<>();
-    AtomicReference<String> clickedReaction = new AtomicReference<>();
-    AtomicBoolean unreact = new AtomicBoolean();
 
-    store.appendChatAt(ref, "alice", "hello", false, 6_000L, "m-42", Map.of("msgid", "m-42"));
-    store.applyMessageReaction(ref, "m-42", ":+1:", "bob", 6_050L);
+    store.appendChatAt(
+        ref,
+        "alice",
+        "hello",
+        false,
+        6_000L,
+        REACTION_MESSAGE_ID,
+        Map.of("msgid", REACTION_MESSAGE_ID));
+    store.applyMessageReaction(ref, REACTION_MESSAGE_ID, THUMBS_UP_REACTION, "bob", 6_050L);
 
-    store.setReactionChipActionHandler(
-        (target, messageId, reactionToken, unreactRequested) -> {
-          clickedTarget.set(target);
-          clickedMsgId.set(messageId);
-          clickedReaction.set(reactionToken);
-          unreact.set(unreactRequested);
-        });
+    ChatTranscriptStoreReactionTestSupport.ReactionClickCapture clickCapture =
+        bindReactionChipActionHandler(store);
 
-    MessageReactionsComponent reactions = reactionComponent(store.document(ref));
-    assertNotNull(reactions);
-    JLabel chip = (JLabel) reactions.getComponent(0);
-    MouseEvent click =
-        new MouseEvent(
-            chip,
-            MouseEvent.MOUSE_RELEASED,
-            System.currentTimeMillis(),
-            0,
-            4,
-            4,
-            1,
-            false,
-            MouseEvent.BUTTON1);
-    for (MouseListener listener : chip.getMouseListeners()) {
-      listener.mouseReleased(click);
-    }
+    assertNotNull(reactionComponent(store.document(ref)));
+    clickFirstReactionChip(store.document(ref));
 
-    assertEquals(ref, clickedTarget.get());
-    assertEquals("m-42", clickedMsgId.get());
-    assertEquals(":+1:", clickedReaction.get());
-    assertFalse(unreact.get());
+    assertEquals(ref, clickCapture.target());
+    assertEquals(REACTION_MESSAGE_ID, clickCapture.messageId());
+    assertEquals(THUMBS_UP_REACTION, clickCapture.reaction());
+    assertFalse(clickCapture.unreactRequested());
   }
 
   @Test
