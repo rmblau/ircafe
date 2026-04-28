@@ -5,6 +5,11 @@ import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreTestFac
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreTestFactory.newStoreWithTranscriptCapAndDeliveryIndicators;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreTestFactory.newStoreWithTranscriptCapAndUserList;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreTestFactory.settingsWithTranscriptCap;
+import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreDocumentTestSupport.inlineComponentCount;
+import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreDocumentTestSupport.lineCount;
+import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreDocumentTestSupport.reactionComponent;
+import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreDocumentTestSupport.transcriptText;
+import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreDocumentTestSupport.transcriptTextUnchecked;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -26,7 +31,6 @@ import cafe.woden.ircclient.ui.chat.embed.ChatImageEmbedder;
 import cafe.woden.ircclient.ui.chat.embed.ChatLinkPreviewEmbedder;
 import cafe.woden.ircclient.ui.chat.fold.MessageReactionsComponent;
 import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
-import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptDeliveryIndicatorSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.OutgoingSendIndicator;
 import cafe.woden.ircclient.ui.chat.transcript.message.RedactedMessageContent;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
@@ -39,7 +43,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JLabel;
 import javax.swing.text.Element;
-import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import org.junit.jupiter.api.Test;
 
@@ -788,45 +791,4 @@ class ChatTranscriptStoreTest {
     assertTrue(textOther.contains("@alice:matrix.example.org: hello other"));
   }
 
-  private static String transcriptText(StyledDocument doc) throws Exception {
-    return doc.getText(0, doc.getLength());
-  }
-
-  private static MessageReactionsComponent reactionComponent(StyledDocument doc) {
-    Element root = doc.getDefaultRootElement();
-    if (root == null) return null;
-    int len = doc.getLength();
-    for (int i = 0; i < root.getElementCount(); i++) {
-      Element line = root.getElement(i);
-      if (line == null) continue;
-      int start = Math.max(0, line.getStartOffset());
-      if (start >= len) continue;
-      Object comp = StyleConstants.getComponent(doc.getCharacterElement(start).getAttributes());
-      if (comp instanceof MessageReactionsComponent reactions) {
-        return reactions;
-      }
-    }
-    return null;
-  }
-
-  private static int lineCount(StyledDocument doc) {
-    try {
-      String text = transcriptText(doc);
-      return (int) text.chars().filter(ch -> ch == '\n').count();
-    } catch (Exception ignored) {
-      return 0;
-    }
-  }
-
-  private static String transcriptTextUnchecked(StyledDocument doc) {
-    try {
-      return transcriptText(doc);
-    } catch (Exception ignored) {
-      return "";
-    }
-  }
-
-  private static int inlineComponentCount(StyledDocument doc, Class<?> componentType) {
-    return ChatTranscriptDeliveryIndicatorSupport.inlineComponentCount(doc, componentType);
-  }
 }
