@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.rebuild;
 
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.logging.history.ChatHistoryService;

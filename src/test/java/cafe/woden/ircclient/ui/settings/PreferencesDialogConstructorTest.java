@@ -19,7 +19,7 @@ import cafe.woden.ircclient.notify.sound.NotificationSoundSettingsBus;
 import cafe.woden.ircclient.ui.chat.NickColorService;
 import cafe.woden.ircclient.ui.chat.NickColorSettingsBus;
 import cafe.woden.ircclient.ui.chat.embed.EmbedLoadPolicyBus;
-import cafe.woden.ircclient.ui.chat.transcript.TranscriptRebuildService;
+import cafe.woden.ircclient.ui.chat.transcript.rebuild.TranscriptRebuildService;
 import cafe.woden.ircclient.ui.filter.FilterSettingsBus;
 import cafe.woden.ircclient.ui.nickcolors.NickColorOverridesDialog;
 import cafe.woden.ircclient.ui.servers.ServerDialogs;
