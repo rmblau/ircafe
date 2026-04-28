@@ -18,39 +18,47 @@ final class ChatTranscriptStoreTestFactory {
   private ChatTranscriptStoreTestFactory() {}
 
   static ChatTranscriptStore newStore() {
-    ChatStyles styles = new ChatStyles(null);
-    ChatRichTextRenderer renderer = new ChatRichTextRenderer(null, null, styles, null);
-    return new ChatTranscriptStore(
-        styles, renderer, null, null, null, null, null, null, null, null);
+    return newStore(new ChatStyles(null), null, null);
   }
 
   static ChatTranscriptStore newStoreWithTranscriptCap(int maxLines) {
-    ChatStyles styles = new ChatStyles(null);
-    ChatRichTextRenderer renderer = new ChatRichTextRenderer(null, null, styles, null);
-    UiSettingsBus settingsBus = mock(UiSettingsBus.class);
-    when(settingsBus.get()).thenReturn(settingsWithTranscriptCap(maxLines));
-    return new ChatTranscriptStore(
-        styles, renderer, null, null, null, null, null, settingsBus, null, null);
+    return newStoreWithSettings(settingsWithTranscriptCap(maxLines), null);
   }
 
   static ChatTranscriptStore newStoreWithTranscriptCapAndDeliveryIndicators(
       int maxLines, boolean enabled) {
-    ChatStyles styles = new ChatStyles(null);
-    ChatRichTextRenderer renderer = new ChatRichTextRenderer(null, null, styles, null);
-    UiSettingsBus settingsBus = mock(UiSettingsBus.class);
-    when(settingsBus.get()).thenReturn(settingsWithTranscriptCap(maxLines, enabled));
-    return new ChatTranscriptStore(
-        styles, renderer, null, null, null, null, null, settingsBus, null, null);
+    return newStoreWithSettings(settingsWithTranscriptCap(maxLines, enabled), null);
   }
 
   static ChatTranscriptStore newStoreWithTranscriptCapAndUserList(
       int maxLines, UserListStore userListStore) {
-    ChatStyles styles = new ChatStyles(null);
-    ChatRichTextRenderer renderer = new ChatRichTextRenderer(null, null, styles, null);
+    return newStoreWithSettings(settingsWithTranscriptCap(maxLines), userListStore);
+  }
+
+  private static ChatTranscriptStore newStoreWithSettings(
+      UiSettings settings, UserListStore userListStore) {
     UiSettingsBus settingsBus = mock(UiSettingsBus.class);
-    when(settingsBus.get()).thenReturn(settingsWithTranscriptCap(maxLines));
+    when(settingsBus.get()).thenReturn(settings);
+    return newStore(new ChatStyles(null), settingsBus, userListStore);
+  }
+
+  private static ChatTranscriptStore newStore(
+      ChatStyles styles, UiSettingsBus settingsBus, UserListStore userListStore) {
     return new ChatTranscriptStore(
-        styles, renderer, null, null, null, null, null, settingsBus, null, userListStore);
+        styles,
+        newRenderer(styles),
+        null,
+        null,
+        null,
+        null,
+        null,
+        settingsBus,
+        null,
+        userListStore);
+  }
+
+  private static ChatRichTextRenderer newRenderer(ChatStyles styles) {
+    return new ChatRichTextRenderer(null, null, styles, null);
   }
 
   static UiSettings settingsWithTranscriptCap(int maxLines) {
