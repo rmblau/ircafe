@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.support;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.irc.roster.UserListStore;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.settings.MemoryUsageDisplayMode;
 import cafe.woden.ircclient.ui.settings.NotificationBackendMode;
 import cafe.woden.ircclient.ui.settings.UiSettings;
@@ -13,24 +14,24 @@ import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import java.util.List;
 
 /** Test factory helpers for {@link ChatTranscriptStore}. */
-final class ChatTranscriptStoreTestFactory {
+public final class ChatTranscriptStoreTestFactory {
 
   private ChatTranscriptStoreTestFactory() {}
 
-  static ChatTranscriptStore newStore() {
+  public static ChatTranscriptStore newStore() {
     return newStore(new ChatStyles(null), null, null);
   }
 
-  static ChatTranscriptStore newStoreWithTranscriptCap(int maxLines) {
+  public static ChatTranscriptStore newStoreWithTranscriptCap(int maxLines) {
     return newStoreWithSettings(settingsWithTranscriptCap(maxLines), null);
   }
 
-  static ChatTranscriptStore newStoreWithTranscriptCapAndDeliveryIndicators(
+  public static ChatTranscriptStore newStoreWithTranscriptCapAndDeliveryIndicators(
       int maxLines, boolean enabled) {
     return newStoreWithSettings(settingsWithTranscriptCap(maxLines, enabled), null);
   }
 
-  static ChatTranscriptStore newStoreWithTranscriptCapAndUserList(
+  public static ChatTranscriptStore newStoreWithTranscriptCapAndUserList(
       int maxLines, UserListStore userListStore) {
     return newStoreWithSettings(settingsWithTranscriptCap(maxLines), userListStore);
   }
@@ -61,11 +62,11 @@ final class ChatTranscriptStoreTestFactory {
     return new ChatRichTextRenderer(null, null, styles, null);
   }
 
-  static UiSettings settingsWithTranscriptCap(int maxLines) {
+  public static UiSettings settingsWithTranscriptCap(int maxLines) {
     return settingsWithTranscriptCap(maxLines, true);
   }
 
-  static UiSettings settingsWithTranscriptCap(
+  public static UiSettings settingsWithTranscriptCap(
       int maxLines, boolean outgoingDeliveryIndicatorsEnabled) {
     return new UiSettings(
         "darcula",

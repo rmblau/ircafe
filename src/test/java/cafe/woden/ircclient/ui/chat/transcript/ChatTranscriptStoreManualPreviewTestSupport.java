@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.chat.transcript;
 
-import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreTestFactory.settingsWithTranscriptCap;
+import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreTestFactory.settingsWithTranscriptCap;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;

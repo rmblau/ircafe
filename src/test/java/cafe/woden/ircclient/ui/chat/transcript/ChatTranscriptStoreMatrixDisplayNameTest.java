@@ -6,7 +6,7 @@ import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStor
 import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreMatrixTestSupport.putMatrixBridgedNick;
 import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreMatrixTestSupport.userListWithMatrixDisplayName;
 import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreTargetRefTestSupport.matrixRoomRef;
-import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreTestFactory.newStoreWithTranscriptCapAndUserList;
+import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreTestFactory.newStoreWithTranscriptCapAndUserList;
 import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreDocumentTestSupport.transcriptText;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
