@@ -4,7 +4,7 @@ import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreReactio
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreReactionTestSupport.THUMBS_UP_REACTION;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreReactionTestSupport.bindReactionChipActionHandler;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreReactionTestSupport.clickFirstReactionChip;
-import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreTargetRefTestSupport.channelRef;
+import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreTargetRefTestSupport.channelRef;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreTestFactory.newStore;
 import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreDocumentTestSupport.lineCount;
 import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreDocumentTestSupport.reactionComponent;
