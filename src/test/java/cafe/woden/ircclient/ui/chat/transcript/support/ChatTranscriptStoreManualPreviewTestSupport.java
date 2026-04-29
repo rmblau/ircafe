@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.support;
 
 import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreTestFactory.settingsWithTranscriptCap;
 import static org.mockito.ArgumentMatchers.any;
@@ -12,20 +12,21 @@ import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.embed.ChatImageEmbedder;
 import cafe.woden.ircclient.ui.chat.embed.ChatLinkPreviewEmbedder;
 import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import java.util.List;
 
 /** Test support for manual-preview transcript fixture setup. */
-final class ChatTranscriptStoreManualPreviewTestSupport {
+public final class ChatTranscriptStoreManualPreviewTestSupport {
 
-  record ManualPreviewFallbackFixture(
+  public record ManualPreviewFallbackFixture(
       ChatTranscriptStore store,
       ChatImageEmbedder imageEmbeds,
       ChatLinkPreviewEmbedder linkPreviews) {}
 
   private ChatTranscriptStoreManualPreviewTestSupport() {}
 
-  static ChatTranscriptStore newStoreWithBlockedImagePreview(String blockedUrl) {
+  public static ChatTranscriptStore newStoreWithBlockedImagePreview(String blockedUrl) {
     ChatStyles styles = new ChatStyles(null);
     ChatRichTextRenderer renderer = renderer(styles);
     UiSettingsBus settingsBus = mock(UiSettingsBus.class);
@@ -42,7 +43,7 @@ final class ChatTranscriptStoreManualPreviewTestSupport {
         styles, renderer, null, null, null, imageEmbeds, linkPreviews, settingsBus, null, null);
   }
 
-  static ManualPreviewFallbackFixture newManualPreviewFallbackFixture() {
+  public static ManualPreviewFallbackFixture newManualPreviewFallbackFixture() {
     ChatStyles styles = new ChatStyles(null);
     ChatRichTextRenderer renderer = renderer(styles);
     ChatImageEmbedder imageEmbeds = mock(ChatImageEmbedder.class);
@@ -55,7 +56,7 @@ final class ChatTranscriptStoreManualPreviewTestSupport {
     return new ManualPreviewFallbackFixture(store, imageEmbeds, linkPreviews);
   }
 
-  static void verifyManualPreviewFallbackAttempted(ManualPreviewFallbackFixture fixture) {
+  public static void verifyManualPreviewFallbackAttempted(ManualPreviewFallbackFixture fixture) {
     verify(fixture.imageEmbeds()).insertEmbedForUrlAt(any(), any(), anyString(), anyInt());
     verify(fixture.linkPreviews()).insertPreviewForUrlAt(any(), any(), anyString(), anyInt());
   }

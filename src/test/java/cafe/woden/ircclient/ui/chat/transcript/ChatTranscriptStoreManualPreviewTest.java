@@ -1,15 +1,16 @@
 package cafe.woden.ircclient.ui.chat.transcript;
 
-import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreManualPreviewTestSupport.newManualPreviewFallbackFixture;
-import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreManualPreviewTestSupport.newStoreWithBlockedImagePreview;
-import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreManualPreviewTestSupport.verifyManualPreviewFallbackAttempted;
-import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreTargetRefTestSupport.channelRef;
+import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreManualPreviewTestSupport.newManualPreviewFallbackFixture;
+import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreManualPreviewTestSupport.newStoreWithBlockedImagePreview;
+import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreManualPreviewTestSupport.verifyManualPreviewFallbackAttempted;
 import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreDocumentTestSupport.transcriptText;
+import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreTargetRefTestSupport.channelRef;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
+import cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreManualPreviewTestSupport.ManualPreviewFallbackFixture;
 import javax.swing.text.StyledDocument;
 import org.junit.jupiter.api.Test;
 
@@ -35,8 +36,7 @@ class ChatTranscriptStoreManualPreviewTest {
 
   @Test
   void insertManualPreviewAtFallsBackToLinkPreviewWhenImageInsertDeclines() {
-    ChatTranscriptStoreManualPreviewTestSupport.ManualPreviewFallbackFixture fixture =
-        newManualPreviewFallbackFixture();
+    ManualPreviewFallbackFixture fixture = newManualPreviewFallbackFixture();
     ChatTranscriptStore store = fixture.store();
     TargetRef ref = channelRef();
     store.appendChat(ref, "alice", "line");
