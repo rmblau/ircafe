@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.transcript;
+package cafe.woden.ircclient.ui.chat.transcript.support;
 
 import cafe.woden.ircclient.ui.chat.fold.MessageReactionsComponent;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptDeliveryIndicatorSupport;
@@ -7,15 +7,15 @@ import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 
 /** Document-level assertions and helpers for transcript store tests. */
-final class ChatTranscriptStoreDocumentTestSupport {
+public final class ChatTranscriptStoreDocumentTestSupport {
 
   private ChatTranscriptStoreDocumentTestSupport() {}
 
-  static String transcriptText(StyledDocument doc) throws Exception {
+  public static String transcriptText(StyledDocument doc) throws Exception {
     return doc.getText(0, doc.getLength());
   }
 
-  static MessageReactionsComponent reactionComponent(StyledDocument doc) {
+  public static MessageReactionsComponent reactionComponent(StyledDocument doc) {
     Element root = doc.getDefaultRootElement();
     if (root == null) return null;
     int len = doc.getLength();
@@ -32,7 +32,7 @@ final class ChatTranscriptStoreDocumentTestSupport {
     return null;
   }
 
-  static int lineCount(StyledDocument doc) {
+  public static int lineCount(StyledDocument doc) {
     try {
       String text = transcriptText(doc);
       return (int) text.chars().filter(ch -> ch == '\n').count();
@@ -41,7 +41,7 @@ final class ChatTranscriptStoreDocumentTestSupport {
     }
   }
 
-  static String transcriptTextUnchecked(StyledDocument doc) {
+  public static String transcriptTextUnchecked(StyledDocument doc) {
     try {
       return transcriptText(doc);
     } catch (Exception ignored) {
@@ -49,7 +49,7 @@ final class ChatTranscriptStoreDocumentTestSupport {
     }
   }
 
-  static int inlineComponentCount(StyledDocument doc, Class<?> componentType) {
+  public static int inlineComponentCount(StyledDocument doc, Class<?> componentType) {
     return ChatTranscriptDeliveryIndicatorSupport.inlineComponentCount(doc, componentType);
   }
 }

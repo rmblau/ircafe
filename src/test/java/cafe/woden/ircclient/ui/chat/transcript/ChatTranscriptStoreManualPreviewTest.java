@@ -1,10 +1,10 @@
 package cafe.woden.ircclient.ui.chat.transcript;
 
-import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreDocumentTestSupport.transcriptText;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreManualPreviewTestSupport.newManualPreviewFallbackFixture;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreManualPreviewTestSupport.newStoreWithBlockedImagePreview;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreManualPreviewTestSupport.verifyManualPreviewFallbackAttempted;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreTargetRefTestSupport.channelRef;
+import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreDocumentTestSupport.transcriptText;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
