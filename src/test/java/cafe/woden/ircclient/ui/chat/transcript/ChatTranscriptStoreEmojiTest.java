@@ -11,7 +11,7 @@ import cafe.woden.ircclient.ui.util.EmojiFontSupport;
 import javax.swing.text.StyledDocument;
 import org.junit.jupiter.api.Test;
 
-class ChatTranscriptStoreTest {
+class ChatTranscriptStoreEmojiTest {
 
   @Test
   void appendChatAtMarksEmojiGlyphRunsInTranscript() throws Exception {
