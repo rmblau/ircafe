@@ -1,10 +1,10 @@
 package cafe.woden.ircclient.ui.chat.transcript;
 
-import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreMatrixTestSupport.MATRIX_ALICE_USER_ID;
-import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreMatrixTestSupport.MATRIX_BRIDGED_WODENCAFE_USER_ID;
-import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreMatrixTestSupport.MATRIX_SERVER;
-import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreMatrixTestSupport.putMatrixBridgedNick;
-import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreMatrixTestSupport.userListWithMatrixDisplayName;
+import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreMatrixTestSupport.MATRIX_ALICE_USER_ID;
+import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreMatrixTestSupport.MATRIX_BRIDGED_WODENCAFE_USER_ID;
+import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreMatrixTestSupport.MATRIX_SERVER;
+import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreMatrixTestSupport.putMatrixBridgedNick;
+import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreMatrixTestSupport.userListWithMatrixDisplayName;
 import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreTargetRefTestSupport.matrixRoomRef;
 import static cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStoreTestFactory.newStoreWithTranscriptCapAndUserList;
 import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreDocumentTestSupport.transcriptText;
