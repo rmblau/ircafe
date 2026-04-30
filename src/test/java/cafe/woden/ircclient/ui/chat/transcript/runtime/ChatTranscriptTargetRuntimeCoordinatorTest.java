@@ -69,8 +69,7 @@ class ChatTranscriptTargetRuntimeCoordinatorTest {
         () -> messageCatalogSupport.createState(32, 32),
         new Object(),
         180,
-        new ChatTranscriptRestyleSupport.Context(
-            new ChatStyles(null), null, (attrs, action) -> {}),
+        new ChatTranscriptRestyleSupport.Context(new ChatStyles(null), null, (attrs, action) -> {}),
         () -> null,
         settings -> null,
         null);

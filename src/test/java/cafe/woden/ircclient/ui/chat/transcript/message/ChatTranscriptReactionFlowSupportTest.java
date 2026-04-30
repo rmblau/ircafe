@@ -32,8 +32,7 @@ class ChatTranscriptReactionFlowSupportTest {
         new ChatTranscriptReactionFlowSupport.Context(
             docs, states, r -> {}, reactionSummarySupport);
 
-    ReactionChipActionHandler handler =
-        (target, messageId, reactionToken, unreactRequested) -> {};
+    ReactionChipActionHandler handler = (target, messageId, reactionToken, unreactRequested) -> {};
     support.setReactionChipActionHandler(context, handler);
 
     verify(reactionSummarySupport).setReactionChipActionHandler(eq(handler), anyMap());

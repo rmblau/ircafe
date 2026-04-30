@@ -66,12 +66,7 @@ class ChatTranscriptAuxiliaryLifecycleCoordinatorTest {
         mock(ChatTranscriptAuxiliaryRowsSupport.class);
     ChatTranscriptAuxiliaryLifecycleCoordinator coordinator =
         new ChatTranscriptAuxiliaryLifecycleCoordinator(new Object());
-    coordinator.bindContext(
-        docs,
-        states,
-        auxiliaryRowsSupport,
-        target -> {},
-        target -> {});
+    coordinator.bindContext(docs, states, auxiliaryRowsSupport, target -> {}, target -> {});
 
     coordinator.maybeRenderPendingReadMarker(ref, 2_000L);
 
@@ -125,6 +120,7 @@ class ChatTranscriptAuxiliaryLifecycleCoordinatorTest {
             new ChatTranscriptMessageStateSupport.Context(120, "[redacted]", () -> 0L));
     private final Map<TargetRef, StyledDocument> docs = new HashMap<>();
     private final Map<TargetRef, ChatTranscriptState> stateByTarget = new HashMap<>();
+
     private TestFixture() {
       ChatTranscriptAuxiliaryRowsSupport auxiliaryRowsSupport =
           new ChatTranscriptAuxiliaryRowsSupport(
@@ -140,11 +136,7 @@ class ChatTranscriptAuxiliaryLifecycleCoordinatorTest {
               documentLineSupport::ensureAtLineStartForInsert,
               (ref, insertAt, delta) -> {});
       coordinator.bindContext(
-          docs,
-          stateByTarget,
-          auxiliaryRowsSupport,
-          this::ensureTarget,
-          target -> {});
+          docs, stateByTarget, auxiliaryRowsSupport, this::ensureTarget, target -> {});
     }
 
     private void ensureTarget(TargetRef ref) {

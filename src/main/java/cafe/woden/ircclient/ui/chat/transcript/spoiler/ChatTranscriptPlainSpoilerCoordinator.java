@@ -2,7 +2,6 @@ package cafe.woden.ircclient.ui.chat.transcript.spoiler;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPlainAppendSupport;
-import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptSpoilerFlowSupport;
 import java.util.Objects;
 
 /** Owns plain-text append and spoiler append/history flow behind one delegate surface. */

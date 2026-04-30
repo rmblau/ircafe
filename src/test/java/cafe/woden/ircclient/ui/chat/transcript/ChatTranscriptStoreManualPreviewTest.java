@@ -1,9 +1,9 @@
 package cafe.woden.ircclient.ui.chat.transcript;
 
+import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreDocumentTestSupport.transcriptText;
 import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreManualPreviewTestSupport.newManualPreviewFallbackFixture;
 import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreManualPreviewTestSupport.newStoreWithBlockedImagePreview;
 import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreManualPreviewTestSupport.verifyManualPreviewFallbackAttempted;
-import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreDocumentTestSupport.transcriptText;
 import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreTargetRefTestSupport.channelRef;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

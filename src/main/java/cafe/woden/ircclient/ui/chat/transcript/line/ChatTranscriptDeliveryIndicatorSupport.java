@@ -1,6 +1,5 @@
 package cafe.woden.ircclient.ui.chat.transcript.line;
 
-import cafe.woden.ircclient.ui.chat.transcript.line.OutgoingSendIndicator;
 import java.awt.Color;
 import java.awt.Component;
 import java.util.function.Consumer;

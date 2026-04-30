@@ -33,8 +33,7 @@ public final class ChatTranscriptReactionFlowSupport {
         .hasReactionFromNick(st == null ? null : st.reactionSummary(), messageId, reaction, nick);
   }
 
-  public void setReactionChipActionHandler(
-      Context context, ReactionChipActionHandler handler) {
+  public void setReactionChipActionHandler(Context context, ReactionChipActionHandler handler) {
     if (context == null) return;
     Map<TargetRef, ChatTranscriptReactionSummarySupport.State> statesByTarget = new HashMap<>();
     for (Map.Entry<TargetRef, ChatTranscriptState> entry : context.stateByTarget().entrySet()) {

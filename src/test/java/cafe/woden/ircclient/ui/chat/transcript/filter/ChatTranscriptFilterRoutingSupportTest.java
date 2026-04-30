@@ -1,6 +1,5 @@
 package cafe.woden.ircclient.ui.chat.transcript.filter;
 
-import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -18,6 +17,7 @@ import cafe.woden.ircclient.model.RegexFlag;
 import cafe.woden.ircclient.model.RegexSpec;
 import cafe.woden.ircclient.model.TagSpec;
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import cafe.woden.ircclient.ui.filter.FilterSettings;
 import cafe.woden.ircclient.ui.filter.FilterSettingsBus;

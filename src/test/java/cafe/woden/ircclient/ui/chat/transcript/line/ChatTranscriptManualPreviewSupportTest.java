@@ -16,7 +16,6 @@ import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.embed.ChatImageEmbedder;
 import cafe.woden.ircclient.ui.chat.embed.ChatLinkPreviewEmbedder;
-import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;

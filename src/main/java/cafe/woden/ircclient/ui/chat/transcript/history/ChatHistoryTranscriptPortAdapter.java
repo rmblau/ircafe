@@ -111,8 +111,8 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
       long tsEpochMs,
       String messageId,
       Map<String, String> ircv3Tags) {
-    return insert().insertChat(
-        ref, insertAt, from, text, outgoingLocalEcho, tsEpochMs, messageId, ircv3Tags);
+    return insert()
+        .insertChat(ref, insertAt, from, text, outgoingLocalEcho, tsEpochMs, messageId, ircv3Tags);
   }
 
   @Override
@@ -136,8 +136,9 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
       long tsEpochMs,
       String messageId,
       Map<String, String> ircv3Tags) {
-    return insert().insertAction(
-        ref, insertAt, from, text, outgoingLocalEcho, tsEpochMs, messageId, ircv3Tags);
+    return insert()
+        .insertAction(
+            ref, insertAt, from, text, outgoingLocalEcho, tsEpochMs, messageId, ircv3Tags);
   }
 
   @Override
@@ -155,8 +156,7 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
       long tsEpochMs,
       String messageId,
       Map<String, String> ircv3Tags) {
-    return insert().insertNotice(
-        ref, insertAt, from, text, tsEpochMs, messageId, ircv3Tags);
+    return insert().insertNotice(ref, insertAt, from, text, tsEpochMs, messageId, ircv3Tags);
   }
 
   @Override
@@ -197,8 +197,7 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
       long tsEpochMs,
       String messageId,
       Map<String, String> ircv3Tags) {
-    append().appendChat(
-        ref, from, text, outgoingLocalEcho, tsEpochMs, messageId, ircv3Tags);
+    append().appendChat(ref, from, text, outgoingLocalEcho, tsEpochMs, messageId, ircv3Tags);
   }
 
   @Override
@@ -216,8 +215,7 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
       long tsEpochMs,
       String messageId,
       Map<String, String> ircv3Tags) {
-    append().appendAction(
-        ref, from, text, outgoingLocalEcho, tsEpochMs, messageId, ircv3Tags);
+    append().appendAction(ref, from, text, outgoingLocalEcho, tsEpochMs, messageId, ircv3Tags);
   }
 
   @Override
@@ -330,5 +328,4 @@ public class ChatHistoryTranscriptPortAdapter implements ChatHistoryTranscriptPo
   private ChatHistoryTranscriptAppendAdapter append() {
     return adapters.messages().append();
   }
-
 }

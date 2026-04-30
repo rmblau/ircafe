@@ -2,8 +2,8 @@ package cafe.woden.ircclient.ui.chat.transcript.message;
 
 import static cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageMetadataSupport.normalizeMessageId;
 
-import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptReplyPreviewSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -14,8 +14,7 @@ public final class ChatTranscriptMessageCatalogSupport {
 
   public static final class State {
     private final Map<String, String> messagePreviewByMsgId;
-    private final Map<String, MessageContentSnapshot>
-        currentMessageContentByMsgId;
+    private final Map<String, MessageContentSnapshot> currentMessageContentByMsgId;
     private final Map<String, RedactedMessageContent> redactedOriginalByMsgId;
 
     private State(int replyPreviewCacheLimit, int redactedMessageCacheLimit) {
@@ -43,8 +42,7 @@ public final class ChatTranscriptMessageCatalogSupport {
         state == null ? null : state.messagePreviewByMsgId, messageId);
   }
 
-  public RedactedMessageContent redactedOriginalById(
-      State state, String messageId) {
+  public RedactedMessageContent redactedOriginalById(State state, String messageId) {
     if (state == null) return null;
     String msgId = normalizeMessageId(messageId);
     if (msgId.isEmpty()) return null;

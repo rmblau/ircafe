@@ -60,8 +60,7 @@ public final class ChatRedactedMessageRevealSupport {
         });
   }
 
-  private static String formatLiveRevealText(
-      TargetRef target, RedactedMessageContent content) {
+  private static String formatLiveRevealText(TargetRef target, RedactedMessageContent content) {
     StringBuilder sb = new StringBuilder();
     sb.append("Source: live transcript cache\n");
     appendCommonHeader(

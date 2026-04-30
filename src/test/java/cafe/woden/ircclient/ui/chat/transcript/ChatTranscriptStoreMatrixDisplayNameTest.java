@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.chat.transcript;
 
+import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreDocumentTestSupport.transcriptText;
 import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreMatrixTestSupport.MATRIX_ALICE_USER_ID;
 import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreMatrixTestSupport.MATRIX_BRIDGED_WODENCAFE_USER_ID;
 import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreMatrixTestSupport.MATRIX_SERVER;
@@ -7,7 +8,6 @@ import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStor
 import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreMatrixTestSupport.userListWithMatrixDisplayName;
 import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreTargetRefTestSupport.matrixRoomRef;
 import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreTestFactory.newStoreWithTranscriptCapAndUserList;
-import static cafe.woden.ircclient.ui.chat.transcript.support.ChatTranscriptStoreDocumentTestSupport.transcriptText;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -29,13 +29,7 @@ class ChatTranscriptStoreMatrixDisplayNameTest {
 
     ChatTranscriptStore store = newStoreWithTranscriptCapAndUserList(0, userListStore);
     store.appendChatAt(
-        ref,
-        MATRIX_ALICE_USER_ID,
-        "hello matrix",
-        false,
-        11_000L,
-        "m-1",
-        Map.of("msgid", "m-1"));
+        ref, MATRIX_ALICE_USER_ID, "hello matrix", false, 11_000L, "m-1", Map.of("msgid", "m-1"));
 
     StyledDocument doc = store.document(ref);
     String text = transcriptText(doc);
@@ -110,21 +104,9 @@ class ChatTranscriptStoreMatrixDisplayNameTest {
     TargetRef otherServer = new TargetRef("other", "#room:other.example.org");
 
     store.appendChatFromHistory(
-        roomA,
-        MATRIX_ALICE_USER_ID,
-        "hello a",
-        false,
-        1_000L,
-        "m-a",
-        Map.of("msgid", "m-a"));
+        roomA, MATRIX_ALICE_USER_ID, "hello a", false, 1_000L, "m-a", Map.of("msgid", "m-a"));
     store.appendChatFromHistory(
-        roomB,
-        MATRIX_ALICE_USER_ID,
-        "hello b",
-        false,
-        1_100L,
-        "m-b",
-        Map.of("msgid", "m-b"));
+        roomB, MATRIX_ALICE_USER_ID, "hello b", false, 1_100L, "m-b", Map.of("msgid", "m-b"));
     store.appendChatFromHistory(
         roomB,
         "@bob:matrix.example.org",

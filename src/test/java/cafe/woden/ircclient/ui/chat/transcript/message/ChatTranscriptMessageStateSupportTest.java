@@ -68,10 +68,7 @@ class ChatTranscriptMessageStateSupportTest {
   @Test
   void rememberEditedCurrentMessageContentPrefersExistingSnapshot() {
     Map<String, MessageContentSnapshot> current = new HashMap<>();
-    current.put(
-        "m-2",
-        new MessageContentSnapshot(
-            LogKind.CHAT, "alice", "original text", 1_111L));
+    current.put("m-2", new MessageContentSnapshot(LogKind.CHAT, "alice", "original text", 1_111L));
     SimpleAttributeSet attrs = new SimpleAttributeSet();
     attrs.addAttribute(ChatStyles.ATTR_META_KIND, "notice");
     attrs.addAttribute(ChatStyles.ATTR_META_FROM, "server");
@@ -91,9 +88,7 @@ class ChatTranscriptMessageStateSupportTest {
   @Test
   void rememberRedactedOriginalUsesCurrentSnapshotAndFallbackClock() {
     Map<String, MessageContentSnapshot> current = new HashMap<>();
-    current.put(
-        "m-3",
-        new MessageContentSnapshot(LogKind.CHAT, "alice", "hello", 3_333L));
+    current.put("m-3", new MessageContentSnapshot(LogKind.CHAT, "alice", "hello", 3_333L));
     Map<String, RedactedMessageContent> redacted = new HashMap<>();
 
     ChatTranscriptMessageStateSupport.rememberRedactedOriginal(

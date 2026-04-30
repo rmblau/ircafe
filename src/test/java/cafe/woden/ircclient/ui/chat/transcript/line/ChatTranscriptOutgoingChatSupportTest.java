@@ -9,8 +9,6 @@ import static org.mockito.Mockito.verify;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
-import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
-import cafe.woden.ircclient.ui.chat.transcript.line.OutgoingSendIndicator;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReactionSummarySupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptSenderStyleSupport;
 import java.awt.Component;

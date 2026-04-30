@@ -4,8 +4,8 @@ import static cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMess
 
 import cafe.woden.ircclient.model.LogKind;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
-import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptReplyPreviewSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
 import cafe.woden.ircclient.ui.chat.transcript.style.ChatTranscriptAttrSupport;
 import java.util.Map;
 import java.util.Objects;
