@@ -2,6 +2,8 @@ package cafe.woden.ircclient.ui.chat.transcript.message;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -9,7 +11,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
 import cafe.woden.ircclient.model.FilterAction;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
@@ -18,10 +19,7 @@ import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredLine
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptOutgoingChatSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPresenceFoldSupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageStateSupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReactionSummarySupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptSenderStyleSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptState;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import java.util.HashMap;
@@ -160,6 +158,55 @@ class ChatTranscriptChatFlowSupportTest {
     assertEquals(0, fixture.insertCapture.calls.get());
   }
 
+  @Test
+  void resolvePendingOutgoingChatRemovesPendingLineAndInsertsCanonicalLine() throws Exception {
+    Fixture fixture =
+        new Fixture(
+            mock(ChatTranscriptReactionSummarySupport.class), newFilterRoutingSupport(null));
+    SimpleAttributeSet pending = new SimpleAttributeSet();
+    pending.addAttribute(ChatStyles.ATTR_META_PENDING_ID, "pending-1");
+    fixture.document().insertString(0, "me: pending\n", pending);
+    fixture
+        .document()
+        .insertString(fixture.document().getLength(), "later\n", new SimpleAttributeSet());
+
+    boolean resolved =
+        fixture.support.resolvePendingOutgoingChat(
+            fixture.context,
+            fixture.ref,
+            " pending-1 ",
+            "me",
+            "confirmed",
+            1_234L,
+            "m-1",
+            Map.of("msgid", "m-1"));
+
+    assertTrue(resolved);
+    assertFalse(fixture.document().getText(0, fixture.document().getLength()).contains("pending"));
+    assertTrue(fixture.document().getText(0, fixture.document().getLength()).contains("later"));
+    assertEquals(0, fixture.insertCapture.insertAt.get());
+    assertEquals("confirmed", fixture.insertCapture.text.get());
+    assertEquals(1_234L, fixture.insertCapture.epochMs.get());
+  }
+
+  @Test
+  void preparePendingReplacementUsesFallbackClockAndRejectsMissingLine() throws Exception {
+    DefaultStyledDocument doc = new DefaultStyledDocument();
+    SimpleAttributeSet pending = new SimpleAttributeSet();
+    pending.addAttribute(ChatStyles.ATTR_META_PENDING_ID, "pending-1");
+    doc.insertString(0, "me: pending\n", pending);
+
+    ChatTranscriptChatFlowSupport.PendingReplacementPlan fallbackPlan =
+        ChatTranscriptChatFlowSupport.preparePendingReplacement(doc, "pending-1", 0L, () -> 42L);
+
+    assertNotNull(fallbackPlan);
+    assertEquals(42L, fallbackPlan.effectiveEpochMs());
+    assertNull(
+        ChatTranscriptChatFlowSupport.preparePendingReplacement(doc, "pending-1", 1L, () -> 42L));
+    assertNull(
+        ChatTranscriptChatFlowSupport.preparePendingReplacement(null, "pending-1", 1L, () -> 42L));
+  }
+
   private static ChatTranscriptFilterRoutingSupport newFilterRoutingSupport(
       FilterEngine filterEngine) {
     return new ChatTranscriptFilterRoutingSupport(
@@ -218,7 +265,7 @@ class ChatTranscriptChatFlowSupportTest {
               (target, epochMs) -> {},
               target -> presenceBreaks.incrementAndGet(),
               (target, from, text, fromStyle, msgStyle, meta, tailComponent, tailAttrs) -> {},
-              (target, insertAt, from, text, fromStyle, msgStyle, meta) -> insertAt + 1,
+              insertCapture::insert,
               (target, after, messageStyle, meta) -> {});
       this.context =
           new ChatTranscriptChatFlowSupport.Context(
@@ -273,6 +320,9 @@ class ChatTranscriptChatFlowSupportTest {
   private static final class InsertCapture
       implements ChatTranscriptChatFlowSupport.InsertVisibleLineHandler {
     private final AtomicInteger calls = new AtomicInteger();
+    private final AtomicReference<Integer> insertAt = new AtomicReference<>();
+    private final AtomicReference<String> text = new AtomicReference<>();
+    private final AtomicReference<Long> epochMs = new AtomicReference<>();
 
     @Override
     public int insert(
@@ -284,6 +334,9 @@ class ChatTranscriptChatFlowSupportTest {
         AttributeSet msgStyle,
         LineMeta meta) {
       calls.incrementAndGet();
+      this.insertAt.set(insertAt);
+      this.text.set(text);
+      this.epochMs.set(meta.epochMs());
       return insertAt + 3;
     }
   }

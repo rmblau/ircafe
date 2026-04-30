@@ -13,17 +13,16 @@ import cafe.woden.ircclient.ui.chat.fold.HistoryDividerComponent;
 import cafe.woden.ircclient.ui.chat.fold.LoadOlderMessagesComponent;
 import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
 import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredFlowCoordinator;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageInteractionCoordinator;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageLineCoordinator;
-import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptPlainSpoilerCoordinator;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReplyFlowCoordinator;
-import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeFlowCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.internal.ChatTranscriptStoreComposition;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMatrixDisplayNameCoordinator;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageInteractionCoordinator;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageLineCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.message.ReactionChipActionHandler;
 import cafe.woden.ircclient.ui.chat.transcript.message.RedactedMessageContent;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTimestampFormatter;
+import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeFlowCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptTargetRuntimeCoordinator;
+import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptPlainSpoilerCoordinator;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import jakarta.annotation.PreDestroy;
@@ -44,7 +43,6 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
 
   private final ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator;
   private final ChatTranscriptMatrixDisplayNameCoordinator matrixDisplayNameCoordinator;
-  private final ChatTranscriptReplyFlowCoordinator replyFlowCoordinator;
   private final ChatTranscriptMessageInteractionCoordinator messageInteractionCoordinator;
   private final ChatTranscriptMessageLineCoordinator messageLineCoordinator;
   private final ChatTranscriptPlainSpoilerCoordinator plainSpoilerCoordinator;
@@ -78,7 +76,6 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
 
     this.filteredFlowCoordinator = components.filteredFlowCoordinator();
     this.matrixDisplayNameCoordinator = components.matrixDisplayNameCoordinator();
-    this.replyFlowCoordinator = components.replyFlowCoordinator();
     this.messageInteractionCoordinator = components.messageInteractionCoordinator();
     this.messageLineCoordinator = components.messageLineCoordinator();
     this.plainSpoilerCoordinator = components.plainSpoilerCoordinator();

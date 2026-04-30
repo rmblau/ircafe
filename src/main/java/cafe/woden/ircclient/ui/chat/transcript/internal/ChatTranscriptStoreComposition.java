@@ -10,20 +10,19 @@ import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
 import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilterRoutingSupport;
 import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredFlowCoordinator;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageInteractionCoordinator;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageLineCoordinator;
-import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptPlainSpoilerCoordinator;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReplyFlowCoordinator;
-import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeFlowCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptAuxiliaryRowsSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptDocumentLineSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPresenceFoldSupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMatrixDisplayNameCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageInteractionCoordinator;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageLineCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTimestampFormatter;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptLineCapSupport;
+import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeFlowCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeSettingsSupport;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptTargetRuntimeCoordinator;
+import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptPlainSpoilerCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.style.ChatTranscriptStyleRoutingSupport;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
@@ -34,7 +33,6 @@ public final class ChatTranscriptStoreComposition {
   public record Components(
       ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator,
       ChatTranscriptMatrixDisplayNameCoordinator matrixDisplayNameCoordinator,
-      ChatTranscriptReplyFlowCoordinator replyFlowCoordinator,
       ChatTranscriptMessageInteractionCoordinator messageInteractionCoordinator,
       ChatTranscriptMessageLineCoordinator messageLineCoordinator,
       ChatTranscriptPlainSpoilerCoordinator plainSpoilerCoordinator,
@@ -114,8 +112,6 @@ public final class ChatTranscriptStoreComposition {
             filteredFlowCoordinator);
     ChatTranscriptMatrixDisplayNameCoordinator matrixDisplayNameCoordinator =
         messageComposition.matrixDisplayNameCoordinator();
-    ChatTranscriptReplyFlowCoordinator replyFlowCoordinator =
-        messageComposition.replyFlowCoordinator();
     ChatTranscriptMessageLineCoordinator messageLineCoordinator =
         messageComposition.messageLineCoordinator();
     ChatTranscriptMessageInteractionCoordinator messageInteractionCoordinator =
@@ -139,20 +135,35 @@ public final class ChatTranscriptStoreComposition {
             filteredFlowCoordinator);
     ChatTranscriptPlainSpoilerCoordinator plainSpoilerCoordinator =
         spoilerComposition.plainSpoilerCoordinator();
-    ChatTranscriptRuntimeContextBinding.bind(
-        runtimeFlowCoordinator,
+    runtimeFlowCoordinator.bindPresenceContext(
         presenceFoldSupport,
         filterRoutingSupport,
-        filteredFlowCoordinator,
+        filteredFlowCoordinator.filteredLinesSupport(),
         runtimeSettingsSupport,
-        targetRuntimeCoordinator,
+        targetRuntimeCoordinator.docs(),
+        targetRuntimeCoordinator.stateByTarget(),
+        targetRuntimeCoordinator::ensureTargetExists,
+        targetRuntimeCoordinator::noteEpochMs,
+        System::currentTimeMillis);
+    runtimeFlowCoordinator.bindLineLifecycleContexts(
+        targetRuntimeCoordinator.docs(),
+        targetRuntimeCoordinator.stateByTarget(),
+        targetRuntimeCoordinator::ensureTargetExists,
+        targetRuntimeCoordinator::noteEpochMs,
+        filterRoutingSupport,
+        filteredFlowCoordinator::endInsertRun,
+        filteredFlowCoordinator::shouldDeferRichTextDuringHistoryBatch,
         documentLineSupport,
-        messageLineCoordinator,
-        auxiliaryRowsSupport);
+        messageLineCoordinator.textAppendSupportContext(),
+        messageLineCoordinator.textInsertSupportContext(),
+        runtimeSettingsSupport,
+        runtimeSettingsSupport::imageEmbedsEnabled,
+        runtimeSettingsSupport::linkPreviewsEnabled,
+        auxiliaryRowsSupport,
+        filteredFlowCoordinator::endAppendRun);
     return new Components(
         filteredFlowCoordinator,
         matrixDisplayNameCoordinator,
-        replyFlowCoordinator,
         messageInteractionCoordinator,
         messageLineCoordinator,
         plainSpoilerCoordinator,

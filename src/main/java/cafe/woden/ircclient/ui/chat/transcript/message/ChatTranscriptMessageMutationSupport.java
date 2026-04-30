@@ -40,7 +40,7 @@ public final class ChatTranscriptMessageMutationSupport {
         ChatTranscriptDocumentSupport.findMessageLine(doc, targetMessageId);
     if (line == null) return false;
 
-    String renderedEditedText = ChatTranscriptMessageEditSupport.renderEditedText(editedText);
+    String renderedEditedText = renderEditedText(editedText);
     boolean replaced =
         messageReplacementSupport.replaceMessageLine(
             ref,
@@ -94,5 +94,13 @@ public final class ChatTranscriptMessageMutationSupport {
     reactionSummarySupport.clearReactionStateForMessage(
         ref, doc, reactionSummary, line.targetMessageId());
     return true;
+  }
+
+  private static String renderEditedText(String text) {
+    String normalized = Objects.toString(text, "");
+    if (normalized.isBlank()) {
+      return "(edited)";
+    }
+    return normalized + " (edited)";
   }
 }

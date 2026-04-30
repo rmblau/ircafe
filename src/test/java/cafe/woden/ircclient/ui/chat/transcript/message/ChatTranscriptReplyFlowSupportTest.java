@@ -6,9 +6,9 @@ import cafe.woden.ircclient.model.LogDirection;
 import cafe.woden.ircclient.model.LogKind;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
-import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptDocumentLineSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptState;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +16,7 @@ import javax.swing.text.DefaultStyledDocument;
 import javax.swing.text.StyledDocument;
 import org.junit.jupiter.api.Test;
 
-class ChatTranscriptReplyFlowCoordinatorTest {
+class ChatTranscriptReplyFlowSupportTest {
 
   @Test
   void appendReplyContextLineEnsuresTargetAndUsesMessagePreviewCache() throws Exception {
@@ -24,8 +24,9 @@ class ChatTranscriptReplyFlowCoordinatorTest {
     Map<TargetRef, StyledDocument> docs = new HashMap<>();
     Map<TargetRef, ChatTranscriptState> stateByTarget = new HashMap<>();
     ChatTranscriptMessageCatalogSupport messageCatalogSupport = messageCatalogSupport();
-    ChatTranscriptReplyFlowCoordinator coordinator =
-        new ChatTranscriptReplyFlowCoordinator(
+    ChatTranscriptReplyFlowSupport support = new ChatTranscriptReplyFlowSupport();
+    ChatTranscriptReplyFlowSupport.Context context =
+        new ChatTranscriptReplyFlowSupport.Context(
             docs,
             stateByTarget,
             target -> {
@@ -48,7 +49,7 @@ class ChatTranscriptReplyFlowCoordinatorTest {
         "Alice",
         "hello");
 
-    coordinator.appendReplyContextLine(ref, "alice", "m-1", 2_000L);
+    support.appendReplyContextLine(context, ref, "alice", "m-1", 2_000L);
 
     assertEquals(
         "-> Alice replied to m-1 (Alice: hello)\n",

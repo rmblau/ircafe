@@ -7,6 +7,7 @@ import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilterRoutingSupport;
 import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredFlowCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptDocumentLineSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPlainAppendSupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMatrixDisplayNameCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTimestampFormatter;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptLineCapSupport;
@@ -14,6 +15,7 @@ import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeFlow
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeSettingsSupport;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptTargetRuntimeCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptPlainSpoilerCoordinator;
+import cafe.woden.ircclient.ui.chat.transcript.spoiler.ChatTranscriptSpoilerFlowSupport;
 import cafe.woden.ircclient.ui.chat.transcript.style.ChatTranscriptStyleRoutingSupport;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 
@@ -40,8 +42,8 @@ final class ChatTranscriptSpoilerComposition {
       ChatTranscriptTargetRuntimeCoordinator targetRuntimeCoordinator,
       ChatTranscriptRuntimeSettingsSupport runtimeSettingsSupport,
       ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator) {
-    ChatTranscriptSpoilerCompositionInputs inputs =
-        new ChatTranscriptSpoilerCompositionInputs(
+    ChatTranscriptSpoilerRuntimeComposition.Components spoilerRuntimeComposition =
+        ChatTranscriptSpoilerRuntimeComposition.create(
             store,
             styles,
             renderer,
@@ -49,19 +51,27 @@ final class ChatTranscriptSpoilerComposition {
             nickColors,
             uiSettings,
             matrixDisplayNameCoordinator,
-            documentLineSupport,
             styleRoutingSupport,
+            runtimeSettingsSupport);
+    ChatTranscriptSpoilerFlowSupport.Context spoilerFlowSupportContext =
+        ChatTranscriptSpoilerFlowComposition.create(
+            styles,
+            spoilerRuntimeComposition,
+            documentLineSupport,
             filterRoutingSupport,
             runtimeFlowCoordinator,
             lineCapSupport,
             targetRuntimeCoordinator,
-            runtimeSettingsSupport,
             filteredFlowCoordinator);
-    ChatTranscriptSpoilerSupportContextGraphComposition.Contexts spoilerSupportContexts =
-        ChatTranscriptSpoilerSupportContextGraphComposition.create(inputs);
+    ChatTranscriptPlainAppendSupport.Context plainAppendSupportContext =
+        new ChatTranscriptPlainAppendSupport.Context(
+            targetRuntimeCoordinator.docs(),
+            styles,
+            targetRuntimeCoordinator::ensureTargetExists,
+            runtimeFlowCoordinator::breakPresenceRun,
+            lineCapSupport::enforceTranscriptLineCap);
     return new Components(
         new ChatTranscriptPlainSpoilerCoordinator(
-            spoilerSupportContexts.plainAppendSupportContext(),
-            spoilerSupportContexts.spoilerFlowSupportContext()));
+            plainAppendSupportContext, spoilerFlowSupportContext));
   }
 }

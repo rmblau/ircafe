@@ -3,17 +3,19 @@ package cafe.woden.ircclient.ui.chat.transcript.message;
 import cafe.woden.ircclient.model.LogDirection;
 import cafe.woden.ircclient.model.LogKind;
 import cafe.woden.ircclient.model.TargetRef;
-import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
 import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptAppendGuardSupport;
 import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilterRoutingSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptDocumentSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptOutgoingChatSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptState;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
+import java.util.function.LongSupplier;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyledDocument;
@@ -23,6 +25,8 @@ import javax.swing.text.StyledDocument;
  * resolution.
  */
 public final class ChatTranscriptChatFlowSupport {
+
+  record PendingReplacementPlan(int lineStart, long effectiveEpochMs) {}
 
   @FunctionalInterface
   public interface AppendVisibleLineHandler {
@@ -217,9 +221,8 @@ public final class ChatTranscriptChatFlowSupport {
     }
     context.ensureTargetExists().ensure(ref);
     StyledDocument doc = context.document(ref);
-    ChatTranscriptPendingReplacementSupport.ReplacementPlan replacement =
-        ChatTranscriptPendingReplacementSupport.prepareReplacement(
-            doc, pendingId, tsEpochMs, System::currentTimeMillis);
+    PendingReplacementPlan replacement =
+        preparePendingReplacement(doc, pendingId, tsEpochMs, System::currentTimeMillis);
     if (replacement == null) {
       return false;
     }
@@ -254,9 +257,8 @@ public final class ChatTranscriptChatFlowSupport {
     }
     context.ensureTargetExists().ensure(ref);
     StyledDocument doc = context.document(ref);
-    ChatTranscriptPendingReplacementSupport.ReplacementPlan replacement =
-        ChatTranscriptPendingReplacementSupport.prepareReplacement(
-            doc, pendingId, tsEpochMs, System::currentTimeMillis);
+    PendingReplacementPlan replacement =
+        preparePendingReplacement(doc, pendingId, tsEpochMs, System::currentTimeMillis);
     if (replacement == null) {
       return false;
     }
@@ -265,6 +267,26 @@ public final class ChatTranscriptChatFlowSupport {
         .insertFailedOutgoingChatLineAt(
             ref, replacement.lineStart(), from, text, replacement.effectiveEpochMs(), reason);
     return true;
+  }
+
+  static PendingReplacementPlan preparePendingReplacement(
+      StyledDocument doc, String pendingId, long tsEpochMs, LongSupplier currentTimeMillis) {
+    if (doc == null || currentTimeMillis == null) return null;
+    String normalizedPendingId = ChatTranscriptMessageMetadataSupport.normalizePendingId(pendingId);
+    if (normalizedPendingId.isEmpty()) return null;
+
+    int lineStart =
+        ChatTranscriptDocumentSupport.findLineStartByPendingId(doc, normalizedPendingId);
+    if (lineStart < 0) return null;
+    int lineEnd = ChatTranscriptDocumentSupport.lineEndOffsetForLineStart(doc, lineStart);
+    try {
+      doc.remove(lineStart, Math.max(0, lineEnd - lineStart));
+    } catch (Exception ignored) {
+      return null;
+    }
+
+    long effectiveEpochMs = tsEpochMs > 0 ? tsEpochMs : currentTimeMillis.getAsLong();
+    return new PendingReplacementPlan(lineStart, effectiveEpochMs);
   }
 
   private void appendChatInternal(

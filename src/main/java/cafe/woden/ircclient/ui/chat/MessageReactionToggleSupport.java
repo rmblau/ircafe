@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.transcript.message;
+package cafe.woden.ircclient.ui.chat;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;

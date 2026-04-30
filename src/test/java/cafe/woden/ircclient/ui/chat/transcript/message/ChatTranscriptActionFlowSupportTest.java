@@ -8,7 +8,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
 import cafe.woden.ircclient.model.FilterAction;
 import cafe.woden.ircclient.model.LogDirection;
 import cafe.woden.ircclient.model.LogKind;
@@ -24,10 +23,8 @@ import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptActionHistoryI
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptManualPreviewSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPresenceFoldSupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageStateSupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReactionSummarySupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptSenderStyleSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
+import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTimestampFormatter;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptState;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import java.util.HashMap;

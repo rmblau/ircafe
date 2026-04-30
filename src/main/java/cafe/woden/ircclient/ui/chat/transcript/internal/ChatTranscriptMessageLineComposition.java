@@ -8,11 +8,11 @@ import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilterRoutingSupport;
 import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredFlowCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptDocumentLineSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptActionFlowSupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMatrixDisplayNameCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageLineCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReactionSummarySupport;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReplyFlowCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptSenderStyleSupport;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTimestampFormatter;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptLineCapSupport;
@@ -43,7 +43,7 @@ final class ChatTranscriptMessageLineComposition {
       ChatTranscriptMessageCatalogSupport messageCatalogSupport,
       ChatTranscriptReactionSummarySupport reactionSummarySupport,
       ChatTranscriptTargetRuntimeCoordinator targetRuntimeCoordinator,
-      ChatTranscriptReplyFlowCoordinator replyFlowCoordinator,
+      ChatTranscriptActionFlowSupport.ReplyContextAppender appendReplyContextLine,
       ChatTranscriptMatrixDisplayNameCoordinator matrixDisplayNameCoordinator,
       ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator) {
     return new ChatTranscriptMessageLineCoordinator(
@@ -66,7 +66,7 @@ final class ChatTranscriptMessageLineComposition {
         targetRuntimeCoordinator.stateByTarget(),
         targetRuntimeCoordinator::ensureTargetExists,
         targetRuntimeCoordinator::noteEpochMs,
-        replyFlowCoordinator::appendReplyContextLine,
+        appendReplyContextLine,
         matrixDisplayNameCoordinator::renderTranscriptFrom,
         filteredFlowCoordinator::endInsertRun,
         filteredFlowCoordinator::shouldDeferRichTextDuringHistoryBatch);

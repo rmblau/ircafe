@@ -10,11 +10,12 @@ import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilterRoutingSupport;
 import cafe.woden.ircclient.ui.chat.transcript.filter.ChatTranscriptFilteredFlowCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptDocumentLineSupport;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptActionFlowSupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMatrixDisplayNameCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageInteractionCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageLineCoordinator;
-import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReplyFlowCoordinator;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReplyFlowSupport;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTimestampFormatter;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptLineCapSupport;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeFlowCoordinator;
@@ -28,7 +29,6 @@ final class ChatTranscriptMessageComposition {
 
   record Components(
       ChatTranscriptMatrixDisplayNameCoordinator matrixDisplayNameCoordinator,
-      ChatTranscriptReplyFlowCoordinator replyFlowCoordinator,
       ChatTranscriptMessageLineCoordinator messageLineCoordinator,
       ChatTranscriptMessageInteractionCoordinator messageInteractionCoordinator) {}
 
@@ -54,8 +54,8 @@ final class ChatTranscriptMessageComposition {
       ChatTranscriptMessageCatalogSupport messageCatalogSupport,
       ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator) {
     ChatTranscriptMatrixDisplayNameCoordinator matrixDisplayNameCoordinator =
-        ChatTranscriptMessageDisplayNameComposition.create(
-            uiSettings, userListStore, targetRuntimeCoordinator);
+        new ChatTranscriptMatrixDisplayNameCoordinator(
+            uiSettings, userListStore, targetRuntimeCoordinator.docs());
     ChatTranscriptMessageSupportComposition.Components messageSupportComposition =
         ChatTranscriptMessageSupportComposition.create(
             styles,
@@ -65,12 +65,19 @@ final class ChatTranscriptMessageComposition {
             styleRoutingSupport,
             documentLineSupport,
             runtimeFlowCoordinator);
-    ChatTranscriptReplyFlowCoordinator replyFlowCoordinator =
-        ChatTranscriptMessageReplyComposition.create(
-            targetRuntimeCoordinator,
+    ChatTranscriptReplyFlowSupport replyFlowSupport = new ChatTranscriptReplyFlowSupport();
+    ChatTranscriptReplyFlowSupport.Context replyFlowContext =
+        new ChatTranscriptReplyFlowSupport.Context(
+            targetRuntimeCoordinator.docs(),
+            targetRuntimeCoordinator.stateByTarget(),
+            targetRuntimeCoordinator::ensureTargetExists,
             documentLineSupport,
             messageSupportComposition.replyContextSupportContext(),
             messageCatalogSupport);
+    ChatTranscriptActionFlowSupport.ReplyContextAppender appendReplyContextLine =
+        (ref, fromNick, replyToMsgId, tsEpochMs) ->
+            replyFlowSupport.appendReplyContextLine(
+                replyFlowContext, ref, fromNick, replyToMsgId, tsEpochMs);
     ChatTranscriptMessageLineCoordinator messageLineCoordinator =
         ChatTranscriptMessageLineComposition.create(
             store,
@@ -89,7 +96,7 @@ final class ChatTranscriptMessageComposition {
             messageCatalogSupport,
             messageSupportComposition.reactionSummarySupport(),
             targetRuntimeCoordinator,
-            replyFlowCoordinator,
+            appendReplyContextLine,
             matrixDisplayNameCoordinator,
             filteredFlowCoordinator);
     ChatTranscriptMessageInteractionCoordinator messageInteractionCoordinator =
@@ -102,9 +109,6 @@ final class ChatTranscriptMessageComposition {
             messageLineCoordinator,
             runtimeFlowCoordinator);
     return new Components(
-        matrixDisplayNameCoordinator,
-        replyFlowCoordinator,
-        messageLineCoordinator,
-        messageInteractionCoordinator);
+        matrixDisplayNameCoordinator, messageLineCoordinator, messageInteractionCoordinator);
   }
 }
