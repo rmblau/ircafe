@@ -135,6 +135,39 @@ public final class ChatTranscriptStoreComposition {
             filteredFlowCoordinator);
     ChatTranscriptPlainSpoilerCoordinator plainSpoilerCoordinator =
         spoilerComposition.plainSpoilerCoordinator();
+    bindPresenceContext(
+        runtimeFlowCoordinator,
+        presenceFoldSupport,
+        filterRoutingSupport,
+        filteredFlowCoordinator,
+        runtimeSettingsSupport,
+        targetRuntimeCoordinator);
+    bindLineLifecycleContexts(
+        runtimeFlowCoordinator,
+        targetRuntimeCoordinator,
+        filterRoutingSupport,
+        filteredFlowCoordinator,
+        documentLineSupport,
+        messageLineCoordinator,
+        runtimeSettingsSupport,
+        auxiliaryRowsSupport);
+    return new Components(
+        filteredFlowCoordinator,
+        matrixDisplayNameCoordinator,
+        messageInteractionCoordinator,
+        messageLineCoordinator,
+        plainSpoilerCoordinator,
+        runtimeFlowCoordinator,
+        targetRuntimeCoordinator);
+  }
+
+  private static void bindPresenceContext(
+      ChatTranscriptRuntimeFlowCoordinator runtimeFlowCoordinator,
+      ChatTranscriptPresenceFoldSupport presenceFoldSupport,
+      ChatTranscriptFilterRoutingSupport filterRoutingSupport,
+      ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator,
+      ChatTranscriptRuntimeSettingsSupport runtimeSettingsSupport,
+      ChatTranscriptTargetRuntimeCoordinator targetRuntimeCoordinator) {
     runtimeFlowCoordinator.bindPresenceContext(
         presenceFoldSupport,
         filterRoutingSupport,
@@ -145,6 +178,17 @@ public final class ChatTranscriptStoreComposition {
         targetRuntimeCoordinator::ensureTargetExists,
         targetRuntimeCoordinator::noteEpochMs,
         System::currentTimeMillis);
+  }
+
+  private static void bindLineLifecycleContexts(
+      ChatTranscriptRuntimeFlowCoordinator runtimeFlowCoordinator,
+      ChatTranscriptTargetRuntimeCoordinator targetRuntimeCoordinator,
+      ChatTranscriptFilterRoutingSupport filterRoutingSupport,
+      ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator,
+      ChatTranscriptDocumentLineSupport documentLineSupport,
+      ChatTranscriptMessageLineCoordinator messageLineCoordinator,
+      ChatTranscriptRuntimeSettingsSupport runtimeSettingsSupport,
+      ChatTranscriptAuxiliaryRowsSupport auxiliaryRowsSupport) {
     runtimeFlowCoordinator.bindLineLifecycleContexts(
         targetRuntimeCoordinator.docs(),
         targetRuntimeCoordinator.stateByTarget(),
@@ -161,13 +205,5 @@ public final class ChatTranscriptStoreComposition {
         runtimeSettingsSupport::linkPreviewsEnabled,
         auxiliaryRowsSupport,
         filteredFlowCoordinator::endAppendRun);
-    return new Components(
-        filteredFlowCoordinator,
-        matrixDisplayNameCoordinator,
-        messageInteractionCoordinator,
-        messageLineCoordinator,
-        plainSpoilerCoordinator,
-        runtimeFlowCoordinator,
-        targetRuntimeCoordinator);
   }
 }

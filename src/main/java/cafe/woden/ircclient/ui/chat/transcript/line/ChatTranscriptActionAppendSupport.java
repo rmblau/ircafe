@@ -17,11 +17,6 @@ import javax.swing.text.StyledDocument;
 public final class ChatTranscriptActionAppendSupport {
 
   @FunctionalInterface
-  public interface RenderedFromResolver {
-    String render(TargetRef ref, String from);
-  }
-
-  @FunctionalInterface
   public interface FilterMatchStyler {
     SimpleAttributeSet apply(AttributeSet base, FilterEngine.Match match);
   }
@@ -43,7 +38,7 @@ public final class ChatTranscriptActionAppendSupport {
       ChatRichTextRenderer renderer,
       ChatTranscriptManualPreviewSupport manualPreviewSupport,
       ChatTranscriptMessageCatalogSupport messageCatalogSupport,
-      RenderedFromResolver renderedFromResolver,
+      ChatTranscriptRenderedFromResolver renderedFromResolver,
       FilterMatchStyler filterMatchStyler,
       Consumer<StyledDocument> ensureAtLineStart,
       TranscriptLineCapEnforcer transcriptLineCapEnforcer,

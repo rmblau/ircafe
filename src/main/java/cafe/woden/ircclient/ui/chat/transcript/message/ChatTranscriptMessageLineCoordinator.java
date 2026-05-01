@@ -13,6 +13,7 @@ import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptManualPreviewF
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptManualPreviewSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptOutgoingChatSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptOutgoingDeliverySupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptRenderedFromResolver;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptSystemLineSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptTextAppendSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptTextInsertSupport;
@@ -66,7 +67,7 @@ public final class ChatTranscriptMessageLineCoordinator {
       Consumer<TargetRef> ensureTargetExists,
       BiConsumer<TargetRef, Long> noteEpochMs,
       ChatTranscriptActionFlowSupport.ReplyContextAppender appendReplyContextLine,
-      ChatTranscriptTextAppendSupport.RenderedFromResolver renderedFromResolver,
+      ChatTranscriptRenderedFromResolver renderedFromResolver,
       Consumer<TargetRef> endFilteredInsertRun,
       Predicate<TargetRef> deferRichTextDuringHistoryBatch) {
     public Dependencies {

@@ -15,11 +15,6 @@ import javax.swing.text.StyledDocument;
 public final class ChatTranscriptActionHistoryInsertSupport {
 
   @FunctionalInterface
-  public interface RenderedFromResolver {
-    String render(TargetRef ref, String from);
-  }
-
-  @FunctionalInterface
   public interface FilterMatchStyler {
     SimpleAttributeSet apply(AttributeSet base, FilterEngine.Match match);
   }
@@ -55,7 +50,7 @@ public final class ChatTranscriptActionHistoryInsertSupport {
       ChatTimestampFormatter timestamps,
       ChatRichTextRenderer renderer,
       ChatTranscriptMessageCatalogSupport messageCatalogSupport,
-      RenderedFromResolver renderedFromResolver,
+      ChatTranscriptRenderedFromResolver renderedFromResolver,
       FilterMatchStyler filterMatchStyler,
       InsertAtNormalizer insertAtNormalizer,
       InsertLineStartEnsurer insertLineStartEnsurer,

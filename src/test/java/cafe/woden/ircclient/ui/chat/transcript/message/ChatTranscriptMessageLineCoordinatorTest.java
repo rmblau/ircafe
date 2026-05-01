@@ -16,6 +16,7 @@ import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptAuxiliaryRowsS
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptDocumentLineSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptLineMetaSupport;
 import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptPresenceFoldSupport;
+import cafe.woden.ircclient.ui.chat.transcript.line.ChatTranscriptRenderedFromResolver;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTimestampFormatter;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptLineCapSupport;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTranscriptRuntimeFlowCoordinator;
@@ -43,6 +44,33 @@ class ChatTranscriptMessageLineCoordinatorTest {
         "NOTICE",
         doc.getCharacterElement(0).getAttributes().getAttribute(ChatStyles.ATTR_META_KIND));
     assertEquals(2_000L, fixture.state(ref).earliestEpochMsSeen());
+  }
+
+  @Test
+  void appendChatAtUsesRenderedFromResolverThroughTextFlow() throws Exception {
+    TestFixture fixture = new TestFixture((ref, from) -> "Alice Display");
+    TargetRef ref = new TargetRef("srv", "#chan");
+
+    fixture.coordinator.appendChatAt(
+        ref, "@alice:matrix", "hello", false, 3_000L, "m-1", Map.of(), null);
+
+    assertTrue(fixture.text(ref).contains("Alice Display: hello"));
+    assertEquals(3_000L, fixture.state(ref).earliestEpochMsSeen());
+  }
+
+  @Test
+  void insertActionFromHistoryAtUsesRenderedFromResolverThroughActionFlow() throws Exception {
+    TestFixture fixture = new TestFixture((ref, from) -> "Alice Display");
+    TargetRef ref = new TargetRef("srv", "#chan");
+
+    int nextInsertAt =
+        fixture.coordinator.insertActionFromHistoryAt(
+            ref, 0, "@alice:matrix", "waves", false, 4_000L, "m-2", Map.of());
+
+    assertTrue(nextInsertAt > 0);
+    assertTrue(fixture.text(ref).contains("Alice Display"));
+    assertTrue(fixture.text(ref).contains("waves"));
+    assertEquals(4_000L, fixture.state(ref).earliestEpochMsSeen());
   }
 
   private static final class TestFixture {
@@ -120,34 +148,39 @@ class ChatTranscriptMessageLineCoordinatorTest {
             documentLineSupport::normalizeInsertAtLineStart,
             documentLineSupport::ensureAtLineStartForInsert,
             runtimeFlowCoordinator::shiftCurrentBlock);
-    private final ChatTranscriptMessageLineCoordinator coordinator =
-        new ChatTranscriptMessageLineCoordinator(
-            new ChatTranscriptMessageLineCoordinator.Dependencies(
-                mutationLock,
-                styles,
-                timestamps,
-                renderer,
-                null,
-                null,
-                styleRoutingSupport,
-                runtimeSettingsSupport,
-                filterRoutingSupport,
-                documentLineSupport,
-                lineCapSupport,
-                runtimeFlowCoordinator,
-                senderStyleSupportContext,
-                messageCatalogSupport,
-                reactionSummarySupport,
-                docs,
-                stateByTarget,
-                this::ensureTarget,
-                this::noteEpoch,
-                (ref, from, replyToMsgId, tsEpochMs) -> {},
-                (ref, from) -> from,
-                filteredFlowCoordinator::endInsertRun,
-                filteredFlowCoordinator::shouldDeferRichTextDuringHistoryBatch));
+    private final ChatTranscriptMessageLineCoordinator coordinator;
 
     private TestFixture() {
+      this((ref, from) -> from);
+    }
+
+    private TestFixture(ChatTranscriptRenderedFromResolver renderedFromResolver) {
+      coordinator =
+          new ChatTranscriptMessageLineCoordinator(
+              new ChatTranscriptMessageLineCoordinator.Dependencies(
+                  mutationLock,
+                  styles,
+                  timestamps,
+                  renderer,
+                  null,
+                  null,
+                  styleRoutingSupport,
+                  runtimeSettingsSupport,
+                  filterRoutingSupport,
+                  documentLineSupport,
+                  lineCapSupport,
+                  runtimeFlowCoordinator,
+                  senderStyleSupportContext,
+                  messageCatalogSupport,
+                  reactionSummarySupport,
+                  docs,
+                  stateByTarget,
+                  this::ensureTarget,
+                  this::noteEpoch,
+                  (ref, from, replyToMsgId, tsEpochMs) -> {},
+                  renderedFromResolver,
+                  filteredFlowCoordinator::endInsertRun,
+                  filteredFlowCoordinator::shouldDeferRichTextDuringHistoryBatch));
       filteredFlowCoordinator.bindContext(
           filterRoutingSupport,
           docs,
@@ -230,6 +263,11 @@ class ChatTranscriptMessageLineCoordinatorTest {
 
     private StyledDocument document(TargetRef ref) {
       return docs.get(ref);
+    }
+
+    private String text(TargetRef ref) throws Exception {
+      StyledDocument doc = document(ref);
+      return doc == null ? "" : doc.getText(0, doc.getLength());
     }
 
     private ChatTranscriptState state(TargetRef ref) {
