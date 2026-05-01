@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.transcript.message;
+package cafe.woden.ircclient.ui.chat.transcript.line;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;

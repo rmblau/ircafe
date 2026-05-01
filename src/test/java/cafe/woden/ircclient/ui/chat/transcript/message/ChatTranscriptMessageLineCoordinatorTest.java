@@ -122,29 +122,30 @@ class ChatTranscriptMessageLineCoordinatorTest {
             runtimeFlowCoordinator::shiftCurrentBlock);
     private final ChatTranscriptMessageLineCoordinator coordinator =
         new ChatTranscriptMessageLineCoordinator(
-            mutationLock,
-            styles,
-            timestamps,
-            renderer,
-            null,
-            null,
-            styleRoutingSupport,
-            runtimeSettingsSupport,
-            filterRoutingSupport,
-            documentLineSupport,
-            lineCapSupport,
-            runtimeFlowCoordinator,
-            senderStyleSupportContext,
-            messageCatalogSupport,
-            reactionSummarySupport,
-            docs,
-            stateByTarget,
-            this::ensureTarget,
-            this::noteEpoch,
-            (ref, from, replyToMsgId, tsEpochMs) -> {},
-            (ref, from) -> from,
-            filteredFlowCoordinator::endInsertRun,
-            filteredFlowCoordinator::shouldDeferRichTextDuringHistoryBatch);
+            new ChatTranscriptMessageLineCoordinator.Dependencies(
+                mutationLock,
+                styles,
+                timestamps,
+                renderer,
+                null,
+                null,
+                styleRoutingSupport,
+                runtimeSettingsSupport,
+                filterRoutingSupport,
+                documentLineSupport,
+                lineCapSupport,
+                runtimeFlowCoordinator,
+                senderStyleSupportContext,
+                messageCatalogSupport,
+                reactionSummarySupport,
+                docs,
+                stateByTarget,
+                this::ensureTarget,
+                this::noteEpoch,
+                (ref, from, replyToMsgId, tsEpochMs) -> {},
+                (ref, from) -> from,
+                filteredFlowCoordinator::endInsertRun,
+                filteredFlowCoordinator::shouldDeferRichTextDuringHistoryBatch));
 
     private TestFixture() {
       filteredFlowCoordinator.bindContext(

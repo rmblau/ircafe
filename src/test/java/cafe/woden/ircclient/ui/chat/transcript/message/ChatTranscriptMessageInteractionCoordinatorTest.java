@@ -1,7 +1,10 @@
 package cafe.woden.ircclient.ui.chat.transcript.message;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -43,6 +46,34 @@ class ChatTranscriptMessageInteractionCoordinatorTest {
   }
 
   @Test
+  void messageOffsetAndOwnMessageUseDocumentMetadata() throws Exception {
+    TestFixture fixture = new TestFixture();
+    TargetRef ref = new TargetRef("srv", "#chan");
+    fixture.ensureTarget(ref);
+    fixture.insertMessageLine(ref, "alice", "hello", "m-1", LogDirection.OUT, true);
+
+    assertEquals(0, fixture.coordinator.messageOffsetById(ref, "m-1"));
+    assertTrue(fixture.coordinator.isOwnMessage(ref, "m-1"));
+    assertFalse(fixture.coordinator.isOwnMessage(ref, "missing"));
+  }
+
+  @Test
+  void messagePreviewUsesCatalogState() {
+    TestFixture fixture = new TestFixture();
+    TargetRef ref = new TargetRef("srv", "#chan");
+    fixture.ensureTarget(ref);
+    fixture.messageCatalogSupport.recordInsertedMessage(
+        fixture.state(ref).messageCatalog(),
+        ChatTranscriptLineMetaSupport.create(
+            ref, LogKind.CHAT, LogDirection.IN, "alice", 321L, null, "m-2", Map.of()),
+        "alice",
+        "hello there");
+
+    assertEquals("alice: hello there", fixture.coordinator.messagePreviewById(ref, "m-2"));
+    assertEquals("", fixture.coordinator.messagePreviewById(ref, "missing"));
+  }
+
+  @Test
   void applyMessageReactionEnsuresTargetAndDelegatesReactionState() {
     ChatTranscriptReactionSummarySupport reactionSummarySupport =
         mock(ChatTranscriptReactionSummarySupport.class);
@@ -62,6 +93,38 @@ class ChatTranscriptMessageInteractionCoordinatorTest {
             ":)",
             "alice",
             10L);
+  }
+
+  @Test
+  void setReactionChipActionHandlerRebindsExistingStates() {
+    ChatTranscriptReactionSummarySupport reactionSummarySupport =
+        mock(ChatTranscriptReactionSummarySupport.class);
+    TestFixture fixture = new TestFixture(reactionSummarySupport);
+    TargetRef ref = new TargetRef("srv", "#chan");
+    fixture.ensureTarget(ref);
+
+    ReactionChipActionHandler handler = (target, messageId, reactionToken, unreactRequested) -> {};
+    fixture.coordinator.setReactionChipActionHandler(handler);
+
+    verify(reactionSummarySupport).setReactionChipActionHandler(eq(handler), anyMap());
+  }
+
+  @Test
+  void missingStateReturnsFalseForReactionLookup() {
+    TestFixture fixture = new TestFixture(mock(ChatTranscriptReactionSummarySupport.class));
+
+    assertFalse(
+        fixture.coordinator.hasReactionFromNick(
+            new TargetRef("srv", "#chan"), "m-1", ":)", "alice"));
+  }
+
+  @Test
+  void applyMessageRedactionReturnsFalseWhenRefMissing() {
+    TestFixture fixture = new TestFixture();
+
+    assertFalse(
+        fixture.coordinator.applyMessageRedaction(
+            null, "m-1", "alice", 12L, "m-2", Map.of("msgid", "m-2")));
   }
 
   private static final class TestFixture {
@@ -129,19 +192,26 @@ class ChatTranscriptMessageInteractionCoordinatorTest {
 
     private void insertMessageLine(TargetRef ref, String from, String text, String messageId)
         throws Exception {
+      insertMessageLine(ref, from, text, messageId, LogDirection.IN, false);
+    }
+
+    private void insertMessageLine(
+        TargetRef ref,
+        String from,
+        String text,
+        String messageId,
+        LogDirection direction,
+        boolean outgoingAttribute)
+        throws Exception {
       StyledDocument doc = document(ref);
       SimpleAttributeSet attrs =
           ChatTranscriptLineMetaSupport.bind(
               new SimpleAttributeSet(),
               ChatTranscriptLineMetaSupport.create(
-                  ref,
-                  LogKind.CHAT,
-                  LogDirection.IN,
-                  from,
-                  1_000L,
-                  null,
-                  messageId,
-                  Map.of("msgid", messageId)));
+                  ref, LogKind.CHAT, direction, from, 1_000L, null, messageId, Map.of()));
+      if (outgoingAttribute) {
+        attrs.addAttribute(ChatStyles.ATTR_OUTGOING, Boolean.TRUE);
+      }
       doc.insertString(0, from + ": " + text + "\n", attrs);
     }
 

@@ -45,7 +45,7 @@ public final class ChatTranscriptMessageLineCoordinator {
   private final ChatTranscriptTextAppendSupport.Context textAppendSupportContext;
   private final ChatTranscriptTextInsertSupport.Context textInsertSupportContext;
 
-  public ChatTranscriptMessageLineCoordinator(
+  public record Dependencies(
       Object mutationLock,
       ChatStyles styles,
       ChatTimestampFormatter ts,
@@ -69,151 +69,198 @@ public final class ChatTranscriptMessageLineCoordinator {
       ChatTranscriptTextAppendSupport.RenderedFromResolver renderedFromResolver,
       Consumer<TargetRef> endFilteredInsertRun,
       Predicate<TargetRef> deferRichTextDuringHistoryBatch) {
-    Objects.requireNonNull(mutationLock, "mutationLock");
-    Objects.requireNonNull(styles, "styles");
-    Objects.requireNonNull(styleRoutingSupport, "styleRoutingSupport");
-    Objects.requireNonNull(runtimeSettingsSupport, "runtimeSettingsSupport");
-    Objects.requireNonNull(filterRoutingSupport, "filterRoutingSupport");
-    Objects.requireNonNull(documentLineSupport, "documentLineSupport");
-    Objects.requireNonNull(lineCapSupport, "lineCapSupport");
-    Objects.requireNonNull(runtimeFlowCoordinator, "runtimeFlowCoordinator");
-    Objects.requireNonNull(senderStyleSupportContext, "senderStyleSupportContext");
-    Objects.requireNonNull(messageCatalogSupport, "messageCatalogSupport");
-    Objects.requireNonNull(reactionSummarySupport, "reactionSummarySupport");
-    Objects.requireNonNull(docs, "docs");
-    Objects.requireNonNull(stateByTarget, "stateByTarget");
-    Objects.requireNonNull(ensureTargetExists, "ensureTargetExists");
-    Objects.requireNonNull(noteEpochMs, "noteEpochMs");
-    Objects.requireNonNull(appendReplyContextLine, "appendReplyContextLine");
-    Objects.requireNonNull(renderedFromResolver, "renderedFromResolver");
-    Objects.requireNonNull(endFilteredInsertRun, "endFilteredInsertRun");
-    Objects.requireNonNull(deferRichTextDuringHistoryBatch, "deferRichTextDuringHistoryBatch");
+    public Dependencies {
+      Objects.requireNonNull(mutationLock, "mutationLock");
+      Objects.requireNonNull(styles, "styles");
+      Objects.requireNonNull(styleRoutingSupport, "styleRoutingSupport");
+      Objects.requireNonNull(runtimeSettingsSupport, "runtimeSettingsSupport");
+      Objects.requireNonNull(filterRoutingSupport, "filterRoutingSupport");
+      Objects.requireNonNull(documentLineSupport, "documentLineSupport");
+      Objects.requireNonNull(lineCapSupport, "lineCapSupport");
+      Objects.requireNonNull(runtimeFlowCoordinator, "runtimeFlowCoordinator");
+      Objects.requireNonNull(senderStyleSupportContext, "senderStyleSupportContext");
+      Objects.requireNonNull(messageCatalogSupport, "messageCatalogSupport");
+      Objects.requireNonNull(reactionSummarySupport, "reactionSummarySupport");
+      Objects.requireNonNull(docs, "docs");
+      Objects.requireNonNull(stateByTarget, "stateByTarget");
+      Objects.requireNonNull(ensureTargetExists, "ensureTargetExists");
+      Objects.requireNonNull(noteEpochMs, "noteEpochMs");
+      Objects.requireNonNull(appendReplyContextLine, "appendReplyContextLine");
+      Objects.requireNonNull(renderedFromResolver, "renderedFromResolver");
+      Objects.requireNonNull(endFilteredInsertRun, "endFilteredInsertRun");
+      Objects.requireNonNull(deferRichTextDuringHistoryBatch, "deferRichTextDuringHistoryBatch");
+    }
+  }
 
-    ChatTranscriptManualPreviewSupport manualPreviewSupport =
-        new ChatTranscriptManualPreviewSupport(styles, imageEmbeds, linkPreviews);
-    ChatTranscriptOutgoingDeliverySupport outgoingDeliverySupport =
-        new ChatTranscriptOutgoingDeliverySupport(docs, mutationLock);
-    ChatTranscriptOutgoingChatSupport outgoingChatSupport =
-        new ChatTranscriptOutgoingChatSupport(
-            styles,
-            senderStyleSupportContext,
-            ensureTargetExists::accept,
-            noteEpochMs::accept,
-            runtimeFlowCoordinator::breakPresenceRun,
-            runtimeFlowCoordinator::appendLineWithTail,
-            runtimeFlowCoordinator::insertLineAt,
-            outgoingDeliverySupport::insertConfirmedDot);
-
+  public ChatTranscriptMessageLineCoordinator(Dependencies dependencies) {
+    Dependencies deps = Objects.requireNonNull(dependencies, "dependencies");
+    ChatTranscriptManualPreviewSupport manualPreviewSupport = createManualPreviewSupport(deps);
+    ChatTranscriptOutgoingChatSupport outgoingChatSupport = createOutgoingChatSupport(deps);
     ChatTranscriptActionAppendSupport.Context actionAppendSupportContext =
-        new ChatTranscriptActionAppendSupport.Context(
-            styles,
-            senderStyleSupportContext,
-            ts,
-            renderer,
-            manualPreviewSupport,
-            messageCatalogSupport,
-            (ref, from) -> renderedFromResolver.render(ref, from),
-            styleRoutingSupport::withFilterMatch,
-            documentLineSupport::ensureAtLineStart,
-            lineCapSupport::enforceTranscriptLineCap,
-            runtimeFlowCoordinator::maybeRenderPendingReadMarker);
-    this.textAppendSupportContext =
-        new ChatTranscriptTextAppendSupport.Context(
-            styles,
-            ts,
-            renderer,
-            messageCatalogSupport,
-            manualPreviewSupport,
-            renderedFromResolver,
-            styleRoutingSupport::withFilterMatch,
-            lineCapSupport::enforceTranscriptLineCap,
-            runtimeFlowCoordinator::maybeRenderPendingReadMarker);
+        createActionAppendSupportContext(deps, manualPreviewSupport);
+    this.textAppendSupportContext = createTextAppendSupportContext(deps, manualPreviewSupport);
     ChatTranscriptActionHistoryInsertSupport.Context actionHistoryInsertSupportContext =
-        new ChatTranscriptActionHistoryInsertSupport.Context(
-            styles,
-            senderStyleSupportContext,
-            ts,
-            renderer,
-            messageCatalogSupport,
-            (ref, from) -> renderedFromResolver.render(ref, from),
-            styleRoutingSupport::withFilterMatch,
-            documentLineSupport::normalizeInsertAtLineStart,
-            documentLineSupport::ensureAtLineStartForInsert,
-            runtimeFlowCoordinator::shiftCurrentBlock,
-            lineCapSupport::enforceTranscriptLineCap,
-            runtimeFlowCoordinator::maybeRenderPendingReadMarker);
-    this.textInsertSupportContext =
-        new ChatTranscriptTextInsertSupport.Context(
-            styles,
-            ts,
-            renderer,
-            messageCatalogSupport,
-            (ref, from) -> renderedFromResolver.render(ref, from),
-            styleRoutingSupport::withFilterMatch,
-            documentLineSupport::normalizeInsertAtLineStart,
-            documentLineSupport::ensureAtLineStartForInsert,
-            runtimeFlowCoordinator::shiftCurrentBlock,
-            lineCapSupport::enforceTranscriptLineCap);
-
-    this.manualPreviewFlowContext =
-        new ChatTranscriptManualPreviewFlowSupport.Context(
-            docs,
-            ensureTargetExists::accept,
-            manualPreviewSupport,
-            runtimeFlowCoordinator::shiftCurrentBlock,
-            lineCapSupport);
-    this.chatFlowContext =
-        new ChatTranscriptChatFlowSupport.Context(
-            filterRoutingSupport,
-            senderStyleSupportContext,
-            outgoingChatSupport,
-            reactionSummarySupport,
-            docs::get,
-            stateByTarget::get,
-            ensureTargetExists::accept,
-            noteEpochMs::accept,
-            runtimeFlowCoordinator::appendLine,
-            runtimeFlowCoordinator::insertLineAt,
-            (ref, fromNick, replyToMsgId, tsEpochMs) ->
-                appendReplyContextLine.append(ref, fromNick, replyToMsgId, tsEpochMs),
-            runtimeSettingsSupport::outgoingDeliveryIndicatorsEnabled);
+        createActionHistoryInsertSupportContext(deps);
+    this.textInsertSupportContext = createTextInsertSupportContext(deps);
+    this.manualPreviewFlowContext = createManualPreviewFlowContext(deps, manualPreviewSupport);
+    this.chatFlowContext = createChatFlowContext(deps, outgoingChatSupport);
     this.actionFlowContext =
-        new ChatTranscriptActionFlowSupport.Context(
-            filterRoutingSupport,
-            actionAppendSupportContext,
-            actionHistoryInsertSupportContext,
-            reactionSummarySupport,
-            docs::get,
-            stateByTarget::get,
-            ensureTargetExists::accept,
-            noteEpochMs::accept,
-            appendReplyContextLine,
-            endFilteredInsertRun::accept,
-            deferRichTextDuringHistoryBatch,
-            runtimeSettingsSupport::timestampsIncludeChatMessages,
-            runtimeSettingsSupport::imageEmbedsEnabled,
-            runtimeSettingsSupport::linkPreviewsEnabled);
-    this.systemLineSupport =
-        new ChatTranscriptSystemLineSupport(
-            filterRoutingSupport,
-            ensureTargetExists::accept,
-            noteEpochMs::accept,
-            runtimeFlowCoordinator::appendLine,
-            runtimeFlowCoordinator::insertLineAt,
-            appendReplyContextLine::append,
-            docs::get,
-            stateByTarget::get,
-            reactionSummarySupport,
-            ref ->
-                new ChatTranscriptSystemLineSupport.LineStyles(
-                    styles.noticeFrom(), styles.noticeMessage()),
-            ref ->
-                new ChatTranscriptSystemLineSupport.LineStyles(
-                    styleRoutingSupport.statusFromStyleFor(ref), styles.status()),
-            ref ->
-                new ChatTranscriptSystemLineSupport.LineStyles(
-                    styleRoutingSupport.errorFromStyleFor(ref), styles.error()),
-            System::currentTimeMillis);
+        createActionFlowContext(
+            deps, actionAppendSupportContext, actionHistoryInsertSupportContext);
+    this.systemLineSupport = createSystemLineSupport(deps);
+  }
+
+  private static ChatTranscriptManualPreviewSupport createManualPreviewSupport(Dependencies deps) {
+    return new ChatTranscriptManualPreviewSupport(
+        deps.styles(), deps.imageEmbeds(), deps.linkPreviews());
+  }
+
+  private static ChatTranscriptOutgoingChatSupport createOutgoingChatSupport(Dependencies deps) {
+    ChatTranscriptOutgoingDeliverySupport outgoingDeliverySupport =
+        new ChatTranscriptOutgoingDeliverySupport(deps.docs(), deps.mutationLock());
+    return new ChatTranscriptOutgoingChatSupport(
+        deps.styles(),
+        deps.senderStyleSupportContext(),
+        deps.ensureTargetExists()::accept,
+        deps.noteEpochMs()::accept,
+        deps.runtimeFlowCoordinator()::breakPresenceRun,
+        deps.runtimeFlowCoordinator()::appendLineWithTail,
+        deps.runtimeFlowCoordinator()::insertLineAt,
+        outgoingDeliverySupport::insertConfirmedDot);
+  }
+
+  private static ChatTranscriptActionAppendSupport.Context createActionAppendSupportContext(
+      Dependencies deps, ChatTranscriptManualPreviewSupport manualPreviewSupport) {
+    return new ChatTranscriptActionAppendSupport.Context(
+        deps.styles(),
+        deps.senderStyleSupportContext(),
+        deps.ts(),
+        deps.renderer(),
+        manualPreviewSupport,
+        deps.messageCatalogSupport(),
+        (ref, from) -> deps.renderedFromResolver().render(ref, from),
+        deps.styleRoutingSupport()::withFilterMatch,
+        deps.documentLineSupport()::ensureAtLineStart,
+        deps.lineCapSupport()::enforceTranscriptLineCap,
+        deps.runtimeFlowCoordinator()::maybeRenderPendingReadMarker);
+  }
+
+  private static ChatTranscriptTextAppendSupport.Context createTextAppendSupportContext(
+      Dependencies deps, ChatTranscriptManualPreviewSupport manualPreviewSupport) {
+    return new ChatTranscriptTextAppendSupport.Context(
+        deps.styles(),
+        deps.ts(),
+        deps.renderer(),
+        deps.messageCatalogSupport(),
+        manualPreviewSupport,
+        deps.renderedFromResolver(),
+        deps.styleRoutingSupport()::withFilterMatch,
+        deps.lineCapSupport()::enforceTranscriptLineCap,
+        deps.runtimeFlowCoordinator()::maybeRenderPendingReadMarker);
+  }
+
+  private static ChatTranscriptActionHistoryInsertSupport.Context
+      createActionHistoryInsertSupportContext(Dependencies deps) {
+    return new ChatTranscriptActionHistoryInsertSupport.Context(
+        deps.styles(),
+        deps.senderStyleSupportContext(),
+        deps.ts(),
+        deps.renderer(),
+        deps.messageCatalogSupport(),
+        (ref, from) -> deps.renderedFromResolver().render(ref, from),
+        deps.styleRoutingSupport()::withFilterMatch,
+        deps.documentLineSupport()::normalizeInsertAtLineStart,
+        deps.documentLineSupport()::ensureAtLineStartForInsert,
+        deps.runtimeFlowCoordinator()::shiftCurrentBlock,
+        deps.lineCapSupport()::enforceTranscriptLineCap,
+        deps.runtimeFlowCoordinator()::maybeRenderPendingReadMarker);
+  }
+
+  private static ChatTranscriptTextInsertSupport.Context createTextInsertSupportContext(
+      Dependencies deps) {
+    return new ChatTranscriptTextInsertSupport.Context(
+        deps.styles(),
+        deps.ts(),
+        deps.renderer(),
+        deps.messageCatalogSupport(),
+        (ref, from) -> deps.renderedFromResolver().render(ref, from),
+        deps.styleRoutingSupport()::withFilterMatch,
+        deps.documentLineSupport()::normalizeInsertAtLineStart,
+        deps.documentLineSupport()::ensureAtLineStartForInsert,
+        deps.runtimeFlowCoordinator()::shiftCurrentBlock,
+        deps.lineCapSupport()::enforceTranscriptLineCap);
+  }
+
+  private static ChatTranscriptManualPreviewFlowSupport.Context createManualPreviewFlowContext(
+      Dependencies deps, ChatTranscriptManualPreviewSupport manualPreviewSupport) {
+    return new ChatTranscriptManualPreviewFlowSupport.Context(
+        deps.docs(),
+        deps.ensureTargetExists()::accept,
+        manualPreviewSupport,
+        deps.runtimeFlowCoordinator()::shiftCurrentBlock,
+        deps.lineCapSupport());
+  }
+
+  private static ChatTranscriptChatFlowSupport.Context createChatFlowContext(
+      Dependencies deps, ChatTranscriptOutgoingChatSupport outgoingChatSupport) {
+    return new ChatTranscriptChatFlowSupport.Context(
+        deps.filterRoutingSupport(),
+        deps.senderStyleSupportContext(),
+        outgoingChatSupport,
+        deps.reactionSummarySupport(),
+        deps.docs()::get,
+        deps.stateByTarget()::get,
+        deps.ensureTargetExists()::accept,
+        deps.noteEpochMs()::accept,
+        deps.runtimeFlowCoordinator()::appendLine,
+        deps.runtimeFlowCoordinator()::insertLineAt,
+        (ref, fromNick, replyToMsgId, tsEpochMs) ->
+            deps.appendReplyContextLine().append(ref, fromNick, replyToMsgId, tsEpochMs),
+        deps.runtimeSettingsSupport()::outgoingDeliveryIndicatorsEnabled);
+  }
+
+  private static ChatTranscriptActionFlowSupport.Context createActionFlowContext(
+      Dependencies deps,
+      ChatTranscriptActionAppendSupport.Context actionAppendSupportContext,
+      ChatTranscriptActionHistoryInsertSupport.Context actionHistoryInsertSupportContext) {
+    return new ChatTranscriptActionFlowSupport.Context(
+        deps.filterRoutingSupport(),
+        actionAppendSupportContext,
+        actionHistoryInsertSupportContext,
+        deps.reactionSummarySupport(),
+        deps.docs()::get,
+        deps.stateByTarget()::get,
+        deps.ensureTargetExists()::accept,
+        deps.noteEpochMs()::accept,
+        deps.appendReplyContextLine(),
+        deps.endFilteredInsertRun()::accept,
+        deps.deferRichTextDuringHistoryBatch(),
+        deps.runtimeSettingsSupport()::timestampsIncludeChatMessages,
+        deps.runtimeSettingsSupport()::imageEmbedsEnabled,
+        deps.runtimeSettingsSupport()::linkPreviewsEnabled);
+  }
+
+  private static ChatTranscriptSystemLineSupport createSystemLineSupport(Dependencies deps) {
+    return new ChatTranscriptSystemLineSupport(
+        deps.filterRoutingSupport(),
+        deps.ensureTargetExists()::accept,
+        deps.noteEpochMs()::accept,
+        deps.runtimeFlowCoordinator()::appendLine,
+        deps.runtimeFlowCoordinator()::insertLineAt,
+        deps.appendReplyContextLine()::append,
+        deps.docs()::get,
+        deps.stateByTarget()::get,
+        deps.reactionSummarySupport(),
+        ref ->
+            new ChatTranscriptSystemLineSupport.LineStyles(
+                deps.styles().noticeFrom(), deps.styles().noticeMessage()),
+        ref ->
+            new ChatTranscriptSystemLineSupport.LineStyles(
+                deps.styleRoutingSupport().statusFromStyleFor(ref), deps.styles().status()),
+        ref ->
+            new ChatTranscriptSystemLineSupport.LineStyles(
+                deps.styleRoutingSupport().errorFromStyleFor(ref), deps.styles().error()),
+        System::currentTimeMillis);
   }
 
   public ChatTranscriptTextAppendSupport.Context textAppendSupportContext() {

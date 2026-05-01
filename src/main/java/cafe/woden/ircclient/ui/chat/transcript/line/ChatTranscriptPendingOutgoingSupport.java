@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.transcript.message;
+package cafe.woden.ircclient.ui.chat.transcript.line;
 
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import java.awt.Color;
