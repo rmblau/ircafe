@@ -66,34 +66,102 @@ final class ChatTranscriptMessageComposition {
         new ChatTranscriptMatrixDisplayNameCoordinator(
             uiSettings, userListStore, targetRuntimeCoordinator.docs());
     ChatTranscriptReplyContextSupport.Context replyContextSupportContext =
-        new ChatTranscriptReplyContextSupport.Context(
-            styles, ts, matrixDisplayNameCoordinator::renderTranscriptFrom);
+        createReplyContextSupportContext(styles, ts, matrixDisplayNameCoordinator);
     ChatTranscriptSenderStyleSupport.Context senderStyleSupportContext =
-        new ChatTranscriptSenderStyleSupport.Context(
-            styles,
-            nickColors,
-            ChatTranscriptLineMetaSupport::bind,
-            styleRoutingSupport::applyOutgoingLineColor,
-            styleRoutingSupport::applyNotificationRuleHighlightColor);
+        createSenderStyleSupportContext(styles, nickColors, styleRoutingSupport);
     ChatTranscriptReactionSummarySupport reactionSummarySupport =
-        new ChatTranscriptReactionSummarySupport(
+        createReactionSummarySupport(
+            styles, styleRoutingSupport, documentLineSupport, runtimeFlowCoordinator);
+    ChatTranscriptActionFlowSupport.ReplyContextAppender appendReplyContextLine =
+        createReplyContextAppender(
+            targetRuntimeCoordinator,
+            documentLineSupport,
+            replyContextSupportContext,
+            messageCatalogSupport);
+    ChatTranscriptMessageLineCoordinator messageLineCoordinator =
+        createMessageLineCoordinator(
+            store,
             styles,
-            styleRoutingSupport::safeTranscriptFont,
-            (ref, epochMs, targetMessageId) ->
-                ChatTranscriptLineMetaSupport.create(
-                    ref,
-                    LogKind.STATUS,
-                    LogDirection.SYSTEM,
-                    null,
-                    epochMs,
-                    null,
-                    targetMessageId,
-                    Map.of("draft/react", "1")),
-            ChatTranscriptLineMetaSupport::bind,
-            ChatTranscriptLineMetaSupport::withAuxiliaryRowKind,
-            documentLineSupport::normalizeInsertAtLineStart,
-            documentLineSupport::ensureAtLineStartForInsert,
-            runtimeFlowCoordinator::shiftCurrentBlock);
+            renderer,
+            ts,
+            imageEmbeds,
+            linkPreviews,
+            styleRoutingSupport,
+            runtimeSettingsSupport,
+            filterRoutingSupport,
+            documentLineSupport,
+            lineCapSupport,
+            runtimeFlowCoordinator,
+            senderStyleSupportContext,
+            messageCatalogSupport,
+            reactionSummarySupport,
+            targetRuntimeCoordinator,
+            appendReplyContextLine,
+            matrixDisplayNameCoordinator,
+            filteredFlowCoordinator);
+    ChatTranscriptMessageInteractionCoordinator messageInteractionCoordinator =
+        createMessageInteractionCoordinator(
+            targetRuntimeCoordinator,
+            messageCatalogSupport,
+            reactionSummarySupport,
+            senderStyleSupportContext,
+            matrixDisplayNameCoordinator,
+            messageLineCoordinator,
+            runtimeFlowCoordinator);
+    return new Components(
+        matrixDisplayNameCoordinator, messageLineCoordinator, messageInteractionCoordinator);
+  }
+
+  private static ChatTranscriptReplyContextSupport.Context createReplyContextSupportContext(
+      ChatStyles styles,
+      ChatTimestampFormatter ts,
+      ChatTranscriptMatrixDisplayNameCoordinator matrixDisplayNameCoordinator) {
+    return new ChatTranscriptReplyContextSupport.Context(
+        styles, ts, matrixDisplayNameCoordinator::renderTranscriptFrom);
+  }
+
+  private static ChatTranscriptSenderStyleSupport.Context createSenderStyleSupportContext(
+      ChatStyles styles,
+      NickColorService nickColors,
+      ChatTranscriptStyleRoutingSupport styleRoutingSupport) {
+    return new ChatTranscriptSenderStyleSupport.Context(
+        styles,
+        nickColors,
+        ChatTranscriptLineMetaSupport::bind,
+        styleRoutingSupport::applyOutgoingLineColor,
+        styleRoutingSupport::applyNotificationRuleHighlightColor);
+  }
+
+  private static ChatTranscriptReactionSummarySupport createReactionSummarySupport(
+      ChatStyles styles,
+      ChatTranscriptStyleRoutingSupport styleRoutingSupport,
+      ChatTranscriptDocumentLineSupport documentLineSupport,
+      ChatTranscriptRuntimeFlowCoordinator runtimeFlowCoordinator) {
+    return new ChatTranscriptReactionSummarySupport(
+        styles,
+        styleRoutingSupport::safeTranscriptFont,
+        (ref, epochMs, targetMessageId) ->
+            ChatTranscriptLineMetaSupport.create(
+                ref,
+                LogKind.STATUS,
+                LogDirection.SYSTEM,
+                null,
+                epochMs,
+                null,
+                targetMessageId,
+                Map.of("draft/react", "1")),
+        ChatTranscriptLineMetaSupport::bind,
+        ChatTranscriptLineMetaSupport::withAuxiliaryRowKind,
+        documentLineSupport::normalizeInsertAtLineStart,
+        documentLineSupport::ensureAtLineStartForInsert,
+        runtimeFlowCoordinator::shiftCurrentBlock);
+  }
+
+  private static ChatTranscriptActionFlowSupport.ReplyContextAppender createReplyContextAppender(
+      ChatTranscriptTargetRuntimeCoordinator targetRuntimeCoordinator,
+      ChatTranscriptDocumentLineSupport documentLineSupport,
+      ChatTranscriptReplyContextSupport.Context replyContextSupportContext,
+      ChatTranscriptMessageCatalogSupport messageCatalogSupport) {
     ChatTranscriptReplyFlowSupport replyFlowSupport = new ChatTranscriptReplyFlowSupport();
     ChatTranscriptReplyFlowSupport.Context replyFlowContext =
         new ChatTranscriptReplyFlowSupport.Context(
@@ -103,52 +171,79 @@ final class ChatTranscriptMessageComposition {
             documentLineSupport,
             replyContextSupportContext,
             messageCatalogSupport);
-    ChatTranscriptActionFlowSupport.ReplyContextAppender appendReplyContextLine =
-        (ref, fromNick, replyToMsgId, tsEpochMs) ->
-            replyFlowSupport.appendReplyContextLine(
-                replyFlowContext, ref, fromNick, replyToMsgId, tsEpochMs);
-    ChatTranscriptMessageLineCoordinator messageLineCoordinator =
-        new ChatTranscriptMessageLineCoordinator(
-            new ChatTranscriptMessageLineCoordinator.Dependencies(
-                store,
-                styles,
-                ts,
-                renderer,
-                imageEmbeds,
-                linkPreviews,
-                styleRoutingSupport,
-                runtimeSettingsSupport,
-                filterRoutingSupport,
-                documentLineSupport,
-                lineCapSupport,
-                runtimeFlowCoordinator,
-                senderStyleSupportContext,
-                messageCatalogSupport,
-                reactionSummarySupport,
-                targetRuntimeCoordinator.docs(),
-                targetRuntimeCoordinator.stateByTarget(),
-                targetRuntimeCoordinator::ensureTargetExists,
-                targetRuntimeCoordinator::noteEpochMs,
-                appendReplyContextLine,
-                matrixDisplayNameCoordinator::renderTranscriptFrom,
-                filteredFlowCoordinator::endInsertRun,
-                filteredFlowCoordinator::shouldDeferRichTextDuringHistoryBatch));
-    ChatTranscriptMessageInteractionCoordinator messageInteractionCoordinator =
-        new ChatTranscriptMessageInteractionCoordinator(
+    return (ref, fromNick, replyToMsgId, tsEpochMs) ->
+        replyFlowSupport.appendReplyContextLine(
+            replyFlowContext, ref, fromNick, replyToMsgId, tsEpochMs);
+  }
+
+  private static ChatTranscriptMessageLineCoordinator createMessageLineCoordinator(
+      ChatTranscriptStore store,
+      ChatStyles styles,
+      ChatRichTextRenderer renderer,
+      ChatTimestampFormatter ts,
+      ChatImageEmbedder imageEmbeds,
+      ChatLinkPreviewEmbedder linkPreviews,
+      ChatTranscriptStyleRoutingSupport styleRoutingSupport,
+      ChatTranscriptRuntimeSettingsSupport runtimeSettingsSupport,
+      ChatTranscriptFilterRoutingSupport filterRoutingSupport,
+      ChatTranscriptDocumentLineSupport documentLineSupport,
+      ChatTranscriptLineCapSupport lineCapSupport,
+      ChatTranscriptRuntimeFlowCoordinator runtimeFlowCoordinator,
+      ChatTranscriptSenderStyleSupport.Context senderStyleSupportContext,
+      ChatTranscriptMessageCatalogSupport messageCatalogSupport,
+      ChatTranscriptReactionSummarySupport reactionSummarySupport,
+      ChatTranscriptTargetRuntimeCoordinator targetRuntimeCoordinator,
+      ChatTranscriptActionFlowSupport.ReplyContextAppender appendReplyContextLine,
+      ChatTranscriptMatrixDisplayNameCoordinator matrixDisplayNameCoordinator,
+      ChatTranscriptFilteredFlowCoordinator filteredFlowCoordinator) {
+    return new ChatTranscriptMessageLineCoordinator(
+        new ChatTranscriptMessageLineCoordinator.Dependencies(
+            store,
+            styles,
+            ts,
+            renderer,
+            imageEmbeds,
+            linkPreviews,
+            styleRoutingSupport,
+            runtimeSettingsSupport,
+            filterRoutingSupport,
+            documentLineSupport,
+            lineCapSupport,
+            runtimeFlowCoordinator,
+            senderStyleSupportContext,
+            messageCatalogSupport,
+            reactionSummarySupport,
             targetRuntimeCoordinator.docs(),
             targetRuntimeCoordinator.stateByTarget(),
             targetRuntimeCoordinator::ensureTargetExists,
             targetRuntimeCoordinator::noteEpochMs,
-            messageCatalogSupport,
-            reactionSummarySupport,
-            senderStyleSupportContext,
+            appendReplyContextLine,
             matrixDisplayNameCoordinator::renderTranscriptFrom,
-            messageLineCoordinator::insertReplacementAction,
-            (ref, insertAt, from, text, fromStyle, messageStyle, meta) ->
-                runtimeFlowCoordinator.insertLineAt(
-                    ref, insertAt, from, text, fromStyle, messageStyle, meta),
-            REDACTED_MESSAGE_PLACEHOLDER);
-    return new Components(
-        matrixDisplayNameCoordinator, messageLineCoordinator, messageInteractionCoordinator);
+            filteredFlowCoordinator::endInsertRun,
+            filteredFlowCoordinator::shouldDeferRichTextDuringHistoryBatch));
+  }
+
+  private static ChatTranscriptMessageInteractionCoordinator createMessageInteractionCoordinator(
+      ChatTranscriptTargetRuntimeCoordinator targetRuntimeCoordinator,
+      ChatTranscriptMessageCatalogSupport messageCatalogSupport,
+      ChatTranscriptReactionSummarySupport reactionSummarySupport,
+      ChatTranscriptSenderStyleSupport.Context senderStyleSupportContext,
+      ChatTranscriptMatrixDisplayNameCoordinator matrixDisplayNameCoordinator,
+      ChatTranscriptMessageLineCoordinator messageLineCoordinator,
+      ChatTranscriptRuntimeFlowCoordinator runtimeFlowCoordinator) {
+    return new ChatTranscriptMessageInteractionCoordinator(
+        targetRuntimeCoordinator.docs(),
+        targetRuntimeCoordinator.stateByTarget(),
+        targetRuntimeCoordinator::ensureTargetExists,
+        targetRuntimeCoordinator::noteEpochMs,
+        messageCatalogSupport,
+        reactionSummarySupport,
+        senderStyleSupportContext,
+        matrixDisplayNameCoordinator::renderTranscriptFrom,
+        messageLineCoordinator::insertReplacementAction,
+        (ref, insertAt, from, text, fromStyle, messageStyle, meta) ->
+            runtimeFlowCoordinator.insertLineAt(
+                ref, insertAt, from, text, fromStyle, messageStyle, meta),
+        REDACTED_MESSAGE_PLACEHOLDER);
   }
 }
