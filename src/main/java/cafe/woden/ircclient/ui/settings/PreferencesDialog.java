@@ -428,48 +428,48 @@ public class PreferencesDialog {
     final java.util.concurrent.atomic.AtomicBoolean suppressLivePreview =
         new java.util.concurrent.atomic.AtomicBoolean(false);
 
-    final java.util.concurrent.atomic.AtomicReference<String> lastValidAccentHex =
-        new java.util.concurrent.atomic.AtomicReference<>(
+    final OptionalHexPreviewState lastValidAccentHex =
+        new OptionalHexPreviewState(
             committedAccentSettings.get() != null
                 ? committedAccentSettings.get().accentColor()
                 : null);
-    final java.util.concurrent.atomic.AtomicReference<String> lastValidChatTimestampHex =
-        new java.util.concurrent.atomic.AtomicReference<>(
+    final OptionalHexPreviewState lastValidChatTimestampHex =
+        new OptionalHexPreviewState(
             committedChatThemeSettings.get() != null
                 ? committedChatThemeSettings.get().timestampColor()
                 : null);
-    final java.util.concurrent.atomic.AtomicReference<String> lastValidChatSystemHex =
-        new java.util.concurrent.atomic.AtomicReference<>(
+    final OptionalHexPreviewState lastValidChatSystemHex =
+        new OptionalHexPreviewState(
             committedChatThemeSettings.get() != null
                 ? committedChatThemeSettings.get().systemColor()
                 : null);
-    final java.util.concurrent.atomic.AtomicReference<String> lastValidChatMentionHex =
-        new java.util.concurrent.atomic.AtomicReference<>(
+    final OptionalHexPreviewState lastValidChatMentionHex =
+        new OptionalHexPreviewState(
             committedChatThemeSettings.get() != null
                 ? committedChatThemeSettings.get().mentionBgColor()
                 : null);
-    final java.util.concurrent.atomic.AtomicReference<String> lastValidChatMessageHex =
-        new java.util.concurrent.atomic.AtomicReference<>(
+    final OptionalHexPreviewState lastValidChatMessageHex =
+        new OptionalHexPreviewState(
             committedChatThemeSettings.get() != null
                 ? committedChatThemeSettings.get().messageColor()
                 : null);
-    final java.util.concurrent.atomic.AtomicReference<String> lastValidChatNoticeHex =
-        new java.util.concurrent.atomic.AtomicReference<>(
+    final OptionalHexPreviewState lastValidChatNoticeHex =
+        new OptionalHexPreviewState(
             committedChatThemeSettings.get() != null
                 ? committedChatThemeSettings.get().noticeColor()
                 : null);
-    final java.util.concurrent.atomic.AtomicReference<String> lastValidChatActionHex =
-        new java.util.concurrent.atomic.AtomicReference<>(
+    final OptionalHexPreviewState lastValidChatActionHex =
+        new OptionalHexPreviewState(
             committedChatThemeSettings.get() != null
                 ? committedChatThemeSettings.get().actionColor()
                 : null);
-    final java.util.concurrent.atomic.AtomicReference<String> lastValidChatErrorHex =
-        new java.util.concurrent.atomic.AtomicReference<>(
+    final OptionalHexPreviewState lastValidChatErrorHex =
+        new OptionalHexPreviewState(
             committedChatThemeSettings.get() != null
                 ? committedChatThemeSettings.get().errorColor()
                 : null);
-    final java.util.concurrent.atomic.AtomicReference<String> lastValidChatPresenceHex =
-        new java.util.concurrent.atomic.AtomicReference<>(
+    final OptionalHexPreviewState lastValidChatPresenceHex =
+        new OptionalHexPreviewState(
             committedChatThemeSettings.get() != null
                 ? committedChatThemeSettings.get().presenceColor()
                 : null);
@@ -502,22 +502,7 @@ public class PreferencesDialog {
           if (accentSettingsBus != null) {
             String hex = null;
             if (accent.enabled.isSelected()) {
-              String raw = accent.hex.getText();
-              raw = raw != null ? raw.trim() : "";
-
-              if (raw.isBlank()) {
-                lastValidAccentHex.set(null);
-                hex = null;
-              } else {
-                Color c = parseHexColorLenient(raw);
-                if (c != null) {
-                  hex = toHex(c);
-                  lastValidAccentHex.set(hex);
-                } else {
-                  // If the user is mid-typing an invalid value, keep the last valid color.
-                  hex = lastValidAccentHex.get();
-                }
-              }
+              hex = lastValidAccentHex.resolve(accent.hex);
             }
 
             ThemeAccentSettings nextAccent =
@@ -546,24 +531,6 @@ public class PreferencesDialog {
           lafPreviewDebounce.trigger();
         };
 
-    final java.util.function.BiFunction<
-            JTextField, java.util.concurrent.atomic.AtomicReference<String>, String>
-        parseOptionalHex =
-            (field, lastRef) -> {
-              String raw = field != null ? field.getText() : null;
-              raw = raw != null ? raw.trim() : "";
-              if (raw.isBlank()) {
-                lastRef.set(null);
-                return null;
-              }
-              Color c = parseHexColorLenient(raw);
-              if (c == null) {
-                return lastRef.get();
-              }
-              String hex = toHex(c);
-              lastRef.set(hex);
-              return hex;
-            };
     final Runnable applyChatPreview =
         () -> {
           if (suppressLivePreview.get()) return;
@@ -575,16 +542,14 @@ public class PreferencesDialog {
                   ? p
                   : ChatThemeSettings.Preset.DEFAULT;
 
-          String tsHexV =
-              parseOptionalHex.apply(chatTheme.timestamp.hex, lastValidChatTimestampHex);
-          String sysHexV = parseOptionalHex.apply(chatTheme.system.hex, lastValidChatSystemHex);
-          String menHexV = parseOptionalHex.apply(chatTheme.mention.hex, lastValidChatMentionHex);
-          String msgHexV = parseOptionalHex.apply(chatTheme.message.hex, lastValidChatMessageHex);
-          String noticeHexV = parseOptionalHex.apply(chatTheme.notice.hex, lastValidChatNoticeHex);
-          String actionHexV = parseOptionalHex.apply(chatTheme.action.hex, lastValidChatActionHex);
-          String errHexV = parseOptionalHex.apply(chatTheme.error.hex, lastValidChatErrorHex);
-          String presenceHexV =
-              parseOptionalHex.apply(chatTheme.presence.hex, lastValidChatPresenceHex);
+          String tsHexV = lastValidChatTimestampHex.resolve(chatTheme.timestamp.hex);
+          String sysHexV = lastValidChatSystemHex.resolve(chatTheme.system.hex);
+          String menHexV = lastValidChatMentionHex.resolve(chatTheme.mention.hex);
+          String msgHexV = lastValidChatMessageHex.resolve(chatTheme.message.hex);
+          String noticeHexV = lastValidChatNoticeHex.resolve(chatTheme.notice.hex);
+          String actionHexV = lastValidChatActionHex.resolve(chatTheme.action.hex);
+          String errHexV = lastValidChatErrorHex.resolve(chatTheme.error.hex);
+          String presenceHexV = lastValidChatPresenceHex.resolve(chatTheme.presence.hex);
           int mentionStrengthV = chatTheme.mentionStrength.getValue();
 
           ChatThemeSettings nextChatTheme =
@@ -754,22 +719,7 @@ public class PreferencesDialog {
     accent.enabled.addActionListener(e -> scheduleLafPreview.run());
     accent.preset.addActionListener(e -> scheduleLafPreview.run());
     accent.strength.addChangeListener(e -> scheduleLafPreview.run());
-    accent
-        .hex
-        .getDocument()
-        .addDocumentListener(
-            new SimpleDocListener(
-                () -> {
-                  String raw = accent.hex.getText();
-                  raw = raw != null ? raw.trim() : "";
-                  if (raw.isBlank()) {
-                    lastValidAccentHex.set(null);
-                  } else {
-                    Color c = parseHexColorLenient(raw);
-                    if (c != null) lastValidAccentHex.set(toHex(c));
-                  }
-                  scheduleLafPreview.run();
-                }));
+    lastValidAccentHex.attachTo(accent.hex, scheduleLafPreview);
     tweaks.density.addActionListener(e -> scheduleLafPreview.run());
     tweaks.cornerRadius.addChangeListener(e -> scheduleLafPreview.run());
     tweaks.uiFontOverrideEnabled.addActionListener(
@@ -796,142 +746,14 @@ public class PreferencesDialog {
     // Chat theme preview (transcript-only)
     chatTheme.preset.addActionListener(e -> scheduleChatPreview.run());
     chatTheme.mentionStrength.addChangeListener(e -> scheduleChatPreview.run());
-    chatTheme
-        .timestamp
-        .hex
-        .getDocument()
-        .addDocumentListener(
-            new SimpleDocListener(
-                () -> {
-                  String raw = chatTheme.timestamp.hex.getText();
-                  raw = raw != null ? raw.trim() : "";
-                  if (raw.isBlank()) {
-                    lastValidChatTimestampHex.set(null);
-                  } else {
-                    Color c = parseHexColorLenient(raw);
-                    if (c != null) lastValidChatTimestampHex.set(toHex(c));
-                  }
-                  scheduleChatPreview.run();
-                }));
-    chatTheme
-        .system
-        .hex
-        .getDocument()
-        .addDocumentListener(
-            new SimpleDocListener(
-                () -> {
-                  String raw = chatTheme.system.hex.getText();
-                  raw = raw != null ? raw.trim() : "";
-                  if (raw.isBlank()) {
-                    lastValidChatSystemHex.set(null);
-                  } else {
-                    Color c = parseHexColorLenient(raw);
-                    if (c != null) lastValidChatSystemHex.set(toHex(c));
-                  }
-                  scheduleChatPreview.run();
-                }));
-    chatTheme
-        .mention
-        .hex
-        .getDocument()
-        .addDocumentListener(
-            new SimpleDocListener(
-                () -> {
-                  String raw = chatTheme.mention.hex.getText();
-                  raw = raw != null ? raw.trim() : "";
-                  if (raw.isBlank()) {
-                    lastValidChatMentionHex.set(null);
-                  } else {
-                    Color c = parseHexColorLenient(raw);
-                    if (c != null) lastValidChatMentionHex.set(toHex(c));
-                  }
-                  scheduleChatPreview.run();
-                }));
-    chatTheme
-        .message
-        .hex
-        .getDocument()
-        .addDocumentListener(
-            new SimpleDocListener(
-                () -> {
-                  String raw = chatTheme.message.hex.getText();
-                  raw = raw != null ? raw.trim() : "";
-                  if (raw.isBlank()) {
-                    lastValidChatMessageHex.set(null);
-                  } else {
-                    Color c = parseHexColorLenient(raw);
-                    if (c != null) lastValidChatMessageHex.set(toHex(c));
-                  }
-                  scheduleChatPreview.run();
-                }));
-    chatTheme
-        .notice
-        .hex
-        .getDocument()
-        .addDocumentListener(
-            new SimpleDocListener(
-                () -> {
-                  String raw = chatTheme.notice.hex.getText();
-                  raw = raw != null ? raw.trim() : "";
-                  if (raw.isBlank()) {
-                    lastValidChatNoticeHex.set(null);
-                  } else {
-                    Color c = parseHexColorLenient(raw);
-                    if (c != null) lastValidChatNoticeHex.set(toHex(c));
-                  }
-                  scheduleChatPreview.run();
-                }));
-    chatTheme
-        .action
-        .hex
-        .getDocument()
-        .addDocumentListener(
-            new SimpleDocListener(
-                () -> {
-                  String raw = chatTheme.action.hex.getText();
-                  raw = raw != null ? raw.trim() : "";
-                  if (raw.isBlank()) {
-                    lastValidChatActionHex.set(null);
-                  } else {
-                    Color c = parseHexColorLenient(raw);
-                    if (c != null) lastValidChatActionHex.set(toHex(c));
-                  }
-                  scheduleChatPreview.run();
-                }));
-    chatTheme
-        .error
-        .hex
-        .getDocument()
-        .addDocumentListener(
-            new SimpleDocListener(
-                () -> {
-                  String raw = chatTheme.error.hex.getText();
-                  raw = raw != null ? raw.trim() : "";
-                  if (raw.isBlank()) {
-                    lastValidChatErrorHex.set(null);
-                  } else {
-                    Color c = parseHexColorLenient(raw);
-                    if (c != null) lastValidChatErrorHex.set(toHex(c));
-                  }
-                  scheduleChatPreview.run();
-                }));
-    chatTheme
-        .presence
-        .hex
-        .getDocument()
-        .addDocumentListener(
-            new SimpleDocListener(
-                () -> {
-                  String raw = chatTheme.presence.hex.getText();
-                  raw = raw != null ? raw.trim() : "";
-                  if (raw.isBlank()) {
-                    lastValidChatPresenceHex.set(null);
-                  } else {
-                    Color c = parseHexColorLenient(raw);
-                    if (c != null) lastValidChatPresenceHex.set(toHex(c));
-                  }
-                  scheduleChatPreview.run();
-                }));
+    lastValidChatTimestampHex.attachTo(chatTheme.timestamp.hex, scheduleChatPreview);
+    lastValidChatSystemHex.attachTo(chatTheme.system.hex, scheduleChatPreview);
+    lastValidChatMentionHex.attachTo(chatTheme.mention.hex, scheduleChatPreview);
+    lastValidChatMessageHex.attachTo(chatTheme.message.hex, scheduleChatPreview);
+    lastValidChatNoticeHex.attachTo(chatTheme.notice.hex, scheduleChatPreview);
+    lastValidChatActionHex.attachTo(chatTheme.action.hex, scheduleChatPreview);
+    lastValidChatErrorHex.attachTo(chatTheme.error.hex, scheduleChatPreview);
+    lastValidChatPresenceHex.attachTo(chatTheme.presence.hex, scheduleChatPreview);
 
     // Chat font preview
     fonts.fontFamily.addActionListener(e -> scheduleFontPreview.run());
