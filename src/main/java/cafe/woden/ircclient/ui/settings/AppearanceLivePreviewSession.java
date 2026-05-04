@@ -20,8 +20,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JTextField;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 final class AppearanceLivePreviewSession implements AutoCloseable {
   private static final String FLAT_ONLY_TOOLTIP = "Available for FlatLaf-based themes only.";
@@ -157,7 +155,7 @@ final class AppearanceLivePreviewSession implements AutoCloseable {
             ? tweaks.uiFontFamily.getEditor().getEditorComponent()
             : null;
     if (uiFontFamilyEditor instanceof JTextField tf) {
-      tf.getDocument().addDocumentListener(new SimpleDocListener(this::scheduleLafPreview));
+      tf.getDocument().addDocumentListener(new SettingsDocumentListener(this::scheduleLafPreview));
     }
     tweaks.uiFontSize.addChangeListener(e -> scheduleLafPreview());
 
@@ -184,7 +182,7 @@ final class AppearanceLivePreviewSession implements AutoCloseable {
             ? fonts.fontFamily.getEditor().getEditorComponent()
             : null;
     if (fontFamilyEditor instanceof JTextField tf) {
-      tf.getDocument().addDocumentListener(new SimpleDocListener(this::scheduleFontPreview));
+      tf.getDocument().addDocumentListener(new SettingsDocumentListener(this::scheduleFontPreview));
     }
     fonts.fontSize.addChangeListener(e -> scheduleFontPreview());
   }
@@ -460,29 +458,6 @@ final class AppearanceLivePreviewSession implements AutoCloseable {
           || applyTheme
           || applyAppearance
           || refreshChatStyles;
-    }
-  }
-
-  private static final class SimpleDocListener implements DocumentListener {
-    private final Runnable onChange;
-
-    SimpleDocListener(Runnable onChange) {
-      this.onChange = onChange;
-    }
-
-    @Override
-    public void insertUpdate(DocumentEvent e) {
-      onChange.run();
-    }
-
-    @Override
-    public void removeUpdate(DocumentEvent e) {
-      onChange.run();
-    }
-
-    @Override
-    public void changedUpdate(DocumentEvent e) {
-      onChange.run();
     }
   }
 

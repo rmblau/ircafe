@@ -93,7 +93,7 @@ final class OutgoingColorControlsSupport {
     outgoingColorEnabled.addActionListener(e -> updateOutgoingColorUi.run());
     outgoingColorHex
         .getDocument()
-        .addDocumentListener(new PreferencesDialog.SimpleDocListener(updateOutgoingColorUi));
+        .addDocumentListener(new SettingsDocumentListener(updateOutgoingColorUi));
     updateOutgoingColorUi.run();
 
     return new OutgoingColorControls(

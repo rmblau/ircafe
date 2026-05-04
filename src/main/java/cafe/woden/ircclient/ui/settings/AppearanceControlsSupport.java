@@ -353,7 +353,7 @@ final class AppearanceControlsSupport {
     enabled.addActionListener(event -> updateChip.run());
     hex.getDocument()
         .addDocumentListener(
-            new PreferencesDialog.SimpleDocListener(
+            new SettingsDocumentListener(
                 () -> {
                   updatePickIcon.run();
                   syncPresetFromHex.run();
@@ -513,7 +513,7 @@ final class AppearanceControlsSupport {
           updateIcon.run();
         });
 
-    hex.getDocument().addDocumentListener(new PreferencesDialog.SimpleDocListener(updateIcon));
+    hex.getDocument().addDocumentListener(new SettingsDocumentListener(updateIcon));
 
     JPanel panel = new JPanel(new MigLayout("insets 0, fillx", "[grow]6[]6[]"));
     panel.add(hex, "growx");

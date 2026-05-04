@@ -102,8 +102,6 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.table.TableColumn;
 import net.miginfocom.swing.MigLayout;
 import org.jmolecules.architecture.layered.InterfaceLayer;
@@ -2417,29 +2415,6 @@ public class PreferencesDialog {
       Window owner, String title, Color initial, Color previewBackground) {
     return SettingsColorPickerDialogSupport.showColorPickerDialog(
         owner, title, initial, previewBackground);
-  }
-
-  static final class SimpleDocListener implements DocumentListener {
-    private final Runnable onChange;
-
-    SimpleDocListener(Runnable onChange) {
-      this.onChange = onChange;
-    }
-
-    @Override
-    public void insertUpdate(DocumentEvent e) {
-      onChange.run();
-    }
-
-    @Override
-    public void removeUpdate(DocumentEvent e) {
-      onChange.run();
-    }
-
-    @Override
-    public void changedUpdate(DocumentEvent e) {
-      onChange.run();
-    }
   }
 
   // ------------------------------

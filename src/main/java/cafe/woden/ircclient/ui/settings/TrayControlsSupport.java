@@ -410,13 +410,13 @@ final class TrayControlsSupport {
     pushyTargetMode.addActionListener(e -> refreshPushyState.run());
     pushyEndpoint
         .getDocument()
-        .addDocumentListener(new PreferencesDialog.SimpleDocListener(refreshPushyValidation));
+        .addDocumentListener(new SettingsDocumentListener(refreshPushyValidation));
     pushyApiKey
         .getDocument()
-        .addDocumentListener(new PreferencesDialog.SimpleDocListener(refreshPushyValidation));
+        .addDocumentListener(new SettingsDocumentListener(refreshPushyValidation));
     pushyTargetValue
         .getDocument()
-        .addDocumentListener(new PreferencesDialog.SimpleDocListener(refreshPushyValidation));
+        .addDocumentListener(new SettingsDocumentListener(refreshPushyValidation));
     refreshPushyState.run();
 
     Runnable refreshEnabled =

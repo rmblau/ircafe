@@ -132,15 +132,13 @@ final class NetworkConnectionPanelSupport {
         });
     updateProxyEnabledState.run();
 
-    proxyHost
-        .getDocument()
-        .addDocumentListener(new PreferencesDialog.SimpleDocListener(validateProxyInputs));
+    proxyHost.getDocument().addDocumentListener(new SettingsDocumentListener(validateProxyInputs));
     proxyUsername
         .getDocument()
-        .addDocumentListener(new PreferencesDialog.SimpleDocListener(validateProxyInputs));
+        .addDocumentListener(new SettingsDocumentListener(validateProxyInputs));
     proxyPassword
         .getDocument()
-        .addDocumentListener(new PreferencesDialog.SimpleDocListener(validateProxyInputs));
+        .addDocumentListener(new SettingsDocumentListener(validateProxyInputs));
     validateProxyInputs.run();
 
     proxyTab.add(proxyEnabled, "span 2, wrap");
