@@ -25,7 +25,6 @@ import cafe.woden.ircclient.notify.api.PushyNotificationPort;
 import cafe.woden.ircclient.notify.pushy.PushySettingsBus;
 import cafe.woden.ircclient.notify.sound.NotificationSoundSettings;
 import cafe.woden.ircclient.notify.sound.NotificationSoundSettingsBus;
-import cafe.woden.ircclient.ui.SwingEdt;
 import cafe.woden.ircclient.ui.chat.NickColorService;
 import cafe.woden.ircclient.ui.chat.NickColorSettings;
 import cafe.woden.ircclient.ui.chat.NickColorSettingsBus;
@@ -40,7 +39,6 @@ import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettings;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettings;
 import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettingsBus;
-import cafe.woden.ircclient.ui.settings.theme.ThemeIdUtils;
 import cafe.woden.ircclient.ui.settings.theme.ThemeManager;
 import cafe.woden.ircclient.ui.settings.theme.ThemeTweakSettings;
 import cafe.woden.ircclient.ui.settings.theme.ThemeTweakSettingsBus;
@@ -53,9 +51,6 @@ import cafe.woden.ircclient.ui.util.CloseableScope;
 import cafe.woden.ircclient.ui.util.DialogCloseableScopeDecorator;
 import cafe.woden.ircclient.ui.util.MouseWheelDecorator;
 import com.formdev.flatlaf.FlatClientProperties;
-import io.reactivex.rxjava3.disposables.Disposable;
-import io.reactivex.rxjava3.subjects.PublishSubject;
-import io.reactivex.rxjava3.subjects.Subject;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -80,9 +75,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
@@ -127,7 +120,7 @@ public class PreferencesDialog {
       "Changes the overall UI spacing / row height. Changes preview live; Apply/OK saves.";
   static final String CORNER_RADIUS_TOOLTIP =
       "Controls rounded corner radius for buttons/fields/etc. Changes preview live; Apply/OK saves.";
-  private static final String FLAT_ONLY_TOOLTIP = "Available for FlatLaf-based themes only.";
+
   static final String UI_FONT_OVERRIDE_TOOLTIP =
       "Overrides the global Swing UI font family and size for controls, menus, tabs, and dialogs.";
   private static final String DEFAULT_GENERIC_BOUNCER_LOGIN_TEMPLATE = "{base}/{network}";
@@ -383,394 +376,30 @@ public class PreferencesDialog {
     } catch (Exception ignored) {
     }
 
-    // Live preview snapshot: used to rollback any preview-only changes on Cancel / window close.
-    final java.util.concurrent.atomic.AtomicReference<String> committedThemeId =
-        new java.util.concurrent.atomic.AtomicReference<>(
-            normalizeThemeIdInternal(current != null ? current.theme() : null));
-    final java.util.concurrent.atomic.AtomicReference<String> lastPreviewThemeId =
-        new java.util.concurrent.atomic.AtomicReference<>(committedThemeId.get());
-    final java.util.concurrent.atomic.AtomicReference<UiSettings> committedUiSettings =
-        new java.util.concurrent.atomic.AtomicReference<>(current);
     final java.util.concurrent.atomic.AtomicReference<EmbedLoadPolicySnapshot>
         pendingEmbedLoadPolicy =
             new java.util.concurrent.atomic.AtomicReference<>(
                 embedLoadPolicyBus != null
                     ? embedLoadPolicyBus.get()
                     : runtimeConfig.readEmbedLoadPolicy());
-    final java.util.concurrent.atomic.AtomicReference<ThemeAccentSettings> committedAccentSettings =
-        new java.util.concurrent.atomic.AtomicReference<>(
-            initialAccent != null
-                ? initialAccent
-                : new ThemeAccentSettings(
-                    UiProperties.DEFAULT_ACCENT_COLOR, UiProperties.DEFAULT_ACCENT_STRENGTH));
-    final java.util.concurrent.atomic.AtomicReference<ThemeTweakSettings> committedTweakSettings =
-        new java.util.concurrent.atomic.AtomicReference<>(
-            initialTweaks != null
-                ? initialTweaks
-                : new ThemeTweakSettings(ThemeTweakSettings.ThemeDensity.AUTO, 10));
-    final java.util.concurrent.atomic.AtomicReference<ChatThemeSettings>
-        committedChatThemeSettings =
-            new java.util.concurrent.atomic.AtomicReference<>(
-                initialChatTheme != null
-                    ? initialChatTheme
-                    : new ChatThemeSettings(
-                        ChatThemeSettings.Preset.DEFAULT,
-                        null,
-                        null,
-                        null,
-                        35,
-                        null,
-                        null,
-                        null,
-                        null,
-                        null));
-
-    final java.util.concurrent.atomic.AtomicBoolean suppressLivePreview =
-        new java.util.concurrent.atomic.AtomicBoolean(false);
-
-    final OptionalHexPreviewState lastValidAccentHex =
-        new OptionalHexPreviewState(
-            committedAccentSettings.get() != null
-                ? committedAccentSettings.get().accentColor()
-                : null);
-    final OptionalHexPreviewState lastValidChatTimestampHex =
-        new OptionalHexPreviewState(
-            committedChatThemeSettings.get() != null
-                ? committedChatThemeSettings.get().timestampColor()
-                : null);
-    final OptionalHexPreviewState lastValidChatSystemHex =
-        new OptionalHexPreviewState(
-            committedChatThemeSettings.get() != null
-                ? committedChatThemeSettings.get().systemColor()
-                : null);
-    final OptionalHexPreviewState lastValidChatMentionHex =
-        new OptionalHexPreviewState(
-            committedChatThemeSettings.get() != null
-                ? committedChatThemeSettings.get().mentionBgColor()
-                : null);
-    final OptionalHexPreviewState lastValidChatMessageHex =
-        new OptionalHexPreviewState(
-            committedChatThemeSettings.get() != null
-                ? committedChatThemeSettings.get().messageColor()
-                : null);
-    final OptionalHexPreviewState lastValidChatNoticeHex =
-        new OptionalHexPreviewState(
-            committedChatThemeSettings.get() != null
-                ? committedChatThemeSettings.get().noticeColor()
-                : null);
-    final OptionalHexPreviewState lastValidChatActionHex =
-        new OptionalHexPreviewState(
-            committedChatThemeSettings.get() != null
-                ? committedChatThemeSettings.get().actionColor()
-                : null);
-    final OptionalHexPreviewState lastValidChatErrorHex =
-        new OptionalHexPreviewState(
-            committedChatThemeSettings.get() != null
-                ? committedChatThemeSettings.get().errorColor()
-                : null);
-    final OptionalHexPreviewState lastValidChatPresenceHex =
-        new OptionalHexPreviewState(
-            committedChatThemeSettings.get() != null
-                ? committedChatThemeSettings.get().presenceColor()
-                : null);
-
-    // Debounced live preview to avoid spamming full UI refreshes while sliders are dragged.
-    final Runnable applyLafPreview =
-        () -> {
-          if (suppressLivePreview.get()) return;
-          if (themeManager == null) return;
-
-          String sel = normalizeThemeIdInternal(String.valueOf(theme.combo.getSelectedItem()));
-          if (sel.isBlank()) return;
-
-          if (tweakSettingsBus != null) {
-            DensityOption opt = (DensityOption) tweaks.density.getSelectedItem();
-            String densityId = opt != null ? opt.id : "auto";
-            String uiFontFamily =
-                Objects.toString(tweaks.uiFontFamily.getSelectedItem(), "").trim();
-            if (uiFontFamily.isBlank()) uiFontFamily = ThemeTweakSettings.DEFAULT_UI_FONT_FAMILY;
-            ThemeTweakSettings nextTweaks =
-                new ThemeTweakSettings(
-                    ThemeTweakSettings.ThemeDensity.from(densityId),
-                    tweaks.cornerRadius.getValue(),
-                    tweaks.uiFontOverrideEnabled.isSelected(),
-                    uiFontFamily,
-                    ((Number) tweaks.uiFontSize.getValue()).intValue());
-            tweakSettingsBus.set(nextTweaks);
-          }
-
-          if (accentSettingsBus != null) {
-            String hex = null;
-            if (accent.enabled.isSelected()) {
-              hex = lastValidAccentHex.resolve(accent.hex);
-            }
-
-            ThemeAccentSettings nextAccent =
-                new ThemeAccentSettings(hex, accent.strength.getValue());
-            accentSettingsBus.set(nextAccent);
-          }
-
-          if (!java.util.Objects.equals(sel, lastPreviewThemeId.get())) {
-            themeManager.applyTheme(sel);
-            lastPreviewThemeId.set(sel);
-          } else {
-            themeManager.applyAppearance(true);
-          }
-
-          // Theme switches can change the "Theme" accent color; refresh the preview pill.
-          try {
-            accent.updateChip.run();
-          } catch (Exception ignored) {
-          }
-        };
-    final RxDebouncedEdtTrigger lafPreviewDebounce =
-        new RxDebouncedEdtTrigger(140, applyLafPreview);
-    final Runnable scheduleLafPreview =
-        () -> {
-          if (suppressLivePreview.get()) return;
-          lafPreviewDebounce.trigger();
-        };
-
-    final Runnable applyChatPreview =
-        () -> {
-          if (suppressLivePreview.get()) return;
-          if (themeManager == null) return;
-          if (chatThemeSettingsBus == null) return;
-
-          ChatThemeSettings.Preset presetV =
-              (chatTheme.preset.getSelectedItem() instanceof ChatThemeSettings.Preset p)
-                  ? p
-                  : ChatThemeSettings.Preset.DEFAULT;
-
-          String tsHexV = lastValidChatTimestampHex.resolve(chatTheme.timestamp.hex);
-          String sysHexV = lastValidChatSystemHex.resolve(chatTheme.system.hex);
-          String menHexV = lastValidChatMentionHex.resolve(chatTheme.mention.hex);
-          String msgHexV = lastValidChatMessageHex.resolve(chatTheme.message.hex);
-          String noticeHexV = lastValidChatNoticeHex.resolve(chatTheme.notice.hex);
-          String actionHexV = lastValidChatActionHex.resolve(chatTheme.action.hex);
-          String errHexV = lastValidChatErrorHex.resolve(chatTheme.error.hex);
-          String presenceHexV = lastValidChatPresenceHex.resolve(chatTheme.presence.hex);
-          int mentionStrengthV = chatTheme.mentionStrength.getValue();
-
-          ChatThemeSettings nextChatTheme =
-              new ChatThemeSettings(
-                  presetV,
-                  tsHexV,
-                  sysHexV,
-                  menHexV,
-                  mentionStrengthV,
-                  msgHexV,
-                  noticeHexV,
-                  actionHexV,
-                  errHexV,
-                  presenceHexV);
-          chatThemeSettingsBus.set(nextChatTheme);
-          themeManager.refreshChatStyles();
-        };
-    final RxDebouncedEdtTrigger chatPreviewDebounce =
-        new RxDebouncedEdtTrigger(120, applyChatPreview);
-    final Runnable scheduleChatPreview =
-        () -> {
-          if (suppressLivePreview.get()) return;
-          chatPreviewDebounce.trigger();
-        };
-
-    final Runnable applyFontPreview =
-        () -> {
-          if (suppressLivePreview.get()) return;
-          UiSettings base = settingsBus != null ? settingsBus.get() : null;
-          if (base == null) return;
-
-          String fam = java.util.Objects.toString(fonts.fontFamily.getSelectedItem(), "").trim();
-          if (fam.isBlank()) fam = "Monospaced";
-          int size = ((Number) fonts.fontSize.getValue()).intValue();
-          if (size < 8) size = 8;
-          if (size > 48) size = 48;
-
-          settingsBus.set(base.withChatFontFamily(fam).withChatFontSize(size));
-        };
-    final RxDebouncedEdtTrigger fontPreviewDebounce =
-        new RxDebouncedEdtTrigger(120, applyFontPreview);
-    final Runnable scheduleFontPreview =
-        () -> {
-          if (suppressLivePreview.get()) return;
-          fontPreviewDebounce.trigger();
-        };
-
-    closeables.add(
-        () -> {
-          lafPreviewDebounce.close();
-          chatPreviewDebounce.close();
-          fontPreviewDebounce.close();
-        });
-
-    final ThemeAccentSettings defaultAccentSettings =
-        new ThemeAccentSettings(
-            UiProperties.DEFAULT_ACCENT_COLOR, UiProperties.DEFAULT_ACCENT_STRENGTH);
-    final ThemeTweakSettings defaultTweakSettings =
-        new ThemeTweakSettings(ThemeTweakSettings.ThemeDensity.AUTO, 10);
-    final ChatThemeSettings defaultChatThemeSettings =
-        new ChatThemeSettings(
-            ChatThemeSettings.Preset.DEFAULT, null, null, null, 35, null, null, null, null, null);
-
-    final Runnable restoreCommittedAppearance =
-        () -> {
-          if (themeManager == null) return;
-          suppressLivePreview.set(true);
-          try {
-            lafPreviewDebounce.cancelPending();
-            chatPreviewDebounce.cancelPending();
-            fontPreviewDebounce.cancelPending();
-
-            UiSettings committedUi = committedUiSettings.get();
-            UiSettings liveUi = settingsBus != null ? settingsBus.get() : null;
-            ThemeAccentSettings targetAccent =
-                committedAccentSettings.get() != null
-                    ? committedAccentSettings.get()
-                    : defaultAccentSettings;
-            ThemeAccentSettings liveAccent =
-                accentSettingsBus != null ? accentSettingsBus.get() : null;
-            ThemeTweakSettings targetTweaks =
-                committedTweakSettings.get() != null
-                    ? committedTweakSettings.get()
-                    : defaultTweakSettings;
-            ThemeTweakSettings liveTweaks =
-                tweakSettingsBus != null ? tweakSettingsBus.get() : null;
-            ChatThemeSettings targetChatTheme =
-                committedChatThemeSettings.get() != null
-                    ? committedChatThemeSettings.get()
-                    : defaultChatThemeSettings;
-            ChatThemeSettings liveChatTheme =
-                chatThemeSettingsBus != null ? chatThemeSettingsBus.get() : null;
-            String committedTheme = committedThemeId.get();
-            String liveTheme = normalizeThemeIdInternal(liveUi != null ? liveUi.theme() : null);
-
-            AppearanceRollbackPlan rollbackPlan =
-                planAppearanceRollback(
-                    committedTheme,
-                    liveTheme,
-                    committedUi,
-                    liveUi,
-                    accentSettingsBus != null,
-                    targetAccent,
-                    liveAccent,
-                    tweakSettingsBus != null,
-                    targetTweaks,
-                    liveTweaks,
-                    chatThemeSettingsBus != null,
-                    targetChatTheme,
-                    liveChatTheme);
-
-            if (!rollbackPlan.hasAnyWork()) {
-              lastPreviewThemeId.set(committedTheme);
-              return;
-            }
-            if (rollbackPlan.restoreUiSettings() && committedUi != null) {
-              settingsBus.set(committedUi);
-            }
-            if (rollbackPlan.restoreAccentSettings() && accentSettingsBus != null) {
-              accentSettingsBus.set(targetAccent);
-            }
-            if (rollbackPlan.restoreTweakSettings() && tweakSettingsBus != null) {
-              tweakSettingsBus.set(targetTweaks);
-            }
-            if (rollbackPlan.restoreChatThemeSettings() && chatThemeSettingsBus != null) {
-              chatThemeSettingsBus.set(targetChatTheme);
-            }
-
-            if (rollbackPlan.applyTheme()) {
-              themeManager.applyTheme(committedTheme);
-              lastPreviewThemeId.set(committedTheme);
-            } else if (rollbackPlan.applyAppearance()) {
-              // Cancel/close should restore quickly and avoid an extra transition flash.
-              themeManager.applyAppearance(false);
-              lastPreviewThemeId.set(committedTheme);
-            } else if (rollbackPlan.refreshChatStyles()) {
-              themeManager.refreshChatStyles();
-            }
-          } finally {
-            suppressLivePreview.set(false);
-          }
-        };
-
-    final Runnable updateFlatTweakCapabilityUi =
-        () -> {
-          Object selectedTheme = theme.combo.getSelectedItem();
-          String selectedThemeId = selectedTheme != null ? selectedTheme.toString() : "";
-          boolean flatTweakCapable = supportsFlatLafTweaksInternal(selectedThemeId);
-          tweaks.density.setEnabled(flatTweakCapable);
-          tweaks.cornerRadius.setEnabled(flatTweakCapable);
-          tweaks.density.setToolTipText(flatTweakCapable ? DENSITY_TOOLTIP : FLAT_ONLY_TOOLTIP);
-          tweaks.cornerRadius.setToolTipText(
-              flatTweakCapable ? CORNER_RADIUS_TOOLTIP : FLAT_ONLY_TOOLTIP);
-        };
-    updateFlatTweakCapabilityUi.run();
-
-    final boolean[] ignoreThemeComboEvents = new boolean[] {true};
-    theme.combo.addActionListener(
-        e -> {
-          if (ignoreThemeComboEvents[0]) return;
-          updateFlatTweakCapabilityUi.run();
-          scheduleLafPreview.run();
-        });
-    ignoreThemeComboEvents[0] = false;
-
-    // LAF + accent/tweak preview
-    accent.enabled.addActionListener(e -> scheduleLafPreview.run());
-    accent.preset.addActionListener(e -> scheduleLafPreview.run());
-    accent.strength.addChangeListener(e -> scheduleLafPreview.run());
-    lastValidAccentHex.attachTo(accent.hex, scheduleLafPreview);
-    tweaks.density.addActionListener(e -> scheduleLafPreview.run());
-    tweaks.cornerRadius.addChangeListener(e -> scheduleLafPreview.run());
-    tweaks.uiFontOverrideEnabled.addActionListener(
-        e -> {
-          tweaks.applyUiFontEnabledState.run();
-          scheduleLafPreview.run();
-        });
-    tweaks.uiFontFamily.addActionListener(e -> scheduleLafPreview.run());
-    tweaks.uiFontFamily.addItemListener(
-        e -> {
-          if (e != null && e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-            scheduleLafPreview.run();
-          }
-        });
-    java.awt.Component uiFontFamilyEditor =
-        tweaks.uiFontFamily.getEditor() != null
-            ? tweaks.uiFontFamily.getEditor().getEditorComponent()
-            : null;
-    if (uiFontFamilyEditor instanceof JTextField tf) {
-      tf.getDocument().addDocumentListener(new SimpleDocListener(scheduleLafPreview));
-    }
-    tweaks.uiFontSize.addChangeListener(e -> scheduleLafPreview.run());
-
-    // Chat theme preview (transcript-only)
-    chatTheme.preset.addActionListener(e -> scheduleChatPreview.run());
-    chatTheme.mentionStrength.addChangeListener(e -> scheduleChatPreview.run());
-    lastValidChatTimestampHex.attachTo(chatTheme.timestamp.hex, scheduleChatPreview);
-    lastValidChatSystemHex.attachTo(chatTheme.system.hex, scheduleChatPreview);
-    lastValidChatMentionHex.attachTo(chatTheme.mention.hex, scheduleChatPreview);
-    lastValidChatMessageHex.attachTo(chatTheme.message.hex, scheduleChatPreview);
-    lastValidChatNoticeHex.attachTo(chatTheme.notice.hex, scheduleChatPreview);
-    lastValidChatActionHex.attachTo(chatTheme.action.hex, scheduleChatPreview);
-    lastValidChatErrorHex.attachTo(chatTheme.error.hex, scheduleChatPreview);
-    lastValidChatPresenceHex.attachTo(chatTheme.presence.hex, scheduleChatPreview);
-
-    // Chat font preview
-    fonts.fontFamily.addActionListener(e -> scheduleFontPreview.run());
-    fonts.fontFamily.addItemListener(
-        e -> {
-          if (e != null && e.getStateChange() == java.awt.event.ItemEvent.SELECTED) {
-            scheduleFontPreview.run();
-          }
-        });
-    java.awt.Component ffEditor =
-        fonts.fontFamily.getEditor() != null
-            ? fonts.fontFamily.getEditor().getEditorComponent()
-            : null;
-    if (ffEditor instanceof JTextField tf) {
-      tf.getDocument().addDocumentListener(new SimpleDocListener(scheduleFontPreview));
-    }
-    fonts.fontSize.addChangeListener(e -> scheduleFontPreview.run());
+    AppearanceLivePreviewSession appearancePreview =
+        new AppearanceLivePreviewSession(
+            current,
+            initialAccent,
+            initialTweaks,
+            initialChatTheme,
+            theme,
+            accent,
+            chatTheme,
+            fonts,
+            tweaks,
+            settingsBus,
+            themeManager,
+            accentSettingsBus,
+            tweakSettingsBus,
+            chatThemeSettingsBus);
+    closeables.add(appearancePreview);
+    appearancePreview.attachListeners();
     JCheckBox autoConnectOnStart = buildAutoConnectCheckbox(current);
     LaunchJvmControls launchJvm = LaunchJvmControlsSupport.buildControls(runtimeConfig);
     NotificationSoundSettings soundSettings =
@@ -2018,21 +1647,7 @@ public class PreferencesDialog {
             }
           }
 
-          // Update committed snapshot for live preview rollback (Cancel/window close).
-          committedThemeId.set(normalizeThemeIdInternal(next.theme()));
-          committedUiSettings.set(next);
-          committedAccentSettings.set(nextAccent);
-          committedTweakSettings.set(nextTweaks);
-          committedChatThemeSettings.set(nextChatTheme);
-          lastValidAccentHex.set(nextAccent.accentColor());
-          lastValidChatTimestampHex.set(nextChatTheme.timestampColor());
-          lastValidChatSystemHex.set(nextChatTheme.systemColor());
-          lastValidChatMentionHex.set(nextChatTheme.mentionBgColor());
-          lastValidChatMessageHex.set(nextChatTheme.messageColor());
-          lastValidChatNoticeHex.set(nextChatTheme.noticeColor());
-          lastValidChatActionHex.set(nextChatTheme.actionColor());
-          lastValidChatErrorHex.set(nextChatTheme.errorColor());
-          lastValidChatPresenceHex.set(nextChatTheme.presenceColor());
+          appearancePreview.commit(next, nextAccent, nextTweaks, nextChatTheme);
         };
 
     apply.addActionListener(e -> doApply.run());
@@ -2048,7 +1663,7 @@ public class PreferencesDialog {
             if (!rollbackScheduled.compareAndSet(false, true)) return;
             SwingUtilities.invokeLater(
                 () -> {
-                  if (rollbackOnClose.get()) restoreCommittedAppearance.run();
+                  if (rollbackOnClose.get()) appearancePreview.restoreCommittedAppearance();
                 });
           }
         });
@@ -2733,71 +2348,6 @@ public class PreferencesDialog {
     return false;
   }
 
-  static AppearanceRollbackPlan planAppearanceRollback(
-      String committedThemeId,
-      String liveThemeId,
-      UiSettings committedUi,
-      UiSettings liveUi,
-      boolean accentBusAvailable,
-      ThemeAccentSettings committedAccent,
-      ThemeAccentSettings liveAccent,
-      boolean tweakBusAvailable,
-      ThemeTweakSettings committedTweaks,
-      ThemeTweakSettings liveTweaks,
-      boolean chatThemeBusAvailable,
-      ChatThemeSettings committedChatTheme,
-      ChatThemeSettings liveChatTheme) {
-    boolean themeChanged = !sameThemeInternal(committedThemeId, liveThemeId);
-    boolean uiChanged = committedUi != null && !Objects.equals(committedUi, liveUi);
-    boolean accentChanged = accentBusAvailable && !Objects.equals(committedAccent, liveAccent);
-    boolean tweakChanged = tweakBusAvailable && !Objects.equals(committedTweaks, liveTweaks);
-    boolean chatThemeChanged =
-        chatThemeBusAvailable && !Objects.equals(committedChatTheme, liveChatTheme);
-
-    boolean applyTheme = themeChanged;
-    boolean applyAppearance = !applyTheme && (uiChanged || accentChanged || tweakChanged);
-    boolean refreshChatStyles = !applyTheme && !applyAppearance && chatThemeChanged;
-    return new AppearanceRollbackPlan(
-        uiChanged,
-        accentChanged,
-        tweakChanged,
-        chatThemeChanged,
-        applyTheme,
-        applyAppearance,
-        refreshChatStyles);
-  }
-
-  static record AppearanceRollbackPlan(
-      boolean restoreUiSettings,
-      boolean restoreAccentSettings,
-      boolean restoreTweakSettings,
-      boolean restoreChatThemeSettings,
-      boolean applyTheme,
-      boolean applyAppearance,
-      boolean refreshChatStyles) {
-    boolean hasAnyWork() {
-      return restoreUiSettings
-          || restoreAccentSettings
-          || restoreTweakSettings
-          || restoreChatThemeSettings
-          || applyTheme
-          || applyAppearance
-          || refreshChatStyles;
-    }
-  }
-
-  private static String normalizeThemeIdInternal(String id) {
-    return ThemeIdUtils.normalizeThemeId(id);
-  }
-
-  private static boolean sameThemeInternal(String a, String b) {
-    return ThemeIdUtils.sameTheme(a, b);
-  }
-
-  private static boolean supportsFlatLafTweaksInternal(String themeId) {
-    return ThemeIdUtils.isLikelyFlatTarget(themeId);
-  }
-
   static void configureIconOnlyButton(JButton button, String iconName, String tooltip) {
     if (button == null) return;
     button.setText("");
@@ -2910,54 +2460,6 @@ public class PreferencesDialog {
 
   private JPanel buildFiltersPanel(FilterControls c) {
     return FiltersPanelSupport.buildPanel(c);
-  }
-
-  private static final class RxDebouncedEdtTrigger implements AutoCloseable {
-    private final AtomicLong sequence = new AtomicLong(0L);
-    private final AtomicBoolean closed = new AtomicBoolean(false);
-    private final Subject<Long> signals = PublishSubject.<Long>create().toSerialized();
-    private final Disposable subscription;
-
-    private RxDebouncedEdtTrigger(long debounceMs, Runnable action) {
-      Runnable safeAction = action == null ? () -> {} : action;
-      this.subscription =
-          signals
-              .debounce(Math.max(0L, debounceMs), TimeUnit.MILLISECONDS)
-              .observeOn(SwingEdt.scheduler())
-              .subscribe(
-                  seq -> {
-                    if (closed.get()) return;
-                    if (seq.longValue() != sequence.get()) return;
-                    try {
-                      safeAction.run();
-                    } catch (Exception ignored) {
-                    }
-                  },
-                  err -> {});
-    }
-
-    void trigger() {
-      if (closed.get()) return;
-      signals.onNext(sequence.incrementAndGet());
-    }
-
-    void cancelPending() {
-      sequence.incrementAndGet();
-    }
-
-    @Override
-    public void close() {
-      if (!closed.compareAndSet(false, true)) return;
-      sequence.incrementAndGet();
-      try {
-        subscription.dispose();
-      } catch (Exception ignored) {
-      }
-      try {
-        signals.onComplete();
-      } catch (Exception ignored) {
-      }
-    }
   }
 
   private void applyFilterSettingsFromUi(FilterControls c) {

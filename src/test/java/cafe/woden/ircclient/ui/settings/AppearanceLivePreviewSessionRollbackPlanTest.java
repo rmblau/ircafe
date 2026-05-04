@@ -9,7 +9,7 @@ import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettings;
 import cafe.woden.ircclient.ui.settings.theme.ThemeTweakSettings;
 import org.junit.jupiter.api.Test;
 
-class PreferencesDialogAppearanceRollbackPlanTest {
+class AppearanceLivePreviewSessionRollbackPlanTest {
 
   @Test
   void noChangesProducesNoRollbackWork() {
@@ -26,8 +26,8 @@ class PreferencesDialogAppearanceRollbackPlanTest {
         new ChatThemeSettings(
             ChatThemeSettings.Preset.DEFAULT, null, null, null, 35, null, null, null, null, null);
 
-    PreferencesDialog.AppearanceRollbackPlan plan =
-        PreferencesDialog.planAppearanceRollback(
+    AppearanceLivePreviewSession.RollbackPlan plan =
+        AppearanceLivePreviewSession.planRollback(
             "darcula", "Darcula", ui, ui, true, accent, accent, true, tweaks, tweaks, true, chat,
             chat);
 
@@ -64,8 +64,8 @@ class PreferencesDialogAppearanceRollbackPlanTest {
         new ChatThemeSettings(
             ChatThemeSettings.Preset.ACCENTED, null, null, null, 60, null, null, null, null, null);
 
-    PreferencesDialog.AppearanceRollbackPlan plan =
-        PreferencesDialog.planAppearanceRollback(
+    AppearanceLivePreviewSession.RollbackPlan plan =
+        AppearanceLivePreviewSession.planRollback(
             "darcula",
             "light",
             committedUi,
@@ -101,8 +101,8 @@ class PreferencesDialogAppearanceRollbackPlanTest {
         new ChatThemeSettings(
             ChatThemeSettings.Preset.DEFAULT, null, null, null, 35, null, null, null, null, null);
 
-    PreferencesDialog.AppearanceRollbackPlan plan =
-        PreferencesDialog.planAppearanceRollback(
+    AppearanceLivePreviewSession.RollbackPlan plan =
+        AppearanceLivePreviewSession.planRollback(
             "darcula",
             "darcula",
             ui,
@@ -150,8 +150,8 @@ class PreferencesDialogAppearanceRollbackPlanTest {
             null,
             null);
 
-    PreferencesDialog.AppearanceRollbackPlan plan =
-        PreferencesDialog.planAppearanceRollback(
+    AppearanceLivePreviewSession.RollbackPlan plan =
+        AppearanceLivePreviewSession.planRollback(
             "darcula",
             "darcula",
             ui,
@@ -188,8 +188,8 @@ class PreferencesDialogAppearanceRollbackPlanTest {
         new ChatThemeSettings(
             ChatThemeSettings.Preset.DEFAULT, null, null, null, 35, null, null, null, null, null);
 
-    PreferencesDialog.AppearanceRollbackPlan plan =
-        PreferencesDialog.planAppearanceRollback(
+    AppearanceLivePreviewSession.RollbackPlan plan =
+        AppearanceLivePreviewSession.planRollback(
             "darcula",
             "darcula",
             ui,
