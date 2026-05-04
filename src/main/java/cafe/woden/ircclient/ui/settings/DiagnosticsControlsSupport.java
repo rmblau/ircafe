@@ -1,7 +1,9 @@
 package cafe.woden.ircclient.ui.settings;
 
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import javax.swing.JCheckBox;
 import javax.swing.JSpinner;
 import javax.swing.JTextArea;
@@ -97,4 +99,106 @@ final class DiagnosticsControlsSupport {
         jhiccupJavaCommand,
         jhiccupArgs);
   }
+
+  static DiagnosticsSettings readSettings(DiagnosticsControls controls) {
+    String jhiccupJavaCommandRaw =
+        Objects.toString(controls.jhiccupJavaCommand().getText(), "").trim();
+    String jhiccupJavaCommandEffective =
+        jhiccupJavaCommandRaw.isEmpty() ? "java" : jhiccupJavaCommandRaw;
+
+    return new DiagnosticsSettings(
+        controls.assertjSwingEnabled().isSelected(),
+        controls.assertjSwingFreezeWatchdogEnabled().isSelected(),
+        clamp(
+            ((Number) controls.assertjSwingFreezeThresholdMs().getValue()).intValue(),
+            500,
+            120_000),
+        clamp(((Number) controls.assertjSwingWatchdogPollMs().getValue()).intValue(), 100, 10_000),
+        clamp(
+            ((Number) controls.assertjSwingFallbackViolationReportMs().getValue()).intValue(),
+            250,
+            120_000),
+        controls.assertjSwingOnIssuePlaySound().isSelected(),
+        controls.assertjSwingOnIssueShowNotification().isSelected(),
+        controls.jhiccupEnabled().isSelected(),
+        Objects.toString(controls.jhiccupJarPath().getText(), "").trim(),
+        jhiccupJavaCommandRaw,
+        jhiccupJavaCommandEffective,
+        parseArgs(controls.jhiccupArgs().getText()));
+  }
+
+  static boolean settingsChanged(RuntimeConfigStore runtimeConfig, DiagnosticsSettings settings) {
+    return runtimeConfig.readAppDiagnosticsAssertjSwingEnabled(true)
+            != settings.assertjSwingEnabled()
+        || runtimeConfig.readAppDiagnosticsAssertjSwingFreezeWatchdogEnabled(true)
+            != settings.assertjSwingFreezeWatchdogEnabled()
+        || runtimeConfig.readAppDiagnosticsAssertjSwingFreezeThresholdMs(2500)
+            != settings.assertjSwingFreezeThresholdMs()
+        || runtimeConfig.readAppDiagnosticsAssertjSwingWatchdogPollMs(500)
+            != settings.assertjSwingWatchdogPollMs()
+        || runtimeConfig.readAppDiagnosticsAssertjSwingFallbackViolationReportMs(5000)
+            != settings.assertjSwingFallbackViolationReportMs()
+        || runtimeConfig.readAppDiagnosticsAssertjSwingIssuePlaySound(false)
+            != settings.assertjSwingOnIssuePlaySound()
+        || runtimeConfig.readAppDiagnosticsAssertjSwingIssueShowNotification(false)
+            != settings.assertjSwingOnIssueShowNotification()
+        || runtimeConfig.readAppDiagnosticsJhiccupEnabled(false) != settings.jhiccupEnabled()
+        || !Objects.equals(
+            runtimeConfig.readAppDiagnosticsJhiccupJarPath(""), settings.jhiccupJarPath())
+        || !Objects.equals(
+            runtimeConfig.readAppDiagnosticsJhiccupJavaCommand("java"),
+            settings.jhiccupJavaCommandEffective())
+        || !Objects.equals(
+            runtimeConfig.readAppDiagnosticsJhiccupArgs(List.of()), settings.jhiccupArgs());
+  }
+
+  static void rememberSettings(RuntimeConfigStore runtimeConfig, DiagnosticsSettings settings) {
+    runtimeConfig.rememberAppDiagnosticsAssertjSwingEnabled(settings.assertjSwingEnabled());
+    runtimeConfig.rememberAppDiagnosticsAssertjSwingFreezeWatchdogEnabled(
+        settings.assertjSwingFreezeWatchdogEnabled());
+    runtimeConfig.rememberAppDiagnosticsAssertjSwingFreezeThresholdMs(
+        settings.assertjSwingFreezeThresholdMs());
+    runtimeConfig.rememberAppDiagnosticsAssertjSwingWatchdogPollMs(
+        settings.assertjSwingWatchdogPollMs());
+    runtimeConfig.rememberAppDiagnosticsAssertjSwingFallbackViolationReportMs(
+        settings.assertjSwingFallbackViolationReportMs());
+    runtimeConfig.rememberAppDiagnosticsAssertjSwingIssuePlaySound(
+        settings.assertjSwingOnIssuePlaySound());
+    runtimeConfig.rememberAppDiagnosticsAssertjSwingIssueShowNotification(
+        settings.assertjSwingOnIssueShowNotification());
+    runtimeConfig.rememberAppDiagnosticsJhiccupEnabled(settings.jhiccupEnabled());
+    runtimeConfig.rememberAppDiagnosticsJhiccupJarPath(settings.jhiccupJarPath());
+    runtimeConfig.rememberAppDiagnosticsJhiccupJavaCommand(settings.jhiccupJavaCommandRaw());
+    runtimeConfig.rememberAppDiagnosticsJhiccupArgs(settings.jhiccupArgs());
+  }
+
+  private static int clamp(int value, int min, int max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  private static List<String> parseArgs(String text) {
+    String raw = Objects.toString(text, "");
+    if (raw.isBlank()) return List.of();
+
+    List<String> args = new ArrayList<>();
+    for (String line : raw.split("\\R")) {
+      String arg = Objects.toString(line, "").trim();
+      if (!arg.isEmpty()) args.add(arg);
+    }
+    return List.copyOf(args);
+  }
+
+  record DiagnosticsSettings(
+      boolean assertjSwingEnabled,
+      boolean assertjSwingFreezeWatchdogEnabled,
+      int assertjSwingFreezeThresholdMs,
+      int assertjSwingWatchdogPollMs,
+      int assertjSwingFallbackViolationReportMs,
+      boolean assertjSwingOnIssuePlaySound,
+      boolean assertjSwingOnIssueShowNotification,
+      boolean jhiccupEnabled,
+      String jhiccupJarPath,
+      String jhiccupJavaCommandRaw,
+      String jhiccupJavaCommandEffective,
+      List<String> jhiccupArgs) {}
 }

@@ -1082,71 +1082,11 @@ public class PreferencesDialog {
               ircEventNotifications.model().snapshot();
           List<UserCommandAlias> userCommandAliasesV = userCommands.model().snapshot();
           boolean unknownCommandAsRawEnabledV = userCommands.unknownCommandAsRaw().isSelected();
-          boolean diagnosticsAssertjSwingEnabledV = diagnostics.assertjSwingEnabled().isSelected();
-          boolean diagnosticsAssertjSwingFreezeWatchdogEnabledV =
-              diagnostics.assertjSwingFreezeWatchdogEnabled().isSelected();
-          int diagnosticsAssertjSwingFreezeThresholdMsV =
-              ((Number) diagnostics.assertjSwingFreezeThresholdMs().getValue()).intValue();
-          if (diagnosticsAssertjSwingFreezeThresholdMsV < 500)
-            diagnosticsAssertjSwingFreezeThresholdMsV = 500;
-          if (diagnosticsAssertjSwingFreezeThresholdMsV > 120_000)
-            diagnosticsAssertjSwingFreezeThresholdMsV = 120_000;
-          int diagnosticsAssertjSwingWatchdogPollMsV =
-              ((Number) diagnostics.assertjSwingWatchdogPollMs().getValue()).intValue();
-          if (diagnosticsAssertjSwingWatchdogPollMsV < 100)
-            diagnosticsAssertjSwingWatchdogPollMsV = 100;
-          if (diagnosticsAssertjSwingWatchdogPollMsV > 10_000)
-            diagnosticsAssertjSwingWatchdogPollMsV = 10_000;
-          int diagnosticsAssertjSwingFallbackViolationReportMsV =
-              ((Number) diagnostics.assertjSwingFallbackViolationReportMs().getValue()).intValue();
-          if (diagnosticsAssertjSwingFallbackViolationReportMsV < 250) {
-            diagnosticsAssertjSwingFallbackViolationReportMsV = 250;
-          }
-          if (diagnosticsAssertjSwingFallbackViolationReportMsV > 120_000) {
-            diagnosticsAssertjSwingFallbackViolationReportMsV = 120_000;
-          }
-          boolean diagnosticsAssertjSwingOnIssuePlaySoundV =
-              diagnostics.assertjSwingOnIssuePlaySound().isSelected();
-          boolean diagnosticsAssertjSwingOnIssueShowNotificationV =
-              diagnostics.assertjSwingOnIssueShowNotification().isSelected();
-          boolean diagnosticsJhiccupEnabledV = diagnostics.jhiccupEnabled().isSelected();
-          String diagnosticsJhiccupJarPathV =
-              Objects.toString(diagnostics.jhiccupJarPath().getText(), "").trim();
-          String diagnosticsJhiccupJavaCommandRawV =
-              Objects.toString(diagnostics.jhiccupJavaCommand().getText(), "").trim();
-          String diagnosticsJhiccupJavaCommandEffectiveV =
-              diagnosticsJhiccupJavaCommandRawV.isEmpty()
-                  ? "java"
-                  : diagnosticsJhiccupJavaCommandRawV;
-          List<String> diagnosticsJhiccupArgsV =
-              parseMultiLineArgs(diagnostics.jhiccupArgs().getText());
+          DiagnosticsControlsSupport.DiagnosticsSettings diagnosticsSettings =
+              DiagnosticsControlsSupport.readSettings(diagnostics);
 
           boolean diagnosticsChangedV =
-              runtimeConfig.readAppDiagnosticsAssertjSwingEnabled(true)
-                      != diagnosticsAssertjSwingEnabledV
-                  || runtimeConfig.readAppDiagnosticsAssertjSwingFreezeWatchdogEnabled(true)
-                      != diagnosticsAssertjSwingFreezeWatchdogEnabledV
-                  || runtimeConfig.readAppDiagnosticsAssertjSwingFreezeThresholdMs(2500)
-                      != diagnosticsAssertjSwingFreezeThresholdMsV
-                  || runtimeConfig.readAppDiagnosticsAssertjSwingWatchdogPollMs(500)
-                      != diagnosticsAssertjSwingWatchdogPollMsV
-                  || runtimeConfig.readAppDiagnosticsAssertjSwingFallbackViolationReportMs(5000)
-                      != diagnosticsAssertjSwingFallbackViolationReportMsV
-                  || runtimeConfig.readAppDiagnosticsAssertjSwingIssuePlaySound(false)
-                      != diagnosticsAssertjSwingOnIssuePlaySoundV
-                  || runtimeConfig.readAppDiagnosticsAssertjSwingIssueShowNotification(false)
-                      != diagnosticsAssertjSwingOnIssueShowNotificationV
-                  || runtimeConfig.readAppDiagnosticsJhiccupEnabled(false)
-                      != diagnosticsJhiccupEnabledV
-                  || !Objects.equals(
-                      runtimeConfig.readAppDiagnosticsJhiccupJarPath(""),
-                      diagnosticsJhiccupJarPathV)
-                  || !Objects.equals(
-                      runtimeConfig.readAppDiagnosticsJhiccupJavaCommand("java"),
-                      diagnosticsJhiccupJavaCommandEffectiveV)
-                  || !Objects.equals(
-                      runtimeConfig.readAppDiagnosticsJhiccupArgs(List.of()),
-                      diagnosticsJhiccupArgsV);
+              DiagnosticsControlsSupport.settingsChanged(runtimeConfig, diagnosticsSettings);
 
           UiSettings next =
               new UiSettings(
@@ -1500,25 +1440,7 @@ public class PreferencesDialog {
               userCommandAliasesBus.set(userCommandAliasesV);
               userCommandAliasesBus.setUnknownCommandAsRawEnabled(unknownCommandAsRawEnabledV);
             }
-            runtimeConfig.rememberAppDiagnosticsAssertjSwingEnabled(
-                diagnosticsAssertjSwingEnabledV);
-            runtimeConfig.rememberAppDiagnosticsAssertjSwingFreezeWatchdogEnabled(
-                diagnosticsAssertjSwingFreezeWatchdogEnabledV);
-            runtimeConfig.rememberAppDiagnosticsAssertjSwingFreezeThresholdMs(
-                diagnosticsAssertjSwingFreezeThresholdMsV);
-            runtimeConfig.rememberAppDiagnosticsAssertjSwingWatchdogPollMs(
-                diagnosticsAssertjSwingWatchdogPollMsV);
-            runtimeConfig.rememberAppDiagnosticsAssertjSwingFallbackViolationReportMs(
-                diagnosticsAssertjSwingFallbackViolationReportMsV);
-            runtimeConfig.rememberAppDiagnosticsAssertjSwingIssuePlaySound(
-                diagnosticsAssertjSwingOnIssuePlaySoundV);
-            runtimeConfig.rememberAppDiagnosticsAssertjSwingIssueShowNotification(
-                diagnosticsAssertjSwingOnIssueShowNotificationV);
-            runtimeConfig.rememberAppDiagnosticsJhiccupEnabled(diagnosticsJhiccupEnabledV);
-            runtimeConfig.rememberAppDiagnosticsJhiccupJarPath(diagnosticsJhiccupJarPathV);
-            runtimeConfig.rememberAppDiagnosticsJhiccupJavaCommand(
-                diagnosticsJhiccupJavaCommandRawV);
-            runtimeConfig.rememberAppDiagnosticsJhiccupArgs(diagnosticsJhiccupArgsV);
+            DiagnosticsControlsSupport.rememberSettings(runtimeConfig, diagnosticsSettings);
             if (diagnosticsChangedV) {
               JOptionPane.showMessageDialog(
                   dialog,
@@ -2254,18 +2176,6 @@ public class PreferencesDialog {
 
   private JPanel buildDiagnosticsPanel(DiagnosticsControls controls) {
     return DiagnosticsPanelSupport.buildPanel(controls);
-  }
-
-  private static List<String> parseMultiLineArgs(String text) {
-    String raw = Objects.toString(text, "");
-    if (raw.isBlank()) return List.of();
-
-    List<String> out = new ArrayList<>();
-    for (String line : raw.split("\\R")) {
-      String arg = line != null ? line.trim() : "";
-      if (!arg.isEmpty()) out.add(arg);
-    }
-    return List.copyOf(out);
   }
 
   private void attachNotificationRuleValidation(
