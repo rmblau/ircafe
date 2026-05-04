@@ -944,21 +944,8 @@ public class PreferencesDialog {
           boolean memoryWarningToastEnabledV = memoryWarnings.toastEnabled.isSelected();
           boolean memoryWarningPushyEnabledV = memoryWarnings.pushyEnabled.isSelected();
           boolean memoryWarningSoundEnabledV = memoryWarnings.soundEnabled.isSelected();
-          String launchJavaCommandV =
-              Objects.toString(launchJvm.javaCommand().getText(), "").trim();
-          if (launchJavaCommandV.isBlank()) launchJavaCommandV = "java";
-          int launchXmsMiBV = ((Number) launchJvm.xmsMiB().getValue()).intValue();
-          int launchXmxMiBV = ((Number) launchJvm.xmxMiB().getValue()).intValue();
-          if (launchXmsMiBV < 0) launchXmsMiBV = 0;
-          if (launchXmxMiBV < 0) launchXmxMiBV = 0;
-          if (launchXmsMiBV > 262_144) launchXmsMiBV = 262_144;
-          if (launchXmxMiBV > 262_144) launchXmxMiBV = 262_144;
-          if (launchXmxMiBV > 0 && launchXmsMiBV > 0 && launchXmxMiBV < launchXmsMiBV) {
-            launchXmxMiBV = launchXmsMiBV;
-          }
-          String launchGcV =
-              LaunchJvmControlsSupport.gcIdValue((LaunchGcOption) launchJvm.gc().getSelectedItem());
-          List<String> launchArgsV = parseMultiLineArgs(launchJvm.extraArgs().getText());
+          LaunchJvmControlsSupport.LaunchJvmSettings launchJvmSettings =
+              LaunchJvmControlsSupport.readSettings(launchJvm);
           IrcProperties.Proxy proxyCfg;
           try {
             proxyCfg = NetworkAdvancedControlsSupport.readProxySettings(proxy);
@@ -1322,11 +1309,11 @@ public class PreferencesDialog {
             runtimeConfig.rememberChatMentionBgColor(nextChatTheme.mentionBgColor());
             runtimeConfig.rememberChatMentionStrength(nextChatTheme.mentionStrength());
             runtimeConfig.rememberAutoConnectOnStart(next.autoConnectOnStart());
-            runtimeConfig.rememberLaunchJvmJavaCommand(launchJavaCommandV);
-            runtimeConfig.rememberLaunchJvmXmsMiB(launchXmsMiBV);
-            runtimeConfig.rememberLaunchJvmXmxMiB(launchXmxMiBV);
-            runtimeConfig.rememberLaunchJvmGc(launchGcV);
-            runtimeConfig.rememberLaunchJvmArgs(launchArgsV);
+            runtimeConfig.rememberLaunchJvmJavaCommand(launchJvmSettings.javaCommand());
+            runtimeConfig.rememberLaunchJvmXmsMiB(launchJvmSettings.xmsMiB());
+            runtimeConfig.rememberLaunchJvmXmxMiB(launchJvmSettings.xmxMiB());
+            runtimeConfig.rememberLaunchJvmGc(launchJvmSettings.gc());
+            runtimeConfig.rememberLaunchJvmArgs(launchJvmSettings.args());
             runtimeConfig.rememberTrayEnabled(next.trayEnabled());
             runtimeConfig.rememberTrayCloseToTray(next.trayCloseToTray());
             runtimeConfig.rememberTrayMinimizeToTray(next.trayMinimizeToTray());

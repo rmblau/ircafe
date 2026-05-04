@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings;
 
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -58,4 +59,42 @@ final class LaunchJvmControlsSupport {
   static String gcIdValue(LaunchGcOption option) {
     return option != null ? option.id() : "";
   }
+
+  static LaunchJvmSettings readSettings(LaunchJvmControls controls) {
+    String javaCommand = Objects.toString(controls.javaCommand().getText(), "").trim();
+    if (javaCommand.isBlank()) javaCommand = "java";
+
+    int xmsMiB = clampMemoryMiB(((Number) controls.xmsMiB().getValue()).intValue());
+    int xmxMiB = clampMemoryMiB(((Number) controls.xmxMiB().getValue()).intValue());
+    if (xmxMiB > 0 && xmsMiB > 0 && xmxMiB < xmsMiB) {
+      xmxMiB = xmsMiB;
+    }
+
+    return new LaunchJvmSettings(
+        javaCommand,
+        xmsMiB,
+        xmxMiB,
+        gcIdValue((LaunchGcOption) controls.gc().getSelectedItem()),
+        parseArgs(controls.extraArgs().getText()));
+  }
+
+  private static int clampMemoryMiB(int value) {
+    if (value < 0) return 0;
+    return Math.min(value, 262_144);
+  }
+
+  private static List<String> parseArgs(String text) {
+    String raw = Objects.toString(text, "");
+    if (raw.isBlank()) return List.of();
+
+    List<String> args = new ArrayList<>();
+    for (String line : raw.split("\\R")) {
+      String arg = Objects.toString(line, "").trim();
+      if (!arg.isEmpty()) args.add(arg);
+    }
+    return List.copyOf(args);
+  }
+
+  record LaunchJvmSettings(
+      String javaCommand, int xmsMiB, int xmxMiB, String gc, List<String> args) {}
 }
