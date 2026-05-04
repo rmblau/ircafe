@@ -961,35 +961,7 @@ public class PreferencesDialog {
           List<String> launchArgsV = parseMultiLineArgs(launchJvm.extraArgs().getText());
           IrcProperties.Proxy proxyCfg;
           try {
-            boolean proxyEnabledV = proxy.enabled.isSelected();
-            String proxyHostV = proxy.host.getText() != null ? proxy.host.getText().trim() : "";
-            int proxyPortV = ((Number) proxy.port.getValue()).intValue();
-            String proxyUserV =
-                proxy.username.getText() != null ? proxy.username.getText().trim() : "";
-            String proxyPassV = new String(proxy.password.getPassword());
-            boolean proxyRemoteDnsV = proxy.remoteDns.isSelected();
-
-            int connectTimeoutSecondsV =
-                ((Number) proxy.connectTimeoutSeconds.getValue()).intValue();
-            int readTimeoutSecondsV = ((Number) proxy.readTimeoutSeconds.getValue()).intValue();
-
-            if (proxyEnabledV) {
-              if (proxyHostV.isBlank())
-                throw new IllegalArgumentException("Proxy host is required when proxy is enabled.");
-              if (proxyPortV <= 0 || proxyPortV > 65535)
-                throw new IllegalArgumentException("Proxy port must be 1..65535.");
-            }
-
-            proxyCfg =
-                new IrcProperties.Proxy(
-                    proxyEnabledV,
-                    proxyHostV,
-                    proxyPortV,
-                    proxyUserV,
-                    proxyPassV,
-                    proxyRemoteDnsV,
-                    Math.max(1L, connectTimeoutSecondsV) * 1000L,
-                    Math.max(1L, readTimeoutSecondsV) * 1000L);
+            proxyCfg = NetworkAdvancedControlsSupport.readProxySettings(proxy);
           } catch (Exception ex) {
             javax.swing.JOptionPane.showMessageDialog(
                 dialog,
@@ -1000,19 +972,7 @@ public class PreferencesDialog {
           }
           IrcProperties.Heartbeat heartbeatCfg;
           try {
-            boolean hbEnabledV = heartbeat.enabled.isSelected();
-            int hbCheckSecondsV = ((Number) heartbeat.checkPeriodSeconds.getValue()).intValue();
-            int hbTimeoutSecondsV = ((Number) heartbeat.timeoutSeconds.getValue()).intValue();
-
-            hbCheckSecondsV = Math.max(1, hbCheckSecondsV);
-            hbTimeoutSecondsV = Math.max(1, hbTimeoutSecondsV);
-            if (hbEnabledV && hbTimeoutSecondsV <= hbCheckSecondsV) {
-              throw new IllegalArgumentException("Timeout must be greater than check period.");
-            }
-
-            heartbeatCfg =
-                new IrcProperties.Heartbeat(
-                    hbEnabledV, hbCheckSecondsV * 1000L, hbTimeoutSecondsV * 1000L);
+            heartbeatCfg = NetworkAdvancedControlsSupport.readHeartbeatSettings(heartbeat);
           } catch (Exception ex) {
             javax.swing.JOptionPane.showMessageDialog(
                 dialog,

@@ -5,6 +5,7 @@ import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.net.NetHeartbeatContext;
 import cafe.woden.ircclient.net.NetProxyContext;
 import java.util.List;
+import java.util.Objects;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
@@ -70,5 +71,49 @@ final class NetworkAdvancedControlsSupport {
         connection.trustAllTlsCertificates,
         connection.panel,
         userLookups.panel);
+  }
+
+  static IrcProperties.Proxy readProxySettings(ProxyControls proxy) {
+    boolean enabled = proxy.enabled.isSelected();
+    String host = Objects.toString(proxy.host.getText(), "").trim();
+    int port = ((Number) proxy.port.getValue()).intValue();
+    String username = Objects.toString(proxy.username.getText(), "").trim();
+    String password = new String(proxy.password.getPassword());
+    boolean remoteDns = proxy.remoteDns.isSelected();
+    int connectTimeoutSeconds = ((Number) proxy.connectTimeoutSeconds.getValue()).intValue();
+    int readTimeoutSeconds = ((Number) proxy.readTimeoutSeconds.getValue()).intValue();
+
+    if (enabled) {
+      if (host.isBlank()) {
+        throw new IllegalArgumentException("Proxy host is required when proxy is enabled.");
+      }
+      if (port <= 0 || port > 65535) {
+        throw new IllegalArgumentException("Proxy port must be 1..65535.");
+      }
+    }
+
+    return new IrcProperties.Proxy(
+        enabled,
+        host,
+        port,
+        username,
+        password,
+        remoteDns,
+        Math.max(1L, connectTimeoutSeconds) * 1000L,
+        Math.max(1L, readTimeoutSeconds) * 1000L);
+  }
+
+  static IrcProperties.Heartbeat readHeartbeatSettings(HeartbeatControls heartbeat) {
+    boolean enabled = heartbeat.enabled.isSelected();
+    int checkSeconds = ((Number) heartbeat.checkPeriodSeconds.getValue()).intValue();
+    int timeoutSeconds = ((Number) heartbeat.timeoutSeconds.getValue()).intValue();
+
+    checkSeconds = Math.max(1, checkSeconds);
+    timeoutSeconds = Math.max(1, timeoutSeconds);
+    if (enabled && timeoutSeconds <= checkSeconds) {
+      throw new IllegalArgumentException("Timeout must be greater than check period.");
+    }
+
+    return new IrcProperties.Heartbeat(enabled, checkSeconds * 1000L, timeoutSeconds * 1000L);
   }
 }
