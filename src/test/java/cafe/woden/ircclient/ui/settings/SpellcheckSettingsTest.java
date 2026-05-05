@@ -2,7 +2,11 @@ package cafe.woden.ircclient.ui.settings;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
+import cafe.woden.ircclient.config.RuntimeConfigStore;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -118,5 +122,74 @@ class SpellcheckSettingsTest {
     assertEquals(
         SpellcheckSettings.COMPLETION_PRESET_STANDARD,
         SpellcheckSettings.normalizeCompletionPreset("standard"));
+  }
+
+  @Test
+  void readSettingsBuildsSpellcheckSettingsFromControls() {
+    SpellcheckControls controls =
+        SpellcheckControlsSupport.buildControls(SpellcheckSettings.defaults());
+    controls.enabled.setSelected(false);
+    controls.underlineEnabled.setSelected(false);
+    controls.suggestOnTabEnabled.setSelected(true);
+    controls.hoverSuggestionsEnabled.setSelected(true);
+    controls.languageTag.setSelectedItem(new SpellcheckLanguageOption("en-GB", "English (UK)"));
+    controls.customDictionary.setText(" Foo\nbar baz\nfoo ");
+    controls.completionPreset.setSelectedItem(
+        new SpellcheckPresetOption(SpellcheckSettings.COMPLETION_PRESET_CUSTOM, "Custom"));
+    controls.customMinPrefixCompletionTokenLength.setValue(3);
+    controls.customMaxPrefixCompletionExtraChars.setValue(12);
+    controls.customMaxPrefixLexiconCandidates.setValue(64);
+    controls.customPrefixCompletionBonusScore.setValue(200);
+    controls.customSourceOrderWeight.setValue(7);
+
+    SpellcheckSettings settings = SpellcheckControlsSupport.readSettings(controls);
+
+    assertFalse(settings.enabled());
+    assertFalse(settings.underlineEnabled());
+    assertTrue(settings.suggestOnTabEnabled());
+    assertTrue(settings.hoverSuggestionsEnabled());
+    assertEquals("en-GB", settings.languageTag());
+    assertEquals(List.of("Foo", "bar", "baz"), settings.customDictionary());
+    assertEquals(SpellcheckSettings.COMPLETION_PRESET_CUSTOM, settings.completionPreset());
+    assertEquals(3, settings.customMinPrefixCompletionTokenLength());
+    assertEquals(12, settings.customMaxPrefixCompletionExtraChars());
+    assertEquals(64, settings.customMaxPrefixLexiconCandidates());
+    assertEquals(200, settings.customPrefixCompletionBonusScore());
+    assertEquals(7, settings.customSourceOrderWeight());
+  }
+
+  @Test
+  void rememberSettingsPersistsSpellcheckSettings() {
+    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    SpellcheckSettings settings =
+        new SpellcheckSettings(
+            false,
+            false,
+            true,
+            true,
+            "en-GB",
+            List.of("IRCafe"),
+            SpellcheckSettings.COMPLETION_PRESET_CUSTOM,
+            3,
+            12,
+            64,
+            200,
+            7);
+
+    SpellcheckControlsSupport.rememberSettings(runtimeConfig, settings);
+
+    verify(runtimeConfig).rememberSpellcheckEnabled(false);
+    verify(runtimeConfig).rememberSpellcheckUnderlineEnabled(false);
+    verify(runtimeConfig).rememberSpellcheckSuggestOnTabEnabled(true);
+    verify(runtimeConfig).rememberSpellcheckHoverSuggestionsEnabled(true);
+    verify(runtimeConfig).rememberSpellcheckLanguageTag("en-GB");
+    verify(runtimeConfig).rememberSpellcheckCustomDictionary(List.of("IRCafe"));
+    verify(runtimeConfig)
+        .rememberSpellcheckCompletionPreset(SpellcheckSettings.COMPLETION_PRESET_CUSTOM);
+    verify(runtimeConfig).rememberSpellcheckCustomMinPrefixCompletionTokenLength(3);
+    verify(runtimeConfig).rememberSpellcheckCustomMaxPrefixCompletionExtraChars(12);
+    verify(runtimeConfig).rememberSpellcheckCustomMaxPrefixLexiconCandidates(64);
+    verify(runtimeConfig).rememberSpellcheckCustomPrefixCompletionBonusScore(200);
+    verify(runtimeConfig).rememberSpellcheckCustomSourceOrderWeight(7);
   }
 }

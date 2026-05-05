@@ -747,28 +747,7 @@ public class PreferencesDialog {
             defaultQuitMessageV = RuntimeConfigStore.DEFAULT_QUIT_MESSAGE;
           }
           defaultQuitMessage.setText(defaultQuitMessageV);
-          boolean spellcheckEnabledV = spellcheck.enabled.isSelected();
-          boolean spellcheckUnderlineEnabledV = spellcheck.underlineEnabled.isSelected();
-          boolean spellcheckSuggestOnTabEnabledV = spellcheck.suggestOnTabEnabled.isSelected();
-          boolean spellcheckHoverSuggestionsEnabledV =
-              spellcheck.hoverSuggestionsEnabled.isSelected();
-          String spellcheckLanguageTagV =
-              SpellcheckControlsSupport.languageTagValue(spellcheck.languageTag);
-          List<String> spellcheckCustomDictionaryV =
-              SpellcheckControlsSupport.parseCustomDictionary(
-                  spellcheck.customDictionary.getText());
-          String spellcheckCompletionPresetV =
-              SpellcheckControlsSupport.completionPresetValue(spellcheck.completionPreset);
-          int spellcheckCustomMinPrefixCompletionTokenLengthV =
-              ((Number) spellcheck.customMinPrefixCompletionTokenLength.getValue()).intValue();
-          int spellcheckCustomMaxPrefixCompletionExtraCharsV =
-              ((Number) spellcheck.customMaxPrefixCompletionExtraChars.getValue()).intValue();
-          int spellcheckCustomMaxPrefixLexiconCandidatesV =
-              ((Number) spellcheck.customMaxPrefixLexiconCandidates.getValue()).intValue();
-          int spellcheckCustomPrefixCompletionBonusScoreV =
-              ((Number) spellcheck.customPrefixCompletionBonusScore.getValue()).intValue();
-          int spellcheckCustomSourceOrderWeightV =
-              ((Number) spellcheck.customSourceOrderWeight.getValue()).intValue();
+          SpellcheckSettings nextSpellcheck = SpellcheckControlsSupport.readSettings(spellcheck);
           boolean ctcpAutoRepliesEnabledV = ctcpAutoReplies.enabled.isSelected();
           boolean ctcpAutoReplyVersionEnabledV = ctcpAutoReplies.version.isSelected();
           boolean ctcpAutoReplyPingEnabledV = ctcpAutoReplies.ping.isSelected();
@@ -988,21 +967,6 @@ public class PreferencesDialog {
                   serverTreeHighlightChannelColorV,
                   preserveDockLayoutBetweenSessionsV,
                   matrixUserListNameDisplayModeV);
-          SpellcheckSettings nextSpellcheck =
-              new SpellcheckSettings(
-                  spellcheckEnabledV,
-                  spellcheckUnderlineEnabledV,
-                  spellcheckSuggestOnTabEnabledV,
-                  spellcheckHoverSuggestionsEnabledV,
-                  spellcheckLanguageTagV,
-                  spellcheckCustomDictionaryV,
-                  spellcheckCompletionPresetV,
-                  spellcheckCustomMinPrefixCompletionTokenLengthV,
-                  spellcheckCustomMaxPrefixCompletionExtraCharsV,
-                  spellcheckCustomMaxPrefixLexiconCandidatesV,
-                  spellcheckCustomPrefixCompletionBonusScoreV,
-                  spellcheckCustomSourceOrderWeightV);
-
           boolean themeChanged = !next.theme().equalsIgnoreCase(prev.theme());
 
           runtimeConfig.rememberServerTreeUnreadBadgeScalePercent(
@@ -1121,25 +1085,7 @@ public class PreferencesDialog {
                 next.typingIndicatorsTranscriptEnabled());
             runtimeConfig.rememberTypingIndicatorsSendSignalEnabled(
                 next.typingIndicatorsSendSignalEnabled());
-            runtimeConfig.rememberSpellcheckEnabled(nextSpellcheck.enabled());
-            runtimeConfig.rememberSpellcheckUnderlineEnabled(nextSpellcheck.underlineEnabled());
-            runtimeConfig.rememberSpellcheckSuggestOnTabEnabled(
-                nextSpellcheck.suggestOnTabEnabled());
-            runtimeConfig.rememberSpellcheckHoverSuggestionsEnabled(
-                nextSpellcheck.hoverSuggestionsEnabled());
-            runtimeConfig.rememberSpellcheckLanguageTag(nextSpellcheck.languageTag());
-            runtimeConfig.rememberSpellcheckCustomDictionary(nextSpellcheck.customDictionary());
-            runtimeConfig.rememberSpellcheckCompletionPreset(nextSpellcheck.completionPreset());
-            runtimeConfig.rememberSpellcheckCustomMinPrefixCompletionTokenLength(
-                nextSpellcheck.customMinPrefixCompletionTokenLength());
-            runtimeConfig.rememberSpellcheckCustomMaxPrefixCompletionExtraChars(
-                nextSpellcheck.customMaxPrefixCompletionExtraChars());
-            runtimeConfig.rememberSpellcheckCustomMaxPrefixLexiconCandidates(
-                nextSpellcheck.customMaxPrefixLexiconCandidates());
-            runtimeConfig.rememberSpellcheckCustomPrefixCompletionBonusScore(
-                nextSpellcheck.customPrefixCompletionBonusScore());
-            runtimeConfig.rememberSpellcheckCustomSourceOrderWeight(
-                nextSpellcheck.customSourceOrderWeight());
+            SpellcheckControlsSupport.rememberSettings(runtimeConfig, nextSpellcheck);
             Ircv3PanelSupport.persistCapabilities(runtimeConfig, ircv3CapabilitiesV);
 
             if (nickColorSettingsBus != null) {

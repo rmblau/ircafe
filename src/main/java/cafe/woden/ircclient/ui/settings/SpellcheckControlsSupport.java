@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings;
 
+import cafe.woden.ircclient.config.RuntimeConfigStore;
 import java.util.LinkedHashSet;
 import java.util.List;
 import javax.swing.DefaultListCellRenderer;
@@ -265,6 +266,41 @@ final class SpellcheckControlsSupport {
         customPrefixCompletionBonusScore,
         customSourceOrderWeight,
         panel);
+  }
+
+  static SpellcheckSettings readSettings(SpellcheckControls controls) {
+    return new SpellcheckSettings(
+        controls.enabled.isSelected(),
+        controls.underlineEnabled.isSelected(),
+        controls.suggestOnTabEnabled.isSelected(),
+        controls.hoverSuggestionsEnabled.isSelected(),
+        languageTagValue(controls.languageTag),
+        parseCustomDictionary(controls.customDictionary.getText()),
+        completionPresetValue(controls.completionPreset),
+        ((Number) controls.customMinPrefixCompletionTokenLength.getValue()).intValue(),
+        ((Number) controls.customMaxPrefixCompletionExtraChars.getValue()).intValue(),
+        ((Number) controls.customMaxPrefixLexiconCandidates.getValue()).intValue(),
+        ((Number) controls.customPrefixCompletionBonusScore.getValue()).intValue(),
+        ((Number) controls.customSourceOrderWeight.getValue()).intValue());
+  }
+
+  static void rememberSettings(RuntimeConfigStore runtimeConfig, SpellcheckSettings settings) {
+    runtimeConfig.rememberSpellcheckEnabled(settings.enabled());
+    runtimeConfig.rememberSpellcheckUnderlineEnabled(settings.underlineEnabled());
+    runtimeConfig.rememberSpellcheckSuggestOnTabEnabled(settings.suggestOnTabEnabled());
+    runtimeConfig.rememberSpellcheckHoverSuggestionsEnabled(settings.hoverSuggestionsEnabled());
+    runtimeConfig.rememberSpellcheckLanguageTag(settings.languageTag());
+    runtimeConfig.rememberSpellcheckCustomDictionary(settings.customDictionary());
+    runtimeConfig.rememberSpellcheckCompletionPreset(settings.completionPreset());
+    runtimeConfig.rememberSpellcheckCustomMinPrefixCompletionTokenLength(
+        settings.customMinPrefixCompletionTokenLength());
+    runtimeConfig.rememberSpellcheckCustomMaxPrefixCompletionExtraChars(
+        settings.customMaxPrefixCompletionExtraChars());
+    runtimeConfig.rememberSpellcheckCustomMaxPrefixLexiconCandidates(
+        settings.customMaxPrefixLexiconCandidates());
+    runtimeConfig.rememberSpellcheckCustomPrefixCompletionBonusScore(
+        settings.customPrefixCompletionBonusScore());
+    runtimeConfig.rememberSpellcheckCustomSourceOrderWeight(settings.customSourceOrderWeight());
   }
 
   static String languageTagValue(JComboBox<SpellcheckLanguageOption> combo) {
