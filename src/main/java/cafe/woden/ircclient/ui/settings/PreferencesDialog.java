@@ -905,31 +905,8 @@ public class PreferencesDialog {
           boolean embedCardStyleChanged =
               !java.util.Objects.equals(prevEmbedCardStyle, embedCardStyleV);
 
-          int historyInitialLoadV = ((Number) history.initialLoadLines.getValue()).intValue();
-          int historyPageSizeV = ((Number) history.pageSize.getValue()).intValue();
-          int historyAutoLoadWheelDebounceMsV =
-              ((Number) history.autoLoadWheelDebounceMs.getValue()).intValue();
-          boolean historySmoothWheelScrollingEnabledV =
-              history.smoothWheelScrollingEnabled.isSelected();
-          int historyLoadOlderChunkSizeV =
-              ((Number) history.loadOlderChunkSize.getValue()).intValue();
-          int historyLoadOlderChunkDelayMsV =
-              ((Number) history.loadOlderChunkDelayMs.getValue()).intValue();
-          int historyLoadOlderChunkEdtBudgetMsV =
-              ((Number) history.loadOlderChunkEdtBudgetMs.getValue()).intValue();
-          boolean historyDeferRichTextDuringBatchV = history.deferRichTextDuringBatch.isSelected();
-          boolean historyLockViewportDuringLoadOlderV =
-              history.lockViewportDuringLoadOlder.isSelected();
-          int historyRemoteRequestTimeoutSecondsV =
-              ((Number) history.remoteRequestTimeoutSeconds.getValue()).intValue();
-          int historyRemoteZncPlaybackTimeoutSecondsV =
-              ((Number) history.remoteZncPlaybackTimeoutSeconds.getValue()).intValue();
-          int historyRemoteZncPlaybackWindowMinutesV =
-              ((Number) history.remoteZncPlaybackWindowMinutes.getValue()).intValue();
-          int commandHistoryMaxSizeV =
-              ((Number) history.commandHistoryMaxSize.getValue()).intValue();
-          int chatTranscriptMaxLinesPerTargetV =
-              ((Number) history.chatTranscriptMaxLinesPerTarget.getValue()).intValue();
+          HistoryControlsSupport.HistorySettings historySettings =
+              HistoryControlsSupport.readSettings(history);
           MemoryUsageDisplayMode memoryUsageDisplayModeV =
               memoryUsageDisplayMode.getSelectedItem() instanceof MemoryUsageDisplayMode mode
                   ? mode
@@ -1126,18 +1103,18 @@ public class PreferencesDialog {
                   timestampFormatV,
                   timestampsIncludeChatMessagesV,
                   timestampsIncludePresenceMessagesV,
-                  historyInitialLoadV,
-                  historyPageSizeV,
-                  historyAutoLoadWheelDebounceMsV,
-                  historyLoadOlderChunkSizeV,
-                  historyLoadOlderChunkDelayMsV,
-                  historyLoadOlderChunkEdtBudgetMsV,
-                  historyDeferRichTextDuringBatchV,
-                  historyRemoteRequestTimeoutSecondsV,
-                  historyRemoteZncPlaybackTimeoutSecondsV,
-                  historyRemoteZncPlaybackWindowMinutesV,
-                  commandHistoryMaxSizeV,
-                  chatTranscriptMaxLinesPerTargetV,
+                  historySettings.initialLoadLines(),
+                  historySettings.pageSize(),
+                  historySettings.autoLoadWheelDebounceMs(),
+                  historySettings.loadOlderChunkSize(),
+                  historySettings.loadOlderChunkDelayMs(),
+                  historySettings.loadOlderChunkEdtBudgetMs(),
+                  historySettings.deferRichTextDuringBatch(),
+                  historySettings.remoteRequestTimeoutSeconds(),
+                  historySettings.remoteZncPlaybackTimeoutSeconds(),
+                  historySettings.remoteZncPlaybackWindowMinutes(),
+                  historySettings.commandHistoryMaxSize(),
+                  historySettings.chatTranscriptMaxLinesPerTarget(),
                   outgoingColorEnabledV,
                   outgoingHexV,
                   outgoingDeliveryIndicatorsEnabledV,
@@ -1197,7 +1174,8 @@ public class PreferencesDialog {
           runtimeConfig.rememberServerTreeHighlightChannelColor(serverTreeHighlightChannelColorV);
           runtimeConfig.rememberPreserveDockLayout(preserveDockLayoutBetweenSessionsV);
           settingsBus.set(next);
-          settingsBus.setChatSmoothWheelScrollingEnabled(historySmoothWheelScrollingEnabledV);
+          settingsBus.setChatSmoothWheelScrollingEnabled(
+              historySettings.smoothWheelScrollingEnabled());
           if (spellcheckSettingsBus != null) {
             spellcheckSettingsBus.set(nextSpellcheck);
           }
@@ -1374,31 +1352,7 @@ public class PreferencesDialog {
             runtimeConfig.rememberTimestampsIncludePresenceMessages(
                 next.timestampsIncludePresenceMessages());
 
-            runtimeConfig.rememberChatHistoryInitialLoadLines(next.chatHistoryInitialLoadLines());
-            runtimeConfig.rememberChatHistoryPageSize(next.chatHistoryPageSize());
-            runtimeConfig.rememberChatHistoryAutoLoadWheelDebounceMs(
-                next.chatHistoryAutoLoadWheelDebounceMs());
-            runtimeConfig.rememberChatSmoothWheelScrollingEnabled(
-                historySmoothWheelScrollingEnabledV);
-            runtimeConfig.rememberChatHistoryLoadOlderChunkSize(
-                next.chatHistoryLoadOlderChunkSize());
-            runtimeConfig.rememberChatHistoryLoadOlderChunkDelayMs(
-                next.chatHistoryLoadOlderChunkDelayMs());
-            runtimeConfig.rememberChatHistoryLoadOlderChunkEdtBudgetMs(
-                next.chatHistoryLoadOlderChunkEdtBudgetMs());
-            runtimeConfig.rememberChatHistoryDeferRichTextDuringBatch(
-                next.chatHistoryDeferRichTextDuringBatch());
-            runtimeConfig.rememberChatHistoryLockViewportDuringLoadOlder(
-                historyLockViewportDuringLoadOlderV);
-            runtimeConfig.rememberChatHistoryRemoteRequestTimeoutSeconds(
-                next.chatHistoryRemoteRequestTimeoutSeconds());
-            runtimeConfig.rememberChatHistoryRemoteZncPlaybackTimeoutSeconds(
-                next.chatHistoryRemoteZncPlaybackTimeoutSeconds());
-            runtimeConfig.rememberChatHistoryRemoteZncPlaybackWindowMinutes(
-                next.chatHistoryRemoteZncPlaybackWindowMinutes());
-            runtimeConfig.rememberCommandHistoryMaxSize(next.commandHistoryMaxSize());
-            runtimeConfig.rememberChatTranscriptMaxLinesPerTarget(
-                next.chatTranscriptMaxLinesPerTarget());
+            HistoryControlsSupport.rememberSettings(runtimeConfig, historySettings);
 
             applyFilterSettingsFromUi(filters);
             runtimeConfig.rememberChatLoggingEnabled(logging.enabled.isSelected());

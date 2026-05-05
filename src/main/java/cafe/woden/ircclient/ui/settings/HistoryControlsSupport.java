@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings;
 
+import cafe.woden.ircclient.config.RuntimeConfigStore;
 import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JSpinner;
@@ -119,5 +120,97 @@ final class HistoryControlsSupport {
         historyRemoteZncPlaybackWindowMinutes,
         commandHistoryMaxSize,
         chatTranscriptMaxLinesPerTarget);
+  }
+
+  static HistorySettings readSettings(HistoryControls controls) {
+    return new HistorySettings(
+        spinnerInt(controls.initialLoadLines),
+        spinnerInt(controls.pageSize),
+        spinnerInt(controls.autoLoadWheelDebounceMs),
+        controls.smoothWheelScrollingEnabled.isSelected(),
+        spinnerInt(controls.loadOlderChunkSize),
+        spinnerInt(controls.loadOlderChunkDelayMs),
+        spinnerInt(controls.loadOlderChunkEdtBudgetMs),
+        controls.deferRichTextDuringBatch.isSelected(),
+        controls.lockViewportDuringLoadOlder.isSelected(),
+        spinnerInt(controls.remoteRequestTimeoutSeconds),
+        spinnerInt(controls.remoteZncPlaybackTimeoutSeconds),
+        spinnerInt(controls.remoteZncPlaybackWindowMinutes),
+        spinnerInt(controls.commandHistoryMaxSize),
+        spinnerInt(controls.chatTranscriptMaxLinesPerTarget));
+  }
+
+  static void rememberSettings(RuntimeConfigStore runtimeConfig, HistorySettings settings) {
+    runtimeConfig.rememberChatHistoryInitialLoadLines(settings.initialLoadLines());
+    runtimeConfig.rememberChatHistoryPageSize(settings.pageSize());
+    runtimeConfig.rememberChatHistoryAutoLoadWheelDebounceMs(settings.autoLoadWheelDebounceMs());
+    runtimeConfig.rememberChatSmoothWheelScrollingEnabled(settings.smoothWheelScrollingEnabled());
+    runtimeConfig.rememberChatHistoryLoadOlderChunkSize(settings.loadOlderChunkSize());
+    runtimeConfig.rememberChatHistoryLoadOlderChunkDelayMs(settings.loadOlderChunkDelayMs());
+    runtimeConfig.rememberChatHistoryLoadOlderChunkEdtBudgetMs(
+        settings.loadOlderChunkEdtBudgetMs());
+    runtimeConfig.rememberChatHistoryDeferRichTextDuringBatch(settings.deferRichTextDuringBatch());
+    runtimeConfig.rememberChatHistoryLockViewportDuringLoadOlder(
+        settings.lockViewportDuringLoadOlder());
+    runtimeConfig.rememberChatHistoryRemoteRequestTimeoutSeconds(
+        settings.remoteRequestTimeoutSeconds());
+    runtimeConfig.rememberChatHistoryRemoteZncPlaybackTimeoutSeconds(
+        settings.remoteZncPlaybackTimeoutSeconds());
+    runtimeConfig.rememberChatHistoryRemoteZncPlaybackWindowMinutes(
+        settings.remoteZncPlaybackWindowMinutes());
+    runtimeConfig.rememberCommandHistoryMaxSize(settings.commandHistoryMaxSize());
+    runtimeConfig.rememberChatTranscriptMaxLinesPerTarget(
+        settings.chatTranscriptMaxLinesPerTarget());
+  }
+
+  private static int spinnerInt(JSpinner spinner) {
+    return ((Number) spinner.getValue()).intValue();
+  }
+
+  record HistorySettings(
+      int initialLoadLines,
+      int pageSize,
+      int autoLoadWheelDebounceMs,
+      boolean smoothWheelScrollingEnabled,
+      int loadOlderChunkSize,
+      int loadOlderChunkDelayMs,
+      int loadOlderChunkEdtBudgetMs,
+      boolean deferRichTextDuringBatch,
+      boolean lockViewportDuringLoadOlder,
+      int remoteRequestTimeoutSeconds,
+      int remoteZncPlaybackTimeoutSeconds,
+      int remoteZncPlaybackWindowMinutes,
+      int commandHistoryMaxSize,
+      int chatTranscriptMaxLinesPerTarget) {
+    HistorySettings {
+      if (initialLoadLines < 0) initialLoadLines = 0;
+      if (pageSize <= 0) pageSize = 200;
+      if (autoLoadWheelDebounceMs <= 0) autoLoadWheelDebounceMs = 2000;
+      if (autoLoadWheelDebounceMs < 100) autoLoadWheelDebounceMs = 100;
+      if (autoLoadWheelDebounceMs > 30_000) autoLoadWheelDebounceMs = 30_000;
+      if (loadOlderChunkSize <= 0) loadOlderChunkSize = 20;
+      if (loadOlderChunkSize < 1) loadOlderChunkSize = 1;
+      if (loadOlderChunkSize > 500) loadOlderChunkSize = 500;
+      if (loadOlderChunkDelayMs < 0) loadOlderChunkDelayMs = 0;
+      if (loadOlderChunkDelayMs > 1_000) loadOlderChunkDelayMs = 1_000;
+      if (loadOlderChunkEdtBudgetMs <= 0) loadOlderChunkEdtBudgetMs = 6;
+      if (loadOlderChunkEdtBudgetMs < 1) loadOlderChunkEdtBudgetMs = 1;
+      if (loadOlderChunkEdtBudgetMs > 33) loadOlderChunkEdtBudgetMs = 33;
+      if (remoteRequestTimeoutSeconds <= 0) remoteRequestTimeoutSeconds = 6;
+      if (remoteRequestTimeoutSeconds < 1) remoteRequestTimeoutSeconds = 1;
+      if (remoteRequestTimeoutSeconds > 120) remoteRequestTimeoutSeconds = 120;
+      if (remoteZncPlaybackTimeoutSeconds <= 0) remoteZncPlaybackTimeoutSeconds = 18;
+      if (remoteZncPlaybackTimeoutSeconds < 1) remoteZncPlaybackTimeoutSeconds = 1;
+      if (remoteZncPlaybackTimeoutSeconds > 300) remoteZncPlaybackTimeoutSeconds = 300;
+      if (remoteZncPlaybackWindowMinutes <= 0) remoteZncPlaybackWindowMinutes = 360;
+      if (remoteZncPlaybackWindowMinutes < 1) remoteZncPlaybackWindowMinutes = 1;
+      if (remoteZncPlaybackWindowMinutes > 1440) remoteZncPlaybackWindowMinutes = 1440;
+      if (commandHistoryMaxSize <= 0) commandHistoryMaxSize = 500;
+      if (commandHistoryMaxSize > 500) commandHistoryMaxSize = 500;
+      if (chatTranscriptMaxLinesPerTarget < 0) chatTranscriptMaxLinesPerTarget = 0;
+      if (chatTranscriptMaxLinesPerTarget > 200_000) {
+        chatTranscriptMaxLinesPerTarget = 200_000;
+      }
+    }
   }
 }
