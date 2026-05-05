@@ -3,7 +3,6 @@ package cafe.woden.ircclient.ui.settings;
 import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
 import cafe.woden.ircclient.config.ExecutorConfig;
-import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.LogProperties;
 import cafe.woden.ircclient.config.NotificationRule;
 import cafe.woden.ircclient.config.PushyProperties;
@@ -16,8 +15,6 @@ import cafe.woden.ircclient.model.BuiltInSound;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.model.UserCommandAlias;
-import cafe.woden.ircclient.net.NetHeartbeatContext;
-import cafe.woden.ircclient.net.NetProxyContext;
 import cafe.woden.ircclient.net.NetTlsContext;
 import cafe.woden.ircclient.notifications.api.IrcEventNotificationRulesPort;
 import cafe.woden.ircclient.notify.api.NotificationSoundPort;
@@ -508,15 +505,9 @@ public class PreferencesDialog {
             NetTlsContext.trustAllCertificates(),
             DEFAULT_GENERIC_BOUNCER_PREFER_LOGIN_HINT,
             DEFAULT_GENERIC_BOUNCER_LOGIN_TEMPLATE);
-    ProxyControls proxy = network.proxy();
     UserhostControls userhost = network.userhost();
     UserInfoEnrichmentControls enrichment = network.enrichment();
-    HeartbeatControls heartbeat = network.heartbeat();
-    BouncerControls bouncer = network.bouncer();
     JSpinner monitorIsonPollIntervalSeconds = network.monitorIsonPollIntervalSeconds();
-    JCheckBox trustAllTlsCertificates = network.trustAllTlsCertificates();
-    JCheckBox genericBouncerPreferLoginHint = bouncer.preferLoginHint;
-    JTextField genericBouncerLoginTemplate = bouncer.loginTemplate;
 
     JPanel networkPanel = network.networkPanel();
     JPanel userLookupsPanel = network.userLookupsPanel();
@@ -925,35 +916,18 @@ public class PreferencesDialog {
           boolean memoryWarningSoundEnabledV = memoryWarnings.soundEnabled.isSelected();
           LaunchJvmControlsSupport.LaunchJvmSettings launchJvmSettings =
               LaunchJvmControlsSupport.readSettings(launchJvm);
-          IrcProperties.Proxy proxyCfg;
+          NetworkAdvancedControlsSupport.NetworkSettings networkSettings;
           try {
-            proxyCfg = NetworkAdvancedControlsSupport.readProxySettings(proxy);
-          } catch (Exception ex) {
+            networkSettings = NetworkAdvancedControlsSupport.readSettings(network);
+          } catch (NetworkAdvancedControlsSupport.NetworkSettingsException ex) {
             javax.swing.JOptionPane.showMessageDialog(
-                dialog,
-                "Invalid SOCKS proxy settings:\n\n" + ex.getMessage(),
-                "Invalid proxy settings",
-                javax.swing.JOptionPane.ERROR_MESSAGE);
-            return;
-          }
-          IrcProperties.Heartbeat heartbeatCfg;
-          try {
-            heartbeatCfg = NetworkAdvancedControlsSupport.readHeartbeatSettings(heartbeat);
-          } catch (Exception ex) {
-            javax.swing.JOptionPane.showMessageDialog(
-                dialog,
-                "Invalid heartbeat settings:\n\n" + ex.getMessage(),
-                "Invalid heartbeat settings",
-                javax.swing.JOptionPane.ERROR_MESSAGE);
+                dialog, ex.getMessage(), ex.title(), javax.swing.JOptionPane.ERROR_MESSAGE);
             return;
           }
 
           UserLookupsPanelSupport.UserLookupSettings userLookupSettings =
               UserLookupsPanelSupport.readSettings(
                   userhost, enrichment, monitorIsonPollIntervalSeconds);
-          boolean genericBouncerPreferLoginHintV = genericBouncerPreferLoginHint.isSelected();
-          String genericBouncerLoginTemplateV =
-              Objects.toString(genericBouncerLoginTemplate.getText(), "").trim();
 
           UiSettings prev = settingsBus.get();
           boolean outgoingColorEnabledV = outgoing.enabled.isSelected();
@@ -1327,18 +1301,8 @@ public class PreferencesDialog {
             }
 
             UserLookupsPanelSupport.rememberSettings(runtimeConfig, userLookupSettings);
-            runtimeConfig.rememberGenericBouncerPreferLoginHint(genericBouncerPreferLoginHintV);
-            runtimeConfig.rememberGenericBouncerLoginTemplate(genericBouncerLoginTemplateV);
-            runtimeConfig.rememberClientProxy(proxyCfg);
-            NetProxyContext.configure(proxyCfg);
-            runtimeConfig.rememberClientHeartbeat(heartbeatCfg);
-            NetHeartbeatContext.configure(heartbeatCfg);
-            if (ircHeartbeatMaintenancePort != null) {
-              ircHeartbeatMaintenancePort.rescheduleActiveHeartbeats();
-            }
-            boolean trustAllTlsV = trustAllTlsCertificates.isSelected();
-            runtimeConfig.rememberClientTlsTrustAllCertificates(trustAllTlsV);
-            NetTlsContext.configure(trustAllTlsV);
+            NetworkAdvancedControlsSupport.rememberSettings(
+                runtimeConfig, ircHeartbeatMaintenancePort, networkSettings);
           } finally {
             runtimeConfig.endMutationBatch();
           }

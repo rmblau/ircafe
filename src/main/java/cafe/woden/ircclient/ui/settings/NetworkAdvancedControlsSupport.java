@@ -2,8 +2,10 @@ package cafe.woden.ircclient.ui.settings;
 
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.irc.backend.IrcHeartbeatMaintenanceService;
 import cafe.woden.ircclient.net.NetHeartbeatContext;
 import cafe.woden.ircclient.net.NetProxyContext;
+import cafe.woden.ircclient.net.NetTlsContext;
 import java.util.List;
 import java.util.Objects;
 import javax.swing.JCheckBox;
@@ -115,5 +117,75 @@ final class NetworkAdvancedControlsSupport {
     }
 
     return new IrcProperties.Heartbeat(enabled, checkSeconds * 1000L, timeoutSeconds * 1000L);
+  }
+
+  static NetworkSettings readSettings(NetworkAdvancedControls controls) {
+    IrcProperties.Proxy proxy;
+    try {
+      proxy = readProxySettings(controls.proxy());
+    } catch (Exception ex) {
+      throw new NetworkSettingsException(
+          "Invalid proxy settings", "Invalid SOCKS proxy settings:\n\n" + ex.getMessage(), ex);
+    }
+
+    IrcProperties.Heartbeat heartbeat;
+    try {
+      heartbeat = readHeartbeatSettings(controls.heartbeat());
+    } catch (Exception ex) {
+      throw new NetworkSettingsException(
+          "Invalid heartbeat settings", "Invalid heartbeat settings:\n\n" + ex.getMessage(), ex);
+    }
+
+    BouncerSettings bouncer = readBouncerSettings(controls.bouncer());
+    boolean trustAllTlsCertificates = controls.trustAllTlsCertificates().isSelected();
+    return new NetworkSettings(proxy, heartbeat, bouncer, trustAllTlsCertificates);
+  }
+
+  static void rememberSettings(
+      RuntimeConfigStore runtimeConfig,
+      IrcHeartbeatMaintenanceService heartbeatMaintenance,
+      NetworkSettings settings) {
+    runtimeConfig.rememberClientProxy(settings.proxy());
+    NetProxyContext.configure(settings.proxy());
+    runtimeConfig.rememberClientHeartbeat(settings.heartbeat());
+    NetHeartbeatContext.configure(settings.heartbeat());
+    if (heartbeatMaintenance != null) {
+      heartbeatMaintenance.rescheduleActiveHeartbeats();
+    }
+    runtimeConfig.rememberGenericBouncerPreferLoginHint(settings.bouncer().preferLoginHint());
+    runtimeConfig.rememberGenericBouncerLoginTemplate(settings.bouncer().loginTemplate());
+    runtimeConfig.rememberClientTlsTrustAllCertificates(settings.trustAllTlsCertificates());
+    NetTlsContext.configure(settings.trustAllTlsCertificates());
+  }
+
+  private static BouncerSettings readBouncerSettings(BouncerControls bouncer) {
+    return new BouncerSettings(
+        bouncer.preferLoginHint.isSelected(),
+        Objects.toString(bouncer.loginTemplate.getText(), "").trim());
+  }
+
+  record NetworkSettings(
+      IrcProperties.Proxy proxy,
+      IrcProperties.Heartbeat heartbeat,
+      BouncerSettings bouncer,
+      boolean trustAllTlsCertificates) {}
+
+  record BouncerSettings(boolean preferLoginHint, String loginTemplate) {
+    BouncerSettings {
+      loginTemplate = Objects.toString(loginTemplate, "").trim();
+    }
+  }
+
+  static final class NetworkSettingsException extends IllegalArgumentException {
+    private final String title;
+
+    private NetworkSettingsException(String title, String message, Throwable cause) {
+      super(message, cause);
+      this.title = title;
+    }
+
+    String title() {
+      return title;
+    }
   }
 }
