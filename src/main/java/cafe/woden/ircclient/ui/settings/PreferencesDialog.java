@@ -706,99 +706,14 @@ public class PreferencesDialog {
 
           boolean autoConnectV = autoConnectOnStart.isSelected();
 
-          boolean trayEnabledV = trayControls.enabled.isSelected();
-          boolean trayCloseToTrayV = trayEnabledV && trayControls.closeToTray.isSelected();
-          boolean trayMinimizeToTrayV = trayEnabledV && trayControls.minimizeToTray.isSelected();
-          boolean trayStartMinimizedV = trayEnabledV && trayControls.startMinimized.isSelected();
-
-          boolean trayNotifyHighlightsV =
-              trayEnabledV && trayControls.notifyHighlights.isSelected();
-          boolean trayNotifyPrivateMessagesV =
-              trayEnabledV && trayControls.notifyPrivateMessages.isSelected();
-          boolean trayNotifyConnectionStateV =
-              trayEnabledV && trayControls.notifyConnectionState.isSelected();
-
-          boolean trayNotifyOnlyWhenUnfocusedV =
-              trayEnabledV && trayControls.notifyOnlyWhenUnfocused.isSelected();
-          boolean trayNotifyOnlyWhenMinimizedOrHiddenV =
-              trayEnabledV && trayControls.notifyOnlyWhenMinimizedOrHidden.isSelected();
-          boolean trayNotifySuppressWhenTargetActiveV =
-              trayEnabledV && trayControls.notifySuppressWhenTargetActive.isSelected();
-
-          boolean trayLinuxDbusActionsEnabledV =
-              trayEnabledV && trayControls.linuxDbusActions.isSelected();
-          NotificationBackendMode trayNotificationBackendModeV =
-              trayControls.notificationBackend.getSelectedItem()
-                      instanceof NotificationBackendMode mode
-                  ? mode
-                  : NotificationBackendMode.AUTO;
-
-          boolean trayNotificationSoundsEnabledV =
-              trayEnabledV && trayControls.notificationSoundsEnabled.isSelected();
-          boolean updateNotifierEnabledV = trayControls.updateNotifierEnabled.isSelected();
-          boolean lagIndicatorEnabledV = trayControls.lagIndicatorEnabled.isSelected();
-          BuiltInSound selectedSoundV =
-              (BuiltInSound) trayControls.notificationSound.getSelectedItem();
-          String trayNotificationSoundIdV =
-              selectedSoundV != null ? selectedSoundV.name() : BuiltInSound.NOTIF_1.name();
-
-          boolean trayNotificationSoundUseCustomV =
-              trayControls.notificationSoundUseCustom.isSelected();
-          String trayNotificationSoundCustomPathV =
-              trayControls.notificationSoundCustomPath.getText();
-          trayNotificationSoundCustomPathV =
-              trayNotificationSoundCustomPathV != null
-                  ? trayNotificationSoundCustomPathV.trim()
-                  : "";
-          if (trayNotificationSoundCustomPathV.isBlank()) trayNotificationSoundCustomPathV = null;
-          if (trayNotificationSoundUseCustomV && trayNotificationSoundCustomPathV == null) {
-            trayNotificationSoundUseCustomV = false;
-          }
-
-          boolean pushyEnabledV = trayControls.pushyEnabled.isSelected();
-          String pushyEndpointV = Objects.toString(trayControls.pushyEndpoint.getText(), "").trim();
-          String pushyApiKeyV = new String(trayControls.pushyApiKey.getPassword()).trim();
-          PushyTargetMode pushyTargetModeV =
-              trayControls.pushyTargetMode.getSelectedItem() instanceof PushyTargetMode mode
-                  ? mode
-                  : PushyTargetMode.DEVICE_TOKEN;
-          String pushyTargetValueV =
-              Objects.toString(trayControls.pushyTargetValue.getText(), "").trim();
-          String pushyTitlePrefixV =
-              Objects.toString(trayControls.pushyTitlePrefix.getText(), "").trim();
-          int pushyConnectTimeoutSecondsV =
-              ((Number) trayControls.pushyConnectTimeoutSeconds.getValue()).intValue();
-          int pushyReadTimeoutSecondsV =
-              ((Number) trayControls.pushyReadTimeoutSeconds.getValue()).intValue();
-
-          String pushyValidationErrorV =
-              TrayControlsSupport.validatePushyInputs(
-                  pushyEnabledV, pushyEndpointV, pushyApiKeyV, pushyTargetModeV, pushyTargetValueV);
-          if (pushyValidationErrorV != null) {
+          TrayControlsSupport.TraySettings traySettings;
+          try {
+            traySettings = TrayControlsSupport.readSettings(trayControls);
+          } catch (TrayControlsSupport.TraySettingsException ex) {
             JOptionPane.showMessageDialog(
-                dialog, pushyValidationErrorV, "Invalid Pushy settings", JOptionPane.ERROR_MESSAGE);
+                dialog, ex.getMessage(), ex.title(), JOptionPane.ERROR_MESSAGE);
             return;
           }
-
-          String pushyDeviceTokenV =
-              pushyTargetModeV == PushyTargetMode.DEVICE_TOKEN && !pushyTargetValueV.isBlank()
-                  ? pushyTargetValueV
-                  : null;
-          String pushyTopicV =
-              pushyTargetModeV == PushyTargetMode.TOPIC && !pushyTargetValueV.isBlank()
-                  ? pushyTargetValueV
-                  : null;
-
-          PushyProperties pushyNext =
-              new PushyProperties(
-                  pushyEnabledV,
-                  pushyEndpointV.isBlank() ? null : pushyEndpointV,
-                  pushyApiKeyV.isBlank() ? null : pushyApiKeyV,
-                  pushyDeviceTokenV,
-                  pushyTopicV,
-                  pushyTitlePrefixV.isBlank() ? null : pushyTitlePrefixV,
-                  pushyConnectTimeoutSecondsV,
-                  pushyReadTimeoutSecondsV);
 
           boolean timestampsEnabledV = timestamps.enabled.isSelected();
           boolean timestampsIncludeChatMessagesV = timestamps.includeChatMessages.isSelected();
@@ -995,18 +910,18 @@ public class PreferencesDialog {
                   fam,
                   size,
                   autoConnectV,
-                  trayEnabledV,
-                  trayCloseToTrayV,
-                  trayMinimizeToTrayV,
-                  trayStartMinimizedV,
-                  trayNotifyHighlightsV,
-                  trayNotifyPrivateMessagesV,
-                  trayNotifyConnectionStateV,
-                  trayNotifyOnlyWhenUnfocusedV,
-                  trayNotifyOnlyWhenMinimizedOrHiddenV,
-                  trayNotifySuppressWhenTargetActiveV,
-                  trayLinuxDbusActionsEnabledV,
-                  trayNotificationBackendModeV,
+                  traySettings.trayEnabled(),
+                  traySettings.trayCloseToTray(),
+                  traySettings.trayMinimizeToTray(),
+                  traySettings.trayStartMinimized(),
+                  traySettings.trayNotifyHighlights(),
+                  traySettings.trayNotifyPrivateMessages(),
+                  traySettings.trayNotifyConnectionState(),
+                  traySettings.trayNotifyOnlyWhenUnfocused(),
+                  traySettings.trayNotifyOnlyWhenMinimizedOrHidden(),
+                  traySettings.trayNotifySuppressWhenTargetActive(),
+                  traySettings.trayLinuxDbusActionsEnabled(),
+                  traySettings.trayNotificationBackendMode(),
                   imageEmbeds.enabled.isSelected(),
                   imageEmbeds.collapsed.isSelected(),
                   maxImageW,
@@ -1156,50 +1071,14 @@ public class PreferencesDialog {
             runtimeConfig.rememberLaunchJvmXmxMiB(launchJvmSettings.xmxMiB());
             runtimeConfig.rememberLaunchJvmGc(launchJvmSettings.gc());
             runtimeConfig.rememberLaunchJvmArgs(launchJvmSettings.args());
-            runtimeConfig.rememberTrayEnabled(next.trayEnabled());
-            runtimeConfig.rememberTrayCloseToTray(next.trayCloseToTray());
-            runtimeConfig.rememberTrayMinimizeToTray(next.trayMinimizeToTray());
-            runtimeConfig.rememberTrayStartMinimized(next.trayStartMinimized());
-            runtimeConfig.rememberTrayNotifyHighlights(next.trayNotifyHighlights());
-            runtimeConfig.rememberTrayNotifyPrivateMessages(next.trayNotifyPrivateMessages());
-            runtimeConfig.rememberTrayNotifyConnectionState(next.trayNotifyConnectionState());
-            runtimeConfig.rememberTrayNotifyOnlyWhenUnfocused(next.trayNotifyOnlyWhenUnfocused());
-            runtimeConfig.rememberTrayNotifyOnlyWhenMinimizedOrHidden(
-                next.trayNotifyOnlyWhenMinimizedOrHidden());
-            runtimeConfig.rememberTrayNotifySuppressWhenTargetActive(
-                next.trayNotifySuppressWhenTargetActive());
-            runtimeConfig.rememberTrayLinuxDbusActionsEnabled(next.trayLinuxDbusActionsEnabled());
-            runtimeConfig.rememberTrayNotificationBackend(
-                next.trayNotificationBackendMode().token());
-
-            if (notificationSoundSettingsBus != null) {
-              notificationSoundSettingsBus.set(
-                  new NotificationSoundSettings(
-                      trayNotificationSoundsEnabledV,
-                      trayNotificationSoundIdV,
-                      trayNotificationSoundUseCustomV,
-                      trayNotificationSoundCustomPathV));
-            }
-            runtimeConfig.rememberTrayNotificationSoundsEnabled(trayNotificationSoundsEnabledV);
-            runtimeConfig.rememberTrayNotificationSound(trayNotificationSoundIdV);
-            runtimeConfig.rememberTrayNotificationSoundUseCustom(trayNotificationSoundUseCustomV);
-            runtimeConfig.rememberTrayNotificationSoundCustomPath(trayNotificationSoundCustomPathV);
-            runtimeConfig.rememberUpdateNotifierEnabled(updateNotifierEnabledV);
-            runtimeConfig.rememberLagIndicatorEnabled(lagIndicatorEnabledV);
-            if (updateNotifierService != null) {
-              updateNotifierService.setEnabled(updateNotifierEnabledV);
-            }
-            if (lagIndicatorService != null) {
-              lagIndicatorService.setEnabled(lagIndicatorEnabledV);
-            }
-            if (pushySettingsBus != null) {
-              pushySettingsBus.set(pushyNext);
-            }
-            runtimeConfig.rememberPushySettings(pushyNext);
-
-            if (trayService != null) {
-              trayService.applySettings();
-            }
+            TrayControlsSupport.rememberSettings(
+                runtimeConfig,
+                notificationSoundSettingsBus,
+                pushySettingsBus,
+                updateNotifierService,
+                lagIndicatorService,
+                trayService,
+                traySettings);
             runtimeConfig.rememberImageEmbedsEnabled(next.imageEmbedsEnabled());
             runtimeConfig.rememberImageEmbedsCollapsedByDefault(
                 next.imageEmbedsCollapsedByDefault());

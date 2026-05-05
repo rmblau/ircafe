@@ -5,8 +5,13 @@ import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.model.BuiltInSound;
 import cafe.woden.ircclient.notify.api.NotificationSoundPort;
 import cafe.woden.ircclient.notify.api.PushyNotificationPort;
+import cafe.woden.ircclient.notify.pushy.PushySettingsBus;
 import cafe.woden.ircclient.notify.sound.NotificationSoundSettings;
+import cafe.woden.ircclient.notify.sound.NotificationSoundSettingsBus;
+import cafe.woden.ircclient.ui.shell.LagIndicatorService;
+import cafe.woden.ircclient.ui.shell.UpdateNotifierService;
 import cafe.woden.ircclient.ui.tray.TrayNotificationService;
+import cafe.woden.ircclient.ui.tray.TrayService;
 import cafe.woden.ircclient.ui.tray.dbus.GnomeDbusNotificationBackend;
 import java.awt.Color;
 import java.io.File;
@@ -513,6 +518,83 @@ final class TrayControlsSupport {
     return controls;
   }
 
+  static TraySettings readSettings(TrayControls controls) {
+    boolean trayEnabled = controls.enabled.isSelected();
+    NotificationBackendMode notificationBackendMode =
+        controls.notificationBackend.getSelectedItem() instanceof NotificationBackendMode mode
+            ? mode
+            : NotificationBackendMode.AUTO;
+
+    return new TraySettings(
+        trayEnabled,
+        trayEnabled && controls.closeToTray.isSelected(),
+        trayEnabled && controls.minimizeToTray.isSelected(),
+        trayEnabled && controls.startMinimized.isSelected(),
+        trayEnabled && controls.notifyHighlights.isSelected(),
+        trayEnabled && controls.notifyPrivateMessages.isSelected(),
+        trayEnabled && controls.notifyConnectionState.isSelected(),
+        trayEnabled && controls.notifyOnlyWhenUnfocused.isSelected(),
+        trayEnabled && controls.notifyOnlyWhenMinimizedOrHidden.isSelected(),
+        trayEnabled && controls.notifySuppressWhenTargetActive.isSelected(),
+        trayEnabled && controls.linuxDbusActions.isSelected(),
+        notificationBackendMode,
+        controls.updateNotifierEnabled.isSelected(),
+        controls.lagIndicatorEnabled.isSelected(),
+        readNotificationSoundSettings(controls, trayEnabled),
+        readPushySettings(controls));
+  }
+
+  static void rememberSettings(
+      RuntimeConfigStore runtimeConfig,
+      NotificationSoundSettingsBus notificationSoundSettingsBus,
+      PushySettingsBus pushySettingsBus,
+      UpdateNotifierService updateNotifierService,
+      LagIndicatorService lagIndicatorService,
+      TrayService trayService,
+      TraySettings settings) {
+    runtimeConfig.rememberTrayEnabled(settings.trayEnabled());
+    runtimeConfig.rememberTrayCloseToTray(settings.trayCloseToTray());
+    runtimeConfig.rememberTrayMinimizeToTray(settings.trayMinimizeToTray());
+    runtimeConfig.rememberTrayStartMinimized(settings.trayStartMinimized());
+    runtimeConfig.rememberTrayNotifyHighlights(settings.trayNotifyHighlights());
+    runtimeConfig.rememberTrayNotifyPrivateMessages(settings.trayNotifyPrivateMessages());
+    runtimeConfig.rememberTrayNotifyConnectionState(settings.trayNotifyConnectionState());
+    runtimeConfig.rememberTrayNotifyOnlyWhenUnfocused(settings.trayNotifyOnlyWhenUnfocused());
+    runtimeConfig.rememberTrayNotifyOnlyWhenMinimizedOrHidden(
+        settings.trayNotifyOnlyWhenMinimizedOrHidden());
+    runtimeConfig.rememberTrayNotifySuppressWhenTargetActive(
+        settings.trayNotifySuppressWhenTargetActive());
+    runtimeConfig.rememberTrayLinuxDbusActionsEnabled(settings.trayLinuxDbusActionsEnabled());
+    runtimeConfig.rememberTrayNotificationBackend(settings.trayNotificationBackendMode().token());
+
+    NotificationSoundSettings soundSettings = settings.notificationSoundSettings();
+    if (notificationSoundSettingsBus != null) {
+      notificationSoundSettingsBus.set(soundSettings);
+    }
+    runtimeConfig.rememberTrayNotificationSoundsEnabled(soundSettings.enabled());
+    runtimeConfig.rememberTrayNotificationSound(soundSettings.soundId());
+    runtimeConfig.rememberTrayNotificationSoundUseCustom(soundSettings.useCustom());
+    runtimeConfig.rememberTrayNotificationSoundCustomPath(soundSettings.customPath());
+
+    runtimeConfig.rememberUpdateNotifierEnabled(settings.updateNotifierEnabled());
+    runtimeConfig.rememberLagIndicatorEnabled(settings.lagIndicatorEnabled());
+    if (updateNotifierService != null) {
+      updateNotifierService.setEnabled(settings.updateNotifierEnabled());
+    }
+    if (lagIndicatorService != null) {
+      lagIndicatorService.setEnabled(settings.lagIndicatorEnabled());
+    }
+
+    if (pushySettingsBus != null) {
+      pushySettingsBus.set(settings.pushySettings());
+    }
+    runtimeConfig.rememberPushySettings(settings.pushySettings());
+
+    if (trayService != null) {
+      trayService.applySettings();
+    }
+  }
+
   static String validatePushyInputs(
       boolean enabled,
       String endpoint,
@@ -538,6 +620,98 @@ final class TrayControlsSupport {
     }
 
     return null;
+  }
+
+  private static NotificationSoundSettings readNotificationSoundSettings(
+      TrayControls controls, boolean trayEnabled) {
+    boolean enabled = trayEnabled && controls.notificationSoundsEnabled.isSelected();
+    BuiltInSound selectedSound = (BuiltInSound) controls.notificationSound.getSelectedItem();
+    String soundId = selectedSound != null ? selectedSound.name() : BuiltInSound.NOTIF_1.name();
+    boolean useCustom = controls.notificationSoundUseCustom.isSelected();
+    String customPath = Objects.toString(controls.notificationSoundCustomPath.getText(), "").trim();
+    if (customPath.isBlank()) customPath = null;
+    if (useCustom && customPath == null) useCustom = false;
+    return new NotificationSoundSettings(enabled, soundId, useCustom, customPath);
+  }
+
+  private static PushyProperties readPushySettings(TrayControls controls) {
+    boolean enabled = controls.pushyEnabled.isSelected();
+    String endpoint = Objects.toString(controls.pushyEndpoint.getText(), "").trim();
+    String apiKey = new String(controls.pushyApiKey.getPassword()).trim();
+    PushyTargetMode targetMode =
+        controls.pushyTargetMode.getSelectedItem() instanceof PushyTargetMode mode
+            ? mode
+            : PushyTargetMode.DEVICE_TOKEN;
+    String targetValue = Objects.toString(controls.pushyTargetValue.getText(), "").trim();
+    String titlePrefix = Objects.toString(controls.pushyTitlePrefix.getText(), "").trim();
+    int connectTimeoutSeconds =
+        ((Number) controls.pushyConnectTimeoutSeconds.getValue()).intValue();
+    int readTimeoutSeconds = ((Number) controls.pushyReadTimeoutSeconds.getValue()).intValue();
+
+    String validationError =
+        validatePushyInputs(enabled, endpoint, apiKey, targetMode, targetValue);
+    if (validationError != null) {
+      throw new TraySettingsException("Invalid Pushy settings", validationError);
+    }
+
+    String deviceToken =
+        targetMode == PushyTargetMode.DEVICE_TOKEN && !targetValue.isBlank() ? targetValue : null;
+    String topic =
+        targetMode == PushyTargetMode.TOPIC && !targetValue.isBlank() ? targetValue : null;
+
+    return new PushyProperties(
+        enabled,
+        endpoint.isBlank() ? null : endpoint,
+        apiKey.isBlank() ? null : apiKey,
+        deviceToken,
+        topic,
+        titlePrefix.isBlank() ? null : titlePrefix,
+        connectTimeoutSeconds,
+        readTimeoutSeconds);
+  }
+
+  record TraySettings(
+      boolean trayEnabled,
+      boolean trayCloseToTray,
+      boolean trayMinimizeToTray,
+      boolean trayStartMinimized,
+      boolean trayNotifyHighlights,
+      boolean trayNotifyPrivateMessages,
+      boolean trayNotifyConnectionState,
+      boolean trayNotifyOnlyWhenUnfocused,
+      boolean trayNotifyOnlyWhenMinimizedOrHidden,
+      boolean trayNotifySuppressWhenTargetActive,
+      boolean trayLinuxDbusActionsEnabled,
+      NotificationBackendMode trayNotificationBackendMode,
+      boolean updateNotifierEnabled,
+      boolean lagIndicatorEnabled,
+      NotificationSoundSettings notificationSoundSettings,
+      PushyProperties pushySettings) {
+    TraySettings {
+      if (trayNotificationBackendMode == null) {
+        trayNotificationBackendMode = NotificationBackendMode.AUTO;
+      }
+      if (notificationSoundSettings == null) {
+        notificationSoundSettings =
+            new NotificationSoundSettings(false, BuiltInSound.NOTIF_1.name(), false, null);
+      }
+      if (pushySettings == null) {
+        pushySettings = new PushyProperties(false, null, null, null, null, null, null, null);
+      }
+    }
+  }
+
+  static final class TraySettingsException extends IllegalArgumentException {
+    private final String title;
+
+    private TraySettingsException(String title, String message) {
+      super(message);
+      this.title = title;
+    }
+
+    String title() {
+      return title;
+    }
   }
 
   private static boolean isValidPushyEndpoint(String endpoint) {
