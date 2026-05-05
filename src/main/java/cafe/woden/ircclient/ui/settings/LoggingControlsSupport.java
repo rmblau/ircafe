@@ -6,8 +6,10 @@ import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.servers.ServerDialogs;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.Window;
+import java.util.Objects;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -194,5 +196,59 @@ final class LoggingControlsSupport {
         dbBaseName,
         dbNextToConfig,
         loggingInfo);
+  }
+
+  static LoggingSettings readSettings(LoggingControls controls) {
+    return new LoggingSettings(
+        controls.enabled.isSelected(),
+        controls.logSoftIgnored.isSelected(),
+        controls.redactionAuditEnabled.isSelected(),
+        controls.logPrivateMessages.isSelected(),
+        controls.savePrivateMessageList.isSelected(),
+        controls.keepForever.isSelected(),
+        spinnerInt(controls.retentionDays),
+        spinnerInt(controls.writerQueueMax),
+        spinnerInt(controls.writerBatchSize),
+        Objects.toString(controls.dbBaseName.getText(), "").trim(),
+        controls.dbNextToConfig.isSelected());
+  }
+
+  static void rememberSettings(RuntimeConfigStore runtimeConfig, LoggingSettings settings) {
+    runtimeConfig.rememberChatLoggingEnabled(settings.enabled());
+    runtimeConfig.rememberChatLoggingLogSoftIgnoredLines(settings.logSoftIgnored());
+    runtimeConfig.rememberChatLoggingRedactionAuditEnabled(settings.redactionAuditEnabled());
+    runtimeConfig.rememberChatLoggingLogPrivateMessages(settings.logPrivateMessages());
+    runtimeConfig.rememberChatLoggingSavePrivateMessageList(settings.savePrivateMessageList());
+    runtimeConfig.rememberChatLoggingDbFileBaseName(settings.dbFileBaseName());
+    runtimeConfig.rememberChatLoggingDbNextToRuntimeConfig(settings.dbNextToRuntimeConfig());
+    runtimeConfig.rememberChatLoggingKeepForever(settings.keepForever());
+    runtimeConfig.rememberChatLoggingRetentionDays(settings.retentionDays());
+    runtimeConfig.rememberChatLoggingWriterQueueMax(settings.writerQueueMax());
+    runtimeConfig.rememberChatLoggingWriterBatchSize(settings.writerBatchSize());
+  }
+
+  private static int spinnerInt(JSpinner spinner) {
+    return ((Number) spinner.getValue()).intValue();
+  }
+
+  record LoggingSettings(
+      boolean enabled,
+      boolean logSoftIgnored,
+      boolean redactionAuditEnabled,
+      boolean logPrivateMessages,
+      boolean savePrivateMessageList,
+      boolean keepForever,
+      int retentionDays,
+      int writerQueueMax,
+      int writerBatchSize,
+      String dbFileBaseName,
+      boolean dbNextToRuntimeConfig) {
+    LoggingSettings {
+      retentionDays = Math.max(0, retentionDays);
+      writerQueueMax = Math.max(100, Math.min(1_000_000, writerQueueMax));
+      writerBatchSize = Math.max(1, Math.min(10_000, writerBatchSize));
+      dbFileBaseName = Objects.toString(dbFileBaseName, "").trim();
+      if (dbFileBaseName.isEmpty()) dbFileBaseName = "ircafe-chatlog";
+    }
   }
 }

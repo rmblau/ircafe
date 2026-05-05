@@ -907,6 +907,8 @@ public class PreferencesDialog {
 
           HistoryControlsSupport.HistorySettings historySettings =
               HistoryControlsSupport.readSettings(history);
+          LoggingControlsSupport.LoggingSettings loggingSettings =
+              LoggingControlsSupport.readSettings(logging);
           MemoryUsageDisplayMode memoryUsageDisplayModeV =
               memoryUsageDisplayMode.getSelectedItem() instanceof MemoryUsageDisplayMode mode
                   ? mode
@@ -1355,26 +1357,7 @@ public class PreferencesDialog {
             HistoryControlsSupport.rememberSettings(runtimeConfig, historySettings);
 
             applyFilterSettingsFromUi(filters);
-            runtimeConfig.rememberChatLoggingEnabled(logging.enabled.isSelected());
-            runtimeConfig.rememberChatLoggingLogSoftIgnoredLines(
-                logging.logSoftIgnored.isSelected());
-            runtimeConfig.rememberChatLoggingRedactionAuditEnabled(
-                logging.redactionAuditEnabled.isSelected());
-            runtimeConfig.rememberChatLoggingLogPrivateMessages(
-                logging.logPrivateMessages.isSelected());
-            runtimeConfig.rememberChatLoggingSavePrivateMessageList(
-                logging.savePrivateMessageList.isSelected());
-            runtimeConfig.rememberChatLoggingDbFileBaseName(logging.dbBaseName.getText());
-            runtimeConfig.rememberChatLoggingDbNextToRuntimeConfig(
-                logging.dbNextToConfig.isSelected());
-
-            runtimeConfig.rememberChatLoggingKeepForever(logging.keepForever.isSelected());
-            runtimeConfig.rememberChatLoggingRetentionDays(
-                ((Number) logging.retentionDays.getValue()).intValue());
-            runtimeConfig.rememberChatLoggingWriterQueueMax(
-                ((Number) logging.writerQueueMax.getValue()).intValue());
-            runtimeConfig.rememberChatLoggingWriterBatchSize(
-                ((Number) logging.writerBatchSize.getValue()).intValue());
+            LoggingControlsSupport.rememberSettings(runtimeConfig, loggingSettings);
 
             runtimeConfig.rememberClientLineColorEnabled(next.clientLineColorEnabled());
             runtimeConfig.rememberClientLineColor(next.clientLineColor());
