@@ -948,41 +948,9 @@ public class PreferencesDialog {
             return;
           }
 
-          boolean userhostEnabledV = userhost.enabled.isSelected();
-          int userhostMinIntervalV = ((Number) userhost.minIntervalSeconds.getValue()).intValue();
-          int userhostMaxPerMinuteV = ((Number) userhost.maxPerMinute.getValue()).intValue();
-          int userhostNickCooldownV = ((Number) userhost.nickCooldownMinutes.getValue()).intValue();
-          int userhostMaxNicksV = ((Number) userhost.maxNicksPerCommand.getValue()).intValue();
-
-          boolean userInfoEnrichmentEnabledV = enrichment.enabled.isSelected();
-          int uieUserhostMinIntervalV =
-              ((Number) enrichment.userhostMinIntervalSeconds.getValue()).intValue();
-          int uieUserhostMaxPerMinuteV =
-              ((Number) enrichment.userhostMaxPerMinute.getValue()).intValue();
-          int uieUserhostNickCooldownV =
-              ((Number) enrichment.userhostNickCooldownMinutes.getValue()).intValue();
-          int uieUserhostMaxNicksV =
-              ((Number) enrichment.userhostMaxNicksPerCommand.getValue()).intValue();
-
-          boolean uieWhoisFallbackEnabledRawV = enrichment.whoisFallbackEnabled.isSelected();
-          int uieWhoisMinIntervalV =
-              ((Number) enrichment.whoisMinIntervalSeconds.getValue()).intValue();
-          int uieWhoisNickCooldownV =
-              ((Number) enrichment.whoisNickCooldownMinutes.getValue()).intValue();
-
-          boolean uiePeriodicRefreshEnabledRawV = enrichment.periodicRefreshEnabled.isSelected();
-          int uiePeriodicRefreshIntervalV =
-              ((Number) enrichment.periodicRefreshIntervalSeconds.getValue()).intValue();
-          int uiePeriodicRefreshNicksPerTickV =
-              ((Number) enrichment.periodicRefreshNicksPerTick.getValue()).intValue();
-          boolean uieWhoisFallbackEnabledV =
-              userInfoEnrichmentEnabledV && uieWhoisFallbackEnabledRawV;
-          boolean uiePeriodicRefreshEnabledV =
-              userInfoEnrichmentEnabledV && uiePeriodicRefreshEnabledRawV;
-          int monitorIsonPollIntervalSecondsV =
-              ((Number) monitorIsonPollIntervalSeconds.getValue()).intValue();
-          if (monitorIsonPollIntervalSecondsV < 5) monitorIsonPollIntervalSecondsV = 5;
-          if (monitorIsonPollIntervalSecondsV > 600) monitorIsonPollIntervalSecondsV = 600;
+          UserLookupsPanelSupport.UserLookupSettings userLookupSettings =
+              UserLookupsPanelSupport.readSettings(
+                  userhost, enrichment, monitorIsonPollIntervalSeconds);
           boolean genericBouncerPreferLoginHintV = genericBouncerPreferLoginHint.isSelected();
           String genericBouncerLoginTemplateV =
               Objects.toString(genericBouncerLoginTemplate.getText(), "").trim();
@@ -1101,23 +1069,23 @@ public class PreferencesDialog {
                   outgoingHexV,
                   outgoingDeliveryIndicatorsEnabledV,
                   serverTreeNotificationBadgesEnabledV,
-                  userhostEnabledV,
-                  userhostMinIntervalV,
-                  userhostMaxPerMinuteV,
-                  userhostNickCooldownV,
-                  userhostMaxNicksV,
-                  userInfoEnrichmentEnabledV,
-                  uieUserhostMinIntervalV,
-                  uieUserhostMaxPerMinuteV,
-                  uieUserhostNickCooldownV,
-                  uieUserhostMaxNicksV,
-                  uieWhoisFallbackEnabledV,
-                  uieWhoisMinIntervalV,
-                  uieWhoisNickCooldownV,
-                  uiePeriodicRefreshEnabledV,
-                  uiePeriodicRefreshIntervalV,
-                  uiePeriodicRefreshNicksPerTickV,
-                  monitorIsonPollIntervalSecondsV,
+                  userLookupSettings.userhostEnabled(),
+                  userLookupSettings.userhostMinIntervalSeconds(),
+                  userLookupSettings.userhostMaxCommandsPerMinute(),
+                  userLookupSettings.userhostNickCooldownMinutes(),
+                  userLookupSettings.userhostMaxNicksPerCommand(),
+                  userLookupSettings.enrichmentEnabled(),
+                  userLookupSettings.enrichmentUserhostMinIntervalSeconds(),
+                  userLookupSettings.enrichmentUserhostMaxCommandsPerMinute(),
+                  userLookupSettings.enrichmentUserhostNickCooldownMinutes(),
+                  userLookupSettings.enrichmentUserhostMaxNicksPerCommand(),
+                  userLookupSettings.enrichmentWhoisFallbackEnabled(),
+                  userLookupSettings.enrichmentWhoisMinIntervalSeconds(),
+                  userLookupSettings.enrichmentWhoisNickCooldownMinutes(),
+                  userLookupSettings.enrichmentPeriodicRefreshEnabled(),
+                  userLookupSettings.enrichmentPeriodicRefreshIntervalSeconds(),
+                  userLookupSettings.enrichmentPeriodicRefreshNicksPerTick(),
+                  userLookupSettings.monitorIsonPollIntervalSeconds(),
                   notificationSettings.cooldownSeconds(),
                   memoryUsageDisplayModeV,
                   memoryUsageRefreshIntervalMsV,
@@ -1358,37 +1326,7 @@ public class PreferencesDialog {
                   JOptionPane.INFORMATION_MESSAGE);
             }
 
-            runtimeConfig.rememberUserhostDiscoveryEnabled(next.userhostDiscoveryEnabled());
-            runtimeConfig.rememberUserhostMinIntervalSeconds(next.userhostMinIntervalSeconds());
-            runtimeConfig.rememberUserhostMaxCommandsPerMinute(next.userhostMaxCommandsPerMinute());
-            runtimeConfig.rememberUserhostNickCooldownMinutes(next.userhostNickCooldownMinutes());
-            runtimeConfig.rememberUserhostMaxNicksPerCommand(next.userhostMaxNicksPerCommand());
-            runtimeConfig.rememberUserInfoEnrichmentEnabled(next.userInfoEnrichmentEnabled());
-            runtimeConfig.rememberUserInfoEnrichmentWhoisFallbackEnabled(
-                next.userInfoEnrichmentWhoisFallbackEnabled());
-
-            runtimeConfig.rememberUserInfoEnrichmentUserhostMinIntervalSeconds(
-                next.userInfoEnrichmentUserhostMinIntervalSeconds());
-            runtimeConfig.rememberUserInfoEnrichmentUserhostMaxCommandsPerMinute(
-                next.userInfoEnrichmentUserhostMaxCommandsPerMinute());
-            runtimeConfig.rememberUserInfoEnrichmentUserhostNickCooldownMinutes(
-                next.userInfoEnrichmentUserhostNickCooldownMinutes());
-            runtimeConfig.rememberUserInfoEnrichmentUserhostMaxNicksPerCommand(
-                next.userInfoEnrichmentUserhostMaxNicksPerCommand());
-
-            runtimeConfig.rememberUserInfoEnrichmentWhoisMinIntervalSeconds(
-                next.userInfoEnrichmentWhoisMinIntervalSeconds());
-            runtimeConfig.rememberUserInfoEnrichmentWhoisNickCooldownMinutes(
-                next.userInfoEnrichmentWhoisNickCooldownMinutes());
-
-            runtimeConfig.rememberUserInfoEnrichmentPeriodicRefreshEnabled(
-                next.userInfoEnrichmentPeriodicRefreshEnabled());
-            runtimeConfig.rememberUserInfoEnrichmentPeriodicRefreshIntervalSeconds(
-                next.userInfoEnrichmentPeriodicRefreshIntervalSeconds());
-            runtimeConfig.rememberUserInfoEnrichmentPeriodicRefreshNicksPerTick(
-                next.userInfoEnrichmentPeriodicRefreshNicksPerTick());
-            runtimeConfig.rememberMonitorIsonPollIntervalSeconds(
-                next.monitorIsonFallbackPollIntervalSeconds());
+            UserLookupsPanelSupport.rememberSettings(runtimeConfig, userLookupSettings);
             runtimeConfig.rememberGenericBouncerPreferLoginHint(genericBouncerPreferLoginHintV);
             runtimeConfig.rememberGenericBouncerLoginTemplate(genericBouncerLoginTemplateV);
             runtimeConfig.rememberClientProxy(proxyCfg);

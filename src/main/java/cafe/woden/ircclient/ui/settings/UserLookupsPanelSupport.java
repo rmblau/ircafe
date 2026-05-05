@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings;
 
+import cafe.woden.ircclient.config.RuntimeConfigStore;
 import java.awt.Font;
 import java.util.List;
 import java.util.function.Consumer;
@@ -566,6 +567,64 @@ final class UserLookupsPanelSupport {
         userhostControls, enrichmentControls, monitorIsonPollIntervalSeconds, userLookupsPanel);
   }
 
+  static UserLookupSettings readSettings(
+      UserhostControls userhost,
+      UserInfoEnrichmentControls enrichment,
+      JSpinner monitorIsonPollIntervalSeconds) {
+    return new UserLookupSettings(
+        userhost.enabled.isSelected(),
+        spinnerInt(userhost.minIntervalSeconds),
+        spinnerInt(userhost.maxPerMinute),
+        spinnerInt(userhost.nickCooldownMinutes),
+        spinnerInt(userhost.maxNicksPerCommand),
+        enrichment.enabled.isSelected(),
+        spinnerInt(enrichment.userhostMinIntervalSeconds),
+        spinnerInt(enrichment.userhostMaxPerMinute),
+        spinnerInt(enrichment.userhostNickCooldownMinutes),
+        spinnerInt(enrichment.userhostMaxNicksPerCommand),
+        enrichment.whoisFallbackEnabled.isSelected(),
+        spinnerInt(enrichment.whoisMinIntervalSeconds),
+        spinnerInt(enrichment.whoisNickCooldownMinutes),
+        enrichment.periodicRefreshEnabled.isSelected(),
+        spinnerInt(enrichment.periodicRefreshIntervalSeconds),
+        spinnerInt(enrichment.periodicRefreshNicksPerTick),
+        spinnerInt(monitorIsonPollIntervalSeconds));
+  }
+
+  static void rememberSettings(RuntimeConfigStore runtimeConfig, UserLookupSettings settings) {
+    runtimeConfig.rememberUserhostDiscoveryEnabled(settings.userhostEnabled());
+    runtimeConfig.rememberUserhostMinIntervalSeconds(settings.userhostMinIntervalSeconds());
+    runtimeConfig.rememberUserhostMaxCommandsPerMinute(settings.userhostMaxCommandsPerMinute());
+    runtimeConfig.rememberUserhostNickCooldownMinutes(settings.userhostNickCooldownMinutes());
+    runtimeConfig.rememberUserhostMaxNicksPerCommand(settings.userhostMaxNicksPerCommand());
+    runtimeConfig.rememberUserInfoEnrichmentEnabled(settings.enrichmentEnabled());
+    runtimeConfig.rememberUserInfoEnrichmentWhoisFallbackEnabled(
+        settings.enrichmentWhoisFallbackEnabled());
+    runtimeConfig.rememberUserInfoEnrichmentUserhostMinIntervalSeconds(
+        settings.enrichmentUserhostMinIntervalSeconds());
+    runtimeConfig.rememberUserInfoEnrichmentUserhostMaxCommandsPerMinute(
+        settings.enrichmentUserhostMaxCommandsPerMinute());
+    runtimeConfig.rememberUserInfoEnrichmentUserhostNickCooldownMinutes(
+        settings.enrichmentUserhostNickCooldownMinutes());
+    runtimeConfig.rememberUserInfoEnrichmentUserhostMaxNicksPerCommand(
+        settings.enrichmentUserhostMaxNicksPerCommand());
+    runtimeConfig.rememberUserInfoEnrichmentWhoisMinIntervalSeconds(
+        settings.enrichmentWhoisMinIntervalSeconds());
+    runtimeConfig.rememberUserInfoEnrichmentWhoisNickCooldownMinutes(
+        settings.enrichmentWhoisNickCooldownMinutes());
+    runtimeConfig.rememberUserInfoEnrichmentPeriodicRefreshEnabled(
+        settings.enrichmentPeriodicRefreshEnabled());
+    runtimeConfig.rememberUserInfoEnrichmentPeriodicRefreshIntervalSeconds(
+        settings.enrichmentPeriodicRefreshIntervalSeconds());
+    runtimeConfig.rememberUserInfoEnrichmentPeriodicRefreshNicksPerTick(
+        settings.enrichmentPeriodicRefreshNicksPerTick());
+    runtimeConfig.rememberMonitorIsonPollIntervalSeconds(settings.monitorIsonPollIntervalSeconds());
+  }
+
+  private static int spinnerInt(JSpinner spinner) {
+    return ((Number) spinner.getValue()).intValue();
+  }
+
   private enum LookupRatePreset {
     CONSERVATIVE("Conservative"),
     BALANCED("Balanced"),
@@ -640,5 +699,57 @@ final class UserLookupsPanelSupport {
               && settings.userInfoEnrichmentPeriodicRefreshNicksPerTick() == 3;
       case CUSTOM -> false;
     };
+  }
+
+  record UserLookupSettings(
+      boolean userhostEnabled,
+      int userhostMinIntervalSeconds,
+      int userhostMaxCommandsPerMinute,
+      int userhostNickCooldownMinutes,
+      int userhostMaxNicksPerCommand,
+      boolean enrichmentEnabled,
+      int enrichmentUserhostMinIntervalSeconds,
+      int enrichmentUserhostMaxCommandsPerMinute,
+      int enrichmentUserhostNickCooldownMinutes,
+      int enrichmentUserhostMaxNicksPerCommand,
+      boolean enrichmentWhoisFallbackEnabled,
+      int enrichmentWhoisMinIntervalSeconds,
+      int enrichmentWhoisNickCooldownMinutes,
+      boolean enrichmentPeriodicRefreshEnabled,
+      int enrichmentPeriodicRefreshIntervalSeconds,
+      int enrichmentPeriodicRefreshNicksPerTick,
+      int monitorIsonPollIntervalSeconds) {
+    UserLookupSettings {
+      if (userhostMinIntervalSeconds <= 0) userhostMinIntervalSeconds = 7;
+      if (userhostMaxCommandsPerMinute <= 0) userhostMaxCommandsPerMinute = 6;
+      if (userhostNickCooldownMinutes <= 0) userhostNickCooldownMinutes = 30;
+      if (userhostMaxNicksPerCommand <= 0) userhostMaxNicksPerCommand = 5;
+      if (userhostMaxNicksPerCommand > 5) userhostMaxNicksPerCommand = 5;
+
+      if (enrichmentUserhostMinIntervalSeconds <= 0) enrichmentUserhostMinIntervalSeconds = 15;
+      if (enrichmentUserhostMaxCommandsPerMinute <= 0) {
+        enrichmentUserhostMaxCommandsPerMinute = 3;
+      }
+      if (enrichmentUserhostNickCooldownMinutes <= 0) {
+        enrichmentUserhostNickCooldownMinutes = 60;
+      }
+      if (enrichmentUserhostMaxNicksPerCommand <= 0) enrichmentUserhostMaxNicksPerCommand = 5;
+      if (enrichmentUserhostMaxNicksPerCommand > 5) enrichmentUserhostMaxNicksPerCommand = 5;
+
+      if (enrichmentWhoisMinIntervalSeconds <= 0) enrichmentWhoisMinIntervalSeconds = 45;
+      if (enrichmentWhoisNickCooldownMinutes <= 0) enrichmentWhoisNickCooldownMinutes = 120;
+      if (enrichmentPeriodicRefreshIntervalSeconds <= 0) {
+        enrichmentPeriodicRefreshIntervalSeconds = 300;
+      }
+      if (enrichmentPeriodicRefreshNicksPerTick <= 0) enrichmentPeriodicRefreshNicksPerTick = 2;
+      if (enrichmentPeriodicRefreshNicksPerTick > 10) enrichmentPeriodicRefreshNicksPerTick = 10;
+
+      enrichmentWhoisFallbackEnabled = enrichmentEnabled && enrichmentWhoisFallbackEnabled;
+      enrichmentPeriodicRefreshEnabled = enrichmentEnabled && enrichmentPeriodicRefreshEnabled;
+
+      if (monitorIsonPollIntervalSeconds <= 0) monitorIsonPollIntervalSeconds = 30;
+      if (monitorIsonPollIntervalSeconds < 5) monitorIsonPollIntervalSeconds = 5;
+      if (monitorIsonPollIntervalSeconds > 600) monitorIsonPollIntervalSeconds = 600;
+    }
   }
 }
