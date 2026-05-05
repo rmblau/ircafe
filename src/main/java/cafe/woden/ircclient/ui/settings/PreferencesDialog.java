@@ -1012,28 +1012,17 @@ public class PreferencesDialog {
           boolean preserveDockLayoutBetweenSessionsV =
               appearanceServerTree.preserveDockLayoutBetweenSessions.isSelected();
 
-          if (notifications.table.isEditing()) {
-            try {
-              notifications.table.getCellEditor().stopCellEditing();
-            } catch (Exception ignored) {
-            }
-          }
-          if (ircEventNotifications.table().isEditing()) {
-            try {
-              ircEventNotifications.table().getCellEditor().stopCellEditing();
-            } catch (Exception ignored) {
-            }
-          }
-          if (userCommands.table().isEditing()) {
-            try {
-              userCommands.table().getCellEditor().stopCellEditing();
-            } catch (Exception ignored) {
-            }
-          }
+          NotificationRulesControlsSupport.NotificationSettings notificationSettings =
+              NotificationRulesControlsSupport.readSettings(notifications);
+          IrcEventNotificationsTabSupport.IrcEventNotificationSettings
+              ircEventNotificationSettings =
+                  IrcEventNotificationsTabSupport.readSettings(ircEventNotifications);
+          UserCommandAliasesControlsSupport.UserCommandAliasSettings userCommandSettings =
+              UserCommandAliasesControlsSupport.readSettings(userCommands);
 
-          ValidationError notifErr = notifications.model.firstValidationError();
+          ValidationError notifErr = notificationSettings.validationError();
           if (notifErr != null) {
-            refreshNotificationRuleValidation(notifications);
+            NotificationRulesControlsSupport.refreshValidation(notifications);
             JOptionPane.showMessageDialog(
                 dialog,
                 notifErr.formatForDialog(),
@@ -1042,7 +1031,7 @@ public class PreferencesDialog {
             return;
           }
 
-          UserCommandAliasValidationError aliasErr = userCommands.model().firstValidationError();
+          UserCommandAliasValidationError aliasErr = userCommandSettings.validationError();
           if (aliasErr != null) {
             JOptionPane.showMessageDialog(
                 dialog,
@@ -1052,15 +1041,6 @@ public class PreferencesDialog {
             return;
           }
 
-          int notificationRuleCooldownSecondsV =
-              ((Number) notifications.cooldownSeconds.getValue()).intValue();
-          if (notificationRuleCooldownSecondsV < 0) notificationRuleCooldownSecondsV = 15;
-          if (notificationRuleCooldownSecondsV > 3600) notificationRuleCooldownSecondsV = 3600;
-          List<NotificationRule> notificationRulesV = notifications.model.snapshot();
-          List<IrcEventNotificationRule> ircEventNotificationRulesV =
-              ircEventNotifications.model().snapshot();
-          List<UserCommandAlias> userCommandAliasesV = userCommands.model().snapshot();
-          boolean unknownCommandAsRawEnabledV = userCommands.unknownCommandAsRaw().isSelected();
           DiagnosticsControlsSupport.DiagnosticsSettings diagnosticsSettings =
               DiagnosticsControlsSupport.readSettings(diagnostics);
 
@@ -1138,7 +1118,7 @@ public class PreferencesDialog {
                   uiePeriodicRefreshIntervalV,
                   uiePeriodicRefreshNicksPerTickV,
                   monitorIsonPollIntervalSecondsV,
-                  notificationRuleCooldownSecondsV,
+                  notificationSettings.cooldownSeconds(),
                   memoryUsageDisplayModeV,
                   memoryUsageRefreshIntervalMsV,
                   memoryWarningNearMaxPercentV,
@@ -1146,7 +1126,7 @@ public class PreferencesDialog {
                   memoryWarningToastEnabledV,
                   memoryWarningPushyEnabledV,
                   memoryWarningSoundEnabledV,
-                  notificationRulesV,
+                  notificationSettings.rules(),
                   serverTreeUnreadChannelColorV,
                   serverTreeHighlightChannelColorV,
                   preserveDockLayoutBetweenSessionsV,
@@ -1364,19 +1344,11 @@ public class PreferencesDialog {
             runtimeConfig.rememberOutgoingDeliveryIndicatorsEnabled(
                 next.outgoingDeliveryIndicatorsEnabled());
 
-            runtimeConfig.rememberNotificationRuleCooldownSeconds(
-                next.notificationRuleCooldownSeconds());
-            runtimeConfig.rememberNotificationRules(notificationRulesV);
-            runtimeConfig.rememberIrcEventNotificationRules(ircEventNotificationRulesV);
-            if (ircEventNotificationRulesBus != null) {
-              ircEventNotificationRulesBus.set(ircEventNotificationRulesV);
-            }
-            runtimeConfig.rememberUserCommandAliases(userCommandAliasesV);
-            runtimeConfig.rememberUnknownCommandAsRawEnabled(unknownCommandAsRawEnabledV);
-            if (userCommandAliasesBus != null) {
-              userCommandAliasesBus.set(userCommandAliasesV);
-              userCommandAliasesBus.setUnknownCommandAsRawEnabled(unknownCommandAsRawEnabledV);
-            }
+            NotificationRulesControlsSupport.rememberSettings(runtimeConfig, notificationSettings);
+            IrcEventNotificationsTabSupport.rememberSettings(
+                runtimeConfig, ircEventNotificationRulesBus, ircEventNotificationSettings);
+            UserCommandAliasesControlsSupport.rememberSettings(
+                runtimeConfig, userCommandAliasesBus, userCommandSettings);
             DiagnosticsControlsSupport.rememberSettings(runtimeConfig, diagnosticsSettings);
             if (diagnosticsChangedV) {
               JOptionPane.showMessageDialog(
@@ -2094,7 +2066,7 @@ public class PreferencesDialog {
         buildIrcEventNotificationsTab(ircEventNotifications),
         dialog,
         this::promptNotificationRuleDialog,
-        this::refreshNotificationRuleValidation);
+        NotificationRulesControlsSupport::refreshValidation);
   }
 
   private UserCommandAliasesControls buildUserCommandAliasesControls(
@@ -2119,25 +2091,13 @@ public class PreferencesDialog {
       NotificationRulesControls notifications, JButton apply, JButton ok) {
     Runnable refresh =
         () -> {
-          boolean valid = refreshNotificationRuleValidation(notifications);
+          boolean valid = NotificationRulesControlsSupport.refreshValidation(notifications);
           apply.setEnabled(valid);
           ok.setEnabled(valid);
         };
 
     notifications.model.addTableModelListener(e -> refresh.run());
     refresh.run();
-  }
-
-  private boolean refreshNotificationRuleValidation(NotificationRulesControls notifications) {
-    ValidationError err = notifications.model.firstValidationError();
-    if (err == null) {
-      notifications.validationLabel.setText(" ");
-      notifications.validationLabel.setVisible(false);
-      return true;
-    }
-    notifications.validationLabel.setText(err.formatForInline());
-    notifications.validationLabel.setVisible(true);
-    return false;
   }
 
   static void configureIconOnlyButton(JButton button, String iconName, String tooltip) {

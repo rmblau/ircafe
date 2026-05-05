@@ -1,9 +1,12 @@
 package cafe.woden.ircclient.ui.settings;
 
+import cafe.woden.ircclient.config.NotificationRule;
+import cafe.woden.ircclient.config.RuntimeConfigStore;
 import java.awt.Color;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import javax.swing.JLabel;
+import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
@@ -83,6 +86,52 @@ final class NotificationRulesControlsSupport {
         testOutput,
         testStatus,
         testRunner);
+  }
+
+  static NotificationSettings readSettings(NotificationRulesControls controls) {
+    stopEditing(controls.table);
+    return new NotificationSettings(
+        spinnerInt(controls.cooldownSeconds),
+        controls.model.snapshot(),
+        controls.model.firstValidationError());
+  }
+
+  static boolean refreshValidation(NotificationRulesControls controls) {
+    ValidationError err = controls.model.firstValidationError();
+    if (err == null) {
+      controls.validationLabel.setText(" ");
+      controls.validationLabel.setVisible(false);
+      return true;
+    }
+    controls.validationLabel.setText(err.formatForInline());
+    controls.validationLabel.setVisible(true);
+    return false;
+  }
+
+  static void rememberSettings(RuntimeConfigStore runtimeConfig, NotificationSettings settings) {
+    runtimeConfig.rememberNotificationRuleCooldownSeconds(settings.cooldownSeconds());
+    runtimeConfig.rememberNotificationRules(settings.rules());
+  }
+
+  private static void stopEditing(JTable table) {
+    if (table == null || !table.isEditing()) return;
+    try {
+      table.getCellEditor().stopCellEditing();
+    } catch (Exception ignored) {
+    }
+  }
+
+  private static int spinnerInt(JSpinner spinner) {
+    return ((Number) spinner.getValue()).intValue();
+  }
+
+  record NotificationSettings(
+      int cooldownSeconds, List<NotificationRule> rules, ValidationError validationError) {
+    NotificationSettings {
+      if (cooldownSeconds < 0) cooldownSeconds = 15;
+      if (cooldownSeconds > 3600) cooldownSeconds = 3600;
+      rules = rules != null ? List.copyOf(rules) : List.of();
+    }
   }
 
   private static Color errorForeground() {

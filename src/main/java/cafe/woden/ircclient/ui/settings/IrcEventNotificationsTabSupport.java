@@ -1,6 +1,8 @@
 package cafe.woden.ircclient.ui.settings;
 
+import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
+import cafe.woden.ircclient.notifications.api.IrcEventNotificationRulesPort;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -272,6 +274,21 @@ final class IrcEventNotificationsTabSupport {
     return tab;
   }
 
+  static IrcEventNotificationSettings readSettings(IrcEventNotificationControls controls) {
+    stopEditing(controls.table());
+    return new IrcEventNotificationSettings(controls.model().snapshot());
+  }
+
+  static void rememberSettings(
+      RuntimeConfigStore runtimeConfig,
+      IrcEventNotificationRulesPort rulesBus,
+      IrcEventNotificationSettings settings) {
+    runtimeConfig.rememberIrcEventNotificationRules(settings.rules());
+    if (rulesBus != null) {
+      rulesBus.set(settings.rules());
+    }
+  }
+
   private static int selectedModelRow(IrcEventNotificationControls controls) {
     int viewRow = controls.table().getSelectedRow();
     return viewRow >= 0 ? controls.table().convertRowIndexToModel(viewRow) : -1;
@@ -283,6 +300,20 @@ final class IrcEventNotificationsTabSupport {
     if (viewRow >= 0) {
       controls.table().getSelectionModel().setSelectionInterval(viewRow, viewRow);
       controls.table().scrollRectToVisible(controls.table().getCellRect(viewRow, 0, true));
+    }
+  }
+
+  private static void stopEditing(javax.swing.JTable table) {
+    if (table == null || !table.isEditing()) return;
+    try {
+      table.getCellEditor().stopCellEditing();
+    } catch (Exception ignored) {
+    }
+  }
+
+  record IrcEventNotificationSettings(List<IrcEventNotificationRule> rules) {
+    IrcEventNotificationSettings {
+      rules = rules != null ? List.copyOf(rules) : List.of();
     }
   }
 

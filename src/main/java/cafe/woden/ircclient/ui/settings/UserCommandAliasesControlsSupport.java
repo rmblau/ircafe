@@ -1,8 +1,11 @@
 package cafe.woden.ircclient.ui.settings;
 
+import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
+import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.model.UserCommandAlias;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.Component;
+import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -200,11 +203,40 @@ final class UserCommandAliasesControlsSupport {
         hint);
   }
 
+  static UserCommandAliasSettings readSettings(UserCommandAliasesControls controls) {
+    stopEditing(controls.table());
+    return new UserCommandAliasSettings(
+        controls.model().snapshot(),
+        controls.unknownCommandAsRaw().isSelected(),
+        controls.model().firstValidationError());
+  }
+
+  static void rememberSettings(
+      RuntimeConfigStore runtimeConfig,
+      UserCommandAliasesPort aliasesBus,
+      UserCommandAliasSettings settings) {
+    runtimeConfig.rememberUserCommandAliases(settings.aliases());
+    runtimeConfig.rememberUnknownCommandAsRawEnabled(settings.unknownCommandAsRawEnabled());
+    if (aliasesBus != null) {
+      aliasesBus.set(settings.aliases());
+      aliasesBus.setUnknownCommandAsRawEnabled(settings.unknownCommandAsRawEnabled());
+    }
+  }
+
   private static void stopEditing(JTable table) {
     if (table == null || !table.isEditing()) return;
     try {
       table.getCellEditor().stopCellEditing();
     } catch (Exception ignored) {
+    }
+  }
+
+  record UserCommandAliasSettings(
+      List<UserCommandAlias> aliases,
+      boolean unknownCommandAsRawEnabled,
+      UserCommandAliasValidationError validationError) {
+    UserCommandAliasSettings {
+      aliases = aliases != null ? List.copyOf(aliases) : List.of();
     }
   }
 
