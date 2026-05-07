@@ -248,11 +248,7 @@ public final class MessageInputContextMenuSupport {
 
             if (!input.hasFocus()) input.requestFocusInWindow();
 
-            try {
-              int pos = input.viewToModel2D(e.getPoint());
-              if (pos >= 0) input.setCaretPosition(pos);
-            } catch (Exception ignored) {
-            }
+            positionCaretForPopup(e.getPoint());
 
             refreshEnabledStates.run();
             PopupMenuThemeSupport.prepareForDisplay(menu);
@@ -269,6 +265,22 @@ public final class MessageInputContextMenuSupport {
             maybeShow(e);
           }
         });
+  }
+
+  void positionCaretForPopup(Point point) {
+    try {
+      int pos = input.viewToModel2D(point);
+      if (pos >= 0 && !isPositionInsideSelection(pos)) {
+        input.setCaretPosition(pos);
+      }
+    } catch (Exception ignored) {
+    }
+  }
+
+  private boolean isPositionInsideSelection(int pos) {
+    int start = Math.min(input.getSelectionStart(), input.getSelectionEnd());
+    int end = Math.max(input.getSelectionStart(), input.getSelectionEnd());
+    return start != end && pos >= start && pos <= end;
   }
 
   private static boolean clipboardHasText() {
