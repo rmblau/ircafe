@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings;
 
+import cafe.woden.ircclient.config.RuntimeConfigStore;
 import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -65,5 +66,52 @@ final class MemoryControlsSupport {
 
     return new MemoryWarningControls(
         nearMaxPercentSpinner, tooltipEnabled, toastEnabled, pushyEnabled, soundEnabled);
+  }
+
+  static MemorySettings readSettings(
+      JComboBox<MemoryUsageDisplayMode> displayMode,
+      JSpinner refreshIntervalMs,
+      MemoryWarningControls warnings) {
+    MemoryUsageDisplayMode mode =
+        displayMode.getSelectedItem() instanceof MemoryUsageDisplayMode selected
+            ? selected
+            : MemoryUsageDisplayMode.LONG;
+    return new MemorySettings(
+        mode,
+        clamp(((Number) refreshIntervalMs.getValue()).intValue(), 250, 60_000),
+        ((Number) warnings.nearMaxPercent.getValue()).intValue(),
+        warnings.tooltipEnabled.isSelected(),
+        warnings.toastEnabled.isSelected(),
+        warnings.pushyEnabled.isSelected(),
+        warnings.soundEnabled.isSelected());
+  }
+
+  static void rememberSettings(RuntimeConfigStore runtimeConfig, MemorySettings settings) {
+    runtimeConfig.rememberMemoryUsageDisplayMode(settings.displayMode().token());
+    runtimeConfig.rememberMemoryUsageRefreshIntervalMs(settings.refreshIntervalMs());
+    runtimeConfig.rememberMemoryUsageWarningNearMaxPercent(settings.warningNearMaxPercent());
+    runtimeConfig.rememberMemoryUsageWarningTooltipEnabled(settings.warningTooltipEnabled());
+    runtimeConfig.rememberMemoryUsageWarningToastEnabled(settings.warningToastEnabled());
+    runtimeConfig.rememberMemoryUsageWarningPushyEnabled(settings.warningPushyEnabled());
+    runtimeConfig.rememberMemoryUsageWarningSoundEnabled(settings.warningSoundEnabled());
+  }
+
+  private static int clamp(int value, int min, int max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  record MemorySettings(
+      MemoryUsageDisplayMode displayMode,
+      int refreshIntervalMs,
+      int warningNearMaxPercent,
+      boolean warningTooltipEnabled,
+      boolean warningToastEnabled,
+      boolean warningPushyEnabled,
+      boolean warningSoundEnabled) {
+    MemorySettings {
+      if (displayMode == null) displayMode = MemoryUsageDisplayMode.LONG;
+      refreshIntervalMs = clamp(refreshIntervalMs, 250, 60_000);
+      warningNearMaxPercent = clamp(warningNearMaxPercent, 1, 50);
+    }
   }
 }

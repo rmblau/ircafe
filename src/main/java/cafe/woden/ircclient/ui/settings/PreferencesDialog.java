@@ -762,20 +762,9 @@ public class PreferencesDialog {
               HistoryControlsSupport.readSettings(history);
           LoggingControlsSupport.LoggingSettings loggingSettings =
               LoggingControlsSupport.readSettings(logging);
-          MemoryUsageDisplayMode memoryUsageDisplayModeV =
-              memoryUsageDisplayMode.getSelectedItem() instanceof MemoryUsageDisplayMode mode
-                  ? mode
-                  : MemoryUsageDisplayMode.LONG;
-          int memoryUsageRefreshIntervalMsV =
-              ((Number) memoryUsageRefreshIntervalMs.getValue()).intValue();
-          if (memoryUsageRefreshIntervalMsV < 250) memoryUsageRefreshIntervalMsV = 250;
-          if (memoryUsageRefreshIntervalMsV > 60_000) memoryUsageRefreshIntervalMsV = 60_000;
-          int memoryWarningNearMaxPercentV =
-              ((Number) memoryWarnings.nearMaxPercent.getValue()).intValue();
-          boolean memoryWarningTooltipEnabledV = memoryWarnings.tooltipEnabled.isSelected();
-          boolean memoryWarningToastEnabledV = memoryWarnings.toastEnabled.isSelected();
-          boolean memoryWarningPushyEnabledV = memoryWarnings.pushyEnabled.isSelected();
-          boolean memoryWarningSoundEnabledV = memoryWarnings.soundEnabled.isSelected();
+          MemoryControlsSupport.MemorySettings memorySettings =
+              MemoryControlsSupport.readSettings(
+                  memoryUsageDisplayMode, memoryUsageRefreshIntervalMs, memoryWarnings);
           LaunchJvmControlsSupport.LaunchJvmSettings launchJvmSettings =
               LaunchJvmControlsSupport.readSettings(launchJvm);
           NetworkAdvancedControlsSupport.NetworkSettings networkSettings;
@@ -923,13 +912,13 @@ public class PreferencesDialog {
                   userLookupSettings.enrichmentPeriodicRefreshNicksPerTick(),
                   userLookupSettings.monitorIsonPollIntervalSeconds(),
                   notificationSettings.cooldownSeconds(),
-                  memoryUsageDisplayModeV,
-                  memoryUsageRefreshIntervalMsV,
-                  memoryWarningNearMaxPercentV,
-                  memoryWarningTooltipEnabledV,
-                  memoryWarningToastEnabledV,
-                  memoryWarningPushyEnabledV,
-                  memoryWarningSoundEnabledV,
+                  memorySettings.displayMode(),
+                  memorySettings.refreshIntervalMs(),
+                  memorySettings.warningNearMaxPercent(),
+                  memorySettings.warningTooltipEnabled(),
+                  memorySettings.warningToastEnabled(),
+                  memorySettings.warningPushyEnabled(),
+                  memorySettings.warningSoundEnabled(),
                   notificationSettings.rules(),
                   serverTreeUnreadChannelColorV,
                   serverTreeHighlightChannelColorV,
@@ -972,18 +961,7 @@ public class PreferencesDialog {
 
             runtimeConfig.rememberUiSettings(
                 next.theme(), next.chatFontFamily(), next.chatFontSize());
-            runtimeConfig.rememberMemoryUsageDisplayMode(next.memoryUsageDisplayMode().token());
-            runtimeConfig.rememberMemoryUsageRefreshIntervalMs(next.memoryUsageRefreshIntervalMs());
-            runtimeConfig.rememberMemoryUsageWarningNearMaxPercent(
-                next.memoryUsageWarningNearMaxPercent());
-            runtimeConfig.rememberMemoryUsageWarningTooltipEnabled(
-                next.memoryUsageWarningTooltipEnabled());
-            runtimeConfig.rememberMemoryUsageWarningToastEnabled(
-                next.memoryUsageWarningToastEnabled());
-            runtimeConfig.rememberMemoryUsageWarningPushyEnabled(
-                next.memoryUsageWarningPushyEnabled());
-            runtimeConfig.rememberMemoryUsageWarningSoundEnabled(
-                next.memoryUsageWarningSoundEnabled());
+            MemoryControlsSupport.rememberSettings(runtimeConfig, memorySettings);
             // Chat theme (transcript-only palette)
             runtimeConfig.rememberChatThemePreset(nextChatTheme.preset().name());
             runtimeConfig.rememberChatTimestampColor(nextChatTheme.timestampColor());
