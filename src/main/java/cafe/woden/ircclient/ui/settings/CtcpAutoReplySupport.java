@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings;
 
+import cafe.woden.ircclient.config.RuntimeConfigStore;
 import java.awt.FlowLayout;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -100,4 +101,22 @@ final class CtcpAutoReplySupport {
         "growx, wmin 0, wrap");
     return form;
   }
+
+  static CtcpAutoReplySettings readSettings(CtcpAutoReplyControls controls) {
+    return new CtcpAutoReplySettings(
+        controls.enabled.isSelected(),
+        controls.version.isSelected(),
+        controls.ping.isSelected(),
+        controls.time.isSelected());
+  }
+
+  static void rememberSettings(RuntimeConfigStore runtimeConfig, CtcpAutoReplySettings settings) {
+    runtimeConfig.rememberCtcpAutoRepliesEnabled(settings.enabled());
+    runtimeConfig.rememberCtcpAutoReplyVersionEnabled(settings.versionEnabled());
+    runtimeConfig.rememberCtcpAutoReplyPingEnabled(settings.pingEnabled());
+    runtimeConfig.rememberCtcpAutoReplyTimeEnabled(settings.timeEnabled());
+  }
+
+  record CtcpAutoReplySettings(
+      boolean enabled, boolean versionEnabled, boolean pingEnabled, boolean timeEnabled) {}
 }

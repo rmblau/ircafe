@@ -198,6 +198,66 @@ final class ChatBehaviorControlsSupport {
     return spinner;
   }
 
+  static ChatBehaviorSettings readSettings(
+      JCheckBox presenceFolds,
+      JCheckBox ctcpRequestsInActiveTarget,
+      JTextField defaultQuitMessage,
+      JCheckBox typingIndicatorsSendEnabled,
+      JCheckBox typingIndicatorsReceiveEnabled,
+      JComboBox<TypingTreeIndicatorStyleOption> typingTreeIndicatorStyle,
+      JCheckBox typingIndicatorsTreeDisplayEnabled,
+      JCheckBox typingIndicatorsUsersListDisplayEnabled,
+      JCheckBox typingIndicatorsTranscriptDisplayEnabled,
+      JCheckBox typingIndicatorsSendSignalDisplayEnabled,
+      JComboBox<MatrixUserListNameDisplayModeOption> matrixUserListNameDisplayMode,
+      JCheckBox serverTreeNotificationBadgesEnabled,
+      JSpinner serverTreeUnreadBadgeScalePercent) {
+    String quitMessage = normalizeDefaultQuitMessage(defaultQuitMessage.getText());
+    defaultQuitMessage.setText(quitMessage);
+
+    return new ChatBehaviorSettings(
+        presenceFolds.isSelected(),
+        ctcpRequestsInActiveTarget.isSelected(),
+        quitMessage,
+        typingIndicatorsSendEnabled.isSelected(),
+        typingIndicatorsReceiveEnabled.isSelected(),
+        typingTreeIndicatorStyleValue(typingTreeIndicatorStyle),
+        typingIndicatorsTreeDisplayEnabled.isSelected(),
+        typingIndicatorsUsersListDisplayEnabled.isSelected(),
+        typingIndicatorsTranscriptDisplayEnabled.isSelected(),
+        typingIndicatorsSendSignalDisplayEnabled.isSelected(),
+        matrixUserListNameDisplayModeValue(matrixUserListNameDisplayMode),
+        serverTreeNotificationBadgesEnabled.isSelected(),
+        clampSpinner(serverTreeUnreadBadgeScalePercent, 50, 150));
+  }
+
+  static void rememberServerTreeSettings(
+      RuntimeConfigStore runtimeConfig, ChatBehaviorSettings settings) {
+    runtimeConfig.rememberServerTreeUnreadBadgeScalePercent(
+        settings.serverTreeUnreadBadgeScalePercent());
+    runtimeConfig.rememberServerTreeNotificationBadgesEnabled(
+        settings.serverTreeNotificationBadgesEnabled());
+  }
+
+  static void rememberSettings(RuntimeConfigStore runtimeConfig, ChatBehaviorSettings settings) {
+    runtimeConfig.rememberPresenceFoldsEnabled(settings.presenceFoldsEnabled());
+    runtimeConfig.rememberCtcpRequestsInActiveTargetEnabled(
+        settings.ctcpRequestsInActiveTargetEnabled());
+    runtimeConfig.rememberDefaultQuitMessage(settings.defaultQuitMessage());
+    runtimeConfig.rememberTypingIndicatorsEnabled(settings.typingIndicatorsSendEnabled());
+    runtimeConfig.rememberTypingIndicatorsReceiveEnabled(settings.typingIndicatorsReceiveEnabled());
+    runtimeConfig.rememberTypingTreeIndicatorStyle(settings.typingIndicatorsTreeStyle());
+    runtimeConfig.rememberTypingIndicatorsTreeEnabled(
+        settings.typingIndicatorsTreeDisplayEnabled());
+    runtimeConfig.rememberTypingIndicatorsUsersListEnabled(
+        settings.typingIndicatorsUsersListDisplayEnabled());
+    runtimeConfig.rememberMatrixUserListNameDisplayMode(settings.matrixUserListNameDisplayMode());
+    runtimeConfig.rememberTypingIndicatorsTranscriptEnabled(
+        settings.typingIndicatorsTranscriptDisplayEnabled());
+    runtimeConfig.rememberTypingIndicatorsSendSignalEnabled(
+        settings.typingIndicatorsSendSignalDisplayEnabled());
+  }
+
   static String typingTreeIndicatorStyleValue(JComboBox<TypingTreeIndicatorStyleOption> combo) {
     Object selected = combo != null ? combo.getSelectedItem() : null;
     if (selected instanceof TypingTreeIndicatorStyleOption option) {
@@ -214,4 +274,32 @@ final class ChatBehaviorControlsSupport {
     }
     return "compact";
   }
+
+  private static String normalizeDefaultQuitMessage(String raw) {
+    String message =
+        java.util.Objects.toString(raw, "").replace('\r', ' ').replace('\n', ' ').trim();
+    return message.isEmpty() ? RuntimeConfigStore.DEFAULT_QUIT_MESSAGE : message;
+  }
+
+  private static int clampSpinner(JSpinner spinner, int min, int max) {
+    int value = ((Number) spinner.getValue()).intValue();
+    if (value < min) value = min;
+    if (value > max) value = max;
+    return value;
+  }
+
+  record ChatBehaviorSettings(
+      boolean presenceFoldsEnabled,
+      boolean ctcpRequestsInActiveTargetEnabled,
+      String defaultQuitMessage,
+      boolean typingIndicatorsSendEnabled,
+      boolean typingIndicatorsReceiveEnabled,
+      String typingIndicatorsTreeStyle,
+      boolean typingIndicatorsTreeDisplayEnabled,
+      boolean typingIndicatorsUsersListDisplayEnabled,
+      boolean typingIndicatorsTranscriptDisplayEnabled,
+      boolean typingIndicatorsSendSignalDisplayEnabled,
+      String matrixUserListNameDisplayMode,
+      boolean serverTreeNotificationBadgesEnabled,
+      int serverTreeUnreadBadgeScalePercent) {}
 }

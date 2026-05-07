@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.ui.settings;
 
+import cafe.woden.ircclient.config.RuntimeConfigStore;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -145,5 +147,58 @@ final class ChatDisplayControlsSupport {
 
     return new TimestampControls(
         enabled, format, includeChatMessages, includePresenceMessages, panel);
+  }
+
+  static TimestampSettings readTimestampSettings(TimestampControls controls) {
+    String format = controls.format.getText() != null ? controls.format.getText().trim() : "";
+    if (format.isBlank()) format = "HH:mm:ss";
+    try {
+      var unused = DateTimeFormatter.ofPattern(format);
+    } catch (Exception ex) {
+      throw new TimestampSettingsException(
+          "Invalid timestamp format",
+          "Invalid timestamp format: "
+              + format
+              + "\n\nUse a java.time DateTimeFormatter pattern (e.g. HH:mm:ss)",
+          ex);
+    }
+    controls.format.setText(format);
+
+    return new TimestampSettings(
+        controls.enabled.isSelected(),
+        format,
+        controls.includeChatMessages.isSelected(),
+        controls.includePresenceMessages.isSelected());
+  }
+
+  static void rememberTimestampSettings(
+      RuntimeConfigStore runtimeConfig, TimestampSettings settings) {
+    runtimeConfig.rememberTimestampsEnabled(settings.enabled());
+    runtimeConfig.rememberTimestampFormat(settings.format());
+    runtimeConfig.rememberTimestampsIncludeChatMessages(settings.includeChatMessages());
+    runtimeConfig.rememberTimestampsIncludePresenceMessages(settings.includePresenceMessages());
+  }
+
+  record TimestampSettings(
+      boolean enabled,
+      String format,
+      boolean includeChatMessages,
+      boolean includePresenceMessages) {
+    TimestampSettings {
+      if (format == null || format.isBlank()) format = "HH:mm:ss";
+    }
+  }
+
+  static final class TimestampSettingsException extends IllegalArgumentException {
+    private final String title;
+
+    private TimestampSettingsException(String title, String message, Throwable cause) {
+      super(message, cause);
+      this.title = title;
+    }
+
+    String title() {
+      return title;
+    }
   }
 }

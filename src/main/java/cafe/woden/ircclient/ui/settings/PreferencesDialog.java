@@ -64,7 +64,6 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -715,64 +714,33 @@ public class PreferencesDialog {
             return;
           }
 
-          boolean timestampsEnabledV = timestamps.enabled.isSelected();
-          boolean timestampsIncludeChatMessagesV = timestamps.includeChatMessages.isSelected();
-          boolean timestampsIncludePresenceMessagesV =
-              timestamps.includePresenceMessages.isSelected();
-          String timestampFormatV =
-              timestamps.format.getText() != null ? timestamps.format.getText().trim() : "";
-          if (timestampFormatV.isBlank()) timestampFormatV = "HH:mm:ss";
+          ChatDisplayControlsSupport.TimestampSettings timestampSettings;
           try {
-            var unused = DateTimeFormatter.ofPattern(timestampFormatV);
-          } catch (Exception ex) {
-            javax.swing.JOptionPane.showMessageDialog(
-                dialog,
-                "Invalid timestamp format: "
-                    + timestampFormatV
-                    + "\n\nUse a java.time DateTimeFormatter pattern (e.g. HH:mm:ss)",
-                "Invalid timestamp format",
-                javax.swing.JOptionPane.ERROR_MESSAGE);
+            timestampSettings = ChatDisplayControlsSupport.readTimestampSettings(timestamps);
+          } catch (ChatDisplayControlsSupport.TimestampSettingsException ex) {
+            JOptionPane.showMessageDialog(
+                dialog, ex.getMessage(), ex.title(), JOptionPane.ERROR_MESSAGE);
             return;
           }
-          timestamps.format.setText(timestampFormatV);
 
-          boolean presenceFoldsV = presenceFolds.isSelected();
-          boolean ctcpRequestsInActiveTargetV = ctcpRequestsInActiveTarget.isSelected();
-          String defaultQuitMessageV =
-              Objects.toString(defaultQuitMessage.getText(), "")
-                  .replace('\r', ' ')
-                  .replace('\n', ' ')
-                  .trim();
-          if (defaultQuitMessageV.isEmpty()) {
-            defaultQuitMessageV = RuntimeConfigStore.DEFAULT_QUIT_MESSAGE;
-          }
-          defaultQuitMessage.setText(defaultQuitMessageV);
+          ChatBehaviorControlsSupport.ChatBehaviorSettings chatBehaviorSettings =
+              ChatBehaviorControlsSupport.readSettings(
+                  presenceFolds,
+                  ctcpRequestsInActiveTarget,
+                  defaultQuitMessage,
+                  typingIndicatorsSendEnabled,
+                  typingIndicatorsReceiveEnabled,
+                  typingTreeIndicatorStyle,
+                  typingIndicatorsTreeDisplayEnabled,
+                  typingIndicatorsUsersListDisplayEnabled,
+                  typingIndicatorsTranscriptDisplayEnabled,
+                  typingIndicatorsSendSignalDisplayEnabled,
+                  matrixUserListNameDisplayMode,
+                  serverTreeNotificationBadgesEnabled,
+                  serverTreeUnreadBadgeScalePercent);
           SpellcheckSettings nextSpellcheck = SpellcheckControlsSupport.readSettings(spellcheck);
-          boolean ctcpAutoRepliesEnabledV = ctcpAutoReplies.enabled.isSelected();
-          boolean ctcpAutoReplyVersionEnabledV = ctcpAutoReplies.version.isSelected();
-          boolean ctcpAutoReplyPingEnabledV = ctcpAutoReplies.ping.isSelected();
-          boolean ctcpAutoReplyTimeEnabledV = ctcpAutoReplies.time.isSelected();
-          boolean typingIndicatorsSendEnabledV = typingIndicatorsSendEnabled.isSelected();
-          boolean typingIndicatorsReceiveEnabledV = typingIndicatorsReceiveEnabled.isSelected();
-          boolean typingIndicatorsTreeDisplayEnabledV =
-              typingIndicatorsTreeDisplayEnabled.isSelected();
-          boolean typingIndicatorsUsersListDisplayEnabledV =
-              typingIndicatorsUsersListDisplayEnabled.isSelected();
-          boolean typingIndicatorsTranscriptDisplayEnabledV =
-              typingIndicatorsTranscriptDisplayEnabled.isSelected();
-          boolean typingIndicatorsSendSignalDisplayEnabledV =
-              typingIndicatorsSendSignalDisplayEnabled.isSelected();
-          String typingIndicatorsTreeStyleV =
-              ChatBehaviorControlsSupport.typingTreeIndicatorStyleValue(typingTreeIndicatorStyle);
-          String matrixUserListNameDisplayModeV =
-              ChatBehaviorControlsSupport.matrixUserListNameDisplayModeValue(
-                  matrixUserListNameDisplayMode);
-          boolean serverTreeNotificationBadgesEnabledV =
-              serverTreeNotificationBadgesEnabled.isSelected();
-          int serverTreeUnreadBadgeScalePercentV =
-              ((Number) serverTreeUnreadBadgeScalePercent.getValue()).intValue();
-          if (serverTreeUnreadBadgeScalePercentV < 50) serverTreeUnreadBadgeScalePercentV = 50;
-          if (serverTreeUnreadBadgeScalePercentV > 150) serverTreeUnreadBadgeScalePercentV = 150;
+          CtcpAutoReplySupport.CtcpAutoReplySettings ctcpAutoReplySettings =
+              CtcpAutoReplySupport.readSettings(ctcpAutoReplies);
           Map<String, Boolean> ircv3CapabilitiesV = ircv3Capabilities.snapshot();
 
           boolean nickColoringEnabledV = nickColors.enabled.isSelected();
@@ -908,19 +876,19 @@ public class PreferencesDialog {
                   imageEmbeds.animateGifs.isSelected(),
                   linkPreviews.enabled.isSelected(),
                   linkPreviews.collapsed.isSelected(),
-                  presenceFoldsV,
-                  ctcpRequestsInActiveTargetV,
-                  typingIndicatorsSendEnabledV,
-                  typingIndicatorsReceiveEnabledV,
-                  typingIndicatorsTreeStyleV,
-                  typingIndicatorsTreeDisplayEnabledV,
-                  typingIndicatorsUsersListDisplayEnabledV,
-                  typingIndicatorsTranscriptDisplayEnabledV,
-                  typingIndicatorsSendSignalDisplayEnabledV,
-                  timestampsEnabledV,
-                  timestampFormatV,
-                  timestampsIncludeChatMessagesV,
-                  timestampsIncludePresenceMessagesV,
+                  chatBehaviorSettings.presenceFoldsEnabled(),
+                  chatBehaviorSettings.ctcpRequestsInActiveTargetEnabled(),
+                  chatBehaviorSettings.typingIndicatorsSendEnabled(),
+                  chatBehaviorSettings.typingIndicatorsReceiveEnabled(),
+                  chatBehaviorSettings.typingIndicatorsTreeStyle(),
+                  chatBehaviorSettings.typingIndicatorsTreeDisplayEnabled(),
+                  chatBehaviorSettings.typingIndicatorsUsersListDisplayEnabled(),
+                  chatBehaviorSettings.typingIndicatorsTranscriptDisplayEnabled(),
+                  chatBehaviorSettings.typingIndicatorsSendSignalDisplayEnabled(),
+                  timestampSettings.enabled(),
+                  timestampSettings.format(),
+                  timestampSettings.includeChatMessages(),
+                  timestampSettings.includePresenceMessages(),
                   historySettings.initialLoadLines(),
                   historySettings.pageSize(),
                   historySettings.autoLoadWheelDebounceMs(),
@@ -936,7 +904,7 @@ public class PreferencesDialog {
                   outgoingColorEnabledV,
                   outgoingHexV,
                   outgoingDeliveryIndicatorsEnabledV,
-                  serverTreeNotificationBadgesEnabledV,
+                  chatBehaviorSettings.serverTreeNotificationBadgesEnabled(),
                   userLookupSettings.userhostEnabled(),
                   userLookupSettings.userhostMinIntervalSeconds(),
                   userLookupSettings.userhostMaxCommandsPerMinute(),
@@ -966,13 +934,11 @@ public class PreferencesDialog {
                   serverTreeUnreadChannelColorV,
                   serverTreeHighlightChannelColorV,
                   preserveDockLayoutBetweenSessionsV,
-                  matrixUserListNameDisplayModeV);
+                  chatBehaviorSettings.matrixUserListNameDisplayMode());
           boolean themeChanged = !next.theme().equalsIgnoreCase(prev.theme());
 
-          runtimeConfig.rememberServerTreeUnreadBadgeScalePercent(
-              serverTreeUnreadBadgeScalePercentV);
-          runtimeConfig.rememberServerTreeNotificationBadgesEnabled(
-              serverTreeNotificationBadgesEnabledV);
+          ChatBehaviorControlsSupport.rememberServerTreeSettings(
+              runtimeConfig, chatBehaviorSettings);
           runtimeConfig.rememberServerTreeUnreadChannelColor(serverTreeUnreadChannelColorV);
           runtimeConfig.rememberServerTreeHighlightChannelColor(serverTreeHighlightChannelColorV);
           runtimeConfig.rememberPreserveDockLayout(preserveDockLayoutBetweenSessionsV);
@@ -1064,27 +1030,8 @@ public class PreferencesDialog {
             if (embedLoadPolicyBus != null) {
               embedLoadPolicyBus.set(embedPolicyV);
             }
-            runtimeConfig.rememberPresenceFoldsEnabled(next.presenceFoldsEnabled());
-            runtimeConfig.rememberCtcpRequestsInActiveTargetEnabled(
-                next.ctcpRequestsInActiveTargetEnabled());
-            runtimeConfig.rememberDefaultQuitMessage(defaultQuitMessageV);
-            runtimeConfig.rememberCtcpAutoRepliesEnabled(ctcpAutoRepliesEnabledV);
-            runtimeConfig.rememberCtcpAutoReplyVersionEnabled(ctcpAutoReplyVersionEnabledV);
-            runtimeConfig.rememberCtcpAutoReplyPingEnabled(ctcpAutoReplyPingEnabledV);
-            runtimeConfig.rememberCtcpAutoReplyTimeEnabled(ctcpAutoReplyTimeEnabledV);
-            runtimeConfig.rememberTypingIndicatorsEnabled(next.typingIndicatorsEnabled());
-            runtimeConfig.rememberTypingIndicatorsReceiveEnabled(
-                next.typingIndicatorsReceiveEnabled());
-            runtimeConfig.rememberTypingTreeIndicatorStyle(next.typingIndicatorsTreeStyle());
-            runtimeConfig.rememberTypingIndicatorsTreeEnabled(next.typingIndicatorsTreeEnabled());
-            runtimeConfig.rememberTypingIndicatorsUsersListEnabled(
-                next.typingIndicatorsUsersListEnabled());
-            runtimeConfig.rememberMatrixUserListNameDisplayMode(
-                next.matrixUserListNameDisplayMode());
-            runtimeConfig.rememberTypingIndicatorsTranscriptEnabled(
-                next.typingIndicatorsTranscriptEnabled());
-            runtimeConfig.rememberTypingIndicatorsSendSignalEnabled(
-                next.typingIndicatorsSendSignalEnabled());
+            ChatBehaviorControlsSupport.rememberSettings(runtimeConfig, chatBehaviorSettings);
+            CtcpAutoReplySupport.rememberSettings(runtimeConfig, ctcpAutoReplySettings);
             SpellcheckControlsSupport.rememberSettings(runtimeConfig, nextSpellcheck);
             Ircv3PanelSupport.persistCapabilities(runtimeConfig, ircv3CapabilitiesV);
 
@@ -1094,12 +1041,7 @@ public class PreferencesDialog {
             }
             runtimeConfig.rememberNickColoringEnabled(nickColoringEnabledV);
             runtimeConfig.rememberNickColorMinContrast(nickColorMinContrastV);
-            runtimeConfig.rememberTimestampsEnabled(next.timestampsEnabled());
-            runtimeConfig.rememberTimestampFormat(next.timestampFormat());
-            runtimeConfig.rememberTimestampsIncludeChatMessages(
-                next.timestampsIncludeChatMessages());
-            runtimeConfig.rememberTimestampsIncludePresenceMessages(
-                next.timestampsIncludePresenceMessages());
+            ChatDisplayControlsSupport.rememberTimestampSettings(runtimeConfig, timestampSettings);
 
             HistoryControlsSupport.rememberSettings(runtimeConfig, historySettings);
 
