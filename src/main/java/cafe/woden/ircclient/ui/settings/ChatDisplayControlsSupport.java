@@ -105,6 +105,62 @@ final class ChatDisplayControlsSupport {
     return new LinkPreviewControls(linkPreviews, linkPreviewsCollapsed, cardStyle, linkPanel);
   }
 
+  static EmbedPreviewSettings readEmbedPreviewSettings(
+      ImageEmbedControls imageEmbeds, LinkPreviewControls linkPreviews) {
+    EmbedCardStyle cardStyle =
+        linkPreviews.cardStyle.getSelectedItem() instanceof EmbedCardStyle style
+            ? style
+            : EmbedCardStyle.DEFAULT;
+
+    return new EmbedPreviewSettings(
+        imageEmbeds.enabled.isSelected(),
+        imageEmbeds.collapsed.isSelected(),
+        ((Number) imageEmbeds.maxWidth.getValue()).intValue(),
+        ((Number) imageEmbeds.maxHeight.getValue()).intValue(),
+        imageEmbeds.animateGifs.isSelected(),
+        linkPreviews.enabled.isSelected(),
+        linkPreviews.collapsed.isSelected(),
+        cardStyle);
+  }
+
+  static void rememberEmbedPreviewSettings(
+      RuntimeConfigStore runtimeConfig,
+      EmbedCardStyleBus embedCardStyleBus,
+      EmbedPreviewSettings settings) {
+    runtimeConfig.rememberImageEmbedsEnabled(settings.imageEmbedsEnabled());
+    runtimeConfig.rememberImageEmbedsCollapsedByDefault(settings.imageEmbedsCollapsedByDefault());
+    runtimeConfig.rememberImageEmbedsMaxWidthPx(settings.imageEmbedsMaxWidthPx());
+    runtimeConfig.rememberImageEmbedsMaxHeightPx(settings.imageEmbedsMaxHeightPx());
+    runtimeConfig.rememberImageEmbedsAnimateGifs(settings.imageEmbedsAnimateGifs());
+    runtimeConfig.rememberEmbedCardStyle(settings.embedCardStyle().token());
+    if (embedCardStyleBus != null) {
+      embedCardStyleBus.set(settings.embedCardStyle());
+    }
+    runtimeConfig.rememberLinkPreviewsEnabled(settings.linkPreviewsEnabled());
+    runtimeConfig.rememberLinkPreviewsCollapsedByDefault(settings.linkPreviewsCollapsedByDefault());
+  }
+
+  record EmbedPreviewSettings(
+      boolean imageEmbedsEnabled,
+      boolean imageEmbedsCollapsedByDefault,
+      int imageEmbedsMaxWidthPx,
+      int imageEmbedsMaxHeightPx,
+      boolean imageEmbedsAnimateGifs,
+      boolean linkPreviewsEnabled,
+      boolean linkPreviewsCollapsedByDefault,
+      EmbedCardStyle embedCardStyle) {
+    EmbedPreviewSettings {
+      if (imageEmbedsMaxWidthPx < 0) imageEmbedsMaxWidthPx = 0;
+      if (imageEmbedsMaxHeightPx < 0) imageEmbedsMaxHeightPx = 0;
+      if (embedCardStyle == null) embedCardStyle = EmbedCardStyle.DEFAULT;
+    }
+
+    boolean embedCardStyleChanged(EmbedCardStyle previous) {
+      EmbedCardStyle normalizedPrevious = previous != null ? previous : EmbedCardStyle.DEFAULT;
+      return normalizedPrevious != embedCardStyle;
+    }
+  }
+
   static TimestampControls buildTimestampControls(UiSettings current) {
     JCheckBox enabled = new JCheckBox("Show timestamps");
     enabled.setSelected(current.timestampsEnabled());

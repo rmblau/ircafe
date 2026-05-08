@@ -747,16 +747,12 @@ public class PreferencesDialog {
           double nickColorMinContrastV = ((Number) nickColors.minContrast.getValue()).doubleValue();
           if (nickColorMinContrastV <= 0) nickColorMinContrastV = 3.0;
 
-          int maxImageW = ((Number) imageEmbeds.maxWidth.getValue()).intValue();
-          int maxImageH = ((Number) imageEmbeds.maxHeight.getValue()).intValue();
-          EmbedCardStyle embedCardStyleV =
-              linkPreviews.cardStyle.getSelectedItem() instanceof EmbedCardStyle style
-                  ? style
-                  : EmbedCardStyle.DEFAULT;
+          ChatDisplayControlsSupport.EmbedPreviewSettings embedPreviewSettings =
+              ChatDisplayControlsSupport.readEmbedPreviewSettings(imageEmbeds, linkPreviews);
           EmbedCardStyle prevEmbedCardStyle =
               embedCardStyleBus != null ? embedCardStyleBus.get() : EmbedCardStyle.DEFAULT;
           boolean embedCardStyleChanged =
-              !java.util.Objects.equals(prevEmbedCardStyle, embedCardStyleV);
+              embedPreviewSettings.embedCardStyleChanged(prevEmbedCardStyle);
 
           HistoryControlsSupport.HistorySettings historySettings =
               HistoryControlsSupport.readSettings(history);
@@ -858,13 +854,13 @@ public class PreferencesDialog {
                   traySettings.trayNotifySuppressWhenTargetActive(),
                   traySettings.trayLinuxDbusActionsEnabled(),
                   traySettings.trayNotificationBackendMode(),
-                  imageEmbeds.enabled.isSelected(),
-                  imageEmbeds.collapsed.isSelected(),
-                  maxImageW,
-                  maxImageH,
-                  imageEmbeds.animateGifs.isSelected(),
-                  linkPreviews.enabled.isSelected(),
-                  linkPreviews.collapsed.isSelected(),
+                  embedPreviewSettings.imageEmbedsEnabled(),
+                  embedPreviewSettings.imageEmbedsCollapsedByDefault(),
+                  embedPreviewSettings.imageEmbedsMaxWidthPx(),
+                  embedPreviewSettings.imageEmbedsMaxHeightPx(),
+                  embedPreviewSettings.imageEmbedsAnimateGifs(),
+                  embedPreviewSettings.linkPreviewsEnabled(),
+                  embedPreviewSettings.linkPreviewsCollapsedByDefault(),
                   chatBehaviorSettings.presenceFoldsEnabled(),
                   chatBehaviorSettings.ctcpRequestsInActiveTargetEnabled(),
                   chatBehaviorSettings.typingIndicatorsSendEnabled(),
@@ -987,19 +983,8 @@ public class PreferencesDialog {
                 lagIndicatorService,
                 trayService,
                 traySettings);
-            runtimeConfig.rememberImageEmbedsEnabled(next.imageEmbedsEnabled());
-            runtimeConfig.rememberImageEmbedsCollapsedByDefault(
-                next.imageEmbedsCollapsedByDefault());
-            runtimeConfig.rememberImageEmbedsMaxWidthPx(next.imageEmbedsMaxWidthPx());
-            runtimeConfig.rememberImageEmbedsMaxHeightPx(next.imageEmbedsMaxHeightPx());
-            runtimeConfig.rememberImageEmbedsAnimateGifs(next.imageEmbedsAnimateGifs());
-            runtimeConfig.rememberEmbedCardStyle(embedCardStyleV.token());
-            if (embedCardStyleBus != null) {
-              embedCardStyleBus.set(embedCardStyleV);
-            }
-            runtimeConfig.rememberLinkPreviewsEnabled(next.linkPreviewsEnabled());
-            runtimeConfig.rememberLinkPreviewsCollapsedByDefault(
-                next.linkPreviewsCollapsedByDefault());
+            ChatDisplayControlsSupport.rememberEmbedPreviewSettings(
+                runtimeConfig, embedCardStyleBus, embedPreviewSettings);
             EmbedLoadPolicySnapshot embedPolicyV =
                 pendingEmbedLoadPolicy.get() != null
                     ? pendingEmbedLoadPolicy.get()
