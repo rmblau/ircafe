@@ -743,9 +743,8 @@ public class PreferencesDialog {
               CtcpAutoReplySupport.readSettings(ctcpAutoReplies);
           Map<String, Boolean> ircv3CapabilitiesV = ircv3Capabilities.snapshot();
 
-          boolean nickColoringEnabledV = nickColors.enabled.isSelected();
-          double nickColorMinContrastV = ((Number) nickColors.minContrast.getValue()).doubleValue();
-          if (nickColorMinContrastV <= 0) nickColorMinContrastV = 3.0;
+          NickColorSettings nextNickColorSettings =
+              NickColorControlsSupport.readSettings(nickColors);
 
           ChatDisplayControlsSupport.EmbedPreviewSettings embedPreviewSettings =
               ChatDisplayControlsSupport.readEmbedPreviewSettings(imageEmbeds, linkPreviews);
@@ -998,12 +997,8 @@ public class PreferencesDialog {
             SpellcheckControlsSupport.rememberSettings(runtimeConfig, nextSpellcheck);
             Ircv3PanelSupport.persistCapabilities(runtimeConfig, ircv3CapabilitiesV);
 
-            if (nickColorSettingsBus != null) {
-              nickColorSettingsBus.set(
-                  new NickColorSettings(nickColoringEnabledV, nickColorMinContrastV));
-            }
-            runtimeConfig.rememberNickColoringEnabled(nickColoringEnabledV);
-            runtimeConfig.rememberNickColorMinContrast(nickColorMinContrastV);
+            NickColorControlsSupport.rememberSettings(
+                runtimeConfig, nickColorSettingsBus, nextNickColorSettings);
             ChatDisplayControlsSupport.rememberTimestampSettings(runtimeConfig, timestampSettings);
 
             HistoryControlsSupport.rememberSettings(runtimeConfig, historySettings);

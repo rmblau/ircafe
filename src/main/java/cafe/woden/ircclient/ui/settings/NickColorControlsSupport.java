@@ -1,7 +1,9 @@
 package cafe.woden.ircclient.ui.settings;
 
+import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.ui.chat.NickColorService;
 import cafe.woden.ircclient.ui.chat.NickColorSettings;
+import cafe.woden.ircclient.ui.chat.NickColorSettingsBus;
 import cafe.woden.ircclient.ui.nickcolors.NickColorOverridesDialog;
 import cafe.woden.ircclient.ui.util.MouseWheelDecorator;
 import java.awt.Window;
@@ -81,6 +83,22 @@ final class NickColorControlsSupport {
     updatePreview.run();
 
     return new NickColorControls(enabled, minContrast, overrides, panel);
+  }
+
+  static NickColorSettings readSettings(NickColorControls controls) {
+    return new NickColorSettings(
+        controls.enabled.isSelected(), ((Number) controls.minContrast.getValue()).doubleValue());
+  }
+
+  static void rememberSettings(
+      RuntimeConfigStore runtimeConfig,
+      NickColorSettingsBus nickColorSettingsBus,
+      NickColorSettings settings) {
+    if (nickColorSettingsBus != null) {
+      nickColorSettingsBus.set(settings);
+    }
+    runtimeConfig.rememberNickColoringEnabled(settings.enabled());
+    runtimeConfig.rememberNickColorMinContrast(settings.minContrast());
   }
 
   private static JSpinner doubleSpinner(
