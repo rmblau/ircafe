@@ -74,7 +74,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
-import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -595,19 +594,7 @@ public class PreferencesDialog {
               tweakSettingsBus != null
                   ? tweakSettingsBus.get()
                   : new ThemeTweakSettings(ThemeTweakSettings.ThemeDensity.AUTO, 10);
-          DensityOption densityOpt = (DensityOption) tweaks.density.getSelectedItem();
-          String densityIdV = densityOpt != null ? densityOpt.id : "auto";
-          int cornerRadiusV = tweaks.cornerRadius.getValue();
-          String uiFontFamilyV = Objects.toString(tweaks.uiFontFamily.getSelectedItem(), "").trim();
-          if (uiFontFamilyV.isBlank()) uiFontFamilyV = ThemeTweakSettings.DEFAULT_UI_FONT_FAMILY;
-          int uiFontSizeV = ((Number) tweaks.uiFontSize.getValue()).intValue();
-          ThemeTweakSettings nextTweaks =
-              new ThemeTweakSettings(
-                  ThemeTweakSettings.ThemeDensity.from(densityIdV),
-                  cornerRadiusV,
-                  tweaks.uiFontOverrideEnabled.isSelected(),
-                  uiFontFamilyV,
-                  uiFontSizeV);
+          ThemeTweakSettings nextTweaks = AppearanceControlsSupport.readTweakSettings(tweaks);
           boolean tweaksChanged = !java.util.Objects.equals(prevTweaks, nextTweaks);
 
           ThemeAccentSettings prevAccent =
@@ -615,22 +602,14 @@ public class PreferencesDialog {
                   ? accentSettingsBus.get()
                   : new ThemeAccentSettings(
                       UiProperties.DEFAULT_ACCENT_COLOR, UiProperties.DEFAULT_ACCENT_STRENGTH);
-          boolean accentOverrideEnabledV = accent.enabled.isSelected();
-          int accentStrengthV = accent.strength.getValue();
-          String accentHexV = null;
-          if (accentOverrideEnabledV) {
-            Color parsed = parseHexColorLenient(accent.hex.getText());
-            if (parsed == null) {
-              JOptionPane.showMessageDialog(
-                  dialog,
-                  "Accent color must be a hex value like #RRGGBB.",
-                  "Invalid accent color",
-                  JOptionPane.ERROR_MESSAGE);
-              return;
-            }
-            accentHexV = toHex(parsed);
+          ThemeAccentSettings nextAccent;
+          try {
+            nextAccent = AppearanceControlsSupport.readAccentSettings(accent);
+          } catch (AppearanceControlsSupport.AppearanceSettingsException ex) {
+            JOptionPane.showMessageDialog(
+                dialog, ex.getMessage(), ex.title(), JOptionPane.ERROR_MESSAGE);
+            return;
           }
-          ThemeAccentSettings nextAccent = new ThemeAccentSettings(accentHexV, accentStrengthV);
           boolean accentChanged = !java.util.Objects.equals(prevAccent, nextAccent);
 
           ChatThemeSettings prevChatTheme =
@@ -648,59 +627,14 @@ public class PreferencesDialog {
                       null,
                       null);
 
-          ChatThemeSettings.Preset presetV =
-              (ChatThemeSettings.Preset) chatTheme.preset.getSelectedItem();
-          if (presetV == null) presetV = ChatThemeSettings.Preset.DEFAULT;
-
-          String tsHexV;
-          String sysHexV;
-          String menHexV;
-          String msgHexV;
-          String noticeHexV;
-          String actionHexV;
-          String errHexV;
-          String presenceHexV;
+          ChatThemeSettings nextChatTheme;
           try {
-            tsHexV =
-                normalizeOptionalHexForApply(
-                    chatTheme.timestamp.hex.getText(), "Chat timestamp color");
-            sysHexV =
-                normalizeOptionalHexForApply(chatTheme.system.hex.getText(), "Chat system color");
-            menHexV =
-                normalizeOptionalHexForApply(
-                    chatTheme.mention.hex.getText(), "Mention highlight color");
-            msgHexV =
-                normalizeOptionalHexForApply(chatTheme.message.hex.getText(), "User message color");
-            noticeHexV =
-                normalizeOptionalHexForApply(
-                    chatTheme.notice.hex.getText(), "Notice message color");
-            actionHexV =
-                normalizeOptionalHexForApply(
-                    chatTheme.action.hex.getText(), "Action message color");
-            errHexV =
-                normalizeOptionalHexForApply(chatTheme.error.hex.getText(), "Error message color");
-            presenceHexV =
-                normalizeOptionalHexForApply(
-                    chatTheme.presence.hex.getText(), "Presence message color");
-          } catch (IllegalArgumentException ex) {
+            nextChatTheme = AppearanceControlsSupport.readChatThemeSettings(chatTheme);
+          } catch (AppearanceControlsSupport.AppearanceSettingsException ex) {
             JOptionPane.showMessageDialog(
-                dialog, ex.getMessage(), "Invalid chat message color", JOptionPane.ERROR_MESSAGE);
+                dialog, ex.getMessage(), ex.title(), JOptionPane.ERROR_MESSAGE);
             return;
           }
-
-          int mentionStrengthV = chatTheme.mentionStrength.getValue();
-          ChatThemeSettings nextChatTheme =
-              new ChatThemeSettings(
-                  presetV,
-                  tsHexV,
-                  sysHexV,
-                  menHexV,
-                  mentionStrengthV,
-                  msgHexV,
-                  noticeHexV,
-                  actionHexV,
-                  errHexV,
-                  presenceHexV);
           boolean chatThemeChanged = !java.util.Objects.equals(prevChatTheme, nextChatTheme);
 
           boolean autoConnectV = autoConnectOnStart.isSelected();
@@ -783,7 +717,7 @@ public class PreferencesDialog {
           try {
             serverTreeAppearanceSettings =
                 AppearanceControlsSupport.readServerTreeSettings(appearanceServerTree);
-          } catch (AppearanceControlsSupport.ServerTreeAppearanceSettingsException ex) {
+          } catch (AppearanceControlsSupport.AppearanceSettingsException ex) {
             JOptionPane.showMessageDialog(
                 dialog, ex.getMessage(), ex.title(), JOptionPane.ERROR_MESSAGE);
             return;
@@ -926,8 +860,7 @@ public class PreferencesDialog {
           }
           runtimeConfig.beginMutationBatch();
           try {
-            runtimeConfig.rememberAccentColor(nextAccent.accentColor());
-            runtimeConfig.rememberAccentStrength(nextAccent.strength());
+            AppearanceControlsSupport.rememberAccentSettings(runtimeConfig, nextAccent);
 
             if (tweakSettingsBus != null) {
               tweakSettingsBus.set(nextTweaks);
@@ -936,26 +869,12 @@ public class PreferencesDialog {
             if (chatThemeSettingsBus != null && chatThemeChanged) {
               chatThemeSettingsBus.set(nextChatTheme);
             }
-            runtimeConfig.rememberUiDensity(nextTweaks.densityId());
-            runtimeConfig.rememberCornerRadius(nextTweaks.cornerRadius());
-            runtimeConfig.rememberUiFontOverrideEnabled(nextTweaks.uiFontOverrideEnabled());
-            runtimeConfig.rememberUiFontFamily(nextTweaks.uiFontFamily());
-            runtimeConfig.rememberUiFontSize(nextTweaks.uiFontSize());
+            AppearanceControlsSupport.rememberTweakSettings(runtimeConfig, nextTweaks);
 
             runtimeConfig.rememberUiSettings(
                 next.theme(), next.chatFontFamily(), next.chatFontSize());
             MemoryControlsSupport.rememberSettings(runtimeConfig, memorySettings);
-            // Chat theme (transcript-only palette)
-            runtimeConfig.rememberChatThemePreset(nextChatTheme.preset().name());
-            runtimeConfig.rememberChatTimestampColor(nextChatTheme.timestampColor());
-            runtimeConfig.rememberChatSystemColor(nextChatTheme.systemColor());
-            runtimeConfig.rememberChatMessageColor(nextChatTheme.messageColor());
-            runtimeConfig.rememberChatNoticeColor(nextChatTheme.noticeColor());
-            runtimeConfig.rememberChatActionColor(nextChatTheme.actionColor());
-            runtimeConfig.rememberChatErrorColor(nextChatTheme.errorColor());
-            runtimeConfig.rememberChatPresenceColor(nextChatTheme.presenceColor());
-            runtimeConfig.rememberChatMentionBgColor(nextChatTheme.mentionBgColor());
-            runtimeConfig.rememberChatMentionStrength(nextChatTheme.mentionStrength());
+            AppearanceControlsSupport.rememberChatThemeSettings(runtimeConfig, nextChatTheme);
             runtimeConfig.rememberAutoConnectOnStart(next.autoConnectOnStart());
             runtimeConfig.rememberLaunchJvmJavaCommand(launchJvmSettings.javaCommand());
             runtimeConfig.rememberLaunchJvmXmsMiB(launchJvmSettings.xmsMiB());
@@ -1736,51 +1655,9 @@ public class PreferencesDialog {
     return s;
   }
 
-  private static JSpinner doubleSpinner(
-      double value, double min, double max, double step, List<AutoCloseable> closeables) {
-    JSpinner s = new JSpinner(new SpinnerNumberModel(value, min, max, step));
-    AutoCloseable ac = MouseWheelDecorator.decorateNumberSpinner(s);
-    if (ac != null) closeables.add(ac);
-    return s;
-  }
-
-  private static String toHex(Color c) {
-    return SettingsColorSupport.toHex(c);
-  }
-
-  private static Color parseHexColor(String raw) {
-    return SettingsColorSupport.parseHexColor(raw);
-  }
-
-  private static Color parseHexColorLenient(String raw) {
-    return SettingsColorSupport.parseHexColorLenient(raw);
-  }
-
-  static String normalizeOptionalHexForApply(String raw, String fieldLabel) {
-    return SettingsColorSupport.normalizeOptionalHexForApply(raw, fieldLabel);
-  }
-
-  private static Color contrastTextColor(Color bg) {
-    return SettingsColorSupport.contrastTextColor(bg);
-  }
-
-  private static Color preferredPreviewBackground() {
-    return SettingsColorSupport.preferredPreviewBackground();
-  }
-
-  private static Icon createColorSwatchIcon(Color color, int w, int h) {
-    return SettingsColorSupport.createColorSwatchIcon(color, w, h);
-  }
-
   private NotificationRule promptNotificationRuleDialog(String title, NotificationRule seed) {
     Window owner = dialog != null ? dialog : null;
     return NotificationRuleDialogSupport.promptNotificationRuleDialog(owner, title, seed);
-  }
-
-  private static Color showColorPickerDialog(
-      Window owner, String title, Color initial, Color previewBackground) {
-    return SettingsColorPickerDialogSupport.showColorPickerDialog(
-        owner, title, initial, previewBackground);
   }
 
   // ------------------------------

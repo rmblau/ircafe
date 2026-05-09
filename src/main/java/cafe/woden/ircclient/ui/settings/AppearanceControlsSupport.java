@@ -17,6 +17,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import javax.swing.BorderFactory;
 import javax.swing.ComboBoxEditor;
 import javax.swing.DefaultListCellRenderer;
@@ -469,6 +470,92 @@ final class AppearanceControlsSupport {
         mentionStrength);
   }
 
+  static ThemeTweakSettings readTweakSettings(TweakControls controls) {
+    DensityOption option = (DensityOption) controls.density.getSelectedItem();
+    String densityId = option != null ? option.id : "auto";
+    String uiFontFamily = Objects.toString(controls.uiFontFamily.getSelectedItem(), "").trim();
+    if (uiFontFamily.isBlank()) uiFontFamily = ThemeTweakSettings.DEFAULT_UI_FONT_FAMILY;
+    return new ThemeTweakSettings(
+        ThemeTweakSettings.ThemeDensity.from(densityId),
+        controls.cornerRadius.getValue(),
+        controls.uiFontOverrideEnabled.isSelected(),
+        uiFontFamily,
+        ((Number) controls.uiFontSize.getValue()).intValue());
+  }
+
+  static ThemeAccentSettings readAccentSettings(AccentControls controls)
+      throws AppearanceSettingsException {
+    String accentColor = null;
+    if (controls.enabled.isSelected()) {
+      Color parsed = SettingsColorSupport.parseHexColorLenient(controls.hex.getText());
+      if (parsed == null) {
+        throw new AppearanceSettingsException(
+            "Invalid accent color", "Accent color must be a hex value like #RRGGBB.");
+      }
+      accentColor = SettingsColorSupport.toHex(parsed);
+    }
+    return new ThemeAccentSettings(accentColor, controls.strength.getValue());
+  }
+
+  static ChatThemeSettings readChatThemeSettings(ChatThemeControls controls)
+      throws AppearanceSettingsException {
+    ChatThemeSettings.Preset preset =
+        controls.preset.getSelectedItem() instanceof ChatThemeSettings.Preset typed
+            ? typed
+            : ChatThemeSettings.Preset.DEFAULT;
+    try {
+      return new ChatThemeSettings(
+          preset,
+          SettingsColorSupport.normalizeOptionalHexForApply(
+              controls.timestamp.hex.getText(), "Chat timestamp color"),
+          SettingsColorSupport.normalizeOptionalHexForApply(
+              controls.system.hex.getText(), "Chat system color"),
+          SettingsColorSupport.normalizeOptionalHexForApply(
+              controls.mention.hex.getText(), "Mention highlight color"),
+          controls.mentionStrength.getValue(),
+          SettingsColorSupport.normalizeOptionalHexForApply(
+              controls.message.hex.getText(), "User message color"),
+          SettingsColorSupport.normalizeOptionalHexForApply(
+              controls.notice.hex.getText(), "Notice message color"),
+          SettingsColorSupport.normalizeOptionalHexForApply(
+              controls.action.hex.getText(), "Action message color"),
+          SettingsColorSupport.normalizeOptionalHexForApply(
+              controls.error.hex.getText(), "Error message color"),
+          SettingsColorSupport.normalizeOptionalHexForApply(
+              controls.presence.hex.getText(), "Presence message color"));
+    } catch (IllegalArgumentException ex) {
+      throw new AppearanceSettingsException("Invalid chat message color", ex.getMessage());
+    }
+  }
+
+  static void rememberTweakSettings(RuntimeConfigStore runtimeConfig, ThemeTweakSettings settings) {
+    runtimeConfig.rememberUiDensity(settings.densityId());
+    runtimeConfig.rememberCornerRadius(settings.cornerRadius());
+    runtimeConfig.rememberUiFontOverrideEnabled(settings.uiFontOverrideEnabled());
+    runtimeConfig.rememberUiFontFamily(settings.uiFontFamily());
+    runtimeConfig.rememberUiFontSize(settings.uiFontSize());
+  }
+
+  static void rememberAccentSettings(
+      RuntimeConfigStore runtimeConfig, ThemeAccentSettings settings) {
+    runtimeConfig.rememberAccentColor(settings.accentColor());
+    runtimeConfig.rememberAccentStrength(settings.strength());
+  }
+
+  static void rememberChatThemeSettings(
+      RuntimeConfigStore runtimeConfig, ChatThemeSettings settings) {
+    runtimeConfig.rememberChatThemePreset(settings.preset().name());
+    runtimeConfig.rememberChatTimestampColor(settings.timestampColor());
+    runtimeConfig.rememberChatSystemColor(settings.systemColor());
+    runtimeConfig.rememberChatMessageColor(settings.messageColor());
+    runtimeConfig.rememberChatNoticeColor(settings.noticeColor());
+    runtimeConfig.rememberChatActionColor(settings.actionColor());
+    runtimeConfig.rememberChatErrorColor(settings.errorColor());
+    runtimeConfig.rememberChatPresenceColor(settings.presenceColor());
+    runtimeConfig.rememberChatMentionBgColor(settings.mentionBgColor());
+    runtimeConfig.rememberChatMentionStrength(settings.mentionStrength());
+  }
+
   static ColorField buildOptionalColorField(String initialHex, String pickerTitle) {
     JTextField hex = new JTextField();
     hex.setColumns(10);
@@ -702,7 +789,7 @@ final class AppearanceControlsSupport {
   }
 
   static ServerTreeAppearanceSettings readServerTreeSettings(AppearanceServerTreeControls controls)
-      throws ServerTreeAppearanceSettingsException {
+      throws AppearanceSettingsException {
     try {
       String unreadChannelColor =
           SettingsColorSupport.normalizeOptionalHexForApply(
@@ -715,7 +802,7 @@ final class AppearanceControlsSupport {
           highlightChannelColor,
           controls.preserveDockLayoutBetweenSessions.isSelected());
     } catch (IllegalArgumentException ex) {
-      throw new ServerTreeAppearanceSettingsException("Invalid server tree color", ex.getMessage());
+      throw new AppearanceSettingsException("Invalid server tree color", ex.getMessage());
     }
   }
 
@@ -788,10 +875,10 @@ final class AppearanceControlsSupport {
       String highlightChannelColor,
       boolean preserveDockLayoutBetweenSessions) {}
 
-  static final class ServerTreeAppearanceSettingsException extends Exception {
+  static final class AppearanceSettingsException extends Exception {
     private final String title;
 
-    ServerTreeAppearanceSettingsException(String title, String message) {
+    AppearanceSettingsException(String title, String message) {
       super(message);
       this.title = title;
     }

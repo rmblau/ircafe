@@ -400,16 +400,7 @@ final class AppearanceLivePreviewSession implements AutoCloseable {
   }
 
   private ThemeTweakSettings readTweakSettings() {
-    DensityOption option = (DensityOption) tweaks.density.getSelectedItem();
-    String densityId = option != null ? option.id : "auto";
-    String uiFontFamily = Objects.toString(tweaks.uiFontFamily.getSelectedItem(), "").trim();
-    if (uiFontFamily.isBlank()) uiFontFamily = ThemeTweakSettings.DEFAULT_UI_FONT_FAMILY;
-    return new ThemeTweakSettings(
-        ThemeTweakSettings.ThemeDensity.from(densityId),
-        tweaks.cornerRadius.getValue(),
-        tweaks.uiFontOverrideEnabled.isSelected(),
-        uiFontFamily,
-        ((Number) tweaks.uiFontSize.getValue()).intValue());
+    return AppearanceControlsSupport.readTweakSettings(tweaks);
   }
 
   private ChatThemeSettings readChatThemeSettings() {
