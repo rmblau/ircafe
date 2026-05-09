@@ -776,29 +776,18 @@ public class PreferencesDialog {
                   userhost, enrichment, monitorIsonPollIntervalSeconds);
 
           UiSettings prev = settingsBus.get();
-          boolean outgoingColorEnabledV = outgoing.enabled.isSelected();
-          String outgoingHexV =
-              UiSettings.normalizeHexOrDefault(outgoing.hex.getText(), prev.clientLineColor());
-          outgoing.hex.setText(outgoingHexV);
-          boolean outgoingDeliveryIndicatorsEnabledV = outgoingDeliveryIndicators.isSelected();
-          String serverTreeUnreadChannelColorV;
-          String serverTreeHighlightChannelColorV;
+          OutgoingColorControlsSupport.OutgoingLineSettings outgoingLineSettings =
+              OutgoingColorControlsSupport.readSettings(
+                  outgoing, outgoingDeliveryIndicators, prev.clientLineColor());
+          AppearanceControlsSupport.ServerTreeAppearanceSettings serverTreeAppearanceSettings;
           try {
-            serverTreeUnreadChannelColorV =
-                normalizeOptionalHexForApply(
-                    appearanceServerTree.unreadChannelColor.hex.getText(),
-                    "Unread channel color must be blank or a hex value like #RRGGBB.");
-            serverTreeHighlightChannelColorV =
-                normalizeOptionalHexForApply(
-                    appearanceServerTree.highlightChannelColor.hex.getText(),
-                    "Highlight channel color must be blank or a hex value like #RRGGBB.");
-          } catch (IllegalArgumentException ex) {
+            serverTreeAppearanceSettings =
+                AppearanceControlsSupport.readServerTreeSettings(appearanceServerTree);
+          } catch (AppearanceControlsSupport.ServerTreeAppearanceSettingsException ex) {
             JOptionPane.showMessageDialog(
-                dialog, ex.getMessage(), "Invalid server tree color", JOptionPane.ERROR_MESSAGE);
+                dialog, ex.getMessage(), ex.title(), JOptionPane.ERROR_MESSAGE);
             return;
           }
-          boolean preserveDockLayoutBetweenSessionsV =
-              appearanceServerTree.preserveDockLayoutBetweenSessions.isSelected();
 
           NotificationRulesControlsSupport.NotificationSettings notificationSettings =
               NotificationRulesControlsSupport.readSettings(notifications);
@@ -885,9 +874,9 @@ public class PreferencesDialog {
                   historySettings.remoteZncPlaybackWindowMinutes(),
                   historySettings.commandHistoryMaxSize(),
                   historySettings.chatTranscriptMaxLinesPerTarget(),
-                  outgoingColorEnabledV,
-                  outgoingHexV,
-                  outgoingDeliveryIndicatorsEnabledV,
+                  outgoingLineSettings.clientLineColorEnabled(),
+                  outgoingLineSettings.clientLineColor(),
+                  outgoingLineSettings.outgoingDeliveryIndicatorsEnabled(),
                   chatBehaviorSettings.serverTreeNotificationBadgesEnabled(),
                   userLookupSettings.userhostEnabled(),
                   userLookupSettings.userhostMinIntervalSeconds(),
@@ -915,17 +904,16 @@ public class PreferencesDialog {
                   memorySettings.warningPushyEnabled(),
                   memorySettings.warningSoundEnabled(),
                   notificationSettings.rules(),
-                  serverTreeUnreadChannelColorV,
-                  serverTreeHighlightChannelColorV,
-                  preserveDockLayoutBetweenSessionsV,
+                  serverTreeAppearanceSettings.unreadChannelColor(),
+                  serverTreeAppearanceSettings.highlightChannelColor(),
+                  serverTreeAppearanceSettings.preserveDockLayoutBetweenSessions(),
                   chatBehaviorSettings.matrixUserListNameDisplayMode());
           boolean themeChanged = !next.theme().equalsIgnoreCase(prev.theme());
 
           ChatBehaviorControlsSupport.rememberServerTreeSettings(
               runtimeConfig, chatBehaviorSettings);
-          runtimeConfig.rememberServerTreeUnreadChannelColor(serverTreeUnreadChannelColorV);
-          runtimeConfig.rememberServerTreeHighlightChannelColor(serverTreeHighlightChannelColorV);
-          runtimeConfig.rememberPreserveDockLayout(preserveDockLayoutBetweenSessionsV);
+          AppearanceControlsSupport.rememberServerTreeSettings(
+              runtimeConfig, serverTreeAppearanceSettings);
           settingsBus.set(next);
           settingsBus.setChatSmoothWheelScrollingEnabled(
               historySettings.smoothWheelScrollingEnabled());
@@ -1006,10 +994,7 @@ public class PreferencesDialog {
             applyFilterSettingsFromUi(filters);
             LoggingControlsSupport.rememberSettings(runtimeConfig, loggingSettings);
 
-            runtimeConfig.rememberClientLineColorEnabled(next.clientLineColorEnabled());
-            runtimeConfig.rememberClientLineColor(next.clientLineColor());
-            runtimeConfig.rememberOutgoingDeliveryIndicatorsEnabled(
-                next.outgoingDeliveryIndicatorsEnabled());
+            OutgoingColorControlsSupport.rememberSettings(runtimeConfig, outgoingLineSettings);
 
             NotificationRulesControlsSupport.rememberSettings(runtimeConfig, notificationSettings);
             IrcEventNotificationsTabSupport.rememberSettings(

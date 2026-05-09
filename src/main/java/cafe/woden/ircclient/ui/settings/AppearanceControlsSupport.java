@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings;
 
+import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.UiProperties;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettings;
 import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettings;
@@ -700,6 +701,31 @@ final class AppearanceControlsSupport {
         unreadChannelColor, highlightChannelColor, preserveDockLayoutBetweenSessions);
   }
 
+  static ServerTreeAppearanceSettings readServerTreeSettings(AppearanceServerTreeControls controls)
+      throws ServerTreeAppearanceSettingsException {
+    try {
+      String unreadChannelColor =
+          SettingsColorSupport.normalizeOptionalHexForApply(
+              controls.unreadChannelColor.hex.getText(), "Unread channel color");
+      String highlightChannelColor =
+          SettingsColorSupport.normalizeOptionalHexForApply(
+              controls.highlightChannelColor.hex.getText(), "Highlight channel color");
+      return new ServerTreeAppearanceSettings(
+          unreadChannelColor,
+          highlightChannelColor,
+          controls.preserveDockLayoutBetweenSessions.isSelected());
+    } catch (IllegalArgumentException ex) {
+      throw new ServerTreeAppearanceSettingsException("Invalid server tree color", ex.getMessage());
+    }
+  }
+
+  static void rememberServerTreeSettings(
+      RuntimeConfigStore runtimeConfig, ServerTreeAppearanceSettings settings) {
+    runtimeConfig.rememberServerTreeUnreadChannelColor(settings.unreadChannelColor());
+    runtimeConfig.rememberServerTreeHighlightChannelColor(settings.highlightChannelColor());
+    runtimeConfig.rememberPreserveDockLayout(settings.preserveDockLayoutBetweenSessions());
+  }
+
   private static String[] availableFontFamiliesSorted() {
     String[] families =
         GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
@@ -755,5 +781,23 @@ final class AppearanceControlsSupport {
   private static Color asUiResource(Color color) {
     if (color == null || color instanceof ColorUIResource) return color;
     return new ColorUIResource(color);
+  }
+
+  record ServerTreeAppearanceSettings(
+      String unreadChannelColor,
+      String highlightChannelColor,
+      boolean preserveDockLayoutBetweenSessions) {}
+
+  static final class ServerTreeAppearanceSettingsException extends Exception {
+    private final String title;
+
+    ServerTreeAppearanceSettingsException(String title, String message) {
+      super(message);
+      this.title = title;
+    }
+
+    String title() {
+      return title;
+    }
   }
 }

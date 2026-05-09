@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings;
 
+import cafe.woden.ircclient.config.RuntimeConfigStore;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -99,4 +100,24 @@ final class OutgoingColorControlsSupport {
     return new OutgoingColorControls(
         outgoingColorEnabled, outgoingColorHex, outgoingPreview, outgoingColorPanel);
   }
+
+  static OutgoingLineSettings readSettings(
+      OutgoingColorControls outgoing, JCheckBox outgoingDeliveryIndicators, String previousColor) {
+    String hex = UiSettings.normalizeHexOrDefault(outgoing.hex.getText(), previousColor);
+    outgoing.hex.setText(hex);
+    return new OutgoingLineSettings(
+        outgoing.enabled.isSelected(), hex, outgoingDeliveryIndicators.isSelected());
+  }
+
+  static void rememberSettings(RuntimeConfigStore runtimeConfig, OutgoingLineSettings settings) {
+    runtimeConfig.rememberClientLineColorEnabled(settings.clientLineColorEnabled());
+    runtimeConfig.rememberClientLineColor(settings.clientLineColor());
+    runtimeConfig.rememberOutgoingDeliveryIndicatorsEnabled(
+        settings.outgoingDeliveryIndicatorsEnabled());
+  }
+
+  record OutgoingLineSettings(
+      boolean clientLineColorEnabled,
+      String clientLineColor,
+      boolean outgoingDeliveryIndicatorsEnabled) {}
 }
