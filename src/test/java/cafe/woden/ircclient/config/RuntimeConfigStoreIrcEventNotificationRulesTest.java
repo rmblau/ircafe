@@ -19,7 +19,7 @@ class RuntimeConfigStoreIrcEventNotificationRulesTest {
   void eventRulesArePersistedUnderUiSection() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
     RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+        RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberIrcEventNotificationRules(
         List.of(

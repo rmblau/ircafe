@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.boot.WebApplicationType;
@@ -23,7 +22,7 @@ class RuntimeConfigStoreChatMessageColorsTest {
   void chatMessageColorOverridesPersistAndCanBeCleared() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
     RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+        RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberChatMessageColor("#112233");
     store.rememberChatNoticeColor("#223344");
@@ -61,7 +60,7 @@ class RuntimeConfigStoreChatMessageColorsTest {
   void chatMessageColorOverridesReloadIntoUiPropertiesOnSpringStartup() {
     Path cfg = tempDir.resolve("ircafe.yml");
     RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+        RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberChatMessageColor("#112233");
     store.rememberChatNoticeColor("#223344");

@@ -31,7 +31,7 @@ class RuntimeConfigStoreJoinedChannelsTest {
         """);
 
     RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+        RuntimeConfigStoreTestFixtures.store(cfg);
 
     assertEquals(List.of("#Alpha", "#beta", "&help"), store.readJoinedChannels("libera"));
   }
@@ -39,8 +39,7 @@ class RuntimeConfigStoreJoinedChannelsTest {
   @Test
   void readJoinedChannelsReturnsEmptyWhenServerOrAutoJoinIsMissing() {
     RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("missing.yml").toString(), new IrcProperties(null, List.of()));
+        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("missing.yml"));
 
     assertEquals(List.of(), store.readJoinedChannels("libera"));
   }
@@ -58,7 +57,7 @@ class RuntimeConfigStoreJoinedChannelsTest {
         """);
 
     RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+        RuntimeConfigStoreTestFixtures.store(cfg);
 
     assertEquals(List.of(), store.readJoinedChannels("libera"));
   }

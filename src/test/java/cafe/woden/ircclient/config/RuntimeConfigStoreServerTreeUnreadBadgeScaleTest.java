@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -17,7 +16,7 @@ class RuntimeConfigStoreServerTreeUnreadBadgeScaleTest {
   void serverTreeUnreadBadgeScaleRoundTripsAndClamps() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
     RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+        RuntimeConfigStoreTestFixtures.store(cfg);
 
     assertEquals(100, store.readServerTreeUnreadBadgeScalePercent(100));
 
@@ -38,7 +37,7 @@ class RuntimeConfigStoreServerTreeUnreadBadgeScaleTest {
   void mutationBatchWritesCombinedUiUpdates() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
     RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+        RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.runMutationBatch(
         () -> {
@@ -56,7 +55,7 @@ class RuntimeConfigStoreServerTreeUnreadBadgeScaleTest {
   void serverTreeNotificationBadgesEnabledPersists() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
     RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+        RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberServerTreeNotificationBadgesEnabled(false);
 
@@ -68,7 +67,7 @@ class RuntimeConfigStoreServerTreeUnreadBadgeScaleTest {
   void chatHistoryViewportLockRoundTrips() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
     RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+        RuntimeConfigStoreTestFixtures.store(cfg);
 
     assertTrue(store.readChatHistoryLockViewportDuringLoadOlder(true));
 
