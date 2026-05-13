@@ -152,19 +152,20 @@ public final class IrcEventNotificationRuleDialogSupport {
     JCheckBox scriptEnabled = new JCheckBox("Run script/program", base.scriptEnabled());
     PathChooserControlsSupport.Controls scriptPathControls =
         PathChooserControlsSupport.buildControls(
-            new PathChooserControlsSupport.Request(
-                base.scriptPath(),
-                "Browse...",
-                "Clear",
-                "terminal",
-                "Browse for script/program",
-                "close",
-                "Clear script path",
-                "Select script/program",
-                PathChooserControlsSupport.SelectionMode.FILES,
-                owner,
-                scriptEnabled::isSelected,
-                true));
+            PathChooserControlsSupport.Request.builder()
+                .initialPath(base.scriptPath())
+                .browseButtonText("Browse...")
+                .clearButtonText("Clear")
+                .browseIconName("terminal")
+                .browseTooltip("Browse for script/program")
+                .clearIconName("close")
+                .clearTooltip("Clear script path")
+                .chooserDialogTitle("Select script/program")
+                .selectionMode(PathChooserControlsSupport.SelectionMode.FILES)
+                .owner(owner)
+                .availableSupplier(scriptEnabled::isSelected)
+                .editableWhenAvailable(true)
+                .build());
     JTextField scriptPath = scriptPathControls.path();
     JButton browseScript = scriptPathControls.browseButton();
     JButton clearScript = scriptPathControls.clearButton();
@@ -172,19 +173,20 @@ public final class IrcEventNotificationRuleDialogSupport {
     JTextField scriptArgs = new JTextField(Objects.toString(base.scriptArgs(), ""));
     PathChooserControlsSupport.Controls scriptWorkingDirectoryControls =
         PathChooserControlsSupport.buildControls(
-            new PathChooserControlsSupport.Request(
-                base.scriptWorkingDirectory(),
-                "Browse...",
-                "Clear",
-                "settings",
-                "Browse for script working directory",
-                "close",
-                "Clear script working directory",
-                "Select script working directory",
-                PathChooserControlsSupport.SelectionMode.DIRECTORIES,
-                owner,
-                scriptEnabled::isSelected,
-                true));
+            PathChooserControlsSupport.Request.builder()
+                .initialPath(base.scriptWorkingDirectory())
+                .browseButtonText("Browse...")
+                .clearButtonText("Clear")
+                .browseIconName("settings")
+                .browseTooltip("Browse for script working directory")
+                .clearIconName("close")
+                .clearTooltip("Clear script working directory")
+                .chooserDialogTitle("Select script working directory")
+                .selectionMode(PathChooserControlsSupport.SelectionMode.DIRECTORIES)
+                .owner(owner)
+                .availableSupplier(scriptEnabled::isSelected)
+                .editableWhenAvailable(true)
+                .build());
     JTextField scriptWorkingDirectory = scriptWorkingDirectoryControls.path();
     JButton browseScriptWorkingDirectory = scriptWorkingDirectoryControls.browseButton();
     JButton clearScriptWorkingDirectory = scriptWorkingDirectoryControls.clearButton();
