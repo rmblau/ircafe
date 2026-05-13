@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.config.ServerEntry;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.controls.ConnectButton;
@@ -26,9 +27,7 @@ class ServerTreeDockableStartupSelectionRestoreTest {
 
   @Test
   void startupPrefersRememberedTargetWhenLeafExists() throws Exception {
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("ircafe.yml").toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
     store.rememberLastSelectedTarget("libera", "status");
 
     ServerTreeDockable dockable = newDockable(store);
@@ -41,9 +40,7 @@ class ServerTreeDockableStartupSelectionRestoreTest {
 
   @Test
   void startupFallsBackToDefaultWhenRememberedTargetDoesNotExist() throws Exception {
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("ircafe.yml").toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
     store.rememberLastSelectedTarget("libera", "#does-not-exist");
 
     ServerTreeDockable dockable = newDockable(store);
@@ -56,9 +53,7 @@ class ServerTreeDockableStartupSelectionRestoreTest {
 
   @Test
   void startupRestoresRememberedTargetWhenItBecomesSelectableLater() throws Exception {
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("ircafe.yml").toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
     TargetRef remembered = new TargetRef("libera", "##Llamas");
     store.rememberLastSelectedTarget(remembered.serverId(), remembered.target());
 
@@ -76,9 +71,7 @@ class ServerTreeDockableStartupSelectionRestoreTest {
 
   @Test
   void lateSubscriberReceivesRestoredSelectionFromReplay() throws Exception {
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("ircafe.yml").toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
     TargetRef remembered = new TargetRef("libera", "##Llamas");
     store.rememberLastSelectedTarget(remembered.serverId(), remembered.target());
 

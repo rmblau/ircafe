@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,9 +18,8 @@ class MonitorListServiceTest {
   @Test
   void addRemoveAndPersistMonitorNicks() {
     RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("ircafe.yml").toString(),
-            new IrcProperties(null, List.of(server("libera"))));
+        RuntimeConfigStoreTestFixtures.storeWithServers(
+            tempDir.resolve("ircafe.yml"), server("libera"));
     MonitorListService service = new MonitorListService(store);
 
     assertEquals(2, service.addNicks("libera", List.of("Alice", "bob", "alice")));
@@ -42,9 +42,8 @@ class MonitorListServiceTest {
   @Test
   void emitsChangesOnlyForMutationsAndClearReturnsRemovedCount() {
     RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("ircafe.yml").toString(),
-            new IrcProperties(null, List.of(server("libera"))));
+        RuntimeConfigStoreTestFixtures.storeWithServers(
+            tempDir.resolve("ircafe.yml"), server("libera"));
     MonitorListService service = new MonitorListService(store);
 
     ArrayList<MonitorListService.Change> changes = new ArrayList<>();

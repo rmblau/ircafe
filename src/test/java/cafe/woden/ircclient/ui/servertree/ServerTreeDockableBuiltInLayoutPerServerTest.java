@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayout;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayoutNode;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeRootSiblingNode;
@@ -74,7 +75,7 @@ class ServerTreeDockableBuiltInLayoutPerServerTest {
   void persistedLayoutPlacesConfiguredBuiltInsAtServerLevel() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
     RuntimeConfigStore runtime =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of(server("libera"))));
+        RuntimeConfigStoreTestFixtures.storeWithServers(cfg, server("libera"));
     runtime.rememberServerTreeBuiltInLayout(
         "libera",
         new ServerTreeBuiltInLayout(
@@ -112,7 +113,7 @@ class ServerTreeDockableBuiltInLayoutPerServerTest {
   void movingBuiltInOutOfOtherPersistsLayoutForServer() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
     RuntimeConfigStore runtime =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of(server("libera"))));
+        RuntimeConfigStoreTestFixtures.storeWithServers(cfg, server("libera"));
 
     onEdt(
         () -> {
@@ -147,7 +148,7 @@ class ServerTreeDockableBuiltInLayoutPerServerTest {
   void persistedRootSiblingOrderReordersTopLevelServerSiblings() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
     RuntimeConfigStore runtime =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of(server("libera"))));
+        RuntimeConfigStoreTestFixtures.storeWithServers(cfg, server("libera"));
     runtime.rememberServerTreeBuiltInLayout(
         "libera",
         new ServerTreeBuiltInLayout(
@@ -197,7 +198,7 @@ class ServerTreeDockableBuiltInLayoutPerServerTest {
   void persistingRootSiblingOrderTracksCurrentServerTreeOrder() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
     RuntimeConfigStore runtime =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of(server("libera"))));
+        RuntimeConfigStoreTestFixtures.storeWithServers(cfg, server("libera"));
     runtime.rememberServerTreeBuiltInLayout(
         "libera",
         new ServerTreeBuiltInLayout(
