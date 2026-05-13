@@ -18,4 +18,9 @@ final class RuntimeConfigStoreTestFixtures {
   static RuntimeConfigStore store(Path configPath, IrcProperties defaults) {
     return new RuntimeConfigStore(configPath.toString(), defaults);
   }
+
+  static RuntimeConfigStore storeWithServers(
+      Path configPath, IrcProperties.Server... servers) {
+    return store(configPath, new IrcProperties(null, List.of(servers)));
+  }
 }

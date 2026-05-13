@@ -20,8 +20,8 @@ class RuntimeConfigStoreServerTreeBuiltInNodesVisibilityTest {
   void builtInNodeVisibilityRoundTripsAndDefaultEntriesAreRemoved() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
     RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            cfg.toString(), new IrcProperties(null, List.of(server("libera"), server("oftc"))));
+        RuntimeConfigStoreTestFixtures.storeWithServers(
+            cfg, server("libera"), server("oftc"));
 
     assertEquals(Map.of(), store.readServerTreeBuiltInNodesVisibility());
 
@@ -55,7 +55,7 @@ class RuntimeConfigStoreServerTreeBuiltInNodesVisibilityTest {
             + "          notifications: false\n");
 
     RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+        RuntimeConfigStoreTestFixtures.store(cfg);
 
     Map<String, ServerTreeBuiltInNodesVisibility> persisted =
         store.readServerTreeBuiltInNodesVisibility();

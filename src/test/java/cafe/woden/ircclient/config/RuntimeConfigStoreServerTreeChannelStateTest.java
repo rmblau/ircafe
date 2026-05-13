@@ -30,8 +30,8 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
         """);
 
     RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            cfg.toString(), new IrcProperties(null, List.of(server("libera", List.of("#alpha")))));
+        RuntimeConfigStoreTestFixtures.storeWithServers(
+            cfg, server("libera", List.of("#alpha")));
 
     store.forgetJoinedChannel("libera", "#alpha");
 
@@ -74,7 +74,7 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
         """);
 
     RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+        RuntimeConfigStoreTestFixtures.store(cfg);
 
     assertEquals(
         ServerTreeChannelSortMode.ALPHABETICAL,
@@ -101,7 +101,7 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
         """);
 
     RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+        RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberServerTreeChannelAutoReattach("libera", "#alpha", false);
 
@@ -137,7 +137,7 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
         """);
 
     RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+        RuntimeConfigStoreTestFixtures.store(cfg);
 
     assertEquals(
         ServerTreeChannelSortMode.MOST_RECENT_ACTIVITY,
@@ -171,7 +171,7 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
         """);
 
     RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+        RuntimeConfigStoreTestFixtures.store(cfg);
 
     assertEquals(
         ServerTreeChannelSortMode.MOST_UNREAD_MESSAGES,
@@ -201,7 +201,7 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
         """);
 
     RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+        RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberServerTreeChannel("libera", "#beta");
 
@@ -223,7 +223,7 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
         """);
 
     RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+        RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberServerTreeChannel("libera", "#beta");
     store.rememberServerTreeChannel("libera", "#alpha");
@@ -256,7 +256,7 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
         """);
 
     RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+        RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberServerTreeChannel("libera", "#alpha");
     assertFalse(store.readServerTreeChannelPinned("libera", "#alpha", true));

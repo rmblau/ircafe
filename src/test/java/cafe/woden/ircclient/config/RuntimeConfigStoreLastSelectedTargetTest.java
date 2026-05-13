@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -18,8 +17,7 @@ class RuntimeConfigStoreLastSelectedTargetTest {
   @Test
   void lastSelectedTargetCanBePersistedAndReadBack() {
     RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("ircafe.yml").toString(), new IrcProperties(null, List.of()));
+        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     store.rememberLastSelectedTarget("libera", "#ircafe");
 
@@ -32,8 +30,7 @@ class RuntimeConfigStoreLastSelectedTargetTest {
   @Test
   void blankSelectionClearsPersistedLastSelectedTarget() {
     RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("ircafe.yml").toString(), new IrcProperties(null, List.of()));
+        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     store.rememberLastSelectedTarget("libera", "#ircafe");
     assertTrue(store.readLastSelectedTarget().isPresent());
@@ -56,7 +53,7 @@ class RuntimeConfigStoreLastSelectedTargetTest {
         """);
 
     RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+        RuntimeConfigStoreTestFixtures.store(cfg);
 
     assertFalse(store.readLastSelectedTarget().isPresent());
   }

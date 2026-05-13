@@ -17,9 +17,8 @@ class RuntimeConfigStoreServerBackendIdTest {
   void ensureFileExistsWithServersPersistsCustomBackendIds() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
     RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            cfg.toString(),
-            new IrcProperties(null, List.of(server("plugin-net", "plugin-backend"))));
+        RuntimeConfigStoreTestFixtures.storeWithServers(
+            cfg, server("plugin-net", "plugin-backend"));
 
     store.ensureFileExistsWithServers();
 
@@ -31,8 +30,8 @@ class RuntimeConfigStoreServerBackendIdTest {
   void ensureFileExistsWithServersOmitsDefaultIrcBackendId() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
     RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            cfg.toString(), new IrcProperties(null, List.of(server("libera", "irc"))));
+        RuntimeConfigStoreTestFixtures.storeWithServers(
+            cfg, server("libera", "irc"));
 
     store.ensureFileExistsWithServers();
 

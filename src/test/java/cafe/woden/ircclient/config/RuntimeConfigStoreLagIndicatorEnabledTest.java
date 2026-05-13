@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -15,8 +14,7 @@ class RuntimeConfigStoreLagIndicatorEnabledTest {
   @Test
   void lagIndicatorEnabledDefaultsWhenUnset() {
     RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("ircafe.yml").toString(), new IrcProperties(null, List.of()));
+        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     assertTrue(store.readLagIndicatorEnabled(true));
     assertFalse(store.readLagIndicatorEnabled(false));
@@ -25,8 +23,7 @@ class RuntimeConfigStoreLagIndicatorEnabledTest {
   @Test
   void lagIndicatorEnabledPersistsAndReadsBack() {
     RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("ircafe.yml").toString(), new IrcProperties(null, List.of()));
+        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     store.rememberLagIndicatorEnabled(false);
     assertFalse(store.readLagIndicatorEnabled(true));
