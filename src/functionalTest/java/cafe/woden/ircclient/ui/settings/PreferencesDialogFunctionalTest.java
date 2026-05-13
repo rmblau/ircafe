@@ -59,7 +59,7 @@ import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettings;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsTestFixtures;
-import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettings;
+import cafe.woden.ircclient.ui.settings.theme.ThemeAppearanceSettingsTestFixtures;
 import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ThemeManager;
 import cafe.woden.ircclient.ui.settings.theme.ThemeManager.ThemeOption;
@@ -384,12 +384,12 @@ class PreferencesDialogFunctionalTest {
     ThemeAccentSettingsBus accentSettingsBus = mock(ThemeAccentSettingsBus.class);
     when(accentSettingsBus.get())
         .thenReturn(
-            new ThemeAccentSettings(
+            ThemeAppearanceSettingsTestFixtures.accent(
                 cafe.woden.ircclient.config.UiProperties.DEFAULT_ACCENT_COLOR,
                 cafe.woden.ircclient.config.UiProperties.DEFAULT_ACCENT_STRENGTH));
     ThemeTweakSettingsBus tweakSettingsBus = mock(ThemeTweakSettingsBus.class);
     when(tweakSettingsBus.get())
-        .thenReturn(new ThemeTweakSettings(ThemeTweakSettings.ThemeDensity.AUTO, 10));
+        .thenReturn(ThemeAppearanceSettingsTestFixtures.tweakDefaults());
     ChatThemeSettingsBus chatThemeSettingsBus = mock(ChatThemeSettingsBus.class);
     when(chatThemeSettingsBus.get()).thenReturn(chatTheme);
 

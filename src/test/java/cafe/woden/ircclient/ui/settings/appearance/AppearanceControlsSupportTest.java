@@ -12,6 +12,7 @@ import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettings;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsTestFixtures;
 import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettings;
+import cafe.woden.ircclient.ui.settings.theme.ThemeAppearanceSettingsTestFixtures;
 import cafe.woden.ircclient.ui.settings.theme.ThemeTweakSettings;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -154,9 +155,15 @@ class AppearanceControlsSupportTest {
   @Test
   void rememberSettingsPersistsAppearanceValues() {
     RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
-    ThemeAccentSettings accentSettings = new ThemeAccentSettings("#AABBCC", 80);
+    var accentSettings = ThemeAppearanceSettingsTestFixtures.accent("#AABBCC", 80);
     ThemeTweakSettings tweakSettings =
-        new ThemeTweakSettings(ThemeTweakSettings.ThemeDensity.COMPACT, 4, true, "Dialog", 14);
+        ThemeAppearanceSettingsTestFixtures.tweakBuilder()
+            .density(ThemeTweakSettings.ThemeDensity.COMPACT)
+            .cornerRadius(4)
+            .uiFontOverrideEnabled(true)
+            .uiFontFamily("Dialog")
+            .uiFontSize(14)
+            .build();
     ChatThemeSettings chatThemeSettings =
         ChatThemeSettingsTestFixtures.builder()
             .preset(ChatThemeSettings.Preset.ACCENTED)

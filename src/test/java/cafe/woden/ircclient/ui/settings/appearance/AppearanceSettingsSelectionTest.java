@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettings;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsTestFixtures;
-import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettings;
+import cafe.woden.ircclient.ui.settings.theme.ThemeAppearanceSettingsTestFixtures;
 import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ThemeTweakSettings;
 import cafe.woden.ircclient.ui.settings.theme.ThemeTweakSettingsBus;
@@ -30,9 +30,11 @@ class AppearanceSettingsSelectionTest {
     ThemeAccentSettingsBus accentBus = mock(ThemeAccentSettingsBus.class);
     ThemeTweakSettingsBus tweakBus = mock(ThemeTweakSettingsBus.class);
     ChatThemeSettingsBus chatThemeBus = mock(ChatThemeSettingsBus.class);
-    when(accentBus.get()).thenReturn(new ThemeAccentSettings(null, 50));
+    when(accentBus.get())
+        .thenReturn(ThemeAppearanceSettingsTestFixtures.accentBuilder().strength(50).build());
     when(tweakBus.get())
-        .thenReturn(new ThemeTweakSettings(ThemeTweakSettings.ThemeDensity.AUTO, 10));
+        .thenReturn(
+            ThemeAppearanceSettingsTestFixtures.tweak(ThemeTweakSettings.ThemeDensity.AUTO, 10));
     when(chatThemeBus.get()).thenReturn(defaultChatTheme());
 
     AppearanceSettingsSelection selection =

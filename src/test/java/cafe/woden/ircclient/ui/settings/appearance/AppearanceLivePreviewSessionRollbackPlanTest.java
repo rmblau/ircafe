@@ -8,6 +8,7 @@ import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettings;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsTestFixtures;
 import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettings;
+import cafe.woden.ircclient.ui.settings.theme.ThemeAppearanceSettingsTestFixtures;
 import cafe.woden.ircclient.ui.settings.theme.ThemeTweakSettings;
 import org.junit.jupiter.api.Test;
 
@@ -16,14 +17,13 @@ class AppearanceLivePreviewSessionRollbackPlanTest {
   @Test
   void noChangesProducesNoRollbackWork() {
     UiSettings ui = mock(UiSettings.class);
-    ThemeAccentSettings accent = new ThemeAccentSettings("#336699", 42);
+    ThemeAccentSettings accent = ThemeAppearanceSettingsTestFixtures.accent("#336699", 42);
     ThemeTweakSettings tweaks =
-        new ThemeTweakSettings(
-            ThemeTweakSettings.ThemeDensity.COZY,
-            8,
-            true,
-            ThemeTweakSettings.DEFAULT_UI_FONT_FAMILY,
-            13);
+        ThemeAppearanceSettingsTestFixtures.tweakBuilder()
+            .density(ThemeTweakSettings.ThemeDensity.COZY)
+            .cornerRadius(8)
+            .uiFontOverrideEnabled(true)
+            .build();
     ChatThemeSettings chat =
         ChatThemeSettingsTestFixtures.defaults();
 
@@ -42,22 +42,16 @@ class AppearanceLivePreviewSessionRollbackPlanTest {
   void themeChangePrefersThemeApplyOverAppearanceOrChatRefresh() {
     UiSettings committedUi = mock(UiSettings.class);
     UiSettings liveUi = mock(UiSettings.class);
-    ThemeAccentSettings committedAccent = new ThemeAccentSettings("#336699", 42);
-    ThemeAccentSettings liveAccent = new ThemeAccentSettings("#6699CC", 65);
-    ThemeTweakSettings committedTweaks =
-        new ThemeTweakSettings(
-            ThemeTweakSettings.ThemeDensity.AUTO,
-            10,
-            false,
-            ThemeTweakSettings.DEFAULT_UI_FONT_FAMILY,
-            13);
+    ThemeAccentSettings committedAccent = ThemeAppearanceSettingsTestFixtures.accent("#336699", 42);
+    ThemeAccentSettings liveAccent = ThemeAppearanceSettingsTestFixtures.accent("#6699CC", 65);
+    ThemeTweakSettings committedTweaks = ThemeAppearanceSettingsTestFixtures.tweakDefaults();
     ThemeTweakSettings liveTweaks =
-        new ThemeTweakSettings(
-            ThemeTweakSettings.ThemeDensity.SPACIOUS,
-            14,
-            true,
-            ThemeTweakSettings.DEFAULT_UI_FONT_FAMILY,
-            16);
+        ThemeAppearanceSettingsTestFixtures.tweakBuilder()
+            .density(ThemeTweakSettings.ThemeDensity.SPACIOUS)
+            .cornerRadius(14)
+            .uiFontOverrideEnabled(true)
+            .uiFontSize(16)
+            .build();
     ChatThemeSettings committedChat =
         ChatThemeSettingsTestFixtures.defaults();
     ChatThemeSettings liveChat =
@@ -90,15 +84,9 @@ class AppearanceLivePreviewSessionRollbackPlanTest {
   @Test
   void accentOrTweakChangesRequestAppearanceApply() {
     UiSettings ui = mock(UiSettings.class);
-    ThemeAccentSettings committedAccent = new ThemeAccentSettings("#336699", 42);
-    ThemeAccentSettings liveAccent = new ThemeAccentSettings("#336699", 60);
-    ThemeTweakSettings tweaks =
-        new ThemeTweakSettings(
-            ThemeTweakSettings.ThemeDensity.AUTO,
-            10,
-            false,
-            ThemeTweakSettings.DEFAULT_UI_FONT_FAMILY,
-            13);
+    ThemeAccentSettings committedAccent = ThemeAppearanceSettingsTestFixtures.accent("#336699", 42);
+    ThemeAccentSettings liveAccent = ThemeAppearanceSettingsTestFixtures.accent("#336699", 60);
+    ThemeTweakSettings tweaks = ThemeAppearanceSettingsTestFixtures.tweakDefaults();
     ChatThemeSettings chat =
         ChatThemeSettingsTestFixtures.defaults();
 
@@ -127,14 +115,8 @@ class AppearanceLivePreviewSessionRollbackPlanTest {
   @Test
   void chatThemeOnlyChangesRequestChatRefresh() {
     UiSettings ui = mock(UiSettings.class);
-    ThemeAccentSettings accent = new ThemeAccentSettings("#336699", 42);
-    ThemeTweakSettings tweaks =
-        new ThemeTweakSettings(
-            ThemeTweakSettings.ThemeDensity.AUTO,
-            10,
-            false,
-            ThemeTweakSettings.DEFAULT_UI_FONT_FAMILY,
-            13);
+    ThemeAccentSettings accent = ThemeAppearanceSettingsTestFixtures.accent("#336699", 42);
+    ThemeTweakSettings tweaks = ThemeAppearanceSettingsTestFixtures.tweakDefaults();
     ChatThemeSettings committedChat =
         ChatThemeSettingsTestFixtures.defaults();
     ChatThemeSettings liveChat =
@@ -165,15 +147,9 @@ class AppearanceLivePreviewSessionRollbackPlanTest {
   @Test
   void busAvailabilityGuardsRestoreWork() {
     UiSettings ui = mock(UiSettings.class);
-    ThemeAccentSettings committedAccent = new ThemeAccentSettings("#336699", 42);
-    ThemeAccentSettings liveAccent = new ThemeAccentSettings("#336699", 60);
-    ThemeTweakSettings tweaks =
-        new ThemeTweakSettings(
-            ThemeTweakSettings.ThemeDensity.AUTO,
-            10,
-            false,
-            ThemeTweakSettings.DEFAULT_UI_FONT_FAMILY,
-            13);
+    ThemeAccentSettings committedAccent = ThemeAppearanceSettingsTestFixtures.accent("#336699", 42);
+    ThemeAccentSettings liveAccent = ThemeAppearanceSettingsTestFixtures.accent("#336699", 60);
+    ThemeTweakSettings tweaks = ThemeAppearanceSettingsTestFixtures.tweakDefaults();
     ChatThemeSettings chat =
         ChatThemeSettingsTestFixtures.defaults();
 

@@ -77,9 +77,10 @@ class ThemeManagerIntegrationTest {
     List<String> steps = new CopyOnWriteArrayList<>();
     Map<String, Boolean> onEdtByStep = new ConcurrentHashMap<>();
 
-    Mockito.when(accentBus.get()).thenReturn(new ThemeAccentSettings("#4C88D0", 70));
+    Mockito.when(accentBus.get())
+        .thenReturn(ThemeAppearanceSettingsTestFixtures.accent("#4C88D0", 70));
     Mockito.when(tweakBus.get())
-        .thenReturn(new ThemeTweakSettings(ThemeTweakSettings.ThemeDensity.AUTO, 10));
+        .thenReturn(ThemeAppearanceSettingsTestFixtures.tweakDefaults());
 
     Mockito.doAnswer(
             invocation -> {
