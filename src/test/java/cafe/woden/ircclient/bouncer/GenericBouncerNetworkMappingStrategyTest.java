@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -111,8 +112,7 @@ class GenericBouncerNetworkMappingStrategyTest {
   }
 
   private RuntimeConfigStore runtimeConfig() {
-    return new RuntimeConfigStore(
-        tempDir.resolve("ircafe.yml").toString(), new IrcProperties(null, List.of()));
+    return RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
   }
 
   private static GenericBouncerNetworkMappingStrategy strategy(RuntimeConfigStore runtimeConfig) {

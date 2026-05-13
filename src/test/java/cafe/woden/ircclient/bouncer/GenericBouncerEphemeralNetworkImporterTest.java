@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.config.EphemeralServerRegistry;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.config.ServerRegistry;
 import io.reactivex.rxjava3.core.Completable;
 import java.nio.file.Path;
@@ -42,7 +43,7 @@ class GenericBouncerEphemeralNetworkImporterTest {
 
     IrcProperties props = new IrcProperties(null, List.of(bouncer));
     RuntimeConfigStore runtime =
-        new RuntimeConfigStore(tempDir.resolve("ircafe.yml").toString(), props);
+        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"), props);
     runtime.rememberGenericBouncerAutoConnectNetwork("bouncer-1", "Libera", true);
 
     ServerRegistry configured = new ServerRegistry(props, runtime);
