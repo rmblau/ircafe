@@ -7,11 +7,9 @@ import cafe.woden.ircclient.irc.roster.UserListStore;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
 import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
-import cafe.woden.ircclient.ui.settings.MemoryUsageDisplayMode;
-import cafe.woden.ircclient.ui.settings.NotificationBackendMode;
 import cafe.woden.ircclient.ui.settings.UiSettings;
+import cafe.woden.ircclient.ui.settings.UiSettingsTestFixtures;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
-import java.util.List;
 
 /** Test factory helpers for {@link ChatTranscriptStore}. */
 public final class ChatTranscriptStoreTestFactory {
@@ -68,88 +66,9 @@ public final class ChatTranscriptStoreTestFactory {
 
   public static UiSettings settingsWithTranscriptCap(
       int maxLines, boolean outgoingDeliveryIndicatorsEnabled) {
-    return new UiSettings(
-        "darcula",
-        "Monospaced",
-        12,
-        true,
-        true,
-        false,
-        false,
-        false,
-        true,
-        true,
-        false,
-        true,
-        false,
-        false,
-        true,
-        NotificationBackendMode.AUTO,
-        true,
-        false,
-        0,
-        0,
-        true,
-        true,
-        false,
-        true,
-        true,
-        true,
-        true,
-        "dots",
-        true,
-        true,
-        true,
-        true,
-        true,
-        "HH:mm:ss",
-        true,
-        true,
-        100,
-        200,
-        2000,
-        20,
-        10,
-        6,
-        false,
-        6,
-        18,
-        360,
-        500,
-        maxLines,
-        true,
-        "#6AA2FF",
-        outgoingDeliveryIndicatorsEnabled,
-        true,
-        true,
-        7,
-        6,
-        30,
-        5,
-        false,
-        15,
-        3,
-        60,
-        5,
-        false,
-        45,
-        120,
-        false,
-        300,
-        2,
-        30,
-        15,
-        MemoryUsageDisplayMode.LONG,
-        1000,
-        5,
-        true,
-        false,
-        false,
-        false,
-        List.of(),
-        null,
-        null,
-        false,
-        "compact");
+    return UiSettingsTestFixtures.builder()
+        .chatTranscriptMaxLinesPerTarget(maxLines)
+        .outgoingDeliveryIndicatorsEnabled(outgoingDeliveryIndicatorsEnabled)
+        .build();
   }
 }
