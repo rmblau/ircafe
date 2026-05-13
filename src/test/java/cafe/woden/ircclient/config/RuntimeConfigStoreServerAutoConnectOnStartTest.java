@@ -19,8 +19,7 @@ class RuntimeConfigStoreServerAutoConnectOnStartTest {
   void serverAutoConnectOnStartRoundTripsAndDefaultEntriesAreRemoved() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
     RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            cfg.toString(), new IrcProperties(null, List.of(server("libera"), server("oftc"))));
+        RuntimeConfigStoreTestFixtures.storeWithServers(cfg, server("libera"), server("oftc"));
 
     assertEquals(Map.of(), store.readServerAutoConnectOnStartByServer());
     assertTrue(store.readServerAutoConnectOnStart("libera", true));
@@ -53,7 +52,7 @@ class RuntimeConfigStoreServerAutoConnectOnStartTest {
             + "      oftc: definitely-not-bool\n");
 
     RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of(server("libera"))));
+        RuntimeConfigStoreTestFixtures.storeWithServers(cfg, server("libera"));
 
     assertEquals(Map.of("libera", false), store.readServerAutoConnectOnStartByServer());
     assertFalse(store.readServerAutoConnectOnStart("libera", true));

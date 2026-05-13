@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -56,7 +55,6 @@ class RuntimeConfigStoreUiBooleanReadsTest {
   }
 
   private RuntimeConfigStore newStore() {
-    return new RuntimeConfigStore(
-        tempDir.resolve("ircafe.yml").toString(), new IrcProperties(null, List.of()));
+    return RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
   }
 }

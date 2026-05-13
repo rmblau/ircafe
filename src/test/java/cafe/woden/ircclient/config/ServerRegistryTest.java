@@ -131,8 +131,7 @@ class ServerRegistryTest {
                 - "#support"
         """);
 
-    RuntimeConfigStore runtimeConfig =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore runtimeConfig = RuntimeConfigStoreTestFixtures.store(cfg);
     IrcProperties.Server mergedServer =
         server("libera", "irc.libera.chat", List.of("#app-default", "#runtime", "#support"));
 
@@ -154,8 +153,7 @@ class ServerRegistryTest {
               nick: "runtimeNick"
         """);
 
-    RuntimeConfigStore runtimeConfig =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore runtimeConfig = RuntimeConfigStoreTestFixtures.store(cfg);
     IrcProperties.Server boundServer =
         server("libera", "irc.libera.chat", List.of("#app-default", "#still-app"));
 
