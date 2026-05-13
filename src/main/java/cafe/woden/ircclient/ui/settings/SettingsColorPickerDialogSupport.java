@@ -3,7 +3,6 @@ package cafe.woden.ircclient.ui.settings;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Window;
 import java.util.ArrayDeque;
@@ -19,20 +18,19 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import net.miginfocom.swing.MigLayout;
 
-final class SettingsColorPickerDialogSupport {
+public final class SettingsColorPickerDialogSupport {
   private static final int MAX_RECENT_COLORS = 12;
   private static final Deque<String> RECENT_COLOR_HEX = new ArrayDeque<>();
 
   private SettingsColorPickerDialogSupport() {}
 
-  static Color showColorPickerDialog(
+  public static Color showColorPickerDialog(
       Window owner, String title, Color initial, Color previewBackground) {
     Color bg =
         previewBackground != null
@@ -125,7 +123,7 @@ final class SettingsColorPickerDialogSupport {
           recent.removeAll();
           List<String> rec = snapshotRecentColorHex();
           if (rec.isEmpty()) {
-            recent.add(helpText("No recent colors yet."), "span 8");
+            recent.add(PreferencesUiSupport.helpText("No recent colors yet."), "span 8");
           } else {
             for (String hx : rec) {
               Color c = SettingsColorSupport.parseHexColorLenient(hx);
@@ -249,21 +247,6 @@ final class SettingsColorPickerDialogSupport {
           if (onPick != null) onPick.accept(c);
         });
     return b;
-  }
-
-  private static JTextArea helpText(String text) {
-    JTextArea t = new JTextArea(text);
-    t.setEditable(false);
-    t.setLineWrap(true);
-    t.setWrapStyleWord(true);
-    t.setOpaque(false);
-    t.setFocusable(false);
-    t.setBorder(null);
-    t.setFont(UIManager.getFont("Label.font"));
-    t.setForeground(UIManager.getColor("Label.foreground"));
-    Dimension pref = t.getPreferredSize();
-    t.setMinimumSize(new Dimension(0, pref != null ? pref.height : 0));
-    return t;
   }
 
   private static final class DocChangeListener implements DocumentListener {
