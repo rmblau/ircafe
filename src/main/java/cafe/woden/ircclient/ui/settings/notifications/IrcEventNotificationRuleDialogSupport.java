@@ -124,23 +124,23 @@ public final class IrcEventNotificationRuleDialogSupport {
 
     NotificationSoundControlsSupport.Controls soundControls =
         NotificationSoundControlsSupport.buildControls(
-            new NotificationSoundControlsSupport.Request(
-                "Play sound",
-                base.soundEnabled(),
-                "Use custom file",
-                base.soundUseCustom(),
-                base.soundId(),
-                base.soundCustomPath(),
-                "Browse...",
-                "Clear",
-                "Test",
-                NotificationSoundControlsSupport.ButtonStyle.ICON_ONLY,
-                owner,
-                notificationSoundService,
-                soundFileImporter,
-                () -> true,
-                true,
-                true));
+            NotificationSoundControlsSupport.Request.builder()
+                .enabledLabel("Play sound")
+                .enabledSelected(base.soundEnabled())
+                .useCustomLabel("Use custom file")
+                .useCustomSelected(base.soundUseCustom())
+                .soundId(base.soundId())
+                .customPath(base.soundCustomPath())
+                .browseButtonText("Browse...")
+                .clearButtonText("Clear")
+                .testButtonText("Test")
+                .buttonStyle(NotificationSoundControlsSupport.ButtonStyle.ICON_ONLY)
+                .owner(owner)
+                .notificationSoundService(notificationSoundService)
+                .soundFileImporter(soundFileImporter)
+                .customPathEditableWhenEnabled(true)
+                .customFileControlsRequireUseCustom(true)
+                .build());
     JCheckBox soundEnabled = soundControls.enabled();
     JComboBox<BuiltInSound> builtInSound = soundControls.builtInSound();
     JCheckBox soundUseCustom = soundControls.useCustom();
