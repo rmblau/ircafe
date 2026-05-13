@@ -15,6 +15,7 @@ import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import cafe.woden.ircclient.ui.settings.UiSettingsTestFixtures;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettings;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsBus;
+import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsTestFixtures;
 import java.awt.Color;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -187,17 +188,13 @@ class ChatTranscriptStoreContrastTest {
       String actionColor,
       String errorColor,
       String presenceColor) {
-    return new ChatThemeSettings(
-        ChatThemeSettings.Preset.DEFAULT,
-        null,
-        null,
-        null,
-        35,
-        messageColor,
-        noticeColor,
-        actionColor,
-        errorColor,
-        presenceColor);
+    return ChatThemeSettingsTestFixtures.builder()
+        .messageColor(messageColor)
+        .noticeColor(noticeColor)
+        .actionColor(actionColor)
+        .errorColor(errorColor)
+        .presenceColor(presenceColor)
+        .build();
   }
 
   private static UiSettings outgoingSettings(boolean enabled, String color) {

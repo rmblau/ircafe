@@ -57,6 +57,7 @@ import cafe.woden.ircclient.ui.settings.notifications.NotificationsPanelSupport;
 import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettings;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsBus;
+import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsTestFixtures;
 import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettings;
 import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ThemeManager;
@@ -98,18 +99,7 @@ class PreferencesDialogFunctionalTest {
   @Test
   void appearancePanelIncludesMessageColorsSubTabAndExpectedRows() throws Exception {
     AppearanceFixture fixture =
-        buildAppearanceFixture(
-            new ChatThemeSettings(
-                ChatThemeSettings.Preset.DEFAULT,
-                null,
-                null,
-                null,
-                35,
-                null,
-                null,
-                null,
-                null,
-                null));
+        buildAppearanceFixture(ChatThemeSettingsTestFixtures.defaults());
 
     assertNotNull(findLabel(fixture.appearancePanel, "Message colors"));
     assertNotNull(findLabel(fixture.appearancePanel, "Server/system"));
@@ -124,17 +114,18 @@ class PreferencesDialogFunctionalTest {
   void resetToDefaultsClearsMessageColorOverrides() throws Exception {
     AppearanceFixture fixture =
         buildAppearanceFixture(
-            new ChatThemeSettings(
-                ChatThemeSettings.Preset.ACCENTED,
-                "#111111",
-                "#222222",
-                "#333333",
-                60,
-                "#444444",
-                "#555555",
-                "#666666",
-                "#777777",
-                "#888888"));
+            ChatThemeSettingsTestFixtures.builder()
+                .preset(ChatThemeSettings.Preset.ACCENTED)
+                .timestampColor("#111111")
+                .systemColor("#222222")
+                .mentionBgColor("#333333")
+                .mentionStrength(60)
+                .messageColor("#444444")
+                .noticeColor("#555555")
+                .actionColor("#666666")
+                .errorColor("#777777")
+                .presenceColor("#888888")
+                .build());
 
     JButton reset = findButton(fixture.appearancePanel, "Reset to defaults");
     assertNotNull(reset, "appearance panel should expose reset action");

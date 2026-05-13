@@ -1,0 +1,281 @@
+package cafe.woden.ircclient.ui.settings.appearance;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
+import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettings;
+import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsTestFixtures;
+import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettings;
+import cafe.woden.ircclient.ui.settings.theme.ThemeTweakSettings;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.JSpinner;
+import javax.swing.JTextField;
+import javax.swing.SpinnerNumberModel;
+import org.junit.jupiter.api.Test;
+
+class AppearanceControlsSupportTest {
+
+  @Test
+  void readTweakSettingsNormalizesFontFamilyAndValues() {
+    TweakControls controls = tweakControls("spacious", 15, true, "  ", 99);
+
+    ThemeTweakSettings settings = AppearanceControlsSupport.readTweakSettings(controls);
+
+    assertEquals(ThemeTweakSettings.ThemeDensity.SPACIOUS, settings.density());
+    assertEquals(15, settings.cornerRadius());
+    assertTrue(settings.uiFontOverrideEnabled());
+    assertEquals(ThemeTweakSettings.DEFAULT_UI_FONT_FAMILY, settings.uiFontFamily());
+    assertEquals(48, settings.uiFontSize());
+  }
+
+  @Test
+  void readAccentSettingsNormalizesEnabledAccentColor() throws Exception {
+    AccentControls controls = accentControls(true, "abc", 75);
+
+    ThemeAccentSettings settings = AppearanceControlsSupport.readAccentSettings(controls);
+
+    assertEquals("#AABBCC", settings.accentColor());
+    assertEquals(75, settings.strength());
+  }
+
+  @Test
+  void readAccentSettingsIgnoresInvalidColorWhenDisabled() throws Exception {
+    AccentControls controls = accentControls(false, "not-a-color", 25);
+
+    ThemeAccentSettings settings = AppearanceControlsSupport.readAccentSettings(controls);
+
+    assertFalse(settings.enabled());
+    assertEquals(25, settings.strength());
+  }
+
+  @Test
+  void readAccentSettingsReportsInvalidEnabledColorWithDialogTitle() {
+    AccentControls controls = accentControls(true, "not-a-color", 25);
+
+    AppearanceControlsSupport.AppearanceSettingsException ex =
+        assertThrows(
+            AppearanceControlsSupport.AppearanceSettingsException.class,
+            () -> AppearanceControlsSupport.readAccentSettings(controls));
+
+    assertEquals("Invalid accent color", ex.title());
+    assertEquals("Accent color must be a hex value like #RRGGBB.", ex.getMessage());
+  }
+
+  @Test
+  void readChatThemeSettingsNormalizesOptionalColors() throws Exception {
+    ChatThemeControls controls =
+        chatThemeControls(
+            ChatThemeSettings.Preset.SOFT,
+            "abc",
+            "",
+            "0x102030",
+            42,
+            "#445566",
+            "778899",
+            "aabbcc",
+            "ddeeff",
+            " ");
+
+    ChatThemeSettings settings = AppearanceControlsSupport.readChatThemeSettings(controls);
+
+    assertEquals(ChatThemeSettings.Preset.SOFT, settings.preset());
+    assertEquals("#AABBCC", settings.timestampColor());
+    assertNull(settings.systemColor());
+    assertEquals("#102030", settings.mentionBgColor());
+    assertEquals(42, settings.mentionStrength());
+    assertEquals("#445566", settings.messageColor());
+    assertEquals("#778899", settings.noticeColor());
+    assertEquals("#AABBCC", settings.actionColor());
+    assertEquals("#DDEEFF", settings.errorColor());
+    assertNull(settings.presenceColor());
+  }
+
+  @Test
+  void readChatThemeSettingsReportsInvalidColorWithDialogTitle() {
+    ChatThemeControls controls =
+        chatThemeControls(
+            ChatThemeSettings.Preset.DEFAULT, "not-a-color", "", "", 35, "", "", "", "", "");
+
+    AppearanceControlsSupport.AppearanceSettingsException ex =
+        assertThrows(
+            AppearanceControlsSupport.AppearanceSettingsException.class,
+            () -> AppearanceControlsSupport.readChatThemeSettings(controls));
+
+    assertEquals("Invalid chat message color", ex.title());
+    assertTrue(ex.getMessage().contains("Chat timestamp color"));
+  }
+
+  @Test
+  void readServerTreeSettingsNormalizesOptionalColors() throws Exception {
+    AppearanceServerTreeControls controls = serverTreeControls(" abc ", "0x102030", true);
+
+    AppearanceControlsSupport.ServerTreeAppearanceSettings settings =
+        AppearanceControlsSupport.readServerTreeSettings(controls);
+
+    assertEquals("#AABBCC", settings.unreadChannelColor());
+    assertEquals("#102030", settings.highlightChannelColor());
+    assertTrue(settings.preserveDockLayoutBetweenSessions());
+  }
+
+  @Test
+  void readServerTreeSettingsKeepsBlankColorsAsNull() throws Exception {
+    AppearanceServerTreeControls controls = serverTreeControls(" ", "", false);
+
+    AppearanceControlsSupport.ServerTreeAppearanceSettings settings =
+        AppearanceControlsSupport.readServerTreeSettings(controls);
+
+    assertNull(settings.unreadChannelColor());
+    assertNull(settings.highlightChannelColor());
+  }
+
+  @Test
+  void readServerTreeSettingsReportsInvalidColorWithDialogTitle() {
+    AppearanceServerTreeControls controls = serverTreeControls("not-a-color", "", false);
+
+    AppearanceControlsSupport.AppearanceSettingsException ex =
+        assertThrows(
+            AppearanceControlsSupport.AppearanceSettingsException.class,
+            () -> AppearanceControlsSupport.readServerTreeSettings(controls));
+
+    assertEquals("Invalid server tree color", ex.title());
+    assertTrue(ex.getMessage().contains("Unread channel color"));
+  }
+
+  @Test
+  void rememberSettingsPersistsAppearanceValues() {
+    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    ThemeAccentSettings accentSettings = new ThemeAccentSettings("#AABBCC", 80);
+    ThemeTweakSettings tweakSettings =
+        new ThemeTweakSettings(ThemeTweakSettings.ThemeDensity.COMPACT, 4, true, "Dialog", 14);
+    ChatThemeSettings chatThemeSettings =
+        ChatThemeSettingsTestFixtures.builder()
+            .preset(ChatThemeSettings.Preset.ACCENTED)
+            .timestampColor("#111111")
+            .systemColor("#222222")
+            .mentionBgColor("#333333")
+            .mentionStrength(55)
+            .messageColor("#444444")
+            .noticeColor("#555555")
+            .actionColor("#666666")
+            .errorColor("#777777")
+            .presenceColor("#888888")
+            .build();
+    AppearanceControlsSupport.ServerTreeAppearanceSettings settings =
+        new AppearanceControlsSupport.ServerTreeAppearanceSettings("#112233", "#445566", true);
+
+    AppearanceControlsSupport.rememberAccentSettings(runtimeConfig, accentSettings);
+    AppearanceControlsSupport.rememberTweakSettings(runtimeConfig, tweakSettings);
+    AppearanceControlsSupport.rememberChatThemeSettings(runtimeConfig, chatThemeSettings);
+    AppearanceControlsSupport.rememberServerTreeSettings(runtimeConfig, settings);
+
+    verify(runtimeConfig).rememberAccentColor("#AABBCC");
+    verify(runtimeConfig).rememberAccentStrength(80);
+    verify(runtimeConfig).rememberUiDensity("compact");
+    verify(runtimeConfig).rememberCornerRadius(4);
+    verify(runtimeConfig).rememberUiFontOverrideEnabled(true);
+    verify(runtimeConfig).rememberUiFontFamily("Dialog");
+    verify(runtimeConfig).rememberUiFontSize(14);
+    verify(runtimeConfig).rememberChatThemePreset("ACCENTED");
+    verify(runtimeConfig).rememberChatTimestampColor("#111111");
+    verify(runtimeConfig).rememberChatSystemColor("#222222");
+    verify(runtimeConfig).rememberChatMessageColor("#444444");
+    verify(runtimeConfig).rememberChatNoticeColor("#555555");
+    verify(runtimeConfig).rememberChatActionColor("#666666");
+    verify(runtimeConfig).rememberChatErrorColor("#777777");
+    verify(runtimeConfig).rememberChatPresenceColor("#888888");
+    verify(runtimeConfig).rememberChatMentionBgColor("#333333");
+    verify(runtimeConfig).rememberChatMentionStrength(55);
+    verify(runtimeConfig).rememberServerTreeUnreadChannelColor("#112233");
+    verify(runtimeConfig).rememberServerTreeHighlightChannelColor("#445566");
+    verify(runtimeConfig).rememberPreserveDockLayout(true);
+  }
+
+  private static TweakControls tweakControls(
+      String densityId,
+      int cornerRadius,
+      boolean uiFontOverrideEnabled,
+      String uiFontFamily,
+      int uiFontSize) {
+    JComboBox<DensityOption> density =
+        new JComboBox<>(new DensityOption[] {new DensityOption(densityId, densityId)});
+    density.setSelectedIndex(0);
+    JCheckBox uiFontOverride = new JCheckBox();
+    uiFontOverride.setSelected(uiFontOverrideEnabled);
+    JComboBox<String> fontFamily = new JComboBox<>(new String[] {uiFontFamily});
+    fontFamily.setSelectedItem(uiFontFamily);
+    return new TweakControls(
+        density,
+        new JSlider(0, 20, cornerRadius),
+        uiFontOverride,
+        fontFamily,
+        new JSpinner(new SpinnerNumberModel(uiFontSize, -100, 100, 1)),
+        () -> {});
+  }
+
+  private static AccentControls accentControls(boolean enabled, String hex, int strength) {
+    JCheckBox enabledBox = new JCheckBox();
+    enabledBox.setSelected(enabled);
+    return new AccentControls(
+        enabledBox,
+        new JComboBox<>(AccentPreset.values()),
+        new JTextField(hex),
+        new JButton(),
+        new JButton(),
+        new JSlider(0, 100, strength),
+        new JPanel(),
+        new JPanel(),
+        () -> {},
+        () -> {},
+        () -> {});
+  }
+
+  private static ChatThemeControls chatThemeControls(
+      ChatThemeSettings.Preset preset,
+      String timestampColor,
+      String systemColor,
+      String mentionColor,
+      int mentionStrength,
+      String messageColor,
+      String noticeColor,
+      String actionColor,
+      String errorColor,
+      String presenceColor) {
+    JComboBox<ChatThemeSettings.Preset> presetCombo =
+        new JComboBox<>(ChatThemeSettings.Preset.values());
+    presetCombo.setSelectedItem(preset);
+    return new ChatThemeControls(
+        presetCombo,
+        colorField(timestampColor),
+        colorField(systemColor),
+        colorField(mentionColor),
+        colorField(messageColor),
+        colorField(noticeColor),
+        colorField(actionColor),
+        colorField(errorColor),
+        colorField(presenceColor),
+        new JSlider(0, 100, mentionStrength));
+  }
+
+  private static AppearanceServerTreeControls serverTreeControls(
+      String unreadColor, String highlightColor, boolean preserveLayout) {
+    JCheckBox preserve = new JCheckBox();
+    preserve.setSelected(preserveLayout);
+    return new AppearanceServerTreeControls(
+        colorField(unreadColor), colorField(highlightColor), preserve);
+  }
+
+  private static ColorField colorField(String hex) {
+    return new ColorField(
+        new JTextField(hex), new JButton(), new JButton(), new JPanel(), () -> {});
+  }
+}

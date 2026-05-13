@@ -5,8 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
-import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettings;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsBus;
+import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsTestFixtures;
 import java.awt.Color;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -45,17 +46,11 @@ class ChatTranscriptMessageColorsFunctionalTest {
       Color baseError = fgAt(doc, errorPos);
 
       bus.set(
-          new ChatThemeSettings(
-              ChatThemeSettings.Preset.DEFAULT,
-              null,
-              "#223344",
-              null,
-              35,
-              "#112233",
-              null,
-              null,
-              "#556677",
-              null));
+          ChatThemeSettingsTestFixtures.builder()
+              .systemColor("#223344")
+              .messageColor("#112233")
+              .errorColor("#556677")
+              .build());
       styles.reload();
       store.restyleAllDocuments();
 
@@ -63,18 +58,7 @@ class ChatTranscriptMessageColorsFunctionalTest {
       assertEquals(new Color(0x22, 0x33, 0x44), fgAt(doc, statusPos));
       assertEquals(new Color(0x55, 0x66, 0x77), fgAt(doc, errorPos));
 
-      bus.set(
-          new ChatThemeSettings(
-              ChatThemeSettings.Preset.DEFAULT,
-              null,
-              null,
-              null,
-              35,
-              null,
-              null,
-              null,
-              null,
-              null));
+      bus.set(ChatThemeSettingsTestFixtures.defaults());
       styles.reload();
       store.restyleAllDocuments();
 

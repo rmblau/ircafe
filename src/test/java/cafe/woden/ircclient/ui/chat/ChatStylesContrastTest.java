@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettings;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsBus;
+import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsTestFixtures;
 import java.awt.Color;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -101,17 +101,14 @@ class ChatStylesContrastTest {
 
     ChatThemeSettingsBus bus = new ChatThemeSettingsBus(null);
     bus.set(
-        new ChatThemeSettings(
-            ChatThemeSettings.Preset.DEFAULT,
-            null,
-            "#223344",
-            null,
-            35,
-            "#112233",
-            "#334455",
-            "#445566",
-            "#556677",
-            "#667788"));
+        ChatThemeSettingsTestFixtures.builder()
+            .systemColor("#223344")
+            .messageColor("#112233")
+            .noticeColor("#334455")
+            .actionColor("#445566")
+            .errorColor("#556677")
+            .presenceColor("#667788")
+            .build());
 
     ChatStyles styles = new ChatStyles(bus);
 
