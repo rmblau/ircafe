@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.config;
 
+import static cafe.woden.ircclient.notifications.IrcEventNotificationRuleTestFixtures.rule;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
@@ -21,29 +23,30 @@ class RuntimeConfigStoreIrcEventNotificationRulesTest {
 
     store.rememberIrcEventNotificationRules(
         List.of(
-            new IrcEventNotificationRule(
-                true,
-                IrcEventNotificationRule.EventType.CTCP_RECEIVED,
-                IrcEventNotificationRule.SourceMode.OTHERS,
-                null,
-                IrcEventNotificationRule.ChannelScope.ONLY,
-                "#general",
-                true,
-                IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY,
-                true,
-                true,
-                true,
-                "NOTIF_3",
-                false,
-                null,
-                true,
-                "/tmp/ircafe-event-hook.sh",
-                "--flag \"value with spaces\"",
-                "/tmp",
-                IrcEventNotificationRule.CtcpMatchMode.LIKE,
-                "VERSION",
-                IrcEventNotificationRule.CtcpMatchMode.GLOB,
-                "*hexchat*")));
+            rule()
+                .enabled(true)
+                .eventType(IrcEventNotificationRule.EventType.CTCP_RECEIVED)
+                .sourceMode(IrcEventNotificationRule.SourceMode.OTHERS)
+                .sourcePattern(null)
+                .channelScope(IrcEventNotificationRule.ChannelScope.ONLY)
+                .channelPatterns("#general")
+                .toastEnabled(true)
+                .focusScope(IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY)
+                .statusBarEnabled(true)
+                .notificationsNodeEnabled(true)
+                .soundEnabled(true)
+                .soundId("NOTIF_3")
+                .soundUseCustom(false)
+                .soundCustomPath(null)
+                .scriptEnabled(true)
+                .scriptPath("/tmp/ircafe-event-hook.sh")
+                .scriptArgs("--flag \"value with spaces\"")
+                .scriptWorkingDirectory("/tmp")
+                .ctcpCommandMode(IrcEventNotificationRule.CtcpMatchMode.LIKE)
+                .ctcpCommandPattern("VERSION")
+                .ctcpValueMode(IrcEventNotificationRule.CtcpMatchMode.GLOB)
+                .ctcpValuePattern("*hexchat*")
+                .build()));
 
     String yaml = Files.readString(cfg);
     assertTrue(yaml.contains("ircEventNotificationRules"));

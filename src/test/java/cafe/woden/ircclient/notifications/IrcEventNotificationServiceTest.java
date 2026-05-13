@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.notifications;
 
+import static cafe.woden.ircclient.notifications.IrcEventNotificationRuleTestFixtures.rule;
+
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -27,46 +29,48 @@ class IrcEventNotificationServiceTest {
     PushyNotificationPort pushy = null;
 
     IrcEventNotificationRule statusRule =
-        new IrcEventNotificationRule(
-            true,
-            IrcEventNotificationRule.EventType.KLINED,
-            IrcEventNotificationRule.SourceMode.ANY,
-            null,
-            IrcEventNotificationRule.ChannelScope.ALL,
-            null,
-            false,
-            IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY,
-            true,
-            true,
-            false,
-            "NOTIF_1",
-            false,
-            null,
-            false,
-            null,
-            null,
-            null);
+        rule()
+            .enabled(true)
+            .eventType(IrcEventNotificationRule.EventType.KLINED)
+            .sourceMode(IrcEventNotificationRule.SourceMode.ANY)
+            .sourcePattern(null)
+            .channelScope(IrcEventNotificationRule.ChannelScope.ALL)
+            .channelPatterns(null)
+            .toastEnabled(false)
+            .focusScope(IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY)
+            .statusBarEnabled(true)
+            .notificationsNodeEnabled(true)
+            .soundEnabled(false)
+            .soundId("NOTIF_1")
+            .soundUseCustom(false)
+            .soundCustomPath(null)
+            .scriptEnabled(false)
+            .scriptPath(null)
+            .scriptArgs(null)
+            .scriptWorkingDirectory(null)
+            .build();
 
     IrcEventNotificationRule soundRule =
-        new IrcEventNotificationRule(
-            true,
-            IrcEventNotificationRule.EventType.KLINED,
-            IrcEventNotificationRule.SourceMode.ANY,
-            null,
-            IrcEventNotificationRule.ChannelScope.ALL,
-            null,
-            false,
-            IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY,
-            false,
-            false,
-            true,
-            "NOTIF_3",
-            false,
-            null,
-            false,
-            null,
-            null,
-            null);
+        rule()
+            .enabled(true)
+            .eventType(IrcEventNotificationRule.EventType.KLINED)
+            .sourceMode(IrcEventNotificationRule.SourceMode.ANY)
+            .sourcePattern(null)
+            .channelScope(IrcEventNotificationRule.ChannelScope.ALL)
+            .channelPatterns(null)
+            .toastEnabled(false)
+            .focusScope(IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY)
+            .statusBarEnabled(false)
+            .notificationsNodeEnabled(false)
+            .soundEnabled(true)
+            .soundId("NOTIF_3")
+            .soundUseCustom(false)
+            .soundCustomPath(null)
+            .scriptEnabled(false)
+            .scriptPath(null)
+            .scriptArgs(null)
+            .scriptWorkingDirectory(null)
+            .build();
 
     when(rulesBus.get()).thenReturn(List.of(statusRule, soundRule));
     ExecutorService exec = Executors.newSingleThreadExecutor();
@@ -115,25 +119,26 @@ class IrcEventNotificationServiceTest {
     PushyNotificationPort pushy = null;
 
     IrcEventNotificationRule activeOnlyRule =
-        new IrcEventNotificationRule(
-            true,
-            IrcEventNotificationRule.EventType.TOPIC_CHANGED,
-            IrcEventNotificationRule.SourceMode.ANY,
-            null,
-            IrcEventNotificationRule.ChannelScope.ACTIVE_TARGET_ONLY,
-            null,
-            true,
-            IrcEventNotificationRule.FocusScope.ANY,
-            true,
-            true,
-            false,
-            "NOTIF_1",
-            false,
-            null,
-            false,
-            null,
-            null,
-            null);
+        rule()
+            .enabled(true)
+            .eventType(IrcEventNotificationRule.EventType.TOPIC_CHANGED)
+            .sourceMode(IrcEventNotificationRule.SourceMode.ANY)
+            .sourcePattern(null)
+            .channelScope(IrcEventNotificationRule.ChannelScope.ACTIVE_TARGET_ONLY)
+            .channelPatterns(null)
+            .toastEnabled(true)
+            .focusScope(IrcEventNotificationRule.FocusScope.ANY)
+            .statusBarEnabled(true)
+            .notificationsNodeEnabled(true)
+            .soundEnabled(false)
+            .soundId("NOTIF_1")
+            .soundUseCustom(false)
+            .soundCustomPath(null)
+            .scriptEnabled(false)
+            .scriptPath(null)
+            .scriptArgs(null)
+            .scriptWorkingDirectory(null)
+            .build();
     when(rulesBus.get()).thenReturn(List.of(activeOnlyRule));
 
     ExecutorService exec = Executors.newSingleThreadExecutor();
@@ -191,29 +196,30 @@ class IrcEventNotificationServiceTest {
     PushyNotificationPort pushy = null;
 
     IrcEventNotificationRule ctcpRule =
-        new IrcEventNotificationRule(
-            true,
-            IrcEventNotificationRule.EventType.CTCP_RECEIVED,
-            IrcEventNotificationRule.SourceMode.OTHERS,
-            null,
-            IrcEventNotificationRule.ChannelScope.ALL,
-            null,
-            true,
-            IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY,
-            true,
-            true,
-            false,
-            "SOMEBODY_SENT_CTCP_1",
-            false,
-            null,
-            false,
-            null,
-            null,
-            null,
-            IrcEventNotificationRule.CtcpMatchMode.LIKE,
-            "VERSION",
-            IrcEventNotificationRule.CtcpMatchMode.GLOB,
-            "*hexchat*");
+        rule()
+            .enabled(true)
+            .eventType(IrcEventNotificationRule.EventType.CTCP_RECEIVED)
+            .sourceMode(IrcEventNotificationRule.SourceMode.OTHERS)
+            .sourcePattern(null)
+            .channelScope(IrcEventNotificationRule.ChannelScope.ALL)
+            .channelPatterns(null)
+            .toastEnabled(true)
+            .focusScope(IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY)
+            .statusBarEnabled(true)
+            .notificationsNodeEnabled(true)
+            .soundEnabled(false)
+            .soundId("SOMEBODY_SENT_CTCP_1")
+            .soundUseCustom(false)
+            .soundCustomPath(null)
+            .scriptEnabled(false)
+            .scriptPath(null)
+            .scriptArgs(null)
+            .scriptWorkingDirectory(null)
+            .ctcpCommandMode(IrcEventNotificationRule.CtcpMatchMode.LIKE)
+            .ctcpCommandPattern("VERSION")
+            .ctcpValueMode(IrcEventNotificationRule.CtcpMatchMode.GLOB)
+            .ctcpValuePattern("*hexchat*")
+            .build();
     when(rulesBus.get()).thenReturn(List.of(ctcpRule));
 
     ExecutorService exec = Executors.newSingleThreadExecutor();
