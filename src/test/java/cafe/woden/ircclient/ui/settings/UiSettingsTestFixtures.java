@@ -17,6 +17,12 @@ public final class UiSettingsTestFixtures {
     return builder().build();
   }
 
+  public static Builder legacyBuilder() {
+    return builder()
+        .trayNotifySuppressWhenTargetActive(true)
+        .chatHistoryLoadOlderChunkDelayMs(0);
+  }
+
   public static final class Builder {
     private String theme = "darcula";
     private String chatFontFamily = "Monospaced";
@@ -100,6 +106,116 @@ public final class UiSettingsTestFixtures {
     private String serverTreeHighlightChannelColor;
     private boolean preserveDockLayoutBetweenSessions = false;
     private String matrixUserListNameDisplayMode = "compact";
+
+    public Builder theme(String theme) {
+      this.theme = theme;
+      return this;
+    }
+
+    public Builder autoConnectOnStart(boolean autoConnectOnStart) {
+      this.autoConnectOnStart = autoConnectOnStart;
+      return this;
+    }
+
+    public Builder imageEmbedsCollapsedByDefault(boolean imageEmbedsCollapsedByDefault) {
+      this.imageEmbedsCollapsedByDefault = imageEmbedsCollapsedByDefault;
+      return this;
+    }
+
+    public Builder imageEmbedsMaxWidthPx(int imageEmbedsMaxWidthPx) {
+      this.imageEmbedsMaxWidthPx = imageEmbedsMaxWidthPx;
+      return this;
+    }
+
+    public Builder imageEmbedsMaxHeightPx(int imageEmbedsMaxHeightPx) {
+      this.imageEmbedsMaxHeightPx = imageEmbedsMaxHeightPx;
+      return this;
+    }
+
+    public Builder imageEmbedsAnimateGifs(boolean imageEmbedsAnimateGifs) {
+      this.imageEmbedsAnimateGifs = imageEmbedsAnimateGifs;
+      return this;
+    }
+
+    public Builder linkPreviewsCollapsedByDefault(boolean linkPreviewsCollapsedByDefault) {
+      this.linkPreviewsCollapsedByDefault = linkPreviewsCollapsedByDefault;
+      return this;
+    }
+
+    public Builder presenceFoldsEnabled(boolean presenceFoldsEnabled) {
+      this.presenceFoldsEnabled = presenceFoldsEnabled;
+      return this;
+    }
+
+    public Builder ctcpRequestsInActiveTargetEnabled(boolean ctcpRequestsInActiveTargetEnabled) {
+      this.ctcpRequestsInActiveTargetEnabled = ctcpRequestsInActiveTargetEnabled;
+      return this;
+    }
+
+    public Builder timestampsEnabled(boolean timestampsEnabled) {
+      this.timestampsEnabled = timestampsEnabled;
+      return this;
+    }
+
+    public Builder timestampFormat(String timestampFormat) {
+      this.timestampFormat = timestampFormat;
+      return this;
+    }
+
+    public Builder timestampsIncludeChatMessages(boolean timestampsIncludeChatMessages) {
+      this.timestampsIncludeChatMessages = timestampsIncludeChatMessages;
+      return this;
+    }
+
+    public Builder chatHistoryInitialLoadLines(int chatHistoryInitialLoadLines) {
+      this.chatHistoryInitialLoadLines = chatHistoryInitialLoadLines;
+      return this;
+    }
+
+    public Builder chatHistoryPageSize(int chatHistoryPageSize) {
+      this.chatHistoryPageSize = chatHistoryPageSize;
+      return this;
+    }
+
+    public Builder chatHistoryLoadOlderChunkDelayMs(int chatHistoryLoadOlderChunkDelayMs) {
+      this.chatHistoryLoadOlderChunkDelayMs = chatHistoryLoadOlderChunkDelayMs;
+      return this;
+    }
+
+    public Builder clientLineColorEnabled(boolean clientLineColorEnabled) {
+      this.clientLineColorEnabled = clientLineColorEnabled;
+      return this;
+    }
+
+    public Builder clientLineColor(String clientLineColor) {
+      this.clientLineColor = clientLineColor;
+      return this;
+    }
+
+    public Builder userhostDiscoveryEnabled(boolean userhostDiscoveryEnabled) {
+      this.userhostDiscoveryEnabled = userhostDiscoveryEnabled;
+      return this;
+    }
+
+    public Builder userhostMinIntervalSeconds(int userhostMinIntervalSeconds) {
+      this.userhostMinIntervalSeconds = userhostMinIntervalSeconds;
+      return this;
+    }
+
+    public Builder userhostMaxCommandsPerMinute(int userhostMaxCommandsPerMinute) {
+      this.userhostMaxCommandsPerMinute = userhostMaxCommandsPerMinute;
+      return this;
+    }
+
+    public Builder userhostNickCooldownMinutes(int userhostNickCooldownMinutes) {
+      this.userhostNickCooldownMinutes = userhostNickCooldownMinutes;
+      return this;
+    }
+
+    public Builder userhostMaxNicksPerCommand(int userhostMaxNicksPerCommand) {
+      this.userhostMaxNicksPerCommand = userhostMaxNicksPerCommand;
+      return this;
+    }
 
     public Builder imageEmbedsEnabled(boolean imageEmbedsEnabled) {
       this.imageEmbedsEnabled = imageEmbedsEnabled;

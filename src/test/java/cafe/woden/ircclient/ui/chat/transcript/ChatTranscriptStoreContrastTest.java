@@ -12,6 +12,7 @@ import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
+import cafe.woden.ircclient.ui.settings.UiSettingsTestFixtures;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettings;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsBus;
 import java.awt.Color;
@@ -200,32 +201,13 @@ class ChatTranscriptStoreContrastTest {
   }
 
   private static UiSettings outgoingSettings(boolean enabled, String color) {
-    return new UiSettings(
-        "light",
-        "Monospaced",
-        12,
-        true,
-        false,
-        false,
-        0,
-        0,
-        true,
-        false,
-        false,
-        true,
-        true,
-        true,
-        "HH:mm:ss",
-        true,
-        100,
-        200,
-        enabled,
-        color,
-        true,
-        7,
-        6,
-        30,
-        5);
+    return UiSettingsTestFixtures.legacyBuilder()
+        .theme("light")
+        .imageEmbedsEnabled(false)
+        .linkPreviewsEnabled(false)
+        .clientLineColorEnabled(enabled)
+        .clientLineColor(color)
+        .build();
   }
 
   private static Color configureLightTranscriptPalette() {
