@@ -18,7 +18,7 @@ class RuntimeConfigStoreAppDiagnosticsSettingsTest {
   void assertjSwingSettingsRoundTripAndClamp() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
     RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+        RuntimeConfigStoreTestFixtures.store(cfg);
 
     assertTrue(store.readAppDiagnosticsAssertjSwingEnabled(true));
     assertFalse(store.readAppDiagnosticsAssertjSwingFreezeWatchdogEnabled(false));
@@ -51,7 +51,7 @@ class RuntimeConfigStoreAppDiagnosticsSettingsTest {
   void jhiccupSettingsRoundTripAndFallback() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
     RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+        RuntimeConfigStoreTestFixtures.store(cfg);
 
     assertFalse(store.readAppDiagnosticsJhiccupEnabled(false));
     assertEquals("", store.readAppDiagnosticsJhiccupJarPath(""));
