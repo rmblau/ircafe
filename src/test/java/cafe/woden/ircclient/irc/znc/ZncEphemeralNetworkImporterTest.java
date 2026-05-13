@@ -9,6 +9,7 @@ import cafe.woden.ircclient.bouncer.BouncerConnectionPort;
 import cafe.woden.ircclient.config.EphemeralServerRegistry;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.config.ServerRegistry;
 import cafe.woden.ircclient.config.ZncProperties;
 import io.reactivex.rxjava3.core.Completable;
@@ -39,7 +40,7 @@ class ZncEphemeralNetworkImporterTest {
             null);
 
     IrcProperties props = new IrcProperties(null, List.of(bouncer));
-    RuntimeConfigStore runtime = new RuntimeConfigStore(" ", props);
+    RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore(props);
     ServerRegistry configured = new ServerRegistry(props, runtime);
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
     ZncAutoConnectStore autoConnect =
@@ -85,7 +86,7 @@ class ZncEphemeralNetworkImporterTest {
             null);
 
     IrcProperties props = new IrcProperties(null, List.of(bouncer));
-    RuntimeConfigStore runtime = new RuntimeConfigStore(" ", props);
+    RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore(props);
     ServerRegistry configured = new ServerRegistry(props, runtime);
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
     ZncAutoConnectStore autoConnect =
@@ -130,7 +131,7 @@ class ZncEphemeralNetworkImporterTest {
             null);
 
     IrcProperties props = new IrcProperties(null, List.of(bouncer));
-    RuntimeConfigStore runtime = new RuntimeConfigStore(" ", props);
+    RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore(props);
     ServerRegistry configured = new ServerRegistry(props, runtime);
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
     ZncAutoConnectStore autoConnect =
@@ -178,7 +179,7 @@ class ZncEphemeralNetworkImporterTest {
 
     IrcProperties props = new IrcProperties(null, List.of(bouncer));
     Path cfg = Files.createTempFile("ircafe-znc-autojoin-", ".yml");
-    RuntimeConfigStore runtime = new RuntimeConfigStore(cfg.toString(), props);
+    RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.store(cfg, props);
     runtime.rememberJoinedChannel("znc:znc:libera.chat", "#ircafe");
     runtime.rememberJoinedChannel("znc:znc:libera.chat", "#off");
     runtime.rememberServerTreeChannelAutoReattach("znc:znc:libera.chat", "#off", false);

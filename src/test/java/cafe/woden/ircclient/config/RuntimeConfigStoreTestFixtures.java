@@ -12,7 +12,11 @@ public final class RuntimeConfigStoreTestFixtures {
   }
 
   public static RuntimeConfigStore inMemoryStore() {
-    return new RuntimeConfigStore(" ", emptyIrcProperties());
+    return inMemoryStore(emptyIrcProperties());
+  }
+
+  public static RuntimeConfigStore inMemoryStore(IrcProperties defaults) {
+    return new RuntimeConfigStore(" ", defaults);
   }
 
   public static RuntimeConfigStore store(Path configPath) {

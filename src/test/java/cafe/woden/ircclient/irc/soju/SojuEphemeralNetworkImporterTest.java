@@ -8,6 +8,7 @@ import cafe.woden.ircclient.bouncer.BouncerConnectionPort;
 import cafe.woden.ircclient.config.EphemeralServerRegistry;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.config.ServerRegistry;
 import cafe.woden.ircclient.config.SojuProperties;
 import io.reactivex.rxjava3.core.Completable;
@@ -39,7 +40,7 @@ class SojuEphemeralNetworkImporterTest {
             null);
 
     IrcProperties props = new IrcProperties(null, List.of(bouncer));
-    RuntimeConfigStore runtime = new RuntimeConfigStore(" ", props);
+    RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore(props);
     ServerRegistry configured = new ServerRegistry(props, runtime);
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
 
@@ -88,7 +89,7 @@ class SojuEphemeralNetworkImporterTest {
             null);
 
     IrcProperties props = new IrcProperties(null, List.of(bouncer));
-    RuntimeConfigStore runtime = new RuntimeConfigStore(" ", props);
+    RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore(props);
     ServerRegistry configured = new ServerRegistry(props, runtime);
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
 
@@ -135,7 +136,7 @@ class SojuEphemeralNetworkImporterTest {
             null);
 
     IrcProperties props = new IrcProperties(null, List.of(bouncer));
-    RuntimeConfigStore runtime = new RuntimeConfigStore(" ", props);
+    RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore(props);
     ServerRegistry configured = new ServerRegistry(props, runtime);
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
 
@@ -186,7 +187,7 @@ class SojuEphemeralNetworkImporterTest {
 
     IrcProperties props = new IrcProperties(null, List.of(bouncer));
     Path cfg = Files.createTempFile("ircafe-soju-autojoin-", ".yml");
-    RuntimeConfigStore runtime = new RuntimeConfigStore(cfg.toString(), props);
+    RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.store(cfg, props);
     runtime.rememberJoinedChannel("soju:soju:123", "#ircafe");
     runtime.rememberJoinedChannel("soju:soju:123", "#off");
     runtime.rememberServerTreeChannelAutoReattach("soju:soju:123", "#off", false);
@@ -235,7 +236,7 @@ class SojuEphemeralNetworkImporterTest {
             null);
 
     IrcProperties props = new IrcProperties(null, List.of(bouncer));
-    RuntimeConfigStore runtime = new RuntimeConfigStore(" ", props);
+    RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore(props);
     ServerRegistry configured = new ServerRegistry(props, runtime);
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
 
