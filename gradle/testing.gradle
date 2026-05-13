@@ -6,8 +6,8 @@ sourceSets {
     functionalTest {
         java.srcDir('src/functionalTest/java')
         resources.srcDir('src/functionalTest/resources')
-        compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
-        runtimeClasspath += output + compileClasspath
+        compileClasspath += sourceSets.main.output + sourceSets.test.output + configurations.testRuntimeClasspath
+        runtimeClasspath += output + sourceSets.test.output + compileClasspath
     }
 }
 

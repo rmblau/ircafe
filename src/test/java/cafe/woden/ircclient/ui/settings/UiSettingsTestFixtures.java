@@ -117,6 +117,16 @@ public final class UiSettingsTestFixtures {
       return this;
     }
 
+    public Builder chatFontFamily(String chatFontFamily) {
+      this.chatFontFamily = chatFontFamily;
+      return this;
+    }
+
+    public Builder chatFontSize(int chatFontSize) {
+      this.chatFontSize = chatFontSize;
+      return this;
+    }
+
     public Builder imageEmbedsCollapsedByDefault(boolean imageEmbedsCollapsedByDefault) {
       this.imageEmbedsCollapsedByDefault = imageEmbedsCollapsedByDefault;
       return this;
