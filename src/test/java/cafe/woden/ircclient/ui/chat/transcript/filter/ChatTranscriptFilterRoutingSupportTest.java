@@ -21,6 +21,7 @@ import cafe.woden.ircclient.ui.chat.transcript.line.LineMeta;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import cafe.woden.ircclient.ui.filter.FilterSettings;
 import cafe.woden.ircclient.ui.filter.FilterSettingsBus;
+import cafe.woden.ircclient.ui.filter.FilterSettingsTestFixtures;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
@@ -36,28 +37,21 @@ class ChatTranscriptFilterRoutingSupportTest {
   void matchForFallsBackToExplicitFromWhenMetaFromIsBlank() {
     ChatTranscriptFilterRoutingSupport support =
         newSupport(
-            new FilterSettings(
-                true,
-                true,
-                true,
-                3,
-                250,
-                12,
-                10,
-                true,
-                List.of(
-                    new FilterRule(
-                        null,
-                        "hide-alice",
-                        true,
-                        "srv/#chan",
-                        FilterAction.HIDE,
-                        FilterDirection.ANY,
-                        EnumSet.of(LogKind.CHAT),
-                        List.of("alice"),
-                        new RegexSpec("hello", EnumSet.of(RegexFlag.I)),
-                        TagSpec.empty())),
-                List.of()),
+            FilterSettingsTestFixtures.builder()
+                .rules(
+                    List.of(
+                        new FilterRule(
+                            null,
+                            "hide-alice",
+                            true,
+                            "srv/#chan",
+                            FilterAction.HIDE,
+                            FilterDirection.ANY,
+                            EnumSet.of(LogKind.CHAT),
+                            List.of("alice"),
+                            new RegexSpec("hello", EnumSet.of(RegexFlag.I)),
+                            TagSpec.empty())))
+                .build(),
             (ref, preview, meta, match) -> {},
             (ref, insertAt, preview, meta, match) -> insertAt,
             ref -> {},
@@ -286,28 +280,21 @@ class ChatTranscriptFilterRoutingSupportTest {
     AtomicInteger breakCalls = new AtomicInteger();
     ChatTranscriptFilterRoutingSupport support =
         newSupport(
-            new FilterSettings(
-                true,
-                true,
-                true,
-                3,
-                250,
-                12,
-                10,
-                true,
-                List.of(
-                    new FilterRule(
-                        null,
-                        "hide-alice",
-                        true,
-                        "srv/#chan",
-                        FilterAction.HIDE,
-                        FilterDirection.ANY,
-                        EnumSet.of(LogKind.CHAT),
-                        List.of("alice"),
-                        new RegexSpec("hello", EnumSet.of(RegexFlag.I)),
-                        TagSpec.empty())),
-                List.of()),
+            FilterSettingsTestFixtures.builder()
+                .rules(
+                    List.of(
+                        new FilterRule(
+                            null,
+                            "hide-alice",
+                            true,
+                            "srv/#chan",
+                            FilterAction.HIDE,
+                            FilterDirection.ANY,
+                            EnumSet.of(LogKind.CHAT),
+                            List.of("alice"),
+                            new RegexSpec("hello", EnumSet.of(RegexFlag.I)),
+                            TagSpec.empty())))
+                .build(),
             (ref, preview, meta, match) -> previewRef.set(preview),
             (ref, insertAt, preview, meta, match) -> insertAt,
             ref -> {},
@@ -335,28 +322,21 @@ class ChatTranscriptFilterRoutingSupportTest {
     AtomicInteger breakCalls = new AtomicInteger();
     ChatTranscriptFilterRoutingSupport support =
         newSupport(
-            new FilterSettings(
-                true,
-                true,
-                true,
-                3,
-                250,
-                12,
-                10,
-                true,
-                List.of(
-                    new FilterRule(
-                        null,
-                        "highlight-alice",
-                        true,
-                        "srv/#chan",
-                        FilterAction.HIGHLIGHT,
-                        FilterDirection.ANY,
-                        EnumSet.of(LogKind.SPOILER),
-                        List.of("alice"),
-                        new RegexSpec("hello", EnumSet.of(RegexFlag.I)),
-                        TagSpec.empty())),
-                List.of()),
+            FilterSettingsTestFixtures.builder()
+                .rules(
+                    List.of(
+                        new FilterRule(
+                            null,
+                            "highlight-alice",
+                            true,
+                            "srv/#chan",
+                            FilterAction.HIGHLIGHT,
+                            FilterDirection.ANY,
+                            EnumSet.of(LogKind.SPOILER),
+                            List.of("alice"),
+                            new RegexSpec("hello", EnumSet.of(RegexFlag.I)),
+                            TagSpec.empty())))
+                .build(),
             (ref, preview, meta, match) -> appendCalls.incrementAndGet(),
             (ref, insertAt, preview, meta, match) -> insertAt,
             ref -> {},
@@ -387,28 +367,21 @@ class ChatTranscriptFilterRoutingSupportTest {
     AtomicInteger breakCalls = new AtomicInteger();
     ChatTranscriptFilterRoutingSupport support =
         newSupport(
-            new FilterSettings(
-                true,
-                true,
-                true,
-                3,
-                250,
-                12,
-                10,
-                true,
-                List.of(
-                    new FilterRule(
-                        null,
-                        "highlight-alice-action",
-                        true,
-                        "srv/#chan",
-                        FilterAction.HIGHLIGHT,
-                        FilterDirection.ANY,
-                        EnumSet.of(LogKind.ACTION),
-                        List.of("alice"),
-                        new RegexSpec("wave", EnumSet.of(RegexFlag.I)),
-                        TagSpec.empty())),
-                List.of()),
+            FilterSettingsTestFixtures.builder()
+                .rules(
+                    List.of(
+                        new FilterRule(
+                            null,
+                            "highlight-alice-action",
+                            true,
+                            "srv/#chan",
+                            FilterAction.HIGHLIGHT,
+                            FilterDirection.ANY,
+                            EnumSet.of(LogKind.ACTION),
+                            List.of("alice"),
+                            new RegexSpec("wave", EnumSet.of(RegexFlag.I)),
+                            TagSpec.empty())))
+                .build(),
             (ref, preview, meta, match) -> appendCalls.incrementAndGet(),
             (ref, insertAt, preview, meta, match) -> insertAt,
             ref -> {},
@@ -439,7 +412,7 @@ class ChatTranscriptFilterRoutingSupportTest {
     AtomicInteger endCalls = new AtomicInteger();
     ChatTranscriptFilterRoutingSupport support =
         newSupport(
-            new FilterSettings(true, true, true, 3, 250, 12, 10, false, List.of(), List.of()),
+            FilterSettingsTestFixtures.historyPlaceholdersDisabledBuilder().build(),
             (ref, preview, meta, match) -> {},
             (ref, insertAt, preview, meta, match) -> {
               insertCalls.incrementAndGet();

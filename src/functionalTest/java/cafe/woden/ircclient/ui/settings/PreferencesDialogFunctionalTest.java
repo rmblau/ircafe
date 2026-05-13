@@ -32,6 +32,7 @@ import cafe.woden.ircclient.ui.chat.embed.EmbedLoadPolicyBus;
 import cafe.woden.ircclient.ui.chat.transcript.rebuild.TranscriptRebuildService;
 import cafe.woden.ircclient.ui.filter.FilterSettings;
 import cafe.woden.ircclient.ui.filter.FilterSettingsBus;
+import cafe.woden.ircclient.ui.filter.FilterSettingsTestFixtures;
 import cafe.woden.ircclient.ui.nickcolors.NickColorOverridesDialog;
 import cafe.woden.ircclient.ui.servers.ServerDialogs;
 import cafe.woden.ircclient.ui.settings.appearance.AppearancePreferencesSection;
@@ -166,7 +167,7 @@ class PreferencesDialogFunctionalTest {
   void filtersPanelExposesSubTabsAndHistoryRunCapToggle() throws Exception {
     List<AutoCloseable> closeables = new ArrayList<>();
     FilterSettings filters =
-        new FilterSettings(true, true, true, 3, 250, 12, 10, false, List.of(), List.of());
+        FilterSettingsTestFixtures.historyPlaceholdersDisabledBuilder().build();
     FilterSettingsBus filterSettingsBus = new FilterSettingsBus(null);
     filterSettingsBus.set(filters);
 
