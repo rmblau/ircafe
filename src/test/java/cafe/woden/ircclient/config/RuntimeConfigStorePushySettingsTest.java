@@ -20,15 +20,15 @@ class RuntimeConfigStorePushySettingsTest {
         new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
 
     store.rememberPushySettings(
-        new PushyProperties(
-            true,
-            "https://api.pushy.me/push",
-            "api-key-123",
-            "device-token-1",
-            null,
-            "IRCafe",
-            5,
-            8));
+        PushyPropertiesTestFixtures.builder()
+            .enabled(true)
+            .endpoint("https://api.pushy.me/push")
+            .apiKey("api-key-123")
+            .deviceToken("device-token-1")
+            .titlePrefix("IRCafe")
+            .connectTimeoutSeconds(5)
+            .readTimeoutSeconds(8)
+            .build());
 
     String yaml = Files.readString(cfg);
     assertTrue(yaml.contains("pushy"));
@@ -52,9 +52,15 @@ class RuntimeConfigStorePushySettingsTest {
         new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
 
     store.rememberPushySettings(
-        new PushyProperties(true, null, "api-key-123", null, "alerts", "Office", 4, 9));
-    store.rememberPushySettings(
-        new PushyProperties(false, null, null, null, null, null, null, null));
+        PushyPropertiesTestFixtures.builder()
+            .enabled(true)
+            .apiKey("api-key-123")
+            .topic("alerts")
+            .titlePrefix("Office")
+            .connectTimeoutSeconds(4)
+            .readTimeoutSeconds(9)
+            .build());
+    store.rememberPushySettings(PushyPropertiesTestFixtures.disabled());
 
     String yaml = Files.readString(cfg);
     assertTrue(yaml.contains("enabled: false"));

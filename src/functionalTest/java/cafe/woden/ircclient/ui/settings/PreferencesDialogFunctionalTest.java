@@ -14,7 +14,7 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesBus;
 import cafe.woden.ircclient.config.LogProperties;
-import cafe.woden.ircclient.config.PushyProperties;
+import cafe.woden.ircclient.config.PushyPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.irc.backend.IrcHeartbeatMaintenanceService;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionCatalog;
@@ -265,7 +265,7 @@ class PreferencesDialogFunctionalTest {
         TrayControlsSupport.buildControls(
             testUiSettings(),
             new NotificationSoundSettings(true, "NOTIF_1", true, "sounds/custom.wav"),
-            new PushyProperties(false, null, null, null, null, null, null, null),
+            PushyPropertiesTestFixtures.disabled(),
             mock(RuntimeConfigStore.class),
             mock(GnomeDbusNotificationBackend.class),
             mock(TrayNotificationService.class),
