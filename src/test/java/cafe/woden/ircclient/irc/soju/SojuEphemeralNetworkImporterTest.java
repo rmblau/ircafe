@@ -7,6 +7,7 @@ import static org.mockito.Mockito.*;
 import cafe.woden.ircclient.bouncer.BouncerConnectionPort;
 import cafe.woden.ircclient.config.EphemeralServerRegistry;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.config.ServerRegistry;
@@ -14,7 +15,6 @@ import cafe.woden.ircclient.config.SojuProperties;
 import io.reactivex.rxjava3.core.Completable;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
@@ -25,21 +25,15 @@ class SojuEphemeralNetworkImporterTest {
     IrcProperties.Server.Sasl sasl =
         new IrcProperties.Server.Sasl(true, "zimmerdon", "pw", "PLAIN", null);
     IrcProperties.Server bouncer =
-        new IrcProperties.Server(
-            "soju",
-            "bouncer.example",
-            6697,
-            true,
-            "",
-            "zimmedon",
-            "zimmerdon",
-            "Real",
-            sasl,
-            List.of(),
-            List.of(),
-            null);
+        IrcPropertiesTestFixtures.serverBuilder("soju")
+            .host("bouncer.example")
+            .nick("zimmedon")
+            .login("zimmerdon")
+            .realName("Real")
+            .sasl(sasl)
+            .build();
 
-    IrcProperties props = new IrcProperties(null, List.of(bouncer));
+    IrcProperties props = IrcPropertiesTestFixtures.properties(bouncer);
     RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore(props);
     ServerRegistry configured = new ServerRegistry(props, runtime);
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
@@ -74,21 +68,15 @@ class SojuEphemeralNetworkImporterTest {
     IrcProperties.Server.Sasl sasl =
         new IrcProperties.Server.Sasl(true, "user", "pw", "PLAIN", null);
     IrcProperties.Server bouncer =
-        new IrcProperties.Server(
-            "soju",
-            "bouncer.example",
-            6697,
-            true,
-            "",
-            "nick",
-            "user",
-            "Real",
-            sasl,
-            List.of(),
-            List.of(),
-            null);
+        IrcPropertiesTestFixtures.serverBuilder("soju")
+            .host("bouncer.example")
+            .nick("nick")
+            .login("user")
+            .realName("Real")
+            .sasl(sasl)
+            .build();
 
-    IrcProperties props = new IrcProperties(null, List.of(bouncer));
+    IrcProperties props = IrcPropertiesTestFixtures.properties(bouncer);
     RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore(props);
     ServerRegistry configured = new ServerRegistry(props, runtime);
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
@@ -121,21 +109,15 @@ class SojuEphemeralNetworkImporterTest {
     IrcProperties.Server.Sasl sasl =
         new IrcProperties.Server.Sasl(true, "user", "pw", "PLAIN", null);
     IrcProperties.Server bouncer =
-        new IrcProperties.Server(
-            "soju",
-            "bouncer.example",
-            6697,
-            true,
-            "",
-            "nick",
-            "user",
-            "Real",
-            sasl,
-            List.of(),
-            List.of(),
-            null);
+        IrcPropertiesTestFixtures.serverBuilder("soju")
+            .host("bouncer.example")
+            .nick("nick")
+            .login("user")
+            .realName("Real")
+            .sasl(sasl)
+            .build();
 
-    IrcProperties props = new IrcProperties(null, List.of(bouncer));
+    IrcProperties props = IrcPropertiesTestFixtures.properties(bouncer);
     RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore(props);
     ServerRegistry configured = new ServerRegistry(props, runtime);
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
@@ -171,21 +153,15 @@ class SojuEphemeralNetworkImporterTest {
     IrcProperties.Server.Sasl sasl =
         new IrcProperties.Server.Sasl(true, "user", "pw", "PLAIN", null);
     IrcProperties.Server bouncer =
-        new IrcProperties.Server(
-            "soju",
-            "bouncer.example",
-            6697,
-            true,
-            "",
-            "nick",
-            "user",
-            "Real",
-            sasl,
-            List.of(),
-            List.of(),
-            null);
+        IrcPropertiesTestFixtures.serverBuilder("soju")
+            .host("bouncer.example")
+            .nick("nick")
+            .login("user")
+            .realName("Real")
+            .sasl(sasl)
+            .build();
 
-    IrcProperties props = new IrcProperties(null, List.of(bouncer));
+    IrcProperties props = IrcPropertiesTestFixtures.properties(bouncer);
     Path cfg = Files.createTempFile("ircafe-soju-autojoin-", ".yml");
     RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.store(cfg, props);
     runtime.rememberJoinedChannel("soju:soju:123", "#ircafe");
@@ -221,21 +197,15 @@ class SojuEphemeralNetworkImporterTest {
     IrcProperties.Server.Sasl sasl =
         new IrcProperties.Server.Sasl(true, "user", "pw", "PLAIN", null);
     IrcProperties.Server bouncer =
-        new IrcProperties.Server(
-            "soju",
-            "bouncer.example",
-            6697,
-            true,
-            "",
-            "nick",
-            "user",
-            "Real",
-            sasl,
-            List.of(),
-            List.of(),
-            null);
+        IrcPropertiesTestFixtures.serverBuilder("soju")
+            .host("bouncer.example")
+            .nick("nick")
+            .login("user")
+            .realName("Real")
+            .sasl(sasl)
+            .build();
 
-    IrcProperties props = new IrcProperties(null, List.of(bouncer));
+    IrcProperties props = IrcPropertiesTestFixtures.properties(bouncer);
     RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore(props);
     ServerRegistry configured = new ServerRegistry(props, runtime);
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();

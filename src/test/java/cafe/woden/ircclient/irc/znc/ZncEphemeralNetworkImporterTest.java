@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.bouncer.BouncerConnectionPort;
 import cafe.woden.ircclient.config.EphemeralServerRegistry;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.config.ServerRegistry;
@@ -15,7 +16,6 @@ import cafe.woden.ircclient.config.ZncProperties;
 import io.reactivex.rxjava3.core.Completable;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
@@ -25,21 +25,16 @@ class ZncEphemeralNetworkImporterTest {
   void upsertsEphemeralServerForDiscoveredNetwork() {
     IrcProperties.Server.Sasl sasl = new IrcProperties.Server.Sasl(false, "", "", "PLAIN", null);
     IrcProperties.Server bouncer =
-        new IrcProperties.Server(
-            "znc",
-            "bouncer.example",
-            6697,
-            true,
-            "pass",
-            "nick",
-            "user@ircafe",
-            "Real",
-            sasl,
-            List.of(),
-            List.of(),
-            null);
+        IrcPropertiesTestFixtures.serverBuilder("znc")
+            .host("bouncer.example")
+            .serverPassword("pass")
+            .nick("nick")
+            .login("user@ircafe")
+            .realName("Real")
+            .sasl(sasl)
+            .build();
 
-    IrcProperties props = new IrcProperties(null, List.of(bouncer));
+    IrcProperties props = IrcPropertiesTestFixtures.properties(bouncer);
     RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore(props);
     ServerRegistry configured = new ServerRegistry(props, runtime);
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
@@ -71,21 +66,16 @@ class ZncEphemeralNetworkImporterTest {
   void callingTwiceDoesNotCreateDuplicate() {
     IrcProperties.Server.Sasl sasl = new IrcProperties.Server.Sasl(false, "", "", "PLAIN", null);
     IrcProperties.Server bouncer =
-        new IrcProperties.Server(
-            "znc",
-            "bouncer.example",
-            6697,
-            true,
-            "pass",
-            "nick",
-            "user",
-            "Real",
-            sasl,
-            List.of(),
-            List.of(),
-            null);
+        IrcPropertiesTestFixtures.serverBuilder("znc")
+            .host("bouncer.example")
+            .serverPassword("pass")
+            .nick("nick")
+            .login("user")
+            .realName("Real")
+            .sasl(sasl)
+            .build();
 
-    IrcProperties props = new IrcProperties(null, List.of(bouncer));
+    IrcProperties props = IrcPropertiesTestFixtures.properties(bouncer);
     RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore(props);
     ServerRegistry configured = new ServerRegistry(props, runtime);
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
@@ -116,21 +106,16 @@ class ZncEphemeralNetworkImporterTest {
   void originDisconnectRemovesEphemerals() {
     IrcProperties.Server.Sasl sasl = new IrcProperties.Server.Sasl(false, "", "", "PLAIN", null);
     IrcProperties.Server bouncer =
-        new IrcProperties.Server(
-            "znc",
-            "bouncer.example",
-            6697,
-            true,
-            "pass",
-            "nick",
-            "user",
-            "Real",
-            sasl,
-            List.of(),
-            List.of(),
-            null);
+        IrcPropertiesTestFixtures.serverBuilder("znc")
+            .host("bouncer.example")
+            .serverPassword("pass")
+            .nick("nick")
+            .login("user")
+            .realName("Real")
+            .sasl(sasl)
+            .build();
 
-    IrcProperties props = new IrcProperties(null, List.of(bouncer));
+    IrcProperties props = IrcPropertiesTestFixtures.properties(bouncer);
     RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore(props);
     ServerRegistry configured = new ServerRegistry(props, runtime);
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
@@ -163,21 +148,16 @@ class ZncEphemeralNetworkImporterTest {
   void importsKnownChannelsIntoEphemeralAutoJoinWhenAutoReattachEnabled() throws Exception {
     IrcProperties.Server.Sasl sasl = new IrcProperties.Server.Sasl(false, "", "", "PLAIN", null);
     IrcProperties.Server bouncer =
-        new IrcProperties.Server(
-            "znc",
-            "bouncer.example",
-            6697,
-            true,
-            "pass",
-            "nick",
-            "user",
-            "Real",
-            sasl,
-            List.of(),
-            List.of(),
-            null);
+        IrcPropertiesTestFixtures.serverBuilder("znc")
+            .host("bouncer.example")
+            .serverPassword("pass")
+            .nick("nick")
+            .login("user")
+            .realName("Real")
+            .sasl(sasl)
+            .build();
 
-    IrcProperties props = new IrcProperties(null, List.of(bouncer));
+    IrcProperties props = IrcPropertiesTestFixtures.properties(bouncer);
     Path cfg = Files.createTempFile("ircafe-znc-autojoin-", ".yml");
     RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.store(cfg, props);
     runtime.rememberJoinedChannel("znc:znc:libera.chat", "#ircafe");
