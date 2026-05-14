@@ -55,6 +55,7 @@ import cafe.woden.ircclient.app.outbound.OutboundCommandDispatcher;
 import cafe.woden.ircclient.app.outbound.backend.OutboundBackendCapabilityPolicy;
 import cafe.woden.ircclient.app.outbound.dcc.OutboundDccCommandService;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.ServerRegistry;
 import cafe.woden.ircclient.ignore.api.InboundIgnorePolicyPort;
@@ -1264,20 +1265,11 @@ class IrcMediatorMockVerifyTest {
 
   private static IrcProperties.Server serverWithBackend(
       String id, IrcProperties.Server.Backend backend) {
-    return new IrcProperties.Server(
-        id,
-        "core.example.net",
-        4242,
-        false,
-        "",
-        "ircafe",
-        "ircafe",
-        "IRCafe User",
-        null,
-        null,
-        List.of(),
-        List.of(),
-        null,
-        backend);
+    return IrcPropertiesTestFixtures.serverBuilder(id)
+        .host("core.example.net")
+        .port(4242)
+        .tls(false)
+        .backend(backend)
+        .build();
   }
 }
