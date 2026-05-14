@@ -15,6 +15,7 @@ import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.commands.CommandParser;
 import cafe.woden.ircclient.app.commands.ParsedInput;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.irc.IrcEvent;
 import cafe.woden.ircclient.irc.ServerIrcEvent;
@@ -194,18 +195,11 @@ class PerformModuleIntegrationTest extends AbstractApplicationModuleIntegrationT
   }
 
   private static IrcProperties.Server serverWithPerform(String id, List<String> perform) {
-    return new IrcProperties.Server(
-        id,
-        "irc.example.net",
-        6697,
-        true,
-        "",
-        "tester",
-        "tester",
-        "Tester",
-        null,
-        List.of(),
-        perform,
-        null);
+    return IrcPropertiesTestFixtures.serverBuilder(id)
+        .nick("tester")
+        .login("tester")
+        .realName("Tester")
+        .perform(perform)
+        .build();
   }
 }
