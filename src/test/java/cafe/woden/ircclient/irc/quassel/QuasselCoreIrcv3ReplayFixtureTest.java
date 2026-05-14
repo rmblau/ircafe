@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
@@ -152,21 +153,14 @@ class QuasselCoreIrcv3ReplayFixtureTest {
   }
 
   private static IrcProperties.Server server() {
-    return new IrcProperties.Server(
-        "quassel",
-        "irc.example.net",
-        4242,
-        false,
-        "",
-        "quassel",
-        "quassel",
-        "Quassel Test",
-        null,
-        null,
-        List.of(),
-        List.of(),
-        null,
-        IrcProperties.Server.Backend.QUASSEL_CORE);
+    return IrcPropertiesTestFixtures.serverBuilder("quassel")
+        .port(4242)
+        .tls(false)
+        .nick("quassel")
+        .login("quassel")
+        .realName("Quassel Test")
+        .backend(IrcProperties.Server.Backend.QUASSEL_CORE)
+        .build();
   }
 
   private record ReplayMessage(int typeBits, String sender, String content) {}
