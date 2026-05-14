@@ -8,12 +8,12 @@ import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.config.EphemeralServerRegistry;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.config.ServerRegistry;
 import io.reactivex.rxjava3.core.Completable;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -27,21 +27,15 @@ class GenericBouncerEphemeralNetworkImporterTest {
     IrcProperties.Server.Sasl sasl =
         new IrcProperties.Server.Sasl(true, "base-user", "pw", "PLAIN", null);
     IrcProperties.Server bouncer =
-        new IrcProperties.Server(
-            "bouncer-1",
-            "bouncer.example",
-            6697,
-            true,
-            "",
-            "nick",
-            "base-user",
-            "Real",
-            sasl,
-            List.of(),
-            List.of(),
-            null);
+        IrcPropertiesTestFixtures.serverBuilder("bouncer-1")
+            .host("bouncer.example")
+            .nick("nick")
+            .login("base-user")
+            .realName("Real")
+            .sasl(sasl)
+            .build();
 
-    IrcProperties props = new IrcProperties(null, List.of(bouncer));
+    IrcProperties props = IrcPropertiesTestFixtures.properties(bouncer);
     RuntimeConfigStore runtime =
         RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"), props);
     runtime.rememberGenericBouncerAutoConnectNetwork("bouncer-1", "Libera", true);

@@ -3,10 +3,10 @@ package cafe.woden.ircclient.bouncer;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -122,18 +122,12 @@ class GenericBouncerNetworkMappingStrategyTest {
   private static IrcProperties.Server sampleBouncerServer(String loginUser) {
     IrcProperties.Server.Sasl sasl =
         new IrcProperties.Server.Sasl(true, loginUser, "pw", "PLAIN", null);
-    return new IrcProperties.Server(
-        "bouncer-1",
-        "bouncer.example",
-        6697,
-        true,
-        "",
-        "nick",
-        loginUser,
-        "Real Name",
-        sasl,
-        List.of(),
-        List.of(),
-        null);
+    return IrcPropertiesTestFixtures.serverBuilder("bouncer-1")
+        .host("bouncer.example")
+        .nick("nick")
+        .login(loginUser)
+        .realName("Real Name")
+        .sasl(sasl)
+        .build();
   }
 }

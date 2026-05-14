@@ -6,6 +6,10 @@ public final class IrcPropertiesTestFixtures {
 
   private IrcPropertiesTestFixtures() {}
 
+  public static IrcProperties properties(IrcProperties.Server... servers) {
+    return new IrcProperties(null, List.of(servers));
+  }
+
   public static IrcProperties.Server server(String id) {
     return serverBuilder(id).build();
   }
