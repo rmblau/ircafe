@@ -10,6 +10,7 @@ import cafe.woden.ircclient.app.api.AvailableBackendIdsPort;
 import cafe.woden.ircclient.app.outbound.backend.spi.OutboundBackendFeatureAdapter;
 import cafe.woden.ircclient.app.outbound.support.CommandTargetPolicy;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.irc.backend.IrcBackendAvailabilityPort;
 import cafe.woden.ircclient.irc.backend.IrcBackendClientService;
@@ -136,39 +137,15 @@ class OutboundBackendCapabilityPolicyTest {
   }
 
   private static IrcProperties.Server server(String id, IrcProperties.Server.Backend backend) {
-    return new IrcProperties.Server(
-        id,
-        "core.example.net",
-        4242,
-        false,
-        "",
-        "ircafe",
-        "ircafe",
-        "IRCafe User",
-        null,
-        null,
-        List.of(),
-        List.of(),
-        null,
-        backend);
+    return coreServer(id).backend(backend).build();
   }
 
   private static IrcProperties.Server server(String id, String backendId) {
-    return new IrcProperties.Server(
-        id,
-        "plugin.example.net",
-        9000,
-        false,
-        "",
-        "ircafe",
-        "ircafe",
-        "IRCafe User",
-        null,
-        null,
-        List.of(),
-        List.of(),
-        null,
-        backendId);
+    return coreServer(id).host("plugin.example.net").port(9000).backendId(backendId).build();
+  }
+
+  private static IrcPropertiesTestFixtures.ServerBuilder coreServer(String id) {
+    return IrcPropertiesTestFixtures.serverBuilder(id).host("core.example.net").port(4242).tls(false);
   }
 
   private static final class PluginBackendFeatureAdapter implements OutboundBackendFeatureAdapter {

@@ -99,6 +99,11 @@ public final class IrcPropertiesTestFixtures {
       return this;
     }
 
+    public ServerBuilder backend(IrcProperties.Server.Backend backend) {
+      this.backendId = BackendDescriptorCatalog.builtIns().idFor(backend);
+      return this;
+    }
+
     public ServerBuilder backendId(String backendId) {
       this.backendId = backendId;
       return this;

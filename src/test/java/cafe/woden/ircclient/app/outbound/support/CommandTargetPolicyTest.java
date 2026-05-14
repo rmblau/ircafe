@@ -9,6 +9,7 @@ import cafe.woden.ircclient.app.api.AvailableBackendIdsPort;
 import cafe.woden.ircclient.app.api.BackendEditorProfileSpec;
 import cafe.woden.ircclient.app.api.BackendUiMode;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.ServerCatalog;
 import java.util.List;
 import java.util.Optional;
@@ -71,39 +72,18 @@ class CommandTargetPolicyTest {
   }
 
   private static IrcProperties.Server server(String id, IrcProperties.Server.Backend backend) {
-    return new IrcProperties.Server(
-        id,
-        "irc.example.net",
-        6697,
-        true,
-        "",
-        "tester",
-        "tester",
-        "Tester",
-        null,
-        null,
-        List.of(),
-        List.of(),
-        null,
-        backend);
+    return baseServer(id).backend(backend).build();
   }
 
   private static IrcProperties.Server server(String id, String backendId) {
-    return new IrcProperties.Server(
-        id,
-        "irc.example.net",
-        6697,
-        true,
-        "",
-        "tester",
-        "tester",
-        "Tester",
-        null,
-        null,
-        List.of(),
-        List.of(),
-        null,
-        backendId);
+    return baseServer(id).backendId(backendId).build();
+  }
+
+  private static IrcPropertiesTestFixtures.ServerBuilder baseServer(String id) {
+    return IrcPropertiesTestFixtures.serverBuilder(id)
+        .nick("tester")
+        .login("tester")
+        .realName("Tester");
   }
 
   private static BackendEditorProfileSpec matrixProfile(String backendId) {
