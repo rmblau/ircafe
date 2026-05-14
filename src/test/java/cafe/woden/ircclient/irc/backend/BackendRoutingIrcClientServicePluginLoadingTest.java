@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.config.api.BackendMetadataPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
@@ -124,21 +125,12 @@ class BackendRoutingIrcClientServicePluginLoadingTest {
   }
 
   private static IrcProperties.Server server(String id, String backendId) {
-    return new IrcProperties.Server(
-        id,
-        "irc.example.net",
-        6697,
-        true,
-        "",
-        "tester",
-        "tester",
-        "IRCafe Test",
-        null,
-        null,
-        List.of(),
-        List.of(),
-        null,
-        backendId);
+    return IrcPropertiesTestFixtures.serverBuilder(id)
+        .nick("tester")
+        .login("tester")
+        .realName("IRCafe Test")
+        .backendId(backendId)
+        .build();
   }
 
   public static final class PluginProvidedIrcBackendClientService
