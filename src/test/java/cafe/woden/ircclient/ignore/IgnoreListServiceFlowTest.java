@@ -1,12 +1,13 @@
 package cafe.woden.ircclient.ignore;
 
+import static cafe.woden.ircclient.config.IrcPropertiesTestFixtures.server;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.config.IgnoreProperties;
-import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.ignore.api.IgnoreAddMaskResult;
 import cafe.woden.ircclient.ignore.api.IgnoreTextPatternMode;
 import java.io.Reader;
@@ -118,8 +119,7 @@ class IgnoreListServiceFlowTest {
   }
 
   private RuntimeConfigStore newRuntimeConfig(Path configPath) {
-    return new RuntimeConfigStore(
-        configPath.toString(), new IrcProperties(null, List.of(server("libera"))));
+    return RuntimeConfigStoreTestFixtures.storeWithServers(configPath, server("libera"));
   }
 
   private static IgnoreProperties loadIgnoreProperties(Path configPath) throws Exception {
@@ -242,19 +242,4 @@ class IgnoreListServiceFlowTest {
     return out.isEmpty() ? Map.of() : out;
   }
 
-  private static IrcProperties.Server server(String id) {
-    return new IrcProperties.Server(
-        id,
-        "irc.example.net",
-        6697,
-        true,
-        "",
-        "ircafe",
-        "ircafe",
-        "IRCafe User",
-        null,
-        List.of(),
-        List.of(),
-        null);
-  }
 }
