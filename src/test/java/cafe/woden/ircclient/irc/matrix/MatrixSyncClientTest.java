@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.net.ProxyPlan;
 import cafe.woden.ircclient.net.ServerProxyResolver;
 import com.sun.net.httpserver.HttpExchange;
@@ -466,21 +467,12 @@ class MatrixSyncClientTest {
   }
 
   private static IrcProperties.Server serverConfig(String id, String host, int port, boolean tls) {
-    return new IrcProperties.Server(
-        id,
-        host,
-        port,
-        tls,
-        "",
-        "ircafe",
-        "ircafe",
-        "IRCafe User",
-        null,
-        null,
-        List.of(),
-        List.of(),
-        null,
-        IrcProperties.Server.Backend.MATRIX);
+    return IrcPropertiesTestFixtures.serverBuilder(id)
+        .host(host)
+        .port(port)
+        .tls(tls)
+        .backend(IrcProperties.Server.Backend.MATRIX)
+        .build();
   }
 
   private record TestServer(
