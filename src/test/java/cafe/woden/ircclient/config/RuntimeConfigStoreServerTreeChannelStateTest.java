@@ -40,7 +40,7 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
 
     ServerRegistry registry =
         new ServerRegistry(
-            new IrcProperties(null, List.of(server("libera", List.of("#alpha")))), store);
+            IrcPropertiesTestFixtures.properties(server("libera", List.of("#alpha"))), store);
 
     assertEquals(List.of(), registry.require("libera").autoJoin());
   }
@@ -269,18 +269,6 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
   }
 
   private static IrcProperties.Server server(String id, List<String> autoJoin) {
-    return new IrcProperties.Server(
-        id,
-        "irc.example.net",
-        6697,
-        true,
-        "",
-        "ircafe",
-        "ircafe",
-        "IRCafe User",
-        null,
-        autoJoin,
-        List.of(),
-        null);
+    return IrcPropertiesTestFixtures.serverBuilder(id).autoJoin(autoJoin).build();
   }
 }
