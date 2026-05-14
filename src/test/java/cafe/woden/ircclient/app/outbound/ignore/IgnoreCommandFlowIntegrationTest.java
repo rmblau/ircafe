@@ -11,8 +11,9 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.config.IgnoreProperties;
-import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.ignore.IgnoreListService;
 import cafe.woden.ircclient.model.TargetRef;
 import java.nio.file.Path;
@@ -91,24 +92,8 @@ class IgnoreCommandFlowIntegrationTest {
 
   private static IgnoreListService newIgnoreListService(Path path) {
     RuntimeConfigStore runtimeConfig =
-        new RuntimeConfigStore(
-            path.toString(),
-            new IrcProperties(
-                null,
-                List.of(
-                    new IrcProperties.Server(
-                        "libera",
-                        "irc.example.net",
-                        6697,
-                        true,
-                        "",
-                        "ircafe",
-                        "ircafe",
-                        "IRCafe User",
-                        null,
-                        List.of(),
-                        List.of(),
-                        null))));
+        RuntimeConfigStoreTestFixtures.storeWithServers(
+            path, IrcPropertiesTestFixtures.server("libera"));
     return new IgnoreListService(new IgnoreProperties(true, false, Map.of()), runtimeConfig);
   }
 }
