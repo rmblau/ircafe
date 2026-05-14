@@ -79,8 +79,7 @@ class ThemeManagerIntegrationTest {
 
     Mockito.when(accentBus.get())
         .thenReturn(ThemeAppearanceSettingsTestFixtures.accent("#4C88D0", 70));
-    Mockito.when(tweakBus.get())
-        .thenReturn(ThemeAppearanceSettingsTestFixtures.tweakDefaults());
+    Mockito.when(tweakBus.get()).thenReturn(ThemeAppearanceSettingsTestFixtures.tweakDefaults());
 
     Mockito.doAnswer(
             invocation -> {

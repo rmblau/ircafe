@@ -3,8 +3,8 @@ package cafe.woden.ircclient.ui.settings.history;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import javax.swing.JCheckBox;

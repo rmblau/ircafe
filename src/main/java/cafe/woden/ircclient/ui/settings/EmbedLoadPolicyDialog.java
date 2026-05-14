@@ -26,7 +26,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
-import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -263,7 +262,7 @@ public class EmbedLoadPolicyDialog {
 
     JCheckBox requireVoiceOrOp = new JCheckBox("Only users with voice/op status");
     JCheckBox requireLoggedIn = new JCheckBox("Only users logged into an account");
-    JSpinner minAccountAgeDays = new JSpinner(new SpinnerNumberModel(0, 0, 36500, 1));
+    JSpinner minAccountAgeDays = PreferencesUiSupport.numberSpinner(0, 0, 36500, 1);
 
     return new PolicyControls(
         userWhitelist,

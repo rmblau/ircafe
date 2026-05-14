@@ -3,8 +3,8 @@ package cafe.woden.ircclient.ui.settings.theme;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.config.UiProperties;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
@@ -73,8 +73,7 @@ class ChatThemeSettingsBusIntegrationTest {
   @Test
   void loadsMessageColorOverridesIntoBusFromImportedRuntimeConfig() {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberChatMessageColor("#404040");
     store.rememberChatNoticeColor("#505050");

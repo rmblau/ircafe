@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.input;
 
-import cafe.woden.ircclient.ui.settings.SpellcheckSettings;
+import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettings;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;

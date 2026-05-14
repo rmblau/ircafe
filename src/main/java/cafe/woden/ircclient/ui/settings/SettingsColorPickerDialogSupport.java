@@ -1,6 +1,5 @@
 package cafe.woden.ircclient.ui.settings;
 
-import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -20,8 +19,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import net.miginfocom.swing.MigLayout;
 
 public final class SettingsColorPickerDialogSupport {
@@ -53,7 +50,7 @@ public final class SettingsColorPickerDialogSupport {
     contrast.setFont(UIManager.getFont("Label.smallFont"));
 
     JTextField hex = new JTextField(SettingsColorSupport.toHex(init), 10);
-    hex.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "#RRGGBB");
+    PreferencesUiSupport.placeholder(hex, "#RRGGBB");
 
     JLabel hexStatus = new JLabel(" ");
     hexStatus.setFont(UIManager.getFont("Label.smallFont"));
@@ -88,7 +85,7 @@ public final class SettingsColorPickerDialogSupport {
 
     hex.getDocument()
         .addDocumentListener(
-            new DocChangeListener(
+            new SettingsDocumentListener(
                 () -> {
                   if (internalUpdate[0]) return;
 
@@ -247,28 +244,5 @@ public final class SettingsColorPickerDialogSupport {
           if (onPick != null) onPick.accept(c);
         });
     return b;
-  }
-
-  private static final class DocChangeListener implements DocumentListener {
-    private final Runnable onChange;
-
-    private DocChangeListener(Runnable onChange) {
-      this.onChange = onChange;
-    }
-
-    @Override
-    public void insertUpdate(DocumentEvent e) {
-      onChange.run();
-    }
-
-    @Override
-    public void removeUpdate(DocumentEvent e) {
-      onChange.run();
-    }
-
-    @Override
-    public void changedUpdate(DocumentEvent e) {
-      onChange.run();
-    }
   }
 }

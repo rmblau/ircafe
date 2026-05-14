@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings;
 
 import cafe.woden.ircclient.config.NotificationRule;
+import cafe.woden.ircclient.ui.settings.memory.MemoryUsageDisplayMode;
 import java.util.List;
 
 public record UiSettings(
@@ -332,7 +333,7 @@ public record UiSettings(
         "compact");
   }
 
-  static String normalizeHexOrDefault(String raw, String fallback) {
+  public static String normalizeHexOrDefault(String raw, String fallback) {
     String fb = (fallback == null || fallback.isBlank()) ? "#6AA2FF" : fallback.trim();
     if (raw == null) return fb;
     String s = raw.trim();
@@ -369,7 +370,7 @@ public record UiSettings(
     }
   }
 
-  static String normalizeTypingTreeIndicatorStyle(String raw) {
+  public static String normalizeTypingTreeIndicatorStyle(String raw) {
     String s = raw == null ? "" : raw.trim().toLowerCase(java.util.Locale.ROOT);
     if (s.isEmpty()) return "dots";
     return switch (s) {
@@ -380,7 +381,7 @@ public record UiSettings(
     };
   }
 
-  static String normalizeMatrixUserListNameDisplayMode(String raw) {
+  public static String normalizeMatrixUserListNameDisplayMode(String raw) {
     String s = raw == null ? "" : raw.trim().toLowerCase(java.util.Locale.ROOT);
     if (s.isEmpty()) return "compact";
     return switch (s) {

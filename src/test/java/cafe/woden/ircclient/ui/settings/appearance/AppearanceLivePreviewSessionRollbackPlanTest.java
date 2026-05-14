@@ -24,8 +24,7 @@ class AppearanceLivePreviewSessionRollbackPlanTest {
             .cornerRadius(8)
             .uiFontOverrideEnabled(true)
             .build();
-    ChatThemeSettings chat =
-        ChatThemeSettingsTestFixtures.defaults();
+    ChatThemeSettings chat = ChatThemeSettingsTestFixtures.defaults();
 
     AppearanceLivePreviewSession.RollbackPlan plan =
         AppearanceLivePreviewSession.planRollback(
@@ -52,8 +51,7 @@ class AppearanceLivePreviewSessionRollbackPlanTest {
             .uiFontOverrideEnabled(true)
             .uiFontSize(16)
             .build();
-    ChatThemeSettings committedChat =
-        ChatThemeSettingsTestFixtures.defaults();
+    ChatThemeSettings committedChat = ChatThemeSettingsTestFixtures.defaults();
     ChatThemeSettings liveChat =
         ChatThemeSettingsTestFixtures.builder()
             .preset(ChatThemeSettings.Preset.ACCENTED)
@@ -87,8 +85,7 @@ class AppearanceLivePreviewSessionRollbackPlanTest {
     ThemeAccentSettings committedAccent = ThemeAppearanceSettingsTestFixtures.accent("#336699", 42);
     ThemeAccentSettings liveAccent = ThemeAppearanceSettingsTestFixtures.accent("#336699", 60);
     ThemeTweakSettings tweaks = ThemeAppearanceSettingsTestFixtures.tweakDefaults();
-    ChatThemeSettings chat =
-        ChatThemeSettingsTestFixtures.defaults();
+    ChatThemeSettings chat = ChatThemeSettingsTestFixtures.defaults();
 
     AppearanceLivePreviewSession.RollbackPlan plan =
         AppearanceLivePreviewSession.planRollback(
@@ -117,8 +114,7 @@ class AppearanceLivePreviewSessionRollbackPlanTest {
     UiSettings ui = mock(UiSettings.class);
     ThemeAccentSettings accent = ThemeAppearanceSettingsTestFixtures.accent("#336699", 42);
     ThemeTweakSettings tweaks = ThemeAppearanceSettingsTestFixtures.tweakDefaults();
-    ChatThemeSettings committedChat =
-        ChatThemeSettingsTestFixtures.defaults();
+    ChatThemeSettings committedChat = ChatThemeSettingsTestFixtures.defaults();
     ChatThemeSettings liveChat =
         ChatThemeSettingsTestFixtures.builder().timestampColor("#AAAAAA").build();
 
@@ -150,8 +146,7 @@ class AppearanceLivePreviewSessionRollbackPlanTest {
     ThemeAccentSettings committedAccent = ThemeAppearanceSettingsTestFixtures.accent("#336699", 42);
     ThemeAccentSettings liveAccent = ThemeAppearanceSettingsTestFixtures.accent("#336699", 60);
     ThemeTweakSettings tweaks = ThemeAppearanceSettingsTestFixtures.tweakDefaults();
-    ChatThemeSettings chat =
-        ChatThemeSettingsTestFixtures.defaults();
+    ChatThemeSettings chat = ChatThemeSettingsTestFixtures.defaults();
 
     AppearanceLivePreviewSession.RollbackPlan plan =
         AppearanceLivePreviewSession.planRollback(

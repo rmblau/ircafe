@@ -5,100 +5,47 @@ import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
 import cafe.woden.ircclient.config.ExecutorConfig;
 import cafe.woden.ircclient.config.LogProperties;
 import cafe.woden.ircclient.config.NotificationRule;
-import cafe.woden.ircclient.config.PushyProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
-import cafe.woden.ircclient.config.UiProperties;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.irc.backend.IrcHeartbeatMaintenanceService;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionCatalog;
-import cafe.woden.ircclient.model.BuiltInSound;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
-import cafe.woden.ircclient.model.TargetRef;
-import cafe.woden.ircclient.model.UserCommandAlias;
-import cafe.woden.ircclient.net.NetTlsContext;
 import cafe.woden.ircclient.notifications.api.IrcEventNotificationRulesPort;
 import cafe.woden.ircclient.notify.api.NotificationSoundPort;
 import cafe.woden.ircclient.notify.api.PushyNotificationPort;
 import cafe.woden.ircclient.notify.pushy.PushySettingsBus;
-import cafe.woden.ircclient.notify.sound.NotificationSoundSettings;
 import cafe.woden.ircclient.notify.sound.NotificationSoundSettingsBus;
 import cafe.woden.ircclient.ui.chat.NickColorService;
-import cafe.woden.ircclient.ui.chat.NickColorSettings;
 import cafe.woden.ircclient.ui.chat.NickColorSettingsBus;
 import cafe.woden.ircclient.ui.chat.embed.EmbedLoadPolicyBus;
 import cafe.woden.ircclient.ui.chat.transcript.rebuild.TranscriptRebuildService;
-import cafe.woden.ircclient.ui.filter.FilterSettings;
 import cafe.woden.ircclient.ui.filter.FilterSettingsBus;
-import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.nickcolors.NickColorOverridesDialog;
 import cafe.woden.ircclient.ui.servers.ServerDialogs;
-import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettings;
+import cafe.woden.ircclient.ui.settings.appearance.AppearanceLivePreviewSession;
+import cafe.woden.ircclient.ui.settings.notifications.IrcEventNotificationRuleDialogSupport;
+import cafe.woden.ircclient.ui.settings.notifications.NotificationRuleDialogSupport;
+import cafe.woden.ircclient.ui.settings.notifications.NotificationRulesControlsSupport;
+import cafe.woden.ircclient.ui.settings.notifications.NotificationSoundFileImportSupport;
+import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsBus;
-import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettings;
 import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ThemeManager;
-import cafe.woden.ircclient.ui.settings.theme.ThemeTweakSettings;
 import cafe.woden.ircclient.ui.settings.theme.ThemeTweakSettingsBus;
 import cafe.woden.ircclient.ui.shell.LagIndicatorService;
 import cafe.woden.ircclient.ui.shell.UpdateNotifierService;
 import cafe.woden.ircclient.ui.tray.TrayNotificationService;
 import cafe.woden.ircclient.ui.tray.TrayService;
 import cafe.woden.ircclient.ui.tray.dbus.GnomeDbusNotificationBackend;
-import cafe.woden.ircclient.ui.util.CloseableScope;
-import cafe.woden.ircclient.ui.util.DialogCloseableScopeDecorator;
-import cafe.woden.ircclient.ui.util.MouseWheelDecorator;
-import com.formdev.flatlaf.FlatClientProperties;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
-import java.awt.Font;
-import java.awt.GraphicsEnvironment;
-import java.awt.Insets;
-import java.awt.LayoutManager;
-import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.Window;
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
-import javax.swing.BorderFactory;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JSpinner;
-import javax.swing.JTabbedPane;
-import javax.swing.JTable;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.Scrollable;
-import javax.swing.SpinnerNumberModel;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.event.ChangeListener;
-import javax.swing.table.TableColumn;
-import net.miginfocom.swing.MigLayout;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -109,13 +56,6 @@ import org.springframework.stereotype.Component;
 @InterfaceLayer
 @Lazy
 public class PreferencesDialog {
-  static final String DENSITY_TOOLTIP =
-      "Changes the overall UI spacing / row height. Changes preview live; Apply/OK saves.";
-  static final String CORNER_RADIUS_TOOLTIP =
-      "Controls rounded corner radius for buttons/fields/etc. Changes preview live; Apply/OK saves.";
-
-  static final String UI_FONT_OVERRIDE_TOOLTIP =
-      "Overrides the global Swing UI font family and size for controls, menus, tabs, and dialogs.";
   private static final String DEFAULT_GENERIC_BOUNCER_LOGIN_TEMPLATE = "{base}/{network}";
   private static final boolean DEFAULT_GENERIC_BOUNCER_PREFER_LOGIN_HINT = true;
 
@@ -320,54 +260,7 @@ public class PreferencesDialog {
 
     UiSettings current = settingsBus.get();
 
-    Map<String, String> themeLabelById = buildThemeLabelById();
-
     List<AutoCloseable> closeables = new ArrayList<>();
-
-    ThemeControls theme = AppearanceControlsSupport.buildThemeControls(current, themeLabelById);
-    FontControls fonts = AppearanceControlsSupport.buildFontControls(current, closeables);
-    ThemeAccentSettings initialAccent =
-        accentSettingsBus != null
-            ? accentSettingsBus.get()
-            : new ThemeAccentSettings(
-                UiProperties.DEFAULT_ACCENT_COLOR, UiProperties.DEFAULT_ACCENT_STRENGTH);
-    AccentControls accent = AppearanceControlsSupport.buildAccentControls(initialAccent);
-    ThemeTweakSettings initialTweaks =
-        tweakSettingsBus != null
-            ? tweakSettingsBus.get()
-            : new ThemeTweakSettings(ThemeTweakSettings.ThemeDensity.AUTO, 10);
-    TweakControls tweaks = AppearanceControlsSupport.buildTweakControls(initialTweaks, closeables);
-
-    ChatThemeSettings initialChatTheme =
-        chatThemeSettingsBus != null
-            ? chatThemeSettingsBus.get()
-            : new ChatThemeSettings(
-                ChatThemeSettings.Preset.DEFAULT,
-                null,
-                null,
-                null,
-                35,
-                null,
-                null,
-                null,
-                null,
-                null);
-    ChatThemeControls chatTheme =
-        AppearanceControlsSupport.buildChatThemeControls(initialChatTheme);
-
-    // Allow mousewheel selection cycling for Appearance-tab combos.
-    try {
-      closeables.add(MouseWheelDecorator.decorateComboBoxSelection(theme.combo));
-    } catch (Exception ignored) {
-    }
-    try {
-      closeables.add(MouseWheelDecorator.decorateComboBoxSelection(chatTheme.preset));
-    } catch (Exception ignored) {
-    }
-    try {
-      closeables.add(MouseWheelDecorator.decorateComboBoxSelection(tweaks.density));
-    } catch (Exception ignored) {
-    }
 
     final java.util.concurrent.atomic.AtomicReference<EmbedLoadPolicySnapshot>
         pendingEmbedLoadPolicy =
@@ -375,1208 +268,121 @@ public class PreferencesDialog {
                 embedLoadPolicyBus != null
                     ? embedLoadPolicyBus.get()
                     : runtimeConfig.readEmbedLoadPolicy());
-    AppearanceLivePreviewSession appearancePreview =
-        new AppearanceLivePreviewSession(
-            current,
-            initialAccent,
-            initialTweaks,
-            initialChatTheme,
-            theme,
-            accent,
-            chatTheme,
-            fonts,
-            tweaks,
-            settingsBus,
-            themeManager,
-            accentSettingsBus,
-            tweakSettingsBus,
-            chatThemeSettingsBus);
-    closeables.add(appearancePreview);
-    appearancePreview.attachListeners();
-    JCheckBox autoConnectOnStart = buildAutoConnectCheckbox(current);
-    LaunchJvmControls launchJvm = LaunchJvmControlsSupport.buildControls(runtimeConfig);
-    NotificationSoundSettings soundSettings =
-        notificationSoundSettingsBus != null
-            ? notificationSoundSettingsBus.get()
-            : new NotificationSoundSettings(true, BuiltInSound.NOTIF_1.name(), false, null);
-    PushyProperties pushySettings =
-        pushySettingsBus != null
-            ? pushySettingsBus.get()
-            : new PushyProperties(false, null, null, null, null, null, null, null);
-    TrayControls trayControls =
-        TrayControlsSupport.buildControls(
-            current,
-            soundSettings,
-            pushySettings,
-            runtimeConfig,
-            gnomeDbusBackend,
-            trayNotificationService,
-            notificationSoundService,
-            pushyNotificationService,
-            pushyTestExecutor,
-            this::importNotificationSoundFileToRuntimeDir);
 
-    EmbedCardStyle currentEmbedCardStyle =
-        embedCardStyleBus != null ? embedCardStyleBus.get() : EmbedCardStyle.DEFAULT;
-    ImageEmbedControls imageEmbeds =
-        ChatDisplayControlsSupport.buildImageEmbedControls(current, closeables);
-    LinkPreviewControls linkPreviews =
-        ChatDisplayControlsSupport.buildLinkPreviewControls(current, currentEmbedCardStyle);
-    JButton advancedEmbedPolicyButton =
-        buildAdvancedEmbedPolicyButton(owner, pendingEmbedLoadPolicy);
-    TimestampControls timestamps = ChatDisplayControlsSupport.buildTimestampControls(current);
-    JComboBox<MemoryUsageDisplayMode> memoryUsageDisplayMode =
-        MemoryControlsSupport.buildMemoryUsageDisplayModeCombo(current);
-    JSpinner memoryUsageRefreshIntervalMs =
-        MemoryControlsSupport.buildMemoryUsageRefreshIntervalSpinner(current, closeables);
-    MemoryWarningControls memoryWarnings =
-        MemoryControlsSupport.buildMemoryWarningControls(current, closeables);
+    PreferencesDialogControls controls =
+        PreferencesDialogControls.build(
+            new PreferencesDialogControls.BuildRequest(
+                owner,
+                dialog,
+                current,
+                closeables,
+                pendingEmbedLoadPolicy,
+                settingsBus,
+                embedCardStyleBus,
+                themeManager,
+                accentSettingsBus,
+                tweakSettingsBus,
+                chatThemeSettingsBus,
+                spellcheckSettingsBus,
+                runtimeConfig,
+                logProps,
+                nickColorSettingsBus,
+                nickColorService,
+                nickColorOverridesDialog,
+                embedLoadPolicyDialog,
+                filterSettingsBus,
+                transcriptRebuildService,
+                targetCoordinator,
+                gnomeDbusBackend,
+                trayNotificationService,
+                notificationSoundSettingsBus,
+                pushySettingsBus,
+                pushyNotificationService,
+                ircEventNotificationRulesBus,
+                userCommandAliasesBus,
+                notificationSoundService,
+                serverDialogs,
+                pushyTestExecutor,
+                notificationRuleTestExecutor,
+                ircv3ExtensionCatalog,
+                this::importNotificationSoundFileToRuntimeDir,
+                DEFAULT_GENERIC_BOUNCER_PREFER_LOGIN_HINT,
+                DEFAULT_GENERIC_BOUNCER_LOGIN_TEMPLATE));
+    AppearanceLivePreviewSession appearancePreview = controls.appearance().preview();
+    List<PreferencesDialogWindowSupport.Tab> tabs =
+        controls.tabs(
+            dialog, this::promptIrcEventNotificationRuleDialog, this::promptNotificationRuleDialog);
 
-    JCheckBox presenceFolds = ChatBehaviorControlsSupport.buildPresenceFoldsCheckbox(current);
-    JCheckBox ctcpRequestsInActiveTarget =
-        ChatBehaviorControlsSupport.buildCtcpRequestsInActiveTargetCheckbox(current);
-    JTextField defaultQuitMessage =
-        ChatBehaviorControlsSupport.buildDefaultQuitMessageField(runtimeConfig);
-    SpellcheckSettings initialSpellcheck =
-        spellcheckSettingsBus != null ? spellcheckSettingsBus.get() : SpellcheckSettings.defaults();
-    SpellcheckControls spellcheck = SpellcheckControlsSupport.buildControls(initialSpellcheck);
-    CtcpAutoReplyControls ctcpAutoReplies =
-        CtcpAutoReplySupport.buildControls(
-            runtimeConfig.readCtcpAutoRepliesEnabled(true),
-            runtimeConfig.readCtcpAutoReplyVersionEnabled(true),
-            runtimeConfig.readCtcpAutoReplyPingEnabled(true),
-            runtimeConfig.readCtcpAutoReplyTimeEnabled(true));
-    JCheckBox typingIndicatorsSendEnabled =
-        ChatBehaviorControlsSupport.buildTypingIndicatorsSendCheckbox(current);
-    JCheckBox typingIndicatorsReceiveEnabled =
-        ChatBehaviorControlsSupport.buildTypingIndicatorsReceiveCheckbox(current);
-    JCheckBox typingIndicatorsTreeDisplayEnabled =
-        ChatBehaviorControlsSupport.buildTypingIndicatorsTreeDisplayCheckbox(current);
-    JCheckBox typingIndicatorsUsersListDisplayEnabled =
-        ChatBehaviorControlsSupport.buildTypingIndicatorsUsersListDisplayCheckbox(current);
-    JCheckBox typingIndicatorsTranscriptDisplayEnabled =
-        ChatBehaviorControlsSupport.buildTypingIndicatorsTranscriptDisplayCheckbox(current);
-    JCheckBox typingIndicatorsSendSignalDisplayEnabled =
-        ChatBehaviorControlsSupport.buildTypingIndicatorsSendSignalDisplayCheckbox(current);
-    JComboBox<TypingTreeIndicatorStyleOption> typingTreeIndicatorStyle =
-        ChatBehaviorControlsSupport.buildTypingTreeIndicatorStyleCombo(current);
-    JComboBox<MatrixUserListNameDisplayModeOption> matrixUserListNameDisplayMode =
-        ChatBehaviorControlsSupport.buildMatrixUserListNameDisplayModeCombo(current);
-    JCheckBox serverTreeNotificationBadgesEnabled =
-        ChatBehaviorControlsSupport.buildServerTreeNotificationBadgesCheckbox(current);
-    JSpinner serverTreeUnreadBadgeScalePercent =
-        ChatBehaviorControlsSupport.buildServerTreeUnreadBadgeScalePercentSpinner(runtimeConfig);
-    Ircv3CapabilitiesControls ircv3Capabilities =
-        Ircv3PanelSupport.buildCapabilitiesControls(runtimeConfig, ircv3ExtensionCatalog);
-    NickColorControls nickColors =
-        NickColorControlsSupport.buildControls(
-            owner,
-            closeables,
-            nickColorService,
-            nickColorOverridesDialog,
-            nickColorSettingsBus != null ? nickColorSettingsBus.get() : null);
-
-    try {
-      closeables.add(MouseWheelDecorator.decorateComboBoxSelection(memoryUsageDisplayMode));
-    } catch (Exception ignored) {
-    }
-
-    HistoryControls history =
-        HistoryControlsSupport.buildControls(
-            current,
-            closeables,
-            settingsBus == null || settingsBus.chatSmoothWheelScrollingEnabled(),
-            runtimeConfig == null
-                || runtimeConfig.readChatHistoryLockViewportDuringLoadOlder(true));
-    LoggingControls logging =
-        LoggingControlsSupport.buildControls(
-            runtimeConfig, logProps, closeables, serverDialogs, dialog);
-
-    OutgoingColorControls outgoing = OutgoingColorControlsSupport.buildControls(dialog, current);
-    JCheckBox outgoingDeliveryIndicators =
-        ChatBehaviorControlsSupport.buildOutgoingDeliveryIndicatorsCheckbox(current);
-    NetworkAdvancedControls network =
-        NetworkAdvancedControlsSupport.buildControls(
-            current,
-            closeables,
-            runtimeConfig,
-            NetTlsContext.trustAllCertificates(),
-            DEFAULT_GENERIC_BOUNCER_PREFER_LOGIN_HINT,
-            DEFAULT_GENERIC_BOUNCER_LOGIN_TEMPLATE);
-    UserhostControls userhost = network.userhost();
-    UserInfoEnrichmentControls enrichment = network.enrichment();
-    JSpinner monitorIsonPollIntervalSeconds = network.monitorIsonPollIntervalSeconds();
-
-    JPanel networkPanel = network.networkPanel();
-    JPanel userLookupsPanel = network.userLookupsPanel();
-
-    NotificationRulesControls notifications =
-        NotificationRulesControlsSupport.buildControls(
-            current, closeables, notificationRuleTestExecutor);
-    IrcEventNotificationControls ircEventNotifications =
-        buildIrcEventNotificationControls(
-            ircEventNotificationRulesBus != null
-                ? ircEventNotificationRulesBus.get()
-                : IrcEventNotificationRule.defaults());
-
-    FilterControls filters = buildFilterControls(filterSettingsBus.get(), closeables);
-    UserCommandAliasesControls userCommands =
-        buildUserCommandAliasesControls(
-            userCommandAliasesBus != null ? userCommandAliasesBus.get() : List.of(),
-            userCommandAliasesBus != null
-                ? userCommandAliasesBus.unknownCommandAsRawEnabled()
-                : runtimeConfig.readUnknownCommandAsRawEnabled(false));
-    DiagnosticsControls diagnostics = buildDiagnosticsControls();
-
-    AppearanceServerTreeControls appearanceServerTree =
-        AppearanceControlsSupport.buildServerTreeControls(current);
-    JPanel appearancePanel =
-        AppearancePanelSupport.buildPanel(
-            theme, accent, chatTheme, fonts, tweaks, appearanceServerTree);
-    JPanel memoryPanel =
-        MemoryPanelSupport.buildPanel(
-            memoryUsageDisplayMode, memoryUsageRefreshIntervalMs, memoryWarnings);
-    JPanel startupPanel = StartupPanelSupport.buildPanel(autoConnectOnStart, launchJvm);
-    JPanel trayPanel = buildTrayNotificationsPanel(trayControls);
-    JPanel chatPanel =
-        ChatPanelSupport.buildPanel(
-            presenceFolds,
-            ctcpRequestsInActiveTarget,
-            defaultQuitMessage,
-            spellcheck,
-            nickColors,
-            timestamps,
-            outgoing,
-            outgoingDeliveryIndicators);
-    JPanel ctcpRepliesPanel = CtcpAutoReplySupport.buildPanel(ctcpAutoReplies);
-    JPanel ircv3Panel =
-        Ircv3PanelSupport.buildPanel(
-            typingIndicatorsSendEnabled,
-            typingIndicatorsReceiveEnabled,
-            typingIndicatorsTreeDisplayEnabled,
-            typingIndicatorsUsersListDisplayEnabled,
-            typingIndicatorsTranscriptDisplayEnabled,
-            typingIndicatorsSendSignalDisplayEnabled,
-            typingTreeIndicatorStyle,
-            matrixUserListNameDisplayMode,
-            serverTreeNotificationBadgesEnabled,
-            serverTreeUnreadBadgeScalePercent,
-            ircv3Capabilities);
-    JPanel embedsPanel =
-        EmbedsAndPreviewsPanelSupport.buildPanel(
-            imageEmbeds, linkPreviews, advancedEmbedPolicyButton);
-    JPanel historyStoragePanel = HistoryStoragePanelSupport.buildPanel(logging, history);
-    JPanel notificationsPanel = buildNotificationsPanel(notifications, ircEventNotifications);
-    JPanel commandsPanel = buildUserCommandsPanel(userCommands);
-    JPanel diagnosticsPanel = buildDiagnosticsPanel(diagnostics);
-    JPanel filtersPanel = buildFiltersPanel(filters);
-
-    JButton apply = new JButton("Apply");
-    JButton ok = new JButton("OK");
-    JButton cancel = new JButton("Cancel");
-
-    apply.setIcon(SvgIcons.action("check", 16));
-    apply.setDisabledIcon(SvgIcons.actionDisabled("check", 16));
-    ok.setIcon(SvgIcons.action("check", 16));
-    ok.setDisabledIcon(SvgIcons.actionDisabled("check", 16));
-    cancel.setIcon(SvgIcons.action("close", 16));
-    cancel.setDisabledIcon(SvgIcons.actionDisabled("close", 16));
-
-    attachNotificationRuleValidation(notifications, apply, ok);
+    PreferencesDialogActionButtonsSupport.Buttons buttons =
+        PreferencesDialogActionButtonsSupport.build();
+    NotificationRulesControlsSupport.attachValidation(
+        controls.notifications(), buttons.apply(), buttons.ok());
 
     Runnable doApply =
         () -> {
-          String t = String.valueOf(theme.combo.getSelectedItem());
-          String fam = String.valueOf(fonts.fontFamily.getSelectedItem());
-          int size = ((Number) fonts.fontSize.getValue()).intValue();
-
-          ThemeTweakSettings prevTweaks =
-              tweakSettingsBus != null
-                  ? tweakSettingsBus.get()
-                  : new ThemeTweakSettings(ThemeTweakSettings.ThemeDensity.AUTO, 10);
-          ThemeTweakSettings nextTweaks = AppearanceControlsSupport.readTweakSettings(tweaks);
-          boolean tweaksChanged = !java.util.Objects.equals(prevTweaks, nextTweaks);
-
-          ThemeAccentSettings prevAccent =
-              accentSettingsBus != null
-                  ? accentSettingsBus.get()
-                  : new ThemeAccentSettings(
-                      UiProperties.DEFAULT_ACCENT_COLOR, UiProperties.DEFAULT_ACCENT_STRENGTH);
-          ThemeAccentSettings nextAccent;
+          PreferencesApplySupport.Snapshot applySnapshot;
           try {
-            nextAccent = AppearanceControlsSupport.readAccentSettings(accent);
-          } catch (AppearanceControlsSupport.AppearanceSettingsException ex) {
+            applySnapshot =
+                PreferencesApplySupport.read(
+                    controls.applyRequest(
+                        accentSettingsBus,
+                        tweakSettingsBus,
+                        chatThemeSettingsBus,
+                        embedCardStyleBus,
+                        settingsBus,
+                        runtimeConfig));
+          } catch (PreferencesApplySupport.ApplyException ex) {
             JOptionPane.showMessageDialog(
                 dialog, ex.getMessage(), ex.title(), JOptionPane.ERROR_MESSAGE);
             return;
           }
-          boolean accentChanged = !java.util.Objects.equals(prevAccent, nextAccent);
-
-          ChatThemeSettings prevChatTheme =
-              chatThemeSettingsBus != null
-                  ? chatThemeSettingsBus.get()
-                  : new ChatThemeSettings(
-                      ChatThemeSettings.Preset.DEFAULT,
-                      null,
-                      null,
-                      null,
-                      35,
-                      null,
-                      null,
-                      null,
-                      null,
-                      null);
-
-          ChatThemeSettings nextChatTheme;
-          try {
-            nextChatTheme = AppearanceControlsSupport.readChatThemeSettings(chatTheme);
-          } catch (AppearanceControlsSupport.AppearanceSettingsException ex) {
-            JOptionPane.showMessageDialog(
-                dialog, ex.getMessage(), ex.title(), JOptionPane.ERROR_MESSAGE);
-            return;
-          }
-          boolean chatThemeChanged = !java.util.Objects.equals(prevChatTheme, nextChatTheme);
-
-          boolean autoConnectV = autoConnectOnStart.isSelected();
-
-          TrayControlsSupport.TraySettings traySettings;
-          try {
-            traySettings = TrayControlsSupport.readSettings(trayControls);
-          } catch (TrayControlsSupport.TraySettingsException ex) {
-            JOptionPane.showMessageDialog(
-                dialog, ex.getMessage(), ex.title(), JOptionPane.ERROR_MESSAGE);
-            return;
-          }
-
-          ChatDisplayControlsSupport.TimestampSettings timestampSettings;
-          try {
-            timestampSettings = ChatDisplayControlsSupport.readTimestampSettings(timestamps);
-          } catch (ChatDisplayControlsSupport.TimestampSettingsException ex) {
-            JOptionPane.showMessageDialog(
-                dialog, ex.getMessage(), ex.title(), JOptionPane.ERROR_MESSAGE);
-            return;
-          }
-
-          ChatBehaviorControlsSupport.ChatBehaviorSettings chatBehaviorSettings =
-              ChatBehaviorControlsSupport.readSettings(
-                  presenceFolds,
-                  ctcpRequestsInActiveTarget,
-                  defaultQuitMessage,
-                  typingIndicatorsSendEnabled,
-                  typingIndicatorsReceiveEnabled,
-                  typingTreeIndicatorStyle,
-                  typingIndicatorsTreeDisplayEnabled,
-                  typingIndicatorsUsersListDisplayEnabled,
-                  typingIndicatorsTranscriptDisplayEnabled,
-                  typingIndicatorsSendSignalDisplayEnabled,
-                  matrixUserListNameDisplayMode,
-                  serverTreeNotificationBadgesEnabled,
-                  serverTreeUnreadBadgeScalePercent);
-          SpellcheckSettings nextSpellcheck = SpellcheckControlsSupport.readSettings(spellcheck);
-          CtcpAutoReplySupport.CtcpAutoReplySettings ctcpAutoReplySettings =
-              CtcpAutoReplySupport.readSettings(ctcpAutoReplies);
-          Map<String, Boolean> ircv3CapabilitiesV = ircv3Capabilities.snapshot();
-
-          NickColorSettings nextNickColorSettings =
-              NickColorControlsSupport.readSettings(nickColors);
-
-          ChatDisplayControlsSupport.EmbedPreviewSettings embedPreviewSettings =
-              ChatDisplayControlsSupport.readEmbedPreviewSettings(imageEmbeds, linkPreviews);
-          EmbedCardStyle prevEmbedCardStyle =
-              embedCardStyleBus != null ? embedCardStyleBus.get() : EmbedCardStyle.DEFAULT;
-          boolean embedCardStyleChanged =
-              embedPreviewSettings.embedCardStyleChanged(prevEmbedCardStyle);
-
-          HistoryControlsSupport.HistorySettings historySettings =
-              HistoryControlsSupport.readSettings(history);
-          LoggingControlsSupport.LoggingSettings loggingSettings =
-              LoggingControlsSupport.readSettings(logging);
-          MemoryControlsSupport.MemorySettings memorySettings =
-              MemoryControlsSupport.readSettings(
-                  memoryUsageDisplayMode, memoryUsageRefreshIntervalMs, memoryWarnings);
-          LaunchJvmControlsSupport.LaunchJvmSettings launchJvmSettings =
-              LaunchJvmControlsSupport.readSettings(launchJvm);
-          NetworkAdvancedControlsSupport.NetworkSettings networkSettings;
-          try {
-            networkSettings = NetworkAdvancedControlsSupport.readSettings(network);
-          } catch (NetworkAdvancedControlsSupport.NetworkSettingsException ex) {
-            javax.swing.JOptionPane.showMessageDialog(
-                dialog, ex.getMessage(), ex.title(), javax.swing.JOptionPane.ERROR_MESSAGE);
-            return;
-          }
-
-          UserLookupsPanelSupport.UserLookupSettings userLookupSettings =
-              UserLookupsPanelSupport.readSettings(
-                  userhost, enrichment, monitorIsonPollIntervalSeconds);
-
-          UiSettings prev = settingsBus.get();
-          OutgoingColorControlsSupport.OutgoingLineSettings outgoingLineSettings =
-              OutgoingColorControlsSupport.readSettings(
-                  outgoing, outgoingDeliveryIndicators, prev.clientLineColor());
-          AppearanceControlsSupport.ServerTreeAppearanceSettings serverTreeAppearanceSettings;
-          try {
-            serverTreeAppearanceSettings =
-                AppearanceControlsSupport.readServerTreeSettings(appearanceServerTree);
-          } catch (AppearanceControlsSupport.AppearanceSettingsException ex) {
-            JOptionPane.showMessageDialog(
-                dialog, ex.getMessage(), ex.title(), JOptionPane.ERROR_MESSAGE);
-            return;
-          }
-
-          NotificationRulesControlsSupport.NotificationSettings notificationSettings =
-              NotificationRulesControlsSupport.readSettings(notifications);
-          IrcEventNotificationsTabSupport.IrcEventNotificationSettings
-              ircEventNotificationSettings =
-                  IrcEventNotificationsTabSupport.readSettings(ircEventNotifications);
-          UserCommandAliasesControlsSupport.UserCommandAliasSettings userCommandSettings =
-              UserCommandAliasesControlsSupport.readSettings(userCommands);
-
-          ValidationError notifErr = notificationSettings.validationError();
-          if (notifErr != null) {
-            NotificationRulesControlsSupport.refreshValidation(notifications);
-            JOptionPane.showMessageDialog(
-                dialog,
-                notifErr.formatForDialog(),
-                "Invalid notification rule",
-                JOptionPane.ERROR_MESSAGE);
-            return;
-          }
-
-          UserCommandAliasValidationError aliasErr = userCommandSettings.validationError();
-          if (aliasErr != null) {
-            JOptionPane.showMessageDialog(
-                dialog,
-                aliasErr.formatForDialog(),
-                "Invalid command alias",
-                JOptionPane.ERROR_MESSAGE);
-            return;
-          }
-
-          DiagnosticsControlsSupport.DiagnosticsSettings diagnosticsSettings =
-              DiagnosticsControlsSupport.readSettings(diagnostics);
-
-          boolean diagnosticsChangedV =
-              DiagnosticsControlsSupport.settingsChanged(runtimeConfig, diagnosticsSettings);
-
-          UiSettings next =
-              new UiSettings(
-                  t,
-                  fam,
-                  size,
-                  autoConnectV,
-                  traySettings.trayEnabled(),
-                  traySettings.trayCloseToTray(),
-                  traySettings.trayMinimizeToTray(),
-                  traySettings.trayStartMinimized(),
-                  traySettings.trayNotifyHighlights(),
-                  traySettings.trayNotifyPrivateMessages(),
-                  traySettings.trayNotifyConnectionState(),
-                  traySettings.trayNotifyOnlyWhenUnfocused(),
-                  traySettings.trayNotifyOnlyWhenMinimizedOrHidden(),
-                  traySettings.trayNotifySuppressWhenTargetActive(),
-                  traySettings.trayLinuxDbusActionsEnabled(),
-                  traySettings.trayNotificationBackendMode(),
-                  embedPreviewSettings.imageEmbedsEnabled(),
-                  embedPreviewSettings.imageEmbedsCollapsedByDefault(),
-                  embedPreviewSettings.imageEmbedsMaxWidthPx(),
-                  embedPreviewSettings.imageEmbedsMaxHeightPx(),
-                  embedPreviewSettings.imageEmbedsAnimateGifs(),
-                  embedPreviewSettings.linkPreviewsEnabled(),
-                  embedPreviewSettings.linkPreviewsCollapsedByDefault(),
-                  chatBehaviorSettings.presenceFoldsEnabled(),
-                  chatBehaviorSettings.ctcpRequestsInActiveTargetEnabled(),
-                  chatBehaviorSettings.typingIndicatorsSendEnabled(),
-                  chatBehaviorSettings.typingIndicatorsReceiveEnabled(),
-                  chatBehaviorSettings.typingIndicatorsTreeStyle(),
-                  chatBehaviorSettings.typingIndicatorsTreeDisplayEnabled(),
-                  chatBehaviorSettings.typingIndicatorsUsersListDisplayEnabled(),
-                  chatBehaviorSettings.typingIndicatorsTranscriptDisplayEnabled(),
-                  chatBehaviorSettings.typingIndicatorsSendSignalDisplayEnabled(),
-                  timestampSettings.enabled(),
-                  timestampSettings.format(),
-                  timestampSettings.includeChatMessages(),
-                  timestampSettings.includePresenceMessages(),
-                  historySettings.initialLoadLines(),
-                  historySettings.pageSize(),
-                  historySettings.autoLoadWheelDebounceMs(),
-                  historySettings.loadOlderChunkSize(),
-                  historySettings.loadOlderChunkDelayMs(),
-                  historySettings.loadOlderChunkEdtBudgetMs(),
-                  historySettings.deferRichTextDuringBatch(),
-                  historySettings.remoteRequestTimeoutSeconds(),
-                  historySettings.remoteZncPlaybackTimeoutSeconds(),
-                  historySettings.remoteZncPlaybackWindowMinutes(),
-                  historySettings.commandHistoryMaxSize(),
-                  historySettings.chatTranscriptMaxLinesPerTarget(),
-                  outgoingLineSettings.clientLineColorEnabled(),
-                  outgoingLineSettings.clientLineColor(),
-                  outgoingLineSettings.outgoingDeliveryIndicatorsEnabled(),
-                  chatBehaviorSettings.serverTreeNotificationBadgesEnabled(),
-                  userLookupSettings.userhostEnabled(),
-                  userLookupSettings.userhostMinIntervalSeconds(),
-                  userLookupSettings.userhostMaxCommandsPerMinute(),
-                  userLookupSettings.userhostNickCooldownMinutes(),
-                  userLookupSettings.userhostMaxNicksPerCommand(),
-                  userLookupSettings.enrichmentEnabled(),
-                  userLookupSettings.enrichmentUserhostMinIntervalSeconds(),
-                  userLookupSettings.enrichmentUserhostMaxCommandsPerMinute(),
-                  userLookupSettings.enrichmentUserhostNickCooldownMinutes(),
-                  userLookupSettings.enrichmentUserhostMaxNicksPerCommand(),
-                  userLookupSettings.enrichmentWhoisFallbackEnabled(),
-                  userLookupSettings.enrichmentWhoisMinIntervalSeconds(),
-                  userLookupSettings.enrichmentWhoisNickCooldownMinutes(),
-                  userLookupSettings.enrichmentPeriodicRefreshEnabled(),
-                  userLookupSettings.enrichmentPeriodicRefreshIntervalSeconds(),
-                  userLookupSettings.enrichmentPeriodicRefreshNicksPerTick(),
-                  userLookupSettings.monitorIsonPollIntervalSeconds(),
-                  notificationSettings.cooldownSeconds(),
-                  memorySettings.displayMode(),
-                  memorySettings.refreshIntervalMs(),
-                  memorySettings.warningNearMaxPercent(),
-                  memorySettings.warningTooltipEnabled(),
-                  memorySettings.warningToastEnabled(),
-                  memorySettings.warningPushyEnabled(),
-                  memorySettings.warningSoundEnabled(),
-                  notificationSettings.rules(),
-                  serverTreeAppearanceSettings.unreadChannelColor(),
-                  serverTreeAppearanceSettings.highlightChannelColor(),
-                  serverTreeAppearanceSettings.preserveDockLayoutBetweenSessions(),
-                  chatBehaviorSettings.matrixUserListNameDisplayMode());
-          boolean themeChanged = !next.theme().equalsIgnoreCase(prev.theme());
-
-          ChatBehaviorControlsSupport.rememberServerTreeSettings(
-              runtimeConfig, chatBehaviorSettings);
-          AppearanceControlsSupport.rememberServerTreeSettings(
-              runtimeConfig, serverTreeAppearanceSettings);
-          settingsBus.set(next);
-          settingsBus.setChatSmoothWheelScrollingEnabled(
-              historySettings.smoothWheelScrollingEnabled());
-          if (spellcheckSettingsBus != null) {
-            spellcheckSettingsBus.set(nextSpellcheck);
-          }
-
-          if (accentSettingsBus != null) {
-            accentSettingsBus.set(nextAccent);
-          }
-          runtimeConfig.beginMutationBatch();
-          try {
-            AppearanceControlsSupport.rememberAccentSettings(runtimeConfig, nextAccent);
-
-            if (tweakSettingsBus != null) {
-              tweakSettingsBus.set(nextTweaks);
-            }
-
-            if (chatThemeSettingsBus != null && chatThemeChanged) {
-              chatThemeSettingsBus.set(nextChatTheme);
-            }
-            AppearanceControlsSupport.rememberTweakSettings(runtimeConfig, nextTweaks);
-
-            runtimeConfig.rememberUiSettings(
-                next.theme(), next.chatFontFamily(), next.chatFontSize());
-            MemoryControlsSupport.rememberSettings(runtimeConfig, memorySettings);
-            AppearanceControlsSupport.rememberChatThemeSettings(runtimeConfig, nextChatTheme);
-            runtimeConfig.rememberAutoConnectOnStart(next.autoConnectOnStart());
-            runtimeConfig.rememberLaunchJvmJavaCommand(launchJvmSettings.javaCommand());
-            runtimeConfig.rememberLaunchJvmXmsMiB(launchJvmSettings.xmsMiB());
-            runtimeConfig.rememberLaunchJvmXmxMiB(launchJvmSettings.xmxMiB());
-            runtimeConfig.rememberLaunchJvmGc(launchJvmSettings.gc());
-            runtimeConfig.rememberLaunchJvmArgs(launchJvmSettings.args());
-            TrayControlsSupport.rememberSettings(
-                runtimeConfig,
-                notificationSoundSettingsBus,
-                pushySettingsBus,
-                updateNotifierService,
-                lagIndicatorService,
-                trayService,
-                traySettings);
-            ChatDisplayControlsSupport.rememberEmbedPreviewSettings(
-                runtimeConfig, embedCardStyleBus, embedPreviewSettings);
-            EmbedLoadPolicySnapshot embedPolicyV =
-                pendingEmbedLoadPolicy.get() != null
-                    ? pendingEmbedLoadPolicy.get()
-                    : EmbedLoadPolicySnapshot.defaults();
-            runtimeConfig.rememberEmbedLoadPolicy(embedPolicyV);
-            if (embedLoadPolicyBus != null) {
-              embedLoadPolicyBus.set(embedPolicyV);
-            }
-            ChatBehaviorControlsSupport.rememberSettings(runtimeConfig, chatBehaviorSettings);
-            CtcpAutoReplySupport.rememberSettings(runtimeConfig, ctcpAutoReplySettings);
-            SpellcheckControlsSupport.rememberSettings(runtimeConfig, nextSpellcheck);
-            Ircv3PanelSupport.persistCapabilities(runtimeConfig, ircv3CapabilitiesV);
-
-            NickColorControlsSupport.rememberSettings(
-                runtimeConfig, nickColorSettingsBus, nextNickColorSettings);
-            ChatDisplayControlsSupport.rememberTimestampSettings(runtimeConfig, timestampSettings);
-
-            HistoryControlsSupport.rememberSettings(runtimeConfig, historySettings);
-
-            applyFilterSettingsFromUi(filters);
-            LoggingControlsSupport.rememberSettings(runtimeConfig, loggingSettings);
-
-            OutgoingColorControlsSupport.rememberSettings(runtimeConfig, outgoingLineSettings);
-
-            NotificationRulesControlsSupport.rememberSettings(runtimeConfig, notificationSettings);
-            IrcEventNotificationsTabSupport.rememberSettings(
-                runtimeConfig, ircEventNotificationRulesBus, ircEventNotificationSettings);
-            UserCommandAliasesControlsSupport.rememberSettings(
-                runtimeConfig, userCommandAliasesBus, userCommandSettings);
-            DiagnosticsControlsSupport.rememberSettings(runtimeConfig, diagnosticsSettings);
-            if (diagnosticsChangedV) {
-              JOptionPane.showMessageDialog(
+          PreferencesCommitSupport.commit(
+              new PreferencesCommitSupport.CommitRequest(
+                  applySnapshot,
+                  runtimeConfig,
+                  settingsBus,
+                  spellcheckSettingsBus,
+                  accentSettingsBus,
+                  tweakSettingsBus,
+                  chatThemeSettingsBus,
+                  notificationSoundSettingsBus,
+                  pushySettingsBus,
+                  updateNotifierService,
+                  lagIndicatorService,
+                  trayService,
+                  embedCardStyleBus,
+                  embedLoadPolicyBus,
+                  ircEventNotificationRulesBus,
+                  userCommandAliasesBus,
+                  ircHeartbeatMaintenancePort,
+                  themeManager,
+                  targetCoordinator,
+                  transcriptRebuildService,
+                  nickColorSettingsBus,
+                  controls.filters(),
+                  filterSettingsBus,
                   dialog,
-                  "Diagnostics settings were saved.\nRestart IRCafe to apply AssertJ Swing / jHiccup startup changes.",
-                  "Restart required",
-                  JOptionPane.INFORMATION_MESSAGE);
-            }
-
-            UserLookupsPanelSupport.rememberSettings(runtimeConfig, userLookupSettings);
-            NetworkAdvancedControlsSupport.rememberSettings(
-                runtimeConfig, ircHeartbeatMaintenancePort, networkSettings);
-          } finally {
-            runtimeConfig.endMutationBatch();
-          }
-
-          if (themeManager != null) {
-            if (themeChanged || accentChanged || tweaksChanged) {
-              // Full UI refresh (also triggers a chat restyle)
-              themeManager.applyTheme(next.theme());
-            } else if (chatThemeChanged) {
-              // Only the transcript palette changed
-              themeManager.refreshChatStyles();
-            }
-          }
-          if (embedCardStyleChanged) {
-            try {
-              TargetRef active = targetCoordinator.getActiveTarget();
-              if (active != null) transcriptRebuildService.rebuild(active);
-            } catch (Exception ignored) {
-              // best-effort
-            }
-          }
-
-          appearancePreview.commit(next, nextAccent, nextTweaks, nextChatTheme);
+                  pendingEmbedLoadPolicy,
+                  appearancePreview));
         };
 
-    apply.addActionListener(e -> doApply.run());
-    final JDialog d = createDialog(owner);
-    this.dialog = d;
-    final AtomicBoolean rollbackOnClose = new AtomicBoolean(true);
-    final AtomicBoolean rollbackScheduled = new AtomicBoolean(false);
-    d.addWindowListener(
-        new java.awt.event.WindowAdapter() {
-          @Override
-          public void windowClosed(java.awt.event.WindowEvent e) {
-            if (!rollbackOnClose.get()) return;
-            if (!rollbackScheduled.compareAndSet(false, true)) return;
-            SwingUtilities.invokeLater(
-                () -> {
-                  if (rollbackOnClose.get()) appearancePreview.restoreCommittedAppearance();
-                });
-          }
-        });
-
-    final CloseableScope scope = DialogCloseableScopeDecorator.install(d);
-    closeables.forEach(scope::add);
-    scope.addCleanup(
-        () -> {
-          if (this.dialog == d) this.dialog = null;
-        });
-
-    ok.addActionListener(
-        e -> {
-          doApply.run();
-          rollbackOnClose.set(false);
-          d.dispose();
-        });
-    cancel.addActionListener(
-        e -> {
-          d.dispose();
-        });
-
-    JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 8));
-    buttons.setBorder(BorderFactory.createEmptyBorder(8, 12, 12, 12));
-    buttons.add(apply);
-    buttons.add(ok);
-    buttons.add(cancel);
-    JTabbedPane tabs = new DynamicTabbedPane();
-
-    tabs.addTab("Appearance", wrapTab(appearancePanel));
-    tabs.addTab("Memory", wrapTab(memoryPanel));
-    tabs.addTab("Startup", wrapTab(startupPanel));
-    tabs.addTab("Tray & Notifications", wrapTab(trayPanel));
-    tabs.addTab("Chat", wrapTab(chatPanel));
-    tabs.addTab("CTCP Replies", wrapTab(ctcpRepliesPanel));
-    tabs.addTab("IRCv3", wrapTab(ircv3Panel));
-    tabs.addTab("Embeds & Previews", wrapTab(embedsPanel));
-    tabs.addTab("History & Storage", wrapTab(historyStoragePanel));
-    tabs.addTab("Notifications", wrapTab(notificationsPanel));
-    tabs.addTab("Commands", wrapTab(commandsPanel));
-    tabs.addTab("Diagnostics", wrapTab(diagnosticsPanel));
-    tabs.addTab("Filters", wrapTab(filtersPanel));
-    tabs.addTab("Network", wrapTab(networkPanel));
-    tabs.addTab("User lookups", wrapTab(userLookupsPanel));
-
-    d.setLayout(new BorderLayout());
-    d.add(tabs, BorderLayout.CENTER);
-    d.add(buttons, BorderLayout.SOUTH);
-    // A tiny minimum size makes "dynamic tab sizing" feel jarring (some tabs would shrink the whole
-    // dialog
-    // to near-nothing). Keep a comfortable baseline so tabs like Network don't open comically
-    // short.
-    d.setMinimumSize(new Dimension(680, 540));
-    installDynamicTabSizing(d, tabs, owner);
-    d.setLocationRelativeTo(owner);
-    d.setVisible(true);
-  }
-
-  private static void installDynamicTabSizing(JDialog d, JTabbedPane tabs, Window owner) {
-    ChangeListener listener =
-        e -> {
-          packClampAndKeepCenter(d, owner);
-          // Some tabs with nested panels/subtabs report final preferred sizes only after
-          // the first layout pass on selection.
-          SwingUtilities.invokeLater(
-              () -> {
-                if (!d.isDisplayable()) return;
-                packClampAndKeepCenter(d, owner);
-              });
-        };
-    tabs.addChangeListener(listener);
-    packClampAndKeepCenter(d, owner);
-    // Run one more pass after the dialog is realized so viewport measurements are final.
-    SwingUtilities.invokeLater(
-        () -> {
-          if (!d.isDisplayable()) return;
-          packClampAndKeepCenter(d, owner);
-        });
-  }
-
-  private static void packClampAndKeepCenter(JDialog d, Window owner) {
-    if (!SwingUtilities.isEventDispatchThread()) {
-      SwingUtilities.invokeLater(() -> packClampAndKeepCenter(d, owner));
-      return;
-    }
-
-    Point center = new Point(d.getX() + d.getWidth() / 2, d.getY() + d.getHeight() / 2);
-    d.pack();
-    d.validate();
-
-    Rectangle usable = usableBounds(owner, d);
-    int margin = 32;
-    int maxW = Math.max(usable.width - margin, d.getMinimumSize().width);
-    int maxH = Math.max(usable.height - margin, d.getMinimumSize().height);
-
-    // First clamp to usable bounds + minimum size.
-    Dimension size = d.getSize();
-    int w = Math.max(d.getMinimumSize().width, Math.min(size.width, maxW));
-    int h = Math.max(d.getMinimumSize().height, Math.min(size.height, maxH));
-    if (w != size.width || h != size.height) {
-      d.setSize(w, h);
-      d.validate();
-    }
-
-    // Some tabs (especially those wrapped in JScrollPane and/or containing wrapped help text)
-    // can slightly under-report their preferred height, resulting in an unnecessary vertical
-    // scrollbar. Nudge after the clamp so the viewport width/word-wrapping is final.
-    nudgeToAvoidUnnecessaryVerticalScroll(d, maxH);
-
-    // Re-clamp in case the nudge bumped us over the usable bounds.
-    size = d.getSize();
-    w = Math.max(d.getMinimumSize().width, Math.min(size.width, maxW));
-    h = Math.max(d.getMinimumSize().height, Math.min(size.height, maxH));
-    if (w != size.width || h != size.height) {
-      d.setSize(w, h);
-      d.validate();
-    }
-
-    // Keep the dialog centered as the user switches tabs.
-    int nx = center.x - d.getWidth() / 2;
-    int ny = center.y - d.getHeight() / 2;
-    nx = Math.max(usable.x, Math.min(nx, usable.x + usable.width - d.getWidth()));
-    ny = Math.max(usable.y, Math.min(ny, usable.y + usable.height - d.getHeight()));
-    d.setLocation(nx, ny);
-  }
-
-  private static void nudgeToAvoidUnnecessaryVerticalScroll(JDialog d, int maxDialogHeight) {
-    if (d == null || !d.isShowing()) return;
-    java.awt.Container root = d.getContentPane();
-    if (root == null) return;
-
-    JTabbedPane tabs = null;
-    for (java.awt.Component c : root.getComponents()) {
-      if (c instanceof JTabbedPane t) {
-        tabs = t;
-        break;
-      }
-    }
-    if (tabs == null) return;
-
-    java.awt.Component selected = tabs.getSelectedComponent();
-    if (!(selected instanceof JScrollPane sp)) return;
-
-    java.awt.Component view = sp.getViewport() != null ? sp.getViewport().getView() : null;
-    if (view == null) return;
-
-    // Force layout so viewport sizes are current.
-    sp.doLayout();
-    if (sp.getViewport() != null) sp.getViewport().doLayout();
-    view.doLayout();
-
-    Dimension viewPref = view.getPreferredSize();
-    Dimension extent = sp.getViewport() != null ? sp.getViewport().getExtentSize() : null;
-    if (viewPref == null || extent == null) return;
-
-    int missing = viewPref.height - extent.height;
-    if (missing <= 0) return;
-
-    // Only nudge if the missing amount is small-ish (we're fixing "almost fits" cases).
-    // If the view is truly huge, we keep the scroll.
-    if (missing > 220) return;
-
-    Dimension dialogSize = d.getSize();
-    int targetH = Math.min(maxDialogHeight, dialogSize.height + missing);
-    if (targetH > dialogSize.height) {
-      d.setSize(dialogSize.width, targetH);
-      d.validate();
-    }
-  }
-
-  private static Rectangle usableBounds(Window owner, Window fallback) {
-    try {
-      var gc =
-          owner != null ? owner.getGraphicsConfiguration() : fallback.getGraphicsConfiguration();
-      if (gc == null)
-        return GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
-
-      Rectangle b = gc.getBounds();
-      Insets in = Toolkit.getDefaultToolkit().getScreenInsets(gc);
-      return new Rectangle(
-          b.x + in.left, b.y + in.top, b.width - in.left - in.right, b.height - in.top - in.bottom);
-    } catch (Exception ignored) {
-      return GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
-    }
-  }
-
-  private Map<String, String> buildThemeLabelById() {
-    Map<String, String> themeLabelById = new LinkedHashMap<>();
-    for (ThemeManager.ThemeOption opt : themeManager.supportedThemes()) {
-      themeLabelById.put(opt.id(), opt.label());
-    }
-    return themeLabelById;
-  }
-
-  /**
-   * Wrap a settings tab inside a scroll pane.
-   *
-   * <p>Important: we use a Scrollable wrapper that tracks the viewport width. Without this, when
-   * the dialog is resized larger and then smaller again, Swing can keep the tab view at the larger
-   * width (no horizontal scrollbar), making controls appear to "stick" expanded instead of
-   * shrinking.
-   */
-  private static JScrollPane wrapTab(JPanel panel) {
-    ScrollableViewportWidthPanel wrapper = new ScrollableViewportWidthPanel(new BorderLayout());
-    wrapper.add(panel, BorderLayout.NORTH);
-
-    JScrollPane scroll =
-        new JScrollPane(
-            wrapper,
-            ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
-            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-    scroll.setBorder(null);
-    scroll.setViewportBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-    scroll.getVerticalScrollBar().setUnitIncrement(16);
-    return scroll;
-  }
-
-  static JPanel padSubTab(JComponent panel) {
-    JPanel wrapper = new JPanel(new BorderLayout());
-    wrapper.setOpaque(false);
-    wrapper.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
-    wrapper.add(panel, BorderLayout.NORTH);
-    return wrapper;
-  }
-
-  /**
-   * A lightweight view wrapper for JScrollPane that always tracks viewport width. This prevents
-   * "expanded" components from not shrinking back down when the parent dialog is resized smaller.
-   */
-  private static final class ScrollableViewportWidthPanel extends JPanel implements Scrollable {
-    private ScrollableViewportWidthPanel(LayoutManager layout) {
-      super(layout);
-    }
-
-    @Override
-    public Dimension getMinimumSize() {
-      Dimension d = super.getMinimumSize();
-      return new Dimension(0, d != null ? d.height : 0);
-    }
-
-    @Override
-    public Dimension getPreferredScrollableViewportSize() {
-      return getPreferredSize();
-    }
-
-    @Override
-    public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
-      return 16;
-    }
-
-    @Override
-    public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
-      if (orientation == SwingConstants.VERTICAL) {
-        return Math.max(32, visibleRect.height - 32);
-      }
-      return Math.max(32, visibleRect.width - 32);
-    }
-
-    @Override
-    public boolean getScrollableTracksViewportWidth() {
-      return true;
-    }
-
-    @Override
-    public boolean getScrollableTracksViewportHeight() {
-      return false;
-    }
-  }
-
-  static JLabel tabTitle(String text) {
-    JLabel l = new JLabel(text);
-    l.putClientProperty(FlatClientProperties.STYLE, "font:+4");
-    Font f = l.getFont();
-    if (f != null) {
-      l.setFont(f.deriveFont(Font.BOLD, f.getSize2D() + 4f));
-    }
-    l.setBorder(BorderFactory.createEmptyBorder(0, 0, 8, 0));
-    return l;
-  }
-
-  static JLabel sectionTitle(String text) {
-    JLabel l = new JLabel(text);
-    l.putClientProperty(FlatClientProperties.STYLE, "font:+2");
-    Font f = l.getFont();
-    if (f != null) {
-      l.setFont(f.deriveFont(Font.BOLD));
-    }
-    l.setBorder(BorderFactory.createEmptyBorder(10, 0, 4, 0));
-    return l;
-  }
-
-  static JPanel captionPanel(String title, String layout, String columns, String rows) {
-    return captionPanelWithPadding(title, layout, columns, rows, 6, 8, 8, 8);
-  }
-
-  static JPanel captionPanelWithPadding(
-      String title,
-      String layout,
-      String columns,
-      String rows,
-      int top,
-      int left,
-      int bottom,
-      int right) {
-    JPanel panel = new JPanel(new MigLayout(layout, columns, rows));
-    panel.setOpaque(false);
-    panel.setBorder(
-        BorderFactory.createCompoundBorder(
-            BorderFactory.createTitledBorder(title),
-            BorderFactory.createEmptyBorder(top, left, bottom, right)));
-    return panel;
-  }
-
-  static JTextArea helpText(String text) {
-    JTextArea t = new JTextArea(text);
-    t.setEditable(false);
-    t.setLineWrap(true);
-    t.setWrapStyleWord(true);
-    t.setOpaque(false);
-    t.setFocusable(false);
-    t.setBorder(null);
-    t.setFont(UIManager.getFont("Label.font"));
-    t.setForeground(UIManager.getColor("Label.foreground"));
-    Dimension pref = t.getPreferredSize();
-    t.setMinimumSize(new Dimension(0, pref != null ? pref.height : 0));
-    return t;
-  }
-
-  static JTextArea subtleInfoText() {
-    JTextArea t = new JTextArea();
-    t.setEditable(false);
-    t.setLineWrap(true);
-    t.setWrapStyleWord(true);
-    t.setOpaque(false);
-    t.setFocusable(false);
-    t.setBorder(null);
-
-    Font f = UIManager.getFont("Label.font");
-    if (f != null) {
-      t.setFont(f.deriveFont(Font.ITALIC));
-    } else {
-      t.setFont(t.getFont().deriveFont(Font.ITALIC));
-    }
-
-    Color hintColor = UIManager.getColor("Label.disabledForeground");
-    if (hintColor != null) t.setForeground(hintColor);
-
-    Dimension pref = t.getPreferredSize();
-    t.setMinimumSize(new Dimension(0, pref != null ? pref.height : 0));
-    return t;
-  }
-
-  private static JTextArea buttonWrapText(String text) {
-    JTextArea t = new JTextArea(text);
-    t.setEditable(false);
-    t.setLineWrap(true);
-    t.setWrapStyleWord(true);
-    t.setOpaque(false);
-    t.setFocusable(false);
-    t.setBorder(null);
-
-    Font f = UIManager.getFont("CheckBox.font");
-    if (f == null) f = UIManager.getFont("Button.font");
-    if (f == null) f = UIManager.getFont("Label.font");
-    if (f != null) t.setFont(f);
-
-    Color c = UIManager.getColor("CheckBox.foreground");
-    if (c == null) c = UIManager.getColor("Label.foreground");
-    if (c != null) t.setForeground(c);
-
-    Dimension pref = t.getPreferredSize();
-    t.setMinimumSize(new Dimension(0, pref != null ? pref.height : 0));
-    return t;
-  }
-
-  static JComponent wrapCheckBox(JCheckBox box, String labelText) {
-    box.setText("");
-    JPanel row = new JPanel(new MigLayout("insets 0, fillx", "[]6[grow,fill]", "[]"));
-    row.setOpaque(false);
-
-    JTextArea label = buttonWrapText(labelText);
-    label.setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
-    label.addMouseListener(
-        new java.awt.event.MouseAdapter() {
-          @Override
-          public void mouseClicked(java.awt.event.MouseEvent e) {
-            if (box.isEnabled()) box.doClick();
-          }
-        });
-
-    row.add(box, "aligny top");
-    row.add(label, "growx, pushx, wmin 0");
-    return row;
-  }
-
-  private static JLabel subtleInfoLabel() {
-    JLabel l = new JLabel();
-    l.setFont(l.getFont().deriveFont(Font.ITALIC));
-    Color hintColor = UIManager.getColor("Label.disabledForeground");
-    if (hintColor != null) l.setForeground(hintColor);
-    return l;
-  }
-
-  private static void showHelpDialog(java.awt.Component parent, String title, String message) {
-    JTextArea area = new JTextArea(message);
-    area.setEditable(false);
-    area.setLineWrap(true);
-    area.setWrapStyleWord(true);
-    area.setOpaque(false);
-    area.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
-    area.setFont(UIManager.getFont("Label.font"));
-
-    JScrollPane scroll = new JScrollPane(area);
-    scroll.setBorder(BorderFactory.createEmptyBorder());
-    scroll.setPreferredSize(new Dimension(460, 240));
-
-    javax.swing.JOptionPane.showMessageDialog(
-        parent, scroll, title, javax.swing.JOptionPane.INFORMATION_MESSAGE);
-  }
-
-  static JButton whyHelpButton(String title, String message) {
-    JButton b = new JButton("?");
-    b.putClientProperty("JButton.buttonType", "help");
-    b.setFocusable(false);
-    b.setMargin(new Insets(0, 8, 0, 8));
-    b.setToolTipText("Why do I need this?");
-    b.addActionListener(e -> showHelpDialog(SwingUtilities.getWindowAncestor(b), title, message));
-    return b;
-  }
-
-  private void addPlaceholderTab(JTabbedPane tabs, String title, String message) {
-    JPanel placeholder = new JPanel(new MigLayout("insets 12, fill", "[grow]", "[]12[grow]"));
-
-    JLabel header = new JLabel(title);
-    header.putClientProperty(FlatClientProperties.STYLE, "font:+4");
-
-    JTextArea body =
-        new JTextArea(
-            message + "\n\n" + "This tab is a placeholder. Controls will move here later.");
-    body.setLineWrap(true);
-    body.setWrapStyleWord(true);
-    body.setEditable(false);
-    body.setFocusable(false);
-    body.setOpaque(false);
-    body.setBorder(BorderFactory.createEmptyBorder());
-
-    placeholder.add(header, "growx, wrap");
-    placeholder.add(body, "grow");
-
-    JScrollPane scroll = new JScrollPane(placeholder);
-    scroll.setBorder(null);
-    tabs.addTab(title, scroll);
-  }
-
-  private JCheckBox buildAutoConnectCheckbox(UiSettings current) {
-    JCheckBox autoConnectOnStart = new JCheckBox("Auto-connect to servers on startup");
-    autoConnectOnStart.setSelected(current.autoConnectOnStart());
-    autoConnectOnStart.setToolTipText(
-        "If enabled, IRCafe will connect to all configured servers automatically after the UI loads.\n"
-            + "If disabled, IRCafe starts disconnected and you can connect manually using the Connect button.");
-    return autoConnectOnStart;
+    PreferencesDialogWindowSupport.show(
+        new PreferencesDialogWindowSupport.ShowRequest(
+            owner,
+            closeables,
+            appearancePreview,
+            doApply,
+            buttons,
+            tabs,
+            dialog -> this.dialog = dialog,
+            closedDialog -> {
+              if (this.dialog == closedDialog) this.dialog = null;
+            }));
   }
 
   private String importNotificationSoundFileToRuntimeDir(File source) throws Exception {
-    if (source == null) return null;
-
-    String name = Objects.toString(source.getName(), "").trim();
-    if (name.isBlank()) throw new IllegalArgumentException("Invalid file name");
-
-    String lower = name.toLowerCase(Locale.ROOT);
-    boolean mp3 = lower.endsWith(".mp3");
-    boolean wav = lower.endsWith(".wav");
-    if (!mp3 && !wav) {
-      throw new IllegalArgumentException("Only .mp3 and .wav are supported");
-    }
-
-    Path cfg = runtimeConfig != null ? runtimeConfig.runtimeConfigPath() : null;
-    Path base = cfg != null ? cfg.getParent() : null;
-    if (base == null) {
-      throw new IllegalStateException("Runtime config directory is unavailable");
-    }
-
-    Path soundsDir = base.resolve("sounds");
-    Files.createDirectories(soundsDir);
-
-    // Sanitize filename for portability.
-    String sanitized = name.replaceAll("[^A-Za-z0-9._-]+", "_");
-    if (sanitized.isBlank()) {
-      sanitized = mp3 ? "notification.mp3" : "notification.wav";
-    }
-
-    String ext = mp3 ? "mp3" : "wav";
-    String baseName = sanitized;
-    int dot = sanitized.lastIndexOf('.');
-    if (dot > 0) {
-      baseName = sanitized.substring(0, dot);
-    }
-
-    Path dest = soundsDir.resolve(baseName + "." + ext);
-    int i = 2;
-    while (Files.exists(dest)) {
-      dest = soundsDir.resolve(baseName + "-" + i + "." + ext);
-      i++;
-    }
-
-    Files.copy(source.toPath(), dest, StandardCopyOption.REPLACE_EXISTING);
-
-    // Store relative to the runtime config directory.
-    return "sounds/" + dest.getFileName();
-  }
-
-  static void configureBuiltInSoundCombo(JComboBox<BuiltInSound> combo) {
-    if (combo == null) return;
-    combo.setRenderer(
-        new DefaultListCellRenderer() {
-          @Override
-          public java.awt.Component getListCellRendererComponent(
-              JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            if (value instanceof BuiltInSound sound) {
-              setText(sound.displayNameForUi());
-            }
-            return this;
-          }
-        });
-  }
-
-  private JPanel buildTrayNotificationsPanel(TrayControls trayControls) {
-    JPanel form =
-        new JPanel(new MigLayout("insets 12, fill, wrap 1", "[grow,fill]", "[]10[]6[grow,fill]"));
-    form.add(tabTitle("Tray & Notifications"), "growx, wrap");
-    form.add(sectionTitle("Categories"), "growx, wmin 0, wrap");
-    form.add(
-        helpText(
-            "Use the sub-tabs below to configure tray behavior, desktop notifications, notification sounds, and Linux integration."),
-        "growx, wmin 0, wrap");
-    form.add(trayControls.panel, "grow, push, wmin 0");
-    return form;
-  }
-
-  static JTextArea subtleInfoTextWith(String text) {
-    JTextArea t = subtleInfoText();
-    t.setText(text);
-    return t;
-  }
-
-  private JButton buildAdvancedEmbedPolicyButton(
-      Window owner,
-      java.util.concurrent.atomic.AtomicReference<EmbedLoadPolicySnapshot> pendingEmbedLoadPolicy) {
-    JButton advanced = new JButton("Advanced Policy...");
-    advanced.setToolTipText(
-        "Open advanced allow/deny controls for embed/link loading by user, channel, URL/domain, and network.");
-    advanced.addActionListener(
-        e -> {
-          if (embedLoadPolicyDialog == null || pendingEmbedLoadPolicy == null) return;
-          EmbedLoadPolicySnapshot current =
-              pendingEmbedLoadPolicy.get() != null
-                  ? pendingEmbedLoadPolicy.get()
-                  : EmbedLoadPolicySnapshot.defaults();
-          embedLoadPolicyDialog.open(owner, current).ifPresent(pendingEmbedLoadPolicy::set);
-        });
-    return advanced;
-  }
-
-  private IrcEventNotificationControls buildIrcEventNotificationControls(
-      List<IrcEventNotificationRule> initialRules) {
-    IrcEventNotificationTableModel model = new IrcEventNotificationTableModel(initialRules);
-    JTable table = new JTable(model);
-    table.setFillsViewportHeight(true);
-    table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    table.setRowHeight(Math.max(22, table.getRowHeight()));
-    table.setShowHorizontalLines(false);
-    table.setShowVerticalLines(false);
-    table.getTableHeader().setReorderingAllowed(false);
-    // Force dialog-only editing flow (no inline cell editor).
-    table.setDefaultEditor(Object.class, null);
-    table.setDefaultEditor(Boolean.class, null);
-    table.putClientProperty("JTable.autoStartsEdit", Boolean.FALSE);
-
-    TableColumn enabledCol =
-        table.getColumnModel().getColumn(IrcEventNotificationTableModel.COL_ENABLED);
-    enabledCol.setMaxWidth(80);
-    enabledCol.setPreferredWidth(70);
-
-    TableColumn eventCol =
-        table.getColumnModel().getColumn(IrcEventNotificationTableModel.COL_EVENT);
-    eventCol.setPreferredWidth(220);
-
-    TableColumn sourceCol =
-        table.getColumnModel().getColumn(IrcEventNotificationTableModel.COL_SOURCE_SUMMARY);
-    sourceCol.setPreferredWidth(300);
-
-    TableColumn channelCol =
-        table.getColumnModel().getColumn(IrcEventNotificationTableModel.COL_CHANNEL_SUMMARY);
-    channelCol.setPreferredWidth(240);
-
-    TableColumn actionsCol =
-        table.getColumnModel().getColumn(IrcEventNotificationTableModel.COL_ACTIONS_SUMMARY);
-    actionsCol.setPreferredWidth(300);
-
-    return new IrcEventNotificationControls(table, model);
-  }
-
-  private JPanel buildIrcEventNotificationsTab(IrcEventNotificationControls controls) {
-    return IrcEventNotificationsTabSupport.buildTab(
-        controls, dialog, this::promptIrcEventNotificationRuleDialog);
+    return NotificationSoundFileImportSupport.importToRuntimeDir(
+        runtimeConfig != null ? runtimeConfig.runtimeConfigPath() : null, source);
   }
 
   private IrcEventNotificationRule promptIrcEventNotificationRuleDialog(
@@ -1590,98 +396,8 @@ public class PreferencesDialog {
         this::importNotificationSoundFileToRuntimeDir);
   }
 
-  private JPanel buildNotificationsPanel(
-      NotificationRulesControls notifications, IrcEventNotificationControls ircEventNotifications) {
-    return NotificationsPanelSupport.buildPanel(
-        notifications,
-        buildIrcEventNotificationsTab(ircEventNotifications),
-        dialog,
-        this::promptNotificationRuleDialog,
-        NotificationRulesControlsSupport::refreshValidation);
-  }
-
-  private UserCommandAliasesControls buildUserCommandAliasesControls(
-      List<UserCommandAlias> initial, boolean unknownCommandAsRawEnabled) {
-    return UserCommandAliasesControlsSupport.buildControls(
-        initial, unknownCommandAsRawEnabled, dialog);
-  }
-
-  private JPanel buildUserCommandsPanel(UserCommandAliasesControls controls) {
-    return UserCommandsPanelSupport.buildPanel(controls);
-  }
-
-  private DiagnosticsControls buildDiagnosticsControls() {
-    return DiagnosticsControlsSupport.buildControls(runtimeConfig);
-  }
-
-  private JPanel buildDiagnosticsPanel(DiagnosticsControls controls) {
-    return DiagnosticsPanelSupport.buildPanel(controls);
-  }
-
-  private void attachNotificationRuleValidation(
-      NotificationRulesControls notifications, JButton apply, JButton ok) {
-    Runnable refresh =
-        () -> {
-          boolean valid = NotificationRulesControlsSupport.refreshValidation(notifications);
-          apply.setEnabled(valid);
-          ok.setEnabled(valid);
-        };
-
-    notifications.model.addTableModelListener(e -> refresh.run());
-    refresh.run();
-  }
-
-  static void configureIconOnlyButton(JButton button, String iconName, String tooltip) {
-    if (button == null) return;
-    button.setText("");
-    button.setIcon(SvgIcons.action(iconName, 16));
-    button.setDisabledIcon(SvgIcons.actionDisabled(iconName, 16));
-    button.setMargin(new Insets(2, 6, 2, 6));
-    button.setToolTipText(tooltip);
-    button.setFocusable(false);
-  }
-
-  private static JDialog createDialog(Window owner) {
-    final JDialog d = new JDialog(owner, "Preferences", JDialog.ModalityType.APPLICATION_MODAL);
-    d.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-    return d;
-  }
-
-  static JSpinner numberSpinner(
-      int value, int min, int max, int step, List<AutoCloseable> closeables) {
-    JSpinner s = new JSpinner(new SpinnerNumberModel(value, min, max, step));
-    AutoCloseable ac = MouseWheelDecorator.decorateNumberSpinner(s);
-    if (ac != null) closeables.add(ac);
-    return s;
-  }
-
   private NotificationRule promptNotificationRuleDialog(String title, NotificationRule seed) {
     Window owner = dialog != null ? dialog : null;
     return NotificationRuleDialogSupport.promptNotificationRuleDialog(owner, title, seed);
-  }
-
-  // ------------------------------
-  // Filters UI (Step 6.2)
-  // ------------------------------
-
-  private FilterControls buildFilterControls(
-      FilterSettings current, List<AutoCloseable> closeables) {
-    return FilterControlsSupport.buildControls(
-        current,
-        dialog,
-        closeables,
-        filterSettingsBus,
-        runtimeConfig,
-        targetCoordinator,
-        transcriptRebuildService);
-  }
-
-  private JPanel buildFiltersPanel(FilterControls c) {
-    return FiltersPanelSupport.buildPanel(c);
-  }
-
-  private void applyFilterSettingsFromUi(FilterControls c) {
-    FilterSettingsApplySupport.applyFromUi(
-        c, filterSettingsBus, runtimeConfig, targetCoordinator, transcriptRebuildService);
   }
 }

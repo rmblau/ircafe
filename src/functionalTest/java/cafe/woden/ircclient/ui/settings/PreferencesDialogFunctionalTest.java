@@ -59,13 +59,12 @@ import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettings;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsTestFixtures;
-import cafe.woden.ircclient.ui.settings.theme.ThemeAppearanceSettingsTestFixtures;
 import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettingsBus;
+import cafe.woden.ircclient.ui.settings.theme.ThemeAppearanceSettingsTestFixtures;
 import cafe.woden.ircclient.ui.settings.theme.ThemeManager;
 import cafe.woden.ircclient.ui.settings.theme.ThemeManager.ThemeOption;
 import cafe.woden.ircclient.ui.settings.theme.ThemeManager.ThemePack;
 import cafe.woden.ircclient.ui.settings.theme.ThemeManager.ThemeTone;
-import cafe.woden.ircclient.ui.settings.theme.ThemeTweakSettings;
 import cafe.woden.ircclient.ui.settings.theme.ThemeTweakSettingsBus;
 import cafe.woden.ircclient.ui.settings.tray.TrayControls;
 import cafe.woden.ircclient.ui.settings.tray.TrayControlsSupport;
@@ -99,8 +98,7 @@ class PreferencesDialogFunctionalTest {
 
   @Test
   void appearancePanelIncludesMessageColorsSubTabAndExpectedRows() throws Exception {
-    AppearanceFixture fixture =
-        buildAppearanceFixture(ChatThemeSettingsTestFixtures.defaults());
+    AppearanceFixture fixture = buildAppearanceFixture(ChatThemeSettingsTestFixtures.defaults());
 
     assertNotNull(findLabel(fixture.appearancePanel, "Message colors"));
     assertNotNull(findLabel(fixture.appearancePanel, "Server/system"));
@@ -388,8 +386,7 @@ class PreferencesDialogFunctionalTest {
                 cafe.woden.ircclient.config.UiProperties.DEFAULT_ACCENT_COLOR,
                 cafe.woden.ircclient.config.UiProperties.DEFAULT_ACCENT_STRENGTH));
     ThemeTweakSettingsBus tweakSettingsBus = mock(ThemeTweakSettingsBus.class);
-    when(tweakSettingsBus.get())
-        .thenReturn(ThemeAppearanceSettingsTestFixtures.tweakDefaults());
+    when(tweakSettingsBus.get()).thenReturn(ThemeAppearanceSettingsTestFixtures.tweakDefaults());
     ChatThemeSettingsBus chatThemeSettingsBus = mock(ChatThemeSettingsBus.class);
     when(chatThemeSettingsBus.get()).thenReturn(chatTheme);
 

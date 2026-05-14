@@ -2,7 +2,7 @@ package cafe.woden.ircclient.ui.input;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import cafe.woden.ircclient.ui.settings.SpellcheckSettings;
+import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettings;
 import java.awt.Point;
 import java.awt.geom.Point2D;
 import javax.swing.JTextField;

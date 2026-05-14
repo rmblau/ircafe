@@ -5,15 +5,15 @@ import java.util.Objects;
 import javax.swing.Icon;
 import javax.swing.UIManager;
 
-final class SettingsColorSupport {
+public final class SettingsColorSupport {
   private SettingsColorSupport() {}
 
-  static String toHex(Color c) {
+  public static String toHex(Color c) {
     if (c == null) return "";
     return String.format("#%02X%02X%02X", c.getRed(), c.getGreen(), c.getBlue());
   }
 
-  static Color parseHexColor(String raw) {
+  public static Color parseHexColor(String raw) {
     if (raw == null) return null;
     String s = raw.trim();
     if (s.isEmpty()) return null;
@@ -28,7 +28,7 @@ final class SettingsColorSupport {
     }
   }
 
-  static Color parseHexColorLenient(String raw) {
+  public static Color parseHexColorLenient(String raw) {
     Color c = parseHexColor(raw);
     if (c != null) return c;
     if (raw == null) return null;
@@ -43,7 +43,7 @@ final class SettingsColorSupport {
     return parseHexColor("#" + r + r + g + g + b + b);
   }
 
-  static String normalizeOptionalHexForApply(String raw, String fieldLabel) {
+  public static String normalizeOptionalHexForApply(String raw, String fieldLabel) {
     String hex = raw != null ? raw.trim() : "";
     if (hex.isBlank()) return null;
     Color c = parseHexColorLenient(hex);
@@ -55,7 +55,7 @@ final class SettingsColorSupport {
     return toHex(c);
   }
 
-  static Color contrastTextColor(Color bg) {
+  public static Color contrastTextColor(Color bg) {
     if (bg == null) return UIManager.getColor("Label.foreground");
     double r = bg.getRed() / 255.0;
     double g = bg.getGreen() / 255.0;
@@ -64,7 +64,7 @@ final class SettingsColorSupport {
     return y < 0.55 ? Color.WHITE : Color.BLACK;
   }
 
-  static Color preferredPreviewBackground() {
+  public static Color preferredPreviewBackground() {
     Color bg = UIManager.getColor("TextPane.background");
     if (bg == null) bg = UIManager.getColor("TextArea.background");
     if (bg == null) bg = UIManager.getColor("Table.background");
@@ -72,11 +72,11 @@ final class SettingsColorSupport {
     return bg != null ? bg : new Color(30, 30, 30);
   }
 
-  static Icon createColorSwatchIcon(Color color, int w, int h) {
+  public static Icon createColorSwatchIcon(Color color, int w, int h) {
     return new ColorSwatch(color, w, h);
   }
 
-  static double contrastRatio(Color fg, Color bg) {
+  public static double contrastRatio(Color fg, Color bg) {
     if (fg == null || bg == null) return 0.0;
 
     double l1 = relativeLuminance(fg);

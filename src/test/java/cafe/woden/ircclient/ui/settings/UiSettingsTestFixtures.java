@@ -18,9 +18,7 @@ public final class UiSettingsTestFixtures {
   }
 
   public static Builder legacyBuilder() {
-    return builder()
-        .trayNotifySuppressWhenTargetActive(true)
-        .chatHistoryLoadOlderChunkDelayMs(0);
+    return builder().trayNotifySuppressWhenTargetActive(true).chatHistoryLoadOlderChunkDelayMs(0);
   }
 
   public static final class Builder {

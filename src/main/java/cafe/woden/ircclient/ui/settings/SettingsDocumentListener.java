@@ -3,10 +3,10 @@ package cafe.woden.ircclient.ui.settings;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-final class SettingsDocumentListener implements DocumentListener {
+public final class SettingsDocumentListener implements DocumentListener {
   private final Runnable onChange;
 
-  SettingsDocumentListener(Runnable onChange) {
+  public SettingsDocumentListener(Runnable onChange) {
     this.onChange = onChange;
   }
 

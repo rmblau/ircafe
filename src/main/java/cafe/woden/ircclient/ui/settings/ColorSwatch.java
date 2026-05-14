@@ -5,12 +5,12 @@ import java.awt.Graphics;
 import javax.swing.Icon;
 import javax.swing.UIManager;
 
-final class ColorSwatch implements Icon {
+public final class ColorSwatch implements Icon {
   private final Color color;
   private final int w;
   private final int h;
 
-  ColorSwatch(Color color, int w, int h) {
+  public ColorSwatch(Color color, int w, int h) {
     this.color = color != null ? color : Color.GRAY;
     this.w = Math.max(6, w);
     this.h = Math.max(6, h);

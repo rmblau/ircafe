@@ -5,7 +5,6 @@ import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.notify.api.NotificationSoundPort;
 import cafe.woden.ircclient.ui.settings.PathChooserControlsSupport;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
-import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.Dimension;
 import java.awt.Window;
 import java.util.Objects;
@@ -105,9 +104,8 @@ public final class IrcEventNotificationRuleDialogSupport {
 
     JComboBox<CtcpNotificationRuleTemplate> ctcpTemplate =
         new JComboBox<>(CtcpNotificationRuleTemplate.values());
-    JButton applyCtcpTemplate = new JButton("Apply");
-    PreferencesUiSupport.configureIconOnlyButton(
-        applyCtcpTemplate, "check", "Apply selected CTCP template");
+    JButton applyCtcpTemplate =
+        PreferencesUiSupport.iconOnlyButton("Apply", "check", "Apply selected CTCP template");
 
     JCheckBox toastEnabled = new JCheckBox("Desktop toast", base.toastEnabled());
 
@@ -210,7 +208,7 @@ public final class IrcEventNotificationRuleDialogSupport {
                 case REGEX -> "^op[0-9]+$";
                 default -> "";
               };
-          sourcePattern.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, placeholder);
+          PreferencesUiSupport.placeholder(sourcePattern, placeholder);
         };
 
     Runnable refreshChannelFieldState =
@@ -224,8 +222,7 @@ public final class IrcEventNotificationRuleDialogSupport {
                   || scope == IrcEventNotificationRule.ChannelScope.ALL_EXCEPT;
           channelPatterns.setEnabled(needsPattern);
           channelPatterns.setEditable(needsPattern);
-          channelPatterns.putClientProperty(
-              FlatClientProperties.PLACEHOLDER_TEXT, needsPattern ? "#staff*, #ops" : "");
+          PreferencesUiSupport.placeholder(channelPatterns, needsPattern ? "#staff*, #ops" : "");
         };
 
     Runnable refreshCtcpFieldState =
@@ -245,9 +242,8 @@ public final class IrcEventNotificationRuleDialogSupport {
           ctcpCommandMode.setEnabled(ctcp);
           ctcpCommandPattern.setEnabled(commandNeedsPattern);
           ctcpCommandPattern.setEditable(commandNeedsPattern);
-          ctcpCommandPattern.putClientProperty(
-              FlatClientProperties.PLACEHOLDER_TEXT,
-              commandNeedsPattern ? "VERSION / PING / TIME / CLIENTINFO" : "");
+          PreferencesUiSupport.placeholder(
+              ctcpCommandPattern, commandNeedsPattern ? "VERSION / PING / TIME / CLIENTINFO" : "");
 
           IrcEventNotificationRule.CtcpMatchMode selectedValueMode =
               ctcpValueMode.getSelectedItem() instanceof IrcEventNotificationRule.CtcpMatchMode m
@@ -258,8 +254,8 @@ public final class IrcEventNotificationRuleDialogSupport {
           ctcpValueMode.setEnabled(ctcp);
           ctcpValuePattern.setEnabled(valueNeedsPattern);
           ctcpValuePattern.setEditable(valueNeedsPattern);
-          ctcpValuePattern.putClientProperty(
-              FlatClientProperties.PLACEHOLDER_TEXT, valueNeedsPattern ? "argument pattern" : "");
+          PreferencesUiSupport.placeholder(
+              ctcpValuePattern, valueNeedsPattern ? "argument pattern" : "");
 
           ctcpTemplate.setEnabled(ctcp);
           applyCtcpTemplate.setEnabled(ctcp);

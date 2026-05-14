@@ -1,12 +1,10 @@
 package cafe.woden.ircclient.ui.settings.notifications;
 
 import cafe.woden.ircclient.config.NotificationRule;
-import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.settings.ColorSwatch;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorPickerDialogSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
-import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Window;
@@ -39,8 +37,7 @@ public final class NotificationRuleDialogSupport {
     type.setSelectedItem(base.type() != null ? base.type() : NotificationRule.Type.WORD);
 
     JTextField pattern = new JTextField(Objects.toString(base.pattern(), ""));
-    pattern.putClientProperty(
-        FlatClientProperties.PLACEHOLDER_TEXT, "Keyword or regular expression");
+    PreferencesUiSupport.placeholder(pattern, "Keyword or regular expression");
     JCheckBox caseSensitive = new JCheckBox("Case sensitive", base.caseSensitive());
     JCheckBox wholeWord = new JCheckBox("Whole word", base.wholeWord());
     wholeWord.setToolTipText("Only applies to WORD rules.");
@@ -51,10 +48,8 @@ public final class NotificationRuleDialogSupport {
     JLabel colorPreview = new JLabel();
     JButton pickColor = new JButton("Choose…");
     JButton clearColor = new JButton("Clear");
-    pickColor.setIcon(SvgIcons.action("palette", 14));
-    pickColor.setDisabledIcon(SvgIcons.actionDisabled("palette", 14));
-    clearColor.setIcon(SvgIcons.action("close", 14));
-    clearColor.setDisabledIcon(SvgIcons.actionDisabled("close", 14));
+    PreferencesUiSupport.configureButtonIcon(pickColor, "palette", 14);
+    PreferencesUiSupport.configureButtonIcon(clearColor, "close", 14);
 
     Runnable refreshWholeWordState =
         () -> {

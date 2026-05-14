@@ -9,6 +9,7 @@ import cafe.woden.ircclient.notify.pushy.PushySettingsBus;
 import cafe.woden.ircclient.notify.sound.NotificationSoundSettings;
 import cafe.woden.ircclient.notify.sound.NotificationSoundSettingsBus;
 import cafe.woden.ircclient.ui.settings.NotificationBackendMode;
+import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.notifications.NotificationSoundControlsSupport;
@@ -29,7 +30,6 @@ import javax.swing.JLabel;
 import javax.swing.JPasswordField;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
-import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
@@ -229,19 +229,10 @@ public final class TrayControlsSupport {
     pushyTitlePrefix.setToolTipText("Prefix prepended to Pushy notification titles.");
 
     JSpinner pushyConnectTimeoutSeconds =
-        new JSpinner(
-            new SpinnerNumberModel(
-                Integer.valueOf(effectivePushySettings.connectTimeoutSeconds()),
-                Integer.valueOf(1),
-                Integer.valueOf(30),
-                Integer.valueOf(1)));
+        PreferencesUiSupport.numberSpinner(
+            effectivePushySettings.connectTimeoutSeconds(), 1, 30, 1);
     JSpinner pushyReadTimeoutSeconds =
-        new JSpinner(
-            new SpinnerNumberModel(
-                Integer.valueOf(effectivePushySettings.readTimeoutSeconds()),
-                Integer.valueOf(1),
-                Integer.valueOf(60),
-                Integer.valueOf(1)));
+        PreferencesUiSupport.numberSpinner(effectivePushySettings.readTimeoutSeconds(), 1, 60, 1);
 
     JButton pushyTest = new JButton("Test Pushy");
     pushyTest.setToolTipText("Send a real test notification to the configured Pushy destination.");

@@ -1,7 +1,8 @@
 package cafe.woden.ircclient.ui.settings.theme;
 
 import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
-import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import com.formdev.flatlaf.FlatClientProperties;
@@ -31,8 +32,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -127,7 +126,7 @@ public class ThemeSelectionDialog {
             });
 
     JTextField search = new JTextField(14);
-    search.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Search themes");
+    PreferencesUiSupport.placeholder(search, "Search themes");
 
     JLabel count = new JLabel();
     count.putClientProperty(
@@ -151,25 +150,7 @@ public class ThemeSelectionDialog {
     toneFilter.addActionListener(filterListener);
     packFilter.addActionListener(filterListener);
     allIntelliJ.addActionListener(filterListener);
-    search
-        .getDocument()
-        .addDocumentListener(
-            new DocumentListener() {
-              @Override
-              public void insertUpdate(DocumentEvent e) {
-                refresh.run();
-              }
-
-              @Override
-              public void removeUpdate(DocumentEvent e) {
-                refresh.run();
-              }
-
-              @Override
-              public void changedUpdate(DocumentEvent e) {
-                refresh.run();
-              }
-            });
+    search.getDocument().addDocumentListener(new SettingsDocumentListener(refresh));
 
     // initial fill
     rebuildModel(
@@ -264,16 +245,9 @@ public class ThemeSelectionDialog {
     previewPanel.add(previewTitle, BorderLayout.NORTH);
     previewPanel.add(previewScroll, BorderLayout.CENTER);
 
-    JButton apply = new JButton("Apply");
-    JButton ok = new JButton("OK");
-    JButton cancel = new JButton("Cancel");
-
-    apply.setIcon(SvgIcons.action("check", 16));
-    apply.setDisabledIcon(SvgIcons.actionDisabled("check", 16));
-    ok.setIcon(SvgIcons.action("check", 16));
-    ok.setDisabledIcon(SvgIcons.actionDisabled("check", 16));
-    cancel.setIcon(SvgIcons.action("close", 16));
-    cancel.setDisabledIcon(SvgIcons.actionDisabled("close", 16));
+    JButton apply = PreferencesUiSupport.buttonWithIcon("Apply", "check");
+    JButton ok = PreferencesUiSupport.buttonWithIcon("OK", "check");
+    JButton cancel = PreferencesUiSupport.buttonWithIcon("Cancel", "close");
     apply.putClientProperty(FlatClientProperties.BUTTON_TYPE, "primary");
 
     apply.addActionListener(e -> commitSelectedTheme());
