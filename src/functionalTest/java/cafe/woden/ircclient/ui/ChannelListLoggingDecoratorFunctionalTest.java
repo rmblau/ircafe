@@ -10,8 +10,10 @@ import cafe.woden.ircclient.app.api.ChannelMetadataPort;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.config.EphemeralServerRegistry;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.LogProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.config.ServerRegistry;
 import cafe.woden.ircclient.dcc.DccTransferStore;
@@ -41,15 +43,15 @@ import cafe.woden.ircclient.ui.bus.OutboundLineBus;
 import cafe.woden.ircclient.ui.bus.TargetActivationBus;
 import cafe.woden.ircclient.ui.channellist.ChannelListPanel;
 import cafe.woden.ircclient.ui.chat.ChatDockManager;
-import cafe.woden.ircclient.ui.chat.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.chat.MentionPatternRegistry;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.controls.ConnectButton;
 import cafe.woden.ircclient.ui.controls.DisconnectButton;
 import cafe.woden.ircclient.ui.coordinator.MessageActionCapabilityPolicy;
 import cafe.woden.ircclient.ui.ignore.IgnoreListDialog;
 import cafe.woden.ircclient.ui.servertree.ServerTreeDockable;
-import cafe.woden.ircclient.ui.settings.SpellcheckSettingsBus;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
+import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettingsBus;
 import cafe.woden.ircclient.ui.shell.StatusBar;
 import cafe.woden.ircclient.ui.terminal.ConsoleTeeService;
 import cafe.woden.ircclient.ui.terminal.TerminalDockable;
@@ -113,9 +115,9 @@ class ChannelListLoggingDecoratorFunctionalTest {
   }
 
   private Fixture createFixture() throws Exception {
-    IrcProperties props = new IrcProperties(null, List.of(server("libera")));
+    IrcProperties props = IrcPropertiesTestFixtures.properties(server("libera"));
     RuntimeConfigStore runtimeConfig =
-        new RuntimeConfigStore(tempDir.resolve("ircafe.yml").toString(), props);
+        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"), props);
     ServerRegistry serverRegistry = new ServerRegistry(props, runtimeConfig);
     ServerCatalog serverCatalog = new ServerCatalog(serverRegistry, new EphemeralServerRegistry());
     LogProperties logProps =
@@ -245,19 +247,7 @@ class ChannelListLoggingDecoratorFunctionalTest {
   }
 
   private static IrcProperties.Server server(String id) {
-    return new IrcProperties.Server(
-        id,
-        "irc.example.net",
-        6697,
-        true,
-        "",
-        "ircafe",
-        "ircafe",
-        "IRCafe User",
-        null,
-        List.of(),
-        List.of(),
-        null);
+    return IrcPropertiesTestFixtures.server(id);
   }
 
   private static void waitFor(ThrowingBooleanSupplier condition, Duration timeout)
