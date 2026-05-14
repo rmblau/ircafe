@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import cafe.woden.ircclient.config.InstalledPluginServices;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,7 +24,7 @@ class Ircv3CapabilityNameResolverAdapterTest {
               InstalledPluginServices.class,
               Ircv3ExtensionCatalog.class,
               Ircv3CapabilityNameResolverAdapter.class)
-          .withBean(IrcProperties.class, () -> new IrcProperties(null, List.of()));
+          .withBean(IrcProperties.class, IrcPropertiesTestFixtures::properties);
 
   @Test
   void springContextCreatesResolverCatalogAndInstalledPluginsWithoutCycle() {
