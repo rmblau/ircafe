@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.SojuProperties;
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
@@ -31,20 +32,12 @@ class PircbotxBotFactoryAuthTest {
         new PircbotxBotFactory(proxyResolver, new SojuProperties(Map.of(), null), null);
 
     IrcProperties.Server server =
-        new IrcProperties.Server(
-            "libera",
-            "irc.libera.chat",
-            6697,
-            true,
-            "",
-            "ircafe",
-            "ircafe",
-            "IRCafe User",
-            new IrcProperties.Server.Sasl(false, "", "", "PLAIN", null),
-            new IrcProperties.Server.Nickserv(true, "ns-secret", "AuthServ", true),
-            List.of("#ircafe"),
-            List.of(),
-            null);
+        IrcPropertiesTestFixtures.serverBuilder("libera")
+            .host("irc.libera.chat")
+            .sasl(new IrcProperties.Server.Sasl(false, "", "", "PLAIN", null))
+            .nickserv(new IrcProperties.Server.Nickserv(true, "ns-secret", "AuthServ", true))
+            .autoJoin(List.of("#ircafe"))
+            .build();
 
     Configuration cfg =
         factory.build(server, "IRCafe test", new ListenerAdapter() {}).getConfiguration();
@@ -63,20 +56,11 @@ class PircbotxBotFactoryAuthTest {
         new PircbotxBotFactory(proxyResolver, new SojuProperties(Map.of(), null), null);
 
     IrcProperties.Server server =
-        new IrcProperties.Server(
-            "libera",
-            "irc.libera.chat",
-            6697,
-            true,
-            "",
-            "ircafe",
-            "ircafe",
-            "IRCafe User",
-            new IrcProperties.Server.Sasl(true, "user", "pw", "PLAIN", null),
-            new IrcProperties.Server.Nickserv(true, "ns-secret", "NickServ", true),
-            List.of(),
-            List.of(),
-            null);
+        IrcPropertiesTestFixtures.serverBuilder("libera")
+            .host("irc.libera.chat")
+            .sasl(new IrcProperties.Server.Sasl(true, "user", "pw", "PLAIN", null))
+            .nickserv(new IrcProperties.Server.Nickserv(true, "ns-secret", "NickServ", true))
+            .build();
 
     IllegalStateException ex =
         assertThrows(
