@@ -3,7 +3,7 @@ package cafe.woden.ircclient.ui.servertree;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.ServerEntry;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.controls.ConnectButton;
@@ -122,20 +122,7 @@ class ServerTreeDockableIgnoresNodeTest {
   }
 
   private static ServerEntry serverEntry(String id) {
-    return ServerEntry.persistent(
-        new IrcProperties.Server(
-            id,
-            "irc.example.net",
-            6697,
-            true,
-            "",
-            "ircafe",
-            "ircafe",
-            "IRCafe User",
-            null,
-            List.of(),
-            List.of(),
-            null));
+    return ServerEntry.persistent(IrcPropertiesTestFixtures.server(id));
   }
 
   @SuppressWarnings("unchecked")

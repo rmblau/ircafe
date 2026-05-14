@@ -5,7 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.bouncer.GenericBouncerAutoConnectStore;
-import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.config.ServerEntry;
 import cafe.woden.ircclient.interceptors.InterceptorStore;
@@ -96,20 +96,7 @@ class ServerTreeExternalStreamBinderTest {
   }
 
   private static ServerEntry serverEntry(String id) {
-    return ServerEntry.persistent(
-        new IrcProperties.Server(
-            id,
-            "irc.example.net",
-            6697,
-            true,
-            "",
-            "ircafe",
-            "ircafe",
-            "IRCafe User",
-            null,
-            List.of(),
-            List.of(),
-            null));
+    return ServerEntry.persistent(IrcPropertiesTestFixtures.server(id));
   }
 
   private static void flushEdt() throws Exception {
