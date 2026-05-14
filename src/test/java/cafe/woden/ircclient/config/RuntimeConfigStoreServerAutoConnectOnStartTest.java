@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -60,18 +59,6 @@ class RuntimeConfigStoreServerAutoConnectOnStartTest {
   }
 
   private static IrcProperties.Server server(String id) {
-    return new IrcProperties.Server(
-        id,
-        "irc.example.net",
-        6697,
-        true,
-        "",
-        "ircafe",
-        "ircafe",
-        "IRCafe User",
-        null,
-        List.of(),
-        List.of(),
-        null);
+    return IrcPropertiesTestFixtures.server(id);
   }
 }
