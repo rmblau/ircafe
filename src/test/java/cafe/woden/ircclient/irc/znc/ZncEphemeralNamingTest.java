@@ -3,7 +3,7 @@ package cafe.woden.ircclient.irc.znc;
 import static org.junit.jupiter.api.Assertions.*;
 
 import cafe.woden.ircclient.config.IrcProperties;
-import java.util.List;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import org.junit.jupiter.api.Test;
 
 class ZncEphemeralNamingTest {
@@ -69,7 +69,12 @@ class ZncEphemeralNamingTest {
             ? new IrcProperties.Server.Sasl(false, "", "", "PLAIN", null)
             : new IrcProperties.Server.Sasl(true, saslUser, "pw", "PLAIN", null);
 
-    return new IrcProperties.Server(
-        id, "znc.example", 6697, true, "", "nick", login, "real", sasl, List.of(), List.of(), null);
+    return IrcPropertiesTestFixtures.serverBuilder(id)
+        .host("znc.example")
+        .nick("nick")
+        .login(login)
+        .realName("real")
+        .sasl(sasl)
+        .build();
   }
 }
