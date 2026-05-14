@@ -21,6 +21,7 @@ import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.app.outbound.support.CommandTargetPolicy;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.irc.backend.IrcBackendClientService;
 import cafe.woden.ircclient.irc.port.IrcNegotiatedFeaturePort;
@@ -636,20 +637,11 @@ class QuasselOutboundCommandServiceTest {
 
   private static IrcProperties.Server serverWithBackend(
       String id, IrcProperties.Server.Backend backend) {
-    return new IrcProperties.Server(
-        id,
-        "core.example.net",
-        4242,
-        false,
-        "",
-        "ircafe",
-        "ircafe",
-        "IRCafe User",
-        null,
-        null,
-        List.of(),
-        List.of(),
-        null,
-        backend);
+    return IrcPropertiesTestFixtures.serverBuilder(id)
+        .host("core.example.net")
+        .port(4242)
+        .tls(false)
+        .backend(backend)
+        .build();
   }
 }

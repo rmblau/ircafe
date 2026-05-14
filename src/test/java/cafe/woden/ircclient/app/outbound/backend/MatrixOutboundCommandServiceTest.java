@@ -11,6 +11,7 @@ import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.outbound.support.CommandTargetPolicy;
 import cafe.woden.ircclient.app.outbound.upload.spi.SemanticUploadCommandHandler;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.irc.backend.IrcBackendClientService;
 import cafe.woden.ircclient.irc.port.IrcNegotiatedFeaturePort;
@@ -115,20 +116,11 @@ class MatrixOutboundCommandServiceTest {
 
   private static IrcProperties.Server serverWithBackend(
       String id, IrcProperties.Server.Backend backend) {
-    return new IrcProperties.Server(
-        id,
-        "matrix.example.org",
-        443,
-        true,
-        "secret",
-        "ircafe",
-        "ircafe",
-        "IRCafe User",
-        null,
-        null,
-        List.of(),
-        List.of(),
-        null,
-        backend);
+    return IrcPropertiesTestFixtures.serverBuilder(id)
+        .host("matrix.example.org")
+        .port(443)
+        .serverPassword("secret")
+        .backend(backend)
+        .build();
   }
 }
