@@ -241,5 +241,4 @@ class IgnoreListServiceFlowTest {
     }
     return out.isEmpty() ? Map.of() : out;
   }
-
 }

@@ -13,16 +13,14 @@ class RuntimeConfigStoreTrayCloseToTrayHintTest {
 
   @Test
   void closeToTrayHintDefaultsToFalseWhenUnset() {
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     assertFalse(store.readTrayCloseToTrayHintShown(false));
   }
 
   @Test
   void closeToTrayHintCanBePersistedAndReadBack() {
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     store.rememberTrayCloseToTrayHintShown(true);
     assertTrue(store.readTrayCloseToTrayHintShown(false));

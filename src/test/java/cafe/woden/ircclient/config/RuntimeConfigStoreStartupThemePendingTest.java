@@ -17,8 +17,7 @@ class RuntimeConfigStoreStartupThemePendingTest {
   @Test
   void startupThemePendingCanBePersistedReadAndCleared() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     assertEquals(Optional.empty(), store.readStartupThemePending());
 
@@ -34,8 +33,7 @@ class RuntimeConfigStoreStartupThemePendingTest {
   @Test
   void blankPendingThemeRemovesPersistedKey() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberStartupThemePending("  darklaf  ");
     assertEquals(Optional.of("darklaf"), store.readStartupThemePending());

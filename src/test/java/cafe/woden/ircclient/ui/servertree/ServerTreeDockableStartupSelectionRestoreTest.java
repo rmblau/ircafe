@@ -2,7 +2,6 @@ package cafe.woden.ircclient.ui.servertree;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
@@ -128,8 +127,7 @@ class ServerTreeDockableStartupSelectionRestoreTest {
   }
 
   private static ServerEntry serverEntry(String id) {
-    return ServerEntry.persistent(
-        IrcPropertiesTestFixtures.server(id));
+    return ServerEntry.persistent(IrcPropertiesTestFixtures.server(id));
   }
 
   private static void onEdt(Runnable r) throws InvocationTargetException, InterruptedException {

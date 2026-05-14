@@ -15,8 +15,7 @@ class RuntimeConfigStoreApplicationJfrEnabledTest {
   @Test
   void applicationJfrEnabledRoundTripsFromRuntimeConfig() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     assertTrue(store.readApplicationJfrEnabled(true));
 

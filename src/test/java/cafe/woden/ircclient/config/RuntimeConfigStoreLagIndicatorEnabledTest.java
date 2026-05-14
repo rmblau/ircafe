@@ -13,8 +13,7 @@ class RuntimeConfigStoreLagIndicatorEnabledTest {
 
   @Test
   void lagIndicatorEnabledDefaultsWhenUnset() {
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     assertTrue(store.readLagIndicatorEnabled(true));
     assertFalse(store.readLagIndicatorEnabled(false));
@@ -22,8 +21,7 @@ class RuntimeConfigStoreLagIndicatorEnabledTest {
 
   @Test
   void lagIndicatorEnabledPersistsAndReadsBack() {
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     store.rememberLagIndicatorEnabled(false);
     assertFalse(store.readLagIndicatorEnabled(true));

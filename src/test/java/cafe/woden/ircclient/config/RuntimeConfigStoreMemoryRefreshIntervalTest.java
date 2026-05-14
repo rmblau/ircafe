@@ -15,8 +15,7 @@ class RuntimeConfigStoreMemoryRefreshIntervalTest {
   @Test
   void memoryRefreshIntervalRoundTripsAndClamps() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     assertEquals(1000, store.readMemoryUsageRefreshIntervalMs(1000));
 

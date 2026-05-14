@@ -30,8 +30,7 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
         """);
 
     RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.storeWithServers(
-            cfg, server("libera", List.of("#alpha")));
+        RuntimeConfigStoreTestFixtures.storeWithServers(cfg, server("libera", List.of("#alpha")));
 
     store.forgetJoinedChannel("libera", "#alpha");
 
@@ -73,8 +72,7 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
                       autoReattach: false
         """);
 
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     assertEquals(
         ServerTreeChannelSortMode.ALPHABETICAL,
@@ -100,8 +98,7 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
                 - "#alpha"
         """);
 
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberServerTreeChannelAutoReattach("libera", "#alpha", false);
 
@@ -136,8 +133,7 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
                       autoReattach: true
         """);
 
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     assertEquals(
         ServerTreeChannelSortMode.MOST_RECENT_ACTIVITY,
@@ -170,8 +166,7 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
                       autoReattach: true
         """);
 
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     assertEquals(
         ServerTreeChannelSortMode.MOST_UNREAD_MESSAGES,
@@ -200,8 +195,7 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
                       autoReattach: false
         """);
 
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberServerTreeChannel("libera", "#beta");
 
@@ -222,8 +216,7 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
             - id: oftc
         """);
 
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberServerTreeChannel("libera", "#beta");
     store.rememberServerTreeChannel("libera", "#alpha");
@@ -255,8 +248,7 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
             - id: libera
         """);
 
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberServerTreeChannel("libera", "#alpha");
     assertFalse(store.readServerTreeChannelPinned("libera", "#alpha", true));

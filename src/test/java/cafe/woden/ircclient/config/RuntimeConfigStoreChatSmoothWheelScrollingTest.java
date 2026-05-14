@@ -13,8 +13,7 @@ class RuntimeConfigStoreChatSmoothWheelScrollingTest {
 
   @Test
   void smoothWheelScrollingDefaultsWhenUnset() {
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     assertTrue(store.readChatSmoothWheelScrollingEnabled(true));
     assertFalse(store.readChatSmoothWheelScrollingEnabled(false));
@@ -22,8 +21,7 @@ class RuntimeConfigStoreChatSmoothWheelScrollingTest {
 
   @Test
   void smoothWheelScrollingCanBePersistedAndReadBack() {
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     store.rememberChatSmoothWheelScrollingEnabled(false);
     assertFalse(store.readChatSmoothWheelScrollingEnabled(true));

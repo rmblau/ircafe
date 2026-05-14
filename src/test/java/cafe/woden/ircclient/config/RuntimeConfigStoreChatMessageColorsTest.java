@@ -21,8 +21,7 @@ class RuntimeConfigStoreChatMessageColorsTest {
   @Test
   void chatMessageColorOverridesPersistAndCanBeCleared() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberChatMessageColor("#112233");
     store.rememberChatNoticeColor("#223344");
@@ -59,8 +58,7 @@ class RuntimeConfigStoreChatMessageColorsTest {
   @Test
   void chatMessageColorOverridesReloadIntoUiPropertiesOnSpringStartup() {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberChatMessageColor("#112233");
     store.rememberChatNoticeColor("#223344");

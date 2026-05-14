@@ -30,16 +30,14 @@ class RuntimeConfigStoreJoinedChannelsTest {
                 - "&help"
         """);
 
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     assertEquals(List.of("#Alpha", "#beta", "&help"), store.readJoinedChannels("libera"));
   }
 
   @Test
   void readJoinedChannelsReturnsEmptyWhenServerOrAutoJoinIsMissing() {
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("missing.yml"));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("missing.yml"));
 
     assertEquals(List.of(), store.readJoinedChannels("libera"));
   }
@@ -56,8 +54,7 @@ class RuntimeConfigStoreJoinedChannelsTest {
               autoJoin: 42
         """);
 
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     assertEquals(List.of(), store.readJoinedChannels("libera"));
   }

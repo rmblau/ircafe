@@ -1,7 +1,6 @@
 package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.notifications.IrcEventNotificationRuleTestFixtures.rule;
-
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
@@ -18,8 +17,7 @@ class RuntimeConfigStoreIrcEventNotificationRulesTest {
   @Test
   void eventRulesArePersistedUnderUiSection() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberIrcEventNotificationRules(
         List.of(

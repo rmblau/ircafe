@@ -20,8 +20,7 @@ class RuntimeConfigStoreServerTreeBuiltInLayoutTest {
   void builtInLayoutRoundTripsAndDefaultEntriesAreRemoved() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
     RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.storeWithServers(
-            cfg, server("libera"), server("oftc"));
+        RuntimeConfigStoreTestFixtures.storeWithServers(cfg, server("libera"), server("oftc"));
 
     assertEquals(Map.of(), store.readServerTreeBuiltInLayoutByServer());
 
@@ -65,8 +64,7 @@ class RuntimeConfigStoreServerTreeBuiltInLayoutTest {
             + "          other:\n"
             + "            - filters\n");
 
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     Map<String, ServerTreeBuiltInLayout> persisted = store.readServerTreeBuiltInLayoutByServer();
 

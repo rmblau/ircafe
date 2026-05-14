@@ -14,8 +14,7 @@ class RuntimeConfigStoreChatLoggingWriterSizingTest {
   @Test
   void writerQueueAndBatchArePersistedUnderLoggingSection() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberChatLoggingWriterQueueMax(123_456);
     store.rememberChatLoggingWriterBatchSize(777);
@@ -29,8 +28,7 @@ class RuntimeConfigStoreChatLoggingWriterSizingTest {
   @Test
   void writerQueueAndBatchAreClampedToSafeBounds() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberChatLoggingWriterQueueMax(5);
     store.rememberChatLoggingWriterBatchSize(0);

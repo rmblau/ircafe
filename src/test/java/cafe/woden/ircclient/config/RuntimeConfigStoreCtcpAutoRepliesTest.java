@@ -14,8 +14,7 @@ class RuntimeConfigStoreCtcpAutoRepliesTest {
 
   @Test
   void ctcpAutoReplySettingsDefaultToEnabledWhenUnset() {
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     assertTrue(store.readCtcpAutoRepliesEnabled(true));
     assertTrue(store.readCtcpAutoReplyVersionEnabled(true));
@@ -26,8 +25,7 @@ class RuntimeConfigStoreCtcpAutoRepliesTest {
   @Test
   void ctcpAutoReplySettingsPersistAndReadBack() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberCtcpAutoRepliesEnabled(false);
     store.rememberCtcpAutoReplyVersionEnabled(false);

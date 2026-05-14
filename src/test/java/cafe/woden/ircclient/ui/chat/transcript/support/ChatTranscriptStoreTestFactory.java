@@ -8,8 +8,8 @@ import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
 import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.settings.UiSettings;
-import cafe.woden.ircclient.ui.settings.UiSettingsTestFixtures;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
+import cafe.woden.ircclient.ui.settings.UiSettingsTestFixtures;
 
 /** Test factory helpers for {@link ChatTranscriptStore}. */
 public final class ChatTranscriptStoreTestFactory {

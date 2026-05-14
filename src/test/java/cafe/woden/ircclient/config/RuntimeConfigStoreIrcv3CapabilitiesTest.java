@@ -15,8 +15,7 @@ class RuntimeConfigStoreIrcv3CapabilitiesTest {
 
   @Test
   void capabilityOverridesDefaultToEnabledWhenUnset() {
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     assertTrue(store.isIrcv3CapabilityEnabled("typing", true));
     assertTrue(store.readIrcv3Capabilities().isEmpty());
@@ -24,8 +23,7 @@ class RuntimeConfigStoreIrcv3CapabilitiesTest {
 
   @Test
   void capabilityOverrideCanBeDisabledAndThenResetToDefault() {
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     store.rememberIrcv3CapabilityEnabled("typing", false);
     assertFalse(store.isIrcv3CapabilityEnabled("typing", true));
@@ -39,8 +37,7 @@ class RuntimeConfigStoreIrcv3CapabilitiesTest {
 
   @Test
   void draftCapabilityOverridesReuseExistingCanonicalPreferenceKeys() {
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     store.rememberIrcv3CapabilityEnabled("chathistory", false);
 
@@ -51,8 +48,7 @@ class RuntimeConfigStoreIrcv3CapabilitiesTest {
 
   @Test
   void runtimeResolverCanCanonicalizePluginProvidedCapabilityAliases() {
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
     store.setIrcv3CapabilityNameResolver(
         new Ircv3CapabilityNameResolverPort() {
           @Override

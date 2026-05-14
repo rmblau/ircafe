@@ -14,8 +14,7 @@ class RuntimeConfigStoreEmbedCardStyleTest {
   @Test
   void rememberEmbedCardStylePersistsTokenUnderUiSection() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberEmbedCardStyle("glassy");
 
@@ -27,8 +26,7 @@ class RuntimeConfigStoreEmbedCardStyleTest {
   @Test
   void blankEmbedCardStyleFallsBackToDefaultToken() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberEmbedCardStyle("   ");
 

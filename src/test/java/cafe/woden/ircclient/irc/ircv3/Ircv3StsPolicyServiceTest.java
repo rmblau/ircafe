@@ -60,8 +60,7 @@ class Ircv3StsPolicyServiceTest {
 
   @Test
   void learnedPolicyPersistsToRuntimeConfigAndReloads() {
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
     IrcProperties.Server configured = server("irc.example.net", 6667, false);
 
     Ircv3StsPolicyService writer = new Ircv3StsPolicyService(store);
@@ -77,8 +76,7 @@ class Ircv3StsPolicyServiceTest {
 
   @Test
   void durationZeroAlsoRemovesPersistedPolicy() {
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
     IrcProperties.Server configured = server("irc.example.net", 6667, false);
     Ircv3StsPolicyService svc = new Ircv3StsPolicyService(store);
 

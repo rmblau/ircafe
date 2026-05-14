@@ -13,8 +13,7 @@ class RuntimeConfigStoreChatLoggingEnabledTest {
 
   @Test
   void chatLoggingEnabledDefaultsWhenUnset() {
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     assertTrue(store.readChatLoggingEnabled(true));
     assertFalse(store.readChatLoggingEnabled(false));
@@ -22,8 +21,7 @@ class RuntimeConfigStoreChatLoggingEnabledTest {
 
   @Test
   void chatLoggingEnabledPersistsAndReadsBack() {
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     store.rememberChatLoggingEnabled(true);
     assertTrue(store.readChatLoggingEnabled(false));

@@ -21,8 +21,7 @@ class RuntimeConfigStoreInterceptorDefinitionsTest {
   @Test
   void interceptorDefinitionsRoundTripRuntimeConfig() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     InterceptorDefinition def =
         new InterceptorDefinition(

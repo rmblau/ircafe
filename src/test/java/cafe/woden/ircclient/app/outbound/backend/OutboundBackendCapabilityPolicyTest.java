@@ -145,7 +145,10 @@ class OutboundBackendCapabilityPolicyTest {
   }
 
   private static IrcPropertiesTestFixtures.ServerBuilder coreServer(String id) {
-    return IrcPropertiesTestFixtures.serverBuilder(id).host("core.example.net").port(4242).tls(false);
+    return IrcPropertiesTestFixtures.serverBuilder(id)
+        .host("core.example.net")
+        .port(4242)
+        .tls(false);
   }
 
   private static final class PluginBackendFeatureAdapter implements OutboundBackendFeatureAdapter {

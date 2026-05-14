@@ -15,8 +15,7 @@ class RuntimeConfigStoreDefaultQuitMessageTest {
 
   @Test
   void defaultQuitMessageFallsBackWhenUnset() {
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     assertEquals(RuntimeConfigStore.DEFAULT_QUIT_MESSAGE, store.readDefaultQuitMessage());
   }
@@ -24,8 +23,7 @@ class RuntimeConfigStoreDefaultQuitMessageTest {
   @Test
   void rememberDefaultQuitMessagePersistsCustomValue() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberDefaultQuitMessage("bye from ircafe");
 
@@ -38,8 +36,7 @@ class RuntimeConfigStoreDefaultQuitMessageTest {
   @Test
   void blankDefaultQuitMessageResetsToBuiltInDefault() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberDefaultQuitMessage("custom");
     store.rememberDefaultQuitMessage("   ");

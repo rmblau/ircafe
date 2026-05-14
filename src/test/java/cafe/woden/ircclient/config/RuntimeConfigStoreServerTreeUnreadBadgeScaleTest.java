@@ -15,8 +15,7 @@ class RuntimeConfigStoreServerTreeUnreadBadgeScaleTest {
   @Test
   void serverTreeUnreadBadgeScaleRoundTripsAndClamps() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     assertEquals(100, store.readServerTreeUnreadBadgeScalePercent(100));
 
@@ -36,8 +35,7 @@ class RuntimeConfigStoreServerTreeUnreadBadgeScaleTest {
   @Test
   void mutationBatchWritesCombinedUiUpdates() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.runMutationBatch(
         () -> {
@@ -54,8 +52,7 @@ class RuntimeConfigStoreServerTreeUnreadBadgeScaleTest {
   @Test
   void serverTreeNotificationBadgesEnabledPersists() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberServerTreeNotificationBadgesEnabled(false);
 
@@ -66,8 +63,7 @@ class RuntimeConfigStoreServerTreeUnreadBadgeScaleTest {
   @Test
   void chatHistoryViewportLockRoundTrips() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     assertTrue(store.readChatHistoryLockViewportDuringLoadOlder(true));
 

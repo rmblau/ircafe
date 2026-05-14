@@ -16,8 +16,7 @@ class RuntimeConfigStoreLastSelectedTargetTest {
 
   @Test
   void lastSelectedTargetCanBePersistedAndReadBack() {
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     store.rememberLastSelectedTarget("libera", "#ircafe");
 
@@ -29,8 +28,7 @@ class RuntimeConfigStoreLastSelectedTargetTest {
 
   @Test
   void blankSelectionClearsPersistedLastSelectedTarget() {
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     store.rememberLastSelectedTarget("libera", "#ircafe");
     assertTrue(store.readLastSelectedTarget().isPresent());
@@ -52,8 +50,7 @@ class RuntimeConfigStoreLastSelectedTargetTest {
               target: ""
         """);
 
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     assertFalse(store.readLastSelectedTarget().isPresent());
   }

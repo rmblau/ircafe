@@ -16,8 +16,7 @@ class RuntimeConfigStoreIrcv3StsPoliciesTest {
 
   @Test
   void stsPoliciesCanBePersistedAndReadBack() {
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     store.rememberIrcv3StsPolicy(
         "IRC.Example.NET",
@@ -39,8 +38,7 @@ class RuntimeConfigStoreIrcv3StsPoliciesTest {
 
   @Test
   void forgettingPolicyRemovesPersistedEntry() {
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     store.rememberIrcv3StsPolicy(
         "irc.example.net", 1_900_000_000_000L, 6697, false, 86_400L, "duration=86400,port=6697");

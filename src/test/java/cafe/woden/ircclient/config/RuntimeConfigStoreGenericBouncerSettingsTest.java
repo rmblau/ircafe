@@ -15,8 +15,7 @@ class RuntimeConfigStoreGenericBouncerSettingsTest {
 
   @Test
   void genericBouncerSettingsDefaultToProvidedFallbacksWhenUnset() {
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     assertEquals("{base}/{network}", store.readGenericBouncerLoginTemplate("{base}/{network}"));
     assertTrue(store.readGenericBouncerPreferLoginHint(true));
@@ -25,8 +24,7 @@ class RuntimeConfigStoreGenericBouncerSettingsTest {
 
   @Test
   void genericBouncerLoginTemplateCanBePersistedAndResetToDefault() {
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     store.rememberGenericBouncerLoginTemplate("{base}|{network}");
     assertEquals("{base}|{network}", store.readGenericBouncerLoginTemplate("{base}/{network}"));
@@ -37,8 +35,7 @@ class RuntimeConfigStoreGenericBouncerSettingsTest {
 
   @Test
   void genericBouncerPreferLoginHintCanBePersisted() {
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     store.rememberGenericBouncerPreferLoginHint(false);
     assertFalse(store.readGenericBouncerPreferLoginHint(true));
@@ -49,8 +46,7 @@ class RuntimeConfigStoreGenericBouncerSettingsTest {
 
   @Test
   void genericBouncerAutoConnectRulesCanBePersistedAndRemoved() {
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     assertTrue(store.readGenericBouncerAutoConnectRules().isEmpty());
 
@@ -65,8 +61,7 @@ class RuntimeConfigStoreGenericBouncerSettingsTest {
 
   @Test
   void removingGenericAutoConnectRulesKeepsGenericSettingsSection() {
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     store.rememberGenericBouncerPreferLoginHint(true);
     store.rememberGenericBouncerAutoConnectNetwork("bouncer-1", "Libera", true);

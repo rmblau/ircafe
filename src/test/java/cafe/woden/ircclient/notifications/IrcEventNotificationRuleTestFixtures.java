@@ -14,13 +14,17 @@ public final class IrcEventNotificationRuleTestFixtures {
 
   public static final class Builder {
     private boolean enabled = true;
-    private IrcEventNotificationRule.EventType eventType = IrcEventNotificationRule.EventType.INVITE_RECEIVED;
-    private IrcEventNotificationRule.SourceMode sourceMode = IrcEventNotificationRule.SourceMode.ANY;
+    private IrcEventNotificationRule.EventType eventType =
+        IrcEventNotificationRule.EventType.INVITE_RECEIVED;
+    private IrcEventNotificationRule.SourceMode sourceMode =
+        IrcEventNotificationRule.SourceMode.ANY;
     private String sourcePattern;
-    private IrcEventNotificationRule.ChannelScope channelScope = IrcEventNotificationRule.ChannelScope.ALL;
+    private IrcEventNotificationRule.ChannelScope channelScope =
+        IrcEventNotificationRule.ChannelScope.ALL;
     private String channelPatterns;
     private boolean toastEnabled = true;
-    private IrcEventNotificationRule.FocusScope focusScope = IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY;
+    private IrcEventNotificationRule.FocusScope focusScope =
+        IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY;
     private boolean statusBarEnabled = true;
     private boolean notificationsNodeEnabled = true;
     private boolean soundEnabled;
@@ -31,9 +35,11 @@ public final class IrcEventNotificationRuleTestFixtures {
     private String scriptPath;
     private String scriptArgs;
     private String scriptWorkingDirectory;
-    private IrcEventNotificationRule.CtcpMatchMode ctcpCommandMode = IrcEventNotificationRule.CtcpMatchMode.ANY;
+    private IrcEventNotificationRule.CtcpMatchMode ctcpCommandMode =
+        IrcEventNotificationRule.CtcpMatchMode.ANY;
     private String ctcpCommandPattern;
-    private IrcEventNotificationRule.CtcpMatchMode ctcpValueMode = IrcEventNotificationRule.CtcpMatchMode.ANY;
+    private IrcEventNotificationRule.CtcpMatchMode ctcpValueMode =
+        IrcEventNotificationRule.CtcpMatchMode.ANY;
     private String ctcpValuePattern;
 
     public Builder enabled(boolean enabled) {

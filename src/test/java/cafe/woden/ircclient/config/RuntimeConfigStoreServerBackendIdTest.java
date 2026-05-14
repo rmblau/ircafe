@@ -29,8 +29,7 @@ class RuntimeConfigStoreServerBackendIdTest {
   void ensureFileExistsWithServersOmitsDefaultIrcBackendId() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
     RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.storeWithServers(
-            cfg, server("libera", "irc"));
+        RuntimeConfigStoreTestFixtures.storeWithServers(cfg, server("libera", "irc"));
 
     store.ensureFileExistsWithServers();
 

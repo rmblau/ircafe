@@ -15,8 +15,7 @@ class RuntimeConfigStorePushySettingsTest {
   @Test
   void pushySettingsArePersistedUnderIrcafePushySection() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberPushySettings(
         PushyPropertiesTestFixtures.builder()
@@ -47,8 +46,7 @@ class RuntimeConfigStorePushySettingsTest {
   @Test
   void blankOptionalPushyFieldsAreRemovedWhenDisabled() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        RuntimeConfigStoreTestFixtures.store(cfg);
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberPushySettings(
         PushyPropertiesTestFixtures.builder()
