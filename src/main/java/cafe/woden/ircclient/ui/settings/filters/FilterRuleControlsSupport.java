@@ -246,11 +246,11 @@ final class FilterRuleControlsSupport {
 
           if (fromViewRow == dropViewRow || fromViewRow + 1 == dropViewRow) return false;
 
-          int fromModelRow = target.convertRowIndexToModel(fromViewRow);
+          int fromModelRow = SettingsTableSupport.modelRowAtView(target, fromViewRow);
           int dropModelRow =
               dropViewRow >= target.getRowCount()
                   ? target.getRowCount()
-                  : target.convertRowIndexToModel(dropViewRow);
+                  : SettingsTableSupport.modelRowAtView(target, dropViewRow);
 
           FilterSettings snap = filterSettingsBus.get();
           if (snap == null || snap.rules() == null) return false;

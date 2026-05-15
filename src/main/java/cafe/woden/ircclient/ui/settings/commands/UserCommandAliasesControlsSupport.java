@@ -112,7 +112,7 @@ public final class UserCommandAliasesControlsSupport {
           SettingsTableSupport.stopEditing(table);
           int idx = model.addAlias(new UserCommandAlias(true, "", ""));
           if (idx >= 0) {
-            int view = table.convertRowIndexToView(idx);
+            int view = SettingsTableSupport.viewRowForModelRow(table, idx);
             SettingsTableSupport.selectViewRow(table, view);
             table.editCellAt(view, UserCommandAliasesTableModel.COL_COMMAND);
             table.requestFocusInWindow();
@@ -150,8 +150,8 @@ public final class UserCommandAliasesControlsSupport {
           SettingsTableSupport.stopEditing(table);
           int row = table.getSelectedRow();
           if (row <= 0) return;
-          int modelRow = table.convertRowIndexToModel(row);
-          int modelPrevRow = table.convertRowIndexToModel(row - 1);
+          int modelRow = SettingsTableSupport.modelRowAtView(table, row);
+          int modelPrevRow = SettingsTableSupport.modelRowAtView(table, row - 1);
           int next = model.moveRow(modelRow, modelPrevRow);
           if (next >= 0) {
             SettingsTableSupport.selectModelRow(table, next);
@@ -163,8 +163,8 @@ public final class UserCommandAliasesControlsSupport {
           SettingsTableSupport.stopEditing(table);
           int row = table.getSelectedRow();
           if (row < 0 || row >= table.getRowCount() - 1) return;
-          int modelRow = table.convertRowIndexToModel(row);
-          int modelNextRow = table.convertRowIndexToModel(row + 1);
+          int modelRow = SettingsTableSupport.modelRowAtView(table, row);
+          int modelNextRow = SettingsTableSupport.modelRowAtView(table, row + 1);
           int next = model.moveRow(modelRow, modelNextRow);
           if (next >= 0) {
             SettingsTableSupport.selectModelRow(table, next);

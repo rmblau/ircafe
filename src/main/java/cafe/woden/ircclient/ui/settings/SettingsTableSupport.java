@@ -11,12 +11,21 @@ public final class SettingsTableSupport {
   public static int selectedModelRow(JTable table) {
     if (table == null) return -1;
     int viewRow = table.getSelectedRow();
-    return viewRow >= 0 ? table.convertRowIndexToModel(viewRow) : -1;
+    return modelRowAtView(table, viewRow);
+  }
+
+  public static int modelRowAtView(JTable table, int viewRow) {
+    if (table == null || viewRow < 0 || viewRow >= table.getRowCount()) return -1;
+    return table.convertRowIndexToModel(viewRow);
+  }
+
+  public static int viewRowForModelRow(JTable table, int modelRow) {
+    if (table == null || modelRow < 0) return -1;
+    return table.convertRowIndexToView(modelRow);
   }
 
   public static void selectModelRow(JTable table, int modelRow) {
-    if (table == null || modelRow < 0) return;
-    int viewRow = table.convertRowIndexToView(modelRow);
+    int viewRow = viewRowForModelRow(table, modelRow);
     selectViewRow(table, viewRow);
   }
 

@@ -28,6 +28,22 @@ class SettingsTableSupportTest {
   }
 
   @Test
+  void convertsRowsThroughSorter() {
+    DefaultTableModel model =
+        new DefaultTableModel(new Object[][] {{"b"}, {"a"}}, new Object[] {"Name"});
+    JTable table = new JTable(model);
+    TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(model);
+    table.setRowSorter(sorter);
+    sorter.toggleSortOrder(0);
+
+    int viewRow = SettingsTableSupport.viewRowForModelRow(table, 0);
+
+    assertEquals(table.convertRowIndexToView(0), viewRow);
+    assertEquals(0, SettingsTableSupport.modelRowAtView(table, viewRow));
+    assertEquals(-1, SettingsTableSupport.modelRowAtView(table, -1));
+  }
+
+  @Test
   void stopsActiveEditor() {
     DefaultTableModel model =
         new DefaultTableModel(new Object[][] {{"old"}}, new Object[] {"Name"});
