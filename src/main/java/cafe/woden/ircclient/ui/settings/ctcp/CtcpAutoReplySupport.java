@@ -2,7 +2,6 @@ package cafe.woden.ircclient.ui.settings.ctcp;
 
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
-import java.awt.FlowLayout;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -90,10 +89,8 @@ public final class CtcpAutoReplySupport {
           controls.time.setSelected(false);
         });
 
-    JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+    JPanel actions = PreferencesUiSupport.actionButtonRow(8, enableDefaults, disableAll);
     actions.setOpaque(false);
-    actions.add(enableDefaults);
-    actions.add(disableAll);
     form.add(actions, "growx, wmin 0, wrap");
 
     form.add(
