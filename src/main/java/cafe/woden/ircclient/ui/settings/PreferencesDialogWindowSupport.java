@@ -5,7 +5,6 @@ import cafe.woden.ircclient.ui.util.CloseableScope;
 import cafe.woden.ircclient.ui.util.DialogCloseableScopeDecorator;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Window;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -88,11 +87,10 @@ final class PreferencesDialogWindowSupport {
   }
 
   private static JPanel buildButtons(PreferencesDialogActionButtonsSupport.Buttons buttons) {
-    JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 8));
+    JPanel panel =
+        PreferencesUiSupport.rightComponentRow(
+            10, 8, buttons.apply(), buttons.ok(), buttons.cancel());
     panel.setBorder(BorderFactory.createEmptyBorder(8, 12, 12, 12));
-    panel.add(buttons.apply());
-    panel.add(buttons.ok());
-    panel.add(buttons.cancel());
     return panel;
   }
 

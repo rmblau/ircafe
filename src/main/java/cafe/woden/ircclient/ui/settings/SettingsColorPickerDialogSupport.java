@@ -2,7 +2,6 @@ package cafe.woden.ircclient.ui.settings;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.Window;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -178,9 +177,7 @@ public final class SettingsColorPickerDialogSupport {
     content.add(new JLabel("Recent"), "aligny top");
     content.add(recent, "growx, wrap");
 
-    JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-    buttons.add(cancel);
-    buttons.add(ok);
+    JPanel buttons = PreferencesUiSupport.rightComponentRow(8, 0, cancel, ok);
 
     JPanel outer = new JPanel(new BorderLayout());
     outer.add(content, BorderLayout.CENTER);

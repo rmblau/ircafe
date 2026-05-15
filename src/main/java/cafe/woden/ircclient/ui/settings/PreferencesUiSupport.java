@@ -206,11 +206,26 @@ public final class PreferencesUiSupport {
   }
 
   public static JPanel actionButtonRow(JComponent... components) {
-    return actionButtonRow(4, components);
+    return leftComponentRow(4, 0, components);
   }
 
   public static JPanel actionButtonRow(int horizontalGap, JComponent... components) {
-    JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, horizontalGap, 0));
+    return leftComponentRow(horizontalGap, 0, components);
+  }
+
+  public static JPanel leftComponentRow(
+      int horizontalGap, int verticalGap, JComponent... components) {
+    return componentRow(FlowLayout.LEFT, horizontalGap, verticalGap, components);
+  }
+
+  public static JPanel rightComponentRow(
+      int horizontalGap, int verticalGap, JComponent... components) {
+    return componentRow(FlowLayout.RIGHT, horizontalGap, verticalGap, components);
+  }
+
+  private static JPanel componentRow(
+      int alignment, int horizontalGap, int verticalGap, JComponent... components) {
+    JPanel panel = new JPanel(new FlowLayout(alignment, horizontalGap, verticalGap));
     if (components == null) return panel;
     for (JComponent component : components) {
       if (component != null) panel.add(component);

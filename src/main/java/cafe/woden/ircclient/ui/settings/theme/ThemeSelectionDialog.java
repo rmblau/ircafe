@@ -9,7 +9,6 @@ import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
@@ -211,14 +210,17 @@ public class ThemeSelectionDialog {
           schedulePreview(ThemeIdUtils.normalizeThemeId(selectedThemeId()));
         });
 
-    JPanel filterBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-    filterBar.add(new JLabel("Tone"));
-    filterBar.add(toneFilter);
-    filterBar.add(new JLabel("Pack"));
-    filterBar.add(packFilter);
-    filterBar.add(allIntelliJ);
-    filterBar.add(search);
-    filterBar.add(count);
+    JPanel filterBar =
+        PreferencesUiSupport.leftComponentRow(
+            6,
+            0,
+            new JLabel("Tone"),
+            toneFilter,
+            new JLabel("Pack"),
+            packFilter,
+            allIntelliJ,
+            search,
+            count);
 
     JScrollPane listScroll = new JScrollPane(themeList);
     listScroll.setPreferredSize(new Dimension(250, 280));
@@ -258,10 +260,7 @@ public class ThemeSelectionDialog {
         });
     cancel.addActionListener(e -> closeDialog());
 
-    JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-    buttons.add(apply);
-    buttons.add(ok);
-    buttons.add(cancel);
+    JPanel buttons = PreferencesUiSupport.rightComponentRow(5, 5, apply, ok, cancel);
 
     JLabel help =
         new JLabel("Select a theme to preview it live. Click Apply/OK to save your selection.");
