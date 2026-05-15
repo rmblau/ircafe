@@ -233,6 +233,11 @@ public final class PreferencesUiSupport {
     return panel;
   }
 
+  public static boolean confirmOkCancel(Component parent, String message, String title) {
+    return JOptionPane.showConfirmDialog(parent, message, title, JOptionPane.OK_CANCEL_OPTION)
+        == JOptionPane.OK_OPTION;
+  }
+
   public static JButton buttonWithIcon(String text, String iconName) {
     JButton button = new JButton(text);
     configureButtonIcon(button, iconName, 16);

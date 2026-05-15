@@ -12,7 +12,6 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
@@ -138,10 +137,10 @@ public final class UserCommandAliasesControlsSupport {
           SettingsTableSupport.stopEditing(table);
           int modelRow = SettingsTableSupport.selectedModelRow(table);
           if (modelRow < 0) return;
-          int res =
-              JOptionPane.showConfirmDialog(
-                  owner, "Remove selected alias?", "Remove alias", JOptionPane.OK_CANCEL_OPTION);
-          if (res != JOptionPane.OK_OPTION) return;
+          if (!PreferencesUiSupport.confirmOkCancel(
+              owner, "Remove selected alias?", "Remove alias")) {
+            return;
+          }
           model.removeRow(modelRow);
         });
 

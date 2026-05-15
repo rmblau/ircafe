@@ -23,7 +23,6 @@ import javax.swing.DropMode;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
-import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -424,13 +423,10 @@ final class FilterRuleControlsSupport {
           FilterRule seed = rulesModel.ruleAt(row);
           if (seed == null) return;
 
-          int confirm =
-              JOptionPane.showConfirmDialog(
-                  owner,
-                  "Delete filter rule '" + seed.name() + "'?",
-                  "Delete Filter Rule",
-                  JOptionPane.OK_CANCEL_OPTION);
-          if (confirm != JOptionPane.OK_OPTION) return;
+          if (!PreferencesUiSupport.confirmOkCancel(
+              owner, "Delete filter rule '" + seed.name() + "'?", "Delete Filter Rule")) {
+            return;
+          }
 
           FilterSettings snap = filterSettingsBus.get();
           List<FilterRule> nextRules = new ArrayList<>();

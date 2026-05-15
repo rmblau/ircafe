@@ -62,13 +62,10 @@ final class FilterOverrideControlsSupport {
         e -> {
           int row = SettingsTableSupport.selectedModelRow(table);
           if (row < 0) return;
-          int confirm =
-              JOptionPane.showConfirmDialog(
-                  owner,
-                  "Remove selected override?",
-                  "Remove Override",
-                  JOptionPane.OK_CANCEL_OPTION);
-          if (confirm != JOptionPane.OK_OPTION) return;
+          if (!PreferencesUiSupport.confirmOkCancel(
+              owner, "Remove selected override?", "Remove Override")) {
+            return;
+          }
           model.removeAt(row);
           SwingUtilities.invokeLater(refreshRemoveButton);
         });

@@ -11,7 +11,6 @@ import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -172,13 +171,10 @@ public final class IrcEventNotificationsTabSupport {
           if (modelRow < 0) return;
           IrcEventNotificationRule rule = controls.model().ruleAt(modelRow);
           String label = IrcEventNotificationTableModel.effectiveRuleLabel(rule);
-          int res =
-              JOptionPane.showConfirmDialog(
-                  owner,
-                  "Remove IRC event rule \"" + label + "\"?",
-                  "Remove IRC Event Rule",
-                  JOptionPane.OK_CANCEL_OPTION);
-          if (res != JOptionPane.OK_OPTION) return;
+          if (!PreferencesUiSupport.confirmOkCancel(
+              owner, "Remove IRC event rule \"" + label + "\"?", "Remove IRC Event Rule")) {
+            return;
+          }
           controls.model().removeRow(modelRow);
           SettingsTableSupport.selectAfterModelRowRemoval(controls.table(), modelRow);
           refreshRuleButtons.run();
@@ -219,13 +215,12 @@ public final class IrcEventNotificationsTabSupport {
 
     resetToIrcafeDefaults.addActionListener(
         e -> {
-          int confirm =
-              JOptionPane.showConfirmDialog(
-                  owner,
-                  "Replace all IRC event rules with IRCafe defaults?",
-                  "Reset IRC event rules",
-                  JOptionPane.OK_CANCEL_OPTION);
-          if (confirm != JOptionPane.OK_OPTION) return;
+          if (!PreferencesUiSupport.confirmOkCancel(
+              owner,
+              "Replace all IRC event rules with IRCafe defaults?",
+              "Reset IRC event rules")) {
+            return;
+          }
 
           List<IrcEventNotificationRule> defaults = IrcEventNotificationRule.defaults();
           if (defaults.isEmpty()) return;

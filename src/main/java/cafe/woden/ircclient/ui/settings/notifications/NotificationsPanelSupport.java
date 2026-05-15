@@ -8,7 +8,6 @@ import java.awt.Component;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
@@ -99,13 +98,10 @@ public final class NotificationsPanelSupport {
           if (modelRow < 0) return;
           NotificationRule rule = notifications.model.ruleAt(modelRow);
           String label = NotificationRulesTableModel.effectiveRuleLabel(rule);
-          int res =
-              JOptionPane.showConfirmDialog(
-                  owner,
-                  "Remove notification rule \"" + label + "\"?",
-                  "Remove Notification Rule",
-                  JOptionPane.OK_CANCEL_OPTION);
-          if (res != JOptionPane.OK_OPTION) return;
+          if (!PreferencesUiSupport.confirmOkCancel(
+              owner, "Remove notification rule \"" + label + "\"?", "Remove Notification Rule")) {
+            return;
+          }
           notifications.model.removeRow(modelRow);
           SettingsTableSupport.selectAfterModelRowRemoval(notifications.table, modelRow);
           refreshRuleButtons.run();
