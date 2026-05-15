@@ -2,7 +2,6 @@ package cafe.woden.ircclient.ui.settings.filters;
 
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -124,9 +123,7 @@ public final class FiltersPanelSupport {
     JScrollPane tableScroll = new JScrollPane(c.overridesTable);
     tableScroll.setPreferredSize(new Dimension(520, 220));
 
-    JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
-    buttons.add(c.addOverride);
-    buttons.add(c.removeOverride);
+    JPanel buttons = PreferencesUiSupport.actionButtonRow(8, c.addOverride, c.removeOverride);
 
     JPanel overrides =
         PreferencesUiSupport.captionPanel(
@@ -153,12 +150,9 @@ public final class FiltersPanelSupport {
     JScrollPane rulesScroll = new JScrollPane(c.rulesTable);
     rulesScroll.setPreferredSize(new Dimension(760, 260));
 
-    JPanel ruleButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
-    ruleButtons.add(c.addRule);
-    ruleButtons.add(c.editRule);
-    ruleButtons.add(c.deleteRule);
-    ruleButtons.add(c.moveRuleUp);
-    ruleButtons.add(c.moveRuleDown);
+    JPanel ruleButtons =
+        PreferencesUiSupport.actionButtonRow(
+            8, c.addRule, c.editRule, c.deleteRule, c.moveRuleUp, c.moveRuleDown);
 
     JPanel rules =
         PreferencesUiSupport.captionPanel(

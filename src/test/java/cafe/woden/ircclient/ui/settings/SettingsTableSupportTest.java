@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import javax.swing.JTable;
 import javax.swing.JTextField;
@@ -39,5 +40,31 @@ class SettingsTableSupportTest {
 
     assertFalse(table.isEditing());
     assertEquals("new", model.getValueAt(0, 0));
+  }
+
+  @Test
+  void selectAfterModelRowRemovalChoosesNextAvailableRow() {
+    DefaultTableModel model =
+        new DefaultTableModel(new Object[][] {{"one"}, {"two"}}, new Object[] {"Name"});
+    JTable table = new JTable(model);
+    table.setRowSelectionInterval(1, 1);
+
+    model.removeRow(1);
+    SettingsTableSupport.selectAfterModelRowRemoval(table, 1);
+
+    assertEquals(0, table.getSelectedRow());
+  }
+
+  @Test
+  void selectAfterModelRowRemovalClearsSelectionWhenTableIsEmpty() {
+    DefaultTableModel model =
+        new DefaultTableModel(new Object[][] {{"one"}}, new Object[] {"Name"});
+    JTable table = new JTable(model);
+    table.setRowSelectionInterval(0, 0);
+
+    model.removeRow(0);
+    SettingsTableSupport.selectAfterModelRowRemoval(table, 0);
+
+    assertTrue(table.getSelectionModel().isSelectionEmpty());
   }
 }

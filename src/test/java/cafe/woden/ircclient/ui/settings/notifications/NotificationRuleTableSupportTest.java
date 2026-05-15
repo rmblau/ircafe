@@ -43,30 +43,4 @@ class NotificationRuleTableSupportTest {
     assertTrue(up.isEnabled());
     assertFalse(down.isEnabled());
   }
-
-  @Test
-  void selectAfterRemoveChoosesNextAvailableRow() {
-    DefaultTableModel model =
-        new DefaultTableModel(new Object[][] {{"one"}, {"two"}}, new Object[] {"Rule"});
-    JTable table = new JTable(model);
-    table.setRowSelectionInterval(1, 1);
-
-    model.removeRow(1);
-    NotificationRuleTableSupport.selectAfterRemove(table, 1);
-
-    assertTrue(table.isRowSelected(0));
-  }
-
-  @Test
-  void selectAfterRemoveClearsSelectionWhenTableIsEmpty() {
-    DefaultTableModel model =
-        new DefaultTableModel(new Object[][] {{"one"}}, new Object[] {"Rule"});
-    JTable table = new JTable(model);
-    table.setRowSelectionInterval(0, 0);
-
-    model.removeRow(0);
-    NotificationRuleTableSupport.selectAfterRemove(table, 0);
-
-    assertTrue(table.getSelectionModel().isSelectionEmpty());
-  }
 }

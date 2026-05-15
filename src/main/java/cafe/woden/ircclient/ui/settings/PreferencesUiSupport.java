@@ -206,7 +206,11 @@ public final class PreferencesUiSupport {
   }
 
   public static JPanel actionButtonRow(JComponent... components) {
-    JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+    return actionButtonRow(4, components);
+  }
+
+  public static JPanel actionButtonRow(int horizontalGap, JComponent... components) {
+    JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, horizontalGap, 0));
     if (components == null) return panel;
     for (JComponent component : components) {
       if (component != null) panel.add(component);

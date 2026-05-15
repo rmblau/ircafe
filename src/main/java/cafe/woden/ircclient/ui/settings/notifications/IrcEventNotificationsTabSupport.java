@@ -180,7 +180,7 @@ public final class IrcEventNotificationsTabSupport {
                   JOptionPane.OK_CANCEL_OPTION);
           if (res != JOptionPane.OK_OPTION) return;
           controls.model().removeRow(modelRow);
-          NotificationRuleTableSupport.selectAfterRemove(controls.table(), modelRow);
+          SettingsTableSupport.selectAfterModelRowRemoval(controls.table(), modelRow);
           refreshRuleButtons.run();
         });
 
@@ -238,8 +238,8 @@ public final class IrcEventNotificationsTabSupport {
           refreshRuleButtons.run();
         });
 
-    NotificationRuleTableSupport.refreshOnSelectionChange(controls.table(), refreshRuleButtons);
-    NotificationRuleTableSupport.editOnDoubleClick(controls.table(), openEditRuleDialog);
+    SettingsTableSupport.refreshOnSelectionChange(controls.table(), refreshRuleButtons);
+    SettingsTableSupport.editOnDoubleClick(controls.table(), openEditRuleDialog);
     refreshRuleButtons.run();
 
     JScrollPane scroll = new JScrollPane(controls.table());

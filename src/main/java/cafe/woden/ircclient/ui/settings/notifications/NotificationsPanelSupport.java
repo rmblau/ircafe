@@ -107,7 +107,7 @@ public final class NotificationsPanelSupport {
                   JOptionPane.OK_CANCEL_OPTION);
           if (res != JOptionPane.OK_OPTION) return;
           notifications.model.removeRow(modelRow);
-          NotificationRuleTableSupport.selectAfterRemove(notifications.table, modelRow);
+          SettingsTableSupport.selectAfterModelRowRemoval(notifications.table, modelRow);
           refreshRuleButtons.run();
         });
 
@@ -129,8 +129,8 @@ public final class NotificationsPanelSupport {
           refreshRuleButtons.run();
         });
 
-    NotificationRuleTableSupport.refreshOnSelectionChange(notifications.table, refreshRuleButtons);
-    NotificationRuleTableSupport.editOnDoubleClick(notifications.table, openEditRuleDialog);
+    SettingsTableSupport.refreshOnSelectionChange(notifications.table, refreshRuleButtons);
+    SettingsTableSupport.editOnDoubleClick(notifications.table, openEditRuleDialog);
     refreshRuleButtons.run();
 
     JScrollPane scroll = new JScrollPane(notifications.table);

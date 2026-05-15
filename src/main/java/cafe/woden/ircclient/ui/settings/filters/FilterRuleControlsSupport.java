@@ -173,7 +173,7 @@ final class FilterRuleControlsSupport {
           moveRuleDown.setEnabled(row < (rulesModel.getRowCount() - 1));
         };
 
-    rulesTable.getSelectionModel().addListSelectionListener(e -> refreshRuleButtons.run());
+    SettingsTableSupport.refreshOnSelectionChange(rulesTable, refreshRuleButtons);
 
     try {
       class RuleRowTransferHandler extends TransferHandler {
@@ -459,25 +459,14 @@ final class FilterRuleControlsSupport {
               () -> {
                 try {
                   rulesModel.setRules(next.rules());
-                  int nextRow = Math.min(row, Math.max(0, rulesModel.getRowCount() - 1));
-                  if (rulesModel.getRowCount() > 0) {
-                    SettingsTableSupport.selectModelRow(rulesTable, nextRow);
-                  }
+                  SettingsTableSupport.selectAfterModelRowRemoval(rulesTable, row);
                   refreshRuleButtons.run();
                 } catch (Exception ignored) {
                 }
               });
         });
 
-    rulesTable.addMouseListener(
-        new java.awt.event.MouseAdapter() {
-          @Override
-          public void mouseClicked(java.awt.event.MouseEvent e) {
-            if (e.getClickCount() == 2 && SwingUtilities.isLeftMouseButton(e)) {
-              openEditRule.run();
-            }
-          }
-        });
+    SettingsTableSupport.editOnDoubleClick(rulesTable, openEditRule);
 
     addRule.addActionListener(
         e -> {
