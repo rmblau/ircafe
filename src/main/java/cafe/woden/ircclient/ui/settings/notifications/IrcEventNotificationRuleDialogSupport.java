@@ -477,12 +477,11 @@ public final class IrcEventNotificationRuleDialogSupport {
               || selectedSourceMode == IrcEventNotificationRule.SourceMode.GLOB
               || selectedSourceMode == IrcEventNotificationRule.SourceMode.REGEX;
       if (sourceNeedsPattern && sourcePatternValue == null) {
-        JOptionPane.showMessageDialog(
+        showInvalidRuleMessage(
             owner,
-            "Source mode \"" + selectedSourceMode + "\" requires a source pattern.",
-            "Invalid IRC Event Rule",
-            JOptionPane.ERROR_MESSAGE);
-        tabs.setSelectedIndex(0);
+            tabs,
+            0,
+            "Source mode \"" + selectedSourceMode + "\" requires a source pattern.");
         continue;
       }
       if (selectedSourceMode == IrcEventNotificationRule.SourceMode.REGEX
@@ -490,13 +489,12 @@ public final class IrcEventNotificationRuleDialogSupport {
         try {
           Pattern.compile(sourcePatternValue);
         } catch (Exception ex) {
-          JOptionPane.showMessageDialog(
+          showInvalidRuleMessage(
               owner,
+              tabs,
+              0,
               "Invalid source regex pattern:\n"
-                  + Objects.toString(ex.getMessage(), "Invalid regex"),
-              "Invalid IRC Event Rule",
-              JOptionPane.ERROR_MESSAGE);
-          tabs.setSelectedIndex(0);
+                  + Objects.toString(ex.getMessage(), "Invalid regex"));
           continue;
         }
       }
@@ -508,12 +506,11 @@ public final class IrcEventNotificationRuleDialogSupport {
           selectedChannelScope == IrcEventNotificationRule.ChannelScope.ONLY
               || selectedChannelScope == IrcEventNotificationRule.ChannelScope.ALL_EXCEPT;
       if (channelNeedsPattern && channelPatternsValue == null) {
-        JOptionPane.showMessageDialog(
+        showInvalidRuleMessage(
             owner,
-            "Channel scope \"" + selectedChannelScope + "\" requires channel patterns.",
-            "Invalid IRC Event Rule",
-            JOptionPane.ERROR_MESSAGE);
-        tabs.setSelectedIndex(0);
+            tabs,
+            0,
+            "Channel scope \"" + selectedChannelScope + "\" requires channel patterns.");
         continue;
       }
       if (!channelNeedsPattern) channelPatternsValue = null;
@@ -534,50 +531,46 @@ public final class IrcEventNotificationRuleDialogSupport {
       boolean ctcpEvent = selectedEvent == IrcEventNotificationRule.EventType.CTCP_RECEIVED;
       if (ctcpEvent && selectedCtcpCommandMode != IrcEventNotificationRule.CtcpMatchMode.ANY) {
         if (ctcpCommandPatternValue == null) {
-          JOptionPane.showMessageDialog(
+          showInvalidRuleMessage(
               owner,
-              "CTCP command mode \"" + selectedCtcpCommandMode + "\" requires a pattern.",
-              "Invalid IRC Event Rule",
-              JOptionPane.ERROR_MESSAGE);
-          tabs.setSelectedIndex(0);
+              tabs,
+              0,
+              "CTCP command mode \"" + selectedCtcpCommandMode + "\" requires a pattern.");
           continue;
         }
         if (selectedCtcpCommandMode == IrcEventNotificationRule.CtcpMatchMode.REGEX) {
           try {
             Pattern.compile(ctcpCommandPatternValue);
           } catch (Exception ex) {
-            JOptionPane.showMessageDialog(
+            showInvalidRuleMessage(
                 owner,
+                tabs,
+                0,
                 "Invalid CTCP command regex pattern:\n"
-                    + Objects.toString(ex.getMessage(), "Invalid regex"),
-                "Invalid IRC Event Rule",
-                JOptionPane.ERROR_MESSAGE);
-            tabs.setSelectedIndex(0);
+                    + Objects.toString(ex.getMessage(), "Invalid regex"));
             continue;
           }
         }
       }
       if (ctcpEvent && selectedCtcpValueMode != IrcEventNotificationRule.CtcpMatchMode.ANY) {
         if (ctcpValuePatternValue == null) {
-          JOptionPane.showMessageDialog(
+          showInvalidRuleMessage(
               owner,
-              "CTCP value mode \"" + selectedCtcpValueMode + "\" requires a pattern.",
-              "Invalid IRC Event Rule",
-              JOptionPane.ERROR_MESSAGE);
-          tabs.setSelectedIndex(0);
+              tabs,
+              0,
+              "CTCP value mode \"" + selectedCtcpValueMode + "\" requires a pattern.");
           continue;
         }
         if (selectedCtcpValueMode == IrcEventNotificationRule.CtcpMatchMode.REGEX) {
           try {
             Pattern.compile(ctcpValuePatternValue);
           } catch (Exception ex) {
-            JOptionPane.showMessageDialog(
+            showInvalidRuleMessage(
                 owner,
+                tabs,
+                0,
                 "Invalid CTCP value regex pattern:\n"
-                    + Objects.toString(ex.getMessage(), "Invalid regex"),
-                "Invalid IRC Event Rule",
-                JOptionPane.ERROR_MESSAGE);
-            tabs.setSelectedIndex(0);
+                    + Objects.toString(ex.getMessage(), "Invalid regex"));
             continue;
           }
         }
@@ -606,12 +599,8 @@ public final class IrcEventNotificationRuleDialogSupport {
       if (scriptWorkingDirectoryValue.isEmpty()) scriptWorkingDirectoryValue = null;
       boolean runScript = scriptEnabled.isSelected();
       if (runScript && scriptPathValue == null) {
-        JOptionPane.showMessageDialog(
-            owner,
-            "Script path is required when Run script/program is enabled.",
-            "Invalid IRC Event Rule",
-            JOptionPane.ERROR_MESSAGE);
-        tabs.setSelectedIndex(3);
+        showInvalidRuleMessage(
+            owner, tabs, 3, "Script path is required when Run script/program is enabled.");
         continue;
       }
 
@@ -639,6 +628,13 @@ public final class IrcEventNotificationRuleDialogSupport {
           selectedCtcpValueMode,
           ctcpValuePatternValue);
     }
+  }
+
+  private static void showInvalidRuleMessage(
+      Window owner, JTabbedPane tabs, int tabIndex, String message) {
+    JOptionPane.showMessageDialog(
+        owner, message, "Invalid IRC Event Rule", JOptionPane.ERROR_MESSAGE);
+    tabs.setSelectedIndex(tabIndex);
   }
 
   private enum CtcpNotificationRuleTemplate {
