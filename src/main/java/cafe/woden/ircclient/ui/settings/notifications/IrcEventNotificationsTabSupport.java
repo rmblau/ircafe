@@ -7,7 +7,6 @@ import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -105,32 +104,17 @@ public final class IrcEventNotificationsTabSupport {
         PreferencesUiSupport.iconOnlyButton(
             "Down", "arrow-down", "Move selected IRC event rule down");
 
-    JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
-    buttons.add(add);
-    buttons.add(edit);
-    buttons.add(enableRule);
-    buttons.add(disableRule);
-    buttons.add(duplicate);
-    buttons.add(remove);
-    buttons.add(up);
-    buttons.add(down);
-
     Runnable refreshRuleButtons =
         () -> {
-          int viewRow = controls.table().getSelectedRow();
-          boolean hasSelection = viewRow >= 0;
-          int modelRow = hasSelection ? controls.table().convertRowIndexToModel(viewRow) : -1;
+          NotificationRuleTableSupport.refreshBasicButtonState(
+              controls.table(), controls.model()::getRowCount, edit, duplicate, remove, up, down);
+          int modelRow = SettingsTableSupport.selectedModelRow(controls.table());
+          boolean hasSelection = modelRow >= 0;
           IrcEventNotificationRule selectedRule =
               modelRow >= 0 ? controls.model().ruleAt(modelRow) : null;
           boolean selectedEnabled = selectedRule != null && selectedRule.enabled();
-          edit.setEnabled(hasSelection);
           enableRule.setEnabled(hasSelection && !selectedEnabled);
           disableRule.setEnabled(hasSelection && selectedEnabled);
-          duplicate.setEnabled(hasSelection);
-          remove.setEnabled(hasSelection);
-          up.setEnabled(hasSelection && modelRow > 0);
-          down.setEnabled(
-              hasSelection && modelRow >= 0 && modelRow < (controls.model().getRowCount() - 1));
         };
 
     Runnable openEditRuleDialog =
@@ -196,12 +180,7 @@ public final class IrcEventNotificationsTabSupport {
                   JOptionPane.OK_CANCEL_OPTION);
           if (res != JOptionPane.OK_OPTION) return;
           controls.model().removeRow(modelRow);
-          int nextModelRow = Math.min(modelRow, controls.model().getRowCount() - 1);
-          if (nextModelRow >= 0) {
-            SettingsTableSupport.selectModelRow(controls.table(), nextModelRow);
-          } else {
-            controls.table().clearSelection();
-          }
+          NotificationRuleTableSupport.selectAfterRemove(controls.table(), modelRow);
           refreshRuleButtons.run();
         });
 
@@ -259,30 +238,8 @@ public final class IrcEventNotificationsTabSupport {
           refreshRuleButtons.run();
         });
 
-    controls
-        .table()
-        .getSelectionModel()
-        .addListSelectionListener(
-            e -> {
-              if (e != null && e.getValueIsAdjusting()) return;
-              refreshRuleButtons.run();
-            });
-
-    controls
-        .table()
-        .addMouseListener(
-            new java.awt.event.MouseAdapter() {
-              @Override
-              public void mouseClicked(java.awt.event.MouseEvent e) {
-                if (e == null) return;
-                if (!javax.swing.SwingUtilities.isLeftMouseButton(e)) return;
-                if (e.getClickCount() != 2) return;
-                int viewRow = controls.table().rowAtPoint(e.getPoint());
-                if (viewRow < 0) return;
-                SettingsTableSupport.selectViewRow(controls.table(), viewRow);
-                openEditRuleDialog.run();
-              }
-            });
+    NotificationRuleTableSupport.refreshOnSelectionChange(controls.table(), refreshRuleButtons);
+    NotificationRuleTableSupport.editOnDoubleClick(controls.table(), openEditRuleDialog);
     refreshRuleButtons.run();
 
     JScrollPane scroll = new JScrollPane(controls.table());
@@ -305,6 +262,9 @@ public final class IrcEventNotificationsTabSupport {
     JPanel rulesPanel =
         PreferencesUiSupport.captionPanelWithPadding(
             "Rules", "insets 0, fill, wrap 1", "[grow,fill]", "[]6[grow,fill]4[]", 10, 10, 10, 10);
+    JPanel buttons =
+        NotificationRuleTableSupport.actionButtonRow(
+            add, edit, enableRule, disableRule, duplicate, remove, up, down);
     rulesPanel.add(buttons, "growx, wmin 0, wrap");
     scroll.setPreferredSize(new Dimension(400, 260));
     rulesPanel.add(scroll, "grow, push, wmin 0, wrap");

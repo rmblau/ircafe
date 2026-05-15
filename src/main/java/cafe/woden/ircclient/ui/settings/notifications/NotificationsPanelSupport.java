@@ -50,26 +50,16 @@ public final class NotificationsPanelSupport {
         PreferencesUiSupport.iconOnlyButton(
             "Down", "arrow-down", "Move selected notification rule down");
 
-    JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
-    buttons.add(add);
-    buttons.add(edit);
-    buttons.add(duplicate);
-    buttons.add(remove);
-    buttons.add(up);
-    buttons.add(down);
-
     Runnable refreshRuleButtons =
-        () -> {
-          int viewRow = notifications.table.getSelectedRow();
-          boolean hasSelection = viewRow >= 0;
-          int modelRow = hasSelection ? notifications.table.convertRowIndexToModel(viewRow) : -1;
-          edit.setEnabled(hasSelection);
-          duplicate.setEnabled(hasSelection);
-          remove.setEnabled(hasSelection);
-          up.setEnabled(hasSelection && modelRow > 0);
-          down.setEnabled(
-              hasSelection && modelRow >= 0 && modelRow < (notifications.model.getRowCount() - 1));
-        };
+        () ->
+            NotificationRuleTableSupport.refreshBasicButtonState(
+                notifications.table,
+                notifications.model::getRowCount,
+                edit,
+                duplicate,
+                remove,
+                up,
+                down);
 
     Runnable openEditRuleDialog =
         () -> {
@@ -118,12 +108,7 @@ public final class NotificationsPanelSupport {
                   JOptionPane.OK_CANCEL_OPTION);
           if (res != JOptionPane.OK_OPTION) return;
           notifications.model.removeRow(modelRow);
-          int nextModelRow = Math.min(modelRow, notifications.model.getRowCount() - 1);
-          if (nextModelRow >= 0) {
-            SettingsTableSupport.selectModelRow(notifications.table, nextModelRow);
-          } else {
-            notifications.table.clearSelection();
-          }
+          NotificationRuleTableSupport.selectAfterRemove(notifications.table, modelRow);
           refreshRuleButtons.run();
         });
 
@@ -145,28 +130,8 @@ public final class NotificationsPanelSupport {
           refreshRuleButtons.run();
         });
 
-    notifications
-        .table
-        .getSelectionModel()
-        .addListSelectionListener(
-            e -> {
-              if (e != null && e.getValueIsAdjusting()) return;
-              refreshRuleButtons.run();
-            });
-
-    notifications.table.addMouseListener(
-        new java.awt.event.MouseAdapter() {
-          @Override
-          public void mouseClicked(java.awt.event.MouseEvent e) {
-            if (e == null) return;
-            if (!javax.swing.SwingUtilities.isLeftMouseButton(e)) return;
-            if (e.getClickCount() != 2) return;
-            int viewRow = notifications.table.rowAtPoint(e.getPoint());
-            if (viewRow < 0) return;
-            SettingsTableSupport.selectViewRow(notifications.table, viewRow);
-            openEditRuleDialog.run();
-          }
-        });
+    NotificationRuleTableSupport.refreshOnSelectionChange(notifications.table, refreshRuleButtons);
+    NotificationRuleTableSupport.editOnDoubleClick(notifications.table, openEditRuleDialog);
     refreshRuleButtons.run();
 
     JScrollPane scroll = new JScrollPane(notifications.table);
@@ -218,6 +183,8 @@ public final class NotificationsPanelSupport {
     JPanel rulesTablePanel =
         PreferencesUiSupport.captionPanel(
             "Rule list", "insets 0, fill, wrap 1", "[grow,fill]", "[]6[grow,fill]4[]4[]");
+    JPanel buttons =
+        NotificationRuleTableSupport.actionButtonRow(add, edit, duplicate, remove, up, down);
     rulesTablePanel.add(buttons, "growx, wmin 0, wrap");
     rulesTablePanel.add(scroll, "grow, push, h 260!, wmin 0, wrap");
     rulesTablePanel.add(notifications.validationLabel, "growx, wmin 0, wrap");
