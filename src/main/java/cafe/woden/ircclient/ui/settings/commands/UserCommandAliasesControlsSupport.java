@@ -102,13 +102,7 @@ public final class UserCommandAliasesControlsSupport {
           model.setTemplateAt(modelRow, template.getText());
         };
 
-    table
-        .getSelectionModel()
-        .addListSelectionListener(
-            e -> {
-              if (e != null && e.getValueIsAdjusting()) return;
-              loadSelectedTemplate.run();
-            });
+    SettingsTableSupport.refreshOnSelectionChange(table, loadSelectedTemplate);
     template
         .getDocument()
         .addDocumentListener(new SettingsDocumentListener(persistSelectedTemplate));

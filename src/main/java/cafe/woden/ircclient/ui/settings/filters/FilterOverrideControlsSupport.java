@@ -36,9 +36,9 @@ final class FilterOverrideControlsSupport {
         PreferencesUiSupport.iconOnlyButton("Remove", "trash", "Remove selected scope override");
     remove.setEnabled(false);
 
-    table
-        .getSelectionModel()
-        .addListSelectionListener(e -> remove.setEnabled(table.getSelectedRow() >= 0));
+    Runnable refreshRemoveButton =
+        () -> remove.setEnabled(SettingsTableSupport.selectedModelRow(table) >= 0);
+    SettingsTableSupport.refreshOnSelectionChange(table, refreshRemoveButton);
 
     add.addActionListener(
         e -> {
@@ -70,7 +70,7 @@ final class FilterOverrideControlsSupport {
                   JOptionPane.OK_CANCEL_OPTION);
           if (confirm != JOptionPane.OK_OPTION) return;
           model.removeAt(row);
-          SwingUtilities.invokeLater(() -> remove.setEnabled(table.getSelectedRow() >= 0));
+          SwingUtilities.invokeLater(refreshRemoveButton);
         });
 
     return new FilterOverrideControls(model, table, add, remove);

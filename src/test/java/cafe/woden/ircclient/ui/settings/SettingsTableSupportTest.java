@@ -67,4 +67,17 @@ class SettingsTableSupportTest {
 
     assertTrue(table.getSelectionModel().isSelectionEmpty());
   }
+
+  @Test
+  void refreshOnSelectionChangeRunsCallback() {
+    DefaultTableModel model =
+        new DefaultTableModel(new Object[][] {{"one"}, {"two"}}, new Object[] {"Name"});
+    JTable table = new JTable(model);
+    int[] calls = new int[] {0};
+
+    SettingsTableSupport.refreshOnSelectionChange(table, () -> calls[0]++);
+    table.setRowSelectionInterval(0, 0);
+
+    assertTrue(calls[0] > 0);
+  }
 }
