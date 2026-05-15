@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings.commands;
 
 import cafe.woden.ircclient.app.commands.HexChatCommandAliasImporter;
 import cafe.woden.ircclient.model.UserCommandAlias;
+import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
 import java.awt.Component;
 import java.io.File;
 import java.nio.file.Files;
@@ -20,7 +21,7 @@ final class HexChatAliasImportDialogSupport {
   private HexChatAliasImportDialogSupport() {}
 
   static void importAliases(Component parent, UserCommandAliasesTableModel model, JTable table) {
-    stopEditing(table);
+    SettingsTableSupport.stopEditing(table);
 
     Component owner = SwingUtilities.getWindowAncestor(parent);
     JFileChooser chooser = new JFileChooser();
@@ -89,11 +90,7 @@ final class HexChatAliasImportDialogSupport {
     }
 
     if (firstAdded >= 0) {
-      int view = table.convertRowIndexToView(firstAdded);
-      if (view >= 0) {
-        table.getSelectionModel().setSelectionInterval(view, view);
-        table.scrollRectToVisible(table.getCellRect(view, 0, true));
-      }
+      SettingsTableSupport.selectModelRow(table, firstAdded);
     }
 
     JOptionPane.showMessageDialog(
@@ -101,14 +98,6 @@ final class HexChatAliasImportDialogSupport {
         buildSummary(imported, added, skippedExisting),
         "HexChat import complete",
         JOptionPane.INFORMATION_MESSAGE);
-  }
-
-  private static void stopEditing(JTable table) {
-    if (table == null || !table.isEditing()) return;
-    try {
-      table.getCellEditor().stopCellEditing();
-    } catch (Exception ignored) {
-    }
   }
 
   private static String buildSummary(

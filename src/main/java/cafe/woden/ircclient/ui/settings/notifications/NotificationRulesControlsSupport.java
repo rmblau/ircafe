@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.settings.notifications;
 import cafe.woden.ircclient.config.NotificationRule;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import java.awt.Color;
 import java.util.List;
@@ -88,7 +89,7 @@ public final class NotificationRulesControlsSupport {
   }
 
   public static NotificationSettings readSettings(NotificationRulesControls controls) {
-    stopEditing(controls.table);
+    SettingsTableSupport.stopEditing(controls.table);
     return new NotificationSettings(
         spinnerInt(controls.cooldownSeconds),
         controls.model.snapshot(),
@@ -124,14 +125,6 @@ public final class NotificationRulesControlsSupport {
       RuntimeConfigStore runtimeConfig, NotificationSettings settings) {
     runtimeConfig.rememberNotificationRuleCooldownSeconds(settings.cooldownSeconds());
     runtimeConfig.rememberNotificationRules(settings.rules());
-  }
-
-  private static void stopEditing(JTable table) {
-    if (table == null || !table.isEditing()) return;
-    try {
-      table.getCellEditor().stopCellEditing();
-    } catch (Exception ignored) {
-    }
   }
 
   private static int spinnerInt(JSpinner spinner) {

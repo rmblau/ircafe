@@ -9,6 +9,7 @@ import cafe.woden.ircclient.ui.filter.FilterRuleEntryDialog;
 import cafe.woden.ircclient.ui.filter.FilterSettings;
 import cafe.woden.ircclient.ui.filter.FilterSettingsBus;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
 import java.awt.Window;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -85,8 +86,7 @@ final class FilterRuleControlsSupport {
                     for (int i = 0; i < rulesModel.getRowCount(); i++) {
                       FilterRule r = rulesModel.ruleAt(i);
                       if (r != null && selectedId.equals(r.id())) {
-                        rulesTable.getSelectionModel().setSelectionInterval(i, i);
-                        rulesTable.scrollRectToVisible(rulesTable.getCellRect(i, 0, true));
+                        SettingsTableSupport.selectModelRow(rulesTable, i);
                         break;
                       }
                     }
@@ -273,8 +273,7 @@ final class FilterRuleControlsSupport {
                 try {
                   rulesModel.setRules(next.rules());
                   if (newRow >= 0 && newRow < rulesModel.getRowCount()) {
-                    rulesTable.getSelectionModel().setSelectionInterval(newRow, newRow);
-                    rulesTable.scrollRectToVisible(rulesTable.getCellRect(newRow, 0, true));
+                    SettingsTableSupport.selectModelRow(rulesTable, newRow);
                   }
                   refreshRuleButtons.run();
                 } catch (Exception ignored) {
@@ -310,8 +309,7 @@ final class FilterRuleControlsSupport {
               () -> {
                 try {
                   rulesModel.setRules(next.rules());
-                  rulesTable.getSelectionModel().setSelectionInterval(newRow, newRow);
-                  rulesTable.scrollRectToVisible(rulesTable.getCellRect(newRow, 0, true));
+                  SettingsTableSupport.selectModelRow(rulesTable, newRow);
                   refreshRuleButtons.run();
                 } catch (Exception ignored) {
                 }
@@ -339,8 +337,7 @@ final class FilterRuleControlsSupport {
               () -> {
                 try {
                   rulesModel.setRules(next.rules());
-                  rulesTable.getSelectionModel().setSelectionInterval(newRow, newRow);
-                  rulesTable.scrollRectToVisible(rulesTable.getCellRect(newRow, 0, true));
+                  SettingsTableSupport.selectModelRow(rulesTable, newRow);
                   refreshRuleButtons.run();
                 } catch (Exception ignored) {
                 }
@@ -410,8 +407,7 @@ final class FilterRuleControlsSupport {
                   }
                   if (idx < 0) idx = Math.max(0, Math.min(row, rulesModel.getRowCount() - 1));
                   if (idx >= 0 && idx < rulesModel.getRowCount()) {
-                    rulesTable.getSelectionModel().setSelectionInterval(idx, idx);
-                    rulesTable.scrollRectToVisible(rulesTable.getCellRect(idx, 0, true));
+                    SettingsTableSupport.selectModelRow(rulesTable, idx);
                   }
                   refreshRuleButtons.run();
                 } catch (Exception ignored) {
@@ -465,8 +461,7 @@ final class FilterRuleControlsSupport {
                   rulesModel.setRules(next.rules());
                   int nextRow = Math.min(row, Math.max(0, rulesModel.getRowCount() - 1));
                   if (rulesModel.getRowCount() > 0) {
-                    rulesTable.getSelectionModel().setSelectionInterval(nextRow, nextRow);
-                    rulesTable.scrollRectToVisible(rulesTable.getCellRect(nextRow, 0, true));
+                    SettingsTableSupport.selectModelRow(rulesTable, nextRow);
                   }
                   refreshRuleButtons.run();
                 } catch (Exception ignored) {
@@ -525,8 +520,7 @@ final class FilterRuleControlsSupport {
                   rulesModel.setRules(next.rules());
                   int row = rulesModel.getRowCount() - 1;
                   if (row >= 0) {
-                    rulesTable.getSelectionModel().setSelectionInterval(row, row);
-                    rulesTable.scrollRectToVisible(rulesTable.getCellRect(row, 0, true));
+                    SettingsTableSupport.selectModelRow(rulesTable, row);
                   }
                 } catch (Exception ignored) {
                 }

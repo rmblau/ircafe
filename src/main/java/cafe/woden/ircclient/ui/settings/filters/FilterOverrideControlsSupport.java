@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings.filters;
 
 import cafe.woden.ircclient.ui.filter.FilterSettings;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -53,14 +54,13 @@ final class FilterOverrideControlsSupport {
           model.addEmpty(scope);
           int idx = model.getRowCount() - 1;
           if (idx >= 0) {
-            table.getSelectionModel().setSelectionInterval(idx, idx);
-            table.scrollRectToVisible(table.getCellRect(idx, 0, true));
+            SettingsTableSupport.selectModelRow(table, idx);
           }
         });
 
     remove.addActionListener(
         e -> {
-          int row = table.getSelectedRow();
+          int row = SettingsTableSupport.selectedModelRow(table);
           if (row < 0) return;
           int confirm =
               JOptionPane.showConfirmDialog(

@@ -4,6 +4,7 @@ import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.notifications.api.IrcEventNotificationRulesPort;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
@@ -134,15 +135,14 @@ public final class IrcEventNotificationsTabSupport {
 
     Runnable openEditRuleDialog =
         () -> {
-          int viewRow = controls.table().getSelectedRow();
-          if (viewRow < 0) return;
-          int modelRow = controls.table().convertRowIndexToModel(viewRow);
+          int modelRow = SettingsTableSupport.selectedModelRow(controls.table());
+          if (modelRow < 0) return;
           IrcEventNotificationRule seed = controls.model().ruleAt(modelRow);
           if (seed == null) return;
           IrcEventNotificationRule edited = ruleEditor.prompt("Edit IRC Event Rule", seed);
           if (edited == null) return;
           controls.model().setRule(modelRow, edited);
-          selectModelRow(controls, modelRow);
+          SettingsTableSupport.selectModelRow(controls.table(), modelRow);
           refreshRuleButtons.run();
         };
 
@@ -151,7 +151,7 @@ public final class IrcEventNotificationsTabSupport {
           IrcEventNotificationRule created = ruleEditor.prompt("Add IRC Event Rule", null);
           if (created == null) return;
           int row = controls.model().addRule(created);
-          selectModelRow(controls, row);
+          SettingsTableSupport.selectModelRow(controls.table(), row);
           refreshRuleButtons.run();
         });
 
@@ -159,7 +159,7 @@ public final class IrcEventNotificationsTabSupport {
 
     enableRule.addActionListener(
         e -> {
-          int modelRow = selectedModelRow(controls);
+          int modelRow = SettingsTableSupport.selectedModelRow(controls.table());
           if (modelRow < 0) return;
           controls.model().setEnabledAt(modelRow, true);
           refreshRuleButtons.run();
@@ -167,7 +167,7 @@ public final class IrcEventNotificationsTabSupport {
 
     disableRule.addActionListener(
         e -> {
-          int modelRow = selectedModelRow(controls);
+          int modelRow = SettingsTableSupport.selectedModelRow(controls.table());
           if (modelRow < 0) return;
           controls.model().setEnabledAt(modelRow, false);
           refreshRuleButtons.run();
@@ -175,16 +175,16 @@ public final class IrcEventNotificationsTabSupport {
 
     duplicate.addActionListener(
         e -> {
-          int modelRow = selectedModelRow(controls);
+          int modelRow = SettingsTableSupport.selectedModelRow(controls.table());
           if (modelRow < 0) return;
           int dup = controls.model().duplicateRow(modelRow);
-          selectModelRow(controls, dup);
+          SettingsTableSupport.selectModelRow(controls.table(), dup);
           refreshRuleButtons.run();
         });
 
     remove.addActionListener(
         e -> {
-          int modelRow = selectedModelRow(controls);
+          int modelRow = SettingsTableSupport.selectedModelRow(controls.table());
           if (modelRow < 0) return;
           IrcEventNotificationRule rule = controls.model().ruleAt(modelRow);
           String label = IrcEventNotificationTableModel.effectiveRuleLabel(rule);
@@ -198,7 +198,7 @@ public final class IrcEventNotificationsTabSupport {
           controls.model().removeRow(modelRow);
           int nextModelRow = Math.min(modelRow, controls.model().getRowCount() - 1);
           if (nextModelRow >= 0) {
-            selectModelRow(controls, nextModelRow);
+            SettingsTableSupport.selectModelRow(controls.table(), nextModelRow);
           } else {
             controls.table().clearSelection();
           }
@@ -207,19 +207,19 @@ public final class IrcEventNotificationsTabSupport {
 
     up.addActionListener(
         e -> {
-          int modelRow = selectedModelRow(controls);
+          int modelRow = SettingsTableSupport.selectedModelRow(controls.table());
           if (modelRow < 0) return;
           int next = controls.model().moveRow(modelRow, modelRow - 1);
-          selectModelRow(controls, next);
+          SettingsTableSupport.selectModelRow(controls.table(), next);
           refreshRuleButtons.run();
         });
 
     down.addActionListener(
         e -> {
-          int modelRow = selectedModelRow(controls);
+          int modelRow = SettingsTableSupport.selectedModelRow(controls.table());
           if (modelRow < 0) return;
           int next = controls.model().moveRow(modelRow, modelRow + 1);
-          selectModelRow(controls, next);
+          SettingsTableSupport.selectModelRow(controls.table(), next);
           refreshRuleButtons.run();
         });
 
@@ -234,7 +234,7 @@ public final class IrcEventNotificationsTabSupport {
           controls.model().applyPreset(rules);
           int row = controls.model().firstRowForEvent(rules.getFirst().eventType());
           if (row < 0) row = 0;
-          selectModelRow(controls, row);
+          SettingsTableSupport.selectModelRow(controls.table(), row);
           refreshRuleButtons.run();
         });
 
@@ -252,8 +252,7 @@ public final class IrcEventNotificationsTabSupport {
           if (defaults.isEmpty()) return;
           controls.model().replaceAll(defaults);
           if (controls.table().getRowCount() > 0) {
-            controls.table().getSelectionModel().setSelectionInterval(0, 0);
-            controls.table().scrollRectToVisible(controls.table().getCellRect(0, 0, true));
+            SettingsTableSupport.selectModelRow(controls.table(), 0);
           } else {
             controls.table().clearSelection();
           }
@@ -280,7 +279,7 @@ public final class IrcEventNotificationsTabSupport {
                 if (e.getClickCount() != 2) return;
                 int viewRow = controls.table().rowAtPoint(e.getPoint());
                 if (viewRow < 0) return;
-                controls.table().getSelectionModel().setSelectionInterval(viewRow, viewRow);
+                SettingsTableSupport.selectViewRow(controls.table(), viewRow);
                 openEditRuleDialog.run();
               }
             });
@@ -318,7 +317,7 @@ public final class IrcEventNotificationsTabSupport {
   }
 
   public static IrcEventNotificationSettings readSettings(IrcEventNotificationControls controls) {
-    stopEditing(controls.table());
+    SettingsTableSupport.stopEditing(controls.table());
     return new IrcEventNotificationSettings(controls.model().snapshot());
   }
 
@@ -329,28 +328,6 @@ public final class IrcEventNotificationsTabSupport {
     runtimeConfig.rememberIrcEventNotificationRules(settings.rules());
     if (rulesBus != null) {
       rulesBus.set(settings.rules());
-    }
-  }
-
-  private static int selectedModelRow(IrcEventNotificationControls controls) {
-    int viewRow = controls.table().getSelectedRow();
-    return viewRow >= 0 ? controls.table().convertRowIndexToModel(viewRow) : -1;
-  }
-
-  private static void selectModelRow(IrcEventNotificationControls controls, int modelRow) {
-    if (modelRow < 0) return;
-    int viewRow = controls.table().convertRowIndexToView(modelRow);
-    if (viewRow >= 0) {
-      controls.table().getSelectionModel().setSelectionInterval(viewRow, viewRow);
-      controls.table().scrollRectToVisible(controls.table().getCellRect(viewRow, 0, true));
-    }
-  }
-
-  private static void stopEditing(javax.swing.JTable table) {
-    if (table == null || !table.isEditing()) return;
-    try {
-      table.getCellEditor().stopCellEditing();
-    } catch (Exception ignored) {
     }
   }
 

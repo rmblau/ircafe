@@ -5,6 +5,7 @@ import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.model.UserCommandAlias;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
+import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.Component;
 import java.util.List;
@@ -76,7 +77,7 @@ public final class UserCommandAliasesControlsSupport {
           if (row < 0) {
             template.setText("");
           } else {
-            int modelRow = table.convertRowIndexToModel(row);
+            int modelRow = SettingsTableSupport.selectedModelRow(table);
             template.setText(model.templateAt(modelRow));
           }
           syncing[0] = false;
@@ -96,9 +97,8 @@ public final class UserCommandAliasesControlsSupport {
     Runnable persistSelectedTemplate =
         () -> {
           if (syncing[0]) return;
-          int row = table.getSelectedRow();
-          if (row < 0) return;
-          int modelRow = table.convertRowIndexToModel(row);
+          int modelRow = SettingsTableSupport.selectedModelRow(table);
+          if (modelRow < 0) return;
           model.setTemplateAt(modelRow, template.getText());
         };
 
@@ -115,12 +115,11 @@ public final class UserCommandAliasesControlsSupport {
 
     add.addActionListener(
         e -> {
-          stopEditing(table);
+          SettingsTableSupport.stopEditing(table);
           int idx = model.addAlias(new UserCommandAlias(true, "", ""));
           if (idx >= 0) {
             int view = table.convertRowIndexToView(idx);
-            table.getSelectionModel().setSelectionInterval(view, view);
-            table.scrollRectToVisible(table.getCellRect(view, 0, true));
+            SettingsTableSupport.selectViewRow(table, view);
             table.editCellAt(view, UserCommandAliasesTableModel.COL_COMMAND);
             table.requestFocusInWindow();
           }
@@ -131,58 +130,50 @@ public final class UserCommandAliasesControlsSupport {
 
     duplicate.addActionListener(
         e -> {
-          stopEditing(table);
-          int row = table.getSelectedRow();
-          if (row < 0) return;
-          int modelRow = table.convertRowIndexToModel(row);
+          SettingsTableSupport.stopEditing(table);
+          int modelRow = SettingsTableSupport.selectedModelRow(table);
+          if (modelRow < 0) return;
           int dup = model.duplicateRow(modelRow);
           if (dup >= 0) {
-            int view = table.convertRowIndexToView(dup);
-            table.getSelectionModel().setSelectionInterval(view, view);
-            table.scrollRectToVisible(table.getCellRect(view, 0, true));
+            SettingsTableSupport.selectModelRow(table, dup);
           }
         });
 
     remove.addActionListener(
         e -> {
-          stopEditing(table);
-          int row = table.getSelectedRow();
-          if (row < 0) return;
+          SettingsTableSupport.stopEditing(table);
+          int modelRow = SettingsTableSupport.selectedModelRow(table);
+          if (modelRow < 0) return;
           int res =
               JOptionPane.showConfirmDialog(
                   owner, "Remove selected alias?", "Remove alias", JOptionPane.OK_CANCEL_OPTION);
           if (res != JOptionPane.OK_OPTION) return;
-          int modelRow = table.convertRowIndexToModel(row);
           model.removeRow(modelRow);
         });
 
     up.addActionListener(
         e -> {
-          stopEditing(table);
+          SettingsTableSupport.stopEditing(table);
           int row = table.getSelectedRow();
           if (row <= 0) return;
           int modelRow = table.convertRowIndexToModel(row);
           int modelPrevRow = table.convertRowIndexToModel(row - 1);
           int next = model.moveRow(modelRow, modelPrevRow);
           if (next >= 0) {
-            int view = table.convertRowIndexToView(next);
-            table.getSelectionModel().setSelectionInterval(view, view);
-            table.scrollRectToVisible(table.getCellRect(view, 0, true));
+            SettingsTableSupport.selectModelRow(table, next);
           }
         });
 
     down.addActionListener(
         e -> {
-          stopEditing(table);
+          SettingsTableSupport.stopEditing(table);
           int row = table.getSelectedRow();
           if (row < 0 || row >= table.getRowCount() - 1) return;
           int modelRow = table.convertRowIndexToModel(row);
           int modelNextRow = table.convertRowIndexToModel(row + 1);
           int next = model.moveRow(modelRow, modelNextRow);
           if (next >= 0) {
-            int view = table.convertRowIndexToView(next);
-            table.getSelectionModel().setSelectionInterval(view, view);
-            table.scrollRectToVisible(table.getCellRect(view, 0, true));
+            SettingsTableSupport.selectModelRow(table, next);
           }
         });
 
@@ -202,7 +193,7 @@ public final class UserCommandAliasesControlsSupport {
   }
 
   public static UserCommandAliasSettings readSettings(UserCommandAliasesControls controls) {
-    stopEditing(controls.table());
+    SettingsTableSupport.stopEditing(controls.table());
     return new UserCommandAliasSettings(
         controls.model().snapshot(),
         controls.unknownCommandAsRaw().isSelected(),
@@ -218,14 +209,6 @@ public final class UserCommandAliasesControlsSupport {
     if (aliasesBus != null) {
       aliasesBus.set(settings.aliases());
       aliasesBus.setUnknownCommandAsRawEnabled(settings.unknownCommandAsRawEnabled());
-    }
-  }
-
-  private static void stopEditing(JTable table) {
-    if (table == null || !table.isEditing()) return;
-    try {
-      table.getCellEditor().stopCellEditing();
-    } catch (Exception ignored) {
     }
   }
 

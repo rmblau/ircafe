@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.settings.notifications;
 import cafe.woden.ircclient.config.NotificationRule;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import javax.swing.Icon;
@@ -72,14 +73,14 @@ public final class NotificationsPanelSupport {
 
     Runnable openEditRuleDialog =
         () -> {
-          int modelRow = selectedModelRow(notifications);
+          int modelRow = SettingsTableSupport.selectedModelRow(notifications.table);
           if (modelRow < 0) return;
           NotificationRule seed = notifications.model.ruleAt(modelRow);
           if (seed == null) return;
           NotificationRule edited = notificationRuleEditor.prompt("Edit Notification Rule", seed);
           if (edited == null) return;
           notifications.model.setRule(modelRow, edited);
-          selectModelRow(notifications, modelRow);
+          SettingsTableSupport.selectModelRow(notifications.table, modelRow);
           refreshRuleButtons.run();
         };
 
@@ -88,7 +89,7 @@ public final class NotificationsPanelSupport {
           NotificationRule created = notificationRuleEditor.prompt("Add Notification Rule", null);
           if (created == null) return;
           int row = notifications.model.addRule(created);
-          selectModelRow(notifications, row);
+          SettingsTableSupport.selectModelRow(notifications.table, row);
           refreshRuleButtons.run();
         });
 
@@ -96,16 +97,16 @@ public final class NotificationsPanelSupport {
 
     duplicate.addActionListener(
         e -> {
-          int modelRow = selectedModelRow(notifications);
+          int modelRow = SettingsTableSupport.selectedModelRow(notifications.table);
           if (modelRow < 0) return;
           int dup = notifications.model.duplicateRow(modelRow);
-          selectModelRow(notifications, dup);
+          SettingsTableSupport.selectModelRow(notifications.table, dup);
           refreshRuleButtons.run();
         });
 
     remove.addActionListener(
         e -> {
-          int modelRow = selectedModelRow(notifications);
+          int modelRow = SettingsTableSupport.selectedModelRow(notifications.table);
           if (modelRow < 0) return;
           NotificationRule rule = notifications.model.ruleAt(modelRow);
           String label = NotificationRulesTableModel.effectiveRuleLabel(rule);
@@ -119,7 +120,7 @@ public final class NotificationsPanelSupport {
           notifications.model.removeRow(modelRow);
           int nextModelRow = Math.min(modelRow, notifications.model.getRowCount() - 1);
           if (nextModelRow >= 0) {
-            selectModelRow(notifications, nextModelRow);
+            SettingsTableSupport.selectModelRow(notifications.table, nextModelRow);
           } else {
             notifications.table.clearSelection();
           }
@@ -128,19 +129,19 @@ public final class NotificationsPanelSupport {
 
     up.addActionListener(
         e -> {
-          int modelRow = selectedModelRow(notifications);
+          int modelRow = SettingsTableSupport.selectedModelRow(notifications.table);
           if (modelRow < 0) return;
           int next = notifications.model.moveRow(modelRow, modelRow - 1);
-          selectModelRow(notifications, next);
+          SettingsTableSupport.selectModelRow(notifications.table, next);
           refreshRuleButtons.run();
         });
 
     down.addActionListener(
         e -> {
-          int modelRow = selectedModelRow(notifications);
+          int modelRow = SettingsTableSupport.selectedModelRow(notifications.table);
           if (modelRow < 0) return;
           int next = notifications.model.moveRow(modelRow, modelRow + 1);
-          selectModelRow(notifications, next);
+          SettingsTableSupport.selectModelRow(notifications.table, next);
           refreshRuleButtons.run();
         });
 
@@ -162,7 +163,7 @@ public final class NotificationsPanelSupport {
             if (e.getClickCount() != 2) return;
             int viewRow = notifications.table.rowAtPoint(e.getPoint());
             if (viewRow < 0) return;
-            notifications.table.getSelectionModel().setSelectionInterval(viewRow, viewRow);
+            SettingsTableSupport.selectViewRow(notifications.table, viewRow);
             openEditRuleDialog.run();
           }
         });
@@ -193,7 +194,7 @@ public final class NotificationsPanelSupport {
 
     runTest.addActionListener(
         e -> {
-          stopEditing(notifications.table);
+          SettingsTableSupport.stopEditing(notifications.table);
           validationRefresher.refresh(notifications);
           notifications.testRunner.runTest(notifications);
         });
@@ -265,28 +266,6 @@ public final class NotificationsPanelSupport {
 
     validationRefresher.refresh(notifications);
     return panel;
-  }
-
-  private static int selectedModelRow(NotificationRulesControls notifications) {
-    int viewRow = notifications.table.getSelectedRow();
-    return viewRow >= 0 ? notifications.table.convertRowIndexToModel(viewRow) : -1;
-  }
-
-  private static void selectModelRow(NotificationRulesControls notifications, int modelRow) {
-    if (modelRow < 0) return;
-    int viewRow = notifications.table.convertRowIndexToView(modelRow);
-    if (viewRow >= 0) {
-      notifications.table.getSelectionModel().setSelectionInterval(viewRow, viewRow);
-      notifications.table.scrollRectToVisible(notifications.table.getCellRect(viewRow, 0, true));
-    }
-  }
-
-  private static void stopEditing(javax.swing.JTable table) {
-    if (table == null || !table.isEditing()) return;
-    try {
-      table.getCellEditor().stopCellEditing();
-    } catch (Exception ignored) {
-    }
   }
 
   @FunctionalInterface

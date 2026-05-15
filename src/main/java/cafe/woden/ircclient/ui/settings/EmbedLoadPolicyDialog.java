@@ -361,7 +361,7 @@ public class EmbedLoadPolicyDialog {
           model.addRow(new Object[] {""});
           int row = model.getRowCount() - 1;
           if (row >= 0) {
-            table.getSelectionModel().setSelectionInterval(row, row);
+            SettingsTableSupport.selectModelRow(table, row);
             table.editCellAt(row, 0);
             if (table.getEditorComponent() != null) {
               table.getEditorComponent().requestFocus();
@@ -370,9 +370,7 @@ public class EmbedLoadPolicyDialog {
         });
     remove.addActionListener(
         e -> {
-          if (table.isEditing() && table.getCellEditor() != null) {
-            table.getCellEditor().stopCellEditing();
-          }
+          SettingsTableSupport.stopEditing(table);
           int[] rows = table.getSelectedRows();
           for (int i = rows.length - 1; i >= 0; i--) {
             model.removeRow(rows[i]);
@@ -380,27 +378,23 @@ public class EmbedLoadPolicyDialog {
         });
     up.addActionListener(
         e -> {
-          if (table.isEditing() && table.getCellEditor() != null) {
-            table.getCellEditor().stopCellEditing();
-          }
+          SettingsTableSupport.stopEditing(table);
           int row = table.getSelectedRow();
           if (row <= 0) return;
           Object value = model.getValueAt(row, 0);
           model.removeRow(row);
           model.insertRow(row - 1, new Object[] {value});
-          table.getSelectionModel().setSelectionInterval(row - 1, row - 1);
+          SettingsTableSupport.selectModelRow(table, row - 1);
         });
     down.addActionListener(
         e -> {
-          if (table.isEditing() && table.getCellEditor() != null) {
-            table.getCellEditor().stopCellEditing();
-          }
+          SettingsTableSupport.stopEditing(table);
           int row = table.getSelectedRow();
           if (row < 0 || row >= model.getRowCount() - 1) return;
           Object value = model.getValueAt(row, 0);
           model.removeRow(row);
           model.insertRow(row + 1, new Object[] {value});
-          table.getSelectionModel().setSelectionInterval(row + 1, row + 1);
+          SettingsTableSupport.selectModelRow(table, row + 1);
         });
 
     JPanel actions = new JPanel(new MigLayout("insets 0, wrap 1", "[grow,fill]", "[]4[]4[]4[]"));
@@ -561,21 +555,14 @@ public class EmbedLoadPolicyDialog {
   }
 
   private static void stopTableEditing(PolicyControls controls) {
-    stopEditing(controls.userWhitelist().table());
-    stopEditing(controls.userBlacklist().table());
-    stopEditing(controls.channelWhitelist().table());
-    stopEditing(controls.channelBlacklist().table());
-    stopEditing(controls.linkWhitelist().table());
-    stopEditing(controls.linkBlacklist().table());
-    stopEditing(controls.domainWhitelist().table());
-    stopEditing(controls.domainBlacklist().table());
-  }
-
-  private static void stopEditing(JTable table) {
-    if (table == null) return;
-    if (table.isEditing() && table.getCellEditor() != null) {
-      table.getCellEditor().stopCellEditing();
-    }
+    SettingsTableSupport.stopEditing(controls.userWhitelist().table());
+    SettingsTableSupport.stopEditing(controls.userBlacklist().table());
+    SettingsTableSupport.stopEditing(controls.channelWhitelist().table());
+    SettingsTableSupport.stopEditing(controls.channelBlacklist().table());
+    SettingsTableSupport.stopEditing(controls.linkWhitelist().table());
+    SettingsTableSupport.stopEditing(controls.linkBlacklist().table());
+    SettingsTableSupport.stopEditing(controls.domainWhitelist().table());
+    SettingsTableSupport.stopEditing(controls.domainBlacklist().table());
   }
 
   private static List<String> readPatternRows(DefaultTableModel model) {
