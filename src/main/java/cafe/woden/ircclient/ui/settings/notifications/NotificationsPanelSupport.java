@@ -5,7 +5,6 @@ import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
 import java.awt.Component;
-import java.awt.FlowLayout;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -152,10 +151,8 @@ public final class NotificationsPanelSupport {
     JButton clearTest =
         PreferencesUiSupport.iconOnlyButton("Clear", "close", "Clear rule test input/output");
 
-    JPanel testButtons = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
-    testButtons.add(runTest);
-    testButtons.add(clearTest);
-    testButtons.add(notifications.testStatus);
+    JPanel testButtons =
+        PreferencesUiSupport.actionButtonRow(runTest, clearTest, notifications.testStatus);
 
     runTest.addActionListener(
         e -> {
@@ -183,8 +180,7 @@ public final class NotificationsPanelSupport {
     JPanel rulesTablePanel =
         PreferencesUiSupport.captionPanel(
             "Rule list", "insets 0, fill, wrap 1", "[grow,fill]", "[]6[grow,fill]4[]4[]");
-    JPanel buttons =
-        NotificationRuleTableSupport.actionButtonRow(add, edit, duplicate, remove, up, down);
+    JPanel buttons = PreferencesUiSupport.actionButtonRow(add, edit, duplicate, remove, up, down);
     rulesTablePanel.add(buttons, "growx, wmin 0, wrap");
     rulesTablePanel.add(scroll, "grow, push, h 260!, wmin 0, wrap");
     rulesTablePanel.add(notifications.validationLabel, "growx, wmin 0, wrap");

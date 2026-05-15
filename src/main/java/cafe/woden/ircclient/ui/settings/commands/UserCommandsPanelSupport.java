@@ -1,7 +1,6 @@
 package cafe.woden.ircclient.ui.settings.commands;
 
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
-import java.awt.FlowLayout;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
@@ -30,13 +29,14 @@ public final class UserCommandsPanelSupport {
     behavior.add(controls.unknownCommandAsRaw(), "growx, wmin 0, wrap");
     panel.add(behavior, "growx, wmin 0, wrap");
 
-    JPanel buttons = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
-    buttons.add(controls.add());
-    buttons.add(controls.importHexChat());
-    buttons.add(controls.duplicate());
-    buttons.add(controls.remove());
-    buttons.add(controls.up());
-    buttons.add(controls.down());
+    JPanel buttons =
+        PreferencesUiSupport.actionButtonRow(
+            controls.add(),
+            controls.importHexChat(),
+            controls.duplicate(),
+            controls.remove(),
+            controls.up(),
+            controls.down());
 
     JScrollPane tableScroll = new JScrollPane(controls.table());
     tableScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);

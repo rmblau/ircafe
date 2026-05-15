@@ -9,6 +9,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Insets;
 import java.util.List;
@@ -202,6 +203,15 @@ public final class PreferencesUiSupport {
     JButton button = new JButton(text);
     configureIconOnlyButton(button, iconName, tooltip);
     return button;
+  }
+
+  public static JPanel actionButtonRow(JComponent... components) {
+    JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+    if (components == null) return panel;
+    for (JComponent component : components) {
+      if (component != null) panel.add(component);
+    }
+    return panel;
   }
 
   public static JButton buttonWithIcon(String text, String iconName) {

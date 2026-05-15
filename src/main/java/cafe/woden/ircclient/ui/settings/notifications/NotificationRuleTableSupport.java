@@ -1,26 +1,15 @@
 package cafe.woden.ircclient.ui.settings.notifications;
 
 import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
-import java.awt.FlowLayout;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.function.IntSupplier;
 import javax.swing.JButton;
-import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 
 final class NotificationRuleTableSupport {
   private NotificationRuleTableSupport() {}
-
-  static JPanel actionButtonRow(JButton... buttons) {
-    JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
-    if (buttons == null) return panel;
-    for (JButton button : buttons) {
-      if (button != null) panel.add(button);
-    }
-    return panel;
-  }
 
   static void refreshBasicButtonState(
       JTable table,

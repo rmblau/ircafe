@@ -263,7 +263,7 @@ public final class IrcEventNotificationsTabSupport {
         PreferencesUiSupport.captionPanelWithPadding(
             "Rules", "insets 0, fill, wrap 1", "[grow,fill]", "[]6[grow,fill]4[]", 10, 10, 10, 10);
     JPanel buttons =
-        NotificationRuleTableSupport.actionButtonRow(
+        PreferencesUiSupport.actionButtonRow(
             add, edit, enableRule, disableRule, duplicate, remove, up, down);
     rulesPanel.add(buttons, "growx, wmin 0, wrap");
     scroll.setPreferredSize(new Dimension(400, 260));
