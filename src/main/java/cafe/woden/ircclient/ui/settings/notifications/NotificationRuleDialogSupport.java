@@ -6,7 +6,6 @@ import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorPickerDialogSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
 import java.awt.Color;
-import java.awt.FlowLayout;
 import java.awt.Window;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -104,11 +103,9 @@ public final class NotificationRuleDialogSupport {
           refreshColorPreview.run();
         });
 
-    JPanel colorRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+    JPanel colorRow =
+        PreferencesUiSupport.leftComponentRow(6, 0, colorPreview, pickColor, clearColor);
     colorRow.setOpaque(false);
-    colorRow.add(colorPreview);
-    colorRow.add(pickColor);
-    colorRow.add(clearColor);
 
     JTextArea hint =
         PreferencesUiSupport.helpText(
@@ -126,10 +123,8 @@ public final class NotificationRuleDialogSupport {
     form.add(new JLabel("Pattern:"));
     form.add(pattern, "growx,pushx,wmin 0,wrap");
     form.add(new JLabel("Options:"));
-    JPanel options = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
+    JPanel options = PreferencesUiSupport.leftComponentRow(8, 0, caseSensitive, wholeWord);
     options.setOpaque(false);
-    options.add(caseSensitive);
-    options.add(wholeWord);
     form.add(options, "growx,wrap");
     form.add(new JLabel("Color:"));
     form.add(colorRow, "growx,wrap");
