@@ -18,7 +18,6 @@ import cafe.woden.ircclient.ui.shell.UpdateNotifierService;
 import cafe.woden.ircclient.ui.tray.TrayNotificationService;
 import cafe.woden.ircclient.ui.tray.TrayService;
 import cafe.woden.ircclient.ui.tray.dbus.GnomeDbusNotificationBackend;
-import java.awt.Color;
 import java.net.URI;
 import java.util.Locale;
 import java.util.Objects;
@@ -237,7 +236,7 @@ public final class TrayControlsSupport {
     JButton pushyTest = new JButton("Test Pushy");
     pushyTest.setToolTipText("Send a real test notification to the configured Pushy destination.");
     JLabel pushyValidationLabel = new JLabel(" ");
-    pushyValidationLabel.setForeground(errorForeground());
+    pushyValidationLabel.setForeground(PreferencesUiSupport.errorForeground());
     JLabel pushyTestStatus = new JLabel(" ");
 
     Runnable refreshPushyValidation =
@@ -279,7 +278,7 @@ public final class TrayControlsSupport {
               validatePushyInputs(pushyEnabled.isSelected(), endpoint, apiKey, mode, target);
           if (error != null) {
             pushyTestStatus.setText(error);
-            pushyTestStatus.setForeground(errorForeground());
+            pushyTestStatus.setForeground(PreferencesUiSupport.errorForeground());
             return;
           }
 
@@ -316,7 +315,7 @@ public final class TrayControlsSupport {
                       pushyTestStatus.setForeground(
                           result.success()
                               ? UIManager.getColor("Label.foreground")
-                              : errorForeground());
+                              : PreferencesUiSupport.errorForeground());
                       refreshPushyValidation.run();
                     });
               });
@@ -648,19 +647,5 @@ public final class TrayControlsSupport {
     } catch (Exception ignored) {
       return false;
     }
-  }
-
-  private static Color errorForeground() {
-    Color color = UIManager.getColor("Label.errorForeground");
-    if (color != null) return color;
-    color = UIManager.getColor("Component.errorColor");
-    if (color != null) return color;
-    color = UIManager.getColor("Component.error.outlineColor");
-    if (color != null) return color;
-    color = UIManager.getColor("Component.error.borderColor");
-    if (color != null) return color;
-    color = UIManager.getColor("Component.error.focusedBorderColor");
-    if (color != null) return color;
-    return new Color(180, 0, 0);
   }
 }

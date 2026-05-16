@@ -12,7 +12,6 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
-import javax.swing.UIManager;
 import javax.swing.table.TableColumn;
 
 public final class NotificationRulesControlsSupport {
@@ -54,7 +53,7 @@ public final class NotificationRulesControlsSupport {
 
     JLabel validationLabel = new JLabel();
     validationLabel.setVisible(false);
-    Color err = errorForeground();
+    Color err = PreferencesUiSupport.errorForeground();
     if (err != null) validationLabel.setForeground(err);
 
     JTextArea testInput = PreferencesUiSupport.textArea(4, 40, true);
@@ -124,19 +123,5 @@ public final class NotificationRulesControlsSupport {
       if (cooldownSeconds > 3600) cooldownSeconds = 3600;
       rules = rules != null ? List.copyOf(rules) : List.of();
     }
-  }
-
-  private static Color errorForeground() {
-    Color color = UIManager.getColor("Label.errorForeground");
-    if (color != null) return color;
-    color = UIManager.getColor("Component.errorColor");
-    if (color != null) return color;
-    color = UIManager.getColor("Component.error.outlineColor");
-    if (color != null) return color;
-    color = UIManager.getColor("Component.error.borderColor");
-    if (color != null) return color;
-    color = UIManager.getColor("Component.error.focusedBorderColor");
-    if (color != null) return color;
-    return new Color(180, 0, 0);
   }
 }

@@ -273,6 +273,20 @@ public final class PreferencesUiSupport {
     showMessage(parent, message, title, JOptionPane.WARNING_MESSAGE);
   }
 
+  public static Color errorForeground() {
+    Color color = UIManager.getColor("Label.errorForeground");
+    if (color != null) return color;
+    color = UIManager.getColor("Component.errorColor");
+    if (color != null) return color;
+    color = UIManager.getColor("Component.error.outlineColor");
+    if (color != null) return color;
+    color = UIManager.getColor("Component.error.borderColor");
+    if (color != null) return color;
+    color = UIManager.getColor("Component.error.focusedBorderColor");
+    if (color != null) return color;
+    return new Color(180, 0, 0);
+  }
+
   public static JButton buttonWithIcon(String text, String iconName) {
     JButton button = new JButton(text);
     configureButtonIcon(button, iconName, 16);
