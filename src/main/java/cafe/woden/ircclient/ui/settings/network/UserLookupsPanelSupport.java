@@ -335,10 +335,10 @@ public final class UserLookupsPanelSupport {
             hostmaskSummary.setText("Disabled");
             return;
           }
-          int minInterval = ((Number) userhostMinIntervalSeconds.getValue()).intValue();
-          int maxPerMinute = ((Number) userhostMaxPerMinute.getValue()).intValue();
-          int cooldownMinutes = ((Number) userhostNickCooldownMinutes.getValue()).intValue();
-          int maxNicks = ((Number) userhostMaxNicksPerCommand.getValue()).intValue();
+          int minInterval = PreferencesUiSupport.spinnerInt(userhostMinIntervalSeconds);
+          int maxPerMinute = PreferencesUiSupport.spinnerInt(userhostMaxPerMinute);
+          int cooldownMinutes = PreferencesUiSupport.spinnerInt(userhostNickCooldownMinutes);
+          int maxNicks = PreferencesUiSupport.spinnerInt(userhostMaxNicksPerCommand);
           hostmaskSummary.setText(
               String.format(
                   "USERHOST ≤%d/min • min %ds • cooldown %dm • up to %d nicks/cmd",
@@ -352,17 +352,17 @@ public final class UserLookupsPanelSupport {
             return;
           }
 
-          int minInterval = ((Number) enrichmentUserhostMinIntervalSeconds.getValue()).intValue();
-          int maxPerMinute = ((Number) enrichmentUserhostMaxPerMinute.getValue()).intValue();
+          int minInterval = PreferencesUiSupport.spinnerInt(enrichmentUserhostMinIntervalSeconds);
+          int maxPerMinute = PreferencesUiSupport.spinnerInt(enrichmentUserhostMaxPerMinute);
           int cooldownMinutes =
-              ((Number) enrichmentUserhostNickCooldownMinutes.getValue()).intValue();
-          int maxNicks = ((Number) enrichmentUserhostMaxNicksPerCommand.getValue()).intValue();
+              PreferencesUiSupport.spinnerInt(enrichmentUserhostNickCooldownMinutes);
+          int maxNicks = PreferencesUiSupport.spinnerInt(enrichmentUserhostMaxNicksPerCommand);
 
           String whoisSummary;
           if (enrichmentWhoisFallbackEnabled.isSelected()) {
             int whoisMinInterval =
-                ((Number) enrichmentWhoisMinIntervalSeconds.getValue()).intValue();
-            int whoisCooldown = ((Number) enrichmentWhoisNickCooldownMinutes.getValue()).intValue();
+                PreferencesUiSupport.spinnerInt(enrichmentWhoisMinIntervalSeconds);
+            int whoisCooldown = PreferencesUiSupport.spinnerInt(enrichmentWhoisNickCooldownMinutes);
             whoisSummary =
                 String.format("WHOIS min %ds, cooldown %dm", whoisMinInterval, whoisCooldown);
           } else {
@@ -372,9 +372,9 @@ public final class UserLookupsPanelSupport {
           String refreshSummary;
           if (enrichmentPeriodicRefreshEnabled.isSelected()) {
             int refreshInterval =
-                ((Number) enrichmentPeriodicRefreshIntervalSeconds.getValue()).intValue();
+                PreferencesUiSupport.spinnerInt(enrichmentPeriodicRefreshIntervalSeconds);
             int refreshNicks =
-                ((Number) enrichmentPeriodicRefreshNicksPerTick.getValue()).intValue();
+                PreferencesUiSupport.spinnerInt(enrichmentPeriodicRefreshNicksPerTick);
             refreshSummary = String.format("Refresh %ds ×%d", refreshInterval, refreshNicks);
           } else {
             refreshSummary = "Refresh off";

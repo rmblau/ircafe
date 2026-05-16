@@ -119,8 +119,8 @@ public final class EmbedPreviewControlsSupport {
     return new EmbedPreviewSettings(
         imageEmbeds.enabled.isSelected(),
         imageEmbeds.collapsed.isSelected(),
-        ((Number) imageEmbeds.maxWidth.getValue()).intValue(),
-        ((Number) imageEmbeds.maxHeight.getValue()).intValue(),
+        PreferencesUiSupport.spinnerInt(imageEmbeds.maxWidth),
+        PreferencesUiSupport.spinnerInt(imageEmbeds.maxHeight),
         imageEmbeds.animateGifs.isSelected(),
         linkPreviews.enabled.isSelected(),
         linkPreviews.collapsed.isSelected(),

@@ -66,12 +66,12 @@ public final class NetworkAdvancedControlsSupport {
   public static IrcProperties.Proxy readProxySettings(ProxyControls proxy) {
     boolean enabled = proxy.enabled.isSelected();
     String host = PreferencesUiSupport.trimmedText(proxy.host);
-    int port = ((Number) proxy.port.getValue()).intValue();
+    int port = PreferencesUiSupport.spinnerInt(proxy.port);
     String username = PreferencesUiSupport.trimmedText(proxy.username);
     String password = new String(proxy.password.getPassword());
     boolean remoteDns = proxy.remoteDns.isSelected();
-    int connectTimeoutSeconds = ((Number) proxy.connectTimeoutSeconds.getValue()).intValue();
-    int readTimeoutSeconds = ((Number) proxy.readTimeoutSeconds.getValue()).intValue();
+    int connectTimeoutSeconds = PreferencesUiSupport.spinnerInt(proxy.connectTimeoutSeconds);
+    int readTimeoutSeconds = PreferencesUiSupport.spinnerInt(proxy.readTimeoutSeconds);
 
     if (enabled) {
       if (host.isBlank()) {
@@ -95,8 +95,8 @@ public final class NetworkAdvancedControlsSupport {
 
   public static IrcProperties.Heartbeat readHeartbeatSettings(HeartbeatControls heartbeat) {
     boolean enabled = heartbeat.enabled.isSelected();
-    int checkSeconds = ((Number) heartbeat.checkPeriodSeconds.getValue()).intValue();
-    int timeoutSeconds = ((Number) heartbeat.timeoutSeconds.getValue()).intValue();
+    int checkSeconds = PreferencesUiSupport.spinnerInt(heartbeat.checkPeriodSeconds);
+    int timeoutSeconds = PreferencesUiSupport.spinnerInt(heartbeat.timeoutSeconds);
 
     checkSeconds = Math.max(1, checkSeconds);
     timeoutSeconds = Math.max(1, timeoutSeconds);

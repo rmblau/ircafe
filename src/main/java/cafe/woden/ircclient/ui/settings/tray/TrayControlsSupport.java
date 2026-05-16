@@ -272,8 +272,8 @@ public final class TrayControlsSupport {
           String apiKey = new String(pushyApiKey.getPassword()).trim();
           String target = PreferencesUiSupport.trimmedText(pushyTargetValue);
           String titlePrefix = PreferencesUiSupport.trimmedText(pushyTitlePrefix);
-          int connectSeconds = ((Number) pushyConnectTimeoutSeconds.getValue()).intValue();
-          int readSeconds = ((Number) pushyReadTimeoutSeconds.getValue()).intValue();
+          int connectSeconds = PreferencesUiSupport.spinnerInt(pushyConnectTimeoutSeconds);
+          int readSeconds = PreferencesUiSupport.spinnerInt(pushyReadTimeoutSeconds);
 
           String error =
               validatePushyInputs(pushyEnabled.isSelected(), endpoint, apiKey, mode, target);
@@ -570,8 +570,8 @@ public final class TrayControlsSupport {
     String targetValue = PreferencesUiSupport.trimmedText(controls.pushyTargetValue);
     String titlePrefix = PreferencesUiSupport.trimmedText(controls.pushyTitlePrefix);
     int connectTimeoutSeconds =
-        ((Number) controls.pushyConnectTimeoutSeconds.getValue()).intValue();
-    int readTimeoutSeconds = ((Number) controls.pushyReadTimeoutSeconds.getValue()).intValue();
+        PreferencesUiSupport.spinnerInt(controls.pushyConnectTimeoutSeconds);
+    int readTimeoutSeconds = PreferencesUiSupport.spinnerInt(controls.pushyReadTimeoutSeconds);
 
     String validationError =
         validatePushyInputs(enabled, endpoint, apiKey, targetMode, targetValue);

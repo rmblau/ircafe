@@ -81,8 +81,8 @@ public final class MemoryControlsSupport {
             : MemoryUsageDisplayMode.LONG;
     return new MemorySettings(
         mode,
-        clamp(((Number) refreshIntervalMs.getValue()).intValue(), 250, 60_000),
-        ((Number) warnings.nearMaxPercent.getValue()).intValue(),
+        PreferencesUiSupport.clampedSpinnerInt(refreshIntervalMs, 250, 60_000),
+        PreferencesUiSupport.spinnerInt(warnings.nearMaxPercent),
         warnings.tooltipEnabled.isSelected(),
         warnings.toastEnabled.isSelected(),
         warnings.pushyEnabled.isSelected(),

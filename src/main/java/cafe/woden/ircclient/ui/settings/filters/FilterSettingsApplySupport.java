@@ -7,6 +7,7 @@ import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.transcript.rebuild.TranscriptRebuildService;
 import cafe.woden.ircclient.ui.filter.FilterSettings;
 import cafe.woden.ircclient.ui.filter.FilterSettingsBus;
+import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import java.util.List;
 import java.util.Objects;
 
@@ -25,24 +26,19 @@ public final class FilterSettingsApplySupport {
     boolean enabledByDefault = c.filtersEnabledByDefault.isSelected();
     boolean placeholdersEnabledByDefault = c.placeholdersEnabledByDefault.isSelected();
     boolean placeholdersCollapsedByDefault = c.placeholdersCollapsedByDefault.isSelected();
-    int previewLines = ((Number) c.placeholderPreviewLines.getValue()).intValue();
-    if (previewLines < 0) previewLines = 0;
-    if (previewLines > 25) previewLines = 25;
+    int previewLines = PreferencesUiSupport.clampedSpinnerInt(c.placeholderPreviewLines, 0, 25);
 
-    int maxLinesPerRun = ((Number) c.placeholderMaxLinesPerRun.getValue()).intValue();
-    if (maxLinesPerRun < 0) maxLinesPerRun = 0;
-    if (maxLinesPerRun > 50_000) maxLinesPerRun = 50_000;
+    int maxLinesPerRun =
+        PreferencesUiSupport.clampedSpinnerInt(c.placeholderMaxLinesPerRun, 0, 50_000);
 
-    int tooltipMaxTags = ((Number) c.placeholderTooltipMaxTags.getValue()).intValue();
-    if (tooltipMaxTags < 0) tooltipMaxTags = 0;
-    if (tooltipMaxTags > 500) tooltipMaxTags = 500;
+    int tooltipMaxTags =
+        PreferencesUiSupport.clampedSpinnerInt(c.placeholderTooltipMaxTags, 0, 500);
 
     boolean historyPlaceholdersEnabledByDefault =
         c.historyPlaceholdersEnabledByDefault.isSelected();
 
-    int maxRunsPerBatch = ((Number) c.historyPlaceholderMaxRunsPerBatch.getValue()).intValue();
-    if (maxRunsPerBatch < 0) maxRunsPerBatch = 0;
-    if (maxRunsPerBatch > 5_000) maxRunsPerBatch = 5_000;
+    int maxRunsPerBatch =
+        PreferencesUiSupport.clampedSpinnerInt(c.historyPlaceholderMaxRunsPerBatch, 0, 5_000);
 
     List<FilterScopeOverride> overrides = c.overridesModel.toOverrides();
 

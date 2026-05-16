@@ -270,11 +270,11 @@ public final class SpellcheckControlsSupport {
         languageTagValue(controls.languageTag),
         parseCustomDictionary(controls.customDictionary.getText()),
         completionPresetValue(controls.completionPreset),
-        ((Number) controls.customMinPrefixCompletionTokenLength.getValue()).intValue(),
-        ((Number) controls.customMaxPrefixCompletionExtraChars.getValue()).intValue(),
-        ((Number) controls.customMaxPrefixLexiconCandidates.getValue()).intValue(),
-        ((Number) controls.customPrefixCompletionBonusScore.getValue()).intValue(),
-        ((Number) controls.customSourceOrderWeight.getValue()).intValue());
+        PreferencesUiSupport.spinnerInt(controls.customMinPrefixCompletionTokenLength),
+        PreferencesUiSupport.spinnerInt(controls.customMaxPrefixCompletionExtraChars),
+        PreferencesUiSupport.spinnerInt(controls.customMaxPrefixLexiconCandidates),
+        PreferencesUiSupport.spinnerInt(controls.customPrefixCompletionBonusScore),
+        PreferencesUiSupport.spinnerInt(controls.customSourceOrderWeight));
   }
 
   public static void rememberSettings(

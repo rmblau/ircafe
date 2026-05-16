@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.appearance;
 
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettings;
@@ -53,7 +54,7 @@ public final class AppearanceControlsSupport {
         controls.cornerRadius.getValue(),
         controls.uiFontOverrideEnabled.isSelected(),
         uiFontFamily,
-        ((Number) controls.uiFontSize.getValue()).intValue());
+        PreferencesUiSupport.spinnerInt(controls.uiFontSize));
   }
 
   static ThemeAccentSettings readAccentSettings(AccentControls controls)
