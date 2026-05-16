@@ -228,7 +228,7 @@ public final class ChatBehaviorControlsSupport {
         typingIndicatorsSendSignalDisplayEnabled.isSelected(),
         matrixUserListNameDisplayModeValue(matrixUserListNameDisplayMode),
         serverTreeNotificationBadgesEnabled.isSelected(),
-        clampSpinner(serverTreeUnreadBadgeScalePercent, 50, 150));
+        PreferencesUiSupport.clampedSpinnerInt(serverTreeUnreadBadgeScalePercent, 50, 150));
   }
 
   public static void rememberServerTreeSettings(
@@ -279,13 +279,6 @@ public final class ChatBehaviorControlsSupport {
     String message =
         java.util.Objects.toString(raw, "").replace('\r', ' ').replace('\n', ' ').trim();
     return message.isEmpty() ? RuntimeConfigStore.DEFAULT_QUIT_MESSAGE : message;
-  }
-
-  private static int clampSpinner(JSpinner spinner, int min, int max) {
-    int value = ((Number) spinner.getValue()).intValue();
-    if (value < min) value = min;
-    if (value > max) value = max;
-    return value;
   }
 
   public record ChatBehaviorSettings(

@@ -577,22 +577,22 @@ public final class UserLookupsPanelSupport {
       JSpinner monitorIsonPollIntervalSeconds) {
     return new UserLookupSettings(
         userhost.enabled.isSelected(),
-        spinnerInt(userhost.minIntervalSeconds),
-        spinnerInt(userhost.maxPerMinute),
-        spinnerInt(userhost.nickCooldownMinutes),
-        spinnerInt(userhost.maxNicksPerCommand),
+        PreferencesUiSupport.spinnerInt(userhost.minIntervalSeconds),
+        PreferencesUiSupport.spinnerInt(userhost.maxPerMinute),
+        PreferencesUiSupport.spinnerInt(userhost.nickCooldownMinutes),
+        PreferencesUiSupport.spinnerInt(userhost.maxNicksPerCommand),
         enrichment.enabled.isSelected(),
-        spinnerInt(enrichment.userhostMinIntervalSeconds),
-        spinnerInt(enrichment.userhostMaxPerMinute),
-        spinnerInt(enrichment.userhostNickCooldownMinutes),
-        spinnerInt(enrichment.userhostMaxNicksPerCommand),
+        PreferencesUiSupport.spinnerInt(enrichment.userhostMinIntervalSeconds),
+        PreferencesUiSupport.spinnerInt(enrichment.userhostMaxPerMinute),
+        PreferencesUiSupport.spinnerInt(enrichment.userhostNickCooldownMinutes),
+        PreferencesUiSupport.spinnerInt(enrichment.userhostMaxNicksPerCommand),
         enrichment.whoisFallbackEnabled.isSelected(),
-        spinnerInt(enrichment.whoisMinIntervalSeconds),
-        spinnerInt(enrichment.whoisNickCooldownMinutes),
+        PreferencesUiSupport.spinnerInt(enrichment.whoisMinIntervalSeconds),
+        PreferencesUiSupport.spinnerInt(enrichment.whoisNickCooldownMinutes),
         enrichment.periodicRefreshEnabled.isSelected(),
-        spinnerInt(enrichment.periodicRefreshIntervalSeconds),
-        spinnerInt(enrichment.periodicRefreshNicksPerTick),
-        spinnerInt(monitorIsonPollIntervalSeconds));
+        PreferencesUiSupport.spinnerInt(enrichment.periodicRefreshIntervalSeconds),
+        PreferencesUiSupport.spinnerInt(enrichment.periodicRefreshNicksPerTick),
+        PreferencesUiSupport.spinnerInt(monitorIsonPollIntervalSeconds));
   }
 
   public static void rememberSettings(
@@ -624,10 +624,6 @@ public final class UserLookupsPanelSupport {
     runtimeConfig.rememberUserInfoEnrichmentPeriodicRefreshNicksPerTick(
         settings.enrichmentPeriodicRefreshNicksPerTick());
     runtimeConfig.rememberMonitorIsonPollIntervalSeconds(settings.monitorIsonPollIntervalSeconds());
-  }
-
-  private static int spinnerInt(JSpinner spinner) {
-    return ((Number) spinner.getValue()).intValue();
   }
 
   private enum LookupRatePreset {

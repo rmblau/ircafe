@@ -8,7 +8,6 @@ import java.awt.Window;
 import java.util.Objects;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JSpinner;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -195,9 +194,9 @@ public final class LoggingControlsSupport {
         controls.logPrivateMessages.isSelected(),
         controls.savePrivateMessageList.isSelected(),
         controls.keepForever.isSelected(),
-        spinnerInt(controls.retentionDays),
-        spinnerInt(controls.writerQueueMax),
-        spinnerInt(controls.writerBatchSize),
+        PreferencesUiSupport.spinnerInt(controls.retentionDays),
+        PreferencesUiSupport.spinnerInt(controls.writerQueueMax),
+        PreferencesUiSupport.spinnerInt(controls.writerBatchSize),
         Objects.toString(controls.dbBaseName.getText(), "").trim(),
         controls.dbNextToConfig.isSelected());
   }
@@ -214,10 +213,6 @@ public final class LoggingControlsSupport {
     runtimeConfig.rememberChatLoggingRetentionDays(settings.retentionDays());
     runtimeConfig.rememberChatLoggingWriterQueueMax(settings.writerQueueMax());
     runtimeConfig.rememberChatLoggingWriterBatchSize(settings.writerBatchSize());
-  }
-
-  private static int spinnerInt(JSpinner spinner) {
-    return ((Number) spinner.getValue()).intValue();
   }
 
   public record LoggingSettings(

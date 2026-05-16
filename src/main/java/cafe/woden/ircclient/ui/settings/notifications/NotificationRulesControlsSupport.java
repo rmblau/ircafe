@@ -10,7 +10,6 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import javax.swing.JButton;
 import javax.swing.JLabel;
-import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.UIManager;
@@ -82,7 +81,7 @@ public final class NotificationRulesControlsSupport {
   public static NotificationSettings readSettings(NotificationRulesControls controls) {
     SettingsTableSupport.stopEditing(controls.table);
     return new NotificationSettings(
-        spinnerInt(controls.cooldownSeconds),
+        PreferencesUiSupport.spinnerInt(controls.cooldownSeconds),
         controls.model.snapshot(),
         controls.model.firstValidationError());
   }
@@ -116,10 +115,6 @@ public final class NotificationRulesControlsSupport {
       RuntimeConfigStore runtimeConfig, NotificationSettings settings) {
     runtimeConfig.rememberNotificationRuleCooldownSeconds(settings.cooldownSeconds());
     runtimeConfig.rememberNotificationRules(settings.rules());
-  }
-
-  private static int spinnerInt(JSpinner spinner) {
-    return ((Number) spinner.getValue()).intValue();
   }
 
   public record NotificationSettings(

@@ -311,6 +311,17 @@ public final class PreferencesUiSupport {
     return new JSpinner(new SpinnerNumberModel(value, min, max, step));
   }
 
+  public static int spinnerInt(JSpinner spinner) {
+    return ((Number) spinner.getValue()).intValue();
+  }
+
+  public static int clampedSpinnerInt(JSpinner spinner, int min, int max) {
+    int value = spinnerInt(spinner);
+    if (value < min) return min;
+    if (value > max) return max;
+    return value;
+  }
+
   private static void decorateNumberSpinner(JSpinner spinner, List<AutoCloseable> closeables) {
     if (spinner == null) return;
     try {

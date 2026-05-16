@@ -127,20 +127,20 @@ public final class HistoryControlsSupport {
 
   public static HistorySettings readSettings(HistoryControls controls) {
     return new HistorySettings(
-        spinnerInt(controls.initialLoadLines),
-        spinnerInt(controls.pageSize),
-        spinnerInt(controls.autoLoadWheelDebounceMs),
+        PreferencesUiSupport.spinnerInt(controls.initialLoadLines),
+        PreferencesUiSupport.spinnerInt(controls.pageSize),
+        PreferencesUiSupport.spinnerInt(controls.autoLoadWheelDebounceMs),
         controls.smoothWheelScrollingEnabled.isSelected(),
-        spinnerInt(controls.loadOlderChunkSize),
-        spinnerInt(controls.loadOlderChunkDelayMs),
-        spinnerInt(controls.loadOlderChunkEdtBudgetMs),
+        PreferencesUiSupport.spinnerInt(controls.loadOlderChunkSize),
+        PreferencesUiSupport.spinnerInt(controls.loadOlderChunkDelayMs),
+        PreferencesUiSupport.spinnerInt(controls.loadOlderChunkEdtBudgetMs),
         controls.deferRichTextDuringBatch.isSelected(),
         controls.lockViewportDuringLoadOlder.isSelected(),
-        spinnerInt(controls.remoteRequestTimeoutSeconds),
-        spinnerInt(controls.remoteZncPlaybackTimeoutSeconds),
-        spinnerInt(controls.remoteZncPlaybackWindowMinutes),
-        spinnerInt(controls.commandHistoryMaxSize),
-        spinnerInt(controls.chatTranscriptMaxLinesPerTarget));
+        PreferencesUiSupport.spinnerInt(controls.remoteRequestTimeoutSeconds),
+        PreferencesUiSupport.spinnerInt(controls.remoteZncPlaybackTimeoutSeconds),
+        PreferencesUiSupport.spinnerInt(controls.remoteZncPlaybackWindowMinutes),
+        PreferencesUiSupport.spinnerInt(controls.commandHistoryMaxSize),
+        PreferencesUiSupport.spinnerInt(controls.chatTranscriptMaxLinesPerTarget));
   }
 
   public static void rememberSettings(RuntimeConfigStore runtimeConfig, HistorySettings settings) {
@@ -164,10 +164,6 @@ public final class HistoryControlsSupport {
     runtimeConfig.rememberCommandHistoryMaxSize(settings.commandHistoryMaxSize());
     runtimeConfig.rememberChatTranscriptMaxLinesPerTarget(
         settings.chatTranscriptMaxLinesPerTarget());
-  }
-
-  private static int spinnerInt(JSpinner spinner) {
-    return ((Number) spinner.getValue()).intValue();
   }
 
   public record HistorySettings(
