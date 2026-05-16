@@ -197,7 +197,7 @@ public final class LoggingControlsSupport {
         PreferencesUiSupport.spinnerInt(controls.retentionDays),
         PreferencesUiSupport.spinnerInt(controls.writerQueueMax),
         PreferencesUiSupport.spinnerInt(controls.writerBatchSize),
-        Objects.toString(controls.dbBaseName.getText(), "").trim(),
+        PreferencesUiSupport.trimmedText(controls.dbBaseName),
         controls.dbNextToConfig.isSelected());
   }
 

@@ -59,7 +59,7 @@ public final class LaunchJvmControlsSupport {
   }
 
   public static LaunchJvmSettings readSettings(LaunchJvmControls controls) {
-    String javaCommand = Objects.toString(controls.javaCommand().getText(), "").trim();
+    String javaCommand = PreferencesUiSupport.trimmedText(controls.javaCommand());
     if (javaCommand.isBlank()) javaCommand = "java";
 
     int xmsMiB = clampMemoryMiB(((Number) controls.xmsMiB().getValue()).intValue());

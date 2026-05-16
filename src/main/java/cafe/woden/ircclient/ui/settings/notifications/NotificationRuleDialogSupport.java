@@ -140,7 +140,7 @@ public final class NotificationRuleDialogSupport {
               ? t
               : NotificationRule.Type.WORD;
 
-      String patternText = Objects.toString(pattern.getText(), "").trim();
+      String patternText = PreferencesUiSupport.trimmedText(pattern);
       if (selectedType == NotificationRule.Type.REGEX && !patternText.isEmpty()) {
         try {
           int flags = Pattern.UNICODE_CASE;

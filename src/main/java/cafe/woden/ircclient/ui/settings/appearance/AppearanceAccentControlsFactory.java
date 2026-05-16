@@ -314,7 +314,7 @@ final class AppearanceAccentControlsFactory {
     }
 
     private AccentPreview overridePreview() {
-      String raw = hex.getText() != null ? hex.getText().trim() : "";
+      String raw = PreferencesUiSupport.trimmedText(hex);
       Color chosen = SettingsColorSupport.parseHexColorLenient(raw);
       Color background =
           chosen != null

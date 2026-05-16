@@ -188,7 +188,7 @@ public final class PathChooserControlsSupport {
     }
 
     public String pathValue() {
-      return Objects.toString(path.getText(), "").trim();
+      return PreferencesUiSupport.trimmedText(path);
     }
 
     private void choosePath() {

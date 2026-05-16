@@ -13,6 +13,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Insets;
 import java.util.List;
+import java.util.Objects;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
@@ -148,6 +149,15 @@ public final class PreferencesUiSupport {
     if (component == null) return;
     component.setEnabled(available);
     component.setEditable(available);
+  }
+
+  public static String trimmedText(JTextComponent component) {
+    return Objects.toString(component != null ? component.getText() : null, "").trim();
+  }
+
+  public static String trimmedTextOrNull(JTextComponent component) {
+    String value = trimmedText(component);
+    return value.isEmpty() ? null : value;
   }
 
   public static JComponent wrapCheckBox(JCheckBox box, String labelText) {

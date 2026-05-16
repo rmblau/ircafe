@@ -6,6 +6,7 @@ import cafe.woden.ircclient.irc.backend.IrcHeartbeatMaintenanceService;
 import cafe.woden.ircclient.net.NetHeartbeatContext;
 import cafe.woden.ircclient.net.NetProxyContext;
 import cafe.woden.ircclient.net.NetTlsContext;
+import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import java.util.List;
 import java.util.Objects;
@@ -64,9 +65,9 @@ public final class NetworkAdvancedControlsSupport {
 
   public static IrcProperties.Proxy readProxySettings(ProxyControls proxy) {
     boolean enabled = proxy.enabled.isSelected();
-    String host = Objects.toString(proxy.host.getText(), "").trim();
+    String host = PreferencesUiSupport.trimmedText(proxy.host);
     int port = ((Number) proxy.port.getValue()).intValue();
-    String username = Objects.toString(proxy.username.getText(), "").trim();
+    String username = PreferencesUiSupport.trimmedText(proxy.username);
     String password = new String(proxy.password.getPassword());
     boolean remoteDns = proxy.remoteDns.isSelected();
     int connectTimeoutSeconds = ((Number) proxy.connectTimeoutSeconds.getValue()).intValue();
@@ -148,7 +149,7 @@ public final class NetworkAdvancedControlsSupport {
   private static BouncerSettings readBouncerSettings(BouncerControls bouncer) {
     return new BouncerSettings(
         bouncer.preferLoginHint.isSelected(),
-        Objects.toString(bouncer.loginTemplate.getText(), "").trim());
+        PreferencesUiSupport.trimmedText(bouncer.loginTemplate));
   }
 
   public record NetworkSettings(

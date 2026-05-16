@@ -246,9 +246,9 @@ public final class TrayControlsSupport {
               pushyTargetMode.getSelectedItem() instanceof PushyTargetMode m
                   ? m
                   : PushyTargetMode.DEVICE_TOKEN;
-          String endpoint = Objects.toString(pushyEndpoint.getText(), "").trim();
+          String endpoint = PreferencesUiSupport.trimmedText(pushyEndpoint);
           String apiKey = new String(pushyApiKey.getPassword()).trim();
-          String target = Objects.toString(pushyTargetValue.getText(), "").trim();
+          String target = PreferencesUiSupport.trimmedText(pushyTargetValue);
           String error =
               validatePushyInputs(pushyEnabled.isSelected(), endpoint, apiKey, mode, target);
           if (error == null) {
@@ -268,10 +268,10 @@ public final class TrayControlsSupport {
               pushyTargetMode.getSelectedItem() instanceof PushyTargetMode m
                   ? m
                   : PushyTargetMode.DEVICE_TOKEN;
-          String endpoint = Objects.toString(pushyEndpoint.getText(), "").trim();
+          String endpoint = PreferencesUiSupport.trimmedText(pushyEndpoint);
           String apiKey = new String(pushyApiKey.getPassword()).trim();
-          String target = Objects.toString(pushyTargetValue.getText(), "").trim();
-          String titlePrefix = Objects.toString(pushyTitlePrefix.getText(), "").trim();
+          String target = PreferencesUiSupport.trimmedText(pushyTargetValue);
+          String titlePrefix = PreferencesUiSupport.trimmedText(pushyTitlePrefix);
           int connectSeconds = ((Number) pushyConnectTimeoutSeconds.getValue()).intValue();
           int readSeconds = ((Number) pushyReadTimeoutSeconds.getValue()).intValue();
 
@@ -553,7 +553,7 @@ public final class TrayControlsSupport {
     BuiltInSound selectedSound = (BuiltInSound) controls.notificationSound.getSelectedItem();
     String soundId = selectedSound != null ? selectedSound.name() : BuiltInSound.NOTIF_1.name();
     boolean useCustom = controls.notificationSoundUseCustom.isSelected();
-    String customPath = Objects.toString(controls.notificationSoundCustomPath.getText(), "").trim();
+    String customPath = PreferencesUiSupport.trimmedText(controls.notificationSoundCustomPath);
     if (customPath.isBlank()) customPath = null;
     if (useCustom && customPath == null) useCustom = false;
     return new NotificationSoundSettings(enabled, soundId, useCustom, customPath);
@@ -561,14 +561,14 @@ public final class TrayControlsSupport {
 
   private static PushyProperties readPushySettings(TrayControls controls) {
     boolean enabled = controls.pushyEnabled.isSelected();
-    String endpoint = Objects.toString(controls.pushyEndpoint.getText(), "").trim();
+    String endpoint = PreferencesUiSupport.trimmedText(controls.pushyEndpoint);
     String apiKey = new String(controls.pushyApiKey.getPassword()).trim();
     PushyTargetMode targetMode =
         controls.pushyTargetMode.getSelectedItem() instanceof PushyTargetMode mode
             ? mode
             : PushyTargetMode.DEVICE_TOKEN;
-    String targetValue = Objects.toString(controls.pushyTargetValue.getText(), "").trim();
-    String titlePrefix = Objects.toString(controls.pushyTitlePrefix.getText(), "").trim();
+    String targetValue = PreferencesUiSupport.trimmedText(controls.pushyTargetValue);
+    String titlePrefix = PreferencesUiSupport.trimmedText(controls.pushyTitlePrefix);
     int connectTimeoutSeconds =
         ((Number) controls.pushyConnectTimeoutSeconds.getValue()).intValue();
     int readTimeoutSeconds = ((Number) controls.pushyReadTimeoutSeconds.getValue()).intValue();

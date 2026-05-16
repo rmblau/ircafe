@@ -99,8 +99,7 @@ public final class DiagnosticsControlsSupport {
   }
 
   public static DiagnosticsSettings readSettings(DiagnosticsControls controls) {
-    String jhiccupJavaCommandRaw =
-        Objects.toString(controls.jhiccupJavaCommand().getText(), "").trim();
+    String jhiccupJavaCommandRaw = PreferencesUiSupport.trimmedText(controls.jhiccupJavaCommand());
     String jhiccupJavaCommandEffective =
         jhiccupJavaCommandRaw.isEmpty() ? "java" : jhiccupJavaCommandRaw;
 
@@ -119,7 +118,7 @@ public final class DiagnosticsControlsSupport {
         controls.assertjSwingOnIssuePlaySound().isSelected(),
         controls.assertjSwingOnIssueShowNotification().isSelected(),
         controls.jhiccupEnabled().isSelected(),
-        Objects.toString(controls.jhiccupJarPath().getText(), "").trim(),
+        PreferencesUiSupport.trimmedText(controls.jhiccupJarPath()),
         jhiccupJavaCommandRaw,
         jhiccupJavaCommandEffective,
         parseArgs(controls.jhiccupArgs().getText()));

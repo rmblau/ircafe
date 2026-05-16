@@ -264,7 +264,7 @@ public final class NotificationSoundControlsSupport {
     }
 
     public String customPathValue() {
-      return Objects.toString(customPath.getText(), "").trim();
+      return PreferencesUiSupport.trimmedText(customPath);
     }
 
     public BuiltInSound selectedBuiltInSound(BuiltInSound fallback) {

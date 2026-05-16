@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.timestamp;
 
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import java.time.format.DateTimeFormatter;
 import javax.swing.JCheckBox;
@@ -57,7 +58,7 @@ public final class TimestampControlsSupport {
   }
 
   public static TimestampSettings readSettings(TimestampControls controls) {
-    String format = controls.format.getText() != null ? controls.format.getText().trim() : "";
+    String format = PreferencesUiSupport.trimmedText(controls.format);
     if (format.isBlank()) format = "HH:mm:ss";
     try {
       var unused = DateTimeFormatter.ofPattern(format);
