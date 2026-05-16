@@ -470,8 +470,7 @@ public final class IrcEventNotificationRuleDialogSupport {
               ? focus
               : IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY;
 
-      String sourcePatternValue = Objects.toString(sourcePattern.getText(), "").trim();
-      if (sourcePatternValue.isEmpty()) sourcePatternValue = null;
+      String sourcePatternValue = trimmedTextOrNull(sourcePattern);
       boolean sourceNeedsPattern =
           selectedSourceMode == IrcEventNotificationRule.SourceMode.NICK_LIST
               || selectedSourceMode == IrcEventNotificationRule.SourceMode.GLOB
@@ -500,8 +499,7 @@ public final class IrcEventNotificationRuleDialogSupport {
       }
       if (!sourceNeedsPattern) sourcePatternValue = null;
 
-      String channelPatternsValue = Objects.toString(channelPatterns.getText(), "").trim();
-      if (channelPatternsValue.isEmpty()) channelPatternsValue = null;
+      String channelPatternsValue = trimmedTextOrNull(channelPatterns);
       boolean channelNeedsPattern =
           selectedChannelScope == IrcEventNotificationRule.ChannelScope.ONLY
               || selectedChannelScope == IrcEventNotificationRule.ChannelScope.ALL_EXCEPT;
@@ -523,10 +521,8 @@ public final class IrcEventNotificationRuleDialogSupport {
           ctcpValueMode.getSelectedItem() instanceof IrcEventNotificationRule.CtcpMatchMode mode
               ? mode
               : IrcEventNotificationRule.CtcpMatchMode.ANY;
-      String ctcpCommandPatternValue = Objects.toString(ctcpCommandPattern.getText(), "").trim();
-      if (ctcpCommandPatternValue.isEmpty()) ctcpCommandPatternValue = null;
-      String ctcpValuePatternValue = Objects.toString(ctcpValuePattern.getText(), "").trim();
-      if (ctcpValuePatternValue.isEmpty()) ctcpValuePatternValue = null;
+      String ctcpCommandPatternValue = trimmedTextOrNull(ctcpCommandPattern);
+      String ctcpValuePatternValue = trimmedTextOrNull(ctcpValuePattern);
 
       boolean ctcpEvent = selectedEvent == IrcEventNotificationRule.EventType.CTCP_RECEIVED;
       if (ctcpEvent && selectedCtcpCommandMode != IrcEventNotificationRule.CtcpMatchMode.ANY) {
@@ -586,17 +582,12 @@ public final class IrcEventNotificationRuleDialogSupport {
           builtInSound.getSelectedItem() instanceof BuiltInSound sound
               ? sound
               : IrcEventNotificationPresetSupport.defaultBuiltInSoundForEvent(selectedEvent);
-      String soundCustomPathValue = Objects.toString(soundCustomPath.getText(), "").trim();
-      if (soundCustomPathValue.isEmpty()) soundCustomPathValue = null;
+      String soundCustomPathValue = trimmedTextOrNull(soundCustomPath);
       boolean useCustomSound = soundUseCustom.isSelected() && soundCustomPathValue != null;
 
-      String scriptPathValue = Objects.toString(scriptPath.getText(), "").trim();
-      if (scriptPathValue.isEmpty()) scriptPathValue = null;
-      String scriptArgsValue = Objects.toString(scriptArgs.getText(), "").trim();
-      if (scriptArgsValue.isEmpty()) scriptArgsValue = null;
-      String scriptWorkingDirectoryValue =
-          Objects.toString(scriptWorkingDirectory.getText(), "").trim();
-      if (scriptWorkingDirectoryValue.isEmpty()) scriptWorkingDirectoryValue = null;
+      String scriptPathValue = trimmedTextOrNull(scriptPath);
+      String scriptArgsValue = trimmedTextOrNull(scriptArgs);
+      String scriptWorkingDirectoryValue = trimmedTextOrNull(scriptWorkingDirectory);
       boolean runScript = scriptEnabled.isSelected();
       if (runScript && scriptPathValue == null) {
         showInvalidRuleMessage(
@@ -635,6 +626,11 @@ public final class IrcEventNotificationRuleDialogSupport {
     JOptionPane.showMessageDialog(
         owner, message, "Invalid IRC Event Rule", JOptionPane.ERROR_MESSAGE);
     tabs.setSelectedIndex(tabIndex);
+  }
+
+  private static String trimmedTextOrNull(JTextField field) {
+    String value = Objects.toString(field != null ? field.getText() : null, "").trim();
+    return value.isEmpty() ? null : value;
   }
 
   private enum CtcpNotificationRuleTemplate {
