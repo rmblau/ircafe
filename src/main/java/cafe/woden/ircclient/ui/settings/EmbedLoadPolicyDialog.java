@@ -347,7 +347,7 @@ public class EmbedLoadPolicyDialog {
         });
     table.setFillsViewportHeight(true);
     table.setRowHeight(24);
-    table.getTableHeader().setReorderingAllowed(false);
+    SettingsTableSupport.disableColumnReordering(table);
 
     JButton add = new JButton("Add");
     JButton remove = new JButton("Remove");
@@ -553,14 +553,15 @@ public class EmbedLoadPolicyDialog {
   }
 
   private static void stopTableEditing(PolicyControls controls) {
-    SettingsTableSupport.stopEditing(controls.userWhitelist().table());
-    SettingsTableSupport.stopEditing(controls.userBlacklist().table());
-    SettingsTableSupport.stopEditing(controls.channelWhitelist().table());
-    SettingsTableSupport.stopEditing(controls.channelBlacklist().table());
-    SettingsTableSupport.stopEditing(controls.linkWhitelist().table());
-    SettingsTableSupport.stopEditing(controls.linkBlacklist().table());
-    SettingsTableSupport.stopEditing(controls.domainWhitelist().table());
-    SettingsTableSupport.stopEditing(controls.domainBlacklist().table());
+    SettingsTableSupport.stopEditing(
+        controls.userWhitelist().table(),
+        controls.userBlacklist().table(),
+        controls.channelWhitelist().table(),
+        controls.channelBlacklist().table(),
+        controls.linkWhitelist().table(),
+        controls.linkBlacklist().table(),
+        controls.domainWhitelist().table(),
+        controls.domainBlacklist().table());
   }
 
   private static List<String> readPatternRows(DefaultTableModel model) {

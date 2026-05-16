@@ -14,7 +14,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.table.TableColumn;
 import net.miginfocom.swing.MigLayout;
@@ -26,16 +25,7 @@ public final class IrcEventNotificationsTabSupport {
       List<IrcEventNotificationRule> initialRules) {
     IrcEventNotificationTableModel model = new IrcEventNotificationTableModel(initialRules);
     JTable table = new JTable(model);
-    table.setFillsViewportHeight(true);
-    table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    table.setRowHeight(Math.max(22, table.getRowHeight()));
-    table.setShowHorizontalLines(false);
-    table.setShowVerticalLines(false);
-    table.getTableHeader().setReorderingAllowed(false);
-    // Force dialog-only editing flow (no inline cell editor).
-    table.setDefaultEditor(Object.class, null);
-    table.setDefaultEditor(Boolean.class, null);
-    table.putClientProperty("JTable.autoStartsEdit", Boolean.FALSE);
+    SettingsTableSupport.configureDialogEditorTable(table);
 
     TableColumn enabledCol =
         table.getColumnModel().getColumn(IrcEventNotificationTableModel.COL_ENABLED);

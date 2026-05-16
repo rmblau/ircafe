@@ -13,7 +13,6 @@ import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
-import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.table.TableColumn;
 
@@ -31,15 +30,7 @@ public final class NotificationRulesControlsSupport {
     NotificationRulesTableModel model =
         new NotificationRulesTableModel(current != null ? current.notificationRules() : List.of());
     JTable table = new JTable(model);
-    table.setFillsViewportHeight(true);
-    table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    table.setRowHeight(Math.max(22, table.getRowHeight()));
-    table.setShowHorizontalLines(false);
-    table.setShowVerticalLines(false);
-    table.getTableHeader().setReorderingAllowed(false);
-    table.setDefaultEditor(Object.class, null);
-    table.setDefaultEditor(Boolean.class, null);
-    table.putClientProperty("JTable.autoStartsEdit", Boolean.FALSE);
+    SettingsTableSupport.configureDialogEditorTable(table);
 
     TableColumn enabledCol =
         table.getColumnModel().getColumn(NotificationRulesTableModel.COL_ENABLED);

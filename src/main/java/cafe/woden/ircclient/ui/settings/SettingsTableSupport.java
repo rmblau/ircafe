@@ -3,10 +3,34 @@ package cafe.woden.ircclient.ui.settings;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 
 public final class SettingsTableSupport {
   private SettingsTableSupport() {}
+
+  public static void configureSingleSelectionTable(JTable table) {
+    if (table == null) return;
+    table.setFillsViewportHeight(true);
+    table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+    table.setRowHeight(Math.max(22, table.getRowHeight()));
+  }
+
+  public static void configureDialogEditorTable(JTable table) {
+    configureSingleSelectionTable(table);
+    if (table == null) return;
+    table.setShowHorizontalLines(false);
+    table.setShowVerticalLines(false);
+    disableColumnReordering(table);
+    table.setDefaultEditor(Object.class, null);
+    table.setDefaultEditor(Boolean.class, null);
+    table.putClientProperty("JTable.autoStartsEdit", Boolean.FALSE);
+  }
+
+  public static void disableColumnReordering(JTable table) {
+    if (table == null || table.getTableHeader() == null) return;
+    table.getTableHeader().setReorderingAllowed(false);
+  }
 
   public static int selectedModelRow(JTable table) {
     if (table == null) return -1;
@@ -54,6 +78,13 @@ public final class SettingsTableSupport {
         table.getCellEditor().stopCellEditing();
       }
     } catch (Exception ignored) {
+    }
+  }
+
+  public static void stopEditing(JTable... tables) {
+    if (tables == null) return;
+    for (JTable table : tables) {
+      stopEditing(table);
     }
   }
 

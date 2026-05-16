@@ -2,15 +2,45 @@ package cafe.woden.ircclient.ui.settings;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 import org.junit.jupiter.api.Test;
 
 class SettingsTableSupportTest {
+
+  @Test
+  void configuresSingleSelectionTableDefaults() {
+    JTable table =
+        new JTable(new DefaultTableModel(new Object[][] {{"one"}}, new Object[] {"Name"}));
+    table.setRowHeight(12);
+
+    SettingsTableSupport.configureSingleSelectionTable(table);
+
+    assertTrue(table.getFillsViewportHeight());
+    assertEquals(ListSelectionModel.SINGLE_SELECTION, table.getSelectionModel().getSelectionMode());
+    assertEquals(22, table.getRowHeight());
+  }
+
+  @Test
+  void configuresDialogEditorTableDefaults() {
+    JTable table =
+        new JTable(new DefaultTableModel(new Object[][] {{true}}, new Object[] {"Enabled"}));
+
+    SettingsTableSupport.configureDialogEditorTable(table);
+
+    assertFalse(table.getShowHorizontalLines());
+    assertFalse(table.getShowVerticalLines());
+    assertFalse(table.getTableHeader().getReorderingAllowed());
+    assertNull(table.getDefaultEditor(Object.class));
+    assertNull(table.getDefaultEditor(Boolean.class));
+    assertEquals(Boolean.FALSE, table.getClientProperty("JTable.autoStartsEdit"));
+  }
 
   @Test
   void selectsModelRowThroughSorter() {

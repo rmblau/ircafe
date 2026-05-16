@@ -14,7 +14,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
-import javax.swing.ListSelectionModel;
 import javax.swing.table.TableColumn;
 
 public final class UserCommandAliasesControlsSupport {
@@ -26,9 +25,7 @@ public final class UserCommandAliasesControlsSupport {
       Component owner) {
     UserCommandAliasesTableModel model = new UserCommandAliasesTableModel(initial);
     JTable table = new JTable(model);
-    table.setFillsViewportHeight(true);
-    table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-    table.setRowHeight(Math.max(22, table.getRowHeight()));
+    SettingsTableSupport.configureSingleSelectionTable(table);
 
     TableColumn enabledCol =
         table.getColumnModel().getColumn(UserCommandAliasesTableModel.COL_ENABLED);
