@@ -68,7 +68,7 @@ public final class NetworkAdvancedControlsSupport {
     String host = PreferencesUiSupport.trimmedText(proxy.host);
     int port = PreferencesUiSupport.spinnerInt(proxy.port);
     String username = PreferencesUiSupport.trimmedText(proxy.username);
-    String password = new String(proxy.password.getPassword());
+    String password = PreferencesUiSupport.passwordText(proxy.password);
     boolean remoteDns = proxy.remoteDns.isSelected();
     int connectTimeoutSeconds = PreferencesUiSupport.spinnerInt(proxy.connectTimeoutSeconds);
     int readTimeoutSeconds = PreferencesUiSupport.spinnerInt(proxy.readTimeoutSeconds);

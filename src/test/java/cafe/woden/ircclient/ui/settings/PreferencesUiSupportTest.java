@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.settings;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import javax.swing.JPasswordField;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,18 @@ class PreferencesUiSupportTest {
     assertEquals("value", PreferencesUiSupport.trimmedTextOrNull(new JTextField(" value ")));
     assertNull(PreferencesUiSupport.trimmedTextOrNull(new JTextField("   ")));
     assertNull(PreferencesUiSupport.trimmedTextOrNull(null));
+  }
+
+  @Test
+  void readsPasswordFieldValues() {
+    assertEquals(" value ", PreferencesUiSupport.passwordText(new JPasswordField(" value ")));
+    assertEquals("", PreferencesUiSupport.passwordText(null));
+  }
+
+  @Test
+  void trimsPasswordFieldValues() {
+    assertEquals("value", PreferencesUiSupport.trimmedPasswordText(new JPasswordField(" value ")));
+    assertEquals("", PreferencesUiSupport.trimmedPasswordText(null));
   }
 
   private static JSpinner spinner(int value) {

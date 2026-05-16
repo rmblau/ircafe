@@ -246,7 +246,7 @@ public final class TrayControlsSupport {
                   ? m
                   : PushyTargetMode.DEVICE_TOKEN;
           String endpoint = PreferencesUiSupport.trimmedText(pushyEndpoint);
-          String apiKey = new String(pushyApiKey.getPassword()).trim();
+          String apiKey = PreferencesUiSupport.trimmedPasswordText(pushyApiKey);
           String target = PreferencesUiSupport.trimmedText(pushyTargetValue);
           String error =
               validatePushyInputs(pushyEnabled.isSelected(), endpoint, apiKey, mode, target);
@@ -268,7 +268,7 @@ public final class TrayControlsSupport {
                   ? m
                   : PushyTargetMode.DEVICE_TOKEN;
           String endpoint = PreferencesUiSupport.trimmedText(pushyEndpoint);
-          String apiKey = new String(pushyApiKey.getPassword()).trim();
+          String apiKey = PreferencesUiSupport.trimmedPasswordText(pushyApiKey);
           String target = PreferencesUiSupport.trimmedText(pushyTargetValue);
           String titlePrefix = PreferencesUiSupport.trimmedText(pushyTitlePrefix);
           int connectSeconds = PreferencesUiSupport.spinnerInt(pushyConnectTimeoutSeconds);
@@ -561,7 +561,7 @@ public final class TrayControlsSupport {
   private static PushyProperties readPushySettings(TrayControls controls) {
     boolean enabled = controls.pushyEnabled.isSelected();
     String endpoint = PreferencesUiSupport.trimmedText(controls.pushyEndpoint);
-    String apiKey = new String(controls.pushyApiKey.getPassword()).trim();
+    String apiKey = PreferencesUiSupport.trimmedPasswordText(controls.pushyApiKey);
     PushyTargetMode targetMode =
         controls.pushyTargetMode.getSelectedItem() instanceof PushyTargetMode mode
             ? mode

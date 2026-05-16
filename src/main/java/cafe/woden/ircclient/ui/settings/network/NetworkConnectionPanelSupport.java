@@ -116,7 +116,7 @@ final class NetworkConnectionPanelSupport {
           proxyHost.putClientProperty("JComponent.outline", host.isBlank() ? "error" : null);
 
           String user = PreferencesUiSupport.trimmedText(proxyUsername);
-          String pass = new String(proxyPassword.getPassword()).trim();
+          String pass = PreferencesUiSupport.trimmedPasswordText(proxyPassword);
 
           boolean hasUser = !user.isBlank();
           boolean hasPass = !pass.isBlank();

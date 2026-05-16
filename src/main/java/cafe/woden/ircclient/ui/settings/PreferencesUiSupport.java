@@ -24,6 +24,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextArea;
@@ -158,6 +159,14 @@ public final class PreferencesUiSupport {
   public static String trimmedTextOrNull(JTextComponent component) {
     String value = trimmedText(component);
     return value.isEmpty() ? null : value;
+  }
+
+  public static String passwordText(JPasswordField component) {
+    return component != null ? new String(component.getPassword()) : "";
+  }
+
+  public static String trimmedPasswordText(JPasswordField component) {
+    return passwordText(component).trim();
   }
 
   public static JComponent wrapCheckBox(JCheckBox box, String labelText) {
