@@ -29,6 +29,7 @@ import javax.swing.JTextArea;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.text.JTextComponent;
 import net.miginfocom.swing.MigLayout;
 
 public final class PreferencesUiSupport {
@@ -141,6 +142,12 @@ public final class PreferencesUiSupport {
   public static void placeholder(JComponent component, String text) {
     if (component == null) return;
     component.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, text);
+  }
+
+  public static void setTextInputAvailable(JTextComponent component, boolean available) {
+    if (component == null) return;
+    component.setEnabled(available);
+    component.setEditable(available);
   }
 
   public static JComponent wrapCheckBox(JCheckBox box, String labelText) {

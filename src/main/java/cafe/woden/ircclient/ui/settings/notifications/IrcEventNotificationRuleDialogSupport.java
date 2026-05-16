@@ -199,8 +199,7 @@ public final class IrcEventNotificationRuleDialogSupport {
               mode == IrcEventNotificationRule.SourceMode.NICK_LIST
                   || mode == IrcEventNotificationRule.SourceMode.GLOB
                   || mode == IrcEventNotificationRule.SourceMode.REGEX;
-          sourcePattern.setEnabled(needsPattern);
-          sourcePattern.setEditable(needsPattern);
+          PreferencesUiSupport.setTextInputAvailable(sourcePattern, needsPattern);
           String placeholder =
               switch (mode) {
                 case NICK_LIST -> "alice, bob";
@@ -220,8 +219,7 @@ public final class IrcEventNotificationRuleDialogSupport {
           boolean needsPattern =
               scope == IrcEventNotificationRule.ChannelScope.ONLY
                   || scope == IrcEventNotificationRule.ChannelScope.ALL_EXCEPT;
-          channelPatterns.setEnabled(needsPattern);
-          channelPatterns.setEditable(needsPattern);
+          PreferencesUiSupport.setTextInputAvailable(channelPatterns, needsPattern);
           PreferencesUiSupport.placeholder(channelPatterns, needsPattern ? "#staff*, #ops" : "");
         };
 
@@ -240,8 +238,7 @@ public final class IrcEventNotificationRuleDialogSupport {
           boolean commandNeedsPattern =
               ctcp && selectedCommandMode != IrcEventNotificationRule.CtcpMatchMode.ANY;
           ctcpCommandMode.setEnabled(ctcp);
-          ctcpCommandPattern.setEnabled(commandNeedsPattern);
-          ctcpCommandPattern.setEditable(commandNeedsPattern);
+          PreferencesUiSupport.setTextInputAvailable(ctcpCommandPattern, commandNeedsPattern);
           PreferencesUiSupport.placeholder(
               ctcpCommandPattern, commandNeedsPattern ? "VERSION / PING / TIME / CLIENTINFO" : "");
 
@@ -252,8 +249,7 @@ public final class IrcEventNotificationRuleDialogSupport {
           boolean valueNeedsPattern =
               ctcp && selectedValueMode != IrcEventNotificationRule.CtcpMatchMode.ANY;
           ctcpValueMode.setEnabled(ctcp);
-          ctcpValuePattern.setEnabled(valueNeedsPattern);
-          ctcpValuePattern.setEditable(valueNeedsPattern);
+          PreferencesUiSupport.setTextInputAvailable(ctcpValuePattern, valueNeedsPattern);
           PreferencesUiSupport.placeholder(
               ctcpValuePattern, valueNeedsPattern ? "argument pattern" : "");
 
@@ -265,8 +261,7 @@ public final class IrcEventNotificationRuleDialogSupport {
         () -> {
           boolean run = scriptEnabled.isSelected();
           scriptPathControls.refresh();
-          scriptArgs.setEnabled(run);
-          scriptArgs.setEditable(run);
+          PreferencesUiSupport.setTextInputAvailable(scriptArgs, run);
           scriptWorkingDirectoryControls.refresh();
         };
 
