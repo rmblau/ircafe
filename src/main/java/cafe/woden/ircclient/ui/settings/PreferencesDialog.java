@@ -44,7 +44,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import javax.swing.JDialog;
-import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -332,8 +331,7 @@ public class PreferencesDialog {
                         settingsBus,
                         runtimeConfig));
           } catch (PreferencesApplySupport.ApplyException ex) {
-            JOptionPane.showMessageDialog(
-                dialog, ex.getMessage(), ex.title(), JOptionPane.ERROR_MESSAGE);
+            PreferencesUiSupport.showErrorMessage(dialog, ex.getMessage(), ex.title());
             return;
           }
           PreferencesCommitSupport.commit(

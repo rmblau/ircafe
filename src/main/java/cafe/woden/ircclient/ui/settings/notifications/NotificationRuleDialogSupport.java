@@ -152,11 +152,8 @@ public final class NotificationRuleDialogSupport {
           Pattern.compile(patternText, flags);
         } catch (Exception ex) {
           String msg = Objects.toString(ex.getMessage(), "Invalid regular expression");
-          JOptionPane.showMessageDialog(
-              owner,
-              "Invalid REGEX pattern:\n" + msg,
-              "Invalid Notification Rule",
-              JOptionPane.ERROR_MESSAGE);
+          PreferencesUiSupport.showErrorMessage(
+              owner, "Invalid REGEX pattern:\n" + msg, "Invalid Notification Rule");
           continue;
         }
       }

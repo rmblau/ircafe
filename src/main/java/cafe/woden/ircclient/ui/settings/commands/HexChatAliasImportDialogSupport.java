@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings.commands;
 
 import cafe.woden.ircclient.app.commands.HexChatCommandAliasImporter;
 import cafe.woden.ircclient.model.UserCommandAlias;
+import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
 import java.awt.Component;
 import java.io.File;
@@ -13,7 +14,6 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 
@@ -50,20 +50,16 @@ final class HexChatAliasImportDialogSupport {
     try {
       imported = HexChatCommandAliasImporter.importFile(selected.toPath());
     } catch (Exception ex) {
-      JOptionPane.showMessageDialog(
+      PreferencesUiSupport.showErrorMessage(
           owner,
           "Could not import HexChat aliases from:\n" + selected + "\n\n" + ex.getMessage(),
-          "Import failed",
-          JOptionPane.ERROR_MESSAGE);
+          "Import failed");
       return;
     }
 
     if (imported.aliases().isEmpty()) {
-      JOptionPane.showMessageDialog(
-          owner,
-          "No aliases were found in the selected file.",
-          "HexChat import",
-          JOptionPane.INFORMATION_MESSAGE);
+      PreferencesUiSupport.showInfoMessage(
+          owner, "No aliases were found in the selected file.", "HexChat import");
       return;
     }
 
@@ -93,11 +89,8 @@ final class HexChatAliasImportDialogSupport {
       SettingsTableSupport.selectModelRow(table, firstAdded);
     }
 
-    JOptionPane.showMessageDialog(
-        owner,
-        buildSummary(imported, added, skippedExisting),
-        "HexChat import complete",
-        JOptionPane.INFORMATION_MESSAGE);
+    PreferencesUiSupport.showInfoMessage(
+        owner, buildSummary(imported, added, skippedExisting), "HexChat import complete");
   }
 
   private static String buildSummary(

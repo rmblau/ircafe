@@ -12,7 +12,6 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.filechooser.FileNameExtensionFilter;
@@ -292,11 +291,8 @@ public final class NotificationSoundControlsSupport {
           refresh();
         }
       } catch (Exception ex) {
-        JOptionPane.showMessageDialog(
-            dialogOwner(),
-            "Could not import sound file.\n\n" + ex.getMessage(),
-            "Import failed",
-            JOptionPane.ERROR_MESSAGE);
+        PreferencesUiSupport.showErrorMessage(
+            dialogOwner(), "Could not import sound file.\n\n" + ex.getMessage(), "Import failed");
       }
     }
 

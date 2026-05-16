@@ -20,7 +20,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
@@ -196,11 +195,10 @@ public class EmbedLoadPolicyDialog {
         e -> {
           stopTableEditing(controls);
           if (!validateAllPatternTables(controls)) {
-            JOptionPane.showMessageDialog(
+            PreferencesUiSupport.showWarningMessage(
                 dialog,
                 "One or more patterns are invalid.\nUse valid glob patterns or `re:<regex>` values.",
-                "Invalid Pattern",
-                JOptionPane.WARNING_MESSAGE);
+                "Invalid Pattern");
             save.setEnabled(false);
             return;
           }

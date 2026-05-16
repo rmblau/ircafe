@@ -245,6 +245,18 @@ public final class PreferencesUiSupport {
         == JOptionPane.OK_OPTION;
   }
 
+  public static void showErrorMessage(Component parent, String message, String title) {
+    showMessage(parent, message, title, JOptionPane.ERROR_MESSAGE);
+  }
+
+  public static void showInfoMessage(Component parent, String message, String title) {
+    showMessage(parent, message, title, JOptionPane.INFORMATION_MESSAGE);
+  }
+
+  public static void showWarningMessage(Component parent, String message, String title) {
+    showMessage(parent, message, title, JOptionPane.WARNING_MESSAGE);
+  }
+
   public static JButton buttonWithIcon(String text, String iconName) {
     JButton button = new JButton(text);
     configureButtonIcon(button, iconName, 16);
@@ -303,6 +315,10 @@ public final class PreferencesUiSupport {
 
   private static void addCloseable(AutoCloseable closeable, List<AutoCloseable> closeables) {
     if (closeable != null && closeables != null) closeables.add(closeable);
+  }
+
+  private static void showMessage(Component parent, String message, String title, int messageType) {
+    JOptionPane.showMessageDialog(parent, message, title, messageType);
   }
 
   private static JTextArea buttonWrapText(String text) {

@@ -618,8 +618,7 @@ public final class IrcEventNotificationRuleDialogSupport {
 
   private static void showInvalidRuleMessage(
       Window owner, JTabbedPane tabs, int tabIndex, String message) {
-    JOptionPane.showMessageDialog(
-        owner, message, "Invalid IRC Event Rule", JOptionPane.ERROR_MESSAGE);
+    PreferencesUiSupport.showErrorMessage(owner, message, "Invalid IRC Event Rule");
     tabs.setSelectedIndex(tabIndex);
   }
 

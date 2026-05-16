@@ -46,7 +46,6 @@ import cafe.woden.ircclient.ui.shell.UpdateNotifierService;
 import cafe.woden.ircclient.ui.tray.TrayService;
 import java.awt.Component;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.swing.JOptionPane;
 
 final class PreferencesCommitSupport {
   private PreferencesCommitSupport() {}
@@ -146,11 +145,10 @@ final class PreferencesCommitSupport {
         runtimeConfig, request.userCommandAliasesBus(), snapshot.userCommand());
     DiagnosticsControlsSupport.rememberSettings(runtimeConfig, snapshot.diagnostics());
     if (snapshot.diagnosticsChanged()) {
-      JOptionPane.showMessageDialog(
+      PreferencesUiSupport.showInfoMessage(
           request.dialogOwner(),
           "Diagnostics settings were saved.\nRestart IRCafe to apply AssertJ Swing / jHiccup startup changes.",
-          "Restart required",
-          JOptionPane.INFORMATION_MESSAGE);
+          "Restart required");
     }
 
     UserLookupsPanelSupport.rememberSettings(runtimeConfig, snapshot.userLookup());
