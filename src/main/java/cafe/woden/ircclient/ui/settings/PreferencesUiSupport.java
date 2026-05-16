@@ -245,6 +245,12 @@ public final class PreferencesUiSupport {
         == JOptionPane.OK_OPTION;
   }
 
+  public static boolean confirmPlainOkCancel(Component parent, Object message, String title) {
+    return JOptionPane.showConfirmDialog(
+            parent, message, title, JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE)
+        == JOptionPane.OK_OPTION;
+  }
+
   public static void showErrorMessage(Component parent, String message, String title) {
     showMessage(parent, message, title, JOptionPane.ERROR_MESSAGE);
   }

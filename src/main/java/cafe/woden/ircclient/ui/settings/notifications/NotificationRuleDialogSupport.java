@@ -13,7 +13,6 @@ import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
@@ -134,10 +133,7 @@ public final class NotificationRuleDialogSupport {
     String dialogTitle = Objects.toString(title, "Notification Rule");
 
     while (true) {
-      int choice =
-          JOptionPane.showConfirmDialog(
-              owner, form, dialogTitle, JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
-      if (choice != JOptionPane.OK_OPTION) return null;
+      if (!PreferencesUiSupport.confirmPlainOkCancel(owner, form, dialogTitle)) return null;
 
       NotificationRule.Type selectedType =
           type.getSelectedItem() instanceof NotificationRule.Type t
