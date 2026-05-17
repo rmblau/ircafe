@@ -407,9 +407,8 @@ public final class AppearanceLivePreviewSession implements AutoCloseable {
 
   private ChatThemeSettings readChatThemeSettings() {
     ChatThemeSettings.Preset preset =
-        (chatTheme.preset.getSelectedItem() instanceof ChatThemeSettings.Preset typed)
-            ? typed
-            : ChatThemeSettings.Preset.DEFAULT;
+        PreferencesUiSupport.selectedComboItem(
+            chatTheme.preset, ChatThemeSettings.Preset.class, ChatThemeSettings.Preset.DEFAULT);
     return new ChatThemeSettings(
         preset,
         lastValidChatTimestampHex.resolve(chatTheme.timestamp.hex),

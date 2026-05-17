@@ -76,9 +76,8 @@ public final class MemoryControlsSupport {
       JSpinner refreshIntervalMs,
       MemoryWarningControls warnings) {
     MemoryUsageDisplayMode mode =
-        displayMode.getSelectedItem() instanceof MemoryUsageDisplayMode selected
-            ? selected
-            : MemoryUsageDisplayMode.LONG;
+        PreferencesUiSupport.selectedComboItem(
+            displayMode, MemoryUsageDisplayMode.class, MemoryUsageDisplayMode.LONG);
     return new MemorySettings(
         mode,
         PreferencesUiSupport.clampedSpinnerInt(refreshIntervalMs, 250, 60_000),

@@ -169,6 +169,12 @@ public final class PreferencesUiSupport {
     return passwordText(component).trim();
   }
 
+  public static <T> T selectedComboItem(JComboBox<?> combo, Class<T> type, T fallback) {
+    if (combo == null || type == null) return fallback;
+    Object selected = combo.getSelectedItem();
+    return type.isInstance(selected) ? type.cast(selected) : fallback;
+  }
+
   public static JComponent wrapCheckBox(JCheckBox box, String labelText) {
     box.setText("");
     JPanel row = new JPanel(new MigLayout("insets 0, fillx", "[]6[grow,fill]", "[]"));

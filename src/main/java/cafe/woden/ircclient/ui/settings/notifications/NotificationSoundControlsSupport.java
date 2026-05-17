@@ -268,7 +268,7 @@ public final class NotificationSoundControlsSupport {
     }
 
     public BuiltInSound selectedBuiltInSound(BuiltInSound fallback) {
-      return builtInSound.getSelectedItem() instanceof BuiltInSound sound ? sound : fallback;
+      return PreferencesUiSupport.selectedComboItem(builtInSound, BuiltInSound.class, fallback);
     }
 
     private void browseCustomSound() {

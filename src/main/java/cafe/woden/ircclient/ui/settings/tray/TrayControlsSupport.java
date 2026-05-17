@@ -242,9 +242,8 @@ public final class TrayControlsSupport {
     Runnable refreshPushyValidation =
         () -> {
           PushyTargetMode mode =
-              pushyTargetMode.getSelectedItem() instanceof PushyTargetMode m
-                  ? m
-                  : PushyTargetMode.DEVICE_TOKEN;
+              PreferencesUiSupport.selectedComboItem(
+                  pushyTargetMode, PushyTargetMode.class, PushyTargetMode.DEVICE_TOKEN);
           String endpoint = PreferencesUiSupport.trimmedText(pushyEndpoint);
           String apiKey = PreferencesUiSupport.trimmedPasswordText(pushyApiKey);
           String target = PreferencesUiSupport.trimmedText(pushyTargetValue);
@@ -264,9 +263,8 @@ public final class TrayControlsSupport {
     pushyTest.addActionListener(
         e -> {
           PushyTargetMode mode =
-              pushyTargetMode.getSelectedItem() instanceof PushyTargetMode m
-                  ? m
-                  : PushyTargetMode.DEVICE_TOKEN;
+              PreferencesUiSupport.selectedComboItem(
+                  pushyTargetMode, PushyTargetMode.class, PushyTargetMode.DEVICE_TOKEN);
           String endpoint = PreferencesUiSupport.trimmedText(pushyEndpoint);
           String apiKey = PreferencesUiSupport.trimmedPasswordText(pushyApiKey);
           String target = PreferencesUiSupport.trimmedText(pushyTargetValue);
@@ -324,9 +322,8 @@ public final class TrayControlsSupport {
     Runnable refreshPushyDestinationState =
         () -> {
           PushyTargetMode mode =
-              pushyTargetMode.getSelectedItem() instanceof PushyTargetMode m
-                  ? m
-                  : PushyTargetMode.DEVICE_TOKEN;
+              PreferencesUiSupport.selectedComboItem(
+                  pushyTargetMode, PushyTargetMode.class, PushyTargetMode.DEVICE_TOKEN);
           if (mode == PushyTargetMode.DEVICE_TOKEN) {
             pushyTargetValue.setToolTipText("Single-device destination token.");
           } else {
@@ -445,9 +442,10 @@ public final class TrayControlsSupport {
   public static TraySettings readSettings(TrayControls controls) {
     boolean trayEnabled = controls.enabled.isSelected();
     NotificationBackendMode notificationBackendMode =
-        controls.notificationBackend.getSelectedItem() instanceof NotificationBackendMode mode
-            ? mode
-            : NotificationBackendMode.AUTO;
+        PreferencesUiSupport.selectedComboItem(
+            controls.notificationBackend,
+            NotificationBackendMode.class,
+            NotificationBackendMode.AUTO);
 
     return new TraySettings(
         trayEnabled,
@@ -549,7 +547,9 @@ public final class TrayControlsSupport {
   private static NotificationSoundSettings readNotificationSoundSettings(
       TrayControls controls, boolean trayEnabled) {
     boolean enabled = trayEnabled && controls.notificationSoundsEnabled.isSelected();
-    BuiltInSound selectedSound = (BuiltInSound) controls.notificationSound.getSelectedItem();
+    BuiltInSound selectedSound =
+        PreferencesUiSupport.selectedComboItem(
+            controls.notificationSound, BuiltInSound.class, BuiltInSound.NOTIF_1);
     String soundId = selectedSound != null ? selectedSound.name() : BuiltInSound.NOTIF_1.name();
     boolean useCustom = controls.notificationSoundUseCustom.isSelected();
     String customPath = PreferencesUiSupport.trimmedText(controls.notificationSoundCustomPath);
@@ -563,9 +563,8 @@ public final class TrayControlsSupport {
     String endpoint = PreferencesUiSupport.trimmedText(controls.pushyEndpoint);
     String apiKey = PreferencesUiSupport.trimmedPasswordText(controls.pushyApiKey);
     PushyTargetMode targetMode =
-        controls.pushyTargetMode.getSelectedItem() instanceof PushyTargetMode mode
-            ? mode
-            : PushyTargetMode.DEVICE_TOKEN;
+        PreferencesUiSupport.selectedComboItem(
+            controls.pushyTargetMode, PushyTargetMode.class, PushyTargetMode.DEVICE_TOKEN);
     String targetValue = PreferencesUiSupport.trimmedText(controls.pushyTargetValue);
     String titlePrefix = PreferencesUiSupport.trimmedText(controls.pushyTitlePrefix);
     int connectTimeoutSeconds =

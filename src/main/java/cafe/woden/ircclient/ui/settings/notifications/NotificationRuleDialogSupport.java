@@ -136,9 +136,8 @@ public final class NotificationRuleDialogSupport {
       if (!PreferencesUiSupport.confirmPlainOkCancel(owner, form, dialogTitle)) return null;
 
       NotificationRule.Type selectedType =
-          type.getSelectedItem() instanceof NotificationRule.Type t
-              ? t
-              : NotificationRule.Type.WORD;
+          PreferencesUiSupport.selectedComboItem(
+              type, NotificationRule.Type.class, NotificationRule.Type.WORD);
 
       String patternText = PreferencesUiSupport.trimmedText(pattern);
       if (selectedType == NotificationRule.Type.REGEX && !patternText.isEmpty()) {

@@ -112,9 +112,8 @@ public final class EmbedPreviewControlsSupport {
   public static EmbedPreviewSettings readEmbedPreviewSettings(
       ImageEmbedControls imageEmbeds, LinkPreviewControls linkPreviews) {
     EmbedCardStyle cardStyle =
-        linkPreviews.cardStyle.getSelectedItem() instanceof EmbedCardStyle style
-            ? style
-            : EmbedCardStyle.DEFAULT;
+        PreferencesUiSupport.selectedComboItem(
+            linkPreviews.cardStyle, EmbedCardStyle.class, EmbedCardStyle.DEFAULT);
 
     return new EmbedPreviewSettings(
         imageEmbeds.enabled.isSelected(),

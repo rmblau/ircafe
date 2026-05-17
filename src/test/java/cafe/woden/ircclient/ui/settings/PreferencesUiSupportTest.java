@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.settings;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import javax.swing.JComboBox;
 import javax.swing.JPasswordField;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
@@ -47,6 +48,27 @@ class PreferencesUiSupportTest {
   void trimsPasswordFieldValues() {
     assertEquals("value", PreferencesUiSupport.trimmedPasswordText(new JPasswordField(" value ")));
     assertEquals("", PreferencesUiSupport.trimmedPasswordText(null));
+  }
+
+  @Test
+  void readsTypedComboSelectionOrFallback() {
+    JComboBox<Object> combo = new JComboBox<>(new Object[] {"first", 42});
+
+    assertEquals("first", PreferencesUiSupport.selectedComboItem(combo, String.class, "fallback"));
+
+    combo.setSelectedItem(42);
+    assertEquals(
+        "fallback", PreferencesUiSupport.selectedComboItem(combo, String.class, "fallback"));
+    assertEquals(42, PreferencesUiSupport.selectedComboItem(combo, Integer.class, -1));
+  }
+
+  @Test
+  void fallsBackForMissingComboSelectionInputs() {
+    assertEquals(
+        "fallback", PreferencesUiSupport.selectedComboItem(null, String.class, "fallback"));
+
+    JComboBox<Object> combo = new JComboBox<>(new Object[] {"first"});
+    assertEquals("fallback", PreferencesUiSupport.selectedComboItem(combo, null, "fallback"));
   }
 
   private static JSpinner spinner(int value) {

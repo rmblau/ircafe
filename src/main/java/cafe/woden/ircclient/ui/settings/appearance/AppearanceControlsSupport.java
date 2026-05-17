@@ -74,9 +74,8 @@ public final class AppearanceControlsSupport {
   static ChatThemeSettings readChatThemeSettings(ChatThemeControls controls)
       throws AppearanceSettingsException {
     ChatThemeSettings.Preset preset =
-        controls.preset.getSelectedItem() instanceof ChatThemeSettings.Preset typed
-            ? typed
-            : ChatThemeSettings.Preset.DEFAULT;
+        PreferencesUiSupport.selectedComboItem(
+            controls.preset, ChatThemeSettings.Preset.class, ChatThemeSettings.Preset.DEFAULT);
     try {
       return new ChatThemeSettings(
           preset,
