@@ -10,7 +10,6 @@ import cafe.woden.ircclient.ui.settings.theme.ThemeTweakSettings;
 import java.awt.Color;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 public final class AppearanceControlsSupport {
   private AppearanceControlsSupport() {}
@@ -47,7 +46,7 @@ public final class AppearanceControlsSupport {
   static ThemeTweakSettings readTweakSettings(TweakControls controls) {
     DensityOption option = (DensityOption) controls.density.getSelectedItem();
     String densityId = option != null ? option.id : "auto";
-    String uiFontFamily = Objects.toString(controls.uiFontFamily.getSelectedItem(), "").trim();
+    String uiFontFamily = PreferencesUiSupport.selectedComboText(controls.uiFontFamily);
     if (uiFontFamily.isBlank()) uiFontFamily = ThemeTweakSettings.DEFAULT_UI_FONT_FAMILY;
     return new ThemeTweakSettings(
         ThemeTweakSettings.ThemeDensity.from(densityId),

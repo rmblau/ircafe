@@ -367,7 +367,7 @@ public final class AppearanceLivePreviewSession implements AutoCloseable {
     UiSettings base = settingsBus != null ? settingsBus.get() : null;
     if (base == null) return;
 
-    String family = Objects.toString(fonts.fontFamily.getSelectedItem(), "").trim();
+    String family = PreferencesUiSupport.selectedComboText(fonts.fontFamily);
     if (family.isBlank()) family = "Monospaced";
     int size = PreferencesUiSupport.clampedSpinnerInt(fonts.fontSize, 8, 48);
 

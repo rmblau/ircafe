@@ -71,6 +71,14 @@ class PreferencesUiSupportTest {
     assertEquals("fallback", PreferencesUiSupport.selectedComboItem(combo, null, "fallback"));
   }
 
+  @Test
+  void readsTrimmedComboSelectionText() {
+    JComboBox<Object> combo = new JComboBox<>(new Object[] {" value "});
+
+    assertEquals("value", PreferencesUiSupport.selectedComboText(combo));
+    assertEquals("", PreferencesUiSupport.selectedComboText(null));
+  }
+
   private static JSpinner spinner(int value) {
     return PreferencesUiSupport.numberSpinner(value, 0, 200, 1);
   }
