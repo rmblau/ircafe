@@ -2,12 +2,13 @@ package cafe.woden.ircclient.ui.settings.notifications;
 
 import cafe.woden.ircclient.model.BuiltInSound;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
+import cafe.woden.ircclient.ui.settings.SettingsRowsTableModel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import javax.swing.table.AbstractTableModel;
 
-final class IrcEventNotificationTableModel extends AbstractTableModel {
+final class IrcEventNotificationTableModel
+    extends SettingsRowsTableModel<IrcEventNotificationTableModel.MutableRule> {
   static final int COL_ENABLED = 0;
   static final int COL_EVENT = 1;
   static final int COL_SOURCE_SUMMARY = 2;
@@ -17,36 +18,26 @@ final class IrcEventNotificationTableModel extends AbstractTableModel {
   private static final String[] COLS =
       new String[] {"Enabled", "Event", "Source", "Channel", "Actions"};
 
-  private final List<MutableRule> rows = new ArrayList<>();
-
   IrcEventNotificationTableModel(List<IrcEventNotificationRule> initial) {
-    if (initial != null) {
-      for (IrcEventNotificationRule r : initial) {
-        if (r == null) continue;
-        rows.add(MutableRule.from(r));
-      }
-    }
+    super(COLS);
+    addInitialRows(initial, MutableRule::from);
   }
 
   List<IrcEventNotificationRule> snapshot() {
-    return rows.stream().map(MutableRule::toRule).toList();
+    return rows().stream().map(MutableRule::toRule).toList();
   }
 
   IrcEventNotificationRule ruleAt(int row) {
-    if (row < 0 || row >= rows.size()) return null;
-    MutableRule m = rows.get(row);
+    MutableRule m = rowAtOrNull(row);
     return m != null ? m.toRule() : null;
   }
 
   void setRule(int row, IrcEventNotificationRule rule) {
-    if (row < 0 || row >= rows.size()) return;
-    rows.set(row, MutableRule.from(rule));
-    fireTableRowsUpdated(row, row);
+    setRowAt(row, MutableRule.from(rule));
   }
 
   void setEnabledAt(int row, boolean enabled) {
-    if (row < 0 || row >= rows.size()) return;
-    MutableRule current = rows.get(row);
+    MutableRule current = rowAtOrNull(row);
     if (current == null || current.enabled == enabled) return;
     current.enabled = enabled;
     fireTableRowsUpdated(row, row);
@@ -62,42 +53,25 @@ final class IrcEventNotificationTableModel extends AbstractTableModel {
   }
 
   int addRule(IrcEventNotificationRule rule) {
-    rows.add(MutableRule.from(rule));
-    int idx = rows.size() - 1;
-    fireTableRowsInserted(idx, idx);
-    return idx;
+    return appendRow(MutableRule.from(rule));
   }
 
   int duplicateRow(int row) {
-    if (row < 0 || row >= rows.size()) return -1;
-    MutableRule src = rows.get(row);
-    MutableRule copy = src.copy();
-    int idx = Math.min(rows.size(), row + 1);
-    rows.add(idx, copy);
-    fireTableRowsInserted(idx, idx);
-    return idx;
+    return duplicateRowAt(row, MutableRule::copy);
   }
 
   void removeRow(int row) {
-    if (row < 0 || row >= rows.size()) return;
-    rows.remove(row);
-    fireTableRowsDeleted(row, row);
+    removeRowAt(row);
   }
 
   int moveRow(int from, int to) {
-    if (from < 0 || from >= rows.size()) return -1;
-    if (to < 0 || to >= rows.size()) return -1;
-    if (from == to) return from;
-    MutableRule r = rows.remove(from);
-    rows.add(to, r);
-    fireTableDataChanged();
-    return to;
+    return moveRowTo(from, to);
   }
 
   int firstRowForEvent(IrcEventNotificationRule.EventType eventType) {
     if (eventType == null) return -1;
-    for (int i = 0; i < rows.size(); i++) {
-      MutableRule r = rows.get(i);
+    for (int i = 0; i < rows().size(); i++) {
+      MutableRule r = rows().get(i);
       if (r == null) continue;
       if (r.eventType == eventType) return i;
     }
@@ -110,39 +84,16 @@ final class IrcEventNotificationTableModel extends AbstractTableModel {
       if (rule == null) continue;
       int idx = firstRowForEvent(rule.eventType());
       if (idx >= 0) {
-        rows.set(idx, MutableRule.from(rule));
+        rows().set(idx, MutableRule.from(rule));
       } else {
-        rows.add(MutableRule.from(rule));
+        rows().add(MutableRule.from(rule));
       }
     }
     fireTableDataChanged();
   }
 
   void replaceAll(List<IrcEventNotificationRule> replacement) {
-    rows.clear();
-    if (replacement != null) {
-      for (IrcEventNotificationRule rule : replacement) {
-        if (rule == null) continue;
-        rows.add(MutableRule.from(rule));
-      }
-    }
-    fireTableDataChanged();
-  }
-
-  @Override
-  public int getRowCount() {
-    return rows.size();
-  }
-
-  @Override
-  public int getColumnCount() {
-    return COLS.length;
-  }
-
-  @Override
-  public String getColumnName(int column) {
-    if (column < 0 || column >= COLS.length) return "";
-    return COLS[column];
+    replaceRows(replacement, MutableRule::from);
   }
 
   @Override
@@ -157,8 +108,8 @@ final class IrcEventNotificationTableModel extends AbstractTableModel {
 
   @Override
   public Object getValueAt(int rowIndex, int columnIndex) {
-    if (rowIndex < 0 || rowIndex >= rows.size()) return null;
-    MutableRule r = rows.get(rowIndex);
+    MutableRule r = rowAtOrNull(rowIndex);
+    if (r == null) return null;
     return switch (columnIndex) {
       case COL_ENABLED -> r.enabled;
       case COL_EVENT -> Objects.toString(r.eventType, "");
@@ -278,7 +229,7 @@ final class IrcEventNotificationTableModel extends AbstractTableModel {
     return v.substring(0, Math.max(0, maxLen - 1)) + "…";
   }
 
-  private static final class MutableRule {
+  static final class MutableRule {
     boolean enabled;
     IrcEventNotificationRule.EventType eventType;
     IrcEventNotificationRule.SourceMode sourceMode;

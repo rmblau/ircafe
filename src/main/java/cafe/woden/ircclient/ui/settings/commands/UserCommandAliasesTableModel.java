@@ -1,86 +1,64 @@
 package cafe.woden.ircclient.ui.settings.commands;
 
 import cafe.woden.ircclient.model.UserCommandAlias;
-import java.util.ArrayList;
+import cafe.woden.ircclient.ui.settings.SettingsRowsTableModel;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
-import javax.swing.table.AbstractTableModel;
 
-final class UserCommandAliasesTableModel extends AbstractTableModel {
+final class UserCommandAliasesTableModel
+    extends SettingsRowsTableModel<UserCommandAliasesTableModel.MutableAlias> {
   static final int COL_ENABLED = 0;
   static final int COL_COMMAND = 1;
 
   private static final String[] COLS = new String[] {"Enabled", "Command"};
   private static final Pattern COMMAND_NAME_PATTERN = Pattern.compile("^[A-Za-z][A-Za-z0-9_-]*$");
 
-  private final List<MutableAlias> rows = new ArrayList<>();
-
   UserCommandAliasesTableModel(List<UserCommandAlias> initial) {
-    if (initial != null) {
-      for (UserCommandAlias alias : initial) {
-        if (alias == null) continue;
-        rows.add(MutableAlias.from(alias));
-      }
-    }
+    super(COLS);
+    addInitialRows(initial, MutableAlias::from);
   }
 
   List<UserCommandAlias> snapshot() {
-    return rows.stream().map(MutableAlias::toAlias).toList();
+    return rows().stream().map(MutableAlias::toAlias).toList();
   }
 
   int addAlias(UserCommandAlias alias) {
-    rows.add(MutableAlias.from(alias));
-    int idx = rows.size() - 1;
-    fireTableRowsInserted(idx, idx);
-    return idx;
+    return appendRow(MutableAlias.from(alias));
   }
 
   int duplicateRow(int row) {
-    if (row < 0 || row >= rows.size()) return -1;
-    MutableAlias src = rows.get(row);
-    MutableAlias copy = src.copy();
-    int idx = Math.min(rows.size(), row + 1);
-    rows.add(idx, copy);
-    fireTableRowsInserted(idx, idx);
-    return idx;
+    return duplicateRowAt(row, MutableAlias::copy);
   }
 
   void removeRow(int row) {
-    if (row < 0 || row >= rows.size()) return;
-    rows.remove(row);
-    fireTableRowsDeleted(row, row);
+    removeRowAt(row);
   }
 
   int moveRow(int from, int to) {
-    if (from < 0 || from >= rows.size()) return -1;
-    if (to < 0 || to >= rows.size()) return -1;
-    if (from == to) return from;
-    MutableAlias alias = rows.remove(from);
-    rows.add(to, alias);
-    fireTableDataChanged();
-    return to;
+    return moveRowTo(from, to);
   }
 
   String templateAt(int row) {
-    if (row < 0 || row >= rows.size()) return "";
-    return Objects.toString(rows.get(row).template, "");
+    MutableAlias alias = rowAtOrNull(row);
+    return alias != null ? Objects.toString(alias.template, "") : "";
   }
 
   void setTemplateAt(int row, String template) {
-    if (row < 0 || row >= rows.size()) return;
-    rows.get(row).template = Objects.toString(template, "");
+    MutableAlias alias = rowAtOrNull(row);
+    if (alias == null) return;
+    alias.template = Objects.toString(template, "");
     fireTableRowsUpdated(row, row);
   }
 
   UserCommandAliasValidationError firstValidationError() {
     Map<String, Integer> seenEnabled = new LinkedHashMap<>();
 
-    for (int i = 0; i < rows.size(); i++) {
-      MutableAlias a = rows.get(i);
+    for (int i = 0; i < rows().size(); i++) {
+      MutableAlias a = rows().get(i);
       if (a == null || !a.enabled) continue;
 
       String cmd = normalizeCommand(a.name);
@@ -110,22 +88,6 @@ final class UserCommandAliasesTableModel extends AbstractTableModel {
   }
 
   @Override
-  public int getRowCount() {
-    return rows.size();
-  }
-
-  @Override
-  public int getColumnCount() {
-    return COLS.length;
-  }
-
-  @Override
-  public String getColumnName(int column) {
-    if (column < 0 || column >= COLS.length) return "";
-    return COLS[column];
-  }
-
-  @Override
   public Class<?> getColumnClass(int columnIndex) {
     if (columnIndex == COL_ENABLED) return Boolean.class;
     return String.class;
@@ -133,13 +95,13 @@ final class UserCommandAliasesTableModel extends AbstractTableModel {
 
   @Override
   public boolean isCellEditable(int rowIndex, int columnIndex) {
-    return rowIndex >= 0 && rowIndex < rows.size() && columnIndex >= 0 && columnIndex < COLS.length;
+    return hasRow(rowIndex) && columnIndex >= 0 && columnIndex < getColumnCount();
   }
 
   @Override
   public Object getValueAt(int rowIndex, int columnIndex) {
-    if (rowIndex < 0 || rowIndex >= rows.size()) return null;
-    MutableAlias a = rows.get(rowIndex);
+    MutableAlias a = rowAtOrNull(rowIndex);
+    if (a == null) return null;
     return switch (columnIndex) {
       case COL_ENABLED -> a.enabled;
       case COL_COMMAND -> a.name;
@@ -149,8 +111,8 @@ final class UserCommandAliasesTableModel extends AbstractTableModel {
 
   @Override
   public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-    if (rowIndex < 0 || rowIndex >= rows.size()) return;
-    MutableAlias a = rows.get(rowIndex);
+    MutableAlias a = rowAtOrNull(rowIndex);
+    if (a == null) return;
 
     switch (columnIndex) {
       case COL_ENABLED -> a.enabled = aValue instanceof Boolean b && b;
@@ -167,7 +129,7 @@ final class UserCommandAliasesTableModel extends AbstractTableModel {
     return cmd;
   }
 
-  private static final class MutableAlias {
+  static final class MutableAlias {
     boolean enabled;
     String name;
     String template;

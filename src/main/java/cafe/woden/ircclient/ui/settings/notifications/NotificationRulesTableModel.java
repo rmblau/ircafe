@@ -1,14 +1,15 @@
 package cafe.woden.ircclient.ui.settings.notifications;
 
 import cafe.woden.ircclient.config.NotificationRule;
+import cafe.woden.ircclient.ui.settings.SettingsRowsTableModel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Pattern;
-import javax.swing.table.AbstractTableModel;
 
-final class NotificationRulesTableModel extends AbstractTableModel {
+final class NotificationRulesTableModel
+    extends SettingsRowsTableModel<NotificationRulesTableModel.MutableRule> {
   static final int COL_ENABLED = 0;
   static final int COL_LABEL = 1;
   static final int COL_MATCH = 2;
@@ -20,31 +21,22 @@ final class NotificationRulesTableModel extends AbstractTableModel {
         "Enabled", "Label", "Match", "Options", "Color",
       };
 
-  private final List<MutableRule> rows = new ArrayList<>();
-
   NotificationRulesTableModel(List<NotificationRule> initial) {
-    if (initial != null) {
-      for (NotificationRule r : initial) {
-        if (r == null) continue;
-        rows.add(MutableRule.from(r));
-      }
-    }
+    super(COLS);
+    addInitialRows(initial, MutableRule::from);
   }
 
   List<NotificationRule> snapshot() {
-    return rows.stream().map(MutableRule::toRule).toList();
+    return rows().stream().map(MutableRule::toRule).toList();
   }
 
   NotificationRule ruleAt(int row) {
-    if (row < 0 || row >= rows.size()) return null;
-    MutableRule m = rows.get(row);
+    MutableRule m = rowAtOrNull(row);
     return m != null ? m.toRule() : null;
   }
 
   void setRule(int row, NotificationRule rule) {
-    if (row < 0 || row >= rows.size()) return;
-    rows.set(row, MutableRule.from(rule));
-    fireTableRowsUpdated(row, row);
+    setRowAt(row, MutableRule.from(rule));
   }
 
   static String effectiveRuleLabel(NotificationRule rule) {
@@ -56,14 +48,12 @@ final class NotificationRulesTableModel extends AbstractTableModel {
   }
 
   String highlightFgAt(int row) {
-    if (row < 0 || row >= rows.size()) return null;
-    MutableRule r = rows.get(row);
+    MutableRule r = rowAtOrNull(row);
     return r != null ? r.highlightFg : null;
   }
 
   void setHighlightFg(int row, String hex) {
-    if (row < 0 || row >= rows.size()) return;
-    MutableRule r = rows.get(row);
+    MutableRule r = rowAtOrNull(row);
     if (r == null) return;
     r.highlightFg = normalizeHexColor(Objects.toString(hex, "").trim());
     fireTableRowsUpdated(row, row);
@@ -71,8 +61,8 @@ final class NotificationRulesTableModel extends AbstractTableModel {
 
   List<ValidationError> validationErrors() {
     List<ValidationError> out = new ArrayList<>();
-    for (int i = 0; i < rows.size(); i++) {
-      MutableRule r = rows.get(i);
+    for (int i = 0; i < rows().size(); i++) {
+      MutableRule r = rows().get(i);
       if (r == null) continue;
       if (!r.enabled) continue;
       if (r.type != NotificationRule.Type.REGEX) continue;
@@ -97,52 +87,19 @@ final class NotificationRulesTableModel extends AbstractTableModel {
   }
 
   int addRule(NotificationRule rule) {
-    rows.add(MutableRule.from(rule));
-    int idx = rows.size() - 1;
-    fireTableRowsInserted(idx, idx);
-    return idx;
+    return appendRow(MutableRule.from(rule));
   }
 
   int duplicateRow(int row) {
-    if (row < 0 || row >= rows.size()) return -1;
-    MutableRule src = rows.get(row);
-    MutableRule copy = src.copy();
-    int idx = Math.min(rows.size(), row + 1);
-    rows.add(idx, copy);
-    fireTableRowsInserted(idx, idx);
-    return idx;
+    return duplicateRowAt(row, MutableRule::copy);
   }
 
   void removeRow(int row) {
-    if (row < 0 || row >= rows.size()) return;
-    rows.remove(row);
-    fireTableRowsDeleted(row, row);
+    removeRowAt(row);
   }
 
   int moveRow(int from, int to) {
-    if (from < 0 || from >= rows.size()) return -1;
-    if (to < 0 || to >= rows.size()) return -1;
-    if (from == to) return from;
-    MutableRule r = rows.remove(from);
-    rows.add(to, r);
-    fireTableDataChanged();
-    return to;
-  }
-
-  @Override
-  public int getRowCount() {
-    return rows.size();
-  }
-
-  @Override
-  public int getColumnCount() {
-    return COLS.length;
-  }
-
-  @Override
-  public String getColumnName(int column) {
-    if (column < 0 || column >= COLS.length) return "";
-    return COLS[column];
+    return moveRowTo(from, to);
   }
 
   @Override
@@ -158,8 +115,8 @@ final class NotificationRulesTableModel extends AbstractTableModel {
 
   @Override
   public Object getValueAt(int rowIndex, int columnIndex) {
-    if (rowIndex < 0 || rowIndex >= rows.size()) return null;
-    MutableRule r = rows.get(rowIndex);
+    MutableRule r = rowAtOrNull(rowIndex);
+    if (r == null) return null;
     return switch (columnIndex) {
       case COL_ENABLED -> r.enabled;
       case COL_LABEL -> effectiveRuleLabel(r.toRule());
@@ -211,7 +168,7 @@ final class NotificationRulesTableModel extends AbstractTableModel {
     return "#" + s.toUpperCase(Locale.ROOT);
   }
 
-  private static final class MutableRule {
+  static final class MutableRule {
     boolean enabled;
     NotificationRule.Type type;
     String label;
