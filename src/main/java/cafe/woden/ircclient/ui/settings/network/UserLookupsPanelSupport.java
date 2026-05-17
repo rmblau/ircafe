@@ -51,8 +51,9 @@ public final class UserLookupsPanelSupport {
 
     Runnable updateLookupPresetHint =
         () -> {
-          LookupRatePreset preset = (LookupRatePreset) lookupPreset.getSelectedItem();
-          if (preset == null) preset = LookupRatePreset.CUSTOM;
+          LookupRatePreset preset =
+              PreferencesUiSupport.selectedComboItem(
+                  lookupPreset, LookupRatePreset.class, LookupRatePreset.CUSTOM);
 
           String message =
               switch (preset) {
@@ -400,7 +401,9 @@ public final class UserLookupsPanelSupport {
     Runnable updateHostmaskState =
         () -> {
           boolean enabled = userhostEnabled.isSelected();
-          LookupRatePreset preset = (LookupRatePreset) lookupPreset.getSelectedItem();
+          LookupRatePreset preset =
+              PreferencesUiSupport.selectedComboItem(
+                  lookupPreset, LookupRatePreset.class, LookupRatePreset.CUSTOM);
           boolean custom = preset == LookupRatePreset.CUSTOM;
 
           boolean showAdvanced = enabled && custom;
@@ -417,7 +420,9 @@ public final class UserLookupsPanelSupport {
     Runnable updateEnrichmentState =
         () -> {
           boolean enabled = enrichmentEnabled.isSelected();
-          LookupRatePreset preset = (LookupRatePreset) lookupPreset.getSelectedItem();
+          LookupRatePreset preset =
+              PreferencesUiSupport.selectedComboItem(
+                  lookupPreset, LookupRatePreset.class, LookupRatePreset.CUSTOM);
           boolean custom = preset == LookupRatePreset.CUSTOM;
 
           enrichmentWhoisFallbackEnabled.setEnabled(enabled);
@@ -475,7 +480,8 @@ public final class UserLookupsPanelSupport {
 
     lookupPreset.addActionListener(
         e -> {
-          LookupRatePreset preset = (LookupRatePreset) lookupPreset.getSelectedItem();
+          LookupRatePreset preset =
+              PreferencesUiSupport.selectedComboItem(lookupPreset, LookupRatePreset.class, null);
           if (preset != null && preset != LookupRatePreset.CUSTOM) {
             applyLookupPreset.accept(preset);
           }

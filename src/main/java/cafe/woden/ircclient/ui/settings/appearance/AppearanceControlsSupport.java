@@ -44,7 +44,8 @@ public final class AppearanceControlsSupport {
   }
 
   static ThemeTweakSettings readTweakSettings(TweakControls controls) {
-    DensityOption option = (DensityOption) controls.density.getSelectedItem();
+    DensityOption option =
+        PreferencesUiSupport.selectedComboItem(controls.density, DensityOption.class, null);
     String densityId = option != null ? option.id : "auto";
     String uiFontFamily = PreferencesUiSupport.selectedComboText(controls.uiFontFamily);
     if (uiFontFamily.isBlank()) uiFontFamily = ThemeTweakSettings.DEFAULT_UI_FONT_FAMILY;

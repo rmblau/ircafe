@@ -128,7 +128,8 @@ public class EmbedLoadPolicyDialog {
 
     Runnable applySelection =
         () -> {
-          ScopeOption selected = (ScopeOption) scope.getSelectedItem();
+          ScopeOption selected =
+              PreferencesUiSupport.selectedComboItem(scope, ScopeOption.class, null);
           if (selected == null) return;
           stopTableEditing(controls);
           EmbedLoadPolicyScope currentScope = readScopeFromControls(controls);
@@ -145,7 +146,8 @@ public class EmbedLoadPolicyDialog {
 
     Runnable loadSelection =
         () -> {
-          ScopeOption selected = (ScopeOption) scope.getSelectedItem();
+          ScopeOption selected =
+              PreferencesUiSupport.selectedComboItem(scope, ScopeOption.class, null);
           if (selected == null) return;
           EmbedLoadPolicyScope show;
           boolean editable = true;
@@ -174,7 +176,8 @@ public class EmbedLoadPolicyDialog {
 
     inheritGlobal.addActionListener(
         e -> {
-          ScopeOption selected = (ScopeOption) scope.getSelectedItem();
+          ScopeOption selected =
+              PreferencesUiSupport.selectedComboItem(scope, ScopeOption.class, null);
           if (selected == null || selected.global()) return;
           if (inheritGlobal.isSelected()) {
             byServerRef.remove(selected.serverId());

@@ -212,7 +212,8 @@ final class AppearanceAccentControlsFactory {
 
     private void applySelectedPreset() {
       if (adjusting.get()) return;
-      AccentPreset selected = (AccentPreset) preset.getSelectedItem();
+      AccentPreset selected =
+          PreferencesUiSupport.selectedComboItem(preset, AccentPreset.class, null);
       if (selected == null) return;
 
       AccentPreset previous =
@@ -322,7 +323,8 @@ final class AppearanceAccentControlsFactory {
               : SettingsColorSupport.parseHexColorLenient(UiProperties.DEFAULT_ACCENT_COLOR);
       if (background == null) background = new Color(0x2D6BFF);
 
-      AccentPreset selected = (AccentPreset) preset.getSelectedItem();
+      AccentPreset selected =
+          PreferencesUiSupport.selectedComboItem(preset, AccentPreset.class, null);
       if (selected == null) {
         selected = AccentPreset.fromHexOrCustom(ThemeAccentSettings.normalizeHexOrNull(raw));
       }

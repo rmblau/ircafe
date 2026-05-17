@@ -191,7 +191,8 @@ public final class IrcEventNotificationsTabSupport {
     applyDefaults.addActionListener(
         e -> {
           IrcEventNotificationPresetSupport.Preset preset =
-              (IrcEventNotificationPresetSupport.Preset) defaultsPreset.getSelectedItem();
+              PreferencesUiSupport.selectedComboItem(
+                  defaultsPreset, IrcEventNotificationPresetSupport.Preset.class, null);
           if (preset == null) return;
           List<IrcEventNotificationRule> rules =
               IrcEventNotificationPresetSupport.buildPreset(preset);

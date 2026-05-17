@@ -191,9 +191,10 @@ public final class IrcEventNotificationRuleDialogSupport {
     Runnable refreshSourceFieldState =
         () -> {
           IrcEventNotificationRule.SourceMode mode =
-              sourceMode.getSelectedItem() instanceof IrcEventNotificationRule.SourceMode s
-                  ? s
-                  : IrcEventNotificationRule.SourceMode.ANY;
+              PreferencesUiSupport.selectedComboItem(
+                  sourceMode,
+                  IrcEventNotificationRule.SourceMode.class,
+                  IrcEventNotificationRule.SourceMode.ANY);
           boolean needsPattern =
               mode == IrcEventNotificationRule.SourceMode.NICK_LIST
                   || mode == IrcEventNotificationRule.SourceMode.GLOB
@@ -212,9 +213,10 @@ public final class IrcEventNotificationRuleDialogSupport {
     Runnable refreshChannelFieldState =
         () -> {
           IrcEventNotificationRule.ChannelScope scope =
-              channelScope.getSelectedItem() instanceof IrcEventNotificationRule.ChannelScope s
-                  ? s
-                  : IrcEventNotificationRule.ChannelScope.ALL;
+              PreferencesUiSupport.selectedComboItem(
+                  channelScope,
+                  IrcEventNotificationRule.ChannelScope.class,
+                  IrcEventNotificationRule.ChannelScope.ALL);
           boolean needsPattern =
               scope == IrcEventNotificationRule.ChannelScope.ONLY
                   || scope == IrcEventNotificationRule.ChannelScope.ALL_EXCEPT;
@@ -225,15 +227,17 @@ public final class IrcEventNotificationRuleDialogSupport {
     Runnable refreshCtcpFieldState =
         () -> {
           IrcEventNotificationRule.EventType selectedEvent =
-              eventType.getSelectedItem() instanceof IrcEventNotificationRule.EventType et
-                  ? et
-                  : IrcEventNotificationRule.EventType.INVITE_RECEIVED;
+              PreferencesUiSupport.selectedComboItem(
+                  eventType,
+                  IrcEventNotificationRule.EventType.class,
+                  IrcEventNotificationRule.EventType.INVITE_RECEIVED);
           boolean ctcp = selectedEvent == IrcEventNotificationRule.EventType.CTCP_RECEIVED;
 
           IrcEventNotificationRule.CtcpMatchMode selectedCommandMode =
-              ctcpCommandMode.getSelectedItem() instanceof IrcEventNotificationRule.CtcpMatchMode m
-                  ? m
-                  : IrcEventNotificationRule.CtcpMatchMode.ANY;
+              PreferencesUiSupport.selectedComboItem(
+                  ctcpCommandMode,
+                  IrcEventNotificationRule.CtcpMatchMode.class,
+                  IrcEventNotificationRule.CtcpMatchMode.ANY);
           boolean commandNeedsPattern =
               ctcp && selectedCommandMode != IrcEventNotificationRule.CtcpMatchMode.ANY;
           ctcpCommandMode.setEnabled(ctcp);
@@ -242,9 +246,10 @@ public final class IrcEventNotificationRuleDialogSupport {
               ctcpCommandPattern, commandNeedsPattern ? "VERSION / PING / TIME / CLIENTINFO" : "");
 
           IrcEventNotificationRule.CtcpMatchMode selectedValueMode =
-              ctcpValueMode.getSelectedItem() instanceof IrcEventNotificationRule.CtcpMatchMode m
-                  ? m
-                  : IrcEventNotificationRule.CtcpMatchMode.ANY;
+              PreferencesUiSupport.selectedComboItem(
+                  ctcpValueMode,
+                  IrcEventNotificationRule.CtcpMatchMode.class,
+                  IrcEventNotificationRule.CtcpMatchMode.ANY);
           boolean valueNeedsPattern =
               ctcp && selectedValueMode != IrcEventNotificationRule.CtcpMatchMode.ANY;
           ctcpValueMode.setEnabled(ctcp);
@@ -266,17 +271,19 @@ public final class IrcEventNotificationRuleDialogSupport {
 
     final IrcEventNotificationRule.EventType[] priorEvent =
         new IrcEventNotificationRule.EventType[] {
-          eventType.getSelectedItem() instanceof IrcEventNotificationRule.EventType e
-              ? e
-              : IrcEventNotificationRule.EventType.INVITE_RECEIVED
+          PreferencesUiSupport.selectedComboItem(
+              eventType,
+              IrcEventNotificationRule.EventType.class,
+              IrcEventNotificationRule.EventType.INVITE_RECEIVED)
         };
 
     eventType.addActionListener(
         e -> {
           IrcEventNotificationRule.EventType selectedEvent =
-              eventType.getSelectedItem() instanceof IrcEventNotificationRule.EventType et
-                  ? et
-                  : IrcEventNotificationRule.EventType.INVITE_RECEIVED;
+              PreferencesUiSupport.selectedComboItem(
+                  eventType,
+                  IrcEventNotificationRule.EventType.class,
+                  IrcEventNotificationRule.EventType.INVITE_RECEIVED);
           IrcEventNotificationRule.EventType previous = priorEvent[0];
           if (previous == null) previous = IrcEventNotificationRule.EventType.INVITE_RECEIVED;
           if (!soundUseCustom.isSelected()) {
@@ -303,9 +310,10 @@ public final class IrcEventNotificationRuleDialogSupport {
     applyCtcpTemplate.addActionListener(
         e -> {
           CtcpNotificationRuleTemplate template =
-              ctcpTemplate.getSelectedItem() instanceof CtcpNotificationRuleTemplate t
-                  ? t
-                  : CtcpNotificationRuleTemplate.CUSTOM;
+              PreferencesUiSupport.selectedComboItem(
+                  ctcpTemplate,
+                  CtcpNotificationRuleTemplate.class,
+                  CtcpNotificationRuleTemplate.CUSTOM);
           eventType.setSelectedItem(IrcEventNotificationRule.EventType.CTCP_RECEIVED);
           if (template == CtcpNotificationRuleTemplate.CUSTOM) {
             ctcpCommandMode.setSelectedItem(IrcEventNotificationRule.CtcpMatchMode.ANY);
@@ -445,21 +453,25 @@ public final class IrcEventNotificationRuleDialogSupport {
       if (!PreferencesUiSupport.confirmPlainOkCancel(owner, form, dialogTitle)) return null;
 
       IrcEventNotificationRule.EventType selectedEvent =
-          eventType.getSelectedItem() instanceof IrcEventNotificationRule.EventType ev
-              ? ev
-              : IrcEventNotificationRule.EventType.INVITE_RECEIVED;
+          PreferencesUiSupport.selectedComboItem(
+              eventType,
+              IrcEventNotificationRule.EventType.class,
+              IrcEventNotificationRule.EventType.INVITE_RECEIVED);
       IrcEventNotificationRule.SourceMode selectedSourceMode =
-          sourceMode.getSelectedItem() instanceof IrcEventNotificationRule.SourceMode mode
-              ? mode
-              : IrcEventNotificationRule.SourceMode.ANY;
+          PreferencesUiSupport.selectedComboItem(
+              sourceMode,
+              IrcEventNotificationRule.SourceMode.class,
+              IrcEventNotificationRule.SourceMode.ANY);
       IrcEventNotificationRule.ChannelScope selectedChannelScope =
-          channelScope.getSelectedItem() instanceof IrcEventNotificationRule.ChannelScope scope
-              ? scope
-              : IrcEventNotificationRule.ChannelScope.ALL;
+          PreferencesUiSupport.selectedComboItem(
+              channelScope,
+              IrcEventNotificationRule.ChannelScope.class,
+              IrcEventNotificationRule.ChannelScope.ALL);
       IrcEventNotificationRule.FocusScope selectedFocusScope =
-          focusScope.getSelectedItem() instanceof IrcEventNotificationRule.FocusScope focus
-              ? focus
-              : IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY;
+          PreferencesUiSupport.selectedComboItem(
+              focusScope,
+              IrcEventNotificationRule.FocusScope.class,
+              IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY);
 
       String sourcePatternValue = PreferencesUiSupport.trimmedTextOrNull(sourcePattern);
       boolean sourceNeedsPattern =
@@ -505,13 +517,15 @@ public final class IrcEventNotificationRuleDialogSupport {
       if (!channelNeedsPattern) channelPatternsValue = null;
 
       IrcEventNotificationRule.CtcpMatchMode selectedCtcpCommandMode =
-          ctcpCommandMode.getSelectedItem() instanceof IrcEventNotificationRule.CtcpMatchMode mode
-              ? mode
-              : IrcEventNotificationRule.CtcpMatchMode.ANY;
+          PreferencesUiSupport.selectedComboItem(
+              ctcpCommandMode,
+              IrcEventNotificationRule.CtcpMatchMode.class,
+              IrcEventNotificationRule.CtcpMatchMode.ANY);
       IrcEventNotificationRule.CtcpMatchMode selectedCtcpValueMode =
-          ctcpValueMode.getSelectedItem() instanceof IrcEventNotificationRule.CtcpMatchMode mode
-              ? mode
-              : IrcEventNotificationRule.CtcpMatchMode.ANY;
+          PreferencesUiSupport.selectedComboItem(
+              ctcpValueMode,
+              IrcEventNotificationRule.CtcpMatchMode.class,
+              IrcEventNotificationRule.CtcpMatchMode.ANY);
       String ctcpCommandPatternValue = PreferencesUiSupport.trimmedTextOrNull(ctcpCommandPattern);
       String ctcpValuePatternValue = PreferencesUiSupport.trimmedTextOrNull(ctcpValuePattern);
 
@@ -570,9 +584,10 @@ public final class IrcEventNotificationRuleDialogSupport {
       }
 
       BuiltInSound selectedSound =
-          builtInSound.getSelectedItem() instanceof BuiltInSound sound
-              ? sound
-              : IrcEventNotificationPresetSupport.defaultBuiltInSoundForEvent(selectedEvent);
+          PreferencesUiSupport.selectedComboItem(
+              builtInSound,
+              BuiltInSound.class,
+              IrcEventNotificationPresetSupport.defaultBuiltInSoundForEvent(selectedEvent));
       String soundCustomPathValue = PreferencesUiSupport.trimmedTextOrNull(soundCustomPath);
       boolean useCustomSound = soundUseCustom.isSelected() && soundCustomPathValue != null;
 
