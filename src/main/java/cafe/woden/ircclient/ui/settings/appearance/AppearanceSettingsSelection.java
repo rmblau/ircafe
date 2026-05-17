@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.appearance;
 
 import cafe.woden.ircclient.config.UiProperties;
+import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettings;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettings;
@@ -28,7 +29,7 @@ public record AppearanceSettingsSelection(
       throws AppearanceControlsSupport.AppearanceSettingsException {
     String theme = String.valueOf(section.theme().combo.getSelectedItem());
     String chatFontFamily = String.valueOf(section.fonts().fontFamily.getSelectedItem());
-    int chatFontSize = ((Number) section.fonts().fontSize.getValue()).intValue();
+    int chatFontSize = PreferencesUiSupport.spinnerInt(section.fonts().fontSize);
 
     ThemeAccentSettings prevAccent = currentAccent(accentSettingsBus);
     ThemeAccentSettings nextAccent = AppearanceControlsSupport.readAccentSettings(section.accent());

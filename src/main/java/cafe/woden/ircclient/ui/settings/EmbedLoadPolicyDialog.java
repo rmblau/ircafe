@@ -429,7 +429,7 @@ public class EmbedLoadPolicyDialog {
         readPatternRows(controls.channelBlacklist().model()),
         controls.requireVoiceOrOp().isSelected(),
         controls.requireLoggedIn().isSelected(),
-        ((Number) controls.minAccountAgeDays().getValue()).intValue(),
+        PreferencesUiSupport.spinnerInt(controls.minAccountAgeDays()),
         readPatternRows(controls.linkWhitelist().model()),
         readPatternRows(controls.linkBlacklist().model()),
         readPatternRows(controls.domainWhitelist().model()),

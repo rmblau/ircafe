@@ -49,7 +49,7 @@ public final class NickColorControlsSupport {
     Runnable updatePreview =
         () -> {
           boolean previewEnabled = enabled.isSelected();
-          double minContrastValue = ((Number) minContrast.getValue()).doubleValue();
+          double minContrastValue = PreferencesUiSupport.spinnerDouble(minContrast);
           if (minContrastValue <= 0) minContrastValue = 3.0;
           minContrast.setEnabled(previewEnabled);
           preview.updatePreview(previewEnabled, minContrastValue);
@@ -87,7 +87,7 @@ public final class NickColorControlsSupport {
 
   public static NickColorSettings readSettings(NickColorControls controls) {
     return new NickColorSettings(
-        controls.enabled.isSelected(), ((Number) controls.minContrast.getValue()).doubleValue());
+        controls.enabled.isSelected(), PreferencesUiSupport.spinnerDouble(controls.minContrast));
   }
 
   public static void rememberSettings(

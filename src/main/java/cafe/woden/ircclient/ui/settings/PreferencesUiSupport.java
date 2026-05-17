@@ -358,6 +358,10 @@ public final class PreferencesUiSupport {
     return ((Number) spinner.getValue()).intValue();
   }
 
+  public static double spinnerDouble(JSpinner spinner) {
+    return ((Number) spinner.getValue()).doubleValue();
+  }
+
   public static int clampedSpinnerInt(JSpinner spinner, int min, int max) {
     int value = spinnerInt(spinner);
     if (value < min) return min;

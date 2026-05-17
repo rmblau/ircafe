@@ -62,8 +62,8 @@ public final class LaunchJvmControlsSupport {
     String javaCommand = PreferencesUiSupport.trimmedText(controls.javaCommand());
     if (javaCommand.isBlank()) javaCommand = "java";
 
-    int xmsMiB = clampMemoryMiB(((Number) controls.xmsMiB().getValue()).intValue());
-    int xmxMiB = clampMemoryMiB(((Number) controls.xmxMiB().getValue()).intValue());
+    int xmsMiB = clampMemoryMiB(PreferencesUiSupport.spinnerInt(controls.xmsMiB()));
+    int xmxMiB = clampMemoryMiB(PreferencesUiSupport.spinnerInt(controls.xmxMiB()));
     if (xmxMiB > 0 && xmsMiB > 0 && xmxMiB < xmsMiB) {
       xmxMiB = xmsMiB;
     }
@@ -72,7 +72,8 @@ public final class LaunchJvmControlsSupport {
         javaCommand,
         xmsMiB,
         xmxMiB,
-        gcIdValue((LaunchGcOption) controls.gc().getSelectedItem()),
+        gcIdValue(
+            PreferencesUiSupport.selectedComboItem(controls.gc(), LaunchGcOption.class, null)),
         parseArgs(controls.extraArgs().getText()));
   }
 

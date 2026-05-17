@@ -19,6 +19,13 @@ class PreferencesUiSupportTest {
   }
 
   @Test
+  void readsSpinnerDoubleValue() {
+    JSpinner spinner = PreferencesUiSupport.numberSpinner(3.5, 0.0, 10.0, 0.5);
+
+    assertEquals(3.5, PreferencesUiSupport.spinnerDouble(spinner));
+  }
+
+  @Test
   void clampsSpinnerIntValue() {
     assertEquals(50, PreferencesUiSupport.clampedSpinnerInt(spinner(25), 50, 150));
     assertEquals(125, PreferencesUiSupport.clampedSpinnerInt(spinner(125), 50, 150));

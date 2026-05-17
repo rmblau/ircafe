@@ -107,12 +107,12 @@ public final class DiagnosticsControlsSupport {
         controls.assertjSwingEnabled().isSelected(),
         controls.assertjSwingFreezeWatchdogEnabled().isSelected(),
         clamp(
-            ((Number) controls.assertjSwingFreezeThresholdMs().getValue()).intValue(),
+            PreferencesUiSupport.spinnerInt(controls.assertjSwingFreezeThresholdMs()),
             500,
             120_000),
-        clamp(((Number) controls.assertjSwingWatchdogPollMs().getValue()).intValue(), 100, 10_000),
+        clamp(PreferencesUiSupport.spinnerInt(controls.assertjSwingWatchdogPollMs()), 100, 10_000),
         clamp(
-            ((Number) controls.assertjSwingFallbackViolationReportMs().getValue()).intValue(),
+            PreferencesUiSupport.spinnerInt(controls.assertjSwingFallbackViolationReportMs()),
             250,
             120_000),
         controls.assertjSwingOnIssuePlaySound().isSelected(),
