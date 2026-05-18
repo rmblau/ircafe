@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings.notifications;
 
 import cafe.woden.ircclient.model.BuiltInSound;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
+import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRowsTableModel;
 import java.util.ArrayList;
 import java.util.List;
@@ -129,8 +130,11 @@ final class IrcEventNotificationTableModel
     if (!sourcePatternAllowed(mode)) {
       base = label;
     } else {
-      String pattern = trimToNull(r.sourcePattern);
-      base = pattern == null ? label + ": (empty)" : label + ": " + truncate(pattern, 56);
+      String pattern = PreferencesUiSupport.trimmedStringOrNull(r.sourcePattern);
+      base =
+          pattern == null
+              ? label + ": (empty)"
+              : label + ": " + PreferencesUiSupport.truncateText(pattern, 56);
     }
 
     String ctcp = summarizeCtcp(r);
@@ -146,8 +150,8 @@ final class IrcEventNotificationTableModel
         r.ctcpCommandMode != null ? r.ctcpCommandMode : IrcEventNotificationRule.CtcpMatchMode.ANY;
     IrcEventNotificationRule.CtcpMatchMode valueMode =
         r.ctcpValueMode != null ? r.ctcpValueMode : IrcEventNotificationRule.CtcpMatchMode.ANY;
-    String commandPattern = trimToNull(r.ctcpCommandPattern);
-    String valuePattern = trimToNull(r.ctcpValuePattern);
+    String commandPattern = PreferencesUiSupport.trimmedStringOrNull(r.ctcpCommandPattern);
+    String valuePattern = PreferencesUiSupport.trimmedStringOrNull(r.ctcpValuePattern);
 
     String commandSummary =
         commandMode == IrcEventNotificationRule.CtcpMatchMode.ANY
@@ -155,11 +159,15 @@ final class IrcEventNotificationTableModel
             : "cmd:"
                 + commandMode
                 + "="
-                + truncate(Objects.toString(commandPattern, "(empty)"), 24);
+                + PreferencesUiSupport.truncateText(
+                    Objects.toString(commandPattern, "(empty)"), 24);
     String valueSummary =
         valueMode == IrcEventNotificationRule.CtcpMatchMode.ANY
             ? "val:any"
-            : "val:" + valueMode + "=" + truncate(Objects.toString(valuePattern, "(empty)"), 24);
+            : "val:"
+                + valueMode
+                + "="
+                + PreferencesUiSupport.truncateText(Objects.toString(valuePattern, "(empty)"), 24);
     return commandSummary + ", " + valueSummary;
   }
 
@@ -180,8 +188,10 @@ final class IrcEventNotificationTableModel
         r.channelScope != null ? r.channelScope : IrcEventNotificationRule.ChannelScope.ALL;
     String label = Objects.toString(scope, "");
     if (!channelPatternAllowed(scope)) return label;
-    String patterns = trimToNull(r.channelPatterns);
-    return patterns == null ? label + ": (empty)" : label + ": " + truncate(patterns, 56);
+    String patterns = PreferencesUiSupport.trimmedStringOrNull(r.channelPatterns);
+    return patterns == null
+        ? label + ": (empty)"
+        : label + ": " + PreferencesUiSupport.truncateText(patterns, 56);
   }
 
   private static String summarizeActions(MutableRule r) {
@@ -195,7 +205,7 @@ final class IrcEventNotificationTableModel
     if (r.statusBarEnabled) parts.add("Status bar");
     if (r.notificationsNodeEnabled) parts.add("Node");
     if (r.soundEnabled) {
-      if (r.soundUseCustom && trimToNull(r.soundCustomPath) != null) {
+      if (r.soundUseCustom && PreferencesUiSupport.trimmedStringOrNull(r.soundCustomPath) != null) {
         parts.add("Sound(custom)");
       } else {
         BuiltInSound sound = BuiltInSound.fromId(r.soundId);
@@ -203,30 +213,18 @@ final class IrcEventNotificationTableModel
       }
     }
     if (r.scriptEnabled) {
-      String script = trimToNull(r.scriptPath);
+      String script = PreferencesUiSupport.trimmedStringOrNull(r.scriptPath);
       if (script == null) {
         parts.add("Script");
       } else {
         int slash = Math.max(script.lastIndexOf('/'), script.lastIndexOf('\\'));
         String leaf =
             (slash >= 0 && slash < (script.length() - 1)) ? script.substring(slash + 1) : script;
-        parts.add("Script(" + truncate(leaf, 26) + ")");
+        parts.add("Script(" + PreferencesUiSupport.truncateText(leaf, 26) + ")");
       }
     }
     if (parts.isEmpty()) return "(none)";
     return String.join(", ", parts);
-  }
-
-  private static String trimToNull(String raw) {
-    String value = Objects.toString(raw, "").trim();
-    return value.isEmpty() ? null : value;
-  }
-
-  private static String truncate(String value, int maxLen) {
-    if (value == null) return "";
-    String v = value.trim();
-    if (v.length() <= maxLen) return v;
-    return v.substring(0, Math.max(0, maxLen - 1)) + "…";
   }
 
   static final class MutableRule {

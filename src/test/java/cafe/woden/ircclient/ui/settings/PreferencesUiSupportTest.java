@@ -46,6 +46,28 @@ class PreferencesUiSupportTest {
   }
 
   @Test
+  void trimsPlainValues() {
+    assertEquals("value", PreferencesUiSupport.trimmedString(" value "));
+    assertEquals("", PreferencesUiSupport.trimmedString(null));
+    assertEquals("42", PreferencesUiSupport.trimmedString(42));
+  }
+
+  @Test
+  void trimsBlankPlainValuesToNull() {
+    assertEquals("value", PreferencesUiSupport.trimmedStringOrNull(" value "));
+    assertNull(PreferencesUiSupport.trimmedStringOrNull("   "));
+    assertNull(PreferencesUiSupport.trimmedStringOrNull(null));
+  }
+
+  @Test
+  void truncatesTrimmedPlainValues() {
+    assertEquals("hello", PreferencesUiSupport.truncateText(" hello ", 12));
+    assertEquals("hello", PreferencesUiSupport.truncateText(" hello ", 5));
+    assertEquals("hel\u2026", PreferencesUiSupport.truncateText(" hello ", 4));
+    assertEquals("\u2026", PreferencesUiSupport.truncateText("hello", 0));
+  }
+
+  @Test
   void readsPasswordFieldValues() {
     assertEquals(" value ", PreferencesUiSupport.passwordText(new JPasswordField(" value ")));
     assertEquals("", PreferencesUiSupport.passwordText(null));

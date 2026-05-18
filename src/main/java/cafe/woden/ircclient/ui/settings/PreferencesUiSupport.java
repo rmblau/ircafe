@@ -161,6 +161,21 @@ public final class PreferencesUiSupport {
     return value.isEmpty() ? null : value;
   }
 
+  public static String trimmedString(Object value) {
+    return Objects.toString(value, "").trim();
+  }
+
+  public static String trimmedStringOrNull(Object value) {
+    String trimmed = trimmedString(value);
+    return trimmed.isEmpty() ? null : trimmed;
+  }
+
+  public static String truncateText(Object value, int maxLength) {
+    String trimmed = trimmedString(value);
+    if (trimmed.length() <= maxLength) return trimmed;
+    return trimmed.substring(0, Math.max(0, maxLength - 1)) + "\u2026";
+  }
+
   public static String passwordText(JPasswordField component) {
     return component != null ? new String(component.getPassword()) : "";
   }

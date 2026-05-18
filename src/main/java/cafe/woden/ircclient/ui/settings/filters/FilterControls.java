@@ -4,6 +4,7 @@ import cafe.woden.ircclient.model.FilterDirection;
 import cafe.woden.ircclient.model.FilterRule;
 import cafe.woden.ircclient.model.FilterScopeOverride;
 import cafe.woden.ircclient.model.RegexFlag;
+import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRowsTableModel;
 import java.util.ArrayList;
 import java.util.List;
@@ -313,7 +314,7 @@ final class FilterRulesTableModel extends SettingsRowsTableModel<FilterRule> {
 
     if (r.hasFromNickGlobs()) {
       String from = String.join(",", r.fromNickGlobs());
-      parts.add("from=" + truncate(from, 48));
+      parts.add("from=" + PreferencesUiSupport.truncateText(from, 48));
     }
 
     if (r.hasTextRegex()) {
@@ -326,22 +327,15 @@ final class FilterRulesTableModel extends SettingsRowsTableModel<FilterRule> {
         if (r.textRegex().flags().contains(RegexFlag.S)) sb.append('s');
         flags = sb.toString();
       }
-      String re = "/" + truncate(pat, 48) + "/" + flags;
+      String re = "/" + PreferencesUiSupport.truncateText(pat, 48) + "/" + flags;
       parts.add("text=" + re);
     }
 
     if (r.hasTags()) {
-      parts.add("tags=" + truncate(r.tags().expr(), 48));
+      parts.add("tags=" + PreferencesUiSupport.truncateText(r.tags().expr(), 48));
     }
 
     if (parts.isEmpty()) return "(matches any)";
     return String.join(" ", parts);
-  }
-
-  private static String truncate(String s, int max) {
-    if (s == null) return "";
-    String v = s.trim();
-    if (v.length() <= max) return v;
-    return v.substring(0, Math.max(0, max - 1)) + "…";
   }
 }
