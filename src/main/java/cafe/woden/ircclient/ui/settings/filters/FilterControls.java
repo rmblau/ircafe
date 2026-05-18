@@ -4,6 +4,7 @@ import cafe.woden.ircclient.model.FilterDirection;
 import cafe.woden.ircclient.model.FilterRule;
 import cafe.woden.ircclient.model.FilterScopeOverride;
 import cafe.woden.ircclient.model.RegexFlag;
+import cafe.woden.ircclient.ui.settings.SettingsRowsTableModel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -12,7 +13,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.SwingConstants;
-import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 
 public final class FilterControls {
@@ -123,27 +123,18 @@ final class FilterOverridesRow {
   }
 }
 
-final class FilterOverridesTableModel extends AbstractTableModel {
-  private final List<FilterOverridesRow> rows = new ArrayList<>();
+final class FilterOverridesTableModel extends SettingsRowsTableModel<FilterOverridesRow> {
+  FilterOverridesTableModel() {
+    super(new String[] {"Scope", "Filters", "Placeholders", "Collapsed"});
+  }
 
   void setOverrides(List<FilterScopeOverride> overrides) {
-    rows.clear();
-    if (overrides != null) {
-      for (FilterScopeOverride o : overrides) {
-        rows.add(
-            new FilterOverridesRow(
-                o.scopePattern(),
-                Tri.fromNullable(o.filtersEnabled()),
-                Tri.fromNullable(o.placeholdersEnabled()),
-                Tri.fromNullable(o.placeholdersCollapsed())));
-      }
-    }
-    fireTableDataChanged();
+    replaceRows(overrides, FilterOverridesTableModel::rowFrom);
   }
 
   List<FilterScopeOverride> toOverrides() {
     List<FilterScopeOverride> out = new ArrayList<>();
-    for (FilterOverridesRow r : rows) {
+    for (FilterOverridesRow r : rows()) {
       String s = r.scope != null ? r.scope.trim() : "";
       if (s.isEmpty()) continue;
       out.add(
@@ -154,35 +145,11 @@ final class FilterOverridesTableModel extends AbstractTableModel {
   }
 
   void addEmpty(String scope) {
-    rows.add(new FilterOverridesRow(scope, Tri.DEFAULT, Tri.DEFAULT, Tri.DEFAULT));
-    fireTableRowsInserted(rows.size() - 1, rows.size() - 1);
+    appendRow(new FilterOverridesRow(scope, Tri.DEFAULT, Tri.DEFAULT, Tri.DEFAULT));
   }
 
   void removeAt(int idx) {
-    if (idx < 0 || idx >= rows.size()) return;
-    rows.remove(idx);
-    fireTableRowsDeleted(idx, idx);
-  }
-
-  @Override
-  public int getRowCount() {
-    return rows.size();
-  }
-
-  @Override
-  public int getColumnCount() {
-    return 4;
-  }
-
-  @Override
-  public String getColumnName(int column) {
-    return switch (column) {
-      case 0 -> "Scope";
-      case 1 -> "Filters";
-      case 2 -> "Placeholders";
-      case 3 -> "Collapsed";
-      default -> "";
-    };
+    removeRowAt(idx);
   }
 
   @Override
@@ -195,12 +162,13 @@ final class FilterOverridesTableModel extends AbstractTableModel {
 
   @Override
   public boolean isCellEditable(int rowIndex, int columnIndex) {
-    return true;
+    return hasRow(rowIndex) && columnIndex >= 0 && columnIndex < getColumnCount();
   }
 
   @Override
   public Object getValueAt(int rowIndex, int columnIndex) {
-    FilterOverridesRow r = rows.get(rowIndex);
+    FilterOverridesRow r = rowAtOrNull(rowIndex);
+    if (r == null) return null;
     return switch (columnIndex) {
       case 0 -> r.scope;
       case 1 -> r.filters;
@@ -212,7 +180,8 @@ final class FilterOverridesTableModel extends AbstractTableModel {
 
   @Override
   public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-    FilterOverridesRow r = rows.get(rowIndex);
+    FilterOverridesRow r = rowAtOrNull(rowIndex);
+    if (r == null) return;
     switch (columnIndex) {
       case 0 -> r.scope = aValue != null ? String.valueOf(aValue) : "";
       case 1 -> r.filters = (aValue instanceof Tri t) ? t : r.filters;
@@ -221,6 +190,14 @@ final class FilterOverridesTableModel extends AbstractTableModel {
       default -> {}
     }
     fireTableRowsUpdated(rowIndex, rowIndex);
+  }
+
+  private static FilterOverridesRow rowFrom(FilterScopeOverride override) {
+    return new FilterOverridesRow(
+        override.scopePattern(),
+        Tri.fromNullable(override.filtersEnabled()),
+        Tri.fromNullable(override.placeholdersEnabled()),
+        Tri.fromNullable(override.placeholdersCollapsed()));
   }
 }
 
@@ -247,40 +224,19 @@ final class CenteredBooleanRenderer extends JCheckBox implements TableCellRender
   }
 }
 
-final class FilterRulesTableModel extends AbstractTableModel {
-  private final List<FilterRule> rules = new ArrayList<>();
+final class FilterRulesTableModel extends SettingsRowsTableModel<FilterRule> {
+  FilterRulesTableModel() {
+    super(new String[] {"On", "Name", "Scope", "Action", "Summary"});
+  }
 
   void setRules(List<FilterRule> next) {
-    rules.clear();
-    if (next != null) rules.addAll(next);
+    rows().clear();
+    if (next != null) rows().addAll(next);
     fireTableDataChanged();
   }
 
   FilterRule ruleAt(int row) {
-    if (row < 0 || row >= rules.size()) return null;
-    return rules.get(row);
-  }
-
-  @Override
-  public int getRowCount() {
-    return rules.size();
-  }
-
-  @Override
-  public int getColumnCount() {
-    return 5;
-  }
-
-  @Override
-  public String getColumnName(int column) {
-    return switch (column) {
-      case 0 -> "On";
-      case 1 -> "Name";
-      case 2 -> "Scope";
-      case 3 -> "Action";
-      case 4 -> "Summary";
-      default -> "";
-    };
+    return rowAtOrNull(row);
   }
 
   @Override
@@ -293,12 +249,13 @@ final class FilterRulesTableModel extends AbstractTableModel {
 
   @Override
   public boolean isCellEditable(int rowIndex, int columnIndex) {
-    return columnIndex == 0;
+    return hasRow(rowIndex) && columnIndex == 0;
   }
 
   @Override
   public Object getValueAt(int rowIndex, int columnIndex) {
-    FilterRule r = rules.get(rowIndex);
+    FilterRule r = rowAtOrNull(rowIndex);
+    if (r == null) return null;
     return switch (columnIndex) {
       case 0 -> r.enabled();
       case 1 -> r.name();
@@ -312,8 +269,7 @@ final class FilterRulesTableModel extends AbstractTableModel {
   @Override
   public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
     if (columnIndex != 0) return;
-    if (rowIndex < 0 || rowIndex >= rules.size()) return;
-    FilterRule cur = rules.get(rowIndex);
+    FilterRule cur = rowAtOrNull(rowIndex);
     if (cur == null) return;
 
     boolean enabled = Boolean.TRUE.equals(aValue);
@@ -331,7 +287,7 @@ final class FilterRulesTableModel extends AbstractTableModel {
             cur.fromNickGlobs(),
             cur.textRegex(),
             cur.tags());
-    rules.set(rowIndex, next);
+    rows().set(rowIndex, next);
     fireTableCellUpdated(rowIndex, columnIndex);
   }
 
