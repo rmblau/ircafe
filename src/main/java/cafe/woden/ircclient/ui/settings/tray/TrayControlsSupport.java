@@ -525,10 +525,10 @@ public final class TrayControlsSupport {
       String targetValue) {
     if (!enabled) return null;
 
-    String key = Objects.toString(apiKey, "").trim();
+    String key = PreferencesUiSupport.trimmedString(apiKey);
     if (key.isEmpty()) return "Pushy API key is required.";
 
-    String target = Objects.toString(targetValue, "").trim();
+    String target = PreferencesUiSupport.trimmedString(targetValue);
     if (target.isEmpty()) {
       return switch (targetMode) {
         case TOPIC -> "Pushy topic is required.";
@@ -536,7 +536,7 @@ public final class TrayControlsSupport {
       };
     }
 
-    String trimmedEndpoint = Objects.toString(endpoint, "").trim();
+    String trimmedEndpoint = PreferencesUiSupport.trimmedString(endpoint);
     if (!trimmedEndpoint.isEmpty() && !isValidPushyEndpoint(trimmedEndpoint)) {
       return "Pushy endpoint must be a valid http(s) URL.";
     }
@@ -639,9 +639,9 @@ public final class TrayControlsSupport {
 
   private static boolean isValidPushyEndpoint(String endpoint) {
     try {
-      URI uri = URI.create(Objects.toString(endpoint, "").trim());
-      String scheme = Objects.toString(uri.getScheme(), "").trim().toLowerCase(Locale.ROOT);
-      String host = Objects.toString(uri.getHost(), "").trim();
+      URI uri = URI.create(PreferencesUiSupport.trimmedString(endpoint));
+      String scheme = PreferencesUiSupport.trimmedString(uri.getScheme()).toLowerCase(Locale.ROOT);
+      String host = PreferencesUiSupport.trimmedString(uri.getHost());
       return ("https".equals(scheme) || "http".equals(scheme)) && !host.isBlank();
     } catch (Exception ignored) {
       return false;

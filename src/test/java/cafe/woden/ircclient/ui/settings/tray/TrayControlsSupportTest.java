@@ -122,6 +122,21 @@ class TrayControlsSupportTest {
   }
 
   @Test
+  void validatePushyInputsTrimsEndpointAndRequiredFields() {
+    assertNull(
+        TrayControlsSupport.validatePushyInputs(
+            true,
+            " https://push.example/push ",
+            " secret ",
+            PushyTargetMode.DEVICE_TOKEN,
+            " device-token "));
+    assertEquals(
+        "Pushy endpoint must be a valid http(s) URL.",
+        TrayControlsSupport.validatePushyInputs(
+            true, " ftp://push.example/push ", "secret", PushyTargetMode.TOPIC, "topic"));
+  }
+
+  @Test
   void rememberSettingsPersistsTraySettingsAndUpdatesServices() {
     RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
     NotificationSoundSettingsBus soundBus = mock(NotificationSoundSettingsBus.class);
