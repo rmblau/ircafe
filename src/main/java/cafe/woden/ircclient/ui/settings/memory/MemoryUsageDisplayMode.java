@@ -1,7 +1,6 @@
 package cafe.woden.ircclient.ui.settings.memory;
 
-import java.util.Locale;
-import java.util.Objects;
+import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 
 public enum MemoryUsageDisplayMode {
   LONG("long", "Long (used / max GiB)"),
@@ -27,7 +26,7 @@ public enum MemoryUsageDisplayMode {
   }
 
   public static MemoryUsageDisplayMode fromToken(String raw) {
-    String v = Objects.toString(raw, "").trim().toLowerCase(Locale.ROOT);
+    String v = SettingsValueSupport.lowerTrimmedString(raw);
     if (v.isEmpty()) return LONG;
     return switch (v) {
       case "long", "full", "detailed" -> LONG;

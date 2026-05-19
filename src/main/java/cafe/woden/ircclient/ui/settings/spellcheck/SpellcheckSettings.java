@@ -1,10 +1,10 @@
 package cafe.woden.ircclient.ui.settings.spellcheck;
 
+import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 
 /** Settings for message-input spell checking and tab suggestions. */
 public record SpellcheckSettings(
@@ -100,7 +100,7 @@ public record SpellcheckSettings(
   }
 
   public static String normalizeLanguageTag(String raw) {
-    String s = Objects.toString(raw, "").trim();
+    String s = SettingsValueSupport.trimmedString(raw);
     if (s.isEmpty()) return DEFAULT_LANGUAGE_TAG;
     String folded = s.replace('_', '-');
     for (String supported : SUPPORTED_LANGUAGE_TAGS) {
@@ -114,7 +114,7 @@ public record SpellcheckSettings(
   }
 
   public static String normalizeCompletionPreset(String raw) {
-    String s = Objects.toString(raw, "").trim().toLowerCase(Locale.ROOT);
+    String s = SettingsValueSupport.lowerTrimmedString(raw);
     if (s.isEmpty()) return DEFAULT_COMPLETION_PRESET;
     for (String supported : SUPPORTED_COMPLETION_PRESETS) {
       if (supported.equalsIgnoreCase(s)) return supported;
@@ -127,24 +127,27 @@ public record SpellcheckSettings(
   }
 
   public static int normalizeCustomMinPrefixCompletionTokenLength(int raw) {
-    return clamp(
+    return SettingsValueSupport.clampInt(
         raw, MIN_PREFIX_COMPLETION_TOKEN_LENGTH_MIN, MIN_PREFIX_COMPLETION_TOKEN_LENGTH_MAX);
   }
 
   public static int normalizeCustomMaxPrefixCompletionExtraChars(int raw) {
-    return clamp(raw, MAX_PREFIX_COMPLETION_EXTRA_CHARS_MIN, MAX_PREFIX_COMPLETION_EXTRA_CHARS_MAX);
+    return SettingsValueSupport.clampInt(
+        raw, MAX_PREFIX_COMPLETION_EXTRA_CHARS_MIN, MAX_PREFIX_COMPLETION_EXTRA_CHARS_MAX);
   }
 
   public static int normalizeCustomMaxPrefixLexiconCandidates(int raw) {
-    return clamp(raw, MAX_PREFIX_LEXICON_CANDIDATES_MIN, MAX_PREFIX_LEXICON_CANDIDATES_MAX);
+    return SettingsValueSupport.clampInt(
+        raw, MAX_PREFIX_LEXICON_CANDIDATES_MIN, MAX_PREFIX_LEXICON_CANDIDATES_MAX);
   }
 
   public static int normalizeCustomPrefixCompletionBonusScore(int raw) {
-    return clamp(raw, PREFIX_COMPLETION_BONUS_SCORE_MIN, PREFIX_COMPLETION_BONUS_SCORE_MAX);
+    return SettingsValueSupport.clampInt(
+        raw, PREFIX_COMPLETION_BONUS_SCORE_MIN, PREFIX_COMPLETION_BONUS_SCORE_MAX);
   }
 
   public static int normalizeCustomSourceOrderWeight(int raw) {
-    return clamp(raw, SOURCE_ORDER_WEIGHT_MIN, SOURCE_ORDER_WEIGHT_MAX);
+    return SettingsValueSupport.clampInt(raw, SOURCE_ORDER_WEIGHT_MIN, SOURCE_ORDER_WEIGHT_MAX);
   }
 
   public CompletionProfile completionProfile() {
@@ -169,7 +172,7 @@ public record SpellcheckSettings(
     LinkedHashSet<String> seen = new LinkedHashSet<>();
     ArrayList<String> out = new ArrayList<>(raw.size());
     for (String entry : raw) {
-      String token = Objects.toString(entry, "").trim();
+      String token = SettingsValueSupport.trimmedString(entry);
       if (token.isEmpty()) continue;
       String lower = token.toLowerCase(Locale.ROOT);
       if (!seen.add(lower)) continue;
@@ -177,10 +180,6 @@ public record SpellcheckSettings(
     }
     if (out.isEmpty()) return List.of();
     return List.copyOf(out);
-  }
-
-  private static int clamp(int value, int min, int max) {
-    return Math.max(min, Math.min(max, value));
   }
 
   public record CompletionProfile(

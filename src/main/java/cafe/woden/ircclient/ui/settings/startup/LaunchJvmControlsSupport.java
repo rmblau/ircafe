@@ -2,9 +2,8 @@ package cafe.woden.ircclient.ui.settings.startup;
 
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
 import javax.swing.JComboBox;
 import javax.swing.JSpinner;
 import javax.swing.JTextArea;
@@ -46,7 +45,7 @@ public final class LaunchJvmControlsSupport {
   }
 
   static LaunchGcOption gcOptionForId(String id) {
-    String want = Objects.toString(id, "").trim().toLowerCase(Locale.ROOT);
+    String want = SettingsValueSupport.lowerTrimmedString(id);
     for (LaunchGcOption option : gcOptions()) {
       if (option.id().equalsIgnoreCase(want)) return option;
     }
@@ -73,7 +72,7 @@ public final class LaunchJvmControlsSupport {
         xmxMiB,
         gcIdValue(
             PreferencesUiSupport.selectedComboItem(controls.gc(), LaunchGcOption.class, null)),
-        PreferencesUiSupport.trimmedLines(controls.extraArgs().getText()));
+        SettingsValueSupport.trimmedLines(controls.extraArgs().getText()));
   }
 
   private static int clampMemoryMiB(int value) {

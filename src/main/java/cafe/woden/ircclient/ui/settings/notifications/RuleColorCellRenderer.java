@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings.notifications;
 
 import cafe.woden.ircclient.ui.settings.ColorSwatch;
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
+import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import java.awt.Color;
 import javax.swing.JLabel;
 import javax.swing.JTable;
@@ -15,13 +16,8 @@ final class RuleColorCellRenderer extends DefaultTableCellRenderer {
         (JLabel)
             super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-    String raw = value != null ? value.toString().trim() : "";
-    Color col = SettingsColorSupport.parseHexColor(raw);
-    if (col == null && raw != null && raw.startsWith("#") && raw.length() == 4) {
-      String s = raw.substring(1);
-      char r = s.charAt(0), g = s.charAt(1), b = s.charAt(2);
-      col = SettingsColorSupport.parseHexColor("#" + r + r + g + g + b + b);
-    }
+    String raw = SettingsValueSupport.trimmedString(value);
+    Color col = SettingsColorSupport.parseHexColorLenient(raw);
 
     if (col != null) {
       c.setIcon(new ColorSwatch(col, 12, 12));

@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings.theme;
 
+import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import java.util.Locale;
 
 /**
@@ -24,8 +25,7 @@ public record ThemeTweakSettings(
     SPACIOUS;
 
     public static ThemeDensity from(String raw) {
-      if (raw == null) return AUTO;
-      String s = raw.trim().toLowerCase(Locale.ROOT);
+      String s = SettingsValueSupport.lowerTrimmedString(raw);
       return switch (s) {
         case "auto" -> AUTO;
         case "compact" -> COMPACT;
@@ -46,8 +46,8 @@ public record ThemeTweakSettings(
     if (cornerRadius < 0) cornerRadius = 0;
     if (cornerRadius > 20) cornerRadius = 20;
 
-    if (uiFontFamily == null || uiFontFamily.isBlank()) uiFontFamily = DEFAULT_UI_FONT_FAMILY;
-    uiFontFamily = uiFontFamily.trim();
+    uiFontFamily = SettingsValueSupport.trimmedString(uiFontFamily);
+    if (uiFontFamily.isEmpty()) uiFontFamily = DEFAULT_UI_FONT_FAMILY;
 
     if (uiFontSize < 8) uiFontSize = 8;
     if (uiFontSize > 48) uiFontSize = 48;

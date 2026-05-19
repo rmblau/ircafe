@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import javax.swing.JButton;
@@ -226,14 +225,14 @@ public class EmbedLoadPolicyDialog {
 
     List<String> configured = runtimeConfig != null ? runtimeConfig.readServerIds() : List.of();
     for (String serverId : configured) {
-      String sid = Objects.toString(serverId, "").trim();
+      String sid = SettingsValueSupport.trimmedString(serverId);
       if (sid.isEmpty()) continue;
       out.putIfAbsent(
           sid.toLowerCase(java.util.Locale.ROOT), new ScopeOption(sid, "Network: " + sid, false));
     }
     if (initial != null && initial.byServer() != null) {
       for (String serverId : initial.byServer().keySet()) {
-        String sid = Objects.toString(serverId, "").trim();
+        String sid = SettingsValueSupport.trimmedString(serverId);
         if (sid.isEmpty()) continue;
         out.putIfAbsent(
             sid.toLowerCase(java.util.Locale.ROOT), new ScopeOption(sid, "Network: " + sid, false));
@@ -524,7 +523,7 @@ public class EmbedLoadPolicyDialog {
     List<Integer> invalidRows = new ArrayList<>();
     String message = "";
     for (int row = 0; row < model.getRowCount(); row++) {
-      String value = Objects.toString(model.getValueAt(row, 0), "").trim();
+      String value = SettingsValueSupport.trimmedString(model.getValueAt(row, 0));
       if (value.isEmpty()) continue;
       Optional<String> error = EmbedLoadPolicyMatcher.validatePatternSyntax(value);
       if (error.isEmpty()) continue;
@@ -571,7 +570,7 @@ public class EmbedLoadPolicyDialog {
     if (model == null || model.getRowCount() == 0) return List.of();
     LinkedHashMap<String, String> seen = new LinkedHashMap<>();
     for (int row = 0; row < model.getRowCount(); row++) {
-      String v = Objects.toString(model.getValueAt(row, 0), "").trim();
+      String v = SettingsValueSupport.trimmedString(model.getValueAt(row, 0));
       if (v.isEmpty()) continue;
       seen.putIfAbsent(v, v);
     }
@@ -584,7 +583,7 @@ public class EmbedLoadPolicyDialog {
     if (rows == null || rows.isEmpty()) return;
     LinkedHashMap<String, String> seen = new LinkedHashMap<>();
     for (String row : rows) {
-      String v = Objects.toString(row, "").trim();
+      String v = SettingsValueSupport.trimmedString(row);
       if (v.isEmpty()) continue;
       seen.putIfAbsent(v, v);
     }

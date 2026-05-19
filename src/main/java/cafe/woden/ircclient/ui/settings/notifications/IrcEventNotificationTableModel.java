@@ -4,6 +4,7 @@ import cafe.woden.ircclient.model.BuiltInSound;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRowsTableModel;
+import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -46,8 +47,10 @@ final class IrcEventNotificationTableModel
 
   static String effectiveRuleLabel(IrcEventNotificationRule rule) {
     if (rule == null) return "(rule)";
-    String event = rule.eventType() != null ? Objects.toString(rule.eventType(), "").trim() : "";
-    String source = rule.sourceMode() != null ? Objects.toString(rule.sourceMode(), "").trim() : "";
+    String event =
+        rule.eventType() != null ? SettingsValueSupport.trimmedString(rule.eventType()) : "";
+    String source =
+        rule.sourceMode() != null ? SettingsValueSupport.trimmedString(rule.sourceMode()) : "";
     if (event.isEmpty()) event = "Event";
     if (source.isEmpty()) return event;
     return event + " (" + source + ")";
@@ -130,7 +133,7 @@ final class IrcEventNotificationTableModel
     if (!sourcePatternAllowed(mode)) {
       base = label;
     } else {
-      String pattern = PreferencesUiSupport.trimmedStringOrNull(r.sourcePattern);
+      String pattern = SettingsValueSupport.trimmedStringOrNull(r.sourcePattern);
       base =
           pattern == null
               ? label + ": (empty)"
@@ -150,8 +153,8 @@ final class IrcEventNotificationTableModel
         r.ctcpCommandMode != null ? r.ctcpCommandMode : IrcEventNotificationRule.CtcpMatchMode.ANY;
     IrcEventNotificationRule.CtcpMatchMode valueMode =
         r.ctcpValueMode != null ? r.ctcpValueMode : IrcEventNotificationRule.CtcpMatchMode.ANY;
-    String commandPattern = PreferencesUiSupport.trimmedStringOrNull(r.ctcpCommandPattern);
-    String valuePattern = PreferencesUiSupport.trimmedStringOrNull(r.ctcpValuePattern);
+    String commandPattern = SettingsValueSupport.trimmedStringOrNull(r.ctcpCommandPattern);
+    String valuePattern = SettingsValueSupport.trimmedStringOrNull(r.ctcpValuePattern);
 
     String commandSummary =
         commandMode == IrcEventNotificationRule.CtcpMatchMode.ANY
@@ -188,7 +191,7 @@ final class IrcEventNotificationTableModel
         r.channelScope != null ? r.channelScope : IrcEventNotificationRule.ChannelScope.ALL;
     String label = Objects.toString(scope, "");
     if (!channelPatternAllowed(scope)) return label;
-    String patterns = PreferencesUiSupport.trimmedStringOrNull(r.channelPatterns);
+    String patterns = SettingsValueSupport.trimmedStringOrNull(r.channelPatterns);
     return patterns == null
         ? label + ": (empty)"
         : label + ": " + PreferencesUiSupport.truncateText(patterns, 56);
@@ -205,7 +208,7 @@ final class IrcEventNotificationTableModel
     if (r.statusBarEnabled) parts.add("Status bar");
     if (r.notificationsNodeEnabled) parts.add("Node");
     if (r.soundEnabled) {
-      if (r.soundUseCustom && PreferencesUiSupport.trimmedStringOrNull(r.soundCustomPath) != null) {
+      if (r.soundUseCustom && SettingsValueSupport.trimmedStringOrNull(r.soundCustomPath) != null) {
         parts.add("Sound(custom)");
       } else {
         BuiltInSound sound = BuiltInSound.fromId(r.soundId);
@@ -213,7 +216,7 @@ final class IrcEventNotificationTableModel
       }
     }
     if (r.scriptEnabled) {
-      String script = PreferencesUiSupport.trimmedStringOrNull(r.scriptPath);
+      String script = SettingsValueSupport.trimmedStringOrNull(r.scriptPath);
       if (script == null) {
         parts.add("Script");
       } else {

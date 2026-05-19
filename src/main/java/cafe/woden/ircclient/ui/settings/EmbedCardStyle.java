@@ -1,8 +1,5 @@
 package cafe.woden.ircclient.ui.settings;
 
-import java.util.Locale;
-import java.util.Objects;
-
 /** Visual style preset used for inline embed cards (images + link previews). */
 public enum EmbedCardStyle {
   DEFAULT("default", "Default (current)"),
@@ -28,7 +25,7 @@ public enum EmbedCardStyle {
   }
 
   public static EmbedCardStyle fromToken(String raw) {
-    String token = Objects.toString(raw, "").trim().toLowerCase(Locale.ROOT);
+    String token = SettingsValueSupport.lowerTrimmedString(raw);
     return switch (token) {
       case "minimal", "min" -> MINIMAL;
       case "glassy", "glass" -> GLASSY;

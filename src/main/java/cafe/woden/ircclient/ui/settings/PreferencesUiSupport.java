@@ -12,9 +12,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Insets;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
@@ -154,7 +152,7 @@ public final class PreferencesUiSupport {
   }
 
   public static String trimmedText(JTextComponent component) {
-    return Objects.toString(component != null ? component.getText() : null, "").trim();
+    return SettingsValueSupport.trimmedString(component != null ? component.getText() : null);
   }
 
   public static String trimmedTextOrNull(JTextComponent component) {
@@ -163,24 +161,15 @@ public final class PreferencesUiSupport {
   }
 
   public static String trimmedString(Object value) {
-    return Objects.toString(value, "").trim();
+    return SettingsValueSupport.trimmedString(value);
   }
 
   public static String trimmedStringOrNull(Object value) {
-    String trimmed = trimmedString(value);
-    return trimmed.isEmpty() ? null : trimmed;
+    return SettingsValueSupport.trimmedStringOrNull(value);
   }
 
   public static List<String> trimmedLines(String text) {
-    String raw = Objects.toString(text, "");
-    if (raw.isBlank()) return List.of();
-
-    List<String> lines = new ArrayList<>();
-    for (String line : raw.split("\\R")) {
-      String trimmed = trimmedString(line);
-      if (!trimmed.isEmpty()) lines.add(trimmed);
-    }
-    return List.copyOf(lines);
+    return SettingsValueSupport.trimmedLines(text);
   }
 
   public static String truncateText(Object value, int maxLength) {
@@ -204,7 +193,7 @@ public final class PreferencesUiSupport {
   }
 
   public static String selectedComboText(JComboBox<?> combo) {
-    return Objects.toString(combo != null ? combo.getSelectedItem() : null, "").trim();
+    return SettingsValueSupport.trimmedString(combo != null ? combo.getSelectedItem() : null);
   }
 
   public static JComponent wrapCheckBox(JCheckBox box, String labelText) {
@@ -395,7 +384,7 @@ public final class PreferencesUiSupport {
   }
 
   public static int clampInt(int value, int min, int max) {
-    return Math.max(min, Math.min(max, value));
+    return SettingsValueSupport.clampInt(value, min, max);
   }
 
   private static void decorateNumberSpinner(JSpinner spinner, List<AutoCloseable> closeables) {

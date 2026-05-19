@@ -334,44 +334,18 @@ public record UiSettings(
   }
 
   public static String normalizeHexOrDefault(String raw, String fallback) {
-    String fb = (fallback == null || fallback.isBlank()) ? "#6AA2FF" : fallback.trim();
-    if (raw == null) return fb;
-    String s = raw.trim();
-    if (s.isEmpty()) return fb;
-    if (s.startsWith("#")) s = s.substring(1);
-    if (s.startsWith("0x") || s.startsWith("0X")) s = s.substring(2);
-    if (s.length() != 6) return fb;
-    try {
-      int rgb = Integer.parseInt(s, 16);
-      int r = (rgb >> 16) & 0xFF;
-      int g = (rgb >> 8) & 0xFF;
-      int b = rgb & 0xFF;
-      return String.format("#%02X%02X%02X", r, g, b);
-    } catch (Exception ignored) {
-      return fb;
-    }
+    String fb = SettingsColorSupport.normalizeHexColor(fallback);
+    if (fb == null) fb = "#6AA2FF";
+    String normalized = SettingsColorSupport.normalizeHexColor(raw);
+    return normalized != null ? normalized : fb;
   }
 
   static String normalizeHexOrNull(String raw) {
-    if (raw == null) return null;
-    String s = raw.trim();
-    if (s.isEmpty()) return null;
-    if (s.startsWith("#")) s = s.substring(1);
-    if (s.startsWith("0x") || s.startsWith("0X")) s = s.substring(2);
-    if (s.length() != 6) return null;
-    try {
-      int rgb = Integer.parseInt(s, 16);
-      int r = (rgb >> 16) & 0xFF;
-      int g = (rgb >> 8) & 0xFF;
-      int b = rgb & 0xFF;
-      return String.format("#%02X%02X%02X", r, g, b);
-    } catch (Exception ignored) {
-      return null;
-    }
+    return SettingsColorSupport.normalizeHexColor(raw);
   }
 
   public static String normalizeTypingTreeIndicatorStyle(String raw) {
-    String s = raw == null ? "" : raw.trim().toLowerCase(java.util.Locale.ROOT);
+    String s = SettingsValueSupport.lowerTrimmedString(raw);
     if (s.isEmpty()) return "dots";
     return switch (s) {
       case "dots", "ellipsis" -> "dots";
@@ -382,7 +356,7 @@ public record UiSettings(
   }
 
   public static String normalizeMatrixUserListNameDisplayMode(String raw) {
-    String s = raw == null ? "" : raw.trim().toLowerCase(java.util.Locale.ROOT);
+    String s = SettingsValueSupport.lowerTrimmedString(raw);
     if (s.isEmpty()) return "compact";
     return switch (s) {
       case "compact", "display-name-only", "displayname", "name-only" -> "compact";

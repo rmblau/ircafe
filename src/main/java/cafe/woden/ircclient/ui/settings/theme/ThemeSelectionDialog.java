@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.settings.theme;
 import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
+import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import com.formdev.flatlaf.FlatClientProperties;
@@ -12,7 +13,6 @@ import java.awt.Dimension;
 import java.awt.Window;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
-import java.util.Objects;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -307,7 +307,7 @@ public class ThemeSelectionDialog {
       String queryRaw) {
     ThemeManager.ThemeTone tone = toneChoice != null ? toneChoice.tone() : null;
     ThemeManager.ThemePack pack = packChoice != null ? packChoice.pack() : null;
-    String q = Objects.toString(queryRaw, "").trim().toLowerCase();
+    String q = SettingsValueSupport.lowerTrimmedString(queryRaw);
 
     model.clear();
     Arrays.stream(all)

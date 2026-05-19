@@ -7,9 +7,9 @@ import cafe.woden.ircclient.net.NetHeartbeatContext;
 import cafe.woden.ircclient.net.NetProxyContext;
 import cafe.woden.ircclient.net.NetTlsContext;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import java.util.List;
-import java.util.Objects;
 
 public final class NetworkAdvancedControlsSupport {
   private NetworkAdvancedControlsSupport() {}
@@ -160,7 +160,7 @@ public final class NetworkAdvancedControlsSupport {
 
   public record BouncerSettings(boolean preferLoginHint, String loginTemplate) {
     public BouncerSettings {
-      loginTemplate = Objects.toString(loginTemplate, "").trim();
+      loginTemplate = SettingsValueSupport.trimmedString(loginTemplate);
     }
   }
 

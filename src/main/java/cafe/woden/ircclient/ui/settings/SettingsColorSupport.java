@@ -14,54 +14,79 @@ public final class SettingsColorSupport {
   }
 
   public static Color parseHexColor(String raw) {
-    if (raw == null) return null;
-    String s = raw.trim();
-    if (s.isEmpty()) return null;
-    if (s.startsWith("#")) s = s.substring(1);
-    if (s.startsWith("0x") || s.startsWith("0X")) s = s.substring(2);
+    return colorFromNormalizedHex(normalizeHexColor(raw));
+  }
+
+  public static Color parseHexColorLenient(String raw) {
+    return colorFromNormalizedHex(normalizeHexColorLenient(raw));
+  }
+
+  public static String normalizeHexColor(String raw) {
+    return normalizeHexColor(raw, false);
+  }
+
+  public static String normalizeHexColorLenient(String raw) {
+    return normalizeHexColor(raw, true);
+  }
+
+  private static String normalizeHexColor(String raw, boolean allowShortHex) {
+    String s = SettingsValueSupport.trimmedStringOrNull(raw);
+    if (s == null) return null;
+    if (s.startsWith("#")) s = s.substring(1).trim();
+    if (s.startsWith("0x") || s.startsWith("0X")) s = s.substring(2).trim();
+
+    if (allowShortHex && s.length() == 3) {
+      char r = s.charAt(0);
+      char g = s.charAt(1);
+      char b = s.charAt(2);
+      s = "" + r + r + g + g + b + b;
+    }
+
     if (s.length() != 6) return null;
+
+    for (int i = 0; i < s.length(); i++) {
+      char c = s.charAt(i);
+      boolean ok = (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+      if (!ok) return null;
+    }
+
+    return "#" + s.toUpperCase(java.util.Locale.ROOT);
+  }
+
+  private static Color colorFromNormalizedHex(String normalizedHex) {
+    if (normalizedHex == null) return null;
     try {
-      int rgb = Integer.parseInt(s, 16);
+      int rgb = Integer.parseInt(normalizedHex.substring(1), 16);
       return new Color(rgb);
     } catch (Exception ignored) {
       return null;
     }
   }
 
-  public static Color parseHexColorLenient(String raw) {
-    Color c = parseHexColor(raw);
-    if (c != null) return c;
-    if (raw == null) return null;
-
-    String s = raw.trim();
-    if (s.startsWith("#")) s = s.substring(1).trim();
-    if (s.length() != 3) return null;
-
-    char r = s.charAt(0);
-    char g = s.charAt(1);
-    char b = s.charAt(2);
-    return parseHexColor("#" + r + r + g + g + b + b);
-  }
-
   public static String normalizeOptionalHexForApply(String raw, String fieldLabel) {
-    String hex = raw != null ? raw.trim() : "";
-    if (hex.isBlank()) return null;
-    Color c = parseHexColorLenient(hex);
-    if (c == null) {
+    String hex = SettingsValueSupport.trimmedStringOrNull(raw);
+    if (hex == null) return null;
+    String normalized = normalizeHexColorLenient(hex);
+    if (normalized == null) {
       String label = Objects.toString(fieldLabel, "Color");
       throw new IllegalArgumentException(
           label + " must be a hex value like #RRGGBB (or blank for default).");
     }
-    return toHex(c);
+    return normalized;
   }
 
   public static Color contrastTextColor(Color bg) {
     if (bg == null) return UIManager.getColor("Label.foreground");
-    double r = bg.getRed() / 255.0;
-    double g = bg.getGreen() / 255.0;
-    double b = bg.getBlue() / 255.0;
-    double y = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-    return y < 0.55 ? Color.WHITE : Color.BLACK;
+    return bestTextColor(bg);
+  }
+
+  public static Color bestTextColor(Color bg) {
+    if (bg == null) return Color.WHITE;
+    return relativeLuminance(bg) > 0.55 ? Color.BLACK : Color.WHITE;
+  }
+
+  public static boolean isDark(Color c) {
+    return c == null || relativeLuminance(c) < 0.45;
   }
 
   public static Color preferredPreviewBackground() {
@@ -89,15 +114,15 @@ public final class SettingsColorSupport {
     return (l1 + 0.05) / (l2 + 0.05);
   }
 
-  private static double relativeLuminance(Color c) {
-    double r = srgbToLinear(c.getRed());
-    double g = srgbToLinear(c.getGreen());
-    double b = srgbToLinear(c.getBlue());
+  public static double relativeLuminance(Color c) {
+    if (c == null) return 0.0;
+    double r = srgbToLinear(c.getRed() / 255.0);
+    double g = srgbToLinear(c.getGreen() / 255.0);
+    double b = srgbToLinear(c.getBlue() / 255.0);
     return (0.2126 * r) + (0.7152 * g) + (0.0722 * b);
   }
 
-  private static double srgbToLinear(int channel) {
-    double v = channel / 255.0;
+  private static double srgbToLinear(double v) {
     return (v <= 0.04045) ? (v / 12.92) : Math.pow((v + 0.055) / 1.055, 2.4);
   }
 }

@@ -6,6 +6,7 @@ import cafe.woden.ircclient.ui.chat.transcript.rebuild.TranscriptRebuildService;
 import cafe.woden.ircclient.ui.filter.FilterSettings;
 import cafe.woden.ircclient.ui.filter.FilterSettingsBus;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import java.awt.Window;
 import java.util.List;
 import java.util.Objects;
@@ -37,7 +38,7 @@ public final class FilterControlsSupport {
 
     JSpinner previewLines =
         PreferencesUiSupport.numberSpinner(
-            PreferencesUiSupport.clampInt(current.placeholderMaxPreviewLines(), 0, 25),
+            SettingsValueSupport.clampInt(current.placeholderMaxPreviewLines(), 0, 25),
             0,
             25,
             1,
@@ -45,7 +46,7 @@ public final class FilterControlsSupport {
 
     JSpinner maxLinesPerRun =
         PreferencesUiSupport.numberSpinner(
-            PreferencesUiSupport.clampInt(current.placeholderMaxLinesPerRun(), 0, 50_000),
+            SettingsValueSupport.clampInt(current.placeholderMaxLinesPerRun(), 0, 50_000),
             0,
             50_000,
             50,
@@ -55,7 +56,7 @@ public final class FilterControlsSupport {
 
     JSpinner tooltipMaxTags =
         PreferencesUiSupport.numberSpinner(
-            PreferencesUiSupport.clampInt(current.placeholderTooltipMaxTags(), 0, 500),
+            SettingsValueSupport.clampInt(current.placeholderTooltipMaxTags(), 0, 500),
             0,
             500,
             1,
@@ -70,7 +71,7 @@ public final class FilterControlsSupport {
 
     JSpinner historyMaxRuns =
         PreferencesUiSupport.numberSpinner(
-            PreferencesUiSupport.clampInt(current.historyPlaceholderMaxRunsPerBatch(), 0, 5_000),
+            SettingsValueSupport.clampInt(current.historyPlaceholderMaxRunsPerBatch(), 0, 5_000),
             0,
             5_000,
             1,

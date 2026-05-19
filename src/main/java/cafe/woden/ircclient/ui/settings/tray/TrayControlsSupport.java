@@ -11,6 +11,7 @@ import cafe.woden.ircclient.notify.sound.NotificationSoundSettingsBus;
 import cafe.woden.ircclient.ui.settings.NotificationBackendMode;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
+import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.notifications.NotificationSoundControlsSupport;
 import cafe.woden.ircclient.ui.shell.LagIndicatorService;
@@ -19,7 +20,6 @@ import cafe.woden.ircclient.ui.tray.TrayNotificationService;
 import cafe.woden.ircclient.ui.tray.TrayService;
 import cafe.woden.ircclient.ui.tray.dbus.GnomeDbusNotificationBackend;
 import java.net.URI;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import javax.swing.JButton;
@@ -525,10 +525,10 @@ public final class TrayControlsSupport {
       String targetValue) {
     if (!enabled) return null;
 
-    String key = PreferencesUiSupport.trimmedString(apiKey);
+    String key = SettingsValueSupport.trimmedString(apiKey);
     if (key.isEmpty()) return "Pushy API key is required.";
 
-    String target = PreferencesUiSupport.trimmedString(targetValue);
+    String target = SettingsValueSupport.trimmedString(targetValue);
     if (target.isEmpty()) {
       return switch (targetMode) {
         case TOPIC -> "Pushy topic is required.";
@@ -536,7 +536,7 @@ public final class TrayControlsSupport {
       };
     }
 
-    String trimmedEndpoint = PreferencesUiSupport.trimmedString(endpoint);
+    String trimmedEndpoint = SettingsValueSupport.trimmedString(endpoint);
     if (!trimmedEndpoint.isEmpty() && !isValidPushyEndpoint(trimmedEndpoint)) {
       return "Pushy endpoint must be a valid http(s) URL.";
     }
@@ -639,9 +639,9 @@ public final class TrayControlsSupport {
 
   private static boolean isValidPushyEndpoint(String endpoint) {
     try {
-      URI uri = URI.create(PreferencesUiSupport.trimmedString(endpoint));
-      String scheme = PreferencesUiSupport.trimmedString(uri.getScheme()).toLowerCase(Locale.ROOT);
-      String host = PreferencesUiSupport.trimmedString(uri.getHost());
+      URI uri = URI.create(SettingsValueSupport.trimmedString(endpoint));
+      String scheme = SettingsValueSupport.lowerTrimmedString(uri.getScheme());
+      String host = SettingsValueSupport.trimmedString(uri.getHost());
       return ("https".equals(scheme) || "http".equals(scheme)) && !host.isBlank();
     } catch (Exception ignored) {
       return false;

@@ -1,11 +1,11 @@
 package cafe.woden.ircclient.ui.settings.notifications;
 
 import cafe.woden.ircclient.config.NotificationRule;
-import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRowsTableModel;
+import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -42,9 +42,9 @@ final class NotificationRulesTableModel
 
   static String effectiveRuleLabel(NotificationRule rule) {
     if (rule == null) return "(unnamed)";
-    String label = PreferencesUiSupport.trimmedString(rule.label());
+    String label = SettingsValueSupport.trimmedString(rule.label());
     if (!label.isEmpty()) return label;
-    String pattern = PreferencesUiSupport.trimmedString(rule.pattern());
+    String pattern = SettingsValueSupport.trimmedString(rule.pattern());
     return pattern.isEmpty() ? "(unnamed)" : pattern;
   }
 
@@ -56,7 +56,7 @@ final class NotificationRulesTableModel
   void setHighlightFg(int row, String hex) {
     MutableRule r = rowAtOrNull(row);
     if (r == null) return;
-    r.highlightFg = normalizeHexColor(PreferencesUiSupport.trimmedString(hex));
+    r.highlightFg = SettingsColorSupport.normalizeHexColorLenient(hex);
     fireTableRowsUpdated(row, row);
   }
 
@@ -68,7 +68,7 @@ final class NotificationRulesTableModel
       if (!r.enabled) continue;
       if (r.type != NotificationRule.Type.REGEX) continue;
 
-      String pat = PreferencesUiSupport.trimmedString(r.pattern);
+      String pat = SettingsValueSupport.trimmedString(r.pattern);
       if (pat.isEmpty()) continue;
 
       try {
@@ -130,7 +130,7 @@ final class NotificationRulesTableModel
 
   private static String summarizeMatch(MutableRule r) {
     if (r == null) return "";
-    String pattern = PreferencesUiSupport.trimmedString(r.pattern);
+    String pattern = SettingsValueSupport.trimmedString(r.pattern);
     if (pattern.isEmpty()) pattern = "(empty)";
     String type = r.type == NotificationRule.Type.REGEX ? "REGEX" : "WORD";
     return type + ": " + pattern;
@@ -143,30 +143,6 @@ final class NotificationRulesTableModel
       return caseLabel + ", " + (r.wholeWord ? "Whole word" : "Substring");
     }
     return caseLabel;
-  }
-
-  private static String normalizeHexColor(String raw) {
-    if (raw == null) return null;
-    String s = PreferencesUiSupport.trimmedString(raw);
-    if (s.isEmpty()) return null;
-
-    if (s.startsWith("#")) s = s.substring(1).trim();
-    if (s.length() == 3) {
-      char r = s.charAt(0);
-      char g = s.charAt(1);
-      char b = s.charAt(2);
-      s = "" + r + r + g + g + b + b;
-    } else if (s.length() != 6) {
-      return null;
-    }
-
-    for (int i = 0; i < s.length(); i++) {
-      char c = s.charAt(i);
-      boolean ok = (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
-      if (!ok) return null;
-    }
-
-    return "#" + s.toUpperCase(Locale.ROOT);
   }
 
   static final class MutableRule {

@@ -1,11 +1,11 @@
 package cafe.woden.ircclient.ui.settings.notifications;
 
+import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Locale;
-import java.util.Objects;
 
 public final class NotificationSoundFileImportSupport {
   private NotificationSoundFileImportSupport() {}
@@ -13,7 +13,7 @@ public final class NotificationSoundFileImportSupport {
   public static String importToRuntimeDir(Path runtimeConfigPath, File source) throws Exception {
     if (source == null) return null;
 
-    String name = Objects.toString(source.getName(), "").trim();
+    String name = SettingsValueSupport.trimmedString(source.getName());
     if (name.isBlank()) throw new IllegalArgumentException("Invalid file name");
 
     String lower = name.toLowerCase(Locale.ROOT);

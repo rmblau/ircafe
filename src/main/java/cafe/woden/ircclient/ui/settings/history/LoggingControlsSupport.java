@@ -4,8 +4,8 @@ import cafe.woden.ircclient.config.LogProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.ui.servers.ServerDialogs;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import java.awt.Window;
-import java.util.Objects;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JTextArea;
@@ -93,7 +93,7 @@ public final class LoggingControlsSupport {
 
     int writerQueueMaxCurrent =
         (logProps != null && logProps.writerQueueMax() != null)
-            ? PreferencesUiSupport.clampInt(logProps.writerQueueMax(), 100, 1_000_000)
+            ? SettingsValueSupport.clampInt(logProps.writerQueueMax(), 100, 1_000_000)
             : 50_000;
     javax.swing.JSpinner writerQueueMax =
         PreferencesUiSupport.numberSpinner(writerQueueMaxCurrent, 100, 1_000_000, 500, closeables);
@@ -104,7 +104,7 @@ public final class LoggingControlsSupport {
 
     int writerBatchSizeCurrent =
         (logProps != null && logProps.writerBatchSize() != null)
-            ? PreferencesUiSupport.clampInt(logProps.writerBatchSize(), 1, 10_000)
+            ? SettingsValueSupport.clampInt(logProps.writerBatchSize(), 1, 10_000)
             : 250;
     javax.swing.JSpinner writerBatchSize =
         PreferencesUiSupport.numberSpinner(writerBatchSizeCurrent, 1, 10_000, 25, closeables);
@@ -229,9 +229,9 @@ public final class LoggingControlsSupport {
       boolean dbNextToRuntimeConfig) {
     public LoggingSettings {
       retentionDays = Math.max(0, retentionDays);
-      writerQueueMax = PreferencesUiSupport.clampInt(writerQueueMax, 100, 1_000_000);
-      writerBatchSize = PreferencesUiSupport.clampInt(writerBatchSize, 1, 10_000);
-      dbFileBaseName = Objects.toString(dbFileBaseName, "").trim();
+      writerQueueMax = SettingsValueSupport.clampInt(writerQueueMax, 100, 1_000_000);
+      writerBatchSize = SettingsValueSupport.clampInt(writerBatchSize, 1, 10_000);
+      dbFileBaseName = SettingsValueSupport.trimmedString(dbFileBaseName);
       if (dbFileBaseName.isEmpty()) dbFileBaseName = "ircafe-chatlog";
     }
   }

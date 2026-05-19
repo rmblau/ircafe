@@ -4,6 +4,7 @@ import cafe.woden.ircclient.app.commands.HexChatCommandAliasImporter;
 import cafe.woden.ircclient.model.UserCommandAlias;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
+import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import java.awt.Component;
 import java.io.File;
 import java.nio.file.Files;
@@ -11,7 +12,6 @@ import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Set;
 import javax.swing.JFileChooser;
 import javax.swing.JTable;
@@ -140,7 +140,7 @@ final class HexChatAliasImportDialogSupport {
   }
 
   private static String normalizeAliasCommandKey(String raw) {
-    String command = Objects.toString(raw, "").trim();
+    String command = SettingsValueSupport.trimmedString(raw);
     if (command.startsWith("/")) command = command.substring(1).trim();
     int split = command.indexOf(' ');
     if (split >= 0) command = command.substring(0, split).trim();
@@ -148,7 +148,7 @@ final class HexChatAliasImportDialogSupport {
   }
 
   private static File suggestedHexChatCommandsConfFile() {
-    String home = Objects.toString(System.getProperty("user.home"), "").trim();
+    String home = SettingsValueSupport.trimmedString(System.getProperty("user.home"));
     if (home.isEmpty()) return null;
 
     Path userHome = Path.of(home);

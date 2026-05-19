@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings.memory;
 
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import java.util.List;
 import javax.swing.JCheckBox;
@@ -99,7 +100,7 @@ public final class MemoryControlsSupport {
   }
 
   private static int clamp(int value, int min, int max) {
-    return PreferencesUiSupport.clampInt(value, min, max);
+    return SettingsValueSupport.clampInt(value, min, max);
   }
 
   public record MemorySettings(

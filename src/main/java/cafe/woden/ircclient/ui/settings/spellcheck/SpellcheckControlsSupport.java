@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings.spellcheck;
 
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import java.util.LinkedHashSet;
 import java.util.List;
 import javax.swing.DefaultListCellRenderer;
@@ -317,11 +318,11 @@ public final class SpellcheckControlsSupport {
     if (raw == null || raw.isBlank()) return List.of();
     LinkedHashSet<String> out = new LinkedHashSet<>();
     for (String line : raw.split("\\R")) {
-      String trimmed = line == null ? "" : line.trim();
+      String trimmed = SettingsValueSupport.trimmedString(line);
       if (trimmed.isEmpty()) continue;
       String[] tokens = trimmed.split("\\s+");
       for (String token : tokens) {
-        String t = token == null ? "" : token.trim();
+        String t = SettingsValueSupport.trimmedString(token);
         if (t.isEmpty()) continue;
         out.add(t);
       }

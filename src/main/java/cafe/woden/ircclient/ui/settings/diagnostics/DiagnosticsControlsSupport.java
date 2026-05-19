@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings.diagnostics;
 
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import java.util.List;
 import java.util.Objects;
 import javax.swing.JCheckBox;
@@ -105,13 +106,13 @@ public final class DiagnosticsControlsSupport {
     return new DiagnosticsSettings(
         controls.assertjSwingEnabled().isSelected(),
         controls.assertjSwingFreezeWatchdogEnabled().isSelected(),
-        PreferencesUiSupport.clampInt(
+        SettingsValueSupport.clampInt(
             PreferencesUiSupport.spinnerInt(controls.assertjSwingFreezeThresholdMs()),
             500,
             120_000),
-        PreferencesUiSupport.clampInt(
+        SettingsValueSupport.clampInt(
             PreferencesUiSupport.spinnerInt(controls.assertjSwingWatchdogPollMs()), 100, 10_000),
-        PreferencesUiSupport.clampInt(
+        SettingsValueSupport.clampInt(
             PreferencesUiSupport.spinnerInt(controls.assertjSwingFallbackViolationReportMs()),
             250,
             120_000),
@@ -121,7 +122,7 @@ public final class DiagnosticsControlsSupport {
         PreferencesUiSupport.trimmedText(controls.jhiccupJarPath()),
         jhiccupJavaCommandRaw,
         jhiccupJavaCommandEffective,
-        PreferencesUiSupport.trimmedLines(controls.jhiccupArgs().getText()));
+        SettingsValueSupport.trimmedLines(controls.jhiccupArgs().getText()));
   }
 
   public static boolean settingsChanged(
