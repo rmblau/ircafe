@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'jacoco'
     id 'checkstyle'
     alias(libs.plugins.springBoot)
     alias(libs.plugins.springDependencyManagement)
@@ -21,6 +22,11 @@ plugins {
     alias(libs.plugins.errorprone)
     alias(libs.plugins.forbiddenapis)
     alias(libs.plugins.dependencyLicenseReport)
+    alias(libs.plugins.testRetry)
+    alias(libs.plugins.pitest)
+    alias(libs.plugins.testLogger)
+    alias(libs.plugins.taskTree)
+    alias(libs.plugins.jmh)
 }
 
 group = 'cafe.woden'
@@ -61,6 +67,12 @@ dependencies {
     implementation lib('jmoleculesHexagonalArchitecture')
     implementation platform("org.springframework.modulith:spring-modulith-bom:${springModulithVersion}")
     implementation lib('springModulithStarterCore')
+
+    rewrite platform(lib('openRewriteRecipeBom'))
+    rewrite lib('openRewriteStaticAnalysis')
+    rewrite lib('openRewriteTestingFrameworks')
+    rewrite lib('openRewriteSpring')
+    rewrite lib('openRewriteMigrateJava')
 
     errorprone lib('errorproneCore')
     implementation lib('soundlibsMp3spi')

@@ -26,7 +26,9 @@ DOCKER_RUN = $(DOCKER) run --rm $(DOCKER_TTY) \
 
 GRADLE_RUN = GRADLE_USER_HOME="$(LOCAL_GRADLE_USER_HOME)" $(GRADLEW)
 
-.PHONY: help gradle bootrun build jar check lint test integration-test architecture-test functional-test clean jpackage \
+.PHONY: help gradle bootrun build jar check quick-check lint test integration-test architecture-test functional-test \
+	verify-ui-change verify-spring-change verify-architecture-change verify-refactor strict-analysis coverage-report \
+	mutation-test jmh clean jpackage \
 	docker-image docker-image-if-missing \
 	docker-gradle docker-build docker-check docker-test docker-lint docker-clean docker-jar \
 	docker-integration-test docker-architecture-test docker-functional-test
@@ -49,6 +51,9 @@ jar: ## Build runnable boot jar under build/libs
 check: ## Run lint + tests + configured checks
 	$(GRADLE_RUN) check $(GRADLE_FLAGS)
 
+quick-check: ## Run fast local feedback checks
+	$(GRADLE_RUN) quickCheck $(GRADLE_FLAGS)
+
 lint: ## Run static analysis and style checks
 	$(GRADLE_RUN) lint $(GRADLE_FLAGS)
 
@@ -63,6 +68,30 @@ architecture-test: ## Run module boundary/architecture guardrail tests
 
 functional-test: ## Run Swing FunctionalTest suite from src/functionalTest
 	$(GRADLE_RUN) functionalTest $(GRADLE_FLAGS)
+
+verify-ui-change: ## Run tests normally needed for Swing UI changes
+	$(GRADLE_RUN) verifyUiChange $(GRADLE_FLAGS)
+
+verify-spring-change: ## Run tests normally needed for Spring/integration changes
+	$(GRADLE_RUN) verifySpringChange $(GRADLE_FLAGS)
+
+verify-architecture-change: ## Run tests normally needed for architecture changes
+	$(GRADLE_RUN) verifyArchitectureChange $(GRADLE_FLAGS)
+
+verify-refactor: ## Run broad verification for behavior-preserving refactors
+	$(GRADLE_RUN) verifyRefactor $(GRADLE_FLAGS)
+
+strict-analysis: ## Run opt-in stricter javac/Error Prone/static-analysis checks
+	$(GRADLE_RUN) strictAnalysis $(GRADLE_FLAGS)
+
+coverage-report: ## Generate aggregate JaCoCo coverage reports
+	$(GRADLE_RUN) coverageReport $(GRADLE_FLAGS)
+
+mutation-test: ## Run focused PIT mutation checks
+	$(GRADLE_RUN) mutationTest $(GRADLE_FLAGS)
+
+jmh: ## Run JMH benchmarks from src/jmh
+	$(GRADLE_RUN) jmh $(GRADLE_FLAGS)
 
 clean: ## Clean local build outputs
 	$(GRADLE_RUN) clean $(GRADLE_FLAGS)

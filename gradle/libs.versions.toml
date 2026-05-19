@@ -12,11 +12,17 @@ spotbugsPlugin = "6.4.8"
 errorpronePlugin = "5.0.0"
 forbiddenapisPlugin = "3.10"
 dependencyLicenseReportPlugin = "3.1.1"
+testRetryPlugin = "1.6.4"
+pitestPlugin = "1.19.0"
+testLoggerPlugin = "4.0.0"
+taskTreePlugin = "4.0.1"
+jmhPlugin = "0.7.3"
 
 lombok = "1.18.42"
 jmolecules = "2.0.1"
 springModulith = "2.0.3"
 junitPlatform = "6.0.1"
+openRewriteRecipeBom = "3.30.0"
 errorproneCore = "2.46.0"
 soundlibsMp3spi = "1.9.5.4"
 soundlibsJlayer = "1.0.1.4"
@@ -91,6 +97,11 @@ pitestCommandLine = { module = "org.pitest:pitest-command-line", version.ref = "
 pitestJunit5Plugin = { module = "org.pitest:pitest-junit5-plugin", version.ref = "pitestJunit5Plugin" }
 autoService = { module = "com.google.auto.service:auto-service", version.ref = "autoService" }
 autoServiceAnnotations = { module = "com.google.auto.service:auto-service-annotations", version.ref = "autoService" }
+openRewriteRecipeBom = { module = "org.openrewrite.recipe:rewrite-recipe-bom", version.ref = "openRewriteRecipeBom" }
+openRewriteStaticAnalysis = { module = "org.openrewrite.recipe:rewrite-static-analysis" }
+openRewriteTestingFrameworks = { module = "org.openrewrite.recipe:rewrite-testing-frameworks" }
+openRewriteSpring = { module = "org.openrewrite.recipe:rewrite-spring" }
+openRewriteMigrateJava = { module = "org.openrewrite.recipe:rewrite-migrate-java" }
 
 [plugins]
 springBoot = { id = "org.springframework.boot", version.ref = "springBootPlugin" }
@@ -106,3 +117,8 @@ spotbugs = { id = "com.github.spotbugs", version.ref = "spotbugsPlugin" }
 errorprone = { id = "net.ltgt.errorprone", version.ref = "errorpronePlugin" }
 forbiddenapis = { id = "de.thetaphi.forbiddenapis", version.ref = "forbiddenapisPlugin" }
 dependencyLicenseReport = { id = "com.github.jk1.dependency-license-report", version.ref = "dependencyLicenseReportPlugin" }
+testRetry = { id = "org.gradle.test-retry", version.ref = "testRetryPlugin" }
+pitest = { id = "info.solidsoft.pitest", version.ref = "pitestPlugin" }
+testLogger = { id = "com.adarshr.test-logger", version.ref = "testLoggerPlugin" }
+taskTree = { id = "com.dorongold.task-tree", version.ref = "taskTreePlugin" }
+jmh = { id = "me.champeau.jmh", version.ref = "jmhPlugin" }
