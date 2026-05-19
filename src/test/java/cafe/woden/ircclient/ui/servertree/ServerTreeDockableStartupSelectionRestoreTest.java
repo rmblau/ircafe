@@ -16,7 +16,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import javax.swing.SwingUtilities;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -82,7 +81,7 @@ class ServerTreeDockableStartupSelectionRestoreTest {
     onEdt(() -> {});
 
     TestSubscriber<TargetRef> subscriber = dockable.selectionStream().test();
-    subscriber.awaitDone(1, TimeUnit.SECONDS);
+    subscriber.awaitCount(1);
     subscriber.assertValue(remembered);
   }
 

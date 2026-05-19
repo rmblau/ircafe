@@ -45,10 +45,7 @@ public final class NetProxyContext {
       return;
     }
 
-    proxy =
-        new Proxy(
-            Proxy.Type.SOCKS,
-            InetSocketAddress.createUnresolved(cfg.host(), cfg.port()));
+    proxy = new Proxy(Proxy.Type.SOCKS, InetSocketAddress.createUnresolved(cfg.host(), cfg.port()));
     registerSocksAuth(cfg);
   }
 

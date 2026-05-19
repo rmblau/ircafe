@@ -1155,9 +1155,7 @@ class QuasselCoreIrcClientServiceTest {
                 Map.of(
                     1,
                     Map.of(
-                        "identityId", 1,
-                        "identityName", "quassel",
-                        "nicks", List.of("quassel")))));
+                        "identityId", 1, "identityName", "quassel", "nicks", List.of("quassel")))));
 
     QuasselCoreIrcClientService service =
         new QuasselCoreIrcClientService(
@@ -1286,9 +1284,7 @@ class QuasselCoreIrcClientServiceTest {
                 Map.of(
                     1,
                     Map.of(
-                        "identityId", 1,
-                        "identityName", "quassel",
-                        "nicks", List.of("quassel")))));
+                        "identityId", 1, "identityName", "quassel", "nicks", List.of("quassel")))));
 
     QuasselCoreIrcClientService service =
         new QuasselCoreIrcClientService(

@@ -5,6 +5,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Path2D;
 import java.util.Locale;
+import java.util.Objects;
+import java.util.function.LongSupplier;
 import javax.swing.*;
 
 /**
@@ -30,6 +32,7 @@ final class TypingSignalIndicator extends JComponent {
   private static final Color DARK_THEME_FALLBACK_ARROW = new Color(0xFFFFFF);
   private static final Color LIGHT_THEME_FALLBACK_ARROW = new Color(0x2B313A);
 
+  private final LongSupplier clock;
   private final Timer fadeTimer;
 
   private boolean available;
@@ -39,6 +42,11 @@ final class TypingSignalIndicator extends JComponent {
   private Mode mode = Mode.IDLE;
 
   TypingSignalIndicator() {
+    this(System::currentTimeMillis);
+  }
+
+  TypingSignalIndicator(LongSupplier clock) {
+    this.clock = Objects.requireNonNull(clock, "clock");
     setOpaque(false);
     setVisible(true);
     fadeTimer =
@@ -69,7 +77,7 @@ final class TypingSignalIndicator extends JComponent {
       mode = Mode.IDLE;
     } else {
       mode = Mode.IDLE;
-      modeStartMs = System.currentTimeMillis();
+      modeStartMs = nowMs();
     }
     setVisible(true);
     repaint();
@@ -78,7 +86,7 @@ final class TypingSignalIndicator extends JComponent {
   void pulse(String state) {
     if (!available) return;
 
-    long now = System.currentTimeMillis();
+    long now = nowMs();
     SignalEvent event = SignalEvent.fromState(state);
     switch (event) {
       case ACTIVE -> {
@@ -121,7 +129,7 @@ final class TypingSignalIndicator extends JComponent {
     Graphics2D g2 = (Graphics2D) g.create();
     try {
       g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-      ArrowVisual visual = visualAt(System.currentTimeMillis());
+      ArrowVisual visual = visualAt(nowMs());
       drawRightArrow(g2, visual);
     } finally {
       g2.dispose();
@@ -151,13 +159,13 @@ final class TypingSignalIndicator extends JComponent {
       return;
     }
     if (mode == Mode.PAUSING) {
-      long elapsed = Math.max(0L, System.currentTimeMillis() - modeStartMs);
+      long elapsed = Math.max(0L, nowMs() - modeStartMs);
       if (elapsed >= PAUSE_FADE_MS) {
         mode = Mode.PAUSED;
         fadeTimer.stop();
       }
     } else if (mode == Mode.RETURNING) {
-      long elapsed = Math.max(0L, System.currentTimeMillis() - modeStartMs);
+      long elapsed = Math.max(0L, nowMs() - modeStartMs);
       if (elapsed >= RETURN_TO_IDLE_MS) {
         mode = Mode.IDLE;
         fadeTimer.stop();
@@ -306,6 +314,10 @@ final class TypingSignalIndicator extends JComponent {
     return Math.max(0f, Math.min(1f, v));
   }
 
+  private long nowMs() {
+    return clock.getAsLong();
+  }
+
   private static float easeOutCubic(float t) {
     float x = 1f - clamp01(t);
     return 1f - (x * x * x);
@@ -368,10 +380,10 @@ final class TypingSignalIndicator extends JComponent {
   private record ArrowVisual(Color color, float glowAlpha) {}
 
   Color debugArrowColorForTest() {
-    return visualAt(System.currentTimeMillis()).color();
+    return visualAt(nowMs()).color();
   }
 
   float debugArrowGlowForTest() {
-    return visualAt(System.currentTimeMillis()).glowAlpha();
+    return visualAt(nowMs()).glowAlpha();
   }
 }

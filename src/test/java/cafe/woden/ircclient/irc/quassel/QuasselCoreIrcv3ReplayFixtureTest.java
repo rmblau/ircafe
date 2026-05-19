@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BooleanSupplier;
+import java.util.function.Predicate;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -73,7 +75,7 @@ class QuasselCoreIrcv3ReplayFixtureTest {
       socket.writeInbound(encodeRpcCall(datastreamCodec, "2displayMsg(Message)", List.of(msg)));
     }
 
-    events.awaitDone(2, TimeUnit.SECONDS);
+    awaitFixtureEvents(events);
 
     assertTrue(
         events.values().stream()
@@ -143,6 +145,35 @@ class QuasselCoreIrcv3ReplayFixtureTest {
       throw new IOException("replay fixture is empty: " + resourcePath);
     }
     return List.copyOf(out);
+  }
+
+  private static void awaitFixtureEvents(TestSubscriber<ServerIrcEvent> events)
+      throws InterruptedException {
+    awaitCondition(
+        () ->
+            containsEvent(events, IrcEvent.MessageReplyObserved.class::isInstance)
+                && containsEvent(events, IrcEvent.MessageReactObserved.class::isInstance)
+                && containsEvent(events, IrcEvent.UserTypingObserved.class::isInstance)
+                && containsEvent(events, IrcEvent.ReadMarkerObserved.class::isInstance)
+                && containsEvent(events, IrcEvent.MessageRedactionObserved.class::isInstance)
+                && containsEvent(
+                    events,
+                    ev ->
+                        ev instanceof IrcEvent.ChannelMessage msg
+                            && "msg-1".equals(msg.ircv3Tags().get("draft/reply"))));
+  }
+
+  private static boolean containsEvent(
+      TestSubscriber<ServerIrcEvent> events, Predicate<IrcEvent> predicate) {
+    return events.values().stream().map(ServerIrcEvent::event).anyMatch(predicate);
+  }
+
+  private static void awaitCondition(BooleanSupplier condition) throws InterruptedException {
+    long deadline = System.currentTimeMillis() + 2_000L;
+    while (!condition.getAsBoolean() && System.currentTimeMillis() < deadline) {
+      Thread.sleep(10L);
+    }
+    assertTrue(condition.getAsBoolean());
   }
 
   private static byte[] encodeRpcCall(

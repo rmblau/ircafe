@@ -74,7 +74,8 @@ class TypingSignalIndicatorTest {
 
   @Test
   void pausedTransitionFadesToGray() throws Exception {
-    TypingSignalIndicator indicator = createOnEdt();
+    ManualClock clock = new ManualClock();
+    TypingSignalIndicator indicator = createOnEdt(clock);
     onEdt(
         () -> {
           indicator.setAvailable(true);
@@ -83,20 +84,21 @@ class TypingSignalIndicatorTest {
           assertNotEquals(0xC6CDD5, rgbHex(indicator.debugArrowColorForTest()));
         });
 
-    Thread.sleep(280);
+    clock.advance(280);
     onEdt(() -> assertEquals(0xC6CDD5, rgbHex(indicator.debugArrowColorForTest())));
   }
 
   @Test
   void doneTransitionFadesBackToGreen() throws Exception {
-    TypingSignalIndicator indicator = createOnEdt();
+    ManualClock clock = new ManualClock();
+    TypingSignalIndicator indicator = createOnEdt(clock);
     onEdt(
         () -> {
           indicator.setAvailable(true);
           indicator.pulse("active");
           indicator.pulse("paused");
         });
-    Thread.sleep(280);
+    clock.advance(280);
 
     onEdt(
         () -> {
@@ -106,7 +108,7 @@ class TypingSignalIndicatorTest {
           assertTrue(indicator.debugArrowGlowForTest() >= 0f);
         });
 
-    Thread.sleep(500);
+    clock.advance(500);
     onEdt(() -> assertEquals(0x35C86E, rgbHex(indicator.debugArrowColorForTest())));
   }
 
@@ -114,6 +116,13 @@ class TypingSignalIndicatorTest {
       throws InvocationTargetException, InterruptedException {
     final TypingSignalIndicator[] out = new TypingSignalIndicator[1];
     onEdt(() -> out[0] = new TypingSignalIndicator());
+    return out[0];
+  }
+
+  private static TypingSignalIndicator createOnEdt(ManualClock clock)
+      throws InvocationTargetException, InterruptedException {
+    final TypingSignalIndicator[] out = new TypingSignalIndicator[1];
+    onEdt(() -> out[0] = new TypingSignalIndicator(clock::nowMs));
     return out[0];
   }
 
@@ -127,5 +136,17 @@ class TypingSignalIndicatorTest {
       return;
     }
     SwingUtilities.invokeAndWait(r);
+  }
+
+  private static final class ManualClock {
+    private long nowMs;
+
+    long nowMs() {
+      return nowMs;
+    }
+
+    void advance(long millis) {
+      nowMs += millis;
+    }
   }
 }
