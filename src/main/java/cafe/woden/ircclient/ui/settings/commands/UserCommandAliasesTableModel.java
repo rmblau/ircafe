@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.commands;
 
 import cafe.woden.ircclient.model.UserCommandAlias;
+import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRowsTableModel;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -72,7 +73,7 @@ final class UserCommandAliasesTableModel
             a.name,
             "Command names must start with a letter and contain only letters, numbers, '_' or '-'.");
       }
-      if (Objects.toString(a.template, "").isBlank()) {
+      if (PreferencesUiSupport.trimmedString(a.template).isEmpty()) {
         return new UserCommandAliasValidationError(i, cmd, "Enabled aliases require an expansion.");
       }
 
@@ -124,7 +125,7 @@ final class UserCommandAliasesTableModel
   }
 
   private static String normalizeCommand(String raw) {
-    String cmd = Objects.toString(raw, "").trim();
+    String cmd = PreferencesUiSupport.trimmedString(raw);
     if (cmd.startsWith("/")) cmd = cmd.substring(1).trim();
     return cmd;
   }

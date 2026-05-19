@@ -49,6 +49,20 @@ class NotificationRulesControlsSupportTest {
     verify(runtimeConfig).rememberNotificationRules(List.of(rule));
   }
 
+  @Test
+  void tableModelTrimsSummariesAndNormalizesHighlightColor() {
+    NotificationRule rule =
+        new NotificationRule("", NotificationRule.Type.WORD, " hello ", true, false, true, null);
+    NotificationRulesTableModel model = new NotificationRulesTableModel(List.of(rule));
+
+    assertEquals("hello", model.getValueAt(0, NotificationRulesTableModel.COL_LABEL));
+    assertEquals("WORD: hello", model.getValueAt(0, NotificationRulesTableModel.COL_MATCH));
+
+    model.setHighlightFg(0, " abc ");
+
+    assertEquals("#AABBCC", model.highlightFgAt(0));
+  }
+
   private static NotificationRulesControls controls(
       int cooldownSeconds, List<NotificationRule> rules) {
     NotificationRulesTableModel model = new NotificationRulesTableModel(rules);

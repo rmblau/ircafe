@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.notifications;
 
 import cafe.woden.ircclient.config.NotificationRule;
+import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRowsTableModel;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,9 +42,9 @@ final class NotificationRulesTableModel
 
   static String effectiveRuleLabel(NotificationRule rule) {
     if (rule == null) return "(unnamed)";
-    String label = Objects.toString(rule.label(), "").trim();
+    String label = PreferencesUiSupport.trimmedString(rule.label());
     if (!label.isEmpty()) return label;
-    String pattern = Objects.toString(rule.pattern(), "").trim();
+    String pattern = PreferencesUiSupport.trimmedString(rule.pattern());
     return pattern.isEmpty() ? "(unnamed)" : pattern;
   }
 
@@ -55,7 +56,7 @@ final class NotificationRulesTableModel
   void setHighlightFg(int row, String hex) {
     MutableRule r = rowAtOrNull(row);
     if (r == null) return;
-    r.highlightFg = normalizeHexColor(Objects.toString(hex, "").trim());
+    r.highlightFg = normalizeHexColor(PreferencesUiSupport.trimmedString(hex));
     fireTableRowsUpdated(row, row);
   }
 
@@ -67,7 +68,7 @@ final class NotificationRulesTableModel
       if (!r.enabled) continue;
       if (r.type != NotificationRule.Type.REGEX) continue;
 
-      String pat = r.pattern != null ? r.pattern.trim() : "";
+      String pat = PreferencesUiSupport.trimmedString(r.pattern);
       if (pat.isEmpty()) continue;
 
       try {
@@ -129,7 +130,7 @@ final class NotificationRulesTableModel
 
   private static String summarizeMatch(MutableRule r) {
     if (r == null) return "";
-    String pattern = Objects.toString(r.pattern, "").trim();
+    String pattern = PreferencesUiSupport.trimmedString(r.pattern);
     if (pattern.isEmpty()) pattern = "(empty)";
     String type = r.type == NotificationRule.Type.REGEX ? "REGEX" : "WORD";
     return type + ": " + pattern;
@@ -146,7 +147,7 @@ final class NotificationRulesTableModel
 
   private static String normalizeHexColor(String raw) {
     if (raw == null) return null;
-    String s = raw.trim();
+    String s = PreferencesUiSupport.trimmedString(raw);
     if (s.isEmpty()) return null;
 
     if (s.startsWith("#")) s = s.substring(1).trim();

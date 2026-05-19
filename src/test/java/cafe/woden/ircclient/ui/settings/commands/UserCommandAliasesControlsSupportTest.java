@@ -51,6 +51,19 @@ class UserCommandAliasesControlsSupportTest {
     verify(aliasesBus).setUnknownCommandAsRawEnabled(true);
   }
 
+  @Test
+  void tableModelTrimsCommandsAndValidationDialogLabels() {
+    UserCommandAliasesTableModel model =
+        new UserCommandAliasesTableModel(List.of(new UserCommandAlias(true, "/ hi ", "   ")));
+
+    assertEquals("hi", model.getValueAt(0, UserCommandAliasesTableModel.COL_COMMAND));
+
+    UserCommandAliasValidationError error = model.firstValidationError();
+
+    assertNotNull(error);
+    assertEquals("Row 1 (/hi):\nEnabled aliases require an expansion.", error.formatForDialog());
+  }
+
   private static UserCommandAliasesControls controls(
       List<UserCommandAlias> aliases, boolean unknownCommandAsRawEnabled) {
     UserCommandAliasesTableModel model = new UserCommandAliasesTableModel(aliases);
