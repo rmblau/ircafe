@@ -3,6 +3,7 @@ package cafe.woden.ircclient.net;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.config.IrcProperties;
 import java.io.IOException;
@@ -52,6 +53,7 @@ class NetProxySelectorTest {
     InetSocketAddress httpAddress = (InetSocketAddress) httpProxy.address();
     assertEquals("proxy.local", httpAddress.getHostString());
     assertEquals(9050, httpAddress.getPort());
+    assertTrue(httpAddress.isUnresolved(), "proxy configuration must not block on DNS");
 
     assertSame(httpProxy, httpsProxy);
   }

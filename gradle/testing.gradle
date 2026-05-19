@@ -1,3 +1,17 @@
+def libsCatalog = extensions.getByType(org.gradle.api.artifacts.VersionCatalogsExtension).named("libs")
+def catalogVersion = { String alias -> libsCatalog.findVersion(alias).get().requiredVersion }
+def junitPlatformVersion = catalogVersion('junitPlatform')
+
+configurations.configureEach {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'org.junit.platform'
+                && details.requested.name == 'junit-platform-launcher') {
+            details.useVersion junitPlatformVersion
+            details.because 'Keep JUnit Platform launcher aligned with the JUnit 6 engine.'
+        }
+    }
+}
+
 configurations {
     mutationTestTool
 }
@@ -25,6 +39,9 @@ tasks.named('test') {
         excludeTestsMatching '*FunctionalTest'
         // Integration coverage runs via the dedicated integrationTest task.
         excludeTestsMatching '*IntegrationTest'
+        // Architecture guardrails run via the dedicated architectureTest task.
+        excludeTestsMatching 'cafe.woden.ircclient.architecture.*'
+        excludeTestsMatching 'cafe.woden.ircclient.modulith.*'
     }
 }
 

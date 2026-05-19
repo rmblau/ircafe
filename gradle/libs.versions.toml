@@ -16,6 +16,7 @@ dependencyLicenseReportPlugin = "3.1.1"
 lombok = "1.18.42"
 jmolecules = "2.0.1"
 springModulith = "2.0.3"
+junitPlatform = "6.0.1"
 errorproneCore = "2.46.0"
 soundlibsMp3spi = "1.9.5.4"
 soundlibsJlayer = "1.0.1.4"
@@ -85,7 +86,7 @@ dbusJavaTransportNativeUnixsocket = { module = "com.github.hypfvieh:dbus-java-tr
 archunitJunit5 = { module = "com.tngtech.archunit:archunit-junit5", version.ref = "archunit" }
 springBootStarterTest = { module = "org.springframework.boot:spring-boot-starter-test" }
 testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
-junitPlatformLauncher = { module = "org.junit.platform:junit-platform-launcher" }
+junitPlatformLauncher = { module = "org.junit.platform:junit-platform-launcher", version.ref = "junitPlatform" }
 pitestCommandLine = { module = "org.pitest:pitest-command-line", version.ref = "pitestCommandLine" }
 pitestJunit5Plugin = { module = "org.pitest:pitest-junit5-plugin", version.ref = "pitestJunit5Plugin" }
 autoService = { module = "com.google.auto.service:auto-service", version.ref = "autoService" }

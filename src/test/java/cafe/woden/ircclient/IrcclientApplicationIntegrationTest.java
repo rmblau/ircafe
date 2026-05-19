@@ -3,7 +3,17 @@ package cafe.woden.ircclient;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest(properties = {"ircafe.ui.enabled=false", "spring.main.headless=true"})
+@SpringBootTest(
+    properties = {
+      "spring.main.headless=true",
+      "ircafe.ui.enabled=false",
+      "ircafe.ui.autoConnectOnStart=false",
+      "ircafe.ui.tray.enabled=false",
+      "ircafe.ui.appDiagnostics.assertjSwing.enabled=false",
+      "ircafe.ui.appDiagnostics.assertjSwing.edtFreezeWatchdogEnabled=false",
+      "ircafe.ui.appDiagnostics.jhiccup.enabled=false",
+      "ircafe.runtime-config=build/tmp/integration-tests/${random.uuid}/ircafe.yml"
+    })
 class IrcclientApplicationIntegrationTest {
   @Test
   void contextLoads() {}
