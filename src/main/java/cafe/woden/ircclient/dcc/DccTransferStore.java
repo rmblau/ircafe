@@ -8,6 +8,7 @@ import cafe.woden.ircclient.dcc.api.DccTransferQueryPort;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.processors.FlowableProcessor;
 import io.reactivex.rxjava3.processors.PublishProcessor;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -25,6 +26,7 @@ public class DccTransferStore implements DccTransferQueryPort, DccTransferComman
   public static final int DEFAULT_MAX_ENTRIES_PER_SERVER = 400;
 
   private final int maxEntriesPerServer;
+  private final Clock clock;
   private final ConcurrentHashMap<String, ConcurrentHashMap<String, DccTransferEntry>>
       entriesByServer = new ConcurrentHashMap<>();
   private final FlowableProcessor<DccTransferChange> changes =
@@ -35,7 +37,12 @@ public class DccTransferStore implements DccTransferQueryPort, DccTransferComman
   }
 
   public DccTransferStore(int maxEntriesPerServer) {
+    this(maxEntriesPerServer, Clock.systemUTC());
+  }
+
+  DccTransferStore(int maxEntriesPerServer, Clock clock) {
     this.maxEntriesPerServer = Math.max(50, maxEntriesPerServer);
+    this.clock = Objects.requireNonNull(clock, "clock");
   }
 
   @Override
@@ -96,7 +103,7 @@ public class DccTransferStore implements DccTransferQueryPort, DccTransferComman
     DccActionHint hint = (actionHint == null) ? DccActionHint.NONE : actionHint;
 
     DccTransferEntry next =
-        new DccTransferEntry(id, sid, n, k, st, d, path, pct, hint, Instant.now());
+        new DccTransferEntry(id, sid, n, k, st, d, path, pct, hint, Instant.now(clock));
     ConcurrentHashMap<String, DccTransferEntry> map =
         entriesByServer.computeIfAbsent(sid, __ -> new ConcurrentHashMap<>());
     map.put(id, next);

@@ -6,6 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import cafe.woden.ircclient.dcc.api.DccActionHint;
 import cafe.woden.ircclient.dcc.api.DccTransferChange;
 import cafe.woden.ircclient.dcc.api.DccTransferEntry;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -15,11 +19,12 @@ import org.junit.jupiter.api.Test;
 class DccTransferStoreTest {
 
   @Test
-  void upsertNormalizesValuesAndListsNewestFirst() throws Exception {
-    DccTransferStore store = new DccTransferStore();
+  void upsertNormalizesValuesAndListsNewestFirst() {
+    ManualClock clock = new ManualClock(Instant.parse("2026-05-19T05:30:00Z"));
+    DccTransferStore store = new DccTransferStore(400, clock);
 
     store.upsert(" libera ", " id-1 ", " alice ", " Chat ", " Open ", " detail ", -5, null);
-    Thread.sleep(2L);
+    clock.advanceMillis(1L);
     store.upsert("libera", "id-2", "bob", "File", "Sending", "50%", 120, DccActionHint.GET_FILE);
 
     List<DccTransferEntry> entries = store.listAll("libera");
@@ -84,6 +89,39 @@ class DccTransferStoreTest {
     Set<String> ids = entries.stream().map(DccTransferEntry::entryId).collect(Collectors.toSet());
     for (int i = 0; i < 5; i++) {
       assertTrue(!ids.contains("id-" + i), "oldest entries should be trimmed first");
+    }
+  }
+
+  private static final class ManualClock extends Clock {
+    private final ZoneId zone;
+    private Instant instant;
+
+    private ManualClock(Instant instant) {
+      this(instant, ZoneOffset.UTC);
+    }
+
+    private ManualClock(Instant instant, ZoneId zone) {
+      this.instant = instant;
+      this.zone = zone;
+    }
+
+    @Override
+    public ZoneId getZone() {
+      return zone;
+    }
+
+    @Override
+    public Clock withZone(ZoneId zone) {
+      return new ManualClock(instant, zone);
+    }
+
+    @Override
+    public Instant instant() {
+      return instant;
+    }
+
+    private void advanceMillis(long millis) {
+      instant = instant.plusMillis(millis);
     }
   }
 }
