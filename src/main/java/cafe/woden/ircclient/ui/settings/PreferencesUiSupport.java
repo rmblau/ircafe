@@ -378,10 +378,11 @@ public final class PreferencesUiSupport {
   }
 
   public static int clampedSpinnerInt(JSpinner spinner, int min, int max) {
-    int value = spinnerInt(spinner);
-    if (value < min) return min;
-    if (value > max) return max;
-    return value;
+    return clampInt(spinnerInt(spinner), min, max);
+  }
+
+  public static int clampInt(int value, int min, int max) {
+    return Math.max(min, Math.min(max, value));
   }
 
   private static void decorateNumberSpinner(JSpinner spinner, List<AutoCloseable> closeables) {

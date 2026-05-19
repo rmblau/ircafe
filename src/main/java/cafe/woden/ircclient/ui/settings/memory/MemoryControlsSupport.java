@@ -99,7 +99,7 @@ public final class MemoryControlsSupport {
   }
 
   private static int clamp(int value, int min, int max) {
-    return Math.max(min, Math.min(max, value));
+    return PreferencesUiSupport.clampInt(value, min, max);
   }
 
   public record MemorySettings(

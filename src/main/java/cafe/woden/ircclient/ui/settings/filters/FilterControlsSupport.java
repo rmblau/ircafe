@@ -37,11 +37,15 @@ public final class FilterControlsSupport {
 
     JSpinner previewLines =
         PreferencesUiSupport.numberSpinner(
-            Math.max(0, Math.min(25, current.placeholderMaxPreviewLines())), 0, 25, 1, closeables);
+            PreferencesUiSupport.clampInt(current.placeholderMaxPreviewLines(), 0, 25),
+            0,
+            25,
+            1,
+            closeables);
 
     JSpinner maxLinesPerRun =
         PreferencesUiSupport.numberSpinner(
-            Math.max(0, Math.min(50_000, current.placeholderMaxLinesPerRun())),
+            PreferencesUiSupport.clampInt(current.placeholderMaxLinesPerRun(), 0, 50_000),
             0,
             50_000,
             50,
@@ -51,7 +55,11 @@ public final class FilterControlsSupport {
 
     JSpinner tooltipMaxTags =
         PreferencesUiSupport.numberSpinner(
-            Math.max(0, Math.min(500, current.placeholderTooltipMaxTags())), 0, 500, 1, closeables);
+            PreferencesUiSupport.clampInt(current.placeholderTooltipMaxTags(), 0, 500),
+            0,
+            500,
+            1,
+            closeables);
     tooltipMaxTags.setToolTipText("Max tags shown in placeholder/hint tooltips. 0 = hide tags.");
 
     JCheckBox historyPlaceholdersEnabledByDefault =
@@ -62,7 +70,7 @@ public final class FilterControlsSupport {
 
     JSpinner historyMaxRuns =
         PreferencesUiSupport.numberSpinner(
-            Math.max(0, Math.min(5_000, current.historyPlaceholderMaxRunsPerBatch())),
+            PreferencesUiSupport.clampInt(current.historyPlaceholderMaxRunsPerBatch(), 0, 5_000),
             0,
             5_000,
             1,

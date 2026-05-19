@@ -106,12 +106,13 @@ public final class DiagnosticsControlsSupport {
     return new DiagnosticsSettings(
         controls.assertjSwingEnabled().isSelected(),
         controls.assertjSwingFreezeWatchdogEnabled().isSelected(),
-        clamp(
+        PreferencesUiSupport.clampInt(
             PreferencesUiSupport.spinnerInt(controls.assertjSwingFreezeThresholdMs()),
             500,
             120_000),
-        clamp(PreferencesUiSupport.spinnerInt(controls.assertjSwingWatchdogPollMs()), 100, 10_000),
-        clamp(
+        PreferencesUiSupport.clampInt(
+            PreferencesUiSupport.spinnerInt(controls.assertjSwingWatchdogPollMs()), 100, 10_000),
+        PreferencesUiSupport.clampInt(
             PreferencesUiSupport.spinnerInt(controls.assertjSwingFallbackViolationReportMs()),
             250,
             120_000),
@@ -169,10 +170,6 @@ public final class DiagnosticsControlsSupport {
     runtimeConfig.rememberAppDiagnosticsJhiccupJarPath(settings.jhiccupJarPath());
     runtimeConfig.rememberAppDiagnosticsJhiccupJavaCommand(settings.jhiccupJavaCommandRaw());
     runtimeConfig.rememberAppDiagnosticsJhiccupArgs(settings.jhiccupArgs());
-  }
-
-  private static int clamp(int value, int min, int max) {
-    return Math.max(min, Math.min(max, value));
   }
 
   private static List<String> parseArgs(String text) {

@@ -93,7 +93,7 @@ public final class LoggingControlsSupport {
 
     int writerQueueMaxCurrent =
         (logProps != null && logProps.writerQueueMax() != null)
-            ? Math.max(100, Math.min(1_000_000, logProps.writerQueueMax()))
+            ? PreferencesUiSupport.clampInt(logProps.writerQueueMax(), 100, 1_000_000)
             : 50_000;
     javax.swing.JSpinner writerQueueMax =
         PreferencesUiSupport.numberSpinner(writerQueueMaxCurrent, 100, 1_000_000, 500, closeables);
@@ -104,7 +104,7 @@ public final class LoggingControlsSupport {
 
     int writerBatchSizeCurrent =
         (logProps != null && logProps.writerBatchSize() != null)
-            ? Math.max(1, Math.min(10_000, logProps.writerBatchSize()))
+            ? PreferencesUiSupport.clampInt(logProps.writerBatchSize(), 1, 10_000)
             : 250;
     javax.swing.JSpinner writerBatchSize =
         PreferencesUiSupport.numberSpinner(writerBatchSizeCurrent, 1, 10_000, 25, closeables);
@@ -229,8 +229,8 @@ public final class LoggingControlsSupport {
       boolean dbNextToRuntimeConfig) {
     public LoggingSettings {
       retentionDays = Math.max(0, retentionDays);
-      writerQueueMax = Math.max(100, Math.min(1_000_000, writerQueueMax));
-      writerBatchSize = Math.max(1, Math.min(10_000, writerBatchSize));
+      writerQueueMax = PreferencesUiSupport.clampInt(writerQueueMax, 100, 1_000_000);
+      writerBatchSize = PreferencesUiSupport.clampInt(writerBatchSize, 1, 10_000);
       dbFileBaseName = Objects.toString(dbFileBaseName, "").trim();
       if (dbFileBaseName.isEmpty()) dbFileBaseName = "ircafe-chatlog";
     }

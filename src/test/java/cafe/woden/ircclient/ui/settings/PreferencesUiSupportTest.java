@@ -33,6 +33,13 @@ class PreferencesUiSupportTest {
   }
 
   @Test
+  void clampsPlainIntValue() {
+    assertEquals(50, PreferencesUiSupport.clampInt(25, 50, 150));
+    assertEquals(125, PreferencesUiSupport.clampInt(125, 50, 150));
+    assertEquals(150, PreferencesUiSupport.clampInt(175, 50, 150));
+  }
+
+  @Test
   void trimsTextComponentValues() {
     assertEquals("value", PreferencesUiSupport.trimmedText(new JTextField(" value ")));
     assertEquals("", PreferencesUiSupport.trimmedText(null));
