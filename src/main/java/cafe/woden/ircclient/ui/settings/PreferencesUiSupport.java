@@ -12,6 +12,7 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Insets;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import javax.swing.BorderFactory;
@@ -168,6 +169,18 @@ public final class PreferencesUiSupport {
   public static String trimmedStringOrNull(Object value) {
     String trimmed = trimmedString(value);
     return trimmed.isEmpty() ? null : trimmed;
+  }
+
+  public static List<String> trimmedLines(String text) {
+    String raw = Objects.toString(text, "");
+    if (raw.isBlank()) return List.of();
+
+    List<String> lines = new ArrayList<>();
+    for (String line : raw.split("\\R")) {
+      String trimmed = trimmedString(line);
+      if (!trimmed.isEmpty()) lines.add(trimmed);
+    }
+    return List.copyOf(lines);
   }
 
   public static String truncateText(Object value, int maxLength) {

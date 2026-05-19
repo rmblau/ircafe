@@ -2,7 +2,6 @@ package cafe.woden.ircclient.ui.settings.diagnostics;
 
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import javax.swing.JCheckBox;
@@ -122,7 +121,7 @@ public final class DiagnosticsControlsSupport {
         PreferencesUiSupport.trimmedText(controls.jhiccupJarPath()),
         jhiccupJavaCommandRaw,
         jhiccupJavaCommandEffective,
-        parseArgs(controls.jhiccupArgs().getText()));
+        PreferencesUiSupport.trimmedLines(controls.jhiccupArgs().getText()));
   }
 
   public static boolean settingsChanged(
@@ -170,18 +169,6 @@ public final class DiagnosticsControlsSupport {
     runtimeConfig.rememberAppDiagnosticsJhiccupJarPath(settings.jhiccupJarPath());
     runtimeConfig.rememberAppDiagnosticsJhiccupJavaCommand(settings.jhiccupJavaCommandRaw());
     runtimeConfig.rememberAppDiagnosticsJhiccupArgs(settings.jhiccupArgs());
-  }
-
-  private static List<String> parseArgs(String text) {
-    String raw = Objects.toString(text, "");
-    if (raw.isBlank()) return List.of();
-
-    List<String> args = new ArrayList<>();
-    for (String line : raw.split("\\R")) {
-      String arg = Objects.toString(line, "").trim();
-      if (!arg.isEmpty()) args.add(arg);
-    }
-    return List.copyOf(args);
   }
 
   public record DiagnosticsSettings(

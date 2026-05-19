@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.settings;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.JPasswordField;
 import javax.swing.JSpinner;
@@ -64,6 +65,13 @@ class PreferencesUiSupportTest {
     assertEquals("value", PreferencesUiSupport.trimmedStringOrNull(" value "));
     assertNull(PreferencesUiSupport.trimmedStringOrNull("   "));
     assertNull(PreferencesUiSupport.trimmedStringOrNull(null));
+  }
+
+  @Test
+  void trimsNonBlankLines() {
+    assertEquals(List.of("-d 1000", "-c"), PreferencesUiSupport.trimmedLines(" -d 1000 \n\n -c "));
+    assertEquals(List.of(), PreferencesUiSupport.trimmedLines(" \n\t "));
+    assertEquals(List.of(), PreferencesUiSupport.trimmedLines(null));
   }
 
   @Test
