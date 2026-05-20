@@ -4952,21 +4952,34 @@ public class RuntimeConfigStore
   }
 
   private void rememberTimestampSetting(String key, Object value) {
+    updateUiSetting(
+        "timestamp " + key,
+        ui -> {
+          Map<String, Object> timestamps = getOrCreateMap(ui, "timestamps");
+
+          timestamps.put(key, value);
+          // Clean up legacy flat key.
+          ui.remove("chatMessageTimestampsEnabled");
+        });
+  }
+
+  private void rememberUiScalarSetting(String key, Object value, String description) {
+    updateUiSetting(description, ui -> ui.put(key, value));
+  }
+
+  private void updateUiSetting(String description, UiUpdater updater) {
     try {
       if (file.toString().isBlank()) return;
 
       Map<String, Object> doc = loadFileOrEmpty();
       Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
       Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> timestamps = getOrCreateMap(ui, "timestamps");
 
-      timestamps.put(key, value);
-      // Clean up legacy flat key.
-      ui.remove("chatMessageTimestampsEnabled");
+      updater.update(ui);
 
       writeFile(doc);
     } catch (Exception e) {
-      log.warn("[ircafe] Could not persist timestamp {} setting to '{}'", key, file, e);
+      log.warn("[ircafe] Could not persist {} setting to '{}'", description, file, e);
     }
   }
 
@@ -4977,129 +4990,40 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberChatHistoryInitialLoadLines(int lines) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("chatHistoryInitialLoadLines", Math.max(0, lines));
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat history initial load setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting(
+        "chatHistoryInitialLoadLines", Math.max(0, lines), "chat history initial load");
   }
 
   public synchronized void rememberChatHistoryPageSize(int pageSize) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("chatHistoryPageSize", Math.max(1, pageSize));
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat history page size setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting("chatHistoryPageSize", Math.max(1, pageSize), "chat history page size");
   }
 
   public synchronized void rememberChatHistoryAutoLoadWheelDebounceMs(int debounceMs) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = Math.max(100, Math.min(30_000, debounceMs));
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("chatHistoryAutoLoadWheelDebounceMs", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat history wheel debounce setting to '{}'", file, e);
-    }
+    int v = Math.max(100, Math.min(30_000, debounceMs));
+    rememberUiScalarSetting("chatHistoryAutoLoadWheelDebounceMs", v, "chat history wheel debounce");
   }
 
   public synchronized void rememberChatHistoryLoadOlderChunkSize(int chunkSize) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = Math.max(1, Math.min(500, chunkSize));
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("chatHistoryLoadOlderChunkSize", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist chat history load-older chunk-size setting to '{}'", file, e);
-    }
+    int v = Math.max(1, Math.min(500, chunkSize));
+    rememberUiScalarSetting(
+        "chatHistoryLoadOlderChunkSize", v, "chat history load-older chunk-size");
   }
 
   public synchronized void rememberChatHistoryLoadOlderChunkDelayMs(int chunkDelayMs) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = Math.max(0, Math.min(1_000, chunkDelayMs));
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("chatHistoryLoadOlderChunkDelayMs", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist chat history load-older chunk-delay setting to '{}'",
-          file,
-          e);
-    }
+    int v = Math.max(0, Math.min(1_000, chunkDelayMs));
+    rememberUiScalarSetting(
+        "chatHistoryLoadOlderChunkDelayMs", v, "chat history load-older chunk-delay");
   }
 
   public synchronized void rememberChatHistoryLoadOlderChunkEdtBudgetMs(int chunkEdtBudgetMs) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = Math.max(1, Math.min(33, chunkEdtBudgetMs));
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("chatHistoryLoadOlderChunkEdtBudgetMs", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist chat history load-older EDT budget setting to '{}'", file, e);
-    }
+    int v = Math.max(1, Math.min(33, chunkEdtBudgetMs));
+    rememberUiScalarSetting(
+        "chatHistoryLoadOlderChunkEdtBudgetMs", v, "chat history load-older EDT budget");
   }
 
   public synchronized void rememberChatHistoryDeferRichTextDuringBatch(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("chatHistoryDeferRichTextDuringBatch", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist chat history deferred-rich-text setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting(
+        "chatHistoryDeferRichTextDuringBatch", enabled, "chat history deferred-rich-text");
   }
 
   /**
@@ -5127,19 +5051,8 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberChatSmoothWheelScrollingEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("chatSmoothWheelScrollingEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat smooth-wheel scrolling setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting(
+        "chatSmoothWheelScrollingEnabled", enabled, "chat smooth-wheel scrolling");
   }
 
   public synchronized boolean readChatHistoryLockViewportDuringLoadOlder(boolean defaultValue) {
@@ -5163,183 +5076,59 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberChatHistoryLockViewportDuringLoadOlder(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("chatHistoryLockViewportDuringLoadOlder", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat history viewport-lock setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting(
+        "chatHistoryLockViewportDuringLoadOlder", enabled, "chat history viewport-lock");
   }
 
   public synchronized void rememberChatHistoryRemoteRequestTimeoutSeconds(int seconds) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = Math.max(1, Math.min(120, seconds));
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("chatHistoryRemoteRequestTimeoutSeconds", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat history remote-timeout setting to '{}'", file, e);
-    }
+    int v = Math.max(1, Math.min(120, seconds));
+    rememberUiScalarSetting(
+        "chatHistoryRemoteRequestTimeoutSeconds", v, "chat history remote-timeout");
   }
 
   public synchronized void rememberChatHistoryRemoteZncPlaybackTimeoutSeconds(int seconds) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = Math.max(1, Math.min(300, seconds));
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("chatHistoryRemoteZncPlaybackTimeoutSeconds", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist chat history remote ZNC-timeout setting to '{}'", file, e);
-    }
+    int v = Math.max(1, Math.min(300, seconds));
+    rememberUiScalarSetting(
+        "chatHistoryRemoteZncPlaybackTimeoutSeconds", v, "chat history remote ZNC-timeout");
   }
 
   public synchronized void rememberChatHistoryRemoteZncPlaybackWindowMinutes(int minutes) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = Math.max(1, Math.min(1440, minutes));
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("chatHistoryRemoteZncPlaybackWindowMinutes", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist chat history remote ZNC window setting to '{}'", file, e);
-    }
+    int v = Math.max(1, Math.min(1440, minutes));
+    rememberUiScalarSetting(
+        "chatHistoryRemoteZncPlaybackWindowMinutes", v, "chat history remote ZNC window");
   }
 
   public synchronized void rememberCommandHistoryMaxSize(int maxSize) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = maxSize;
-      if (v <= 0) v = 500;
-      if (v > 500) v = 500;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("commandHistoryMaxSize", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist command history max size setting to '{}'", file, e);
-    }
+    int v = maxSize;
+    if (v <= 0) v = 500;
+    if (v > 500) v = 500;
+    rememberUiScalarSetting("commandHistoryMaxSize", v, "command history max size");
   }
 
   public synchronized void rememberChatTranscriptMaxLinesPerTarget(int maxLines) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = Math.max(0, maxLines);
-      if (v > 200_000) v = 200_000;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("chatTranscriptMaxLinesPerTarget", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist chat transcript max-lines-per-target setting to '{}'",
-          file,
-          e);
-    }
+    int v = Math.max(0, maxLines);
+    if (v > 200_000) v = 200_000;
+    rememberUiScalarSetting(
+        "chatTranscriptMaxLinesPerTarget", v, "chat transcript max-lines-per-target");
   }
 
   public synchronized void rememberClientLineColorEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("clientLineColorEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist outgoing message color enabled setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting("clientLineColorEnabled", enabled, "outgoing message color enabled");
   }
 
   public synchronized void rememberClientLineColor(String hex) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("clientLineColor", Objects.toString(hex, "").trim());
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist outgoing message color setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting(
+        "clientLineColor", Objects.toString(hex, "").trim(), "outgoing message color");
   }
 
   public synchronized void rememberOutgoingDeliveryIndicatorsEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("outgoingDeliveryIndicatorsEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist outgoing delivery indicators setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting(
+        "outgoingDeliveryIndicatorsEnabled", enabled, "outgoing delivery indicators");
   }
 
   public synchronized void rememberServerTreeNotificationBadgesEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("serverTreeNotificationBadgesEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist server tree notification badges setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting(
+        "serverTreeNotificationBadgesEnabled", enabled, "server tree notification badges");
   }
 
   public synchronized void rememberUserhostDiscoveryEnabled(boolean enabled) {
@@ -6570,6 +6359,11 @@ public class RuntimeConfigStore
 
   private interface ServerUpdater {
     void update(Map<String, Object> serverMap);
+  }
+
+  @FunctionalInterface
+  private interface UiUpdater {
+    void update(Map<String, Object> ui);
   }
 
   private void updateServer(String serverId, ServerUpdater updater) {
