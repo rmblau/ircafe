@@ -3393,185 +3393,85 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberAppDiagnosticsAssertjSwingEnabled(boolean enabled) {
-    rememberAppDiagnosticsAssertjSwingBoolean("enabled", enabled, "enabled");
+    rememberAppDiagnosticsAssertjSwingSetting("enabled", enabled);
   }
 
   public synchronized void rememberAppDiagnosticsAssertjSwingFreezeWatchdogEnabled(
       boolean enabled) {
-    rememberAppDiagnosticsAssertjSwingBoolean(
-        "edtFreezeWatchdogEnabled", enabled, "edtFreezeWatchdogEnabled");
+    rememberAppDiagnosticsAssertjSwingSetting("edtFreezeWatchdogEnabled", enabled);
   }
 
   public synchronized void rememberAppDiagnosticsAssertjSwingFreezeThresholdMs(int ms) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = clampAssertjFreezeThresholdMs(ms);
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> assertjSwing =
-          getOrCreateMapPath(doc, "ircafe", "ui", "appDiagnostics", "assertjSwing");
-
-      assertjSwing.put("edtFreezeThresholdMs", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist ui.appDiagnostics.assertjSwing.edtFreezeThresholdMs to '{}'",
-          file,
-          e);
-    }
+    rememberAppDiagnosticsAssertjSwingSetting(
+        "edtFreezeThresholdMs", clampAssertjFreezeThresholdMs(ms));
   }
 
   public synchronized void rememberAppDiagnosticsAssertjSwingWatchdogPollMs(int ms) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = clampAssertjWatchdogPollMs(ms);
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> assertjSwing =
-          getOrCreateMapPath(doc, "ircafe", "ui", "appDiagnostics", "assertjSwing");
-
-      assertjSwing.put("edtWatchdogPollMs", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist ui.appDiagnostics.assertjSwing.edtWatchdogPollMs to '{}'",
-          file,
-          e);
-    }
+    rememberAppDiagnosticsAssertjSwingSetting("edtWatchdogPollMs", clampAssertjWatchdogPollMs(ms));
   }
 
   public synchronized void rememberAppDiagnosticsAssertjSwingFallbackViolationReportMs(int ms) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = clampAssertjFallbackViolationReportMs(ms);
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> assertjSwing =
-          getOrCreateMapPath(doc, "ircafe", "ui", "appDiagnostics", "assertjSwing");
-
-      assertjSwing.put("edtFallbackViolationReportMs", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist ui.appDiagnostics.assertjSwing.edtFallbackViolationReportMs to '{}'",
-          file,
-          e);
-    }
+    rememberAppDiagnosticsAssertjSwingSetting(
+        "edtFallbackViolationReportMs", clampAssertjFallbackViolationReportMs(ms));
   }
 
   public synchronized void rememberAppDiagnosticsAssertjSwingIssuePlaySound(boolean enabled) {
-    rememberAppDiagnosticsAssertjSwingBoolean("onIssuePlaySound", enabled, "onIssuePlaySound");
+    rememberAppDiagnosticsAssertjSwingSetting("onIssuePlaySound", enabled);
   }
 
   public synchronized void rememberAppDiagnosticsAssertjSwingIssueShowNotification(
       boolean enabled) {
-    rememberAppDiagnosticsAssertjSwingBoolean(
-        "onIssueShowNotification", enabled, "onIssueShowNotification");
+    rememberAppDiagnosticsAssertjSwingSetting("onIssueShowNotification", enabled);
   }
 
   public synchronized void rememberAppDiagnosticsJhiccupEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> jhiccup =
-          getOrCreateMapPath(doc, "ircafe", "ui", "appDiagnostics", "jhiccup");
-
-      jhiccup.put("enabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.appDiagnostics.jhiccup.enabled to '{}'", file, e);
-    }
+    rememberAppDiagnosticsSectionSetting("jhiccup", "enabled", enabled, false);
   }
 
   public synchronized void rememberAppDiagnosticsJhiccupJarPath(String jarPath) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String v = Objects.toString(jarPath, "").trim();
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> jhiccup =
-          getOrCreateMapPath(doc, "ircafe", "ui", "appDiagnostics", "jhiccup");
-
-      if (v.isEmpty()) {
-        jhiccup.remove("jarPath");
-      } else {
-        jhiccup.put("jarPath", v);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.appDiagnostics.jhiccup.jarPath to '{}'", file, e);
-    }
+    rememberAppDiagnosticsSectionSetting(
+        "jhiccup", "jarPath", Objects.toString(jarPath, "").trim(), true);
   }
 
   public synchronized void rememberAppDiagnosticsJhiccupJavaCommand(String javaCommand) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String v = Objects.toString(javaCommand, "").trim();
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> jhiccup =
-          getOrCreateMapPath(doc, "ircafe", "ui", "appDiagnostics", "jhiccup");
-
-      if (v.isEmpty()) {
-        jhiccup.remove("javaCommand");
-      } else {
-        jhiccup.put("javaCommand", v);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.appDiagnostics.jhiccup.javaCommand to '{}'", file, e);
-    }
+    rememberAppDiagnosticsSectionSetting(
+        "jhiccup", "javaCommand", Objects.toString(javaCommand, "").trim(), true);
   }
 
   public synchronized void rememberAppDiagnosticsJhiccupArgs(List<String> args) {
+    rememberAppDiagnosticsSectionSetting("jhiccup", "args", sanitizeArgs(args), true);
+  }
+
+  private void rememberAppDiagnosticsAssertjSwingSetting(String key, Object value) {
+    rememberAppDiagnosticsSectionSetting("assertjSwing", key, value, false);
+  }
+
+  private void rememberAppDiagnosticsSectionSetting(
+      String section, String key, Object value, boolean removeEmpty) {
     try {
       if (file.toString().isBlank()) return;
 
-      List<String> sanitized = sanitizeArgs(args);
-
       Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> jhiccup =
-          getOrCreateMapPath(doc, "ircafe", "ui", "appDiagnostics", "jhiccup");
+      Map<String, Object> settings =
+          getOrCreateMapPath(doc, "ircafe", "ui", "appDiagnostics", section);
 
-      if (sanitized.isEmpty()) {
-        jhiccup.remove("args");
+      if (removeEmpty && isEmptySettingValue(value)) {
+        settings.remove(key);
       } else {
-        jhiccup.put("args", sanitized);
+        settings.put(key, value);
       }
 
       writeFile(doc);
     } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.appDiagnostics.jhiccup.args to '{}'", file, e);
+      log.warn("[ircafe] Could not persist ui.appDiagnostics.{}.{} to '{}'", section, key, file, e);
     }
   }
 
-  private void rememberAppDiagnosticsAssertjSwingBoolean(String key, boolean value, String label) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> assertjSwing =
-          getOrCreateMapPath(doc, "ircafe", "ui", "appDiagnostics", "assertjSwing");
-
-      assertjSwing.put(key, value);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist ui.appDiagnostics.assertjSwing.{} to '{}'", label, file, e);
-    }
+  private static boolean isEmptySettingValue(Object value) {
+    if (value == null) return true;
+    if (value instanceof CharSequence text) return text.toString().isBlank();
+    if (value instanceof java.util.Collection<?> collection) return collection.isEmpty();
+    return false;
   }
 
   public synchronized void rememberIrcEventNotificationRules(List<IrcEventNotificationRule> rules) {
@@ -4852,173 +4752,66 @@ public class RuntimeConfigStore
   // --- WeeChat-style filters (ircafe.ui.filters.*) ---
 
   public synchronized void rememberFiltersEnabledByDefault(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> filters = getOrCreateMap(ui, "filters");
-
-      filters.put("enabledByDefault", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist filters enabledByDefault setting to '{}'", file, e);
-    }
+    rememberFilterScalarSetting("enabledByDefault", enabled);
   }
 
   public synchronized void rememberFilterPlaceholdersEnabledByDefault(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> filters = getOrCreateMap(ui, "filters");
-
-      filters.put("placeholdersEnabledByDefault", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist filters placeholdersEnabledByDefault setting to '{}'",
-          file,
-          e);
-    }
+    rememberFilterScalarSetting("placeholdersEnabledByDefault", enabled);
   }
 
   public synchronized void rememberFilterPlaceholdersCollapsedByDefault(boolean collapsed) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> filters = getOrCreateMap(ui, "filters");
-
-      filters.put("placeholdersCollapsedByDefault", collapsed);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist filters placeholdersCollapsedByDefault setting to '{}'",
-          file,
-          e);
-    }
+    rememberFilterScalarSetting("placeholdersCollapsedByDefault", collapsed);
   }
 
   public synchronized void rememberFilterPlaceholderMaxPreviewLines(int maxLines) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = FilterPlaceholderRanges.normalizeMaxPreviewLines(maxLines);
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> filters = getOrCreateMap(ui, "filters");
-
-      filters.put("placeholderMaxPreviewLines", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist filters placeholderMaxPreviewLines setting to '{}'", file, e);
-    }
+    rememberFilterScalarSetting(
+        "placeholderMaxPreviewLines", FilterPlaceholderRanges.normalizeMaxPreviewLines(maxLines));
   }
 
   public synchronized void rememberFilterPlaceholderMaxLinesPerRun(int maxLines) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = FilterPlaceholderRanges.normalizeMaxLinesPerRun(maxLines);
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> filters = getOrCreateMap(ui, "filters");
-
-      filters.put("placeholderMaxLinesPerRun", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist filters placeholderMaxLinesPerRun setting to '{}'", file, e);
-    }
+    rememberFilterScalarSetting(
+        "placeholderMaxLinesPerRun", FilterPlaceholderRanges.normalizeMaxLinesPerRun(maxLines));
   }
 
   public synchronized void rememberFilterPlaceholderTooltipMaxTags(int maxTags) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = FilterPlaceholderRanges.normalizeTooltipMaxTags(maxTags);
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> filters = getOrCreateMap(ui, "filters");
-
-      filters.put("placeholderTooltipMaxTags", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist filters placeholderTooltipMaxTags setting to '{}'", file, e);
-    }
+    rememberFilterScalarSetting(
+        "placeholderTooltipMaxTags", FilterPlaceholderRanges.normalizeTooltipMaxTags(maxTags));
   }
 
   public synchronized void rememberFilterHistoryPlaceholderMaxRunsPerBatch(int maxRuns) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = FilterPlaceholderRanges.normalizeHistoryMaxRunsPerBatch(maxRuns);
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> filters = getOrCreateMap(ui, "filters");
-
-      filters.put("historyPlaceholderMaxRunsPerBatch", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist filters historyPlaceholderMaxRunsPerBatch setting to '{}'",
-          file,
-          e);
-    }
+    rememberFilterScalarSetting(
+        "historyPlaceholderMaxRunsPerBatch",
+        FilterPlaceholderRanges.normalizeHistoryMaxRunsPerBatch(maxRuns));
   }
 
   public synchronized void rememberFilterHistoryPlaceholdersEnabledByDefault(boolean enabled) {
+    rememberFilterScalarSetting("historyPlaceholdersEnabledByDefault", enabled);
+  }
+
+  private void rememberFilterScalarSetting(String key, Object value) {
     try {
       if (file.toString().isBlank()) return;
 
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> filters = getOrCreateMap(ui, "filters");
-
-      filters.put("historyPlaceholdersEnabledByDefault", enabled);
+      Map<String, Object> doc = loadFileOrEmpty();
+      Map<String, Object> filters = getOrCreateFilterSettingsMap(doc);
+      filters.put(key, value);
 
       writeFile(doc);
     } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist filters historyPlaceholdersEnabledByDefault setting to '{}'",
-          file,
-          e);
+      log.warn("[ircafe] Could not persist filters {} setting to '{}'", key, file, e);
     }
+  }
+
+  private static Map<String, Object> getOrCreateFilterSettingsMap(Map<String, Object> doc) {
+    return getOrCreateMapPath(doc, "ircafe", "ui", "filters");
   }
 
   public synchronized void rememberFilterRules(List<FilterRule> rules) {
     try {
       if (file.toString().isBlank()) return;
 
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> filters = getOrCreateMap(ui, "filters");
-
+      Map<String, Object> doc = loadFileOrEmpty();
+      Map<String, Object> filters = getOrCreateFilterSettingsMap(doc);
       List<Map<String, Object>> out = new ArrayList<>();
       if (rules != null) {
         for (FilterRule r : rules) {
@@ -5082,11 +4875,8 @@ public class RuntimeConfigStore
     try {
       if (file.toString().isBlank()) return;
 
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> filters = getOrCreateMap(ui, "filters");
-
+      Map<String, Object> doc = loadFileOrEmpty();
+      Map<String, Object> filters = getOrCreateFilterSettingsMap(doc);
       List<Map<String, Object>> out = new ArrayList<>();
       if (overrides != null) {
         for (FilterScopeOverride o : overrides) {
