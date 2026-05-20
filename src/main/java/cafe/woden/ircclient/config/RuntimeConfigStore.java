@@ -2345,313 +2345,94 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberTrayEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("enabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist tray.enabled setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting("tray", "enabled", enabled, "tray.enabled");
   }
 
   public synchronized void rememberTrayCloseToTray(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("closeToTray", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist tray.closeToTray setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting("tray", "closeToTray", enabled, "tray.closeToTray");
   }
 
   public synchronized void rememberTrayCloseToTrayHintShown(boolean shown) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("closeToTrayHintShown", shown);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist tray.closeToTrayHintShown setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting(
+        "tray", "closeToTrayHintShown", shown, "tray.closeToTrayHintShown");
   }
 
   public synchronized void rememberTrayMinimizeToTray(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("minimizeToTray", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist tray.minimizeToTray setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting("tray", "minimizeToTray", enabled, "tray.minimizeToTray");
   }
 
   public synchronized void rememberTrayStartMinimized(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("startMinimized", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist tray.startMinimized setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting("tray", "startMinimized", enabled, "tray.startMinimized");
   }
 
   public synchronized void rememberTrayNotifyHighlights(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("notifyHighlights", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist tray.notifyHighlights setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting("tray", "notifyHighlights", enabled, "tray.notifyHighlights");
   }
 
   public synchronized void rememberTrayNotifyPrivateMessages(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("notifyPrivateMessages", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist tray.notifyPrivateMessages setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting(
+        "tray", "notifyPrivateMessages", enabled, "tray.notifyPrivateMessages");
   }
 
   public synchronized void rememberTrayNotifyConnectionState(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("notifyConnectionState", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist tray.notifyConnectionState setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting(
+        "tray", "notifyConnectionState", enabled, "tray.notifyConnectionState");
   }
 
   public synchronized void rememberTrayNotifyOnlyWhenUnfocused(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("notifyOnlyWhenUnfocused", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist tray.notifyOnlyWhenUnfocused setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting(
+        "tray", "notifyOnlyWhenUnfocused", enabled, "tray.notifyOnlyWhenUnfocused");
   }
 
   public synchronized void rememberTrayNotifyOnlyWhenMinimizedOrHidden(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("notifyOnlyWhenMinimizedOrHidden", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist tray.notifyOnlyWhenMinimizedOrHidden setting to '{}'",
-          file,
-          e);
-    }
+    rememberUiSectionScalarSetting(
+        "tray", "notifyOnlyWhenMinimizedOrHidden", enabled, "tray.notifyOnlyWhenMinimizedOrHidden");
   }
 
   public synchronized void rememberTrayNotifySuppressWhenTargetActive(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("notifySuppressWhenTargetActive", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist tray.notifySuppressWhenTargetActive setting to '{}'",
-          file,
-          e);
-    }
+    rememberUiSectionScalarSetting(
+        "tray", "notifySuppressWhenTargetActive", enabled, "tray.notifySuppressWhenTargetActive");
   }
 
   public synchronized void rememberTrayLinuxDbusActionsEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("linuxDbusActionsEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist tray.linuxDbusActionsEnabled setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting(
+        "tray", "linuxDbusActionsEnabled", enabled, "tray.linuxDbusActionsEnabled");
   }
 
   public synchronized void rememberTrayNotificationBackend(String backendToken) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String v = Objects.toString(backendToken, "").trim().toLowerCase(Locale.ROOT);
-      if (v.isEmpty()) v = "auto";
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("notificationBackend", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist tray.notificationBackend setting to '{}'", file, e);
-    }
+    String v = Objects.toString(backendToken, "").trim().toLowerCase(Locale.ROOT);
+    if (v.isEmpty()) v = "auto";
+    rememberUiSectionScalarSetting("tray", "notificationBackend", v, "tray.notificationBackend");
   }
 
   public synchronized void rememberTrayNotificationSoundsEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("notificationSoundsEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist tray.notificationSoundsEnabled setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting(
+        "tray", "notificationSoundsEnabled", enabled, "tray.notificationSoundsEnabled");
   }
 
   public synchronized void rememberTrayNotificationSound(String soundId) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String v = Objects.toString(soundId, "").trim();
-      if (v.isEmpty()) v = "NOTIF_1";
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("notificationSound", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist tray.notificationSound setting to '{}'", file, e);
-    }
+    String v = Objects.toString(soundId, "").trim();
+    if (v.isEmpty()) v = "NOTIF_1";
+    rememberUiSectionScalarSetting("tray", "notificationSound", v, "tray.notificationSound");
   }
 
   public synchronized void rememberTrayNotificationSoundUseCustom(boolean useCustom) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("notificationSoundUseCustom", useCustom);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist tray.notificationSoundUseCustom setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting(
+        "tray", "notificationSoundUseCustom", useCustom, "tray.notificationSoundUseCustom");
   }
 
   public synchronized void rememberTrayNotificationSoundCustomPath(String relativePath) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String v = Objects.toString(relativePath, "").trim();
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      if (v.isEmpty()) {
-        tray.remove("notificationSoundCustomPath");
-      } else {
-        tray.put("notificationSoundCustomPath", v);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist tray.notificationSoundCustomPath setting to '{}'", file, e);
-    }
+    String v = Objects.toString(relativePath, "").trim();
+    updateUiSetting(
+        "tray.notificationSoundCustomPath",
+        ui -> {
+          Map<String, Object> tray = getOrCreateMap(ui, "tray");
+          if (v.isEmpty()) {
+            tray.remove("notificationSoundCustomPath");
+          } else {
+            tray.put("notificationSoundCustomPath", v);
+          }
+        });
   }
 
   public synchronized void rememberPushySettings(PushyProperties settings) {
