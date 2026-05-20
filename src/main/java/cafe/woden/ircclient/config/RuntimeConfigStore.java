@@ -4934,81 +4934,39 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberTimestampsEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> timestamps = getOrCreateMap(ui, "timestamps");
-
-      timestamps.put("enabled", enabled);
-      // Clean up legacy flat key.
-      ui.remove("chatMessageTimestampsEnabled");
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist timestamp enable setting to '{}'", file, e);
-    }
+    rememberTimestampSetting("enabled", enabled);
   }
 
   public synchronized void rememberTimestampFormat(String format) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String fmt = (format == null || format.isBlank()) ? "HH:mm:ss" : format.trim();
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> timestamps = getOrCreateMap(ui, "timestamps");
-
-      timestamps.put("format", fmt);
-      // Clean up legacy flat key.
-      ui.remove("chatMessageTimestampsEnabled");
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist timestamp format setting to '{}'", file, e);
-    }
+    String fmt = (format == null || format.isBlank()) ? "HH:mm:ss" : format.trim();
+    rememberTimestampSetting("format", fmt);
   }
 
   public synchronized void rememberTimestampsIncludeChatMessages(boolean includeChatMessages) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> timestamps = getOrCreateMap(ui, "timestamps");
-
-      timestamps.put("includeChatMessages", includeChatMessages);
-      // Clean up legacy flat key.
-      ui.remove("chatMessageTimestampsEnabled");
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat message timestamp setting to '{}'", file, e);
-    }
+    rememberTimestampSetting("includeChatMessages", includeChatMessages);
   }
 
   public synchronized void rememberTimestampsIncludePresenceMessages(
       boolean includePresenceMessages) {
+    rememberTimestampSetting("includePresenceMessages", includePresenceMessages);
+  }
+
+  private void rememberTimestampSetting(String key, Object value) {
     try {
       if (file.toString().isBlank()) return;
 
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
+      Map<String, Object> doc = loadFileOrEmpty();
       Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
       Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
       Map<String, Object> timestamps = getOrCreateMap(ui, "timestamps");
 
-      timestamps.put("includePresenceMessages", includePresenceMessages);
+      timestamps.put(key, value);
       // Clean up legacy flat key.
       ui.remove("chatMessageTimestampsEnabled");
 
       writeFile(doc);
     } catch (Exception e) {
-      log.warn("[ircafe] Could not persist presence message timestamp setting to '{}'", file, e);
+      log.warn("[ircafe] Could not persist timestamp {} setting to '{}'", key, file, e);
     }
   }
 
