@@ -2,12 +2,10 @@ package cafe.woden.ircclient.config;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.yaml.snakeyaml.Yaml;
 
 class RuntimeConfigStoreChatBehaviorSettingsTest {
 
@@ -30,7 +28,7 @@ class RuntimeConfigStoreChatBehaviorSettingsTest {
     store.rememberTypingIndicatorsTranscriptEnabled(false);
     store.rememberTypingIndicatorsSendSignalEnabled(false);
 
-    Map<String, Object> ui = section(section(loadYaml(cfg), "ircafe"), "ui");
+    Map<String, Object> ui = RuntimeConfigYamlTestSupport.uiSection(cfg);
     assertEquals(false, ui.get("presenceFoldsEnabled"));
     assertEquals("Bye now", ui.get("defaultQuitMessage"));
     assertEquals(false, ui.get("ctcpRequestsInActiveTargetEnabled"));
@@ -42,15 +40,5 @@ class RuntimeConfigStoreChatBehaviorSettingsTest {
     assertEquals("verbose", ui.get("matrixUserListNameDisplayMode"));
     assertEquals(false, ui.get("typingIndicatorsTranscriptEnabled"));
     assertEquals(false, ui.get("typingIndicatorsSendSignalEnabled"));
-  }
-
-  @SuppressWarnings("unchecked")
-  private static Map<String, Object> loadYaml(Path cfg) throws Exception {
-    return (Map<String, Object>) new Yaml().load(Files.readString(cfg));
-  }
-
-  @SuppressWarnings("unchecked")
-  private static Map<String, Object> section(Map<String, Object> parent, String key) {
-    return (Map<String, Object>) parent.get(key);
   }
 }

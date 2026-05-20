@@ -3,12 +3,10 @@ package cafe.woden.ircclient.config;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.yaml.snakeyaml.Yaml;
 
 class RuntimeConfigStoreTraySettingsTest {
 
@@ -74,21 +72,6 @@ class RuntimeConfigStoreTraySettingsTest {
   }
 
   private static Map<String, Object> traySection(Path cfg) throws Exception {
-    return section(section(loadYaml(cfg), "ircafe"), "ui", "tray");
-  }
-
-  @SuppressWarnings("unchecked")
-  private static Map<String, Object> loadYaml(Path cfg) throws Exception {
-    return (Map<String, Object>) new Yaml().load(Files.readString(cfg));
-  }
-
-  @SuppressWarnings("unchecked")
-  private static Map<String, Object> section(
-      Map<String, Object> parent, String first, String... rest) {
-    Map<String, Object> current = (Map<String, Object>) parent.get(first);
-    for (String key : rest) {
-      current = (Map<String, Object>) current.get(key);
-    }
-    return current;
+    return RuntimeConfigYamlTestSupport.uiSection(cfg, "tray");
   }
 }

@@ -2,12 +2,10 @@ package cafe.woden.ircclient.config;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.yaml.snakeyaml.Yaml;
 
 class RuntimeConfigStoreUiSectionScalarSettingsTest {
 
@@ -36,18 +34,21 @@ class RuntimeConfigStoreUiSectionScalarSettingsTest {
     store.rememberUserInfoEnrichmentPeriodicRefreshIntervalSeconds(0);
     store.rememberUserInfoEnrichmentPeriodicRefreshNicksPerTick(99);
 
-    Map<String, Object> ui = section(section(loadYaml(cfg), "ircafe"), "ui");
-    Map<String, Object> hostmaskDiscovery = section(ui, "hostmaskDiscovery");
+    Map<String, Object> ui = RuntimeConfigYamlTestSupport.uiSection(cfg);
+    Map<String, Object> hostmaskDiscovery =
+        RuntimeConfigYamlTestSupport.section(ui, "hostmaskDiscovery");
     assertEquals(false, hostmaskDiscovery.get("userhostEnabled"));
     assertEquals(1, hostmaskDiscovery.get("userhostMinIntervalSeconds"));
     assertEquals(1, hostmaskDiscovery.get("userhostMaxCommandsPerMinute"));
     assertEquals(1, hostmaskDiscovery.get("userhostNickCooldownMinutes"));
     assertEquals(5, hostmaskDiscovery.get("userhostMaxNicksPerCommand"));
 
-    Map<String, Object> monitorFallback = section(ui, "monitorFallback");
+    Map<String, Object> monitorFallback =
+        RuntimeConfigYamlTestSupport.section(ui, "monitorFallback");
     assertEquals(5, monitorFallback.get("isonPollIntervalSeconds"));
 
-    Map<String, Object> userInfoEnrichment = section(ui, "userInfoEnrichment");
+    Map<String, Object> userInfoEnrichment =
+        RuntimeConfigYamlTestSupport.section(ui, "userInfoEnrichment");
     assertEquals(false, userInfoEnrichment.get("enabled"));
     assertEquals(false, userInfoEnrichment.get("whoisFallbackEnabled"));
     assertEquals(1, userInfoEnrichment.get("userhostMinIntervalSeconds"));
@@ -59,15 +60,5 @@ class RuntimeConfigStoreUiSectionScalarSettingsTest {
     assertEquals(false, userInfoEnrichment.get("periodicRefreshEnabled"));
     assertEquals(5, userInfoEnrichment.get("periodicRefreshIntervalSeconds"));
     assertEquals(20, userInfoEnrichment.get("periodicRefreshNicksPerTick"));
-  }
-
-  @SuppressWarnings("unchecked")
-  private static Map<String, Object> loadYaml(Path cfg) throws Exception {
-    return (Map<String, Object>) new Yaml().load(Files.readString(cfg));
-  }
-
-  @SuppressWarnings("unchecked")
-  private static Map<String, Object> section(Map<String, Object> parent, String key) {
-    return (Map<String, Object>) parent.get(key);
   }
 }
