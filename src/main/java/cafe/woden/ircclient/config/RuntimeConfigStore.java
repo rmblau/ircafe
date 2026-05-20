@@ -57,6 +57,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.IntUnaryOperator;
 import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 import org.slf4j.Logger;
@@ -222,19 +223,8 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when the key is missing or invalid.
    */
   public synchronized boolean readTrayCloseToTrayHintShown(boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-      if (!Files.exists(file)) return defaultValue;
-
-      Map<String, Object> doc = loadFile();
-      return RuntimeConfigDocumentPathReader.readValue(
-              doc, "ircafe", "ui", "tray", "closeToTrayHintShown")
-          .flatMap(RuntimeConfigStore::asBoolean)
-          .orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read tray.closeToTrayHintShown from '{}'", file, e);
-      return defaultValue;
-    }
+    return readUiSectionBoolean(
+        "tray", "closeToTrayHintShown", defaultValue, "tray.closeToTrayHintShown");
   }
 
   /**
@@ -244,19 +234,8 @@ public class RuntimeConfigStore
    */
   @Override
   public synchronized boolean readInviteAutoJoinEnabled(boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-      if (!Files.exists(file)) return defaultValue;
-
-      Map<String, Object> doc = loadFile();
-      return RuntimeConfigDocumentPathReader.readValue(
-              doc, "ircafe", "ui", "invites", "autoJoinOnInvite")
-          .flatMap(RuntimeConfigStore::asBoolean)
-          .orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read invites.autoJoinOnInvite from '{}'", file, e);
-      return defaultValue;
-    }
+    return readUiSectionBoolean(
+        "invites", "autoJoinOnInvite", defaultValue, "invites.autoJoinOnInvite");
   }
 
   /**
@@ -265,19 +244,8 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when the key is missing or invalid.
    */
   public synchronized boolean readUpdateNotifierEnabled(boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-      if (!Files.exists(file)) return defaultValue;
-
-      Map<String, Object> doc = loadFile();
-      return RuntimeConfigDocumentPathReader.readValue(
-              doc, "ircafe", "ui", "updateNotifier", "enabled")
-          .flatMap(RuntimeConfigStore::asBoolean)
-          .orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.updateNotifier.enabled from '{}'", file, e);
-      return defaultValue;
-    }
+    return readUiSectionBoolean(
+        "updateNotifier", "enabled", defaultValue, "ui.updateNotifier.enabled");
   }
 
   /**
@@ -286,19 +254,7 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when the key is missing or invalid.
    */
   public synchronized boolean readLagIndicatorEnabled(boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-      if (!Files.exists(file)) return defaultValue;
-
-      Map<String, Object> doc = loadFile();
-      return RuntimeConfigDocumentPathReader.readValue(
-              doc, "ircafe", "ui", "lagIndicator", "enabled")
-          .flatMap(RuntimeConfigStore::asBoolean)
-          .orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.lagIndicator.enabled from '{}'", file, e);
-      return defaultValue;
-    }
+    return readUiSectionBoolean("lagIndicator", "enabled", defaultValue, "ui.lagIndicator.enabled");
   }
 
   public Path runtimeConfigPath() {
@@ -1330,21 +1286,11 @@ public class RuntimeConfigStore
   }
 
   public synchronized int readMemoryUsageRefreshIntervalMs(int defaultValue) {
-    int fallback = clampMemoryUsageRefreshIntervalMs(defaultValue);
-    try {
-      if (file.toString().isBlank()) return fallback;
-      if (!Files.exists(file)) return fallback;
-
-      Map<String, Object> doc = loadFile();
-      return RuntimeConfigDocumentPathReader.readValue(
-              doc, "ircafe", "ui", "memoryUsageRefreshIntervalMs")
-          .flatMap(RuntimeConfigStore::asInt)
-          .map(this::clampMemoryUsageRefreshIntervalMs)
-          .orElse(fallback);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.memoryUsageRefreshIntervalMs from '{}'", file, e);
-      return fallback;
-    }
+    return readUiInt(
+        "memoryUsageRefreshIntervalMs",
+        defaultValue,
+        this::clampMemoryUsageRefreshIntervalMs,
+        "ui.memoryUsageRefreshIntervalMs");
   }
 
   public synchronized void rememberMemoryUsageRefreshIntervalMs(int intervalMs) {
@@ -1414,19 +1360,8 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when the key is missing or invalid.
    */
   public synchronized boolean readApplicationJfrEnabled(boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-      if (!Files.exists(file)) return defaultValue;
-
-      Map<String, Object> doc = loadFile();
-      return RuntimeConfigDocumentPathReader.readValue(
-              doc, "ircafe", "ui", "appDiagnostics", "jfr", "enabled")
-          .flatMap(RuntimeConfigStore::asBoolean)
-          .orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.appDiagnostics.jfr.enabled from '{}'", file, e);
-      return defaultValue;
-    }
+    return readUiNestedBoolean(
+        defaultValue, "ui.appDiagnostics.jfr.enabled", "appDiagnostics", "jfr", "enabled");
   }
 
   /**
@@ -2607,23 +2542,9 @@ public class RuntimeConfigStore
 
   @Override
   public synchronized String readDefaultQuitMessage() {
-    try {
-      if (file.toString().isBlank()) return DEFAULT_QUIT_MESSAGE;
-      if (!Files.exists(file)) return DEFAULT_QUIT_MESSAGE;
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return DEFAULT_QUIT_MESSAGE;
-
-      Object uiObj = ircafe.get("ui");
-      if (!(uiObj instanceof Map<?, ?> ui)) return DEFAULT_QUIT_MESSAGE;
-
-      if (!ui.containsKey("defaultQuitMessage")) return DEFAULT_QUIT_MESSAGE;
-      return normalizeQuitMessage(ui.get("defaultQuitMessage"));
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.defaultQuitMessage from '{}'", file, e);
-      return DEFAULT_QUIT_MESSAGE;
-    }
+    return readUiValue("ui.defaultQuitMessage", "defaultQuitMessage")
+        .map(RuntimeConfigStore::normalizeQuitMessage)
+        .orElse(DEFAULT_QUIT_MESSAGE);
   }
 
   public synchronized boolean readAppDiagnosticsAssertjSwingEnabled(boolean defaultValue) {
@@ -3109,26 +3030,7 @@ public class RuntimeConfigStore
   }
 
   private boolean readCtcpAutoReplyValue(String key, boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-      if (!Files.exists(file)) return defaultValue;
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return defaultValue;
-
-      Object uiObj = ircafe.get("ui");
-      if (!(uiObj instanceof Map<?, ?> ui)) return defaultValue;
-
-      Object ctcpObj = ui.get("ctcpReplies");
-      if (!(ctcpObj instanceof Map<?, ?> ctcpReplies)) return defaultValue;
-
-      if (!ctcpReplies.containsKey(key)) return defaultValue;
-      return asBoolean(ctcpReplies.get(key)).orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.ctcpReplies.{} from '{}'", key, file, e);
-      return defaultValue;
-    }
+    return readUiSectionBoolean("ctcpReplies", key, defaultValue, "ui.ctcpReplies." + key);
   }
 
   public synchronized void rememberUserCommandAliases(List<UserCommandAlias> aliases) {
@@ -3924,25 +3826,11 @@ public class RuntimeConfigStore
   }
 
   public synchronized int readServerTreeUnreadBadgeScalePercent(int defaultValue) {
-    int fallback = clampServerTreeUnreadBadgeScalePercent(defaultValue);
-    try {
-      if (file.toString().isBlank()) return fallback;
-      if (!Files.exists(file)) return fallback;
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return fallback;
-
-      Object uiObj = ircafe.get("ui");
-      if (!(uiObj instanceof Map<?, ?> ui)) return fallback;
-
-      Object raw = ui.get("serverTreeUnreadBadgeScalePercent");
-      if (raw == null) return fallback;
-      return asInt(raw).map(this::clampServerTreeUnreadBadgeScalePercent).orElse(fallback);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.serverTreeUnreadBadgeScalePercent from '{}'", file, e);
-      return fallback;
-    }
+    return readUiInt(
+        "serverTreeUnreadBadgeScalePercent",
+        defaultValue,
+        this::clampServerTreeUnreadBadgeScalePercent,
+        "ui.serverTreeUnreadBadgeScalePercent");
   }
 
   public synchronized void rememberServerTreeUnreadBadgeScalePercent(int percent) {
@@ -4535,6 +4423,49 @@ public class RuntimeConfigStore
         });
   }
 
+  private Optional<Object> readUiValue(String description, String... path) {
+    try {
+      if (file.toString().isBlank()) return Optional.empty();
+      if (!Files.exists(file)) return Optional.empty();
+
+      Map<String, Object> doc = loadFile();
+      String[] fullPath = new String[path.length + 2];
+      fullPath[0] = "ircafe";
+      fullPath[1] = "ui";
+      System.arraycopy(path, 0, fullPath, 2, path.length);
+      return RuntimeConfigDocumentPathReader.readValue(doc, fullPath);
+    } catch (Exception e) {
+      log.warn("[ircafe] Could not read {} from '{}'", description, file, e);
+      return Optional.empty();
+    }
+  }
+
+  private boolean readUiBoolean(String key, boolean defaultValue, String description) {
+    return readUiValue(description, key)
+        .flatMap(RuntimeConfigStore::asBoolean)
+        .orElse(defaultValue);
+  }
+
+  private boolean readUiSectionBoolean(
+      String section, String key, boolean defaultValue, String description) {
+    return readUiNestedBoolean(defaultValue, description, section, key);
+  }
+
+  private boolean readUiNestedBoolean(boolean defaultValue, String description, String... path) {
+    return readUiValue(description, path)
+        .flatMap(RuntimeConfigStore::asBoolean)
+        .orElse(defaultValue);
+  }
+
+  private int readUiInt(
+      String key, int defaultValue, IntUnaryOperator normalizer, String description) {
+    int fallback = normalizer.applyAsInt(defaultValue);
+    return readUiValue(description, key)
+        .flatMap(RuntimeConfigStore::asInt)
+        .map(normalizer::applyAsInt)
+        .orElse(fallback);
+  }
+
   private void rememberUiScalarSetting(String key, Object value, String description) {
     updateUiSetting(description, ui -> ui.put(key, value));
   }
@@ -4609,22 +4540,8 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when the key is missing or invalid.
    */
   public synchronized boolean readChatSmoothWheelScrollingEnabled(boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-      if (!Files.exists(file)) return defaultValue;
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return defaultValue;
-      Object uiObj = ircafe.get("ui");
-      if (!(uiObj instanceof Map<?, ?> ui)) return defaultValue;
-      Object raw = ui.get("chatSmoothWheelScrollingEnabled");
-      if (raw == null) return defaultValue;
-      return asBoolean(raw).orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.chatSmoothWheelScrollingEnabled from '{}'", file, e);
-      return defaultValue;
-    }
+    return readUiBoolean(
+        "chatSmoothWheelScrollingEnabled", defaultValue, "ui.chatSmoothWheelScrollingEnabled");
   }
 
   public synchronized void rememberChatSmoothWheelScrollingEnabled(boolean enabled) {
@@ -4633,23 +4550,10 @@ public class RuntimeConfigStore
   }
 
   public synchronized boolean readChatHistoryLockViewportDuringLoadOlder(boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-      if (!Files.exists(file)) return defaultValue;
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return defaultValue;
-      Object uiObj = ircafe.get("ui");
-      if (!(uiObj instanceof Map<?, ?> ui)) return defaultValue;
-      Object raw = ui.get("chatHistoryLockViewportDuringLoadOlder");
-      if (raw == null) return defaultValue;
-      return asBoolean(raw).orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not read ui.chatHistoryLockViewportDuringLoadOlder from '{}'", file, e);
-      return defaultValue;
-    }
+    return readUiBoolean(
+        "chatHistoryLockViewportDuringLoadOlder",
+        defaultValue,
+        "ui.chatHistoryLockViewportDuringLoadOlder");
   }
 
   public synchronized void rememberChatHistoryLockViewportDuringLoadOlder(boolean enabled) {
