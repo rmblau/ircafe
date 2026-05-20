@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings.filters;
 
 import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.model.FilterPlaceholderRanges;
 import cafe.woden.ircclient.model.FilterScopeOverride;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.transcript.rebuild.TranscriptRebuildService;
@@ -26,19 +27,24 @@ public final class FilterSettingsApplySupport {
     boolean enabledByDefault = c.filtersEnabledByDefault.isSelected();
     boolean placeholdersEnabledByDefault = c.placeholdersEnabledByDefault.isSelected();
     boolean placeholdersCollapsedByDefault = c.placeholdersCollapsedByDefault.isSelected();
-    int previewLines = PreferencesUiSupport.clampedSpinnerInt(c.placeholderPreviewLines, 0, 25);
+    int previewLines =
+        FilterPlaceholderRanges.normalizeMaxPreviewLines(
+            PreferencesUiSupport.spinnerInt(c.placeholderPreviewLines));
 
     int maxLinesPerRun =
-        PreferencesUiSupport.clampedSpinnerInt(c.placeholderMaxLinesPerRun, 0, 50_000);
+        FilterPlaceholderRanges.normalizeMaxLinesPerRun(
+            PreferencesUiSupport.spinnerInt(c.placeholderMaxLinesPerRun));
 
     int tooltipMaxTags =
-        PreferencesUiSupport.clampedSpinnerInt(c.placeholderTooltipMaxTags, 0, 500);
+        FilterPlaceholderRanges.normalizeTooltipMaxTags(
+            PreferencesUiSupport.spinnerInt(c.placeholderTooltipMaxTags));
 
     boolean historyPlaceholdersEnabledByDefault =
         c.historyPlaceholdersEnabledByDefault.isSelected();
 
     int maxRunsPerBatch =
-        PreferencesUiSupport.clampedSpinnerInt(c.historyPlaceholderMaxRunsPerBatch, 0, 5_000);
+        FilterPlaceholderRanges.normalizeHistoryMaxRunsPerBatch(
+            PreferencesUiSupport.spinnerInt(c.historyPlaceholderMaxRunsPerBatch));
 
     List<FilterScopeOverride> overrides = c.overridesModel.toOverrides();
 

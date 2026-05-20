@@ -34,39 +34,42 @@ public class FilterSettingsBus {
 
   public FilterSettingsBus(UiProperties props) {
     UiProperties.Filters f = (props != null) ? props.filters() : null;
+    FilterSettings defaults = FilterSettings.defaults();
 
     boolean filtersEnabledByDefault =
-        f == null || f.enabledByDefault() == null || Boolean.TRUE.equals(f.enabledByDefault());
+        f != null && f.enabledByDefault() != null
+            ? Boolean.TRUE.equals(f.enabledByDefault())
+            : defaults.filtersEnabledByDefault();
     boolean placeholdersEnabledByDefault =
-        f == null
-            || f.placeholdersEnabledByDefault() == null
-            || Boolean.TRUE.equals(f.placeholdersEnabledByDefault());
+        f != null && f.placeholdersEnabledByDefault() != null
+            ? Boolean.TRUE.equals(f.placeholdersEnabledByDefault())
+            : defaults.placeholdersEnabledByDefault();
     boolean placeholdersCollapsedByDefault =
-        f == null
-            || f.placeholdersCollapsedByDefault() == null
-            || Boolean.TRUE.equals(f.placeholdersCollapsedByDefault());
+        f != null && f.placeholdersCollapsedByDefault() != null
+            ? Boolean.TRUE.equals(f.placeholdersCollapsedByDefault())
+            : defaults.placeholdersCollapsedByDefault();
 
-    int placeholderMaxPreviewLines = 3;
+    int placeholderMaxPreviewLines = defaults.placeholderMaxPreviewLines();
     if (f != null && f.placeholderMaxPreviewLines() != null) {
       placeholderMaxPreviewLines = f.placeholderMaxPreviewLines();
     }
 
-    int placeholderMaxLinesPerRun = 250;
+    int placeholderMaxLinesPerRun = defaults.placeholderMaxLinesPerRun();
     if (f != null && f.placeholderMaxLinesPerRun() != null) {
       placeholderMaxLinesPerRun = f.placeholderMaxLinesPerRun();
     }
 
-    int placeholderTooltipMaxTags = 12;
+    int placeholderTooltipMaxTags = defaults.placeholderTooltipMaxTags();
     if (f != null && f.placeholderTooltipMaxTags() != null) {
       placeholderTooltipMaxTags = f.placeholderTooltipMaxTags();
     }
 
-    int historyPlaceholderMaxRunsPerBatch = 10;
+    int historyPlaceholderMaxRunsPerBatch = defaults.historyPlaceholderMaxRunsPerBatch();
     if (f != null && f.historyPlaceholderMaxRunsPerBatch() != null) {
       historyPlaceholderMaxRunsPerBatch = f.historyPlaceholderMaxRunsPerBatch();
     }
 
-    boolean historyPlaceholdersEnabledByDefault = true;
+    boolean historyPlaceholdersEnabledByDefault = defaults.historyPlaceholdersEnabledByDefault();
     if (f != null && f.historyPlaceholdersEnabledByDefault() != null) {
       historyPlaceholdersEnabledByDefault =
           Boolean.TRUE.equals(f.historyPlaceholdersEnabledByDefault());

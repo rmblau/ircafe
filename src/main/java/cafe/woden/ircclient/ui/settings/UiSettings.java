@@ -119,94 +119,95 @@ public record UiSettings(
     if (trayNotificationBackendMode == null)
       trayNotificationBackendMode = NotificationBackendMode.AUTO;
 
-    if (imageEmbedsMaxWidthPx < 0) imageEmbedsMaxWidthPx = 0;
-    if (imageEmbedsMaxHeightPx < 0) imageEmbedsMaxHeightPx = 0;
+    imageEmbedsMaxWidthPx =
+        SettingsRangeSupport.normalizeImageEmbedDimensionPx(imageEmbedsMaxWidthPx);
+    imageEmbedsMaxHeightPx =
+        SettingsRangeSupport.normalizeImageEmbedDimensionPx(imageEmbedsMaxHeightPx);
 
     if (timestampFormat == null || timestampFormat.isBlank()) timestampFormat = "HH:mm:ss";
     typingIndicatorsTreeStyle = normalizeTypingTreeIndicatorStyle(typingIndicatorsTreeStyle);
     matrixUserListNameDisplayMode =
         normalizeMatrixUserListNameDisplayMode(matrixUserListNameDisplayMode);
 
-    if (chatHistoryInitialLoadLines < 0) chatHistoryInitialLoadLines = 0;
-    if (chatHistoryPageSize <= 0) chatHistoryPageSize = 200;
-    if (chatHistoryAutoLoadWheelDebounceMs <= 0) chatHistoryAutoLoadWheelDebounceMs = 2000;
-    if (chatHistoryAutoLoadWheelDebounceMs < 100) chatHistoryAutoLoadWheelDebounceMs = 100;
-    if (chatHistoryAutoLoadWheelDebounceMs > 30_000) chatHistoryAutoLoadWheelDebounceMs = 30_000;
-    if (chatHistoryLoadOlderChunkSize <= 0) chatHistoryLoadOlderChunkSize = 20;
-    if (chatHistoryLoadOlderChunkSize < 1) chatHistoryLoadOlderChunkSize = 1;
-    if (chatHistoryLoadOlderChunkSize > 500) chatHistoryLoadOlderChunkSize = 500;
-    if (chatHistoryLoadOlderChunkDelayMs < 0) chatHistoryLoadOlderChunkDelayMs = 0;
-    if (chatHistoryLoadOlderChunkDelayMs > 1_000) chatHistoryLoadOlderChunkDelayMs = 1_000;
-    if (chatHistoryLoadOlderChunkEdtBudgetMs <= 0) chatHistoryLoadOlderChunkEdtBudgetMs = 6;
-    if (chatHistoryLoadOlderChunkEdtBudgetMs < 1) chatHistoryLoadOlderChunkEdtBudgetMs = 1;
-    if (chatHistoryLoadOlderChunkEdtBudgetMs > 33) chatHistoryLoadOlderChunkEdtBudgetMs = 33;
-    if (chatHistoryRemoteRequestTimeoutSeconds <= 0) chatHistoryRemoteRequestTimeoutSeconds = 6;
-    if (chatHistoryRemoteRequestTimeoutSeconds < 1) chatHistoryRemoteRequestTimeoutSeconds = 1;
-    if (chatHistoryRemoteRequestTimeoutSeconds > 120) chatHistoryRemoteRequestTimeoutSeconds = 120;
-    if (chatHistoryRemoteZncPlaybackTimeoutSeconds <= 0)
-      chatHistoryRemoteZncPlaybackTimeoutSeconds = 18;
-    if (chatHistoryRemoteZncPlaybackTimeoutSeconds < 1)
-      chatHistoryRemoteZncPlaybackTimeoutSeconds = 1;
-    if (chatHistoryRemoteZncPlaybackTimeoutSeconds > 300)
-      chatHistoryRemoteZncPlaybackTimeoutSeconds = 300;
-    if (chatHistoryRemoteZncPlaybackWindowMinutes <= 0)
-      chatHistoryRemoteZncPlaybackWindowMinutes = 360;
-    if (chatHistoryRemoteZncPlaybackWindowMinutes < 1)
-      chatHistoryRemoteZncPlaybackWindowMinutes = 1;
-    if (chatHistoryRemoteZncPlaybackWindowMinutes > 1440)
-      chatHistoryRemoteZncPlaybackWindowMinutes = 1440;
-
-    if (commandHistoryMaxSize <= 0) commandHistoryMaxSize = 500;
-    if (commandHistoryMaxSize > 500) commandHistoryMaxSize = 500;
-    if (chatTranscriptMaxLinesPerTarget < 0) chatTranscriptMaxLinesPerTarget = 0;
-    if (chatTranscriptMaxLinesPerTarget > 200_000) chatTranscriptMaxLinesPerTarget = 200_000;
+    chatHistoryInitialLoadLines =
+        SettingsRangeSupport.normalizeChatHistoryInitialLoadLines(chatHistoryInitialLoadLines);
+    chatHistoryPageSize = SettingsRangeSupport.normalizeChatHistoryPageSize(chatHistoryPageSize);
+    chatHistoryAutoLoadWheelDebounceMs =
+        SettingsRangeSupport.normalizeChatHistoryAutoLoadWheelDebounceMs(
+            chatHistoryAutoLoadWheelDebounceMs);
+    chatHistoryLoadOlderChunkSize =
+        SettingsRangeSupport.normalizeChatHistoryLoadOlderChunkSize(chatHistoryLoadOlderChunkSize);
+    chatHistoryLoadOlderChunkDelayMs =
+        SettingsRangeSupport.normalizeChatHistoryLoadOlderChunkDelayMs(
+            chatHistoryLoadOlderChunkDelayMs);
+    chatHistoryLoadOlderChunkEdtBudgetMs =
+        SettingsRangeSupport.normalizeChatHistoryLoadOlderChunkEdtBudgetMs(
+            chatHistoryLoadOlderChunkEdtBudgetMs);
+    chatHistoryRemoteRequestTimeoutSeconds =
+        SettingsRangeSupport.normalizeChatHistoryRemoteRequestTimeoutSeconds(
+            chatHistoryRemoteRequestTimeoutSeconds);
+    chatHistoryRemoteZncPlaybackTimeoutSeconds =
+        SettingsRangeSupport.normalizeChatHistoryRemoteZncPlaybackTimeoutSeconds(
+            chatHistoryRemoteZncPlaybackTimeoutSeconds);
+    chatHistoryRemoteZncPlaybackWindowMinutes =
+        SettingsRangeSupport.normalizeChatHistoryRemoteZncPlaybackWindowMinutes(
+            chatHistoryRemoteZncPlaybackWindowMinutes);
+    commandHistoryMaxSize =
+        SettingsRangeSupport.normalizeCommandHistoryMaxSize(commandHistoryMaxSize);
+    chatTranscriptMaxLinesPerTarget =
+        SettingsRangeSupport.normalizeChatTranscriptMaxLinesPerTarget(
+            chatTranscriptMaxLinesPerTarget);
 
     clientLineColor = normalizeHexOrDefault(clientLineColor, "#6AA2FF");
 
     // Hostmask discovery / USERHOST anti-flood
-    if (userhostMinIntervalSeconds <= 0) userhostMinIntervalSeconds = 7;
-    if (userhostMaxCommandsPerMinute <= 0) userhostMaxCommandsPerMinute = 6;
-    if (userhostNickCooldownMinutes <= 0) userhostNickCooldownMinutes = 30;
-    if (userhostMaxNicksPerCommand <= 0) userhostMaxNicksPerCommand = 5;
-    if (userhostMaxNicksPerCommand > 5) userhostMaxNicksPerCommand = 5;
+    userhostMinIntervalSeconds =
+        SettingsRangeSupport.normalizeUserhostMinIntervalSeconds(userhostMinIntervalSeconds);
+    userhostMaxCommandsPerMinute =
+        SettingsRangeSupport.normalizeUserhostMaxCommandsPerMinute(userhostMaxCommandsPerMinute);
+    userhostNickCooldownMinutes =
+        SettingsRangeSupport.normalizeUserhostNickCooldownMinutes(userhostNickCooldownMinutes);
+    userhostMaxNicksPerCommand =
+        SettingsRangeSupport.normalizeUserhostMaxNicksPerCommand(userhostMaxNicksPerCommand);
 
     // General user info enrichment (fallback)
-    if (userInfoEnrichmentUserhostMinIntervalSeconds <= 0)
-      userInfoEnrichmentUserhostMinIntervalSeconds = 15;
-    if (userInfoEnrichmentUserhostMaxCommandsPerMinute <= 0)
-      userInfoEnrichmentUserhostMaxCommandsPerMinute = 3;
-    if (userInfoEnrichmentUserhostNickCooldownMinutes <= 0)
-      userInfoEnrichmentUserhostNickCooldownMinutes = 60;
-    if (userInfoEnrichmentUserhostMaxNicksPerCommand <= 0)
-      userInfoEnrichmentUserhostMaxNicksPerCommand = 5;
-    if (userInfoEnrichmentUserhostMaxNicksPerCommand > 5)
-      userInfoEnrichmentUserhostMaxNicksPerCommand = 5;
-
-    if (userInfoEnrichmentWhoisMinIntervalSeconds <= 0)
-      userInfoEnrichmentWhoisMinIntervalSeconds = 45;
-    if (userInfoEnrichmentWhoisNickCooldownMinutes <= 0)
-      userInfoEnrichmentWhoisNickCooldownMinutes = 120;
-
-    if (userInfoEnrichmentPeriodicRefreshIntervalSeconds <= 0)
-      userInfoEnrichmentPeriodicRefreshIntervalSeconds = 300;
-    if (userInfoEnrichmentPeriodicRefreshNicksPerTick <= 0)
-      userInfoEnrichmentPeriodicRefreshNicksPerTick = 2;
-    if (userInfoEnrichmentPeriodicRefreshNicksPerTick > 10)
-      userInfoEnrichmentPeriodicRefreshNicksPerTick = 10;
-
-    if (monitorIsonFallbackPollIntervalSeconds <= 0) monitorIsonFallbackPollIntervalSeconds = 30;
-    if (monitorIsonFallbackPollIntervalSeconds < 5) monitorIsonFallbackPollIntervalSeconds = 5;
-    if (monitorIsonFallbackPollIntervalSeconds > 600) monitorIsonFallbackPollIntervalSeconds = 600;
-
-    if (notificationRuleCooldownSeconds < 0) notificationRuleCooldownSeconds = 15;
-    if (notificationRuleCooldownSeconds > 3600) notificationRuleCooldownSeconds = 3600;
+    userInfoEnrichmentUserhostMinIntervalSeconds =
+        SettingsRangeSupport.normalizeEnrichmentUserhostMinIntervalSeconds(
+            userInfoEnrichmentUserhostMinIntervalSeconds);
+    userInfoEnrichmentUserhostMaxCommandsPerMinute =
+        SettingsRangeSupport.normalizeEnrichmentUserhostMaxCommandsPerMinute(
+            userInfoEnrichmentUserhostMaxCommandsPerMinute);
+    userInfoEnrichmentUserhostNickCooldownMinutes =
+        SettingsRangeSupport.normalizeEnrichmentUserhostNickCooldownMinutes(
+            userInfoEnrichmentUserhostNickCooldownMinutes);
+    userInfoEnrichmentUserhostMaxNicksPerCommand =
+        SettingsRangeSupport.normalizeUserhostMaxNicksPerCommand(
+            userInfoEnrichmentUserhostMaxNicksPerCommand);
+    userInfoEnrichmentWhoisMinIntervalSeconds =
+        SettingsRangeSupport.normalizeEnrichmentWhoisMinIntervalSeconds(
+            userInfoEnrichmentWhoisMinIntervalSeconds);
+    userInfoEnrichmentWhoisNickCooldownMinutes =
+        SettingsRangeSupport.normalizeEnrichmentWhoisNickCooldownMinutes(
+            userInfoEnrichmentWhoisNickCooldownMinutes);
+    userInfoEnrichmentPeriodicRefreshIntervalSeconds =
+        SettingsRangeSupport.normalizeEnrichmentPeriodicRefreshIntervalSeconds(
+            userInfoEnrichmentPeriodicRefreshIntervalSeconds);
+    userInfoEnrichmentPeriodicRefreshNicksPerTick =
+        SettingsRangeSupport.normalizeEnrichmentPeriodicRefreshNicksPerTick(
+            userInfoEnrichmentPeriodicRefreshNicksPerTick);
+    monitorIsonFallbackPollIntervalSeconds =
+        SettingsRangeSupport.normalizeMonitorIsonFallbackPollIntervalSeconds(
+            monitorIsonFallbackPollIntervalSeconds);
+    notificationRuleCooldownSeconds =
+        SettingsRangeSupport.normalizeNotificationRuleCooldownSeconds(
+            notificationRuleCooldownSeconds);
 
     if (memoryUsageDisplayMode == null) memoryUsageDisplayMode = MemoryUsageDisplayMode.LONG;
-    if (memoryUsageRefreshIntervalMs <= 0) memoryUsageRefreshIntervalMs = 1000;
-    if (memoryUsageRefreshIntervalMs < 250) memoryUsageRefreshIntervalMs = 250;
-    if (memoryUsageRefreshIntervalMs > 60_000) memoryUsageRefreshIntervalMs = 60_000;
-    if (memoryUsageWarningNearMaxPercent <= 0) memoryUsageWarningNearMaxPercent = 5;
-    if (memoryUsageWarningNearMaxPercent > 50) memoryUsageWarningNearMaxPercent = 50;
+    memoryUsageRefreshIntervalMs =
+        SettingsRangeSupport.normalizeMemoryUsageRefreshIntervalMs(memoryUsageRefreshIntervalMs);
+    memoryUsageWarningNearMaxPercent =
+        SettingsRangeSupport.normalizeMemoryUsageWarningNearMaxPercent(
+            memoryUsageWarningNearMaxPercent);
 
     if (notificationRules == null) notificationRules = List.of();
     serverTreeUnreadChannelColor = normalizeHexOrNull(serverTreeUnreadChannelColor);

@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings.theme;
 
+import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import com.formdev.flatlaf.FlatLaf;
 import java.awt.Color;
 import java.awt.Font;
@@ -192,7 +193,7 @@ class ThemeAppearanceService {
     if (themeAccent == null) themeAccent = UIManager.getColor("Component.focusColor");
     if (themeAccent == null) themeAccent = new Color(0x2D, 0x6B, 0xFF);
 
-    double strength = Math.max(0, Math.min(100, accent.strength())) / 100.0;
+    double strength = SettingsRangeSupport.normalizeThemePercent(accent.strength()) / 100.0;
     Color blended = ThemeColorUtils.mix(themeAccent, chosen, strength);
 
     Color panelBg = UIManager.getColor("Panel.background");

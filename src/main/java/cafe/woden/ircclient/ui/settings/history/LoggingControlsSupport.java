@@ -4,6 +4,7 @@ import cafe.woden.ircclient.config.LogProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.ui.servers.ServerDialogs;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import java.awt.Window;
 import javax.swing.JButton;
@@ -74,7 +75,7 @@ public final class LoggingControlsSupport {
     boolean keepForeverCurrent = logProps == null || Boolean.TRUE.equals(logProps.keepForever());
     int retentionDaysCurrent =
         (logProps != null && logProps.retentionDays() != null)
-            ? Math.max(0, logProps.retentionDays())
+            ? SettingsRangeSupport.normalizeLoggingRetentionDays(logProps.retentionDays())
             : 0;
 
     JCheckBox keepForever = new JCheckBox("Keep chat history forever (no retention pruning)");
@@ -93,7 +94,7 @@ public final class LoggingControlsSupport {
 
     int writerQueueMaxCurrent =
         (logProps != null && logProps.writerQueueMax() != null)
-            ? SettingsValueSupport.clampInt(logProps.writerQueueMax(), 100, 1_000_000)
+            ? SettingsRangeSupport.normalizeLoggingWriterQueueMax(logProps.writerQueueMax())
             : 50_000;
     javax.swing.JSpinner writerQueueMax =
         PreferencesUiSupport.numberSpinner(writerQueueMaxCurrent, 100, 1_000_000, 500, closeables);
@@ -104,7 +105,7 @@ public final class LoggingControlsSupport {
 
     int writerBatchSizeCurrent =
         (logProps != null && logProps.writerBatchSize() != null)
-            ? SettingsValueSupport.clampInt(logProps.writerBatchSize(), 1, 10_000)
+            ? SettingsRangeSupport.normalizeLoggingWriterBatchSize(logProps.writerBatchSize())
             : 250;
     javax.swing.JSpinner writerBatchSize =
         PreferencesUiSupport.numberSpinner(writerBatchSizeCurrent, 1, 10_000, 25, closeables);
@@ -228,9 +229,9 @@ public final class LoggingControlsSupport {
       String dbFileBaseName,
       boolean dbNextToRuntimeConfig) {
     public LoggingSettings {
-      retentionDays = Math.max(0, retentionDays);
-      writerQueueMax = SettingsValueSupport.clampInt(writerQueueMax, 100, 1_000_000);
-      writerBatchSize = SettingsValueSupport.clampInt(writerBatchSize, 1, 10_000);
+      retentionDays = SettingsRangeSupport.normalizeLoggingRetentionDays(retentionDays);
+      writerQueueMax = SettingsRangeSupport.normalizeLoggingWriterQueueMax(writerQueueMax);
+      writerBatchSize = SettingsRangeSupport.normalizeLoggingWriterBatchSize(writerBatchSize);
       dbFileBaseName = SettingsValueSupport.trimmedString(dbFileBaseName);
       if (dbFileBaseName.isEmpty()) dbFileBaseName = "ircafe-chatlog";
     }

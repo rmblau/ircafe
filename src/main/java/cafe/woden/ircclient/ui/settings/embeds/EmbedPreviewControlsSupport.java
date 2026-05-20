@@ -4,6 +4,7 @@ import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.ui.settings.EmbedCardStyle;
 import cafe.woden.ircclient.ui.settings.EmbedCardStyleBus;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import java.util.List;
 import javax.swing.JCheckBox;
@@ -153,8 +154,10 @@ public final class EmbedPreviewControlsSupport {
       boolean linkPreviewsCollapsedByDefault,
       EmbedCardStyle embedCardStyle) {
     public EmbedPreviewSettings {
-      if (imageEmbedsMaxWidthPx < 0) imageEmbedsMaxWidthPx = 0;
-      if (imageEmbedsMaxHeightPx < 0) imageEmbedsMaxHeightPx = 0;
+      imageEmbedsMaxWidthPx =
+          SettingsRangeSupport.normalizeImageEmbedDimensionPx(imageEmbedsMaxWidthPx);
+      imageEmbedsMaxHeightPx =
+          SettingsRangeSupport.normalizeImageEmbedDimensionPx(imageEmbedsMaxHeightPx);
       if (embedCardStyle == null) embedCardStyle = EmbedCardStyle.DEFAULT;
     }
 

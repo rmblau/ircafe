@@ -2,11 +2,11 @@ package cafe.woden.ircclient.ui.settings.filters;
 
 import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.model.FilterPlaceholderRanges;
 import cafe.woden.ircclient.ui.chat.transcript.rebuild.TranscriptRebuildService;
 import cafe.woden.ircclient.ui.filter.FilterSettings;
 import cafe.woden.ircclient.ui.filter.FilterSettingsBus;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
-import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import java.awt.Window;
 import java.util.List;
 import java.util.Objects;
@@ -38,7 +38,7 @@ public final class FilterControlsSupport {
 
     JSpinner previewLines =
         PreferencesUiSupport.numberSpinner(
-            SettingsValueSupport.clampInt(current.placeholderMaxPreviewLines(), 0, 25),
+            FilterPlaceholderRanges.normalizeMaxPreviewLines(current.placeholderMaxPreviewLines()),
             0,
             25,
             1,
@@ -46,7 +46,7 @@ public final class FilterControlsSupport {
 
     JSpinner maxLinesPerRun =
         PreferencesUiSupport.numberSpinner(
-            SettingsValueSupport.clampInt(current.placeholderMaxLinesPerRun(), 0, 50_000),
+            FilterPlaceholderRanges.normalizeMaxLinesPerRun(current.placeholderMaxLinesPerRun()),
             0,
             50_000,
             50,
@@ -56,7 +56,7 @@ public final class FilterControlsSupport {
 
     JSpinner tooltipMaxTags =
         PreferencesUiSupport.numberSpinner(
-            SettingsValueSupport.clampInt(current.placeholderTooltipMaxTags(), 0, 500),
+            FilterPlaceholderRanges.normalizeTooltipMaxTags(current.placeholderTooltipMaxTags()),
             0,
             500,
             1,
@@ -71,7 +71,8 @@ public final class FilterControlsSupport {
 
     JSpinner historyMaxRuns =
         PreferencesUiSupport.numberSpinner(
-            SettingsValueSupport.clampInt(current.historyPlaceholderMaxRunsPerBatch(), 0, 5_000),
+            FilterPlaceholderRanges.normalizeHistoryMaxRunsPerBatch(
+                current.historyPlaceholderMaxRunsPerBatch()),
             0,
             5_000,
             1,

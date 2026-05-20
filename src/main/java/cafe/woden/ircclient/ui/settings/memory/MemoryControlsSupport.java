@@ -2,7 +2,7 @@ package cafe.woden.ircclient.ui.settings.memory;
 
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
-import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
+import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import java.util.List;
 import javax.swing.JCheckBox;
@@ -81,7 +81,8 @@ public final class MemoryControlsSupport {
             displayMode, MemoryUsageDisplayMode.class, MemoryUsageDisplayMode.LONG);
     return new MemorySettings(
         mode,
-        PreferencesUiSupport.clampedSpinnerInt(refreshIntervalMs, 250, 60_000),
+        SettingsRangeSupport.normalizeMemoryUsageRefreshIntervalMs(
+            PreferencesUiSupport.spinnerInt(refreshIntervalMs)),
         PreferencesUiSupport.spinnerInt(warnings.nearMaxPercent),
         warnings.tooltipEnabled.isSelected(),
         warnings.toastEnabled.isSelected(),
@@ -99,10 +100,6 @@ public final class MemoryControlsSupport {
     runtimeConfig.rememberMemoryUsageWarningSoundEnabled(settings.warningSoundEnabled());
   }
 
-  private static int clamp(int value, int min, int max) {
-    return SettingsValueSupport.clampInt(value, min, max);
-  }
-
   public record MemorySettings(
       MemoryUsageDisplayMode displayMode,
       int refreshIntervalMs,
@@ -113,8 +110,10 @@ public final class MemoryControlsSupport {
       boolean warningSoundEnabled) {
     public MemorySettings {
       if (displayMode == null) displayMode = MemoryUsageDisplayMode.LONG;
-      refreshIntervalMs = clamp(refreshIntervalMs, 250, 60_000);
-      warningNearMaxPercent = clamp(warningNearMaxPercent, 1, 50);
+      refreshIntervalMs =
+          SettingsRangeSupport.normalizeMemoryUsageRefreshIntervalMs(refreshIntervalMs);
+      warningNearMaxPercent =
+          SettingsRangeSupport.normalizeMemoryUsageWarningNearMaxPercent(warningNearMaxPercent);
     }
   }
 }

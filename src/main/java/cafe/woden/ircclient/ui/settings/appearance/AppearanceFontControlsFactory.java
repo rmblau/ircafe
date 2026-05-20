@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.appearance;
 
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.theme.ThemeTweakSettings;
 import java.awt.BorderLayout;
@@ -44,7 +45,8 @@ final class AppearanceFontControlsFactory {
     PreferencesUiSupport.decorateComboBoxSelection(uiFontFamily, closeables);
 
     JSpinner uiFontSize =
-        PreferencesUiSupport.numberSpinner(effective.uiFontSize(), 8, 48, 1, closeables);
+        PreferencesUiSupport.numberSpinner(
+            SettingsRangeSupport.normalizeFontSize(effective.uiFontSize()), 8, 48, 1, closeables);
     uiFontSize.setToolTipText(AppearanceTooltips.UI_FONT_OVERRIDE);
 
     JCheckBox uiFontOverrideEnabled = new JCheckBox("Override system UI font");
@@ -74,7 +76,8 @@ final class AppearanceFontControlsFactory {
     fontFamily.setRenderer(new FontPreviewRenderer(fontFamily.getFont()));
 
     JSpinner fontSize =
-        PreferencesUiSupport.numberSpinner(current.chatFontSize(), 8, 48, 1, closeables);
+        PreferencesUiSupport.numberSpinner(
+            SettingsRangeSupport.normalizeFontSize(current.chatFontSize()), 8, 48, 1, closeables);
     return new FontControls(fontFamily, fontSize);
   }
 

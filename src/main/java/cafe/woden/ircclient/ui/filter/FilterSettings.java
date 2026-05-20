@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.filter;
 
+import cafe.woden.ircclient.model.FilterPlaceholderRanges;
 import cafe.woden.ircclient.model.FilterRule;
 import cafe.woden.ircclient.model.FilterScopeOverride;
 import java.util.List;
@@ -18,23 +19,30 @@ public record FilterSettings(
     List<FilterScopeOverride> overrides) {
 
   public FilterSettings {
-    if (placeholderMaxPreviewLines < 0) placeholderMaxPreviewLines = 0;
-    if (placeholderMaxPreviewLines > 25) placeholderMaxPreviewLines = 25;
-
-    if (placeholderMaxLinesPerRun < 0) placeholderMaxLinesPerRun = 0;
-    if (placeholderMaxLinesPerRun > 50_000) placeholderMaxLinesPerRun = 50_000;
-
-    if (placeholderTooltipMaxTags < 0) placeholderTooltipMaxTags = 0;
-    if (placeholderTooltipMaxTags > 500) placeholderTooltipMaxTags = 500;
-
-    if (historyPlaceholderMaxRunsPerBatch < 0) historyPlaceholderMaxRunsPerBatch = 0;
-    if (historyPlaceholderMaxRunsPerBatch > 5_000) historyPlaceholderMaxRunsPerBatch = 5_000;
+    placeholderMaxPreviewLines =
+        FilterPlaceholderRanges.normalizeMaxPreviewLines(placeholderMaxPreviewLines);
+    placeholderMaxLinesPerRun =
+        FilterPlaceholderRanges.normalizeMaxLinesPerRun(placeholderMaxLinesPerRun);
+    placeholderTooltipMaxTags =
+        FilterPlaceholderRanges.normalizeTooltipMaxTags(placeholderTooltipMaxTags);
+    historyPlaceholderMaxRunsPerBatch =
+        FilterPlaceholderRanges.normalizeHistoryMaxRunsPerBatch(historyPlaceholderMaxRunsPerBatch);
 
     rules = (rules == null) ? List.of() : List.copyOf(rules);
     overrides = (overrides == null) ? List.of() : List.copyOf(overrides);
   }
 
   public static FilterSettings defaults() {
-    return new FilterSettings(true, true, true, 3, 250, 12, 10, true, List.of(), List.of());
+    return new FilterSettings(
+        true,
+        true,
+        true,
+        FilterPlaceholderRanges.DEFAULT_MAX_PREVIEW_LINES,
+        FilterPlaceholderRanges.DEFAULT_MAX_LINES_PER_RUN,
+        FilterPlaceholderRanges.DEFAULT_TOOLTIP_MAX_TAGS,
+        FilterPlaceholderRanges.DEFAULT_HISTORY_MAX_RUNS_PER_BATCH,
+        true,
+        List.of(),
+        List.of());
   }
 }

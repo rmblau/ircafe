@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings.network;
 
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import java.awt.Font;
 import java.util.List;
@@ -727,36 +728,47 @@ public final class UserLookupsPanelSupport {
       int enrichmentPeriodicRefreshNicksPerTick,
       int monitorIsonPollIntervalSeconds) {
     public UserLookupSettings {
-      if (userhostMinIntervalSeconds <= 0) userhostMinIntervalSeconds = 7;
-      if (userhostMaxCommandsPerMinute <= 0) userhostMaxCommandsPerMinute = 6;
-      if (userhostNickCooldownMinutes <= 0) userhostNickCooldownMinutes = 30;
-      if (userhostMaxNicksPerCommand <= 0) userhostMaxNicksPerCommand = 5;
-      if (userhostMaxNicksPerCommand > 5) userhostMaxNicksPerCommand = 5;
+      userhostMinIntervalSeconds =
+          SettingsRangeSupport.normalizeUserhostMinIntervalSeconds(userhostMinIntervalSeconds);
+      userhostMaxCommandsPerMinute =
+          SettingsRangeSupport.normalizeUserhostMaxCommandsPerMinute(userhostMaxCommandsPerMinute);
+      userhostNickCooldownMinutes =
+          SettingsRangeSupport.normalizeUserhostNickCooldownMinutes(userhostNickCooldownMinutes);
+      userhostMaxNicksPerCommand =
+          SettingsRangeSupport.normalizeUserhostMaxNicksPerCommand(userhostMaxNicksPerCommand);
 
-      if (enrichmentUserhostMinIntervalSeconds <= 0) enrichmentUserhostMinIntervalSeconds = 15;
-      if (enrichmentUserhostMaxCommandsPerMinute <= 0) {
-        enrichmentUserhostMaxCommandsPerMinute = 3;
-      }
-      if (enrichmentUserhostNickCooldownMinutes <= 0) {
-        enrichmentUserhostNickCooldownMinutes = 60;
-      }
-      if (enrichmentUserhostMaxNicksPerCommand <= 0) enrichmentUserhostMaxNicksPerCommand = 5;
-      if (enrichmentUserhostMaxNicksPerCommand > 5) enrichmentUserhostMaxNicksPerCommand = 5;
+      enrichmentUserhostMinIntervalSeconds =
+          SettingsRangeSupport.normalizeEnrichmentUserhostMinIntervalSeconds(
+              enrichmentUserhostMinIntervalSeconds);
+      enrichmentUserhostMaxCommandsPerMinute =
+          SettingsRangeSupport.normalizeEnrichmentUserhostMaxCommandsPerMinute(
+              enrichmentUserhostMaxCommandsPerMinute);
+      enrichmentUserhostNickCooldownMinutes =
+          SettingsRangeSupport.normalizeEnrichmentUserhostNickCooldownMinutes(
+              enrichmentUserhostNickCooldownMinutes);
+      enrichmentUserhostMaxNicksPerCommand =
+          SettingsRangeSupport.normalizeUserhostMaxNicksPerCommand(
+              enrichmentUserhostMaxNicksPerCommand);
 
-      if (enrichmentWhoisMinIntervalSeconds <= 0) enrichmentWhoisMinIntervalSeconds = 45;
-      if (enrichmentWhoisNickCooldownMinutes <= 0) enrichmentWhoisNickCooldownMinutes = 120;
-      if (enrichmentPeriodicRefreshIntervalSeconds <= 0) {
-        enrichmentPeriodicRefreshIntervalSeconds = 300;
-      }
-      if (enrichmentPeriodicRefreshNicksPerTick <= 0) enrichmentPeriodicRefreshNicksPerTick = 2;
-      if (enrichmentPeriodicRefreshNicksPerTick > 10) enrichmentPeriodicRefreshNicksPerTick = 10;
+      enrichmentWhoisMinIntervalSeconds =
+          SettingsRangeSupport.normalizeEnrichmentWhoisMinIntervalSeconds(
+              enrichmentWhoisMinIntervalSeconds);
+      enrichmentWhoisNickCooldownMinutes =
+          SettingsRangeSupport.normalizeEnrichmentWhoisNickCooldownMinutes(
+              enrichmentWhoisNickCooldownMinutes);
+      enrichmentPeriodicRefreshIntervalSeconds =
+          SettingsRangeSupport.normalizeEnrichmentPeriodicRefreshIntervalSeconds(
+              enrichmentPeriodicRefreshIntervalSeconds);
+      enrichmentPeriodicRefreshNicksPerTick =
+          SettingsRangeSupport.normalizeEnrichmentPeriodicRefreshNicksPerTick(
+              enrichmentPeriodicRefreshNicksPerTick);
 
       enrichmentWhoisFallbackEnabled = enrichmentEnabled && enrichmentWhoisFallbackEnabled;
       enrichmentPeriodicRefreshEnabled = enrichmentEnabled && enrichmentPeriodicRefreshEnabled;
 
-      if (monitorIsonPollIntervalSeconds <= 0) monitorIsonPollIntervalSeconds = 30;
-      if (monitorIsonPollIntervalSeconds < 5) monitorIsonPollIntervalSeconds = 5;
-      if (monitorIsonPollIntervalSeconds > 600) monitorIsonPollIntervalSeconds = 600;
+      monitorIsonPollIntervalSeconds =
+          SettingsRangeSupport.normalizeMonitorIsonFallbackPollIntervalSeconds(
+              monitorIsonPollIntervalSeconds);
     }
   }
 }

@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.theme;
 
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
+import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 
 /**
  * Optional theme accent override.
@@ -12,9 +13,7 @@ public record ThemeAccentSettings(String accentColor, int strength) {
 
   public ThemeAccentSettings {
     accentColor = normalizeHexOrNull(accentColor);
-
-    if (strength < 0) strength = 0;
-    if (strength > 100) strength = 100;
+    strength = SettingsRangeSupport.normalizeThemePercent(strength);
   }
 
   public boolean enabled() {

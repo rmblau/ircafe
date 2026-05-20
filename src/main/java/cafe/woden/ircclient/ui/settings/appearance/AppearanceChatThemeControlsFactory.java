@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings.appearance;
 
+import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettings;
 import java.awt.Component;
 import javax.swing.DefaultListCellRenderer;
@@ -60,7 +61,8 @@ final class AppearanceChatThemeControlsFactory {
 
   private static JSlider createMentionStrengthSlider(ChatThemeSettings current) {
     int strength = current != null ? current.mentionStrength() : 35;
-    JSlider mentionStrength = new JSlider(0, 100, Math.max(0, Math.min(100, strength)));
+    JSlider mentionStrength =
+        new JSlider(0, 100, SettingsRangeSupport.normalizeThemePercent(strength));
     mentionStrength.setMajorTickSpacing(25);
     mentionStrength.setMinorTickSpacing(5);
     mentionStrength.setPaintTicks(false);

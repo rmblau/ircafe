@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings.history;
 
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import java.util.List;
 import javax.swing.JCheckBox;
@@ -182,34 +183,32 @@ public final class HistoryControlsSupport {
       int commandHistoryMaxSize,
       int chatTranscriptMaxLinesPerTarget) {
     public HistorySettings {
-      if (initialLoadLines < 0) initialLoadLines = 0;
-      if (pageSize <= 0) pageSize = 200;
-      if (autoLoadWheelDebounceMs <= 0) autoLoadWheelDebounceMs = 2000;
-      if (autoLoadWheelDebounceMs < 100) autoLoadWheelDebounceMs = 100;
-      if (autoLoadWheelDebounceMs > 30_000) autoLoadWheelDebounceMs = 30_000;
-      if (loadOlderChunkSize <= 0) loadOlderChunkSize = 20;
-      if (loadOlderChunkSize < 1) loadOlderChunkSize = 1;
-      if (loadOlderChunkSize > 500) loadOlderChunkSize = 500;
-      if (loadOlderChunkDelayMs < 0) loadOlderChunkDelayMs = 0;
-      if (loadOlderChunkDelayMs > 1_000) loadOlderChunkDelayMs = 1_000;
-      if (loadOlderChunkEdtBudgetMs <= 0) loadOlderChunkEdtBudgetMs = 6;
-      if (loadOlderChunkEdtBudgetMs < 1) loadOlderChunkEdtBudgetMs = 1;
-      if (loadOlderChunkEdtBudgetMs > 33) loadOlderChunkEdtBudgetMs = 33;
-      if (remoteRequestTimeoutSeconds <= 0) remoteRequestTimeoutSeconds = 6;
-      if (remoteRequestTimeoutSeconds < 1) remoteRequestTimeoutSeconds = 1;
-      if (remoteRequestTimeoutSeconds > 120) remoteRequestTimeoutSeconds = 120;
-      if (remoteZncPlaybackTimeoutSeconds <= 0) remoteZncPlaybackTimeoutSeconds = 18;
-      if (remoteZncPlaybackTimeoutSeconds < 1) remoteZncPlaybackTimeoutSeconds = 1;
-      if (remoteZncPlaybackTimeoutSeconds > 300) remoteZncPlaybackTimeoutSeconds = 300;
-      if (remoteZncPlaybackWindowMinutes <= 0) remoteZncPlaybackWindowMinutes = 360;
-      if (remoteZncPlaybackWindowMinutes < 1) remoteZncPlaybackWindowMinutes = 1;
-      if (remoteZncPlaybackWindowMinutes > 1440) remoteZncPlaybackWindowMinutes = 1440;
-      if (commandHistoryMaxSize <= 0) commandHistoryMaxSize = 500;
-      if (commandHistoryMaxSize > 500) commandHistoryMaxSize = 500;
-      if (chatTranscriptMaxLinesPerTarget < 0) chatTranscriptMaxLinesPerTarget = 0;
-      if (chatTranscriptMaxLinesPerTarget > 200_000) {
-        chatTranscriptMaxLinesPerTarget = 200_000;
-      }
+      initialLoadLines =
+          SettingsRangeSupport.normalizeChatHistoryInitialLoadLines(initialLoadLines);
+      pageSize = SettingsRangeSupport.normalizeChatHistoryPageSize(pageSize);
+      autoLoadWheelDebounceMs =
+          SettingsRangeSupport.normalizeChatHistoryAutoLoadWheelDebounceMs(autoLoadWheelDebounceMs);
+      loadOlderChunkSize =
+          SettingsRangeSupport.normalizeChatHistoryLoadOlderChunkSize(loadOlderChunkSize);
+      loadOlderChunkDelayMs =
+          SettingsRangeSupport.normalizeChatHistoryLoadOlderChunkDelayMs(loadOlderChunkDelayMs);
+      loadOlderChunkEdtBudgetMs =
+          SettingsRangeSupport.normalizeChatHistoryLoadOlderChunkEdtBudgetMs(
+              loadOlderChunkEdtBudgetMs);
+      remoteRequestTimeoutSeconds =
+          SettingsRangeSupport.normalizeChatHistoryRemoteRequestTimeoutSeconds(
+              remoteRequestTimeoutSeconds);
+      remoteZncPlaybackTimeoutSeconds =
+          SettingsRangeSupport.normalizeChatHistoryRemoteZncPlaybackTimeoutSeconds(
+              remoteZncPlaybackTimeoutSeconds);
+      remoteZncPlaybackWindowMinutes =
+          SettingsRangeSupport.normalizeChatHistoryRemoteZncPlaybackWindowMinutes(
+              remoteZncPlaybackWindowMinutes);
+      commandHistoryMaxSize =
+          SettingsRangeSupport.normalizeCommandHistoryMaxSize(commandHistoryMaxSize);
+      chatTranscriptMaxLinesPerTarget =
+          SettingsRangeSupport.normalizeChatTranscriptMaxLinesPerTarget(
+              chatTranscriptMaxLinesPerTarget);
     }
   }
 }

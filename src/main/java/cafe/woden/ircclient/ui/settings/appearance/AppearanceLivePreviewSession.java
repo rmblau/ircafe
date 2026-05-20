@@ -4,6 +4,7 @@ import cafe.woden.ircclient.config.UiProperties;
 import cafe.woden.ircclient.ui.SwingEdt;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
+import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettings;
@@ -369,7 +370,8 @@ public final class AppearanceLivePreviewSession implements AutoCloseable {
 
     String family = PreferencesUiSupport.selectedComboText(fonts.fontFamily);
     if (family.isBlank()) family = "Monospaced";
-    int size = PreferencesUiSupport.clampedSpinnerInt(fonts.fontSize, 8, 48);
+    int size =
+        SettingsRangeSupport.normalizeFontSize(PreferencesUiSupport.spinnerInt(fonts.fontSize));
 
     settingsBus.set(base.withChatFontFamily(family).withChatFontSize(size));
   }

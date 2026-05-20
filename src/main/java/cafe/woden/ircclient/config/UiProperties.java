@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.config;
 
+import cafe.woden.ircclient.model.FilterPlaceholderRanges;
 import java.awt.Font;
 import java.util.List;
 import java.util.Locale;
@@ -338,36 +339,21 @@ public record UiProperties(
       if (placeholdersEnabledByDefault == null) placeholdersEnabledByDefault = true;
       if (placeholdersCollapsedByDefault == null) placeholdersCollapsedByDefault = true;
 
-      if (placeholderMaxPreviewLines == null || placeholderMaxPreviewLines < 0) {
-        placeholderMaxPreviewLines = 3;
-      }
-      if (placeholderMaxPreviewLines > 25) {
-        placeholderMaxPreviewLines = 25;
-      }
+      placeholderMaxPreviewLines =
+          FilterPlaceholderRanges.defaultedMaxPreviewLines(placeholderMaxPreviewLines);
 
-      if (placeholderMaxLinesPerRun == null || placeholderMaxLinesPerRun < 0) {
-        placeholderMaxLinesPerRun = 250;
-      }
       // 0 disables the cap (unbounded).
-      if (placeholderMaxLinesPerRun > 50_000) {
-        placeholderMaxLinesPerRun = 50_000;
-      }
+      placeholderMaxLinesPerRun =
+          FilterPlaceholderRanges.defaultedMaxLinesPerRun(placeholderMaxLinesPerRun);
 
-      if (placeholderTooltipMaxTags == null || placeholderTooltipMaxTags < 0) {
-        placeholderTooltipMaxTags = 12;
-      }
       // 0 disables tag listing in tooltips.
-      if (placeholderTooltipMaxTags > 500) {
-        placeholderTooltipMaxTags = 500;
-      }
+      placeholderTooltipMaxTags =
+          FilterPlaceholderRanges.defaultedTooltipMaxTags(placeholderTooltipMaxTags);
 
-      if (historyPlaceholderMaxRunsPerBatch == null || historyPlaceholderMaxRunsPerBatch < 0) {
-        historyPlaceholderMaxRunsPerBatch = 10;
-      }
       // 0 disables the per-batch cap (unbounded placeholder/hint runs during history loads).
-      if (historyPlaceholderMaxRunsPerBatch > 5_000) {
-        historyPlaceholderMaxRunsPerBatch = 5_000;
-      }
+      historyPlaceholderMaxRunsPerBatch =
+          FilterPlaceholderRanges.defaultedHistoryMaxRunsPerBatch(
+              historyPlaceholderMaxRunsPerBatch);
 
       if (historyPlaceholdersEnabledByDefault == null) {
         historyPlaceholdersEnabledByDefault = true;

@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.settings.notifications;
 import cafe.woden.ircclient.config.NotificationRule;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import java.awt.Color;
@@ -119,8 +120,8 @@ public final class NotificationRulesControlsSupport {
   public record NotificationSettings(
       int cooldownSeconds, List<NotificationRule> rules, ValidationError validationError) {
     public NotificationSettings {
-      if (cooldownSeconds < 0) cooldownSeconds = 15;
-      if (cooldownSeconds > 3600) cooldownSeconds = 3600;
+      cooldownSeconds =
+          SettingsRangeSupport.normalizeNotificationRuleCooldownSeconds(cooldownSeconds);
       rules = rules != null ? List.copyOf(rules) : List.of();
     }
   }

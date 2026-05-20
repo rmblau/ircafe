@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings.diagnostics;
 
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import java.util.List;
 import java.util.Objects;
@@ -106,16 +107,12 @@ public final class DiagnosticsControlsSupport {
     return new DiagnosticsSettings(
         controls.assertjSwingEnabled().isSelected(),
         controls.assertjSwingFreezeWatchdogEnabled().isSelected(),
-        SettingsValueSupport.clampInt(
-            PreferencesUiSupport.spinnerInt(controls.assertjSwingFreezeThresholdMs()),
-            500,
-            120_000),
-        SettingsValueSupport.clampInt(
-            PreferencesUiSupport.spinnerInt(controls.assertjSwingWatchdogPollMs()), 100, 10_000),
-        SettingsValueSupport.clampInt(
-            PreferencesUiSupport.spinnerInt(controls.assertjSwingFallbackViolationReportMs()),
-            250,
-            120_000),
+        SettingsRangeSupport.normalizeAssertjSwingFreezeThresholdMs(
+            PreferencesUiSupport.spinnerInt(controls.assertjSwingFreezeThresholdMs())),
+        SettingsRangeSupport.normalizeAssertjSwingWatchdogPollMs(
+            PreferencesUiSupport.spinnerInt(controls.assertjSwingWatchdogPollMs())),
+        SettingsRangeSupport.normalizeAssertjSwingFallbackViolationReportMs(
+            PreferencesUiSupport.spinnerInt(controls.assertjSwingFallbackViolationReportMs())),
         controls.assertjSwingOnIssuePlaySound().isSelected(),
         controls.assertjSwingOnIssueShowNotification().isSelected(),
         controls.jhiccupEnabled().isSelected(),

@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings.theme;
 
+import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import java.util.Locale;
 
 /**
@@ -22,7 +23,7 @@ public record ChatThemeSettings(
 
   public ChatThemeSettings {
     if (preset == null) preset = Preset.DEFAULT;
-    mentionStrength = clamp01(mentionStrength);
+    mentionStrength = SettingsRangeSupport.normalizeThemePercent(mentionStrength);
   }
 
   public enum Preset {
@@ -45,9 +46,5 @@ public record ChatThemeSettings(
         return DEFAULT;
       }
     }
-  }
-
-  private static int clamp01(int v) {
-    return Math.max(0, Math.min(100, v));
   }
 }

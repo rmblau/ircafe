@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings.chat;
 
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JCheckBox;
@@ -192,7 +193,9 @@ public final class ChatBehaviorControlsSupport {
       RuntimeConfigStore runtimeConfig) {
     int current =
         runtimeConfig != null ? runtimeConfig.readServerTreeUnreadBadgeScalePercent(100) : 100;
-    JSpinner spinner = PreferencesUiSupport.numberSpinner(current, 50, 150, 5);
+    JSpinner spinner =
+        PreferencesUiSupport.numberSpinner(
+            SettingsRangeSupport.normalizeServerTreeUnreadBadgeScalePercent(current), 50, 150, 5);
     spinner.setToolTipText(
         "Scale for unread/highlight count badges in the server tree. Lower values make badges and numbers smaller.");
     return spinner;
@@ -228,7 +231,8 @@ public final class ChatBehaviorControlsSupport {
         typingIndicatorsSendSignalDisplayEnabled.isSelected(),
         matrixUserListNameDisplayModeValue(matrixUserListNameDisplayMode),
         serverTreeNotificationBadgesEnabled.isSelected(),
-        PreferencesUiSupport.clampedSpinnerInt(serverTreeUnreadBadgeScalePercent, 50, 150));
+        SettingsRangeSupport.normalizeServerTreeUnreadBadgeScalePercent(
+            PreferencesUiSupport.spinnerInt(serverTreeUnreadBadgeScalePercent)));
   }
 
   public static void rememberServerTreeSettings(

@@ -33,6 +33,7 @@ import cafe.woden.ircclient.config.api.ServerTreeRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UserCommandAliasesConfigPort;
+import cafe.woden.ircclient.model.FilterPlaceholderRanges;
 import cafe.woden.ircclient.model.FilterRule;
 import cafe.woden.ircclient.model.FilterScopeOverride;
 import cafe.woden.ircclient.model.InterceptorDefinition;
@@ -4911,9 +4912,7 @@ public class RuntimeConfigStore
     try {
       if (file.toString().isBlank()) return;
 
-      int v = maxLines;
-      if (v < 0) v = 0;
-      if (v > 25) v = 25;
+      int v = FilterPlaceholderRanges.normalizeMaxPreviewLines(maxLines);
 
       Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
       Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
@@ -4933,9 +4932,7 @@ public class RuntimeConfigStore
     try {
       if (file.toString().isBlank()) return;
 
-      int v = maxLines;
-      if (v < 0) v = 0;
-      if (v > 50_000) v = 50_000;
+      int v = FilterPlaceholderRanges.normalizeMaxLinesPerRun(maxLines);
 
       Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
       Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
@@ -4955,9 +4952,7 @@ public class RuntimeConfigStore
     try {
       if (file.toString().isBlank()) return;
 
-      int v = maxTags;
-      if (v < 0) v = 0;
-      if (v > 500) v = 500;
+      int v = FilterPlaceholderRanges.normalizeTooltipMaxTags(maxTags);
 
       Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
       Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
@@ -4977,9 +4972,7 @@ public class RuntimeConfigStore
     try {
       if (file.toString().isBlank()) return;
 
-      int v = maxRuns;
-      if (v < 0) v = 0;
-      if (v > 5_000) v = 5_000;
+      int v = FilterPlaceholderRanges.normalizeHistoryMaxRunsPerBatch(maxRuns);
 
       Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
       Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
