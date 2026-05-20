@@ -3710,134 +3710,39 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberImageEmbedsEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("imageEmbedsEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist image embed setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting("imageEmbedsEnabled", enabled, "image embed");
   }
 
   public synchronized void rememberImageEmbedsCollapsedByDefault(boolean collapsed) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("imageEmbedsCollapsedByDefault", collapsed);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist image embed collapse setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting("imageEmbedsCollapsedByDefault", collapsed, "image embed collapse");
   }
 
   public synchronized void rememberImageEmbedsMaxWidthPx(int maxWidthPx) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("imageEmbedsMaxWidthPx", Math.max(0, maxWidthPx));
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist image embed max width setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting(
+        "imageEmbedsMaxWidthPx", Math.max(0, maxWidthPx), "image embed max width");
   }
 
   public synchronized void rememberImageEmbedsMaxHeightPx(int maxHeightPx) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("imageEmbedsMaxHeightPx", Math.max(0, maxHeightPx));
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist image embed max height setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting(
+        "imageEmbedsMaxHeightPx", Math.max(0, maxHeightPx), "image embed max height");
   }
 
   public synchronized void rememberImageEmbedsAnimateGifs(boolean animate) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("imageEmbedsAnimateGifs", animate);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist image embed GIF animation setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting("imageEmbedsAnimateGifs", animate, "image embed GIF animation");
   }
 
   public synchronized void rememberLinkPreviewsEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("linkPreviewsEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist link preview setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting("linkPreviewsEnabled", enabled, "link preview");
   }
 
   public synchronized void rememberLinkPreviewsCollapsedByDefault(boolean collapsed) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("linkPreviewsCollapsedByDefault", collapsed);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist link preview collapse setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting("linkPreviewsCollapsedByDefault", collapsed, "link preview collapse");
   }
 
   public synchronized void rememberEmbedCardStyle(String styleToken) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String token = Objects.toString(styleToken, "").trim().toLowerCase(Locale.ROOT);
-      if (token.isBlank()) token = "default";
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("embedCardStyle", token);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist embed card style setting to '{}'", file, e);
-    }
+    String token = Objects.toString(styleToken, "").trim().toLowerCase(Locale.ROOT);
+    if (token.isBlank()) token = "default";
+    rememberUiScalarSetting("embedCardStyle", token, "embed card style");
   }
 
   /** Reads advanced embed/link loading policy settings under {@code ircafe.ui.embedLoadPolicy}. */
