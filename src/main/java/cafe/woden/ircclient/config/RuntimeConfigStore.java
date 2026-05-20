@@ -3837,41 +3837,20 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberPresenceFoldsEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("presenceFoldsEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist presence folds setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting("presenceFoldsEnabled", enabled, "presence folds");
   }
 
   public synchronized void rememberDefaultQuitMessage(String message) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String normalized = normalizeQuitMessage(message);
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      if (DEFAULT_QUIT_MESSAGE.equals(normalized)) {
-        ui.remove("defaultQuitMessage");
-      } else {
-        ui.put("defaultQuitMessage", normalized);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.defaultQuitMessage to '{}'", file, e);
-    }
+    String normalized = normalizeQuitMessage(message);
+    updateUiSetting(
+        "ui.defaultQuitMessage",
+        ui -> {
+          if (DEFAULT_QUIT_MESSAGE.equals(normalized)) {
+            ui.remove("defaultQuitMessage");
+          } else {
+            ui.put("defaultQuitMessage", normalized);
+          }
+        });
   }
 
   private static String normalizeQuitMessage(Object message) {
@@ -3881,19 +3860,7 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberCtcpRequestsInActiveTargetEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("ctcpRequestsInActiveTargetEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist CTCP request routing setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting("ctcpRequestsInActiveTargetEnabled", enabled, "CTCP request routing");
   }
 
   public synchronized void rememberCtcpAutoRepliesEnabled(boolean enabled) {
@@ -3913,70 +3880,21 @@ public class RuntimeConfigStore
   }
 
   private void rememberCtcpAutoReplyValue(String key, boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> ctcpReplies = getOrCreateMap(ui, "ctcpReplies");
-
-      ctcpReplies.put(key, enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.ctcpReplies.{} to '{}'", key, file, e);
-    }
+    rememberUiSectionScalarSetting("ctcpReplies", key, enabled, "ui.ctcpReplies." + key);
   }
 
   public synchronized void rememberTypingIndicatorsEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("typingIndicatorsEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist typing indicators setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting("typingIndicatorsEnabled", enabled, "typing indicators");
   }
 
   public synchronized void rememberTypingIndicatorsReceiveEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("typingIndicatorsReceiveEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist incoming typing indicators setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting(
+        "typingIndicatorsReceiveEnabled", enabled, "incoming typing indicators");
   }
 
   public synchronized void rememberTypingTreeIndicatorStyle(String style) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String normalized = UiProperties.normalizeTypingTreeIndicatorStyle(style);
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("typingTreeIndicatorStyle", normalized);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist typing tree indicator style to '{}'", file, e);
-    }
+    String normalized = UiProperties.normalizeTypingTreeIndicatorStyle(style);
+    rememberUiScalarSetting("typingTreeIndicatorStyle", normalized, "typing tree indicator style");
   }
 
   public synchronized void rememberTypingIndicatorsTreeEnabled(boolean enabled) {
@@ -3988,20 +3906,9 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberMatrixUserListNameDisplayMode(String mode) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String normalized = UiProperties.normalizeMatrixUserListNameDisplayMode(mode);
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("matrixUserListNameDisplayMode", normalized);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist Matrix user list name display mode to '{}'", file, e);
-    }
+    String normalized = UiProperties.normalizeMatrixUserListNameDisplayMode(mode);
+    rememberUiScalarSetting(
+        "matrixUserListNameDisplayMode", normalized, "Matrix user list name display mode");
   }
 
   public synchronized void rememberTypingIndicatorsTranscriptEnabled(boolean enabled) {
@@ -4013,19 +3920,7 @@ public class RuntimeConfigStore
   }
 
   private void rememberTypingIndicatorDisplayBoolean(String key, boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put(key, enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist {} to '{}'", key, file, e);
-    }
+    rememberUiScalarSetting(key, enabled, key);
   }
 
   public synchronized int readServerTreeUnreadBadgeScalePercent(int defaultValue) {
@@ -4051,18 +3946,9 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberServerTreeUnreadBadgeScalePercent(int percent) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int normalized = clampServerTreeUnreadBadgeScalePercent(percent);
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      ui.put("serverTreeUnreadBadgeScalePercent", normalized);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.serverTreeUnreadBadgeScalePercent to '{}'", file, e);
-    }
+    int normalized = clampServerTreeUnreadBadgeScalePercent(percent);
+    rememberUiScalarSetting(
+        "serverTreeUnreadBadgeScalePercent", normalized, "ui.serverTreeUnreadBadgeScalePercent");
   }
 
   private int clampServerTreeUnreadBadgeScalePercent(int percent) {
