@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.theme;
 
 import cafe.woden.ircclient.ui.util.UiColorKeys;
+import cafe.woden.ircclient.ui.util.UiDefaultKeys;
 import java.awt.Color;
 import java.util.HashSet;
 import java.util.Locale;
@@ -81,7 +82,7 @@ class NimbusThemeOverrideService {
     UiColorKeys.COMBO_BOX_DISABLED_TEXT,
     UiColorKeys.COMBO_BOX_SELECTION_BACKGROUND,
     UiColorKeys.COMBO_BOX_SELECTION_FOREGROUND,
-    UiColorKeys.COMBO_BOX_RENDERER_USE_LIST_COLORS,
+    UiDefaultKeys.COMBO_BOX_RENDERER_USE_LIST_COLORS,
     UiColorKeys.COMBO_BOX_LIST_RENDERER_BACKGROUND,
     UiColorKeys.COMBO_BOX_LIST_RENDERER_TEXT_FOREGROUND,
     UiColorKeys.COMBO_BOX_LIST_RENDERER_SELECTED_BACKGROUND,
@@ -461,7 +462,7 @@ class NimbusThemeOverrideService {
     UIManager.put(UiColorKeys.COMBO_BOX_DISABLED_TEXT, disabledText);
     UIManager.put(UiColorKeys.COMBO_BOX_SELECTION_BACKGROUND, selectionBg);
     UIManager.put(UiColorKeys.COMBO_BOX_SELECTION_FOREGROUND, selectionFg);
-    UIManager.put(UiColorKeys.COMBO_BOX_RENDERER_USE_LIST_COLORS, Boolean.TRUE);
+    UIManager.put(UiDefaultKeys.COMBO_BOX_RENDERER_USE_LIST_COLORS, Boolean.TRUE);
     UIManager.put(UiColorKeys.COMBO_BOX_LIST_RENDERER_BACKGROUND, bg);
     UIManager.put(UiColorKeys.COMBO_BOX_LIST_RENDERER_TEXT_FOREGROUND, text);
     UIManager.put(UiColorKeys.COMBO_BOX_LIST_RENDERER_SELECTED_BACKGROUND, selectionBg);
@@ -1083,12 +1084,12 @@ class NimbusThemeOverrideService {
     UIManager.put(UiColorKeys.POPUP_MENU_BACKGROUND, popupBg);
     UIManager.put(UiColorKeys.POPUP_MENU_FOREGROUND, text);
     UIManager.put(UiColorKeys.POPUP_MENU_BORDER_COLOR, border);
-    UIManager.put("PopupMenu.opaque", Boolean.TRUE);
+    UIManager.put(UiDefaultKeys.POPUP_MENU_OPAQUE, Boolean.TRUE);
     UIManager.put(UiColorKeys.POPUP_MENU_SEPARATOR_FOREGROUND, separator);
     UIManager.put(UiColorKeys.POPUP_MENU_SEPARATOR_BACKGROUND, popupBg);
-    UIManager.put("MenuItem.opaque", Boolean.TRUE);
-    UIManager.put("CheckBoxMenuItem.opaque", Boolean.TRUE);
-    UIManager.put("RadioButtonMenuItem.opaque", Boolean.TRUE);
+    UIManager.put(UiDefaultKeys.MENU_ITEM_OPAQUE, Boolean.TRUE);
+    UIManager.put(UiDefaultKeys.CHECK_BOX_MENU_ITEM_OPAQUE, Boolean.TRUE);
+    UIManager.put(UiDefaultKeys.RADIO_BUTTON_MENU_ITEM_OPAQUE, Boolean.TRUE);
 
     UIManager.put(UiColorKeys.SEPARATOR_FOREGROUND, separator);
     UIManager.put(UiColorKeys.SEPARATOR_BACKGROUND, panelBg);

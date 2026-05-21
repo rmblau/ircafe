@@ -4,6 +4,7 @@ import cafe.woden.ircclient.diagnostics.JfrRuntimeEventsService;
 import cafe.woden.ircclient.diagnostics.RuntimeDiagnosticEvent;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
+import cafe.woden.ircclient.ui.util.UiFontKeys;
 import cafe.woden.ircclient.util.VirtualThreads;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
@@ -859,7 +860,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
       }
 
       Font baseFont = getFont();
-      if (baseFont == null) baseFont = javax.swing.UIManager.getFont("Label.font");
+      if (baseFont == null) baseFont = javax.swing.UIManager.getFont(UiFontKeys.LABEL_FONT);
       if (baseFont == null) baseFont = new Font("Dialog", Font.PLAIN, 12);
 
       g2.setColor(text);

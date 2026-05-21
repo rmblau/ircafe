@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.chat.fold;
 
 import cafe.woden.ircclient.ui.util.UiColorKeys;
+import cafe.woden.ircclient.ui.util.UiFontKeys;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -47,8 +48,8 @@ public class SpoilerMessageComponent extends JPanel {
 
     // Match transcript fonts as closely as we can (embedded Swing components do NOT automatically
     // inherit the JTextPane's styled font). Callers may override via setTranscriptFont(...).
-    Font base = UIManager.getFont("TextPane.font");
-    if (base == null) base = UIManager.getFont("Label.font");
+    Font base = UIManager.getFont(UiFontKeys.TEXT_PANE_FONT);
+    if (base == null) base = UIManager.getFont(UiFontKeys.LABEL_FONT);
     setTranscriptFont(base);
 
     if (!ts.getText().isBlank()) header.add(ts);

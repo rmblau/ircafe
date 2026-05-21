@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.shell;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.util.PopupMenuThemeSupport;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
+import cafe.woden.ircclient.ui.util.UiFontKeys;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -688,18 +689,18 @@ public class StatusBar extends JPanel {
   }
 
   private void applyUiFontsFromDefaults() {
-    Font base = UIManager.getFont("Label.font");
-    Font defaultFont = UIManager.getFont("defaultFont");
+    Font base = UIManager.getFont(UiFontKeys.LABEL_FONT);
+    Font defaultFont = UIManager.getFont(UiFontKeys.DEFAULT_FONT);
     if (defaultFont != null && (base == null || defaultFont.getSize2D() > base.getSize2D())) {
       base = defaultFont;
     }
     if (base == null) return;
 
-    Font buttonFont = UIManager.getFont("Button.font");
+    Font buttonFont = UIManager.getFont(UiFontKeys.BUTTON_FONT);
     if (buttonFont == null) buttonFont = base;
-    Font tableFont = UIManager.getFont("Table.font");
+    Font tableFont = UIManager.getFont(UiFontKeys.TABLE_FONT);
     if (tableFont == null) tableFont = base;
-    Font headerFont = UIManager.getFont("TableHeader.font");
+    Font headerFont = UIManager.getFont(UiFontKeys.TABLE_HEADER_FONT);
     if (headerFont == null) headerFont = buttonFont;
 
     setFont(base);

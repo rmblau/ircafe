@@ -12,6 +12,7 @@ import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.util.PopupMenuThemeSupport;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
+import cafe.woden.ircclient.ui.util.UiFontKeys;
 import cafe.woden.ircclient.util.VirtualThreads;
 import com.formdev.flatlaf.FlatClientProperties;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -265,7 +266,7 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
   }
 
   private void applyDerivedFonts() {
-    Font base = UIManager.getFont("Label.font");
+    Font base = UIManager.getFont(UiFontKeys.LABEL_FONT);
     if (base == null) base = title.getFont();
     if (base == null) return;
     title.setFont(base.deriveFont(Font.BOLD));
@@ -1607,7 +1608,7 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
     hint.setLineWrap(true);
     hint.setWrapStyleWord(true);
     hint.setBorder(BorderFactory.createEmptyBorder(2, 0, 0, 0));
-    Font font = UIManager.getFont("Label.font");
+    Font font = UIManager.getFont(UiFontKeys.LABEL_FONT);
     if (font == null) font = new JLabel().getFont();
     if (font != null) hint.setFont(font);
     Color foreground = firstUiColor(UiColorKeys.LABEL_FOREGROUND, UiColorKeys.TEXT_AREA_FOREGROUND);

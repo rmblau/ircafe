@@ -106,7 +106,6 @@ public final class UiColorKeys {
   public static final String COMBO_BOX_DISABLED_TEXT = "ComboBox.disabledText";
   public static final String COMBO_BOX_SELECTION_BACKGROUND = "ComboBox.selectionBackground";
   public static final String COMBO_BOX_SELECTION_FOREGROUND = "ComboBox.selectionForeground";
-  public static final String COMBO_BOX_RENDERER_USE_LIST_COLORS = "ComboBox.rendererUseListColors";
   public static final String COMBO_BOX_LIST_RENDERER_BACKGROUND =
       "ComboBox:\"ComboBox.listRenderer\".background";
   public static final String COMBO_BOX_LIST_RENDERER_TEXT_FOREGROUND =

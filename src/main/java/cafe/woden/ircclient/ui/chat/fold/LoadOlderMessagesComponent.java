@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.chat.fold;
 
 import cafe.woden.ircclient.ui.util.UiColorKeys;
+import cafe.woden.ircclient.ui.util.UiFontKeys;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
@@ -47,8 +48,8 @@ public final class LoadOlderMessagesComponent extends JPanel {
     button.setFocusPainted(false);
     button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-    Font base = UIManager.getFont("TextPane.font");
-    if (base == null) base = UIManager.getFont("Label.font");
+    Font base = UIManager.getFont(UiFontKeys.TEXT_PANE_FONT);
+    if (base == null) base = UIManager.getFont(UiFontKeys.LABEL_FONT);
     setTranscriptFont(base);
 
     applyTheme();

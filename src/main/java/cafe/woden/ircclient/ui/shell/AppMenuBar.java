@@ -30,6 +30,7 @@ import cafe.woden.ircclient.ui.settings.theme.ThemeSelectionDialog;
 import cafe.woden.ircclient.ui.tray.TrayNotificationService;
 import cafe.woden.ircclient.ui.util.PopupMenuThemeSupport;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
+import cafe.woden.ircclient.ui.util.UiFontKeys;
 import io.github.andrewauclair.moderndocking.Dockable;
 import io.github.andrewauclair.moderndocking.DockingRegion;
 import io.github.andrewauclair.moderndocking.app.Docking;
@@ -2391,7 +2392,7 @@ public class AppMenuBar extends JMenuBar {
 
       java.awt.Font baseFont = getFont();
       if (baseFont == null) {
-        baseFont = javax.swing.UIManager.getFont("Label.font");
+        baseFont = javax.swing.UIManager.getFont(UiFontKeys.LABEL_FONT);
       }
       if (baseFont == null) {
         baseFont = new java.awt.Font("Dialog", java.awt.Font.PLAIN, 12);

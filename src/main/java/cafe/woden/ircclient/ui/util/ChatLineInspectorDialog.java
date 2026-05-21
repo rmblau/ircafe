@@ -123,9 +123,9 @@ public final class ChatLineInspectorDialog {
   }
 
   private static Font defaultMonospaceFont() {
-    Font base = UIManager.getFont("TextArea.font");
-    if (base == null) base = UIManager.getFont("TextPane.font");
-    if (base == null) base = UIManager.getFont("Label.font");
+    Font base = UIManager.getFont(UiFontKeys.TEXT_AREA_FONT);
+    if (base == null) base = UIManager.getFont(UiFontKeys.TEXT_PANE_FONT);
+    if (base == null) base = UIManager.getFont(UiFontKeys.LABEL_FONT);
     int size = base != null ? base.getSize() : 12;
     return new Font(Font.MONOSPACED, Font.PLAIN, Math.max(10, size));
   }

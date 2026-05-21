@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings;
 
+import cafe.woden.ircclient.ui.util.UiFontKeys;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Window;
@@ -46,13 +47,13 @@ public final class SettingsColorPickerDialogSupport {
     preview.setBackground(bg);
 
     JLabel contrast = new JLabel();
-    contrast.setFont(UIManager.getFont("Label.smallFont"));
+    contrast.setFont(UIManager.getFont(UiFontKeys.LABEL_SMALL_FONT));
 
     JTextField hex = new JTextField(SettingsColorSupport.toHex(init), 10);
     PreferencesUiSupport.placeholder(hex, "#RRGGBB");
 
     JLabel hexStatus = new JLabel(" ");
-    hexStatus.setFont(UIManager.getFont("Label.smallFont"));
+    hexStatus.setFont(UIManager.getFont(UiFontKeys.LABEL_SMALL_FONT));
 
     JButton more = new JButton("More…");
     JButton ok = new JButton("OK");

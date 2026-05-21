@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.servertree.coordinator;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
+import cafe.woden.ircclient.ui.util.UiFontKeys;
 import java.awt.Font;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -59,19 +60,19 @@ class ServerTreeUiRefreshCoordinatorTest {
   @Test
   void applyTreeFontFromUiDefaultsUsesTreeFontWhenConfigured() {
     JTree tree = new JTree();
-    Font originalTreeFont = UIManager.getFont("Tree.font");
-    Font originalDefaultFont = UIManager.getFont("defaultFont");
+    Font originalTreeFont = UIManager.getFont(UiFontKeys.TREE_FONT);
+    Font originalDefaultFont = UIManager.getFont(UiFontKeys.DEFAULT_FONT);
     Font expected = new Font("Dialog", Font.BOLD, 13);
     try {
-      UIManager.put("Tree.font", expected);
+      UIManager.put(UiFontKeys.TREE_FONT, expected);
       tree.setFont(new Font("Dialog", Font.PLAIN, 11));
 
       ServerTreeUiRefreshCoordinator.applyTreeFontFromUiDefaults(tree);
 
       assertEquals(expected, tree.getFont());
     } finally {
-      UIManager.put("Tree.font", originalTreeFont);
-      UIManager.put("defaultFont", originalDefaultFont);
+      UIManager.put(UiFontKeys.TREE_FONT, originalTreeFont);
+      UIManager.put(UiFontKeys.DEFAULT_FONT, originalDefaultFont);
     }
   }
 }

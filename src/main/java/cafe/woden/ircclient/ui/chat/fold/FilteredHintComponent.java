@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.chat.fold;
 
 import cafe.woden.ircclient.ui.util.UiColorKeys;
+import cafe.woden.ircclient.ui.util.UiFontKeys;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -154,7 +155,10 @@ public class FilteredHintComponent extends JPanel implements FilteredLineCompone
     Color dim = UIManager.getColor(UiColorKeys.LABEL_DISABLED_FOREGROUND);
     if (dim != null) l.setForeground(dim);
 
-    Font base = (transcriptBaseFont != null) ? transcriptBaseFont : UIManager.getFont("Label.font");
+    Font base =
+        (transcriptBaseFont != null)
+            ? transcriptBaseFont
+            : UIManager.getFont(UiFontKeys.LABEL_FONT);
     if (base != null) {
       l.setFont(base.deriveFont(Font.ITALIC));
     }

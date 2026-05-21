@@ -4,6 +4,7 @@ import cafe.woden.ircclient.model.BuiltInSound;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.util.MouseWheelDecorator;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
+import cafe.woden.ircclient.ui.util.UiFontKeys;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -97,7 +98,7 @@ public final class PreferencesUiSupport {
     area.setOpaque(false);
     area.setFocusable(false);
     area.setBorder(null);
-    area.setFont(UIManager.getFont("Label.font"));
+    area.setFont(UIManager.getFont(UiFontKeys.LABEL_FONT));
     area.setForeground(UIManager.getColor(UiColorKeys.LABEL_FOREGROUND));
     Dimension preferred = area.getPreferredSize();
     area.setMinimumSize(new Dimension(0, preferred != null ? preferred.height : 0));
@@ -113,7 +114,7 @@ public final class PreferencesUiSupport {
     area.setFocusable(false);
     area.setBorder(null);
 
-    Font font = UIManager.getFont("Label.font");
+    Font font = UIManager.getFont(UiFontKeys.LABEL_FONT);
     if (font != null) {
       area.setFont(font.deriveFont(Font.ITALIC));
     } else {
@@ -413,9 +414,9 @@ public final class PreferencesUiSupport {
     area.setFocusable(false);
     area.setBorder(null);
 
-    Font font = UIManager.getFont("CheckBox.font");
-    if (font == null) font = UIManager.getFont("Button.font");
-    if (font == null) font = UIManager.getFont("Label.font");
+    Font font = UIManager.getFont(UiFontKeys.CHECK_BOX_FONT);
+    if (font == null) font = UIManager.getFont(UiFontKeys.BUTTON_FONT);
+    if (font == null) font = UIManager.getFont(UiFontKeys.LABEL_FONT);
     if (font != null) area.setFont(font);
 
     Color color = UIManager.getColor(UiColorKeys.CHECK_BOX_FOREGROUND);
@@ -434,7 +435,7 @@ public final class PreferencesUiSupport {
     area.setWrapStyleWord(true);
     area.setOpaque(false);
     area.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
-    area.setFont(UIManager.getFont("Label.font"));
+    area.setFont(UIManager.getFont(UiFontKeys.LABEL_FONT));
 
     JScrollPane scroll = new JScrollPane(area);
     scroll.setBorder(BorderFactory.createEmptyBorder());

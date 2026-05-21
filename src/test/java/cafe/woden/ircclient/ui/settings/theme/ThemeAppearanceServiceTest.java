@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import cafe.woden.ircclient.ui.util.UiColorKeys;
+import cafe.woden.ircclient.ui.util.UiFontKeys;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import java.awt.Color;
@@ -95,7 +96,7 @@ class ThemeAppearanceServiceTest {
             throw new RuntimeException(e);
           }
 
-          Font baselineDefault = UIManager.getFont("defaultFont");
+          Font baselineDefault = UIManager.getFont(UiFontKeys.DEFAULT_FONT);
           if (baselineDefault == null) {
             throw new IllegalStateException("defaultFont baseline missing");
           }
@@ -111,7 +112,7 @@ class ThemeAppearanceServiceTest {
                   .uiFontSize(targetSize)
                   .build());
 
-          Font afterApply = UIManager.getFont("defaultFont");
+          Font afterApply = UIManager.getFont(UiFontKeys.DEFAULT_FONT);
           assertNotEquals(baselineDefault.getSize(), afterApply.getSize());
           assertEquals(targetSize, afterApply.getSize());
           assertEquals(targetFamily, afterApply.getFamily());
@@ -122,7 +123,7 @@ class ThemeAppearanceServiceTest {
                   .uiFontSize(targetSize)
                   .build());
 
-          Font afterDisable = UIManager.getFont("defaultFont");
+          Font afterDisable = UIManager.getFont(UiFontKeys.DEFAULT_FONT);
           assertEquals(baselineDefault.getFamily(), afterDisable.getFamily());
           assertEquals(baselineDefault.getSize(), afterDisable.getSize());
         });
@@ -139,10 +140,10 @@ class ThemeAppearanceServiceTest {
           }
           // Remove any developer-default font overrides left by other tests so baseline comes from
           // the newly installed LAF.
-          UIManager.put("defaultFont", null);
-          UIManager.put("Tree.font", null);
+          UIManager.put(UiFontKeys.DEFAULT_FONT, null);
+          UIManager.put(UiFontKeys.TREE_FONT, null);
 
-          Font lightTreeBaseline = uiFont("Tree.font");
+          Font lightTreeBaseline = uiFont(UiFontKeys.TREE_FONT);
           int targetSize = lightTreeBaseline.getSize() + 4;
 
           try {
@@ -150,17 +151,17 @@ class ThemeAppearanceServiceTest {
           } catch (Exception e) {
             throw new RuntimeException(e);
           }
-          UIManager.put("defaultFont", null);
-          UIManager.put("Tree.font", null);
+          UIManager.put(UiFontKeys.DEFAULT_FONT, null);
+          UIManager.put(UiFontKeys.TREE_FONT, null);
 
-          Font darkTreeBaseline = uiFont("Tree.font");
+          Font darkTreeBaseline = uiFont(UiFontKeys.TREE_FONT);
           service.applyCommonTweaks(
               ThemeAppearanceSettingsTestFixtures.tweakBuilder()
                   .uiFontOverrideEnabled(true)
                   .uiFontFamily(darkTreeBaseline.getFamily())
                   .uiFontSize(targetSize)
                   .build());
-          Font darkAfterApply = uiFont("Tree.font");
+          Font darkAfterApply = uiFont(UiFontKeys.TREE_FONT);
           assertEquals(targetSize, darkAfterApply.getSize());
 
           try {
@@ -175,7 +176,7 @@ class ThemeAppearanceServiceTest {
                   .uiFontSize(targetSize)
                   .build());
 
-          Font lightAfterRestore = uiFont("Tree.font");
+          Font lightAfterRestore = uiFont(UiFontKeys.TREE_FONT);
           assertEquals(lightTreeBaseline.getSize(), lightAfterRestore.getSize());
           assertNotEquals(targetSize, lightAfterRestore.getSize());
         });
@@ -204,7 +205,7 @@ class ThemeAppearanceServiceTest {
   private static Font uiFont(String key) {
     Font f = UIManager.getFont(key);
     if (f != null) return f;
-    Font fallback = UIManager.getFont("defaultFont");
+    Font fallback = UIManager.getFont(UiFontKeys.DEFAULT_FONT);
     if (fallback != null) return fallback;
     return new Font("Dialog", Font.PLAIN, 12);
   }
