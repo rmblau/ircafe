@@ -2521,23 +2521,10 @@ public class RuntimeConfigStore
 
   @Override
   public synchronized boolean readUnknownCommandAsRawEnabled(boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-      if (!Files.exists(file)) return defaultValue;
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return defaultValue;
-
-      Object commandsObj = ircafe.get("commands");
-      if (!(commandsObj instanceof Map<?, ?> commands)) return defaultValue;
-
-      if (!commands.containsKey("unknownCommandAsRaw")) return defaultValue;
-      return asBoolean(commands.get("unknownCommandAsRaw")).orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read commands.unknownCommandAsRaw from '{}'", file, e);
-      return defaultValue;
-    }
+    return readExistingConfigValue(
+            "commands.unknownCommandAsRaw", "ircafe", "commands", "unknownCommandAsRaw")
+        .flatMap(RuntimeConfigStore::asBoolean)
+        .orElse(defaultValue);
   }
 
   @Override
@@ -3278,18 +3265,9 @@ public class RuntimeConfigStore
   // --- Chat logging / history persistence (ircafe.logging.*) ---
 
   public synchronized boolean readChatLoggingEnabled(boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-      if (!Files.exists(file)) return defaultValue;
-
-      Map<String, Object> doc = loadFile();
-      return RuntimeConfigDocumentPathReader.readValue(doc, "ircafe", "logging", "enabled")
-          .flatMap(RuntimeConfigStore::asBoolean)
-          .orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read logging.enabled from '{}'", file, e);
-      return defaultValue;
-    }
+    return readExistingConfigValue("logging.enabled", "ircafe", "logging", "enabled")
+        .flatMap(RuntimeConfigStore::asBoolean)
+        .orElse(defaultValue);
   }
 
   public synchronized void rememberChatLoggingEnabled(boolean enabled) {
@@ -5328,50 +5306,20 @@ public class RuntimeConfigStore
   @Override
   public synchronized String readGenericBouncerLoginTemplate(String defaultValue) {
     String fallback = normalizeGenericBouncerLoginTemplate(defaultValue);
-    try {
-      if (file.toString().isBlank()) return fallback;
-      if (!Files.exists(file)) return fallback;
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return fallback;
-
-      Object bouncerObj = ircafe.get("bouncer");
-      if (!(bouncerObj instanceof Map<?, ?> bouncer)) return fallback;
-
-      Object genericObj = bouncer.get("generic");
-      if (!(genericObj instanceof Map<?, ?> generic)) return fallback;
-
-      if (!generic.containsKey("loginTemplate")) return fallback;
-      return normalizeGenericBouncerLoginTemplate(generic.get("loginTemplate"));
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read bouncer.generic.loginTemplate from '{}'", file, e);
-      return fallback;
-    }
+    return readGenericBouncerValue("bouncer.generic.loginTemplate", "loginTemplate")
+        .map(RuntimeConfigStore::normalizeGenericBouncerLoginTemplate)
+        .orElse(fallback);
   }
 
   @Override
   public synchronized boolean readGenericBouncerPreferLoginHint(boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-      if (!Files.exists(file)) return defaultValue;
+    return readGenericBouncerValue("bouncer.generic.preferLoginHint", "preferLoginHint")
+        .flatMap(RuntimeConfigStore::asBoolean)
+        .orElse(defaultValue);
+  }
 
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return defaultValue;
-
-      Object bouncerObj = ircafe.get("bouncer");
-      if (!(bouncerObj instanceof Map<?, ?> bouncer)) return defaultValue;
-
-      Object genericObj = bouncer.get("generic");
-      if (!(genericObj instanceof Map<?, ?> generic)) return defaultValue;
-
-      if (!generic.containsKey("preferLoginHint")) return defaultValue;
-      return asBoolean(generic.get("preferLoginHint")).orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read bouncer.generic.preferLoginHint from '{}'", file, e);
-      return defaultValue;
-    }
+  private Optional<Object> readGenericBouncerValue(String description, String key) {
+    return readExistingConfigValue(description, "ircafe", "bouncer", "generic", key);
   }
 
   public synchronized void rememberGenericBouncerLoginTemplate(String template) {
