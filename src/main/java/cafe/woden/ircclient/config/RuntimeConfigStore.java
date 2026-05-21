@@ -2627,13 +2627,7 @@ public class RuntimeConfigStore
     Object argsObj =
         readAppDiagnosticsSetting("ui.appDiagnostics.jhiccup.args", "jhiccup", "args").orElse(null);
     if (!(argsObj instanceof List<?> raw)) return fallback;
-
-    List<String> out = new ArrayList<>();
-    for (Object entry : raw) {
-      String a = Objects.toString(entry, "").trim();
-      if (!a.isEmpty()) out.add(a);
-    }
-    return List.copyOf(out);
+    return sanitizeArgs(raw);
   }
 
   private boolean readAppDiagnosticsAssertjSwingBoolean(String key, boolean defaultValue) {
@@ -2643,21 +2637,12 @@ public class RuntimeConfigStore
   }
 
   private Optional<Object> readAppDiagnosticsSetting(String description, String... path) {
-    try {
-      if (file.toString().isBlank()) return Optional.empty();
-      if (!Files.exists(file)) return Optional.empty();
-
-      Map<String, Object> doc = loadFile();
-      String[] fullPath = new String[path.length + 3];
-      fullPath[0] = "ircafe";
-      fullPath[1] = "ui";
-      fullPath[2] = "appDiagnostics";
-      System.arraycopy(path, 0, fullPath, 3, path.length);
-      return RuntimeConfigDocumentPathReader.readValue(doc, fullPath);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read {} from '{}'", description, file, e);
-      return Optional.empty();
-    }
+    String[] fullPath = new String[path.length + 3];
+    fullPath[0] = "ircafe";
+    fullPath[1] = "ui";
+    fullPath[2] = "appDiagnostics";
+    System.arraycopy(path, 0, fullPath, 3, path.length);
+    return readExistingConfigValue(description, fullPath);
   }
 
   private static int clampAssertjFreezeThresholdMs(int value) {
@@ -2678,11 +2663,11 @@ public class RuntimeConfigStore
     return value;
   }
 
-  private static List<String> sanitizeArgs(List<String> args) {
+  private static List<String> sanitizeArgs(List<?> args) {
     if (args == null || args.isEmpty()) return List.of();
     List<String> out = new ArrayList<>();
-    for (String a : args) {
-      String t = Objects.toString(a, "").trim();
+    for (Object arg : args) {
+      String t = Objects.toString(arg, "").trim();
       if (!t.isEmpty()) out.add(t);
     }
     return List.copyOf(out);
@@ -2691,93 +2676,45 @@ public class RuntimeConfigStore
   public synchronized String readLaunchJvmJavaCommand(String defaultValue) {
     String fallback = Objects.toString(defaultValue, "").trim();
     if (fallback.isEmpty()) fallback = "java";
-    try {
-      if (file.toString().isBlank()) return fallback;
-      if (!Files.exists(file)) return fallback;
-
-      Map<String, Object> doc = loadFile();
-      String raw =
-          RuntimeConfigDocumentPathReader.readValue(doc, "ircafe", "launch", "jvm", "javaCommand")
-              .map(value -> Objects.toString(value, "").trim())
-              .orElse("");
-      return raw.isEmpty() ? fallback : raw;
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read launch.jvm.javaCommand from '{}'", file, e);
-      return fallback;
-    }
+    String raw =
+        readLaunchJvmValue("launch.jvm.javaCommand", "javaCommand")
+            .map(value -> Objects.toString(value, "").trim())
+            .orElse("");
+    return raw.isEmpty() ? fallback : raw;
   }
 
   public synchronized int readLaunchJvmXmsMiB(int defaultValue) {
     int fallback = clampLaunchJvmHeapMiB(defaultValue);
-    try {
-      if (file.toString().isBlank()) return fallback;
-      if (!Files.exists(file)) return fallback;
-
-      Map<String, Object> doc = loadFile();
-      return RuntimeConfigDocumentPathReader.readValue(doc, "ircafe", "launch", "jvm", "xmsMiB")
-          .flatMap(RuntimeConfigStore::asInt)
-          .map(RuntimeConfigStore::clampLaunchJvmHeapMiB)
-          .orElse(fallback);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read launch.jvm.xmsMiB from '{}'", file, e);
-      return fallback;
-    }
+    return readLaunchJvmValue("launch.jvm.xmsMiB", "xmsMiB")
+        .flatMap(RuntimeConfigStore::asInt)
+        .map(RuntimeConfigStore::clampLaunchJvmHeapMiB)
+        .orElse(fallback);
   }
 
   public synchronized int readLaunchJvmXmxMiB(int defaultValue) {
     int fallback = clampLaunchJvmHeapMiB(defaultValue);
-    try {
-      if (file.toString().isBlank()) return fallback;
-      if (!Files.exists(file)) return fallback;
-
-      Map<String, Object> doc = loadFile();
-      return RuntimeConfigDocumentPathReader.readValue(doc, "ircafe", "launch", "jvm", "xmxMiB")
-          .flatMap(RuntimeConfigStore::asInt)
-          .map(RuntimeConfigStore::clampLaunchJvmHeapMiB)
-          .orElse(fallback);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read launch.jvm.xmxMiB from '{}'", file, e);
-      return fallback;
-    }
+    return readLaunchJvmValue("launch.jvm.xmxMiB", "xmxMiB")
+        .flatMap(RuntimeConfigStore::asInt)
+        .map(RuntimeConfigStore::clampLaunchJvmHeapMiB)
+        .orElse(fallback);
   }
 
   public synchronized String readLaunchJvmGc(String defaultValue) {
     String fallback = normalizeLaunchJvmGc(defaultValue);
-    try {
-      if (file.toString().isBlank()) return fallback;
-      if (!Files.exists(file)) return fallback;
-
-      Map<String, Object> doc = loadFile();
-      return RuntimeConfigDocumentPathReader.readValue(doc, "ircafe", "launch", "jvm", "gc")
-          .map(RuntimeConfigStore::normalizeLaunchJvmGc)
-          .orElse(fallback);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read launch.jvm.gc from '{}'", file, e);
-      return fallback;
-    }
+    return readLaunchJvmValue("launch.jvm.gc", "gc")
+        .map(RuntimeConfigStore::normalizeLaunchJvmGc)
+        .orElse(fallback);
   }
 
   public synchronized List<String> readLaunchJvmArgs(List<String> defaultValue) {
-    try {
-      if (file.toString().isBlank()) return sanitizeArgs(defaultValue);
-      if (!Files.exists(file)) return sanitizeArgs(defaultValue);
+    List<String> fallback = sanitizeArgs(defaultValue);
+    Object argsObj = readLaunchJvmValue("launch.jvm.args", "args").orElse(null);
+    if (!(argsObj instanceof List<?> raw)) return fallback;
+    return sanitizeArgs(raw);
+  }
 
-      Map<String, Object> doc = loadFile();
-      Object argsObj =
-          RuntimeConfigDocumentPathReader.readValue(doc, "ircafe", "launch", "jvm", "args")
-              .orElse(null);
-      if (!(argsObj instanceof List<?> raw)) return sanitizeArgs(defaultValue);
-
-      List<String> out = new ArrayList<>();
-      for (Object entry : raw) {
-        String arg = Objects.toString(entry, "").trim();
-        if (!arg.isEmpty()) out.add(arg);
-      }
-      return List.copyOf(out);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read launch.jvm.args from '{}'", file, e);
-      return sanitizeArgs(defaultValue);
-    }
+  private Optional<Object> readLaunchJvmValue(String description, String key) {
+    return readExistingConfigValue(description, "ircafe", "launch", "jvm", key);
   }
 
   public synchronized void rememberLaunchJvmJavaCommand(String javaCommand) {
@@ -4355,16 +4292,20 @@ public class RuntimeConfigStore
   }
 
   private Optional<Object> readUiValue(String description, String... path) {
+    String[] fullPath = new String[path.length + 2];
+    fullPath[0] = "ircafe";
+    fullPath[1] = "ui";
+    System.arraycopy(path, 0, fullPath, 2, path.length);
+    return readExistingConfigValue(description, fullPath);
+  }
+
+  private Optional<Object> readExistingConfigValue(String description, String... path) {
     try {
       if (file.toString().isBlank()) return Optional.empty();
       if (!Files.exists(file)) return Optional.empty();
 
       Map<String, Object> doc = loadFile();
-      String[] fullPath = new String[path.length + 2];
-      fullPath[0] = "ircafe";
-      fullPath[1] = "ui";
-      System.arraycopy(path, 0, fullPath, 2, path.length);
-      return RuntimeConfigDocumentPathReader.readValue(doc, fullPath);
+      return RuntimeConfigDocumentPathReader.readValue(doc, path);
     } catch (Exception e) {
       log.warn("[ircafe] Could not read {} from '{}'", description, file, e);
       return Optional.empty();
