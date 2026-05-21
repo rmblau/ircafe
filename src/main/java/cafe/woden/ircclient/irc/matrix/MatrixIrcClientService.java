@@ -1671,7 +1671,8 @@ public class MatrixIrcClientService implements IrcBackendClientService {
     if (!editTarget.isEmpty()) {
       return sendRawEdit(serverId, target, editTarget, message);
     }
-    String replyTarget = Ircv3Tags.firstTagValue(tags, "reply", MatrixProtocol.TAG_DRAFT_REPLY);
+    String replyTarget =
+        Ircv3Tags.firstTagValue(tags, MatrixProtocol.TAG_REPLY, MatrixProtocol.TAG_DRAFT_REPLY);
     if (!replyTarget.isEmpty()) {
       return sendRawReply(serverId, target, replyTarget, message);
     }
@@ -1701,7 +1702,8 @@ public class MatrixIrcClientService implements IrcBackendClientService {
     if (!editTarget.isEmpty()) {
       return sendRawEdit(serverId, target, editTarget, message);
     }
-    String replyTarget = Ircv3Tags.firstTagValue(tags, "reply", MatrixProtocol.TAG_DRAFT_REPLY);
+    String replyTarget =
+        Ircv3Tags.firstTagValue(tags, MatrixProtocol.TAG_REPLY, MatrixProtocol.TAG_DRAFT_REPLY);
     if (!replyTarget.isEmpty()) {
       return sendRawReply(serverId, target, replyTarget, message);
     }
@@ -1915,9 +1917,10 @@ public class MatrixIrcClientService implements IrcBackendClientService {
   private Completable sendRawTagmsg(String serverId, String rawLine, RawCommand raw) {
     String target = argOrBlank(raw, 0, "TAGMSG requires a target");
     Map<String, String> tags = parseRawTags(rawLine);
-    String replyTarget = Ircv3Tags.firstTagValue(tags, "reply", MatrixProtocol.TAG_DRAFT_REPLY);
-    String reaction = normalize(tags.get("draft/react"));
-    String unreaction = normalize(tags.get("draft/unreact"));
+    String replyTarget =
+        Ircv3Tags.firstTagValue(tags, MatrixProtocol.TAG_REPLY, MatrixProtocol.TAG_DRAFT_REPLY);
+    String reaction = normalize(tags.get(MatrixProtocol.TAG_DRAFT_REACT));
+    String unreaction = normalize(tags.get(MatrixProtocol.TAG_DRAFT_UNREACT));
     if (!reaction.isEmpty() && !unreaction.isEmpty()) {
       throw new IllegalArgumentException(
           "TAGMSG cannot include both +draft/react and +draft/unreact");

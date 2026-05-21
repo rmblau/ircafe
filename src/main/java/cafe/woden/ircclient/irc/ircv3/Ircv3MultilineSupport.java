@@ -1,5 +1,10 @@
 package cafe.woden.ircclient.irc.ircv3;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_MULTILINE;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_MULTILINE_CONCAT;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MULTILINE;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MULTILINE_CONCAT;
+
 import java.util.Locale;
 import java.util.Objects;
 
@@ -8,10 +13,10 @@ public final class Ircv3MultilineSupport {
 
   public record LimitParams(long maxBytes, long maxLines) {}
 
-  public static final String MULTILINE_CAPABILITY = "multiline";
-  public static final String DRAFT_MULTILINE_CAPABILITY = "draft/multiline";
-  public static final String MULTILINE_CONCAT_TAG = "multiline-concat";
-  public static final String DRAFT_MULTILINE_CONCAT_TAG = "draft/multiline-concat";
+  public static final String MULTILINE_CAPABILITY = MULTILINE;
+  public static final String DRAFT_MULTILINE_CAPABILITY = DRAFT_MULTILINE;
+  public static final String MULTILINE_CONCAT_TAG = MULTILINE_CONCAT;
+  public static final String DRAFT_MULTILINE_CONCAT_TAG = DRAFT_MULTILINE_CONCAT;
 
   private Ircv3MultilineSupport() {}
 

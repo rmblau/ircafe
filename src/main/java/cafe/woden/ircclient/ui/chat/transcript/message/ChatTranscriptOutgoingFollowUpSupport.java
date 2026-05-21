@@ -2,6 +2,9 @@ package cafe.woden.ircclient.ui.chat.transcript.message;
 
 import static cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageMetadataSupport.firstIrcv3TagValue;
 import static cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageMetadataSupport.normalizeMessageId;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_REACT;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_REPLY;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.REPLY;
 
 import cafe.woden.ircclient.model.TargetRef;
 import java.util.Map;
@@ -79,8 +82,8 @@ public final class ChatTranscriptOutgoingFollowUpSupport {
   public static Plan plan(String messageId, Map<String, String> ircv3Tags) {
     String normalizedMessageId = normalizeMessageId(messageId);
     String replyToMessageId =
-        firstIrcv3TagValue(ircv3Tags, "reply", "+reply", "draft/reply", "+draft/reply");
-    String reactionToken = firstIrcv3TagValue(ircv3Tags, "draft/react", "+draft/react");
+        firstIrcv3TagValue(ircv3Tags, REPLY, "+" + REPLY, DRAFT_REPLY, "+" + DRAFT_REPLY);
+    String reactionToken = firstIrcv3TagValue(ircv3Tags, DRAFT_REACT, "+" + DRAFT_REACT);
     return new Plan(
         normalizedMessageId,
         Objects.toString(replyToMessageId, "").trim(),

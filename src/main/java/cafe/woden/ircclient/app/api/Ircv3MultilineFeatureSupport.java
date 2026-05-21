@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.app.api;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MULTILINE;
+
 import cafe.woden.ircclient.app.outbound.backend.OutboundBackendCapabilityPolicy;
 import cafe.woden.ircclient.irc.port.IrcNegotiatedFeaturePort;
 import java.util.Objects;
@@ -15,7 +17,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public final class Ircv3MultilineFeatureSupport implements Ircv3FeatureAvailabilitySupport {
 
-  private static final String FEATURE_ID = "multiline";
+  private static final String FEATURE_ID = MULTILINE;
   private static final String REQUIREMENT_HINT = "requires negotiated draft/multiline or multiline";
   private static final String NEGOTIATION_UNAVAILABLE_MESSAGE =
       "IRCv3 multiline is not negotiated on this server.";

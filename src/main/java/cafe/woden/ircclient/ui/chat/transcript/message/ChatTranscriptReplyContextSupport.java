@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.chat.transcript.message;
 
 import static cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageMetadataSupport.normalizeMessageId;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_REPLY;
 
 import cafe.woden.ircclient.model.LogDirection;
 import cafe.woden.ircclient.model.LogKind;
@@ -48,7 +49,7 @@ public final class ChatTranscriptReplyContextSupport {
     String targetMsgId = normalizeMessageId(replyToMsgId);
     if (targetMsgId.isEmpty()) return;
 
-    Map<String, String> tags = Map.of("draft/reply", targetMsgId);
+    Map<String, String> tags = Map.of(DRAFT_REPLY, targetMsgId);
     LineMeta meta =
         ChatTranscriptLineMetaSupport.create(
             ref, LogKind.STATUS, LogDirection.SYSTEM, fromNick, tsEpochMs, null, targetMsgId, tags);

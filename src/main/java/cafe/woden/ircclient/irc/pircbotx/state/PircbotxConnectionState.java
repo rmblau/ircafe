@@ -1,5 +1,31 @@
 package cafe.woden.ircclient.irc.pircbotx.state;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.BATCH;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.CAP_NOTIFY;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.CHATHISTORY;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.CHGHOST;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_CHATHISTORY;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_EXTENDED_MONITOR;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_MESSAGE_EDIT;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_MESSAGE_REDACTION;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_MULTILINE;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_READ_MARKER;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.ECHO_MESSAGE;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.EXTENDED_MONITOR;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.LABELED_RESPONSE;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MESSAGE_EDIT;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MESSAGE_REDACTION;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MESSAGE_TAGS;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MONITOR;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MULTILINE;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.READ_MARKER;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.SERVER_TIME;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.SETNAME;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.SOJU_BOUNCER_NETWORKS;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.STANDARD_REPLIES;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.STS;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.ZNC_PLAYBACK;
+
 import cafe.woden.ircclient.bouncer.BouncerDiscoveredNetwork;
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
@@ -710,35 +736,32 @@ public final class PircbotxConnectionState {
   public boolean updateTrackedCapability(String capabilityName, boolean enabled) {
     String normalized = Objects.toString(capabilityName, "").trim().toLowerCase(Locale.ROOT);
     return switch (normalized) {
-      case "znc.in/playback" -> updateTrackedCapability(zncPlaybackCapAcked, enabled);
-      case "batch" -> updateTrackedCapability(batchCapAcked, enabled);
-      case "draft/chathistory", "chathistory" ->
-          updateTrackedCapability(chatHistoryCapAcked, enabled);
-      case "soju.im/bouncer-networks" ->
-          updateTrackedCapability(sojuBouncerNetworksCapAcked, enabled);
-      case "server-time" -> updateTrackedCapability(serverTimeCapAcked, enabled);
-      case "standard-replies" -> updateTrackedCapability(standardRepliesCapAcked, enabled);
-      case "echo-message" -> updateTrackedCapability(echoMessageCapAcked, enabled);
-      case "cap-notify" -> updateTrackedCapability(capNotifyCapAcked, enabled);
-      case "labeled-response" -> updateTrackedCapability(labeledResponseCapAcked, enabled);
-      case "setname" -> updateTrackedCapability(setnameCapAcked, enabled);
-      case "chghost" -> updateTrackedCapability(chghostCapAcked, enabled);
-      case "sts" -> updateTrackedCapability(stsCapAcked, enabled);
-      case "multiline" ->
+      case ZNC_PLAYBACK -> updateTrackedCapability(zncPlaybackCapAcked, enabled);
+      case BATCH -> updateTrackedCapability(batchCapAcked, enabled);
+      case DRAFT_CHATHISTORY, CHATHISTORY -> updateTrackedCapability(chatHistoryCapAcked, enabled);
+      case SOJU_BOUNCER_NETWORKS -> updateTrackedCapability(sojuBouncerNetworksCapAcked, enabled);
+      case SERVER_TIME -> updateTrackedCapability(serverTimeCapAcked, enabled);
+      case STANDARD_REPLIES -> updateTrackedCapability(standardRepliesCapAcked, enabled);
+      case ECHO_MESSAGE -> updateTrackedCapability(echoMessageCapAcked, enabled);
+      case CAP_NOTIFY -> updateTrackedCapability(capNotifyCapAcked, enabled);
+      case LABELED_RESPONSE -> updateTrackedCapability(labeledResponseCapAcked, enabled);
+      case SETNAME -> updateTrackedCapability(setnameCapAcked, enabled);
+      case CHGHOST -> updateTrackedCapability(chghostCapAcked, enabled);
+      case STS -> updateTrackedCapability(stsCapAcked, enabled);
+      case MULTILINE ->
           updateTrackedCapabilityWithLimitReset(
               multilineCapAcked, multilineMaxBytes, multilineMaxLines, enabled);
-      case "draft/multiline" ->
+      case DRAFT_MULTILINE ->
           updateTrackedCapabilityWithLimitReset(
               draftMultilineCapAcked, draftMultilineMaxBytes, draftMultilineMaxLines, enabled);
-      case "draft/message-edit", "message-edit" ->
+      case DRAFT_MESSAGE_EDIT, MESSAGE_EDIT ->
           updateTrackedCapability(draftMessageEditCapAcked, enabled);
-      case "draft/message-redaction", "message-redaction" ->
+      case DRAFT_MESSAGE_REDACTION, MESSAGE_REDACTION ->
           updateTrackedCapability(draftMessageRedactionCapAcked, enabled);
-      case "message-tags" -> updateTrackedCapability(messageTagsCapAcked, enabled);
-      case "draft/read-marker", "read-marker" ->
-          updateTrackedCapability(readMarkerCapAcked, enabled);
-      case "monitor" -> updateTrackedCapability(monitorCapAcked, enabled);
-      case "extended-monitor", "draft/extended-monitor" ->
+      case MESSAGE_TAGS -> updateTrackedCapability(messageTagsCapAcked, enabled);
+      case DRAFT_READ_MARKER, READ_MARKER -> updateTrackedCapability(readMarkerCapAcked, enabled);
+      case MONITOR -> updateTrackedCapability(monitorCapAcked, enabled);
+      case EXTENDED_MONITOR, DRAFT_EXTENDED_MONITOR ->
           updateTrackedCapability(extendedMonitorCapAcked, enabled);
       default -> false;
     };

@@ -1,5 +1,8 @@
 package cafe.woden.ircclient.ui.servertree.policy;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.SOJU_BOUNCER_NETWORKS;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.ZNC_PLAYBACK;
+
 import cafe.woden.ircclient.app.api.ConnectionState;
 import cafe.woden.ircclient.ui.servertree.ServerTreeConventions;
 import java.util.HashMap;
@@ -81,8 +84,8 @@ public final class ServerTreeBouncerDetachPolicy {
     if (!ephemeralBackendId.isEmpty() || context.isBouncerControlServer(sid)) {
       return true;
     }
-    return context.hasBouncerCapability(sid, "soju.im/bouncer-networks")
-        || context.hasBouncerCapability(sid, "znc.in/playback");
+    return context.hasBouncerCapability(sid, SOJU_BOUNCER_NETWORKS)
+        || context.hasBouncerCapability(sid, ZNC_PLAYBACK);
   }
 
   private static Map<String, Set<String>> normalizedControlServerIdsByBackendId(

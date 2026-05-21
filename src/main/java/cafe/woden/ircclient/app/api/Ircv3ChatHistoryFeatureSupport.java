@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.app.api;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.CHATHISTORY;
+
 import cafe.woden.ircclient.app.outbound.backend.OutboundBackendCapabilityPolicy;
 import cafe.woden.ircclient.irc.playback.IrcBouncerPlaybackPort;
 import cafe.woden.ircclient.irc.port.IrcNegotiatedFeaturePort;
@@ -16,7 +18,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public final class Ircv3ChatHistoryFeatureSupport implements Ircv3FeatureAvailabilitySupport {
 
-  private static final String FEATURE_ID = "chathistory";
+  private static final String FEATURE_ID = CHATHISTORY;
   private static final String REQUIREMENT_HINT =
       "requires negotiated draft/chathistory or chathistory";
   private static final String NEGOTIATION_UNAVAILABLE_MESSAGE =

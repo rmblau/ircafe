@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.app.api;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.READ_MARKER;
+
 import cafe.woden.ircclient.app.outbound.backend.OutboundBackendCapabilityPolicy;
 import cafe.woden.ircclient.config.api.Ircv3CapabilityNameResolverPort;
 import cafe.woden.ircclient.irc.port.IrcReadMarkerPort;
@@ -20,7 +22,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public final class Ircv3ReadMarkerFeatureSupport implements Ircv3FeatureAvailabilitySupport {
 
-  private static final String FEATURE_ID = "read-marker";
+  private static final String FEATURE_ID = READ_MARKER;
   private static final String REQUIREMENT_HINT =
       "requires negotiated read-marker or draft/read-marker";
   private static final String NEGOTIATION_UNAVAILABLE_MESSAGE =

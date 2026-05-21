@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.ui.chat.transcript.internal;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_REACT;
+
 import cafe.woden.ircclient.irc.roster.UserListPort;
 import cafe.woden.ircclient.model.LogDirection;
 import cafe.woden.ircclient.model.LogKind;
@@ -149,7 +151,7 @@ final class ChatTranscriptMessageComposition {
                 epochMs,
                 null,
                 targetMessageId,
-                Map.of("draft/react", "1")),
+                Map.of(DRAFT_REACT, "1")),
         ChatTranscriptLineMetaSupport::bind,
         ChatTranscriptLineMetaSupport::withAuxiliaryRowKind,
         documentLineSupport::normalizeInsertAtLineStart,

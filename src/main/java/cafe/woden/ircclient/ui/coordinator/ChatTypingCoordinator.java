@@ -1,5 +1,14 @@
 package cafe.woden.ircclient.ui.coordinator;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_REACT;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_REPLY;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_TYPING;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_UNREACT;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MESSAGE_TAGS;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.REACT;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.REPLY;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.TYPING;
+
 import cafe.woden.ircclient.irc.port.IrcTypingPort;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.ChatDockable;
@@ -78,8 +87,8 @@ public final class ChatTypingCoordinator {
     String cap = Objects.toString(capability, "").trim().toLowerCase(Locale.ROOT);
     if (sid.isEmpty() || cap.isEmpty()) return;
 
-    boolean messageTagsChanged = "message-tags".equals(cap);
-    if ("typing".equals(cap) || "draft/typing".equals(cap) || messageTagsChanged) {
+    boolean messageTagsChanged = MESSAGE_TAGS.equals(cap);
+    if (TYPING.equals(cap) || DRAFT_TYPING.equals(cap) || messageTagsChanged) {
       TargetRef activeTarget = activeTargetSupplier.get();
       if (activeTarget != null && Objects.equals(activeTarget.serverId(), sid)) {
         boolean atBottomBefore = transcriptAtBottomSupplier.getAsBoolean();
@@ -93,10 +102,11 @@ public final class ChatTypingCoordinator {
     }
 
     if (!messageTagsChanged
-        && !"reply".equals(cap)
-        && !"draft/reply".equals(cap)
-        && !"draft/react".equals(cap)
-        && !"draft/unreact".equals(cap)) {
+        && !REPLY.equals(cap)
+        && !DRAFT_REPLY.equals(cap)
+        && !REACT.equals(cap)
+        && !DRAFT_REACT.equals(cap)
+        && !DRAFT_UNREACT.equals(cap)) {
       return;
     }
 

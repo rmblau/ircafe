@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.irc.pircbotx.capability;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.SASL;
+
 import com.google.common.collect.ImmutableList;
 import java.util.LinkedHashSet;
 import java.util.Locale;
@@ -27,8 +29,8 @@ record PircbotxSaslCapabilityOffer(
         continue;
       }
 
-      if (normalized.equalsIgnoreCase("sasl")
-          || normalized.toLowerCase(Locale.ROOT).startsWith("sasl=")) {
+      if (normalized.equalsIgnoreCase(SASL)
+          || normalized.toLowerCase(Locale.ROOT).startsWith(SASL + "=")) {
         saslOffered = true;
         int idx = normalized.indexOf('=');
         if (idx >= 0 && idx + 1 < normalized.length()) {

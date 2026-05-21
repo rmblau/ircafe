@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.logging.history;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.CHATHISTORY;
+
 import cafe.woden.ircclient.config.ConfigPropertyKeys;
 import cafe.woden.ircclient.config.ExecutorConfig;
 import cafe.woden.ircclient.config.LogProperties;
@@ -251,10 +253,10 @@ public class DbChatHistoryIngestor implements ChatHistoryIngestor {
 
   private static String inferSource(String batchId) {
     String bid = safe(batchId).trim();
-    if (bid.isEmpty()) return "chathistory";
+    if (bid.isEmpty()) return CHATHISTORY;
     String lower = bid.toLowerCase(Locale.ROOT);
     if (lower.startsWith("znc-playback")) return "znc-playback";
-    return "chathistory";
+    return CHATHISTORY;
   }
 
   private static boolean isPrivateMessageTarget(String target) {

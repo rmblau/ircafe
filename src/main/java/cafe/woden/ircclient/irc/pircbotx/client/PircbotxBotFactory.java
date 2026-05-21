@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.irc.pircbotx.client;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.SOJU_BOUNCER_NETWORKS;
+
 import cafe.woden.ircclient.config.AutoJoinEntryCodec;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.SojuProperties;
@@ -211,8 +213,8 @@ public class PircbotxBotFactory {
       if (isCapabilityEnabled(cap)) caps.add(cap);
     }
     // Optional: soju network discovery.
-    if (sojuProps.discovery().enabled() && isCapabilityEnabled("soju.im/bouncer-networks")) {
-      caps.add("soju.im/bouncer-networks");
+    if (sojuProps.discovery().enabled() && isCapabilityEnabled(SOJU_BOUNCER_NETWORKS)) {
+      caps.add(SOJU_BOUNCER_NETWORKS);
     }
     builder.addCapHandler(new BatchedEnableCapHandler(caps));
   }

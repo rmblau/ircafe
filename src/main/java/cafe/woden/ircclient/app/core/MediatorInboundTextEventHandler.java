@@ -1,5 +1,8 @@
 package cafe.woden.ircclient.app.core;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_REACT;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_UNREACT;
+
 import cafe.woden.ircclient.app.api.InterceptorEventType;
 import cafe.woden.ircclient.app.api.IrcEventNotifierPort;
 import cafe.woden.ircclient.app.api.NotificationRuleMatch;
@@ -1123,8 +1126,8 @@ public class MediatorInboundTextEventHandler {
 
   private static boolean hasMessageMutationTag(Map<String, String> tags) {
     return !firstIrcv3TagValue(tags, "draft/edit", "+draft/edit").isBlank()
-        || !firstIrcv3TagValue(tags, "draft/react", "+draft/react").isBlank()
-        || !firstIrcv3TagValue(tags, "draft/unreact", "+draft/unreact").isBlank()
+        || !firstIrcv3TagValue(tags, DRAFT_REACT, "+" + DRAFT_REACT).isBlank()
+        || !firstIrcv3TagValue(tags, DRAFT_UNREACT, "+" + DRAFT_UNREACT).isBlank()
         || !firstIrcv3TagValue(tags, "draft/delete", "+draft/delete").isBlank()
         || !firstIrcv3TagValue(tags, "draft/redact", "+draft/redact").isBlank();
   }

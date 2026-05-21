@@ -1,5 +1,10 @@
 package cafe.woden.ircclient.irc.pircbotx.parse;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.BATCH;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.CHATHISTORY;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_CHATHISTORY;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MESSAGE_TAGS;
+
 import cafe.woden.ircclient.irc.IrcEvent;
 import cafe.woden.ircclient.irc.ServerIrcEvent;
 import cafe.woden.ircclient.irc.pircbotx.capability.BatchedEnableCapHandler;
@@ -116,13 +121,13 @@ public final class PircbotxCapabilityNegotiationSupport {
       ParsedCapLine capLine, List<CapHandler> remainingCapHandlers) {
     if (!capLine.isAction("LS", "NEW")) return;
     if (conn.isMessageTagsCapAcked()) return;
-    if (isCapabilityRequestPending(remainingCapHandlers, "message-tags")) return;
+    if (isCapabilityRequestPending(remainingCapHandlers, MESSAGE_TAGS)) return;
     if (!conn.beginMessageTagsFallbackRequest()) return;
 
     boolean offered = false;
     for (String token : capLine.tokens()) {
       String capName = canonicalCapName(token);
-      if ("message-tags".equalsIgnoreCase(capName)) {
+      if (MESSAGE_TAGS.equalsIgnoreCase(capName)) {
         offered = true;
         break;
       }
@@ -133,7 +138,7 @@ public final class PircbotxCapabilityNegotiationSupport {
     }
 
     try {
-      bot.sendCAP().request("message-tags");
+      bot.sendCAP().request(MESSAGE_TAGS);
       log.debug(
           "[{}] fallback CAP REQ sent for message-tags (downstream capability remained unenabled)",
           serverId);
@@ -152,11 +157,11 @@ public final class PircbotxCapabilityNegotiationSupport {
     boolean offeredDraftChatHistory = false;
     for (String token : capLine.tokens()) {
       String capName = canonicalCapName(token);
-      if ("batch".equalsIgnoreCase(capName)) {
+      if (BATCH.equalsIgnoreCase(capName)) {
         offeredBatch = true;
-      } else if ("chathistory".equalsIgnoreCase(capName)) {
+      } else if (CHATHISTORY.equalsIgnoreCase(capName)) {
         offeredChatHistory = true;
-      } else if ("draft/chathistory".equalsIgnoreCase(capName)) {
+      } else if (DRAFT_CHATHISTORY.equalsIgnoreCase(capName)) {
         offeredDraftChatHistory = true;
       }
     }
@@ -167,18 +172,18 @@ public final class PircbotxCapabilityNegotiationSupport {
 
     if (offeredBatch
         && !conn.isBatchCapAcked()
-        && !isCapabilityRequestPending(remainingCapHandlers, "batch")
+        && !isCapabilityRequestPending(remainingCapHandlers, BATCH)
         && conn.beginBatchFallbackRequest()) {
-      requestedCaps.add("batch");
+      requestedCaps.add(BATCH);
       requestedBatch = true;
     }
 
     String historyCapToRequest = "";
     if (!conn.isChatHistoryCapAcked()) {
       if (offeredChatHistory) {
-        historyCapToRequest = "chathistory";
+        historyCapToRequest = CHATHISTORY;
       } else if (offeredDraftChatHistory) {
-        historyCapToRequest = "draft/chathistory";
+        historyCapToRequest = DRAFT_CHATHISTORY;
       }
     }
     if (!historyCapToRequest.isEmpty()

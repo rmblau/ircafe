@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.logging.history;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.CHATHISTORY;
+
 import cafe.woden.ircclient.app.api.Ircv3ChatHistoryFeatureSupport;
 import cafe.woden.ircclient.config.ConfigPropertyKeys;
 import cafe.woden.ircclient.config.ExecutorConfig;
@@ -723,7 +725,7 @@ public class RemoteOnlyChatHistoryService implements ChatHistoryService {
                 txt,
                 outgoing,
                 false,
-                metaJson("chathistory", ev.batchId())));
+                metaJson(CHATHISTORY, ev.batchId())));
       }
 
       lines.sort(

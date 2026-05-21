@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.irc.matrix;
 
 import cafe.woden.ircclient.irc.ircv3.Ircv3ChatHistorySelectors;
+import cafe.woden.ircclient.util.Ircv3CapabilityNames;
 import java.util.Set;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -78,7 +79,10 @@ final class MatrixProtocol {
   static final String MEMBERSHIP_JOIN = "join";
 
   static final String TAG_DRAFT_EDIT = "draft/edit";
-  static final String TAG_DRAFT_REPLY = "draft/reply";
+  static final String TAG_DRAFT_REACT = Ircv3CapabilityNames.DRAFT_REACT;
+  static final String TAG_DRAFT_REPLY = Ircv3CapabilityNames.DRAFT_REPLY;
+  static final String TAG_DRAFT_UNREACT = Ircv3CapabilityNames.DRAFT_UNREACT;
+  static final String TAG_REPLY = Ircv3CapabilityNames.REPLY;
   static final String TAG_IRCAFE_PM_TARGET = "ircafe/pm-target";
   static final String TAG_MATRIX_MEDIA_URL = "matrix.media_url";
   static final String TAG_MATRIX_MSGTYPE = "matrix.msgtype";

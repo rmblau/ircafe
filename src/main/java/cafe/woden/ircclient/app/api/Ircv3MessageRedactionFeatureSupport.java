@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.app.api;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MESSAGE_REDACTION;
+
 import cafe.woden.ircclient.app.outbound.backend.OutboundBackendCapabilityPolicy;
 import java.util.Objects;
 import lombok.NonNull;
@@ -13,7 +15,7 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public final class Ircv3MessageRedactionFeatureSupport implements Ircv3FeatureAvailabilitySupport {
 
-  private static final String FEATURE_ID = "message-redaction";
+  private static final String FEATURE_ID = MESSAGE_REDACTION;
   private static final String REQUIREMENT_HINT =
       "requires negotiated draft/message-redaction or message-redaction";
   private static final String NEGOTIATION_UNAVAILABLE_MESSAGE =

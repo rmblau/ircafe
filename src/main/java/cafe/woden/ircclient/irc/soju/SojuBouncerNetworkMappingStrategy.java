@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.irc.soju;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.SOJU_BOUNCER_NETWORKS;
+
 import cafe.woden.ircclient.bouncer.BouncerDiscoveredNetwork;
 import cafe.woden.ircclient.bouncer.BouncerNetworkMappingStrategy;
 import cafe.woden.ircclient.bouncer.ResolvedBouncerNetwork;
@@ -16,7 +18,7 @@ public class SojuBouncerNetworkMappingStrategy implements BouncerNetworkMappingS
 
   public static final String BACKEND_ID = "soju";
   public static final String NETWORKS_GROUP_LABEL = "Soju Networks";
-  public static final String DISCOVERY_CAPABILITY = "soju.im/bouncer-networks";
+  public static final String DISCOVERY_CAPABILITY = SOJU_BOUNCER_NETWORKS;
 
   @Override
   public String backendId() {
