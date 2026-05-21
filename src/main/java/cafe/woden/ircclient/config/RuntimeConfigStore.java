@@ -3271,189 +3271,92 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberChatLoggingEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
-
-      logging.put("enabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat logging enabled setting to '{}'", file, e);
-    }
+    rememberChatLoggingScalarSetting("enabled", enabled, "chat logging enabled");
   }
 
   public synchronized void rememberChatLoggingLogSoftIgnoredLines(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
-
-      logging.put("logSoftIgnoredLines", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat logging soft-ignore setting to '{}'", file, e);
-    }
+    rememberChatLoggingScalarSetting("logSoftIgnoredLines", enabled, "chat logging soft-ignore");
   }
 
   public synchronized void rememberChatLoggingRedactionAuditEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
-
-      logging.put("redactionAuditEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat logging redaction-audit setting to '{}'", file, e);
-    }
+    rememberChatLoggingScalarSetting(
+        "redactionAuditEnabled", enabled, "chat logging redaction-audit");
   }
 
   public synchronized void rememberChatLoggingLogPrivateMessages(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
-
-      logging.put("logPrivateMessages", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat logging PM-history setting to '{}'", file, e);
-    }
+    rememberChatLoggingScalarSetting("logPrivateMessages", enabled, "chat logging PM-history");
   }
 
   public synchronized void rememberChatLoggingSavePrivateMessageList(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
-
-      logging.put("savePrivateMessageList", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat logging PM-list setting to '{}'", file, e);
-    }
+    rememberChatLoggingScalarSetting("savePrivateMessageList", enabled, "chat logging PM-list");
   }
 
   public synchronized void rememberChatLoggingDbFileBaseName(String fileBaseName) {
-    try {
-      if (file.toString().isBlank()) return;
+    String base = Objects.toString(fileBaseName, "").trim();
+    if (base.isEmpty()) base = "ircafe-chatlog";
 
-      String base = Objects.toString(fileBaseName, "").trim();
-      if (base.isEmpty()) base = "ircafe-chatlog";
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
-      Map<String, Object> hsqldb = getOrCreateMap(logging, "hsqldb");
-
-      hsqldb.put("fileBaseName", base);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat logging DB file base name to '{}'", file, e);
-    }
+    rememberChatLoggingHsqldbScalarSetting("fileBaseName", base, "chat logging DB file base name");
   }
 
   public synchronized void rememberChatLoggingDbNextToRuntimeConfig(boolean nextToRuntimeConfig) {
+    rememberChatLoggingHsqldbScalarSetting(
+        "nextToRuntimeConfig", nextToRuntimeConfig, "chat logging DB location");
+  }
+
+  public synchronized void rememberChatLoggingKeepForever(boolean keepForever) {
+    rememberChatLoggingScalarSetting("keepForever", keepForever, "chat logging keepForever");
+  }
+
+  public synchronized void rememberChatLoggingRetentionDays(int retentionDays) {
+    rememberChatLoggingScalarSetting(
+        "retentionDays", Math.max(0, retentionDays), "chat logging retentionDays");
+  }
+
+  public synchronized void rememberChatLoggingWriterQueueMax(int writerQueueMax) {
+    rememberChatLoggingScalarSetting(
+        "writerQueueMax",
+        Math.max(100, Math.min(1_000_000, writerQueueMax)),
+        "chat logging writerQueueMax");
+  }
+
+  public synchronized void rememberChatLoggingWriterBatchSize(int writerBatchSize) {
+    rememberChatLoggingScalarSetting(
+        "writerBatchSize",
+        Math.max(1, Math.min(10_000, writerBatchSize)),
+        "chat logging writerBatchSize");
+  }
+
+  private void rememberChatLoggingScalarSetting(String key, Object value, String description) {
     try {
       if (file.toString().isBlank()) return;
 
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
+      Map<String, Object> doc = loadFileOrEmpty();
+      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
+      Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
+
+      logging.put(key, value);
+
+      writeFile(doc);
+    } catch (Exception e) {
+      log.warn("[ircafe] Could not persist {} setting to '{}'", description, file, e);
+    }
+  }
+
+  private void rememberChatLoggingHsqldbScalarSetting(
+      String key, Object value, String description) {
+    try {
+      if (file.toString().isBlank()) return;
+
+      Map<String, Object> doc = loadFileOrEmpty();
       Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
       Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
       Map<String, Object> hsqldb = getOrCreateMap(logging, "hsqldb");
 
-      hsqldb.put("nextToRuntimeConfig", nextToRuntimeConfig);
+      hsqldb.put(key, value);
 
       writeFile(doc);
     } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat logging DB location setting to '{}'", file, e);
-    }
-  }
-
-  public synchronized void rememberChatLoggingKeepForever(boolean keepForever) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
-
-      logging.put("keepForever", keepForever);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat logging keepForever setting to '{}'", file, e);
-    }
-  }
-
-  public synchronized void rememberChatLoggingRetentionDays(int retentionDays) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int days = Math.max(0, retentionDays);
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
-
-      logging.put("retentionDays", days);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat logging retentionDays setting to '{}'", file, e);
-    }
-  }
-
-  public synchronized void rememberChatLoggingWriterQueueMax(int writerQueueMax) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = Math.max(100, Math.min(1_000_000, writerQueueMax));
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
-
-      logging.put("writerQueueMax", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat logging writerQueueMax setting to '{}'", file, e);
-    }
-  }
-
-  public synchronized void rememberChatLoggingWriterBatchSize(int writerBatchSize) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = Math.max(1, Math.min(10_000, writerBatchSize));
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
-
-      logging.put("writerBatchSize", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat logging writerBatchSize setting to '{}'", file, e);
+      log.warn("[ircafe] Could not persist {} setting to '{}'", description, file, e);
     }
   }
 
