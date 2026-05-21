@@ -15,7 +15,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  * <p>These values can be overridden by the runtime YAML file imported via {@code
  * spring.config.import}.
  */
-@ConfigurationProperties(prefix = "ircafe.ui")
+@ConfigurationProperties(prefix = ConfigPropertyKeys.IRCAFE_UI_PREFIX)
 @InfrastructureLayer
 public record UiProperties(
     String theme,

@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.logviewer;
 
+import cafe.woden.ircclient.config.ConfigPropertyKeys;
 import cafe.woden.ircclient.logging.viewer.ChatLogViewerMatchMode;
 import cafe.woden.ircclient.logging.viewer.ChatLogViewerQuery;
 import cafe.woden.ircclient.logging.viewer.ChatLogViewerResult;
@@ -516,7 +517,7 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
     if (!service.enabled()) {
       title.setText("Log Viewer");
       subtitle.setText("Chat logging is disabled.");
-      status.setText("Enable ircafe.logging.enabled=true to use this view.");
+      status.setText("Enable " + ConfigPropertyKeys.LOGGING_ENABLED_TRUE + " to use this view.");
       setControlsEnabled(false);
       model.setRows(List.of());
       return;

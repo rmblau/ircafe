@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.logging;
 
+import cafe.woden.ircclient.config.ConfigPropertyKeys;
 import cafe.woden.ircclient.config.LogProperties;
 import cafe.woden.ircclient.util.VirtualThreads;
 import java.util.ArrayList;
@@ -51,14 +52,14 @@ public class ChatLogService implements ChatLogWriter, AutoCloseable {
             DEFAULT_MAX_QUEUE,
             MIN_MAX_QUEUE,
             MAX_MAX_QUEUE,
-            "ircafe.logging.writerQueueMax");
+            ConfigPropertyKeys.LOGGING_WRITER_QUEUE_MAX);
     this.batchSize =
         clamp(
             props.writerBatchSize(),
             DEFAULT_BATCH_SIZE,
             MIN_BATCH_SIZE,
             MAX_BATCH_SIZE,
-            "ircafe.logging.writerBatchSize");
+            ConfigPropertyKeys.LOGGING_WRITER_BATCH_SIZE);
     this.queue = new LinkedBlockingQueue<>(maxQueue);
 
     this.writerThread = VirtualThreads.unstarted("ircafe-chatlog-writer", this::writerLoop);

@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.logging;
 
+import cafe.woden.ircclient.config.ConfigPropertyKeys;
 import cafe.woden.ircclient.irc.playback.PlaybackCursorProvider;
 import java.util.OptionalLong;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +12,10 @@ import org.springframework.stereotype.Component;
 /** Playback cursor based on the embedded chat log DB. */
 @Component
 @Primary
-@ConditionalOnProperty(prefix = "ircafe.logging", name = "enabled", havingValue = "true")
+@ConditionalOnProperty(
+    prefix = ConfigPropertyKeys.IRCAFE_LOGGING_PREFIX,
+    name = ConfigPropertyKeys.ENABLED_PROPERTY,
+    havingValue = ConfigPropertyKeys.TRUE_VALUE)
 @InfrastructureLayer
 @RequiredArgsConstructor
 public class ChatLogPlaybackCursorProvider implements PlaybackCursorProvider {

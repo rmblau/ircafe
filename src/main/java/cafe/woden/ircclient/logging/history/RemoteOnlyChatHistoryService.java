@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.logging.history;
 
 import cafe.woden.ircclient.app.api.Ircv3ChatHistoryFeatureSupport;
+import cafe.woden.ircclient.config.ConfigPropertyKeys;
 import cafe.woden.ircclient.config.ExecutorConfig;
 import cafe.woden.ircclient.irc.ChatHistoryEntry;
 import cafe.woden.ircclient.irc.IrcClientService;
@@ -46,9 +47,9 @@ import org.springframework.stereotype.Component;
 /** Remote-only chat history paging (IRCv3 CHATHISTORY), used when DB logging is disabled. */
 @Component
 @ConditionalOnProperty(
-    prefix = "ircafe.logging",
-    name = "enabled",
-    havingValue = "false",
+    prefix = ConfigPropertyKeys.IRCAFE_LOGGING_PREFIX,
+    name = ConfigPropertyKeys.ENABLED_PROPERTY,
+    havingValue = ConfigPropertyKeys.FALSE_VALUE,
     matchIfMissing = true)
 @InfrastructureLayer
 @RequiredArgsConstructor

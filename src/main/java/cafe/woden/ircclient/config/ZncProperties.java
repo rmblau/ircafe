@@ -7,7 +7,7 @@ import org.jmolecules.architecture.layered.InfrastructureLayer;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /** ZNC bouncer integration settings. */
-@ConfigurationProperties(prefix = "ircafe.znc")
+@ConfigurationProperties(prefix = ConfigPropertyKeys.IRCAFE_ZNC_PREFIX)
 @InfrastructureLayer
 public record ZncProperties(Map<String, Map<String, Boolean>> autoConnect, Discovery discovery) {
 

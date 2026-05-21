@@ -9,7 +9,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  *
  * <p>When enabled and configured, IRC event notifications can be forwarded to Pushy.
  */
-@ConfigurationProperties(prefix = "ircafe.pushy")
+@ConfigurationProperties(prefix = ConfigPropertyKeys.IRCAFE_PUSHY_PREFIX)
 @InfrastructureLayer
 public record PushyProperties(
     Boolean enabled,

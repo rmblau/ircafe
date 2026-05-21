@@ -18,6 +18,7 @@ import cafe.woden.ircclient.app.api.ChatHistoryIngestionPort;
 import cafe.woden.ircclient.app.api.TargetChatHistoryPort;
 import cafe.woden.ircclient.app.api.TargetLogMaintenancePort;
 import cafe.woden.ircclient.app.api.ZncPlaybackEventsPort;
+import cafe.woden.ircclient.config.ConfigPropertyKeys;
 import cafe.woden.ircclient.logging.history.ChatHistoryTranscriptPort;
 import cafe.woden.ircclient.logging.history.LoggingAppHistoryPortsAdapter;
 import cafe.woden.ircclient.model.TargetRef;
@@ -35,7 +36,7 @@ import org.springframework.modulith.test.ApplicationModuleTest;
 import org.springframework.test.context.TestPropertySource;
 
 @ApplicationModuleTest(mode = ApplicationModuleTest.BootstrapMode.STANDALONE)
-@TestPropertySource(properties = {"ircafe.logging.enabled=true"})
+@TestPropertySource(properties = {ConfigPropertyKeys.LOGGING_ENABLED_TRUE})
 class LoggingModuleIntegrationTest extends AbstractApplicationModuleIntegrationTest {
 
   private final ApplicationContext applicationContext;
