@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.shell;
 
 import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.util.PopupMenuThemeSupport;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -949,17 +950,17 @@ public class StatusBar extends JPanel {
     Color fallback = darkUi ? new Color(0xDE, 0xE8, 0xF8) : new Color(0x15, 0x4A, 0x8A);
     Color candidate =
         firstNonNull(
-            UIManager.getColor("Component.linkColor"),
-            UIManager.getColor("@accentColor"),
-            UIManager.getColor("Component.accentColor"),
+            UIManager.getColor(UiColorKeys.COMPONENT_LINK_COLOR),
+            UIManager.getColor(UiColorKeys.ACCENT_COLOR),
+            UIManager.getColor(UiColorKeys.COMPONENT_ACCENT_COLOR),
             statusTextForeground(),
-            UIManager.getColor("Label.foreground"));
+            UIManager.getColor(UiColorKeys.LABEL_FOREGROUND));
     return ensureReadableTextColor(candidate, bg, darkUi, NOTICE_MIN_CONTRAST, fallback);
   }
 
   private Color statusBarBackground() {
     Color bg = getBackground();
-    if (bg == null) bg = UIManager.getColor("Panel.background");
+    if (bg == null) bg = UIManager.getColor(UiColorKeys.PANEL_BACKGROUND);
     if (bg == null) bg = noticeLabel.getBackground();
     return bg != null ? new Color(bg.getRed(), bg.getGreen(), bg.getBlue()) : Color.WHITE;
   }

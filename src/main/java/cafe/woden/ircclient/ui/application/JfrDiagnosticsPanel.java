@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.application;
 import cafe.woden.ircclient.diagnostics.JfrRuntimeEventsService;
 import cafe.woden.ircclient.diagnostics.RuntimeDiagnosticEvent;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import cafe.woden.ircclient.util.VirtualThreads;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
@@ -827,8 +828,8 @@ public final class JfrDiagnosticsPanel extends JPanel {
       int y = (getHeight() - size) / 2;
       int stroke = Math.max(10, size / 9);
 
-      Color track = uiColor("ProgressBar.background", new Color(230, 230, 230));
-      Color text = uiColor("Label.foreground", new Color(40, 40, 40));
+      Color track = uiColor(UiColorKeys.PROGRESS_BAR_BACKGROUND, new Color(230, 230, 230));
+      Color text = uiColor(UiColorKeys.LABEL_FOREGROUND, new Color(40, 40, 40));
       Color ok = new Color(46, 170, 85);
       Color warn = new Color(227, 171, 32);
       Color bad = new Color(220, 77, 66);
@@ -840,7 +841,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
                   ? warn
                   : (valuePercent >= 0)
                       ? ok
-                      : uiColor("Label.disabledForeground", new Color(140, 140, 140));
+                      : uiColor(UiColorKeys.LABEL_DISABLED_FOREGROUND, new Color(140, 140, 140));
 
       g2.setStroke(new BasicStroke(stroke, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
       g2.setColor(track);

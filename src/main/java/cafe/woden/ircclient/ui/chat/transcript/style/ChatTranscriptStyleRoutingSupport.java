@@ -6,6 +6,7 @@ import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.util.EmojiFontSupport;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.awt.Font;
 import java.util.Locale;
@@ -72,8 +73,8 @@ public final class ChatTranscriptStyleRoutingSupport {
         // HIDE actions are rendered via placeholders; no visible style override.
       }
       case DIM -> {
-        Color muted = UIManager.getColor("Label.disabledForeground");
-        if (muted == null) muted = UIManager.getColor("Component.disabledForeground");
+        Color muted = UIManager.getColor(UiColorKeys.LABEL_DISABLED_FOREGROUND);
+        if (muted == null) muted = UIManager.getColor(UiColorKeys.COMPONENT_DISABLED_FOREGROUND);
         if (muted != null) {
           StyleConstants.setForeground(attrs, muted);
         }

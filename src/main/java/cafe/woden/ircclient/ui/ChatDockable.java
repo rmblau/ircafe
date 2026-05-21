@@ -69,6 +69,7 @@ import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettingsBus;
 import cafe.woden.ircclient.ui.terminal.TerminalDockable;
 import cafe.woden.ircclient.ui.util.ChatRedactedMessageRevealSupport;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import cafe.woden.ircclient.util.InstalledPluginDescriptor;
 import io.github.andrewauclair.moderndocking.Dockable;
 import io.github.andrewauclair.moderndocking.app.Docking;
@@ -1521,10 +1522,10 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
   }
 
   private static Color resolveMainDockAccentColor() {
-    Color accent = UIManager.getColor("@accentColor");
-    if (accent == null) accent = UIManager.getColor("Component.focusColor");
-    if (accent == null) accent = UIManager.getColor("Tree.selectionBackground");
-    if (accent == null) accent = UIManager.getColor("Label.foreground");
+    Color accent = UIManager.getColor(UiColorKeys.ACCENT_COLOR);
+    if (accent == null) accent = UIManager.getColor(UiColorKeys.COMPONENT_FOCUS_COLOR);
+    if (accent == null) accent = UIManager.getColor(UiColorKeys.TREE_SELECTION_BACKGROUND);
+    if (accent == null) accent = UIManager.getColor(UiColorKeys.LABEL_FOREGROUND);
     if (accent == null) accent = new Color(0x2D, 0x6B, 0xFF);
     return withAlpha(accent, 235);
   }

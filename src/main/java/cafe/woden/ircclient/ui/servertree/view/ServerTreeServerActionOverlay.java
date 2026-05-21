@@ -8,6 +8,7 @@ import cafe.woden.ircclient.ui.servertree.ServerTreeConventions;
 import cafe.woden.ircclient.ui.servertree.ServerTreeUiHooks;
 import cafe.woden.ircclient.ui.servertree.model.ServerTreeNodeData;
 import cafe.woden.ircclient.ui.servertree.viewmodel.ServerTreeConnectionStateViewModel;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -624,18 +625,18 @@ public final class ServerTreeServerActionOverlay {
       Graphics2D g2, Rectangle button, String iconName, boolean enabled, boolean hot) {
     if (g2 == null || button == null) return;
 
-    Color base = UIManager.getColor("Button.background");
-    if (base == null) base = UIManager.getColor("Panel.background");
+    Color base = UIManager.getColor(UiColorKeys.BUTTON_BACKGROUND);
+    if (base == null) base = UIManager.getColor(UiColorKeys.PANEL_BACKGROUND);
     if (base == null) base = Color.LIGHT_GRAY;
 
-    Color border = UIManager.getColor("Component.borderColor");
-    if (border == null) border = UIManager.getColor("Separator.foreground");
+    Color border = UIManager.getColor(UiColorKeys.COMPONENT_BORDER_COLOR);
+    if (border == null) border = UIManager.getColor(UiColorKeys.SEPARATOR_FOREGROUND);
     if (border == null) border = Color.GRAY;
 
     Color fill = withAlpha(base, enabled ? 220 : 170);
     if (hot && enabled) {
-      Color accent = UIManager.getColor("@accentColor");
-      if (accent == null) accent = UIManager.getColor("Component.focusColor");
+      Color accent = UIManager.getColor(UiColorKeys.ACCENT_COLOR);
+      if (accent == null) accent = UIManager.getColor(UiColorKeys.COMPONENT_FOCUS_COLOR);
       if (accent != null) {
         fill = withAlpha(accent, 64);
         border = withAlpha(accent, 185);
@@ -661,8 +662,8 @@ public final class ServerTreeServerActionOverlay {
   private void paintDangerCloseButton(Graphics2D g2, Rectangle button, boolean hot) {
     if (g2 == null || button == null) return;
 
-    Color dangerBase = UIManager.getColor("Component.error.borderColor");
-    if (dangerBase == null) dangerBase = UIManager.getColor("Actions.Red");
+    Color dangerBase = UIManager.getColor(UiColorKeys.COMPONENT_ERROR_BORDER_COLOR);
+    if (dangerBase == null) dangerBase = UIManager.getColor(UiColorKeys.ACTIONS_RED);
     if (dangerBase == null) dangerBase = new Color(196, 55, 55);
 
     Color fill = withAlpha(dangerBase, hot ? 236 : 216);

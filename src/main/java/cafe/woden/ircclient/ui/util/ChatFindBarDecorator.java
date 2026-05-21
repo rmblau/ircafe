@@ -285,7 +285,7 @@ public final class ChatFindBarDecorator implements AutoCloseable {
 
       // Subtle status styling if a theme provides one
       try {
-        java.awt.Color fg = UIManager.getColor("Label.disabledForeground");
+        java.awt.Color fg = UIManager.getColor(UiColorKeys.LABEL_DISABLED_FOREGROUND);
         if (fg != null) status.setForeground(fg);
       } catch (Exception ignored) {
       }

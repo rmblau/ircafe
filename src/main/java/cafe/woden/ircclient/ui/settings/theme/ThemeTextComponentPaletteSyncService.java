@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings.theme;
 
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -25,21 +26,33 @@ class ThemeTextComponentPaletteSyncService {
     if (!isNimbusLookAndFeelActive()) return;
 
     Color fieldBg =
-        firstUiColor("TextField.background", "TextComponent.background", "nimbusLightBackground");
-    Color fieldFg = firstUiColor("TextField.foreground", "Label.foreground", "textText");
+        firstUiColor(
+            UiColorKeys.TEXT_FIELD_BACKGROUND,
+            UiColorKeys.TEXT_COMPONENT_BACKGROUND,
+            UiColorKeys.NIMBUS_LIGHT_BACKGROUND);
+    Color fieldFg =
+        firstUiColor(
+            UiColorKeys.TEXT_FIELD_FOREGROUND, UiColorKeys.LABEL_FOREGROUND, UiColorKeys.TEXT_TEXT);
     Color areaBg =
-        firstUiColor("TextPane.background", "TextArea.background", "TextComponent.background");
-    Color areaFg = firstUiColor("TextPane.foreground", "TextArea.foreground", "Label.foreground");
+        firstUiColor(
+            UiColorKeys.TEXT_PANE_BACKGROUND,
+            UiColorKeys.TEXT_AREA_BACKGROUND,
+            UiColorKeys.TEXT_COMPONENT_BACKGROUND);
+    Color areaFg =
+        firstUiColor(
+            UiColorKeys.TEXT_PANE_FOREGROUND,
+            UiColorKeys.TEXT_AREA_FOREGROUND,
+            UiColorKeys.LABEL_FOREGROUND);
     Color selectionBg =
         firstUiColor(
-            "TextComponent.selectionBackground",
-            "TextField.selectionBackground",
-            "TextPane.selectionBackground");
+            UiColorKeys.TEXT_COMPONENT_SELECTION_BACKGROUND,
+            UiColorKeys.TEXT_FIELD_SELECTION_BACKGROUND,
+            UiColorKeys.TEXT_PANE_SELECTION_BACKGROUND);
     Color selectionFg =
         firstUiColor(
-            "TextComponent.selectionForeground",
-            "TextField.selectionForeground",
-            "TextPane.selectionForeground");
+            UiColorKeys.TEXT_COMPONENT_SELECTION_FOREGROUND,
+            UiColorKeys.TEXT_FIELD_SELECTION_FOREGROUND,
+            UiColorKeys.TEXT_PANE_SELECTION_FOREGROUND);
 
     int updated = 0;
     for (Window window : Window.getWindows()) {

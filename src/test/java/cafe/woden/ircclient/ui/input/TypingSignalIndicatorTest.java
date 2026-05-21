@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.lang.reflect.InvocationTargetException;
 import java.util.LinkedHashMap;
@@ -20,12 +21,12 @@ import org.junit.jupiter.api.parallel.ResourceLock;
 class TypingSignalIndicatorTest {
 
   private static final String[] SNAPSHOT_KEYS = {
-    "TextField.background",
-    "TextPane.background",
-    "Panel.background",
-    "control",
-    "Label.foreground",
-    "TextField.foreground"
+    UiColorKeys.TEXT_FIELD_BACKGROUND,
+    UiColorKeys.TEXT_PANE_BACKGROUND,
+    UiColorKeys.PANEL_BACKGROUND,
+    UiColorKeys.CONTROL,
+    UiColorKeys.LABEL_FOREGROUND,
+    UiColorKeys.TEXT_FIELD_FOREGROUND
   };
 
   private Map<String, Object> uiSnapshot;
@@ -46,8 +47,8 @@ class TypingSignalIndicatorTest {
 
   @Test
   void unavailableStateUsesDarkArrowOnLightTheme() throws Exception {
-    UIManager.put("TextField.background", new Color(0xF9, 0xFA, 0xFC));
-    UIManager.put("Label.foreground", new Color(0x1F, 0x26, 0x2F));
+    UIManager.put(UiColorKeys.TEXT_FIELD_BACKGROUND, new Color(0xF9, 0xFA, 0xFC));
+    UIManager.put(UiColorKeys.LABEL_FOREGROUND, new Color(0x1F, 0x26, 0x2F));
 
     TypingSignalIndicator indicator = createOnEdt();
     onEdt(
@@ -60,8 +61,8 @@ class TypingSignalIndicatorTest {
 
   @Test
   void unavailableStateUsesWhiteArrowOnDarkTheme() throws Exception {
-    UIManager.put("TextField.background", new Color(0x19, 0x1F, 0x28));
-    UIManager.put("Label.foreground", new Color(0x2A, 0x31, 0x3A));
+    UIManager.put(UiColorKeys.TEXT_FIELD_BACKGROUND, new Color(0x19, 0x1F, 0x28));
+    UIManager.put(UiColorKeys.LABEL_FOREGROUND, new Color(0x2A, 0x31, 0x3A));
 
     TypingSignalIndicator indicator = createOnEdt();
     onEdt(

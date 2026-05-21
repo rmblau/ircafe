@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.settings;
 import cafe.woden.ircclient.model.BuiltInSound;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.util.MouseWheelDecorator;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -97,7 +98,7 @@ public final class PreferencesUiSupport {
     area.setFocusable(false);
     area.setBorder(null);
     area.setFont(UIManager.getFont("Label.font"));
-    area.setForeground(UIManager.getColor("Label.foreground"));
+    area.setForeground(UIManager.getColor(UiColorKeys.LABEL_FOREGROUND));
     Dimension preferred = area.getPreferredSize();
     area.setMinimumSize(new Dimension(0, preferred != null ? preferred.height : 0));
     return area;
@@ -119,7 +120,7 @@ public final class PreferencesUiSupport {
       area.setFont(area.getFont().deriveFont(Font.ITALIC));
     }
 
-    Color hintColor = UIManager.getColor("Label.disabledForeground");
+    Color hintColor = UIManager.getColor(UiColorKeys.LABEL_DISABLED_FOREGROUND);
     if (hintColor != null) area.setForeground(hintColor);
 
     Dimension preferred = area.getPreferredSize();
@@ -310,15 +311,15 @@ public final class PreferencesUiSupport {
   }
 
   public static Color errorForeground() {
-    Color color = UIManager.getColor("Label.errorForeground");
+    Color color = UIManager.getColor(UiColorKeys.LABEL_ERROR_FOREGROUND);
     if (color != null) return color;
-    color = UIManager.getColor("Component.errorColor");
+    color = UIManager.getColor(UiColorKeys.COMPONENT_ERROR_COLOR);
     if (color != null) return color;
-    color = UIManager.getColor("Component.error.outlineColor");
+    color = UIManager.getColor(UiColorKeys.COMPONENT_ERROR_OUTLINE_COLOR);
     if (color != null) return color;
-    color = UIManager.getColor("Component.error.borderColor");
+    color = UIManager.getColor(UiColorKeys.COMPONENT_ERROR_BORDER_COLOR);
     if (color != null) return color;
-    color = UIManager.getColor("Component.error.focusedBorderColor");
+    color = UIManager.getColor(UiColorKeys.COMPONENT_ERROR_FOCUSED_BORDER_COLOR);
     if (color != null) return color;
     return new Color(180, 0, 0);
   }
@@ -417,8 +418,8 @@ public final class PreferencesUiSupport {
     if (font == null) font = UIManager.getFont("Label.font");
     if (font != null) area.setFont(font);
 
-    Color color = UIManager.getColor("CheckBox.foreground");
-    if (color == null) color = UIManager.getColor("Label.foreground");
+    Color color = UIManager.getColor(UiColorKeys.CHECK_BOX_FOREGROUND);
+    if (color == null) color = UIManager.getColor(UiColorKeys.LABEL_FOREGROUND);
     if (color != null) area.setForeground(color);
 
     Dimension preferred = area.getPreferredSize();

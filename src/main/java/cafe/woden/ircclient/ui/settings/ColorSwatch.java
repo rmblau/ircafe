@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings;
 
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.awt.Graphics;
 import javax.swing.Icon;
@@ -33,8 +34,8 @@ public final class ColorSwatch implements Icon {
       g.setColor(color);
       g.fillRect(x, y, w, h);
       Color border = c != null ? c.getForeground() : null;
-      if (border == null) border = UIManager.getColor("Component.borderColor");
-      if (border == null) border = UIManager.getColor("Separator.foreground");
+      if (border == null) border = UIManager.getColor(UiColorKeys.COMPONENT_BORDER_COLOR);
+      if (border == null) border = UIManager.getColor(UiColorKeys.SEPARATOR_FOREGROUND);
       if (border == null) border = Color.BLACK;
       border = new Color(border.getRed(), border.getGreen(), border.getBlue(), 120);
       g.setColor(border);

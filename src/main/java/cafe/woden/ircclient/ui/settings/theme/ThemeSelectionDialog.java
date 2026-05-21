@@ -6,6 +6,7 @@ import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
 import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -449,33 +450,47 @@ public class ThemeSelectionDialog {
   private void refreshTranscriptPreview() {
     if (transcriptPreview == null) return;
 
-    Color panelBg = firstUiColor(Color.WHITE, "Panel.background", "control", "nimbusBase");
+    Color panelBg =
+        firstUiColor(
+            Color.WHITE,
+            UiColorKeys.PANEL_BACKGROUND,
+            UiColorKeys.CONTROL,
+            UiColorKeys.NIMBUS_BASE);
     Color textBg =
         firstUiColor(
-            panelBg, "TextArea.background", "TextComponent.background", "Panel.background");
+            panelBg,
+            UiColorKeys.TEXT_AREA_BACKGROUND,
+            UiColorKeys.TEXT_COMPONENT_BACKGROUND,
+            UiColorKeys.PANEL_BACKGROUND);
     Color textFg =
         firstUiColor(
             Color.BLACK,
-            "TextArea.foreground",
-            "TextComponent.foreground",
-            "Label.foreground",
-            "textText");
+            UiColorKeys.TEXT_AREA_FOREGROUND,
+            UiColorKeys.TEXT_COMPONENT_FOREGROUND,
+            UiColorKeys.LABEL_FOREGROUND,
+            UiColorKeys.TEXT_TEXT);
     Color accent =
         firstUiColor(
             new Color(0x2D, 0x6B, 0xFF),
-            "@accentColor",
-            "Component.linkColor",
-            "Component.focusColor",
-            "textHighlight");
+            UiColorKeys.ACCENT_COLOR,
+            UiColorKeys.COMPONENT_LINK_COLOR,
+            UiColorKeys.COMPONENT_FOCUS_COLOR,
+            UiColorKeys.TEXT_HIGHLIGHT);
     Color muted = ThemeColorUtils.mix(textFg, textBg, 0.45);
     Color system = ThemeColorUtils.mix(textFg, textBg, 0.30);
     Color nick = ThemeColorUtils.mix(accent, textFg, 0.20);
     Color self = ThemeColorUtils.mix(accent, textFg, 0.35);
     Color highlightBg =
-        firstUiColor(null, "List.selectionBackground", "TextComponent.selectionBackground");
+        firstUiColor(
+            null,
+            UiColorKeys.LIST_SELECTION_BACKGROUND,
+            UiColorKeys.TEXT_COMPONENT_SELECTION_BACKGROUND);
     if (highlightBg == null) highlightBg = ThemeColorUtils.mix(textBg, accent, 0.33);
     Color highlightFg =
-        firstUiColor(null, "List.selectionForeground", "TextComponent.selectionForeground");
+        firstUiColor(
+            null,
+            UiColorKeys.LIST_SELECTION_FOREGROUND,
+            UiColorKeys.TEXT_COMPONENT_SELECTION_FOREGROUND);
     if (highlightFg == null) highlightFg = ThemeColorUtils.bestTextColor(highlightBg);
 
     String html =

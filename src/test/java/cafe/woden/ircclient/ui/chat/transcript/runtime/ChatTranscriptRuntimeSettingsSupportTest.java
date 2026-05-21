@@ -11,6 +11,7 @@ import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.transcript.style.ChatTranscriptColorSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import javax.swing.UIManager;
 import org.junit.jupiter.api.AfterEach;
@@ -27,14 +28,14 @@ class ChatTranscriptRuntimeSettingsSupportTest {
 
   @BeforeEach
   void snapshotUiManager() {
-    backgroundSnapshot = UIManager.get("TextPane.background");
-    foregroundSnapshot = UIManager.get("TextPane.foreground");
+    backgroundSnapshot = UIManager.get(UiColorKeys.TEXT_PANE_BACKGROUND);
+    foregroundSnapshot = UIManager.get(UiColorKeys.TEXT_PANE_FOREGROUND);
   }
 
   @AfterEach
   void restoreUiManager() {
-    UIManager.put("TextPane.background", backgroundSnapshot);
-    UIManager.put("TextPane.foreground", foregroundSnapshot);
+    UIManager.put(UiColorKeys.TEXT_PANE_BACKGROUND, backgroundSnapshot);
+    UIManager.put(UiColorKeys.TEXT_PANE_FOREGROUND, foregroundSnapshot);
   }
 
   @Test
@@ -75,8 +76,8 @@ class ChatTranscriptRuntimeSettingsSupportTest {
 
   @Test
   void outgoingLineColorIsAdjustedToRemainReadable() {
-    UIManager.put("TextPane.background", Color.WHITE);
-    UIManager.put("TextPane.foreground", Color.BLACK);
+    UIManager.put(UiColorKeys.TEXT_PANE_BACKGROUND, Color.WHITE);
+    UIManager.put(UiColorKeys.TEXT_PANE_FOREGROUND, Color.BLACK);
     ChatTranscriptRuntimeSettingsSupport support =
         new ChatTranscriptRuntimeSettingsSupport(null, new ChatStyles(null));
     UiSettings settings = mock(UiSettings.class);

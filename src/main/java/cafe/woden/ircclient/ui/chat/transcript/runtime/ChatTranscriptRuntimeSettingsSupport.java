@@ -4,6 +4,7 @@ import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.transcript.style.ChatTranscriptColorSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.util.Objects;
 import javax.swing.UIManager;
@@ -117,7 +118,7 @@ public final class ChatTranscriptRuntimeSettingsSupport {
   private Color transcriptBaseBackground() {
     Color background = StyleConstants.getBackground(styles.message());
     if (background == null) {
-      background = UIManager.getColor("TextPane.background");
+      background = UIManager.getColor(UiColorKeys.TEXT_PANE_BACKGROUND);
     }
     return background;
   }
@@ -125,7 +126,7 @@ public final class ChatTranscriptRuntimeSettingsSupport {
   private Color transcriptBaseForeground() {
     Color foreground = StyleConstants.getForeground(styles.message());
     if (foreground == null) {
-      foreground = UIManager.getColor("TextPane.foreground");
+      foreground = UIManager.getColor(UiColorKeys.TEXT_PANE_FOREGROUND);
     }
     return foreground;
   }

@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.chat.embed;
 import cafe.woden.ircclient.ui.SwingEdt;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.settings.EmbedCardStyle;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import io.reactivex.rxjava3.disposables.Disposable;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -1516,7 +1517,7 @@ final class ChatLinkPreviewComponent extends JPanel {
 
   private static java.awt.Color borderColor(EmbedCardStyle style) {
     EmbedCardStyle s = style != null ? style : EmbedCardStyle.DEFAULT;
-    java.awt.Color base = javax.swing.UIManager.getColor("Component.borderColor");
+    java.awt.Color base = javax.swing.UIManager.getColor(UiColorKeys.COMPONENT_BORDER_COLOR);
     if (base == null) {
       base = blend(foregroundColor(), baseBackgroundColor(), 0.35);
     }
@@ -1524,7 +1525,11 @@ final class ChatLinkPreviewComponent extends JPanel {
       case MINIMAL -> withAlpha(base, 105);
       case GLASSY ->
           withAlpha(
-              blend(base, firstNonNullColor("Component.linkColor", "Component.focusColor"), 0.20),
+              blend(
+                  base,
+                  firstNonNullColor(
+                      UiColorKeys.COMPONENT_LINK_COLOR, UiColorKeys.COMPONENT_FOCUS_COLOR),
+                  0.20),
               205);
       case DENSER -> withAlpha(base, 190);
       case DEFAULT -> withAlpha(base, 170);
@@ -1532,8 +1537,8 @@ final class ChatLinkPreviewComponent extends JPanel {
   }
 
   private static Color siteTextColor() {
-    Color accent = javax.swing.UIManager.getColor("Component.linkColor");
-    if (accent == null) accent = javax.swing.UIManager.getColor("Component.focusColor");
+    Color accent = javax.swing.UIManager.getColor(UiColorKeys.COMPONENT_LINK_COLOR);
+    if (accent == null) accent = javax.swing.UIManager.getColor(UiColorKeys.COMPONENT_FOCUS_COLOR);
     if (accent == null) accent = foregroundColor();
     return withAlpha(accent, 220);
   }
@@ -1563,14 +1568,14 @@ final class ChatLinkPreviewComponent extends JPanel {
   }
 
   private static Color foregroundColor() {
-    Color fg = javax.swing.UIManager.getColor("Label.foreground");
+    Color fg = javax.swing.UIManager.getColor(UiColorKeys.LABEL_FOREGROUND);
     if (fg == null) fg = Color.DARK_GRAY;
     return fg;
   }
 
   private static Color baseBackgroundColor() {
-    Color bg = javax.swing.UIManager.getColor("TextPane.background");
-    if (bg == null) bg = javax.swing.UIManager.getColor("Panel.background");
+    Color bg = javax.swing.UIManager.getColor(UiColorKeys.TEXT_PANE_BACKGROUND);
+    if (bg == null) bg = javax.swing.UIManager.getColor(UiColorKeys.PANEL_BACKGROUND);
     if (bg == null) bg = Color.WHITE;
     return bg;
   }

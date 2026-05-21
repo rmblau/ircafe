@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.settings.theme;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import java.awt.Color;
@@ -34,20 +35,23 @@ class ThemeAppearanceServiceTest {
 
           Color baselineFocus = new Color(0x44, 0x55, 0x66);
           Color baselineSelection = new Color(0x2E, 0x3F, 0x50);
-          UIManager.put("Component.focusColor", baselineFocus);
-          UIManager.put("TextComponent.selectionBackground", baselineSelection);
+          UIManager.put(UiColorKeys.COMPONENT_FOCUS_COLOR, baselineFocus);
+          UIManager.put(UiColorKeys.TEXT_COMPONENT_SELECTION_BACKGROUND, baselineSelection);
 
           service.applyAccentOverrides(ThemeAppearanceSettingsTestFixtures.accent("#FF5500", 100));
 
-          Color afterApplyFocus = UIManager.getColor("Component.focusColor");
-          Color afterApplySelection = UIManager.getColor("TextComponent.selectionBackground");
+          Color afterApplyFocus = UIManager.getColor(UiColorKeys.COMPONENT_FOCUS_COLOR);
+          Color afterApplySelection =
+              UIManager.getColor(UiColorKeys.TEXT_COMPONENT_SELECTION_BACKGROUND);
           assertNotEquals(baselineFocus, afterApplyFocus);
           assertNotEquals(baselineSelection, afterApplySelection);
 
           service.applyAccentOverrides(ThemeAppearanceSettingsTestFixtures.accentDefaults());
 
-          assertEquals(baselineFocus, UIManager.getColor("Component.focusColor"));
-          assertEquals(baselineSelection, UIManager.getColor("TextComponent.selectionBackground"));
+          assertEquals(baselineFocus, UIManager.getColor(UiColorKeys.COMPONENT_FOCUS_COLOR));
+          assertEquals(
+              baselineSelection,
+              UIManager.getColor(UiColorKeys.TEXT_COMPONENT_SELECTION_BACKGROUND));
         });
   }
 
@@ -62,7 +66,7 @@ class ThemeAppearanceServiceTest {
           }
 
           Color darkBaselineFocus = new Color(0x32, 0x42, 0x52);
-          UIManager.put("Component.focusColor", darkBaselineFocus);
+          UIManager.put(UiColorKeys.COMPONENT_FOCUS_COLOR, darkBaselineFocus);
           service.applyAccentOverrides(ThemeAppearanceSettingsTestFixtures.accent("#22AAEE", 80));
 
           try {
@@ -72,12 +76,12 @@ class ThemeAppearanceServiceTest {
           }
 
           Color lightBaselineFocus = new Color(0x88, 0x66, 0x44);
-          UIManager.put("Component.focusColor", lightBaselineFocus);
+          UIManager.put(UiColorKeys.COMPONENT_FOCUS_COLOR, lightBaselineFocus);
 
           service.applyAccentOverrides(ThemeAppearanceSettingsTestFixtures.accentDefaults());
 
-          assertEquals(lightBaselineFocus, UIManager.getColor("Component.focusColor"));
-          assertNotEquals(darkBaselineFocus, UIManager.getColor("Component.focusColor"));
+          assertEquals(lightBaselineFocus, UIManager.getColor(UiColorKeys.COMPONENT_FOCUS_COLOR));
+          assertNotEquals(darkBaselineFocus, UIManager.getColor(UiColorKeys.COMPONENT_FOCUS_COLOR));
         });
   }
 

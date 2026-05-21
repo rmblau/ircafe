@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.input;
 
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -257,20 +258,20 @@ final class MessageInputHintPopupSupport {
   private void applyHintPopupTheme() {
     // Base the hint styling on the *actual* input component, not generic TextPane defaults.
     Color textBg = input.getBackground();
-    if (textBg == null) textBg = UIManager.getColor("TextField.background");
-    if (textBg == null) textBg = UIManager.getColor("TextComponent.background");
-    if (textBg == null) textBg = UIManager.getColor("Panel.background");
+    if (textBg == null) textBg = UIManager.getColor(UiColorKeys.TEXT_FIELD_BACKGROUND);
+    if (textBg == null) textBg = UIManager.getColor(UiColorKeys.TEXT_COMPONENT_BACKGROUND);
+    if (textBg == null) textBg = UIManager.getColor(UiColorKeys.PANEL_BACKGROUND);
     if (textBg == null) textBg = new Color(245, 245, 245);
 
     Color textFg = input.getForeground();
-    if (textFg == null) textFg = UIManager.getColor("TextField.foreground");
-    if (textFg == null) textFg = UIManager.getColor("TextComponent.foreground");
-    if (textFg == null) textFg = UIManager.getColor("Label.foreground");
+    if (textFg == null) textFg = UIManager.getColor(UiColorKeys.TEXT_FIELD_FOREGROUND);
+    if (textFg == null) textFg = UIManager.getColor(UiColorKeys.TEXT_COMPONENT_FOREGROUND);
+    if (textFg == null) textFg = UIManager.getColor(UiColorKeys.LABEL_FOREGROUND);
     if (textFg == null) textFg = Color.DARK_GRAY;
 
-    Color selBg = UIManager.getColor("TextField.selectionBackground");
-    if (selBg == null) selBg = UIManager.getColor("TextComponent.selectionBackground");
-    if (selBg == null) selBg = UIManager.getColor("List.selectionBackground");
+    Color selBg = UIManager.getColor(UiColorKeys.TEXT_FIELD_SELECTION_BACKGROUND);
+    if (selBg == null) selBg = UIManager.getColor(UiColorKeys.TEXT_COMPONENT_SELECTION_BACKGROUND);
+    if (selBg == null) selBg = UIManager.getColor(UiColorKeys.LIST_SELECTION_BACKGROUND);
     if (selBg == null) {
       try {
         selBg = input.getSelectionColor();
@@ -281,7 +282,7 @@ final class MessageInputHintPopupSupport {
     // Subtle tint so the hint is distinct but still theme-native.
     Color hintBg = (selBg == null) ? textBg : mix(textBg, selBg, 0.18);
 
-    Color border = UIManager.getColor("TextField.borderColor");
+    Color border = UIManager.getColor(UiColorKeys.TEXT_FIELD_BORDER_COLOR);
 
     if (DEBUG_HINT_POPUP) {
       try {
@@ -298,21 +299,21 @@ final class MessageInputHintPopupSupport {
             colorToString(input.getSelectionColor()));
         for (String k :
             new String[] {
-              "TextField.background",
-              "TextField.foreground",
-              "TextField.selectionBackground",
-              "TextPane.background",
-              "TextPane.foreground",
-              "TextComponent.background",
-              "TextComponent.foreground",
-              "TextComponent.selectionBackground",
-              "Panel.background",
-              "Label.foreground",
-              "ToolTip.background",
-              "ToolTip.foreground",
-              "TextField.borderColor",
-              "Component.borderColor",
-              "Separator.foreground"
+              UiColorKeys.TEXT_FIELD_BACKGROUND,
+              UiColorKeys.TEXT_FIELD_FOREGROUND,
+              UiColorKeys.TEXT_FIELD_SELECTION_BACKGROUND,
+              UiColorKeys.TEXT_PANE_BACKGROUND,
+              UiColorKeys.TEXT_PANE_FOREGROUND,
+              UiColorKeys.TEXT_COMPONENT_BACKGROUND,
+              UiColorKeys.TEXT_COMPONENT_FOREGROUND,
+              UiColorKeys.TEXT_COMPONENT_SELECTION_BACKGROUND,
+              UiColorKeys.PANEL_BACKGROUND,
+              UiColorKeys.LABEL_FOREGROUND,
+              UiColorKeys.TOOL_TIP_BACKGROUND,
+              UiColorKeys.TOOL_TIP_FOREGROUND,
+              UiColorKeys.TEXT_FIELD_BORDER_COLOR,
+              UiColorKeys.COMPONENT_BORDER_COLOR,
+              UiColorKeys.SEPARATOR_FOREGROUND
             }) {
           Object v = UIManager.get(k);
           if (v instanceof Color c) {
@@ -331,8 +332,8 @@ final class MessageInputHintPopupSupport {
         log.warn("[HintPopupDebug] failed to log UI values", e);
       }
     }
-    if (border == null) border = UIManager.getColor("Component.borderColor");
-    if (border == null) border = UIManager.getColor("Separator.foreground");
+    if (border == null) border = UIManager.getColor(UiColorKeys.COMPONENT_BORDER_COLOR);
+    if (border == null) border = UIManager.getColor(UiColorKeys.SEPARATOR_FOREGROUND);
     if (border == null)
       border = new Color(textFg.getRed(), textFg.getGreen(), textFg.getBlue(), 120);
 

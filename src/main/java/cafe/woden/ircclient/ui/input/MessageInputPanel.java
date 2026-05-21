@@ -11,6 +11,7 @@ import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettings;
 import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettingsBus;
 import cafe.woden.ircclient.ui.util.EmojiFontSupport;
 import cafe.woden.ircclient.ui.util.EmojiTextSupport;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.processors.FlowableProcessor;
 import io.reactivex.rxjava3.processors.PublishProcessor;
@@ -221,7 +222,7 @@ public class MessageInputPanel extends JPanel {
 
     JPanel shell = new JPanel(new BorderLayout(0, 0));
     shell.setOpaque(true);
-    Color textBg = UIManager.getColor("TextField.background");
+    Color textBg = UIManager.getColor(UiColorKeys.TEXT_FIELD_BACKGROUND);
     if (textBg == null) textBg = input.getBackground();
     if (textBg != null) shell.setBackground(textBg);
     shell.setBorder(
@@ -297,9 +298,9 @@ public class MessageInputPanel extends JPanel {
   }
 
   private static Color resolveInputShellBorderColor() {
-    Color c = UIManager.getColor("Component.borderColor");
-    if (c == null) c = UIManager.getColor("TextField.borderColor");
-    if (c == null) c = UIManager.getColor("Separator.foreground");
+    Color c = UIManager.getColor(UiColorKeys.COMPONENT_BORDER_COLOR);
+    if (c == null) c = UIManager.getColor(UiColorKeys.TEXT_FIELD_BORDER_COLOR);
+    if (c == null) c = UIManager.getColor(UiColorKeys.SEPARATOR_FOREGROUND);
     if (c == null) c = new Color(0x8B8F95);
     return c;
   }

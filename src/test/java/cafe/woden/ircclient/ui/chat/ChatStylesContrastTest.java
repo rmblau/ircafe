@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsTestFixtures;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -22,14 +23,14 @@ import org.junit.jupiter.api.parallel.ResourceLock;
 class ChatStylesContrastTest {
 
   private static final String[] SNAPSHOT_KEYS = {
-    "TextPane.background",
-    "TextPane.foreground",
-    "Label.foreground",
-    "Label.disabledForeground",
-    "Component.linkColor",
-    "TextPane.selectionBackground",
-    "Component.warningColor",
-    "Component.errorColor"
+    UiColorKeys.TEXT_PANE_BACKGROUND,
+    UiColorKeys.TEXT_PANE_FOREGROUND,
+    UiColorKeys.LABEL_FOREGROUND,
+    UiColorKeys.LABEL_DISABLED_FOREGROUND,
+    UiColorKeys.COMPONENT_LINK_COLOR,
+    UiColorKeys.TEXT_PANE_SELECTION_BACKGROUND,
+    UiColorKeys.COMPONENT_WARNING_COLOR,
+    UiColorKeys.COMPONENT_ERROR_COLOR
   };
 
   private Map<String, Object> snapshot;
@@ -51,11 +52,11 @@ class ChatStylesContrastTest {
   @Test
   void lightThemesUseDarkReadableTranscriptText() {
     Color bg = new Color(0xFA, 0xFB, 0xFD);
-    UIManager.put("TextPane.background", bg);
-    UIManager.put("TextPane.foreground", new Color(0xEA, 0xED, 0xF2));
-    UIManager.put("Label.foreground", new Color(0x26, 0x2D, 0x36));
-    UIManager.put("Label.disabledForeground", new Color(0xD9, 0xDE, 0xE6));
-    UIManager.put("Component.linkColor", new Color(0xBE, 0xCF, 0xF5));
+    UIManager.put(UiColorKeys.TEXT_PANE_BACKGROUND, bg);
+    UIManager.put(UiColorKeys.TEXT_PANE_FOREGROUND, new Color(0xEA, 0xED, 0xF2));
+    UIManager.put(UiColorKeys.LABEL_FOREGROUND, new Color(0x26, 0x2D, 0x36));
+    UIManager.put(UiColorKeys.LABEL_DISABLED_FOREGROUND, new Color(0xD9, 0xDE, 0xE6));
+    UIManager.put(UiColorKeys.COMPONENT_LINK_COLOR, new Color(0xBE, 0xCF, 0xF5));
 
     ChatStyles styles = new ChatStyles(null);
 
@@ -73,11 +74,11 @@ class ChatStylesContrastTest {
   @Test
   void darkThemesUseLightReadableTranscriptText() {
     Color bg = new Color(0x17, 0x1B, 0x21);
-    UIManager.put("TextPane.background", bg);
-    UIManager.put("TextPane.foreground", new Color(0x1D, 0x22, 0x2A));
-    UIManager.put("Label.foreground", new Color(0x2A, 0x31, 0x3B));
-    UIManager.put("Label.disabledForeground", new Color(0x2F, 0x36, 0x41));
-    UIManager.put("Component.linkColor", new Color(0x29, 0x42, 0x70));
+    UIManager.put(UiColorKeys.TEXT_PANE_BACKGROUND, bg);
+    UIManager.put(UiColorKeys.TEXT_PANE_FOREGROUND, new Color(0x1D, 0x22, 0x2A));
+    UIManager.put(UiColorKeys.LABEL_FOREGROUND, new Color(0x2A, 0x31, 0x3B));
+    UIManager.put(UiColorKeys.LABEL_DISABLED_FOREGROUND, new Color(0x2F, 0x36, 0x41));
+    UIManager.put(UiColorKeys.COMPONENT_LINK_COLOR, new Color(0x29, 0x42, 0x70));
 
     ChatStyles styles = new ChatStyles(null);
 
@@ -94,10 +95,10 @@ class ChatStylesContrastTest {
 
   @Test
   void messageTypeOverridesApplyToTranscriptStyles() {
-    UIManager.put("TextPane.background", Color.WHITE);
-    UIManager.put("TextPane.foreground", Color.BLACK);
-    UIManager.put("Label.foreground", Color.BLACK);
-    UIManager.put("Label.disabledForeground", new Color(0x66, 0x66, 0x66));
+    UIManager.put(UiColorKeys.TEXT_PANE_BACKGROUND, Color.WHITE);
+    UIManager.put(UiColorKeys.TEXT_PANE_FOREGROUND, Color.BLACK);
+    UIManager.put(UiColorKeys.LABEL_FOREGROUND, Color.BLACK);
+    UIManager.put(UiColorKeys.LABEL_DISABLED_FOREGROUND, new Color(0x66, 0x66, 0x66));
 
     ChatThemeSettingsBus bus = new ChatThemeSettingsBus(null);
     bus.set(

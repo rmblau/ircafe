@@ -41,14 +41,38 @@ public final class PopupMenuThemeSupport {
   }
 
   private static void applyNimbusPopupPalette(JPopupMenu menu) {
-    Color popupBg = firstColor("PopupMenu.background", "MenuItem.background", "Menu.background");
-    Color popupFg = firstColor("PopupMenu.foreground", "MenuItem.foreground", "Label.foreground");
-    Color itemBg = firstColor("MenuItem.background", "PopupMenu.background", "Menu.background");
-    Color itemFg = firstColor("MenuItem.foreground", "PopupMenu.foreground", "Label.foreground");
-    Color disabledFg = firstColor("MenuItem.disabledForeground", "Label.disabledForeground");
-    Color sepFg = firstColor("PopupMenuSeparator.foreground", "Separator.foreground");
-    Color sepBg = firstColor("PopupMenuSeparator.background", "PopupMenu.background");
-    Color borderColor = firstColor("PopupMenu.borderColor", "nimbusBorder", "Separator.foreground");
+    Color popupBg =
+        firstColor(
+            UiColorKeys.POPUP_MENU_BACKGROUND,
+            UiColorKeys.MENU_ITEM_BACKGROUND,
+            UiColorKeys.MENU_BACKGROUND);
+    Color popupFg =
+        firstColor(
+            UiColorKeys.POPUP_MENU_FOREGROUND,
+            UiColorKeys.MENU_ITEM_FOREGROUND,
+            UiColorKeys.LABEL_FOREGROUND);
+    Color itemBg =
+        firstColor(
+            UiColorKeys.MENU_ITEM_BACKGROUND,
+            UiColorKeys.POPUP_MENU_BACKGROUND,
+            UiColorKeys.MENU_BACKGROUND);
+    Color itemFg =
+        firstColor(
+            UiColorKeys.MENU_ITEM_FOREGROUND,
+            UiColorKeys.POPUP_MENU_FOREGROUND,
+            UiColorKeys.LABEL_FOREGROUND);
+    Color disabledFg =
+        firstColor(
+            UiColorKeys.MENU_ITEM_DISABLED_FOREGROUND, UiColorKeys.LABEL_DISABLED_FOREGROUND);
+    Color sepFg =
+        firstColor(UiColorKeys.POPUP_MENU_SEPARATOR_FOREGROUND, UiColorKeys.SEPARATOR_FOREGROUND);
+    Color sepBg =
+        firstColor(UiColorKeys.POPUP_MENU_SEPARATOR_BACKGROUND, UiColorKeys.POPUP_MENU_BACKGROUND);
+    Color borderColor =
+        firstColor(
+            UiColorKeys.POPUP_MENU_BORDER_COLOR,
+            UiColorKeys.NIMBUS_BORDER,
+            UiColorKeys.SEPARATOR_FOREGROUND);
     Font menuFont = firstFont("Menu.font", "MenuBar.font", "MenuItem.font", "Label.font");
     Font menuItemFont = firstFont("MenuItem.font", "Menu.font", "Label.font");
     Font checkItemFont =

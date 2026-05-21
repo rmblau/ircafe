@@ -16,6 +16,7 @@ import cafe.woden.ircclient.ui.settings.UiSettingsTestFixtures;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettings;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsTestFixtures;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -33,14 +34,14 @@ import org.junit.jupiter.api.parallel.ResourceLock;
 class ChatTranscriptStoreContrastTest {
 
   private static final String[] SNAPSHOT_KEYS = {
-    "TextPane.background",
-    "TextPane.foreground",
-    "Label.foreground",
-    "Label.disabledForeground",
-    "Component.linkColor",
-    "TextPane.selectionBackground",
-    "Component.warningColor",
-    "Component.errorColor"
+    UiColorKeys.TEXT_PANE_BACKGROUND,
+    UiColorKeys.TEXT_PANE_FOREGROUND,
+    UiColorKeys.LABEL_FOREGROUND,
+    UiColorKeys.LABEL_DISABLED_FOREGROUND,
+    UiColorKeys.COMPONENT_LINK_COLOR,
+    UiColorKeys.TEXT_PANE_SELECTION_BACKGROUND,
+    UiColorKeys.COMPONENT_WARNING_COLOR,
+    UiColorKeys.COMPONENT_ERROR_COLOR
   };
 
   private Map<String, Object> snapshot;
@@ -209,14 +210,14 @@ class ChatTranscriptStoreContrastTest {
 
   private static Color configureLightTranscriptPalette() {
     Color bg = new Color(0xFA, 0xFB, 0xFD);
-    UIManager.put("TextPane.background", bg);
-    UIManager.put("TextPane.foreground", new Color(0xEA, 0xED, 0xF2));
-    UIManager.put("Label.foreground", new Color(0x26, 0x2D, 0x36));
-    UIManager.put("Label.disabledForeground", new Color(0xD9, 0xDE, 0xE6));
-    UIManager.put("Component.linkColor", new Color(0xBE, 0xCF, 0xF5));
-    UIManager.put("TextPane.selectionBackground", new Color(0xD8, 0xE4, 0xFA));
-    UIManager.put("Component.warningColor", new Color(0xF0, 0xB0, 0x00));
-    UIManager.put("Component.errorColor", new Color(0xD0, 0x50, 0x50));
+    UIManager.put(UiColorKeys.TEXT_PANE_BACKGROUND, bg);
+    UIManager.put(UiColorKeys.TEXT_PANE_FOREGROUND, new Color(0xEA, 0xED, 0xF2));
+    UIManager.put(UiColorKeys.LABEL_FOREGROUND, new Color(0x26, 0x2D, 0x36));
+    UIManager.put(UiColorKeys.LABEL_DISABLED_FOREGROUND, new Color(0xD9, 0xDE, 0xE6));
+    UIManager.put(UiColorKeys.COMPONENT_LINK_COLOR, new Color(0xBE, 0xCF, 0xF5));
+    UIManager.put(UiColorKeys.TEXT_PANE_SELECTION_BACKGROUND, new Color(0xD8, 0xE4, 0xFA));
+    UIManager.put(UiColorKeys.COMPONENT_WARNING_COLOR, new Color(0xF0, 0xB0, 0x00));
+    UIManager.put(UiColorKeys.COMPONENT_ERROR_COLOR, new Color(0xD0, 0x50, 0x50));
     return bg;
   }
 

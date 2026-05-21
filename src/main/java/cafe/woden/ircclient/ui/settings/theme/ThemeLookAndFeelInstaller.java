@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings.theme;
 
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import com.formdev.flatlaf.FlatDarculaLaf;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLaf;
@@ -215,35 +216,35 @@ class ThemeLookAndFeelInstaller {
     applyLegacySystemLookAndFeelOrFallback(METAL_LAF_CLASS);
 
     if (steel) {
-      UIManager.put("Component.focusColor", ThemeColorUtils.uiColor(0x2D, 0x5B, 0x8A));
+      UIManager.put(UiColorKeys.COMPONENT_FOCUS_COLOR, ThemeColorUtils.uiColor(0x2D, 0x5B, 0x8A));
     }
   }
 
   private static void clearFlatAccentDefaults() {
-    UIManager.put("@accentColor", null);
-    UIManager.put("@accentBaseColor", null);
-    UIManager.put("@accentBase2Color", null);
+    UIManager.put(UiColorKeys.ACCENT_COLOR, null);
+    UIManager.put(UiColorKeys.ACCENT_BASE_COLOR, null);
+    UIManager.put(UiColorKeys.ACCENT_BASE_2_COLOR, null);
   }
 
   private static void ensureBaselineAccentContrast() {
-    Color panelBg = UIManager.getColor("Panel.background");
-    if (panelBg == null) panelBg = UIManager.getColor("control");
+    Color panelBg = UIManager.getColor(UiColorKeys.PANEL_BACKGROUND);
+    if (panelBg == null) panelBg = UIManager.getColor(UiColorKeys.CONTROL);
     if (panelBg == null) return;
 
-    Color focus = UIManager.getColor("Component.focusColor");
-    if (focus == null) focus = UIManager.getColor("List.selectionBackground");
-    if (focus == null) focus = UIManager.getColor("TextComponent.selectionBackground");
+    Color focus = UIManager.getColor(UiColorKeys.COMPONENT_FOCUS_COLOR);
+    if (focus == null) focus = UIManager.getColor(UiColorKeys.LIST_SELECTION_BACKGROUND);
+    if (focus == null) focus = UIManager.getColor(UiColorKeys.TEXT_COMPONENT_SELECTION_BACKGROUND);
     if (focus != null) {
       UIManager.put(
-          "Component.focusColor",
+          UiColorKeys.COMPONENT_FOCUS_COLOR,
           ThemeColorUtils.ensureContrastAgainstBackground(focus, panelBg, 1.25));
     }
 
-    Color link = UIManager.getColor("Component.linkColor");
+    Color link = UIManager.getColor(UiColorKeys.COMPONENT_LINK_COLOR);
     if (link == null) link = focus;
     if (link != null) {
       UIManager.put(
-          "Component.linkColor",
+          UiColorKeys.COMPONENT_LINK_COLOR,
           ThemeColorUtils.ensureContrastAgainstBackground(link, panelBg, 1.25));
     }
   }

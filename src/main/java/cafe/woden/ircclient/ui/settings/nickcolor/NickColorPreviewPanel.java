@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.nickcolor;
 
 import cafe.woden.ircclient.ui.chat.NickColorService;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -23,9 +24,9 @@ final class NickColorPreviewPanel extends JPanel {
     this.nickColorService = nickColorService;
 
     setOpaque(true);
-    Color border = UIManager.getColor("Component.borderColor");
-    if (border == null) border = UIManager.getColor("Separator.foreground");
-    if (border == null) border = UIManager.getColor("Label.foreground");
+    Color border = UIManager.getColor(UiColorKeys.COMPONENT_BORDER_COLOR);
+    if (border == null) border = UIManager.getColor(UiColorKeys.SEPARATOR_FOREGROUND);
+    if (border == null) border = UIManager.getColor(UiColorKeys.LABEL_FOREGROUND);
     if (border == null) border = Color.GRAY;
 
     setBorder(
@@ -42,12 +43,12 @@ final class NickColorPreviewPanel extends JPanel {
   }
 
   void updatePreview(boolean enabled, double minContrast) {
-    Color background = UIManager.getColor("TextPane.background");
-    if (background == null) background = UIManager.getColor("Panel.background");
+    Color background = UIManager.getColor(UiColorKeys.TEXT_PANE_BACKGROUND);
+    if (background == null) background = UIManager.getColor(UiColorKeys.PANEL_BACKGROUND);
     if (background == null) background = Color.WHITE;
 
-    Color foreground = UIManager.getColor("TextPane.foreground");
-    if (foreground == null) foreground = UIManager.getColor("Label.foreground");
+    Color foreground = UIManager.getColor(UiColorKeys.TEXT_PANE_FOREGROUND);
+    if (foreground == null) foreground = UIManager.getColor(UiColorKeys.LABEL_FOREGROUND);
     if (foreground == null) foreground = Color.BLACK;
 
     setBackground(background);

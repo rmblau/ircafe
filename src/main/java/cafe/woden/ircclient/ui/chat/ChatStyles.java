@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.chat;
 
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettings;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsBus;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import javax.swing.UIManager;
 import javax.swing.text.AttributeSet;
@@ -93,12 +94,12 @@ public class ChatStyles {
   }
 
   public synchronized void reload() {
-    Color fg = UIManager.getColor("TextPane.foreground");
-    Color dim = UIManager.getColor("Label.disabledForeground");
-    Color bg = UIManager.getColor("TextPane.background");
+    Color fg = UIManager.getColor(UiColorKeys.TEXT_PANE_FOREGROUND);
+    Color dim = UIManager.getColor(UiColorKeys.LABEL_DISABLED_FOREGROUND);
+    Color bg = UIManager.getColor(UiColorKeys.TEXT_PANE_BACKGROUND);
 
-    if (fg == null) fg = UIManager.getColor("Label.foreground");
-    if (bg == null) bg = UIManager.getColor("Panel.background");
+    if (fg == null) fg = UIManager.getColor(UiColorKeys.LABEL_FOREGROUND);
+    if (bg == null) bg = UIManager.getColor(UiColorKeys.PANEL_BACKGROUND);
     if (bg == null) bg = Color.WHITE;
 
     boolean darkUi = isDarkUi(bg);
@@ -108,8 +109,8 @@ public class ChatStyles {
     Color dimFallback = mix(fg, bg, darkUi ? 0.62 : 0.70);
     dim = ensureReadableTextColor(dim, bg, darkUi, 3.0, dimFallback);
 
-    Color link = UIManager.getColor("Component.linkColor");
-    if (link == null) link = UIManager.getColor("Label.foreground");
+    Color link = UIManager.getColor(UiColorKeys.COMPONENT_LINK_COLOR);
+    if (link == null) link = UIManager.getColor(UiColorKeys.LABEL_FOREGROUND);
     Color linkFallback = darkUi ? new Color(0x86B8FF) : new Color(0x0A4FB3);
     link = ensureReadableTextColor(link, bg, darkUi, 3.0, linkFallback);
 
@@ -117,18 +118,18 @@ public class ChatStyles {
     // and whether we're using outline/border colors. Try several common ones before falling back.
     Color warn =
         firstNonNull(
-            UIManager.getColor("Component.warningColor"),
-            UIManager.getColor("Component.warning.outlineColor"),
-            UIManager.getColor("Component.warning.borderColor"),
-            UIManager.getColor("Component.warning.focusedBorderColor"),
-            UIManager.getColor("Component.warning.focusColor"));
+            UIManager.getColor(UiColorKeys.COMPONENT_WARNING_COLOR),
+            UIManager.getColor(UiColorKeys.COMPONENT_WARNING_OUTLINE_COLOR),
+            UIManager.getColor(UiColorKeys.COMPONENT_WARNING_BORDER_COLOR),
+            UIManager.getColor(UiColorKeys.COMPONENT_WARNING_FOCUSED_BORDER_COLOR),
+            UIManager.getColor(UiColorKeys.COMPONENT_WARNING_FOCUS_COLOR));
     Color err =
         firstNonNull(
-            UIManager.getColor("Component.errorColor"),
-            UIManager.getColor("Component.error.outlineColor"),
-            UIManager.getColor("Component.error.borderColor"),
-            UIManager.getColor("Component.error.focusedBorderColor"),
-            UIManager.getColor("Component.error.focusColor"));
+            UIManager.getColor(UiColorKeys.COMPONENT_ERROR_COLOR),
+            UIManager.getColor(UiColorKeys.COMPONENT_ERROR_OUTLINE_COLOR),
+            UIManager.getColor(UiColorKeys.COMPONENT_ERROR_BORDER_COLOR),
+            UIManager.getColor(UiColorKeys.COMPONENT_ERROR_FOCUSED_BORDER_COLOR),
+            UIManager.getColor(UiColorKeys.COMPONENT_ERROR_FOCUS_COLOR));
     if (warn == null) warn = darkUi ? new Color(0xD4AE66) : new Color(0xF0B000);
     if (err == null) err = darkUi ? new Color(0xC96E6E) : new Color(0xD05050);
     if (darkUi) {
@@ -136,14 +137,14 @@ public class ChatStyles {
       warn = toneDownHighlightColor(warn, bg, 0.86, 0.30f);
     }
 
-    Color selBg = UIManager.getColor("TextPane.selectionBackground");
+    Color selBg = UIManager.getColor(UiColorKeys.TEXT_PANE_SELECTION_BACKGROUND);
 
     ChatThemeSettings s = chatThemeSettings != null ? chatThemeSettings.get() : null;
     ChatThemeSettings.Preset preset = s != null ? s.preset() : ChatThemeSettings.Preset.DEFAULT;
 
     // Best-effort "accent" fallback (used by ACCENTED/HIGH_CONTRAST presets)
-    Color accent = UIManager.getColor("@accentColor");
-    if (accent == null) accent = UIManager.getColor("Component.focusColor");
+    Color accent = UIManager.getColor(UiColorKeys.ACCENT_COLOR);
+    if (accent == null) accent = UIManager.getColor(UiColorKeys.COMPONENT_FOCUS_COLOR);
     if (accent == null) accent = link;
 
     int mentionStrength = s != null ? s.mentionStrength() : 35;

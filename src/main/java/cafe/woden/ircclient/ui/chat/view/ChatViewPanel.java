@@ -14,6 +14,7 @@ import cafe.woden.ircclient.ui.util.ChatTranscriptContextMenuDecorator;
 import cafe.woden.ircclient.ui.util.CloseableScope;
 import cafe.woden.ircclient.ui.util.EmojiFontSupport;
 import cafe.woden.ircclient.ui.util.FollowTailScrollDecorator;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import cafe.woden.ircclient.ui.util.ViewportWrapRevalidateDecorator;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -143,7 +144,7 @@ public abstract class ChatViewPanel extends JPanel implements Scrollable {
 
   private void applyChatBackground() {
     try {
-      Color bg = UIManager.getColor("TextPane.background");
+      Color bg = UIManager.getColor(UiColorKeys.TEXT_PANE_BACKGROUND);
       if (bg == null) {
         bg = chat.getBackground();
       }

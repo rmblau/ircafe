@@ -5,6 +5,7 @@ import cafe.woden.ircclient.ui.chat.NickColorService;
 import cafe.woden.ircclient.ui.chat.fold.SpoilerMessageComponent;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.awt.Font;
 import java.util.Objects;
@@ -60,8 +61,8 @@ public final class ChatTranscriptSpoilerComponentSupport {
       if (nickColors == null || !nickColors.enabled() || Objects.toString(fromNick, "").isBlank()) {
         return;
       }
-      Color bg = UIManager.getColor("TextPane.background");
-      Color fg = UIManager.getColor("TextPane.foreground");
+      Color bg = UIManager.getColor(UiColorKeys.TEXT_PANE_BACKGROUND);
+      Color fg = UIManager.getColor(UiColorKeys.TEXT_PANE_FOREGROUND);
       component.setFromColor(nickColors.colorForNick(fromNick, bg, fg));
     } catch (Exception ignored) {
     }

@@ -7,6 +7,7 @@ import cafe.woden.ircclient.ui.settings.SettingsColorPickerDialogSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
 import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettings;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.Color;
 import java.awt.Component;
@@ -98,11 +99,11 @@ final class AppearanceAccentControlsFactory {
   }
 
   private static Color fallbackAccentColor() {
-    Color background = UIManager.getColor("Component.accentColor");
-    if (background == null) background = UIManager.getColor("Component.focusColor");
-    if (background == null) background = UIManager.getColor("Focus.color");
-    if (background == null) background = UIManager.getColor("Actions.Blue");
-    if (background == null) background = UIManager.getColor("Button.default.focusColor");
+    Color background = UIManager.getColor(UiColorKeys.COMPONENT_ACCENT_COLOR);
+    if (background == null) background = UIManager.getColor(UiColorKeys.COMPONENT_FOCUS_COLOR);
+    if (background == null) background = UIManager.getColor(UiColorKeys.FOCUS_COLOR);
+    if (background == null) background = UIManager.getColor(UiColorKeys.ACTIONS_BLUE);
+    if (background == null) background = UIManager.getColor(UiColorKeys.BUTTON_DEFAULT_FOCUS_COLOR);
     if (background == null) {
       background = SettingsColorSupport.parseHexColorLenient(UiProperties.DEFAULT_ACCENT_COLOR);
     }

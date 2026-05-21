@@ -19,6 +19,7 @@ import cafe.woden.ircclient.ui.shell.UpdateNotifierService;
 import cafe.woden.ircclient.ui.tray.TrayNotificationService;
 import cafe.woden.ircclient.ui.tray.TrayService;
 import cafe.woden.ircclient.ui.tray.dbus.GnomeDbusNotificationBackend;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.net.URI;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
@@ -295,7 +296,7 @@ public final class TrayControlsSupport {
 
           pushyTest.setEnabled(false);
           pushyTestStatus.setText("Sending test push…");
-          pushyTestStatus.setForeground(UIManager.getColor("Label.foreground"));
+          pushyTestStatus.setForeground(UIManager.getColor(UiColorKeys.LABEL_FOREGROUND));
 
           pushyTestExecutor.submit(
               () -> {
@@ -312,7 +313,7 @@ public final class TrayControlsSupport {
                               : result.message());
                       pushyTestStatus.setForeground(
                           result.success()
-                              ? UIManager.getColor("Label.foreground")
+                              ? UIManager.getColor(UiColorKeys.LABEL_FOREGROUND)
                               : PreferencesUiSupport.errorForeground());
                       refreshPushyValidation.run();
                     });

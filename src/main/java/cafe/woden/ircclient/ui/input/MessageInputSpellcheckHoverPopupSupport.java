@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.input;
 
 import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettings;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -483,13 +484,13 @@ final class MessageInputSpellcheckHoverPopupSupport {
 
   private void applyTheme() {
     Color bg = input.getBackground();
-    if (bg == null) bg = UIManager.getColor("TextField.background");
-    if (bg == null) bg = UIManager.getColor("Panel.background");
+    if (bg == null) bg = UIManager.getColor(UiColorKeys.TEXT_FIELD_BACKGROUND);
+    if (bg == null) bg = UIManager.getColor(UiColorKeys.PANEL_BACKGROUND);
     if (bg == null) bg = Color.WHITE;
 
     Color fg = input.getForeground();
-    if (fg == null) fg = UIManager.getColor("TextField.foreground");
-    if (fg == null) fg = UIManager.getColor("Label.foreground");
+    if (fg == null) fg = UIManager.getColor(UiColorKeys.TEXT_FIELD_FOREGROUND);
+    if (fg == null) fg = UIManager.getColor(UiColorKeys.LABEL_FOREGROUND);
     if (fg == null) fg = Color.BLACK;
 
     Color panelBg = blend(bg, fg, isDark(bg) ? 0.08f : 0.03f);

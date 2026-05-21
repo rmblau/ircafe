@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.chat.fold;
 
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
@@ -152,9 +153,9 @@ public class SpoilerMessageComponent extends JPanel {
   }
 
   private void applyPillColors() {
-    Color bg = UIManager.getColor("TextPane.background");
-    Color fg = UIManager.getColor("TextPane.foreground");
-    Color dim = UIManager.getColor("Label.disabledForeground");
+    Color bg = UIManager.getColor(UiColorKeys.TEXT_PANE_BACKGROUND);
+    Color fg = UIManager.getColor(UiColorKeys.TEXT_PANE_FOREGROUND);
+    Color dim = UIManager.getColor(UiColorKeys.LABEL_DISABLED_FOREGROUND);
 
     if (bg == null) bg = Color.WHITE;
     if (fg == null) fg = Color.BLACK;

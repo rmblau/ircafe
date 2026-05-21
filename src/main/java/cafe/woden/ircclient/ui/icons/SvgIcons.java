@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.icons;
 
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import java.awt.Color;
 import java.util.Map;
@@ -120,15 +121,15 @@ public final class SvgIcons {
 
       // Accent token (online dot)
       if (rgb == TOKEN_ACCENT) {
-        Color accent = UIManager.getColor("@accentColor");
-        if (accent == null) accent = UIManager.getColor("Component.focusColor");
+        Color accent = UIManager.getColor(UiColorKeys.ACCENT_COLOR);
+        if (accent == null) accent = UIManager.getColor(UiColorKeys.COMPONENT_FOCUS_COLOR);
         if (accent == null) accent = treeOrLabelForeground();
         return withAlpha(accent, 240);
       }
 
       // Muted token (offline dot)
       if (rgb == TOKEN_MUTED) {
-        Color dis = UIManager.getColor("Label.disabledForeground");
+        Color dis = UIManager.getColor(UiColorKeys.LABEL_DISABLED_FOREGROUND);
         if (dis == null) dis = disabledForeground(treeOrLabelForeground());
         return withAlpha(dis, 220);
       }
@@ -139,20 +140,20 @@ public final class SvgIcons {
   }
 
   private static Color labelForeground() {
-    Color c = UIManager.getColor("Label.foreground");
+    Color c = UIManager.getColor(UiColorKeys.LABEL_FOREGROUND);
     if (c == null) c = Color.DARK_GRAY;
     return c;
   }
 
   private static Color treeOrLabelForeground() {
-    Color c = UIManager.getColor("Tree.textForeground");
-    if (c == null) c = UIManager.getColor("Label.foreground");
+    Color c = UIManager.getColor(UiColorKeys.TREE_TEXT_FOREGROUND);
+    if (c == null) c = UIManager.getColor(UiColorKeys.LABEL_FOREGROUND);
     if (c == null) c = Color.DARK_GRAY;
     return c;
   }
 
   private static Color disabledForeground(Color fallback) {
-    Color c = UIManager.getColor("Label.disabledForeground");
+    Color c = UIManager.getColor(UiColorKeys.LABEL_DISABLED_FOREGROUND);
     if (c != null) return c;
     // Fallback: fade the normal foreground.
     return withAlpha(Objects.requireNonNullElse(fallback, Color.DARK_GRAY), 140);

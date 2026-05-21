@@ -4,6 +4,7 @@ import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.theme.ThemeTweakSettings;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -137,19 +138,25 @@ final class AppearanceFontControlsFactory {
     if (!(editorComponent instanceof JTextField field)) return;
 
     Color background =
-        firstUiColor("ComboBox.background", "TextField.background", "TextComponent.background");
+        firstUiColor(
+            UiColorKeys.COMBO_BOX_BACKGROUND,
+            UiColorKeys.TEXT_FIELD_BACKGROUND,
+            UiColorKeys.TEXT_COMPONENT_BACKGROUND);
     Color foreground =
-        firstUiColor("ComboBox.foreground", "TextField.foreground", "Label.foreground");
+        firstUiColor(
+            UiColorKeys.COMBO_BOX_FOREGROUND,
+            UiColorKeys.TEXT_FIELD_FOREGROUND,
+            UiColorKeys.LABEL_FOREGROUND);
     Color selectionBackground =
         firstUiColor(
-            "ComboBox.selectionBackground",
-            "TextComponent.selectionBackground",
-            "List.selectionBackground");
+            UiColorKeys.COMBO_BOX_SELECTION_BACKGROUND,
+            UiColorKeys.TEXT_COMPONENT_SELECTION_BACKGROUND,
+            UiColorKeys.LIST_SELECTION_BACKGROUND);
     Color selectionForeground =
         firstUiColor(
-            "ComboBox.selectionForeground",
-            "TextComponent.selectionForeground",
-            "List.selectionForeground");
+            UiColorKeys.COMBO_BOX_SELECTION_FOREGROUND,
+            UiColorKeys.TEXT_COMPONENT_SELECTION_FOREGROUND,
+            UiColorKeys.LIST_SELECTION_FOREGROUND);
 
     if (background != null) field.setBackground(asUiResource(background));
     if (foreground != null) {
@@ -220,8 +227,8 @@ final class AppearanceFontControlsFactory {
         background = isSelected ? list.getSelectionBackground() : list.getBackground();
         foreground = isSelected ? list.getSelectionForeground() : list.getForeground();
       } else {
-        background = UIManager.getColor("ComboBox.background");
-        foreground = UIManager.getColor("ComboBox.foreground");
+        background = UIManager.getColor(UiColorKeys.COMBO_BOX_BACKGROUND);
+        foreground = UIManager.getColor(UiColorKeys.COMBO_BOX_FOREGROUND);
       }
       panel.setBackground(background);
       left.setForeground(foreground);

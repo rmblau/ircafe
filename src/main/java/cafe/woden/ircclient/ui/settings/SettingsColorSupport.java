@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings;
 
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import cafe.woden.ircclient.util.HexColorSupport;
 import java.awt.Color;
 import java.util.Objects;
@@ -53,7 +54,7 @@ public final class SettingsColorSupport {
   }
 
   public static Color contrastTextColor(Color bg) {
-    if (bg == null) return UIManager.getColor("Label.foreground");
+    if (bg == null) return UIManager.getColor(UiColorKeys.LABEL_FOREGROUND);
     return bestTextColor(bg);
   }
 
@@ -67,10 +68,10 @@ public final class SettingsColorSupport {
   }
 
   public static Color preferredPreviewBackground() {
-    Color bg = UIManager.getColor("TextPane.background");
-    if (bg == null) bg = UIManager.getColor("TextArea.background");
-    if (bg == null) bg = UIManager.getColor("Table.background");
-    if (bg == null) bg = UIManager.getColor("Panel.background");
+    Color bg = UIManager.getColor(UiColorKeys.TEXT_PANE_BACKGROUND);
+    if (bg == null) bg = UIManager.getColor(UiColorKeys.TEXT_AREA_BACKGROUND);
+    if (bg == null) bg = UIManager.getColor(UiColorKeys.TABLE_BACKGROUND);
+    if (bg == null) bg = UIManager.getColor(UiColorKeys.PANEL_BACKGROUND);
     return bg != null ? bg : new Color(30, 30, 30);
   }
 

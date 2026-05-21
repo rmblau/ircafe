@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.input;
 
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -279,8 +280,8 @@ final class TypingSignalIndicator extends JComponent {
     Color bg = resolveFallbackBackgroundColor();
     if (isDark(bg)) return DARK_THEME_FALLBACK_ARROW;
 
-    Color fg = UIManager.getColor("Label.foreground");
-    if (fg == null) fg = UIManager.getColor("TextField.foreground");
+    Color fg = UIManager.getColor(UiColorKeys.LABEL_FOREGROUND);
+    if (fg == null) fg = UIManager.getColor(UiColorKeys.TEXT_FIELD_FOREGROUND);
     if (fg != null && isDark(fg)) return fg;
     return LIGHT_THEME_FALLBACK_ARROW;
   }
@@ -331,10 +332,10 @@ final class TypingSignalIndicator extends JComponent {
       return bg;
     }
 
-    Color bg = UIManager.getColor("TextField.background");
-    if (bg == null) bg = UIManager.getColor("TextPane.background");
-    if (bg == null) bg = UIManager.getColor("Panel.background");
-    if (bg == null) bg = UIManager.getColor("control");
+    Color bg = UIManager.getColor(UiColorKeys.TEXT_FIELD_BACKGROUND);
+    if (bg == null) bg = UIManager.getColor(UiColorKeys.TEXT_PANE_BACKGROUND);
+    if (bg == null) bg = UIManager.getColor(UiColorKeys.PANEL_BACKGROUND);
+    if (bg == null) bg = UIManager.getColor(UiColorKeys.CONTROL);
     return bg;
   }
 

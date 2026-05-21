@@ -6,6 +6,7 @@ import cafe.woden.ircclient.ui.settings.EmbedCardStyle;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import cafe.woden.ircclient.ui.util.PopupMenuThemeSupport;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import io.reactivex.rxjava3.disposables.Disposable;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
@@ -640,7 +641,7 @@ final class ChatImageComponent extends JPanel {
   }
 
   private java.awt.Color borderColor() {
-    java.awt.Color base = javax.swing.UIManager.getColor("Component.borderColor");
+    java.awt.Color base = javax.swing.UIManager.getColor(UiColorKeys.COMPONENT_BORDER_COLOR);
     if (base == null) {
       base = blend(foregroundColor(), baseBackgroundColor(), 0.35);
     }
@@ -648,7 +649,11 @@ final class ChatImageComponent extends JPanel {
       case MINIMAL -> withAlpha(base, 105);
       case GLASSY ->
           withAlpha(
-              blend(base, firstNonNullColor("Component.linkColor", "Component.focusColor"), 0.20),
+              blend(
+                  base,
+                  firstNonNullColor(
+                      UiColorKeys.COMPONENT_LINK_COLOR, UiColorKeys.COMPONENT_FOCUS_COLOR),
+                  0.20),
               205);
       case DENSER -> withAlpha(base, 190);
       case DEFAULT -> withAlpha(base, 170);
@@ -780,14 +785,14 @@ final class ChatImageComponent extends JPanel {
   }
 
   private static java.awt.Color foregroundColor() {
-    java.awt.Color fg = javax.swing.UIManager.getColor("Label.foreground");
+    java.awt.Color fg = javax.swing.UIManager.getColor(UiColorKeys.LABEL_FOREGROUND);
     if (fg == null) fg = java.awt.Color.DARK_GRAY;
     return fg;
   }
 
   private static java.awt.Color baseBackgroundColor() {
-    java.awt.Color bg = javax.swing.UIManager.getColor("TextPane.background");
-    if (bg == null) bg = javax.swing.UIManager.getColor("Panel.background");
+    java.awt.Color bg = javax.swing.UIManager.getColor(UiColorKeys.TEXT_PANE_BACKGROUND);
+    if (bg == null) bg = javax.swing.UIManager.getColor(UiColorKeys.PANEL_BACKGROUND);
     if (bg == null) bg = java.awt.Color.WHITE;
     return bg;
   }

@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.settings.appearance;
 import cafe.woden.ircclient.ui.settings.SettingsColorPickerDialogSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -29,7 +30,7 @@ final class AppearanceColorFieldFactory {
         event -> {
           Color initial = SettingsColorSupport.parseHexColorLenient(hex.getText());
           if (initial == null) {
-            initial = UIManager.getColor("Label.foreground");
+            initial = UIManager.getColor(UiColorKeys.LABEL_FOREGROUND);
           }
           Color chosen =
               SettingsColorPickerDialogSupport.showColorPickerDialog(

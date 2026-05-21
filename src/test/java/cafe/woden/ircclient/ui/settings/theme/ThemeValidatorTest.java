@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.util.PopupMenuThemeSupport;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
@@ -111,7 +112,11 @@ class ThemeValidatorTest {
     onEdt(() -> themeManager.installLookAndFeel(darklaf.id()));
     onEdt(
         () -> {
-          Color bg = firstNonNullColor("Panel.background", "TextComponent.background", "control");
+          Color bg =
+              firstNonNullColor(
+                  UiColorKeys.PANEL_BACKGROUND,
+                  UiColorKeys.TEXT_COMPONENT_BACKGROUND,
+                  UiColorKeys.CONTROL);
           assertNotNull(bg, "darklaf: missing background color");
           assertTrue(
               relativeLuminance(bg) < 0.45,
@@ -135,9 +140,9 @@ class ThemeValidatorTest {
     onEdt(() -> themeManager.installLookAndFeel(nimbusDark.id()));
     onEdt(
         () -> {
-          nimbusMenuBg[0] = UIManager.getColor("MenuBar.background");
-          nimbusSelectionBg[0] = UIManager.getColor("nimbusSelectionBackground");
-          nimbusFocus[0] = UIManager.getColor("nimbusFocus");
+          nimbusMenuBg[0] = UIManager.getColor(UiColorKeys.MENU_BAR_BACKGROUND);
+          nimbusSelectionBg[0] = UIManager.getColor(UiColorKeys.NIMBUS_SELECTION_BACKGROUND);
+          nimbusFocus[0] = UIManager.getColor(UiColorKeys.NIMBUS_FOCUS);
 
           assertNotNull(nimbusMenuBg[0], "nimbus-dark: expected menu background");
           assertNotNull(nimbusSelectionBg[0], "nimbus-dark: expected selection background");
@@ -147,9 +152,9 @@ class ThemeValidatorTest {
     onEdt(() -> themeManager.installLookAndFeel(darcula.id()));
     onEdt(
         () -> {
-          Color menuBgAfter = UIManager.getColor("MenuBar.background");
-          Color selectionAfter = UIManager.getColor("nimbusSelectionBackground");
-          Color focusAfter = UIManager.getColor("nimbusFocus");
+          Color menuBgAfter = UIManager.getColor(UiColorKeys.MENU_BAR_BACKGROUND);
+          Color selectionAfter = UIManager.getColor(UiColorKeys.NIMBUS_SELECTION_BACKGROUND);
+          Color focusAfter = UIManager.getColor(UiColorKeys.NIMBUS_FOCUS);
 
           if (menuBgAfter != null) {
             assertNotEquals(
@@ -178,10 +183,10 @@ class ThemeValidatorTest {
     onEdt(() -> themeManager.installLookAndFeel(nimbusDark.id()));
     onEdt(
         () -> {
-          Color menuBg = UIManager.getColor("MenuBar.background");
-          Color menuFg = UIManager.getColor("Menu.foreground");
-          Color buttonBg = UIManager.getColor("Button.background");
-          Color comboBg = UIManager.getColor("ComboBox.background");
+          Color menuBg = UIManager.getColor(UiColorKeys.MENU_BAR_BACKGROUND);
+          Color menuFg = UIManager.getColor(UiColorKeys.MENU_FOREGROUND);
+          Color buttonBg = UIManager.getColor(UiColorKeys.BUTTON_BACKGROUND);
+          Color comboBg = UIManager.getColor(UiColorKeys.COMBO_BOX_BACKGROUND);
 
           assertNotNull(menuBg, "nimbus-dark: MenuBar.background should be set");
           assertNotNull(menuFg, "nimbus-dark: Menu.foreground should be set");
@@ -231,7 +236,9 @@ class ThemeValidatorTest {
           Color menuFg = menu.getForeground();
           Color menuItemEnabledFg =
               firstNonNullColor(
-                  "MenuItem[Enabled].textForeground", "MenuItem.foreground", "Label.foreground");
+                  UiColorKeys.MENU_ITEM_ENABLED_TEXT_FOREGROUND,
+                  UiColorKeys.MENU_ITEM_FOREGROUND,
+                  UiColorKeys.LABEL_FOREGROUND);
           Color buttonBg = button.getBackground();
           Color comboBg = combo.getBackground();
 
@@ -351,7 +358,10 @@ class ThemeValidatorTest {
 
           Color popupBg = menu.getBackground();
           Color popupFg =
-              firstNonNullColor("PopupMenu.foreground", "MenuItem.foreground", "Label.foreground");
+              firstNonNullColor(
+                  UiColorKeys.POPUP_MENU_FOREGROUND,
+                  UiColorKeys.MENU_ITEM_FOREGROUND,
+                  UiColorKeys.LABEL_FOREGROUND);
           Color itemBg = copy.getBackground();
           Color itemFg = copy.getForeground();
 
@@ -398,34 +408,44 @@ class ThemeValidatorTest {
     String themeId = theme.id();
     assertNotNull(UIManager.getLookAndFeel(), () -> themeId + ": no active LookAndFeel");
 
-    Color panelBg = firstNonNullColor("Panel.background", "control", "nimbusBase");
-    Color labelFg = firstNonNullColor("Label.foreground", "textText", "controlText");
+    Color panelBg =
+        firstNonNullColor(
+            UiColorKeys.PANEL_BACKGROUND, UiColorKeys.CONTROL, UiColorKeys.NIMBUS_BASE);
+    Color labelFg =
+        firstNonNullColor(
+            UiColorKeys.LABEL_FOREGROUND, UiColorKeys.TEXT_TEXT, UiColorKeys.CONTROL_TEXT);
     assertContrastAtLeast(
         themeId, "Label.foreground vs Panel.background", labelFg, panelBg, MIN_TEXT_CONTRAST);
 
     Color textBg =
-        firstNonNullColor("TextField.background", "TextComponent.background", "Panel.background");
+        firstNonNullColor(
+            UiColorKeys.TEXT_FIELD_BACKGROUND,
+            UiColorKeys.TEXT_COMPONENT_BACKGROUND,
+            UiColorKeys.PANEL_BACKGROUND);
     Color textFg =
-        firstNonNullColor("TextField.foreground", "TextComponent.foreground", "Label.foreground");
+        firstNonNullColor(
+            UiColorKeys.TEXT_FIELD_FOREGROUND,
+            UiColorKeys.TEXT_COMPONENT_FOREGROUND,
+            UiColorKeys.LABEL_FOREGROUND);
     assertContrastAtLeast(
         themeId, "TextField.foreground vs TextField.background", textFg, textBg, MIN_TEXT_CONTRAST);
 
     Color selectionBg =
         firstNonNullColor(
-            "TextComponent.selectionBackground",
-            "List.selectionBackground",
-            "textHighlight",
-            "nimbusSelectionBackground",
-            "Table.selectionBackground",
-            "Tree.selectionBackground");
+            UiColorKeys.TEXT_COMPONENT_SELECTION_BACKGROUND,
+            UiColorKeys.LIST_SELECTION_BACKGROUND,
+            UiColorKeys.TEXT_HIGHLIGHT,
+            UiColorKeys.NIMBUS_SELECTION_BACKGROUND,
+            UiColorKeys.TABLE_SELECTION_BACKGROUND,
+            UiColorKeys.TREE_SELECTION_BACKGROUND);
     Color selectionFg =
         firstNonNullColor(
-            "TextComponent.selectionForeground",
-            "List.selectionForeground",
-            "textHighlightText",
-            "nimbusSelectedText",
-            "List.foreground",
-            "Label.foreground");
+            UiColorKeys.TEXT_COMPONENT_SELECTION_FOREGROUND,
+            UiColorKeys.LIST_SELECTION_FOREGROUND,
+            UiColorKeys.TEXT_HIGHLIGHT_TEXT,
+            UiColorKeys.NIMBUS_SELECTED_TEXT,
+            UiColorKeys.LIST_FOREGROUND,
+            UiColorKeys.LABEL_FOREGROUND);
     assertContrastAtLeast(
         themeId,
         "List.selectionForeground vs List.selectionBackground",
@@ -435,12 +455,12 @@ class ThemeValidatorTest {
 
     Color accent =
         firstNonNullColor(
-            "@accentColor",
-            "Component.focusColor",
-            "nimbusFocus",
-            "textHighlight",
-            "List.selectionBackground",
-            "Label.foreground");
+            UiColorKeys.ACCENT_COLOR,
+            UiColorKeys.COMPONENT_FOCUS_COLOR,
+            UiColorKeys.NIMBUS_FOCUS,
+            UiColorKeys.TEXT_HIGHLIGHT,
+            UiColorKeys.LIST_SELECTION_BACKGROUND,
+            UiColorKeys.LABEL_FOREGROUND);
     boolean systemPack = theme.pack() == ThemeManager.ThemePack.SYSTEM;
     double accentMin = systemPack ? 1.25 : MIN_ACCENT_CONTRAST;
     assertContrastAtLeast(themeId, "Accent vs Panel.background", accent, panelBg, accentMin);

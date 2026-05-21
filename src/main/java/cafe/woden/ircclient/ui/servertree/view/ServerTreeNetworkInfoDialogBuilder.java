@@ -7,6 +7,7 @@ import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionRegistry;
 import cafe.woden.ircclient.ui.servertree.ServerTreeConventions;
 import cafe.woden.ircclient.ui.servertree.state.ServerRuntimeMetadata;
 import cafe.woden.ircclient.ui.servertree.viewmodel.ServerTreeConnectionStateViewModel;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Dimension;
@@ -651,9 +652,9 @@ public final class ServerTreeNetworkInfoDialogBuilder {
 
   private static JPanel buildCountChip(String label, int count) {
     JPanel chip = new JPanel(new MigLayout("insets 6, wrap 1", "[grow,fill]", "[]0[]"));
-    Color border = UIManager.getColor("Separator.foreground");
+    Color border = UIManager.getColor(UiColorKeys.SEPARATOR_FOREGROUND);
     if (border == null) {
-      border = UIManager.getColor("Component.borderColor");
+      border = UIManager.getColor(UiColorKeys.COMPONENT_BORDER_COLOR);
     }
     if (border == null) {
       border = Color.GRAY;
@@ -666,7 +667,7 @@ public final class ServerTreeNetworkInfoDialogBuilder {
       countLabel.setFont(font.deriveFont(Font.BOLD, font.getSize2D() + 1f));
     }
     JLabel textLabel = new JLabel(label);
-    Color muted = UIManager.getColor("Label.disabledForeground");
+    Color muted = UIManager.getColor(UiColorKeys.LABEL_DISABLED_FOREGROUND);
     if (muted != null) {
       textLabel.setForeground(muted);
     }

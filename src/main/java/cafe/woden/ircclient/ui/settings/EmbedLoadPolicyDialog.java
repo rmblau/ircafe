@@ -4,6 +4,7 @@ import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicyScope;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.ui.chat.embed.EmbedLoadPolicyMatcher;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Dimension;
@@ -539,17 +540,17 @@ public class EmbedLoadPolicyDialog {
   }
 
   private static Color resolveValidationErrorBackground() {
-    Color c = UIManager.getColor("Component.error.background");
+    Color c = UIManager.getColor(UiColorKeys.COMPONENT_ERROR_BACKGROUND);
     if (c != null) return c;
-    c = UIManager.getColor("TextField.error.background");
+    c = UIManager.getColor(UiColorKeys.TEXT_FIELD_ERROR_BACKGROUND);
     if (c != null) return c;
     return new Color(255, 236, 236);
   }
 
   private static Color resolveValidationErrorForeground() {
-    Color c = UIManager.getColor("Component.error.foreground");
+    Color c = UIManager.getColor(UiColorKeys.COMPONENT_ERROR_FOREGROUND);
     if (c != null) return c;
-    c = UIManager.getColor("Component.error.focusedBorderColor");
+    c = UIManager.getColor(UiColorKeys.COMPONENT_ERROR_FOCUSED_BORDER_COLOR);
     if (c != null) return c;
     return new Color(150, 25, 25);
   }

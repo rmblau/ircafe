@@ -5,6 +5,7 @@ import cafe.woden.ircclient.ui.settings.ColorSwatch;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorPickerDialogSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.awt.Window;
 import java.util.Objects;
@@ -66,13 +67,13 @@ public final class NotificationRuleDialogSupport {
           if (c == null) {
             colorPreview.setIcon(null);
             colorPreview.setText("Default");
-            Color fg = UIManager.getColor("Label.foreground");
+            Color fg = UIManager.getColor(UiColorKeys.LABEL_FOREGROUND);
             if (fg != null) colorPreview.setForeground(fg);
             return;
           }
           colorPreview.setIcon(new ColorSwatch(c, 14, 14));
           colorPreview.setText(SettingsColorSupport.toHex(c));
-          Color fg = UIManager.getColor("Label.foreground");
+          Color fg = UIManager.getColor(UiColorKeys.LABEL_FOREGROUND);
           if (fg != null) colorPreview.setForeground(fg);
         };
     refreshColorPreview.run();
@@ -81,8 +82,8 @@ public final class NotificationRuleDialogSupport {
         e -> {
           Color current = SettingsColorSupport.parseHexColorLenient(colorHex[0]);
           if (current == null) {
-            Color fallback = UIManager.getColor("TextPane.foreground");
-            if (fallback == null) fallback = UIManager.getColor("Label.foreground");
+            Color fallback = UIManager.getColor(UiColorKeys.TEXT_PANE_FOREGROUND);
+            if (fallback == null) fallback = UIManager.getColor(UiColorKeys.LABEL_FOREGROUND);
             current = fallback != null ? fallback : Color.WHITE;
           }
           Color chosen =

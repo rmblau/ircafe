@@ -6,6 +6,7 @@ import cafe.woden.ircclient.ui.settings.SettingsColorPickerDialogSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
 import cafe.woden.ircclient.ui.settings.UiSettings;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Window;
@@ -44,7 +45,7 @@ public final class OutgoingColorControlsSupport {
             currentColor = SettingsColorSupport.parseHexColor(current.clientLineColor());
           }
           if (currentColor == null) {
-            currentColor = UIManager.getColor("Label.foreground");
+            currentColor = UIManager.getColor(UiColorKeys.LABEL_FOREGROUND);
           }
           if (currentColor == null) {
             currentColor = Color.WHITE;
