@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.settings.spellcheck;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import java.util.LinkedHashSet;
 import java.util.List;
 import javax.swing.DefaultListCellRenderer;
@@ -170,18 +171,20 @@ public final class SpellcheckControlsSupport {
     JPanel customKnobsPanel =
         new JPanel(
             new MigLayout(
-                "insets 0, fillx, wrap 2, hidemode 3", "[right]8[grow,fill]", "[]2[]2[]2[]2[]"));
+                "insets 0, fillx, wrap 2, hidemode 3",
+                MigLayoutConstraints.RIGHT_8_GROW_FILL,
+                "[]2[]2[]2[]2[]"));
     customKnobsPanel.setOpaque(false);
     customKnobsPanel.add(new JLabel("Min prefix length"));
-    customKnobsPanel.add(customMinPrefixCompletionTokenLength, "w 120!");
+    customKnobsPanel.add(customMinPrefixCompletionTokenLength, MigLayoutConstraints.WIDTH_120);
     customKnobsPanel.add(new JLabel("Max completion tail"));
-    customKnobsPanel.add(customMaxPrefixCompletionExtraChars, "w 120!");
+    customKnobsPanel.add(customMaxPrefixCompletionExtraChars, MigLayoutConstraints.WIDTH_120);
     customKnobsPanel.add(new JLabel("Lexicon candidate cap"));
-    customKnobsPanel.add(customMaxPrefixLexiconCandidates, "w 120!");
+    customKnobsPanel.add(customMaxPrefixLexiconCandidates, MigLayoutConstraints.WIDTH_120);
     customKnobsPanel.add(new JLabel("Prefix bonus"));
-    customKnobsPanel.add(customPrefixCompletionBonusScore, "w 120!");
+    customKnobsPanel.add(customPrefixCompletionBonusScore, MigLayoutConstraints.WIDTH_120);
     customKnobsPanel.add(new JLabel("Source-order weight"));
-    customKnobsPanel.add(customSourceOrderWeight, "w 120!");
+    customKnobsPanel.add(customSourceOrderWeight, MigLayoutConstraints.WIDTH_120);
 
     Runnable syncEnabled =
         () -> {
@@ -215,36 +218,44 @@ public final class SpellcheckControlsSupport {
     JPanel panel =
         new JPanel(
             new MigLayout(
-                "insets 0, fillx, wrap 1, hidemode 3", "[grow,fill]", "[]2[]2[]4[]2[]2[]2[]2[]"));
+                "insets 0, fillx, wrap 1, hidemode 3",
+                MigLayoutConstraints.GROW_FILL,
+                "[]2[]2[]4[]2[]2[]2[]2[]"));
     panel.setOpaque(false);
-    panel.add(enabled, "growx, wmin 0, wrap");
-    panel.add(underline, "growx, wmin 0, gapleft 18, wrap");
-    panel.add(suggestOnTab, "growx, wmin 0, gapleft 18, wrap");
-    panel.add(hoverSuggestions, "growx, wmin 0, gapleft 18, wrap");
+    panel.add(enabled, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    panel.add(underline, MigLayoutConstraints.GROW_X_WMIN_0_GAP_LEFT_18_WRAP);
+    panel.add(suggestOnTab, MigLayoutConstraints.GROW_X_WMIN_0_GAP_LEFT_18_WRAP);
+    panel.add(hoverSuggestions, MigLayoutConstraints.GROW_X_WMIN_0_GAP_LEFT_18_WRAP);
 
-    JPanel langRow = new JPanel(new MigLayout("insets 0, fillx", "[]8[grow,fill]", "[]"));
+    JPanel langRow =
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_0_FILL_X, MigLayoutConstraints.ROW_8_GROW_FILL, "[]"));
     langRow.setOpaque(false);
     langRow.add(new JLabel("Dictionary language"));
     langRow.add(languageTag, "growx, wmin 160");
-    panel.add(langRow, "growx, wmin 0, gapleft 18, wrap");
+    panel.add(langRow, MigLayoutConstraints.GROW_X_WMIN_0_GAP_LEFT_18_WRAP);
 
-    JPanel presetRow = new JPanel(new MigLayout("insets 0, fillx", "[]8[grow,fill]", "[]"));
+    JPanel presetRow =
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_0_FILL_X, MigLayoutConstraints.ROW_8_GROW_FILL, "[]"));
     presetRow.setOpaque(false);
     presetRow.add(new JLabel("Completion preset"));
-    presetRow.add(completionPreset, "growx, wmin 180");
-    panel.add(presetRow, "growx, wmin 0, gapleft 18, wrap");
+    presetRow.add(completionPreset, MigLayoutConstraints.GROW_X_WMIN_180);
+    panel.add(presetRow, MigLayoutConstraints.GROW_X_WMIN_0_GAP_LEFT_18_WRAP);
     panel.add(
         PreferencesUiSupport.helpText(
             "Presets tune TAB completion ranking. Select Custom to reveal manual tuning knobs."),
-        "growx, wmin 0, gapleft 18, wrap");
+        MigLayoutConstraints.GROW_X_WMIN_0_GAP_LEFT_18_WRAP);
     panel.add(customKnobsPanel, "growx, wmin 0, gapleft 36, wrap");
 
-    panel.add(new JLabel("Custom dictionary"), "growx, wmin 0, gapleft 18, wrap");
+    panel.add(new JLabel("Custom dictionary"), MigLayoutConstraints.GROW_X_WMIN_0_GAP_LEFT_18_WRAP);
     panel.add(customScroll, "growx, wmin 0, h 80:110:180, gapleft 18, wrap");
     panel.add(
         PreferencesUiSupport.helpText(
             "Add channel slang, nick-like words, or terms you use frequently so they are ignored."),
-        "growx, wmin 0, gapleft 18, wrap");
+        MigLayoutConstraints.GROW_X_WMIN_0_GAP_LEFT_18_WRAP);
 
     return new SpellcheckControls(
         enabled,

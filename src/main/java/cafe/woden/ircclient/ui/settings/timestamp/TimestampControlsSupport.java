@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.settings.timestamp;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import java.time.format.DateTimeFormatter;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -42,10 +43,19 @@ public final class TimestampControlsSupport {
     syncEnabled.run();
 
     JPanel panel =
-        new JPanel(new MigLayout("insets 0, fillx, wrap 1", "[grow,fill]", "[]6[]6[]6[]"));
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_1,
+                MigLayoutConstraints.GROW_FILL,
+                "[]6[]6[]6[]"));
     panel.setOpaque(false);
     panel.add(enabled);
-    JPanel formatRow = new JPanel(new MigLayout("insets 0, fillx, wrap 2", "[][grow,fill]", "[]"));
+    JPanel formatRow =
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_2,
+                MigLayoutConstraints.LEADING_GROW_FILL,
+                "[]"));
     formatRow.setOpaque(false);
     formatRow.add(new JLabel("Format"));
     formatRow.add(format, "w 200!");

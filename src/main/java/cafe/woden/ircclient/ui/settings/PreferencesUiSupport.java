@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings;
 
 import cafe.woden.ircclient.model.BuiltInSound;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import cafe.woden.ircclient.ui.util.MouseWheelDecorator;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import cafe.woden.ircclient.ui.util.UiFontKeys;
@@ -200,7 +201,10 @@ public final class PreferencesUiSupport {
 
   public static JComponent wrapCheckBox(JCheckBox box, String labelText) {
     box.setText("");
-    JPanel row = new JPanel(new MigLayout("insets 0, fillx", "[]6[grow,fill]", "[]"));
+    JPanel row =
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_0_FILL_X, MigLayoutConstraints.ROW_6_GROW_FILL, "[]"));
     row.setOpaque(false);
 
     JTextArea label = buttonWrapText(labelText);
@@ -213,8 +217,8 @@ public final class PreferencesUiSupport {
           }
         });
 
-    row.add(box, "aligny top");
-    row.add(label, "growx, pushx, wmin 0");
+    row.add(box, MigLayoutConstraints.ALIGN_Y_TOP);
+    row.add(label, MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0);
     return row;
   }
 

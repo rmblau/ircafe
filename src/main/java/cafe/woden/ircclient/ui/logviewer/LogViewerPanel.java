@@ -7,6 +7,7 @@ import cafe.woden.ircclient.logging.viewer.ChatLogViewerResult;
 import cafe.woden.ircclient.logging.viewer.ChatLogViewerRow;
 import cafe.woden.ircclient.logging.viewer.ChatLogViewerService;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import cafe.woden.ircclient.ui.util.PopupMenuThemeSupport;
 import cafe.woden.ircclient.util.VirtualThreads;
 import com.formdev.flatlaf.FlatClientProperties;
@@ -278,7 +279,7 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
                 "insets 8 10 6 10,fillx,wrap 7",
                 "[grow,fill][right][pref!][pref!][pref!][pref!][pref!]",
                 "[]2[]"));
-    header.add(title, "growx");
+    header.add(title, MigLayoutConstraints.GROW_X);
     header.add(new JLabel("Max rows:"), "");
     header.add(limitSpinner, "w 84!");
     header.add(searchButton, "sg viewer-btn");
@@ -292,7 +293,10 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
   private void buildFilters() {
     JPanel filters =
         new JPanel(
-            new MigLayout("insets 4 10 8 10,fillx,wrap 1,hidemode 3", "[grow,fill]", "[]2[]2[]"));
+            new MigLayout(
+                "insets 4 10 8 10,fillx,wrap 1,hidemode 3",
+                MigLayoutConstraints.GROW_FILL,
+                "[]2[]2[]"));
 
     nickMode.setRenderer(modeRenderer());
     messageMode.setRenderer(modeRenderer());
@@ -322,32 +326,34 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
     JPanel quickRow =
         new JPanel(
             new MigLayout(
-                "insets 0,fillx,hidemode 3",
+                MigLayoutConstraints.INSETS_0_FILL_X_HIDEMODE_3,
                 "[right][grow,fill][pref!][right][grow,fill][pref!][pref!]",
                 "[]"));
     quickRow.add(new JLabel("Nick:"), "");
-    quickRow.add(nickField, "pushx,growx");
-    quickRow.add(nickMode, "w 88!");
+    quickRow.add(nickField, MigLayoutConstraints.PUSH_X_GROW_X);
+    quickRow.add(nickMode, MigLayoutConstraints.WIDTH_88);
     quickRow.add(new JLabel("Channel:"), "");
-    quickRow.add(channelField, "pushx,growx");
-    quickRow.add(channelMode, "w 88!");
+    quickRow.add(channelField, MigLayoutConstraints.PUSH_X_GROW_X);
+    quickRow.add(channelMode, MigLayoutConstraints.WIDTH_88);
     quickRow.add(channelListButton, "w 34!");
-    filters.add(quickRow, "growx");
+    filters.add(quickRow, MigLayoutConstraints.GROW_X);
 
     JPanel messageRow =
         new JPanel(
             new MigLayout(
-                "insets 0,fillx,hidemode 3", "[right][grow,fill][pref!][grow,fill]", "[]"));
+                MigLayoutConstraints.INSETS_0_FILL_X_HIDEMODE_3,
+                "[right][grow,fill][pref!][grow,fill]",
+                "[]"));
     messageRow.add(new JLabel("Message:"), "");
-    messageRow.add(messageField, "pushx,growx");
-    messageRow.add(messageMode, "w 88!");
-    messageRow.add(new JLabel(""), "pushx,growx");
-    filters.add(messageRow, "growx");
+    messageRow.add(messageField, MigLayoutConstraints.PUSH_X_GROW_X);
+    messageRow.add(messageMode, MigLayoutConstraints.WIDTH_88);
+    messageRow.add(new JLabel(""), MigLayoutConstraints.PUSH_X_GROW_X);
+    filters.add(messageRow, MigLayoutConstraints.GROW_X);
 
     JPanel dateRow =
         new JPanel(
             new MigLayout(
-                "insets 0,fillx,hidemode 3",
+                MigLayoutConstraints.INSETS_0_FILL_X_HIDEMODE_3,
                 "[right][pref!][right][pref!][right][pref!][grow,fill]",
                 "[]"));
     dateRow.add(new JLabel("Range:"), "");
@@ -356,23 +362,26 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
     dateRow.add(fromSpinner, "w 145!");
     dateRow.add(toLabel, "");
     dateRow.add(toSpinner, "w 145!");
-    dateRow.add(new JLabel(""), "pushx,growx");
-    filters.add(dateRow, "growx");
+    dateRow.add(new JLabel(""), MigLayoutConstraints.PUSH_X_GROW_X);
+    filters.add(dateRow, MigLayoutConstraints.GROW_X);
 
     advancedPanel.add(new JLabel("Hostmask:"), "");
-    advancedPanel.add(hostmaskField, "pushx,growx");
-    advancedPanel.add(hostmaskMode, "w 88!");
-    advancedPanel.add(new JLabel(""), "pushx,growx");
-    filters.add(advancedPanel, "growx");
+    advancedPanel.add(hostmaskField, MigLayoutConstraints.PUSH_X_GROW_X);
+    advancedPanel.add(hostmaskMode, MigLayoutConstraints.WIDTH_88);
+    advancedPanel.add(new JLabel(""), MigLayoutConstraints.PUSH_X_GROW_X);
+    filters.add(advancedPanel, MigLayoutConstraints.GROW_X);
 
     JPanel visibilityRow =
         new JPanel(
-            new MigLayout("insets 0,fillx,hidemode 3", "[right][pref!][pref!][grow,fill]", "[]"));
+            new MigLayout(
+                MigLayoutConstraints.INSETS_0_FILL_X_HIDEMODE_3,
+                "[right][pref!][pref!][grow,fill]",
+                "[]"));
     visibilityRow.add(new JLabel("Show:"), "");
     visibilityRow.add(includeServerEvents, "");
     visibilityRow.add(includeProtocolDetails, "");
-    visibilityRow.add(new JLabel(""), "pushx,growx");
-    filters.add(visibilityRow, "growx");
+    visibilityRow.add(new JLabel(""), MigLayoutConstraints.PUSH_X_GROW_X);
+    filters.add(visibilityRow, MigLayoutConstraints.GROW_X);
 
     footer.add(filters, BorderLayout.NORTH);
     updateChannelFilterUi();
@@ -461,9 +470,18 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
     dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
     JPanel content =
-        new JPanel(new MigLayout("insets 12, fill, wrap 1", "[grow,fill]", "[][grow,fill][]"));
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_12_FILL_WRAP_1,
+                MigLayoutConstraints.GROW_FILL,
+                "[][grow,fill][]"));
 
-    JPanel form = new JPanel(new MigLayout("insets 0, fillx, wrap 2", "[right][grow,fill]", ""));
+    JPanel form =
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_2,
+                MigLayoutConstraints.RIGHT_GROW_FILL,
+                ""));
     addReadOnlyFormRow(form, "Row ID", row.id() > 0L ? String.valueOf(row.id()) : "");
     addReadOnlyFormRow(form, "Time", formatEpochMs(row.tsEpochMs()));
     addReadOnlyFormRow(form, "Server", row.serverId());
@@ -475,11 +493,15 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
     addReadOnlyFormRow(form, "Message ID", row.messageId());
     addReadOnlyFormRow(form, "Message Tags", formatTags(row.ircv3Tags()));
     addReadOnlyFormRow(form, "Meta", row.metaJson());
-    content.add(form, "growx");
+    content.add(form, MigLayoutConstraints.GROW_X);
 
     JPanel messagePanel =
-        new JPanel(new MigLayout("insets 0, fill, wrap 1", "[grow,fill]", "[]4[grow,fill]"));
-    messagePanel.add(new JLabel("Message"), "growx");
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_0_FILL_WRAP_1,
+                MigLayoutConstraints.GROW_FILL,
+                "[]4[grow,fill]"));
+    messagePanel.add(new JLabel("Message"), MigLayoutConstraints.GROW_X);
     JTextArea messageArea = new JTextArea(Objects.toString(row.text(), ""));
     messageArea.setEditable(false);
     messageArea.setLineWrap(true);
@@ -491,10 +513,15 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
 
     JButton close = new JButton("Close");
     close.addActionListener(ev -> dialog.dispose());
-    JPanel actions = new JPanel(new MigLayout("insets 0, fillx", "[grow,fill][]", "[]"));
-    actions.add(new JLabel(""), "growx");
+    JPanel actions =
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_0_FILL_X,
+                MigLayoutConstraints.GROW_FILL_TRAILING,
+                "[]"));
+    actions.add(new JLabel(""), MigLayoutConstraints.GROW_X);
     actions.add(close, "tag ok");
-    content.add(actions, "growx");
+    content.add(actions, MigLayoutConstraints.GROW_X);
 
     dialog.setContentPane(content);
     dialog.getRootPane().setDefaultButton(close);
@@ -510,7 +537,7 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
     JTextField field = new JTextField(Objects.toString(value, ""));
     field.setEditable(false);
     field.setCaretPosition(0);
-    panel.add(field, "growx");
+    panel.add(field, MigLayoutConstraints.GROW_X);
   }
 
   private void refreshAvailability() {
@@ -1237,26 +1264,37 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
     doneButton.addActionListener(e -> hideChannelPickerPopup());
 
     JPanel searchRow =
-        new JPanel(new MigLayout("insets 0,fillx,hidemode 3", "[right][grow,fill][pref!]", "[]"));
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_0_FILL_X_HIDEMODE_3,
+                "[right][grow,fill][pref!]",
+                "[]"));
     searchRow.add(new JLabel("Filter:"), "");
-    searchRow.add(channelPickerFilterField, "pushx,growx");
+    searchRow.add(channelPickerFilterField, MigLayoutConstraints.PUSH_X_GROW_X);
     searchRow.add(clearFilterButton, "");
 
     JScrollPane scroll = new JScrollPane(channelPickerList);
     scroll.setPreferredSize(new java.awt.Dimension(420, 280));
 
     JPanel buttons =
-        new JPanel(new MigLayout("insets 0,fillx,hidemode 3", "[grow,fill][pref!][pref!]", "[]"));
-    buttons.add(channelPickerSummaryLabel, "growx");
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_0_FILL_X_HIDEMODE_3,
+                "[grow,fill][pref!][pref!]",
+                "[]"));
+    buttons.add(channelPickerSummaryLabel, MigLayoutConstraints.GROW_X);
     buttons.add(clearSelectionButton, "");
     buttons.add(doneButton, "");
 
     JPanel root =
         new JPanel(
-            new MigLayout("insets 4,fill,wrap 1,hidemode 3", "[grow,fill]", "[]8[grow,fill]8[]"));
-    root.add(searchRow, "growx");
+            new MigLayout(
+                "insets 4,fill,wrap 1,hidemode 3",
+                MigLayoutConstraints.GROW_FILL,
+                "[]8[grow,fill]8[]"));
+    root.add(searchRow, MigLayoutConstraints.GROW_X);
     root.add(scroll, "grow,push,wmin 0,hmin 0");
-    root.add(buttons, "growx");
+    root.add(buttons, MigLayoutConstraints.GROW_X);
     installChannelPickerShortcuts(root, doneButton);
     popup.add(root);
     channelPickerPopup = popup;

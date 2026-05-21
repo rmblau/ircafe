@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.channellist;
 
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import java.util.Locale;
 import java.util.Objects;
 import javax.swing.JCheckBox;
@@ -67,7 +68,8 @@ final class IrcChannelListUxMode implements ChannelListUxMode {
               "Registered channels only (-show r)",
               "Unregistered channels only (-show u)"
             });
-    JPanel showFlagsPanel = new JPanel(new MigLayout("insets 0, fillx", "[][grow]", "[]"));
+    JPanel showFlagsPanel =
+        new JPanel(new MigLayout(MigLayoutConstraints.INSETS_0_FILL_X, "[][grow]", "[]"));
     showFlagsPanel.add(showModes);
     showFlagsPanel.add(showTopicSetter, "gapleft 10");
 
@@ -81,21 +83,23 @@ final class IrcChannelListUxMode implements ChannelListUxMode {
     JPanel form =
         new JPanel(
             new MigLayout(
-                "insets 0, fillx, wrap 2", "[right][grow,fill]", "[]6[]6[]6[]6[]6[]6[]6[]"));
+                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_2,
+                MigLayoutConstraints.RIGHT_GROW_FILL,
+                "[]6[]6[]6[]6[]6[]6[]6[]"));
     form.add(new JLabel("Query pattern:"));
-    form.add(queryField, "growx");
+    form.add(queryField, MigLayoutConstraints.GROW_X);
     form.add(new JLabel("Topic filter:"));
-    form.add(includeTopic, "growx");
+    form.add(includeTopic, MigLayoutConstraints.GROW_X);
     form.add(minEnabled);
-    form.add(minUsers, "w 120!");
+    form.add(minUsers, MigLayoutConstraints.WIDTH_120);
     form.add(maxEnabled);
-    form.add(maxUsers, "w 120!");
+    form.add(maxUsers, MigLayoutConstraints.WIDTH_120);
     form.add(skipEnabled);
-    form.add(skipCount, "w 120!");
+    form.add(skipCount, MigLayoutConstraints.WIDTH_120);
     form.add(new JLabel("Display extras:"));
-    form.add(showFlagsPanel, "growx");
+    form.add(showFlagsPanel, MigLayoutConstraints.GROW_X);
     form.add(new JLabel("Registration:"));
-    form.add(registrationScope, "growx");
+    form.add(registrationScope, MigLayoutConstraints.GROW_X);
 
     int choice =
         JOptionPane.showConfirmDialog(

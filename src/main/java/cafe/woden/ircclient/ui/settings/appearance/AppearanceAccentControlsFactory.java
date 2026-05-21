@@ -7,6 +7,7 @@ import cafe.woden.ircclient.ui.settings.SettingsColorPickerDialogSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
 import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettings;
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.Color;
@@ -80,21 +81,29 @@ final class AppearanceAccentControlsFactory {
       JTextField hex,
       JButton pick,
       JButton clear) {
-    JPanel row = new JPanel(new MigLayout("insets 0, fillx, wrap 1", "[grow,fill]", "[]6[]"));
+    JPanel row =
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_1,
+                MigLayoutConstraints.GROW_FILL,
+                "[]6[]"));
     row.setOpaque(false);
 
-    JPanel top = new JPanel(new MigLayout("insets 0, fillx", "[grow,fill]10[grow,fill]", "[]"));
+    JPanel top =
+        new JPanel(
+            new MigLayout(MigLayoutConstraints.INSETS_0_FILL_X, "[grow,fill]10[grow,fill]", "[]"));
     top.setOpaque(false);
-    top.add(enabled, "growx");
-    top.add(preset, "growx, wmin 0");
-    row.add(top, "growx, wrap");
+    top.add(enabled, MigLayoutConstraints.GROW_X);
+    top.add(preset, MigLayoutConstraints.GROW_X_WMIN_0);
+    row.add(top, MigLayoutConstraints.GROW_X_WRAP);
 
-    JPanel bottom = new JPanel(new MigLayout("insets 0, fillx", "[grow,fill]6[]6[]", "[]"));
+    JPanel bottom =
+        new JPanel(new MigLayout(MigLayoutConstraints.INSETS_0_FILL_X, "[grow,fill]6[]6[]", "[]"));
     bottom.setOpaque(false);
-    bottom.add(hex, "w 110!");
+    bottom.add(hex, MigLayoutConstraints.WIDTH_110);
     bottom.add(pick);
     bottom.add(clear);
-    row.add(bottom, "growx");
+    row.add(bottom, MigLayoutConstraints.GROW_X);
     return row;
   }
 

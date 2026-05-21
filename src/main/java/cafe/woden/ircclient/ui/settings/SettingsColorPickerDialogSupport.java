@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings;
 
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import cafe.woden.ircclient.ui.util.UiFontKeys;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -157,26 +158,31 @@ public final class SettingsColorPickerDialogSupport {
     JPanel content =
         new JPanel(
             new MigLayout(
-                "insets 12, fillx, wrap 2", "[grow,fill]12[grow,fill]", "[]10[]6[]10[]6[]10[]"));
-    content.add(preview, "span 2, growx, wrap");
-    content.add(contrast, "span 2, growx, wrap");
+                MigLayoutConstraints.INSETS_12_FILL_X_WRAP_2,
+                MigLayoutConstraints.GROW_FILL_GAP_12_GROW_FILL,
+                "[]10[]6[]10[]6[]10[]"));
+    content.add(preview, MigLayoutConstraints.SPAN_2_GROW_X_WRAP);
+    content.add(contrast, MigLayoutConstraints.SPAN_2_GROW_X_WRAP);
 
     content.add(new JLabel("Hex"));
     JPanel hexRow =
         new JPanel(
-            new MigLayout("insets 0, fillx, wrap 3", "[grow,fill]6[nogrid]6[nogrid]", "[]2[]"));
+            new MigLayout(
+                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_3,
+                "[grow,fill]6[nogrid]6[nogrid]",
+                "[]2[]"));
     hexRow.setOpaque(false);
-    hexRow.add(hex, "w 110!");
+    hexRow.add(hex, MigLayoutConstraints.WIDTH_110);
     hexRow.add(more);
     hexRow.add(new JLabel(), "push");
     hexRow.add(hexStatus, "span 3, growx");
-    content.add(hexRow, "growx, wrap");
+    content.add(hexRow, MigLayoutConstraints.GROW_X_WRAP);
 
-    content.add(new JLabel("Palette"), "aligny top");
-    content.add(palette, "growx, wrap");
+    content.add(new JLabel("Palette"), MigLayoutConstraints.ALIGN_Y_TOP);
+    content.add(palette, MigLayoutConstraints.GROW_X_WRAP);
 
-    content.add(new JLabel("Recent"), "aligny top");
-    content.add(recent, "growx, wrap");
+    content.add(new JLabel("Recent"), MigLayoutConstraints.ALIGN_Y_TOP);
+    content.add(recent, MigLayoutConstraints.GROW_X_WRAP);
 
     JPanel buttons = PreferencesUiSupport.rightComponentRow(8, 0, cancel, ok);
 

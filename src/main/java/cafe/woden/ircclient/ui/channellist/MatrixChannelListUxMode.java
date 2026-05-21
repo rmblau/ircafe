@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.channellist;
 
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -75,15 +76,20 @@ final class MatrixChannelListUxMode implements ChannelListUxMode {
     sinceEnabled.addActionListener(e -> sinceField.setEnabled(sinceEnabled.isSelected()));
 
     JPanel form =
-        new JPanel(new MigLayout("insets 0, fillx, wrap 2", "[right][grow,fill]", "[]6[]6[]6[]"));
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_2,
+                MigLayoutConstraints.RIGHT_GROW_FILL,
+                "[]6[]6[]6[]"));
     form.add(new JLabel("Search:"));
-    form.add(queryField, "growx");
+    form.add(queryField, MigLayoutConstraints.GROW_X);
     form.add(new JLabel("Limit:"));
-    form.add(limitSpinner, "w 120!");
+    form.add(limitSpinner, MigLayoutConstraints.WIDTH_120);
     form.add(sinceEnabled);
-    form.add(sinceField, "growx");
+    form.add(sinceField, MigLayoutConstraints.GROW_X);
     form.add(new JLabel("Tip:"));
-    form.add(new JLabel("Use Next Page after results include next_batch."), "growx");
+    form.add(
+        new JLabel("Use Next Page after results include next_batch."), MigLayoutConstraints.GROW_X);
 
     int choice =
         JOptionPane.showConfirmDialog(

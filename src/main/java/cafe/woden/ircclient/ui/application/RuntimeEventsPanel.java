@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.application;
 
 import cafe.woden.ircclient.diagnostics.RuntimeDiagnosticEvent;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import java.awt.BorderLayout;
@@ -350,7 +351,11 @@ public final class RuntimeEventsPanel extends JPanel {
     JPanel root = new JPanel(new BorderLayout(0, 10));
 
     JPanel fields =
-        new JPanel(new MigLayout("insets 0, fillx, wrap 2", "[right]10[grow,fill]", "[]4[]4[]4[]"));
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_2,
+                MigLayoutConstraints.RIGHT_10_GROW_FILL,
+                "[]4[]4[]4[]"));
     addDetailRow(fields, "Time", event.at() == null ? "" : TIME_FMT.format(event.at()));
     addDetailRow(fields, "Level", Objects.toString(event.level(), ""));
     addDetailRow(fields, "Event type", Objects.toString(event.type(), ""));
@@ -388,7 +393,7 @@ public final class RuntimeEventsPanel extends JPanel {
     v.setOpaque(false);
     v.setBorder(null);
     v.setFocusable(false);
-    panel.add(v, "growx, wmin 0");
+    panel.add(v, MigLayoutConstraints.GROW_X_WMIN_0);
   }
 
   private static void addDetailRowIfPresent(JPanel panel, String label, String value) {

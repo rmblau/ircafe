@@ -6,6 +6,7 @@ import cafe.woden.ircclient.ui.settings.EmbedCardStyleBus;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import java.util.List;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -60,15 +61,18 @@ public final class EmbedPreviewControlsSupport {
 
     JPanel imagePanel =
         new JPanel(
-            new MigLayout("insets 0, fillx, wrap 2", "[grow,fill]8[nogrid]", "[]4[]4[]4[]4[]"));
+            new MigLayout(
+                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_2,
+                "[grow,fill]8[nogrid]",
+                "[]4[]4[]4[]4[]"));
     imagePanel.setOpaque(false);
-    imagePanel.add(imageEmbeds, "span 2, wrap");
-    imagePanel.add(imageEmbedsCollapsed, "span 2, wrap");
+    imagePanel.add(imageEmbeds, MigLayoutConstraints.SPAN_2_WRAP);
+    imagePanel.add(imageEmbedsCollapsed, MigLayoutConstraints.SPAN_2_WRAP);
     imagePanel.add(new JLabel("Max image width (px, 0 = no limit):"));
-    imagePanel.add(imageMaxWidth, "w 110!");
+    imagePanel.add(imageMaxWidth, MigLayoutConstraints.WIDTH_110);
     imagePanel.add(new JLabel("Max image height (px, 0 = no limit):"));
-    imagePanel.add(imageMaxHeight, "w 110!");
-    imagePanel.add(animateGifs, "span 2, wrap");
+    imagePanel.add(imageMaxHeight, MigLayoutConstraints.WIDTH_110);
+    imagePanel.add(animateGifs, MigLayoutConstraints.SPAN_2_WRAP);
 
     return new ImageEmbedControls(
         imageEmbeds, imageEmbedsCollapsed, imageMaxWidth, imageMaxHeight, animateGifs, imagePanel);
@@ -97,15 +101,22 @@ public final class EmbedPreviewControlsSupport {
         "Visual preset for inline cards used by link previews and image embeds.");
 
     JPanel linkPanel =
-        new JPanel(new MigLayout("insets 0, fillx, wrap 1", "[grow,fill]", "[]4[]8[]"));
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_1,
+                MigLayoutConstraints.GROW_FILL,
+                "[]4[]8[]"));
     linkPanel.setOpaque(false);
     linkPanel.add(linkPreviews);
     linkPanel.add(linkPreviewsCollapsed);
-    JPanel styleRow = new JPanel(new MigLayout("insets 0", "[][grow,fill]", "[]"));
+    JPanel styleRow =
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_0, MigLayoutConstraints.LEADING_GROW_FILL, "[]"));
     styleRow.setOpaque(false);
     styleRow.add(new JLabel("Card style"));
     styleRow.add(cardStyle, "w 180!");
-    linkPanel.add(styleRow, "growx");
+    linkPanel.add(styleRow, MigLayoutConstraints.GROW_X);
 
     return new LinkPreviewControls(linkPreviews, linkPreviewsCollapsed, cardStyle, linkPanel);
   }

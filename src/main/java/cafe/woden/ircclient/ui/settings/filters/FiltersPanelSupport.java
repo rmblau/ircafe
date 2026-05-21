@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.filters;
 
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import java.awt.Dimension;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -14,14 +15,20 @@ public final class FiltersPanelSupport {
 
   public static JPanel buildPanel(FilterControls c) {
     JPanel panel =
-        new JPanel(new MigLayout("insets 12, fill, wrap 1", "[grow,fill]", "[]8[]6[grow,fill]"));
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_12_FILL_WRAP_1,
+                MigLayoutConstraints.GROW_FILL,
+                "[]8[]6[grow,fill]"));
 
-    panel.add(PreferencesUiSupport.tabTitle("Filters"), "growx, wrap");
-    panel.add(PreferencesUiSupport.sectionTitle("Configuration"), "growx, wmin 0, wrap");
+    panel.add(PreferencesUiSupport.tabTitle("Filters"), MigLayoutConstraints.GROW_X_WRAP);
+    panel.add(
+        PreferencesUiSupport.sectionTitle("Configuration"),
+        MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
     panel.add(
         PreferencesUiSupport.helpText(
             "Filters only affect transcript rendering; messages are still logged."),
-        "growx, wmin 0, wrap");
+        MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
 
     JTabbedPane tabs = new JTabbedPane();
     tabs.addTab("General", buildGeneralTab(c));
@@ -30,94 +37,125 @@ public final class FiltersPanelSupport {
     tabs.addTab("Overrides", buildOverridesTab(c));
     tabs.addTab("Rules", buildRulesTab(c));
 
-    panel.add(tabs, "grow, push, wmin 0");
+    panel.add(tabs, MigLayoutConstraints.GROW_PUSH_WMIN_0);
     return panel;
   }
 
   private static JComponent buildGeneralTab(FilterControls c) {
-    JPanel panel = new JPanel(new MigLayout("insets 12, fillx, wrap 1", "[grow,fill]", ""));
+    JPanel panel =
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_12_FILL_X_WRAP_1, MigLayoutConstraints.GROW_FILL, ""));
     panel.setOpaque(false);
 
     JPanel defaults =
-        PreferencesUiSupport.captionPanel("Defaults", "insets 0, fillx, wrap 1", "[grow,fill]", "");
-    defaults.add(c.filtersEnabledByDefault, "growx, wrap");
+        PreferencesUiSupport.captionPanel(
+            "Defaults",
+            MigLayoutConstraints.INSETS_0_FILL_X_WRAP_1,
+            MigLayoutConstraints.GROW_FILL,
+            "");
+    defaults.add(c.filtersEnabledByDefault, MigLayoutConstraints.GROW_X_WRAP);
     defaults.add(
         PreferencesUiSupport.helpText(
             "When disabled, rules and placeholders are ignored unless a scope override enables them."),
-        "growx, wmin 0, wrap");
-    panel.add(defaults, "growx, wmin 0");
+        MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    panel.add(defaults, MigLayoutConstraints.GROW_X_WMIN_0);
 
     return panel;
   }
 
   private static JComponent buildPlaceholdersTab(FilterControls c) {
-    JPanel panel = new JPanel(new MigLayout("insets 12, fillx, wrap 1", "[grow,fill]", "[]8[]8[]"));
+    JPanel panel =
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_12_FILL_X_WRAP_1,
+                MigLayoutConstraints.GROW_FILL,
+                "[]8[]8[]"));
     panel.setOpaque(false);
 
     JPanel behavior =
         PreferencesUiSupport.captionPanel(
-            "Placeholder behavior", "insets 0, fillx, wrap 1", "[grow,fill]", "");
-    behavior.add(c.placeholdersEnabledByDefault, "growx, wrap");
-    behavior.add(c.placeholdersCollapsedByDefault, "growx, wrap");
+            "Placeholder behavior",
+            MigLayoutConstraints.INSETS_0_FILL_X_WRAP_1,
+            MigLayoutConstraints.GROW_FILL,
+            "");
+    behavior.add(c.placeholdersEnabledByDefault, MigLayoutConstraints.GROW_X_WRAP);
+    behavior.add(c.placeholdersCollapsedByDefault, MigLayoutConstraints.GROW_X_WRAP);
 
-    JPanel previewRow = new JPanel(new MigLayout("insets 0", "[][grow]", ""));
+    JPanel previewRow = new JPanel(new MigLayout(MigLayoutConstraints.INSETS_0, "[][grow]", ""));
     previewRow.add(new JLabel("Placeholder preview lines:"), "split 2");
-    previewRow.add(c.placeholderPreviewLines, "w 80!");
-    behavior.add(previewRow, "growx, wrap");
-    panel.add(behavior, "growx, wmin 0, wrap");
+    previewRow.add(c.placeholderPreviewLines, MigLayoutConstraints.WIDTH_80);
+    behavior.add(previewRow, MigLayoutConstraints.GROW_X_WRAP);
+    panel.add(behavior, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
 
     JPanel limits =
         PreferencesUiSupport.captionPanel(
-            "Preview and run limits", "insets 0, fillx, wrap 1", "[grow,fill]", "");
-    JPanel runCapRow = new JPanel(new MigLayout("insets 0", "[][grow]", ""));
+            "Preview and run limits",
+            MigLayoutConstraints.INSETS_0_FILL_X_WRAP_1,
+            MigLayoutConstraints.GROW_FILL,
+            "");
+    JPanel runCapRow = new JPanel(new MigLayout(MigLayoutConstraints.INSETS_0, "[][grow]", ""));
     runCapRow.add(new JLabel("Max hidden lines per run:"), "split 2");
-    runCapRow.add(c.placeholderMaxLinesPerRun, "w 80!");
-    limits.add(runCapRow, "growx, wrap");
+    runCapRow.add(c.placeholderMaxLinesPerRun, MigLayoutConstraints.WIDTH_80);
+    limits.add(runCapRow, MigLayoutConstraints.GROW_X_WRAP);
     limits.add(
         PreferencesUiSupport.helpText(
             "0 = unlimited. Prevents a single placeholder from representing an enormous filtered run."),
-        "growx, wmin 0, wrap");
-    panel.add(limits, "growx, wmin 0, wrap");
+        MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    panel.add(limits, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
 
     JPanel tooltip =
         PreferencesUiSupport.captionPanel(
-            "Tooltip details", "insets 0, fillx, wrap 1", "[grow,fill]", "");
-    JPanel tooltipTagsRow = new JPanel(new MigLayout("insets 0", "[][grow]", ""));
+            "Tooltip details",
+            MigLayoutConstraints.INSETS_0_FILL_X_WRAP_1,
+            MigLayoutConstraints.GROW_FILL,
+            "");
+    JPanel tooltipTagsRow =
+        new JPanel(new MigLayout(MigLayoutConstraints.INSETS_0, "[][grow]", ""));
     tooltipTagsRow.add(new JLabel("Tooltip tag limit:"), "split 2");
-    tooltipTagsRow.add(c.placeholderTooltipMaxTags, "w 80!");
-    tooltip.add(tooltipTagsRow, "growx, wrap");
+    tooltipTagsRow.add(c.placeholderTooltipMaxTags, MigLayoutConstraints.WIDTH_80);
+    tooltip.add(tooltipTagsRow, MigLayoutConstraints.GROW_X_WRAP);
     tooltip.add(
         PreferencesUiSupport.helpText("0 = hide tags in the tooltip (rule + count still shown)."),
-        "growx, wmin 0, wrap");
-    panel.add(tooltip, "growx, wmin 0, wrap");
+        MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    panel.add(tooltip, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
 
     return panel;
   }
 
   private static JComponent buildHistoryTab(FilterControls c) {
-    JPanel panel = new JPanel(new MigLayout("insets 12, fillx, wrap 1", "[grow,fill]", ""));
+    JPanel panel =
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_12_FILL_X_WRAP_1, MigLayoutConstraints.GROW_FILL, ""));
     panel.setOpaque(false);
 
     JPanel history =
         PreferencesUiSupport.captionPanel(
-            "History loading", "insets 0, fillx, wrap 1", "[grow,fill]", "");
-    history.add(c.historyPlaceholdersEnabledByDefault, "growx, wrap");
+            "History loading",
+            MigLayoutConstraints.INSETS_0_FILL_X_WRAP_1,
+            MigLayoutConstraints.GROW_FILL,
+            "");
+    history.add(c.historyPlaceholdersEnabledByDefault, MigLayoutConstraints.GROW_X_WRAP);
 
-    JPanel historyCapRow = new JPanel(new MigLayout("insets 0", "[][grow]", ""));
+    JPanel historyCapRow = new JPanel(new MigLayout(MigLayoutConstraints.INSETS_0, "[][grow]", ""));
     historyCapRow.add(new JLabel("History placeholder run cap per batch:"), "split 2");
-    historyCapRow.add(c.historyPlaceholderMaxRunsPerBatch, "w 80!");
-    history.add(historyCapRow, "growx, wrap");
+    historyCapRow.add(c.historyPlaceholderMaxRunsPerBatch, MigLayoutConstraints.WIDTH_80);
+    history.add(historyCapRow, MigLayoutConstraints.GROW_X_WRAP);
     history.add(
         PreferencesUiSupport.helpText(
             "0 = unlimited. Limits how many filtered placeholder/hint runs appear per history load."),
-        "growx, wmin 0, wrap");
-    panel.add(history, "growx, wmin 0");
+        MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    panel.add(history, MigLayoutConstraints.GROW_X_WMIN_0);
 
     return panel;
   }
 
   private static JComponent buildOverridesTab(FilterControls c) {
-    JPanel panel = new JPanel(new MigLayout("insets 12, fillx, wrap 1", "[grow,fill]", ""));
+    JPanel panel =
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_12_FILL_X_WRAP_1, MigLayoutConstraints.GROW_FILL, ""));
     panel.setOpaque(false);
 
     JScrollPane tableScroll = new JScrollPane(c.overridesTable);
@@ -127,24 +165,30 @@ public final class FiltersPanelSupport {
 
     JPanel overrides =
         PreferencesUiSupport.captionPanel(
-            "Scope overrides", "insets 0, fillx, wrap 1", "[grow,fill]", "");
+            "Scope overrides",
+            MigLayoutConstraints.INSETS_0_FILL_X_WRAP_1,
+            MigLayoutConstraints.GROW_FILL,
+            "");
     overrides.add(
         PreferencesUiSupport.helpText(
             "Overrides apply by scope pattern. Most specific match wins."),
-        "growx, wmin 0, wrap");
-    overrides.add(tableScroll, "growx, wrap 8");
-    overrides.add(buttons, "growx, wrap 8");
+        MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    overrides.add(tableScroll, MigLayoutConstraints.GROW_X_WRAP_8);
+    overrides.add(buttons, MigLayoutConstraints.GROW_X_WRAP_8);
     overrides.add(
         PreferencesUiSupport.helpText(
             "Tip: You can also manage overrides via /filter override ... and export with /filter export."),
-        "growx, wmin 0, wrap");
-    panel.add(overrides, "growx, wmin 0");
+        MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    panel.add(overrides, MigLayoutConstraints.GROW_X_WMIN_0);
 
     return panel;
   }
 
   private static JComponent buildRulesTab(FilterControls c) {
-    JPanel panel = new JPanel(new MigLayout("insets 12, fillx, wrap 1", "[grow,fill]", ""));
+    JPanel panel =
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_12_FILL_X_WRAP_1, MigLayoutConstraints.GROW_FILL, ""));
     panel.setOpaque(false);
 
     JScrollPane rulesScroll = new JScrollPane(c.rulesTable);
@@ -156,18 +200,21 @@ public final class FiltersPanelSupport {
 
     JPanel rules =
         PreferencesUiSupport.captionPanel(
-            "Filter rules", "insets 0, fillx, wrap 1", "[grow,fill]", "");
+            "Filter rules",
+            MigLayoutConstraints.INSETS_0_FILL_X_WRAP_1,
+            MigLayoutConstraints.GROW_FILL,
+            "");
     rules.add(
         PreferencesUiSupport.helpText(
             "Rules affect transcript rendering only (they do not prevent logging)."),
-        "growx, wmin 0, wrap");
-    rules.add(rulesScroll, "growx, wrap 8");
-    rules.add(ruleButtons, "growx, wrap 8");
+        MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    rules.add(rulesScroll, MigLayoutConstraints.GROW_X_WRAP_8);
+    rules.add(ruleButtons, MigLayoutConstraints.GROW_X_WRAP_8);
     rules.add(
         PreferencesUiSupport.helpText(
             "Tip: You can also manage rules via /filter add|del|set and export with /filter export."),
-        "growx, wmin 0, wrap");
-    panel.add(rules, "growx, wmin 0");
+        MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    panel.add(rules, MigLayoutConstraints.GROW_X_WMIN_0);
 
     return panel;
   }

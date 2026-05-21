@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.settings.embeds;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.ui.settings.EmbedLoadPolicyDialog;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import java.awt.Window;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JButton;
@@ -37,25 +38,35 @@ public final class EmbedsAndPreviewsPanelSupport {
     JPanel form =
         new JPanel(
             new MigLayout(
-                "insets 12, fillx, wrap 2", "[right]12[grow,fill]", "[]10[]6[]10[]6[]10[]"));
+                MigLayoutConstraints.INSETS_12_FILL_X_WRAP_2,
+                MigLayoutConstraints.RIGHT_12_GROW_FILL,
+                "[]10[]6[]10[]6[]10[]"));
 
-    form.add(PreferencesUiSupport.tabTitle("Embeds & Previews"), "span 2, growx, wmin 0, wrap");
-    form.add(PreferencesUiSupport.sectionTitle("Inline images"), "span 2, growx, wmin 0, wrap");
-    form.add(new JLabel("Direct image links"), "aligny top");
-    form.add(image.panel, "growx");
+    form.add(
+        PreferencesUiSupport.tabTitle("Embeds & Previews"),
+        MigLayoutConstraints.SPAN_2_GROW_X_WMIN_0_WRAP);
+    form.add(
+        PreferencesUiSupport.sectionTitle("Inline images"),
+        MigLayoutConstraints.SPAN_2_GROW_X_WMIN_0_WRAP);
+    form.add(new JLabel("Direct image links"), MigLayoutConstraints.ALIGN_Y_TOP);
+    form.add(image.panel, MigLayoutConstraints.GROW_X);
 
-    form.add(PreferencesUiSupport.sectionTitle("Link previews"), "span 2, growx, wmin 0, wrap");
-    form.add(new JLabel("OpenGraph cards"), "aligny top");
-    form.add(links.panel, "growx");
+    form.add(
+        PreferencesUiSupport.sectionTitle("Link previews"),
+        MigLayoutConstraints.SPAN_2_GROW_X_WMIN_0_WRAP);
+    form.add(new JLabel("OpenGraph cards"), MigLayoutConstraints.ALIGN_Y_TOP);
+    form.add(links.panel, MigLayoutConstraints.GROW_X);
 
-    form.add(PreferencesUiSupport.sectionTitle("Access policy"), "span 2, growx, wmin 0, wrap");
-    form.add(new JLabel("Advanced matching rules"), "aligny top");
-    JPanel buttonRow = new JPanel(new MigLayout("insets 0", "[]", "[]"));
+    form.add(
+        PreferencesUiSupport.sectionTitle("Access policy"),
+        MigLayoutConstraints.SPAN_2_GROW_X_WMIN_0_WRAP);
+    form.add(new JLabel("Advanced matching rules"), MigLayoutConstraints.ALIGN_Y_TOP);
+    JPanel buttonRow = new JPanel(new MigLayout(MigLayoutConstraints.INSETS_0, "[]", "[]"));
     buttonRow.setOpaque(false);
     if (advancedPolicyButton != null) {
       buttonRow.add(advancedPolicyButton);
     }
-    form.add(buttonRow, "growx");
+    form.add(buttonRow, MigLayoutConstraints.GROW_X);
 
     return form;
   }

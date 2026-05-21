@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings.startup;
 
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -23,15 +24,19 @@ public final class StartupPanelSupport {
 
   public static JPanel buildPanel(JCheckBox autoConnectOnStart, LaunchJvmControls launchJvm) {
     JPanel form =
-        new JPanel(new MigLayout("insets 12, fillx, wrap 1", "[grow,fill]", "[]10[]10[]"));
-    form.add(PreferencesUiSupport.tabTitle("Startup"), "growx, wrap");
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_12_FILL_X_WRAP_1,
+                MigLayoutConstraints.GROW_FILL,
+                "[]10[]10[]"));
+    form.add(PreferencesUiSupport.tabTitle("Startup"), MigLayoutConstraints.GROW_X_WRAP);
 
-    form.add(PreferencesUiSupport.sectionTitle("On launch"), "growx, wrap");
-    form.add(autoConnectOnStart, "growx, wrap");
+    form.add(PreferencesUiSupport.sectionTitle("On launch"), MigLayoutConstraints.GROW_X_WRAP);
+    form.add(autoConnectOnStart, MigLayoutConstraints.GROW_X_WRAP);
     form.add(
         PreferencesUiSupport.helpText(
             "If enabled, IRCafe will connect to all configured servers automatically after the UI loads."),
-        "growx, wrap");
+        MigLayoutConstraints.GROW_X_WRAP);
 
     JScrollPane extraArgsScroll = new JScrollPane(launchJvm.extraArgs());
     extraArgsScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -41,25 +46,25 @@ public final class StartupPanelSupport {
     JPanel jvm =
         PreferencesUiSupport.captionPanel(
             "JVM on next launch",
-            "insets 0, fillx, wrap 2",
-            "[right]10[grow,fill]",
+            MigLayoutConstraints.INSETS_0_FILL_X_WRAP_2,
+            MigLayoutConstraints.RIGHT_10_GROW_FILL,
             "[]4[]4[]4[]4[]");
     jvm.add(new JLabel("Java command"));
-    jvm.add(launchJvm.javaCommand(), "growx, wmin 0, wrap");
+    jvm.add(launchJvm.javaCommand(), MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
     jvm.add(new JLabel("Initial heap (MiB)"));
     jvm.add(launchJvm.xmsMiB(), "w 140!, wrap");
     jvm.add(new JLabel("Max heap (MiB)"));
     jvm.add(launchJvm.xmxMiB(), "w 140!, wrap");
     jvm.add(new JLabel("GC"));
-    jvm.add(launchJvm.gc(), "growx, wmin 0, wrap");
-    jvm.add(new JLabel("Extra JVM args"), "aligny top");
+    jvm.add(launchJvm.gc(), MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    jvm.add(new JLabel("Extra JVM args"), MigLayoutConstraints.ALIGN_Y_TOP);
     jvm.add(extraArgsScroll, "growx, h 100!, wmin 0, wrap");
     jvm.add(
         PreferencesUiSupport.helpText(
             "These settings are stored in runtime config and applied on a future restart by launcher scripts.\n"
                 + "Use 0 for heap values to leave them unset."),
-        "span 2, growx, wmin 0, wrap");
-    form.add(jvm, "growx, wmin 0, wrap");
+        MigLayoutConstraints.SPAN_2_GROW_X_WMIN_0_WRAP);
+    form.add(jvm, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
 
     return form;
   }

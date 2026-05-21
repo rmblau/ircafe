@@ -10,6 +10,7 @@ import cafe.woden.ircclient.model.InterceptorRule;
 import cafe.woden.ircclient.model.InterceptorRuleMode;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import cafe.woden.ircclient.ui.util.PopupMenuThemeSupport;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import cafe.woden.ircclient.ui.util.UiFontKeys;
@@ -75,7 +76,7 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
 
   private static final String RULE_ANY_EVENT_LABEL = "Any Message";
   private static final String ACTION_TAB_ICON_BUTTON_CONSTRAINT = "w 36!,h 28!";
-  private static final String RULE_DIMENSION_COMBO_CONSTRAINT = "w 110!";
+  private static final String RULE_DIMENSION_COMBO_CONSTRAINT = MigLayoutConstraints.WIDTH_110;
   private static final InterceptorRuleMode[] CHANNEL_FILTER_MODES = {
     InterceptorRuleMode.ALL,
     InterceptorRuleMode.NONE,
@@ -259,9 +260,11 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
 
   private void buildHeader() {
     JPanel header =
-        new JPanel(new MigLayout("insets 8 10 4 10,fillx,wrap 1", "[grow,fill]", "[]2[]"));
-    header.add(title, "growx");
-    header.add(subtitle, "growx");
+        new JPanel(
+            new MigLayout(
+                "insets 8 10 4 10,fillx,wrap 1", MigLayoutConstraints.GROW_FILL, "[]2[]"));
+    header.add(title, MigLayoutConstraints.GROW_X);
+    header.add(subtitle, MigLayoutConstraints.GROW_X);
     add(header, BorderLayout.NORTH);
   }
 
@@ -336,7 +339,10 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
   private JPanel buildDefinitionTab() {
     JPanel tab =
         new JPanel(
-            new MigLayout("insets 8 10 8 10,fillx,wrap 1,hidemode 3", "[grow,fill]", "[]8[]6[]"));
+            new MigLayout(
+                "insets 8 10 8 10,fillx,wrap 1,hidemode 3",
+                MigLayoutConstraints.GROW_FILL,
+                "[]8[]6[]"));
 
     JPanel identity =
         new JPanel(
@@ -344,7 +350,7 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
                 "insets 8,fillx,wrap 4,hidemode 3", "[right][grow,fill]16[right][pref!]", "[]6[]"));
     identity.setBorder(BorderFactory.createTitledBorder("Interceptor"));
     identity.add(new JLabel("Name:"));
-    identity.add(interceptorName, "growx");
+    identity.add(interceptorName, MigLayoutConstraints.GROW_X);
     identity.add(new JLabel("Enabled:"));
     identity.add(enabled, "wrap");
     identity.add(new JLabel("Server scope:"));
@@ -353,25 +359,27 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
     JPanel channels =
         new JPanel(
             new MigLayout(
-                "insets 8,fillx,wrap 3,hidemode 3", "[right][pref!][grow,fill]", "[]6[]6[]"));
+                MigLayoutConstraints.INSETS_8_FILLX_WRAP_3_HIDEMODE_3,
+                "[right][pref!][grow,fill]",
+                "[]6[]6[]"));
     channels.setBorder(BorderFactory.createTitledBorder("Channel Filtering"));
     channels.add(new JLabel("Include:"));
     channels.add(includeMode, "w 78!");
-    channels.add(includes, "growx, pushx, wmin 0, wrap");
+    channels.add(includes, MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0_WRAP);
     channels.add(new JLabel("Exclude:"));
     channels.add(excludeMode, "w 78!");
-    channels.add(excludes, "growx, pushx, wmin 0, wrap");
+    channels.add(excludes, MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0_WRAP);
     channels.add(
         wrappedHint(
             "Use comma, semicolon, or newline-separated patterns. "
                 + "All/None modes override pattern text."),
         "span 3, growx, pushx, wmin 0");
 
-    tab.add(identity, "growx, wrap");
-    tab.add(channels, "growx, wrap");
+    tab.add(identity, MigLayoutConstraints.GROW_X_WRAP);
+    tab.add(channels, MigLayoutConstraints.GROW_X_WRAP);
     tab.add(
         wrappedHint("Rule editing lives in Triggers; notifications and scripts are under Actions."),
-        "growx, pushx, wmin 0");
+        MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0);
     return tab;
   }
 
@@ -383,7 +391,7 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
     toolbar.add(addRule);
     toolbar.add(editRule);
     toolbar.add(removeRule);
-    toolbar.add(new JLabel(""), "growx");
+    toolbar.add(new JLabel(""), MigLayoutConstraints.GROW_X);
 
     tab.add(toolbar, BorderLayout.NORTH);
     tab.add(new JScrollPane(rulesTable), BorderLayout.CENTER);
@@ -393,47 +401,55 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
   private JPanel buildActionsTab() {
     JPanel tab =
         new JPanel(
-            new MigLayout("insets 8 10 8 10,fillx,wrap 1,hidemode 3", "[grow,fill]", "[]8[]8[]"));
+            new MigLayout(
+                "insets 8 10 8 10,fillx,wrap 1,hidemode 3",
+                MigLayoutConstraints.GROW_FILL,
+                "[]8[]8[]"));
 
     JPanel notifications =
         new JPanel(
-            new MigLayout("insets 8,fillx,wrap 2,hidemode 3", "[grow,fill][grow,fill]", "[]"));
+            new MigLayout(
+                "insets 8,fillx,wrap 2,hidemode 3", MigLayoutConstraints.GROW_FILL_PAIR, "[]"));
     notifications.setBorder(BorderFactory.createTitledBorder("Notifications"));
-    notifications.add(actionStatusBarEnabled, "growx");
-    notifications.add(actionToastEnabled, "growx");
+    notifications.add(actionStatusBarEnabled, MigLayoutConstraints.GROW_X);
+    notifications.add(actionToastEnabled, MigLayoutConstraints.GROW_X);
 
     JPanel sound =
         new JPanel(
             new MigLayout(
-                "insets 8,fillx,wrap 3,hidemode 3", "[pref!][grow,fill][pref!]", "[]6[]6[]"));
+                MigLayoutConstraints.INSETS_8_FILLX_WRAP_3_HIDEMODE_3,
+                "[pref!][grow,fill][pref!]",
+                "[]6[]6[]"));
     sound.setBorder(BorderFactory.createTitledBorder("Sound"));
     sound.add(actionSoundEnabled, "span 2,growx");
     sound.add(testSound, "align right," + ACTION_TAB_ICON_BUTTON_CONSTRAINT + ",wrap");
     sound.add(new JLabel("Built-in:"));
     sound.add(actionSoundId, "span 2,growx,wrap");
-    sound.add(actionSoundUseCustom, "span 3,wrap");
+    sound.add(actionSoundUseCustom, MigLayoutConstraints.SPAN_3_WRAP);
     sound.add(new JLabel("File:"));
-    sound.add(actionSoundCustomPath, "growx,pushx,wmin 0");
+    sound.add(actionSoundCustomPath, MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0);
     sound.add(browseSoundCustomPath, ACTION_TAB_ICON_BUTTON_CONSTRAINT);
 
     JPanel script =
         new JPanel(
             new MigLayout(
-                "insets 8,fillx,wrap 3,hidemode 3", "[pref!][grow,fill][pref!]", "[]6[]6[]"));
+                MigLayoutConstraints.INSETS_8_FILLX_WRAP_3_HIDEMODE_3,
+                "[pref!][grow,fill][pref!]",
+                "[]6[]6[]"));
     script.setBorder(BorderFactory.createTitledBorder("Script"));
-    script.add(actionScriptEnabled, "span 3,wrap");
+    script.add(actionScriptEnabled, MigLayoutConstraints.SPAN_3_WRAP);
     script.add(new JLabel("Path:"));
-    script.add(actionScriptPath, "growx");
+    script.add(actionScriptPath, MigLayoutConstraints.GROW_X);
     script.add(browseScriptPath, ACTION_TAB_ICON_BUTTON_CONSTRAINT);
     script.add(new JLabel("Args:"));
     script.add(actionScriptArgs, "span 2,growx,wrap");
     script.add(new JLabel("CWD:"));
-    script.add(actionScriptWorkingDirectory, "growx");
+    script.add(actionScriptWorkingDirectory, MigLayoutConstraints.GROW_X);
     script.add(browseScriptWorkingDirectory, ACTION_TAB_ICON_BUTTON_CONSTRAINT);
 
-    tab.add(notifications, "growx");
-    tab.add(sound, "growx");
-    tab.add(script, "growx");
+    tab.add(notifications, MigLayoutConstraints.GROW_X);
+    tab.add(sound, MigLayoutConstraints.GROW_X);
+    tab.add(script, MigLayoutConstraints.GROW_X);
 
     return tab;
   }
@@ -456,7 +472,7 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
     toolbar.add(exportHitsCsv);
     toolbar.add(clearSelectedHits);
     toolbar.add(clearHits);
-    toolbar.add(new JLabel(""), "growx");
+    toolbar.add(new JLabel(""), MigLayoutConstraints.GROW_X);
 
     tab.add(toolbar, BorderLayout.NORTH);
     tab.add(new JScrollPane(hitsTable), BorderLayout.CENTER);
@@ -1053,17 +1069,18 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
                 "[right][pref!][grow,fill]",
                 "[]6[]6[]6[]6[]6[]6[]"));
 
-    panel.add(ruleEnabled, "span 3,wrap");
+    panel.add(ruleEnabled, MigLayoutConstraints.SPAN_3_WRAP);
 
     panel.add(new JLabel("Label:"));
-    panel.add(ruleLabel, "span 2,growx,pushx,wmin 0,wrap");
+    panel.add(ruleLabel, MigLayoutConstraints.SPAN_2_GROW_X_PUSH_X_WMIN_0_WRAP);
 
     JPanel eventsGrid =
         new JPanel(
-            new MigLayout("insets 0,fillx,wrap 2,hidemode 3", "[grow,fill][grow,fill]", "[]2[]"));
+            new MigLayout(
+                "insets 0,fillx,wrap 2,hidemode 3", MigLayoutConstraints.GROW_FILL_PAIR, "[]2[]"));
     for (JCheckBox selector : eventSelectors.values()) {
       selector.setToolTipText("Match " + selector.getText() + " events.");
-      eventsGrid.add(selector, "growx");
+      eventsGrid.add(selector, MigLayoutConstraints.GROW_X);
     }
 
     JScrollPane eventsScroll = new JScrollPane(eventsGrid);
@@ -1072,9 +1089,11 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
     eventsScroll.getVerticalScrollBar().setUnitIncrement(14);
 
     JPanel eventsPanel =
-        new JPanel(new MigLayout("insets 0,fillx,wrap 1,hidemode 3", "[grow,fill]", "[]4[]"));
-    eventsPanel.add(anyEventType, "growx");
-    eventsPanel.add(eventsScroll, "growx,pushx,wmin 0");
+        new JPanel(
+            new MigLayout(
+                "insets 0,fillx,wrap 1,hidemode 3", MigLayoutConstraints.GROW_FILL, "[]4[]"));
+    eventsPanel.add(anyEventType, MigLayoutConstraints.GROW_X);
+    eventsPanel.add(eventsScroll, MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0);
 
     Runnable refreshEventSelectorState =
         () -> {
@@ -1086,27 +1105,29 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
     JCheckBox messageEventSelector = eventSelectors.get(InterceptorEventType.MESSAGE);
 
     panel.add(new JLabel("Events:"));
-    panel.add(eventsPanel, "span 2,growx,pushx,wmin 0,wrap");
+    panel.add(eventsPanel, MigLayoutConstraints.SPAN_2_GROW_X_PUSH_X_WMIN_0_WRAP);
 
     panel.add(new JLabel("Message:"));
     panel.add(messageMode, RULE_DIMENSION_COMBO_CONSTRAINT);
-    panel.add(messagePattern, "growx,pushx,wmin 0,wrap");
+    panel.add(messagePattern, MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0_WRAP);
 
     JPanel ctcpHelperRow =
-        new JPanel(new MigLayout("insets 0,fillx", "[grow,fill]8[grow,fill]8[]", "[]"));
-    ctcpHelperRow.add(ctcpCommand, "growx,pushx,wmin 0");
-    ctcpHelperRow.add(ctcpValue, "growx,pushx,wmin 0");
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_0_FILL_X, "[grow,fill]8[grow,fill]8[]", "[]"));
+    ctcpHelperRow.add(ctcpCommand, MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0);
+    ctcpHelperRow.add(ctcpValue, MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0);
     ctcpHelperRow.add(applyCtcpHelper, "w 36!,h 28!");
     panel.add(new JLabel("CTCP helper:"));
-    panel.add(ctcpHelperRow, "span 2,growx,pushx,wmin 0,wrap");
+    panel.add(ctcpHelperRow, MigLayoutConstraints.SPAN_2_GROW_X_PUSH_X_WMIN_0_WRAP);
 
     panel.add(new JLabel("Nick:"));
     panel.add(nickMode, RULE_DIMENSION_COMBO_CONSTRAINT);
-    panel.add(nickPattern, "growx,pushx,wmin 0,wrap");
+    panel.add(nickPattern, MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0_WRAP);
 
     panel.add(new JLabel("Hostmask:"));
     panel.add(hostmaskMode, RULE_DIMENSION_COMBO_CONSTRAINT);
-    panel.add(hostmaskPattern, "growx,pushx,wmin 0,wrap");
+    panel.add(hostmaskPattern, MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0_WRAP);
 
     Runnable refreshDimensionFieldState =
         bindRuleDimensionModeFieldEnabled(

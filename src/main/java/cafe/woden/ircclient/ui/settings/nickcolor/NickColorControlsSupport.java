@@ -6,6 +6,7 @@ import cafe.woden.ircclient.ui.chat.NickColorSettings;
 import cafe.woden.ircclient.ui.chat.NickColorSettingsBus;
 import cafe.woden.ircclient.ui.nickcolors.NickColorOverridesDialog;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import java.awt.Window;
 import java.util.List;
 import javax.swing.JButton;
@@ -67,19 +68,23 @@ public final class NickColorControlsSupport {
         });
 
     JPanel panel =
-        new JPanel(new MigLayout("insets 0, fillx, wrap 2", "[grow,fill]8[nogrid]", "[]6[]6[]6[]"));
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_2,
+                "[grow,fill]8[nogrid]",
+                "[]6[]6[]6[]"));
     panel.setOpaque(false);
-    panel.add(enabled, "span 2, wrap");
+    panel.add(enabled, MigLayoutConstraints.SPAN_2_WRAP);
     panel.add(new JLabel("Minimum contrast ratio:"));
-    panel.add(minContrast, "w 110!, wrap");
+    panel.add(minContrast, MigLayoutConstraints.WIDTH_110_WRAP);
     panel.add(overrides, "span 2, alignx left, wrap");
     panel.add(
         PreferencesUiSupport.helpText(
             "Tip: If nick colors look too similar to the background, increase the contrast ratio.\n"
                 + "Overrides always win over the palette."),
-        "span 2, growx, wmin 0, wrap");
-    panel.add(new JLabel("Preview:"), "span 2, wrap");
-    panel.add(preview, "span 2, growx");
+        MigLayoutConstraints.SPAN_2_GROW_X_WMIN_0_WRAP);
+    panel.add(new JLabel("Preview:"), MigLayoutConstraints.SPAN_2_WRAP);
+    panel.add(preview, MigLayoutConstraints.SPAN_2_GROW_X);
     updatePreview.run();
 
     return new NickColorControls(enabled, minContrast, overrides, panel);

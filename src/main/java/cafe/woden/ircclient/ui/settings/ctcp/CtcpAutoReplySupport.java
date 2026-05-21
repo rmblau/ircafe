@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings.ctcp;
 
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -47,27 +48,35 @@ public final class CtcpAutoReplySupport {
   }
 
   public static JPanel buildPanel(CtcpAutoReplyControls controls) {
-    JPanel form = new JPanel(new MigLayout("insets 12, fillx, wrap 1", "[grow,fill]", "[]8[]8[]"));
+    JPanel form =
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_12_FILL_X_WRAP_1,
+                MigLayoutConstraints.GROW_FILL,
+                "[]8[]8[]"));
 
-    form.add(PreferencesUiSupport.tabTitle("CTCP Replies"), "growx, wmin 0, wrap");
+    form.add(
+        PreferencesUiSupport.tabTitle("CTCP Replies"), MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
     form.add(
         PreferencesUiSupport.subtleInfoTextWith(
             "Control automatic replies to inbound private CTCP requests. "
                 + "Outbound /ctcp commands are not affected."),
-        "growx, wmin 0, wrap");
-    form.add(controls.enabled, "growx, wrap");
+        MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    form.add(controls.enabled, MigLayoutConstraints.GROW_X_WRAP);
 
     JPanel perCommand =
-        new JPanel(new MigLayout("insets 8, fillx, wrap 1, hidemode 3", "[grow,fill]", "[]2[]2[]"));
+        new JPanel(
+            new MigLayout(
+                "insets 8, fillx, wrap 1, hidemode 3", MigLayoutConstraints.GROW_FILL, "[]2[]2[]"));
     perCommand.setOpaque(false);
     perCommand.setBorder(
         BorderFactory.createCompoundBorder(
             BorderFactory.createTitledBorder("Per-command replies"),
             BorderFactory.createEmptyBorder(4, 8, 6, 8)));
-    perCommand.add(controls.version, "growx, wmin 0, gapleft 8, wrap");
-    perCommand.add(controls.ping, "growx, wmin 0, gapleft 8, wrap");
-    perCommand.add(controls.time, "growx, wmin 0, gapleft 8, wrap");
-    form.add(perCommand, "growx, wmin 0, wrap");
+    perCommand.add(controls.version, MigLayoutConstraints.GROW_X_WMIN_0_GAP_LEFT_8_WRAP);
+    perCommand.add(controls.ping, MigLayoutConstraints.GROW_X_WMIN_0_GAP_LEFT_8_WRAP);
+    perCommand.add(controls.time, MigLayoutConstraints.GROW_X_WMIN_0_GAP_LEFT_8_WRAP);
+    form.add(perCommand, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
 
     JButton enableDefaults = new JButton("Enable defaults");
     enableDefaults.setToolTipText("Enable automatic replies and turn on VERSION, PING, and TIME.");
@@ -91,12 +100,12 @@ public final class CtcpAutoReplySupport {
 
     JPanel actions = PreferencesUiSupport.actionButtonRow(8, enableDefaults, disableAll);
     actions.setOpaque(false);
-    form.add(actions, "growx, wmin 0, wrap");
+    form.add(actions, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
 
     form.add(
         PreferencesUiSupport.helpText(
             "If the top toggle is off, IRCafe will not send any automatic CTCP replies."),
-        "growx, wmin 0, wrap");
+        MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
     return form;
   }
 

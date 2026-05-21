@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.application;
 import cafe.woden.ircclient.diagnostics.JfrRuntimeEventsService;
 import cafe.woden.ircclient.diagnostics.RuntimeDiagnosticEvent;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import cafe.woden.ircclient.ui.util.UiFontKeys;
 import cafe.woden.ircclient.util.VirtualThreads;
@@ -155,7 +156,9 @@ public final class JfrDiagnosticsPanel extends JPanel {
     JPanel root = new JPanel(new BorderLayout(8, 8));
     root.setBorder(BorderFactory.createEmptyBorder(6, 8, 8, 8));
 
-    JPanel controls = new JPanel(new MigLayout("insets 0, fillx, wrap 2", "[]16[]push[]", "[]"));
+    JPanel controls =
+        new JPanel(
+            new MigLayout(MigLayoutConstraints.INSETS_0_FILL_X_WRAP_2, "[]16[]push[]", "[]"));
     enabledCheck.setOpaque(false);
     pauseRowsCheck.setOpaque(false);
     controls.add(enabledCheck);
@@ -250,7 +253,11 @@ public final class JfrDiagnosticsPanel extends JPanel {
 
   private JPanel buildCpuSummaryPanel() {
     JPanel panel =
-        new JPanel(new MigLayout("insets 6, fillx, wrap 2", "[right]8[grow,fill]", "[]4[]4[]4[]"));
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_6_FILL_X_WRAP_2,
+                MigLayoutConstraints.RIGHT_8_GROW_FILL,
+                "[]4[]4[]4[]"));
     panel.setBorder(BorderFactory.createTitledBorder("CPU"));
     panel.setOpaque(false);
     addSummaryField(panel, "Machine", cpuMachineValue);
@@ -262,7 +269,11 @@ public final class JfrDiagnosticsPanel extends JPanel {
 
   private JPanel buildHeapSummaryPanel() {
     JPanel panel =
-        new JPanel(new MigLayout("insets 6, fillx, wrap 2", "[right]8[grow,fill]", "[]4[]4[]4[]"));
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_6_FILL_X_WRAP_2,
+                MigLayoutConstraints.RIGHT_8_GROW_FILL,
+                "[]4[]4[]4[]"));
     panel.setBorder(BorderFactory.createTitledBorder("Heap"));
     panel.setOpaque(false);
     addSummaryField(panel, "Used", heapUsedValue);
@@ -274,7 +285,11 @@ public final class JfrDiagnosticsPanel extends JPanel {
 
   private JPanel buildGcSummaryPanel() {
     JPanel panel =
-        new JPanel(new MigLayout("insets 6, fillx, wrap 2", "[right]8[grow,fill]", "[]4[]4[]4[]"));
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_6_FILL_X_WRAP_2,
+                MigLayoutConstraints.RIGHT_8_GROW_FILL,
+                "[]4[]4[]4[]"));
     panel.setBorder(BorderFactory.createTitledBorder("GC"));
     panel.setOpaque(false);
     addSummaryField(panel, "Events (2m)", gcCountValue);
@@ -295,7 +310,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
   private static void addSummaryField(JPanel panel, String label, JTextField field) {
     if (panel == null || field == null) return;
     panel.add(new JLabel(Objects.toString(label, "")));
-    panel.add(field, "growx, wmin 0");
+    panel.add(field, MigLayoutConstraints.GROW_X_WMIN_0);
   }
 
   private void installControlActions() {
@@ -650,7 +665,11 @@ public final class JfrDiagnosticsPanel extends JPanel {
     JPanel root = new JPanel(new BorderLayout(0, 10));
 
     JPanel fields =
-        new JPanel(new MigLayout("insets 0, fillx, wrap 2", "[right]10[grow,fill]", "[]4[]4[]4[]"));
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_2,
+                MigLayoutConstraints.RIGHT_10_GROW_FILL,
+                "[]4[]4[]4[]"));
     addDetailRow(fields, "Time", event.at() == null ? "" : TIME_FMT.format(event.at()));
     addDetailRow(fields, "Level", Objects.toString(event.level(), ""));
     addDetailRow(fields, "Event type", Objects.toString(event.type(), ""));
@@ -688,7 +707,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
     v.setOpaque(false);
     v.setBorder(null);
     v.setFocusable(false);
-    panel.add(v, "growx, wmin 0");
+    panel.add(v, MigLayoutConstraints.GROW_X_WMIN_0);
   }
 
   private static void addDetailRowIfPresent(JPanel panel, String label, String value) {

@@ -5,6 +5,7 @@ import cafe.woden.ircclient.ui.settings.ColorSwatch;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorPickerDialogSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.awt.Window;
@@ -114,14 +115,16 @@ public final class NotificationRuleDialogSupport {
     JPanel form =
         new JPanel(
             new MigLayout(
-                "insets 10,fillx,wrap 2,hidemode 3", "[right][grow,fill]", "[]6[]6[]6[]6[]6[]6[]"));
+                MigLayoutConstraints.INSETS_10_FILLX_WRAP_2_HIDEMODE_3,
+                MigLayoutConstraints.RIGHT_GROW_FILL,
+                "[]6[]6[]6[]6[]6[]6[]"));
     form.add(enabled, "span 2,wrap");
     form.add(new JLabel("Label:"));
-    form.add(label, "growx,pushx,wmin 0,wrap");
+    form.add(label, MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0_WRAP);
     form.add(new JLabel("Type:"));
     form.add(type, "w 140!,wrap");
     form.add(new JLabel("Pattern:"));
-    form.add(pattern, "growx,pushx,wmin 0,wrap");
+    form.add(pattern, MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0_WRAP);
     form.add(new JLabel("Options:"));
     JPanel options = PreferencesUiSupport.leftComponentRow(8, 0, caseSensitive, wholeWord);
     options.setOpaque(false);

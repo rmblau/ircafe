@@ -5,6 +5,7 @@ import cafe.woden.ircclient.state.api.NegotiatedModeSemantics;
 import cafe.woden.ircclient.ui.backend.BackendUiContext;
 import cafe.woden.ircclient.ui.backend.BackendUiProfile;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
@@ -303,7 +304,9 @@ public final class ChannelListPanel extends JPanel {
     root.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 
     JPanel controls =
-        new JPanel(new MigLayout("insets 0, fillx", "[][][][][]push[][grow,fill]", "[]"));
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_0_FILL_X, "[][][][][]push[][grow,fill]", "[]"));
     configureActionButton(
         runListButton,
         "refresh",
@@ -346,7 +349,7 @@ public final class ChannelListPanel extends JPanel {
     controls.add(listDetailsButton);
     controls.add(clearListButton);
     controls.add(new JLabel("Filter:"), "gapleft 12");
-    controls.add(filterField, "pushx,growx");
+    controls.add(filterField, MigLayoutConstraints.PUSH_X_GROW_X);
 
     listSubtitle.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 0));
     JPanel north = new JPanel(new BorderLayout(0, 6));
@@ -449,7 +452,8 @@ public final class ChannelListPanel extends JPanel {
     managedSubtitle.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 0));
 
     JPanel toolbar =
-        new JPanel(new MigLayout("insets 0, fillx", "[][][][][][]push[][pref!]", "[]"));
+        new JPanel(
+            new MigLayout(MigLayoutConstraints.INSETS_0_FILL_X, "[][][][][][]push[][pref!]", "[]"));
     configureActionButton(addChannelButton, "plus", "Add a channel and attempt to join", "Add");
     configureActionButton(
         attachDetachButton,
@@ -1846,7 +1850,7 @@ public final class ChannelListPanel extends JPanel {
                 "[right][grow,fill][right][grow,fill][right][grow,fill]",
                 "[]8[]8[]8[]8[grow,fill]"));
     detailsTab.add(new JLabel("Server"));
-    detailsTab.add(readOnlyField(details.serverId()), "growx");
+    detailsTab.add(readOnlyField(details.serverId()), MigLayoutConstraints.GROW_X);
     detailsTab.add(new JLabel("Channel"));
     detailsTab.add(readOnlyField(details.channel()), "span 3,growx");
 
@@ -1854,22 +1858,23 @@ public final class ChannelListPanel extends JPanel {
     detailsTab.add(
         readOnlyField(
             details.source() == ChannelDetailsSource.MANAGED ? "Managed" : "Server /LIST"),
-        "growx");
+        MigLayoutConstraints.GROW_X);
     detailsTab.add(new JLabel("State"));
-    detailsTab.add(stateField, "growx");
+    detailsTab.add(stateField, MigLayoutConstraints.GROW_X);
     detailsTab.add(new JLabel("Auto-join"));
-    detailsTab.add(autoReattachField, "growx");
+    detailsTab.add(autoReattachField, MigLayoutConstraints.GROW_X);
 
     detailsTab.add(new JLabel("Users"));
-    detailsTab.add(usersField, "growx");
+    detailsTab.add(usersField, MigLayoutConstraints.GROW_X);
     detailsTab.add(new JLabel("Notifications"));
-    detailsTab.add(notificationsField, "growx");
+    detailsTab.add(notificationsField, MigLayoutConstraints.GROW_X);
     detailsTab.add(new JLabel("Modes"));
-    detailsTab.add(modesField, "growx");
+    detailsTab.add(modesField, MigLayoutConstraints.GROW_X);
 
     JPanel modeSummaryPanel = new JPanel(new BorderLayout(0, 6));
     modeSummaryPanel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-    JPanel modeActions = new JPanel(new MigLayout("insets 0, fillx", "[][]push", "[]"));
+    JPanel modeActions =
+        new JPanel(new MigLayout(MigLayoutConstraints.INSETS_0_FILL_X, "[][]push", "[]"));
     modeActions.add(refreshModesButton);
     modeActions.add(setModesButton);
     modeSummaryPanel.add(modeActions, BorderLayout.NORTH);
@@ -1881,7 +1886,8 @@ public final class ChannelListPanel extends JPanel {
 
     JPanel banPanel = new JPanel(new BorderLayout(0, 6));
     banPanel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
-    JPanel banActions = new JPanel(new MigLayout("insets 0, fillx", "[][][][]push", "[]"));
+    JPanel banActions =
+        new JPanel(new MigLayout(MigLayoutConstraints.INSETS_0_FILL_X, "[][][][]push", "[]"));
     banActions.add(addBanButton);
     banActions.add(editBanButton);
     banActions.add(deleteBanButton);
@@ -1909,9 +1915,13 @@ public final class ChannelListPanel extends JPanel {
     south.add(closeButton);
 
     JPanel root =
-        new JPanel(new MigLayout("insets 0, fill, wrap 1", "[grow,fill]", "[grow,fill][]"));
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_0_FILL_WRAP_1,
+                MigLayoutConstraints.GROW_FILL,
+                MigLayoutConstraints.GROW_FILL_TRAILING));
     root.add(detailsTabs, "grow,push");
-    root.add(south, "growx");
+    root.add(south, MigLayoutConstraints.GROW_X);
 
     Window owner = SwingUtilities.getWindowAncestor(this);
     JDialog dialog =

@@ -4,6 +4,7 @@ import cafe.woden.ircclient.config.NotificationRule;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import java.awt.Component;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -24,15 +25,19 @@ public final class NotificationsPanelSupport {
       NotificationRuleEditor notificationRuleEditor,
       ValidationRefresher validationRefresher) {
     JPanel panel =
-        new JPanel(new MigLayout("insets 10, fill, wrap 1", "[grow,fill]", "[]8[]4[grow,fill]"));
+        new JPanel(
+            new MigLayout(
+                "insets 10, fill, wrap 1", MigLayoutConstraints.GROW_FILL, "[]8[]4[grow,fill]"));
 
-    panel.add(PreferencesUiSupport.tabTitle("Notifications"), "growx, wmin 0, wrap");
-    panel.add(PreferencesUiSupport.sectionTitle("Rule matches"), "growx, wmin 0, wrap");
+    panel.add(
+        PreferencesUiSupport.tabTitle("Notifications"), MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    panel.add(
+        PreferencesUiSupport.sectionTitle("Rule matches"), MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
     panel.add(
         PreferencesUiSupport.helpText(
             "Add custom word/regex rules to create notifications when messages match.\n"
                 + "Rules only trigger for channels (not PMs), including the active channel."),
-        "growx, wmin 0, wrap");
+        MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
 
     JButton add = PreferencesUiSupport.iconOnlyButton("Add", "plus", "Add notification rule");
     JButton edit =
@@ -164,43 +169,60 @@ public final class NotificationsPanelSupport {
           notifications.testStatus.setText(" ");
         });
 
-    JPanel rulesTab = new JPanel(new MigLayout("insets 0, fill, wrap 1", "[grow,fill]", "[]8[]"));
+    JPanel rulesTab =
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_0_FILL_WRAP_1,
+                MigLayoutConstraints.GROW_FILL,
+                "[]8[]"));
     rulesTab.setOpaque(false);
     JPanel rulesBehaviorPanel =
         PreferencesUiSupport.captionPanel(
-            "Rule behavior", "insets 0, fillx, wrap 2", "[right]10[grow,fill]", "[]");
+            "Rule behavior",
+            MigLayoutConstraints.INSETS_0_FILL_X_WRAP_2,
+            MigLayoutConstraints.RIGHT_10_GROW_FILL,
+            "[]");
     rulesBehaviorPanel.add(new JLabel("Cooldown (sec)"));
-    rulesBehaviorPanel.add(notifications.cooldownSeconds, "w 110!, wrap");
-    rulesTab.add(rulesBehaviorPanel, "growx, wmin 0, wrap");
+    rulesBehaviorPanel.add(notifications.cooldownSeconds, MigLayoutConstraints.WIDTH_110_WRAP);
+    rulesTab.add(rulesBehaviorPanel, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
 
     JPanel rulesTablePanel =
         PreferencesUiSupport.captionPanel(
-            "Rule list", "insets 0, fill, wrap 1", "[grow,fill]", "[]6[grow,fill]4[]4[]");
+            "Rule list",
+            MigLayoutConstraints.INSETS_0_FILL_WRAP_1,
+            MigLayoutConstraints.GROW_FILL,
+            "[]6[grow,fill]4[]4[]");
     JPanel buttons = PreferencesUiSupport.actionButtonRow(add, edit, duplicate, remove, up, down);
-    rulesTablePanel.add(buttons, "growx, wmin 0, wrap");
+    rulesTablePanel.add(buttons, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
     rulesTablePanel.add(scroll, "grow, push, h 260!, wmin 0, wrap");
-    rulesTablePanel.add(notifications.validationLabel, "growx, wmin 0, wrap");
+    rulesTablePanel.add(notifications.validationLabel, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
     rulesTablePanel.add(
         PreferencesUiSupport.helpText("Tip: Double-click a rule to edit it."),
-        "growx, wmin 0, wrap");
-    rulesTab.add(rulesTablePanel, "grow, push, wmin 0");
+        MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    rulesTab.add(rulesTablePanel, MigLayoutConstraints.GROW_PUSH_WMIN_0);
 
-    JPanel testTab = new JPanel(new MigLayout("insets 0, fill, wrap 1", "[grow,fill]", "[]"));
+    JPanel testTab =
+        new JPanel(
+            new MigLayout(
+                MigLayoutConstraints.INSETS_0_FILL_WRAP_1, MigLayoutConstraints.GROW_FILL, "[]"));
     testTab.setOpaque(false);
     JPanel testRunnerPanel =
         PreferencesUiSupport.captionPanel(
-            "Message test", "insets 0, fill, wrap 2", "[right]10[grow,fill]", "[]6[]4[]4[]");
+            "Message test",
+            "insets 0, fill, wrap 2",
+            MigLayoutConstraints.RIGHT_10_GROW_FILL,
+            "[]6[]4[]4[]");
     testRunnerPanel.add(
         PreferencesUiSupport.helpText(
             "Paste a sample message to see which rules match. This is just a preview; it won't create real notifications."),
-        "span 2, growx, wmin 0, wrap");
-    testRunnerPanel.add(new JLabel("Sample"), "aligny top");
+        MigLayoutConstraints.SPAN_2_GROW_X_WMIN_0_WRAP);
+    testRunnerPanel.add(new JLabel("Sample"), MigLayoutConstraints.ALIGN_Y_TOP);
     testRunnerPanel.add(testInScroll, "growx, h 100!, wrap");
-    testRunnerPanel.add(new JLabel("Matches"), "aligny top");
+    testRunnerPanel.add(new JLabel("Matches"), MigLayoutConstraints.ALIGN_Y_TOP);
     testRunnerPanel.add(testOutScroll, "growx, h 160!, wrap");
     testRunnerPanel.add(new JLabel(""));
-    testRunnerPanel.add(testButtons, "growx, wrap");
-    testTab.add(testRunnerPanel, "grow, push, wmin 0");
+    testRunnerPanel.add(testButtons, MigLayoutConstraints.GROW_X_WRAP);
+    testTab.add(testRunnerPanel, MigLayoutConstraints.GROW_PUSH_WMIN_0);
 
     JTabbedPane subTabs = new JTabbedPane();
     Icon rulesTabIcon = SvgIcons.action("edit", 14);
@@ -221,7 +243,7 @@ public final class NotificationsPanelSupport {
         PreferencesUiSupport.padSubTab(ircEventTab),
         "Configure notifications for IRC events like kick/ban/invite/mode updates");
 
-    panel.add(subTabs, "grow, push, wmin 0");
+    panel.add(subTabs, MigLayoutConstraints.GROW_PUSH_WMIN_0);
 
     validationRefresher.refresh(notifications);
     return panel;
