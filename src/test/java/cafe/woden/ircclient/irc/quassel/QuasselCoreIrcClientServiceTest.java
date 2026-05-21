@@ -31,6 +31,7 @@ import java.net.Socket;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
@@ -130,6 +131,53 @@ class QuasselCoreIrcClientServiceTest {
     verify(connector).connect(server);
     verify(protocolProbe).negotiate(socket);
     verify(authHandshake).authenticate(socket, server);
+  }
+
+  @Test
+  void disconnectReasonWinsWhenReadLoopSeesEofDuringClose() throws Exception {
+    ServerCatalog serverCatalog = mock(ServerCatalog.class);
+    QuasselCoreSocketConnector connector = mock(QuasselCoreSocketConnector.class);
+    QuasselCoreProtocolProbe protocolProbe = mock(QuasselCoreProtocolProbe.class);
+    QuasselCoreAuthHandshake authHandshake = mock(QuasselCoreAuthHandshake.class);
+    QuasselCoreDatastreamCodec datastreamCodec = new QuasselCoreDatastreamCodec();
+    IrcProperties.Server server = server();
+    BlockingSocket socket = new BlockingSocket();
+    CountDownLatch releaseClose = new CountDownLatch(1);
+    socket.delayCloseReturnUntil(releaseClose);
+    QuasselCoreProtocolProbe.ProbeSelection probeSelection =
+        new QuasselCoreProtocolProbe.ProbeSelection(
+            0x00000002, QuasselCoreProtocolProbe.PROTOCOL_DATASTREAM, 0, 0);
+
+    when(serverCatalog.require("quassel")).thenReturn(server);
+    when(connector.connect(server)).thenReturn(socket);
+    when(protocolProbe.negotiate(socket)).thenReturn(probeSelection);
+    when(authHandshake.authenticate(socket, server))
+        .thenReturn(new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of()));
+
+    QuasselCoreIrcClientService service =
+        new QuasselCoreIrcClientService(
+            serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
+    TestSubscriber<ServerIrcEvent> events = service.events().test();
+
+    service.connect("quassel").blockingAwait();
+    events.awaitCount(3);
+
+    TestObserver<Void> disconnect = service.disconnect("quassel").test();
+    assertTrue(socket.awaitCloseStarted(), "disconnect should close the socket");
+    events.awaitCount(4);
+
+    IrcEvent.Disconnected disconnected =
+        assertInstanceOf(IrcEvent.Disconnected.class, events.values().get(3).event());
+    assertEquals("Client requested disconnect", disconnected.reason());
+    assertEquals(
+        1,
+        events.values().stream()
+            .map(ServerIrcEvent::event)
+            .filter(IrcEvent.Disconnected.class::isInstance)
+            .count());
+
+    releaseClose.countDown();
+    disconnect.awaitDone(2, TimeUnit.SECONDS).assertComplete();
   }
 
   @Test
@@ -357,6 +405,7 @@ class QuasselCoreIrcClientServiceTest {
 
     service.connect("quassel").blockingAwait();
     events.awaitCount(3);
+    awaitEstablishedSession(service, "quassel");
 
     service.sendRaw("quassel", "TAGMSG #dupe{net:network-2}").blockingAwait();
 
@@ -2131,6 +2180,7 @@ class QuasselCoreIrcClientServiceTest {
 
     service.connect("quassel").blockingAwait();
     events.awaitCount(3);
+    awaitEstablishedSession(service, "quassel");
 
     service.requestLagProbe("quassel").blockingAwait();
 
@@ -3622,7 +3672,9 @@ class QuasselCoreIrcClientServiceTest {
     private final PipedInputStream input;
     private final PipedOutputStream inputWriter;
     private final ByteArrayOutputStream output = new ByteArrayOutputStream();
+    private final CountDownLatch closeStarted = new CountDownLatch(1);
     private volatile boolean closed;
+    private volatile CountDownLatch closeRelease;
 
     private BlockingSocket() throws IOException {
       this.input = new PipedInputStream();
@@ -3645,6 +3697,18 @@ class QuasselCoreIrcClientServiceTest {
       closed = true;
       inputWriter.close();
       input.close();
+      closeStarted.countDown();
+      CountDownLatch release = closeRelease;
+      if (release != null) {
+        try {
+          if (!release.await(2, TimeUnit.SECONDS)) {
+            throw new IOException("Timed out waiting for test socket close release");
+          }
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          throw new IOException("Interrupted while closing test socket", e);
+        }
+      }
     }
 
     @Override
@@ -3655,6 +3719,14 @@ class QuasselCoreIrcClientServiceTest {
     private void writeInbound(byte[] frame) throws IOException {
       inputWriter.write(frame);
       inputWriter.flush();
+    }
+
+    private void delayCloseReturnUntil(CountDownLatch release) {
+      closeRelease = Objects.requireNonNull(release, "release");
+    }
+
+    private boolean awaitCloseStarted() throws InterruptedException {
+      return closeStarted.await(2, TimeUnit.SECONDS);
     }
   }
 }

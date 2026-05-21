@@ -1713,6 +1713,9 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
           continue;
         } catch (EOFException eof) {
           log.debug("Quassel read loop EOF: serverId={}", sid);
+          if (session.closeRequested.get() || shuttingDown.get()) {
+            return;
+          }
           availabilityReasonByServer.put(sid, "Quassel Core connection closed");
           emitDisconnectedOnce(session, "Quassel Core connection closed");
           scheduleReconnectIfEligible(session, "Quassel Core connection closed");
