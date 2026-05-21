@@ -38,7 +38,7 @@ final class ImdbLinkPreviewResolver implements LinkPreviewResolver {
           http.getString(
               target,
               "text/html,application/xhtml+xml",
-              PreviewHttp.headers("User-Agent", PreviewHttp.BROWSER_USER_AGENT));
+              PreviewHttp.headers(PreviewHttp.HEADER_USER_AGENT, PreviewHttp.BROWSER_USER_AGENT));
       int status = resp.statusCode();
       if (status < 200 || status >= 300) {
         log.debug("IMDb preview: HTTP {} for {}", status, target);

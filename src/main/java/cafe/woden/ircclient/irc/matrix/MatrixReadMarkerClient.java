@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import lombok.AccessLevel;
@@ -24,11 +23,7 @@ import org.springframework.stereotype.Component;
 final class MatrixReadMarkerClient {
 
   private static final Map<String, String> REQUEST_HEADERS =
-      Map.of(
-          "User-Agent", "ircafe-matrix-read-marker/1.0",
-          "Accept", "application/json",
-          "Accept-Encoding", "gzip",
-          "Content-Type", "application/json");
+      MatrixHttpHeaders.jsonWithContentType("ircafe-matrix-read-marker/1.0");
 
   private static final ObjectMapper JSON = new ObjectMapper();
 
@@ -43,7 +38,7 @@ final class MatrixReadMarkerClient {
     URI endpoint = MatrixEndpointResolver.roomReadMarkersUri(server, roomId);
     String token = normalize(accessToken);
     if (token.isEmpty()) {
-      return ReadMarkerResult.failed(endpoint, "access token is blank");
+      return ReadMarkerResult.failed(endpoint, MatrixProtocol.ACCESS_TOKEN_BLANK);
     }
     String eid = normalize(eventId);
     if (eid.isEmpty()) {
@@ -51,12 +46,11 @@ final class MatrixReadMarkerClient {
     }
 
     ProxyPlan plan = proxyResolver.planForServer(serverId);
-    Map<String, String> headers = new HashMap<>(REQUEST_HEADERS);
-    headers.put("Authorization", "Bearer " + token);
+    Map<String, String> headers = MatrixHttpHeaders.withBearerToken(REQUEST_HEADERS, token);
 
     ObjectNode payload = JSON.createObjectNode();
-    payload.put("m.read", eid);
-    payload.put("m.fully_read", eid);
+    payload.put(MatrixProtocol.READ_MARKER_READ, eid);
+    payload.put(MatrixProtocol.READ_MARKER_FULLY_READ, eid);
 
     try {
       HttpLite.Response<String> response =

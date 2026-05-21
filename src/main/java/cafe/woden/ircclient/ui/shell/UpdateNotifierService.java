@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.shell;
 
 import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
+import cafe.woden.ircclient.net.HttpHeaderNames;
 import cafe.woden.ircclient.net.HttpLite;
 import cafe.woden.ircclient.net.NetProxyContext;
 import cafe.woden.ircclient.ui.ExternalBrowserLauncher;
@@ -198,10 +199,10 @@ public class UpdateNotifierService {
     try {
       Map<String, String> headers =
           Map.of(
-              "Accept", "application/vnd.github+json",
-              "Accept-Encoding", "gzip",
-              "X-GitHub-Api-Version", "2022-11-28",
-              "User-Agent", "ircafe-update-notifier/1.0");
+              HttpHeaderNames.ACCEPT, "application/vnd.github+json",
+              HttpHeaderNames.ACCEPT_ENCODING, "gzip",
+              HttpHeaderNames.X_GITHUB_API_VERSION, "2022-11-28",
+              HttpHeaderNames.USER_AGENT, "ircafe-update-notifier/1.0");
 
       HttpLite.Response<String> response =
           HttpLite.getString(LATEST_RELEASE_API_URI, headers, NetProxyContext.proxy(), 4000, 7000);

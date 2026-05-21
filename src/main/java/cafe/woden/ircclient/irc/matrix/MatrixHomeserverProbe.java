@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import lombok.AccessLevel;
@@ -24,10 +23,7 @@ import org.springframework.stereotype.Component;
 final class MatrixHomeserverProbe {
 
   private static final Map<String, String> REQUEST_HEADERS =
-      Map.of(
-          "User-Agent", "ircafe-matrix-probe/1.0",
-          "Accept", "application/json",
-          "Accept-Encoding", "gzip");
+      MatrixHttpHeaders.json("ircafe-matrix-probe/1.0");
 
   private static final ObjectMapper JSON = new ObjectMapper();
 
@@ -72,11 +68,10 @@ final class MatrixHomeserverProbe {
     ProxyPlan plan = proxyResolver.planForServer(serverId);
     String token = Objects.toString(accessToken, "").trim();
     if (token.isEmpty()) {
-      return WhoamiResult.failed(whoamiUri, "access token is blank");
+      return WhoamiResult.failed(whoamiUri, MatrixProtocol.ACCESS_TOKEN_BLANK);
     }
 
-    Map<String, String> headers = new HashMap<>(REQUEST_HEADERS);
-    headers.put("Authorization", "Bearer " + token);
+    Map<String, String> headers = MatrixHttpHeaders.withBearerToken(REQUEST_HEADERS, token);
 
     try {
       HttpLite.Response<String> response =
@@ -89,7 +84,8 @@ final class MatrixHomeserverProbe {
       }
 
       JsonNode root = JSON.readTree(body);
-      String userId = Objects.toString(root.path("user_id").asText(""), "").trim();
+      String userId =
+          Objects.toString(root.path(MatrixProtocol.JSON_USER_ID).asText(""), "").trim();
       String deviceId = Objects.toString(root.path("device_id").asText(""), "").trim();
       if (userId.isEmpty()) {
         return WhoamiResult.failed(whoamiUri, "whoami response did not include user_id");

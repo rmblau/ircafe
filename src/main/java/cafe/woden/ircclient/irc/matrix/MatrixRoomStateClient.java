@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,11 +26,7 @@ import org.springframework.stereotype.Component;
 final class MatrixRoomStateClient {
 
   private static final Map<String, String> REQUEST_HEADERS =
-      Map.of(
-          "User-Agent", "ircafe-matrix-state/1.0",
-          "Accept", "application/json",
-          "Accept-Encoding", "gzip",
-          "Content-Type", "application/json");
+      MatrixHttpHeaders.jsonWithContentType("ircafe-matrix-state/1.0");
 
   private static final ObjectMapper JSON = new ObjectMapper();
 
@@ -39,15 +34,15 @@ final class MatrixRoomStateClient {
 
   TopicResult fetchRoomTopic(
       String serverId, IrcProperties.Server server, String accessToken, String roomId) {
-    URI endpoint = MatrixEndpointResolver.roomStateEventUri(server, roomId, "m.room.topic");
+    URI endpoint =
+        MatrixEndpointResolver.roomStateEventUri(server, roomId, MatrixProtocol.EVENT_ROOM_TOPIC);
     String token = normalize(accessToken);
     if (token.isEmpty()) {
-      return TopicResult.failed(endpoint, "access token is blank");
+      return TopicResult.failed(endpoint, MatrixProtocol.ACCESS_TOKEN_BLANK);
     }
 
     ProxyPlan plan = proxyResolver.planForServer(serverId);
-    Map<String, String> headers = new HashMap<>(REQUEST_HEADERS);
-    headers.put("Authorization", "Bearer " + token);
+    Map<String, String> headers = MatrixHttpHeaders.withBearerToken(REQUEST_HEADERS, token);
 
     try {
       HttpLite.Response<String> response =
@@ -75,15 +70,15 @@ final class MatrixRoomStateClient {
       String accessToken,
       String roomId,
       String topic) {
-    URI endpoint = MatrixEndpointResolver.roomStateEventUri(server, roomId, "m.room.topic");
+    URI endpoint =
+        MatrixEndpointResolver.roomStateEventUri(server, roomId, MatrixProtocol.EVENT_ROOM_TOPIC);
     String token = normalize(accessToken);
     if (token.isEmpty()) {
-      return UpdateResult.failed(endpoint, "access token is blank");
+      return UpdateResult.failed(endpoint, MatrixProtocol.ACCESS_TOKEN_BLANK);
     }
 
     ProxyPlan plan = proxyResolver.planForServer(serverId);
-    Map<String, String> headers = new HashMap<>(REQUEST_HEADERS);
-    headers.put("Authorization", "Bearer " + token);
+    Map<String, String> headers = MatrixHttpHeaders.withBearerToken(REQUEST_HEADERS, token);
 
     try {
       String payload = JSON.writeValueAsString(Map.of("topic", Objects.toString(topic, "")));
@@ -111,15 +106,16 @@ final class MatrixRoomStateClient {
 
   PowerLevelsResult fetchRoomPowerLevels(
       String serverId, IrcProperties.Server server, String accessToken, String roomId) {
-    URI endpoint = MatrixEndpointResolver.roomStateEventUri(server, roomId, "m.room.power_levels");
+    URI endpoint =
+        MatrixEndpointResolver.roomStateEventUri(
+            server, roomId, MatrixProtocol.EVENT_ROOM_POWER_LEVELS);
     String token = normalize(accessToken);
     if (token.isEmpty()) {
-      return PowerLevelsResult.failed(endpoint, "access token is blank");
+      return PowerLevelsResult.failed(endpoint, MatrixProtocol.ACCESS_TOKEN_BLANK);
     }
 
     ProxyPlan plan = proxyResolver.planForServer(serverId);
-    Map<String, String> headers = new HashMap<>(REQUEST_HEADERS);
-    headers.put("Authorization", "Bearer " + token);
+    Map<String, String> headers = MatrixHttpHeaders.withBearerToken(REQUEST_HEADERS, token);
 
     try {
       HttpLite.Response<String> response =
@@ -150,10 +146,12 @@ final class MatrixRoomStateClient {
       String accessToken,
       String roomId,
       Map<String, Object> stateContent) {
-    URI endpoint = MatrixEndpointResolver.roomStateEventUri(server, roomId, "m.room.power_levels");
+    URI endpoint =
+        MatrixEndpointResolver.roomStateEventUri(
+            server, roomId, MatrixProtocol.EVENT_ROOM_POWER_LEVELS);
     String token = normalize(accessToken);
     if (token.isEmpty()) {
-      return UpdateResult.failed(endpoint, "access token is blank");
+      return UpdateResult.failed(endpoint, MatrixProtocol.ACCESS_TOKEN_BLANK);
     }
 
     Map<String, Object> payload =
@@ -162,8 +160,7 @@ final class MatrixRoomStateClient {
             : deepCopyMap(stateContent);
 
     ProxyPlan plan = proxyResolver.planForServer(serverId);
-    Map<String, String> headers = new HashMap<>(REQUEST_HEADERS);
-    headers.put("Authorization", "Bearer " + token);
+    Map<String, String> headers = MatrixHttpHeaders.withBearerToken(REQUEST_HEADERS, token);
 
     try {
       String body = JSON.writeValueAsString(payload);

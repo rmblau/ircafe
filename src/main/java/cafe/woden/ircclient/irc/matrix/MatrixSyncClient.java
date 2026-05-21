@@ -28,16 +28,11 @@ import org.springframework.stereotype.Component;
 final class MatrixSyncClient {
 
   private static final Map<String, String> REQUEST_HEADERS =
-      Map.of(
-          "User-Agent", "ircafe-matrix-sync/1.0",
-          "Accept", "application/json",
-          "Accept-Encoding", "gzip");
+      MatrixHttpHeaders.json("ircafe-matrix-sync/1.0");
 
   private static final ObjectMapper JSON = new ObjectMapper();
-  private static final String ENCRYPTED_PLACEHOLDER_BODY = "[encrypted message unavailable]";
-  private static final Set<String> MEDIA_MSGTYPES =
-      Set.of("m.image", "m.file", "m.video", "m.audio");
-
+  private static final String ENCRYPTED_PLACEHOLDER_BODY =
+      MatrixProtocol.ENCRYPTED_PLACEHOLDER_BODY;
   @NonNull private final ServerProxyResolver proxyResolver;
 
   SyncResult sync(
@@ -49,16 +44,11 @@ final class MatrixSyncClient {
     URI endpoint = MatrixEndpointResolver.syncUri(server, sinceToken, timeoutMs);
     String token = normalize(accessToken);
     if (token.isEmpty()) {
-      return SyncResult.failed(endpoint, "access token is blank");
+      return SyncResult.failed(endpoint, MatrixProtocol.ACCESS_TOKEN_BLANK);
     }
 
     ProxyPlan plan = proxyResolver.planForServer(serverId);
-    Map<String, String> headers =
-        Map.of(
-            "User-Agent", REQUEST_HEADERS.get("User-Agent"),
-            "Accept", REQUEST_HEADERS.get("Accept"),
-            "Accept-Encoding", REQUEST_HEADERS.get("Accept-Encoding"),
-            "Authorization", "Bearer " + token);
+    Map<String, String> headers = MatrixHttpHeaders.withBearerToken(REQUEST_HEADERS, token);
 
     try {
       HttpLite.Response<String> response =
@@ -71,7 +61,7 @@ final class MatrixSyncClient {
       }
 
       JsonNode root = JSON.readTree(body);
-      String nextBatch = normalize(root.path("next_batch").asText(""));
+      String nextBatch = normalize(root.path(MatrixProtocol.JSON_NEXT_BATCH).asText(""));
       List<RoomTimelineEvent> events = parseRoomTimelineEvents(root);
       List<RoomMembershipEvent> membershipEvents = parseRoomMembershipEvents(root);
       List<RoomMessageEditEvent> messageEditEvents = parseRoomMessageEditEvents(root);
@@ -104,7 +94,7 @@ final class MatrixSyncClient {
 
   private static List<RoomTimelineEvent> parseRoomTimelineEvents(JsonNode root) {
     List<RoomTimelineEvent> events = new ArrayList<>();
-    JsonNode joinedRooms = root.path("rooms").path("join");
+    JsonNode joinedRooms = root.path(MatrixProtocol.JSON_ROOMS).path(MatrixProtocol.JSON_JOIN);
     if (!joinedRooms.isObject()) {
       return List.copyOf(events);
     }
@@ -117,41 +107,45 @@ final class MatrixSyncClient {
               String roomId = normalize(roomEntry.getKey());
               if (roomId.isEmpty()) return;
 
-              JsonNode timelineEvents = roomEntry.getValue().path("timeline").path("events");
+              JsonNode timelineEvents =
+                  roomEntry
+                      .getValue()
+                      .path(MatrixProtocol.JSON_TIMELINE)
+                      .path(MatrixProtocol.JSON_EVENTS);
               if (!timelineEvents.isArray()) return;
 
               for (JsonNode event : timelineEvents) {
                 if (event == null || event.isNull()) continue;
-                String type = normalize(event.path("type").asText(""));
-                if ("m.room.encrypted".equals(type)) {
-                  String sender = normalize(event.path("sender").asText(""));
-                  String eventId = normalize(event.path("event_id").asText(""));
-                  long originServerTs = event.path("origin_server_ts").asLong(0L);
+                String type = normalize(event.path(MatrixProtocol.JSON_TYPE).asText(""));
+                if (MatrixProtocol.EVENT_ROOM_ENCRYPTED.equals(type)) {
+                  String sender = normalize(event.path(MatrixProtocol.JSON_SENDER).asText(""));
+                  String eventId = normalize(event.path(MatrixProtocol.JSON_EVENT_ID).asText(""));
+                  long originServerTs = event.path(MatrixProtocol.JSON_ORIGIN_SERVER_TS).asLong(0L);
                   if (sender.isEmpty()) continue;
                   events.add(
                       new RoomTimelineEvent(
                           roomId,
                           sender,
                           eventId,
-                          "m.room.encrypted",
+                          MatrixProtocol.EVENT_ROOM_ENCRYPTED,
                           ENCRYPTED_PLACEHOLDER_BODY,
                           "",
                           originServerTs,
                           ""));
                   continue;
                 }
-                if (!"m.room.message".equals(type)) continue;
+                if (!MatrixProtocol.EVENT_ROOM_MESSAGE.equals(type)) continue;
 
-                JsonNode content = event.path("content");
+                JsonNode content = event.path(MatrixProtocol.JSON_CONTENT);
                 if (isMessageEditEvent(content)) continue;
-                String sender = normalize(event.path("sender").asText(""));
-                String eventId = normalize(event.path("event_id").asText(""));
-                String msgType = normalize(content.path("msgtype").asText(""));
-                if (msgType.isEmpty()) msgType = "m.text";
+                String sender = normalize(event.path(MatrixProtocol.JSON_SENDER).asText(""));
+                String eventId = normalize(event.path(MatrixProtocol.JSON_EVENT_ID).asText(""));
+                String msgType = normalize(content.path(MatrixProtocol.JSON_MSGTYPE).asText(""));
+                if (msgType.isEmpty()) msgType = MatrixProtocol.MSGTYPE_TEXT;
                 String mediaUrl = parseMediaUrl(content, msgType);
                 String body = resolveMessageBody(content, msgType, mediaUrl);
                 String replyToEventId = parseReplyToEventId(content);
-                long originServerTs = event.path("origin_server_ts").asLong(0L);
+                long originServerTs = event.path(MatrixProtocol.JSON_ORIGIN_SERVER_TS).asLong(0L);
 
                 if (sender.isEmpty()) continue;
                 if (body.trim().isEmpty()) continue;
@@ -175,7 +169,7 @@ final class MatrixSyncClient {
   private static List<RoomMembershipEvent> parseRoomMembershipEvents(JsonNode root) {
     List<RoomMembershipEvent> events = new ArrayList<>();
     Set<String> seenEventKeys = new LinkedHashSet<>();
-    JsonNode joinedRooms = root.path("rooms").path("join");
+    JsonNode joinedRooms = root.path(MatrixProtocol.JSON_ROOMS).path(MatrixProtocol.JSON_JOIN);
     if (!joinedRooms.isObject()) {
       return List.of();
     }
@@ -190,9 +184,17 @@ final class MatrixSyncClient {
 
               JsonNode roomNode = roomEntry.getValue();
               collectRoomMembershipEvents(
-                  roomId, roomNode.path("timeline").path("events"), false, seenEventKeys, events);
+                  roomId,
+                  roomNode.path(MatrixProtocol.JSON_TIMELINE).path(MatrixProtocol.JSON_EVENTS),
+                  false,
+                  seenEventKeys,
+                  events);
               collectRoomMembershipEvents(
-                  roomId, roomNode.path("state").path("events"), true, seenEventKeys, events);
+                  roomId,
+                  roomNode.path(MatrixProtocol.JSON_STATE).path(MatrixProtocol.JSON_EVENTS),
+                  true,
+                  seenEventKeys,
+                  events);
             });
 
     return events.isEmpty() ? List.of() : List.copyOf(events);
@@ -209,27 +211,30 @@ final class MatrixSyncClient {
 
     for (JsonNode event : membershipEvents) {
       if (event == null || event.isNull()) continue;
-      String type = normalize(event.path("type").asText(""));
-      if (!"m.room.member".equals(type)) continue;
+      String type = normalize(event.path(MatrixProtocol.JSON_TYPE).asText(""));
+      if (!MatrixProtocol.EVENT_ROOM_MEMBER.equals(type)) continue;
 
-      String userId = normalize(event.path("state_key").asText(""));
+      String userId = normalize(event.path(MatrixProtocol.JSON_STATE_KEY).asText(""));
       if (!looksLikeMatrixUserId(userId)) continue;
 
-      JsonNode content = event.path("content");
-      String sender = normalize(event.path("sender").asText(""));
-      String eventId = normalize(event.path("event_id").asText(""));
-      String membership = normalize(content.path("membership").asText(""));
+      JsonNode content = event.path(MatrixProtocol.JSON_CONTENT);
+      String sender = normalize(event.path(MatrixProtocol.JSON_SENDER).asText(""));
+      String eventId = normalize(event.path(MatrixProtocol.JSON_EVENT_ID).asText(""));
+      String membership = normalize(content.path(MatrixProtocol.JSON_MEMBERSHIP).asText(""));
       if (membership.isEmpty()) continue;
-      String displayName = normalize(content.path("displayname").asText(""));
-      String reason = Objects.toString(content.path("reason").asText(""), "");
-      long originServerTs = event.path("origin_server_ts").asLong(0L);
+      String displayName = normalize(content.path(MatrixProtocol.JSON_DISPLAY_NAME).asText(""));
+      String reason = Objects.toString(content.path(MatrixProtocol.JSON_REASON).asText(""), "");
+      long originServerTs = event.path(MatrixProtocol.JSON_ORIGIN_SERVER_TS).asLong(0L);
 
-      JsonNode prevContent = event.path("unsigned").path("prev_content");
+      JsonNode prevContent =
+          event.path(MatrixProtocol.JSON_UNSIGNED).path(MatrixProtocol.JSON_PREV_CONTENT);
       if (!prevContent.isObject()) {
-        prevContent = event.path("prev_content");
+        prevContent = event.path(MatrixProtocol.JSON_PREV_CONTENT);
       }
-      String prevMembership = normalize(prevContent.path("membership").asText(""));
-      String prevDisplayName = normalize(prevContent.path("displayname").asText(""));
+      String prevMembership =
+          normalize(prevContent.path(MatrixProtocol.JSON_MEMBERSHIP).asText(""));
+      String prevDisplayName =
+          normalize(prevContent.path(MatrixProtocol.JSON_DISPLAY_NAME).asText(""));
       if (fromStateSnapshot && prevMembership.isEmpty()) {
         // Joined-room state snapshots represent current membership, not a join/part transition.
         prevMembership = membership;
@@ -265,7 +270,7 @@ final class MatrixSyncClient {
       boolean fromStateSnapshot) {
     String eid = normalize(eventId);
     if (!eid.isEmpty()) return "id:" + eid;
-    return (fromStateSnapshot ? "state" : "timeline")
+    return (fromStateSnapshot ? MatrixProtocol.JSON_STATE : MatrixProtocol.JSON_TIMELINE)
         + ":"
         + normalize(roomId)
         + "|"
@@ -280,7 +285,7 @@ final class MatrixSyncClient {
 
   private static List<RoomMessageEditEvent> parseRoomMessageEditEvents(JsonNode root) {
     List<RoomMessageEditEvent> events = new ArrayList<>();
-    JsonNode joinedRooms = root.path("rooms").path("join");
+    JsonNode joinedRooms = root.path(MatrixProtocol.JSON_ROOMS).path(MatrixProtocol.JSON_JOIN);
     if (!joinedRooms.isObject()) {
       return List.of();
     }
@@ -293,32 +298,40 @@ final class MatrixSyncClient {
               String roomId = normalize(roomEntry.getKey());
               if (!looksLikeMatrixRoomId(roomId)) return;
 
-              JsonNode timelineEvents = roomEntry.getValue().path("timeline").path("events");
+              JsonNode timelineEvents =
+                  roomEntry
+                      .getValue()
+                      .path(MatrixProtocol.JSON_TIMELINE)
+                      .path(MatrixProtocol.JSON_EVENTS);
               if (!timelineEvents.isArray()) return;
 
               for (JsonNode event : timelineEvents) {
                 if (event == null || event.isNull()) continue;
-                String type = normalize(event.path("type").asText(""));
-                if (!"m.room.message".equals(type)) continue;
+                String type = normalize(event.path(MatrixProtocol.JSON_TYPE).asText(""));
+                if (!MatrixProtocol.EVENT_ROOM_MESSAGE.equals(type)) continue;
 
-                JsonNode content = event.path("content");
+                JsonNode content = event.path(MatrixProtocol.JSON_CONTENT);
                 if (!isMessageEditEvent(content)) continue;
 
-                JsonNode relatesTo = content.path("m.relates_to");
-                String targetEventId = normalize(relatesTo.path("event_id").asText(""));
+                JsonNode relatesTo = content.path(MatrixProtocol.JSON_RELATES_TO);
+                String targetEventId =
+                    normalize(relatesTo.path(MatrixProtocol.JSON_EVENT_ID).asText(""));
                 if (targetEventId.isEmpty()) continue;
 
-                JsonNode newContent = content.path("m.new_content");
+                JsonNode newContent = content.path(MatrixProtocol.JSON_NEW_CONTENT);
                 JsonNode effectiveContent = newContent.isObject() ? newContent : content;
-                String sender = normalize(event.path("sender").asText(""));
-                String eventId = normalize(event.path("event_id").asText(""));
-                String msgType = normalize(effectiveContent.path("msgtype").asText(""));
-                String body = Objects.toString(effectiveContent.path("body").asText(""), "");
-                long originServerTs = event.path("origin_server_ts").asLong(0L);
+                String sender = normalize(event.path(MatrixProtocol.JSON_SENDER).asText(""));
+                String eventId = normalize(event.path(MatrixProtocol.JSON_EVENT_ID).asText(""));
+                String msgType =
+                    normalize(effectiveContent.path(MatrixProtocol.JSON_MSGTYPE).asText(""));
+                String body =
+                    Objects.toString(
+                        effectiveContent.path(MatrixProtocol.JSON_BODY).asText(""), "");
+                long originServerTs = event.path(MatrixProtocol.JSON_ORIGIN_SERVER_TS).asLong(0L);
 
                 if (sender.isEmpty()) continue;
                 if (body.trim().isEmpty()) continue;
-                if (msgType.isEmpty()) msgType = "m.text";
+                if (msgType.isEmpty()) msgType = MatrixProtocol.MSGTYPE_TEXT;
 
                 events.add(
                     new RoomMessageEditEvent(
@@ -331,7 +344,7 @@ final class MatrixSyncClient {
 
   private static List<RoomReactionEvent> parseRoomReactionEvents(JsonNode root) {
     List<RoomReactionEvent> events = new ArrayList<>();
-    JsonNode joinedRooms = root.path("rooms").path("join");
+    JsonNode joinedRooms = root.path(MatrixProtocol.JSON_ROOMS).path(MatrixProtocol.JSON_JOIN);
     if (!joinedRooms.isObject()) {
       return List.of();
     }
@@ -344,23 +357,30 @@ final class MatrixSyncClient {
               String roomId = normalize(roomEntry.getKey());
               if (!looksLikeMatrixRoomId(roomId)) return;
 
-              JsonNode timelineEvents = roomEntry.getValue().path("timeline").path("events");
+              JsonNode timelineEvents =
+                  roomEntry
+                      .getValue()
+                      .path(MatrixProtocol.JSON_TIMELINE)
+                      .path(MatrixProtocol.JSON_EVENTS);
               if (!timelineEvents.isArray()) return;
 
               for (JsonNode event : timelineEvents) {
                 if (event == null || event.isNull()) continue;
-                String type = normalize(event.path("type").asText(""));
-                if (!"m.reaction".equals(type)) continue;
+                String type = normalize(event.path(MatrixProtocol.JSON_TYPE).asText(""));
+                if (!MatrixProtocol.EVENT_REACTION.equals(type)) continue;
 
-                JsonNode relatesTo = event.path("content").path("m.relates_to");
-                String relType = normalize(relatesTo.path("rel_type").asText(""));
-                String targetEventId = normalize(relatesTo.path("event_id").asText(""));
-                String reaction = normalize(relatesTo.path("key").asText(""));
-                String sender = normalize(event.path("sender").asText(""));
-                String eventId = normalize(event.path("event_id").asText(""));
-                long originServerTs = event.path("origin_server_ts").asLong(0L);
+                JsonNode relatesTo =
+                    event.path(MatrixProtocol.JSON_CONTENT).path(MatrixProtocol.JSON_RELATES_TO);
+                String relType =
+                    normalize(relatesTo.path(MatrixProtocol.JSON_RELATION_TYPE).asText(""));
+                String targetEventId =
+                    normalize(relatesTo.path(MatrixProtocol.JSON_EVENT_ID).asText(""));
+                String reaction = normalize(relatesTo.path(MatrixProtocol.JSON_KEY).asText(""));
+                String sender = normalize(event.path(MatrixProtocol.JSON_SENDER).asText(""));
+                String eventId = normalize(event.path(MatrixProtocol.JSON_EVENT_ID).asText(""));
+                long originServerTs = event.path(MatrixProtocol.JSON_ORIGIN_SERVER_TS).asLong(0L);
 
-                if (!"m.annotation".equals(relType)) continue;
+                if (!MatrixProtocol.RELATION_ANNOTATION.equals(relType)) continue;
                 if (sender.isEmpty() || targetEventId.isEmpty() || reaction.isEmpty()) continue;
 
                 events.add(
@@ -374,7 +394,7 @@ final class MatrixSyncClient {
 
   private static List<RoomRedactionEvent> parseRoomRedactionEvents(JsonNode root) {
     List<RoomRedactionEvent> events = new ArrayList<>();
-    JsonNode joinedRooms = root.path("rooms").path("join");
+    JsonNode joinedRooms = root.path(MatrixProtocol.JSON_ROOMS).path(MatrixProtocol.JSON_JOIN);
     if (!joinedRooms.isObject()) {
       return List.of();
     }
@@ -387,19 +407,28 @@ final class MatrixSyncClient {
               String roomId = normalize(roomEntry.getKey());
               if (!looksLikeMatrixRoomId(roomId)) return;
 
-              JsonNode timelineEvents = roomEntry.getValue().path("timeline").path("events");
+              JsonNode timelineEvents =
+                  roomEntry
+                      .getValue()
+                      .path(MatrixProtocol.JSON_TIMELINE)
+                      .path(MatrixProtocol.JSON_EVENTS);
               if (!timelineEvents.isArray()) return;
 
               for (JsonNode event : timelineEvents) {
                 if (event == null || event.isNull()) continue;
-                String type = normalize(event.path("type").asText(""));
-                if (!"m.room.redaction".equals(type)) continue;
+                String type = normalize(event.path(MatrixProtocol.JSON_TYPE).asText(""));
+                if (!MatrixProtocol.EVENT_ROOM_REDACTION.equals(type)) continue;
 
-                String sender = normalize(event.path("sender").asText(""));
-                String eventId = normalize(event.path("event_id").asText(""));
+                String sender = normalize(event.path(MatrixProtocol.JSON_SENDER).asText(""));
+                String eventId = normalize(event.path(MatrixProtocol.JSON_EVENT_ID).asText(""));
                 String redactsEventId = normalize(event.path("redacts").asText(""));
-                String reason = normalize(event.path("content").path("reason").asText(""));
-                long originServerTs = event.path("origin_server_ts").asLong(0L);
+                String reason =
+                    normalize(
+                        event
+                            .path(MatrixProtocol.JSON_CONTENT)
+                            .path(MatrixProtocol.JSON_REASON)
+                            .asText(""));
+                long originServerTs = event.path(MatrixProtocol.JSON_ORIGIN_SERVER_TS).asLong(0L);
 
                 if (redactsEventId.isEmpty()) continue;
 
@@ -416,24 +445,43 @@ final class MatrixSyncClient {
     if (content == null || content.isNull() || !content.isObject()) {
       return false;
     }
-    JsonNode relatesTo = content.path("m.relates_to");
-    String relType = normalize(relatesTo.path("rel_type").asText(""));
-    String targetEventId = normalize(relatesTo.path("event_id").asText(""));
-    return "m.replace".equals(relType) && !targetEventId.isEmpty();
+    JsonNode relatesTo = content.path(MatrixProtocol.JSON_RELATES_TO);
+    String relType = normalize(relatesTo.path(MatrixProtocol.JSON_RELATION_TYPE).asText(""));
+    String targetEventId = normalize(relatesTo.path(MatrixProtocol.JSON_EVENT_ID).asText(""));
+    return MatrixProtocol.RELATION_REPLACE.equals(relType) && !targetEventId.isEmpty();
   }
 
   private static String parseReplyToEventId(JsonNode content) {
     if (content == null || content.isNull() || !content.isObject()) {
       return "";
     }
-    JsonNode relatesTo = content.path("m.relates_to");
-    String replyViaStable = normalize(relatesTo.path("m.in_reply_to").path("event_id").asText(""));
+    JsonNode relatesTo = content.path(MatrixProtocol.JSON_RELATES_TO);
+    String replyViaStable =
+        normalize(
+            relatesTo
+                .path(MatrixProtocol.JSON_REPLY_TO)
+                .path(MatrixProtocol.JSON_EVENT_ID)
+                .asText(""));
     if (!replyViaStable.isEmpty()) return replyViaStable;
-    String replyViaLegacy = normalize(relatesTo.path("in_reply_to").path("event_id").asText(""));
+    String replyViaLegacy =
+        normalize(
+            relatesTo
+                .path(MatrixProtocol.JSON_REPLY_TO_LEGACY)
+                .path(MatrixProtocol.JSON_EVENT_ID)
+                .asText(""));
     if (!replyViaLegacy.isEmpty()) return replyViaLegacy;
-    String topLevelStable = normalize(content.path("m.in_reply_to").path("event_id").asText(""));
+    String topLevelStable =
+        normalize(
+            content
+                .path(MatrixProtocol.JSON_REPLY_TO)
+                .path(MatrixProtocol.JSON_EVENT_ID)
+                .asText(""));
     if (!topLevelStable.isEmpty()) return topLevelStable;
-    return normalize(content.path("in_reply_to").path("event_id").asText(""));
+    return normalize(
+        content
+            .path(MatrixProtocol.JSON_REPLY_TO_LEGACY)
+            .path(MatrixProtocol.JSON_EVENT_ID)
+            .asText(""));
   }
 
   private static String parseMediaUrl(JsonNode content, String msgType) {
@@ -443,13 +491,16 @@ final class MatrixSyncClient {
     if (content == null || content.isNull() || !content.isObject()) {
       return "";
     }
-    String direct = normalize(content.path("url").asText(""));
+    String direct = normalize(content.path(MatrixProtocol.JSON_URL).asText(""));
     if (!direct.isEmpty()) return direct;
-    return normalize(content.path("file").path("url").asText(""));
+    return normalize(content.path("file").path(MatrixProtocol.JSON_URL).asText(""));
   }
 
   private static String resolveMessageBody(JsonNode content, String msgType, String mediaUrl) {
-    String body = content == null ? "" : Objects.toString(content.path("body").asText(""), "");
+    String body =
+        content == null
+            ? ""
+            : Objects.toString(content.path(MatrixProtocol.JSON_BODY).asText(""), "");
     if (!body.trim().isEmpty()) {
       return body;
     }
@@ -460,22 +511,23 @@ final class MatrixSyncClient {
   }
 
   private static boolean isMediaMsgType(String msgType) {
-    return MEDIA_MSGTYPES.contains(normalize(msgType));
+    return MatrixProtocol.MEDIA_MSGTYPES.contains(normalize(msgType));
   }
 
   private static Map<String, String> parseDirectRoomMappings(JsonNode root) {
     Map<String, String> directPeerByRoom = new HashMap<>();
-    JsonNode accountDataEvents = root.path("account_data").path("events");
+    JsonNode accountDataEvents =
+        root.path(MatrixProtocol.JSON_ACCOUNT_DATA).path(MatrixProtocol.JSON_EVENTS);
     if (!accountDataEvents.isArray()) {
       return Map.of();
     }
 
     for (JsonNode event : accountDataEvents) {
       if (event == null || event.isNull()) continue;
-      String type = normalize(event.path("type").asText(""));
-      if (!"m.direct".equals(type)) continue;
+      String type = normalize(event.path(MatrixProtocol.JSON_TYPE).asText(""));
+      if (!MatrixProtocol.EVENT_DIRECT.equals(type)) continue;
 
-      JsonNode content = event.path("content");
+      JsonNode content = event.path(MatrixProtocol.JSON_CONTENT);
       if (!content.isObject()) continue;
 
       content
@@ -502,7 +554,7 @@ final class MatrixSyncClient {
 
   private static List<TypingEvent> parseTypingEvents(JsonNode root) {
     List<TypingEvent> typingEvents = new ArrayList<>();
-    JsonNode joinedRooms = root.path("rooms").path("join");
+    JsonNode joinedRooms = root.path(MatrixProtocol.JSON_ROOMS).path(MatrixProtocol.JSON_JOIN);
     if (!joinedRooms.isObject()) {
       return List.of();
     }
@@ -515,15 +567,19 @@ final class MatrixSyncClient {
               String roomId = normalize(roomEntry.getKey());
               if (!looksLikeMatrixRoomId(roomId)) return;
 
-              JsonNode ephemeralEvents = roomEntry.getValue().path("ephemeral").path("events");
+              JsonNode ephemeralEvents =
+                  roomEntry
+                      .getValue()
+                      .path(MatrixProtocol.JSON_EPHEMERAL)
+                      .path(MatrixProtocol.JSON_EVENTS);
               if (!ephemeralEvents.isArray()) return;
 
               for (JsonNode event : ephemeralEvents) {
                 if (event == null || event.isNull()) continue;
-                String type = normalize(event.path("type").asText(""));
+                String type = normalize(event.path(MatrixProtocol.JSON_TYPE).asText(""));
                 if (!"m.typing".equals(type)) continue;
 
-                JsonNode userIdsNode = event.path("content").path("user_ids");
+                JsonNode userIdsNode = event.path(MatrixProtocol.JSON_CONTENT).path("user_ids");
                 LinkedHashSet<String> userIds = new LinkedHashSet<>();
                 if (userIdsNode.isArray()) {
                   for (JsonNode userIdNode : userIdsNode) {
@@ -543,7 +599,7 @@ final class MatrixSyncClient {
 
   private static List<ReadReceiptEvent> parseReadReceiptEvents(JsonNode root) {
     List<ReadReceiptEvent> receipts = new ArrayList<>();
-    JsonNode joinedRooms = root.path("rooms").path("join");
+    JsonNode joinedRooms = root.path(MatrixProtocol.JSON_ROOMS).path(MatrixProtocol.JSON_JOIN);
     if (!joinedRooms.isObject()) {
       return List.of();
     }
@@ -556,15 +612,19 @@ final class MatrixSyncClient {
               String roomId = normalize(roomEntry.getKey());
               if (!looksLikeMatrixRoomId(roomId)) return;
 
-              JsonNode ephemeralEvents = roomEntry.getValue().path("ephemeral").path("events");
+              JsonNode ephemeralEvents =
+                  roomEntry
+                      .getValue()
+                      .path(MatrixProtocol.JSON_EPHEMERAL)
+                      .path(MatrixProtocol.JSON_EVENTS);
               if (!ephemeralEvents.isArray()) return;
 
               for (JsonNode event : ephemeralEvents) {
                 if (event == null || event.isNull()) continue;
-                String type = normalize(event.path("type").asText(""));
+                String type = normalize(event.path(MatrixProtocol.JSON_TYPE).asText(""));
                 if (!"m.receipt".equals(type)) continue;
 
-                JsonNode content = event.path("content");
+                JsonNode content = event.path(MatrixProtocol.JSON_CONTENT);
                 if (!content.isObject()) continue;
                 content
                     .fields()
@@ -610,7 +670,7 @@ final class MatrixSyncClient {
 
   private static Map<String, String> parseJoinedRoomAliases(JsonNode root) {
     Map<String, String> aliasByRoom = new HashMap<>();
-    JsonNode joinedRooms = root.path("rooms").path("join");
+    JsonNode joinedRooms = root.path(MatrixProtocol.JSON_ROOMS).path(MatrixProtocol.JSON_JOIN);
     if (!joinedRooms.isObject()) {
       return Map.of();
     }
@@ -636,9 +696,12 @@ final class MatrixSyncClient {
     if (roomNode == null || roomNode.isNull()) {
       return "";
     }
-    String fromState = aliasFromStateEvents(roomNode.path("state").path("events"));
+    String fromState =
+        aliasFromStateEvents(
+            roomNode.path(MatrixProtocol.JSON_STATE).path(MatrixProtocol.JSON_EVENTS));
     if (!fromState.isEmpty()) return fromState;
-    return aliasFromStateEvents(roomNode.path("timeline").path("events"));
+    return aliasFromStateEvents(
+        roomNode.path(MatrixProtocol.JSON_TIMELINE).path(MatrixProtocol.JSON_EVENTS));
   }
 
   private static String aliasFromStateEvents(JsonNode events) {
@@ -647,8 +710,8 @@ final class MatrixSyncClient {
     }
     for (JsonNode event : events) {
       if (event == null || event.isNull()) continue;
-      String type = normalize(event.path("type").asText(""));
-      JsonNode content = event.path("content");
+      String type = normalize(event.path(MatrixProtocol.JSON_TYPE).asText(""));
+      JsonNode content = event.path(MatrixProtocol.JSON_CONTENT);
       if ("m.room.canonical_alias".equals(type)) {
         String alias = normalize(content.path("alias").asText(""));
         if (looksLikeMatrixRoomAlias(alias)) {
@@ -661,7 +724,7 @@ final class MatrixSyncClient {
         continue;
       }
       if ("m.room.aliases".equals(type)) {
-        String alias = firstRoomAlias(content.path("aliases"));
+        String alias = firstRoomAlias(content.path(MatrixProtocol.JSON_ALIASES));
         if (!alias.isEmpty()) {
           return alias;
         }
@@ -685,7 +748,8 @@ final class MatrixSyncClient {
 
   private static boolean isReadReceiptType(String type) {
     String token = normalize(type);
-    return "m.read".equals(token) || "m.read.private".equals(token);
+    return MatrixProtocol.READ_MARKER_READ.equals(token)
+        || MatrixProtocol.READ_MARKER_READ_PRIVATE.equals(token);
   }
 
   private static String normalize(String value) {

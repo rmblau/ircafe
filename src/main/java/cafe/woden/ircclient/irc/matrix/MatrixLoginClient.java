@@ -24,11 +24,7 @@ import org.springframework.stereotype.Component;
 final class MatrixLoginClient {
 
   private static final Map<String, String> REQUEST_HEADERS =
-      Map.of(
-          "User-Agent", "ircafe-matrix-login/1.0",
-          "Accept", "application/json",
-          "Accept-Encoding", "gzip",
-          "Content-Type", "application/json");
+      MatrixHttpHeaders.jsonWithContentType("ircafe-matrix-login/1.0");
 
   private static final ObjectMapper JSON = new ObjectMapper();
 
@@ -47,9 +43,9 @@ final class MatrixLoginClient {
     }
 
     ObjectNode payload = JSON.createObjectNode();
-    payload.put("type", "m.login.password");
+    payload.put(MatrixProtocol.JSON_TYPE, MatrixProtocol.LOGIN_TYPE_PASSWORD);
     ObjectNode identifier = payload.putObject("identifier");
-    identifier.put("type", "m.id.user");
+    identifier.put(MatrixProtocol.JSON_TYPE, "m.id.user");
     identifier.put("user", user);
     payload.put("password", pass);
 
@@ -70,7 +66,7 @@ final class MatrixLoginClient {
       }
       JsonNode root = JSON.readTree(body);
       String accessToken = normalize(root.path("access_token").asText(""));
-      String userId = normalize(root.path("user_id").asText(""));
+      String userId = normalize(root.path(MatrixProtocol.JSON_USER_ID).asText(""));
       if (accessToken.isEmpty()) {
         return LoginResult.failed(endpoint, "login response did not include access_token");
       }

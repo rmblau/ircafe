@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.settings.network;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
+import cafe.woden.ircclient.ui.util.SwingClientProperties;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.util.List;
 import java.util.Objects;
@@ -73,7 +74,7 @@ final class NetworkConnectionPanelSupport {
     JPasswordField proxyPassword =
         new JPasswordField(Objects.toString(proxySettings.password(), ""));
     PreferencesUiSupport.placeholder(proxyPassword, "(optional)");
-    proxyPassword.putClientProperty("JPasswordField.showRevealButton", true);
+    proxyPassword.putClientProperty(SwingClientProperties.PASSWORD_FIELD_SHOW_REVEAL_BUTTON, true);
     proxyPassword.putClientProperty(FlatClientProperties.STYLE, "showRevealButton:true;");
     javax.swing.JButton clearPassword = new javax.swing.JButton("Clear");
     clearPassword.addActionListener(e -> proxyPassword.setText(""));
@@ -106,14 +107,16 @@ final class NetworkConnectionPanelSupport {
     Runnable validateProxyInputs =
         () -> {
           if (!proxyEnabled.isSelected()) {
-            proxyHost.putClientProperty("JComponent.outline", null);
-            proxyUsername.putClientProperty("JComponent.outline", null);
-            proxyPassword.putClientProperty("JComponent.outline", null);
+            proxyHost.putClientProperty(FlatClientProperties.OUTLINE, null);
+            proxyUsername.putClientProperty(FlatClientProperties.OUTLINE, null);
+            proxyPassword.putClientProperty(FlatClientProperties.OUTLINE, null);
             return;
           }
 
           String host = PreferencesUiSupport.trimmedText(proxyHost);
-          proxyHost.putClientProperty("JComponent.outline", host.isBlank() ? "error" : null);
+          proxyHost.putClientProperty(
+              FlatClientProperties.OUTLINE,
+              host.isBlank() ? FlatClientProperties.OUTLINE_ERROR : null);
 
           String user = PreferencesUiSupport.trimmedText(proxyUsername);
           String pass = PreferencesUiSupport.trimmedPasswordText(proxyPassword);
@@ -122,9 +125,9 @@ final class NetworkConnectionPanelSupport {
           boolean hasPass = !pass.isBlank();
           boolean mismatch = hasUser ^ hasPass;
 
-          Object outline = mismatch ? "warning" : null;
-          proxyUsername.putClientProperty("JComponent.outline", outline);
-          proxyPassword.putClientProperty("JComponent.outline", outline);
+          Object outline = mismatch ? FlatClientProperties.OUTLINE_WARNING : null;
+          proxyUsername.putClientProperty(FlatClientProperties.OUTLINE, outline);
+          proxyPassword.putClientProperty(FlatClientProperties.OUTLINE, outline);
         };
 
     proxyEnabled.addActionListener(

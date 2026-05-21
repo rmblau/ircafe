@@ -8,6 +8,7 @@ import cafe.woden.ircclient.logging.viewer.ChatLogViewerService;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.util.PopupMenuThemeSupport;
 import cafe.woden.ircclient.util.VirtualThreads;
+import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Cursor;
@@ -303,13 +304,14 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
     channelMode.setSelectedItem(ChatLogViewerMatchMode.CONTAINS);
 
     nickField.setToolTipText("Filter by nick (quick filter).");
-    nickField.putClientProperty("JTextField.placeholderText", "Nick filter");
+    nickField.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nick filter");
     messageField.setToolTipText("Filter by message text.");
-    messageField.putClientProperty("JTextField.placeholderText", "Message text");
+    messageField.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Message text");
     hostmaskField.setToolTipText("Filter by full hostmask when available.");
-    hostmaskField.putClientProperty("JTextField.placeholderText", "Hostmask filter");
+    hostmaskField.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Hostmask filter");
     channelField.setToolTipText("Filter by channel/target. Use List mode for multiple channels.");
-    channelField.putClientProperty("JTextField.placeholderText", "Channel filter (e.g. #ircafe)");
+    channelField.putClientProperty(
+        FlatClientProperties.PLACEHOLDER_TEXT, "Channel filter (e.g. #ircafe)");
     channelListButton.setToolTipText("Choose channels for List mode");
     configureInlineActionButton(channelListButton, "channel", "Choose channels for List mode");
     datePreset.setToolTipText("Date window for search.");
@@ -972,17 +974,19 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
     channelListButton.setEnabled(enabled && !serverId.isBlank());
 
     if (list) {
-      channelField.putClientProperty("JTextField.placeholderText", "Channel list: #a, #b or #a #b");
+      channelField.putClientProperty(
+          FlatClientProperties.PLACEHOLDER_TEXT, "Channel list: #a, #b or #a #b");
       channelField.setToolTipText(
           "List mode: enter channels separated by commas, semicolons, or spaces.");
       channelListButton.setToolTipText(
           "Choose channels from open buffers and known logged channels");
     } else if (any) {
-      channelField.putClientProperty("JTextField.placeholderText", "Any channel/target");
+      channelField.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Any channel/target");
       channelField.setToolTipText("Any mode ignores the channel field.");
       channelListButton.setToolTipText("Choose channels to switch to List mode");
     } else {
-      channelField.putClientProperty("JTextField.placeholderText", "Channel filter (e.g. #ircafe)");
+      channelField.putClientProperty(
+          FlatClientProperties.PLACEHOLDER_TEXT, "Channel filter (e.g. #ircafe)");
       channelField.setToolTipText("Filter by channel/target. Use List mode for multiple channels.");
       channelListButton.setToolTipText("Choose channels for List mode");
     }
@@ -1151,7 +1155,7 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
 
     channelPickerFilterField = new JTextField();
     channelPickerFilterField.putClientProperty(
-        "JTextField.placeholderText", "Filter channels (type to narrow)");
+        FlatClientProperties.PLACEHOLDER_TEXT, "Filter channels (type to narrow)");
     channelPickerFilterField.setToolTipText("Type to filter the channel list. Shortcut: Ctrl+F.");
     channelPickerFilterField
         .getDocument()

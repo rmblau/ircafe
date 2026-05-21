@@ -11,7 +11,6 @@ import java.net.URI;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import lombok.AccessLevel;
@@ -27,10 +26,7 @@ import org.springframework.stereotype.Component;
 final class MatrixMediaUploadClient {
 
   private static final Map<String, String> REQUEST_HEADERS =
-      Map.of(
-          "User-Agent", "ircafe-matrix-upload/1.0",
-          "Accept", "application/json",
-          "Accept-Encoding", "gzip");
+      MatrixHttpHeaders.json("ircafe-matrix-upload/1.0");
 
   private static final ObjectMapper JSON = new ObjectMapper();
 
@@ -41,7 +37,7 @@ final class MatrixMediaUploadClient {
     URI fallbackEndpoint = MatrixEndpointResolver.mediaUploadUri(server, "");
     String token = normalize(accessToken);
     if (token.isEmpty()) {
-      return UploadResult.failed(fallbackEndpoint, "access token is blank");
+      return UploadResult.failed(fallbackEndpoint, MatrixProtocol.ACCESS_TOKEN_BLANK);
     }
 
     Path path;
@@ -69,9 +65,8 @@ final class MatrixMediaUploadClient {
     }
     String contentType = detectContentType(path, fileName);
 
-    Map<String, String> headers = new HashMap<>(REQUEST_HEADERS);
-    headers.put("Authorization", "Bearer " + token);
-    headers.put("Content-Type", contentType);
+    Map<String, String> headers = MatrixHttpHeaders.withBearerToken(REQUEST_HEADERS, token);
+    headers.put(MatrixHttpHeaders.HEADER_CONTENT_TYPE, contentType);
 
     ProxyPlan plan = proxyResolver.planForServer(serverId);
     try {

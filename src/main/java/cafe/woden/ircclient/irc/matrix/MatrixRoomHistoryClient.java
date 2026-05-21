@@ -9,11 +9,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -27,16 +25,11 @@ import org.springframework.stereotype.Component;
 final class MatrixRoomHistoryClient {
 
   private static final Map<String, String> REQUEST_HEADERS =
-      Map.of(
-          "User-Agent", "ircafe-matrix-history/1.0",
-          "Accept", "application/json",
-          "Accept-Encoding", "gzip");
+      MatrixHttpHeaders.json("ircafe-matrix-history/1.0");
 
   private static final ObjectMapper JSON = new ObjectMapper();
-  private static final String ENCRYPTED_PLACEHOLDER_BODY = "[encrypted message unavailable]";
-  private static final Set<String> MEDIA_MSGTYPES =
-      Set.of("m.image", "m.file", "m.video", "m.audio");
-
+  private static final String ENCRYPTED_PLACEHOLDER_BODY =
+      MatrixProtocol.ENCRYPTED_PLACEHOLDER_BODY;
   @NonNull private final ServerProxyResolver proxyResolver;
 
   HistoryResult fetchMessagesBefore(
@@ -76,12 +69,11 @@ final class MatrixRoomHistoryClient {
             server, roomId, fromToken, toToken, dir.queryToken(), limit);
     String token = normalize(accessToken);
     if (token.isEmpty()) {
-      return HistoryResult.failed(endpoint, "access token is blank");
+      return HistoryResult.failed(endpoint, MatrixProtocol.ACCESS_TOKEN_BLANK);
     }
 
     ProxyPlan plan = proxyResolver.planForServer(serverId);
-    Map<String, String> headers = new HashMap<>(REQUEST_HEADERS);
-    headers.put("Authorization", "Bearer " + token);
+    Map<String, String> headers = MatrixHttpHeaders.withBearerToken(REQUEST_HEADERS, token);
 
     try {
       HttpLite.Response<String> response =
@@ -95,7 +87,7 @@ final class MatrixRoomHistoryClient {
 
       JsonNode root = JSON.readTree(body);
       String endToken = normalize(root.path("end").asText(""));
-      ChunkParseResult chunk = parseChunk(root.path("chunk"));
+      ChunkParseResult chunk = parseChunk(root.path(MatrixProtocol.JSON_CHUNK));
       return HistoryResult.success(
           endpoint, endToken, chunk.events(), chunk.reactionEvents(), chunk.redactionEvents());
     } catch (IOException ex) {
@@ -131,17 +123,17 @@ final class MatrixRoomHistoryClient {
     List<RoomRedactionEvent> redactionEvents = new ArrayList<>();
     for (JsonNode event : chunk) {
       if (event == null || event.isNull()) continue;
-      String type = normalize(event.path("type").asText(""));
-      if ("m.room.message".equals(type)) {
-        JsonNode content = event.path("content");
-        String sender = normalize(event.path("sender").asText(""));
-        String eventId = normalize(event.path("event_id").asText(""));
-        String msgType = normalize(content.path("msgtype").asText(""));
-        if (msgType.isEmpty()) msgType = "m.text";
+      String type = normalize(event.path(MatrixProtocol.JSON_TYPE).asText(""));
+      if (MatrixProtocol.EVENT_ROOM_MESSAGE.equals(type)) {
+        JsonNode content = event.path(MatrixProtocol.JSON_CONTENT);
+        String sender = normalize(event.path(MatrixProtocol.JSON_SENDER).asText(""));
+        String eventId = normalize(event.path(MatrixProtocol.JSON_EVENT_ID).asText(""));
+        String msgType = normalize(content.path(MatrixProtocol.JSON_MSGTYPE).asText(""));
+        if (msgType.isEmpty()) msgType = MatrixProtocol.MSGTYPE_TEXT;
         String mediaUrl = parseMediaUrl(content, msgType);
         String body = resolveMessageBody(content, msgType, mediaUrl);
         String replyToEventId = parseReplyToEventId(content);
-        long originServerTs = event.path("origin_server_ts").asLong(0L);
+        long originServerTs = event.path(MatrixProtocol.JSON_ORIGIN_SERVER_TS).asLong(0L);
         if (sender.isEmpty() || body.trim().isEmpty()) continue;
 
         events.add(
@@ -150,16 +142,16 @@ final class MatrixRoomHistoryClient {
         continue;
       }
 
-      if ("m.room.encrypted".equals(type)) {
-        String sender = normalize(event.path("sender").asText(""));
-        String eventId = normalize(event.path("event_id").asText(""));
-        long originServerTs = event.path("origin_server_ts").asLong(0L);
+      if (MatrixProtocol.EVENT_ROOM_ENCRYPTED.equals(type)) {
+        String sender = normalize(event.path(MatrixProtocol.JSON_SENDER).asText(""));
+        String eventId = normalize(event.path(MatrixProtocol.JSON_EVENT_ID).asText(""));
+        long originServerTs = event.path(MatrixProtocol.JSON_ORIGIN_SERVER_TS).asLong(0L);
         if (sender.isEmpty()) continue;
         events.add(
             new RoomHistoryEvent(
                 sender,
                 eventId,
-                "m.room.encrypted",
+                MatrixProtocol.EVENT_ROOM_ENCRYPTED,
                 ENCRYPTED_PLACEHOLDER_BODY,
                 "",
                 originServerTs,
@@ -167,15 +159,16 @@ final class MatrixRoomHistoryClient {
         continue;
       }
 
-      if ("m.reaction".equals(type)) {
-        JsonNode relatesTo = event.path("content").path("m.relates_to");
-        String relType = normalize(relatesTo.path("rel_type").asText(""));
-        String sender = normalize(event.path("sender").asText(""));
-        String eventId = normalize(event.path("event_id").asText(""));
-        String targetEventId = normalize(relatesTo.path("event_id").asText(""));
-        String reaction = normalize(relatesTo.path("key").asText(""));
-        long originServerTs = event.path("origin_server_ts").asLong(0L);
-        if (!"m.annotation".equals(relType)) continue;
+      if (MatrixProtocol.EVENT_REACTION.equals(type)) {
+        JsonNode relatesTo =
+            event.path(MatrixProtocol.JSON_CONTENT).path(MatrixProtocol.JSON_RELATES_TO);
+        String relType = normalize(relatesTo.path(MatrixProtocol.JSON_RELATION_TYPE).asText(""));
+        String sender = normalize(event.path(MatrixProtocol.JSON_SENDER).asText(""));
+        String eventId = normalize(event.path(MatrixProtocol.JSON_EVENT_ID).asText(""));
+        String targetEventId = normalize(relatesTo.path(MatrixProtocol.JSON_EVENT_ID).asText(""));
+        String reaction = normalize(relatesTo.path(MatrixProtocol.JSON_KEY).asText(""));
+        long originServerTs = event.path(MatrixProtocol.JSON_ORIGIN_SERVER_TS).asLong(0L);
+        if (!MatrixProtocol.RELATION_ANNOTATION.equals(relType)) continue;
         if (sender.isEmpty()
             || eventId.isEmpty()
             || targetEventId.isEmpty()
@@ -187,12 +180,17 @@ final class MatrixRoomHistoryClient {
         continue;
       }
 
-      if ("m.room.redaction".equals(type)) {
-        String sender = normalize(event.path("sender").asText(""));
-        String eventId = normalize(event.path("event_id").asText(""));
+      if (MatrixProtocol.EVENT_ROOM_REDACTION.equals(type)) {
+        String sender = normalize(event.path(MatrixProtocol.JSON_SENDER).asText(""));
+        String eventId = normalize(event.path(MatrixProtocol.JSON_EVENT_ID).asText(""));
         String redactsEventId = normalize(event.path("redacts").asText(""));
-        String reason = normalize(event.path("content").path("reason").asText(""));
-        long originServerTs = event.path("origin_server_ts").asLong(0L);
+        String reason =
+            normalize(
+                event
+                    .path(MatrixProtocol.JSON_CONTENT)
+                    .path(MatrixProtocol.JSON_REASON)
+                    .asText(""));
+        long originServerTs = event.path(MatrixProtocol.JSON_ORIGIN_SERVER_TS).asLong(0L);
         if (redactsEventId.isEmpty()) continue;
         redactionEvents.add(
             new RoomRedactionEvent(sender, eventId, redactsEventId, reason, originServerTs));
@@ -205,14 +203,33 @@ final class MatrixRoomHistoryClient {
     if (content == null || content.isNull() || !content.isObject()) {
       return "";
     }
-    JsonNode relatesTo = content.path("m.relates_to");
-    String replyViaStable = normalize(relatesTo.path("m.in_reply_to").path("event_id").asText(""));
+    JsonNode relatesTo = content.path(MatrixProtocol.JSON_RELATES_TO);
+    String replyViaStable =
+        normalize(
+            relatesTo
+                .path(MatrixProtocol.JSON_REPLY_TO)
+                .path(MatrixProtocol.JSON_EVENT_ID)
+                .asText(""));
     if (!replyViaStable.isEmpty()) return replyViaStable;
-    String replyViaLegacy = normalize(relatesTo.path("in_reply_to").path("event_id").asText(""));
+    String replyViaLegacy =
+        normalize(
+            relatesTo
+                .path(MatrixProtocol.JSON_REPLY_TO_LEGACY)
+                .path(MatrixProtocol.JSON_EVENT_ID)
+                .asText(""));
     if (!replyViaLegacy.isEmpty()) return replyViaLegacy;
-    String topLevelStable = normalize(content.path("m.in_reply_to").path("event_id").asText(""));
+    String topLevelStable =
+        normalize(
+            content
+                .path(MatrixProtocol.JSON_REPLY_TO)
+                .path(MatrixProtocol.JSON_EVENT_ID)
+                .asText(""));
     if (!topLevelStable.isEmpty()) return topLevelStable;
-    return normalize(content.path("in_reply_to").path("event_id").asText(""));
+    return normalize(
+        content
+            .path(MatrixProtocol.JSON_REPLY_TO_LEGACY)
+            .path(MatrixProtocol.JSON_EVENT_ID)
+            .asText(""));
   }
 
   private static String parseMediaUrl(JsonNode content, String msgType) {
@@ -222,13 +239,16 @@ final class MatrixRoomHistoryClient {
     if (content == null || content.isNull() || !content.isObject()) {
       return "";
     }
-    String direct = normalize(content.path("url").asText(""));
+    String direct = normalize(content.path(MatrixProtocol.JSON_URL).asText(""));
     if (!direct.isEmpty()) return direct;
-    return normalize(content.path("file").path("url").asText(""));
+    return normalize(content.path("file").path(MatrixProtocol.JSON_URL).asText(""));
   }
 
   private static String resolveMessageBody(JsonNode content, String msgType, String mediaUrl) {
-    String body = content == null ? "" : Objects.toString(content.path("body").asText(""), "");
+    String body =
+        content == null
+            ? ""
+            : Objects.toString(content.path(MatrixProtocol.JSON_BODY).asText(""), "");
     if (!body.trim().isEmpty()) {
       return body;
     }
@@ -239,7 +259,7 @@ final class MatrixRoomHistoryClient {
   }
 
   private static boolean isMediaMsgType(String msgType) {
-    return MEDIA_MSGTYPES.contains(normalize(msgType));
+    return MatrixProtocol.MEDIA_MSGTYPES.contains(normalize(msgType));
   }
 
   private static String normalize(String value) {

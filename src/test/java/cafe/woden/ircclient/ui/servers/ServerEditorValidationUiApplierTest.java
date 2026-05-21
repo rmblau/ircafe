@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.formdev.flatlaf.FlatClientProperties;
 import javax.swing.JButton;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
@@ -63,19 +64,43 @@ class ServerEditorValidationUiApplierTest {
             proxyReadTimeoutField,
             saveButton));
 
-    assertEquals("error", idField.getClientProperty("JComponent.outline"));
-    assertNull(hostField.getClientProperty("JComponent.outline"));
-    assertEquals("error", portField.getClientProperty("JComponent.outline"));
-    assertEquals("error", serverPasswordField.getClientProperty("JComponent.outline"));
-    assertEquals("error", matrixAuthUserField.getClientProperty("JComponent.outline"));
-    assertEquals("error", saslUserField.getClientProperty("JComponent.outline"));
-    assertEquals("error", saslSecretField.getClientProperty("JComponent.outline"));
-    assertEquals("error", nickservPasswordField.getClientProperty("JComponent.outline"));
-    assertEquals("error", proxyHostField.getClientProperty("JComponent.outline"));
-    assertEquals("error", proxyPortField.getClientProperty("JComponent.outline"));
-    assertEquals("warning", proxyUserField.getClientProperty("JComponent.outline"));
-    assertEquals("warning", proxyPasswordField.getClientProperty("JComponent.outline"));
-    assertEquals("warning", proxyConnectTimeoutField.getClientProperty("JComponent.outline"));
+    assertEquals(
+        FlatClientProperties.OUTLINE_ERROR,
+        idField.getClientProperty(FlatClientProperties.OUTLINE));
+    assertNull(hostField.getClientProperty(FlatClientProperties.OUTLINE));
+    assertEquals(
+        FlatClientProperties.OUTLINE_ERROR,
+        portField.getClientProperty(FlatClientProperties.OUTLINE));
+    assertEquals(
+        FlatClientProperties.OUTLINE_ERROR,
+        serverPasswordField.getClientProperty(FlatClientProperties.OUTLINE));
+    assertEquals(
+        FlatClientProperties.OUTLINE_ERROR,
+        matrixAuthUserField.getClientProperty(FlatClientProperties.OUTLINE));
+    assertEquals(
+        FlatClientProperties.OUTLINE_ERROR,
+        saslUserField.getClientProperty(FlatClientProperties.OUTLINE));
+    assertEquals(
+        FlatClientProperties.OUTLINE_ERROR,
+        saslSecretField.getClientProperty(FlatClientProperties.OUTLINE));
+    assertEquals(
+        FlatClientProperties.OUTLINE_ERROR,
+        nickservPasswordField.getClientProperty(FlatClientProperties.OUTLINE));
+    assertEquals(
+        FlatClientProperties.OUTLINE_ERROR,
+        proxyHostField.getClientProperty(FlatClientProperties.OUTLINE));
+    assertEquals(
+        FlatClientProperties.OUTLINE_ERROR,
+        proxyPortField.getClientProperty(FlatClientProperties.OUTLINE));
+    assertEquals(
+        FlatClientProperties.OUTLINE_WARNING,
+        proxyUserField.getClientProperty(FlatClientProperties.OUTLINE));
+    assertEquals(
+        FlatClientProperties.OUTLINE_WARNING,
+        proxyPasswordField.getClientProperty(FlatClientProperties.OUTLINE));
+    assertEquals(
+        FlatClientProperties.OUTLINE_WARNING,
+        proxyConnectTimeoutField.getClientProperty(FlatClientProperties.OUTLINE));
     assertFalse(saveButton.isEnabled());
     assertEquals("Fix highlighted fields to enable Save.", saveButton.getToolTipText());
   }
@@ -83,27 +108,38 @@ class ServerEditorValidationUiApplierTest {
   @Test
   void applyClearsInactiveSectionsAndAllowsSave() {
     JTextField matrixAuthUserField = new JTextField();
-    matrixAuthUserField.putClientProperty("JComponent.outline", "error");
+    matrixAuthUserField.putClientProperty(
+        FlatClientProperties.OUTLINE, FlatClientProperties.OUTLINE_ERROR);
     JTextField saslUserField = new JTextField();
-    saslUserField.putClientProperty("JComponent.outline", "error");
+    saslUserField.putClientProperty(
+        FlatClientProperties.OUTLINE, FlatClientProperties.OUTLINE_ERROR);
     JPasswordField saslSecretField = new JPasswordField();
-    saslSecretField.putClientProperty("JComponent.outline", "error");
+    saslSecretField.putClientProperty(
+        FlatClientProperties.OUTLINE, FlatClientProperties.OUTLINE_ERROR);
     JTextField nickservServiceField = new JTextField();
-    nickservServiceField.putClientProperty("JComponent.outline", "error");
+    nickservServiceField.putClientProperty(
+        FlatClientProperties.OUTLINE, FlatClientProperties.OUTLINE_ERROR);
     JPasswordField nickservPasswordField = new JPasswordField();
-    nickservPasswordField.putClientProperty("JComponent.outline", "error");
+    nickservPasswordField.putClientProperty(
+        FlatClientProperties.OUTLINE, FlatClientProperties.OUTLINE_ERROR);
     JTextField proxyHostField = new JTextField();
-    proxyHostField.putClientProperty("JComponent.outline", "error");
+    proxyHostField.putClientProperty(
+        FlatClientProperties.OUTLINE, FlatClientProperties.OUTLINE_ERROR);
     JTextField proxyPortField = new JTextField();
-    proxyPortField.putClientProperty("JComponent.outline", "error");
+    proxyPortField.putClientProperty(
+        FlatClientProperties.OUTLINE, FlatClientProperties.OUTLINE_ERROR);
     JTextField proxyUserField = new JTextField();
-    proxyUserField.putClientProperty("JComponent.outline", "warning");
+    proxyUserField.putClientProperty(
+        FlatClientProperties.OUTLINE, FlatClientProperties.OUTLINE_WARNING);
     JPasswordField proxyPasswordField = new JPasswordField();
-    proxyPasswordField.putClientProperty("JComponent.outline", "warning");
+    proxyPasswordField.putClientProperty(
+        FlatClientProperties.OUTLINE, FlatClientProperties.OUTLINE_WARNING);
     JTextField proxyConnectTimeoutField = new JTextField();
-    proxyConnectTimeoutField.putClientProperty("JComponent.outline", "warning");
+    proxyConnectTimeoutField.putClientProperty(
+        FlatClientProperties.OUTLINE, FlatClientProperties.OUTLINE_WARNING);
     JTextField proxyReadTimeoutField = new JTextField();
-    proxyReadTimeoutField.putClientProperty("JComponent.outline", "warning");
+    proxyReadTimeoutField.putClientProperty(
+        FlatClientProperties.OUTLINE, FlatClientProperties.OUTLINE_WARNING);
     JButton saveButton = new JButton();
 
     ServerEditorValidationUiApplier.apply(
@@ -136,17 +172,17 @@ class ServerEditorValidationUiApplierTest {
             proxyReadTimeoutField,
             saveButton));
 
-    assertNull(matrixAuthUserField.getClientProperty("JComponent.outline"));
-    assertNull(saslUserField.getClientProperty("JComponent.outline"));
-    assertNull(saslSecretField.getClientProperty("JComponent.outline"));
-    assertNull(nickservServiceField.getClientProperty("JComponent.outline"));
-    assertNull(nickservPasswordField.getClientProperty("JComponent.outline"));
-    assertNull(proxyHostField.getClientProperty("JComponent.outline"));
-    assertNull(proxyPortField.getClientProperty("JComponent.outline"));
-    assertNull(proxyUserField.getClientProperty("JComponent.outline"));
-    assertNull(proxyPasswordField.getClientProperty("JComponent.outline"));
-    assertNull(proxyConnectTimeoutField.getClientProperty("JComponent.outline"));
-    assertNull(proxyReadTimeoutField.getClientProperty("JComponent.outline"));
+    assertNull(matrixAuthUserField.getClientProperty(FlatClientProperties.OUTLINE));
+    assertNull(saslUserField.getClientProperty(FlatClientProperties.OUTLINE));
+    assertNull(saslSecretField.getClientProperty(FlatClientProperties.OUTLINE));
+    assertNull(nickservServiceField.getClientProperty(FlatClientProperties.OUTLINE));
+    assertNull(nickservPasswordField.getClientProperty(FlatClientProperties.OUTLINE));
+    assertNull(proxyHostField.getClientProperty(FlatClientProperties.OUTLINE));
+    assertNull(proxyPortField.getClientProperty(FlatClientProperties.OUTLINE));
+    assertNull(proxyUserField.getClientProperty(FlatClientProperties.OUTLINE));
+    assertNull(proxyPasswordField.getClientProperty(FlatClientProperties.OUTLINE));
+    assertNull(proxyConnectTimeoutField.getClientProperty(FlatClientProperties.OUTLINE));
+    assertNull(proxyReadTimeoutField.getClientProperty(FlatClientProperties.OUTLINE));
     assertTrue(saveButton.isEnabled());
     assertNull(saveButton.getToolTipText());
   }

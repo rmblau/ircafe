@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import lombok.AccessLevel;
@@ -26,11 +25,7 @@ import org.springframework.stereotype.Component;
 final class MatrixRoomTypingClient {
 
   private static final Map<String, String> REQUEST_HEADERS =
-      Map.of(
-          "User-Agent", "ircafe-matrix-typing/1.0",
-          "Accept", "application/json",
-          "Accept-Encoding", "gzip",
-          "Content-Type", "application/json");
+      MatrixHttpHeaders.jsonWithContentType("ircafe-matrix-typing/1.0");
 
   private static final ObjectMapper JSON = new ObjectMapper();
 
@@ -47,12 +42,11 @@ final class MatrixRoomTypingClient {
     URI endpoint = MatrixEndpointResolver.roomTypingUri(server, roomId, userId);
     String token = normalize(accessToken);
     if (token.isEmpty()) {
-      return TypingResult.failed(endpoint, "access token is blank");
+      return TypingResult.failed(endpoint, MatrixProtocol.ACCESS_TOKEN_BLANK);
     }
 
     ProxyPlan plan = proxyResolver.planForServer(serverId);
-    Map<String, String> headers = new HashMap<>(REQUEST_HEADERS);
-    headers.put("Authorization", "Bearer " + token);
+    Map<String, String> headers = MatrixHttpHeaders.withBearerToken(REQUEST_HEADERS, token);
 
     ObjectNode payload = JSON.createObjectNode();
     payload.put("typing", typing);

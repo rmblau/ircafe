@@ -15,10 +15,10 @@ import lombok.RequiredArgsConstructor;
 final class MatrixLocalEchoEmitter {
   private static final String CTCP_ACTION_PREFIX = "\u0001ACTION ";
   private static final String CTCP_SUFFIX = "\u0001";
-  private static final String TAG_IRCAFE_PM_TARGET = "ircafe/pm-target";
-  private static final String TAG_MATRIX_MSGTYPE = "matrix.msgtype";
-  private static final String TAG_MATRIX_MEDIA_URL = "matrix.media_url";
-  private static final String TAG_MATRIX_ROOM_ID = "matrix.room_id";
+  private static final String TAG_IRCAFE_PM_TARGET = MatrixProtocol.TAG_IRCAFE_PM_TARGET;
+  private static final String TAG_MATRIX_MSGTYPE = MatrixProtocol.TAG_MATRIX_MSGTYPE;
+  private static final String TAG_MATRIX_MEDIA_URL = MatrixProtocol.TAG_MATRIX_MEDIA_URL;
+  private static final String TAG_MATRIX_ROOM_ID = MatrixProtocol.TAG_MATRIX_ROOM_ID;
 
   interface SessionView {
     String userId();
@@ -50,14 +50,24 @@ final class MatrixLocalEchoEmitter {
       emit(
           sid,
           new IrcEvent.ChannelAction(
-              now, target, sender, action, mid, Map.of(TAG_MATRIX_MSGTYPE, "m.emote")));
+              now,
+              target,
+              sender,
+              action,
+              mid,
+              Map.of(TAG_MATRIX_MSGTYPE, MatrixProtocol.MSGTYPE_EMOTE)));
       return;
     }
 
     emit(
         sid,
         new IrcEvent.ChannelMessage(
-            now, target, sender, raw, mid, Map.of(TAG_MATRIX_MSGTYPE, "m.text")));
+            now,
+            target,
+            sender,
+            raw,
+            mid,
+            Map.of(TAG_MATRIX_MSGTYPE, MatrixProtocol.MSGTYPE_TEXT)));
   }
 
   void emitPrivateMessage(
@@ -84,14 +94,18 @@ final class MatrixLocalEchoEmitter {
       emit(
           sid,
           new IrcEvent.PrivateAction(
-              now, sender, action, mid, privateMessageTags(peer, rid, "m.emote")));
+              now,
+              sender,
+              action,
+              mid,
+              privateMessageTags(peer, rid, MatrixProtocol.MSGTYPE_EMOTE)));
       return;
     }
 
     emit(
         sid,
         new IrcEvent.PrivateMessage(
-            now, sender, raw, mid, privateMessageTags(peer, rid, "m.text")));
+            now, sender, raw, mid, privateMessageTags(peer, rid, MatrixProtocol.MSGTYPE_TEXT)));
   }
 
   void emitChannelMediaMessage(
@@ -213,7 +227,7 @@ final class MatrixLocalEchoEmitter {
     String rid = normalize(roomId);
     String type = normalize(msgType);
     if (type.isEmpty()) {
-      type = "m.text";
+      type = MatrixProtocol.MSGTYPE_TEXT;
     }
 
     if (includePrivateTargetTag && !peer.isEmpty()) {

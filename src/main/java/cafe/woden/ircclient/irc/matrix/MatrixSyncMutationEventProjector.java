@@ -14,10 +14,10 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 final class MatrixSyncMutationEventProjector {
-  private static final String TAG_IRCAFE_PM_TARGET = "ircafe/pm-target";
-  private static final String TAG_MATRIX_MSGTYPE = "matrix.msgtype";
-  private static final String TAG_MATRIX_ROOM_ID = "matrix.room_id";
-  private static final String TAG_DRAFT_EDIT = "draft/edit";
+  private static final String TAG_IRCAFE_PM_TARGET = MatrixProtocol.TAG_IRCAFE_PM_TARGET;
+  private static final String TAG_MATRIX_MSGTYPE = MatrixProtocol.TAG_MATRIX_MSGTYPE;
+  private static final String TAG_MATRIX_ROOM_ID = MatrixProtocol.TAG_MATRIX_ROOM_ID;
+  private static final String TAG_DRAFT_EDIT = MatrixProtocol.TAG_DRAFT_EDIT;
 
   interface SessionView {
     String userId();
@@ -78,7 +78,7 @@ final class MatrixSyncMutationEventProjector {
       Instant at = ts > 0L ? Instant.ofEpochMilli(ts) : Instant.now();
       session.rememberRoomEvent(roomId, messageId, ts);
 
-      String normalizedType = msgType.isEmpty() ? "m.text" : msgType;
+      String normalizedType = msgType.isEmpty() ? MatrixProtocol.MSGTYPE_TEXT : msgType;
       String peerUserId = session.peerForRoom(roomId);
       boolean fromSelf = sender.equals(session.userId());
       if (!peerUserId.isEmpty()) {
@@ -195,7 +195,7 @@ final class MatrixSyncMutationEventProjector {
     String rid = normalize(roomId);
     String type = normalize(msgType);
     if (type.isEmpty()) {
-      type = "m.text";
+      type = MatrixProtocol.MSGTYPE_TEXT;
     }
 
     if (includePrivateTargetTag && !peer.isEmpty()) {

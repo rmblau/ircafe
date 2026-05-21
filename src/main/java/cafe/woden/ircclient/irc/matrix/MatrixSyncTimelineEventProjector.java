@@ -14,11 +14,11 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 final class MatrixSyncTimelineEventProjector {
-  private static final String TAG_IRCAFE_PM_TARGET = "ircafe/pm-target";
-  private static final String TAG_MATRIX_MSGTYPE = "matrix.msgtype";
-  private static final String TAG_MATRIX_MEDIA_URL = "matrix.media_url";
-  private static final String TAG_MATRIX_ROOM_ID = "matrix.room_id";
-  private static final String TAG_DRAFT_REPLY = "draft/reply";
+  private static final String TAG_IRCAFE_PM_TARGET = MatrixProtocol.TAG_IRCAFE_PM_TARGET;
+  private static final String TAG_MATRIX_MSGTYPE = MatrixProtocol.TAG_MATRIX_MSGTYPE;
+  private static final String TAG_MATRIX_MEDIA_URL = MatrixProtocol.TAG_MATRIX_MEDIA_URL;
+  private static final String TAG_MATRIX_ROOM_ID = MatrixProtocol.TAG_MATRIX_ROOM_ID;
+  private static final String TAG_DRAFT_REPLY = MatrixProtocol.TAG_DRAFT_REPLY;
 
   interface SessionView {
     String userId();
@@ -63,12 +63,13 @@ final class MatrixSyncTimelineEventProjector {
       }
 
       if (directMessageRoom) {
-        String normalizedType = msgType.isEmpty() ? "m.text" : msgType;
-        if ("m.emote".equals(msgType)) {
+        String normalizedType = msgType.isEmpty() ? MatrixProtocol.MSGTYPE_TEXT : msgType;
+        if (MatrixProtocol.MSGTYPE_EMOTE.equals(msgType)) {
           Map<String, String> tags =
               withTag(
                   withTag(
-                      privateMessageTags(peerUserId, roomId, "m.emote", fromSelf),
+                      privateMessageTags(
+                          peerUserId, roomId, MatrixProtocol.MSGTYPE_EMOTE, fromSelf),
                       TAG_MATRIX_MEDIA_URL,
                       mediaUrl),
                   TAG_DRAFT_REPLY,
@@ -76,11 +77,12 @@ final class MatrixSyncTimelineEventProjector {
           emit(sid, new IrcEvent.PrivateAction(at, sender, body, messageId, tags));
           continue;
         }
-        if ("m.notice".equals(msgType)) {
+        if (MatrixProtocol.MSGTYPE_NOTICE.equals(msgType)) {
           Map<String, String> tags =
               withTag(
                   withTag(
-                      privateMessageTags(peerUserId, roomId, "m.notice", fromSelf),
+                      privateMessageTags(
+                          peerUserId, roomId, MatrixProtocol.MSGTYPE_NOTICE, fromSelf),
                       TAG_MATRIX_MEDIA_URL,
                       mediaUrl),
                   TAG_DRAFT_REPLY,
@@ -100,27 +102,33 @@ final class MatrixSyncTimelineEventProjector {
         continue;
       }
 
-      if ("m.emote".equals(msgType)) {
+      if (MatrixProtocol.MSGTYPE_EMOTE.equals(msgType)) {
         Map<String, String> tags =
             withTag(
-                withTag(Map.of(TAG_MATRIX_MSGTYPE, "m.emote"), TAG_MATRIX_MEDIA_URL, mediaUrl),
+                withTag(
+                    Map.of(TAG_MATRIX_MSGTYPE, MatrixProtocol.MSGTYPE_EMOTE),
+                    TAG_MATRIX_MEDIA_URL,
+                    mediaUrl),
                 TAG_DRAFT_REPLY,
                 replyToMessageId);
         emit(sid, new IrcEvent.ChannelAction(at, roomTarget, sender, body, messageId, tags));
         continue;
       }
 
-      if ("m.notice".equals(msgType)) {
+      if (MatrixProtocol.MSGTYPE_NOTICE.equals(msgType)) {
         Map<String, String> tags =
             withTag(
-                withTag(Map.of(TAG_MATRIX_MSGTYPE, "m.notice"), TAG_MATRIX_MEDIA_URL, mediaUrl),
+                withTag(
+                    Map.of(TAG_MATRIX_MSGTYPE, MatrixProtocol.MSGTYPE_NOTICE),
+                    TAG_MATRIX_MEDIA_URL,
+                    mediaUrl),
                 TAG_DRAFT_REPLY,
                 replyToMessageId);
         emit(sid, new IrcEvent.Notice(at, sender, roomTarget, body, messageId, tags));
         continue;
       }
 
-      String normalizedType = msgType.isEmpty() ? "m.text" : msgType;
+      String normalizedType = msgType.isEmpty() ? MatrixProtocol.MSGTYPE_TEXT : msgType;
       Map<String, String> tags =
           withTag(
               withTag(Map.of(TAG_MATRIX_MSGTYPE, normalizedType), TAG_MATRIX_MEDIA_URL, mediaUrl),
@@ -140,7 +148,7 @@ final class MatrixSyncTimelineEventProjector {
     String rid = normalize(roomId);
     String type = normalize(msgType);
     if (type.isEmpty()) {
-      type = "m.text";
+      type = MatrixProtocol.MSGTYPE_TEXT;
     }
 
     if (includePrivateTargetTag && !peer.isEmpty()) {

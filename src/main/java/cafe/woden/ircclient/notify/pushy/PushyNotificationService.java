@@ -3,6 +3,7 @@ package cafe.woden.ircclient.notify.pushy;
 import cafe.woden.ircclient.config.ExecutorConfig;
 import cafe.woden.ircclient.config.PushyProperties;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
+import cafe.woden.ircclient.net.HttpHeaderNames;
 import cafe.woden.ircclient.notify.api.PushyNotificationPort;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -124,7 +125,7 @@ public class PushyNotificationService implements PushyNotificationPort {
       HttpRequest request =
           HttpRequest.newBuilder(URI.create(url))
               .timeout(Duration.ofSeconds(properties.readTimeoutSeconds()))
-              .header("Content-Type", "application/json")
+              .header(HttpHeaderNames.CONTENT_TYPE, "application/json")
               .POST(HttpRequest.BodyPublishers.ofString(payload, StandardCharsets.UTF_8))
               .build();
 

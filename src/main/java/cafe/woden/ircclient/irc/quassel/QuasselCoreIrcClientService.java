@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.irc.quassel;
 
+import static cafe.woden.ircclient.irc.backend.IrcBackendValidationMessages.SERVER_ID_BLANK;
+
 import cafe.woden.ircclient.config.BackendDescriptorCatalog;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.ServerCatalog;
@@ -274,7 +276,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               QuasselCoreSetupPrompt prompt = pendingSetupByServer.get(sid);
               if (prompt == null) {
@@ -337,7 +339,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               QuasselSession session = requireEstablishedSession(sid, "quassel connect network");
               int networkId =
@@ -391,7 +393,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               QuasselSession session = requireEstablishedSession(sid, "quassel disconnect network");
               int networkId =
@@ -415,7 +417,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               QuasselSession session = requireEstablishedSession(sid, "quassel create network");
               QuasselCoreNetworkCreateRequest req =
@@ -459,7 +461,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               QuasselSession session = requireEstablishedSession(sid, "quassel update network");
               int networkId =
@@ -477,7 +479,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               QuasselSession session = requireEstablishedSession(sid, "quassel remove network");
               int networkId =
@@ -500,7 +502,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
 
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               cancelReconnectTask(sid, false);
               if (resetReconnectAttempts) {
@@ -705,7 +707,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               String raw = Objects.toString(rawLine, "").trim();
-              if (sid.isEmpty()) throw new IllegalArgumentException("server id is blank");
+              if (sid.isEmpty()) throw new IllegalArgumentException(SERVER_ID_BLANK);
               if (raw.isEmpty()) throw new IllegalArgumentException("raw line is blank");
               if (containsCrlf(raw)) throw new IllegalArgumentException("raw line contains CR/LF");
 
@@ -721,7 +723,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               QuasselSession session = requireEstablishedSession(sid, "send typing");
               if (!isTypingAvailable(sid)) {
@@ -752,7 +754,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               QuasselSession session = requireEstablishedSession(sid, "send read marker");
               if (!isReadMarkerAvailable(sid)) {
@@ -785,7 +787,11 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
                   session,
                   sid,
                   "send read marker",
-                  "MARKREAD " + requested.rawTarget() + " timestamp=" + markerTimestamp);
+                  "MARKREAD "
+                      + requested.rawTarget()
+                      + " "
+                      + Ircv3ChatHistorySelectors.TIMESTAMP_PREFIX
+                      + markerTimestamp);
             })
         .subscribeOn(RxVirtualSchedulers.io());
   }
@@ -1040,7 +1046,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               QuasselSession session = requireEstablishedSession(sid, "request lag probe");
               Socket socket = session.socketRef.get();
@@ -1157,7 +1163,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
       throws BackendNotAvailableException {
     String sid = normalizeServerId(serverId);
     if (sid.isEmpty()) {
-      throw new IllegalArgumentException("server id is blank");
+      throw new IllegalArgumentException(SERVER_ID_BLANK);
     }
     QualifiedTarget tgt = sanitizeHistoryTarget(target);
     int lim = normalizeHistoryLimit(limit);
@@ -2632,7 +2638,9 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
     if (resolvedEpochMs <= 0L) {
       resolvedEpochMs = fallback.toEpochMilli();
     }
-    String marker = "timestamp=" + MARKREAD_TS_FMT.format(Instant.ofEpochMilli(resolvedEpochMs));
+    String marker =
+        Ircv3ChatHistorySelectors.TIMESTAMP_PREFIX
+            + MARKREAD_TS_FMT.format(Instant.ofEpochMilli(resolvedEpochMs));
     bus.onNext(
         new ServerIrcEvent(
             session.serverId, new IrcEvent.ReadMarkerObserved(fallback, from, target, marker)));
@@ -6667,7 +6675,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
     return Completable.fromAction(
             () -> {
               String sid = normalizeServerId(serverId);
-              if (sid.isEmpty()) throw new IllegalArgumentException("server id is blank");
+              if (sid.isEmpty()) throw new IllegalArgumentException(SERVER_ID_BLANK);
 
               QuasselSession session = requireEstablishedSession(sid, operation);
               if (firstKnownNetworkId(session) < 0) {

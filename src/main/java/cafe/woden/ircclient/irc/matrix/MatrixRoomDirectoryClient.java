@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -33,11 +32,7 @@ final class MatrixRoomDirectoryClient {
   private static final int MAX_PUBLIC_ROOMS_LIMIT = 200;
 
   private static final Map<String, String> REQUEST_HEADERS =
-      Map.of(
-          "User-Agent", "ircafe-matrix-directory/1.0",
-          "Accept", "application/json",
-          "Accept-Encoding", "gzip",
-          "Content-Type", "application/json");
+      MatrixHttpHeaders.jsonWithContentType("ircafe-matrix-directory/1.0");
 
   private static final ObjectMapper JSON = new ObjectMapper();
 
@@ -48,12 +43,11 @@ final class MatrixRoomDirectoryClient {
     URI endpoint = MatrixEndpointResolver.roomAliasDirectoryUri(server, roomAlias);
     String token = normalize(accessToken);
     if (token.isEmpty()) {
-      return ResolveResult.failed(endpoint, "access token is blank");
+      return ResolveResult.failed(endpoint, MatrixProtocol.ACCESS_TOKEN_BLANK);
     }
 
     ProxyPlan plan = proxyResolver.planForServer(serverId);
-    Map<String, String> headers = new HashMap<>(REQUEST_HEADERS);
-    headers.put("Authorization", "Bearer " + token);
+    Map<String, String> headers = MatrixHttpHeaders.withBearerToken(REQUEST_HEADERS, token);
 
     try {
       HttpLite.Response<String> response =
@@ -89,12 +83,11 @@ final class MatrixRoomDirectoryClient {
     URI endpoint = MatrixEndpointResolver.publicRoomsUri(server);
     String token = normalize(accessToken);
     if (token.isEmpty()) {
-      return PublicRoomsResult.failed(endpoint, "access token is blank");
+      return PublicRoomsResult.failed(endpoint, MatrixProtocol.ACCESS_TOKEN_BLANK);
     }
 
     ProxyPlan plan = proxyResolver.planForServer(serverId);
-    Map<String, String> headers = new HashMap<>(REQUEST_HEADERS);
-    headers.put("Authorization", "Bearer " + token);
+    Map<String, String> headers = MatrixHttpHeaders.withBearerToken(REQUEST_HEADERS, token);
 
     try {
       String payload =
@@ -146,9 +139,9 @@ final class MatrixRoomDirectoryClient {
     if (json.isEmpty()) return ParsedPublicRooms.empty();
     try {
       JsonNode root = JSON.readTree(json);
-      JsonNode chunk = root.path("chunk");
+      JsonNode chunk = root.path(MatrixProtocol.JSON_CHUNK);
       List<PublicRoom> rooms = parsePublicRoomChunk(chunk);
-      String nextBatch = normalize(root.path("next_batch").asText(""));
+      String nextBatch = normalize(root.path(MatrixProtocol.JSON_NEXT_BATCH).asText(""));
       return new ParsedPublicRooms(rooms, nextBatch);
     } catch (Exception ignored) {
       return ParsedPublicRooms.empty();
@@ -173,10 +166,10 @@ final class MatrixRoomDirectoryClient {
 
   private static PublicRoom parsePublicRoom(JsonNode roomNode) {
     if (roomNode == null || !roomNode.isObject()) return null;
-    String roomId = normalize(roomNode.path("room_id").asText(""));
+    String roomId = normalize(roomNode.path(MatrixProtocol.JSON_ROOM_ID).asText(""));
     String canonicalAlias = normalize(roomNode.path("canonical_alias").asText(""));
     if (canonicalAlias.isEmpty()) {
-      canonicalAlias = firstAlias(roomNode.path("aliases"));
+      canonicalAlias = firstAlias(roomNode.path(MatrixProtocol.JSON_ALIASES));
     }
     String name = normalize(roomNode.path("name").asText(""));
     String topic = normalize(roomNode.path("topic").asText(""));
@@ -222,7 +215,7 @@ final class MatrixRoomDirectoryClient {
     if (json.isEmpty()) return "";
     try {
       JsonNode root = JSON.readTree(json);
-      return normalize(root.path("room_id").asText(""));
+      return normalize(root.path(MatrixProtocol.JSON_ROOM_ID).asText(""));
     } catch (Exception ignored) {
       return "";
     }

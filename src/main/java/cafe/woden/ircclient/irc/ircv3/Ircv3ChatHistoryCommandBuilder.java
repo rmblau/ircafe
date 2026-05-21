@@ -22,7 +22,7 @@ public final class Ircv3ChatHistoryCommandBuilder {
 
   public static String buildBeforeByMessageId(String target, String messageId, int limit) {
     String msgId = sanitizeSelectorValue(messageId);
-    return buildBefore(target, "msgid=" + msgId, limit);
+    return buildBefore(target, Ircv3ChatHistorySelectors.MSGID_PREFIX + msgId, limit);
   }
 
   public static String buildBefore(String target, String selector, int limit) {
@@ -57,7 +57,7 @@ public final class Ircv3ChatHistoryCommandBuilder {
 
   public static String timestampSelector(Instant at) {
     Instant ts = Objects.requireNonNull(at, "at");
-    return "timestamp=" + TS_FMT.format(ts);
+    return Ircv3ChatHistorySelectors.TIMESTAMP_PREFIX + TS_FMT.format(ts);
   }
 
   public static int clampLimit(int limit) {

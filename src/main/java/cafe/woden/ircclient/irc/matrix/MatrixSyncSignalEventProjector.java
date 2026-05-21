@@ -58,8 +58,8 @@ final class MatrixSyncSignalEventProjector {
       long ts = membershipEvent.originServerTs();
       Instant at = ts > 0L ? Instant.ofEpochMilli(ts) : Instant.now();
 
-      boolean joinedNow = "join".equals(membership);
-      boolean joinedBefore = "join".equals(prevMembership);
+      boolean joinedNow = MatrixProtocol.MEMBERSHIP_JOIN.equals(membership);
+      boolean joinedBefore = MatrixProtocol.MEMBERSHIP_JOIN.equals(prevMembership);
 
       if (!userId.equals(selfUserId) && joinedNow && !joinedBefore) {
         emit(sid, new IrcEvent.UserJoinedChannel(at, roomTarget, userId));
@@ -138,7 +138,7 @@ final class MatrixSyncSignalEventProjector {
       String target = signalTargetForRoom(session, roomId);
       if (target.isEmpty()) continue;
       Instant markerAt = Instant.ofEpochMilli(ts);
-      String marker = "timestamp=" + markerAt;
+      String marker = MatrixProtocol.HISTORY_SELECTOR_TIMESTAMP_PREFIX + markerAt;
       emit(sid, new IrcEvent.ReadMarkerObserved(markerAt, fromUserId, target, marker));
     }
   }

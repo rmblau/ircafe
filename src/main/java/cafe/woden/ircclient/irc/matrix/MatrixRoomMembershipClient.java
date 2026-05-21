@@ -24,11 +24,7 @@ import org.springframework.stereotype.Component;
 final class MatrixRoomMembershipClient {
 
   private static final Map<String, String> REQUEST_HEADERS =
-      Map.of(
-          "User-Agent", "ircafe-matrix-membership/1.0",
-          "Accept", "application/json",
-          "Accept-Encoding", "gzip",
-          "Content-Type", "application/json");
+      MatrixHttpHeaders.jsonWithContentType("ircafe-matrix-membership/1.0");
 
   private static final ObjectMapper JSON = new ObjectMapper();
 
@@ -39,12 +35,11 @@ final class MatrixRoomMembershipClient {
     URI endpoint = MatrixEndpointResolver.joinRoomUri(server, roomIdOrAlias);
     String token = normalize(accessToken);
     if (token.isEmpty()) {
-      return JoinResult.failed(endpoint, "access token is blank");
+      return JoinResult.failed(endpoint, MatrixProtocol.ACCESS_TOKEN_BLANK);
     }
 
     ProxyPlan plan = proxyResolver.planForServer(serverId);
-    Map<String, String> headers = new HashMap<>(REQUEST_HEADERS);
-    headers.put("Authorization", "Bearer " + token);
+    Map<String, String> headers = MatrixHttpHeaders.withBearerToken(REQUEST_HEADERS, token);
 
     try {
       HttpLite.Response<String> response =
@@ -74,12 +69,11 @@ final class MatrixRoomMembershipClient {
     URI endpoint = MatrixEndpointResolver.leaveRoomUri(server, roomId);
     String token = normalize(accessToken);
     if (token.isEmpty()) {
-      return LeaveResult.failed(endpoint, "access token is blank");
+      return LeaveResult.failed(endpoint, MatrixProtocol.ACCESS_TOKEN_BLANK);
     }
 
     ProxyPlan plan = proxyResolver.planForServer(serverId);
-    Map<String, String> headers = new HashMap<>(REQUEST_HEADERS);
-    headers.put("Authorization", "Bearer " + token);
+    Map<String, String> headers = MatrixHttpHeaders.withBearerToken(REQUEST_HEADERS, token);
 
     try {
       HttpLite.Response<String> response =
@@ -109,7 +103,7 @@ final class MatrixRoomMembershipClient {
         serverId,
         MatrixEndpointResolver.roomInviteUri(server, roomId),
         accessToken,
-        Map.of("user_id", normalize(userId)),
+        Map.of(MatrixProtocol.JSON_USER_ID, normalize(userId)),
         "invite endpoint");
   }
 
@@ -121,10 +115,10 @@ final class MatrixRoomMembershipClient {
       String userId,
       String reason) {
     Map<String, Object> payload = new HashMap<>();
-    payload.put("user_id", normalize(userId));
+    payload.put(MatrixProtocol.JSON_USER_ID, normalize(userId));
     String why = normalize(reason);
     if (!why.isEmpty()) {
-      payload.put("reason", why);
+      payload.put(MatrixProtocol.JSON_REASON, why);
     }
     return postRoomMembershipAction(
         serverId,
@@ -142,10 +136,10 @@ final class MatrixRoomMembershipClient {
       String userId,
       String reason) {
     Map<String, Object> payload = new HashMap<>();
-    payload.put("user_id", normalize(userId));
+    payload.put(MatrixProtocol.JSON_USER_ID, normalize(userId));
     String why = normalize(reason);
     if (!why.isEmpty()) {
-      payload.put("reason", why);
+      payload.put(MatrixProtocol.JSON_REASON, why);
     }
     return postRoomMembershipAction(
         serverId,
@@ -165,7 +159,7 @@ final class MatrixRoomMembershipClient {
         serverId,
         MatrixEndpointResolver.roomUnbanUri(server, roomId),
         accessToken,
-        Map.of("user_id", normalize(userId)),
+        Map.of(MatrixProtocol.JSON_USER_ID, normalize(userId)),
         "unban endpoint");
   }
 
@@ -173,12 +167,11 @@ final class MatrixRoomMembershipClient {
       String serverId, URI endpoint, String accessToken, Map<String, ?> payload, String opLabel) {
     String token = normalize(accessToken);
     if (token.isEmpty()) {
-      return ActionResult.failed(endpoint, "access token is blank");
+      return ActionResult.failed(endpoint, MatrixProtocol.ACCESS_TOKEN_BLANK);
     }
 
     ProxyPlan plan = proxyResolver.planForServer(serverId);
-    Map<String, String> headers = new HashMap<>(REQUEST_HEADERS);
-    headers.put("Authorization", "Bearer " + token);
+    Map<String, String> headers = MatrixHttpHeaders.withBearerToken(REQUEST_HEADERS, token);
 
     try {
       String payloadJson = JSON.writeValueAsString(payload == null ? Map.of() : payload);
@@ -209,7 +202,7 @@ final class MatrixRoomMembershipClient {
     if (json.isEmpty()) return "";
     try {
       JsonNode root = JSON.readTree(json);
-      return normalize(root.path("room_id").asText(""));
+      return normalize(root.path(MatrixProtocol.JSON_ROOM_ID).asText(""));
     } catch (Exception ignored) {
       return "";
     }
