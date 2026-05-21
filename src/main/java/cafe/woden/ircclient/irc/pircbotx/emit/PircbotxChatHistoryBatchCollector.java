@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.irc.pircbotx.emit;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.CHATHISTORY;
+
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
 import cafe.woden.ircclient.irc.ircv3.*;
@@ -179,7 +181,7 @@ public final class PircbotxChatHistoryBatchCollector {
   private static boolean isChatHistoryBatchType(String type) {
     if (type == null) return false;
     String t = type.toLowerCase(Locale.ROOT);
-    return t.contains("chathistory");
+    return t.contains(CHATHISTORY);
   }
 
   private static final class ChatHistoryBatchBuffer {

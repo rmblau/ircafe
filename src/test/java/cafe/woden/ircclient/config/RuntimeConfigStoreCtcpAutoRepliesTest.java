@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -15,9 +14,7 @@ class RuntimeConfigStoreCtcpAutoRepliesTest {
 
   @Test
   void ctcpAutoReplySettingsDefaultToEnabledWhenUnset() {
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("ircafe.yml").toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     assertTrue(store.readCtcpAutoRepliesEnabled(true));
     assertTrue(store.readCtcpAutoReplyVersionEnabled(true));
@@ -28,8 +25,7 @@ class RuntimeConfigStoreCtcpAutoRepliesTest {
   @Test
   void ctcpAutoReplySettingsPersistAndReadBack() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberCtcpAutoRepliesEnabled(false);
     store.rememberCtcpAutoReplyVersionEnabled(false);

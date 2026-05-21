@@ -12,9 +12,11 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Refreshes tree renderer/layout state after UI defaults or look-and-feel changes. */
+@InterfaceLayer
 @Component
 public final class ServerTreeUiRefreshCoordinator {
 

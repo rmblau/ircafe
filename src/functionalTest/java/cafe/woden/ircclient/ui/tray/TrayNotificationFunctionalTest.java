@@ -10,18 +10,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.app.api.ActiveTargetPort;
-import cafe.woden.ircclient.config.NotificationRule;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.notify.sound.NotificationSoundService;
-import cafe.woden.ircclient.ui.settings.MemoryUsageDisplayMode;
-import cafe.woden.ircclient.ui.settings.NotificationBackendMode;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
+import cafe.woden.ircclient.ui.settings.UiSettingsTestFixtures;
 import cafe.woden.ircclient.ui.shell.StatusBar;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BooleanSupplier;
 import javax.swing.SwingUtilities;
@@ -123,89 +120,12 @@ class TrayNotificationFunctionalTest {
   }
 
   private static UiSettings baseSettings() {
-    return new UiSettings(
-        "darcula",
-        "Monospaced",
-        12,
-        true,
-        true,
-        false,
-        false,
-        false,
-        true,
-        true,
-        false,
-        false,
-        false,
-        true,
-        true,
-        NotificationBackendMode.AUTO,
-        false,
-        false,
-        0,
-        0,
-        true,
-        false,
-        false,
-        true,
-        true,
-        true,
-        true,
-        "dots",
-        true,
-        true,
-        true,
-        true,
-        true,
-        "HH:mm:ss",
-        true,
-        true,
-        100,
-        200,
-        2000,
-        20,
-        10,
-        6,
-        false,
-        6,
-        18,
-        360,
-        500,
-        4000,
-        true,
-        "#6AA2FF",
-        true,
-        true,
-        true,
-        7,
-        6,
-        30,
-        5,
-        false,
-        15,
-        3,
-        60,
-        5,
-        false,
-        45,
-        120,
-        false,
-        300,
-        2,
-        30,
-        15,
-        MemoryUsageDisplayMode.LONG,
-        1000,
-        5,
-        true,
-        false,
-        false,
-        false,
-        List.<NotificationRule>of(),
-        null,
-        null,
-        false,
-        "compact");
+    return UiSettingsTestFixtures.builder()
+        .trayNotifyOnlyWhenUnfocused(false)
+        .trayNotifySuppressWhenTargetActive(true)
+        .imageEmbedsEnabled(false)
+        .linkPreviewsEnabled(false)
+        .build();
   }
 
   private static void waitFor(BooleanSupplier condition, Duration timeout) throws Exception {

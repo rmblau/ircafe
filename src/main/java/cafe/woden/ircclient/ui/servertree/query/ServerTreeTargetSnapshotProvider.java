@@ -10,9 +10,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Provides tree and leaf snapshots for target-based queries. */
+@InterfaceLayer
 @Component
 public final class ServerTreeTargetSnapshotProvider {
 

@@ -10,7 +10,7 @@ import cafe.woden.ircclient.model.InterceptorDefinition;
 import cafe.woden.ircclient.model.InterceptorRule;
 import cafe.woden.ircclient.model.InterceptorRuleMode;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
-import cafe.woden.ircclient.notify.sound.NotificationSoundService;
+import cafe.woden.ircclient.notify.api.NotificationSoundPort;
 import cafe.woden.ircclient.util.VirtualThreads;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.processors.FlowableProcessor;
@@ -63,7 +63,7 @@ public class InterceptorStore implements InterceptorIngestPort {
   public record ScopedInterceptorRef(String serverId, String interceptorId) {}
 
   private final InterceptorConfigPort runtimeConfig;
-  private final NotificationSoundService notificationSoundService;
+  private final NotificationSoundPort notificationSoundService;
   private final TrayNotificationsPort trayNotificationService;
   private final ExecutorService actionScriptExecutor;
 
@@ -89,7 +89,7 @@ public class InterceptorStore implements InterceptorIngestPort {
   @Autowired
   public InterceptorStore(
       InterceptorConfigPort runtimeConfig,
-      NotificationSoundService notificationSoundService,
+      NotificationSoundPort notificationSoundService,
       @Lazy TrayNotificationsPort trayNotificationService,
       @Qualifier(ExecutorConfig.IRC_EVENT_SCRIPT_EXECUTOR) ExecutorService actionScriptExecutor,
       @Qualifier(ExecutorConfig.INTERCEPTOR_STORE_INGEST_EXECUTOR) ExecutorService ingestExecutor,
@@ -120,7 +120,7 @@ public class InterceptorStore implements InterceptorIngestPort {
 
   private InterceptorStore(
       InterceptorConfigPort runtimeConfig,
-      NotificationSoundService notificationSoundService,
+      NotificationSoundPort notificationSoundService,
       TrayNotificationsPort trayNotificationService,
       ExecutorService actionScriptExecutor,
       ExecutorService ingestExecutor,

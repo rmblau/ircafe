@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -15,8 +14,7 @@ class RuntimeConfigStoreChatLoggingWriterSizingTest {
   @Test
   void writerQueueAndBatchArePersistedUnderLoggingSection() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberChatLoggingWriterQueueMax(123_456);
     store.rememberChatLoggingWriterBatchSize(777);
@@ -30,8 +28,7 @@ class RuntimeConfigStoreChatLoggingWriterSizingTest {
   @Test
   void writerQueueAndBatchAreClampedToSafeBounds() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberChatLoggingWriterQueueMax(5);
     store.rememberChatLoggingWriterBatchSize(0);

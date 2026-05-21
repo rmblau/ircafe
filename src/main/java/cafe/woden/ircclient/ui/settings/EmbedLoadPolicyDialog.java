@@ -4,6 +4,7 @@ import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicyScope;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.ui.chat.embed.EmbedLoadPolicyMatcher;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Dimension;
@@ -12,7 +13,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import javax.swing.JButton;
@@ -20,13 +20,11 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
-import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -130,7 +128,8 @@ public class EmbedLoadPolicyDialog {
 
     Runnable applySelection =
         () -> {
-          ScopeOption selected = (ScopeOption) scope.getSelectedItem();
+          ScopeOption selected =
+              PreferencesUiSupport.selectedComboItem(scope, ScopeOption.class, null);
           if (selected == null) return;
           stopTableEditing(controls);
           EmbedLoadPolicyScope currentScope = readScopeFromControls(controls);
@@ -147,7 +146,8 @@ public class EmbedLoadPolicyDialog {
 
     Runnable loadSelection =
         () -> {
-          ScopeOption selected = (ScopeOption) scope.getSelectedItem();
+          ScopeOption selected =
+              PreferencesUiSupport.selectedComboItem(scope, ScopeOption.class, null);
           if (selected == null) return;
           EmbedLoadPolicyScope show;
           boolean editable = true;
@@ -176,7 +176,8 @@ public class EmbedLoadPolicyDialog {
 
     inheritGlobal.addActionListener(
         e -> {
-          ScopeOption selected = (ScopeOption) scope.getSelectedItem();
+          ScopeOption selected =
+              PreferencesUiSupport.selectedComboItem(scope, ScopeOption.class, null);
           if (selected == null || selected.global()) return;
           if (inheritGlobal.isSelected()) {
             byServerRef.remove(selected.serverId());
@@ -197,11 +198,10 @@ public class EmbedLoadPolicyDialog {
         e -> {
           stopTableEditing(controls);
           if (!validateAllPatternTables(controls)) {
-            JOptionPane.showMessageDialog(
+            PreferencesUiSupport.showWarningMessage(
                 dialog,
                 "One or more patterns are invalid.\nUse valid glob patterns or `re:<regex>` values.",
-                "Invalid Pattern",
-                JOptionPane.WARNING_MESSAGE);
+                "Invalid Pattern");
             save.setEnabled(false);
             return;
           }
@@ -226,14 +226,14 @@ public class EmbedLoadPolicyDialog {
 
     List<String> configured = runtimeConfig != null ? runtimeConfig.readServerIds() : List.of();
     for (String serverId : configured) {
-      String sid = Objects.toString(serverId, "").trim();
+      String sid = SettingsValueSupport.trimmedString(serverId);
       if (sid.isEmpty()) continue;
       out.putIfAbsent(
           sid.toLowerCase(java.util.Locale.ROOT), new ScopeOption(sid, "Network: " + sid, false));
     }
     if (initial != null && initial.byServer() != null) {
       for (String serverId : initial.byServer().keySet()) {
-        String sid = Objects.toString(serverId, "").trim();
+        String sid = SettingsValueSupport.trimmedString(serverId);
         if (sid.isEmpty()) continue;
         out.putIfAbsent(
             sid.toLowerCase(java.util.Locale.ROOT), new ScopeOption(sid, "Network: " + sid, false));
@@ -263,7 +263,7 @@ public class EmbedLoadPolicyDialog {
 
     JCheckBox requireVoiceOrOp = new JCheckBox("Only users with voice/op status");
     JCheckBox requireLoggedIn = new JCheckBox("Only users logged into an account");
-    JSpinner minAccountAgeDays = new JSpinner(new SpinnerNumberModel(0, 0, 36500, 1));
+    JSpinner minAccountAgeDays = PreferencesUiSupport.numberSpinner(0, 0, 36500, 1);
 
     return new PolicyControls(
         userWhitelist,
@@ -350,7 +350,7 @@ public class EmbedLoadPolicyDialog {
         });
     table.setFillsViewportHeight(true);
     table.setRowHeight(24);
-    table.getTableHeader().setReorderingAllowed(false);
+    SettingsTableSupport.disableColumnReordering(table);
 
     JButton add = new JButton("Add");
     JButton remove = new JButton("Remove");
@@ -362,7 +362,7 @@ public class EmbedLoadPolicyDialog {
           model.addRow(new Object[] {""});
           int row = model.getRowCount() - 1;
           if (row >= 0) {
-            table.getSelectionModel().setSelectionInterval(row, row);
+            SettingsTableSupport.selectModelRow(table, row);
             table.editCellAt(row, 0);
             if (table.getEditorComponent() != null) {
               table.getEditorComponent().requestFocus();
@@ -371,9 +371,7 @@ public class EmbedLoadPolicyDialog {
         });
     remove.addActionListener(
         e -> {
-          if (table.isEditing() && table.getCellEditor() != null) {
-            table.getCellEditor().stopCellEditing();
-          }
+          SettingsTableSupport.stopEditing(table);
           int[] rows = table.getSelectedRows();
           for (int i = rows.length - 1; i >= 0; i--) {
             model.removeRow(rows[i]);
@@ -381,27 +379,23 @@ public class EmbedLoadPolicyDialog {
         });
     up.addActionListener(
         e -> {
-          if (table.isEditing() && table.getCellEditor() != null) {
-            table.getCellEditor().stopCellEditing();
-          }
+          SettingsTableSupport.stopEditing(table);
           int row = table.getSelectedRow();
           if (row <= 0) return;
           Object value = model.getValueAt(row, 0);
           model.removeRow(row);
           model.insertRow(row - 1, new Object[] {value});
-          table.getSelectionModel().setSelectionInterval(row - 1, row - 1);
+          SettingsTableSupport.selectModelRow(table, row - 1);
         });
     down.addActionListener(
         e -> {
-          if (table.isEditing() && table.getCellEditor() != null) {
-            table.getCellEditor().stopCellEditing();
-          }
+          SettingsTableSupport.stopEditing(table);
           int row = table.getSelectedRow();
           if (row < 0 || row >= model.getRowCount() - 1) return;
           Object value = model.getValueAt(row, 0);
           model.removeRow(row);
           model.insertRow(row + 1, new Object[] {value});
-          table.getSelectionModel().setSelectionInterval(row + 1, row + 1);
+          SettingsTableSupport.selectModelRow(table, row + 1);
         });
 
     JPanel actions = new JPanel(new MigLayout("insets 0, wrap 1", "[grow,fill]", "[]4[]4[]4[]"));
@@ -435,7 +429,7 @@ public class EmbedLoadPolicyDialog {
         readPatternRows(controls.channelBlacklist().model()),
         controls.requireVoiceOrOp().isSelected(),
         controls.requireLoggedIn().isSelected(),
-        ((Number) controls.minAccountAgeDays().getValue()).intValue(),
+        PreferencesUiSupport.spinnerInt(controls.minAccountAgeDays()),
         readPatternRows(controls.linkWhitelist().model()),
         readPatternRows(controls.linkBlacklist().model()),
         readPatternRows(controls.domainWhitelist().model()),
@@ -530,7 +524,7 @@ public class EmbedLoadPolicyDialog {
     List<Integer> invalidRows = new ArrayList<>();
     String message = "";
     for (int row = 0; row < model.getRowCount(); row++) {
-      String value = Objects.toString(model.getValueAt(row, 0), "").trim();
+      String value = SettingsValueSupport.trimmedString(model.getValueAt(row, 0));
       if (value.isEmpty()) continue;
       Optional<String> error = EmbedLoadPolicyMatcher.validatePatternSyntax(value);
       if (error.isEmpty()) continue;
@@ -546,44 +540,38 @@ public class EmbedLoadPolicyDialog {
   }
 
   private static Color resolveValidationErrorBackground() {
-    Color c = UIManager.getColor("Component.error.background");
+    Color c = UIManager.getColor(UiColorKeys.COMPONENT_ERROR_BACKGROUND);
     if (c != null) return c;
-    c = UIManager.getColor("TextField.error.background");
+    c = UIManager.getColor(UiColorKeys.TEXT_FIELD_ERROR_BACKGROUND);
     if (c != null) return c;
     return new Color(255, 236, 236);
   }
 
   private static Color resolveValidationErrorForeground() {
-    Color c = UIManager.getColor("Component.error.foreground");
+    Color c = UIManager.getColor(UiColorKeys.COMPONENT_ERROR_FOREGROUND);
     if (c != null) return c;
-    c = UIManager.getColor("Component.error.focusedBorderColor");
+    c = UIManager.getColor(UiColorKeys.COMPONENT_ERROR_FOCUSED_BORDER_COLOR);
     if (c != null) return c;
     return new Color(150, 25, 25);
   }
 
   private static void stopTableEditing(PolicyControls controls) {
-    stopEditing(controls.userWhitelist().table());
-    stopEditing(controls.userBlacklist().table());
-    stopEditing(controls.channelWhitelist().table());
-    stopEditing(controls.channelBlacklist().table());
-    stopEditing(controls.linkWhitelist().table());
-    stopEditing(controls.linkBlacklist().table());
-    stopEditing(controls.domainWhitelist().table());
-    stopEditing(controls.domainBlacklist().table());
-  }
-
-  private static void stopEditing(JTable table) {
-    if (table == null) return;
-    if (table.isEditing() && table.getCellEditor() != null) {
-      table.getCellEditor().stopCellEditing();
-    }
+    SettingsTableSupport.stopEditing(
+        controls.userWhitelist().table(),
+        controls.userBlacklist().table(),
+        controls.channelWhitelist().table(),
+        controls.channelBlacklist().table(),
+        controls.linkWhitelist().table(),
+        controls.linkBlacklist().table(),
+        controls.domainWhitelist().table(),
+        controls.domainBlacklist().table());
   }
 
   private static List<String> readPatternRows(DefaultTableModel model) {
     if (model == null || model.getRowCount() == 0) return List.of();
     LinkedHashMap<String, String> seen = new LinkedHashMap<>();
     for (int row = 0; row < model.getRowCount(); row++) {
-      String v = Objects.toString(model.getValueAt(row, 0), "").trim();
+      String v = SettingsValueSupport.trimmedString(model.getValueAt(row, 0));
       if (v.isEmpty()) continue;
       seen.putIfAbsent(v, v);
     }
@@ -596,7 +584,7 @@ public class EmbedLoadPolicyDialog {
     if (rows == null || rows.isEmpty()) return;
     LinkedHashMap<String, String> seen = new LinkedHashMap<>();
     for (String row : rows) {
-      String v = Objects.toString(row, "").trim();
+      String v = SettingsValueSupport.trimmedString(row);
       if (v.isEmpty()) continue;
       seen.putIfAbsent(v, v);
     }

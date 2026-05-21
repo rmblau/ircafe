@@ -2,6 +2,7 @@ package cafe.woden.ircclient.app.commands;
 
 import cafe.woden.ircclient.model.FilterAction;
 import cafe.woden.ircclient.model.FilterDirection;
+import cafe.woden.ircclient.model.FilterPlaceholderRanges;
 import cafe.woden.ircclient.model.LogKind;
 import cafe.woden.ircclient.model.RegexSpec;
 import java.util.EnumSet;
@@ -189,8 +190,7 @@ public sealed interface FilterCommand
   /** Set the global maximum number of preview lines stored per placeholder (0..25). */
   record PlaceholderPreview(int maxLines) implements FilterCommand {
     public PlaceholderPreview {
-      if (maxLines < 0) maxLines = 0;
-      if (maxLines > 25) maxLines = 25;
+      maxLines = FilterPlaceholderRanges.normalizeMaxPreviewLines(maxLines);
     }
   }
 
@@ -221,37 +221,33 @@ public sealed interface FilterCommand
       if (!previewSpecified) {
         placeholderMaxPreviewLines = null;
       } else {
-        int v = (placeholderMaxPreviewLines == null) ? 0 : placeholderMaxPreviewLines;
-        if (v < 0) v = 0;
-        if (v > 25) v = 25;
-        placeholderMaxPreviewLines = v;
+        placeholderMaxPreviewLines =
+            FilterPlaceholderRanges.normalizeMaxPreviewLines(
+                placeholderMaxPreviewLines == null ? 0 : placeholderMaxPreviewLines);
       }
 
       if (!maxRunSpecified) {
         placeholderMaxLinesPerRun = null;
       } else {
-        int v = (placeholderMaxLinesPerRun == null) ? 0 : placeholderMaxLinesPerRun;
-        if (v < 0) v = 0;
-        if (v > 50_000) v = 50_000;
-        placeholderMaxLinesPerRun = v;
+        placeholderMaxLinesPerRun =
+            FilterPlaceholderRanges.normalizeMaxLinesPerRun(
+                placeholderMaxLinesPerRun == null ? 0 : placeholderMaxLinesPerRun);
       }
 
       if (!tooltipTagsSpecified) {
         placeholderTooltipMaxTags = null;
       } else {
-        int v = (placeholderTooltipMaxTags == null) ? 0 : placeholderTooltipMaxTags;
-        if (v < 0) v = 0;
-        if (v > 500) v = 500;
-        placeholderTooltipMaxTags = v;
+        placeholderTooltipMaxTags =
+            FilterPlaceholderRanges.normalizeTooltipMaxTags(
+                placeholderTooltipMaxTags == null ? 0 : placeholderTooltipMaxTags);
       }
 
       if (!maxBatchSpecified) {
         historyPlaceholderMaxRunsPerBatch = null;
       } else {
-        int v = (historyPlaceholderMaxRunsPerBatch == null) ? 0 : historyPlaceholderMaxRunsPerBatch;
-        if (v < 0) v = 0;
-        if (v > 5_000) v = 5_000;
-        historyPlaceholderMaxRunsPerBatch = v;
+        historyPlaceholderMaxRunsPerBatch =
+            FilterPlaceholderRanges.normalizeHistoryMaxRunsPerBatch(
+                historyPlaceholderMaxRunsPerBatch == null ? 0 : historyPlaceholderMaxRunsPerBatch);
       }
 
       if (!historySpecified) {

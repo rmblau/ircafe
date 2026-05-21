@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.ui.settings.UiSettings;
+import cafe.woden.ircclient.ui.settings.UiSettingsTestFixtures;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -297,32 +298,10 @@ class MessageInputTypingSupportTest {
   }
 
   private static UiSettings defaultSettings() {
-    return new UiSettings(
-        "darcula",
-        "Monospaced",
-        12,
-        true,
-        false,
-        false,
-        0,
-        0,
-        true,
-        false,
-        false,
-        true,
-        true,
-        true,
-        "HH:mm:ss",
-        true,
-        100,
-        200,
-        true,
-        "#6AA2FF",
-        true,
-        7,
-        6,
-        30,
-        5);
+    return UiSettingsTestFixtures.legacyBuilder()
+        .imageEmbedsEnabled(false)
+        .linkPreviewsEnabled(false)
+        .build();
   }
 
   private static void onEdt(Runnable r) throws InvocationTargetException, InterruptedException {

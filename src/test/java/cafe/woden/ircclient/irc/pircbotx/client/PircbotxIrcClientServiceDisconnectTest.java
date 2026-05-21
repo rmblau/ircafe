@@ -11,7 +11,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import cafe.woden.ircclient.bouncer.BouncerBackendRegistry;
 import cafe.woden.ircclient.bouncer.BouncerDiscoveryEventPort;
 import cafe.woden.ircclient.bouncer.GenericBouncerNetworkMappingStrategy;
-import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.config.SojuProperties;
@@ -30,7 +30,6 @@ import cafe.woden.ircclient.irc.znc.ZncBouncerNetworkMappingStrategy;
 import cafe.woden.ircclient.state.ServerIsupportState;
 import cafe.woden.ircclient.util.RxVirtualSchedulers;
 import io.reactivex.rxjava3.subscribers.TestSubscriber;
-import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -71,7 +70,7 @@ class PircbotxIrcClientServiceDisconnectTest {
 
     PircbotxIrcClientService service =
         new PircbotxIrcClientService(
-            new IrcProperties(null, List.of()),
+            IrcPropertiesTestFixtures.properties(),
             serverCatalog,
             inputParserHookInstaller,
             botFactory,
@@ -129,7 +128,7 @@ class PircbotxIrcClientServiceDisconnectTest {
 
     PircbotxIrcClientService service =
         new PircbotxIrcClientService(
-            new IrcProperties(null, List.of()),
+            IrcPropertiesTestFixtures.properties(),
             serverCatalog,
             inputParserHookInstaller,
             botFactory,

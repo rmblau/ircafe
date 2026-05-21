@@ -19,8 +19,10 @@ import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.config.EphemeralServerRegistry;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.LogProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.config.ServerRegistry;
 import cafe.woden.ircclient.ignore.api.IgnoreListQueryPort;
@@ -40,8 +42,8 @@ import cafe.woden.ircclient.ui.bus.ActiveInputRouter;
 import cafe.woden.ircclient.ui.bus.OutboundLineBus;
 import cafe.woden.ircclient.ui.bus.TargetActivationBus;
 import cafe.woden.ircclient.ui.chat.ChatDockManager;
-import cafe.woden.ircclient.ui.chat.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.chat.MentionPatternRegistry;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.controls.ConnectButton;
 import cafe.woden.ircclient.ui.controls.DisconnectButton;
 import cafe.woden.ircclient.ui.servertree.ServerTreeDockable;
@@ -235,9 +237,9 @@ class DetachedChannelLifecycleFunctionalTest {
   }
 
   private Fixture createFixture(List<String> startupJoinedChannels) throws Exception {
-    IrcProperties props = new IrcProperties(null, List.of(server("libera")));
+    IrcProperties props = IrcPropertiesTestFixtures.properties(server("libera"));
     RuntimeConfigStore runtimeConfig =
-        new RuntimeConfigStore(tempDir.resolve("ircafe.yml").toString(), props);
+        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"), props);
     for (String channel : startupJoinedChannels) {
       runtimeConfig.rememberJoinedChannel("libera", channel);
     }
@@ -360,19 +362,7 @@ class DetachedChannelLifecycleFunctionalTest {
   }
 
   private static IrcProperties.Server server(String id) {
-    return new IrcProperties.Server(
-        id,
-        "irc.example.net",
-        6697,
-        true,
-        "",
-        "ircafe",
-        "ircafe",
-        "IRCafe User",
-        null,
-        List.of(),
-        List.of(),
-        null);
+    return IrcPropertiesTestFixtures.server(id);
   }
 
   private static JMenuItem findMenuItem(JPopupMenu menu, String text) {

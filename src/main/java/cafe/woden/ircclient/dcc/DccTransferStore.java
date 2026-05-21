@@ -1,8 +1,14 @@
 package cafe.woden.ircclient.dcc;
 
+import cafe.woden.ircclient.dcc.api.DccActionHint;
+import cafe.woden.ircclient.dcc.api.DccTransferChange;
+import cafe.woden.ircclient.dcc.api.DccTransferCommandPort;
+import cafe.woden.ircclient.dcc.api.DccTransferEntry;
+import cafe.woden.ircclient.dcc.api.DccTransferQueryPort;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.processors.FlowableProcessor;
 import io.reactivex.rxjava3.processors.PublishProcessor;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -15,64 +21,52 @@ import org.springframework.stereotype.Component;
 /** In-memory store of per-server DCC transfer/chat state for UI rendering. */
 @Component
 @ApplicationLayer
-public class DccTransferStore {
-
-  public enum ActionHint {
-    NONE,
-    ACCEPT_CHAT,
-    GET_FILE,
-    CLOSE_CHAT
-  }
-
-  public record Entry(
-      String entryId,
-      String serverId,
-      String nick,
-      String kind,
-      String status,
-      String detail,
-      String localPath,
-      Integer progressPercent,
-      ActionHint actionHint,
-      Instant updatedAt) {}
-
-  public record Change(String serverId) {}
+public class DccTransferStore implements DccTransferQueryPort, DccTransferCommandPort {
 
   public static final int DEFAULT_MAX_ENTRIES_PER_SERVER = 400;
 
   private final int maxEntriesPerServer;
-  private final ConcurrentHashMap<String, ConcurrentHashMap<String, Entry>> entriesByServer =
-      new ConcurrentHashMap<>();
-  private final FlowableProcessor<Change> changes =
-      PublishProcessor.<Change>create().toSerialized();
+  private final Clock clock;
+  private final ConcurrentHashMap<String, ConcurrentHashMap<String, DccTransferEntry>>
+      entriesByServer = new ConcurrentHashMap<>();
+  private final FlowableProcessor<DccTransferChange> changes =
+      PublishProcessor.<DccTransferChange>create().toSerialized();
 
   public DccTransferStore() {
     this(DEFAULT_MAX_ENTRIES_PER_SERVER);
   }
 
   public DccTransferStore(int maxEntriesPerServer) {
-    this.maxEntriesPerServer = Math.max(50, maxEntriesPerServer);
+    this(maxEntriesPerServer, Clock.systemUTC());
   }
 
-  public Flowable<Change> changes() {
+  DccTransferStore(int maxEntriesPerServer, Clock clock) {
+    this.maxEntriesPerServer = Math.max(50, maxEntriesPerServer);
+    this.clock = Objects.requireNonNull(clock, "clock");
+  }
+
+  @Override
+  public Flowable<DccTransferChange> changes() {
     return changes.onBackpressureBuffer();
   }
 
-  public List<Entry> listAll(String serverId) {
+  @Override
+  public List<DccTransferEntry> listAll(String serverId) {
     String sid = normalizeServerId(serverId);
     if (sid.isEmpty()) return List.of();
-    ConcurrentHashMap<String, Entry> map = entriesByServer.get(sid);
+    ConcurrentHashMap<String, DccTransferEntry> map = entriesByServer.get(sid);
     if (map == null || map.isEmpty()) return List.of();
 
-    ArrayList<Entry> out = new ArrayList<>(map.values());
+    ArrayList<DccTransferEntry> out = new ArrayList<>(map.values());
     out.sort(
         Comparator.comparing(
-                DccTransferStore.Entry::updatedAt, Comparator.nullsLast(Comparator.reverseOrder()))
+                DccTransferEntry::updatedAt, Comparator.nullsLast(Comparator.reverseOrder()))
             .thenComparing(e -> Objects.toString(e.kind(), ""))
             .thenComparing(e -> Objects.toString(e.nick(), ""), String.CASE_INSENSITIVE_ORDER));
     return List.copyOf(out);
   }
 
+  @Override
   public void upsert(
       String serverId,
       String entryId,
@@ -81,10 +75,11 @@ public class DccTransferStore {
       String status,
       String detail,
       Integer progressPercent,
-      ActionHint actionHint) {
+      DccActionHint actionHint) {
     upsert(serverId, entryId, nick, kind, status, detail, "", progressPercent, actionHint);
   }
 
+  @Override
   public void upsert(
       String serverId,
       String entryId,
@@ -94,7 +89,7 @@ public class DccTransferStore {
       String detail,
       String localPath,
       Integer progressPercent,
-      ActionHint actionHint) {
+      DccActionHint actionHint) {
     String sid = normalizeServerId(serverId);
     String id = normalizeEntryId(entryId);
     if (sid.isEmpty() || id.isEmpty()) return;
@@ -105,42 +100,45 @@ public class DccTransferStore {
     String d = normalizeText(detail);
     String path = normalizePath(localPath);
     Integer pct = normalizeProgress(progressPercent);
-    ActionHint hint = (actionHint == null) ? ActionHint.NONE : actionHint;
+    DccActionHint hint = (actionHint == null) ? DccActionHint.NONE : actionHint;
 
-    Entry next = new Entry(id, sid, n, k, st, d, path, pct, hint, Instant.now());
-    ConcurrentHashMap<String, Entry> map =
+    DccTransferEntry next =
+        new DccTransferEntry(id, sid, n, k, st, d, path, pct, hint, Instant.now(clock));
+    ConcurrentHashMap<String, DccTransferEntry> map =
         entriesByServer.computeIfAbsent(sid, __ -> new ConcurrentHashMap<>());
     map.put(id, next);
     trimIfNeeded(map);
-    changes.onNext(new Change(sid));
+    changes.onNext(new DccTransferChange(sid));
   }
 
+  @Override
   public void remove(String serverId, String entryId) {
     String sid = normalizeServerId(serverId);
     String id = normalizeEntryId(entryId);
     if (sid.isEmpty() || id.isEmpty()) return;
 
-    ConcurrentHashMap<String, Entry> map = entriesByServer.get(sid);
+    ConcurrentHashMap<String, DccTransferEntry> map = entriesByServer.get(sid);
     if (map == null) return;
     if (map.remove(id) != null) {
-      changes.onNext(new Change(sid));
+      changes.onNext(new DccTransferChange(sid));
     }
   }
 
+  @Override
   public void clearServer(String serverId) {
     String sid = normalizeServerId(serverId);
     if (sid.isEmpty()) return;
-    ConcurrentHashMap<String, Entry> removed = entriesByServer.remove(sid);
+    ConcurrentHashMap<String, DccTransferEntry> removed = entriesByServer.remove(sid);
     if (removed != null && !removed.isEmpty()) {
-      changes.onNext(new Change(sid));
+      changes.onNext(new DccTransferChange(sid));
     }
   }
 
-  private void trimIfNeeded(ConcurrentHashMap<String, Entry> map) {
+  private void trimIfNeeded(ConcurrentHashMap<String, DccTransferEntry> map) {
     if (map == null) return;
     while (map.size() > maxEntriesPerServer) {
-      Entry oldest = null;
-      for (Entry entry : map.values()) {
+      DccTransferEntry oldest = null;
+      for (DccTransferEntry entry : map.values()) {
         if (entry == null) continue;
         if (oldest == null) {
           oldest = entry;

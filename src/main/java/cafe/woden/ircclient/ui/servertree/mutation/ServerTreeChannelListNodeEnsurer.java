@@ -5,9 +5,11 @@ import cafe.woden.ircclient.ui.servertree.model.ServerNodes;
 import cafe.woden.ircclient.ui.servertree.model.ServerTreeNodeData;
 import cafe.woden.ircclient.ui.servertree.policy.ServerTreeServerLeafInsertPolicy;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Ensures each server root has a channel-list leaf with stable insert positioning. */
+@InterfaceLayer
 @Component
 public final class ServerTreeChannelListNodeEnsurer {
 

@@ -7,9 +7,11 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Resolves server-scoped tree nodes and first-server selection candidates. */
+@InterfaceLayer
 @Component
 public final class ServerTreeServerNodeResolver {
   public interface Context {

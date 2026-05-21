@@ -14,7 +14,7 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.backend.BackendUiContext;
 import cafe.woden.ircclient.ui.backend.BackendUiProfile;
-import cafe.woden.ircclient.ui.chat.ChatTranscriptStore;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.input.MessageInputPanel;
 import java.util.HashMap;
 import java.util.Map;

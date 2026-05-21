@@ -17,6 +17,7 @@ import cafe.woden.ircclient.ui.servertree.model.ServerTreeNodeData;
 import cafe.woden.ircclient.ui.servertree.view.ServerTreeCellRenderer;
 import cafe.woden.ircclient.ui.servertree.view.ServerTreeDetachedWarningClickHandler;
 import cafe.woden.ircclient.ui.servertree.view.ServerTreeTypingIndicatorStyle;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import io.reactivex.rxjava3.disposables.Disposable;
 import java.awt.Color;
 import java.awt.Component;
@@ -348,8 +349,9 @@ class ServerTreeDockableDetachedChannelTest {
   void detachedChannelRendererUsesItalicAndMutedForeground() throws Exception {
     onEdt(
         () -> {
-          Color prevLabelDisabled = UIManager.getColor("Label.disabledForeground");
-          Color prevComponentDisabled = UIManager.getColor("Component.disabledForeground");
+          Color prevLabelDisabled = UIManager.getColor(UiColorKeys.LABEL_DISABLED_FOREGROUND);
+          Color prevComponentDisabled =
+              UIManager.getColor(UiColorKeys.COMPONENT_DISABLED_FOREGROUND);
           try {
             ServerTreeDockable dockable = newDockable();
             invokeAddServerRoot(dockable, "libera");
@@ -358,8 +360,8 @@ class ServerTreeDockableDetachedChannelTest {
             dockable.ensureNode(chan);
             dockable.setChannelDisconnected(chan, true);
 
-            UIManager.put("Label.disabledForeground", new Color(12, 34, 56));
-            UIManager.put("Component.disabledForeground", new Color(65, 76, 87));
+            UIManager.put(UiColorKeys.LABEL_DISABLED_FOREGROUND, new Color(12, 34, 56));
+            UIManager.put(UiColorKeys.COMPONENT_DISABLED_FOREGROUND, new Color(65, 76, 87));
 
             JTree tree = getTree(dockable);
             DefaultMutableTreeNode node = findLeafNode(dockable, chan);
@@ -374,8 +376,8 @@ class ServerTreeDockableDetachedChannelTest {
           } catch (Exception e) {
             throw new RuntimeException(e);
           } finally {
-            UIManager.put("Label.disabledForeground", prevLabelDisabled);
-            UIManager.put("Component.disabledForeground", prevComponentDisabled);
+            UIManager.put(UiColorKeys.LABEL_DISABLED_FOREGROUND, prevLabelDisabled);
+            UIManager.put(UiColorKeys.COMPONENT_DISABLED_FOREGROUND, prevComponentDisabled);
           }
         });
   }

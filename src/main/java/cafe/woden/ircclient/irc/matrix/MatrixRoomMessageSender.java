@@ -11,7 +11,6 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -25,18 +24,11 @@ import org.springframework.stereotype.Component;
 final class MatrixRoomMessageSender {
 
   private static final Map<String, String> REQUEST_HEADERS =
-      Map.of(
-          "User-Agent", "ircafe-matrix-send/1.0",
-          "Accept", "application/json",
-          "Accept-Encoding", "gzip",
-          "Content-Type", "application/json");
+      MatrixHttpHeaders.jsonWithContentType("ircafe-matrix-send/1.0");
 
   private static final ObjectMapper JSON = new ObjectMapper();
   private static final String CTCP_ACTION_PREFIX = "\u0001ACTION ";
   private static final String CTCP_SUFFIX = "\u0001";
-  private static final Set<String> MEDIA_MSGTYPES =
-      Set.of("m.image", "m.file", "m.video", "m.audio");
-
   @NonNull private final ServerProxyResolver proxyResolver;
 
   SendResult sendRoomMessage(
@@ -56,15 +48,19 @@ final class MatrixRoomMessageSender {
       String roomId,
       String transactionId,
       String message) {
-    MessageContent content = messageContent(message, "m.notice");
+    MessageContent content = messageContent(message, MatrixProtocol.MSGTYPE_NOTICE);
     return sendRoomEvent(
         serverId,
         server,
         accessToken,
         roomId,
         transactionId,
-        "m.room.message",
-        Map.of("msgtype", content.msgtype(), "body", content.body()),
+        MatrixProtocol.EVENT_ROOM_MESSAGE,
+        Map.of(
+            MatrixProtocol.JSON_MSGTYPE,
+            content.msgtype(),
+            MatrixProtocol.JSON_BODY,
+            content.body()),
         "room send");
   }
 
@@ -79,7 +75,7 @@ final class MatrixRoomMessageSender {
       String mediaUrl) {
     URI endpoint = MatrixEndpointResolver.roomSendMessageUri(server, roomId, transactionId);
     String type = normalize(msgType);
-    if (!MEDIA_MSGTYPES.contains(type)) {
+    if (!MatrixProtocol.MEDIA_MSGTYPES.contains(type)) {
       return SendResult.failed(endpoint, "unsupported media msgtype");
     }
     String url = normalize(mediaUrl);
@@ -94,8 +90,14 @@ final class MatrixRoomMessageSender {
         accessToken,
         roomId,
         transactionId,
-        "m.room.message",
-        Map.of("msgtype", type, "body", body, "url", url),
+        MatrixProtocol.EVENT_ROOM_MESSAGE,
+        Map.of(
+            MatrixProtocol.JSON_MSGTYPE,
+            type,
+            MatrixProtocol.JSON_BODY,
+            body,
+            MatrixProtocol.JSON_URL,
+            url),
         "room media send");
   }
 
@@ -115,11 +117,20 @@ final class MatrixRoomMessageSender {
     MessageContent content = messageContent(message, "");
     Map<String, Object> payload =
         Map.of(
-            "msgtype", content.msgtype(),
-            "body", content.body(),
-            "m.relates_to", Map.of("m.in_reply_to", Map.of("event_id", replyTo)));
+            MatrixProtocol.JSON_MSGTYPE, content.msgtype(),
+            MatrixProtocol.JSON_BODY, content.body(),
+            MatrixProtocol.JSON_RELATES_TO,
+                Map.of(
+                    MatrixProtocol.JSON_REPLY_TO, Map.of(MatrixProtocol.JSON_EVENT_ID, replyTo)));
     return sendRoomEvent(
-        serverId, server, accessToken, roomId, transactionId, "m.room.message", payload, "reply");
+        serverId,
+        server,
+        accessToken,
+        roomId,
+        transactionId,
+        MatrixProtocol.EVENT_ROOM_MESSAGE,
+        payload,
+        "reply");
   }
 
   SendResult sendRoomEdit(
@@ -141,16 +152,31 @@ final class MatrixRoomMessageSender {
     }
     Map<String, Object> payload =
         Map.of(
-            "msgtype",
-            "m.text",
-            "body",
+            MatrixProtocol.JSON_MSGTYPE,
+            MatrixProtocol.MSGTYPE_TEXT,
+            MatrixProtocol.JSON_BODY,
             body,
-            "m.new_content",
-            Map.of("msgtype", "m.text", "body", body),
-            "m.relates_to",
-            Map.of("rel_type", "m.replace", "event_id", target));
+            MatrixProtocol.JSON_NEW_CONTENT,
+            Map.of(
+                MatrixProtocol.JSON_MSGTYPE,
+                MatrixProtocol.MSGTYPE_TEXT,
+                MatrixProtocol.JSON_BODY,
+                body),
+            MatrixProtocol.JSON_RELATES_TO,
+            Map.of(
+                MatrixProtocol.JSON_RELATION_TYPE,
+                MatrixProtocol.RELATION_REPLACE,
+                MatrixProtocol.JSON_EVENT_ID,
+                target));
     return sendRoomEvent(
-        serverId, server, accessToken, roomId, transactionId, "m.room.message", payload, "edit");
+        serverId,
+        server,
+        accessToken,
+        roomId,
+        transactionId,
+        MatrixProtocol.EVENT_ROOM_MESSAGE,
+        payload,
+        "edit");
   }
 
   SendResult sendRoomReaction(
@@ -164,7 +190,8 @@ final class MatrixRoomMessageSender {
     String target = normalize(targetEventId);
     String key = normalize(reaction);
     URI endpoint =
-        MatrixEndpointResolver.roomSendEventUri(server, roomId, "m.reaction", transactionId);
+        MatrixEndpointResolver.roomSendEventUri(
+            server, roomId, MatrixProtocol.EVENT_REACTION, transactionId);
     if (target.isEmpty()) {
       return SendResult.failed(endpoint, "target event id is blank");
     }
@@ -172,9 +199,24 @@ final class MatrixRoomMessageSender {
       return SendResult.failed(endpoint, "reaction is blank");
     }
     Map<String, Object> payload =
-        Map.of("m.relates_to", Map.of("rel_type", "m.annotation", "event_id", target, "key", key));
+        Map.of(
+            MatrixProtocol.JSON_RELATES_TO,
+            Map.of(
+                MatrixProtocol.JSON_RELATION_TYPE,
+                MatrixProtocol.RELATION_ANNOTATION,
+                MatrixProtocol.JSON_EVENT_ID,
+                target,
+                MatrixProtocol.JSON_KEY,
+                key));
     return sendRoomEvent(
-        serverId, server, accessToken, roomId, transactionId, "m.reaction", payload, "reaction");
+        serverId,
+        server,
+        accessToken,
+        roomId,
+        transactionId,
+        MatrixProtocol.EVENT_REACTION,
+        payload,
+        "reaction");
   }
 
   SendResult sendRoomRedaction(
@@ -189,7 +231,7 @@ final class MatrixRoomMessageSender {
         MatrixEndpointResolver.roomRedactEventUri(server, roomId, redactsEventId, transactionId);
     String token = normalize(accessToken);
     if (token.isEmpty()) {
-      return SendResult.failed(endpoint, "access token is blank");
+      return SendResult.failed(endpoint, MatrixProtocol.ACCESS_TOKEN_BLANK);
     }
     String redactEventId = normalize(redactsEventId);
     if (redactEventId.isEmpty()) {
@@ -199,10 +241,9 @@ final class MatrixRoomMessageSender {
     Map<String, Object> payload = new HashMap<>();
     String why = normalize(reason);
     if (!why.isEmpty()) {
-      payload.put("reason", why);
+      payload.put(MatrixProtocol.JSON_REASON, why);
     }
-    Map<String, String> headers = new HashMap<>(REQUEST_HEADERS);
-    headers.put("Authorization", "Bearer " + token);
+    Map<String, String> headers = MatrixHttpHeaders.withBearerToken(REQUEST_HEADERS, token);
     ProxyPlan plan = proxyResolver.planForServer(serverId);
     try {
       String payloadJson = JSON.writeValueAsString(payload);
@@ -245,8 +286,12 @@ final class MatrixRoomMessageSender {
         accessToken,
         roomId,
         transactionId,
-        "m.room.message",
-        Map.of("msgtype", content.msgtype(), "body", content.body()),
+        MatrixProtocol.EVENT_ROOM_MESSAGE,
+        Map.of(
+            MatrixProtocol.JSON_MSGTYPE,
+            content.msgtype(),
+            MatrixProtocol.JSON_BODY,
+            content.body()),
         "room send");
   }
 
@@ -263,19 +308,18 @@ final class MatrixRoomMessageSender {
         MatrixEndpointResolver.roomSendEventUri(server, roomId, eventType, transactionId);
     String token = normalize(accessToken);
     if (token.isEmpty()) {
-      return SendResult.failed(endpoint, "access token is blank");
+      return SendResult.failed(endpoint, MatrixProtocol.ACCESS_TOKEN_BLANK);
     }
     Map<String, Object> safePayload = payload == null ? Map.of() : payload;
     if (safePayload.isEmpty()) {
       return SendResult.failed(endpoint, "event payload is blank");
     }
-    if ("m.room.message".equals(normalize(eventType))
-        && normalize(Objects.toString(safePayload.get("body"), "")).isEmpty()) {
+    if (MatrixProtocol.EVENT_ROOM_MESSAGE.equals(normalize(eventType))
+        && normalize(Objects.toString(safePayload.get(MatrixProtocol.JSON_BODY), "")).isEmpty()) {
       return SendResult.failed(endpoint, "message is blank");
     }
 
-    Map<String, String> headers = new HashMap<>(REQUEST_HEADERS);
-    headers.put("Authorization", "Bearer " + token);
+    Map<String, String> headers = MatrixHttpHeaders.withBearerToken(REQUEST_HEADERS, token);
     ProxyPlan plan = proxyResolver.planForServer(serverId);
     try {
       String payloadJson = JSON.writeValueAsString(safePayload);
@@ -307,7 +351,7 @@ final class MatrixRoomMessageSender {
     if (json.isEmpty()) return "";
     try {
       JsonNode root = JSON.readTree(json);
-      return normalize(root.path("event_id").asText(""));
+      return normalize(root.path(MatrixProtocol.JSON_EVENT_ID).asText(""));
     } catch (Exception ignored) {
       return "";
     }
@@ -324,10 +368,10 @@ final class MatrixRoomMessageSender {
         && raw.length() > (CTCP_ACTION_PREFIX.length() + CTCP_SUFFIX.length())) {
       String emote = raw.substring(CTCP_ACTION_PREFIX.length(), raw.length() - 1).trim();
       if (!emote.isEmpty()) {
-        return new MessageContent("m.emote", emote);
+        return new MessageContent(MatrixProtocol.MSGTYPE_EMOTE, emote);
       }
     }
-    return new MessageContent("m.text", raw);
+    return new MessageContent(MatrixProtocol.MSGTYPE_TEXT, raw);
   }
 
   private static String normalize(String value) {

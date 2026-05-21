@@ -14,9 +14,8 @@ class RuntimeConfigStoreMonitorNicksTest {
   @Test
   void monitorNickListCanBePersistedUpdatedAndCleared() {
     RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("ircafe.yml").toString(),
-            new IrcProperties(null, List.of(server("libera"))));
+        RuntimeConfigStoreTestFixtures.storeWithServers(
+            tempDir.resolve("ircafe.yml"), server("libera"));
 
     store.rememberMonitorNick("libera", "Alice");
     store.rememberMonitorNick("libera", "alice");
@@ -34,18 +33,6 @@ class RuntimeConfigStoreMonitorNicksTest {
   }
 
   private static IrcProperties.Server server(String id) {
-    return new IrcProperties.Server(
-        id,
-        "irc.example.net",
-        6697,
-        true,
-        "",
-        "ircafe",
-        "ircafe",
-        "IRCafe User",
-        null,
-        List.of(),
-        List.of(),
-        null);
+    return IrcPropertiesTestFixtures.server(id);
   }
 }

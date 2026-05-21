@@ -3,7 +3,7 @@ package cafe.woden.ircclient.ui.settings;
 import java.awt.Dimension;
 import javax.swing.JTabbedPane;
 
-final class DynamicTabbedPane extends JTabbedPane {
+public final class DynamicTabbedPane extends JTabbedPane {
   @Override
   public Dimension getPreferredSize() {
     return computeSelectedSize(true);

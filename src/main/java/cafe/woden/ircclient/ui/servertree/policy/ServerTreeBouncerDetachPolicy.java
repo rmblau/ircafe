@@ -1,5 +1,8 @@
 package cafe.woden.ircclient.ui.servertree.policy;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.SOJU_BOUNCER_NETWORKS;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.ZNC_PLAYBACK;
+
 import cafe.woden.ircclient.app.api.ConnectionState;
 import cafe.woden.ircclient.ui.servertree.ServerTreeConventions;
 import java.util.HashMap;
@@ -8,9 +11,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Encapsulates bouncer-detach eligibility policy for server/channel actions. */
+@InterfaceLayer
 @Component
 public final class ServerTreeBouncerDetachPolicy {
 
@@ -79,8 +84,8 @@ public final class ServerTreeBouncerDetachPolicy {
     if (!ephemeralBackendId.isEmpty() || context.isBouncerControlServer(sid)) {
       return true;
     }
-    return context.hasBouncerCapability(sid, "soju.im/bouncer-networks")
-        || context.hasBouncerCapability(sid, "znc.in/playback");
+    return context.hasBouncerCapability(sid, SOJU_BOUNCER_NETWORKS)
+        || context.hasBouncerCapability(sid, ZNC_PLAYBACK);
   }
 
   private static Map<String, Set<String>> normalizedControlServerIdsByBackendId(

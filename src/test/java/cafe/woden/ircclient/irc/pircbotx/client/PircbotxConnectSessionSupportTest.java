@@ -14,6 +14,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.irc.IrcEvent;
 import cafe.woden.ircclient.irc.ServerIrcEvent;
 import cafe.woden.ircclient.irc.pircbotx.listener.*;
@@ -145,19 +146,12 @@ class PircbotxConnectSessionSupportTest {
   }
 
   private static IrcProperties.Server server(String host, int port, String nick) {
-    return new IrcProperties.Server(
-        "libera",
-        host,
-        port,
-        true,
-        "",
-        nick,
-        "login",
-        "Real Name",
-        null,
-        null,
-        List.of(),
-        List.of(),
-        null);
+    return IrcPropertiesTestFixtures.serverBuilder("libera")
+        .host(host)
+        .port(port)
+        .nick(nick)
+        .login("login")
+        .realName("Real Name")
+        .build();
   }
 }

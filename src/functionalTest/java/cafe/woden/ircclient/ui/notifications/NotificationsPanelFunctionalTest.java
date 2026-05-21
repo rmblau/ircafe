@@ -10,9 +10,9 @@ import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.notifications.NotificationStore;
-import cafe.woden.ircclient.notifications.NotificationStore.HighlightEvent;
-import cafe.woden.ircclient.notifications.NotificationStore.IrcEventRuleEvent;
-import cafe.woden.ircclient.notifications.NotificationStore.RuleMatchEvent;
+import cafe.woden.ircclient.notifications.api.HighlightEvent;
+import cafe.woden.ircclient.notifications.api.IrcEventRuleEvent;
+import cafe.woden.ircclient.notifications.api.RuleMatchEvent;
 import io.reactivex.rxjava3.core.Flowable;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;

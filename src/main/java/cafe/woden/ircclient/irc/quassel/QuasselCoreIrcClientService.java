@@ -1,5 +1,23 @@
 package cafe.woden.ircclient.irc.quassel;
 
+import static cafe.woden.ircclient.irc.backend.IrcBackendValidationMessages.SERVER_ID_BLANK;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.CHANNEL_CONTEXT;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_CHANNEL_CONTEXT;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_MESSAGE_EDIT;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_MESSAGE_REDACTION;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_MULTILINE;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_REACT;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_READ_MARKER;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_REPLY;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_UNREACT;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.LABELED_RESPONSE;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MESSAGE_TAGS;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MULTILINE;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.READ_MARKER;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.REPLY;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.STANDARD_REPLIES;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.TYPING;
+
 import cafe.woden.ircclient.config.BackendDescriptorCatalog;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.ServerCatalog;
@@ -274,7 +292,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               QuasselCoreSetupPrompt prompt = pendingSetupByServer.get(sid);
               if (prompt == null) {
@@ -337,7 +355,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               QuasselSession session = requireEstablishedSession(sid, "quassel connect network");
               int networkId =
@@ -391,7 +409,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               QuasselSession session = requireEstablishedSession(sid, "quassel disconnect network");
               int networkId =
@@ -415,7 +433,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               QuasselSession session = requireEstablishedSession(sid, "quassel create network");
               QuasselCoreNetworkCreateRequest req =
@@ -459,7 +477,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               QuasselSession session = requireEstablishedSession(sid, "quassel update network");
               int networkId =
@@ -477,7 +495,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               QuasselSession session = requireEstablishedSession(sid, "quassel remove network");
               int networkId =
@@ -500,7 +518,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
 
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               cancelReconnectTask(sid, false);
               if (resetReconnectAttempts) {
@@ -705,7 +723,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               String raw = Objects.toString(rawLine, "").trim();
-              if (sid.isEmpty()) throw new IllegalArgumentException("server id is blank");
+              if (sid.isEmpty()) throw new IllegalArgumentException(SERVER_ID_BLANK);
               if (raw.isEmpty()) throw new IllegalArgumentException("raw line is blank");
               if (containsCrlf(raw)) throw new IllegalArgumentException("raw line contains CR/LF");
 
@@ -721,7 +739,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               QuasselSession session = requireEstablishedSession(sid, "send typing");
               if (!isTypingAvailable(sid)) {
@@ -752,7 +770,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               QuasselSession session = requireEstablishedSession(sid, "send read marker");
               if (!isReadMarkerAvailable(sid)) {
@@ -785,7 +803,11 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
                   session,
                   sid,
                   "send read marker",
-                  "MARKREAD " + requested.rawTarget() + " timestamp=" + markerTimestamp);
+                  "MARKREAD "
+                      + requested.rawTarget()
+                      + " "
+                      + Ircv3ChatHistorySelectors.TIMESTAMP_PREFIX
+                      + markerTimestamp);
             })
         .subscribeOn(RxVirtualSchedulers.io());
   }
@@ -911,31 +933,31 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
   @Override
   public boolean isMessageTagsAvailable(String serverId) {
     QuasselSession session = findEstablishedSession(serverId);
-    return capabilityEnabledOrUnknown(session, "message-tags");
+    return capabilityEnabledOrUnknown(session, MESSAGE_TAGS);
   }
 
   @Override
   public boolean isDraftReplyAvailable(String serverId) {
     QuasselSession session = findEstablishedSession(serverId);
-    return capabilityEnabledOrUnknown(session, "message-tags");
+    return capabilityEnabledOrUnknown(session, MESSAGE_TAGS);
   }
 
   @Override
   public boolean isDraftReactAvailable(String serverId) {
     QuasselSession session = findEstablishedSession(serverId);
-    return capabilityEnabledOrUnknown(session, "message-tags");
+    return capabilityEnabledOrUnknown(session, MESSAGE_TAGS);
   }
 
   @Override
   public boolean isDraftUnreactAvailable(String serverId) {
     QuasselSession session = findEstablishedSession(serverId);
-    return capabilityEnabledOrUnknown(session, "message-tags");
+    return capabilityEnabledOrUnknown(session, MESSAGE_TAGS);
   }
 
   @Override
   public boolean isMultilineAvailable(String serverId) {
     QuasselSession session = findEstablishedSession(serverId);
-    return capabilityEnabledOrUnknown(session, "multiline", "draft/multiline");
+    return capabilityEnabledOrUnknown(session, MULTILINE, DRAFT_MULTILINE);
   }
 
   @Override
@@ -962,13 +984,13 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
   @Override
   public boolean isExperimentalMessageEditAvailable(String serverId) {
     QuasselSession session = findEstablishedSession(serverId);
-    return capabilityEnabledOrUnknown(session, "draft/message-edit");
+    return capabilityEnabledOrUnknown(session, DRAFT_MESSAGE_EDIT);
   }
 
   @Override
   public boolean isMessageRedactionAvailable(String serverId) {
     QuasselSession session = findEstablishedSession(serverId);
-    return capabilityEnabledOrUnknown(session, "draft/message-redaction");
+    return capabilityEnabledOrUnknown(session, DRAFT_MESSAGE_REDACTION);
   }
 
   @Override
@@ -990,7 +1012,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
     if (!session.capabilitySnapshotObserved.get()) {
       return "typing support status is not yet available from Quassel backend state";
     }
-    if (!hasCapabilityAny(session, "message-tags")) {
+    if (!hasCapabilityAny(session, MESSAGE_TAGS)) {
       return "message-tags not negotiated in Quassel backend network state";
     }
     return "server may be blocking +typing via CLIENTTAGDENY";
@@ -999,19 +1021,19 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
   @Override
   public boolean isReadMarkerAvailable(String serverId) {
     QuasselSession session = findEstablishedSession(serverId);
-    return capabilityEnabledOrUnknown(session, "read-marker", "draft/read-marker");
+    return capabilityEnabledOrUnknown(session, READ_MARKER, DRAFT_READ_MARKER);
   }
 
   @Override
   public boolean isLabeledResponseAvailable(String serverId) {
     QuasselSession session = findEstablishedSession(serverId);
-    return capabilityEnabledOrUnknown(session, "labeled-response");
+    return capabilityEnabledOrUnknown(session, LABELED_RESPONSE);
   }
 
   @Override
   public boolean isStandardRepliesAvailable(String serverId) {
     QuasselSession session = findEstablishedSession(serverId);
-    return capabilityEnabledOrUnknown(session, "standard-replies");
+    return capabilityEnabledOrUnknown(session, STANDARD_REPLIES);
   }
 
   @Override
@@ -1040,7 +1062,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               QuasselSession session = requireEstablishedSession(sid, "request lag probe");
               Socket socket = session.socketRef.get();
@@ -1101,7 +1123,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
   private boolean typingCapabilityEnabledOrUnknown(QuasselSession session) {
     if (session == null) return false;
     if (!session.capabilitySnapshotObserved.get()) return false;
-    return hasCapabilityAny(session, "message-tags");
+    return hasCapabilityAny(session, MESSAGE_TAGS);
   }
 
   private MonitorSupportState monitorSupportForPreferredNetwork(QuasselSession session) {
@@ -1157,7 +1179,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
       throws BackendNotAvailableException {
     String sid = normalizeServerId(serverId);
     if (sid.isEmpty()) {
-      throw new IllegalArgumentException("server id is blank");
+      throw new IllegalArgumentException(SERVER_ID_BLANK);
     }
     QualifiedTarget tgt = sanitizeHistoryTarget(target);
     int lim = normalizeHistoryLimit(limit);
@@ -1691,6 +1713,9 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
           continue;
         } catch (EOFException eof) {
           log.debug("Quassel read loop EOF: serverId={}", sid);
+          if (session.closeRequested.get() || shuttingDown.get()) {
+            return;
+          }
           availabilityReasonByServer.put(sid, "Quassel Core connection closed");
           emitDisconnectedOnce(session, "Quassel Core connection closed");
           scheduleReconnectIfEligible(session, "Quassel Core connection closed");
@@ -2632,7 +2657,9 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
     if (resolvedEpochMs <= 0L) {
       resolvedEpochMs = fallback.toEpochMilli();
     }
-    String marker = "timestamp=" + MARKREAD_TS_FMT.format(Instant.ofEpochMilli(resolvedEpochMs));
+    String marker =
+        Ircv3ChatHistorySelectors.TIMESTAMP_PREFIX
+            + MARKREAD_TS_FMT.format(Instant.ofEpochMilli(resolvedEpochMs));
     bus.onNext(
         new ServerIrcEvent(
             session.serverId, new IrcEvent.ReadMarkerObserved(fallback, from, target, marker)));
@@ -3484,14 +3511,14 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
         resolveSignalTarget(session, fromDisplay, fallbackTarget, networkId, envelope, tags);
 
     String replyTo =
-        Ircv3Tags.firstTagValue(tags, "reply", "+reply", "draft/reply", "+draft/reply");
+        Ircv3Tags.firstTagValue(tags, REPLY, "+" + REPLY, DRAFT_REPLY, "+" + DRAFT_REPLY);
     if (!replyTo.isBlank()) {
       bus.onNext(
           new ServerIrcEvent(
               session.serverId, new IrcEvent.MessageReplyObserved(at, from, convTarget, replyTo)));
     }
 
-    String react = Ircv3Tags.firstTagValue(tags, "draft/react", "+draft/react");
+    String react = Ircv3Tags.firstTagValue(tags, DRAFT_REACT, "+" + DRAFT_REACT);
     if (!react.isBlank()) {
       String targetMsgId = replyTo;
       if (targetMsgId.isBlank()) {
@@ -3507,7 +3534,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
               new IrcEvent.MessageReactObserved(at, from, convTarget, react, targetMsgId)));
     }
 
-    String unreact = Ircv3Tags.firstTagValue(tags, "draft/unreact", "+draft/unreact");
+    String unreact = Ircv3Tags.firstTagValue(tags, DRAFT_UNREACT, "+" + DRAFT_UNREACT);
     if (!unreact.isBlank()) {
       String targetMsgId = replyTo;
       if (targetMsgId.isBlank()) {
@@ -3533,7 +3560,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
               new IrcEvent.MessageRedactionObserved(at, from, convTarget, redactMsgId)));
     }
 
-    String typing = Ircv3Tags.firstTagValue(tags, "typing", "+typing");
+    String typing = Ircv3Tags.firstTagValue(tags, TYPING, "+" + TYPING);
     if (!typing.isBlank()) {
       bus.onNext(
           new ServerIrcEvent(
@@ -3542,7 +3569,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
 
     String readMarker =
         Ircv3Tags.firstTagValue(
-            tags, "draft/read-marker", "+draft/read-marker", "read-marker", "+read-marker");
+            tags, DRAFT_READ_MARKER, "+" + DRAFT_READ_MARKER, READ_MARKER, "+" + READ_MARKER);
     if (!readMarker.isBlank()) {
       bus.onNext(
           new ServerIrcEvent(
@@ -3893,10 +3920,10 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
     String channelContext =
         Ircv3Tags.firstTagValue(
             tags,
-            "draft/channel-context",
-            "+draft/channel-context",
-            "channel-context",
-            "+channel-context");
+            DRAFT_CHANNEL_CONTEXT,
+            "+" + DRAFT_CHANNEL_CONTEXT,
+            CHANNEL_CONTEXT,
+            "+" + CHANNEL_CONTEXT);
     String targetHint = stripLeadingColon(channelContext);
     if (targetHint.isBlank()) {
       targetHint = stripLeadingColon(envelope.firstParam());
@@ -6667,7 +6694,7 @@ public class QuasselCoreIrcClientService implements IrcBackendClientService {
     return Completable.fromAction(
             () -> {
               String sid = normalizeServerId(serverId);
-              if (sid.isEmpty()) throw new IllegalArgumentException("server id is blank");
+              if (sid.isEmpty()) throw new IllegalArgumentException(SERVER_ID_BLANK);
 
               QuasselSession session = requireEstablishedSession(sid, operation);
               if (firstKnownNetworkId(session) < 0) {

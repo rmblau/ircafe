@@ -13,9 +13,11 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Applies per-server built-in leaf/group visibility and reapplies persisted layout/order. */
+@InterfaceLayer
 @Component
 public final class ServerTreeServerLeafVisibilityCoordinator {
 

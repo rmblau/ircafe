@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.chat;
 
 import cafe.woden.ircclient.config.UiProperties;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -90,11 +91,11 @@ public class NickColorService {
     if (n.isEmpty()) return;
 
     Color bg = StyleConstants.getBackground(attrs);
-    if (bg == null) bg = UIManager.getColor("TextPane.background");
+    if (bg == null) bg = UIManager.getColor(UiColorKeys.TEXT_PANE_BACKGROUND);
     if (bg == null) bg = Color.WHITE;
 
     Color fgFallback = StyleConstants.getForeground(attrs);
-    if (fgFallback == null) fgFallback = UIManager.getColor("TextPane.foreground");
+    if (fgFallback == null) fgFallback = UIManager.getColor(UiColorKeys.TEXT_PANE_FOREGROUND);
 
     Color chosen = adjustedForContrast(baseColor(n), bg, minContrast, fgFallback);
     if (chosen != null) {
@@ -111,7 +112,7 @@ public class NickColorService {
     if (lower.isEmpty()) return fallbackForeground;
 
     Color bg = background;
-    if (bg == null) bg = UIManager.getColor("TextPane.background");
+    if (bg == null) bg = UIManager.getColor(UiColorKeys.TEXT_PANE_BACKGROUND);
     if (bg == null) bg = Color.WHITE;
 
     return adjustedForContrast(baseColor(lower), bg, minContrast, fallbackForeground);
@@ -133,7 +134,7 @@ public class NickColorService {
     if (lower.isEmpty()) return fallbackForeground;
 
     Color bg = background;
-    if (bg == null) bg = UIManager.getColor("TextPane.background");
+    if (bg == null) bg = UIManager.getColor(UiColorKeys.TEXT_PANE_BACKGROUND);
     if (bg == null) bg = Color.WHITE;
 
     double mc = (minContrast > 0) ? minContrast : 3.0;
@@ -143,7 +144,7 @@ public class NickColorService {
   private Color baseColor(String nickLower) {
     Color o = overrides.get(nickLower);
     if (o != null) return o;
-    if (palette.isEmpty()) return UIManager.getColor("TextPane.foreground");
+    if (palette.isEmpty()) return UIManager.getColor(UiColorKeys.TEXT_PANE_FOREGROUND);
     int idx = Math.floorMod(nickLower.hashCode(), palette.size());
     return palette.get(idx);
   }

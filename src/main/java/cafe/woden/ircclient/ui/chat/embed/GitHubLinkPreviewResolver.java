@@ -17,7 +17,7 @@ final class GitHubLinkPreviewResolver implements LinkPreviewResolver {
           http.getString(
               api,
               "application/vnd.github+json",
-              PreviewHttp.headers("X-GitHub-Api-Version", "2022-11-28"));
+              PreviewHttp.headers(PreviewHttp.HEADER_X_GITHUB_API_VERSION, "2022-11-28"));
 
       if (resp.statusCode() < 200 || resp.statusCode() >= 300) {
         return null;

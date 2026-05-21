@@ -30,8 +30,7 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
         """);
 
     RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            cfg.toString(), new IrcProperties(null, List.of(server("libera", List.of("#alpha")))));
+        RuntimeConfigStoreTestFixtures.storeWithServers(cfg, server("libera", List.of("#alpha")));
 
     store.forgetJoinedChannel("libera", "#alpha");
 
@@ -40,7 +39,7 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
 
     ServerRegistry registry =
         new ServerRegistry(
-            new IrcProperties(null, List.of(server("libera", List.of("#alpha")))), store);
+            IrcPropertiesTestFixtures.properties(server("libera", List.of("#alpha"))), store);
 
     assertEquals(List.of(), registry.require("libera").autoJoin());
   }
@@ -73,8 +72,7 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
                       autoReattach: false
         """);
 
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     assertEquals(
         ServerTreeChannelSortMode.ALPHABETICAL,
@@ -100,8 +98,7 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
                 - "#alpha"
         """);
 
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberServerTreeChannelAutoReattach("libera", "#alpha", false);
 
@@ -136,8 +133,7 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
                       autoReattach: true
         """);
 
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     assertEquals(
         ServerTreeChannelSortMode.MOST_RECENT_ACTIVITY,
@@ -170,8 +166,7 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
                       autoReattach: true
         """);
 
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     assertEquals(
         ServerTreeChannelSortMode.MOST_UNREAD_MESSAGES,
@@ -200,8 +195,7 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
                       autoReattach: false
         """);
 
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberServerTreeChannel("libera", "#beta");
 
@@ -222,8 +216,7 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
             - id: oftc
         """);
 
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberServerTreeChannel("libera", "#beta");
     store.rememberServerTreeChannel("libera", "#alpha");
@@ -255,8 +248,7 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
             - id: libera
         """);
 
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberServerTreeChannel("libera", "#alpha");
     assertFalse(store.readServerTreeChannelPinned("libera", "#alpha", true));
@@ -269,18 +261,6 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
   }
 
   private static IrcProperties.Server server(String id, List<String> autoJoin) {
-    return new IrcProperties.Server(
-        id,
-        "irc.example.net",
-        6697,
-        true,
-        "",
-        "ircafe",
-        "ircafe",
-        "IRCafe User",
-        null,
-        autoJoin,
-        List.of(),
-        null);
+    return IrcPropertiesTestFixtures.serverBuilder(id).autoJoin(autoJoin).build();
   }
 }

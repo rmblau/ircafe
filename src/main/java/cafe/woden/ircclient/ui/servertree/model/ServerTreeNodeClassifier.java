@@ -3,9 +3,11 @@ package cafe.woden.ircclient.ui.servertree.model;
 import java.util.Objects;
 import java.util.function.Predicate;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Shared node classification helpers used by server-tree collaborators. */
+@InterfaceLayer
 @Component
 public final class ServerTreeNodeClassifier {
 

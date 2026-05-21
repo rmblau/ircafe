@@ -1,8 +1,5 @@
 package cafe.woden.ircclient.ui.settings;
 
-import java.util.Locale;
-import java.util.Objects;
-
 public enum NotificationBackendMode {
   AUTO("auto", "Auto (Recommended)"),
   NATIVE_ONLY("native-only", "Native only"),
@@ -25,7 +22,7 @@ public enum NotificationBackendMode {
   }
 
   public static NotificationBackendMode fromToken(String raw) {
-    String v = Objects.toString(raw, "").trim().toLowerCase(Locale.ROOT);
+    String v = SettingsValueSupport.lowerTrimmedString(raw);
     if (v.isEmpty()) return AUTO;
     return switch (v) {
       case "auto" -> AUTO;

@@ -1,5 +1,14 @@
 package cafe.woden.ircclient.ui.chat;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_REACT;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_REPLY;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_TYPING;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_UNREACT;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MESSAGE_TAGS;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.REACT;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.REPLY;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.TYPING;
+
 import cafe.woden.ircclient.app.api.Ircv3ReadMarkerFeatureSupport;
 import cafe.woden.ircclient.app.commands.SlashCommandPresentationCatalog;
 import cafe.woden.ircclient.irc.port.IrcCurrentNickPort;
@@ -15,10 +24,12 @@ import cafe.woden.ircclient.ui.backend.BackendUiProfileProvider;
 import cafe.woden.ircclient.ui.bus.ActiveInputRouter;
 import cafe.woden.ircclient.ui.bus.OutboundLineBus;
 import cafe.woden.ircclient.ui.bus.TargetActivationBus;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
+import cafe.woden.ircclient.ui.chat.view.PinnedChatDockable;
 import cafe.woden.ircclient.ui.coordinator.MessageActionCapabilityPolicy;
 import cafe.woden.ircclient.ui.servertree.ServerTreeDockable;
-import cafe.woden.ircclient.ui.settings.SpellcheckSettingsBus;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
+import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettingsBus;
 import io.github.andrewauclair.moderndocking.Dockable;
 import io.github.andrewauclair.moderndocking.DockingRegion;
 import io.github.andrewauclair.moderndocking.app.Docking;
@@ -205,15 +216,16 @@ public class ChatDockManager {
       return;
     }
 
-    boolean messageTagsChanged = "message-tags".equals(cap);
-    if ("typing".equals(cap) || "draft/typing".equals(cap) || messageTagsChanged) {
+    boolean messageTagsChanged = MESSAGE_TAGS.equals(cap);
+    if (TYPING.equals(cap) || DRAFT_TYPING.equals(cap) || messageTagsChanged) {
       clearTypingIndicatorsForServer(sid);
     }
     if (!messageTagsChanged
-        && !"reply".equals(cap)
-        && !"draft/reply".equals(cap)
-        && !"draft/react".equals(cap)
-        && !"draft/unreact".equals(cap)) return;
+        && !REPLY.equals(cap)
+        && !DRAFT_REPLY.equals(cap)
+        && !REACT.equals(cap)
+        && !DRAFT_REACT.equals(cap)
+        && !DRAFT_UNREACT.equals(cap)) return;
 
     boolean replySupported = messageActionCapabilityPolicy.canReply(sid);
     boolean reactSupported = messageActionCapabilityPolicy.canReact(sid);

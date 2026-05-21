@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
@@ -23,6 +24,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BooleanSupplier;
+import java.util.function.Predicate;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -72,7 +75,7 @@ class QuasselCoreIrcv3ReplayFixtureTest {
       socket.writeInbound(encodeRpcCall(datastreamCodec, "2displayMsg(Message)", List.of(msg)));
     }
 
-    events.awaitDone(2, TimeUnit.SECONDS);
+    awaitFixtureEvents(events);
 
     assertTrue(
         events.values().stream()
@@ -144,6 +147,35 @@ class QuasselCoreIrcv3ReplayFixtureTest {
     return List.copyOf(out);
   }
 
+  private static void awaitFixtureEvents(TestSubscriber<ServerIrcEvent> events)
+      throws InterruptedException {
+    awaitCondition(
+        () ->
+            containsEvent(events, IrcEvent.MessageReplyObserved.class::isInstance)
+                && containsEvent(events, IrcEvent.MessageReactObserved.class::isInstance)
+                && containsEvent(events, IrcEvent.UserTypingObserved.class::isInstance)
+                && containsEvent(events, IrcEvent.ReadMarkerObserved.class::isInstance)
+                && containsEvent(events, IrcEvent.MessageRedactionObserved.class::isInstance)
+                && containsEvent(
+                    events,
+                    ev ->
+                        ev instanceof IrcEvent.ChannelMessage msg
+                            && "msg-1".equals(msg.ircv3Tags().get("draft/reply"))));
+  }
+
+  private static boolean containsEvent(
+      TestSubscriber<ServerIrcEvent> events, Predicate<IrcEvent> predicate) {
+    return events.values().stream().map(ServerIrcEvent::event).anyMatch(predicate);
+  }
+
+  private static void awaitCondition(BooleanSupplier condition) throws InterruptedException {
+    long deadline = System.currentTimeMillis() + 2_000L;
+    while (!condition.getAsBoolean() && System.currentTimeMillis() < deadline) {
+      Thread.sleep(10L);
+    }
+    assertTrue(condition.getAsBoolean());
+  }
+
   private static byte[] encodeRpcCall(
       QuasselCoreDatastreamCodec codec, String slotName, List<Object> params) throws IOException {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -152,21 +184,14 @@ class QuasselCoreIrcv3ReplayFixtureTest {
   }
 
   private static IrcProperties.Server server() {
-    return new IrcProperties.Server(
-        "quassel",
-        "irc.example.net",
-        4242,
-        false,
-        "",
-        "quassel",
-        "quassel",
-        "Quassel Test",
-        null,
-        null,
-        List.of(),
-        List.of(),
-        null,
-        IrcProperties.Server.Backend.QUASSEL_CORE);
+    return IrcPropertiesTestFixtures.serverBuilder("quassel")
+        .port(4242)
+        .tls(false)
+        .nick("quassel")
+        .login("quassel")
+        .realName("Quassel Test")
+        .backend(IrcProperties.Server.Backend.QUASSEL_CORE)
+        .build();
   }
 
   private record ReplayMessage(int typeBits, String sender, String content) {}

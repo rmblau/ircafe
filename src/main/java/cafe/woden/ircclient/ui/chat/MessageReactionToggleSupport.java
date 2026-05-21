@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.chat;
 
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.coordinator.MessageActionCapabilityPolicy;
 import java.util.Objects;
 import java.util.function.Function;

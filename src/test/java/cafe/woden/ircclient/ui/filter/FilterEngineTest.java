@@ -30,28 +30,21 @@ class FilterEngineTest {
     FilterSettingsBus bus = mock(FilterSettingsBus.class);
     when(bus.get())
         .thenReturn(
-            new FilterSettings(
-                true,
-                true,
-                true,
-                3,
-                250,
-                12,
-                10,
-                true,
-                List.of(
-                    new FilterRule(
-                        null,
-                        "hide-spam",
-                        true,
-                        "libera/#ircafe",
-                        FilterAction.HIDE,
-                        FilterDirection.ANY,
-                        EnumSet.of(LogKind.CHAT),
-                        List.of("spammer"),
-                        new RegexSpec("buy now", EnumSet.of(RegexFlag.I)),
-                        TagSpec.empty())),
-                List.of()));
+            FilterSettingsTestFixtures.builder()
+                .rules(
+                    List.of(
+                        new FilterRule(
+                            null,
+                            "hide-spam",
+                            true,
+                            "libera/#ircafe",
+                            FilterAction.HIDE,
+                            FilterDirection.ANY,
+                            EnumSet.of(LogKind.CHAT),
+                            List.of("spammer"),
+                            new RegexSpec("buy now", EnumSet.of(RegexFlag.I)),
+                            TagSpec.empty())))
+                .build());
 
     FilterEngine engine = new FilterEngine(bus);
     TargetRef target = new TargetRef("libera", "#ircafe");
@@ -71,19 +64,12 @@ class FilterEngineTest {
     FilterSettingsBus bus = mock(FilterSettingsBus.class);
     when(bus.get())
         .thenReturn(
-            new FilterSettings(
-                true,
-                true,
-                true,
-                3,
-                250,
-                12,
-                10,
-                true,
-                List.of(),
-                List.of(
-                    new FilterScopeOverride("*/*", false, null, null),
-                    new FilterScopeOverride("libera/#ircafe", true, null, null))));
+            FilterSettingsTestFixtures.builder()
+                .overrides(
+                    List.of(
+                        new FilterScopeOverride("*/*", false, null, null),
+                        new FilterScopeOverride("libera/#ircafe", true, null, null)))
+                .build());
 
     FilterEngine engine = new FilterEngine(bus);
 
@@ -102,7 +88,10 @@ class FilterEngineTest {
     FilterSettingsBus bus = mock(FilterSettingsBus.class);
     when(bus.get())
         .thenReturn(
-            new FilterSettings(false, true, true, 0, 250, 12, 10, true, List.of(), List.of()));
+            FilterSettingsTestFixtures.builder()
+                .filtersEnabledByDefault(false)
+                .placeholderMaxPreviewLines(0)
+                .build());
 
     FilterEngine engine = new FilterEngine(bus);
     FilterContext ctx =

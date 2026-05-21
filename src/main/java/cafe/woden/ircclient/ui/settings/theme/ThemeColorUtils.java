@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings.theme;
 
+import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
 import java.awt.Color;
 import javax.swing.plaf.ColorUIResource;
 
@@ -12,15 +13,7 @@ final class ThemeColorUtils {
   }
 
   static Color parseHexColor(String raw) {
-    String normalized = ThemeAccentSettings.normalizeHexOrNull(raw);
-    if (normalized == null) return null;
-
-    try {
-      int rgb = Integer.parseInt(normalized.substring(1), 16);
-      return new Color(rgb);
-    } catch (Exception ignored) {
-      return null;
-    }
+    return SettingsColorSupport.parseHexColorLenient(raw);
   }
 
   static Color mix(Color a, Color b, double t) {
@@ -77,36 +70,19 @@ final class ThemeColorUtils {
   }
 
   static boolean isDark(Color c) {
-    if (c == null) return true;
-    return relativeLuminance(c) < 0.45;
+    return SettingsColorSupport.isDark(c);
   }
 
   static double relativeLuminance(Color c) {
-    if (c == null) return 0.0;
-
-    double r = srgbToLinear(c.getRed() / 255.0);
-    double g = srgbToLinear(c.getGreen() / 255.0);
-    double b = srgbToLinear(c.getBlue() / 255.0);
-    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    return SettingsColorSupport.relativeLuminance(c);
   }
 
   static double contrastRatio(Color c1, Color c2) {
-    if (c1 == null || c2 == null) return 1.0;
-
-    double l1 = relativeLuminance(c1);
-    double l2 = relativeLuminance(c2);
-    double lighter = Math.max(l1, l2);
-    double darker = Math.min(l1, l2);
-    return (lighter + 0.05) / (darker + 0.05);
+    return c1 == null || c2 == null ? 1.0 : SettingsColorSupport.contrastRatio(c1, c2);
   }
 
   static Color bestTextColor(Color bg) {
-    if (bg == null) return Color.WHITE;
-    return relativeLuminance(bg) > 0.55 ? Color.BLACK : Color.WHITE;
-  }
-
-  private static double srgbToLinear(double v) {
-    return (v <= 0.04045) ? (v / 12.92) : Math.pow((v + 0.055) / 1.055, 2.4);
+    return SettingsColorSupport.bestTextColor(bg);
   }
 
   private static int clamp255(int v) {

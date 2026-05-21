@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.chat.fold;
 
 import cafe.woden.ircclient.app.api.PresenceEvent;
 import cafe.woden.ircclient.app.api.PresenceKind;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -130,7 +131,7 @@ public class PresenceFoldComponent extends JPanel {
       l.setOpaque(false);
 
       // mimic a "status" style: dim + italic
-      Color dim = UIManager.getColor("Label.disabledForeground");
+      Color dim = UIManager.getColor(UiColorKeys.LABEL_DISABLED_FOREGROUND);
       if (dim != null) l.setForeground(dim);
       Font f = UIManager.getFont("Label.font");
       if (f != null) l.setFont(f.deriveFont(Font.ITALIC));
@@ -155,7 +156,7 @@ public class PresenceFoldComponent extends JPanel {
     summary.setText(marker + buildSummaryCounts(entries));
 
     // keep the "status" vibe
-    Color dim = UIManager.getColor("Label.disabledForeground");
+    Color dim = UIManager.getColor(UiColorKeys.LABEL_DISABLED_FOREGROUND);
     if (dim != null) summary.setForeground(dim);
     Font f = UIManager.getFont("Label.font");
     if (f != null) summary.setFont(f.deriveFont(Font.ITALIC));

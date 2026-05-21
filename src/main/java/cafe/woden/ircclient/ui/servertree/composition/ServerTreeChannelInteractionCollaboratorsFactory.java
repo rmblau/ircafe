@@ -22,9 +22,11 @@ import javax.swing.Timer;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Factory that assembles channel-interaction collaborators for server tree construction. */
+@InterfaceLayer
 @Component
 public final class ServerTreeChannelInteractionCollaboratorsFactory {
 

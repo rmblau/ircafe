@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -27,10 +26,7 @@ import org.springframework.stereotype.Component;
 final class MatrixJoinedRoomsClient {
 
   private static final Map<String, String> REQUEST_HEADERS =
-      Map.of(
-          "User-Agent", "ircafe-matrix-joined-rooms/1.0",
-          "Accept", "application/json",
-          "Accept-Encoding", "gzip");
+      MatrixHttpHeaders.json("ircafe-matrix-joined-rooms/1.0");
 
   private static final ObjectMapper JSON = new ObjectMapper();
 
@@ -41,12 +37,11 @@ final class MatrixJoinedRoomsClient {
     URI endpoint = MatrixEndpointResolver.joinedRoomsUri(server);
     String token = normalize(accessToken);
     if (token.isEmpty()) {
-      return JoinedRoomsResult.failed(endpoint, "access token is blank");
+      return JoinedRoomsResult.failed(endpoint, MatrixProtocol.ACCESS_TOKEN_BLANK);
     }
 
     ProxyPlan plan = proxyResolver.planForServer(serverId);
-    Map<String, String> headers = new HashMap<>(REQUEST_HEADERS);
-    headers.put("Authorization", "Bearer " + token);
+    Map<String, String> headers = MatrixHttpHeaders.withBearerToken(REQUEST_HEADERS, token);
 
     try {
       HttpLite.Response<String> response =
@@ -72,7 +67,7 @@ final class MatrixJoinedRoomsClient {
     if (json.isEmpty()) return List.of();
     try {
       JsonNode root = JSON.readTree(json);
-      JsonNode joinedRooms = root.path("joined_rooms");
+      JsonNode joinedRooms = root.path(MatrixProtocol.JSON_JOINED_ROOMS);
       if (!joinedRooms.isArray()) {
         return List.of();
       }

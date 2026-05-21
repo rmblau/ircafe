@@ -8,11 +8,13 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /** Builds context menus for Quassel network container and empty-state tree nodes. */
+@InterfaceLayer
 @Component
 public final class ServerTreeQuasselNetworkNodeMenuBuilder {
 

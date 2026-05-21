@@ -12,7 +12,7 @@ import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.commands.FilterCommand;
 import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
 import cafe.woden.ircclient.model.TargetRef;
-import cafe.woden.ircclient.ui.chat.TranscriptRebuildService;
+import cafe.woden.ircclient.ui.chat.transcript.rebuild.TranscriptRebuildService;
 import org.junit.jupiter.api.Test;
 
 class LocalFilterCommandServiceTest {

@@ -1,5 +1,8 @@
 package cafe.woden.ircclient.irc.ircv3;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_READ_MARKER;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.READ_MARKER;
+
 import java.util.List;
 
 /** SPI provider for the IRCv3 read-marker draft extension. */
@@ -7,7 +10,7 @@ public final class Ircv3ReadMarkerExtensionProvider implements Ircv3ExtensionDef
 
   @Override
   public String providerId() {
-    return "read-marker";
+    return READ_MARKER;
   }
 
   @Override
@@ -19,21 +22,21 @@ public final class Ircv3ReadMarkerExtensionProvider implements Ircv3ExtensionDef
   public List<Ircv3ExtensionRegistry.ExtensionDefinition> extensions() {
     return List.of(
         Ircv3ExtensionProviderSupport.capability(
-            "read-marker",
+            READ_MARKER,
             Ircv3ExtensionRegistry.SpecStatus.DRAFT,
-            "draft/read-marker",
-            "read-marker",
+            DRAFT_READ_MARKER,
+            READ_MARKER,
             "Read markers (draft)",
             Ircv3ExtensionRegistry.UiGroup.CONVERSATION,
             240,
             "Enables read-position markers on servers that support them.",
-            "draft/read-marker"));
+            DRAFT_READ_MARKER));
   }
 
   @Override
   public List<Ircv3ExtensionRegistry.FeatureDefinition> visibleFeatures() {
     return List.of(
         Ircv3ExtensionProviderSupport.feature(
-            700, "Read markers", List.of(), List.of("read-marker", "draft/read-marker")));
+            700, "Read markers", List.of(), List.of(READ_MARKER, DRAFT_READ_MARKER)));
   }
 }

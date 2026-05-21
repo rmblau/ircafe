@@ -9,9 +9,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Maintains status-node labels for regular server and bouncer-control states. */
+@InterfaceLayer
 @Component
 public final class ServerTreeStatusLabelManager {
 

@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.logging;
 
 import cafe.woden.ircclient.app.api.Ircv3ChatHistoryFeatureSupport;
+import cafe.woden.ircclient.config.ConfigPropertyKeys;
 import cafe.woden.ircclient.config.ExecutorConfig;
 import cafe.woden.ircclient.config.LogProperties;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
@@ -46,7 +47,10 @@ import org.springframework.transaction.support.TransactionTemplate;
  * to the runtime config YAML by default. Flyway migrations are run on startup.
  */
 @Configuration
-@ConditionalOnProperty(prefix = "ircafe.logging", name = "enabled", havingValue = "true")
+@ConditionalOnProperty(
+    prefix = ConfigPropertyKeys.IRCAFE_LOGGING_PREFIX,
+    name = ConfigPropertyKeys.ENABLED_PROPERTY,
+    havingValue = ConfigPropertyKeys.TRUE_VALUE)
 @InfrastructureLayer
 public class ChatLogDatabaseConfig {
 

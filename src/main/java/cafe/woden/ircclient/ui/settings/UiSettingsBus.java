@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.settings;
 import cafe.woden.ircclient.config.NotificationRule;
 import cafe.woden.ircclient.config.UiProperties;
 import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
+import cafe.woden.ircclient.ui.settings.memory.MemoryUsageDisplayMode;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.List;

@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.chat.fold;
 
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
@@ -221,18 +222,18 @@ public final class MessageReactionsComponent extends JPanel {
   }
 
   private static Color resolveChipForeground() {
-    Color fg = UIManager.getColor("TextPane.foreground");
-    if (fg == null) fg = UIManager.getColor("Label.foreground");
+    Color fg = UIManager.getColor(UiColorKeys.TEXT_PANE_FOREGROUND);
+    if (fg == null) fg = UIManager.getColor(UiColorKeys.LABEL_FOREGROUND);
     return fg;
   }
 
   private static Color resolveChipBackground() {
-    Color sel = UIManager.getColor("TextPane.selectionBackground");
-    Color bg = UIManager.getColor("TextPane.background");
+    Color sel = UIManager.getColor(UiColorKeys.TEXT_PANE_SELECTION_BACKGROUND);
+    Color bg = UIManager.getColor(UiColorKeys.TEXT_PANE_BACKGROUND);
     if (sel == null && bg == null) {
       // Best-effort fallback to avoid hard-coded colors clashing with theme-pack themes.
-      Color pbg = UIManager.getColor("Panel.background");
-      if (pbg == null) pbg = UIManager.getColor("control");
+      Color pbg = UIManager.getColor(UiColorKeys.PANEL_BACKGROUND);
+      if (pbg == null) pbg = UIManager.getColor(UiColorKeys.CONTROL);
       return pbg != null ? pbg : new Color(0xDDDDDD);
     }
     if (sel == null) return bg;
@@ -244,10 +245,10 @@ public final class MessageReactionsComponent extends JPanel {
   }
 
   private static Color resolveChipBorderColor() {
-    Color c = UIManager.getColor("Component.borderColor");
-    if (c == null) c = UIManager.getColor("Separator.foreground");
+    Color c = UIManager.getColor(UiColorKeys.COMPONENT_BORDER_COLOR);
+    if (c == null) c = UIManager.getColor(UiColorKeys.SEPARATOR_FOREGROUND);
     if (c == null) {
-      Color fg = UIManager.getColor("Label.foreground");
+      Color fg = UIManager.getColor(UiColorKeys.LABEL_FOREGROUND);
       if (fg == null) fg = Color.DARK_GRAY;
       c = new Color(fg.getRed(), fg.getGreen(), fg.getBlue(), 90);
     }

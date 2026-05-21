@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
@@ -625,21 +626,17 @@ class QuasselCoreContainerIntegrationTest {
       String nick,
       String realName) {
     IrcProperties.Server toServer() {
-      return new IrcProperties.Server(
-          serverId,
-          host,
-          port,
-          tls,
-          password,
-          nick,
-          login,
-          realName,
-          null,
-          null,
-          List.of(),
-          List.of(),
-          new IrcProperties.Proxy(false, "", 0, "", "", true, 20_000, 30_000),
-          IrcProperties.Server.Backend.QUASSEL_CORE);
+      return IrcPropertiesTestFixtures.serverBuilder(serverId)
+          .host(host)
+          .port(port)
+          .tls(tls)
+          .serverPassword(password)
+          .nick(nick)
+          .login(login)
+          .realName(realName)
+          .proxy(new IrcProperties.Proxy(false, "", 0, "", "", true, 20_000, 30_000))
+          .backend(IrcProperties.Server.Backend.QUASSEL_CORE)
+          .build();
     }
 
     RuntimeCoreConfig withPassword(String nextPassword) {

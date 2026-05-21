@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.notifications;
 
+import static cafe.woden.ircclient.notifications.IrcEventNotificationRuleTestFixtures.rule;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -49,25 +50,26 @@ class IrcEventNotificationRuleTest {
   @Test
   void sourceAndChannelFiltersAreApplied() {
     IrcEventNotificationRule rule =
-        new IrcEventNotificationRule(
-            true,
-            IrcEventNotificationRule.EventType.INVITE_RECEIVED,
-            IrcEventNotificationRule.SourceMode.OTHERS,
-            null,
-            IrcEventNotificationRule.ChannelScope.ONLY,
-            "#staff*",
-            true,
-            IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY,
-            true,
-            true,
-            false,
-            BuiltInSound.NOTIF_1.name(),
-            false,
-            null,
-            false,
-            null,
-            null,
-            null);
+        rule()
+            .enabled(true)
+            .eventType(IrcEventNotificationRule.EventType.INVITE_RECEIVED)
+            .sourceMode(IrcEventNotificationRule.SourceMode.OTHERS)
+            .sourcePattern(null)
+            .channelScope(IrcEventNotificationRule.ChannelScope.ONLY)
+            .channelPatterns("#staff*")
+            .toastEnabled(true)
+            .focusScope(IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY)
+            .statusBarEnabled(true)
+            .notificationsNodeEnabled(true)
+            .soundEnabled(false)
+            .soundId(BuiltInSound.NOTIF_1.name())
+            .soundUseCustom(false)
+            .soundCustomPath(null)
+            .scriptEnabled(false)
+            .scriptPath(null)
+            .scriptArgs(null)
+            .scriptWorkingDirectory(null)
+            .build();
 
     assertTrue(
         rule.matches(
@@ -95,67 +97,70 @@ class IrcEventNotificationRuleTest {
   @Test
   void sourceMatcherSupportsNickListGlobAndRegex() {
     IrcEventNotificationRule nickList =
-        new IrcEventNotificationRule(
-            true,
-            IrcEventNotificationRule.EventType.USER_JOINED,
-            IrcEventNotificationRule.SourceMode.NICK_LIST,
-            "alice bob",
-            IrcEventNotificationRule.ChannelScope.ALL,
-            null,
-            true,
-            IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY,
-            true,
-            true,
-            false,
-            BuiltInSound.NOTIF_1.name(),
-            false,
-            null,
-            false,
-            null,
-            null,
-            null);
+        rule()
+            .enabled(true)
+            .eventType(IrcEventNotificationRule.EventType.USER_JOINED)
+            .sourceMode(IrcEventNotificationRule.SourceMode.NICK_LIST)
+            .sourcePattern("alice bob")
+            .channelScope(IrcEventNotificationRule.ChannelScope.ALL)
+            .channelPatterns(null)
+            .toastEnabled(true)
+            .focusScope(IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY)
+            .statusBarEnabled(true)
+            .notificationsNodeEnabled(true)
+            .soundEnabled(false)
+            .soundId(BuiltInSound.NOTIF_1.name())
+            .soundUseCustom(false)
+            .soundCustomPath(null)
+            .scriptEnabled(false)
+            .scriptPath(null)
+            .scriptArgs(null)
+            .scriptWorkingDirectory(null)
+            .build();
 
     IrcEventNotificationRule glob =
-        new IrcEventNotificationRule(
-            true,
-            IrcEventNotificationRule.EventType.USER_JOINED,
-            IrcEventNotificationRule.SourceMode.GLOB,
-            "mod*",
-            IrcEventNotificationRule.ChannelScope.ALL,
-            null,
-            true,
-            IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY,
-            true,
-            true,
-            false,
-            BuiltInSound.NOTIF_1.name(),
-            false,
-            null,
-            false,
-            null,
-            null,
-            null);
+        rule()
+            .enabled(true)
+            .eventType(IrcEventNotificationRule.EventType.USER_JOINED)
+            .sourceMode(IrcEventNotificationRule.SourceMode.GLOB)
+            .sourcePattern("mod*")
+            .channelScope(IrcEventNotificationRule.ChannelScope.ALL)
+            .channelPatterns(null)
+            .toastEnabled(true)
+            .focusScope(IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY)
+            .statusBarEnabled(true)
+            .notificationsNodeEnabled(true)
+            .soundEnabled(false)
+            .soundId(BuiltInSound.NOTIF_1.name())
+            .soundUseCustom(false)
+            .soundCustomPath(null)
+            .scriptEnabled(false)
+            .scriptPath(null)
+            .scriptArgs(null)
+            .scriptWorkingDirectory(null)
+            .build();
 
     IrcEventNotificationRule regex =
-        new IrcEventNotificationRule(
-            true,
-            IrcEventNotificationRule.EventType.USER_JOINED,
-            IrcEventNotificationRule.SourceMode.REGEX,
-            "^op[0-9]+$",
-            IrcEventNotificationRule.ChannelScope.ALL,
-            null,
-            true,
-            IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY,
-            true,
-            true,
-            false,
-            BuiltInSound.NOTIF_1.name(),
-            false,
-            null,
-            false,
-            null,
-            null,
-            null);
+        rule()
+            .enabled(true)
+            .eventType(IrcEventNotificationRule.EventType.USER_JOINED)
+            .sourceMode(IrcEventNotificationRule.SourceMode.REGEX)
+            .sourcePattern("^op[0-9]+$")
+            .channelScope(IrcEventNotificationRule.ChannelScope.ALL)
+            .channelPatterns(null)
+            .toastEnabled(true)
+            .focusScope(IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY)
+            .statusBarEnabled(true)
+            .notificationsNodeEnabled(true)
+            .soundEnabled(false)
+            .soundId(BuiltInSound.NOTIF_1.name())
+            .soundUseCustom(false)
+            .soundCustomPath(null)
+            .scriptEnabled(false)
+            .scriptPath(null)
+            .scriptArgs(null)
+            .scriptWorkingDirectory(null)
+            .build();
 
     assertTrue(
         nickList.matches(
@@ -182,25 +187,26 @@ class IrcEventNotificationRuleTest {
   @Test
   void allExceptScopeAllowsServerWideEventsWithoutChannel() {
     IrcEventNotificationRule rule =
-        new IrcEventNotificationRule(
-            true,
-            IrcEventNotificationRule.EventType.KLINED,
-            IrcEventNotificationRule.SourceMode.ANY,
-            null,
-            IrcEventNotificationRule.ChannelScope.ALL_EXCEPT,
-            "#ops*",
-            true,
-            IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY,
-            true,
-            true,
-            true,
-            BuiltInSound.NOTIF_2.name(),
-            false,
-            null,
-            false,
-            null,
-            null,
-            null);
+        rule()
+            .enabled(true)
+            .eventType(IrcEventNotificationRule.EventType.KLINED)
+            .sourceMode(IrcEventNotificationRule.SourceMode.ANY)
+            .sourcePattern(null)
+            .channelScope(IrcEventNotificationRule.ChannelScope.ALL_EXCEPT)
+            .channelPatterns("#ops*")
+            .toastEnabled(true)
+            .focusScope(IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY)
+            .statusBarEnabled(true)
+            .notificationsNodeEnabled(true)
+            .soundEnabled(true)
+            .soundId(BuiltInSound.NOTIF_2.name())
+            .soundUseCustom(false)
+            .soundCustomPath(null)
+            .scriptEnabled(false)
+            .scriptPath(null)
+            .scriptArgs(null)
+            .scriptWorkingDirectory(null)
+            .build();
 
     assertTrue(rule.matches(IrcEventNotificationRule.EventType.KLINED, null, null, null));
     assertTrue(rule.matches(IrcEventNotificationRule.EventType.KLINED, null, null, "#general"));
@@ -210,25 +216,26 @@ class IrcEventNotificationRuleTest {
   @Test
   void activeTargetOnlyScopeRequiresSameServerAndMatchingActiveChannel() {
     IrcEventNotificationRule rule =
-        new IrcEventNotificationRule(
-            true,
-            IrcEventNotificationRule.EventType.TOPIC_CHANGED,
-            IrcEventNotificationRule.SourceMode.ANY,
-            null,
-            IrcEventNotificationRule.ChannelScope.ACTIVE_TARGET_ONLY,
-            "#ignored",
-            true,
-            IrcEventNotificationRule.FocusScope.ANY,
-            true,
-            true,
-            false,
-            BuiltInSound.TOPIC_CHANGED_1.name(),
-            false,
-            null,
-            false,
-            null,
-            null,
-            null);
+        rule()
+            .enabled(true)
+            .eventType(IrcEventNotificationRule.EventType.TOPIC_CHANGED)
+            .sourceMode(IrcEventNotificationRule.SourceMode.ANY)
+            .sourcePattern(null)
+            .channelScope(IrcEventNotificationRule.ChannelScope.ACTIVE_TARGET_ONLY)
+            .channelPatterns("#ignored")
+            .toastEnabled(true)
+            .focusScope(IrcEventNotificationRule.FocusScope.ANY)
+            .statusBarEnabled(true)
+            .notificationsNodeEnabled(true)
+            .soundEnabled(false)
+            .soundId(BuiltInSound.TOPIC_CHANGED_1.name())
+            .soundUseCustom(false)
+            .soundCustomPath(null)
+            .scriptEnabled(false)
+            .scriptPath(null)
+            .scriptArgs(null)
+            .scriptWorkingDirectory(null)
+            .build();
 
     assertFalse(
         rule.matches(IrcEventNotificationRule.EventType.TOPIC_CHANGED, null, null, "#chat"));
@@ -246,29 +253,30 @@ class IrcEventNotificationRuleTest {
   @Test
   void ctcpCommandAndValueFiltersAreAppliedForCtcpEvents() {
     IrcEventNotificationRule rule =
-        new IrcEventNotificationRule(
-            true,
-            IrcEventNotificationRule.EventType.CTCP_RECEIVED,
-            IrcEventNotificationRule.SourceMode.OTHERS,
-            null,
-            IrcEventNotificationRule.ChannelScope.ALL,
-            null,
-            true,
-            IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY,
-            true,
-            true,
-            false,
-            BuiltInSound.SOMEBODY_SENT_CTCP_1.name(),
-            false,
-            null,
-            false,
-            null,
-            null,
-            null,
-            IrcEventNotificationRule.CtcpMatchMode.LIKE,
-            "VERSION",
-            IrcEventNotificationRule.CtcpMatchMode.GLOB,
-            "*hexchat*");
+        rule()
+            .enabled(true)
+            .eventType(IrcEventNotificationRule.EventType.CTCP_RECEIVED)
+            .sourceMode(IrcEventNotificationRule.SourceMode.OTHERS)
+            .sourcePattern(null)
+            .channelScope(IrcEventNotificationRule.ChannelScope.ALL)
+            .channelPatterns(null)
+            .toastEnabled(true)
+            .focusScope(IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY)
+            .statusBarEnabled(true)
+            .notificationsNodeEnabled(true)
+            .soundEnabled(false)
+            .soundId(BuiltInSound.SOMEBODY_SENT_CTCP_1.name())
+            .soundUseCustom(false)
+            .soundCustomPath(null)
+            .scriptEnabled(false)
+            .scriptPath(null)
+            .scriptArgs(null)
+            .scriptWorkingDirectory(null)
+            .ctcpCommandMode(IrcEventNotificationRule.CtcpMatchMode.LIKE)
+            .ctcpCommandPattern("VERSION")
+            .ctcpValueMode(IrcEventNotificationRule.CtcpMatchMode.GLOB)
+            .ctcpValuePattern("*hexchat*")
+            .build();
 
     assertTrue(
         rule.matches(

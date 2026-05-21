@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import java.net.URI;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class MatrixEndpointResolverTest {
@@ -358,20 +358,11 @@ class MatrixEndpointResolverTest {
   }
 
   private static IrcProperties.Server server(String id, String host, int port, boolean tls) {
-    return new IrcProperties.Server(
-        id,
-        host,
-        port,
-        tls,
-        "",
-        "ircafe",
-        "ircafe",
-        "IRCafe User",
-        null,
-        null,
-        List.of(),
-        List.of(),
-        null,
-        IrcProperties.Server.Backend.MATRIX);
+    return IrcPropertiesTestFixtures.serverBuilder(id)
+        .host(host)
+        .port(port)
+        .tls(tls)
+        .backend(IrcProperties.Server.Backend.MATRIX)
+        .build();
   }
 }

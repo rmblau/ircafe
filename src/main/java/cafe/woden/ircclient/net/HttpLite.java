@@ -144,7 +144,8 @@ public final class HttpLite {
     try (InputStream in = r.body()) {
       bytes = in.readAllBytes();
     }
-    Charset charset = charsetFromContentType(r.headers().firstValue("Content-Type").orElse(null));
+    Charset charset =
+        charsetFromContentType(r.headers().firstValue(HttpHeaderNames.CONTENT_TYPE).orElse(null));
     return new Response<>(r.statusCode(), r.headers(), new String(bytes, charset));
   }
 
@@ -170,10 +171,10 @@ public final class HttpLite {
     }
 
     byte[] payload = Objects.toString(requestBody, "").getBytes(StandardCharsets.UTF_8);
-    if (conn.getRequestProperty("Content-Type") == null) {
-      conn.setRequestProperty("Content-Type", "text/plain; charset=UTF-8");
+    if (conn.getRequestProperty(HttpHeaderNames.CONTENT_TYPE) == null) {
+      conn.setRequestProperty(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
     }
-    conn.setRequestProperty("Content-Length", Integer.toString(payload.length));
+    conn.setRequestProperty(HttpHeaderNames.CONTENT_LENGTH, Integer.toString(payload.length));
 
     try (OutputStream out = conn.getOutputStream()) {
       out.write(payload);
@@ -193,7 +194,8 @@ public final class HttpLite {
       bytes = in.readAllBytes();
     }
     Headers headers = new Headers(conn.getHeaderFields());
-    Charset charset = charsetFromContentType(headers.firstValue("Content-Type").orElse(null));
+    Charset charset =
+        charsetFromContentType(headers.firstValue(HttpHeaderNames.CONTENT_TYPE).orElse(null));
     return new Response<>(code, headers, new String(bytes, charset));
   }
 
@@ -219,10 +221,10 @@ public final class HttpLite {
     }
 
     byte[] payload = requestBody == null ? new byte[0] : requestBody;
-    if (conn.getRequestProperty("Content-Type") == null) {
-      conn.setRequestProperty("Content-Type", "application/octet-stream");
+    if (conn.getRequestProperty(HttpHeaderNames.CONTENT_TYPE) == null) {
+      conn.setRequestProperty(HttpHeaderNames.CONTENT_TYPE, "application/octet-stream");
     }
-    conn.setRequestProperty("Content-Length", Integer.toString(payload.length));
+    conn.setRequestProperty(HttpHeaderNames.CONTENT_LENGTH, Integer.toString(payload.length));
 
     try (OutputStream out = conn.getOutputStream()) {
       out.write(payload);
@@ -242,7 +244,8 @@ public final class HttpLite {
       bytes = in.readAllBytes();
     }
     Headers headers = new Headers(conn.getHeaderFields());
-    Charset charset = charsetFromContentType(headers.firstValue("Content-Type").orElse(null));
+    Charset charset =
+        charsetFromContentType(headers.firstValue(HttpHeaderNames.CONTENT_TYPE).orElse(null));
     return new Response<>(code, headers, new String(bytes, charset));
   }
 
@@ -268,10 +271,10 @@ public final class HttpLite {
     }
 
     byte[] payload = Objects.toString(requestBody, "").getBytes(StandardCharsets.UTF_8);
-    if (conn.getRequestProperty("Content-Type") == null) {
-      conn.setRequestProperty("Content-Type", "text/plain; charset=UTF-8");
+    if (conn.getRequestProperty(HttpHeaderNames.CONTENT_TYPE) == null) {
+      conn.setRequestProperty(HttpHeaderNames.CONTENT_TYPE, "text/plain; charset=UTF-8");
     }
-    conn.setRequestProperty("Content-Length", Integer.toString(payload.length));
+    conn.setRequestProperty(HttpHeaderNames.CONTENT_LENGTH, Integer.toString(payload.length));
 
     try (OutputStream out = conn.getOutputStream()) {
       out.write(payload);
@@ -291,7 +294,8 @@ public final class HttpLite {
       bytes = in.readAllBytes();
     }
     Headers headers = new Headers(conn.getHeaderFields());
-    Charset charset = charsetFromContentType(headers.firstValue("Content-Type").orElse(null));
+    Charset charset =
+        charsetFromContentType(headers.firstValue(HttpHeaderNames.CONTENT_TYPE).orElse(null));
     return new Response<>(code, headers, new String(bytes, charset));
   }
 

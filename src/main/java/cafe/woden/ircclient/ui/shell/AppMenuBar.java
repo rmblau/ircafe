@@ -7,8 +7,8 @@ import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
 import cafe.woden.ircclient.diagnostics.RuntimeJfrService;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.model.TargetRef;
-import cafe.woden.ircclient.notify.pushy.PushyNotificationService;
-import cafe.woden.ircclient.notify.sound.NotificationSoundService;
+import cafe.woden.ircclient.notify.api.NotificationSoundPort;
+import cafe.woden.ircclient.notify.api.PushyNotificationPort;
 import cafe.woden.ircclient.ui.ChatDockable;
 import cafe.woden.ircclient.ui.UserListDockable;
 import cafe.woden.ircclient.ui.bus.ActiveInputRouter;
@@ -20,15 +20,16 @@ import cafe.woden.ircclient.ui.input.MessageInputPanel;
 import cafe.woden.ircclient.ui.nickcolors.NickColorOverridesDialog;
 import cafe.woden.ircclient.ui.servers.ServerDialogs;
 import cafe.woden.ircclient.ui.servertree.ServerTreeDockable;
-import cafe.woden.ircclient.ui.settings.MemoryUsageDisplayMode;
 import cafe.woden.ircclient.ui.settings.PreferencesDialog;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
+import cafe.woden.ircclient.ui.settings.memory.MemoryUsageDisplayMode;
 import cafe.woden.ircclient.ui.settings.theme.ThemeIdUtils;
 import cafe.woden.ircclient.ui.settings.theme.ThemeManager;
 import cafe.woden.ircclient.ui.settings.theme.ThemeSelectionDialog;
 import cafe.woden.ircclient.ui.tray.TrayNotificationService;
 import cafe.woden.ircclient.ui.util.PopupMenuThemeSupport;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import io.github.andrewauclair.moderndocking.Dockable;
 import io.github.andrewauclair.moderndocking.DockingRegion;
 import io.github.andrewauclair.moderndocking.app.Docking;
@@ -146,8 +147,8 @@ public class AppMenuBar extends JMenuBar {
   private final UiSettingsBus settingsBus;
   private final UiShellRuntimeConfigPort runtimeConfig;
   private final TrayNotificationService trayNotificationService;
-  private final PushyNotificationService pushyNotificationService;
-  private final NotificationSoundService notificationSoundService;
+  private final PushyNotificationPort pushyNotificationService;
+  private final NotificationSoundPort notificationSoundService;
   private final RuntimeJfrService runtimeJfrService;
   private final ThemeManager themeManager;
   private final ChatDockable chat;
@@ -189,8 +190,8 @@ public class AppMenuBar extends JMenuBar {
       UiSettingsBus settingsBus,
       UiShellRuntimeConfigPort runtimeConfig,
       TrayNotificationService trayNotificationService,
-      PushyNotificationService pushyNotificationService,
-      NotificationSoundService notificationSoundService,
+      PushyNotificationPort pushyNotificationService,
+      NotificationSoundPort notificationSoundService,
       RuntimeJfrService runtimeJfrService,
       ServerDialogs serverDialogs,
       UiProperties uiProps,
@@ -1400,8 +1401,9 @@ public class AppMenuBar extends JMenuBar {
 
   private void updateMemoryButtonStyleForCurrentMode() {
     if (memoryUsageDisplayMode == MemoryUsageDisplayMode.SHORT) {
-      Color border = javax.swing.UIManager.getColor("Component.borderColor");
-      if (border == null) border = javax.swing.UIManager.getColor("Label.disabledForeground");
+      Color border = javax.swing.UIManager.getColor(UiColorKeys.COMPONENT_BORDER_COLOR);
+      if (border == null)
+        border = javax.swing.UIManager.getColor(UiColorKeys.LABEL_DISABLED_FOREGROUND);
       if (border == null) border = new Color(120, 120, 120);
       memoryButton.setBorder(
           javax.swing.BorderFactory.createCompoundBorder(
@@ -2260,8 +2262,8 @@ public class AppMenuBar extends JMenuBar {
       Object aa = g2.getRenderingHint(RenderingHints.KEY_ANTIALIASING);
       g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-      Color fg = javax.swing.UIManager.getColor("Label.foreground");
-      Color bg = javax.swing.UIManager.getColor("Panel.background");
+      Color fg = javax.swing.UIManager.getColor(UiColorKeys.LABEL_FOREGROUND);
+      Color bg = javax.swing.UIManager.getColor(UiColorKeys.PANEL_BACKGROUND);
       if (fg == null) fg = Color.WHITE;
       if (bg == null) bg = Color.BLACK;
 
@@ -2369,8 +2371,8 @@ public class AppMenuBar extends JMenuBar {
       int y = (getHeight() - size) / 2;
       int strokeW = Math.max(10, size / 9);
 
-      Color track = uiColor("ProgressBar.background", new Color(228, 228, 228));
-      Color text = uiColor("Label.foreground", new Color(33, 33, 33));
+      Color track = uiColor(UiColorKeys.PROGRESS_BAR_BACKGROUND, new Color(228, 228, 228));
+      Color text = uiColor(UiColorKeys.LABEL_FOREGROUND, new Color(33, 33, 33));
       Color arcStart = new Color(38, 166, 91);
       Color arcEnd = new Color(220, 73, 56);
 

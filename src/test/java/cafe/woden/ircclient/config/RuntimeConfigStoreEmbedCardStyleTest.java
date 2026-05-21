@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -15,8 +14,7 @@ class RuntimeConfigStoreEmbedCardStyleTest {
   @Test
   void rememberEmbedCardStylePersistsTokenUnderUiSection() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberEmbedCardStyle("glassy");
 
@@ -26,10 +24,33 @@ class RuntimeConfigStoreEmbedCardStyleTest {
   }
 
   @Test
+  void rememberEmbedPreviewSettingsPersistUnderUiSection() throws Exception {
+    Path cfg = tempDir.resolve("ircafe.yml");
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
+
+    store.rememberImageEmbedsEnabled(false);
+    store.rememberImageEmbedsCollapsedByDefault(true);
+    store.rememberImageEmbedsMaxWidthPx(-1);
+    store.rememberImageEmbedsMaxHeightPx(480);
+    store.rememberImageEmbedsAnimateGifs(false);
+    store.rememberLinkPreviewsEnabled(false);
+    store.rememberLinkPreviewsCollapsedByDefault(true);
+
+    String yaml = Files.readString(cfg);
+    assertTrue(yaml.contains("ui:"));
+    assertTrue(yaml.contains("imageEmbedsEnabled: false"));
+    assertTrue(yaml.contains("imageEmbedsCollapsedByDefault: true"));
+    assertTrue(yaml.contains("imageEmbedsMaxWidthPx: 0"));
+    assertTrue(yaml.contains("imageEmbedsMaxHeightPx: 480"));
+    assertTrue(yaml.contains("imageEmbedsAnimateGifs: false"));
+    assertTrue(yaml.contains("linkPreviewsEnabled: false"));
+    assertTrue(yaml.contains("linkPreviewsCollapsedByDefault: true"));
+  }
+
+  @Test
   void blankEmbedCardStyleFallsBackToDefaultToken() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberEmbedCardStyle("   ");
 

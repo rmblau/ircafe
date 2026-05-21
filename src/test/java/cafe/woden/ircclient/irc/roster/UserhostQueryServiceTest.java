@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.irc.IrcClientService;
 import cafe.woden.ircclient.irc.runtime.IrcRuntimeSettings;
 import cafe.woden.ircclient.irc.runtime.IrcRuntimeSettingsProvider;
+import cafe.woden.ircclient.irc.runtime.IrcRuntimeSettingsTestFixtures;
 import io.reactivex.rxjava3.core.Completable;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -95,8 +96,11 @@ class UserhostQueryServiceTest {
   }
 
   private static IrcRuntimeSettings settings(boolean enabled) {
-    return new IrcRuntimeSettings(
-        enabled, 1, 10, 30, 5, false, 15, 3, 60, 5, false, 45, 120, false, 300, 2);
+    return IrcRuntimeSettingsTestFixtures.builder()
+        .userhostDiscoveryEnabled(enabled)
+        .userhostMinIntervalSeconds(1)
+        .userhostMaxCommandsPerMinute(10)
+        .build();
   }
 
   private static void invokeTickAll(UserhostQueryService service) throws Exception {

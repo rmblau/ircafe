@@ -134,27 +134,29 @@ public class ImageFetchService {
     // java.net.http.HttpClient does not support SOCKS proxies.
     Map<String, String> headers = new HashMap<>();
     headers.put(
-        "User-Agent",
+        PreviewHttp.HEADER_USER_AGENT,
         needsInstagramReferer(uri) ? PreviewHttp.BROWSER_USER_AGENT : PreviewHttp.USER_AGENT);
-    headers.put("Accept-Language", PreviewHttp.ACCEPT_LANGUAGE);
-    headers.put("Accept-Encoding", "gzip");
+    headers.put(PreviewHttp.HEADER_ACCEPT_LANGUAGE, PreviewHttp.ACCEPT_LANGUAGE);
+    headers.put(PreviewHttp.HEADER_ACCEPT_ENCODING, "gzip");
     // IMPORTANT: Do NOT advertise AVIF by default.
     // Some CDNs will pick AVIF whenever it's present in Accept (ignoring q=), and ImageIO
     // can't decode it without a native/plugin decoder. If you later add AVIF support,
     // you can add image/avif back into this header.
-    headers.put("Accept", "image/jpeg,image/png,image/webp,image/gif,image/*;q=0.5,*/*;q=0.4");
+    headers.put(
+        PreviewHttp.HEADER_ACCEPT,
+        "image/jpeg,image/png,image/webp,image/gif,image/*;q=0.5,*/*;q=0.4");
     // Some CDNs are picky; these headers help us look like a browser fetching an image.
     headers.put("Sec-Fetch-Dest", "image");
     headers.put("Sec-Fetch-Mode", "no-cors");
 
     // Some IMDb/Amazon image endpoints can be picky without a referer.
     if (needsImdbReferer(uri)) {
-      headers.put("Referer", "https://www.imdb.com/");
+      headers.put(PreviewHttp.HEADER_REFERER, "https://www.imdb.com/");
     }
 
     // Instagram CDN endpoints can return bot-check HTML without a referer.
-    if (!headers.containsKey("Referer") && needsInstagramReferer(uri)) {
-      headers.put("Referer", "https://www.instagram.com/");
+    if (!headers.containsKey(PreviewHttp.HEADER_REFERER) && needsInstagramReferer(uri)) {
+      headers.put(PreviewHttp.HEADER_REFERER, "https://www.instagram.com/");
     }
 
     ProxyPlan plan =

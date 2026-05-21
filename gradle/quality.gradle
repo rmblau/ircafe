@@ -76,6 +76,53 @@ tasks.register('errorProneApply') {
     dependsOn('errorProneApplyMain')
 }
 
+tasks.register('strictCompileMain', JavaCompile) {
+    group = 'verification'
+    description = 'Compiles main Java sources with javac lint warnings elevated to errors.'
+    javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(javaRelease)
+    }
+    source = sourceSets.main.java
+    classpath = sourceSets.main.compileClasspath
+    destinationDirectory = layout.buildDirectory.dir('tmp/strictCompileMain')
+    options.annotationProcessorPath = configurations.annotationProcessor
+    options.generatedSourceOutputDirectory =
+        layout.buildDirectory.dir('generated/sources/annotationProcessor/java/strictCompileMain')
+    options.release = javaRelease
+    options.warnings = true
+    options.compilerArgs.removeAll { it.startsWith('-Xlint') || it == '-Werror' }
+    options.compilerArgs.addAll(['-Xlint:all', '-Werror'])
+    options.errorprone.enabled = false
+}
+
+tasks.register('errorProneCheckMain', JavaCompile) {
+    group = 'verification'
+    description = 'Runs Error Prone checks for main Java sources without applying patches.'
+    javaCompiler = javaToolchains.compilerFor {
+        languageVersion = JavaLanguageVersion.of(javaRelease)
+    }
+    source = sourceSets.main.java
+    classpath = sourceSets.main.compileClasspath
+    destinationDirectory = layout.buildDirectory.dir('tmp/errorProneCheckMain')
+    options.annotationProcessorPath = configurations.annotationProcessor
+    options.generatedSourceOutputDirectory =
+        layout.buildDirectory.dir('generated/sources/annotationProcessor/java/errorProneCheckMain')
+    options.release = javaRelease
+    options.errorprone.enabled = true
+}
+
+tasks.register('strictAnalysis') {
+    group = 'verification'
+    description = 'Runs opt-in stricter compile and static-analysis checks for main sources.'
+    dependsOn(
+        'strictCompileMain',
+        'errorProneCheckMain',
+        'spotlessCheck',
+        'spotbugsMain',
+        'forbiddenApisMain'
+    )
+}
+
 tasks.named('spotlessApply') {
     dependsOn('errorProneApply')
 }

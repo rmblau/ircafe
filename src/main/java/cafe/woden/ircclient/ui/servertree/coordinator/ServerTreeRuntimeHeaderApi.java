@@ -6,9 +6,11 @@ import java.time.Instant;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Public-facing runtime metadata and header controls API used by the dockable. */
+@InterfaceLayer
 @Component
 public final class ServerTreeRuntimeHeaderApi {
   public interface Context {

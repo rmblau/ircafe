@@ -1,16 +1,12 @@
 package cafe.woden.ircclient.ui.servers;
 
+import com.formdev.flatlaf.FlatClientProperties;
 import java.util.Objects;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 
 /** Applies server-editor validation state to Swing widgets. */
 final class ServerEditorValidationUiApplier {
-  private static final String OUTLINE_PROP = "JComponent.outline";
-  private static final String OUTLINE_ERROR = "error";
-  private static final String OUTLINE_WARNING = "warning";
-  private static final String OUTLINE_SUCCESS = "success";
-
   private ServerEditorValidationUiApplier() {}
 
   static void apply(ServerEditorValidationPolicy.ValidationState state, ValidationWidgets widgets) {
@@ -76,26 +72,29 @@ final class ServerEditorValidationUiApplier {
   }
 
   static void clearOutline(JComponent component) {
-    component.putClientProperty(OUTLINE_PROP, null);
+    component.putClientProperty(FlatClientProperties.OUTLINE, null);
   }
 
   static void setSuccess(JComponent component, boolean on) {
-    Object current = component.getClientProperty(OUTLINE_PROP);
+    Object current = component.getClientProperty(FlatClientProperties.OUTLINE);
     if (on) {
       if (current == null) {
-        component.putClientProperty(OUTLINE_PROP, OUTLINE_SUCCESS);
+        component.putClientProperty(
+            FlatClientProperties.OUTLINE, FlatClientProperties.OUTLINE_SUCCESS);
       }
-    } else if (Objects.equals(current, OUTLINE_SUCCESS)) {
+    } else if (Objects.equals(current, FlatClientProperties.OUTLINE_SUCCESS)) {
       clearOutline(component);
     }
   }
 
   private static void setError(JComponent component, boolean on) {
-    component.putClientProperty(OUTLINE_PROP, on ? OUTLINE_ERROR : null);
+    component.putClientProperty(
+        FlatClientProperties.OUTLINE, on ? FlatClientProperties.OUTLINE_ERROR : null);
   }
 
   private static void setWarning(JComponent component, boolean on) {
-    component.putClientProperty(OUTLINE_PROP, on ? OUTLINE_WARNING : null);
+    component.putClientProperty(
+        FlatClientProperties.OUTLINE, on ? FlatClientProperties.OUTLINE_WARNING : null);
   }
 
   record ValidationWidgets(

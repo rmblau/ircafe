@@ -5,9 +5,11 @@ import cafe.woden.ircclient.config.InstalledPluginServices;
 import java.util.List;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.jmolecules.architecture.layered.InfrastructureLayer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+@InfrastructureLayer
 @Configuration(proxyBeanMethods = false)
 @RequiredArgsConstructor
 class BackendExtensionCatalogStateConfiguration {

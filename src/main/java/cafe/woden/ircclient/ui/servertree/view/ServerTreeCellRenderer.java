@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.servertree.view;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.servertree.view.ServerTreeCellPresentationPolicy.IconSpec;
 import cafe.woden.ircclient.ui.servertree.view.ServerTreeCellPresentationPolicy.Presentation;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -444,9 +445,9 @@ public final class ServerTreeCellRenderer extends DefaultTreeCellRenderer {
   }
 
   private Color typingIndicatorColor() {
-    Color color = UIManager.getColor("@accentColor");
-    if (color == null) color = UIManager.getColor("Component.focusColor");
-    if (color == null) color = UIManager.getColor("Label.foreground");
+    Color color = UIManager.getColor(UiColorKeys.ACCENT_COLOR);
+    if (color == null) color = UIManager.getColor(UiColorKeys.COMPONENT_FOCUS_COLOR);
+    if (color == null) color = UIManager.getColor(UiColorKeys.LABEL_FOREGROUND);
     if (color == null) color = TYPING_ACTIVITY_INDICATOR_FALLBACK;
     return color;
   }

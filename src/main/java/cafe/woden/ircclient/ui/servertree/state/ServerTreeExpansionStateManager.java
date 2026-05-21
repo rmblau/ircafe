@@ -11,9 +11,11 @@ import java.util.Set;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Tracks expanded-tree paths and provides default selection targets after structure changes. */
+@InterfaceLayer
 @Component
 public final class ServerTreeExpansionStateManager {
 

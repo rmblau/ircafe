@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.ui.input;
 
 import cafe.woden.ircclient.ui.SwingEdt;
-import cafe.woden.ircclient.ui.settings.SpellcheckSettings;
+import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettings;
 import cafe.woden.ircclient.util.VirtualThreads;
 import com.github.benmanes.caffeine.cache.AsyncLoadingCache;
 import com.github.benmanes.caffeine.cache.Caffeine;

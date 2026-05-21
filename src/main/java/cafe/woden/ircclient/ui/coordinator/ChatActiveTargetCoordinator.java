@@ -3,7 +3,7 @@ package cafe.woden.ircclient.ui.coordinator;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.ChatDockable;
 import cafe.woden.ircclient.ui.backend.BackendUiProfile;
-import cafe.woden.ircclient.ui.chat.ChatTranscriptStore;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.input.MessageInputPanel;
 import java.util.Map;
 import java.util.Objects;

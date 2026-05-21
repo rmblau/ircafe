@@ -1,0 +1,44 @@
+package cafe.woden.ircclient.config;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.nio.file.Path;
+import java.util.Map;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
+class RuntimeConfigStoreChatBehaviorSettingsTest {
+
+  @TempDir Path tempDir;
+
+  @Test
+  void persistsChatBehaviorSettingsUnderUiSection() throws Exception {
+    Path cfg = tempDir.resolve("ircafe.yml");
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
+
+    store.rememberPresenceFoldsEnabled(false);
+    store.rememberDefaultQuitMessage("Bye\nnow");
+    store.rememberCtcpRequestsInActiveTargetEnabled(false);
+    store.rememberTypingIndicatorsEnabled(false);
+    store.rememberTypingIndicatorsReceiveEnabled(false);
+    store.rememberTypingTreeIndicatorStyle("KBD");
+    store.rememberTypingIndicatorsTreeEnabled(false);
+    store.rememberTypingIndicatorsUsersListEnabled(false);
+    store.rememberMatrixUserListNameDisplayMode("full");
+    store.rememberTypingIndicatorsTranscriptEnabled(false);
+    store.rememberTypingIndicatorsSendSignalEnabled(false);
+
+    Map<String, Object> ui = RuntimeConfigYamlTestSupport.uiSection(cfg);
+    assertEquals(false, ui.get("presenceFoldsEnabled"));
+    assertEquals("Bye now", ui.get("defaultQuitMessage"));
+    assertEquals(false, ui.get("ctcpRequestsInActiveTargetEnabled"));
+    assertEquals(false, ui.get("typingIndicatorsEnabled"));
+    assertEquals(false, ui.get("typingIndicatorsReceiveEnabled"));
+    assertEquals("keyboard", ui.get("typingTreeIndicatorStyle"));
+    assertEquals(false, ui.get("typingIndicatorsTreeEnabled"));
+    assertEquals(false, ui.get("typingIndicatorsUsersListEnabled"));
+    assertEquals("verbose", ui.get("matrixUserListNameDisplayMode"));
+    assertEquals(false, ui.get("typingIndicatorsTranscriptEnabled"));
+    assertEquals(false, ui.get("typingIndicatorsSendSignalEnabled"));
+  }
+}

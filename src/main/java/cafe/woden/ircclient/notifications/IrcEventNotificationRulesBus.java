@@ -3,6 +3,7 @@ package cafe.woden.ircclient.notifications;
 import cafe.woden.ircclient.config.IrcEventNotificationRuleProperties;
 import cafe.woden.ircclient.config.UiProperties;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
+import cafe.woden.ircclient.notifications.api.IrcEventNotificationRulesPort;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.List;
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Lazy
 @ApplicationLayer
-public class IrcEventNotificationRulesBus {
+public class IrcEventNotificationRulesBus implements IrcEventNotificationRulesPort {
 
   public static final String PROP_IRC_EVENT_NOTIFICATION_RULES = "ircEventNotificationRules";
 

@@ -5,6 +5,7 @@ import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeRoot
 import cafe.woden.ircclient.ui.servertree.model.ServerNodes;
 import cafe.woden.ircclient.ui.servertree.model.ServerTreeNodeClassifier;
 import cafe.woden.ircclient.ui.servertree.model.ServerTreeNodeData;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -167,9 +168,9 @@ public final class ServerTreeDragReorderSupport {
     try {
       g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-      Color color = UIManager.getColor("Component.accentColor");
-      if (color == null) color = UIManager.getColor("Tree.selectionBorderColor");
-      if (color == null) color = UIManager.getColor("Tree.selectionForeground");
+      Color color = UIManager.getColor(UiColorKeys.COMPONENT_ACCENT_COLOR);
+      if (color == null) color = UIManager.getColor(UiColorKeys.TREE_SELECTION_BORDER_COLOR);
+      if (color == null) color = UIManager.getColor(UiColorKeys.TREE_SELECTION_FOREGROUND);
       if (color == null) color = Color.BLACK;
       g2.setColor(color);
 

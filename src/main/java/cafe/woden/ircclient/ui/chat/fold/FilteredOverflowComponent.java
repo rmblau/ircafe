@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.chat.fold;
 
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -156,7 +157,7 @@ public class FilteredOverflowComponent extends JPanel implements FilteredLineCom
 
   private void applyDimItalic(JLabel l) {
     if (l == null) return;
-    Color dim = UIManager.getColor("Label.disabledForeground");
+    Color dim = UIManager.getColor(UiColorKeys.LABEL_DISABLED_FOREGROUND);
     if (dim != null) l.setForeground(dim);
 
     Font base = (transcriptBaseFont != null) ? transcriptBaseFont : UIManager.getFont("Label.font");

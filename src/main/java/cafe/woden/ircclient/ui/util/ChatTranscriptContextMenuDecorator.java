@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.util;
 
+import cafe.woden.ircclient.net.HttpHeaderNames;
 import cafe.woden.ircclient.net.HttpLite;
 import cafe.woden.ircclient.net.NetProxyContext;
 import cafe.woden.ircclient.net.ProxyPlan;
@@ -1017,9 +1018,9 @@ public final class ChatTranscriptContextMenuDecorator implements AutoCloseable {
       Proxy proxy = (plan.proxy() != null) ? plan.proxy() : Proxy.NO_PROXY;
 
       Map<String, String> headers = new HashMap<>();
-      headers.put("User-Agent", DEFAULT_UA);
-      headers.put("Accept", "*/*");
-      headers.put("Accept-Language", "en-US,en;q=0.9");
+      headers.put(HttpHeaderNames.USER_AGENT, DEFAULT_UA);
+      headers.put(HttpHeaderNames.ACCEPT, "*/*");
+      headers.put(HttpHeaderNames.ACCEPT_LANGUAGE, "en-US,en;q=0.9");
 
       int connectTimeoutMs = Math.max(1, plan.connectTimeoutMs());
       int readTimeoutMs = Math.max(Math.max(1, plan.readTimeoutMs()), 120_000);
@@ -1034,7 +1035,7 @@ public final class ChatTranscriptContextMenuDecorator implements AutoCloseable {
           // ensure we don't leak the first connection
         }
         String origin = uri.getScheme() + "://" + uri.getHost() + "/";
-        headers.put("Referer", origin);
+        headers.put(HttpHeaderNames.REFERER, origin);
         resp = HttpLite.getStream(uri, headers, proxy, connectTimeoutMs, readTimeoutMs);
         code = resp.statusCode();
       }

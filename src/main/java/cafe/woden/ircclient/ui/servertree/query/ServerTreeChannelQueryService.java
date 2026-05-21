@@ -8,11 +8,13 @@ import java.util.Objects;
 import java.util.function.Function;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /** Provides channel-related tree queries and mutations with EDT-safe execution. */
+@InterfaceLayer
 @Component
 @RequiredArgsConstructor
 public final class ServerTreeChannelQueryService {

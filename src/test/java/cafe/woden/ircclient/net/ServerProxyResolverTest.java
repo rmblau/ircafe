@@ -10,10 +10,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.ServerCatalog;
 import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -87,18 +87,11 @@ class ServerProxyResolverTest {
   }
 
   private static IrcProperties.Server server(String id, IrcProperties.Proxy proxy) {
-    return new IrcProperties.Server(
-        id,
-        "irc.example.net",
-        6697,
-        true,
-        "",
-        "nick",
-        "login",
-        "real name",
-        null,
-        List.of(),
-        List.of(),
-        proxy);
+    return IrcPropertiesTestFixtures.serverBuilder(id)
+        .nick("nick")
+        .login("login")
+        .realName("real name")
+        .proxy(proxy)
+        .build();
   }
 }

@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.ui.servertree.state;
 
 import cafe.woden.ircclient.model.TargetRef;
-import cafe.woden.ircclient.notifications.NotificationStore;
+import cafe.woden.ircclient.notifications.api.NotificationQueryPort;
 import cafe.woden.ircclient.ui.servertree.ServerTreeBouncerBackends;
 import cafe.woden.ircclient.ui.servertree.ServerTreeConventions;
 import cafe.woden.ircclient.ui.servertree.model.ServerTreeNodeData;
@@ -11,14 +11,16 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Updates dynamic node badges/labels driven by notifications and auto-connect state. */
+@InterfaceLayer
 @Component
 public final class ServerTreeNodeBadgeUpdater {
 
   public interface Context {
-    NotificationStore notificationStore();
+    NotificationQueryPort notificationStore();
 
     Set<String> ephemeralServerIds();
 
@@ -30,7 +32,7 @@ public final class ServerTreeNodeBadgeUpdater {
   }
 
   private record DefaultContext(
-      NotificationStore notificationStore,
+      NotificationQueryPort notificationStore,
       Set<String> ephemeralServerIds,
       Map<TargetRef, DefaultMutableTreeNode> leaves,
       Consumer<DefaultMutableTreeNode> nodeChanged,
@@ -52,7 +54,7 @@ public final class ServerTreeNodeBadgeUpdater {
   }
 
   public static Context context(
-      NotificationStore notificationStore,
+      NotificationQueryPort notificationStore,
       Set<String> ephemeralServerIds,
       Map<TargetRef, DefaultMutableTreeNode> leaves,
       Consumer<DefaultMutableTreeNode> nodeChanged,

@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.config.InstalledPluginServices;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.irc.backend.BackendRoutingIrcClientService;
 import cafe.woden.ircclient.irc.backend.IrcBackendClientService;
@@ -277,20 +278,11 @@ class BackendRoutingIrcClientServiceSpringIntegrationTest {
   record BackendStreamHandle(PublishProcessor<ServerIrcEvent> processor) {}
 
   private static IrcProperties.Server server(String id, IrcProperties.Server.Backend backend) {
-    return new IrcProperties.Server(
-        id,
-        "irc.example.net",
-        6697,
-        true,
-        "",
-        "tester",
-        "tester",
-        "Tester",
-        null,
-        null,
-        List.of(),
-        List.of(),
-        null,
-        backend);
+    return IrcPropertiesTestFixtures.serverBuilder(id)
+        .nick("tester")
+        .login("tester")
+        .realName("Tester")
+        .backend(backend)
+        .build();
   }
 }

@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.app.outbound.dcc;
 
 import cafe.woden.ircclient.app.api.UiPort;
-import cafe.woden.ircclient.dcc.DccTransferStore;
+import cafe.woden.ircclient.dcc.api.DccActionHint;
 import cafe.woden.ircclient.model.TargetRef;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -61,7 +61,7 @@ final class DccFileTransferIoSupport {
               "Transferring",
               displayName + " (" + DccCommandSupport.formatBytes(size) + ")",
               pct,
-              DccTransferStore.ActionHint.NONE);
+              DccActionHint.NONE);
         }
       }
       out.flush();
@@ -116,7 +116,7 @@ final class DccFileTransferIoSupport {
                 offer.fileName() + " -> " + destination.getFileName(),
                 localPath,
                 pct,
-                DccTransferStore.ActionHint.NONE);
+                DccActionHint.NONE);
           }
         }
         fileOut.flush();

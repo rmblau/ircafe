@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.irc.matrix;
 
+import static cafe.woden.ircclient.irc.backend.IrcBackendValidationMessages.SERVER_ID_BLANK;
+
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.irc.IrcEvent;
@@ -50,7 +52,7 @@ final class MatrixRawRoomAdminCommandHandler {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
 
               SessionView session = requireSession(sid, "topic");
@@ -95,7 +97,7 @@ final class MatrixRawRoomAdminCommandHandler {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
 
               SessionView session = requireSession(sid, "kick");
@@ -132,7 +134,7 @@ final class MatrixRawRoomAdminCommandHandler {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
 
               SessionView session = requireSession(sid, "invite");
@@ -160,7 +162,7 @@ final class MatrixRawRoomAdminCommandHandler {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
 
               SessionView session = requireSession(sid, "list");

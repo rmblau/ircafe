@@ -2,7 +2,8 @@ package cafe.woden.ircclient.app.outbound.dcc;
 
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
-import cafe.woden.ircclient.dcc.DccTransferStore;
+import cafe.woden.ircclient.dcc.api.DccActionHint;
+import cafe.woden.ircclient.dcc.api.DccTransferCommandPort;
 import cafe.woden.ircclient.model.TargetRef;
 import java.time.Instant;
 import java.util.Locale;
@@ -20,7 +21,7 @@ final class DccCommandSupport {
 
   @NonNull private final UiPort ui;
   @NonNull private final TargetCoordinator targetCoordinator;
-  private final DccTransferStore dccTransferStore;
+  private final DccTransferCommandPort dccTransferStore;
 
   TargetRef ensurePmTarget(String sid, String nick) {
     TargetRef pm = new TargetRef(sid, nick);
@@ -51,7 +52,7 @@ final class DccCommandSupport {
       String status,
       String detail,
       Integer progressPercent,
-      DccTransferStore.ActionHint actionHint) {
+      DccActionHint actionHint) {
     upsertTransfer(sid, nick, entryId, kind, status, detail, "", progressPercent, actionHint);
   }
 
@@ -64,7 +65,7 @@ final class DccCommandSupport {
       String detail,
       String localPath,
       Integer progressPercent,
-      DccTransferStore.ActionHint actionHint) {
+      DccActionHint actionHint) {
     if (dccTransferStore == null) return;
     dccTransferStore.upsert(
         sid, entryId, nick, kind, status, detail, localPath, progressPercent, actionHint);

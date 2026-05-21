@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.ui.settings.theme;
 
+import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import com.formdev.flatlaf.FlatLaf;
 import java.awt.Color;
 import java.awt.Font;
@@ -40,19 +42,19 @@ class ThemeAppearanceService {
   };
 
   private static final String[] ACCENT_OVERRIDE_KEYS = {
-    "@accentColor",
-    "@accentBaseColor",
-    "@accentBase2Color",
-    "Component.focusColor",
-    "Component.linkColor",
-    "TextComponent.selectionBackground",
-    "TextComponent.selectionForeground",
-    "List.selectionBackground",
-    "List.selectionForeground",
-    "Table.selectionBackground",
-    "Table.selectionForeground",
-    "Tree.selectionBackground",
-    "Tree.selectionForeground"
+    UiColorKeys.ACCENT_COLOR,
+    UiColorKeys.ACCENT_BASE_COLOR,
+    UiColorKeys.ACCENT_BASE_2_COLOR,
+    UiColorKeys.COMPONENT_FOCUS_COLOR,
+    UiColorKeys.COMPONENT_LINK_COLOR,
+    UiColorKeys.TEXT_COMPONENT_SELECTION_BACKGROUND,
+    UiColorKeys.TEXT_COMPONENT_SELECTION_FOREGROUND,
+    UiColorKeys.LIST_SELECTION_BACKGROUND,
+    UiColorKeys.LIST_SELECTION_FOREGROUND,
+    UiColorKeys.TABLE_SELECTION_BACKGROUND,
+    UiColorKeys.TABLE_SELECTION_FOREGROUND,
+    UiColorKeys.TREE_SELECTION_BACKGROUND,
+    UiColorKeys.TREE_SELECTION_FOREGROUND
   };
 
   private static final Object NULL_SENTINEL = new Object();
@@ -188,15 +190,15 @@ class ThemeAppearanceService {
     Color chosen = ThemeColorUtils.parseHexColor(accent.accentColor());
     if (chosen == null) return;
 
-    Color themeAccent = UIManager.getColor("@accentColor");
-    if (themeAccent == null) themeAccent = UIManager.getColor("Component.focusColor");
+    Color themeAccent = UIManager.getColor(UiColorKeys.ACCENT_COLOR);
+    if (themeAccent == null) themeAccent = UIManager.getColor(UiColorKeys.COMPONENT_FOCUS_COLOR);
     if (themeAccent == null) themeAccent = new Color(0x2D, 0x6B, 0xFF);
 
-    double strength = Math.max(0, Math.min(100, accent.strength())) / 100.0;
+    double strength = SettingsRangeSupport.normalizeThemePercent(accent.strength()) / 100.0;
     Color blended = ThemeColorUtils.mix(themeAccent, chosen, strength);
 
-    Color panelBg = UIManager.getColor("Panel.background");
-    if (panelBg == null) panelBg = UIManager.getColor("control");
+    Color panelBg = UIManager.getColor(UiColorKeys.PANEL_BACKGROUND);
+    if (panelBg == null) panelBg = UIManager.getColor(UiColorKeys.CONTROL);
 
     boolean dark = ThemeColorUtils.isDark(panelBg);
     Color focus =
@@ -212,31 +214,31 @@ class ThemeAppearanceService {
     captureAccentBaseline();
 
     if (isFlatLafActive()) {
-      UIManager.put("@accentColor", blended);
-      UIManager.put("@accentBaseColor", blended);
-      UIManager.put("@accentBase2Color", focus);
+      UIManager.put(UiColorKeys.ACCENT_COLOR, blended);
+      UIManager.put(UiColorKeys.ACCENT_BASE_COLOR, blended);
+      UIManager.put(UiColorKeys.ACCENT_BASE_2_COLOR, focus);
     }
 
-    UIManager.put("Component.focusColor", focus);
-    UIManager.put("Component.linkColor", link);
+    UIManager.put(UiColorKeys.COMPONENT_FOCUS_COLOR, focus);
+    UIManager.put(UiColorKeys.COMPONENT_LINK_COLOR, link);
 
-    Color bg = UIManager.getColor("TextComponent.background");
-    if (bg == null) bg = UIManager.getColor("Panel.background");
-    if (bg == null) bg = UIManager.getColor("control");
+    Color bg = UIManager.getColor(UiColorKeys.TEXT_COMPONENT_BACKGROUND);
+    if (bg == null) bg = UIManager.getColor(UiColorKeys.PANEL_BACKGROUND);
+    if (bg == null) bg = UIManager.getColor(UiColorKeys.CONTROL);
     if (bg == null) bg = dark ? Color.DARK_GRAY : Color.LIGHT_GRAY;
 
     double selMix = dark ? 0.55 : 0.35;
     Color selectionBg = ThemeColorUtils.mix(bg, blended, selMix);
     Color selectionFg = ThemeColorUtils.bestTextColor(selectionBg);
 
-    UIManager.put("TextComponent.selectionBackground", selectionBg);
-    UIManager.put("TextComponent.selectionForeground", selectionFg);
-    UIManager.put("List.selectionBackground", selectionBg);
-    UIManager.put("List.selectionForeground", selectionFg);
-    UIManager.put("Table.selectionBackground", selectionBg);
-    UIManager.put("Table.selectionForeground", selectionFg);
-    UIManager.put("Tree.selectionBackground", selectionBg);
-    UIManager.put("Tree.selectionForeground", selectionFg);
+    UIManager.put(UiColorKeys.TEXT_COMPONENT_SELECTION_BACKGROUND, selectionBg);
+    UIManager.put(UiColorKeys.TEXT_COMPONENT_SELECTION_FOREGROUND, selectionFg);
+    UIManager.put(UiColorKeys.LIST_SELECTION_BACKGROUND, selectionBg);
+    UIManager.put(UiColorKeys.LIST_SELECTION_FOREGROUND, selectionFg);
+    UIManager.put(UiColorKeys.TABLE_SELECTION_BACKGROUND, selectionBg);
+    UIManager.put(UiColorKeys.TABLE_SELECTION_FOREGROUND, selectionFg);
+    UIManager.put(UiColorKeys.TREE_SELECTION_BACKGROUND, selectionBg);
+    UIManager.put(UiColorKeys.TREE_SELECTION_FOREGROUND, selectionFg);
   }
 
   private void captureAccentBaseline() {

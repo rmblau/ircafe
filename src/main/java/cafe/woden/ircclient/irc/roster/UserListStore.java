@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @ApplicationLayer
-public class UserListStore {
+public class UserListStore implements UserListPort {
 
   private static final int MAX_LEARNED_NICKS_PER_SERVER = 20_000;
 

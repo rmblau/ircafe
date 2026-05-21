@@ -3,7 +3,7 @@ package cafe.woden.ircclient.ui.coordinator;
 import cafe.woden.ircclient.ignore.IgnoreListService;
 import cafe.woden.ircclient.ignore.IgnoreStatusService;
 import cafe.woden.ircclient.irc.IrcEvent.NickInfo;
-import cafe.woden.ircclient.irc.roster.UserListStore;
+import cafe.woden.ircclient.irc.roster.UserListPort;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.ChatDockable;
 import cafe.woden.ircclient.ui.NickContextMenuFactory;
@@ -19,7 +19,7 @@ public final class ChatNickContextCoordinator {
 
   private final IgnoreListService ignoreListService;
   private final IgnoreStatusService ignoreStatusService;
-  private final UserListStore userListStore;
+  private final UserListPort userListStore;
   private final NickContextMenuFactory.NickContextMenu nickContextMenu;
   private final Supplier<TargetRef> activeTargetSupplier;
   private final Component dialogParent;
@@ -27,7 +27,7 @@ public final class ChatNickContextCoordinator {
   public ChatNickContextCoordinator(
       IgnoreListService ignoreListService,
       IgnoreStatusService ignoreStatusService,
-      UserListStore userListStore,
+      UserListPort userListStore,
       NickContextMenuFactory.NickContextMenu nickContextMenu,
       Supplier<TargetRef> activeTargetSupplier,
       Component dialogParent) {

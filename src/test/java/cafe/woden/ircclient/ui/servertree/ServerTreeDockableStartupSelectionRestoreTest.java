@@ -2,8 +2,9 @@ package cafe.woden.ircclient.ui.servertree;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.config.ServerEntry;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.controls.ConnectButton;
@@ -15,7 +16,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 import javax.swing.SwingUtilities;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -26,9 +26,7 @@ class ServerTreeDockableStartupSelectionRestoreTest {
 
   @Test
   void startupPrefersRememberedTargetWhenLeafExists() throws Exception {
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("ircafe.yml").toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
     store.rememberLastSelectedTarget("libera", "status");
 
     ServerTreeDockable dockable = newDockable(store);
@@ -41,9 +39,7 @@ class ServerTreeDockableStartupSelectionRestoreTest {
 
   @Test
   void startupFallsBackToDefaultWhenRememberedTargetDoesNotExist() throws Exception {
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("ircafe.yml").toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
     store.rememberLastSelectedTarget("libera", "#does-not-exist");
 
     ServerTreeDockable dockable = newDockable(store);
@@ -56,9 +52,7 @@ class ServerTreeDockableStartupSelectionRestoreTest {
 
   @Test
   void startupRestoresRememberedTargetWhenItBecomesSelectableLater() throws Exception {
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("ircafe.yml").toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
     TargetRef remembered = new TargetRef("libera", "##Llamas");
     store.rememberLastSelectedTarget(remembered.serverId(), remembered.target());
 
@@ -76,9 +70,7 @@ class ServerTreeDockableStartupSelectionRestoreTest {
 
   @Test
   void lateSubscriberReceivesRestoredSelectionFromReplay() throws Exception {
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("ircafe.yml").toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
     TargetRef remembered = new TargetRef("libera", "##Llamas");
     store.rememberLastSelectedTarget(remembered.serverId(), remembered.target());
 
@@ -89,7 +81,7 @@ class ServerTreeDockableStartupSelectionRestoreTest {
     onEdt(() -> {});
 
     TestSubscriber<TargetRef> subscriber = dockable.selectionStream().test();
-    subscriber.awaitDone(1, TimeUnit.SECONDS);
+    subscriber.awaitCount(1);
     subscriber.assertValue(remembered);
   }
 
@@ -134,20 +126,7 @@ class ServerTreeDockableStartupSelectionRestoreTest {
   }
 
   private static ServerEntry serverEntry(String id) {
-    return ServerEntry.persistent(
-        new IrcProperties.Server(
-            id,
-            "irc.example.net",
-            6697,
-            true,
-            "",
-            "ircafe",
-            "ircafe",
-            "IRCafe User",
-            null,
-            List.of(),
-            List.of(),
-            null));
+    return ServerEntry.persistent(IrcPropertiesTestFixtures.server(id));
   }
 
   private static void onEdt(Runnable r) throws InvocationTargetException, InterruptedException {

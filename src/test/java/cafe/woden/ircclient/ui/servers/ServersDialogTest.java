@@ -3,7 +3,7 @@ package cafe.woden.ircclient.ui.servers;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.app.api.BackendEditorProfileSpec;
-import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -18,21 +18,12 @@ class ServersDialogTest {
     String label =
         ServersDialog.serverListLabel(
             backendProfiles,
-            new IrcProperties.Server(
-                "plugin",
-                "irc.example.net",
-                6697,
-                true,
-                "",
-                "tester",
-                "tester",
-                "Tester",
-                null,
-                null,
-                List.of(),
-                List.of(),
-                null,
-                "plugin-backend"));
+            IrcPropertiesTestFixtures.serverBuilder("plugin")
+                .nick("tester")
+                .login("tester")
+                .realName("Tester")
+                .backendId("plugin-backend")
+                .build());
 
     assertTrue(label.contains("Backend:</span> Fancy Plugin"));
     assertTrue(label.contains("· Nick:</span> tester"));

@@ -1,10 +1,10 @@
 package cafe.woden.ircclient.ui.coordinator;
 
 import cafe.woden.ircclient.model.TargetRef;
-import cafe.woden.ircclient.notifications.NotificationStore;
-import cafe.woden.ircclient.notifications.NotificationStore.HighlightEvent;
-import cafe.woden.ircclient.notifications.NotificationStore.IrcEventRuleEvent;
-import cafe.woden.ircclient.notifications.NotificationStore.RuleMatchEvent;
+import cafe.woden.ircclient.notifications.api.HighlightEvent;
+import cafe.woden.ircclient.notifications.api.IrcEventRuleEvent;
+import cafe.woden.ircclient.notifications.api.NotificationStorePort;
+import cafe.woden.ircclient.notifications.api.RuleMatchEvent;
 import cafe.woden.ircclient.ui.ChatDockable;
 import cafe.woden.ircclient.ui.channellist.ChannelListPanel;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
@@ -57,7 +57,7 @@ public final class ChatTopicCoordinator {
   private final TopicPanel topicPanel = new TopicPanel();
   private final JSplitPane topicSplit;
   private final ChannelListPanel channelListPanel;
-  private final NotificationStore notificationStore;
+  private final NotificationStorePort notificationStore;
   private final Consumer<TargetRef> targetSelector;
   private final Runnable uiRefresh;
   private final Function<TargetRef, String> persistedTopicLookup;
@@ -74,7 +74,7 @@ public final class ChatTopicCoordinator {
   public ChatTopicCoordinator(
       JScrollPane transcriptScroll,
       ChannelListPanel channelListPanel,
-      NotificationStore notificationStore,
+      NotificationStorePort notificationStore,
       Consumer<TargetRef> targetSelector,
       Runnable uiRefresh) {
     this(
@@ -92,7 +92,7 @@ public final class ChatTopicCoordinator {
   public ChatTopicCoordinator(
       JScrollPane transcriptScroll,
       ChannelListPanel channelListPanel,
-      NotificationStore notificationStore,
+      NotificationStorePort notificationStore,
       Consumer<TargetRef> targetSelector,
       Runnable uiRefresh,
       Function<TargetRef, String> persistedTopicLookup,

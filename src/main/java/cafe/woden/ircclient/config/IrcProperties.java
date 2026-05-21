@@ -15,7 +15,7 @@ import org.springframework.boot.context.properties.bind.Name;
  *
  * <p>Supports multiple servers via {@code irc.servers}.
  */
-@ConfigurationProperties(prefix = "irc")
+@ConfigurationProperties(prefix = ConfigPropertyKeys.IRC_PREFIX)
 @InfrastructureLayer
 public record IrcProperties(Client client, List<Server> servers) {
 

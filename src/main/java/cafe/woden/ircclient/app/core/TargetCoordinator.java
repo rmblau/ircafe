@@ -16,7 +16,7 @@ import cafe.woden.ircclient.irc.IrcEvent;
 import cafe.woden.ircclient.irc.enrichment.UserInfoEnrichmentService;
 import cafe.woden.ircclient.irc.playback.IrcBouncerPlaybackPort;
 import cafe.woden.ircclient.irc.port.IrcTargetMembershipPort;
-import cafe.woden.ircclient.irc.roster.UserListStore;
+import cafe.woden.ircclient.irc.roster.UserListPort;
 import cafe.woden.ircclient.irc.roster.UserhostQueryService;
 import cafe.woden.ircclient.model.TargetRef;
 import io.reactivex.rxjava3.core.Completable;
@@ -49,7 +49,7 @@ public class TargetCoordinator implements ActiveTargetPort {
   private static final Logger log = LoggerFactory.getLogger(TargetCoordinator.class);
 
   @NonNull private final UiPort ui;
-  @NonNull private final UserListStore userListStore;
+  @NonNull private final UserListPort userListStore;
 
   @NonNull
   @Qualifier("ircTargetMembershipPort")
@@ -96,7 +96,7 @@ public class TargetCoordinator implements ActiveTargetPort {
 
   public TargetCoordinator(
       UiPort ui,
-      UserListStore userListStore,
+      UserListPort userListStore,
       IrcTargetMembershipPort targetMembership,
       IrcBouncerPlaybackPort bouncerPlayback,
       ServerRegistry serverRegistry,
@@ -131,7 +131,7 @@ public class TargetCoordinator implements ActiveTargetPort {
   @Autowired
   public TargetCoordinator(
       UiPort ui,
-      UserListStore userListStore,
+      UserListPort userListStore,
       @Qualifier("ircTargetMembershipPort") IrcTargetMembershipPort targetMembership,
       @Qualifier("ircClientService") IrcBouncerPlaybackPort bouncerPlayback,
       ServerRegistry serverRegistry,

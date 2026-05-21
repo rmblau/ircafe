@@ -172,11 +172,17 @@ If you prefer a Make-first workflow, these cover most tasks:
 |---|---|---|
 | Run app from source | `make bootrun` | `./gradlew bootRun` |
 | Build runnable jar | `make jar` | `./gradlew bootJar` |
+| Fast local feedback | `make quick-check` | `./gradlew quickCheck` |
 | Run lint checks | `make lint` | `./gradlew lint` |
 | Run unit/non-functional tests | `make test` | `./gradlew test` |
 | Run integration tests | `make integration-test` | `./gradlew integrationTest` |
 | Run architecture guardrails | `make architecture-test` | `./gradlew architectureTest` |
 | Run Swing functional tests | `make functional-test` | `./gradlew functionalTest` |
+| Verify UI changes | `make verify-ui-change` | `./gradlew verifyUiChange` |
+| Verify Spring changes | `make verify-spring-change` | `./gradlew verifySpringChange` |
+| Verify architecture changes | `make verify-architecture-change` | `./gradlew verifyArchitectureChange` |
+| Run strict analysis | `make strict-analysis` | `./gradlew strictAnalysis` |
+| Generate coverage report | `make coverage-report` | `./gradlew coverageReport` |
 | Build app image | `make jpackage` | `./gradlew jpackage` |
 | Run full verification | `make check` | `./gradlew check` |
 
@@ -279,6 +285,7 @@ On tagged GitHub releases, CI now publishes `ircafe-<version>-linux-x64.flatpak`
 Common local checks:
 
 ```bash
+./gradlew quickCheck
 ./gradlew lint
 ./gradlew test
 ./gradlew check
@@ -390,6 +397,16 @@ When to run which tests:
 - Non-UI feature work: `./gradlew test`
 - Pre-merge on larger changes: `./gradlew check` plus relevant targeted suites above
 
+Shortcut aliases:
+
+```bash
+./gradlew quickCheck
+./gradlew verifyUiChange
+./gradlew verifySpringChange
+./gradlew verifyArchitectureChange
+./gradlew verifyRefactor
+```
+
 Auto-fix workflow (Error Prone auto-corrects first, then Spotless formatting):
 
 ```bash
@@ -404,9 +421,17 @@ Additional verification/reporting tasks:
 
 ```bash
 ./gradlew mutationTest
+./gradlew pitest
 ./gradlew themeValidate
+./gradlew strictAnalysis
+./gradlew coverageReport
+./gradlew jacocoTestReport
+./gradlew jacocoIntegrationTestReport
+./gradlew jacocoFunctionalTestReport
 ./gradlew dependencyCheckAnalyze
 ./gradlew cyclonedxBom
+./gradlew taskTree --task check
+./gradlew jmh
 ```
 
 ## Command discovery

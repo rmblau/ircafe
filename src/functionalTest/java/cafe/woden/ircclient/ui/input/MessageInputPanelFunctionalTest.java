@@ -10,10 +10,9 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.ui.CommandHistoryStore;
 import cafe.woden.ircclient.ui.backend.BackendUiContext;
 import cafe.woden.ircclient.ui.backend.BackendUiProfile;
-import cafe.woden.ircclient.ui.settings.MemoryUsageDisplayMode;
-import cafe.woden.ircclient.ui.settings.NotificationBackendMode;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
+import cafe.woden.ircclient.ui.settings.UiSettingsTestFixtures;
 import io.reactivex.rxjava3.disposables.Disposable;
 import java.awt.Component;
 import java.awt.Container;
@@ -256,89 +255,7 @@ class MessageInputPanelFunctionalTest {
       sid -> "matrix".equalsIgnoreCase(sid);
 
   private static UiSettings settingsWithChatFont(String family, int size) {
-    return new UiSettings(
-        "darcula",
-        family,
-        size,
-        true,
-        true,
-        false,
-        false,
-        false,
-        true,
-        true,
-        false,
-        true,
-        false,
-        false,
-        true,
-        NotificationBackendMode.AUTO,
-        true,
-        false,
-        0,
-        0,
-        true,
-        true,
-        false,
-        true,
-        true,
-        true,
-        true,
-        "dots",
-        true,
-        true,
-        true,
-        true,
-        true,
-        "HH:mm:ss",
-        true,
-        true,
-        100,
-        200,
-        2000,
-        20,
-        10,
-        6,
-        false,
-        6,
-        18,
-        360,
-        500,
-        4000,
-        true,
-        "#6AA2FF",
-        true,
-        true,
-        true,
-        7,
-        6,
-        30,
-        5,
-        false,
-        15,
-        3,
-        60,
-        5,
-        false,
-        45,
-        120,
-        false,
-        300,
-        2,
-        30,
-        15,
-        MemoryUsageDisplayMode.LONG,
-        1000,
-        5,
-        true,
-        false,
-        false,
-        false,
-        List.of(),
-        null,
-        null,
-        false,
-        "compact");
+    return UiSettingsTestFixtures.builder().chatFontFamily(family).chatFontSize(size).build();
   }
 
   private static JButton findNamedButton(Component root, String name) {

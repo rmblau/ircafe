@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -25,11 +24,7 @@ import org.springframework.stereotype.Component;
 final class MatrixDirectRoomResolver {
 
   private static final Map<String, String> REQUEST_HEADERS =
-      Map.of(
-          "User-Agent", "ircafe-matrix-dm/1.0",
-          "Accept", "application/json",
-          "Accept-Encoding", "gzip",
-          "Content-Type", "application/json");
+      MatrixHttpHeaders.jsonWithContentType("ircafe-matrix-dm/1.0");
 
   private static final ObjectMapper JSON = new ObjectMapper();
 
@@ -40,7 +35,7 @@ final class MatrixDirectRoomResolver {
     URI endpoint = MatrixEndpointResolver.createRoomUri(server);
     String token = normalize(accessToken);
     if (token.isEmpty()) {
-      return ResolveResult.failed(endpoint, "access token is blank");
+      return ResolveResult.failed(endpoint, MatrixProtocol.ACCESS_TOKEN_BLANK);
     }
 
     String peer = normalize(peerUserId);
@@ -50,8 +45,7 @@ final class MatrixDirectRoomResolver {
 
     Map<String, Object> payload =
         Map.of("is_direct", true, "preset", "trusted_private_chat", "invite", List.of(peer));
-    Map<String, String> headers = new HashMap<>(REQUEST_HEADERS);
-    headers.put("Authorization", "Bearer " + token);
+    Map<String, String> headers = MatrixHttpHeaders.withBearerToken(REQUEST_HEADERS, token);
     ProxyPlan plan = proxyResolver.planForServer(serverId);
 
     try {
@@ -89,7 +83,7 @@ final class MatrixDirectRoomResolver {
     if (json.isEmpty()) return "";
     try {
       JsonNode root = JSON.readTree(json);
-      return normalize(root.path("room_id").asText(""));
+      return normalize(root.path(MatrixProtocol.JSON_ROOM_ID).asText(""));
     } catch (Exception ignored) {
       return "";
     }

@@ -51,4 +51,21 @@ class FilterCommandParserTest {
     assertTrue(hlAdd.patch().actionSpecified());
     assertEquals(FilterAction.HIGHLIGHT, hlAdd.patch().action());
   }
+
+  @Test
+  void clampsPlaceholderTuningCommands() {
+    FilterCommand preview = parser.parse("/filter placeholder-preview 99");
+    FilterCommand.PlaceholderPreview placeholderPreview =
+        assertInstanceOf(FilterCommand.PlaceholderPreview.class, preview);
+    assertEquals(25, placeholderPreview.maxLines());
+
+    FilterCommand defaults =
+        parser.parse("/filter defaults preview=-1 maxrun=999999 maxtags=999 maxbatch=9999");
+    FilterCommand.Defaults parsedDefaults =
+        assertInstanceOf(FilterCommand.Defaults.class, defaults);
+    assertEquals(0, parsedDefaults.placeholderMaxPreviewLines());
+    assertEquals(50_000, parsedDefaults.placeholderMaxLinesPerRun());
+    assertEquals(500, parsedDefaults.placeholderTooltipMaxTags());
+    assertEquals(5_000, parsedDefaults.historyPlaceholderMaxRunsPerBatch());
+  }
 }

@@ -1,18 +1,19 @@
 package cafe.woden.ircclient.ui.settings.theme;
 
 import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
-import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
+import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Window;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
-import java.util.Objects;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -31,8 +32,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.UIManager;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -127,7 +126,7 @@ public class ThemeSelectionDialog {
             });
 
     JTextField search = new JTextField(14);
-    search.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Search themes");
+    PreferencesUiSupport.placeholder(search, "Search themes");
 
     JLabel count = new JLabel();
     count.putClientProperty(
@@ -151,25 +150,7 @@ public class ThemeSelectionDialog {
     toneFilter.addActionListener(filterListener);
     packFilter.addActionListener(filterListener);
     allIntelliJ.addActionListener(filterListener);
-    search
-        .getDocument()
-        .addDocumentListener(
-            new DocumentListener() {
-              @Override
-              public void insertUpdate(DocumentEvent e) {
-                refresh.run();
-              }
-
-              @Override
-              public void removeUpdate(DocumentEvent e) {
-                refresh.run();
-              }
-
-              @Override
-              public void changedUpdate(DocumentEvent e) {
-                refresh.run();
-              }
-            });
+    search.getDocument().addDocumentListener(new SettingsDocumentListener(refresh));
 
     // initial fill
     rebuildModel(
@@ -230,14 +211,17 @@ public class ThemeSelectionDialog {
           schedulePreview(ThemeIdUtils.normalizeThemeId(selectedThemeId()));
         });
 
-    JPanel filterBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
-    filterBar.add(new JLabel("Tone"));
-    filterBar.add(toneFilter);
-    filterBar.add(new JLabel("Pack"));
-    filterBar.add(packFilter);
-    filterBar.add(allIntelliJ);
-    filterBar.add(search);
-    filterBar.add(count);
+    JPanel filterBar =
+        PreferencesUiSupport.leftComponentRow(
+            6,
+            0,
+            new JLabel("Tone"),
+            toneFilter,
+            new JLabel("Pack"),
+            packFilter,
+            allIntelliJ,
+            search,
+            count);
 
     JScrollPane listScroll = new JScrollPane(themeList);
     listScroll.setPreferredSize(new Dimension(250, 280));
@@ -264,16 +248,9 @@ public class ThemeSelectionDialog {
     previewPanel.add(previewTitle, BorderLayout.NORTH);
     previewPanel.add(previewScroll, BorderLayout.CENTER);
 
-    JButton apply = new JButton("Apply");
-    JButton ok = new JButton("OK");
-    JButton cancel = new JButton("Cancel");
-
-    apply.setIcon(SvgIcons.action("check", 16));
-    apply.setDisabledIcon(SvgIcons.actionDisabled("check", 16));
-    ok.setIcon(SvgIcons.action("check", 16));
-    ok.setDisabledIcon(SvgIcons.actionDisabled("check", 16));
-    cancel.setIcon(SvgIcons.action("close", 16));
-    cancel.setDisabledIcon(SvgIcons.actionDisabled("close", 16));
+    JButton apply = PreferencesUiSupport.buttonWithIcon("Apply", "check");
+    JButton ok = PreferencesUiSupport.buttonWithIcon("OK", "check");
+    JButton cancel = PreferencesUiSupport.buttonWithIcon("Cancel", "close");
     apply.putClientProperty(FlatClientProperties.BUTTON_TYPE, "primary");
 
     apply.addActionListener(e -> commitSelectedTheme());
@@ -284,10 +261,7 @@ public class ThemeSelectionDialog {
         });
     cancel.addActionListener(e -> closeDialog());
 
-    JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-    buttons.add(apply);
-    buttons.add(ok);
-    buttons.add(cancel);
+    JPanel buttons = PreferencesUiSupport.rightComponentRow(5, 5, apply, ok, cancel);
 
     JLabel help =
         new JLabel("Select a theme to preview it live. Click Apply/OK to save your selection.");
@@ -334,7 +308,7 @@ public class ThemeSelectionDialog {
       String queryRaw) {
     ThemeManager.ThemeTone tone = toneChoice != null ? toneChoice.tone() : null;
     ThemeManager.ThemePack pack = packChoice != null ? packChoice.pack() : null;
-    String q = Objects.toString(queryRaw, "").trim().toLowerCase();
+    String q = SettingsValueSupport.lowerTrimmedString(queryRaw);
 
     model.clear();
     Arrays.stream(all)
@@ -476,33 +450,47 @@ public class ThemeSelectionDialog {
   private void refreshTranscriptPreview() {
     if (transcriptPreview == null) return;
 
-    Color panelBg = firstUiColor(Color.WHITE, "Panel.background", "control", "nimbusBase");
+    Color panelBg =
+        firstUiColor(
+            Color.WHITE,
+            UiColorKeys.PANEL_BACKGROUND,
+            UiColorKeys.CONTROL,
+            UiColorKeys.NIMBUS_BASE);
     Color textBg =
         firstUiColor(
-            panelBg, "TextArea.background", "TextComponent.background", "Panel.background");
+            panelBg,
+            UiColorKeys.TEXT_AREA_BACKGROUND,
+            UiColorKeys.TEXT_COMPONENT_BACKGROUND,
+            UiColorKeys.PANEL_BACKGROUND);
     Color textFg =
         firstUiColor(
             Color.BLACK,
-            "TextArea.foreground",
-            "TextComponent.foreground",
-            "Label.foreground",
-            "textText");
+            UiColorKeys.TEXT_AREA_FOREGROUND,
+            UiColorKeys.TEXT_COMPONENT_FOREGROUND,
+            UiColorKeys.LABEL_FOREGROUND,
+            UiColorKeys.TEXT_TEXT);
     Color accent =
         firstUiColor(
             new Color(0x2D, 0x6B, 0xFF),
-            "@accentColor",
-            "Component.linkColor",
-            "Component.focusColor",
-            "textHighlight");
+            UiColorKeys.ACCENT_COLOR,
+            UiColorKeys.COMPONENT_LINK_COLOR,
+            UiColorKeys.COMPONENT_FOCUS_COLOR,
+            UiColorKeys.TEXT_HIGHLIGHT);
     Color muted = ThemeColorUtils.mix(textFg, textBg, 0.45);
     Color system = ThemeColorUtils.mix(textFg, textBg, 0.30);
     Color nick = ThemeColorUtils.mix(accent, textFg, 0.20);
     Color self = ThemeColorUtils.mix(accent, textFg, 0.35);
     Color highlightBg =
-        firstUiColor(null, "List.selectionBackground", "TextComponent.selectionBackground");
+        firstUiColor(
+            null,
+            UiColorKeys.LIST_SELECTION_BACKGROUND,
+            UiColorKeys.TEXT_COMPONENT_SELECTION_BACKGROUND);
     if (highlightBg == null) highlightBg = ThemeColorUtils.mix(textBg, accent, 0.33);
     Color highlightFg =
-        firstUiColor(null, "List.selectionForeground", "TextComponent.selectionForeground");
+        firstUiColor(
+            null,
+            UiColorKeys.LIST_SELECTION_FOREGROUND,
+            UiColorKeys.TEXT_COMPONENT_SELECTION_FOREGROUND);
     if (highlightFg == null) highlightFg = ThemeColorUtils.bestTextColor(highlightBg);
 
     String html =

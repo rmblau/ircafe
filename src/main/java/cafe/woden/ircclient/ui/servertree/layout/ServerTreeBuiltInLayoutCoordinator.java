@@ -10,9 +10,11 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Coordinates per-server built-in node layout state and runtime-config persistence. */
+@InterfaceLayer
 @Component
 public final class ServerTreeBuiltInLayoutCoordinator {
 

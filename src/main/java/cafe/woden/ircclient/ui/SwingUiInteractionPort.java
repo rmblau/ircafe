@@ -15,6 +15,7 @@ import cafe.woden.ircclient.ui.bus.TargetActivationBus;
 import cafe.woden.ircclient.ui.controls.ConnectButton;
 import cafe.woden.ircclient.ui.controls.DisconnectButton;
 import cafe.woden.ircclient.ui.servertree.ServerTreeDockable;
+import cafe.woden.ircclient.ui.util.SwingClientProperties;
 import io.reactivex.rxjava3.core.Flowable;
 import java.util.ArrayList;
 import java.util.List;
@@ -241,7 +242,8 @@ final class SwingUiInteractionPort implements UiInteractionPort {
           javax.swing.JPasswordField adminPasswordField = new javax.swing.JPasswordField(20);
           adminPasswordField.putClientProperty(
               com.formdev.flatlaf.FlatClientProperties.PLACEHOLDER_TEXT, "admin password");
-          adminPasswordField.putClientProperty("JPasswordField.showRevealButton", true);
+          adminPasswordField.putClientProperty(
+              SwingClientProperties.PASSWORD_FIELD_SHOW_REVEAL_BUTTON, true);
           adminPasswordField.putClientProperty(
               com.formdev.flatlaf.FlatClientProperties.STYLE, "showRevealButton:true");
 

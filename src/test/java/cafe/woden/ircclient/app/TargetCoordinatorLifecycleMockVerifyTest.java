@@ -14,6 +14,7 @@ import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.ServerRegistry;
 import cafe.woden.ircclient.ignore.api.IgnoreListQueryPort;
@@ -26,7 +27,6 @@ import cafe.woden.ircclient.irc.roster.UserhostQueryService;
 import cafe.woden.ircclient.model.TargetRef;
 import io.reactivex.rxjava3.core.Completable;
 import java.time.Instant;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -153,21 +153,12 @@ class TargetCoordinatorLifecycleMockVerifyTest {
     when(serverRegistry.find("quassel"))
         .thenReturn(
             Optional.of(
-                new IrcProperties.Server(
-                    "quassel",
-                    "core.example.net",
-                    4242,
-                    false,
-                    "",
-                    "ircafe",
-                    "ircafe",
-                    "IRCafe User",
-                    null,
-                    null,
-                    List.of(),
-                    List.of(),
-                    null,
-                    IrcProperties.Server.Backend.QUASSEL_CORE)));
+                IrcPropertiesTestFixtures.serverBuilder("quassel")
+                    .host("core.example.net")
+                    .port(4242)
+                    .tls(false)
+                    .backend(IrcProperties.Server.Backend.QUASSEL_CORE)
+                    .build()));
     TargetCoordinator coordinator =
         newCoordinator(
             ui,

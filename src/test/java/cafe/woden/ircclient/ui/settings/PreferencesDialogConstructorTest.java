@@ -7,22 +7,23 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.app.api.ActiveTargetPort;
-import cafe.woden.ircclient.app.commands.UserCommandAliasesBus;
+import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
 import cafe.woden.ircclient.config.LogProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.irc.backend.IrcHeartbeatMaintenanceService;
-import cafe.woden.ircclient.notifications.IrcEventNotificationRulesBus;
-import cafe.woden.ircclient.notify.pushy.PushyNotificationService;
+import cafe.woden.ircclient.notifications.api.IrcEventNotificationRulesPort;
+import cafe.woden.ircclient.notify.api.NotificationSoundPort;
+import cafe.woden.ircclient.notify.api.PushyNotificationPort;
 import cafe.woden.ircclient.notify.pushy.PushySettingsBus;
-import cafe.woden.ircclient.notify.sound.NotificationSoundService;
 import cafe.woden.ircclient.notify.sound.NotificationSoundSettingsBus;
 import cafe.woden.ircclient.ui.chat.NickColorService;
 import cafe.woden.ircclient.ui.chat.NickColorSettingsBus;
-import cafe.woden.ircclient.ui.chat.TranscriptRebuildService;
 import cafe.woden.ircclient.ui.chat.embed.EmbedLoadPolicyBus;
+import cafe.woden.ircclient.ui.chat.transcript.rebuild.TranscriptRebuildService;
 import cafe.woden.ircclient.ui.filter.FilterSettingsBus;
 import cafe.woden.ircclient.ui.nickcolors.NickColorOverridesDialog;
 import cafe.woden.ircclient.ui.servers.ServerDialogs;
+import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ThemeManager;
@@ -100,10 +101,10 @@ class PreferencesDialogConstructorTest {
         mock(GnomeDbusNotificationBackend.class),
         mock(NotificationSoundSettingsBus.class),
         mock(PushySettingsBus.class),
-        mock(PushyNotificationService.class),
-        mock(IrcEventNotificationRulesBus.class),
-        mock(UserCommandAliasesBus.class),
-        mock(NotificationSoundService.class),
+        mock(PushyNotificationPort.class),
+        mock(IrcEventNotificationRulesPort.class),
+        mock(UserCommandAliasesPort.class),
+        mock(NotificationSoundPort.class),
         mock(ServerDialogs.class),
         pushyTestExecutor,
         notificationRuleTestExecutor);

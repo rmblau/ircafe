@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.servertree.state.ServerTreeChannelStateStore;
 import cafe.woden.ircclient.ui.servertree.state.ServerTreePrivateMessageOnlineStateStore;
@@ -39,8 +39,7 @@ class ServerTreeTargetRemovalStateCoordinatorTest {
                 - "query:title"
         """);
 
-    RuntimeConfigStore runtimeConfig =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore runtimeConfig = RuntimeConfigStoreTestFixtures.store(cfg);
     ServerTreeChannelStateStore channelStateStore = new ServerTreeChannelStateStore();
     channelStateStore
         .channelAutoReattachByServer()

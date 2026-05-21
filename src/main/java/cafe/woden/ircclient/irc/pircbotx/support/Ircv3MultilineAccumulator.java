@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.irc.pircbotx.support;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.BATCH;
+
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
 import cafe.woden.ircclient.irc.ircv3.*;
@@ -83,7 +85,7 @@ public final class Ircv3MultilineAccumulator {
     pruneExpired(now);
 
     Map<String, String> safeTags = (tags == null) ? Map.of() : tags;
-    String batchId = Ircv3Tags.firstTagValue(safeTags, "batch");
+    String batchId = Ircv3Tags.firstTagValue(safeTags, BATCH);
     Map<String, String> cleanedTags = stripConcatTags(safeTags);
     if (batchId.isBlank()) {
       return FoldResult.passThrough(at, Objects.toString(text, ""), messageId, cleanedTags);

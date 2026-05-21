@@ -14,6 +14,7 @@ import cafe.woden.ircclient.app.outbound.support.CommandTargetPolicy;
 import cafe.woden.ircclient.app.outbound.support.OutboundRawCommandSupport;
 import cafe.woden.ircclient.app.outbound.support.OutboundRawLineCorrelationService;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
 import cafe.woden.ircclient.ignore.api.IgnoreListCommandPort;
@@ -120,21 +121,12 @@ class OutboundInviteCommandServiceTest {
     when(serverCatalog.find("quassel"))
         .thenReturn(
             Optional.of(
-                new IrcProperties.Server(
-                    "quassel",
-                    "core.example.net",
-                    4242,
-                    false,
-                    "",
-                    "ircafe",
-                    "ircafe",
-                    "IRCafe User",
-                    null,
-                    null,
-                    List.of(),
-                    List.of(),
-                    null,
-                    IrcProperties.Server.Backend.QUASSEL_CORE)));
+                IrcPropertiesTestFixtures.serverBuilder("quassel")
+                    .host("core.example.net")
+                    .port(4242)
+                    .tls(false)
+                    .backend(IrcProperties.Server.Backend.QUASSEL_CORE)
+                    .build()));
     when(irc.joinChannel("quassel", "#ircafe")).thenReturn(Completable.complete());
 
     service.handleInviteJoin(disposables, "13");

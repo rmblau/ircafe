@@ -23,8 +23,8 @@ final class NewsLinkPreviewResolver implements LinkPreviewResolver {
             uri,
             "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8",
             PreviewHttp.headers(
-                "User-Agent", PreviewHttp.BROWSER_USER_AGENT,
-                "Accept-Language", PreviewHttp.ACCEPT_LANGUAGE));
+                PreviewHttp.HEADER_USER_AGENT, PreviewHttp.BROWSER_USER_AGENT,
+                PreviewHttp.HEADER_ACCEPT_LANGUAGE, PreviewHttp.ACCEPT_LANGUAGE));
 
     int status = resp.statusCode();
     if (status < 200 || status >= 300) {

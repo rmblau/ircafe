@@ -8,9 +8,11 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Inserts ensured leaves into the tree model and updates default PM-online state. */
+@InterfaceLayer
 @Component
 public final class ServerTreeEnsureNodeLeafInserter {
 

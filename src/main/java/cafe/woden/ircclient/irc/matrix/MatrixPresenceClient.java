@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import lombok.AccessLevel;
@@ -24,11 +23,7 @@ import org.springframework.stereotype.Component;
 final class MatrixPresenceClient {
 
   private static final Map<String, String> REQUEST_HEADERS =
-      Map.of(
-          "User-Agent", "ircafe-matrix-presence/1.0",
-          "Accept", "application/json",
-          "Accept-Encoding", "gzip",
-          "Content-Type", "application/json");
+      MatrixHttpHeaders.jsonWithContentType("ircafe-matrix-presence/1.0");
 
   private static final ObjectMapper JSON = new ObjectMapper();
 
@@ -43,7 +38,7 @@ final class MatrixPresenceClient {
     URI endpoint = MatrixEndpointResolver.userPresenceStatusUri(server, userId);
     String token = normalize(accessToken);
     if (token.isEmpty()) {
-      return PresenceResult.failed(endpoint, "access token is blank");
+      return PresenceResult.failed(endpoint, MatrixProtocol.ACCESS_TOKEN_BLANK);
     }
 
     String msg = normalize(awayMessage);
@@ -57,8 +52,7 @@ final class MatrixPresenceClient {
     }
 
     ProxyPlan plan = proxyResolver.planForServer(serverId);
-    Map<String, String> headers = new HashMap<>(REQUEST_HEADERS);
-    headers.put("Authorization", "Bearer " + token);
+    Map<String, String> headers = MatrixHttpHeaders.withBearerToken(REQUEST_HEADERS, token);
 
     try {
       HttpLite.Response<String> response =

@@ -18,8 +18,8 @@ tasks.withType(JavaCompile).configureEach {
     options.compilerArgs += ["-Xlint:none"]
 
     // Disable Error Prone during normal compile/test to avoid warning noise.
-    // The dedicated `errorProneApplyMain` task remains enabled for manual autofix runs.
-    if (name != 'errorProneApplyMain') {
+    // Dedicated Error Prone tasks remain enabled for manual autofix/check runs.
+    if (name != 'errorProneApplyMain' && name != 'errorProneCheckMain') {
         options.errorprone.enabled = false
     }
 }

@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.coordinator.MessageActionCapabilityPolicy;
 import org.junit.jupiter.api.Test;
 

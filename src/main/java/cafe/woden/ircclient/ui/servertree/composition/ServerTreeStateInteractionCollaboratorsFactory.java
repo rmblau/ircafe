@@ -28,9 +28,11 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Factory that assembles state/interaction collaborators for server tree construction. */
+@InterfaceLayer
 @Component
 @RequiredArgsConstructor
 public final class ServerTreeStateInteractionCollaboratorsFactory {

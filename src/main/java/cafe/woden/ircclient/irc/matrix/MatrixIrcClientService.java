@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.irc.matrix;
 
+import static cafe.woden.ircclient.irc.backend.IrcBackendValidationMessages.SERVER_ID_BLANK;
+
 import cafe.woden.ircclient.config.BackendDescriptorCatalog;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.ServerCatalog;
@@ -43,19 +45,20 @@ public class MatrixIrcClientService implements IrcBackendClientService {
   private static final String DEFAULT_UNAVAILABLE_REASON = "not connected";
   private static final String CONNECTING_REASON = "Matrix transport is connecting";
   private static final String UNSUPPORTED_OPERATION_REASON = "operation is not implemented yet";
-  private static final String TAG_IRCAFE_PM_TARGET = "ircafe/pm-target";
-  private static final String TAG_MATRIX_MSGTYPE = "matrix.msgtype";
+  private static final String TAG_IRCAFE_PM_TARGET = MatrixProtocol.TAG_IRCAFE_PM_TARGET;
+  private static final String TAG_MATRIX_MSGTYPE = MatrixProtocol.TAG_MATRIX_MSGTYPE;
 
-  private static final String TAG_MATRIX_UPLOAD_PATH = "matrix.upload_path";
-  private static final String TAG_MATRIX_ROOM_ID = "matrix.room_id";
+  private static final String TAG_MATRIX_UPLOAD_PATH = MatrixProtocol.TAG_MATRIX_UPLOAD_PATH;
+  private static final String TAG_MATRIX_ROOM_ID = MatrixProtocol.TAG_MATRIX_ROOM_ID;
 
-  private static final String RAW_TAG_MATRIX_MSGTYPE = "matrix/msgtype";
-  private static final String RAW_TAG_MATRIX_MEDIA_URL = "matrix/media_url";
-  private static final String RAW_TAG_MATRIX_UPLOAD_PATH = "matrix/upload_path";
-  private static final String HISTORY_SELECTOR_TIMESTAMP_PREFIX = "timestamp=";
-  private static final String HISTORY_SELECTOR_MSGID_PREFIX = "msgid=";
-  private static final Set<String> MATRIX_MEDIA_MSGTYPES =
-      Set.of("m.image", "m.file", "m.video", "m.audio");
+  private static final String RAW_TAG_MATRIX_MSGTYPE = MatrixProtocol.RAW_TAG_MATRIX_MSGTYPE;
+  private static final String RAW_TAG_MATRIX_MEDIA_URL = MatrixProtocol.RAW_TAG_MATRIX_MEDIA_URL;
+  private static final String RAW_TAG_MATRIX_UPLOAD_PATH =
+      MatrixProtocol.RAW_TAG_MATRIX_UPLOAD_PATH;
+  private static final String HISTORY_SELECTOR_TIMESTAMP_PREFIX =
+      MatrixProtocol.HISTORY_SELECTOR_TIMESTAMP_PREFIX;
+  private static final String HISTORY_SELECTOR_MSGID_PREFIX =
+      MatrixProtocol.HISTORY_SELECTOR_MSGID_PREFIX;
   private static final int MATRIX_TYPING_TIMEOUT_MS = 30_000;
   private static final int SYNC_INTERVAL_SECONDS = 3;
   private static final int SYNC_TIMEOUT_MS = 0;
@@ -181,7 +184,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               if (sessionsByServer.containsKey(sid)) {
                 return;
@@ -318,7 +321,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               String nick = Objects.toString(newNick, "").trim();
               if (nick.isEmpty()) {
@@ -355,7 +358,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               String msg = Objects.toString(awayMessage, "").trim();
               if (msg.contains("\r") || msg.contains("\n")) {
@@ -393,7 +396,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
 
               MatrixSession session = sessionsByServer.get(sid);
@@ -433,7 +436,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
 
               MatrixSession session = sessionsByServer.get(sid);
@@ -478,7 +481,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               String userId = normalize(nick);
               if (userId.isEmpty()) {
@@ -528,7 +531,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
 
               MatrixSession session = sessionsByServer.get(sid);
@@ -567,7 +570,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               String text = Objects.toString(message, "");
               if (text.trim().isEmpty()) {
@@ -606,7 +609,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               String peerUserId = normalize(nick);
               if (peerUserId.isEmpty()) {
@@ -652,7 +655,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               String text = Objects.toString(message, "");
               if (text.trim().isEmpty()) {
@@ -685,7 +688,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
                   roomId,
                   text,
                   result.eventId(),
-                  Map.of(TAG_MATRIX_MSGTYPE, "m.notice"));
+                  Map.of(TAG_MATRIX_MSGTYPE, MatrixProtocol.MSGTYPE_NOTICE));
             })
         .subscribeOn(RxVirtualSchedulers.io());
   }
@@ -696,7 +699,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               String peerUserId = normalize(nick);
               if (peerUserId.isEmpty()) {
@@ -739,7 +742,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
                   peerUserId,
                   text,
                   result.eventId(),
-                  privateMessageTags(peerUserId, roomId, "m.notice"));
+                  privateMessageTags(peerUserId, roomId, MatrixProtocol.MSGTYPE_NOTICE));
             })
         .subscribeOn(RxVirtualSchedulers.io());
   }
@@ -748,7 +751,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
   public Completable sendRaw(String serverId, String rawLine) {
     String sid = normalizeServerId(serverId);
     if (sid.isEmpty()) {
-      return Completable.error(new IllegalArgumentException("server id is blank"));
+      return Completable.error(new IllegalArgumentException(SERVER_ID_BLANK));
     }
     String line = Objects.toString(rawLine, "").trim();
     if (line.isEmpty()) {
@@ -898,7 +901,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               MatrixSession session = sessionsByServer.get(sid);
               if (session == null) {
@@ -948,7 +951,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               MatrixSession session = sessionsByServer.get(sid);
               if (session == null) {
@@ -1034,7 +1037,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               String requestedTarget = normalize(target);
               if (requestedTarget.isEmpty()) {
@@ -1106,7 +1109,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               String requestedTarget = normalize(target);
               if (requestedTarget.isEmpty()) {
@@ -1188,7 +1191,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               String requestedTarget = normalize(target);
               if (requestedTarget.isEmpty()) {
@@ -1630,7 +1633,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
         () -> {
           String sid = normalizeServerId(serverId);
           if (sid.isEmpty()) {
-            return Completable.error(new IllegalArgumentException("server id is blank"));
+            return Completable.error(new IllegalArgumentException(SERVER_ID_BLANK));
           }
           String requestedTarget = normalize(target);
           if (requestedTarget.isEmpty()) {
@@ -1664,11 +1667,12 @@ public class MatrixIrcClientService implements IrcBackendClientService {
     if (message.isEmpty() && matrixMsgType.isEmpty()) {
       throw new IllegalArgumentException("PRIVMSG requires target and message");
     }
-    String editTarget = normalize(tags.get("draft/edit"));
+    String editTarget = normalize(tags.get(MatrixProtocol.TAG_DRAFT_EDIT));
     if (!editTarget.isEmpty()) {
       return sendRawEdit(serverId, target, editTarget, message);
     }
-    String replyTarget = Ircv3Tags.firstTagValue(tags, "reply", "draft/reply");
+    String replyTarget =
+        Ircv3Tags.firstTagValue(tags, MatrixProtocol.TAG_REPLY, MatrixProtocol.TAG_DRAFT_REPLY);
     if (!replyTarget.isEmpty()) {
       return sendRawReply(serverId, target, replyTarget, message);
     }
@@ -1694,11 +1698,12 @@ public class MatrixIrcClientService implements IrcBackendClientService {
       throw new IllegalArgumentException("NOTICE requires target and message");
     }
     Map<String, String> tags = parseRawTags(rawLine);
-    String editTarget = normalize(tags.get("draft/edit"));
+    String editTarget = normalize(tags.get(MatrixProtocol.TAG_DRAFT_EDIT));
     if (!editTarget.isEmpty()) {
       return sendRawEdit(serverId, target, editTarget, message);
     }
-    String replyTarget = Ircv3Tags.firstTagValue(tags, "reply", "draft/reply");
+    String replyTarget =
+        Ircv3Tags.firstTagValue(tags, MatrixProtocol.TAG_REPLY, MatrixProtocol.TAG_DRAFT_REPLY);
     if (!replyTarget.isEmpty()) {
       return sendRawReply(serverId, target, replyTarget, message);
     }
@@ -1719,7 +1724,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               String mediaType = normalize(msgType);
               if (!isMatrixMediaMsgType(mediaType)) {
@@ -1860,7 +1865,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               String requestedTarget = normalize(target);
               if (requestedTarget.isEmpty()) {
@@ -1912,9 +1917,10 @@ public class MatrixIrcClientService implements IrcBackendClientService {
   private Completable sendRawTagmsg(String serverId, String rawLine, RawCommand raw) {
     String target = argOrBlank(raw, 0, "TAGMSG requires a target");
     Map<String, String> tags = parseRawTags(rawLine);
-    String replyTarget = Ircv3Tags.firstTagValue(tags, "reply", "draft/reply");
-    String reaction = normalize(tags.get("draft/react"));
-    String unreaction = normalize(tags.get("draft/unreact"));
+    String replyTarget =
+        Ircv3Tags.firstTagValue(tags, MatrixProtocol.TAG_REPLY, MatrixProtocol.TAG_DRAFT_REPLY);
+    String reaction = normalize(tags.get(MatrixProtocol.TAG_DRAFT_REACT));
+    String unreaction = normalize(tags.get(MatrixProtocol.TAG_DRAFT_UNREACT));
     if (!reaction.isEmpty() && !unreaction.isEmpty()) {
       throw new IllegalArgumentException(
           "TAGMSG cannot include both +draft/react and +draft/unreact");
@@ -1941,7 +1947,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               String targetEventId = normalize(replyToEventId);
               if (targetEventId.isEmpty()) {
@@ -1982,7 +1988,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               String editTarget = normalize(targetEventId);
               if (editTarget.isEmpty()) {
@@ -2023,7 +2029,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               String reactTarget = normalize(targetEventId);
               String react = normalize(reaction);
@@ -2062,7 +2068,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
               String reactTarget = normalize(targetEventId);
               String react = normalize(reaction);
@@ -2414,7 +2420,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
             () -> {
               String sid = normalizeServerId(serverId);
               if (sid.isEmpty()) {
-                throw new IllegalArgumentException("server id is blank");
+                throw new IllegalArgumentException(SERVER_ID_BLANK);
               }
 
               MatrixSession session = sessionsByServer.get(sid);
@@ -2623,7 +2629,8 @@ public class MatrixIrcClientService implements IrcBackendClientService {
     if (tags == null || tags.isEmpty()) {
       return "";
     }
-    return firstNonBlank(tags.get(RAW_TAG_MATRIX_MSGTYPE), tags.get("matrix.msgtype"));
+    return firstNonBlank(
+        tags.get(RAW_TAG_MATRIX_MSGTYPE), tags.get(MatrixProtocol.TAG_MATRIX_MSGTYPE));
   }
 
   private static String rawMatrixMediaUrl(Map<String, String> tags) {
@@ -2632,9 +2639,9 @@ public class MatrixIrcClientService implements IrcBackendClientService {
     }
     return firstNonBlank(
         tags.get(RAW_TAG_MATRIX_MEDIA_URL),
-        tags.get("matrix.url"),
-        tags.get("matrix.media_url"),
-        tags.get("matrix/url"));
+        tags.get(MatrixProtocol.TAG_MATRIX_URL),
+        tags.get(MatrixProtocol.TAG_MATRIX_MEDIA_URL),
+        tags.get(MatrixProtocol.RAW_TAG_MATRIX_URL));
   }
 
   private static String rawMatrixUploadPath(Map<String, String> tags) {
@@ -2662,7 +2669,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
   }
 
   private static boolean isMatrixMediaMsgType(String msgType) {
-    return MATRIX_MEDIA_MSGTYPES.contains(normalize(msgType));
+    return MatrixProtocol.MEDIA_MSGTYPES.contains(normalize(msgType));
   }
 
   private static Map<String, String> parseRawTags(String rawLine) {
@@ -3100,7 +3107,7 @@ public class MatrixIrcClientService implements IrcBackendClientService {
     String rid = normalize(roomId);
     String type = normalize(msgType);
     if (type.isEmpty()) {
-      type = "m.text";
+      type = MatrixProtocol.MSGTYPE_TEXT;
     }
 
     if (includePrivateTargetTag && !peer.isEmpty()) {

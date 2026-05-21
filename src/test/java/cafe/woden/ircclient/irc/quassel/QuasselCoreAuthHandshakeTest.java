@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
 import java.io.ByteArrayInputStream;
@@ -180,21 +181,14 @@ class QuasselCoreAuthHandshakeTest {
   void configuredAuthUserFallsBackToNickThenDefault() {
     IrcProperties.Server nickOnly = server("", "");
     IrcProperties.Server fullyBlank =
-        new IrcProperties.Server(
-            "quassel",
-            "irc.example.net",
-            4242,
-            false,
-            "",
-            "",
-            "",
-            "Quassel Test",
-            null,
-            null,
-            List.of(),
-            List.of(),
-            null,
-            IrcProperties.Server.Backend.QUASSEL_CORE);
+        IrcPropertiesTestFixtures.serverBuilder("quassel")
+            .port(4242)
+            .tls(false)
+            .nick("")
+            .login("")
+            .realName("Quassel Test")
+            .backend(IrcProperties.Server.Backend.QUASSEL_CORE)
+            .build();
 
     assertEquals("nick", QuasselCoreAuthHandshake.configuredAuthUser(nickOnly));
     assertEquals("quassel-user", QuasselCoreAuthHandshake.configuredAuthUser(fullyBlank));
@@ -203,21 +197,16 @@ class QuasselCoreAuthHandshakeTest {
   @Test
   void configuredAuthPasswordFallsBackToEnabledSasl() {
     IrcProperties.Server withSasl =
-        new IrcProperties.Server(
-            "quassel",
-            "irc.example.net",
-            4242,
-            false,
-            "",
-            "nick",
-            "alice",
-            "Quassel Test",
-            new IrcProperties.Server.Sasl(true, "alice", "sasl-secret", "PLAIN", null),
-            new IrcProperties.Server.Nickserv(false, "", "NickServ", null),
-            List.of(),
-            List.of(),
-            null,
-            IrcProperties.Server.Backend.QUASSEL_CORE);
+        IrcPropertiesTestFixtures.serverBuilder("quassel")
+            .port(4242)
+            .tls(false)
+            .nick("nick")
+            .login("alice")
+            .realName("Quassel Test")
+            .sasl(new IrcProperties.Server.Sasl(true, "alice", "sasl-secret", "PLAIN", null))
+            .nickserv(new IrcProperties.Server.Nickserv(false, "", "NickServ", null))
+            .backend(IrcProperties.Server.Backend.QUASSEL_CORE)
+            .build();
 
     assertEquals("sasl-secret", QuasselCoreAuthHandshake.configuredAuthPassword(withSasl));
   }
@@ -314,21 +303,17 @@ class QuasselCoreAuthHandshakeTest {
   }
 
   private static IrcProperties.Server server(String login, String password) {
-    return new IrcProperties.Server(
-        "quassel",
-        "irc.example.net",
-        4242,
-        false,
-        password,
-        "nick",
-        login,
-        "Quassel Test",
-        new IrcProperties.Server.Sasl(false, "", "", "PLAIN", null),
-        new IrcProperties.Server.Nickserv(false, "", "NickServ", null),
-        List.of(),
-        List.of(),
-        null,
-        IrcProperties.Server.Backend.QUASSEL_CORE);
+    return IrcPropertiesTestFixtures.serverBuilder("quassel")
+        .port(4242)
+        .tls(false)
+        .serverPassword(password)
+        .nick("nick")
+        .login(login)
+        .realName("Quassel Test")
+        .sasl(new IrcProperties.Server.Sasl(false, "", "", "PLAIN", null))
+        .nickserv(new IrcProperties.Server.Nickserv(false, "", "NickServ", null))
+        .backend(IrcProperties.Server.Backend.QUASSEL_CORE)
+        .build();
   }
 
   private static final class ScriptedSocket extends Socket {

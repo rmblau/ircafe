@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.config.api.Ircv3CapabilityNameResolverPort;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Locale;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -16,9 +15,7 @@ class RuntimeConfigStoreIrcv3CapabilitiesTest {
 
   @Test
   void capabilityOverridesDefaultToEnabledWhenUnset() {
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("ircafe.yml").toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     assertTrue(store.isIrcv3CapabilityEnabled("typing", true));
     assertTrue(store.readIrcv3Capabilities().isEmpty());
@@ -26,9 +23,7 @@ class RuntimeConfigStoreIrcv3CapabilitiesTest {
 
   @Test
   void capabilityOverrideCanBeDisabledAndThenResetToDefault() {
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("ircafe.yml").toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     store.rememberIrcv3CapabilityEnabled("typing", false);
     assertFalse(store.isIrcv3CapabilityEnabled("typing", true));
@@ -42,9 +37,7 @@ class RuntimeConfigStoreIrcv3CapabilitiesTest {
 
   @Test
   void draftCapabilityOverridesReuseExistingCanonicalPreferenceKeys() {
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("ircafe.yml").toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     store.rememberIrcv3CapabilityEnabled("chathistory", false);
 
@@ -55,9 +48,7 @@ class RuntimeConfigStoreIrcv3CapabilitiesTest {
 
   @Test
   void runtimeResolverCanCanonicalizePluginProvidedCapabilityAliases() {
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("ircafe.yml").toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
     store.setIrcv3CapabilityNameResolver(
         new Ircv3CapabilityNameResolverPort() {
           @Override

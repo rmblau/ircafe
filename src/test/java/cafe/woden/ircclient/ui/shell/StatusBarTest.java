@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.awt.event.MouseEvent;
 import java.lang.reflect.Field;
@@ -27,7 +28,10 @@ import org.junit.jupiter.api.parallel.ResourceLock;
 @ResourceLock(value = "UIManager", mode = ResourceAccessMode.READ_WRITE)
 class StatusBarTest {
   private static final String[] UI_SNAPSHOT_KEYS = {
-    "Panel.background", "Label.foreground", "Component.linkColor", "@accentColor"
+    UiColorKeys.PANEL_BACKGROUND,
+    UiColorKeys.LABEL_FOREGROUND,
+    UiColorKeys.COMPONENT_LINK_COLOR,
+    UiColorKeys.ACCENT_COLOR
   };
 
   private Map<String, Object> uiSnapshot;
@@ -84,10 +88,10 @@ class StatusBarTest {
   void noticeForegroundKeepsReadableContrastAgainstDarkBackground() throws Exception {
     Color bg = new Color(0x24, 0x27, 0x2C);
     Color nearBg = new Color(0x31, 0x35, 0x3B);
-    UIManager.put("Panel.background", bg);
-    UIManager.put("Label.foreground", nearBg);
-    UIManager.put("Component.linkColor", nearBg);
-    UIManager.put("@accentColor", nearBg);
+    UIManager.put(UiColorKeys.PANEL_BACKGROUND, bg);
+    UIManager.put(UiColorKeys.LABEL_FOREGROUND, nearBg);
+    UIManager.put(UiColorKeys.COMPONENT_LINK_COLOR, nearBg);
+    UIManager.put(UiColorKeys.ACCENT_COLOR, nearBg);
 
     StatusBar statusBar = onEdt(StatusBar::new);
     JLabel noticeLabel = readLabel(statusBar, "noticeLabel");
@@ -110,10 +114,10 @@ class StatusBarTest {
     Color lightAccent = new Color(0x1D, 0x5C, 0xB0);
     Color darkAccent = new Color(0x34, 0x38, 0x3F);
 
-    UIManager.put("Panel.background", lightBg);
-    UIManager.put("Label.foreground", new Color(0x22, 0x26, 0x2C));
-    UIManager.put("Component.linkColor", lightAccent);
-    UIManager.put("@accentColor", lightAccent);
+    UIManager.put(UiColorKeys.PANEL_BACKGROUND, lightBg);
+    UIManager.put(UiColorKeys.LABEL_FOREGROUND, new Color(0x22, 0x26, 0x2C));
+    UIManager.put(UiColorKeys.COMPONENT_LINK_COLOR, lightAccent);
+    UIManager.put(UiColorKeys.ACCENT_COLOR, lightAccent);
 
     StatusBar statusBar = onEdt(StatusBar::new);
     JLabel noticeLabel = readLabel(statusBar, "noticeLabel");
@@ -127,10 +131,10 @@ class StatusBarTest {
 
     onEdtVoid(
         () -> {
-          UIManager.put("Panel.background", darkBg);
-          UIManager.put("Label.foreground", darkAccent);
-          UIManager.put("Component.linkColor", darkAccent);
-          UIManager.put("@accentColor", darkAccent);
+          UIManager.put(UiColorKeys.PANEL_BACKGROUND, darkBg);
+          UIManager.put(UiColorKeys.LABEL_FOREGROUND, darkAccent);
+          UIManager.put(UiColorKeys.COMPONENT_LINK_COLOR, darkAccent);
+          UIManager.put(UiColorKeys.ACCENT_COLOR, darkAccent);
           statusBar.setBackground(darkBg);
           invokePrivate(statusBar, "refreshThemeAwareColors");
         });

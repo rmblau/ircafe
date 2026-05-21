@@ -3,7 +3,7 @@ package cafe.woden.ircclient.ui.input;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-import cafe.woden.ircclient.ui.settings.SpellcheckSettings;
+import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettings;
 import java.lang.reflect.Field;
 import java.util.concurrent.ExecutorService;
 import javax.swing.JTextField;

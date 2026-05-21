@@ -27,8 +27,10 @@ final class XLinkPreviewResolver implements LinkPreviewResolver {
                 api,
                 "application/json",
                 PreviewHttp.headers(
-                    "Referer", "https://platform.twitter.com/",
-                    "Origin", "https://platform.twitter.com"));
+                    PreviewHttp.HEADER_REFERER,
+                    "https://platform.twitter.com/",
+                    "Origin",
+                    "https://platform.twitter.com"));
         if (resp.statusCode() >= 200 && resp.statusCode() < 300) {
           LinkPreview parsed = XPreviewUtil.parseSyndicationJson(resp.body(), uri);
           if (parsed != null) return parsed;
@@ -53,7 +55,9 @@ final class XLinkPreviewResolver implements LinkPreviewResolver {
 
       var resp =
           http.getString(
-              api, "application/json", PreviewHttp.headers("Referer", "https://publish.x.com/"));
+              api,
+              "application/json",
+              PreviewHttp.headers(PreviewHttp.HEADER_REFERER, "https://publish.x.com/"));
       if (resp.statusCode() < 200 || resp.statusCode() >= 300) return null;
 
       return XPreviewUtil.parseOEmbedJson(resp.body(), statusUri, statusId);

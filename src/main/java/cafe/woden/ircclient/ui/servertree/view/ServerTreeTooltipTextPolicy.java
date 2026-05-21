@@ -7,9 +7,11 @@ import cafe.woden.ircclient.ui.servertree.model.ServerTreeQuasselNetworkNodeData
 import cafe.woden.ircclient.ui.servertree.viewmodel.ServerTreeConnectionStateViewModel;
 import java.util.Objects;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Stateless tooltip text policy for server-tree nodes once a concrete tree node is known. */
+@InterfaceLayer
 @Component
 public final class ServerTreeTooltipTextPolicy {
 

@@ -13,9 +13,11 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Facade for built-in node visibility, layout ordering, and associated persistence operations. */
+@InterfaceLayer
 @Component
 public final class ServerTreeBuiltInLayoutVisibilityFacade {
 

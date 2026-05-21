@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -17,9 +16,8 @@ class RuntimeConfigStoreServerBackendIdTest {
   void ensureFileExistsWithServersPersistsCustomBackendIds() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
     RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            cfg.toString(),
-            new IrcProperties(null, List.of(server("plugin-net", "plugin-backend"))));
+        RuntimeConfigStoreTestFixtures.storeWithServers(
+            cfg, server("plugin-net", "plugin-backend"));
 
     store.ensureFileExistsWithServers();
 
@@ -31,8 +29,7 @@ class RuntimeConfigStoreServerBackendIdTest {
   void ensureFileExistsWithServersOmitsDefaultIrcBackendId() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
     RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            cfg.toString(), new IrcProperties(null, List.of(server("libera", "irc"))));
+        RuntimeConfigStoreTestFixtures.storeWithServers(cfg, server("libera", "irc"));
 
     store.ensureFileExistsWithServers();
 
@@ -41,20 +38,6 @@ class RuntimeConfigStoreServerBackendIdTest {
   }
 
   private static IrcProperties.Server server(String id, String backendId) {
-    return new IrcProperties.Server(
-        id,
-        "irc.example.net",
-        6697,
-        true,
-        "",
-        "ircafe",
-        "ircafe",
-        "IRCafe User",
-        null,
-        null,
-        List.of(),
-        List.of(),
-        null,
-        backendId);
+    return IrcPropertiesTestFixtures.serverBuilder(id).backendId(backendId).build();
   }
 }

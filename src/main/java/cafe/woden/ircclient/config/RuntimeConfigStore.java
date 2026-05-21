@@ -33,6 +33,7 @@ import cafe.woden.ircclient.config.api.ServerTreeRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UserCommandAliasesConfigPort;
+import cafe.woden.ircclient.model.FilterPlaceholderRanges;
 import cafe.woden.ircclient.model.FilterRule;
 import cafe.woden.ircclient.model.FilterScopeOverride;
 import cafe.woden.ircclient.model.InterceptorDefinition;
@@ -56,6 +57,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.IntUnaryOperator;
 import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 import org.slf4j.Logger;
@@ -221,19 +223,8 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when the key is missing or invalid.
    */
   public synchronized boolean readTrayCloseToTrayHintShown(boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-      if (!Files.exists(file)) return defaultValue;
-
-      Map<String, Object> doc = loadFile();
-      return RuntimeConfigDocumentPathReader.readValue(
-              doc, "ircafe", "ui", "tray", "closeToTrayHintShown")
-          .flatMap(RuntimeConfigStore::asBoolean)
-          .orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read tray.closeToTrayHintShown from '{}'", file, e);
-      return defaultValue;
-    }
+    return readUiSectionBoolean(
+        "tray", "closeToTrayHintShown", defaultValue, "tray.closeToTrayHintShown");
   }
 
   /**
@@ -243,19 +234,8 @@ public class RuntimeConfigStore
    */
   @Override
   public synchronized boolean readInviteAutoJoinEnabled(boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-      if (!Files.exists(file)) return defaultValue;
-
-      Map<String, Object> doc = loadFile();
-      return RuntimeConfigDocumentPathReader.readValue(
-              doc, "ircafe", "ui", "invites", "autoJoinOnInvite")
-          .flatMap(RuntimeConfigStore::asBoolean)
-          .orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read invites.autoJoinOnInvite from '{}'", file, e);
-      return defaultValue;
-    }
+    return readUiSectionBoolean(
+        "invites", "autoJoinOnInvite", defaultValue, "invites.autoJoinOnInvite");
   }
 
   /**
@@ -264,19 +244,8 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when the key is missing or invalid.
    */
   public synchronized boolean readUpdateNotifierEnabled(boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-      if (!Files.exists(file)) return defaultValue;
-
-      Map<String, Object> doc = loadFile();
-      return RuntimeConfigDocumentPathReader.readValue(
-              doc, "ircafe", "ui", "updateNotifier", "enabled")
-          .flatMap(RuntimeConfigStore::asBoolean)
-          .orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.updateNotifier.enabled from '{}'", file, e);
-      return defaultValue;
-    }
+    return readUiSectionBoolean(
+        "updateNotifier", "enabled", defaultValue, "ui.updateNotifier.enabled");
   }
 
   /**
@@ -285,19 +254,7 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when the key is missing or invalid.
    */
   public synchronized boolean readLagIndicatorEnabled(boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-      if (!Files.exists(file)) return defaultValue;
-
-      Map<String, Object> doc = loadFile();
-      return RuntimeConfigDocumentPathReader.readValue(
-              doc, "ircafe", "ui", "lagIndicator", "enabled")
-          .flatMap(RuntimeConfigStore::asBoolean)
-          .orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.lagIndicator.enabled from '{}'", file, e);
-      return defaultValue;
-    }
+    return readUiSectionBoolean("lagIndicator", "enabled", defaultValue, "ui.lagIndicator.enabled");
   }
 
   public Path runtimeConfigPath() {
@@ -1329,21 +1286,11 @@ public class RuntimeConfigStore
   }
 
   public synchronized int readMemoryUsageRefreshIntervalMs(int defaultValue) {
-    int fallback = clampMemoryUsageRefreshIntervalMs(defaultValue);
-    try {
-      if (file.toString().isBlank()) return fallback;
-      if (!Files.exists(file)) return fallback;
-
-      Map<String, Object> doc = loadFile();
-      return RuntimeConfigDocumentPathReader.readValue(
-              doc, "ircafe", "ui", "memoryUsageRefreshIntervalMs")
-          .flatMap(RuntimeConfigStore::asInt)
-          .map(this::clampMemoryUsageRefreshIntervalMs)
-          .orElse(fallback);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.memoryUsageRefreshIntervalMs from '{}'", file, e);
-      return fallback;
-    }
+    return readUiInt(
+        "memoryUsageRefreshIntervalMs",
+        defaultValue,
+        this::clampMemoryUsageRefreshIntervalMs,
+        "ui.memoryUsageRefreshIntervalMs");
   }
 
   public synchronized void rememberMemoryUsageRefreshIntervalMs(int intervalMs) {
@@ -1413,19 +1360,8 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when the key is missing or invalid.
    */
   public synchronized boolean readApplicationJfrEnabled(boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-      if (!Files.exists(file)) return defaultValue;
-
-      Map<String, Object> doc = loadFile();
-      return RuntimeConfigDocumentPathReader.readValue(
-              doc, "ircafe", "ui", "appDiagnostics", "jfr", "enabled")
-          .flatMap(RuntimeConfigStore::asBoolean)
-          .orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.appDiagnostics.jfr.enabled from '{}'", file, e);
-      return defaultValue;
-    }
+    return readUiNestedBoolean(
+        defaultValue, "ui.appDiagnostics.jfr.enabled", "appDiagnostics", "jfr", "enabled");
   }
 
   /**
@@ -2344,313 +2280,94 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberTrayEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("enabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist tray.enabled setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting("tray", "enabled", enabled, "tray.enabled");
   }
 
   public synchronized void rememberTrayCloseToTray(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("closeToTray", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist tray.closeToTray setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting("tray", "closeToTray", enabled, "tray.closeToTray");
   }
 
   public synchronized void rememberTrayCloseToTrayHintShown(boolean shown) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("closeToTrayHintShown", shown);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist tray.closeToTrayHintShown setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting(
+        "tray", "closeToTrayHintShown", shown, "tray.closeToTrayHintShown");
   }
 
   public synchronized void rememberTrayMinimizeToTray(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("minimizeToTray", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist tray.minimizeToTray setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting("tray", "minimizeToTray", enabled, "tray.minimizeToTray");
   }
 
   public synchronized void rememberTrayStartMinimized(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("startMinimized", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist tray.startMinimized setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting("tray", "startMinimized", enabled, "tray.startMinimized");
   }
 
   public synchronized void rememberTrayNotifyHighlights(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("notifyHighlights", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist tray.notifyHighlights setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting("tray", "notifyHighlights", enabled, "tray.notifyHighlights");
   }
 
   public synchronized void rememberTrayNotifyPrivateMessages(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("notifyPrivateMessages", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist tray.notifyPrivateMessages setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting(
+        "tray", "notifyPrivateMessages", enabled, "tray.notifyPrivateMessages");
   }
 
   public synchronized void rememberTrayNotifyConnectionState(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("notifyConnectionState", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist tray.notifyConnectionState setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting(
+        "tray", "notifyConnectionState", enabled, "tray.notifyConnectionState");
   }
 
   public synchronized void rememberTrayNotifyOnlyWhenUnfocused(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("notifyOnlyWhenUnfocused", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist tray.notifyOnlyWhenUnfocused setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting(
+        "tray", "notifyOnlyWhenUnfocused", enabled, "tray.notifyOnlyWhenUnfocused");
   }
 
   public synchronized void rememberTrayNotifyOnlyWhenMinimizedOrHidden(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("notifyOnlyWhenMinimizedOrHidden", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist tray.notifyOnlyWhenMinimizedOrHidden setting to '{}'",
-          file,
-          e);
-    }
+    rememberUiSectionScalarSetting(
+        "tray", "notifyOnlyWhenMinimizedOrHidden", enabled, "tray.notifyOnlyWhenMinimizedOrHidden");
   }
 
   public synchronized void rememberTrayNotifySuppressWhenTargetActive(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("notifySuppressWhenTargetActive", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist tray.notifySuppressWhenTargetActive setting to '{}'",
-          file,
-          e);
-    }
+    rememberUiSectionScalarSetting(
+        "tray", "notifySuppressWhenTargetActive", enabled, "tray.notifySuppressWhenTargetActive");
   }
 
   public synchronized void rememberTrayLinuxDbusActionsEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("linuxDbusActionsEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist tray.linuxDbusActionsEnabled setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting(
+        "tray", "linuxDbusActionsEnabled", enabled, "tray.linuxDbusActionsEnabled");
   }
 
   public synchronized void rememberTrayNotificationBackend(String backendToken) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String v = Objects.toString(backendToken, "").trim().toLowerCase(Locale.ROOT);
-      if (v.isEmpty()) v = "auto";
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("notificationBackend", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist tray.notificationBackend setting to '{}'", file, e);
-    }
+    String v = Objects.toString(backendToken, "").trim().toLowerCase(Locale.ROOT);
+    if (v.isEmpty()) v = "auto";
+    rememberUiSectionScalarSetting("tray", "notificationBackend", v, "tray.notificationBackend");
   }
 
   public synchronized void rememberTrayNotificationSoundsEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("notificationSoundsEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist tray.notificationSoundsEnabled setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting(
+        "tray", "notificationSoundsEnabled", enabled, "tray.notificationSoundsEnabled");
   }
 
   public synchronized void rememberTrayNotificationSound(String soundId) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String v = Objects.toString(soundId, "").trim();
-      if (v.isEmpty()) v = "NOTIF_1";
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("notificationSound", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist tray.notificationSound setting to '{}'", file, e);
-    }
+    String v = Objects.toString(soundId, "").trim();
+    if (v.isEmpty()) v = "NOTIF_1";
+    rememberUiSectionScalarSetting("tray", "notificationSound", v, "tray.notificationSound");
   }
 
   public synchronized void rememberTrayNotificationSoundUseCustom(boolean useCustom) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      tray.put("notificationSoundUseCustom", useCustom);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist tray.notificationSoundUseCustom setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting(
+        "tray", "notificationSoundUseCustom", useCustom, "tray.notificationSoundUseCustom");
   }
 
   public synchronized void rememberTrayNotificationSoundCustomPath(String relativePath) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String v = Objects.toString(relativePath, "").trim();
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> tray = getOrCreateMap(ui, "tray");
-
-      if (v.isEmpty()) {
-        tray.remove("notificationSoundCustomPath");
-      } else {
-        tray.put("notificationSoundCustomPath", v);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist tray.notificationSoundCustomPath setting to '{}'", file, e);
-    }
+    String v = Objects.toString(relativePath, "").trim();
+    updateUiSetting(
+        "tray.notificationSoundCustomPath",
+        ui -> {
+          Map<String, Object> tray = getOrCreateMap(ui, "tray");
+          if (v.isEmpty()) {
+            tray.remove("notificationSoundCustomPath");
+          } else {
+            tray.put("notificationSoundCustomPath", v);
+          }
+        });
   }
 
   public synchronized void rememberPushySettings(PushyProperties settings) {
@@ -2804,44 +2521,17 @@ public class RuntimeConfigStore
 
   @Override
   public synchronized boolean readUnknownCommandAsRawEnabled(boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-      if (!Files.exists(file)) return defaultValue;
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return defaultValue;
-
-      Object commandsObj = ircafe.get("commands");
-      if (!(commandsObj instanceof Map<?, ?> commands)) return defaultValue;
-
-      if (!commands.containsKey("unknownCommandAsRaw")) return defaultValue;
-      return asBoolean(commands.get("unknownCommandAsRaw")).orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read commands.unknownCommandAsRaw from '{}'", file, e);
-      return defaultValue;
-    }
+    return readExistingConfigValue(
+            "commands.unknownCommandAsRaw", "ircafe", "commands", "unknownCommandAsRaw")
+        .flatMap(RuntimeConfigStore::asBoolean)
+        .orElse(defaultValue);
   }
 
   @Override
   public synchronized String readDefaultQuitMessage() {
-    try {
-      if (file.toString().isBlank()) return DEFAULT_QUIT_MESSAGE;
-      if (!Files.exists(file)) return DEFAULT_QUIT_MESSAGE;
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return DEFAULT_QUIT_MESSAGE;
-
-      Object uiObj = ircafe.get("ui");
-      if (!(uiObj instanceof Map<?, ?> ui)) return DEFAULT_QUIT_MESSAGE;
-
-      if (!ui.containsKey("defaultQuitMessage")) return DEFAULT_QUIT_MESSAGE;
-      return normalizeQuitMessage(ui.get("defaultQuitMessage"));
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.defaultQuitMessage from '{}'", file, e);
-      return DEFAULT_QUIT_MESSAGE;
-    }
+    return readUiValue("ui.defaultQuitMessage", "defaultQuitMessage")
+        .map(RuntimeConfigStore::normalizeQuitMessage)
+        .orElse(DEFAULT_QUIT_MESSAGE);
   }
 
   public synchronized boolean readAppDiagnosticsAssertjSwingEnabled(boolean defaultValue) {
@@ -2854,61 +2544,35 @@ public class RuntimeConfigStore
   }
 
   public synchronized int readAppDiagnosticsAssertjSwingFreezeThresholdMs(int defaultValue) {
-    try {
-      if (file.toString().isBlank()) return clampAssertjFreezeThresholdMs(defaultValue);
-      if (!Files.exists(file)) return clampAssertjFreezeThresholdMs(defaultValue);
-
-      Map<String, Object> doc = loadFile();
-      return readAssertjSwingValue(doc, "edtFreezeThresholdMs")
-          .flatMap(RuntimeConfigStore::asInt)
-          .map(RuntimeConfigStore::clampAssertjFreezeThresholdMs)
-          .orElse(clampAssertjFreezeThresholdMs(defaultValue));
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not read ui.appDiagnostics.assertjSwing.edtFreezeThresholdMs from '{}'",
-          file,
-          e);
-      return clampAssertjFreezeThresholdMs(defaultValue);
-    }
+    int fallback = clampAssertjFreezeThresholdMs(defaultValue);
+    return readAppDiagnosticsSetting(
+            "ui.appDiagnostics.assertjSwing.edtFreezeThresholdMs",
+            "assertjSwing",
+            "edtFreezeThresholdMs")
+        .flatMap(RuntimeConfigStore::asInt)
+        .map(RuntimeConfigStore::clampAssertjFreezeThresholdMs)
+        .orElse(fallback);
   }
 
   public synchronized int readAppDiagnosticsAssertjSwingWatchdogPollMs(int defaultValue) {
-    try {
-      if (file.toString().isBlank()) return clampAssertjWatchdogPollMs(defaultValue);
-      if (!Files.exists(file)) return clampAssertjWatchdogPollMs(defaultValue);
-
-      Map<String, Object> doc = loadFile();
-      return readAssertjSwingValue(doc, "edtWatchdogPollMs")
-          .flatMap(RuntimeConfigStore::asInt)
-          .map(RuntimeConfigStore::clampAssertjWatchdogPollMs)
-          .orElse(clampAssertjWatchdogPollMs(defaultValue));
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not read ui.appDiagnostics.assertjSwing.edtWatchdogPollMs from '{}'",
-          file,
-          e);
-      return clampAssertjWatchdogPollMs(defaultValue);
-    }
+    int fallback = clampAssertjWatchdogPollMs(defaultValue);
+    return readAppDiagnosticsSetting(
+            "ui.appDiagnostics.assertjSwing.edtWatchdogPollMs", "assertjSwing", "edtWatchdogPollMs")
+        .flatMap(RuntimeConfigStore::asInt)
+        .map(RuntimeConfigStore::clampAssertjWatchdogPollMs)
+        .orElse(fallback);
   }
 
   public synchronized int readAppDiagnosticsAssertjSwingFallbackViolationReportMs(
       int defaultValue) {
-    try {
-      if (file.toString().isBlank()) return clampAssertjFallbackViolationReportMs(defaultValue);
-      if (!Files.exists(file)) return clampAssertjFallbackViolationReportMs(defaultValue);
-
-      Map<String, Object> doc = loadFile();
-      return readAssertjSwingValue(doc, "edtFallbackViolationReportMs")
-          .flatMap(RuntimeConfigStore::asInt)
-          .map(RuntimeConfigStore::clampAssertjFallbackViolationReportMs)
-          .orElse(clampAssertjFallbackViolationReportMs(defaultValue));
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not read ui.appDiagnostics.assertjSwing.edtFallbackViolationReportMs from '{}'",
-          file,
-          e);
-      return clampAssertjFallbackViolationReportMs(defaultValue);
-    }
+    int fallback = clampAssertjFallbackViolationReportMs(defaultValue);
+    return readAppDiagnosticsSetting(
+            "ui.appDiagnostics.assertjSwing.edtFallbackViolationReportMs",
+            "assertjSwing",
+            "edtFallbackViolationReportMs")
+        .flatMap(RuntimeConfigStore::asInt)
+        .map(RuntimeConfigStore::clampAssertjFallbackViolationReportMs)
+        .orElse(fallback);
   }
 
   public synchronized boolean readAppDiagnosticsAssertjSwingIssuePlaySound(boolean defaultValue) {
@@ -2921,109 +2585,51 @@ public class RuntimeConfigStore
   }
 
   public synchronized boolean readAppDiagnosticsJhiccupEnabled(boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-      if (!Files.exists(file)) return defaultValue;
-
-      Map<String, Object> doc = loadFile();
-      return readJhiccupValue(doc, "enabled")
-          .flatMap(RuntimeConfigStore::asBoolean)
-          .orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.appDiagnostics.jhiccup.enabled from '{}'", file, e);
-      return defaultValue;
-    }
+    return readAppDiagnosticsSetting("ui.appDiagnostics.jhiccup.enabled", "jhiccup", "enabled")
+        .flatMap(RuntimeConfigStore::asBoolean)
+        .orElse(defaultValue);
   }
 
   public synchronized String readAppDiagnosticsJhiccupJarPath(String defaultValue) {
-    try {
-      String fallback = Objects.toString(defaultValue, "").trim();
-      if (file.toString().isBlank()) return fallback;
-      if (!Files.exists(file)) return fallback;
-
-      Map<String, Object> doc = loadFile();
-      String raw =
-          readJhiccupValue(doc, "jarPath")
-              .map(value -> Objects.toString(value, "").trim())
-              .orElse("");
-      return raw.isEmpty() ? fallback : raw;
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.appDiagnostics.jhiccup.jarPath from '{}'", file, e);
-      return Objects.toString(defaultValue, "").trim();
-    }
+    String fallback = Objects.toString(defaultValue, "").trim();
+    String raw =
+        readAppDiagnosticsSetting("ui.appDiagnostics.jhiccup.jarPath", "jhiccup", "jarPath")
+            .map(value -> Objects.toString(value, "").trim())
+            .orElse("");
+    return raw.isEmpty() ? fallback : raw;
   }
 
   public synchronized String readAppDiagnosticsJhiccupJavaCommand(String defaultValue) {
-    try {
-      String fallback = Objects.toString(defaultValue, "").trim();
-      if (fallback.isEmpty()) fallback = "java";
-      if (file.toString().isBlank()) return fallback;
-      if (!Files.exists(file)) return fallback;
-
-      Map<String, Object> doc = loadFile();
-      String raw =
-          readJhiccupValue(doc, "javaCommand")
-              .map(value -> Objects.toString(value, "").trim())
-              .orElse("");
-      return raw.isEmpty() ? fallback : raw;
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.appDiagnostics.jhiccup.javaCommand from '{}'", file, e);
-      String fallback = Objects.toString(defaultValue, "").trim();
-      return fallback.isEmpty() ? "java" : fallback;
-    }
+    String fallback = Objects.toString(defaultValue, "").trim();
+    if (fallback.isEmpty()) fallback = "java";
+    String raw =
+        readAppDiagnosticsSetting("ui.appDiagnostics.jhiccup.javaCommand", "jhiccup", "javaCommand")
+            .map(value -> Objects.toString(value, "").trim())
+            .orElse("");
+    return raw.isEmpty() ? fallback : raw;
   }
 
   public synchronized List<String> readAppDiagnosticsJhiccupArgs(List<String> defaultValue) {
-    try {
-      if (file.toString().isBlank()) return sanitizeArgs(defaultValue);
-      if (!Files.exists(file)) return sanitizeArgs(defaultValue);
-
-      Map<String, Object> doc = loadFile();
-      Object argsObj = readJhiccupValue(doc, "args").orElse(null);
-      if (!(argsObj instanceof List<?> raw)) return sanitizeArgs(defaultValue);
-
-      List<String> out = new ArrayList<>();
-      for (Object entry : raw) {
-        String a = Objects.toString(entry, "").trim();
-        if (!a.isEmpty()) out.add(a);
-      }
-      return List.copyOf(out);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.appDiagnostics.jhiccup.args from '{}'", file, e);
-      return sanitizeArgs(defaultValue);
-    }
+    List<String> fallback = sanitizeArgs(defaultValue);
+    Object argsObj =
+        readAppDiagnosticsSetting("ui.appDiagnostics.jhiccup.args", "jhiccup", "args").orElse(null);
+    if (!(argsObj instanceof List<?> raw)) return fallback;
+    return sanitizeArgs(raw);
   }
 
   private boolean readAppDiagnosticsAssertjSwingBoolean(String key, boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-      if (!Files.exists(file)) return defaultValue;
-
-      Map<String, Object> doc = loadFile();
-      return readAssertjSwingValue(doc, key)
-          .flatMap(RuntimeConfigStore::asBoolean)
-          .orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.appDiagnostics.assertjSwing.{} from '{}'", key, file, e);
-      return defaultValue;
-    }
+    return readAppDiagnosticsSetting("ui.appDiagnostics.assertjSwing." + key, "assertjSwing", key)
+        .flatMap(RuntimeConfigStore::asBoolean)
+        .orElse(defaultValue);
   }
 
-  private Optional<Object> readAssertjSwingValue(Map<String, Object> doc, String key) {
-    return readAppDiagnosticsValue(doc, "assertjSwing", key);
-  }
-
-  private Optional<Object> readJhiccupValue(Map<String, Object> doc, String key) {
-    return readAppDiagnosticsValue(doc, "jhiccup", key);
-  }
-
-  private Optional<Object> readAppDiagnosticsValue(Map<String, Object> doc, String... path) {
+  private Optional<Object> readAppDiagnosticsSetting(String description, String... path) {
     String[] fullPath = new String[path.length + 3];
     fullPath[0] = "ircafe";
     fullPath[1] = "ui";
     fullPath[2] = "appDiagnostics";
     System.arraycopy(path, 0, fullPath, 3, path.length);
-    return RuntimeConfigDocumentPathReader.readValue(doc, fullPath);
+    return readExistingConfigValue(description, fullPath);
   }
 
   private static int clampAssertjFreezeThresholdMs(int value) {
@@ -3044,11 +2650,11 @@ public class RuntimeConfigStore
     return value;
   }
 
-  private static List<String> sanitizeArgs(List<String> args) {
+  private static List<String> sanitizeArgs(List<?> args) {
     if (args == null || args.isEmpty()) return List.of();
     List<String> out = new ArrayList<>();
-    for (String a : args) {
-      String t = Objects.toString(a, "").trim();
+    for (Object arg : args) {
+      String t = Objects.toString(arg, "").trim();
       if (!t.isEmpty()) out.add(t);
     }
     return List.copyOf(out);
@@ -3057,93 +2663,45 @@ public class RuntimeConfigStore
   public synchronized String readLaunchJvmJavaCommand(String defaultValue) {
     String fallback = Objects.toString(defaultValue, "").trim();
     if (fallback.isEmpty()) fallback = "java";
-    try {
-      if (file.toString().isBlank()) return fallback;
-      if (!Files.exists(file)) return fallback;
-
-      Map<String, Object> doc = loadFile();
-      String raw =
-          RuntimeConfigDocumentPathReader.readValue(doc, "ircafe", "launch", "jvm", "javaCommand")
-              .map(value -> Objects.toString(value, "").trim())
-              .orElse("");
-      return raw.isEmpty() ? fallback : raw;
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read launch.jvm.javaCommand from '{}'", file, e);
-      return fallback;
-    }
+    String raw =
+        readLaunchJvmValue("launch.jvm.javaCommand", "javaCommand")
+            .map(value -> Objects.toString(value, "").trim())
+            .orElse("");
+    return raw.isEmpty() ? fallback : raw;
   }
 
   public synchronized int readLaunchJvmXmsMiB(int defaultValue) {
     int fallback = clampLaunchJvmHeapMiB(defaultValue);
-    try {
-      if (file.toString().isBlank()) return fallback;
-      if (!Files.exists(file)) return fallback;
-
-      Map<String, Object> doc = loadFile();
-      return RuntimeConfigDocumentPathReader.readValue(doc, "ircafe", "launch", "jvm", "xmsMiB")
-          .flatMap(RuntimeConfigStore::asInt)
-          .map(RuntimeConfigStore::clampLaunchJvmHeapMiB)
-          .orElse(fallback);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read launch.jvm.xmsMiB from '{}'", file, e);
-      return fallback;
-    }
+    return readLaunchJvmValue("launch.jvm.xmsMiB", "xmsMiB")
+        .flatMap(RuntimeConfigStore::asInt)
+        .map(RuntimeConfigStore::clampLaunchJvmHeapMiB)
+        .orElse(fallback);
   }
 
   public synchronized int readLaunchJvmXmxMiB(int defaultValue) {
     int fallback = clampLaunchJvmHeapMiB(defaultValue);
-    try {
-      if (file.toString().isBlank()) return fallback;
-      if (!Files.exists(file)) return fallback;
-
-      Map<String, Object> doc = loadFile();
-      return RuntimeConfigDocumentPathReader.readValue(doc, "ircafe", "launch", "jvm", "xmxMiB")
-          .flatMap(RuntimeConfigStore::asInt)
-          .map(RuntimeConfigStore::clampLaunchJvmHeapMiB)
-          .orElse(fallback);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read launch.jvm.xmxMiB from '{}'", file, e);
-      return fallback;
-    }
+    return readLaunchJvmValue("launch.jvm.xmxMiB", "xmxMiB")
+        .flatMap(RuntimeConfigStore::asInt)
+        .map(RuntimeConfigStore::clampLaunchJvmHeapMiB)
+        .orElse(fallback);
   }
 
   public synchronized String readLaunchJvmGc(String defaultValue) {
     String fallback = normalizeLaunchJvmGc(defaultValue);
-    try {
-      if (file.toString().isBlank()) return fallback;
-      if (!Files.exists(file)) return fallback;
-
-      Map<String, Object> doc = loadFile();
-      return RuntimeConfigDocumentPathReader.readValue(doc, "ircafe", "launch", "jvm", "gc")
-          .map(RuntimeConfigStore::normalizeLaunchJvmGc)
-          .orElse(fallback);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read launch.jvm.gc from '{}'", file, e);
-      return fallback;
-    }
+    return readLaunchJvmValue("launch.jvm.gc", "gc")
+        .map(RuntimeConfigStore::normalizeLaunchJvmGc)
+        .orElse(fallback);
   }
 
   public synchronized List<String> readLaunchJvmArgs(List<String> defaultValue) {
-    try {
-      if (file.toString().isBlank()) return sanitizeArgs(defaultValue);
-      if (!Files.exists(file)) return sanitizeArgs(defaultValue);
+    List<String> fallback = sanitizeArgs(defaultValue);
+    Object argsObj = readLaunchJvmValue("launch.jvm.args", "args").orElse(null);
+    if (!(argsObj instanceof List<?> raw)) return fallback;
+    return sanitizeArgs(raw);
+  }
 
-      Map<String, Object> doc = loadFile();
-      Object argsObj =
-          RuntimeConfigDocumentPathReader.readValue(doc, "ircafe", "launch", "jvm", "args")
-              .orElse(null);
-      if (!(argsObj instanceof List<?> raw)) return sanitizeArgs(defaultValue);
-
-      List<String> out = new ArrayList<>();
-      for (Object entry : raw) {
-        String arg = Objects.toString(entry, "").trim();
-        if (!arg.isEmpty()) out.add(arg);
-      }
-      return List.copyOf(out);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read launch.jvm.args from '{}'", file, e);
-      return sanitizeArgs(defaultValue);
-    }
+  private Optional<Object> readLaunchJvmValue(String description, String key) {
+    return readExistingConfigValue(description, "ircafe", "launch", "jvm", key);
   }
 
   public synchronized void rememberLaunchJvmJavaCommand(String javaCommand) {
@@ -3327,26 +2885,7 @@ public class RuntimeConfigStore
   }
 
   private boolean readCtcpAutoReplyValue(String key, boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-      if (!Files.exists(file)) return defaultValue;
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return defaultValue;
-
-      Object uiObj = ircafe.get("ui");
-      if (!(uiObj instanceof Map<?, ?> ui)) return defaultValue;
-
-      Object ctcpObj = ui.get("ctcpReplies");
-      if (!(ctcpObj instanceof Map<?, ?> ctcpReplies)) return defaultValue;
-
-      if (!ctcpReplies.containsKey(key)) return defaultValue;
-      return asBoolean(ctcpReplies.get(key)).orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.ctcpReplies.{} from '{}'", key, file, e);
-      return defaultValue;
-    }
+    return readUiSectionBoolean("ctcpReplies", key, defaultValue, "ui.ctcpReplies." + key);
   }
 
   public synchronized void rememberUserCommandAliases(List<UserCommandAlias> aliases) {
@@ -3392,185 +2931,85 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberAppDiagnosticsAssertjSwingEnabled(boolean enabled) {
-    rememberAppDiagnosticsAssertjSwingBoolean("enabled", enabled, "enabled");
+    rememberAppDiagnosticsAssertjSwingSetting("enabled", enabled);
   }
 
   public synchronized void rememberAppDiagnosticsAssertjSwingFreezeWatchdogEnabled(
       boolean enabled) {
-    rememberAppDiagnosticsAssertjSwingBoolean(
-        "edtFreezeWatchdogEnabled", enabled, "edtFreezeWatchdogEnabled");
+    rememberAppDiagnosticsAssertjSwingSetting("edtFreezeWatchdogEnabled", enabled);
   }
 
   public synchronized void rememberAppDiagnosticsAssertjSwingFreezeThresholdMs(int ms) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = clampAssertjFreezeThresholdMs(ms);
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> assertjSwing =
-          getOrCreateMapPath(doc, "ircafe", "ui", "appDiagnostics", "assertjSwing");
-
-      assertjSwing.put("edtFreezeThresholdMs", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist ui.appDiagnostics.assertjSwing.edtFreezeThresholdMs to '{}'",
-          file,
-          e);
-    }
+    rememberAppDiagnosticsAssertjSwingSetting(
+        "edtFreezeThresholdMs", clampAssertjFreezeThresholdMs(ms));
   }
 
   public synchronized void rememberAppDiagnosticsAssertjSwingWatchdogPollMs(int ms) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = clampAssertjWatchdogPollMs(ms);
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> assertjSwing =
-          getOrCreateMapPath(doc, "ircafe", "ui", "appDiagnostics", "assertjSwing");
-
-      assertjSwing.put("edtWatchdogPollMs", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist ui.appDiagnostics.assertjSwing.edtWatchdogPollMs to '{}'",
-          file,
-          e);
-    }
+    rememberAppDiagnosticsAssertjSwingSetting("edtWatchdogPollMs", clampAssertjWatchdogPollMs(ms));
   }
 
   public synchronized void rememberAppDiagnosticsAssertjSwingFallbackViolationReportMs(int ms) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = clampAssertjFallbackViolationReportMs(ms);
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> assertjSwing =
-          getOrCreateMapPath(doc, "ircafe", "ui", "appDiagnostics", "assertjSwing");
-
-      assertjSwing.put("edtFallbackViolationReportMs", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist ui.appDiagnostics.assertjSwing.edtFallbackViolationReportMs to '{}'",
-          file,
-          e);
-    }
+    rememberAppDiagnosticsAssertjSwingSetting(
+        "edtFallbackViolationReportMs", clampAssertjFallbackViolationReportMs(ms));
   }
 
   public synchronized void rememberAppDiagnosticsAssertjSwingIssuePlaySound(boolean enabled) {
-    rememberAppDiagnosticsAssertjSwingBoolean("onIssuePlaySound", enabled, "onIssuePlaySound");
+    rememberAppDiagnosticsAssertjSwingSetting("onIssuePlaySound", enabled);
   }
 
   public synchronized void rememberAppDiagnosticsAssertjSwingIssueShowNotification(
       boolean enabled) {
-    rememberAppDiagnosticsAssertjSwingBoolean(
-        "onIssueShowNotification", enabled, "onIssueShowNotification");
+    rememberAppDiagnosticsAssertjSwingSetting("onIssueShowNotification", enabled);
   }
 
   public synchronized void rememberAppDiagnosticsJhiccupEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> jhiccup =
-          getOrCreateMapPath(doc, "ircafe", "ui", "appDiagnostics", "jhiccup");
-
-      jhiccup.put("enabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.appDiagnostics.jhiccup.enabled to '{}'", file, e);
-    }
+    rememberAppDiagnosticsSectionSetting("jhiccup", "enabled", enabled, false);
   }
 
   public synchronized void rememberAppDiagnosticsJhiccupJarPath(String jarPath) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String v = Objects.toString(jarPath, "").trim();
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> jhiccup =
-          getOrCreateMapPath(doc, "ircafe", "ui", "appDiagnostics", "jhiccup");
-
-      if (v.isEmpty()) {
-        jhiccup.remove("jarPath");
-      } else {
-        jhiccup.put("jarPath", v);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.appDiagnostics.jhiccup.jarPath to '{}'", file, e);
-    }
+    rememberAppDiagnosticsSectionSetting(
+        "jhiccup", "jarPath", Objects.toString(jarPath, "").trim(), true);
   }
 
   public synchronized void rememberAppDiagnosticsJhiccupJavaCommand(String javaCommand) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String v = Objects.toString(javaCommand, "").trim();
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> jhiccup =
-          getOrCreateMapPath(doc, "ircafe", "ui", "appDiagnostics", "jhiccup");
-
-      if (v.isEmpty()) {
-        jhiccup.remove("javaCommand");
-      } else {
-        jhiccup.put("javaCommand", v);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.appDiagnostics.jhiccup.javaCommand to '{}'", file, e);
-    }
+    rememberAppDiagnosticsSectionSetting(
+        "jhiccup", "javaCommand", Objects.toString(javaCommand, "").trim(), true);
   }
 
   public synchronized void rememberAppDiagnosticsJhiccupArgs(List<String> args) {
+    rememberAppDiagnosticsSectionSetting("jhiccup", "args", sanitizeArgs(args), true);
+  }
+
+  private void rememberAppDiagnosticsAssertjSwingSetting(String key, Object value) {
+    rememberAppDiagnosticsSectionSetting("assertjSwing", key, value, false);
+  }
+
+  private void rememberAppDiagnosticsSectionSetting(
+      String section, String key, Object value, boolean removeEmpty) {
     try {
       if (file.toString().isBlank()) return;
 
-      List<String> sanitized = sanitizeArgs(args);
-
       Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> jhiccup =
-          getOrCreateMapPath(doc, "ircafe", "ui", "appDiagnostics", "jhiccup");
+      Map<String, Object> settings =
+          getOrCreateMapPath(doc, "ircafe", "ui", "appDiagnostics", section);
 
-      if (sanitized.isEmpty()) {
-        jhiccup.remove("args");
+      if (removeEmpty && isEmptySettingValue(value)) {
+        settings.remove(key);
       } else {
-        jhiccup.put("args", sanitized);
+        settings.put(key, value);
       }
 
       writeFile(doc);
     } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.appDiagnostics.jhiccup.args to '{}'", file, e);
+      log.warn("[ircafe] Could not persist ui.appDiagnostics.{}.{} to '{}'", section, key, file, e);
     }
   }
 
-  private void rememberAppDiagnosticsAssertjSwingBoolean(String key, boolean value, String label) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> assertjSwing =
-          getOrCreateMapPath(doc, "ircafe", "ui", "appDiagnostics", "assertjSwing");
-
-      assertjSwing.put(key, value);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist ui.appDiagnostics.assertjSwing.{} to '{}'", label, file, e);
-    }
+  private static boolean isEmptySettingValue(Object value) {
+    if (value == null) return true;
+    if (value instanceof CharSequence text) return text.toString().isBlank();
+    if (value instanceof java.util.Collection<?> collection) return collection.isEmpty();
+    return false;
   }
 
   public synchronized void rememberIrcEventNotificationRules(List<IrcEventNotificationRule> rules) {
@@ -3826,336 +3265,135 @@ public class RuntimeConfigStore
   // --- Chat logging / history persistence (ircafe.logging.*) ---
 
   public synchronized boolean readChatLoggingEnabled(boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-      if (!Files.exists(file)) return defaultValue;
-
-      Map<String, Object> doc = loadFile();
-      return RuntimeConfigDocumentPathReader.readValue(doc, "ircafe", "logging", "enabled")
-          .flatMap(RuntimeConfigStore::asBoolean)
-          .orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read logging.enabled from '{}'", file, e);
-      return defaultValue;
-    }
+    return readExistingConfigValue("logging.enabled", "ircafe", "logging", "enabled")
+        .flatMap(RuntimeConfigStore::asBoolean)
+        .orElse(defaultValue);
   }
 
   public synchronized void rememberChatLoggingEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
-
-      logging.put("enabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat logging enabled setting to '{}'", file, e);
-    }
+    rememberChatLoggingScalarSetting("enabled", enabled, "chat logging enabled");
   }
 
   public synchronized void rememberChatLoggingLogSoftIgnoredLines(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
-
-      logging.put("logSoftIgnoredLines", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat logging soft-ignore setting to '{}'", file, e);
-    }
+    rememberChatLoggingScalarSetting("logSoftIgnoredLines", enabled, "chat logging soft-ignore");
   }
 
   public synchronized void rememberChatLoggingRedactionAuditEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
-
-      logging.put("redactionAuditEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat logging redaction-audit setting to '{}'", file, e);
-    }
+    rememberChatLoggingScalarSetting(
+        "redactionAuditEnabled", enabled, "chat logging redaction-audit");
   }
 
   public synchronized void rememberChatLoggingLogPrivateMessages(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
-
-      logging.put("logPrivateMessages", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat logging PM-history setting to '{}'", file, e);
-    }
+    rememberChatLoggingScalarSetting("logPrivateMessages", enabled, "chat logging PM-history");
   }
 
   public synchronized void rememberChatLoggingSavePrivateMessageList(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
-
-      logging.put("savePrivateMessageList", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat logging PM-list setting to '{}'", file, e);
-    }
+    rememberChatLoggingScalarSetting("savePrivateMessageList", enabled, "chat logging PM-list");
   }
 
   public synchronized void rememberChatLoggingDbFileBaseName(String fileBaseName) {
-    try {
-      if (file.toString().isBlank()) return;
+    String base = Objects.toString(fileBaseName, "").trim();
+    if (base.isEmpty()) base = "ircafe-chatlog";
 
-      String base = Objects.toString(fileBaseName, "").trim();
-      if (base.isEmpty()) base = "ircafe-chatlog";
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
-      Map<String, Object> hsqldb = getOrCreateMap(logging, "hsqldb");
-
-      hsqldb.put("fileBaseName", base);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat logging DB file base name to '{}'", file, e);
-    }
+    rememberChatLoggingHsqldbScalarSetting("fileBaseName", base, "chat logging DB file base name");
   }
 
   public synchronized void rememberChatLoggingDbNextToRuntimeConfig(boolean nextToRuntimeConfig) {
+    rememberChatLoggingHsqldbScalarSetting(
+        "nextToRuntimeConfig", nextToRuntimeConfig, "chat logging DB location");
+  }
+
+  public synchronized void rememberChatLoggingKeepForever(boolean keepForever) {
+    rememberChatLoggingScalarSetting("keepForever", keepForever, "chat logging keepForever");
+  }
+
+  public synchronized void rememberChatLoggingRetentionDays(int retentionDays) {
+    rememberChatLoggingScalarSetting(
+        "retentionDays", Math.max(0, retentionDays), "chat logging retentionDays");
+  }
+
+  public synchronized void rememberChatLoggingWriterQueueMax(int writerQueueMax) {
+    rememberChatLoggingScalarSetting(
+        "writerQueueMax",
+        Math.max(100, Math.min(1_000_000, writerQueueMax)),
+        "chat logging writerQueueMax");
+  }
+
+  public synchronized void rememberChatLoggingWriterBatchSize(int writerBatchSize) {
+    rememberChatLoggingScalarSetting(
+        "writerBatchSize",
+        Math.max(1, Math.min(10_000, writerBatchSize)),
+        "chat logging writerBatchSize");
+  }
+
+  private void rememberChatLoggingScalarSetting(String key, Object value, String description) {
     try {
       if (file.toString().isBlank()) return;
 
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
+      Map<String, Object> doc = loadFileOrEmpty();
+      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
+      Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
+
+      logging.put(key, value);
+
+      writeFile(doc);
+    } catch (Exception e) {
+      log.warn("[ircafe] Could not persist {} setting to '{}'", description, file, e);
+    }
+  }
+
+  private void rememberChatLoggingHsqldbScalarSetting(
+      String key, Object value, String description) {
+    try {
+      if (file.toString().isBlank()) return;
+
+      Map<String, Object> doc = loadFileOrEmpty();
       Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
       Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
       Map<String, Object> hsqldb = getOrCreateMap(logging, "hsqldb");
 
-      hsqldb.put("nextToRuntimeConfig", nextToRuntimeConfig);
+      hsqldb.put(key, value);
 
       writeFile(doc);
     } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat logging DB location setting to '{}'", file, e);
-    }
-  }
-
-  public synchronized void rememberChatLoggingKeepForever(boolean keepForever) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
-
-      logging.put("keepForever", keepForever);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat logging keepForever setting to '{}'", file, e);
-    }
-  }
-
-  public synchronized void rememberChatLoggingRetentionDays(int retentionDays) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int days = Math.max(0, retentionDays);
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
-
-      logging.put("retentionDays", days);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat logging retentionDays setting to '{}'", file, e);
-    }
-  }
-
-  public synchronized void rememberChatLoggingWriterQueueMax(int writerQueueMax) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = Math.max(100, Math.min(1_000_000, writerQueueMax));
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
-
-      logging.put("writerQueueMax", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat logging writerQueueMax setting to '{}'", file, e);
-    }
-  }
-
-  public synchronized void rememberChatLoggingWriterBatchSize(int writerBatchSize) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = Math.max(1, Math.min(10_000, writerBatchSize));
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
-
-      logging.put("writerBatchSize", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat logging writerBatchSize setting to '{}'", file, e);
+      log.warn("[ircafe] Could not persist {} setting to '{}'", description, file, e);
     }
   }
 
   public synchronized void rememberImageEmbedsEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("imageEmbedsEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist image embed setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting("imageEmbedsEnabled", enabled, "image embed");
   }
 
   public synchronized void rememberImageEmbedsCollapsedByDefault(boolean collapsed) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("imageEmbedsCollapsedByDefault", collapsed);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist image embed collapse setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting("imageEmbedsCollapsedByDefault", collapsed, "image embed collapse");
   }
 
   public synchronized void rememberImageEmbedsMaxWidthPx(int maxWidthPx) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("imageEmbedsMaxWidthPx", Math.max(0, maxWidthPx));
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist image embed max width setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting(
+        "imageEmbedsMaxWidthPx", Math.max(0, maxWidthPx), "image embed max width");
   }
 
   public synchronized void rememberImageEmbedsMaxHeightPx(int maxHeightPx) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("imageEmbedsMaxHeightPx", Math.max(0, maxHeightPx));
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist image embed max height setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting(
+        "imageEmbedsMaxHeightPx", Math.max(0, maxHeightPx), "image embed max height");
   }
 
   public synchronized void rememberImageEmbedsAnimateGifs(boolean animate) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("imageEmbedsAnimateGifs", animate);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist image embed GIF animation setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting("imageEmbedsAnimateGifs", animate, "image embed GIF animation");
   }
 
   public synchronized void rememberLinkPreviewsEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("linkPreviewsEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist link preview setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting("linkPreviewsEnabled", enabled, "link preview");
   }
 
   public synchronized void rememberLinkPreviewsCollapsedByDefault(boolean collapsed) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("linkPreviewsCollapsedByDefault", collapsed);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist link preview collapse setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting("linkPreviewsCollapsedByDefault", collapsed, "link preview collapse");
   }
 
   public synchronized void rememberEmbedCardStyle(String styleToken) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String token = Objects.toString(styleToken, "").trim().toLowerCase(Locale.ROOT);
-      if (token.isBlank()) token = "default";
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("embedCardStyle", token);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist embed card style setting to '{}'", file, e);
-    }
+    String token = Objects.toString(styleToken, "").trim().toLowerCase(Locale.ROOT);
+    if (token.isBlank()) token = "default";
+    rememberUiScalarSetting("embedCardStyle", token, "embed card style");
   }
 
   /** Reads advanced embed/link loading policy settings under {@code ircafe.ui.embedLoadPolicy}. */
@@ -4250,41 +3488,20 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberPresenceFoldsEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("presenceFoldsEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist presence folds setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting("presenceFoldsEnabled", enabled, "presence folds");
   }
 
   public synchronized void rememberDefaultQuitMessage(String message) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String normalized = normalizeQuitMessage(message);
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      if (DEFAULT_QUIT_MESSAGE.equals(normalized)) {
-        ui.remove("defaultQuitMessage");
-      } else {
-        ui.put("defaultQuitMessage", normalized);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.defaultQuitMessage to '{}'", file, e);
-    }
+    String normalized = normalizeQuitMessage(message);
+    updateUiSetting(
+        "ui.defaultQuitMessage",
+        ui -> {
+          if (DEFAULT_QUIT_MESSAGE.equals(normalized)) {
+            ui.remove("defaultQuitMessage");
+          } else {
+            ui.put("defaultQuitMessage", normalized);
+          }
+        });
   }
 
   private static String normalizeQuitMessage(Object message) {
@@ -4294,19 +3511,7 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberCtcpRequestsInActiveTargetEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("ctcpRequestsInActiveTargetEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist CTCP request routing setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting("ctcpRequestsInActiveTargetEnabled", enabled, "CTCP request routing");
   }
 
   public synchronized void rememberCtcpAutoRepliesEnabled(boolean enabled) {
@@ -4326,70 +3531,21 @@ public class RuntimeConfigStore
   }
 
   private void rememberCtcpAutoReplyValue(String key, boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> ctcpReplies = getOrCreateMap(ui, "ctcpReplies");
-
-      ctcpReplies.put(key, enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.ctcpReplies.{} to '{}'", key, file, e);
-    }
+    rememberUiSectionScalarSetting("ctcpReplies", key, enabled, "ui.ctcpReplies." + key);
   }
 
   public synchronized void rememberTypingIndicatorsEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("typingIndicatorsEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist typing indicators setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting("typingIndicatorsEnabled", enabled, "typing indicators");
   }
 
   public synchronized void rememberTypingIndicatorsReceiveEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("typingIndicatorsReceiveEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist incoming typing indicators setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting(
+        "typingIndicatorsReceiveEnabled", enabled, "incoming typing indicators");
   }
 
   public synchronized void rememberTypingTreeIndicatorStyle(String style) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String normalized = UiProperties.normalizeTypingTreeIndicatorStyle(style);
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("typingTreeIndicatorStyle", normalized);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist typing tree indicator style to '{}'", file, e);
-    }
+    String normalized = UiProperties.normalizeTypingTreeIndicatorStyle(style);
+    rememberUiScalarSetting("typingTreeIndicatorStyle", normalized, "typing tree indicator style");
   }
 
   public synchronized void rememberTypingIndicatorsTreeEnabled(boolean enabled) {
@@ -4401,20 +3557,9 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberMatrixUserListNameDisplayMode(String mode) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String normalized = UiProperties.normalizeMatrixUserListNameDisplayMode(mode);
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("matrixUserListNameDisplayMode", normalized);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist Matrix user list name display mode to '{}'", file, e);
-    }
+    String normalized = UiProperties.normalizeMatrixUserListNameDisplayMode(mode);
+    rememberUiScalarSetting(
+        "matrixUserListNameDisplayMode", normalized, "Matrix user list name display mode");
   }
 
   public synchronized void rememberTypingIndicatorsTranscriptEnabled(boolean enabled) {
@@ -4426,56 +3571,21 @@ public class RuntimeConfigStore
   }
 
   private void rememberTypingIndicatorDisplayBoolean(String key, boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put(key, enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist {} to '{}'", key, file, e);
-    }
+    rememberUiScalarSetting(key, enabled, key);
   }
 
   public synchronized int readServerTreeUnreadBadgeScalePercent(int defaultValue) {
-    int fallback = clampServerTreeUnreadBadgeScalePercent(defaultValue);
-    try {
-      if (file.toString().isBlank()) return fallback;
-      if (!Files.exists(file)) return fallback;
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return fallback;
-
-      Object uiObj = ircafe.get("ui");
-      if (!(uiObj instanceof Map<?, ?> ui)) return fallback;
-
-      Object raw = ui.get("serverTreeUnreadBadgeScalePercent");
-      if (raw == null) return fallback;
-      return asInt(raw).map(this::clampServerTreeUnreadBadgeScalePercent).orElse(fallback);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.serverTreeUnreadBadgeScalePercent from '{}'", file, e);
-      return fallback;
-    }
+    return readUiInt(
+        "serverTreeUnreadBadgeScalePercent",
+        defaultValue,
+        this::clampServerTreeUnreadBadgeScalePercent,
+        "ui.serverTreeUnreadBadgeScalePercent");
   }
 
   public synchronized void rememberServerTreeUnreadBadgeScalePercent(int percent) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int normalized = clampServerTreeUnreadBadgeScalePercent(percent);
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      ui.put("serverTreeUnreadBadgeScalePercent", normalized);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.serverTreeUnreadBadgeScalePercent to '{}'", file, e);
-    }
+    int normalized = clampServerTreeUnreadBadgeScalePercent(percent);
+    rememberUiScalarSetting(
+        "serverTreeUnreadBadgeScalePercent", normalized, "ui.serverTreeUnreadBadgeScalePercent");
   }
 
   private int clampServerTreeUnreadBadgeScalePercent(int percent) {
@@ -4851,181 +3961,66 @@ public class RuntimeConfigStore
   // --- WeeChat-style filters (ircafe.ui.filters.*) ---
 
   public synchronized void rememberFiltersEnabledByDefault(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> filters = getOrCreateMap(ui, "filters");
-
-      filters.put("enabledByDefault", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist filters enabledByDefault setting to '{}'", file, e);
-    }
+    rememberFilterScalarSetting("enabledByDefault", enabled);
   }
 
   public synchronized void rememberFilterPlaceholdersEnabledByDefault(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> filters = getOrCreateMap(ui, "filters");
-
-      filters.put("placeholdersEnabledByDefault", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist filters placeholdersEnabledByDefault setting to '{}'",
-          file,
-          e);
-    }
+    rememberFilterScalarSetting("placeholdersEnabledByDefault", enabled);
   }
 
   public synchronized void rememberFilterPlaceholdersCollapsedByDefault(boolean collapsed) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> filters = getOrCreateMap(ui, "filters");
-
-      filters.put("placeholdersCollapsedByDefault", collapsed);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist filters placeholdersCollapsedByDefault setting to '{}'",
-          file,
-          e);
-    }
+    rememberFilterScalarSetting("placeholdersCollapsedByDefault", collapsed);
   }
 
   public synchronized void rememberFilterPlaceholderMaxPreviewLines(int maxLines) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = maxLines;
-      if (v < 0) v = 0;
-      if (v > 25) v = 25;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> filters = getOrCreateMap(ui, "filters");
-
-      filters.put("placeholderMaxPreviewLines", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist filters placeholderMaxPreviewLines setting to '{}'", file, e);
-    }
+    rememberFilterScalarSetting(
+        "placeholderMaxPreviewLines", FilterPlaceholderRanges.normalizeMaxPreviewLines(maxLines));
   }
 
   public synchronized void rememberFilterPlaceholderMaxLinesPerRun(int maxLines) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = maxLines;
-      if (v < 0) v = 0;
-      if (v > 50_000) v = 50_000;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> filters = getOrCreateMap(ui, "filters");
-
-      filters.put("placeholderMaxLinesPerRun", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist filters placeholderMaxLinesPerRun setting to '{}'", file, e);
-    }
+    rememberFilterScalarSetting(
+        "placeholderMaxLinesPerRun", FilterPlaceholderRanges.normalizeMaxLinesPerRun(maxLines));
   }
 
   public synchronized void rememberFilterPlaceholderTooltipMaxTags(int maxTags) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = maxTags;
-      if (v < 0) v = 0;
-      if (v > 500) v = 500;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> filters = getOrCreateMap(ui, "filters");
-
-      filters.put("placeholderTooltipMaxTags", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist filters placeholderTooltipMaxTags setting to '{}'", file, e);
-    }
+    rememberFilterScalarSetting(
+        "placeholderTooltipMaxTags", FilterPlaceholderRanges.normalizeTooltipMaxTags(maxTags));
   }
 
   public synchronized void rememberFilterHistoryPlaceholderMaxRunsPerBatch(int maxRuns) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = maxRuns;
-      if (v < 0) v = 0;
-      if (v > 5_000) v = 5_000;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> filters = getOrCreateMap(ui, "filters");
-
-      filters.put("historyPlaceholderMaxRunsPerBatch", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist filters historyPlaceholderMaxRunsPerBatch setting to '{}'",
-          file,
-          e);
-    }
+    rememberFilterScalarSetting(
+        "historyPlaceholderMaxRunsPerBatch",
+        FilterPlaceholderRanges.normalizeHistoryMaxRunsPerBatch(maxRuns));
   }
 
   public synchronized void rememberFilterHistoryPlaceholdersEnabledByDefault(boolean enabled) {
+    rememberFilterScalarSetting("historyPlaceholdersEnabledByDefault", enabled);
+  }
+
+  private void rememberFilterScalarSetting(String key, Object value) {
     try {
       if (file.toString().isBlank()) return;
 
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> filters = getOrCreateMap(ui, "filters");
-
-      filters.put("historyPlaceholdersEnabledByDefault", enabled);
+      Map<String, Object> doc = loadFileOrEmpty();
+      Map<String, Object> filters = getOrCreateFilterSettingsMap(doc);
+      filters.put(key, value);
 
       writeFile(doc);
     } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist filters historyPlaceholdersEnabledByDefault setting to '{}'",
-          file,
-          e);
+      log.warn("[ircafe] Could not persist filters {} setting to '{}'", key, file, e);
     }
+  }
+
+  private static Map<String, Object> getOrCreateFilterSettingsMap(Map<String, Object> doc) {
+    return getOrCreateMapPath(doc, "ircafe", "ui", "filters");
   }
 
   public synchronized void rememberFilterRules(List<FilterRule> rules) {
     try {
       if (file.toString().isBlank()) return;
 
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> filters = getOrCreateMap(ui, "filters");
-
+      Map<String, Object> doc = loadFileOrEmpty();
+      Map<String, Object> filters = getOrCreateFilterSettingsMap(doc);
       List<Map<String, Object>> out = new ArrayList<>();
       if (rules != null) {
         for (FilterRule r : rules) {
@@ -5089,11 +4084,8 @@ public class RuntimeConfigStore
     try {
       if (file.toString().isBlank()) return;
 
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> filters = getOrCreateMap(ui, "filters");
-
+      Map<String, Object> doc = loadFileOrEmpty();
+      Map<String, Object> filters = getOrCreateFilterSettingsMap(doc);
       List<Map<String, Object>> out = new ArrayList<>();
       if (overrides != null) {
         for (FilterScopeOverride o : overrides) {
@@ -5151,81 +4143,104 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberTimestampsEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> timestamps = getOrCreateMap(ui, "timestamps");
-
-      timestamps.put("enabled", enabled);
-      // Clean up legacy flat key.
-      ui.remove("chatMessageTimestampsEnabled");
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist timestamp enable setting to '{}'", file, e);
-    }
+    rememberTimestampSetting("enabled", enabled);
   }
 
   public synchronized void rememberTimestampFormat(String format) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String fmt = (format == null || format.isBlank()) ? "HH:mm:ss" : format.trim();
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> timestamps = getOrCreateMap(ui, "timestamps");
-
-      timestamps.put("format", fmt);
-      // Clean up legacy flat key.
-      ui.remove("chatMessageTimestampsEnabled");
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist timestamp format setting to '{}'", file, e);
-    }
+    String fmt = (format == null || format.isBlank()) ? "HH:mm:ss" : format.trim();
+    rememberTimestampSetting("format", fmt);
   }
 
   public synchronized void rememberTimestampsIncludeChatMessages(boolean includeChatMessages) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> timestamps = getOrCreateMap(ui, "timestamps");
-
-      timestamps.put("includeChatMessages", includeChatMessages);
-      // Clean up legacy flat key.
-      ui.remove("chatMessageTimestampsEnabled");
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat message timestamp setting to '{}'", file, e);
-    }
+    rememberTimestampSetting("includeChatMessages", includeChatMessages);
   }
 
   public synchronized void rememberTimestampsIncludePresenceMessages(
       boolean includePresenceMessages) {
+    rememberTimestampSetting("includePresenceMessages", includePresenceMessages);
+  }
+
+  private void rememberTimestampSetting(String key, Object value) {
+    updateUiSetting(
+        "timestamp " + key,
+        ui -> {
+          Map<String, Object> timestamps = getOrCreateMap(ui, "timestamps");
+
+          timestamps.put(key, value);
+          // Clean up legacy flat key.
+          ui.remove("chatMessageTimestampsEnabled");
+        });
+  }
+
+  private Optional<Object> readUiValue(String description, String... path) {
+    String[] fullPath = new String[path.length + 2];
+    fullPath[0] = "ircafe";
+    fullPath[1] = "ui";
+    System.arraycopy(path, 0, fullPath, 2, path.length);
+    return readExistingConfigValue(description, fullPath);
+  }
+
+  private Optional<Object> readExistingConfigValue(String description, String... path) {
+    try {
+      if (file.toString().isBlank()) return Optional.empty();
+      if (!Files.exists(file)) return Optional.empty();
+
+      Map<String, Object> doc = loadFile();
+      return RuntimeConfigDocumentPathReader.readValue(doc, path);
+    } catch (Exception e) {
+      log.warn("[ircafe] Could not read {} from '{}'", description, file, e);
+      return Optional.empty();
+    }
+  }
+
+  private boolean readUiBoolean(String key, boolean defaultValue, String description) {
+    return readUiValue(description, key)
+        .flatMap(RuntimeConfigStore::asBoolean)
+        .orElse(defaultValue);
+  }
+
+  private boolean readUiSectionBoolean(
+      String section, String key, boolean defaultValue, String description) {
+    return readUiNestedBoolean(defaultValue, description, section, key);
+  }
+
+  private boolean readUiNestedBoolean(boolean defaultValue, String description, String... path) {
+    return readUiValue(description, path)
+        .flatMap(RuntimeConfigStore::asBoolean)
+        .orElse(defaultValue);
+  }
+
+  private int readUiInt(
+      String key, int defaultValue, IntUnaryOperator normalizer, String description) {
+    int fallback = normalizer.applyAsInt(defaultValue);
+    return readUiValue(description, key)
+        .flatMap(RuntimeConfigStore::asInt)
+        .map(normalizer::applyAsInt)
+        .orElse(fallback);
+  }
+
+  private void rememberUiScalarSetting(String key, Object value, String description) {
+    updateUiSetting(description, ui -> ui.put(key, value));
+  }
+
+  private void rememberUiSectionScalarSetting(
+      String section, String key, Object value, String description) {
+    updateUiSetting(description, ui -> getOrCreateMap(ui, section).put(key, value));
+  }
+
+  private void updateUiSetting(String description, UiUpdater updater) {
     try {
       if (file.toString().isBlank()) return;
 
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
+      Map<String, Object> doc = loadFileOrEmpty();
       Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
       Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> timestamps = getOrCreateMap(ui, "timestamps");
 
-      timestamps.put("includePresenceMessages", includePresenceMessages);
-      // Clean up legacy flat key.
-      ui.remove("chatMessageTimestampsEnabled");
+      updater.update(ui);
 
       writeFile(doc);
     } catch (Exception e) {
-      log.warn("[ircafe] Could not persist presence message timestamp setting to '{}'", file, e);
+      log.warn("[ircafe] Could not persist {} setting to '{}'", description, file, e);
     }
   }
 
@@ -5236,129 +4251,40 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberChatHistoryInitialLoadLines(int lines) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("chatHistoryInitialLoadLines", Math.max(0, lines));
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat history initial load setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting(
+        "chatHistoryInitialLoadLines", Math.max(0, lines), "chat history initial load");
   }
 
   public synchronized void rememberChatHistoryPageSize(int pageSize) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("chatHistoryPageSize", Math.max(1, pageSize));
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat history page size setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting("chatHistoryPageSize", Math.max(1, pageSize), "chat history page size");
   }
 
   public synchronized void rememberChatHistoryAutoLoadWheelDebounceMs(int debounceMs) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = Math.max(100, Math.min(30_000, debounceMs));
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("chatHistoryAutoLoadWheelDebounceMs", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat history wheel debounce setting to '{}'", file, e);
-    }
+    int v = Math.max(100, Math.min(30_000, debounceMs));
+    rememberUiScalarSetting("chatHistoryAutoLoadWheelDebounceMs", v, "chat history wheel debounce");
   }
 
   public synchronized void rememberChatHistoryLoadOlderChunkSize(int chunkSize) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = Math.max(1, Math.min(500, chunkSize));
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("chatHistoryLoadOlderChunkSize", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist chat history load-older chunk-size setting to '{}'", file, e);
-    }
+    int v = Math.max(1, Math.min(500, chunkSize));
+    rememberUiScalarSetting(
+        "chatHistoryLoadOlderChunkSize", v, "chat history load-older chunk-size");
   }
 
   public synchronized void rememberChatHistoryLoadOlderChunkDelayMs(int chunkDelayMs) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = Math.max(0, Math.min(1_000, chunkDelayMs));
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("chatHistoryLoadOlderChunkDelayMs", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist chat history load-older chunk-delay setting to '{}'",
-          file,
-          e);
-    }
+    int v = Math.max(0, Math.min(1_000, chunkDelayMs));
+    rememberUiScalarSetting(
+        "chatHistoryLoadOlderChunkDelayMs", v, "chat history load-older chunk-delay");
   }
 
   public synchronized void rememberChatHistoryLoadOlderChunkEdtBudgetMs(int chunkEdtBudgetMs) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = Math.max(1, Math.min(33, chunkEdtBudgetMs));
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("chatHistoryLoadOlderChunkEdtBudgetMs", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist chat history load-older EDT budget setting to '{}'", file, e);
-    }
+    int v = Math.max(1, Math.min(33, chunkEdtBudgetMs));
+    rememberUiScalarSetting(
+        "chatHistoryLoadOlderChunkEdtBudgetMs", v, "chat history load-older EDT budget");
   }
 
   public synchronized void rememberChatHistoryDeferRichTextDuringBatch(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("chatHistoryDeferRichTextDuringBatch", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist chat history deferred-rich-text setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting(
+        "chatHistoryDeferRichTextDuringBatch", enabled, "chat history deferred-rich-text");
   }
 
   /**
@@ -5367,565 +4293,207 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when the key is missing or invalid.
    */
   public synchronized boolean readChatSmoothWheelScrollingEnabled(boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-      if (!Files.exists(file)) return defaultValue;
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return defaultValue;
-      Object uiObj = ircafe.get("ui");
-      if (!(uiObj instanceof Map<?, ?> ui)) return defaultValue;
-      Object raw = ui.get("chatSmoothWheelScrollingEnabled");
-      if (raw == null) return defaultValue;
-      return asBoolean(raw).orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.chatSmoothWheelScrollingEnabled from '{}'", file, e);
-      return defaultValue;
-    }
+    return readUiBoolean(
+        "chatSmoothWheelScrollingEnabled", defaultValue, "ui.chatSmoothWheelScrollingEnabled");
   }
 
   public synchronized void rememberChatSmoothWheelScrollingEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("chatSmoothWheelScrollingEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat smooth-wheel scrolling setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting(
+        "chatSmoothWheelScrollingEnabled", enabled, "chat smooth-wheel scrolling");
   }
 
   public synchronized boolean readChatHistoryLockViewportDuringLoadOlder(boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-      if (!Files.exists(file)) return defaultValue;
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return defaultValue;
-      Object uiObj = ircafe.get("ui");
-      if (!(uiObj instanceof Map<?, ?> ui)) return defaultValue;
-      Object raw = ui.get("chatHistoryLockViewportDuringLoadOlder");
-      if (raw == null) return defaultValue;
-      return asBoolean(raw).orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not read ui.chatHistoryLockViewportDuringLoadOlder from '{}'", file, e);
-      return defaultValue;
-    }
+    return readUiBoolean(
+        "chatHistoryLockViewportDuringLoadOlder",
+        defaultValue,
+        "ui.chatHistoryLockViewportDuringLoadOlder");
   }
 
   public synchronized void rememberChatHistoryLockViewportDuringLoadOlder(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("chatHistoryLockViewportDuringLoadOlder", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat history viewport-lock setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting(
+        "chatHistoryLockViewportDuringLoadOlder", enabled, "chat history viewport-lock");
   }
 
   public synchronized void rememberChatHistoryRemoteRequestTimeoutSeconds(int seconds) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = Math.max(1, Math.min(120, seconds));
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("chatHistoryRemoteRequestTimeoutSeconds", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chat history remote-timeout setting to '{}'", file, e);
-    }
+    int v = Math.max(1, Math.min(120, seconds));
+    rememberUiScalarSetting(
+        "chatHistoryRemoteRequestTimeoutSeconds", v, "chat history remote-timeout");
   }
 
   public synchronized void rememberChatHistoryRemoteZncPlaybackTimeoutSeconds(int seconds) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = Math.max(1, Math.min(300, seconds));
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("chatHistoryRemoteZncPlaybackTimeoutSeconds", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist chat history remote ZNC-timeout setting to '{}'", file, e);
-    }
+    int v = Math.max(1, Math.min(300, seconds));
+    rememberUiScalarSetting(
+        "chatHistoryRemoteZncPlaybackTimeoutSeconds", v, "chat history remote ZNC-timeout");
   }
 
   public synchronized void rememberChatHistoryRemoteZncPlaybackWindowMinutes(int minutes) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = Math.max(1, Math.min(1440, minutes));
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("chatHistoryRemoteZncPlaybackWindowMinutes", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist chat history remote ZNC window setting to '{}'", file, e);
-    }
+    int v = Math.max(1, Math.min(1440, minutes));
+    rememberUiScalarSetting(
+        "chatHistoryRemoteZncPlaybackWindowMinutes", v, "chat history remote ZNC window");
   }
 
   public synchronized void rememberCommandHistoryMaxSize(int maxSize) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = maxSize;
-      if (v <= 0) v = 500;
-      if (v > 500) v = 500;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("commandHistoryMaxSize", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist command history max size setting to '{}'", file, e);
-    }
+    int v = maxSize;
+    if (v <= 0) v = 500;
+    if (v > 500) v = 500;
+    rememberUiScalarSetting("commandHistoryMaxSize", v, "command history max size");
   }
 
   public synchronized void rememberChatTranscriptMaxLinesPerTarget(int maxLines) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = Math.max(0, maxLines);
-      if (v > 200_000) v = 200_000;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("chatTranscriptMaxLinesPerTarget", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist chat transcript max-lines-per-target setting to '{}'",
-          file,
-          e);
-    }
+    int v = Math.max(0, maxLines);
+    if (v > 200_000) v = 200_000;
+    rememberUiScalarSetting(
+        "chatTranscriptMaxLinesPerTarget", v, "chat transcript max-lines-per-target");
   }
 
   public synchronized void rememberClientLineColorEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("clientLineColorEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist outgoing message color enabled setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting("clientLineColorEnabled", enabled, "outgoing message color enabled");
   }
 
   public synchronized void rememberClientLineColor(String hex) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("clientLineColor", Objects.toString(hex, "").trim());
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist outgoing message color setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting(
+        "clientLineColor", Objects.toString(hex, "").trim(), "outgoing message color");
   }
 
   public synchronized void rememberOutgoingDeliveryIndicatorsEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("outgoingDeliveryIndicatorsEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist outgoing delivery indicators setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting(
+        "outgoingDeliveryIndicatorsEnabled", enabled, "outgoing delivery indicators");
   }
 
   public synchronized void rememberServerTreeNotificationBadgesEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("serverTreeNotificationBadgesEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist server tree notification badges setting to '{}'", file, e);
-    }
+    rememberUiScalarSetting(
+        "serverTreeNotificationBadgesEnabled", enabled, "server tree notification badges");
   }
 
   public synchronized void rememberUserhostDiscoveryEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> hostmaskDiscovery = getOrCreateMap(ui, "hostmaskDiscovery");
-
-      hostmaskDiscovery.put("userhostEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist USERHOST discovery enabled setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting(
+        "hostmaskDiscovery", "userhostEnabled", enabled, "USERHOST discovery enabled");
   }
 
   public synchronized void rememberUserhostMinIntervalSeconds(int seconds) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> hostmaskDiscovery = getOrCreateMap(ui, "hostmaskDiscovery");
-
-      hostmaskDiscovery.put("userhostMinIntervalSeconds", Math.max(1, seconds));
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist USERHOST min interval setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting(
+        "hostmaskDiscovery",
+        "userhostMinIntervalSeconds",
+        Math.max(1, seconds),
+        "USERHOST min interval");
   }
 
   public synchronized void rememberUserhostMaxCommandsPerMinute(int maxPerMinute) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> hostmaskDiscovery = getOrCreateMap(ui, "hostmaskDiscovery");
-
-      hostmaskDiscovery.put("userhostMaxCommandsPerMinute", Math.max(1, maxPerMinute));
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist USERHOST max commands/min setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting(
+        "hostmaskDiscovery",
+        "userhostMaxCommandsPerMinute",
+        Math.max(1, maxPerMinute),
+        "USERHOST max commands/min");
   }
 
   public synchronized void rememberUserhostNickCooldownMinutes(int minutes) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> hostmaskDiscovery = getOrCreateMap(ui, "hostmaskDiscovery");
-
-      hostmaskDiscovery.put("userhostNickCooldownMinutes", Math.max(1, minutes));
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist USERHOST nick cooldown setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting(
+        "hostmaskDiscovery",
+        "userhostNickCooldownMinutes",
+        Math.max(1, minutes),
+        "USERHOST nick cooldown");
   }
 
   public synchronized void rememberUserhostMaxNicksPerCommand(int maxNicks) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> hostmaskDiscovery = getOrCreateMap(ui, "hostmaskDiscovery");
-
-      int capped = Math.max(1, Math.min(5, maxNicks));
-      hostmaskDiscovery.put("userhostMaxNicksPerCommand", capped);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist USERHOST max nicks/command setting to '{}'", file, e);
-    }
+    int capped = Math.max(1, Math.min(5, maxNicks));
+    rememberUiSectionScalarSetting(
+        "hostmaskDiscovery", "userhostMaxNicksPerCommand", capped, "USERHOST max nicks/command");
   }
 
   public synchronized void rememberMonitorIsonPollIntervalSeconds(int seconds) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> monitorFallback = getOrCreateMap(ui, "monitorFallback");
-
-      int v = Math.max(5, Math.min(600, seconds));
-      monitorFallback.put("isonPollIntervalSeconds", v);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist monitor fallback ISON interval setting to '{}'", file, e);
-    }
+    int v = Math.max(5, Math.min(600, seconds));
+    rememberUiSectionScalarSetting(
+        "monitorFallback", "isonPollIntervalSeconds", v, "monitor fallback ISON interval");
   }
 
   // --- User info enrichment fallback (ircafe.ui.userInfoEnrichment.*) ---
 
   public synchronized void rememberUserInfoEnrichmentEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> enrich = getOrCreateMap(ui, "userInfoEnrichment");
-
-      enrich.put("enabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist user info enrichment enabled setting to '{}'", file, e);
-    }
+    rememberUiSectionScalarSetting(
+        "userInfoEnrichment", "enabled", enabled, "user info enrichment enabled");
   }
 
   public synchronized void rememberUserInfoEnrichmentWhoisFallbackEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> enrich = getOrCreateMap(ui, "userInfoEnrichment");
-
-      enrich.put("whoisFallbackEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist user info enrichment WHOIS fallback enabled setting to '{}'",
-          file,
-          e);
-    }
+    rememberUiSectionScalarSetting(
+        "userInfoEnrichment",
+        "whoisFallbackEnabled",
+        enabled,
+        "user info enrichment WHOIS fallback enabled");
   }
 
   public synchronized void rememberUserInfoEnrichmentUserhostMinIntervalSeconds(int seconds) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> enrich = getOrCreateMap(ui, "userInfoEnrichment");
-
-      enrich.put("userhostMinIntervalSeconds", Math.max(1, seconds));
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist user info enrichment USERHOST min interval setting to '{}'",
-          file,
-          e);
-    }
+    rememberUiSectionScalarSetting(
+        "userInfoEnrichment",
+        "userhostMinIntervalSeconds",
+        Math.max(1, seconds),
+        "user info enrichment USERHOST min interval");
   }
 
   public synchronized void rememberUserInfoEnrichmentUserhostMaxCommandsPerMinute(
       int maxPerMinute) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> enrich = getOrCreateMap(ui, "userInfoEnrichment");
-
-      enrich.put("userhostMaxCommandsPerMinute", Math.max(1, maxPerMinute));
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist user info enrichment USERHOST max commands/min setting to '{}'",
-          file,
-          e);
-    }
+    rememberUiSectionScalarSetting(
+        "userInfoEnrichment",
+        "userhostMaxCommandsPerMinute",
+        Math.max(1, maxPerMinute),
+        "user info enrichment USERHOST max commands/min");
   }
 
   public synchronized void rememberUserInfoEnrichmentUserhostNickCooldownMinutes(int minutes) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> enrich = getOrCreateMap(ui, "userInfoEnrichment");
-
-      enrich.put("userhostNickCooldownMinutes", Math.max(1, minutes));
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist user info enrichment USERHOST nick cooldown setting to '{}'",
-          file,
-          e);
-    }
+    rememberUiSectionScalarSetting(
+        "userInfoEnrichment",
+        "userhostNickCooldownMinutes",
+        Math.max(1, minutes),
+        "user info enrichment USERHOST nick cooldown");
   }
 
   public synchronized void rememberUserInfoEnrichmentUserhostMaxNicksPerCommand(int maxNicks) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> enrich = getOrCreateMap(ui, "userInfoEnrichment");
-
-      int capped = Math.max(1, Math.min(5, maxNicks));
-      enrich.put("userhostMaxNicksPerCommand", capped);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist user info enrichment USERHOST max nicks/command setting to '{}'",
-          file,
-          e);
-    }
+    int capped = Math.max(1, Math.min(5, maxNicks));
+    rememberUiSectionScalarSetting(
+        "userInfoEnrichment",
+        "userhostMaxNicksPerCommand",
+        capped,
+        "user info enrichment USERHOST max nicks/command");
   }
 
   public synchronized void rememberUserInfoEnrichmentWhoisMinIntervalSeconds(int seconds) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> enrich = getOrCreateMap(ui, "userInfoEnrichment");
-
-      enrich.put("whoisMinIntervalSeconds", Math.max(1, seconds));
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist user info enrichment WHOIS min interval setting to '{}'",
-          file,
-          e);
-    }
+    rememberUiSectionScalarSetting(
+        "userInfoEnrichment",
+        "whoisMinIntervalSeconds",
+        Math.max(1, seconds),
+        "user info enrichment WHOIS min interval");
   }
 
   public synchronized void rememberUserInfoEnrichmentWhoisNickCooldownMinutes(int minutes) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> enrich = getOrCreateMap(ui, "userInfoEnrichment");
-
-      enrich.put("whoisNickCooldownMinutes", Math.max(1, minutes));
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist user info enrichment WHOIS nick cooldown setting to '{}'",
-          file,
-          e);
-    }
+    rememberUiSectionScalarSetting(
+        "userInfoEnrichment",
+        "whoisNickCooldownMinutes",
+        Math.max(1, minutes),
+        "user info enrichment WHOIS nick cooldown");
   }
 
   public synchronized void rememberUserInfoEnrichmentPeriodicRefreshEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> enrich = getOrCreateMap(ui, "userInfoEnrichment");
-
-      enrich.put("periodicRefreshEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist user info enrichment periodic refresh enabled setting to '{}'",
-          file,
-          e);
-    }
+    rememberUiSectionScalarSetting(
+        "userInfoEnrichment",
+        "periodicRefreshEnabled",
+        enabled,
+        "user info enrichment periodic refresh enabled");
   }
 
   public synchronized void rememberUserInfoEnrichmentPeriodicRefreshIntervalSeconds(int seconds) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> enrich = getOrCreateMap(ui, "userInfoEnrichment");
-
-      enrich.put("periodicRefreshIntervalSeconds", Math.max(5, seconds));
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist user info enrichment periodic refresh interval setting to '{}'",
-          file,
-          e);
-    }
+    rememberUiSectionScalarSetting(
+        "userInfoEnrichment",
+        "periodicRefreshIntervalSeconds",
+        Math.max(5, seconds),
+        "user info enrichment periodic refresh interval");
   }
 
   public synchronized void rememberUserInfoEnrichmentPeriodicRefreshNicksPerTick(int nicksPerTick) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> enrich = getOrCreateMap(ui, "userInfoEnrichment");
-
-      int capped = Math.max(1, Math.min(20, nicksPerTick));
-      enrich.put("periodicRefreshNicksPerTick", capped);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist user info enrichment periodic refresh nicks/tick setting to '{}'",
-          file,
-          e);
-    }
+    int capped = Math.max(1, Math.min(20, nicksPerTick));
+    rememberUiSectionScalarSetting(
+        "userInfoEnrichment",
+        "periodicRefreshNicksPerTick",
+        capped,
+        "user info enrichment periodic refresh nicks/tick");
   }
 
   public synchronized void rememberClientTlsTrustAllCertificates(boolean trustAllCertificates) {
@@ -6641,50 +5209,20 @@ public class RuntimeConfigStore
   @Override
   public synchronized String readGenericBouncerLoginTemplate(String defaultValue) {
     String fallback = normalizeGenericBouncerLoginTemplate(defaultValue);
-    try {
-      if (file.toString().isBlank()) return fallback;
-      if (!Files.exists(file)) return fallback;
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return fallback;
-
-      Object bouncerObj = ircafe.get("bouncer");
-      if (!(bouncerObj instanceof Map<?, ?> bouncer)) return fallback;
-
-      Object genericObj = bouncer.get("generic");
-      if (!(genericObj instanceof Map<?, ?> generic)) return fallback;
-
-      if (!generic.containsKey("loginTemplate")) return fallback;
-      return normalizeGenericBouncerLoginTemplate(generic.get("loginTemplate"));
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read bouncer.generic.loginTemplate from '{}'", file, e);
-      return fallback;
-    }
+    return readGenericBouncerValue("bouncer.generic.loginTemplate", "loginTemplate")
+        .map(RuntimeConfigStore::normalizeGenericBouncerLoginTemplate)
+        .orElse(fallback);
   }
 
   @Override
   public synchronized boolean readGenericBouncerPreferLoginHint(boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-      if (!Files.exists(file)) return defaultValue;
+    return readGenericBouncerValue("bouncer.generic.preferLoginHint", "preferLoginHint")
+        .flatMap(RuntimeConfigStore::asBoolean)
+        .orElse(defaultValue);
+  }
 
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return defaultValue;
-
-      Object bouncerObj = ircafe.get("bouncer");
-      if (!(bouncerObj instanceof Map<?, ?> bouncer)) return defaultValue;
-
-      Object genericObj = bouncer.get("generic");
-      if (!(genericObj instanceof Map<?, ?> generic)) return defaultValue;
-
-      if (!generic.containsKey("preferLoginHint")) return defaultValue;
-      return asBoolean(generic.get("preferLoginHint")).orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read bouncer.generic.preferLoginHint from '{}'", file, e);
-      return defaultValue;
-    }
+  private Optional<Object> readGenericBouncerValue(String description, String key) {
+    return readExistingConfigValue(description, "ircafe", "bouncer", "generic", key);
   }
 
   public synchronized void rememberGenericBouncerLoginTemplate(String template) {
@@ -6829,6 +5367,11 @@ public class RuntimeConfigStore
 
   private interface ServerUpdater {
     void update(Map<String, Object> serverMap);
+  }
+
+  @FunctionalInterface
+  private interface UiUpdater {
+    void update(Map<String, Object> ui);
   }
 
   private void updateServer(String serverId, ServerUpdater updater) {

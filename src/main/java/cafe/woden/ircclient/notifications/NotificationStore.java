@@ -2,6 +2,12 @@ package cafe.woden.ircclient.notifications;
 
 import cafe.woden.ircclient.app.api.UiSettingsPort;
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.notifications.api.HighlightEvent;
+import cafe.woden.ircclient.notifications.api.IrcEventRuleEvent;
+import cafe.woden.ircclient.notifications.api.NotificationChange;
+import cafe.woden.ircclient.notifications.api.NotificationEvent;
+import cafe.woden.ircclient.notifications.api.NotificationStorePort;
+import cafe.woden.ircclient.notifications.api.RuleMatchEvent;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.processors.FlowableProcessor;
 import io.reactivex.rxjava3.processors.PublishProcessor;
@@ -22,72 +28,7 @@ import org.springframework.stereotype.Component;
 /** In-memory store of per-server "highlight" notifications. */
 @Component
 @ApplicationLayer
-public class NotificationStore {
-
-  public sealed interface NotificationEvent
-      permits HighlightEvent, RuleMatchEvent, IrcEventRuleEvent {
-    String serverId();
-
-    String channel();
-
-    String fromNick();
-
-    Instant at();
-
-    String messageId();
-  }
-
-  /**
-   * A single highlight/mention event.
-   *
-   * @param serverId server identifier
-   * @param channel channel name (e.g. #libera)
-   * @param fromNick nick that triggered the highlight
-   * @param snippet short excerpt of the message/action that triggered the highlight
-   * @param at timestamp (Instant)
-   */
-  public record HighlightEvent(
-      String serverId,
-      String channel,
-      String fromNick,
-      String snippet,
-      Instant at,
-      String messageId)
-      implements NotificationEvent {}
-
-  /**
-   * A rule match event (WORD/REGEX) from a channel message/action.
-   *
-   * @param serverId server identifier
-   * @param channel channel name (e.g. #libera)
-   * @param fromNick nick that triggered the notification
-   * @param ruleLabel configured rule label
-   * @param snippet short excerpt of the message around the match
-   * @param at timestamp (Instant)
-   */
-  public record RuleMatchEvent(
-      String serverId,
-      String channel,
-      String fromNick,
-      String ruleLabel,
-      String snippet,
-      Instant at,
-      String messageId)
-      implements NotificationEvent {}
-
-  /** A configured IRC event notification entry (kick/invite/mode/etc). */
-  public record IrcEventRuleEvent(
-      String serverId,
-      String channel,
-      String fromNick,
-      String title,
-      String body,
-      Instant at,
-      String messageId)
-      implements NotificationEvent {}
-
-  /** Notification store update signal (used by the UI to refresh). */
-  public record Change(String serverId) {}
+public class NotificationStore implements NotificationStorePort {
 
   /** Hard cap to prevent unbounded memory growth. */
   public static final int DEFAULT_MAX_EVENTS_PER_SERVER = 2000;
@@ -115,8 +56,8 @@ public class NotificationStore {
   private final ConcurrentHashMap<RuleMatchKey, Instant> lastRuleMatchAt =
       new ConcurrentHashMap<>();
 
-  private final FlowableProcessor<Change> changes =
-      PublishProcessor.<Change>create().toSerialized();
+  private final FlowableProcessor<NotificationChange> changes =
+      PublishProcessor.<NotificationChange>create().toSerialized();
 
   public NotificationStore() {
     this(null, DEFAULT_MAX_EVENTS_PER_SERVER);
@@ -137,21 +78,25 @@ public class NotificationStore {
   }
 
   /** Emits a signal whenever notifications change for a server. */
-  public Flowable<Change> changes() {
+  @Override
+  public Flowable<NotificationChange> changes() {
     return changes.onBackpressureBuffer();
   }
 
   /** Record a new highlight event. */
+  @Override
   public void recordHighlight(TargetRef channelTarget, String fromNick) {
     recordHighlight(channelTarget, fromNick, "", "");
   }
 
   /** Record a new highlight event with optional message snippet context. */
+  @Override
   public void recordHighlight(TargetRef channelTarget, String fromNick, String snippet) {
     recordHighlight(channelTarget, fromNick, snippet, "");
   }
 
   /** Record a new highlight event with optional snippet context and backing message id. */
+  @Override
   public void recordHighlight(
       TargetRef channelTarget, String fromNick, String snippet, String messageId) {
     if (channelTarget == null) return;
@@ -181,16 +126,18 @@ public class NotificationStore {
       }
     }
 
-    changes.onNext(new Change(sid));
+    changes.onNext(new NotificationChange(sid));
   }
 
   /** Record a new rule match event. */
+  @Override
   public void recordRuleMatch(
       TargetRef channelTarget, String fromNick, String ruleLabel, String snippet) {
     recordRuleMatch(channelTarget, fromNick, ruleLabel, snippet, "");
   }
 
   /** Record a new rule match event with an optional backing message id. */
+  @Override
   public void recordRuleMatch(
       TargetRef channelTarget,
       String fromNick,
@@ -235,16 +182,18 @@ public class NotificationStore {
       }
     }
 
-    changes.onNext(new Change(sid));
+    changes.onNext(new NotificationChange(sid));
   }
 
   /** Record a configured IRC event notification for the Notifications node. */
+  @Override
   public void recordIrcEvent(
       String serverId, String target, String fromNick, String title, String body) {
     recordIrcEvent(serverId, target, fromNick, title, body, "");
   }
 
   /** Record a configured IRC event notification for the Notifications node. */
+  @Override
   public void recordIrcEvent(
       String serverId,
       String target,
@@ -276,10 +225,11 @@ public class NotificationStore {
       }
     }
 
-    changes.onNext(new Change(sid));
+    changes.onNext(new NotificationChange(sid));
   }
 
   /** Returns a defensive copy of all highlight events for a server, oldest to newest. */
+  @Override
   public List<HighlightEvent> listAll(String serverId) {
     String sid = normalizeServerId(serverId);
     if (sid.isEmpty()) return List.of();
@@ -291,6 +241,7 @@ public class NotificationStore {
   }
 
   /** Returns a defensive copy of all rule-match events for a server, oldest to newest. */
+  @Override
   public List<RuleMatchEvent> listAllRuleMatches(String serverId) {
     String sid = normalizeServerId(serverId);
     if (sid.isEmpty()) return List.of();
@@ -305,6 +256,7 @@ public class NotificationStore {
    * Returns a defensive copy of all configured IRC event notifications for a server, oldest to
    * newest.
    */
+  @Override
   public List<IrcEventRuleEvent> listAllIrcEventRules(String serverId) {
     String sid = normalizeServerId(serverId);
     if (sid.isEmpty()) return List.of();
@@ -316,6 +268,7 @@ public class NotificationStore {
   }
 
   /** Returns up to {@code max} most recent highlight events for a server (newest last). */
+  @Override
   public List<HighlightEvent> listRecent(String serverId, int max) {
     if (max <= 0) return List.of();
     String sid = normalizeServerId(serverId);
@@ -329,6 +282,7 @@ public class NotificationStore {
     }
   }
 
+  @Override
   public int count(String serverId) {
     String sid = normalizeServerId(serverId);
     if (sid.isEmpty()) return 0;
@@ -359,6 +313,7 @@ public class NotificationStore {
   }
 
   /** Clears all highlight events for a specific channel on a server. */
+  @Override
   public void clearChannel(TargetRef channelTarget) {
     if (channelTarget == null) return;
     if (channelTarget.isUiOnly()) return;
@@ -393,11 +348,12 @@ public class NotificationStore {
     clearRuleMatchCooldownForChannel(sid, channel);
 
     if (changed) {
-      changes.onNext(new Change(sid));
+      changes.onNext(new NotificationChange(sid));
     }
   }
 
   /** Clears all highlight events for a server. */
+  @Override
   public void clearServer(String serverId) {
     String sid = normalizeServerId(serverId);
     if (sid.isEmpty()) return;
@@ -423,9 +379,10 @@ public class NotificationStore {
     }
 
     clearRuleMatchCooldownForServer(sid);
-    changes.onNext(new Change(sid));
+    changes.onNext(new NotificationChange(sid));
   }
 
+  @Override
   public int clearSelected(String serverId, List<? extends NotificationEvent> selectedEvents) {
     String sid = normalizeServerId(serverId);
     if (sid.isEmpty() || selectedEvents == null || selectedEvents.isEmpty()) return 0;
@@ -469,7 +426,7 @@ public class NotificationStore {
 
     clearRuleMatchCooldownForSelectedRules(sid, selectedEvents);
     if (removed > 0) {
-      changes.onNext(new Change(sid));
+      changes.onNext(new NotificationChange(sid));
     }
     return removed;
   }

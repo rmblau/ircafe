@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.irc.pircbotx.capability;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.SASL;
+
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
 import cafe.woden.ircclient.irc.ircv3.*;
@@ -75,7 +77,7 @@ public final class MultiSaslCapHandler implements CapHandler {
     if (!saslRequested) {
       saslRequested = true;
       state = State.REQUESTED;
-      bot.sendCAP().request("sasl");
+      bot.sendCAP().request(SASL);
       log.debug(
           "[SASL] Requested capability sasl (offered mechanisms: {})",
           capabilityOffer.offeredMechanismsUpper());

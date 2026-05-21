@@ -8,9 +8,11 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Restores and consumes startup remembered tree selection when it becomes selectable. */
+@InterfaceLayer
 @Component
 public final class ServerTreeStartupSelectionRestorer {
 

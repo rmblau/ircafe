@@ -6,18 +6,20 @@ import cafe.woden.ircclient.config.ServerEntry;
 import cafe.woden.ircclient.interceptors.InterceptorStore;
 import cafe.woden.ircclient.irc.soju.SojuAutoConnectStore;
 import cafe.woden.ircclient.irc.znc.ZncAutoConnectStore;
-import cafe.woden.ircclient.notifications.NotificationStore;
+import cafe.woden.ircclient.notifications.api.NotificationQueryPort;
 import cafe.woden.ircclient.ui.SwingEdt;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /** Binds long-lived external store/catalog streams for the server tree. */
+@InterfaceLayer
 @Component
 public final class ServerTreeExternalStreamBinder {
   private static final Logger log = LoggerFactory.getLogger(ServerTreeExternalStreamBinder.class);
@@ -85,7 +87,7 @@ public final class ServerTreeExternalStreamBinder {
   public void bind(
       Context context,
       ServerCatalog serverCatalog,
-      NotificationStore notificationStore,
+      NotificationQueryPort notificationStore,
       InterceptorStore interceptorStore,
       SojuAutoConnectStore sojuAutoConnect,
       ZncAutoConnectStore zncAutoConnect,

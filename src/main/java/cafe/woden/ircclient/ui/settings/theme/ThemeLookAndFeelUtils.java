@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings.theme;
 
+import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
@@ -39,8 +40,7 @@ final class ThemeLookAndFeelUtils {
   }
 
   private static boolean isTruthy(String raw) {
-    if (raw == null) return false;
-    String s = raw.trim().toLowerCase(Locale.ROOT);
+    String s = SettingsValueSupport.lowerTrimmedString(raw);
     return "1".equals(s) || "true".equals(s) || "yes".equals(s) || "on".equals(s);
   }
 }

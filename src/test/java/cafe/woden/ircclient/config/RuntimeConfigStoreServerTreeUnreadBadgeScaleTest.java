@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -16,8 +15,7 @@ class RuntimeConfigStoreServerTreeUnreadBadgeScaleTest {
   @Test
   void serverTreeUnreadBadgeScaleRoundTripsAndClamps() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     assertEquals(100, store.readServerTreeUnreadBadgeScalePercent(100));
 
@@ -37,8 +35,7 @@ class RuntimeConfigStoreServerTreeUnreadBadgeScaleTest {
   @Test
   void mutationBatchWritesCombinedUiUpdates() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.runMutationBatch(
         () -> {
@@ -55,8 +52,7 @@ class RuntimeConfigStoreServerTreeUnreadBadgeScaleTest {
   @Test
   void serverTreeNotificationBadgesEnabledPersists() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberServerTreeNotificationBadgesEnabled(false);
 
@@ -67,8 +63,7 @@ class RuntimeConfigStoreServerTreeUnreadBadgeScaleTest {
   @Test
   void chatHistoryViewportLockRoundTrips() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     assertTrue(store.readChatHistoryLockViewportDuringLoadOlder(true));
 

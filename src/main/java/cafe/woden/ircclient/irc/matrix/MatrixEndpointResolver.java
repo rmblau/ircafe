@@ -69,7 +69,7 @@ final class MatrixEndpointResolver {
 
   public static URI roomSendMessageUri(
       IrcProperties.Server server, String roomId, String transactionId) {
-    return roomSendEventUri(server, roomId, "m.room.message", transactionId);
+    return roomSendEventUri(server, roomId, MatrixProtocol.EVENT_ROOM_MESSAGE, transactionId);
   }
 
   public static URI roomSendEventUri(
@@ -163,7 +163,7 @@ final class MatrixEndpointResolver {
 
   public static URI joinedRoomsUri(IrcProperties.Server server) {
     URI apiBase = clientApiBaseUri(server);
-    String path = appendPath(apiBase.getPath(), "joined_rooms");
+    String path = appendPath(apiBase.getPath(), MatrixProtocol.JSON_JOINED_ROOMS);
     return rebuild(apiBase, path);
   }
 

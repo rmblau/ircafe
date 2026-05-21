@@ -1,5 +1,8 @@
 package cafe.woden.ircclient.logging.history;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.CHATHISTORY;
+
+import cafe.woden.ircclient.config.ConfigPropertyKeys;
 import cafe.woden.ircclient.config.ExecutorConfig;
 import cafe.woden.ircclient.config.LogProperties;
 import cafe.woden.ircclient.irc.ChatHistoryEntry;
@@ -26,7 +29,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 /** DB-backed {@link ChatHistoryIngestor}. */
 @Component
-@ConditionalOnProperty(prefix = "ircafe.logging", name = "enabled", havingValue = "true")
+@ConditionalOnProperty(
+    prefix = ConfigPropertyKeys.IRCAFE_LOGGING_PREFIX,
+    name = ConfigPropertyKeys.ENABLED_PROPERTY,
+    havingValue = ConfigPropertyKeys.TRUE_VALUE)
 @InfrastructureLayer
 @RequiredArgsConstructor
 public class DbChatHistoryIngestor implements ChatHistoryIngestor {
@@ -247,10 +253,10 @@ public class DbChatHistoryIngestor implements ChatHistoryIngestor {
 
   private static String inferSource(String batchId) {
     String bid = safe(batchId).trim();
-    if (bid.isEmpty()) return "chathistory";
+    if (bid.isEmpty()) return CHATHISTORY;
     String lower = bid.toLowerCase(Locale.ROOT);
     if (lower.startsWith("znc-playback")) return "znc-playback";
-    return "chathistory";
+    return CHATHISTORY;
   }
 
   private static boolean isPrivateMessageTarget(String target) {

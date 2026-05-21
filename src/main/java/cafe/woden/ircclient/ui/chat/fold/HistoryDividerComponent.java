@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.chat.fold;
 
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Insets;
@@ -113,8 +114,8 @@ public final class HistoryDividerComponent extends JPanel {
 
   private void applyTheme() {
     if (label == null) return;
-    var dim = UIManager.getColor("Label.disabledForeground");
-    var fg = UIManager.getColor("TextPane.foreground");
+    var dim = UIManager.getColor(UiColorKeys.LABEL_DISABLED_FOREGROUND);
+    var fg = UIManager.getColor(UiColorKeys.TEXT_PANE_FOREGROUND);
     label.setForeground(dim != null ? dim : fg);
   }
 }

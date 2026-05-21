@@ -15,9 +15,11 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Builds target-node context menus for server tree channels and built-ins. */
+@InterfaceLayer
 @Component
 public final class ServerTreeTargetNodeMenuBuilder {
 

@@ -19,6 +19,7 @@ import cafe.woden.ircclient.irc.ServerIrcEvent;
 import cafe.woden.ircclient.irc.backend.IrcBackendClientService;
 import cafe.woden.ircclient.irc.runtime.IrcRuntimeSettings;
 import cafe.woden.ircclient.irc.runtime.IrcRuntimeSettingsProvider;
+import cafe.woden.ircclient.irc.runtime.IrcRuntimeSettingsTestFixtures;
 import io.reactivex.rxjava3.processors.PublishProcessor;
 import java.lang.reflect.Method;
 import java.time.Instant;
@@ -144,8 +145,10 @@ class UserInfoEnrichmentServiceTest {
   }
 
   private static IrcRuntimeSettings settings(boolean enrichmentEnabled, boolean whoisFallback) {
-    return new IrcRuntimeSettings(
-        true, 7, 6, 30, 5, enrichmentEnabled, 15, 3, 60, 5, whoisFallback, 45, 120, false, 300, 2);
+    return IrcRuntimeSettingsTestFixtures.builder()
+        .userInfoEnrichmentEnabled(enrichmentEnabled)
+        .userInfoEnrichmentWhoisFallbackEnabled(whoisFallback)
+        .build();
   }
 
   private record Fixture(

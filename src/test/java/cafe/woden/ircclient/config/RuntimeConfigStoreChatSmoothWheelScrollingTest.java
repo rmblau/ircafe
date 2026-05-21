@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -14,9 +13,7 @@ class RuntimeConfigStoreChatSmoothWheelScrollingTest {
 
   @Test
   void smoothWheelScrollingDefaultsWhenUnset() {
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("ircafe.yml").toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     assertTrue(store.readChatSmoothWheelScrollingEnabled(true));
     assertFalse(store.readChatSmoothWheelScrollingEnabled(false));
@@ -24,9 +21,7 @@ class RuntimeConfigStoreChatSmoothWheelScrollingTest {
 
   @Test
   void smoothWheelScrollingCanBePersistedAndReadBack() {
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("ircafe.yml").toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     store.rememberChatSmoothWheelScrollingEnabled(false);
     assertFalse(store.readChatSmoothWheelScrollingEnabled(true));

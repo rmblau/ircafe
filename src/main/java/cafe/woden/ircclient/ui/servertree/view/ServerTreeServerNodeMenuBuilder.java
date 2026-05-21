@@ -21,11 +21,13 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /** Builds server-node and interceptor-group context menus for server tree. */
+@InterfaceLayer
 @Component
 public final class ServerTreeServerNodeMenuBuilder {
 

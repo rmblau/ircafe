@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.config.api.Ircv3StsPolicyConfigPort;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -17,9 +16,7 @@ class RuntimeConfigStoreIrcv3StsPoliciesTest {
 
   @Test
   void stsPoliciesCanBePersistedAndReadBack() {
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("ircafe.yml").toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     store.rememberIrcv3StsPolicy(
         "IRC.Example.NET",
@@ -41,9 +38,7 @@ class RuntimeConfigStoreIrcv3StsPoliciesTest {
 
   @Test
   void forgettingPolicyRemovesPersistedEntry() {
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("ircafe.yml").toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     store.rememberIrcv3StsPolicy(
         "irc.example.net", 1_900_000_000_000L, 6697, false, 86_400L, "duration=86400,port=6697");

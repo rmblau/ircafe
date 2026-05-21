@@ -1,0 +1,49 @@
+package cafe.woden.ircclient.ui.chat.transcript.line;
+
+import cafe.woden.ircclient.ui.chat.ChatStyles;
+import java.awt.Color;
+import java.util.Objects;
+import javax.swing.text.AttributeSet;
+import javax.swing.text.MutableAttributeSet;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyleConstants;
+
+/** Shared helpers for pending outbound transcript rows and delivery indicators. */
+public final class ChatTranscriptPendingOutgoingSupport {
+
+  private static final String PENDING_STATE = "pending";
+
+  private ChatTranscriptPendingOutgoingSupport() {}
+
+  public static void markPending(MutableAttributeSet attrs, String pendingId) {
+    if (attrs == null) return;
+    String pid = Objects.toString(pendingId, "").trim();
+    if (pid.isEmpty()) return;
+    attrs.addAttribute(ChatStyles.ATTR_META_PENDING_ID, pid);
+    attrs.addAttribute(ChatStyles.ATTR_META_PENDING_STATE, PENDING_STATE);
+  }
+
+  public static SimpleAttributeSet pendingTailAttrs(AttributeSet base, String pendingId) {
+    SimpleAttributeSet tail = new SimpleAttributeSet(base);
+    markPending(tail, pendingId);
+    return tail;
+  }
+
+  public static Color pendingSpinnerColor(AttributeSet messageAttrs) {
+    if (messageAttrs == null) return null;
+    try {
+      return StyleConstants.getForeground(messageAttrs);
+    } catch (Exception ignored) {
+      return null;
+    }
+  }
+
+  public static String renderPendingFailure(String reason) {
+    String normalized = Objects.toString(reason, "").trim();
+    if (normalized.isEmpty()) return "[failed]";
+    if (normalized.length() > 120) {
+      normalized = normalized.substring(0, 117) + "...";
+    }
+    return "[failed: " + normalized + "]";
+  }
+}

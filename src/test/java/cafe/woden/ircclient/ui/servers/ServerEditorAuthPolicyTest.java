@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.config.IrcProperties;
-import java.util.List;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import org.junit.jupiter.api.Test;
 
 class ServerEditorAuthPolicyTest {
@@ -29,26 +29,21 @@ class ServerEditorAuthPolicyTest {
   @Test
   void seedMatrixAuthModePrefersPasswordWhenSeedUsesMatrixPasswordMechanism() {
     IrcProperties.Server seed =
-        new IrcProperties.Server(
-            "matrix",
-            "https://matrix.example.org",
-            443,
-            true,
-            "",
-            "",
-            "",
-            "",
-            new IrcProperties.Server.Sasl(
-                true,
-                "alice",
-                "secret",
-                ServerEditorAuthPolicy.MATRIX_PASSWORD_AUTH_MECHANISM,
-                true),
-            null,
-            List.of(),
-            List.of(),
-            null,
-            "matrix");
+        IrcPropertiesTestFixtures.serverBuilder("matrix")
+            .host("https://matrix.example.org")
+            .port(443)
+            .backend(IrcProperties.Server.Backend.MATRIX)
+            .nick("")
+            .login("")
+            .realName("")
+            .sasl(
+                new IrcProperties.Server.Sasl(
+                    true,
+                    "alice",
+                    "secret",
+                    ServerEditorAuthPolicy.MATRIX_PASSWORD_AUTH_MECHANISM,
+                    true))
+            .build();
 
     assertEquals(
         ServerEditorMatrixAuthMode.USERNAME_PASSWORD,
@@ -175,39 +170,25 @@ class ServerEditorAuthPolicyTest {
     assertEquals(
         ServerEditorAuthMode.SASL,
         ServerEditorAuthPolicy.seedAuthMode(
-            new IrcProperties.Server(
-                "libera",
-                "irc.libera.chat",
-                6697,
-                true,
-                "",
-                "tester",
-                "tester",
-                "Tester",
-                new IrcProperties.Server.Sasl(true, "tester", "secret", "PLAIN", true),
-                new IrcProperties.Server.Nickserv(false, "", "NickServ", true),
-                List.of(),
-                List.of(),
-                null,
-                "irc")));
+            IrcPropertiesTestFixtures.serverBuilder("libera")
+                .host("irc.libera.chat")
+                .nick("tester")
+                .login("tester")
+                .realName("Tester")
+                .sasl(new IrcProperties.Server.Sasl(true, "tester", "secret", "PLAIN", true))
+                .nickserv(new IrcProperties.Server.Nickserv(false, "", "NickServ", true))
+                .build()));
     assertEquals(
         ServerEditorAuthMode.NICKSERV,
         ServerEditorAuthPolicy.seedAuthMode(
-            new IrcProperties.Server(
-                "libera",
-                "irc.libera.chat",
-                6697,
-                true,
-                "",
-                "tester",
-                "tester",
-                "Tester",
-                new IrcProperties.Server.Sasl(false, "", "", "PLAIN", true),
-                new IrcProperties.Server.Nickserv(true, "secret", "NickServ", true),
-                List.of(),
-                List.of(),
-                null,
-                "irc")));
+            IrcPropertiesTestFixtures.serverBuilder("libera")
+                .host("irc.libera.chat")
+                .nick("tester")
+                .login("tester")
+                .realName("Tester")
+                .sasl(new IrcProperties.Server.Sasl(false, "", "", "PLAIN", true))
+                .nickserv(new IrcProperties.Server.Nickserv(true, "secret", "NickServ", true))
+                .build()));
     assertEquals(ServerEditorAuthMode.DISABLED, ServerEditorAuthPolicy.seedAuthMode(null));
   }
 }

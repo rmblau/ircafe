@@ -79,9 +79,9 @@ final class InstagramLinkPreviewResolver implements LinkPreviewResolver {
 
     Map<String, String> headers =
         PreviewHttp.headers(
-            "User-Agent", PreviewHttp.BROWSER_USER_AGENT,
-            "Accept-Language", PreviewHttp.ACCEPT_LANGUAGE,
-            "Referer", IG_ORIGIN);
+            PreviewHttp.HEADER_USER_AGENT, PreviewHttp.BROWSER_USER_AGENT,
+            PreviewHttp.HEADER_ACCEPT_LANGUAGE, PreviewHttp.ACCEPT_LANGUAGE,
+            PreviewHttp.HEADER_REFERER, IG_ORIGIN);
 
     var resp = http.getStream(fetchUri, "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8", headers);
 
@@ -114,9 +114,9 @@ final class InstagramLinkPreviewResolver implements LinkPreviewResolver {
 
       Map<String, String> headers =
           PreviewHttp.headers(
-              "User-Agent", PreviewHttp.BROWSER_USER_AGENT,
-              "Accept-Language", PreviewHttp.ACCEPT_LANGUAGE,
-              "Referer", IG_ORIGIN);
+              PreviewHttp.HEADER_USER_AGENT, PreviewHttp.BROWSER_USER_AGENT,
+              PreviewHttp.HEADER_ACCEPT_LANGUAGE, PreviewHttp.ACCEPT_LANGUAGE,
+              PreviewHttp.HEADER_REFERER, IG_ORIGIN);
 
       var resp = http.getStream(mediaUri, "image/*,*/*;q=0.8", headers);
       int status = resp.statusCode();

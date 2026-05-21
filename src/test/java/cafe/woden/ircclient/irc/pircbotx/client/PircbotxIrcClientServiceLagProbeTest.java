@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.bouncer.BouncerBackendRegistry;
 import cafe.woden.ircclient.bouncer.BouncerDiscoveryEventPort;
-import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.config.SojuProperties;
@@ -26,7 +26,6 @@ import cafe.woden.ircclient.irc.playback.*;
 import cafe.woden.ircclient.state.ServerIsupportState;
 import cafe.woden.ircclient.util.RxVirtualSchedulers;
 import java.lang.reflect.Method;
-import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -94,7 +93,7 @@ class PircbotxIrcClientServiceLagProbeTest {
             new ZncProperties(null, null));
 
     return new PircbotxIrcClientService(
-        new IrcProperties(null, List.of()),
+        IrcPropertiesTestFixtures.properties(),
         serverCatalog,
         inputParserHookInstaller,
         botFactory,

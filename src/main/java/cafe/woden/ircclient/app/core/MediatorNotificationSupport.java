@@ -3,7 +3,7 @@ package cafe.woden.ircclient.app.core;
 import cafe.woden.ircclient.app.api.InterceptorEventType;
 import cafe.woden.ircclient.app.api.InterceptorIngestPort;
 import cafe.woden.ircclient.app.api.IrcEventNotifierPort;
-import cafe.woden.ircclient.irc.roster.UserListStore;
+import cafe.woden.ircclient.irc.roster.UserListPort;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.model.TargetRef;
 import java.util.Objects;
@@ -19,7 +19,7 @@ public class MediatorNotificationSupport {
 
   private final IrcEventNotifierPort ircEventNotifierPort;
   private final InterceptorIngestPort interceptorIngestPort;
-  private final UserListStore userListStore;
+  private final UserListPort userListStore;
   private final TargetCoordinator targetCoordinator;
   private final MediatorTargetUiSupport mediatorTargetUiSupport;
 

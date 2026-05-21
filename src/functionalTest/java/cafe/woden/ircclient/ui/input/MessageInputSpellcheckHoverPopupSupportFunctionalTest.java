@@ -5,7 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import cafe.woden.ircclient.ui.settings.SpellcheckSettings;
+import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettings;
+import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettingsTestFixtures;
 import java.awt.Component;
 import java.awt.Point;
 import java.lang.reflect.Field;
@@ -63,19 +64,7 @@ class MessageInputSpellcheckHoverPopupSupportFunctionalTest {
     JTextField input = new JTextField("teh cat");
     SpellcheckSettings enabledSettings = SpellcheckSettings.defaults();
     SpellcheckSettings disabledHoverSettings =
-        new SpellcheckSettings(
-            enabledSettings.enabled(),
-            enabledSettings.underlineEnabled(),
-            enabledSettings.suggestOnTabEnabled(),
-            false,
-            enabledSettings.languageTag(),
-            enabledSettings.customDictionary(),
-            enabledSettings.completionPreset(),
-            enabledSettings.customMinPrefixCompletionTokenLength(),
-            enabledSettings.customMaxPrefixCompletionExtraChars(),
-            enabledSettings.customMaxPrefixLexiconCandidates(),
-            enabledSettings.customPrefixCompletionBonusScore(),
-            enabledSettings.customSourceOrderWeight());
+        SpellcheckSettingsTestFixtures.builder().hoverSuggestionsEnabled(false).build();
 
     MessageInputSpellcheckSupport spellcheckSupport =
         new MessageInputSpellcheckSupport(input, enabledSettings);
@@ -214,19 +203,20 @@ class MessageInputSpellcheckHoverPopupSupportFunctionalTest {
   }
 
   private static SpellcheckSettings withHoverSuggestionsEnabled(SpellcheckSettings current) {
-    return new SpellcheckSettings(
-        current.enabled(),
-        current.underlineEnabled(),
-        current.suggestOnTabEnabled(),
-        true,
-        current.languageTag(),
-        current.customDictionary(),
-        current.completionPreset(),
-        current.customMinPrefixCompletionTokenLength(),
-        current.customMaxPrefixCompletionExtraChars(),
-        current.customMaxPrefixLexiconCandidates(),
-        current.customPrefixCompletionBonusScore(),
-        current.customSourceOrderWeight());
+    return SpellcheckSettingsTestFixtures.builder()
+        .enabled(current.enabled())
+        .underlineEnabled(current.underlineEnabled())
+        .suggestOnTabEnabled(current.suggestOnTabEnabled())
+        .hoverSuggestionsEnabled(true)
+        .languageTag(current.languageTag())
+        .customDictionary(current.customDictionary())
+        .completionPreset(current.completionPreset())
+        .customMinPrefixCompletionTokenLength(current.customMinPrefixCompletionTokenLength())
+        .customMaxPrefixCompletionExtraChars(current.customMaxPrefixCompletionExtraChars())
+        .customMaxPrefixLexiconCandidates(current.customMaxPrefixLexiconCandidates())
+        .customPrefixCompletionBonusScore(current.customPrefixCompletionBonusScore())
+        .customSourceOrderWeight(current.customSourceOrderWeight())
+        .build();
   }
 
   @FunctionalInterface

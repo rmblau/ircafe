@@ -17,8 +17,7 @@ class RuntimeConfigStoreLaunchJvmSettingsTest {
   @Test
   void launchJvmSettingsRoundTripThroughRuntimeConfig() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberLaunchJvmJavaCommand("java21");
     store.rememberLaunchJvmXmsMiB(768);
@@ -46,8 +45,7 @@ class RuntimeConfigStoreLaunchJvmSettingsTest {
   @Test
   void defaultLikeLaunchJvmValuesAreCompactedOutOfConfig() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberLaunchJvmJavaCommand("java21");
     store.rememberLaunchJvmXmsMiB(512);

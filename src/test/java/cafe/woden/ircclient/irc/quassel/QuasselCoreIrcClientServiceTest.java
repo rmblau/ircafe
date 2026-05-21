@@ -13,11 +13,13 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
 import cafe.woden.ircclient.irc.quassel.control.QuasselCoreControlPort;
 import cafe.woden.ircclient.util.RxVirtualSchedulers;
+import io.reactivex.rxjava3.observers.TestObserver;
 import io.reactivex.rxjava3.subscribers.TestSubscriber;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -29,16 +31,37 @@ import java.net.Socket;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 class QuasselCoreIrcClientServiceTest {
+  private static final String RX_SHUTDOWN_GRACE_PROPERTY = "ircafe.rx.shutdown.grace.ms";
+
+  private String previousRxShutdownGrace;
+
+  @BeforeEach
+  void shortenRxShutdownGrace() {
+    previousRxShutdownGrace = System.getProperty(RX_SHUTDOWN_GRACE_PROPERTY);
+    System.setProperty(RX_SHUTDOWN_GRACE_PROPERTY, "0");
+  }
+
   @AfterEach
   void tearDownSchedulers() {
-    RxVirtualSchedulers.shutdown();
+    try {
+      RxVirtualSchedulers.shutdown();
+    } finally {
+      if (previousRxShutdownGrace == null) {
+        System.clearProperty(RX_SHUTDOWN_GRACE_PROPERTY);
+      } else {
+        System.setProperty(RX_SHUTDOWN_GRACE_PROPERTY, previousRxShutdownGrace);
+      }
+    }
   }
 
   @Test
@@ -111,6 +134,53 @@ class QuasselCoreIrcClientServiceTest {
   }
 
   @Test
+  void disconnectReasonWinsWhenReadLoopSeesEofDuringClose() throws Exception {
+    ServerCatalog serverCatalog = mock(ServerCatalog.class);
+    QuasselCoreSocketConnector connector = mock(QuasselCoreSocketConnector.class);
+    QuasselCoreProtocolProbe protocolProbe = mock(QuasselCoreProtocolProbe.class);
+    QuasselCoreAuthHandshake authHandshake = mock(QuasselCoreAuthHandshake.class);
+    QuasselCoreDatastreamCodec datastreamCodec = new QuasselCoreDatastreamCodec();
+    IrcProperties.Server server = server();
+    BlockingSocket socket = new BlockingSocket();
+    CountDownLatch releaseClose = new CountDownLatch(1);
+    socket.delayCloseReturnUntil(releaseClose);
+    QuasselCoreProtocolProbe.ProbeSelection probeSelection =
+        new QuasselCoreProtocolProbe.ProbeSelection(
+            0x00000002, QuasselCoreProtocolProbe.PROTOCOL_DATASTREAM, 0, 0);
+
+    when(serverCatalog.require("quassel")).thenReturn(server);
+    when(connector.connect(server)).thenReturn(socket);
+    when(protocolProbe.negotiate(socket)).thenReturn(probeSelection);
+    when(authHandshake.authenticate(socket, server))
+        .thenReturn(new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of()));
+
+    QuasselCoreIrcClientService service =
+        new QuasselCoreIrcClientService(
+            serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
+    TestSubscriber<ServerIrcEvent> events = service.events().test();
+
+    service.connect("quassel").blockingAwait();
+    events.awaitCount(3);
+
+    TestObserver<Void> disconnect = service.disconnect("quassel").test();
+    assertTrue(socket.awaitCloseStarted(), "disconnect should close the socket");
+    events.awaitCount(4);
+
+    IrcEvent.Disconnected disconnected =
+        assertInstanceOf(IrcEvent.Disconnected.class, events.values().get(3).event());
+    assertEquals("Client requested disconnect", disconnected.reason());
+    assertEquals(
+        1,
+        events.values().stream()
+            .map(ServerIrcEvent::event)
+            .filter(IrcEvent.Disconnected.class::isInstance)
+            .count());
+
+    releaseClose.countDown();
+    disconnect.awaitDone(2, TimeUnit.SECONDS).assertComplete();
+  }
+
+  @Test
   void sendRawUsesQuasselRpcSendInputAfterSessionHandshake() throws Exception {
     ServerCatalog serverCatalog = mock(ServerCatalog.class);
     QuasselCoreSocketConnector connector = mock(QuasselCoreSocketConnector.class);
@@ -137,6 +207,7 @@ class QuasselCoreIrcClientServiceTest {
 
     service.connect("quassel").blockingAwait();
     events.awaitCount(3);
+    awaitEstablishedSession(service, "quassel");
 
     service.sendRaw("quassel", "WHOIS alice").blockingAwait();
 
@@ -334,6 +405,7 @@ class QuasselCoreIrcClientServiceTest {
 
     service.connect("quassel").blockingAwait();
     events.awaitCount(3);
+    awaitEstablishedSession(service, "quassel");
 
     service.sendRaw("quassel", "TAGMSG #dupe{net:network-2}").blockingAwait();
 
@@ -377,6 +449,7 @@ class QuasselCoreIrcClientServiceTest {
 
     service.connect("quassel").blockingAwait();
     events.awaitCount(3);
+    awaitEstablishedSession(service, "quassel");
 
     socket.writeInbound(
         encodeSignalProxyFrame(
@@ -434,6 +507,7 @@ class QuasselCoreIrcClientServiceTest {
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
     events.awaitCount(3);
+    awaitEstablishedSession(service, "quassel");
 
     socket.writeInbound(
         encodeSignalProxyFrame(
@@ -852,6 +926,7 @@ class QuasselCoreIrcClientServiceTest {
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
     events.awaitCount(3);
+    awaitEstablishedSession(service, "quassel");
 
     socket.writeInbound(
         encodeSignalProxyFrame(
@@ -925,6 +1000,7 @@ class QuasselCoreIrcClientServiceTest {
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
     events.awaitCount(3);
+    awaitEstablishedSession(service, "quassel");
 
     socket.writeInbound(
         encodeSignalProxyFrame(
@@ -1119,7 +1195,16 @@ class QuasselCoreIrcClientServiceTest {
     when(connector.connect(server)).thenReturn(socket);
     when(protocolProbe.negotiate(socket)).thenReturn(probeSelection);
     when(authHandshake.authenticate(socket, server))
-        .thenReturn(new QuasselCoreAuthHandshake.AuthResult("quassel", 5, List.of(5), Map.of()));
+        .thenReturn(
+            new QuasselCoreAuthHandshake.AuthResult(
+                "quassel",
+                5,
+                List.of(5),
+                Map.of(),
+                Map.of(
+                    1,
+                    Map.of(
+                        "identityId", 1, "identityName", "quassel", "nicks", List.of("quassel")))));
 
     QuasselCoreIrcClientService service =
         new QuasselCoreIrcClientService(
@@ -1128,7 +1213,26 @@ class QuasselCoreIrcClientServiceTest {
     service.connect("quassel").blockingAwait();
     events.awaitCount(3);
 
-    service.quasselCoreConnectNetwork("quassel", "5").blockingAwait();
+    TestObserver<Void> connect = service.quasselCoreConnectNetwork("quassel", "5").test();
+
+    verify(datastreamCodec, org.mockito.Mockito.timeout(500L))
+        .writeSignalProxyInitRequest(
+            eq(socket.getOutputStream()), eq("Network"), eq("5"), eq(List.of()));
+    socket.writeInbound(
+        encodeSignalProxyFrame(
+            List.of(
+                QuasselCoreDatastreamCodec.SIGNAL_PROXY_SYNC,
+                "NetworkInfo".getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                "5".getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                "sync()".getBytes(java.nio.charset.StandardCharsets.UTF_8),
+                Map.of(
+                    "networkName",
+                    "libera",
+                    "identity",
+                    1,
+                    "ServerList",
+                    List.of(Map.of("server", "irc.libera.chat", "port", 6697))))));
+    connect.awaitDone(1, TimeUnit.SECONDS).assertComplete();
 
     verify(datastreamCodec)
         .writeSignalProxyInitRequest(
@@ -1136,6 +1240,7 @@ class QuasselCoreIrcClientServiceTest {
     verify(datastreamCodec)
         .writeSignalProxySync(
             eq(socket.getOutputStream()), eq("Network"), eq("5"), eq("requestConnect"), any());
+    service.disconnect("quassel").blockingAwait();
   }
 
   @Test
@@ -1170,10 +1275,11 @@ class QuasselCoreIrcClientServiceTest {
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
     events.awaitCount(3);
+    awaitEstablishedSession(service, "quassel");
 
     QuasselCoreControlPort.QuasselCoreNetworkCreateRequest createRequest =
         new QuasselCoreControlPort.QuasselCoreNetworkCreateRequest(
-            "libera", "irc.libera.chat", 6697, true, "", true, null, List.of());
+            "libera", "irc.libera.chat", 6697, true, "", true, null, List.of("#ircafe"));
     service.quasselCoreCreateNetwork("quassel", createRequest).blockingAwait();
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -1218,7 +1324,16 @@ class QuasselCoreIrcClientServiceTest {
     when(connector.connect(server)).thenReturn(socket);
     when(protocolProbe.negotiate(socket)).thenReturn(probeSelection);
     when(authHandshake.authenticate(socket, server))
-        .thenReturn(new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of()));
+        .thenReturn(
+            new QuasselCoreAuthHandshake.AuthResult(
+                "quassel",
+                1,
+                List.of(1),
+                Map.of(),
+                Map.of(
+                    1,
+                    Map.of(
+                        "identityId", 1, "identityName", "quassel", "nicks", List.of("quassel")))));
 
     QuasselCoreIrcClientService service =
         new QuasselCoreIrcClientService(
@@ -1226,6 +1341,7 @@ class QuasselCoreIrcClientServiceTest {
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
     events.awaitCount(3);
+    awaitEstablishedSession(service, "quassel");
 
     QuasselCoreControlPort.QuasselCoreNetworkCreateRequest createRequest =
         new QuasselCoreControlPort.QuasselCoreNetworkCreateRequest(
@@ -1239,12 +1355,10 @@ class QuasselCoreIrcClientServiceTest {
                 "2networkCreated(NetworkId)".getBytes(java.nio.charset.StandardCharsets.UTF_8),
                 new QuasselCoreDatastreamCodec.UserTypeValue("NetworkId", 9))));
 
-    long deadline = System.currentTimeMillis() + 2_000L;
-    while (System.currentTimeMillis() < deadline
-        && service.quasselCoreNetworks("quassel").stream()
-            .noneMatch(n -> n.networkId() == 9 && "libera".equalsIgnoreCase(n.networkName()))) {
-      Thread.sleep(10L);
-    }
+    awaitCondition(
+        () ->
+            service.quasselCoreNetworks("quassel").stream()
+                .anyMatch(n -> n.networkId() == 9 && "libera".equalsIgnoreCase(n.networkName())));
 
     assertTrue(
         service.quasselCoreNetworks("quassel").stream()
@@ -1383,6 +1497,7 @@ class QuasselCoreIrcClientServiceTest {
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
     events.awaitCount(3);
+    awaitEstablishedSession(service, "quassel");
 
     socket.writeInbound(
         encodeSignalProxyFrame(
@@ -1396,7 +1511,10 @@ class QuasselCoreIrcClientServiceTest {
                     List.of("multiline=max-bytes=4096,max-lines=4", "message-tags", "typing")))));
 
     long deadline = System.currentTimeMillis() + 2_000L;
-    while (!service.isMultilineAvailable("quassel") && System.currentTimeMillis() < deadline) {
+    while ((!service.isMultilineAvailable("quassel")
+            || service.negotiatedMultilineMaxBytes("quassel") != 4096L
+            || service.negotiatedMultilineMaxLines("quassel") != 4)
+        && System.currentTimeMillis() < deadline) {
       Thread.sleep(10L);
     }
     assertTrue(service.isMultilineAvailable("quassel"));
@@ -1432,6 +1550,7 @@ class QuasselCoreIrcClientServiceTest {
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
     events.awaitCount(3);
+    awaitEstablishedSession(service, "quassel");
 
     socket.writeInbound(
         encodeRpcCall(
@@ -2061,6 +2180,7 @@ class QuasselCoreIrcClientServiceTest {
 
     service.connect("quassel").blockingAwait();
     events.awaitCount(3);
+    awaitEstablishedSession(service, "quassel");
 
     service.requestLagProbe("quassel").blockingAwait();
 
@@ -2112,6 +2232,7 @@ class QuasselCoreIrcClientServiceTest {
 
     service.connect("quassel").blockingAwait();
     events.awaitCount(3);
+    awaitEstablishedSession(service, "quassel");
 
     service.requestChatHistoryBefore("quassel", "#ircafe", "msgid=100", 25).blockingAwait();
 
@@ -2159,6 +2280,7 @@ class QuasselCoreIrcClientServiceTest {
 
     service.connect("quassel").blockingAwait();
     events.awaitCount(3);
+    awaitEstablishedSession(service, "quassel");
 
     service.requestChatHistoryLatest("quassel", "#ircafe", "msgid=100", 30).blockingAwait();
     service.requestChatHistoryAround("quassel", "#ircafe", "msgid=100", 20).blockingAwait();
@@ -2234,6 +2356,7 @@ class QuasselCoreIrcClientServiceTest {
 
     service.connect("quassel").blockingAwait();
     events.awaitCount(3);
+    awaitEstablishedSession(service, "quassel");
 
     service.requestChatHistoryLatest("quassel", "#ircafe", "*", 999).blockingAwait();
 
@@ -2281,6 +2404,7 @@ class QuasselCoreIrcClientServiceTest {
 
     service.connect("quassel").blockingAwait();
     events.awaitCount(3);
+    awaitEstablishedSession(service, "quassel");
 
     socket.writeInbound(
         encodeRpcCall(
@@ -2344,6 +2468,7 @@ class QuasselCoreIrcClientServiceTest {
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
     events.awaitCount(3);
+    awaitEstablishedSession(service, "quassel");
 
     IllegalArgumentException err =
         assertThrows(
@@ -3236,12 +3361,12 @@ class QuasselCoreIrcClientServiceTest {
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
     service.connect("quassel").blockingAwait();
-    events.awaitDone(2, TimeUnit.SECONDS);
+    awaitEvent(events, ev -> ev instanceof IrcEvent.Reconnecting);
 
     assertTrue(
         events.values().stream().anyMatch(sev -> sev.event() instanceof IrcEvent.Reconnecting),
         "expected reconnect lifecycle event after connect failure");
-    verify(connector, times(2)).connect(server);
+    verify(connector, org.mockito.Mockito.timeout(1_000L).times(2)).connect(server);
     service.disconnect("quassel").blockingAwait();
   }
 
@@ -3437,7 +3562,7 @@ class QuasselCoreIrcClientServiceTest {
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
     service.connect("quassel").blockingAwait();
-    events.awaitCount(3);
+    awaitCondition(() -> service.isQuasselCoreSetupPending("quassel"));
 
     assertTrue(service.isQuasselCoreSetupPending("quassel"));
     QuasselCoreControlPort.QuasselCoreSetupPrompt prompt =
@@ -3478,31 +3603,20 @@ class QuasselCoreIrcClientServiceTest {
   }
 
   private static IrcProperties.Server server() {
-    return new IrcProperties.Server(
-        "quassel",
-        "irc.example.net",
-        4242,
-        false,
-        "",
-        "quassel",
-        "quassel",
-        "Quassel Test",
-        null,
-        null,
-        List.of(),
-        List.of(),
-        null,
-        IrcProperties.Server.Backend.QUASSEL_CORE);
+    return IrcPropertiesTestFixtures.serverBuilder("quassel")
+        .host("irc.example.net")
+        .port(4242)
+        .tls(false)
+        .nick("quassel")
+        .login("quassel")
+        .realName("Quassel Test")
+        .backend(IrcProperties.Server.Backend.QUASSEL_CORE)
+        .build();
   }
 
   private static void awaitEvent(
       TestSubscriber<ServerIrcEvent> events, Predicate<IrcEvent> predicate) throws Exception {
-    long deadline = System.currentTimeMillis() + 2_000L;
-    while (System.currentTimeMillis() < deadline) {
-      boolean matched = events.values().stream().map(ServerIrcEvent::event).anyMatch(predicate);
-      if (matched) return;
-      Thread.sleep(10L);
-    }
+    awaitCondition(() -> events.values().stream().map(ServerIrcEvent::event).anyMatch(predicate));
   }
 
   private static byte[] encodeRpcCall(
@@ -3543,19 +3657,24 @@ class QuasselCoreIrcClientServiceTest {
 
   private static void awaitEstablishedSession(QuasselCoreIrcClientService service, String serverId)
       throws InterruptedException {
+    awaitCondition(() -> service.hasEstablishedQuasselCoreSession(serverId));
+  }
+
+  private static void awaitCondition(BooleanSupplier condition) throws InterruptedException {
     long deadline = System.currentTimeMillis() + 2_000L;
-    while (!service.hasEstablishedQuasselCoreSession(serverId)
-        && System.currentTimeMillis() < deadline) {
+    while (!condition.getAsBoolean() && System.currentTimeMillis() < deadline) {
       Thread.sleep(10L);
     }
-    assertTrue(service.hasEstablishedQuasselCoreSession(serverId));
+    assertTrue(condition.getAsBoolean());
   }
 
   private static final class BlockingSocket extends Socket {
     private final PipedInputStream input;
     private final PipedOutputStream inputWriter;
     private final ByteArrayOutputStream output = new ByteArrayOutputStream();
+    private final CountDownLatch closeStarted = new CountDownLatch(1);
     private volatile boolean closed;
+    private volatile CountDownLatch closeRelease;
 
     private BlockingSocket() throws IOException {
       this.input = new PipedInputStream();
@@ -3578,6 +3697,18 @@ class QuasselCoreIrcClientServiceTest {
       closed = true;
       inputWriter.close();
       input.close();
+      closeStarted.countDown();
+      CountDownLatch release = closeRelease;
+      if (release != null) {
+        try {
+          if (!release.await(2, TimeUnit.SECONDS)) {
+            throw new IOException("Timed out waiting for test socket close release");
+          }
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+          throw new IOException("Interrupted while closing test socket", e);
+        }
+      }
     }
 
     @Override
@@ -3588,6 +3719,14 @@ class QuasselCoreIrcClientServiceTest {
     private void writeInbound(byte[] frame) throws IOException {
       inputWriter.write(frame);
       inputWriter.flush();
+    }
+
+    private void delayCloseReturnUntil(CountDownLatch release) {
+      closeRelease = Objects.requireNonNull(release, "release");
+    }
+
+    private boolean awaitCloseStarted() throws InterruptedException {
+      return closeStarted.await(2, TimeUnit.SECONDS);
     }
   }
 }

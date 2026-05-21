@@ -10,9 +10,11 @@ import java.util.function.Function;
 import javax.swing.JTree;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Encapsulates fallback and startup target-selection policy for a server tree. */
+@InterfaceLayer
 @Component
 public final class ServerTreeSelectionFallbackPolicy {
 

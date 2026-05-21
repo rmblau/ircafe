@@ -8,9 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Builds server tree nodes/leaves before dockable-specific layout placement is applied. */
+@InterfaceLayer
 @Component
 public final class ServerTreeServerNodeBuilder {
 

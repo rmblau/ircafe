@@ -20,7 +20,7 @@ import cafe.woden.ircclient.irc.soju.SojuAutoConnectStore;
 import cafe.woden.ircclient.irc.znc.ZncAutoConnectStore;
 import cafe.woden.ircclient.model.InterceptorDefinition;
 import cafe.woden.ircclient.model.TargetRef;
-import cafe.woden.ircclient.notifications.NotificationStore;
+import cafe.woden.ircclient.notifications.api.NotificationStorePort;
 import cafe.woden.ircclient.ui.backend.BackendUiProfileProvider;
 import cafe.woden.ircclient.ui.controls.ConnectButton;
 import cafe.woden.ircclient.ui.controls.DisconnectButton;
@@ -399,7 +399,7 @@ public class ServerTreeDockable extends JPanel implements Dockable, Scrollable {
       ZncAutoConnectStore zncAutoConnect,
       ConnectButton connectBtn,
       DisconnectButton disconnectBtn,
-      NotificationStore notificationStore,
+      NotificationStorePort notificationStore,
       InterceptorStore interceptorStore,
       UiSettingsBus settingsBus,
       ServerDialogs serverDialogs,

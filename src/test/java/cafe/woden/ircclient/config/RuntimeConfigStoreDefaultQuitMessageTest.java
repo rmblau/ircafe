@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -16,9 +15,7 @@ class RuntimeConfigStoreDefaultQuitMessageTest {
 
   @Test
   void defaultQuitMessageFallsBackWhenUnset() {
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("ircafe.yml").toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
 
     assertEquals(RuntimeConfigStore.DEFAULT_QUIT_MESSAGE, store.readDefaultQuitMessage());
   }
@@ -26,8 +23,7 @@ class RuntimeConfigStoreDefaultQuitMessageTest {
   @Test
   void rememberDefaultQuitMessagePersistsCustomValue() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberDefaultQuitMessage("bye from ircafe");
 
@@ -40,8 +36,7 @@ class RuntimeConfigStoreDefaultQuitMessageTest {
   @Test
   void blankDefaultQuitMessageResetsToBuiltInDefault() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     store.rememberDefaultQuitMessage("custom");
     store.rememberDefaultQuitMessage("   ");

@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.monitor;
 import cafe.woden.ircclient.monitor.MonitorListService;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.util.PopupMenuThemeSupport;
+import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -195,7 +196,7 @@ public final class MonitorPanel extends JPanel {
 
   private List<String> promptForNicks() {
     JTextField field = new JTextField();
-    field.putClientProperty("JTextField.placeholderText", "alice");
+    field.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "alice");
     Object[] message = {"Nick:", field};
     int option =
         JOptionPane.showConfirmDialog(

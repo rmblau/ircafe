@@ -33,7 +33,8 @@ class ServerRegistryTest {
 
     ServerRegistry registry =
         new ServerRegistry(
-            new IrcProperties(null, List.of(initialLibera, oftc, overrideLibera)), runtimeConfig);
+            IrcPropertiesTestFixtures.properties(initialLibera, oftc, overrideLibera),
+            runtimeConfig);
 
     var observer = registry.updates().test();
     observer.assertValue(List.of(overrideLibera, oftc));
@@ -50,7 +51,8 @@ class ServerRegistryTest {
   @Test
   void upsertWritesRuntimeConfigAndEmitsUpdatedSnapshot() {
     RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
-    ServerRegistry registry = new ServerRegistry(new IrcProperties(null, List.of()), runtimeConfig);
+    ServerRegistry registry =
+        new ServerRegistry(IrcPropertiesTestFixtures.properties(), runtimeConfig);
     var observer = registry.updates().test();
 
     IrcProperties.Server libera = server("libera", "irc.libera.chat");
@@ -73,7 +75,7 @@ class ServerRegistryTest {
     IrcProperties.Server libera = server("libera", "irc.libera.chat");
     IrcProperties.Server oftc = server("oftc", "irc.oftc.net");
     ServerRegistry registry =
-        new ServerRegistry(new IrcProperties(null, List.of(libera)), runtimeConfig);
+        new ServerRegistry(IrcPropertiesTestFixtures.properties(libera), runtimeConfig);
 
     List<IrcProperties.Server> replacement = new ArrayList<>();
     replacement.add(oftc);
@@ -91,7 +93,7 @@ class ServerRegistryTest {
     IrcProperties.Server libera = server("libera", "irc.libera.chat");
     IrcProperties.Server oftc = server("oftc", "irc.oftc.net");
     ServerRegistry registry =
-        new ServerRegistry(new IrcProperties(null, List.of(libera, oftc)), runtimeConfig);
+        new ServerRegistry(IrcPropertiesTestFixtures.properties(libera, oftc), runtimeConfig);
     var observer = registry.updates().test();
 
     registry.remove(" ");
@@ -109,7 +111,8 @@ class ServerRegistryTest {
   @Test
   void requireThrowsForUnknownServer() {
     RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
-    ServerRegistry registry = new ServerRegistry(new IrcProperties(null, List.of()), runtimeConfig);
+    ServerRegistry registry =
+        new ServerRegistry(IrcPropertiesTestFixtures.properties(), runtimeConfig);
 
     IllegalArgumentException ex =
         assertThrows(IllegalArgumentException.class, () -> registry.require("missing"));
@@ -131,13 +134,12 @@ class ServerRegistryTest {
                 - "#support"
         """);
 
-    RuntimeConfigStore runtimeConfig =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore runtimeConfig = RuntimeConfigStoreTestFixtures.store(cfg);
     IrcProperties.Server mergedServer =
         server("libera", "irc.libera.chat", List.of("#app-default", "#runtime", "#support"));
 
     ServerRegistry registry =
-        new ServerRegistry(new IrcProperties(null, List.of(mergedServer)), runtimeConfig);
+        new ServerRegistry(IrcPropertiesTestFixtures.properties(mergedServer), runtimeConfig);
 
     assertEquals(List.of("#runtime", "#support"), registry.require("libera").autoJoin());
   }
@@ -154,13 +156,12 @@ class ServerRegistryTest {
               nick: "runtimeNick"
         """);
 
-    RuntimeConfigStore runtimeConfig =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore runtimeConfig = RuntimeConfigStoreTestFixtures.store(cfg);
     IrcProperties.Server boundServer =
         server("libera", "irc.libera.chat", List.of("#app-default", "#still-app"));
 
     ServerRegistry registry =
-        new ServerRegistry(new IrcProperties(null, List.of(boundServer)), runtimeConfig);
+        new ServerRegistry(IrcPropertiesTestFixtures.properties(boundServer), runtimeConfig);
 
     assertEquals(List.of("#app-default", "#still-app"), registry.require("libera").autoJoin());
   }
@@ -173,7 +174,7 @@ class ServerRegistryTest {
         server("libera", "irc.libera.chat", List.of("#app-default", "#still-app"));
 
     ServerRegistry registry =
-        new ServerRegistry(new IrcProperties(null, List.of(boundServer)), runtimeConfig);
+        new ServerRegistry(IrcPropertiesTestFixtures.properties(boundServer), runtimeConfig);
 
     registry.syncRuntimeAutoJoin("libera", List.of("#runtime-only"));
 
@@ -187,18 +188,6 @@ class ServerRegistryTest {
   }
 
   private static IrcProperties.Server server(String id, String host, List<String> autoJoin) {
-    return new IrcProperties.Server(
-        id,
-        host,
-        6697,
-        true,
-        "",
-        "ircafe",
-        "ircafe",
-        "IRCafe User",
-        null,
-        autoJoin,
-        List.of(),
-        null);
+    return IrcPropertiesTestFixtures.serverBuilder(id).host(host).autoJoin(autoJoin).build();
   }
 }

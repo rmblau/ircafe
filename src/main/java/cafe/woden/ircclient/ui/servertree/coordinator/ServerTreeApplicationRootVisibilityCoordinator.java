@@ -9,9 +9,11 @@ import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
 import javax.swing.tree.TreePath;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Orchestrates showing/hiding the application root while preserving selection and expansion. */
+@InterfaceLayer
 @Component
 public final class ServerTreeApplicationRootVisibilityCoordinator {
 

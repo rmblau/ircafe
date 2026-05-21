@@ -1,5 +1,8 @@
 package cafe.woden.ircclient.irc.ircv3;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_MESSAGE_REDACTION;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MESSAGE_REDACTION;
+
 import java.util.List;
 
 /** SPI provider for the IRCv3 message-redaction draft extension. */
@@ -8,7 +11,7 @@ public final class Ircv3MessageRedactionExtensionProvider
 
   @Override
   public String providerId() {
-    return "message-redaction";
+    return MESSAGE_REDACTION;
   }
 
   @Override
@@ -20,15 +23,15 @@ public final class Ircv3MessageRedactionExtensionProvider
   public List<Ircv3ExtensionRegistry.ExtensionDefinition> extensions() {
     return List.of(
         Ircv3ExtensionProviderSupport.capability(
-            "message-redaction",
+            MESSAGE_REDACTION,
             Ircv3ExtensionRegistry.SpecStatus.DRAFT,
-            "draft/message-redaction",
-            "message-redaction",
+            DRAFT_MESSAGE_REDACTION,
+            MESSAGE_REDACTION,
             "Message redaction (draft)",
             Ircv3ExtensionRegistry.UiGroup.CONVERSATION,
             300,
             "Allows delete/redaction updates for messages.",
-            "draft/message-redaction"));
+            DRAFT_MESSAGE_REDACTION));
   }
 
   @Override
@@ -38,6 +41,6 @@ public final class Ircv3MessageRedactionExtensionProvider
             400,
             "Message redaction",
             List.of(),
-            List.of("message-redaction", "draft/message-redaction")));
+            List.of(MESSAGE_REDACTION, DRAFT_MESSAGE_REDACTION)));
   }
 }

@@ -6,7 +6,7 @@ import cafe.woden.ircclient.config.UiProperties;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.model.TargetRef;
-import cafe.woden.ircclient.notify.sound.NotificationSoundService;
+import cafe.woden.ircclient.notify.api.NotificationSoundPort;
 import cafe.woden.ircclient.util.VirtualThreads;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -57,7 +57,7 @@ public class AssertjSwingDiagnosticsService {
   private final ApplicationDiagnosticsService diagnostics;
   private final UiProperties uiProps;
   private final DiagnosticsRuntimeConfigPort runtimeConfig;
-  private final ObjectProvider<NotificationSoundService> soundServiceProvider;
+  private final ObjectProvider<NotificationSoundPort> soundServiceProvider;
   private final ObjectProvider<TrayNotificationsPort> trayNotificationServiceProvider;
 
   private final ScheduledExecutorService watchdogExec;
@@ -82,7 +82,7 @@ public class AssertjSwingDiagnosticsService {
       ApplicationDiagnosticsService diagnostics,
       UiProperties uiProps,
       DiagnosticsRuntimeConfigPort runtimeConfig,
-      ObjectProvider<NotificationSoundService> soundServiceProvider,
+      ObjectProvider<NotificationSoundPort> soundServiceProvider,
       ObjectProvider<TrayNotificationsPort> trayNotificationServiceProvider,
       @Qualifier(ExecutorConfig.ASSERTJ_WATCHDOG_SCHEDULER) ScheduledExecutorService watchdogExec) {
     this.diagnostics = diagnostics;
@@ -600,7 +600,7 @@ public class AssertjSwingDiagnosticsService {
     if (!onIssuePlaySound && !onIssueShowNotification) return;
 
     if (onIssuePlaySound) {
-      NotificationSoundService soundService =
+      NotificationSoundPort soundService =
           soundServiceProvider != null ? soundServiceProvider.getIfAvailable() : null;
       if (soundService != null) {
         try {

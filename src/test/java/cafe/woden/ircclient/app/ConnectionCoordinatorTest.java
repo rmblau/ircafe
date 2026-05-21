@@ -19,6 +19,7 @@ import cafe.woden.ircclient.app.api.TrayNotificationsPort;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.LogProperties;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.config.ServerRegistry;
@@ -1109,15 +1110,22 @@ class ConnectionCoordinatorTest {
 
   private static IrcProperties.Server server(
       String id, String host, int port, boolean tls, IrcProperties.Server.Backend backend) {
-    return new IrcProperties.Server(
-        id, host, port, tls, "", "tester", "tester", "Tester", null, null, List.of(), List.of(),
-        null, backend);
+    return serverBuilder(id, host, port, tls).backend(backend).build();
   }
 
   private static IrcProperties.Server server(
       String id, String host, int port, boolean tls, String backendId) {
-    return new IrcProperties.Server(
-        id, host, port, tls, "", "tester", "tester", "Tester", null, null, List.of(), List.of(),
-        null, backendId);
+    return serverBuilder(id, host, port, tls).backendId(backendId).build();
+  }
+
+  private static IrcPropertiesTestFixtures.ServerBuilder serverBuilder(
+      String id, String host, int port, boolean tls) {
+    return IrcPropertiesTestFixtures.serverBuilder(id)
+        .host(host)
+        .port(port)
+        .tls(tls)
+        .nick("tester")
+        .login("tester")
+        .realName("Tester");
   }
 }

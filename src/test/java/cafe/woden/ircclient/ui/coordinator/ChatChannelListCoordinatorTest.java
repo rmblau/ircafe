@@ -21,14 +21,18 @@ import cafe.woden.ircclient.ui.channellist.ChannelListPanel;
 import cafe.woden.ircclient.ui.servertree.ServerTreeDockable;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.plugins.RxJavaPlugins;
 import io.reactivex.rxjava3.processors.FlowableProcessor;
 import io.reactivex.rxjava3.processors.PublishProcessor;
+import io.reactivex.rxjava3.schedulers.TestScheduler;
 import io.reactivex.rxjava3.subscribers.TestSubscriber;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.mockito.ArgumentCaptor;
 
 class ChatChannelListCoordinatorTest {
@@ -327,7 +331,10 @@ class ChatChannelListCoordinatorTest {
   }
 
   @Test
-  void bindRunListCallbackSelectsChannelListAndEmitsListCommand() throws Exception {
+  @ResourceLock("RxJavaPlugins")
+  void bindRunListCallbackSelectsChannelListAndEmitsListCommand() {
+    TestScheduler scheduler = new TestScheduler();
+    RxJavaPlugins.setComputationSchedulerHandler(ignored -> scheduler);
     ChannelListPanel channelListPanel = mock(ChannelListPanel.class);
     ServerTreeDockable serverTree = mock(ServerTreeDockable.class);
     UserListStore userListStore = mock(UserListStore.class);
@@ -351,14 +358,18 @@ class ChatChannelListCoordinatorTest {
             ChatChannelListCoordinatorTest::emptyBanListSnapshot);
 
     CompositeDisposable disposables = new CompositeDisposable();
-    coordinator.bind(disposables);
-    Runnable runList = captureRunListCallback(channelListPanel);
-    runList.run();
+    try {
+      coordinator.bind(disposables);
+      Runnable runList = captureRunListCallback(channelListPanel);
+      runList.run();
 
-    verify(serverTree).selectTarget(TargetRef.channelList("libera"));
-    Thread.sleep(300);
-    outbound.assertValue("/list");
-    disposables.dispose();
+      verify(serverTree).selectTarget(TargetRef.channelList("libera"));
+      scheduler.advanceTimeBy(150, TimeUnit.MILLISECONDS);
+      outbound.assertValue("/list");
+    } finally {
+      disposables.dispose();
+      RxJavaPlugins.reset();
+    }
   }
 
   @Test

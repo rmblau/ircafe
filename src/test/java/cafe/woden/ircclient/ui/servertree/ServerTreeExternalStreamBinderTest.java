@@ -5,13 +5,14 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.bouncer.GenericBouncerAutoConnectStore;
-import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.config.ServerEntry;
 import cafe.woden.ircclient.interceptors.InterceptorStore;
 import cafe.woden.ircclient.irc.soju.SojuAutoConnectStore;
 import cafe.woden.ircclient.irc.znc.ZncAutoConnectStore;
-import cafe.woden.ircclient.notifications.NotificationStore;
+import cafe.woden.ircclient.notifications.api.NotificationChange;
+import cafe.woden.ircclient.notifications.api.NotificationQueryPort;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.processors.PublishProcessor;
 import java.util.ArrayList;
@@ -25,7 +26,7 @@ class ServerTreeExternalStreamBinderTest {
   @Test
   void bindSubscribesToExternalStreamsAndDispatchesCallbacks() throws Exception {
     ServerCatalog serverCatalog = mock(ServerCatalog.class);
-    NotificationStore notificationStore = mock(NotificationStore.class);
+    NotificationQueryPort notificationStore = mock(NotificationQueryPort.class);
     InterceptorStore interceptorStore = mock(InterceptorStore.class);
     SojuAutoConnectStore sojuAutoConnect = mock(SojuAutoConnectStore.class);
     ZncAutoConnectStore zncAutoConnect = mock(ZncAutoConnectStore.class);
@@ -33,7 +34,7 @@ class ServerTreeExternalStreamBinderTest {
 
     List<ServerEntry> initialServers = List.of(serverEntry("libera"));
     PublishProcessor<List<ServerEntry>> serverUpdates = PublishProcessor.create();
-    PublishProcessor<NotificationStore.Change> notificationChanges = PublishProcessor.create();
+    PublishProcessor<NotificationChange> notificationChanges = PublishProcessor.create();
     PublishProcessor<InterceptorStore.Change> interceptorChanges = PublishProcessor.create();
     PublishProcessor<Map<String, Map<String, Boolean>>> sojuUpdates = PublishProcessor.create();
     PublishProcessor<Map<String, Map<String, Boolean>>> zncUpdates = PublishProcessor.create();
@@ -75,7 +76,7 @@ class ServerTreeExternalStreamBinderTest {
 
     List<ServerEntry> updatedServers = List.of(serverEntry("oftc"));
     serverUpdates.onNext(updatedServers);
-    notificationChanges.onNext(new NotificationStore.Change("libera"));
+    notificationChanges.onNext(new NotificationChange("libera"));
     interceptorChanges.onNext(new InterceptorStore.Change("libera", "word"));
     sojuUpdates.onNext(Map.of());
     zncUpdates.onNext(Map.of());
@@ -95,20 +96,7 @@ class ServerTreeExternalStreamBinderTest {
   }
 
   private static ServerEntry serverEntry(String id) {
-    return ServerEntry.persistent(
-        new IrcProperties.Server(
-            id,
-            "irc.example.net",
-            6697,
-            true,
-            "",
-            "ircafe",
-            "ircafe",
-            "IRCafe User",
-            null,
-            List.of(),
-            List.of(),
-            null));
+    return ServerEntry.persistent(IrcPropertiesTestFixtures.server(id));
   }
 
   private static void flushEdt() throws Exception {

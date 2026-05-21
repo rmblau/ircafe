@@ -16,6 +16,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.irc.ChatHistoryEntry;
 import cafe.woden.ircclient.irc.IrcEvent;
@@ -5853,58 +5854,35 @@ class MatrixIrcClientServiceTest {
 
   private static IrcProperties.Server server(
       String id, String host, int port, boolean tls, String token) {
-    return new IrcProperties.Server(
-        id,
-        host,
-        port,
-        tls,
-        token,
-        "ircafe",
-        "ircafe",
-        "IRCafe User",
-        null,
-        null,
-        List.of(),
-        List.of(),
-        null,
-        IrcProperties.Server.Backend.MATRIX);
+    return IrcPropertiesTestFixtures.serverBuilder(id)
+        .host(host)
+        .port(port)
+        .tls(tls)
+        .serverPassword(token)
+        .backend(IrcProperties.Server.Backend.MATRIX)
+        .build();
   }
 
   private static IrcProperties.Server serverWithSaslToken(
       String id, String host, int port, boolean tls, String saslToken) {
-    return new IrcProperties.Server(
-        id,
-        host,
-        port,
-        tls,
-        "",
-        "ircafe",
-        "ircafe",
-        "IRCafe User",
-        new IrcProperties.Server.Sasl(true, "alice", saslToken, "PLAIN", true),
-        null,
-        List.of(),
-        List.of(),
-        null,
-        IrcProperties.Server.Backend.MATRIX);
+    return IrcPropertiesTestFixtures.serverBuilder(id)
+        .host(host)
+        .port(port)
+        .tls(tls)
+        .sasl(new IrcProperties.Server.Sasl(true, "alice", saslToken, "PLAIN", true))
+        .backend(IrcProperties.Server.Backend.MATRIX)
+        .build();
   }
 
   private static IrcProperties.Server serverWithMatrixPasswordAuth(
       String id, String host, int port, boolean tls, String username, String password) {
-    return new IrcProperties.Server(
-        id,
-        host,
-        port,
-        tls,
-        "",
-        "ircafe",
-        "",
-        "IRCafe User",
-        new IrcProperties.Server.Sasl(true, username, password, "MATRIX_PASSWORD", true),
-        null,
-        List.of(),
-        List.of(),
-        null,
-        IrcProperties.Server.Backend.MATRIX);
+    return IrcPropertiesTestFixtures.serverBuilder(id)
+        .host(host)
+        .port(port)
+        .tls(tls)
+        .login("")
+        .sasl(new IrcProperties.Server.Sasl(true, username, password, "MATRIX_PASSWORD", true))
+        .backend(IrcProperties.Server.Backend.MATRIX)
+        .build();
   }
 }

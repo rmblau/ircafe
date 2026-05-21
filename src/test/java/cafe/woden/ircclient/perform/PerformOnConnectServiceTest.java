@@ -15,16 +15,20 @@ import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.commands.CommandParser;
 import cafe.woden.ircclient.app.commands.ParsedInput;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.irc.IrcEvent;
 import cafe.woden.ircclient.irc.ServerIrcEvent;
 import cafe.woden.ircclient.irc.backend.IrcBackendClientService;
 import cafe.woden.ircclient.model.TargetRef;
 import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.plugins.RxJavaPlugins;
 import io.reactivex.rxjava3.processors.PublishProcessor;
+import io.reactivex.rxjava3.schedulers.TestScheduler;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,6 +59,7 @@ class PerformOnConnectServiceTest {
   @AfterEach
   void tearDown() {
     service.shutdown();
+    RxJavaPlugins.reset();
   }
 
   @Test
@@ -94,6 +99,7 @@ class PerformOnConnectServiceTest {
 
   @Test
   void reconnectStormCancelsPriorRunAndPreventsDuplicates() throws Exception {
+    TestScheduler scheduler = installTestScheduler();
     doReturn(Optional.of(serverWithPerform("libera", List.of("/wait 700", "RAW ONCE"))))
         .when(serverCatalog)
         .find("libera");
@@ -108,10 +114,10 @@ class PerformOnConnectServiceTest {
         .sendRaw("libera", "RAW ONCE");
 
     fireReady();
-    Thread.sleep(100);
+    scheduler.advanceTimeBy(100, TimeUnit.MILLISECONDS);
     fireReady();
 
-    Thread.sleep(1_300);
+    scheduler.advanceTimeBy(1_000, TimeUnit.MILLISECONDS);
     assertEquals(1, rawCalls.get(), "reconnect should keep only the latest perform run active");
   }
 
@@ -163,26 +169,24 @@ class PerformOnConnectServiceTest {
     events.onNext(new ServerIrcEvent("libera", new IrcEvent.ConnectionReady(Instant.now())));
   }
 
+  private static TestScheduler installTestScheduler() {
+    TestScheduler scheduler = new TestScheduler();
+    RxJavaPlugins.setComputationSchedulerHandler(ignored -> scheduler);
+    return scheduler;
+  }
+
   private static IrcProperties.Server serverWithPerform(String id, List<String> perform) {
     return serverWithPerform(id, perform, "irc");
   }
 
   private static IrcProperties.Server serverWithPerform(
       String id, List<String> perform, String backendId) {
-    return new IrcProperties.Server(
-        id,
-        "irc.example.net",
-        6697,
-        true,
-        "",
-        "tester",
-        "tester",
-        "Tester",
-        null,
-        null,
-        List.of(),
-        perform,
-        null,
-        backendId);
+    return IrcPropertiesTestFixtures.serverBuilder(id)
+        .nick("tester")
+        .login("tester")
+        .realName("Tester")
+        .perform(perform)
+        .backendId(backendId)
+        .build();
   }
 }

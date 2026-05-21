@@ -118,8 +118,8 @@ class NotificationStoreTest {
     store.recordIrcEvent(
         "libera", "#ircafe", "carol", "Topic changed", "new topic body", "msg-irc");
 
-    NotificationStore.RuleMatchEvent ruleEvent = store.listAllRuleMatches("libera").getFirst();
-    NotificationStore.IrcEventRuleEvent ircEvent = store.listAllIrcEventRules("libera").getFirst();
+    var ruleEvent = store.listAllRuleMatches("libera").getFirst();
+    var ircEvent = store.listAllIrcEventRules("libera").getFirst();
 
     assertEquals(2, store.clearSelected("libera", List.of(ruleEvent, ircEvent)));
     assertEquals(1, store.listAll("libera").size());

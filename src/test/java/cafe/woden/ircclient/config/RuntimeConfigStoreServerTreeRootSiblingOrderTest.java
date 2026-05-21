@@ -20,8 +20,7 @@ class RuntimeConfigStoreServerTreeRootSiblingOrderTest {
   void rootSiblingOrderRoundTripsAndDefaultEntriesAreRemoved() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
     RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            cfg.toString(), new IrcProperties(null, List.of(server("libera"), server("oftc"))));
+        RuntimeConfigStoreTestFixtures.storeWithServers(cfg, server("libera"), server("oftc"));
 
     assertEquals(Map.of(), store.readServerTreeRootSiblingOrderByServer());
 
@@ -61,8 +60,7 @@ class RuntimeConfigStoreServerTreeRootSiblingOrderTest {
             + "          - other\n"
             + "          - unknown-node\n");
 
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     Map<String, ServerTreeRootSiblingOrder> persisted =
         store.readServerTreeRootSiblingOrderByServer();
@@ -78,18 +76,6 @@ class RuntimeConfigStoreServerTreeRootSiblingOrderTest {
   }
 
   private static IrcProperties.Server server(String id) {
-    return new IrcProperties.Server(
-        id,
-        "irc.example.net",
-        6697,
-        true,
-        "",
-        "ircafe",
-        "ircafe",
-        "IRCafe User",
-        null,
-        List.of(),
-        List.of(),
-        null);
+    return IrcPropertiesTestFixtures.server(id);
   }
 }

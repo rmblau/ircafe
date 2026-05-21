@@ -19,12 +19,14 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 final class MatrixHistoryCursorCoordinator {
-  private static final String HISTORY_SELECTOR_TIMESTAMP_PREFIX = "timestamp=";
-  private static final String HISTORY_SELECTOR_MSGID_PREFIX = "msgid=";
-  private static final String TAG_MATRIX_MSGTYPE = "matrix.msgtype";
-  private static final String TAG_MATRIX_MEDIA_URL = "matrix.media_url";
-  private static final String TAG_MATRIX_ROOM_ID = "matrix.room_id";
-  private static final String TAG_DRAFT_REPLY = "draft/reply";
+  private static final String HISTORY_SELECTOR_TIMESTAMP_PREFIX =
+      MatrixProtocol.HISTORY_SELECTOR_TIMESTAMP_PREFIX;
+  private static final String HISTORY_SELECTOR_MSGID_PREFIX =
+      MatrixProtocol.HISTORY_SELECTOR_MSGID_PREFIX;
+  private static final String TAG_MATRIX_MSGTYPE = MatrixProtocol.TAG_MATRIX_MSGTYPE;
+  private static final String TAG_MATRIX_MEDIA_URL = MatrixProtocol.TAG_MATRIX_MEDIA_URL;
+  private static final String TAG_MATRIX_ROOM_ID = MatrixProtocol.TAG_MATRIX_ROOM_ID;
+  private static final String TAG_DRAFT_REPLY = MatrixProtocol.TAG_DRAFT_REPLY;
   private static final int MSGID_LOOKUP_SCAN_PAGE_LIMIT = 200;
   private static final int MSGID_LOOKUP_MAX_PAGES = 10;
   private static final int TIMESTAMP_CURSOR_SCAN_PAGE_LIMIT = 200;
@@ -529,13 +531,13 @@ final class MatrixHistoryCursorCoordinator {
 
       String msgType = normalize(event.msgType());
       if (msgType.isEmpty()) {
-        msgType = "m.text";
+        msgType = MatrixProtocol.MSGTYPE_TEXT;
       }
       String mediaUrl = normalize(event.mediaUrl());
       ChatHistoryEntry.Kind kind =
           switch (msgType) {
-            case "m.emote" -> ChatHistoryEntry.Kind.ACTION;
-            case "m.notice" -> ChatHistoryEntry.Kind.NOTICE;
+            case MatrixProtocol.MSGTYPE_EMOTE -> ChatHistoryEntry.Kind.ACTION;
+            case MatrixProtocol.MSGTYPE_NOTICE -> ChatHistoryEntry.Kind.NOTICE;
             default -> ChatHistoryEntry.Kind.PRIVMSG;
           };
 

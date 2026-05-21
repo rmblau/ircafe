@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.irc.znc;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.ZNC_PLAYBACK;
+
 import cafe.woden.ircclient.bouncer.BouncerDiscoveredNetwork;
 import cafe.woden.ircclient.bouncer.BouncerNetworkMappingStrategy;
 import cafe.woden.ircclient.bouncer.ResolvedBouncerNetwork;
@@ -16,7 +18,7 @@ public class ZncBouncerNetworkMappingStrategy implements BouncerNetworkMappingSt
 
   public static final String BACKEND_ID = "znc";
   public static final String NETWORKS_GROUP_LABEL = "ZNC Networks";
-  public static final String DISCOVERY_CAPABILITY = "znc.in/playback";
+  public static final String DISCOVERY_CAPABILITY = ZNC_PLAYBACK;
 
   @Override
   public String backendId() {

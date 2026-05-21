@@ -1,5 +1,15 @@
 package cafe.woden.ircclient.irc.pircbotx.parse;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.CHANNEL_CONTEXT;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_CHANNEL_CONTEXT;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_REACT;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_READ_MARKER;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_REPLY;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_UNREACT;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.READ_MARKER;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.REPLY;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.TYPING;
+
 import cafe.woden.ircclient.irc.IrcEvent;
 import cafe.woden.ircclient.irc.ServerIrcEvent;
 import com.google.common.collect.ImmutableMap;
@@ -40,21 +50,21 @@ public final class PircbotxTagSignalSupport {
     String channelContext =
         firstTag(
             tags,
-            "draft/channel-context",
-            "+draft/channel-context",
-            "channel-context",
-            "+channel-context");
+            DRAFT_CHANNEL_CONTEXT,
+            "+" + DRAFT_CHANNEL_CONTEXT,
+            CHANNEL_CONTEXT,
+            "+" + CHANNEL_CONTEXT);
     String convTarget = resolveSignalTarget(msgTarget, nick, channelContext);
 
     if (cmd.equals("PRIVMSG") || cmd.equals("NOTICE") || cmd.equals("TAGMSG")) {
-      String replyTo = firstTag(tags, "reply", "+reply", "draft/reply", "+draft/reply");
+      String replyTo = firstTag(tags, REPLY, "+" + REPLY, DRAFT_REPLY, "+" + DRAFT_REPLY);
       if (!replyTo.isBlank()) {
         sink.accept(
             new ServerIrcEvent(
                 serverId, new IrcEvent.MessageReplyObserved(at, nick, convTarget, replyTo)));
       }
 
-      String react = firstTag(tags, "draft/react", "+draft/react");
+      String react = firstTag(tags, DRAFT_REACT, "+" + DRAFT_REACT);
       if (!react.isBlank()) {
         sink.accept(
             new ServerIrcEvent(
@@ -63,7 +73,7 @@ public final class PircbotxTagSignalSupport {
                     at, nick, convTarget, react, observedMessageId(tags))));
       }
 
-      String unreact = firstTag(tags, "draft/unreact", "+draft/unreact");
+      String unreact = firstTag(tags, DRAFT_UNREACT, "+" + DRAFT_UNREACT);
       if (!unreact.isBlank()) {
         sink.accept(
             new ServerIrcEvent(
@@ -81,7 +91,7 @@ public final class PircbotxTagSignalSupport {
                 new IrcEvent.MessageRedactionObserved(at, nick, convTarget, redactMsgId)));
       }
 
-      String typing = firstTag(tags, "typing", "+typing");
+      String typing = firstTag(tags, TYPING, "+" + TYPING);
       if (!typing.isBlank()) {
         if (log.isDebugEnabled()) {
           log.debug(
@@ -99,7 +109,7 @@ public final class PircbotxTagSignalSupport {
     }
 
     String readMarker =
-        firstTag(tags, "draft/read-marker", "+draft/read-marker", "read-marker", "+read-marker");
+        firstTag(tags, DRAFT_READ_MARKER, "+" + DRAFT_READ_MARKER, READ_MARKER, "+" + READ_MARKER);
     if (!readMarker.isBlank()) {
       sink.accept(
           new ServerIrcEvent(
@@ -156,7 +166,7 @@ public final class PircbotxTagSignalSupport {
   }
 
   private static String observedMessageId(ImmutableMap<String, String> tags) {
-    String msgId = firstTag(tags, "reply", "+reply", "draft/reply", "+draft/reply");
+    String msgId = firstTag(tags, REPLY, "+" + REPLY, DRAFT_REPLY, "+" + DRAFT_REPLY);
     if (!msgId.isBlank()) return msgId;
     return firstTag(tags, "msgid", "+msgid", "draft/msgid", "+draft/msgid");
   }

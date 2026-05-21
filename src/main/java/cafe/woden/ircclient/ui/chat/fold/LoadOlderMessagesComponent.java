@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.chat.fold;
 
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
@@ -153,9 +154,9 @@ public final class LoadOlderMessagesComponent extends JPanel {
   }
 
   private void applyTheme() {
-    Color fg = UIManager.getColor("TextPane.foreground");
-    Color link = UIManager.getColor("Component.linkColor");
-    if (link == null) link = UIManager.getColor("textHighlight");
+    Color fg = UIManager.getColor(UiColorKeys.TEXT_PANE_FOREGROUND);
+    Color link = UIManager.getColor(UiColorKeys.COMPONENT_LINK_COLOR);
+    if (link == null) link = UIManager.getColor(UiColorKeys.TEXT_HIGHLIGHT);
     if (link == null) link = fg;
     button.setForeground(link);
   }

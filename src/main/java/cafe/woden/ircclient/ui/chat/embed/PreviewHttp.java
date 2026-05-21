@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.net.HttpHeaderNames;
 import cafe.woden.ircclient.net.HttpLite;
 import cafe.woden.ircclient.net.ProxyPlan;
 import java.io.ByteArrayOutputStream;
@@ -27,11 +28,17 @@ final class PreviewHttp {
   static final String BROWSER_USER_AGENT =
       "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
   static final String ACCEPT_LANGUAGE = "en-US,en;q=0.9";
+  static final String HEADER_ACCEPT = HttpHeaderNames.ACCEPT;
+  static final String HEADER_ACCEPT_ENCODING = HttpHeaderNames.ACCEPT_ENCODING;
+  static final String HEADER_ACCEPT_LANGUAGE = HttpHeaderNames.ACCEPT_LANGUAGE;
+  static final String HEADER_REFERER = HttpHeaderNames.REFERER;
+  static final String HEADER_USER_AGENT = HttpHeaderNames.USER_AGENT;
+  static final String HEADER_X_GITHUB_API_VERSION = HttpHeaderNames.X_GITHUB_API_VERSION;
   private static final Map<String, String> BASE_HEADERS =
       Map.of(
-          "User-Agent", USER_AGENT,
-          "Accept-Language", ACCEPT_LANGUAGE,
-          "Accept-Encoding", "gzip");
+          HEADER_USER_AGENT, USER_AGENT,
+          HEADER_ACCEPT_LANGUAGE, ACCEPT_LANGUAGE,
+          HEADER_ACCEPT_ENCODING, "gzip");
 
   private final Proxy proxy;
   private final int connectTimeoutMs;
@@ -51,7 +58,7 @@ final class PreviewHttp {
   public HttpLite.Response<InputStream> getStream(
       URI uri, String accept, Map<String, String> extraHeaders) throws IOException {
     Map<String, String> headers = new HashMap<>(BASE_HEADERS);
-    headers.put("Accept", accept);
+    headers.put(HEADER_ACCEPT, accept);
     if (extraHeaders != null) headers.putAll(extraHeaders);
 
     return HttpLite.getStream(uri, headers, proxy, connectTimeoutMs, readTimeoutMs);
@@ -78,9 +85,9 @@ final class PreviewHttp {
       URI uri, String accept, Map<String, String> extraHeaders) throws IOException {
     Map<String, String> headers = new HashMap<>(BASE_HEADERS);
     if (accept != null && !accept.isBlank()) {
-      headers.put("Accept", accept);
+      headers.put(HEADER_ACCEPT, accept);
     } else {
-      headers.put("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+      headers.put(HEADER_ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
     }
     if (extraHeaders != null) headers.putAll(extraHeaders);
 

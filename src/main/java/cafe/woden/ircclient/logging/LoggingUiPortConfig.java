@@ -2,6 +2,7 @@ package cafe.woden.ircclient.logging;
 
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.api.UiTranscriptPort;
+import cafe.woden.ircclient.config.ConfigPropertyKeys;
 import cafe.woden.ircclient.config.LogProperties;
 import cafe.woden.ircclient.logging.viewer.ChatRedactionAuditService;
 import org.jmolecules.architecture.layered.InfrastructureLayer;
@@ -14,7 +15,10 @@ import org.springframework.context.annotation.Primary;
 
 /** Wires a {@link UiPort} decorator that logs transcript events to the embedded chat log DB. */
 @Configuration
-@ConditionalOnProperty(prefix = "ircafe.logging", name = "enabled", havingValue = "true")
+@ConditionalOnProperty(
+    prefix = ConfigPropertyKeys.IRCAFE_LOGGING_PREFIX,
+    name = ConfigPropertyKeys.ENABLED_PROPERTY,
+    havingValue = ConfigPropertyKeys.TRUE_VALUE)
 @InfrastructureLayer
 public class LoggingUiPortConfig {
 

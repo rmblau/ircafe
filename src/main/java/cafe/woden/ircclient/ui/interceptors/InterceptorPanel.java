@@ -11,6 +11,7 @@ import cafe.woden.ircclient.model.InterceptorRuleMode;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.util.PopupMenuThemeSupport;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import cafe.woden.ircclient.util.VirtualThreads;
 import com.formdev.flatlaf.FlatClientProperties;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -891,10 +892,19 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
 
     Color foreground =
         combo.isEnabled()
-            ? firstUiColor("ComboBox.foreground", "TextField.foreground", "Label.foreground")
-            : firstUiColor("ComboBox.disabledText", "Label.disabledForeground", "Label.foreground");
+            ? firstUiColor(
+                UiColorKeys.COMBO_BOX_FOREGROUND,
+                UiColorKeys.TEXT_FIELD_FOREGROUND,
+                UiColorKeys.LABEL_FOREGROUND)
+            : firstUiColor(
+                UiColorKeys.COMBO_BOX_DISABLED_TEXT,
+                UiColorKeys.LABEL_DISABLED_FOREGROUND,
+                UiColorKeys.LABEL_FOREGROUND);
     Color background =
-        firstUiColor("ComboBox.background", "TextField.background", "Panel.background");
+        firstUiColor(
+            UiColorKeys.COMBO_BOX_BACKGROUND,
+            UiColorKeys.TEXT_FIELD_BACKGROUND,
+            UiColorKeys.PANEL_BACKGROUND);
     if (foreground != null) renderer.setForeground(foreground);
     if (background != null) renderer.setBackground(background);
   }
@@ -1600,9 +1610,9 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
     Font font = UIManager.getFont("Label.font");
     if (font == null) font = new JLabel().getFont();
     if (font != null) hint.setFont(font);
-    Color foreground = firstUiColor("Label.foreground", "TextArea.foreground");
+    Color foreground = firstUiColor(UiColorKeys.LABEL_FOREGROUND, UiColorKeys.TEXT_AREA_FOREGROUND);
     if (foreground != null) hint.setForeground(foreground);
-    Color background = firstUiColor("Panel.background", "control");
+    Color background = firstUiColor(UiColorKeys.PANEL_BACKGROUND, UiColorKeys.CONTROL);
     if (background != null) {
       hint.setOpaque(true);
       hint.setBackground(background);

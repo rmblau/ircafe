@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.dcc.DccTransferStore;
+import cafe.woden.ircclient.dcc.api.DccActionHint;
 import cafe.woden.ircclient.irc.port.IrcMediatorInteractionPort;
 import cafe.woden.ircclient.model.TargetRef;
 import java.io.BufferedWriter;
@@ -95,6 +96,6 @@ class DccChatSessionSupportTest {
             "",
             "",
             null,
-            DccTransferStore.ActionHint.NONE);
+            DccActionHint.NONE);
   }
 }

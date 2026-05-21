@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.irc.ircv3;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.STS;
+
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.Ircv3StsPolicyConfigPort;
 import java.util.HashMap;
@@ -98,7 +100,7 @@ public class Ircv3StsPolicyService {
 
       int eq = t.indexOf('=');
       String cap = eq >= 0 ? t.substring(0, eq).trim() : t;
-      if (!"sts".equalsIgnoreCase(cap)) continue;
+      if (!STS.equalsIgnoreCase(cap)) continue;
 
       String value = (eq >= 0 && eq + 1 < t.length()) ? t.substring(eq + 1).trim() : "";
       observeStsValue(serverId, host, secureConnection, value);

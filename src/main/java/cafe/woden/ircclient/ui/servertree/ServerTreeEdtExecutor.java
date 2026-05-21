@@ -5,9 +5,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import javax.swing.SwingUtilities;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Small helper for marshaling reads/writes onto the Swing EDT. */
+@InterfaceLayer
 @Component
 public final class ServerTreeEdtExecutor {
 

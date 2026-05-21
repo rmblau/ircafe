@@ -9,9 +9,11 @@ import io.github.andrewauclair.moderndocking.Dockable;
 import io.reactivex.rxjava3.core.Flowable;
 import java.util.Objects;
 import java.util.function.Function;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Public-facing request stream API composed from tree request and interaction collaborators. */
+@InterfaceLayer
 @Component
 public final class ServerTreeRequestApi {
 

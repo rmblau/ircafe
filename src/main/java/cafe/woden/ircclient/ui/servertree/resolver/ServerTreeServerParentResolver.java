@@ -10,9 +10,11 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Resolves where a server root should be attached in the tree hierarchy. */
+@InterfaceLayer
 @Component
 public final class ServerTreeServerParentResolver {
 

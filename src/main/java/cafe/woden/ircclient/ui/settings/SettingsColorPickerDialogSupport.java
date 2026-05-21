@@ -1,10 +1,7 @@
 package cafe.woden.ircclient.ui.settings;
 
-import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Window;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -19,20 +16,17 @@ import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import net.miginfocom.swing.MigLayout;
 
-final class SettingsColorPickerDialogSupport {
+public final class SettingsColorPickerDialogSupport {
   private static final int MAX_RECENT_COLORS = 12;
   private static final Deque<String> RECENT_COLOR_HEX = new ArrayDeque<>();
 
   private SettingsColorPickerDialogSupport() {}
 
-  static Color showColorPickerDialog(
+  public static Color showColorPickerDialog(
       Window owner, String title, Color initial, Color previewBackground) {
     Color bg =
         previewBackground != null
@@ -55,7 +49,7 @@ final class SettingsColorPickerDialogSupport {
     contrast.setFont(UIManager.getFont("Label.smallFont"));
 
     JTextField hex = new JTextField(SettingsColorSupport.toHex(init), 10);
-    hex.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "#RRGGBB");
+    PreferencesUiSupport.placeholder(hex, "#RRGGBB");
 
     JLabel hexStatus = new JLabel(" ");
     hexStatus.setFont(UIManager.getFont("Label.smallFont"));
@@ -90,7 +84,7 @@ final class SettingsColorPickerDialogSupport {
 
     hex.getDocument()
         .addDocumentListener(
-            new DocChangeListener(
+            new SettingsDocumentListener(
                 () -> {
                   if (internalUpdate[0]) return;
 
@@ -125,7 +119,7 @@ final class SettingsColorPickerDialogSupport {
           recent.removeAll();
           List<String> rec = snapshotRecentColorHex();
           if (rec.isEmpty()) {
-            recent.add(helpText("No recent colors yet."), "span 8");
+            recent.add(PreferencesUiSupport.helpText("No recent colors yet."), "span 8");
           } else {
             for (String hx : rec) {
               Color c = SettingsColorSupport.parseHexColorLenient(hx);
@@ -183,9 +177,7 @@ final class SettingsColorPickerDialogSupport {
     content.add(new JLabel("Recent"), "aligny top");
     content.add(recent, "growx, wrap");
 
-    JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-    buttons.add(cancel);
-    buttons.add(ok);
+    JPanel buttons = PreferencesUiSupport.rightComponentRow(8, 0, cancel, ok);
 
     JPanel outer = new JPanel(new BorderLayout());
     outer.add(content, BorderLayout.CENTER);
@@ -249,43 +241,5 @@ final class SettingsColorPickerDialogSupport {
           if (onPick != null) onPick.accept(c);
         });
     return b;
-  }
-
-  private static JTextArea helpText(String text) {
-    JTextArea t = new JTextArea(text);
-    t.setEditable(false);
-    t.setLineWrap(true);
-    t.setWrapStyleWord(true);
-    t.setOpaque(false);
-    t.setFocusable(false);
-    t.setBorder(null);
-    t.setFont(UIManager.getFont("Label.font"));
-    t.setForeground(UIManager.getColor("Label.foreground"));
-    Dimension pref = t.getPreferredSize();
-    t.setMinimumSize(new Dimension(0, pref != null ? pref.height : 0));
-    return t;
-  }
-
-  private static final class DocChangeListener implements DocumentListener {
-    private final Runnable onChange;
-
-    private DocChangeListener(Runnable onChange) {
-      this.onChange = onChange;
-    }
-
-    @Override
-    public void insertUpdate(DocumentEvent e) {
-      onChange.run();
-    }
-
-    @Override
-    public void removeUpdate(DocumentEvent e) {
-      onChange.run();
-    }
-
-    @Override
-    public void changedUpdate(DocumentEvent e) {
-      onChange.run();
-    }
   }
 }

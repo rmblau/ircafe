@@ -8,9 +8,11 @@ import javax.swing.JPopupMenu;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import lombok.RequiredArgsConstructor;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Builds context menus for server tree nodes. */
+@InterfaceLayer
 @Component
 @RequiredArgsConstructor
 public final class ServerTreeContextMenuBuilder {

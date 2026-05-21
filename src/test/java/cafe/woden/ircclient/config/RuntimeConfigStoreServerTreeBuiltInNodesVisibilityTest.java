@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import cafe.woden.ircclient.config.api.ServerTreeBuiltInVisibilityConfigPort.ServerTreeBuiltInNodesVisibility;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -20,8 +19,7 @@ class RuntimeConfigStoreServerTreeBuiltInNodesVisibilityTest {
   void builtInNodeVisibilityRoundTripsAndDefaultEntriesAreRemoved() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
     RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            cfg.toString(), new IrcProperties(null, List.of(server("libera"), server("oftc"))));
+        RuntimeConfigStoreTestFixtures.storeWithServers(cfg, server("libera"), server("oftc"));
 
     assertEquals(Map.of(), store.readServerTreeBuiltInNodesVisibility());
 
@@ -54,8 +52,7 @@ class RuntimeConfigStoreServerTreeBuiltInNodesVisibilityTest {
             + "        libera:\n"
             + "          notifications: false\n");
 
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(cfg);
 
     Map<String, ServerTreeBuiltInNodesVisibility> persisted =
         store.readServerTreeBuiltInNodesVisibility();
@@ -69,18 +66,6 @@ class RuntimeConfigStoreServerTreeBuiltInNodesVisibilityTest {
   }
 
   private static IrcProperties.Server server(String id) {
-    return new IrcProperties.Server(
-        id,
-        "irc.example.net",
-        6697,
-        true,
-        "",
-        "ircafe",
-        "ircafe",
-        "IRCafe User",
-        null,
-        List.of(),
-        List.of(),
-        null);
+    return IrcPropertiesTestFixtures.server(id);
   }
 }

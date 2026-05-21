@@ -3,7 +3,7 @@
     allowedDependencies = {
       "config",
       "config::api",
-      "dcc",
+      "dcc::api",
       "ignore::api",
       "irc",
       "irc::backend",

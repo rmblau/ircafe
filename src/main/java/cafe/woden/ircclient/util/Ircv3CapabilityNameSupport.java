@@ -12,53 +12,55 @@ public final class Ircv3CapabilityNameSupport {
 
   private static final Map<String, String> REQUEST_TOKEN_ALIASES =
       Map.of(
-          "read-marker", "draft/read-marker",
-          "draft/read-marker", "draft/read-marker",
-          "multiline", "draft/multiline",
-          "draft/multiline", "draft/multiline",
-          "chathistory", "draft/chathistory",
-          "draft/chathistory", "draft/chathistory",
-          "message-redaction", "draft/message-redaction",
-          "draft/message-redaction", "draft/message-redaction");
+          Ircv3CapabilityNames.READ_MARKER, Ircv3CapabilityNames.DRAFT_READ_MARKER,
+          Ircv3CapabilityNames.DRAFT_READ_MARKER, Ircv3CapabilityNames.DRAFT_READ_MARKER,
+          Ircv3CapabilityNames.MULTILINE, Ircv3CapabilityNames.DRAFT_MULTILINE,
+          Ircv3CapabilityNames.DRAFT_MULTILINE, Ircv3CapabilityNames.DRAFT_MULTILINE,
+          Ircv3CapabilityNames.CHATHISTORY, Ircv3CapabilityNames.DRAFT_CHATHISTORY,
+          Ircv3CapabilityNames.DRAFT_CHATHISTORY, Ircv3CapabilityNames.DRAFT_CHATHISTORY,
+          Ircv3CapabilityNames.MESSAGE_REDACTION, Ircv3CapabilityNames.DRAFT_MESSAGE_REDACTION,
+          Ircv3CapabilityNames.DRAFT_MESSAGE_REDACTION,
+              Ircv3CapabilityNames.DRAFT_MESSAGE_REDACTION);
 
   private static final Map<String, String> PREFERENCE_KEY_ALIASES =
       Map.ofEntries(
-          entry("read-marker", "read-marker"),
-          entry("draft/read-marker", "read-marker"),
-          entry("multiline", "multiline"),
-          entry("draft/multiline", "multiline"),
-          entry("chathistory", "chathistory"),
-          entry("draft/chathistory", "chathistory"),
-          entry("message-redaction", "message-redaction"),
-          entry("draft/message-redaction", "message-redaction"),
-          entry("reply", "reply"),
-          entry("draft/reply", "reply"),
-          entry("react", "react"),
-          entry("draft/react", "react"),
-          entry("unreact", "unreact"),
-          entry("draft/unreact", "unreact"),
-          entry("typing", "typing"),
-          entry("draft/typing", "typing"),
-          entry("channel-context", "channel-context"),
-          entry("draft/channel-context", "channel-context"),
-          entry("message-edit", "message-edit"),
-          entry("draft/message-edit", "message-edit"));
+          entry(Ircv3CapabilityNames.READ_MARKER, Ircv3CapabilityNames.READ_MARKER),
+          entry(Ircv3CapabilityNames.DRAFT_READ_MARKER, Ircv3CapabilityNames.READ_MARKER),
+          entry(Ircv3CapabilityNames.MULTILINE, Ircv3CapabilityNames.MULTILINE),
+          entry(Ircv3CapabilityNames.DRAFT_MULTILINE, Ircv3CapabilityNames.MULTILINE),
+          entry(Ircv3CapabilityNames.CHATHISTORY, Ircv3CapabilityNames.CHATHISTORY),
+          entry(Ircv3CapabilityNames.DRAFT_CHATHISTORY, Ircv3CapabilityNames.CHATHISTORY),
+          entry(Ircv3CapabilityNames.MESSAGE_REDACTION, Ircv3CapabilityNames.MESSAGE_REDACTION),
+          entry(
+              Ircv3CapabilityNames.DRAFT_MESSAGE_REDACTION, Ircv3CapabilityNames.MESSAGE_REDACTION),
+          entry(Ircv3CapabilityNames.REPLY, Ircv3CapabilityNames.REPLY),
+          entry(Ircv3CapabilityNames.DRAFT_REPLY, Ircv3CapabilityNames.REPLY),
+          entry(Ircv3CapabilityNames.REACT, Ircv3CapabilityNames.REACT),
+          entry(Ircv3CapabilityNames.DRAFT_REACT, Ircv3CapabilityNames.REACT),
+          entry(Ircv3CapabilityNames.UNREACT, Ircv3CapabilityNames.UNREACT),
+          entry(Ircv3CapabilityNames.DRAFT_UNREACT, Ircv3CapabilityNames.UNREACT),
+          entry(Ircv3CapabilityNames.TYPING, Ircv3CapabilityNames.TYPING),
+          entry(Ircv3CapabilityNames.DRAFT_TYPING, Ircv3CapabilityNames.TYPING),
+          entry(Ircv3CapabilityNames.CHANNEL_CONTEXT, Ircv3CapabilityNames.CHANNEL_CONTEXT),
+          entry(Ircv3CapabilityNames.DRAFT_CHANNEL_CONTEXT, Ircv3CapabilityNames.CHANNEL_CONTEXT),
+          entry(Ircv3CapabilityNames.MESSAGE_EDIT, Ircv3CapabilityNames.MESSAGE_EDIT),
+          entry(Ircv3CapabilityNames.DRAFT_MESSAGE_EDIT, Ircv3CapabilityNames.MESSAGE_EDIT));
 
   private static final Set<String> NON_REQUESTABLE_TOKENS =
       Set.of(
-          "sts",
-          "reply",
-          "draft/reply",
-          "react",
-          "draft/react",
-          "unreact",
-          "draft/unreact",
-          "typing",
-          "draft/typing",
-          "channel-context",
-          "draft/channel-context",
-          "message-edit",
-          "draft/message-edit");
+          Ircv3CapabilityNames.STS,
+          Ircv3CapabilityNames.REPLY,
+          Ircv3CapabilityNames.DRAFT_REPLY,
+          Ircv3CapabilityNames.REACT,
+          Ircv3CapabilityNames.DRAFT_REACT,
+          Ircv3CapabilityNames.UNREACT,
+          Ircv3CapabilityNames.DRAFT_UNREACT,
+          Ircv3CapabilityNames.TYPING,
+          Ircv3CapabilityNames.DRAFT_TYPING,
+          Ircv3CapabilityNames.CHANNEL_CONTEXT,
+          Ircv3CapabilityNames.DRAFT_CHANNEL_CONTEXT,
+          Ircv3CapabilityNames.MESSAGE_EDIT,
+          Ircv3CapabilityNames.DRAFT_MESSAGE_EDIT);
 
   private Ircv3CapabilityNameSupport() {}
 

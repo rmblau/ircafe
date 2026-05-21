@@ -14,7 +14,7 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesBus;
 import cafe.woden.ircclient.config.LogProperties;
-import cafe.woden.ircclient.config.PushyProperties;
+import cafe.woden.ircclient.config.PushyPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.irc.backend.IrcHeartbeatMaintenanceService;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionCatalog;
@@ -28,19 +28,47 @@ import cafe.woden.ircclient.notify.sound.NotificationSoundSettings;
 import cafe.woden.ircclient.notify.sound.NotificationSoundSettingsBus;
 import cafe.woden.ircclient.ui.chat.NickColorService;
 import cafe.woden.ircclient.ui.chat.NickColorSettingsBus;
-import cafe.woden.ircclient.ui.chat.TranscriptRebuildService;
 import cafe.woden.ircclient.ui.chat.embed.EmbedLoadPolicyBus;
+import cafe.woden.ircclient.ui.chat.transcript.rebuild.TranscriptRebuildService;
 import cafe.woden.ircclient.ui.filter.FilterSettings;
 import cafe.woden.ircclient.ui.filter.FilterSettingsBus;
+import cafe.woden.ircclient.ui.filter.FilterSettingsTestFixtures;
 import cafe.woden.ircclient.ui.nickcolors.NickColorOverridesDialog;
 import cafe.woden.ircclient.ui.servers.ServerDialogs;
+import cafe.woden.ircclient.ui.settings.appearance.AppearancePreferencesSection;
+import cafe.woden.ircclient.ui.settings.chat.ChatBehaviorControlsSupport;
+import cafe.woden.ircclient.ui.settings.commands.UserCommandAliasesControls;
+import cafe.woden.ircclient.ui.settings.commands.UserCommandAliasesControlsSupport;
+import cafe.woden.ircclient.ui.settings.commands.UserCommandsPanelSupport;
+import cafe.woden.ircclient.ui.settings.filters.FilterControls;
+import cafe.woden.ircclient.ui.settings.filters.FilterControlsSupport;
+import cafe.woden.ircclient.ui.settings.filters.FiltersPanelSupport;
+import cafe.woden.ircclient.ui.settings.history.HistoryControls;
+import cafe.woden.ircclient.ui.settings.history.HistoryControlsSupport;
+import cafe.woden.ircclient.ui.settings.history.HistoryStoragePanelSupport;
+import cafe.woden.ircclient.ui.settings.history.LoggingControls;
+import cafe.woden.ircclient.ui.settings.history.LoggingControlsSupport;
+import cafe.woden.ircclient.ui.settings.ircv3.Ircv3CapabilitiesControls;
+import cafe.woden.ircclient.ui.settings.ircv3.Ircv3PanelSupport;
+import cafe.woden.ircclient.ui.settings.notifications.IrcEventNotificationControls;
+import cafe.woden.ircclient.ui.settings.notifications.IrcEventNotificationsTabSupport;
+import cafe.woden.ircclient.ui.settings.notifications.NotificationRulesControls;
+import cafe.woden.ircclient.ui.settings.notifications.NotificationRulesControlsSupport;
+import cafe.woden.ircclient.ui.settings.notifications.NotificationsPanelSupport;
+import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettings;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsBus;
-import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettings;
+import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsTestFixtures;
 import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettingsBus;
+import cafe.woden.ircclient.ui.settings.theme.ThemeAppearanceSettingsTestFixtures;
 import cafe.woden.ircclient.ui.settings.theme.ThemeManager;
-import cafe.woden.ircclient.ui.settings.theme.ThemeTweakSettings;
+import cafe.woden.ircclient.ui.settings.theme.ThemeManager.ThemeOption;
+import cafe.woden.ircclient.ui.settings.theme.ThemeManager.ThemePack;
+import cafe.woden.ircclient.ui.settings.theme.ThemeManager.ThemeTone;
 import cafe.woden.ircclient.ui.settings.theme.ThemeTweakSettingsBus;
+import cafe.woden.ircclient.ui.settings.tray.TrayControls;
+import cafe.woden.ircclient.ui.settings.tray.TrayControlsSupport;
+import cafe.woden.ircclient.ui.settings.tray.TrayNotificationsPanelSupport;
 import cafe.woden.ircclient.ui.shell.LagIndicatorService;
 import cafe.woden.ircclient.ui.shell.UpdateNotifierService;
 import cafe.woden.ircclient.ui.tray.TrayNotificationService;
@@ -52,7 +80,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -71,19 +98,7 @@ class PreferencesDialogFunctionalTest {
 
   @Test
   void appearancePanelIncludesMessageColorsSubTabAndExpectedRows() throws Exception {
-    AppearanceFixture fixture =
-        buildAppearanceFixture(
-            new ChatThemeSettings(
-                ChatThemeSettings.Preset.DEFAULT,
-                null,
-                null,
-                null,
-                35,
-                null,
-                null,
-                null,
-                null,
-                null));
+    AppearanceFixture fixture = buildAppearanceFixture(ChatThemeSettingsTestFixtures.defaults());
 
     assertNotNull(findLabel(fixture.appearancePanel, "Message colors"));
     assertNotNull(findLabel(fixture.appearancePanel, "Server/system"));
@@ -98,17 +113,18 @@ class PreferencesDialogFunctionalTest {
   void resetToDefaultsClearsMessageColorOverrides() throws Exception {
     AppearanceFixture fixture =
         buildAppearanceFixture(
-            new ChatThemeSettings(
-                ChatThemeSettings.Preset.ACCENTED,
-                "#111111",
-                "#222222",
-                "#333333",
-                60,
-                "#444444",
-                "#555555",
-                "#666666",
-                "#777777",
-                "#888888"));
+            ChatThemeSettingsTestFixtures.builder()
+                .preset(ChatThemeSettings.Preset.ACCENTED)
+                .timestampColor("#111111")
+                .systemColor("#222222")
+                .mentionBgColor("#333333")
+                .mentionStrength(60)
+                .messageColor("#444444")
+                .noticeColor("#555555")
+                .actionColor("#666666")
+                .errorColor("#777777")
+                .presenceColor("#888888")
+                .build());
 
     JButton reset = findButton(fixture.appearancePanel, "Reset to defaults");
     assertNotNull(reset, "appearance panel should expose reset action");
@@ -135,24 +151,34 @@ class PreferencesDialogFunctionalTest {
     IllegalArgumentException ex =
         assertThrows(
             IllegalArgumentException.class,
-            () -> PreferencesDialog.normalizeOptionalHexForApply("#12GG34", "User message color"));
+            () ->
+                SettingsColorSupport.normalizeOptionalHexForApply("#12GG34", "User message color"));
     assertEquals(
         "User message color must be a hex value like #RRGGBB (or blank for default).",
         ex.getMessage());
-    assertNull(PreferencesDialog.normalizeOptionalHexForApply("   ", "User message color"));
+    assertNull(SettingsColorSupport.normalizeOptionalHexForApply("   ", "User message color"));
     assertEquals(
-        "#AABBCC", PreferencesDialog.normalizeOptionalHexForApply("#abc", "User message color"));
+        "#AABBCC", SettingsColorSupport.normalizeOptionalHexForApply("#abc", "User message color"));
   }
 
   @Test
   void filtersPanelExposesSubTabsAndHistoryRunCapToggle() throws Exception {
-    PreferencesDialog dialog = newPreferencesDialog();
     List<AutoCloseable> closeables = new ArrayList<>();
     FilterSettings filters =
-        new FilterSettings(true, true, true, 3, 250, 12, 10, false, List.of(), List.of());
+        FilterSettingsTestFixtures.historyPlaceholdersDisabledBuilder().build();
+    FilterSettingsBus filterSettingsBus = new FilterSettingsBus(null);
+    filterSettingsBus.set(filters);
 
-    Object controls = invoke(dialog, "buildFilterControls", filters, closeables);
-    JPanel panel = (JPanel) invoke(dialog, "buildFiltersPanel", controls);
+    FilterControls controls =
+        FilterControlsSupport.buildControls(
+            filters,
+            null,
+            closeables,
+            filterSettingsBus,
+            mock(RuntimeConfigStore.class),
+            mock(ActiveTargetPort.class),
+            mock(TranscriptRebuildService.class));
+    JPanel panel = FiltersPanelSupport.buildPanel(controls);
 
     assertNotNull(findTabbedPaneWithTab(panel, "General"));
     assertNotNull(findTabbedPaneWithTab(panel, "Placeholders"));
@@ -172,16 +198,21 @@ class PreferencesDialogFunctionalTest {
 
   @Test
   void notificationsPanelIncludesRulesTestAndIrcEventsTabs() throws Exception {
-    PreferencesDialog dialog = newPreferencesDialog();
     List<AutoCloseable> closeables = new ArrayList<>();
 
     NotificationRulesControls notifications =
         NotificationRulesControlsSupport.buildControls(
             testUiSettings(), closeables, mock(ExecutorService.class));
-    Object ircEvents =
-        invoke(dialog, "buildIrcEventNotificationControls", IrcEventNotificationRule.defaults());
+    IrcEventNotificationControls ircEvents =
+        IrcEventNotificationsTabSupport.buildControls(IrcEventNotificationRule.defaults());
 
-    JPanel panel = (JPanel) invoke(dialog, "buildNotificationsPanel", notifications, ircEvents);
+    JPanel panel =
+        NotificationsPanelSupport.buildPanel(
+            notifications,
+            IrcEventNotificationsTabSupport.buildTab(ircEvents, null, (title, seed) -> seed),
+            null,
+            (title, seed) -> seed,
+            NotificationRulesControlsSupport::refreshValidation);
     assertNotNull(findTabbedPaneWithTab(panel, "Rules"));
     assertNotNull(findTabbedPaneWithTab(panel, "Test"));
     assertNotNull(findTabbedPaneWithTab(panel, "IRC Events"));
@@ -197,7 +228,11 @@ class PreferencesDialogFunctionalTest {
         HistoryControlsSupport.buildControls(testUiSettings(), closeables, false, false);
     LoggingControls logging =
         LoggingControlsSupport.buildControls(
-            (LogProperties) null, closeables, mock(ServerDialogs.class), null);
+            (RuntimeConfigStore) null,
+            (LogProperties) null,
+            closeables,
+            mock(ServerDialogs.class),
+            null);
     JPanel panel = HistoryStoragePanelSupport.buildPanel(logging, history);
 
     assertNotNull(findTabbedPaneWithTab(panel, "Logging"));
@@ -209,14 +244,10 @@ class PreferencesDialogFunctionalTest {
 
   @Test
   void commandsPanelIncludesAliasImportAndUnknownFallbackToggle() throws Exception {
-    PreferencesDialog dialog = newPreferencesDialog();
-    Object controls =
-        invoke(
-            dialog,
-            "buildUserCommandAliasesControls",
-            List.of(new UserCommandAlias(true, "greet", "/msg %1 hello")),
-            true);
-    JPanel panel = (JPanel) invoke(dialog, "buildUserCommandsPanel", controls);
+    UserCommandAliasesControls controls =
+        UserCommandAliasesControlsSupport.buildControls(
+            List.of(new UserCommandAlias(true, "greet", "/msg %1 hello")), true, null);
+    JPanel panel = UserCommandsPanelSupport.buildPanel(controls);
 
     JButton importHexChat = (JButton) readField(controls, "importHexChat");
     assertNotNull(importHexChat);
@@ -228,12 +259,11 @@ class PreferencesDialogFunctionalTest {
 
   @Test
   void trayPanelSoundsTabExposesCustomSoundPathControls() throws Exception {
-    PreferencesDialog dialog = newPreferencesDialog();
     TrayControls trayControls =
         TrayControlsSupport.buildControls(
             testUiSettings(),
             new NotificationSoundSettings(true, "NOTIF_1", true, "sounds/custom.wav"),
-            new PushyProperties(false, null, null, null, null, null, null, null),
+            PushyPropertiesTestFixtures.disabled(),
             mock(RuntimeConfigStore.class),
             mock(GnomeDbusNotificationBackend.class),
             mock(TrayNotificationService.class),
@@ -241,7 +271,7 @@ class PreferencesDialogFunctionalTest {
             mock(PushyNotificationService.class),
             mock(ExecutorService.class),
             source -> "");
-    JPanel trayPanel = (JPanel) invoke(dialog, "buildTrayNotificationsPanel", trayControls);
+    JPanel trayPanel = TrayNotificationsPanelSupport.buildPanel(trayControls);
     assertNotNull(findTabbedPaneWithTab(trayPanel, "Sounds"));
 
     JCheckBox soundsEnabled = (JCheckBox) readField(trayControls, "notificationSoundsEnabled");
@@ -341,34 +371,35 @@ class PreferencesDialogFunctionalTest {
       throws Exception {
     UiSettings current = testUiSettings();
     List<AutoCloseable> closeables = new ArrayList<>();
-    Map<String, String> themeLabelById = new LinkedHashMap<>();
-    themeLabelById.put("darcula", "Darcula");
-
-    ThemeControls themeControls =
-        AppearanceControlsSupport.buildThemeControls(current, themeLabelById);
-    AccentControls accentControls =
-        AppearanceControlsSupport.buildAccentControls(
-            new ThemeAccentSettings(
+    UiSettingsBus settingsBus = mock(UiSettingsBus.class);
+    when(settingsBus.get()).thenReturn(current);
+    ThemeManager themeManager = mock(ThemeManager.class);
+    when(themeManager.supportedThemes())
+        .thenReturn(
+            new ThemeOption[] {
+              new ThemeOption("darcula", "Darcula", ThemeTone.DARK, ThemePack.FLATLAF, true)
+            });
+    ThemeAccentSettingsBus accentSettingsBus = mock(ThemeAccentSettingsBus.class);
+    when(accentSettingsBus.get())
+        .thenReturn(
+            ThemeAppearanceSettingsTestFixtures.accent(
                 cafe.woden.ircclient.config.UiProperties.DEFAULT_ACCENT_COLOR,
                 cafe.woden.ircclient.config.UiProperties.DEFAULT_ACCENT_STRENGTH));
-    ChatThemeControls chatThemeControls =
-        AppearanceControlsSupport.buildChatThemeControls(chatTheme);
-    FontControls fontControls = AppearanceControlsSupport.buildFontControls(current, closeables);
-    TweakControls tweakControls =
-        AppearanceControlsSupport.buildTweakControls(
-            new ThemeTweakSettings(ThemeTweakSettings.ThemeDensity.AUTO, 10), closeables);
-    AppearanceServerTreeControls appearanceServerTreeControls =
-        AppearanceControlsSupport.buildServerTreeControls(current);
+    ThemeTweakSettingsBus tweakSettingsBus = mock(ThemeTweakSettingsBus.class);
+    when(tweakSettingsBus.get()).thenReturn(ThemeAppearanceSettingsTestFixtures.tweakDefaults());
+    ChatThemeSettingsBus chatThemeSettingsBus = mock(ChatThemeSettingsBus.class);
+    when(chatThemeSettingsBus.get()).thenReturn(chatTheme);
 
-    JPanel appearancePanel =
-        AppearancePanelSupport.buildPanel(
-            themeControls,
-            accentControls,
-            chatThemeControls,
-            fontControls,
-            tweakControls,
-            appearanceServerTreeControls);
-    return new AppearanceFixture(appearancePanel, chatThemeControls);
+    AppearancePreferencesSection section =
+        AppearancePreferencesSection.build(
+            current,
+            closeables,
+            settingsBus,
+            themeManager,
+            accentSettingsBus,
+            tweakSettingsBus,
+            chatThemeSettingsBus);
+    return new AppearanceFixture(section.panel(), readField(section, "chatTheme"));
   }
 
   private static PreferencesDialog newPreferencesDialog() {
@@ -417,32 +448,7 @@ class PreferencesDialogFunctionalTest {
   }
 
   private static UiSettings testUiSettings() {
-    return new UiSettings(
-        "darcula",
-        "Monospaced",
-        12,
-        true,
-        false,
-        false,
-        0,
-        0,
-        true,
-        false,
-        false,
-        true,
-        true,
-        true,
-        "HH:mm:ss",
-        true,
-        100,
-        200,
-        false,
-        "#6AA2FF",
-        true,
-        7,
-        6,
-        30,
-        5);
+    return UiSettingsTestFixtures.legacyBuilder().build();
   }
 
   private static JTextField chatThemeHex(Object chatThemeControls, String fieldName)

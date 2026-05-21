@@ -1,8 +1,8 @@
 package cafe.woden.ircclient.ui.dcc;
 
-import cafe.woden.ircclient.dcc.DccTransferStore;
-import cafe.woden.ircclient.dcc.DccTransferStore.ActionHint;
-import cafe.woden.ircclient.dcc.DccTransferStore.Entry;
+import cafe.woden.ircclient.dcc.api.DccActionHint;
+import cafe.woden.ircclient.dcc.api.DccTransferEntry;
+import cafe.woden.ircclient.dcc.api.DccTransferQueryPort;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import java.awt.BorderLayout;
@@ -38,7 +38,7 @@ public final class DccTransfersPanel extends JPanel implements AutoCloseable {
   private static final int COL_PROGRESS = 4;
   private static final int COL_DETAIL = 5;
 
-  private final DccTransferStore store;
+  private final DccTransferQueryPort store;
   private final CompositeDisposable disposables = new CompositeDisposable();
   private final DccTransfersTableModel model = new DccTransfersTableModel();
 
@@ -53,12 +53,12 @@ public final class DccTransfersPanel extends JPanel implements AutoCloseable {
   private volatile String serverId;
   private volatile Consumer<String> onEmitCommand;
 
-  public DccTransfersPanel(DccTransferStore store) {
+  public DccTransfersPanel(DccTransferQueryPort store) {
     this(store, null, null);
   }
 
   public DccTransfersPanel(
-      DccTransferStore store, String serverId, Consumer<String> onEmitCommand) {
+      DccTransferQueryPort store, String serverId, Consumer<String> onEmitCommand) {
     super(new BorderLayout());
     this.store = Objects.requireNonNull(store, "store");
     this.serverId = serverId;
@@ -125,9 +125,9 @@ public final class DccTransfersPanel extends JPanel implements AutoCloseable {
               return;
             }
             int modelRow = table.convertRowIndexToModel(viewRow);
-            Entry row = model.entryAt(modelRow);
+            DccTransferEntry row = model.entryAt(modelRow);
             table.setCursor(
-                (row != null && row.actionHint() != ActionHint.NONE)
+                (row != null && row.actionHint() != DccActionHint.NONE)
                     ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
                     : Cursor.getDefaultCursor());
           }
@@ -190,12 +190,12 @@ public final class DccTransfersPanel extends JPanel implements AutoCloseable {
       return;
     }
 
-    List<Entry> rows = store.listAll(sid);
+    List<DccTransferEntry> rows = store.listAll(sid);
     model.setRows(rows);
 
     int total = rows.size();
     long actionable =
-        rows.stream().filter(r -> r != null && r.actionHint() != ActionHint.NONE).count();
+        rows.stream().filter(r -> r != null && r.actionHint() != DccActionHint.NONE).count();
     title.setText("DCC Transfers - " + sid);
     if (total == 0) {
       subtitle.setText("No DCC activity recorded for this server.");
@@ -213,7 +213,7 @@ public final class DccTransfersPanel extends JPanel implements AutoCloseable {
   }
 
   private void runSelectedAction() {
-    Entry selected = selectedEntry();
+    DccTransferEntry selected = selectedDccTransferEntry();
     if (selected == null) return;
     String cmd = commandFor(selected);
     if (cmd.isBlank()) return;
@@ -222,7 +222,7 @@ public final class DccTransfersPanel extends JPanel implements AutoCloseable {
   }
 
   private void openPmForSelected() {
-    Entry selected = selectedEntry();
+    DccTransferEntry selected = selectedDccTransferEntry();
     if (selected == null) return;
     String nick = Objects.toString(selected.nick(), "").trim();
     if (nick.isEmpty()) return;
@@ -231,7 +231,7 @@ public final class DccTransfersPanel extends JPanel implements AutoCloseable {
   }
 
   private void copySavePathForSelected() {
-    Entry selected = selectedEntry();
+    DccTransferEntry selected = selectedDccTransferEntry();
     if (selected == null) return;
     String path = savePathFor(selected);
     if (path.isBlank()) return;
@@ -243,7 +243,7 @@ public final class DccTransfersPanel extends JPanel implements AutoCloseable {
   }
 
   private void updateActionButtonState() {
-    Entry selected = selectedEntry();
+    DccTransferEntry selected = selectedDccTransferEntry();
     if (selected == null) {
       actionButton.setEnabled(false);
       actionButton.setText("Run Action");
@@ -261,14 +261,14 @@ public final class DccTransfersPanel extends JPanel implements AutoCloseable {
     copyPathButton.setEnabled(!path.isBlank());
   }
 
-  private Entry selectedEntry() {
+  private DccTransferEntry selectedDccTransferEntry() {
     int viewRow = table.getSelectedRow();
     if (viewRow < 0) return null;
     int modelRow = table.convertRowIndexToModel(viewRow);
     return model.entryAt(modelRow);
   }
 
-  private static String commandFor(Entry entry) {
+  private static String commandFor(DccTransferEntry entry) {
     if (entry == null) return "";
     String nick = Objects.toString(entry.nick(), "").trim();
     if (nick.isEmpty()) return "";
@@ -280,12 +280,12 @@ public final class DccTransfersPanel extends JPanel implements AutoCloseable {
     };
   }
 
-  private static String savePathFor(Entry entry) {
+  private static String savePathFor(DccTransferEntry entry) {
     if (entry == null) return "";
     return Objects.toString(entry.localPath(), "").trim();
   }
 
-  private static String labelFor(ActionHint hint) {
+  private static String labelFor(DccActionHint hint) {
     if (hint == null) return "Run Action";
     return switch (hint) {
       case ACCEPT_CHAT -> "Accept Chat";
@@ -303,14 +303,14 @@ public final class DccTransfersPanel extends JPanel implements AutoCloseable {
     private static final DateTimeFormatter TIME_FMT =
         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
 
-    private List<Entry> rows = List.of();
+    private List<DccTransferEntry> rows = List.of();
 
-    void setRows(List<Entry> rows) {
+    void setRows(List<DccTransferEntry> rows) {
       this.rows = (rows == null) ? List.of() : List.copyOf(rows);
       fireTableDataChanged();
     }
 
-    Entry entryAt(int rowIndex) {
+    DccTransferEntry entryAt(int rowIndex) {
       if (rowIndex < 0 || rowIndex >= rows.size()) return null;
       return rows.get(rowIndex);
     }
@@ -332,7 +332,7 @@ public final class DccTransfersPanel extends JPanel implements AutoCloseable {
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
-      Entry row = entryAt(rowIndex);
+      DccTransferEntry row = entryAt(rowIndex);
       if (row == null) return "";
       return switch (columnIndex) {
         case COL_TIME -> formatTime(row.updatedAt());

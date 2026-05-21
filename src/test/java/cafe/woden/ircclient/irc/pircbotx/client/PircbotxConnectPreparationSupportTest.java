@@ -8,12 +8,12 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.irc.ircv3.Ircv3StsPolicyService;
 import cafe.woden.ircclient.irc.pircbotx.listener.*;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
 import cafe.woden.ircclient.state.api.ServerIsupportStatePort;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 
 class PircbotxConnectPreparationSupportTest {
@@ -29,36 +29,32 @@ class PircbotxConnectPreparationSupportTest {
             serverCatalog, stsPolicies, serverIsupportState, timers);
 
     IrcProperties.Server configured =
-        new IrcProperties.Server(
-            "libera",
-            "irc.example.net",
-            6667,
-            false,
-            "",
-            "OldNick",
-            "loginuser@loginclient",
-            "Old Real",
-            new IrcProperties.Server.Sasl(true, "sasluser@saslclient/netb", "pw", "PLAIN", false),
-            null,
-            List.of(),
-            List.of(),
-            null);
+        IrcPropertiesTestFixtures.serverBuilder("libera")
+            .host("irc.example.net")
+            .port(6667)
+            .tls(false)
+            .nick("OldNick")
+            .login("loginuser@loginclient")
+            .realName("Old Real")
+            .sasl(
+                new IrcProperties.Server.Sasl(
+                    true, "sasluser@saslclient/netb", "pw", "PLAIN", false))
+            .build();
     IrcProperties.Server secured =
-        new IrcProperties.Server(
-            "libera",
-            "irc.secure.example.net",
-            6697,
-            true,
-            "",
-            "NewNick",
-            configured.login(),
-            configured.realName(),
-            configured.sasl(),
-            configured.nickserv(),
-            configured.autoJoin(),
-            configured.perform(),
-            configured.proxy(),
-            configured.backend());
+        IrcPropertiesTestFixtures.serverBuilder("libera")
+            .host("irc.secure.example.net")
+            .port(6697)
+            .tls(true)
+            .nick("NewNick")
+            .login(configured.login())
+            .realName(configured.realName())
+            .sasl(configured.sasl())
+            .nickserv(configured.nickserv())
+            .autoJoin(configured.autoJoin())
+            .perform(configured.perform())
+            .proxy(configured.proxy())
+            .backend(configured.backend())
+            .build();
     when(serverCatalog.require("libera")).thenReturn(configured);
     when(stsPolicies.applyPolicy(configured)).thenReturn(secured);
 

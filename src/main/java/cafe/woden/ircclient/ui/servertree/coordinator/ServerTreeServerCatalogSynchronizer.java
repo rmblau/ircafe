@@ -18,9 +18,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Synchronizes the server tree structure with the latest server catalog snapshot. */
+@InterfaceLayer
 @Component
 public final class ServerTreeServerCatalogSynchronizer {
 

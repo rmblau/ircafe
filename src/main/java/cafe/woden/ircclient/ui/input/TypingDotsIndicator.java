@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.input;
 
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -121,7 +122,7 @@ final class TypingDotsIndicator extends JComponent {
 
   private Color resolveBaseColor() {
     Color fg = getForeground();
-    if (fg == null) fg = UIManager.getColor("Label.foreground");
+    if (fg == null) fg = UIManager.getColor(UiColorKeys.LABEL_FOREGROUND);
     if (fg == null) fg = Color.GRAY;
     return fg;
   }

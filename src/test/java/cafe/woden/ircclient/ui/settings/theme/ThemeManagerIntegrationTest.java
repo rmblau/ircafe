@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import cafe.woden.ircclient.ui.chat.ChatStyles;
-import cafe.woden.ircclient.ui.chat.ChatTranscriptStore;
+import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -77,9 +77,9 @@ class ThemeManagerIntegrationTest {
     List<String> steps = new CopyOnWriteArrayList<>();
     Map<String, Boolean> onEdtByStep = new ConcurrentHashMap<>();
 
-    Mockito.when(accentBus.get()).thenReturn(new ThemeAccentSettings("#4C88D0", 70));
-    Mockito.when(tweakBus.get())
-        .thenReturn(new ThemeTweakSettings(ThemeTweakSettings.ThemeDensity.AUTO, 10));
+    Mockito.when(accentBus.get())
+        .thenReturn(ThemeAppearanceSettingsTestFixtures.accent("#4C88D0", 70));
+    Mockito.when(tweakBus.get()).thenReturn(ThemeAppearanceSettingsTestFixtures.tweakDefaults());
 
     Mockito.doAnswer(
             invocation -> {

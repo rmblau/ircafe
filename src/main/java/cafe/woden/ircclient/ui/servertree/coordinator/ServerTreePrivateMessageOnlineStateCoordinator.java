@@ -7,9 +7,11 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Coordinates private-message online-state updates and affected tree node refreshes. */
+@InterfaceLayer
 @Component
 public final class ServerTreePrivateMessageOnlineStateCoordinator {
 

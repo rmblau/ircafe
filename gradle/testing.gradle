@@ -1,13 +1,64 @@
+def libsCatalog = extensions.getByType(org.gradle.api.artifacts.VersionCatalogsExtension).named("libs")
+def catalogVersion = { String alias -> libsCatalog.findVersion(alias).get().requiredVersion }
+def booleanProperty = { String name, String defaultValue ->
+    (findProperty(name) ?: defaultValue).toString().toBoolean()
+}
+def intProperty = { String name, String defaultValue ->
+    Integer.parseInt((findProperty(name) ?: defaultValue).toString())
+}
+def junitPlatformVersion = catalogVersion('junitPlatform')
+
+configurations.configureEach {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'org.junit.platform'
+                && details.requested.name == 'junit-platform-launcher') {
+            details.useVersion junitPlatformVersion
+            details.because 'Keep JUnit Platform launcher aligned with the JUnit 6 engine.'
+        }
+    }
+}
+
 configurations {
     mutationTestTool
+}
+
+testlogger {
+    theme 'standard-parallel'
+    showPassed false
+    showSkipped true
+    showFailed true
+    showStandardStreams false
+    slowThreshold 2000
+}
+
+pitest {
+    pitestVersion = catalogVersion('pitestCommandLine')
+    junit5PluginVersion = catalogVersion('pitestJunit5Plugin')
+    targetClasses = ['cafe.woden.ircclient.*']
+    targetTests = ['cafe.woden.ircclient.*']
+    outputFormats = ['HTML', 'XML']
+    threads = intProperty('pitestThreads', '4')
+    timestampedReports = false
+    failWhenNoMutations = false
+}
+
+jmh {
+    fork = intProperty('jmhForks', '1')
+    iterations = intProperty('jmhIterations', '5')
+    warmupIterations = intProperty('jmhWarmupIterations', '3')
+    resultFormat = 'JSON'
+    resultsFile = layout.buildDirectory.file('reports/jmh/results.json').get().asFile
+    humanOutputFile = layout.buildDirectory.file('reports/jmh/human.txt').get().asFile
+    includeTests = true
+    duplicateClassesStrategy = DuplicatesStrategy.WARN
 }
 
 sourceSets {
     functionalTest {
         java.srcDir('src/functionalTest/java')
         resources.srcDir('src/functionalTest/resources')
-        compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
-        runtimeClasspath += output + compileClasspath
+        compileClasspath += sourceSets.main.output + sourceSets.test.output + configurations.testRuntimeClasspath
+        runtimeClasspath += output + sourceSets.test.output + compileClasspath
     }
 }
 
@@ -25,6 +76,28 @@ tasks.named('test') {
         excludeTestsMatching '*FunctionalTest'
         // Integration coverage runs via the dedicated integrationTest task.
         excludeTestsMatching '*IntegrationTest'
+        // Architecture guardrails run via the dedicated architectureTest task.
+        excludeTestsMatching 'cafe.woden.ircclient.architecture.*'
+        excludeTestsMatching 'cafe.woden.ircclient.modulith.*'
+    }
+}
+
+def enableTestRetry = System.getenv("CI") == "true" || booleanProperty('testRetry', 'false')
+tasks.withType(Test).configureEach {
+    testLogging {
+        events 'FAILED', 'SKIPPED'
+        exceptionFormat 'full'
+        showCauses true
+        showExceptions true
+        showStackTraces true
+        showStandardStreams false
+    }
+
+    retry {
+        maxRetries = enableTestRetry ? intProperty('testRetryMaxRetries', '1') : 0
+        maxFailures = intProperty('testRetryMaxFailures', '20')
+        failOnPassedAfterRetry = true
+        failOnSkippedAfterRetry = true
     }
 }
 
@@ -287,4 +360,80 @@ tasks.register('themeValidate', Test) {
     filter {
         includeTestsMatching 'cafe.woden.ircclient.ui.settings.ThemeValidatorTest'
     }
+}
+
+def configureJacocoReport = { reportTask ->
+    reportTask.reports {
+        html.required = true
+        xml.required = true
+        csv.required = false
+    }
+    reportTask.doFirst {
+        reportTask.executionData.setFrom(reportTask.executionData.files.findAll { it.exists() })
+    }
+}
+
+tasks.named('jacocoTestReport', org.gradle.testing.jacoco.tasks.JacocoReport) {
+    group = 'verification'
+    description = 'Generates JaCoCo coverage for unit and non-functional tests.'
+    dependsOn(tasks.named('test'))
+    sourceSets sourceSets.main
+    configureJacocoReport(delegate)
+}
+
+tasks.register('jacocoIntegrationTestReport', org.gradle.testing.jacoco.tasks.JacocoReport) {
+    group = 'verification'
+    description = 'Generates JaCoCo coverage for integration tests.'
+    dependsOn(tasks.named('integrationTest'))
+    executionData(tasks.named('integrationTest'))
+    sourceSets sourceSets.main
+    configureJacocoReport(delegate)
+}
+
+tasks.register('jacocoFunctionalTestReport', org.gradle.testing.jacoco.tasks.JacocoReport) {
+    group = 'verification'
+    description = 'Generates JaCoCo coverage for Swing functional tests.'
+    dependsOn(tasks.named('functionalTest'))
+    executionData(tasks.named('functionalTest'))
+    sourceSets sourceSets.main
+    configureJacocoReport(delegate)
+}
+
+tasks.register('coverageReport', org.gradle.testing.jacoco.tasks.JacocoReport) {
+    group = 'verification'
+    description = 'Generates aggregate JaCoCo coverage for test, integrationTest, and functionalTest.'
+    dependsOn(tasks.named('test'), tasks.named('integrationTest'), tasks.named('functionalTest'))
+    executionData(tasks.named('test'), tasks.named('integrationTest'), tasks.named('functionalTest'))
+    sourceSets sourceSets.main
+    configureJacocoReport(delegate)
+}
+
+tasks.register('quickCheck') {
+    group = 'verification'
+    description = 'Runs fast local feedback checks: formatting and unit/non-functional tests.'
+    dependsOn('spotlessCheck', 'test')
+}
+
+tasks.register('verifyUiChange') {
+    group = 'verification'
+    description = 'Runs verification normally needed for Swing UI behavior changes.'
+    dependsOn('test', 'functionalTest')
+}
+
+tasks.register('verifySpringChange') {
+    group = 'verification'
+    description = 'Runs verification normally needed for Spring wiring or integration changes.'
+    dependsOn('test', 'integrationTest')
+}
+
+tasks.register('verifyArchitectureChange') {
+    group = 'verification'
+    description = 'Runs verification normally needed for architecture or module-boundary changes.'
+    dependsOn('test', 'architectureTest')
+}
+
+tasks.register('verifyRefactor') {
+    group = 'verification'
+    description = 'Runs broad verification for behavior-preserving refactors.'
+    dependsOn('lint', 'test', 'architectureTest')
 }

@@ -5,7 +5,7 @@ import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicy
 import cafe.woden.ircclient.ignore.IgnoreMaskMatcher;
 import cafe.woden.ircclient.irc.IrcEvent.AccountState;
 import cafe.woden.ircclient.irc.IrcEvent.NickInfo;
-import cafe.woden.ircclient.irc.roster.UserListStore;
+import cafe.woden.ircclient.irc.roster.UserListPort;
 import cafe.woden.ircclient.model.TargetRef;
 import java.net.URI;
 import java.time.Instant;
@@ -31,9 +31,9 @@ public class EmbedLoadPolicyMatcher {
   private static final Set<Character> VOICE_OR_OP_PREFIXES = Set.of('+', '%', '@', '&', '~');
 
   private final EmbedLoadPolicyBus policyBus;
-  private final UserListStore userListStore;
+  private final UserListPort userListStore;
 
-  public EmbedLoadPolicyMatcher(EmbedLoadPolicyBus policyBus, UserListStore userListStore) {
+  public EmbedLoadPolicyMatcher(EmbedLoadPolicyBus policyBus, UserListPort userListStore) {
     this.policyBus = policyBus;
     this.userListStore = userListStore;
   }

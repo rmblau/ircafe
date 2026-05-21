@@ -21,8 +21,7 @@ class RuntimeConfigStoreEmbedLoadPolicyTest {
   void embedLoadPolicyRoundTripsAndDefaultOverridesAreRemoved() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
     RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            cfg.toString(), new IrcProperties(null, List.of(server("libera"), server("oftc"))));
+        RuntimeConfigStoreTestFixtures.storeWithServers(cfg, server("libera"), server("oftc"));
 
     assertEquals(EmbedLoadPolicySnapshot.defaults(), store.readEmbedLoadPolicy());
 
@@ -93,7 +92,7 @@ class RuntimeConfigStoreEmbedLoadPolicyTest {
             + "        libera: definitely-not-a-map\n");
 
     RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of(server("libera"))));
+        RuntimeConfigStoreTestFixtures.storeWithServers(cfg, server("libera"));
 
     EmbedLoadPolicySnapshot policy = store.readEmbedLoadPolicy();
     assertTrue(policy.global().requireLoggedIn());
@@ -102,18 +101,6 @@ class RuntimeConfigStoreEmbedLoadPolicyTest {
   }
 
   private static IrcProperties.Server server(String id) {
-    return new IrcProperties.Server(
-        id,
-        "irc.example.net",
-        6697,
-        true,
-        "",
-        "ircafe",
-        "ircafe",
-        "IRCafe User",
-        null,
-        List.of(),
-        List.of(),
-        null);
+    return IrcPropertiesTestFixtures.server(id);
   }
 }

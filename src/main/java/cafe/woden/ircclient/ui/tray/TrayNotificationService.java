@@ -4,7 +4,7 @@ import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.app.api.TrayNotificationsPort;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.model.TargetRef;
-import cafe.woden.ircclient.notify.sound.NotificationSoundService;
+import cafe.woden.ircclient.notify.api.NotificationSoundPort;
 import cafe.woden.ircclient.ui.settings.NotificationBackendMode;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
@@ -86,7 +86,7 @@ public class TrayNotificationService implements TrayNotificationsPort {
   private final ObjectProvider<cafe.woden.ircclient.ui.servertree.ServerTreeDockable>
       serverTreeProvider;
   private final ObjectProvider<GnomeDbusNotificationBackend> gnomeDbusProvider;
-  private final NotificationSoundService soundService;
+  private final NotificationSoundPort soundService;
   private final Scheduler computationScheduler;
   private final Scheduler ioScheduler;
   private final FlowableProcessor<NotificationRequest> requests;
@@ -109,7 +109,7 @@ public class TrayNotificationService implements TrayNotificationsPort {
       ObjectProvider<ActiveTargetPort> targetCoordinatorProvider,
       ObjectProvider<cafe.woden.ircclient.ui.servertree.ServerTreeDockable> serverTreeProvider,
       ObjectProvider<GnomeDbusNotificationBackend> gnomeDbusProvider,
-      NotificationSoundService soundService) {
+      NotificationSoundPort soundService) {
     this(
         settingsBus,
         trayServiceProvider,
@@ -131,7 +131,7 @@ public class TrayNotificationService implements TrayNotificationsPort {
       ObjectProvider<ActiveTargetPort> targetCoordinatorProvider,
       ObjectProvider<cafe.woden.ircclient.ui.servertree.ServerTreeDockable> serverTreeProvider,
       ObjectProvider<GnomeDbusNotificationBackend> gnomeDbusProvider,
-      NotificationSoundService soundService,
+      NotificationSoundPort soundService,
       Scheduler computationScheduler,
       Scheduler ioScheduler) {
     this.settingsBus = settingsBus;

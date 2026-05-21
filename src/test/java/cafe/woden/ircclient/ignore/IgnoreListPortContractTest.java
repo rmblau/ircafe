@@ -1,12 +1,12 @@
 package cafe.woden.ircclient.ignore;
 
+import static cafe.woden.ircclient.config.IrcPropertiesTestFixtures.server;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.config.IgnoreProperties;
-import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.ignore.api.IgnoreAddMaskResult;
 import cafe.woden.ircclient.ignore.api.IgnoreListCommandPort;
 import cafe.woden.ircclient.ignore.api.IgnoreListQueryPort;
@@ -104,25 +104,8 @@ class IgnoreListPortContractTest {
   }
 
   private static IgnoreListService newService(Path configPath) {
-    RuntimeConfigStore runtimeConfig =
-        new RuntimeConfigStore(
-            configPath.toString(),
-            new IrcProperties(
-                null,
-                List.of(
-                    new IrcProperties.Server(
-                        "libera",
-                        "irc.example.net",
-                        6697,
-                        true,
-                        "",
-                        "ircafe",
-                        "ircafe",
-                        "IRCafe User",
-                        null,
-                        List.of(),
-                        List.of(),
-                        null))));
+    var runtimeConfig =
+        RuntimeConfigStoreTestFixtures.storeWithServers(configPath, server("libera"));
     return new IgnoreListService(new IgnoreProperties(true, false, Map.of()), runtimeConfig);
   }
 }

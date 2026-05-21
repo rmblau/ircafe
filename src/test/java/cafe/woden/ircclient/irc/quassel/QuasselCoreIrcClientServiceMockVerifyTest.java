@@ -2,6 +2,7 @@ package cafe.woden.ircclient.irc.quassel;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.inOrder;
@@ -11,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
@@ -25,6 +27,8 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BooleanSupplier;
+import java.util.function.Predicate;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
@@ -108,15 +112,7 @@ class QuasselCoreIrcClientServiceMockVerifyTest {
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
     service.connect("quassel").blockingAwait();
-    long deadline = System.currentTimeMillis() + 2_000L;
-    while (System.currentTimeMillis() < deadline) {
-      boolean ready =
-          events.values().stream()
-              .map(ServerIrcEvent::event)
-              .anyMatch(IrcEvent.ConnectionReady.class::isInstance);
-      if (ready) break;
-      Thread.sleep(10L);
-    }
+    awaitEvent(events, IrcEvent.ConnectionReady.class::isInstance);
 
     verify(datastreamCodec).writeSignalProxyHeartBeatReply(any(OutputStream.class), eq(token));
     verify(datastreamCodec, org.mockito.Mockito.atLeast(2))
@@ -163,22 +159,29 @@ class QuasselCoreIrcClientServiceMockVerifyTest {
     verify(authHandshake, never()).authenticate(any(Socket.class), any(IrcProperties.Server.class));
   }
 
+  private static void awaitEvent(
+      TestSubscriber<ServerIrcEvent> events, Predicate<IrcEvent> predicate)
+      throws InterruptedException {
+    awaitCondition(() -> events.values().stream().map(ServerIrcEvent::event).anyMatch(predicate));
+  }
+
+  private static void awaitCondition(BooleanSupplier condition) throws InterruptedException {
+    long deadline = System.currentTimeMillis() + 2_000L;
+    while (!condition.getAsBoolean() && System.currentTimeMillis() < deadline) {
+      Thread.sleep(10L);
+    }
+    assertTrue(condition.getAsBoolean());
+  }
+
   private static IrcProperties.Server server() {
-    return new IrcProperties.Server(
-        "quassel",
-        "irc.example.net",
-        4242,
-        false,
-        "",
-        "quassel",
-        "quassel",
-        "Quassel Test",
-        null,
-        null,
-        List.of(),
-        List.of(),
-        null,
-        IrcProperties.Server.Backend.QUASSEL_CORE);
+    return IrcPropertiesTestFixtures.serverBuilder("quassel")
+        .port(4242)
+        .tls(false)
+        .nick("quassel")
+        .login("quassel")
+        .realName("Quassel Test")
+        .backend(IrcProperties.Server.Backend.QUASSEL_CORE)
+        .build();
   }
 
   private static final class ScriptedSocket extends Socket {

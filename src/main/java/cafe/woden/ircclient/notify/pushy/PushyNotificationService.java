@@ -3,6 +3,8 @@ package cafe.woden.ircclient.notify.pushy;
 import cafe.woden.ircclient.config.ExecutorConfig;
 import cafe.woden.ircclient.config.PushyProperties;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
+import cafe.woden.ircclient.net.HttpHeaderNames;
+import cafe.woden.ircclient.notify.api.PushyNotificationPort;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
@@ -28,7 +30,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Lazy
 @ApplicationLayer
-public class PushyNotificationService {
+public class PushyNotificationService implements PushyNotificationPort {
 
   private static final Logger log = LoggerFactory.getLogger(PushyNotificationService.class);
   private static final PushyProperties DISABLED_DEFAULTS =
@@ -123,7 +125,7 @@ public class PushyNotificationService {
       HttpRequest request =
           HttpRequest.newBuilder(URI.create(url))
               .timeout(Duration.ofSeconds(properties.readTimeoutSeconds()))
-              .header("Content-Type", "application/json")
+              .header(HttpHeaderNames.CONTENT_TYPE, "application/json")
               .POST(HttpRequest.BodyPublishers.ofString(payload, StandardCharsets.UTF_8))
               .build();
 
@@ -201,16 +203,6 @@ public class PushyNotificationService {
   private PushyProperties currentProperties() {
     PushyProperties p = settingsBus != null ? settingsBus.get() : null;
     return p != null ? p : DISABLED_DEFAULTS;
-  }
-
-  public record PushResult(boolean success, String message) {
-    public static PushResult success(String message) {
-      return new PushResult(true, Objects.toString(message, "").trim());
-    }
-
-    public static PushResult failed(String message) {
-      return new PushResult(false, Objects.toString(message, "").trim());
-    }
   }
 
   private static void appendJsonField(

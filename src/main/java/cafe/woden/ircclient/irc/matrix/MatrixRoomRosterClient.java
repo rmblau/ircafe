@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -26,10 +25,7 @@ import org.springframework.stereotype.Component;
 final class MatrixRoomRosterClient {
 
   private static final Map<String, String> REQUEST_HEADERS =
-      Map.of(
-          "User-Agent", "ircafe-matrix-roster/1.0",
-          "Accept", "application/json",
-          "Accept-Encoding", "gzip");
+      MatrixHttpHeaders.json("ircafe-matrix-roster/1.0");
 
   private static final ObjectMapper JSON = new ObjectMapper();
 
@@ -40,12 +36,11 @@ final class MatrixRoomRosterClient {
     URI endpoint = MatrixEndpointResolver.roomJoinedMembersUri(server, roomId);
     String token = normalize(accessToken);
     if (token.isEmpty()) {
-      return RosterResult.failed(endpoint, "access token is blank");
+      return RosterResult.failed(endpoint, MatrixProtocol.ACCESS_TOKEN_BLANK);
     }
 
     ProxyPlan plan = proxyResolver.planForServer(serverId);
-    Map<String, String> headers = new HashMap<>(REQUEST_HEADERS);
-    headers.put("Authorization", "Bearer " + token);
+    Map<String, String> headers = MatrixHttpHeaders.withBearerToken(REQUEST_HEADERS, token);
 
     try {
       HttpLite.Response<String> response =

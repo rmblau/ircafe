@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cafe.woden.ircclient.dcc.api.DccActionHint;
+import cafe.woden.ircclient.dcc.api.DccTransferEntry;
 import cafe.woden.ircclient.modulith.AbstractApplicationModuleIntegrationTest;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -42,20 +44,13 @@ class DccModuleIntegrationTest extends AbstractApplicationModuleIntegrationTest 
         "Connected",
         "Open",
         100,
-        DccTransferStore.ActionHint.CLOSE_CHAT);
+        DccActionHint.CLOSE_CHAT);
     dccTransferStore.upsert(
-        serverId,
-        "send:bob",
-        "bob",
-        "File",
-        "Sending",
-        "48%",
-        48,
-        DccTransferStore.ActionHint.NONE);
+        serverId, "send:bob", "bob", "File", "Sending", "48%", 48, DccActionHint.NONE);
 
     Set<String> entryIds =
         dccTransferStore.listAll(serverId).stream()
-            .map(DccTransferStore.Entry::entryId)
+            .map(DccTransferEntry::entryId)
             .collect(Collectors.toSet());
     assertEquals(Set.of("chat:alice", "send:bob"), entryIds);
 

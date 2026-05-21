@@ -15,6 +15,7 @@ import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.commands.CommandParser;
 import cafe.woden.ircclient.app.commands.ParsedInput;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.irc.IrcEvent;
 import cafe.woden.ircclient.irc.ServerIrcEvent;
@@ -22,11 +23,15 @@ import cafe.woden.ircclient.irc.backend.BackendRoutingIrcClientService;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.modulith.AbstractApplicationModuleIntegrationTest;
 import io.reactivex.rxjava3.core.Completable;
+import io.reactivex.rxjava3.plugins.RxJavaPlugins;
+import io.reactivex.rxjava3.schedulers.TestScheduler;
 import java.lang.reflect.Method;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -55,6 +60,11 @@ class PerformModuleIntegrationTest extends AbstractApplicationModuleIntegrationT
     this.performOnConnectService = performOnConnectService;
     this.ircClientService = ircClientService;
     this.uiPort = uiPort;
+  }
+
+  @AfterEach
+  void resetRxJavaPlugins() {
+    RxJavaPlugins.reset();
   }
 
   @Test
@@ -96,6 +106,7 @@ class PerformModuleIntegrationTest extends AbstractApplicationModuleIntegrationT
 
   @Test
   void disconnectedEventCancelsInFlightPerformRun() throws Exception {
+    TestScheduler scheduler = installTestScheduler();
     doReturn(Optional.of(serverWithPerform("libera", List.of("/wait 2000", "RAW SECOND"))))
         .when(serverCatalog)
         .find("libera");
@@ -115,12 +126,13 @@ class PerformModuleIntegrationTest extends AbstractApplicationModuleIntegrationT
     verify(uiPort, timeout(1_000)).appendStatus(status, "(perform)", "Waiting 2000ms");
 
     fireEvent(new IrcEvent.Disconnected(Instant.now(), "network split"));
-    Thread.sleep(2_600);
+    scheduler.advanceTimeBy(3_000, TimeUnit.MILLISECONDS);
     assertEquals(0, secondLineCalls.get(), "disconnect should cancel queued perform lines");
   }
 
   @Test
   void reconnectCancelsPriorPerformRunAndOnlyLatestRunContinues() throws Exception {
+    TestScheduler scheduler = installTestScheduler();
     doReturn(Optional.of(serverWithPerform("libera", List.of("/wait 800", "RAW SECOND"))))
         .when(serverCatalog)
         .find("libera");
@@ -135,19 +147,20 @@ class PerformModuleIntegrationTest extends AbstractApplicationModuleIntegrationT
         .sendRaw("libera", "RAW SECOND");
 
     fireEvent(new IrcEvent.ConnectionReady(Instant.now()));
-    Thread.sleep(120);
+    scheduler.advanceTimeBy(120, TimeUnit.MILLISECONDS);
     fireEvent(new IrcEvent.ConnectionReady(Instant.now()));
 
     TargetRef status = new TargetRef("libera", "status");
     verify(uiPort, timeout(1_000).atLeast(2))
         .appendStatus(status, "(perform)", "Running perform list (2 lines)");
 
-    Thread.sleep(1_300);
+    scheduler.advanceTimeBy(1_100, TimeUnit.MILLISECONDS);
     assertEquals(1, rawCalls.get(), "reconnect should cancel overlapping perform runs");
   }
 
   @Test
   void waitAndUnsupportedCommandsAreReportedAndRunContinues() throws Exception {
+    TestScheduler scheduler = installTestScheduler();
     doReturn(
             Optional.of(serverWithPerform("libera", List.of("/wait 120", "/help topic", "RAW OK"))))
         .when(serverCatalog)
@@ -158,11 +171,12 @@ class PerformModuleIntegrationTest extends AbstractApplicationModuleIntegrationT
     fireEvent(new IrcEvent.ConnectionReady(Instant.now()));
 
     TargetRef status = new TargetRef("libera", "status");
-    verify(uiPort, timeout(1_000)).appendStatus(status, "(perform)", "Waiting 120ms");
-    verify(uiPort, timeout(1_000))
+    verify(uiPort).appendStatus(status, "(perform)", "Waiting 120ms");
+    scheduler.advanceTimeBy(600, TimeUnit.MILLISECONDS);
+    verify(uiPort)
         .appendStatus(
             status, "(perform)", "Unsupported in perform: /help topic (use /quote or raw IRC)");
-    verify(ircClientService, timeout(2_000)).sendRaw("libera", "RAW OK");
+    verify(ircClientService).sendRaw("libera", "RAW OK");
   }
 
   @Test
@@ -193,19 +207,18 @@ class PerformModuleIntegrationTest extends AbstractApplicationModuleIntegrationT
     onEvent.invoke(target, new ServerIrcEvent("libera", event));
   }
 
+  private static TestScheduler installTestScheduler() {
+    TestScheduler scheduler = new TestScheduler();
+    RxJavaPlugins.setComputationSchedulerHandler(ignored -> scheduler);
+    return scheduler;
+  }
+
   private static IrcProperties.Server serverWithPerform(String id, List<String> perform) {
-    return new IrcProperties.Server(
-        id,
-        "irc.example.net",
-        6697,
-        true,
-        "",
-        "tester",
-        "tester",
-        "Tester",
-        null,
-        List.of(),
-        perform,
-        null);
+    return IrcPropertiesTestFixtures.serverBuilder(id)
+        .nick("tester")
+        .login("tester")
+        .realName("Tester")
+        .perform(perform)
+        .build();
   }
 }

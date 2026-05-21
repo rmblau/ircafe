@@ -5,9 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import java.nio.file.Path;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -59,9 +60,7 @@ class Ircv3StsPolicyServiceTest {
 
   @Test
   void learnedPolicyPersistsToRuntimeConfigAndReloads() {
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("ircafe.yml").toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
     IrcProperties.Server configured = server("irc.example.net", 6667, false);
 
     Ircv3StsPolicyService writer = new Ircv3StsPolicyService(store);
@@ -77,9 +76,7 @@ class Ircv3StsPolicyServiceTest {
 
   @Test
   void durationZeroAlsoRemovesPersistedPolicy() {
-    RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            tempDir.resolve("ircafe.yml").toString(), new IrcProperties(null, List.of()));
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
     IrcProperties.Server configured = server("irc.example.net", 6667, false);
     Ircv3StsPolicyService svc = new Ircv3StsPolicyService(store);
 
@@ -91,18 +88,11 @@ class Ircv3StsPolicyServiceTest {
   }
 
   private static IrcProperties.Server server(String host, int port, boolean tls) {
-    return new IrcProperties.Server(
-        "libera",
-        host,
-        port,
-        tls,
-        "",
-        "IRCafeUser",
-        "ircafe",
-        "IRCafe User",
-        new IrcProperties.Server.Sasl(false, "", "", "PLAIN", null),
-        List.of(),
-        List.of(),
-        null);
+    return IrcPropertiesTestFixtures.serverBuilder("libera")
+        .host(host)
+        .port(port)
+        .tls(tls)
+        .nick("IRCafeUser")
+        .build();
   }
 }

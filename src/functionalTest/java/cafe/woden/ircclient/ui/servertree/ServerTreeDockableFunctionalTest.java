@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.config.ServerEntry;
@@ -439,21 +440,7 @@ class ServerTreeDockableFunctionalTest {
   }
 
   private static IrcProperties.Server server(String id, IrcProperties.Server.Backend backend) {
-    return new IrcProperties.Server(
-        id,
-        "irc.example.net",
-        6697,
-        true,
-        "",
-        "ircafe",
-        "ircafe",
-        "IRCafe User",
-        null,
-        null,
-        List.of(),
-        List.of(),
-        null,
-        backend);
+    return IrcPropertiesTestFixtures.serverBuilder(id).backend(backend).build();
   }
 
   private static JMenuItem findMenuItem(JPopupMenu menu, String text) {

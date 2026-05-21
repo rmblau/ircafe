@@ -6,6 +6,7 @@ import cafe.woden.ircclient.net.NetTlsContext;
 import cafe.woden.ircclient.net.SocksProxySocketFactory;
 import cafe.woden.ircclient.net.SocksProxySslSocketFactory;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.util.SwingClientProperties;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.BorderLayout;
 import java.awt.CardLayout;
@@ -351,7 +352,7 @@ public class ServerEditorDialog extends JDialog {
   }
 
   private void enablePasswordReveal(JPasswordField field) {
-    field.putClientProperty("JPasswordField.showRevealButton", true);
+    field.putClientProperty(SwingClientProperties.PASSWORD_FIELD_SHOW_REVEAL_BUTTON, true);
     appendStyle(field, "showRevealButton:true");
   }
 

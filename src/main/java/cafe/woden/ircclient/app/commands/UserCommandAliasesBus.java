@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Lazy
 @ApplicationLayer
-public class UserCommandAliasesBus {
+public class UserCommandAliasesBus implements UserCommandAliasesPort {
 
   public static final String PROP_USER_COMMAND_ALIASES = "userCommandAliases";
   public static final String PROP_UNKNOWN_COMMAND_AS_RAW = "unknownCommandAsRaw";
@@ -31,10 +31,12 @@ public class UserCommandAliasesBus {
         runtimeConfig != null && runtimeConfig.readUnknownCommandAsRawEnabled(false);
   }
 
+  @Override
   public List<UserCommandAlias> get() {
     return current;
   }
 
+  @Override
   public void set(List<UserCommandAlias> next) {
     List<UserCommandAlias> safe = sanitize(next);
     List<UserCommandAlias> prev = this.current;
@@ -42,10 +44,12 @@ public class UserCommandAliasesBus {
     pcs.firePropertyChange(PROP_USER_COMMAND_ALIASES, prev, safe);
   }
 
+  @Override
   public boolean unknownCommandAsRawEnabled() {
     return unknownCommandAsRawEnabled;
   }
 
+  @Override
   public void setUnknownCommandAsRawEnabled(boolean enabled) {
     boolean prev = this.unknownCommandAsRawEnabled;
     this.unknownCommandAsRawEnabled = enabled;

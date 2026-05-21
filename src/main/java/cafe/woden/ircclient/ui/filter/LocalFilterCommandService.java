@@ -14,7 +14,7 @@ import cafe.woden.ircclient.model.RegexFlag;
 import cafe.woden.ircclient.model.RegexSpec;
 import cafe.woden.ircclient.model.TagSpec;
 import cafe.woden.ircclient.model.TargetRef;
-import cafe.woden.ircclient.ui.chat.TranscriptRebuildService;
+import cafe.woden.ircclient.ui.chat.transcript.rebuild.TranscriptRebuildService;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumSet;

@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.notifications;
 
+import static cafe.woden.ircclient.notifications.IrcEventNotificationRuleTestFixtures.rule;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -35,25 +36,26 @@ class IrcEventNotificationRulesBusTest {
     bus.addListener(listener);
     try {
       IrcEventNotificationRule keep =
-          new IrcEventNotificationRule(
-              true,
-              IrcEventNotificationRule.EventType.PRIVATE_MESSAGE_RECEIVED,
-              IrcEventNotificationRule.SourceMode.ANY,
-              null,
-              IrcEventNotificationRule.ChannelScope.ALL,
-              null,
-              true,
-              IrcEventNotificationRule.FocusScope.ANY,
-              true,
-              true,
-              false,
-              "NOTIF_1",
-              false,
-              null,
-              false,
-              null,
-              null,
-              null);
+          rule()
+              .enabled(true)
+              .eventType(IrcEventNotificationRule.EventType.PRIVATE_MESSAGE_RECEIVED)
+              .sourceMode(IrcEventNotificationRule.SourceMode.ANY)
+              .sourcePattern(null)
+              .channelScope(IrcEventNotificationRule.ChannelScope.ALL)
+              .channelPatterns(null)
+              .toastEnabled(true)
+              .focusScope(IrcEventNotificationRule.FocusScope.ANY)
+              .statusBarEnabled(true)
+              .notificationsNodeEnabled(true)
+              .soundEnabled(false)
+              .soundId("NOTIF_1")
+              .soundUseCustom(false)
+              .soundCustomPath(null)
+              .scriptEnabled(false)
+              .scriptPath(null)
+              .scriptArgs(null)
+              .scriptWorkingDirectory(null)
+              .build();
 
       List<IrcEventNotificationRule> mixed = new ArrayList<>();
       mixed.add(null);

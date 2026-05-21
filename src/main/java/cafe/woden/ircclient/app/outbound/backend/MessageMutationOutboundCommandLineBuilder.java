@@ -1,5 +1,8 @@
 package cafe.woden.ircclient.app.outbound.backend;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_REACT;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_UNREACT;
+
 import cafe.woden.ircclient.model.TargetRef;
 import java.util.Objects;
 import lombok.AccessLevel;
@@ -18,11 +21,11 @@ final class MessageMutationOutboundCommandLineBuilder {
   }
 
   static String buildReactRawLine(TargetRef target, String replyToMessageId, String reaction) {
-    return buildReactionRawLine(target, replyToMessageId, reaction, "draft/react");
+    return buildReactionRawLine(target, replyToMessageId, reaction, DRAFT_REACT);
   }
 
   static String buildUnreactRawLine(TargetRef target, String replyToMessageId, String reaction) {
-    return buildReactionRawLine(target, replyToMessageId, reaction, "draft/unreact");
+    return buildReactionRawLine(target, replyToMessageId, reaction, DRAFT_UNREACT);
   }
 
   static String buildEditRawLine(TargetRef target, String targetMessageId, String editedText) {

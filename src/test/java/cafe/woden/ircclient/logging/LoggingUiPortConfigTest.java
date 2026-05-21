@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.logging;
 
+import static cafe.woden.ircclient.config.ConfigPropertyKeys.LOGGING_ENABLED_FALSE;
+import static cafe.woden.ircclient.config.ConfigPropertyKeys.LOGGING_ENABLED_TRUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.inOrder;
@@ -32,7 +34,7 @@ class LoggingUiPortConfigTest {
   @Test
   void loggingUiPortBeanCreatedWhenLoggingEnabled() {
     runner
-        .withPropertyValues("ircafe.logging.enabled=true")
+        .withPropertyValues(LOGGING_ENABLED_TRUE)
         .run(
             ctx -> {
               UiPort ui = ctx.getBean(UiPort.class);
@@ -48,7 +50,7 @@ class LoggingUiPortConfigTest {
   @Test
   void loggingUiPortBeanBacksOffWhenLoggingDisabled() {
     runner
-        .withPropertyValues("ircafe.logging.enabled=false")
+        .withPropertyValues(LOGGING_ENABLED_FALSE)
         .run(
             ctx ->
                 // Only SwingUiPort remains when the conditional logging decorator is disabled.
@@ -59,7 +61,7 @@ class LoggingUiPortConfigTest {
   void loggingUiPortIsPrimaryWhenOtherUiPortBeansExist() {
     runner
         .withBean("baseUiPort", UiPort.class, () -> Mockito.mock(UiPort.class))
-        .withPropertyValues("ircafe.logging.enabled=true")
+        .withPropertyValues(LOGGING_ENABLED_TRUE)
         .run(
             ctx -> {
               UiPort selected = ctx.getBean(UiPort.class);
@@ -75,7 +77,7 @@ class LoggingUiPortConfigTest {
   @Test
   void primaryUiPortDelegatesChannelListMethodsToSwingUiPort() {
     runner
-        .withPropertyValues("ircafe.logging.enabled=true")
+        .withPropertyValues(LOGGING_ENABLED_TRUE)
         .run(
             ctx -> {
               UiPort ui = ctx.getBean(UiPort.class);

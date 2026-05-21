@@ -4,6 +4,7 @@ import cafe.woden.ircclient.app.api.Ircv3ChatHistoryFeatureSupport;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpContributor;
 import cafe.woden.ircclient.irc.IrcClientService;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ChatHistorySelectors;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.state.api.ChatHistoryRequestRoutingPort.QueryMode;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -62,7 +63,8 @@ public final class OutboundChatHistoryCommandService implements OutboundHelpCont
     lim = clampChatHistoryLimit(lim);
 
     if (selectorToken.isEmpty()) {
-      selectorToken = "timestamp=" + CHATHISTORY_TS_FMT.format(Instant.now());
+      selectorToken =
+          Ircv3ChatHistorySelectors.TIMESTAMP_PREFIX + CHATHISTORY_TS_FMT.format(Instant.now());
     }
     String preview = "CHATHISTORY BEFORE " + at.target() + " " + selectorToken + " " + lim;
     final String selectorFinal = selectorToken;

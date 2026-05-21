@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.io.IOException;
 import java.net.URI;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import lombok.AccessLevel;
@@ -24,11 +23,7 @@ import org.springframework.stereotype.Component;
 final class MatrixDisplayNameClient {
 
   private static final Map<String, String> REQUEST_HEADERS =
-      Map.of(
-          "User-Agent", "ircafe-matrix-displayname/1.0",
-          "Accept", "application/json",
-          "Accept-Encoding", "gzip",
-          "Content-Type", "application/json");
+      MatrixHttpHeaders.jsonWithContentType("ircafe-matrix-displayname/1.0");
 
   private static final ObjectMapper JSON = new ObjectMapper();
 
@@ -43,7 +38,7 @@ final class MatrixDisplayNameClient {
     URI endpoint = MatrixEndpointResolver.userDisplayNameUri(server, userId);
     String token = normalize(accessToken);
     if (token.isEmpty()) {
-      return UpdateResult.failed(endpoint, "access token is blank");
+      return UpdateResult.failed(endpoint, MatrixProtocol.ACCESS_TOKEN_BLANK);
     }
     String nick = normalize(displayName);
     if (nick.isEmpty()) {
@@ -51,11 +46,10 @@ final class MatrixDisplayNameClient {
     }
 
     ObjectNode payload = JSON.createObjectNode();
-    payload.put("displayname", nick);
+    payload.put(MatrixProtocol.JSON_DISPLAY_NAME, nick);
 
     ProxyPlan plan = proxyResolver.planForServer(serverId);
-    Map<String, String> headers = new HashMap<>(REQUEST_HEADERS);
-    headers.put("Authorization", "Bearer " + token);
+    Map<String, String> headers = MatrixHttpHeaders.withBearerToken(REQUEST_HEADERS, token);
 
     try {
       HttpLite.Response<String> response =

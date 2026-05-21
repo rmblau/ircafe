@@ -10,9 +10,11 @@ import cafe.woden.ircclient.ui.servertree.state.ServerTreeBuiltInVisibilityCoord
 import java.util.Objects;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Composition helper for creating layout/visibility collaborators used by server tree. */
+@InterfaceLayer
 @Component
 @RequiredArgsConstructor
 public final class ServerTreeLayoutCollaboratorsFactory {

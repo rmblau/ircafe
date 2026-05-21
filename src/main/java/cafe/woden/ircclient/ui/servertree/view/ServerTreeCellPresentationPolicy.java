@@ -7,6 +7,7 @@ import cafe.woden.ircclient.ui.servertree.model.ServerTreeNodeData;
 import cafe.woden.ircclient.ui.servertree.model.ServerTreeQuasselNetworkNodeData;
 import cafe.woden.ircclient.ui.servertree.policy.ServerTreeTypingTargetPolicy;
 import cafe.woden.ircclient.ui.servertree.viewmodel.ServerTreeConnectionStateViewModel;
+import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.awt.Font;
 import java.util.Enumeration;
@@ -17,9 +18,11 @@ import java.util.function.Predicate;
 import java.util.function.Supplier;
 import javax.swing.UIManager;
 import javax.swing.tree.DefaultMutableTreeNode;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Stateless presentation policy for server-tree cell labels, icons, badges, and typing state. */
+@InterfaceLayer
 @Component
 public final class ServerTreeCellPresentationPolicy {
 
@@ -541,7 +544,7 @@ public final class ServerTreeCellPresentationPolicy {
   }
 
   private static Color disabledForegroundColor() {
-    Color muted = UIManager.getColor("Label.disabledForeground");
-    return muted != null ? muted : UIManager.getColor("Component.disabledForeground");
+    Color muted = UIManager.getColor(UiColorKeys.LABEL_DISABLED_FOREGROUND);
+    return muted != null ? muted : UIManager.getColor(UiColorKeys.COMPONENT_DISABLED_FOREGROUND);
   }
 }

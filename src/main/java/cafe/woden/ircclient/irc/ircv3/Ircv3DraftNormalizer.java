@@ -1,5 +1,10 @@
 package cafe.woden.ircclient.irc.ircv3;
 
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_REACT;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_REPLY;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_UNREACT;
+import static cafe.woden.ircclient.util.Ircv3CapabilityNames.REPLY;
+
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Objects;
@@ -51,17 +56,17 @@ public final class Ircv3DraftNormalizer {
       String p = Objects.toString(part, "").trim();
       if (p.isEmpty()) continue;
       String key = normalizeIrcv3TagKey(p);
-      if ("reply".equals(key) || "draft/reply".equals(key)) {
+      if (REPLY.equals(key) || DRAFT_REPLY.equals(key)) {
         sawReplyTag = true;
         if (replySupported) kept.add(part);
         continue;
       }
-      if ("draft/react".equals(key)) {
+      if (DRAFT_REACT.equals(key)) {
         sawReactTag = true;
         kept.add(part);
         continue;
       }
-      if ("draft/unreact".equals(key)) {
+      if (DRAFT_UNREACT.equals(key)) {
         sawReactTag = true;
         kept.add(part);
         continue;

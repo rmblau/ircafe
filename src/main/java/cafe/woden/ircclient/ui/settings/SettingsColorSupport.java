@@ -1,82 +1,85 @@
 package cafe.woden.ircclient.ui.settings;
 
+import cafe.woden.ircclient.ui.util.UiColorKeys;
+import cafe.woden.ircclient.util.HexColorSupport;
 import java.awt.Color;
 import java.util.Objects;
 import javax.swing.Icon;
 import javax.swing.UIManager;
 
-final class SettingsColorSupport {
+public final class SettingsColorSupport {
   private SettingsColorSupport() {}
 
-  static String toHex(Color c) {
+  public static String toHex(Color c) {
     if (c == null) return "";
     return String.format("#%02X%02X%02X", c.getRed(), c.getGreen(), c.getBlue());
   }
 
-  static Color parseHexColor(String raw) {
-    if (raw == null) return null;
-    String s = raw.trim();
-    if (s.isEmpty()) return null;
-    if (s.startsWith("#")) s = s.substring(1);
-    if (s.startsWith("0x") || s.startsWith("0X")) s = s.substring(2);
-    if (s.length() != 6) return null;
+  public static Color parseHexColor(String raw) {
+    return colorFromNormalizedHex(normalizeHexColor(raw));
+  }
+
+  public static Color parseHexColorLenient(String raw) {
+    return colorFromNormalizedHex(normalizeHexColorLenient(raw));
+  }
+
+  public static String normalizeHexColor(String raw) {
+    return HexColorSupport.normalizeHexColor(raw);
+  }
+
+  public static String normalizeHexColorLenient(String raw) {
+    return HexColorSupport.normalizeHexColorLenient(raw);
+  }
+
+  private static Color colorFromNormalizedHex(String normalizedHex) {
+    if (normalizedHex == null) return null;
     try {
-      int rgb = Integer.parseInt(s, 16);
+      int rgb = Integer.parseInt(normalizedHex.substring(1), 16);
       return new Color(rgb);
     } catch (Exception ignored) {
       return null;
     }
   }
 
-  static Color parseHexColorLenient(String raw) {
-    Color c = parseHexColor(raw);
-    if (c != null) return c;
-    if (raw == null) return null;
-
-    String s = raw.trim();
-    if (s.startsWith("#")) s = s.substring(1).trim();
-    if (s.length() != 3) return null;
-
-    char r = s.charAt(0);
-    char g = s.charAt(1);
-    char b = s.charAt(2);
-    return parseHexColor("#" + r + r + g + g + b + b);
-  }
-
-  static String normalizeOptionalHexForApply(String raw, String fieldLabel) {
-    String hex = raw != null ? raw.trim() : "";
-    if (hex.isBlank()) return null;
-    Color c = parseHexColorLenient(hex);
-    if (c == null) {
+  public static String normalizeOptionalHexForApply(String raw, String fieldLabel) {
+    String hex = SettingsValueSupport.trimmedStringOrNull(raw);
+    if (hex == null) return null;
+    String normalized = normalizeHexColorLenient(hex);
+    if (normalized == null) {
       String label = Objects.toString(fieldLabel, "Color");
       throw new IllegalArgumentException(
           label + " must be a hex value like #RRGGBB (or blank for default).");
     }
-    return toHex(c);
+    return normalized;
   }
 
-  static Color contrastTextColor(Color bg) {
-    if (bg == null) return UIManager.getColor("Label.foreground");
-    double r = bg.getRed() / 255.0;
-    double g = bg.getGreen() / 255.0;
-    double b = bg.getBlue() / 255.0;
-    double y = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-    return y < 0.55 ? Color.WHITE : Color.BLACK;
+  public static Color contrastTextColor(Color bg) {
+    if (bg == null) return UIManager.getColor(UiColorKeys.LABEL_FOREGROUND);
+    return bestTextColor(bg);
   }
 
-  static Color preferredPreviewBackground() {
-    Color bg = UIManager.getColor("TextPane.background");
-    if (bg == null) bg = UIManager.getColor("TextArea.background");
-    if (bg == null) bg = UIManager.getColor("Table.background");
-    if (bg == null) bg = UIManager.getColor("Panel.background");
+  public static Color bestTextColor(Color bg) {
+    if (bg == null) return Color.WHITE;
+    return relativeLuminance(bg) > 0.55 ? Color.BLACK : Color.WHITE;
+  }
+
+  public static boolean isDark(Color c) {
+    return c == null || relativeLuminance(c) < 0.45;
+  }
+
+  public static Color preferredPreviewBackground() {
+    Color bg = UIManager.getColor(UiColorKeys.TEXT_PANE_BACKGROUND);
+    if (bg == null) bg = UIManager.getColor(UiColorKeys.TEXT_AREA_BACKGROUND);
+    if (bg == null) bg = UIManager.getColor(UiColorKeys.TABLE_BACKGROUND);
+    if (bg == null) bg = UIManager.getColor(UiColorKeys.PANEL_BACKGROUND);
     return bg != null ? bg : new Color(30, 30, 30);
   }
 
-  static Icon createColorSwatchIcon(Color color, int w, int h) {
+  public static Icon createColorSwatchIcon(Color color, int w, int h) {
     return new ColorSwatch(color, w, h);
   }
 
-  static double contrastRatio(Color fg, Color bg) {
+  public static double contrastRatio(Color fg, Color bg) {
     if (fg == null || bg == null) return 0.0;
 
     double l1 = relativeLuminance(fg);
@@ -89,15 +92,15 @@ final class SettingsColorSupport {
     return (l1 + 0.05) / (l2 + 0.05);
   }
 
-  private static double relativeLuminance(Color c) {
-    double r = srgbToLinear(c.getRed());
-    double g = srgbToLinear(c.getGreen());
-    double b = srgbToLinear(c.getBlue());
+  public static double relativeLuminance(Color c) {
+    if (c == null) return 0.0;
+    double r = srgbToLinear(c.getRed() / 255.0);
+    double g = srgbToLinear(c.getGreen() / 255.0);
+    double b = srgbToLinear(c.getBlue() / 255.0);
     return (0.2126 * r) + (0.7152 * g) + (0.0722 * b);
   }
 
-  private static double srgbToLinear(int channel) {
-    double v = channel / 255.0;
+  private static double srgbToLinear(double v) {
     return (v <= 0.04045) ? (v / 12.92) : Math.pow((v + 0.055) / 1.055, 2.4);
   }
 }

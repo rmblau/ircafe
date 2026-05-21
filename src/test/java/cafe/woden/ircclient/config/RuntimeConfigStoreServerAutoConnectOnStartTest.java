@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -19,8 +18,7 @@ class RuntimeConfigStoreServerAutoConnectOnStartTest {
   void serverAutoConnectOnStartRoundTripsAndDefaultEntriesAreRemoved() throws Exception {
     Path cfg = tempDir.resolve("ircafe.yml");
     RuntimeConfigStore store =
-        new RuntimeConfigStore(
-            cfg.toString(), new IrcProperties(null, List.of(server("libera"), server("oftc"))));
+        RuntimeConfigStoreTestFixtures.storeWithServers(cfg, server("libera"), server("oftc"));
 
     assertEquals(Map.of(), store.readServerAutoConnectOnStartByServer());
     assertTrue(store.readServerAutoConnectOnStart("libera", true));
@@ -53,7 +51,7 @@ class RuntimeConfigStoreServerAutoConnectOnStartTest {
             + "      oftc: definitely-not-bool\n");
 
     RuntimeConfigStore store =
-        new RuntimeConfigStore(cfg.toString(), new IrcProperties(null, List.of(server("libera"))));
+        RuntimeConfigStoreTestFixtures.storeWithServers(cfg, server("libera"));
 
     assertEquals(Map.of("libera", false), store.readServerAutoConnectOnStartByServer());
     assertFalse(store.readServerAutoConnectOnStart("libera", true));
@@ -61,18 +59,6 @@ class RuntimeConfigStoreServerAutoConnectOnStartTest {
   }
 
   private static IrcProperties.Server server(String id) {
-    return new IrcProperties.Server(
-        id,
-        "irc.example.net",
-        6697,
-        true,
-        "",
-        "ircafe",
-        "ircafe",
-        "IRCafe User",
-        null,
-        List.of(),
-        List.of(),
-        null);
+    return IrcPropertiesTestFixtures.server(id);
   }
 }

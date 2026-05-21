@@ -50,9 +50,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
 /** Factory that assembles tooltip and context-menu collaborators for the server tree UI. */
+@InterfaceLayer
 @Component
 @RequiredArgsConstructor
 public final class ServerTreeViewInteractionCollaboratorsFactory {

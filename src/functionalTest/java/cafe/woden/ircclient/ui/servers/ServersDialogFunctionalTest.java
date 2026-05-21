@@ -5,7 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.config.ServerRegistry;
 import java.awt.Component;
 import java.awt.Container;
@@ -15,7 +17,6 @@ import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BooleanSupplier;
 import javax.swing.JButton;
@@ -38,9 +39,11 @@ class ServersDialogFunctionalTest {
   void addEditAndRemoveServerWorkflowsUpdateRegistry() throws Exception {
     Assumptions.assumeFalse(GraphicsEnvironment.isHeadless(), "dialog UI requires a display");
 
-    IrcProperties initial = new IrcProperties(null, List.of(server("libera", "irc.libera.chat")));
+    IrcProperties.Server initialServer =
+        IrcPropertiesTestFixtures.serverBuilder("libera").host("irc.libera.chat").build();
+    IrcProperties initial = IrcPropertiesTestFixtures.properties(initialServer);
     RuntimeConfigStore runtimeConfig =
-        new RuntimeConfigStore(tempDir.resolve("ircafe.yml").toString(), initial);
+        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"), initial);
     ServerRegistry registry = new ServerRegistry(initial, runtimeConfig);
 
     ServersDialog dialog = onEdtCall(() -> new ServersDialog(null, registry, runtimeConfig));
@@ -90,9 +93,9 @@ class ServersDialogFunctionalTest {
   void addQuasselServerWorkflowPersistsBackendAndCoreCredentials() throws Exception {
     Assumptions.assumeFalse(GraphicsEnvironment.isHeadless(), "dialog UI requires a display");
 
-    IrcProperties initial = new IrcProperties(null, List.of());
+    IrcProperties initial = IrcPropertiesTestFixtures.properties();
     RuntimeConfigStore runtimeConfig =
-        new RuntimeConfigStore(tempDir.resolve("ircafe.yml").toString(), initial);
+        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"), initial);
     ServerRegistry registry = new ServerRegistry(initial, runtimeConfig);
 
     ServersDialog dialog = onEdtCall(() -> new ServersDialog(null, registry, runtimeConfig));
@@ -242,22 +245,6 @@ class ServersDialogFunctionalTest {
       }
     }
     return false;
-  }
-
-  private static IrcProperties.Server server(String id, String host) {
-    return new IrcProperties.Server(
-        id,
-        host,
-        6697,
-        true,
-        "",
-        "ircafe",
-        "ircafe",
-        "IRCafe User",
-        null,
-        List.of(),
-        List.of(),
-        null);
   }
 
   private static <T> T readField(Object target, String fieldName, Class<T> type) throws Exception {
