@@ -121,7 +121,7 @@ public class RuntimeConfigStore
 
   private final Path file;
   private final RuntimeConfigDocumentStore documentStore;
-  private final IrcProperties defaults;
+  private final RuntimeConfigServerListStore serverListStore;
   private Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolver =
       new Ircv3CapabilityNameResolverPort() {};
   public RuntimeConfigStore(
@@ -130,7 +130,7 @@ public class RuntimeConfigStore
       IrcProperties defaults) {
     this.file = Paths.get(Objects.requireNonNullElse(filePath, "").trim());
     this.documentStore = new RuntimeConfigDocumentStore(this.file);
-    this.defaults = defaults;
+    this.serverListStore = new RuntimeConfigServerListStore(this.file, documentStore, defaults);
 
     ensureFileExistsWithServers();
   }
@@ -249,83 +249,16 @@ public class RuntimeConfigStore
   }
 
   public synchronized void ensureFileExistsWithServers() {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Path parent = file.getParent();
-      if (parent != null && !Files.exists(parent)) {
-        Files.createDirectories(parent);
-      }
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-
-      Map<String, Object> irc = getOrCreateMap(doc, "irc");
-
-      // If the key exists, don't overwrite it. This is what makes removals stick.
-      if (!irc.containsKey("servers")) {
-        List<Map<String, Object>> seeded = new ArrayList<>();
-        if (defaults != null && defaults.servers() != null) {
-          for (IrcProperties.Server s : defaults.servers()) {
-            if (s == null) continue;
-            seeded.add(toServerMap(s));
-          }
-        }
-        irc.put("servers", seeded);
-        writeFile(doc);
-      }
-    } catch (Exception e) {
-
-      log.warn("[ircafe] Could not ensure runtime config file '{}'", file, e);
-    }
+    serverListStore.ensureFileExistsWithServers();
   }
 
   public synchronized void writeServers(List<IrcProperties.Server> servers) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> irc = getOrCreateMap(doc, "irc");
-
-      List<Map<String, Object>> out = new ArrayList<>();
-      if (servers != null) {
-        for (IrcProperties.Server s : servers) {
-          if (s == null) continue;
-          out.add(toServerMap(s));
-        }
-      }
-
-      irc.put("servers", out);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist servers list to '{}'", file, e);
-    }
+    serverListStore.writeServers(servers);
   }
 
   /** Returns configured server ids from runtime config, falling back to boot defaults. */
   public synchronized List<String> readServerIds() {
-    try {
-      if (file.toString().isBlank()) return defaultServerIds();
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Object ircObj = doc.get("irc");
-      if (!(ircObj instanceof Map<?, ?> irc)) return defaultServerIds();
-      Object serversObj = irc.get("servers");
-      if (!(serversObj instanceof List<?> servers) || servers.isEmpty()) return defaultServerIds();
-
-      ArrayList<String> out = new ArrayList<>();
-      for (Object item : servers) {
-        if (!(item instanceof Map<?, ?> server)) continue;
-        String id = Objects.toString(server.get("id"), "").trim();
-        if (id.isEmpty()) continue;
-        if (containsIgnoreCase(out, id)) continue;
-        out.add(id);
-      }
-      if (out.isEmpty()) return defaultServerIds();
-      return List.copyOf(out);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read server ids from '{}'", file, e);
-      return defaultServerIds();
-    }
+    return serverListStore.readServerIds();
   }
 
   /**
@@ -335,28 +268,7 @@ public class RuntimeConfigStore
    * treat runtime config as authoritative without conflating missing keys with inherited defaults.
    */
   public synchronized Map<String, List<String>> readExplicitServerAutoJoinById() {
-    try {
-      if (file.toString().isBlank()) return Map.of();
-      if (!Files.exists(file)) return Map.of();
-
-      Map<String, Object> doc = loadFile();
-      Map<String, Object> irc = readMap(doc.get("irc"));
-      Object serversObj = irc.get("servers");
-      if (!(serversObj instanceof List<?> servers) || servers.isEmpty()) return Map.of();
-
-      LinkedHashMap<String, List<String>> out = new LinkedHashMap<>();
-      for (Object item : servers) {
-        if (!(item instanceof Map<?, ?> server)) continue;
-        String id = Objects.toString(server.get("id"), "").trim();
-        if (id.isEmpty()) continue;
-        if (!server.containsKey("autoJoin")) continue;
-        out.put(id, sanitizeStringList(server.get("autoJoin")));
-      }
-      return out.isEmpty() ? Map.of() : Map.copyOf(out);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read explicit auto-join lists from '{}'", file, e);
-      return Map.of();
-    }
+    return serverListStore.readExplicitServerAutoJoinById();
   }
 
   @Override
@@ -907,21 +819,6 @@ public class RuntimeConfigStore
     for (Object entry : list) {
       String v = Objects.toString(entry, "").trim();
       if (!v.isEmpty()) out.add(v);
-    }
-    return out.isEmpty() ? List.of() : List.copyOf(out);
-  }
-
-  private List<String> defaultServerIds() {
-    if (defaults == null || defaults.servers() == null || defaults.servers().isEmpty()) {
-      return List.of();
-    }
-    ArrayList<String> out = new ArrayList<>();
-    for (IrcProperties.Server server : defaults.servers()) {
-      if (server == null) continue;
-      String id = Objects.toString(server.id(), "").trim();
-      if (id.isEmpty()) continue;
-      if (containsIgnoreCase(out, id)) continue;
-      out.add(id);
     }
     return out.isEmpty() ? List.of() : List.copyOf(out);
   }
@@ -5382,76 +5279,6 @@ public class RuntimeConfigStore
       return Optional.of((List<Map<String, Object>>) o);
     }
     return Optional.empty();
-  }
-
-  private static Map<String, Object> toServerMap(IrcProperties.Server s) {
-    Map<String, Object> m = new LinkedHashMap<>();
-    m.put("id", s.id());
-    m.put("host", s.host());
-    m.put("port", s.port());
-    m.put("tls", s.tls());
-    String backendId = BackendDescriptorCatalog.builtIns().normalizeIdOrDefault(s.backendId());
-    if (!backendId.equals(
-        BackendDescriptorCatalog.builtIns().idFor(IrcProperties.Server.Backend.IRC))) {
-      m.put("backend", backendId);
-    }
-    if (s.serverPassword() != null && !s.serverPassword().isBlank()) {
-      m.put("serverPassword", s.serverPassword());
-    }
-    if (s.nick() != null) m.put("nick", s.nick());
-    if (s.login() != null && !s.login().isBlank()) m.put("login", s.login());
-    if (s.realName() != null && !s.realName().isBlank()) m.put("realName", s.realName());
-    if (s.autoJoin() != null && !s.autoJoin().isEmpty())
-      m.put("autoJoin", new ArrayList<>(s.autoJoin()));
-    if (s.perform() != null && !s.perform().isEmpty())
-      m.put("perform", new ArrayList<>(s.perform()));
-    if (s.sasl() != null && s.sasl().enabled()) {
-      Map<String, Object> sasl = new LinkedHashMap<>();
-      sasl.put("enabled", true);
-      sasl.put("username", s.sasl().username());
-      sasl.put("password", s.sasl().password());
-      if (s.sasl().mechanism() != null && !s.sasl().mechanism().isBlank()) {
-        sasl.put("mechanism", s.sasl().mechanism());
-      }
-      // Persist only when diverging from the default strict behavior.
-      // Default (when omitted) is: disconnectOnFailure = true.
-      if (s.sasl().disconnectOnFailure() != null && !s.sasl().disconnectOnFailure()) {
-        sasl.put("disconnectOnFailure", false);
-      }
-      m.put("sasl", sasl);
-    }
-    if (s.nickserv() != null && s.nickserv().enabled()) {
-      Map<String, Object> nickserv = new LinkedHashMap<>();
-      nickserv.put("enabled", true);
-      nickserv.put("password", s.nickserv().password());
-      if (s.nickserv().service() != null
-          && !s.nickserv().service().isBlank()
-          && !"NickServ".equalsIgnoreCase(s.nickserv().service().trim())) {
-        nickserv.put("service", s.nickserv().service());
-      }
-      if (s.nickserv().delayJoinUntilIdentified() != null
-          && !s.nickserv().delayJoinUntilIdentified()) {
-        nickserv.put("delayJoinUntilIdentified", false);
-      }
-      m.put("nickserv", nickserv);
-    }
-
-    // Optional per-server SOCKS5 proxy override.
-    // If present with enabled=false, this represents an explicit "disable proxy" for this server.
-    if (s.proxy() != null) {
-      IrcProperties.Proxy p = s.proxy();
-      Map<String, Object> proxy = new LinkedHashMap<>();
-      proxy.put("enabled", p.enabled());
-      proxy.put("host", Objects.toString(p.host(), "").trim());
-      proxy.put("port", Math.max(0, p.port()));
-      proxy.put("username", Objects.toString(p.username(), "").trim());
-      proxy.put("password", Objects.toString(p.password(), ""));
-      proxy.put("remoteDns", p.remoteDns());
-      proxy.put("connectTimeoutMs", Math.max(0L, p.connectTimeoutMs()));
-      proxy.put("readTimeoutMs", Math.max(0L, p.readTimeoutMs()));
-      m.put("proxy", proxy);
-    }
-    return m;
   }
 
   @SuppressWarnings("unchecked")
