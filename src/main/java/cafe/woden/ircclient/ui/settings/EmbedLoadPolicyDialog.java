@@ -4,7 +4,9 @@ import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicyScope;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.ui.chat.embed.EmbedLoadPolicyMatcher;
+import cafe.woden.ircclient.ui.util.MigConstraints;
 import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.awt.Dialog;
@@ -30,7 +32,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
-import net.miginfocom.swing.MigLayout;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
@@ -97,38 +98,29 @@ public class EmbedLoadPolicyDialog {
     tabs.addTab("Gates", buildGatePanel(controls));
 
     JPanel scopePanel =
-        new JPanel(
-            new MigLayout(
-                "insets 10, fillx, wrap 2", MigLayoutConstraints.LEADING_GROW_FILL, "[]4[]4[]"));
+        new JPanel(MigLayouts.fillXWrap(10, 2, MigLayoutConstraints.LEADING_GROW_FILL, "[]4[]4[]"));
     scopePanel.add(new JLabel("Scope:"));
-    scopePanel.add(scope, MigLayoutConstraints.GROW_X_WRAP);
-    scopePanel.add(inheritGlobal, MigLayoutConstraints.SPAN_2_WRAP);
+    scopePanel.add(scope, MigConstraints.growXWrap());
+    scopePanel.add(inheritGlobal, MigConstraints.spanXWrap(2));
     scopePanel.add(
         new JLabel("Patterns are glob by default (`*`/`?`). Use `re:<regex>` for regex patterns."),
-        MigLayoutConstraints.SPAN_2_WRAP);
+        MigConstraints.spanXWrap(2));
     scopePanel.add(
         new JLabel(
             "User rules support `nick:` and `host:` prefixes. Link/domain rules match URL/domain text."),
-        MigLayoutConstraints.SPAN_2_WRAP);
+        MigConstraints.spanXWrap(2));
 
     JButton save = new JButton("Save");
     JButton cancel = new JButton("Cancel");
-    JPanel buttons =
-        new JPanel(
-            new MigLayout(MigLayoutConstraints.INSETS_0_FILL_X, "[grow,fill][pref!][pref!]", "[]"));
+    JPanel buttons = new JPanel(MigLayouts.fillX("[grow,fill][pref!][pref!]", "[]"));
     buttons.add(new JPanel(), "growx, pushx");
     buttons.add(save);
     buttons.add(cancel);
 
-    JPanel root =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_WRAP_1,
-                MigLayoutConstraints.GROW_FILL,
-                "[][grow,fill][]"));
-    root.add(scopePanel, MigLayoutConstraints.GROW_X);
+    JPanel root = new JPanel(MigLayouts.singleColumnFill(0, "[][grow,fill][]"));
+    root.add(scopePanel, MigConstraints.growX());
     root.add(tabs, "grow");
-    root.add(buttons, MigLayoutConstraints.GROW_X);
+    root.add(buttons, MigConstraints.growX());
 
     final EmbedLoadPolicySnapshot[] result = {null};
     Runnable refreshValidation = () -> save.setEnabled(validateAllPatternTables(controls));
@@ -291,10 +283,8 @@ public class EmbedLoadPolicyDialog {
       String leftTitle, String rightTitle, PatternTableControls left, PatternTableControls right) {
     JPanel panel =
         new JPanel(
-            new MigLayout(
-                "insets 10, fill, wrap 2",
-                MigLayoutConstraints.GROW_FILL_PAIR,
-                MigLayoutConstraints.GROW_FILL));
+            MigLayouts.fillWrap(
+                10, 2, MigLayoutConstraints.GROW_FILL_PAIR, MigLayoutConstraints.GROW_FILL));
     panel.add(buildLabeledPanel(leftTitle, left.panel()), "grow");
     panel.add(buildLabeledPanel(rightTitle, right.panel()), "grow");
     return panel;
@@ -303,11 +293,9 @@ public class EmbedLoadPolicyDialog {
   private static JPanel buildLabeledPanel(String title, JPanel content) {
     JPanel panel =
         new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_WRAP_1,
-                MigLayoutConstraints.GROW_FILL,
-                MigLayoutConstraints.LEADING_GROW_FILL));
-    panel.add(new JLabel(title), MigLayoutConstraints.GROW_X);
+            MigLayouts.fillWrap(
+                0, 1, MigLayoutConstraints.GROW_FILL, MigLayoutConstraints.LEADING_GROW_FILL));
+    panel.add(new JLabel(title), MigConstraints.growX());
     panel.add(content, "grow");
     return panel;
   }
@@ -315,15 +303,14 @@ public class EmbedLoadPolicyDialog {
   private static JPanel buildGatePanel(PolicyControls controls) {
     JPanel panel =
         new JPanel(
-            new MigLayout(
-                "insets 10, fillx, wrap 2", MigLayoutConstraints.LEADING_GROW_FILL, "[]6[]6[]6[]"));
-    panel.add(controls.requireVoiceOrOp(), MigLayoutConstraints.SPAN_2_WRAP);
-    panel.add(controls.requireLoggedIn(), MigLayoutConstraints.SPAN_2_WRAP);
+            MigLayouts.fillXWrap(10, 2, MigLayoutConstraints.LEADING_GROW_FILL, "[]6[]6[]6[]"));
+    panel.add(controls.requireVoiceOrOp(), MigConstraints.spanXWrap(2));
+    panel.add(controls.requireLoggedIn(), MigConstraints.spanXWrap(2));
     panel.add(new JLabel("Minimum account age (days, 0 = disabled):"));
     panel.add(controls.minAccountAgeDays(), "w 120!, wrap");
     panel.add(
         new JLabel("If account age metadata is unavailable for a sender, this check fails closed."),
-        MigLayoutConstraints.SPAN_2_WRAP);
+        MigConstraints.spanXWrap(2));
     return panel;
   }
 
@@ -416,24 +403,21 @@ public class EmbedLoadPolicyDialog {
         });
 
     JPanel actions =
-        new JPanel(
-            new MigLayout("insets 0, wrap 1", MigLayoutConstraints.GROW_FILL, "[]4[]4[]4[]"));
-    actions.add(add, MigLayoutConstraints.GROW_X);
-    actions.add(remove, MigLayoutConstraints.GROW_X);
-    actions.add(up, MigLayoutConstraints.GROW_X);
-    actions.add(down, MigLayoutConstraints.GROW_X);
+        new JPanel(MigLayouts.wrap(0, 1, MigLayoutConstraints.GROW_FILL, "[]4[]4[]4[]"));
+    actions.add(add, MigConstraints.growX());
+    actions.add(remove, MigConstraints.growX());
+    actions.add(up, MigConstraints.growX());
+    actions.add(down, MigConstraints.growX());
 
     JLabel validation = new JLabel(" ");
     validation.setForeground(errorFg);
 
-    JPanel panel =
-        new JPanel(
-            new MigLayout("insets 0, fill, wrap 2", "[grow,fill][pref!]", "[][][grow,fill][]"));
-    panel.add(new JLabel(title), MigLayoutConstraints.SPAN_2_GROW_X_WRAP);
-    panel.add(new JLabel(hint), MigLayoutConstraints.SPAN_2_GROW_X_WRAP);
+    JPanel panel = new JPanel(MigLayouts.fillWrap(0, 2, "[grow,fill][pref!]", "[][][grow,fill][]"));
+    panel.add(new JLabel(title), MigConstraints.span2GrowXWrap());
+    panel.add(new JLabel(hint), MigConstraints.span2GrowXWrap());
     panel.add(new JScrollPane(table), "grow");
     panel.add(actions, "top");
-    panel.add(validation, MigLayoutConstraints.SPAN_2_GROW_X_WRAP);
+    panel.add(validation, MigConstraints.span2GrowXWrap());
 
     return new PatternTableControls(
         model, table, add, remove, up, down, panel, validation, invalidRows);

@@ -1,6 +1,8 @@
 package cafe.woden.ircclient.ui.settings;
 
+import cafe.woden.ircclient.ui.util.MigConstraints;
 import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import cafe.woden.ircclient.ui.util.UiFontKeys;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -20,7 +22,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
-import net.miginfocom.swing.MigLayout;
 
 public final class SettingsColorPickerDialogSupport {
   private static final int MAX_RECENT_COLORS = 12;
@@ -101,7 +102,7 @@ public final class SettingsColorPickerDialogSupport {
                   updatePreview.run();
                 }));
 
-    JPanel palette = new JPanel(new MigLayout("insets 0, wrap 8, gap 6", "[]", "[]"));
+    JPanel palette = new JPanel(MigLayouts.wrapWithGap(0, 8, 6, "[]", "[]"));
     Color[] colors =
         new Color[] {
           new Color(0xFFFFFF), new Color(0xD9D9D9), new Color(0xA6A6A6), new Color(0x4D4D4D),
@@ -115,7 +116,7 @@ public final class SettingsColorPickerDialogSupport {
       palette.add(colorSwatchButton(c, setColor));
     }
 
-    JPanel recent = new JPanel(new MigLayout("insets 0, wrap 8, gap 6", "[]", "[]"));
+    JPanel recent = new JPanel(MigLayouts.wrapWithGap(0, 8, 6, "[]", "[]"));
     Runnable refreshRecent =
         () -> {
           recent.removeAll();
@@ -157,32 +158,26 @@ public final class SettingsColorPickerDialogSupport {
 
     JPanel content =
         new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_12_FILL_X_WRAP_2,
-                MigLayoutConstraints.GROW_FILL_GAP_12_GROW_FILL,
-                "[]10[]6[]10[]6[]10[]"));
-    content.add(preview, MigLayoutConstraints.SPAN_2_GROW_X_WRAP);
-    content.add(contrast, MigLayoutConstraints.SPAN_2_GROW_X_WRAP);
+            MigLayouts.fillXWrap(
+                12, 2, MigLayoutConstraints.GROW_FILL_GAP_12_GROW_FILL, "[]10[]6[]10[]6[]10[]"));
+    content.add(preview, MigConstraints.span2GrowXWrap());
+    content.add(contrast, MigConstraints.span2GrowXWrap());
 
     content.add(new JLabel("Hex"));
     JPanel hexRow =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_3,
-                "[grow,fill]6[nogrid]6[nogrid]",
-                "[]2[]"));
+        new JPanel(MigLayouts.fillXWrap(0, 3, "[grow,fill]6[nogrid]6[nogrid]", "[]2[]"));
     hexRow.setOpaque(false);
-    hexRow.add(hex, MigLayoutConstraints.WIDTH_110);
+    hexRow.add(hex, MigConstraints.width(110));
     hexRow.add(more);
     hexRow.add(new JLabel(), "push");
     hexRow.add(hexStatus, "span 3, growx");
-    content.add(hexRow, MigLayoutConstraints.GROW_X_WRAP);
+    content.add(hexRow, MigConstraints.growXWrap());
 
-    content.add(new JLabel("Palette"), MigLayoutConstraints.ALIGN_Y_TOP);
-    content.add(palette, MigLayoutConstraints.GROW_X_WRAP);
+    content.add(new JLabel("Palette"), MigConstraints.alignYTop());
+    content.add(palette, MigConstraints.growXWrap());
 
-    content.add(new JLabel("Recent"), MigLayoutConstraints.ALIGN_Y_TOP);
-    content.add(recent, MigLayoutConstraints.GROW_X_WRAP);
+    content.add(new JLabel("Recent"), MigConstraints.alignYTop());
+    content.add(recent, MigConstraints.growXWrap());
 
     JPanel buttons = PreferencesUiSupport.rightComponentRow(8, 0, cancel, ok);
 

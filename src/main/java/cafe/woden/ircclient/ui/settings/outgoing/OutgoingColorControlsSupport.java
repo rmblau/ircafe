@@ -6,7 +6,8 @@ import cafe.woden.ircclient.ui.settings.SettingsColorPickerDialogSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
 import cafe.woden.ircclient.ui.settings.UiSettings;
-import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
+import cafe.woden.ircclient.ui.util.MigConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -18,7 +19,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
-import net.miginfocom.swing.MigLayout;
 
 public final class OutgoingColorControlsSupport {
   private OutgoingColorControlsSupport() {}
@@ -64,14 +64,10 @@ public final class OutgoingColorControlsSupport {
         });
 
     JPanel outgoingColorPanel =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_3,
-                "[grow,fill]8[nogrid]8[nogrid]",
-                "[]4[]"));
+        new JPanel(MigLayouts.fillXWrap(0, 3, "[grow,fill]8[nogrid]8[nogrid]", "[]4[]"));
     outgoingColorPanel.setOpaque(false);
     outgoingColorPanel.add(outgoingColorEnabled, "span 3, wrap");
-    outgoingColorPanel.add(outgoingColorHex, MigLayoutConstraints.WIDTH_110);
+    outgoingColorPanel.add(outgoingColorHex, MigConstraints.width(110));
     outgoingColorPanel.add(outgoingPick);
     outgoingColorPanel.add(outgoingPreview);
 

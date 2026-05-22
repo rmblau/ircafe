@@ -6,7 +6,8 @@ import cafe.woden.ircclient.ui.chat.NickColorSettings;
 import cafe.woden.ircclient.ui.chat.NickColorSettingsBus;
 import cafe.woden.ircclient.ui.nickcolors.NickColorOverridesDialog;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
-import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
+import cafe.woden.ircclient.ui.util.MigConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import java.awt.Window;
 import java.util.List;
 import javax.swing.JButton;
@@ -14,7 +15,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
-import net.miginfocom.swing.MigLayout;
 
 public final class NickColorControlsSupport {
   private NickColorControlsSupport() {}
@@ -67,24 +67,19 @@ public final class NickColorControlsSupport {
           updatePreview.run();
         });
 
-    JPanel panel =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_2,
-                "[grow,fill]8[nogrid]",
-                "[]6[]6[]6[]"));
+    JPanel panel = new JPanel(MigLayouts.fillXWrap(0, 2, "[grow,fill]8[nogrid]", "[]6[]6[]6[]"));
     panel.setOpaque(false);
-    panel.add(enabled, MigLayoutConstraints.SPAN_2_WRAP);
+    panel.add(enabled, MigConstraints.spanXWrap(2));
     panel.add(new JLabel("Minimum contrast ratio:"));
-    panel.add(minContrast, MigLayoutConstraints.WIDTH_110_WRAP);
+    panel.add(minContrast, MigConstraints.widthWrap(110));
     panel.add(overrides, "span 2, alignx left, wrap");
     panel.add(
         PreferencesUiSupport.helpText(
             "Tip: If nick colors look too similar to the background, increase the contrast ratio.\n"
                 + "Overrides always win over the palette."),
-        MigLayoutConstraints.SPAN_2_GROW_X_WMIN_0_WRAP);
-    panel.add(new JLabel("Preview:"), MigLayoutConstraints.SPAN_2_WRAP);
-    panel.add(preview, MigLayoutConstraints.SPAN_2_GROW_X);
+        MigConstraints.span2GrowXMinWidth0Wrap());
+    panel.add(new JLabel("Preview:"), MigConstraints.spanXWrap(2));
+    panel.add(preview, MigConstraints.span2GrowX());
     updatePreview.run();
 
     return new NickColorControls(enabled, minContrast, overrides, panel);

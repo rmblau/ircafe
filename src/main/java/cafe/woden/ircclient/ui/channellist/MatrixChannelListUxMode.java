@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.channellist;
 
-import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
+import cafe.woden.ircclient.ui.util.MigConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -12,7 +13,6 @@ import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
-import net.miginfocom.swing.MigLayout;
 
 final class MatrixChannelListUxMode implements ChannelListUxMode {
   private static final String DEFAULT_HINT =
@@ -75,21 +75,15 @@ final class MatrixChannelListUxMode implements ChannelListUxMode {
     sinceField.setEnabled(sinceEnabled.isSelected());
     sinceEnabled.addActionListener(e -> sinceField.setEnabled(sinceEnabled.isSelected()));
 
-    JPanel form =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_2,
-                MigLayoutConstraints.RIGHT_GROW_FILL,
-                "[]6[]6[]6[]"));
+    JPanel form = new JPanel(MigLayouts.twoColumnForm(0, "[]6[]6[]6[]"));
     form.add(new JLabel("Search:"));
-    form.add(queryField, MigLayoutConstraints.GROW_X);
+    form.add(queryField, MigConstraints.growX());
     form.add(new JLabel("Limit:"));
-    form.add(limitSpinner, MigLayoutConstraints.WIDTH_120);
+    form.add(limitSpinner, MigConstraints.width(120));
     form.add(sinceEnabled);
-    form.add(sinceField, MigLayoutConstraints.GROW_X);
+    form.add(sinceField, MigConstraints.growX());
     form.add(new JLabel("Tip:"));
-    form.add(
-        new JLabel("Use Next Page after results include next_batch."), MigLayoutConstraints.GROW_X);
+    form.add(new JLabel("Use Next Page after results include next_batch."), MigConstraints.growX());
 
     int choice =
         JOptionPane.showConfirmDialog(

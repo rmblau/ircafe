@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.channellist;
 
-import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
+import cafe.woden.ircclient.ui.util.MigConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import java.util.Locale;
 import java.util.Objects;
 import javax.swing.JCheckBox;
@@ -11,7 +12,6 @@ import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
-import net.miginfocom.swing.MigLayout;
 
 final class IrcChannelListUxMode implements ChannelListUxMode {
   private static final String DEFAULT_HINT =
@@ -68,8 +68,7 @@ final class IrcChannelListUxMode implements ChannelListUxMode {
               "Registered channels only (-show r)",
               "Unregistered channels only (-show u)"
             });
-    JPanel showFlagsPanel =
-        new JPanel(new MigLayout(MigLayoutConstraints.INSETS_0_FILL_X, "[][grow]", "[]"));
+    JPanel showFlagsPanel = new JPanel(MigLayouts.fillX("[][grow]", "[]"));
     showFlagsPanel.add(showModes);
     showFlagsPanel.add(showTopicSetter, "gapleft 10");
 
@@ -80,26 +79,21 @@ final class IrcChannelListUxMode implements ChannelListUxMode {
     maxEnabled.addActionListener(e -> maxUsers.setEnabled(maxEnabled.isSelected()));
     skipEnabled.addActionListener(e -> skipCount.setEnabled(skipEnabled.isSelected()));
 
-    JPanel form =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_2,
-                MigLayoutConstraints.RIGHT_GROW_FILL,
-                "[]6[]6[]6[]6[]6[]6[]6[]"));
+    JPanel form = new JPanel(MigLayouts.twoColumnForm(0, "[]6[]6[]6[]6[]6[]6[]6[]"));
     form.add(new JLabel("Query pattern:"));
-    form.add(queryField, MigLayoutConstraints.GROW_X);
+    form.add(queryField, MigConstraints.growX());
     form.add(new JLabel("Topic filter:"));
-    form.add(includeTopic, MigLayoutConstraints.GROW_X);
+    form.add(includeTopic, MigConstraints.growX());
     form.add(minEnabled);
-    form.add(minUsers, MigLayoutConstraints.WIDTH_120);
+    form.add(minUsers, MigConstraints.width(120));
     form.add(maxEnabled);
-    form.add(maxUsers, MigLayoutConstraints.WIDTH_120);
+    form.add(maxUsers, MigConstraints.width(120));
     form.add(skipEnabled);
-    form.add(skipCount, MigLayoutConstraints.WIDTH_120);
+    form.add(skipCount, MigConstraints.width(120));
     form.add(new JLabel("Display extras:"));
-    form.add(showFlagsPanel, MigLayoutConstraints.GROW_X);
+    form.add(showFlagsPanel, MigConstraints.growX());
     form.add(new JLabel("Registration:"));
-    form.add(registrationScope, MigLayoutConstraints.GROW_X);
+    form.add(registrationScope, MigConstraints.growX());
 
     int choice =
         JOptionPane.showConfirmDialog(

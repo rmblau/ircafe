@@ -3,7 +3,9 @@ package cafe.woden.ircclient.ui.settings.network;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
+import cafe.woden.ircclient.ui.util.MigConstraints;
 import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import cafe.woden.ircclient.ui.util.SwingClientProperties;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.util.List;
@@ -17,7 +19,6 @@ import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import net.miginfocom.swing.MigLayout;
 
 final class NetworkConnectionPanelSupport {
   private NetworkConnectionPanelSupport() {}
@@ -29,42 +30,28 @@ final class NetworkConnectionPanelSupport {
       boolean trustAllTlsCertificatesSelected,
       boolean preferLoginHintDefault,
       String loginTemplateDefault) {
-    JPanel networkPanel =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_WRAP_1,
-                MigLayoutConstraints.GROW_FILL,
-                "[]0[grow,fill]"));
+    JPanel networkPanel = new JPanel(MigLayouts.singleColumnFill(0, "[]0[grow,fill]"));
 
-    JPanel proxyTab =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_2,
-                MigLayoutConstraints.RIGHT_12_GROW_FILL,
-                "[]6[]"));
+    JPanel proxyTab = new JPanel(MigLayouts.twoColumnForm(12, "[]6[]"));
     proxyTab.setOpaque(false);
 
     JPanel proxyHeader =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_X,
-                MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING,
-                "[]"));
+        new JPanel(MigLayouts.fillX(MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING, "[]"));
     proxyHeader.setOpaque(false);
     proxyHeader.add(
-        PreferencesUiSupport.sectionTitle("SOCKS5 proxy"), MigLayoutConstraints.GROW_X_WMIN_0);
+        PreferencesUiSupport.sectionTitle("SOCKS5 proxy"), MigConstraints.growXMinWidth0());
     proxyHeader.add(
         PreferencesUiSupport.whyHelpButton(
             "SOCKS5 proxy",
             "When enabled, IRCafe routes IRC connections, link previews, embedded images, and file downloads through a SOCKS5 proxy.\n\n"
                 + "Heads up: proxy credentials are stored in your runtime config file in plain text."),
         "align right");
-    proxyTab.add(proxyHeader, MigLayoutConstraints.SPAN_2_GROW_X_WMIN_0_WRAP);
+    proxyTab.add(proxyHeader, MigConstraints.span2GrowXMinWidth0Wrap());
 
     JTextArea proxyBlurb = PreferencesUiSupport.subtleInfoText();
     proxyBlurb.setText(
         "Routes IRC + embeds through SOCKS5. Use remote DNS if local DNS is blocked.");
-    proxyTab.add(proxyBlurb, MigLayoutConstraints.SPAN_2_GROW_X_WMIN_0_WRAP);
+    proxyTab.add(proxyBlurb, MigConstraints.span2GrowXMinWidth0Wrap());
 
     JCheckBox proxyEnabled = new JCheckBox("Use SOCKS5 proxy");
     proxyEnabled.setSelected(proxySettings.enabled());
@@ -102,13 +89,9 @@ final class NetworkConnectionPanelSupport {
         PreferencesUiSupport.numberSpinner(readTimeoutSec, 1, 600, 1, closeables);
 
     JPanel passwordRow =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_X,
-                MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING,
-                "[]"));
+        new JPanel(MigLayouts.fillX(MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING, "[]"));
     passwordRow.setOpaque(false);
-    passwordRow.add(proxyPassword, MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0);
+    passwordRow.add(proxyPassword, MigConstraints.growXPushXMinWidth0());
     passwordRow.add(clearPassword);
 
     Runnable updateProxyEnabledState =
@@ -166,38 +149,28 @@ final class NetworkConnectionPanelSupport {
         .addDocumentListener(new SettingsDocumentListener(validateProxyInputs));
     validateProxyInputs.run();
 
-    proxyTab.add(proxyEnabled, MigLayoutConstraints.SPAN_2_WRAP);
+    proxyTab.add(proxyEnabled, MigConstraints.spanXWrap(2));
     proxyTab.add(new JLabel("Host:"));
-    proxyTab.add(proxyHost, MigLayoutConstraints.GROW_X_WMIN_0);
+    proxyTab.add(proxyHost, MigConstraints.growXMinWidth0());
     proxyTab.add(new JLabel("Port:"));
-    proxyTab.add(proxyPort, MigLayoutConstraints.WIDTH_110);
+    proxyTab.add(proxyPort, MigConstraints.width(110));
     proxyTab.add(new JLabel(""));
-    proxyTab.add(proxyRemoteDnsRow, MigLayoutConstraints.GROW_X_WMIN_0);
+    proxyTab.add(proxyRemoteDnsRow, MigConstraints.growXMinWidth0());
     proxyTab.add(new JLabel("Username:"));
-    proxyTab.add(proxyUsername, MigLayoutConstraints.GROW_X_WMIN_0);
+    proxyTab.add(proxyUsername, MigConstraints.growXMinWidth0());
     proxyTab.add(new JLabel("Password:"));
-    proxyTab.add(passwordRow, MigLayoutConstraints.GROW_X_WMIN_0);
+    proxyTab.add(passwordRow, MigConstraints.growXMinWidth0());
     proxyTab.add(new JLabel("Connect timeout (sec):"));
-    proxyTab.add(connectTimeoutSeconds, MigLayoutConstraints.WIDTH_110);
+    proxyTab.add(connectTimeoutSeconds, MigConstraints.width(110));
     proxyTab.add(new JLabel("Read timeout (sec):"));
-    proxyTab.add(readTimeoutSeconds, MigLayoutConstraints.WIDTH_110);
+    proxyTab.add(readTimeoutSeconds, MigConstraints.width(110));
 
-    JPanel tlsTab =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_1,
-                MigLayoutConstraints.GROW_FILL,
-                "[]6[]"));
+    JPanel tlsTab = new JPanel(MigLayouts.singleColumn("[]6[]"));
     tlsTab.setOpaque(false);
     JPanel tlsHeader =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_X,
-                MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING,
-                "[]"));
+        new JPanel(MigLayouts.fillX(MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING, "[]"));
     tlsHeader.setOpaque(false);
-    tlsHeader.add(
-        PreferencesUiSupport.sectionTitle("TLS / SSL"), MigLayoutConstraints.GROW_X_WMIN_0);
+    tlsHeader.add(PreferencesUiSupport.sectionTitle("TLS / SSL"), MigConstraints.growXMinWidth0());
     tlsHeader.add(
         PreferencesUiSupport.whyHelpButton(
             "TLS / SSL (Trust all certificates)",
@@ -205,37 +178,27 @@ final class NetworkConnectionPanelSupport {
                 + "for IRC-over-TLS connections and for HTTPS fetching (link previews, embedded images, etc).\n\n"
                 + "Only enable this if you understand the risk (MITM becomes trivial)."),
         "align right");
-    tlsTab.add(tlsHeader, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    tlsTab.add(tlsHeader, MigConstraints.growXMinWidth0Wrap());
 
     JTextArea tlsBlurb = PreferencesUiSupport.subtleInfoText();
     tlsBlurb.setText(
         "If enabled, certificate validation is skipped (insecure). Only use for debugging.");
-    tlsTab.add(tlsBlurb, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    tlsTab.add(tlsBlurb, MigConstraints.growXMinWidth0Wrap());
 
     JCheckBox trustAllTlsCertificates = new JCheckBox();
     trustAllTlsCertificates.setSelected(trustAllTlsCertificatesSelected);
     JComponent trustAllTlsRow =
         PreferencesUiSupport.wrapCheckBox(
             trustAllTlsCertificates, "Trust all TLS/SSL certificates (insecure)");
-    tlsTab.add(trustAllTlsRow, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    tlsTab.add(trustAllTlsRow, MigConstraints.growXMinWidth0Wrap());
 
-    JPanel heartbeatTab =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_2,
-                MigLayoutConstraints.RIGHT_12_GROW_FILL,
-                "[]6[]"));
+    JPanel heartbeatTab = new JPanel(MigLayouts.twoColumnForm(12, "[]6[]"));
     heartbeatTab.setOpaque(false);
     JPanel heartbeatHeader =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_X,
-                MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING,
-                "[]"));
+        new JPanel(MigLayouts.fillX(MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING, "[]"));
     heartbeatHeader.setOpaque(false);
     heartbeatHeader.add(
-        PreferencesUiSupport.sectionTitle("Connection heartbeat"),
-        MigLayoutConstraints.GROW_X_WMIN_0);
+        PreferencesUiSupport.sectionTitle("Connection heartbeat"), MigConstraints.growXMinWidth0());
     heartbeatHeader.add(
         PreferencesUiSupport.whyHelpButton(
             "Connection heartbeat",
@@ -244,12 +207,12 @@ final class NetworkConnectionPanelSupport {
                 + "and let the reconnect logic take over (if enabled).\n\n"
                 + "Tip: If your network is very quiet, increase the timeout."),
         "align right");
-    heartbeatTab.add(heartbeatHeader, MigLayoutConstraints.SPAN_2_GROW_X_WMIN_0_WRAP);
+    heartbeatTab.add(heartbeatHeader, MigConstraints.span2GrowXMinWidth0Wrap());
 
     JTextArea heartbeatBlurb = PreferencesUiSupport.subtleInfoText();
     heartbeatBlurb.setText(
         "Detects silent disconnects by closing idle sockets so reconnect can kick in.");
-    heartbeatTab.add(heartbeatBlurb, MigLayoutConstraints.SPAN_2_GROW_X_WMIN_0_WRAP);
+    heartbeatTab.add(heartbeatBlurb, MigConstraints.span2GrowXMinWidth0Wrap());
 
     JCheckBox heartbeatEnabled = new JCheckBox();
     heartbeatEnabled.setSelected(heartbeatSettings.enabled());
@@ -273,29 +236,20 @@ final class NetworkConnectionPanelSupport {
     heartbeatEnabled.addActionListener(e -> updateHeartbeatEnabledState.run());
     updateHeartbeatEnabledState.run();
 
-    heartbeatTab.add(heartbeatEnabledRow, MigLayoutConstraints.SPAN_2_GROW_X_WMIN_0_WRAP);
+    heartbeatTab.add(heartbeatEnabledRow, MigConstraints.span2GrowXMinWidth0Wrap());
     heartbeatTab.add(new JLabel("Check period (sec):"));
-    heartbeatTab.add(heartbeatCheckPeriodSeconds, MigLayoutConstraints.WIDTH_110);
+    heartbeatTab.add(heartbeatCheckPeriodSeconds, MigConstraints.width(110));
     heartbeatTab.add(new JLabel("Timeout (sec):"));
-    heartbeatTab.add(heartbeatTimeoutSeconds, MigLayoutConstraints.WIDTH_110);
+    heartbeatTab.add(heartbeatTimeoutSeconds, MigConstraints.width(110));
 
-    JPanel bouncerTab =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_2,
-                MigLayoutConstraints.RIGHT_12_GROW_FILL,
-                "[]6[]"));
+    JPanel bouncerTab = new JPanel(MigLayouts.twoColumnForm(12, "[]6[]"));
     bouncerTab.setOpaque(false);
     JPanel bouncerHeader =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_X,
-                MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING,
-                "[]"));
+        new JPanel(MigLayouts.fillX(MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING, "[]"));
     bouncerHeader.setOpaque(false);
     bouncerHeader.add(
         PreferencesUiSupport.sectionTitle("Bouncer discovery defaults"),
-        MigLayoutConstraints.GROW_X_WMIN_0);
+        MigConstraints.growXMinWidth0());
     bouncerHeader.add(
         PreferencesUiSupport.whyHelpButton(
             "Bouncer discovery defaults",
@@ -303,20 +257,19 @@ final class NetworkConnectionPanelSupport {
                 + "Use a login template to shape derived usernames.\n"
                 + "Use hint preference to accept or ignore login user hints sent by the bouncer."),
         "align right");
-    bouncerTab.add(bouncerHeader, MigLayoutConstraints.SPAN_2_GROW_X_WMIN_0_WRAP);
+    bouncerTab.add(bouncerHeader, MigConstraints.span2GrowXMinWidth0Wrap());
 
     JTextArea bouncerBlurb = PreferencesUiSupport.subtleInfoText();
     bouncerBlurb.setText(
         "Controls how generic bouncer-discovered networks map to ephemeral server login users.");
-    bouncerTab.add(bouncerBlurb, MigLayoutConstraints.SPAN_2_GROW_X_WMIN_0_WRAP);
+    bouncerTab.add(bouncerBlurb, MigConstraints.span2GrowXMinWidth0Wrap());
 
     JCheckBox genericBouncerPreferLoginHint = new JCheckBox();
     genericBouncerPreferLoginHint.setSelected(preferLoginHintDefault);
     JComponent genericBouncerPreferLoginHintRow =
         PreferencesUiSupport.wrapCheckBox(
             genericBouncerPreferLoginHint, "Prefer login user hint from discovery payloads");
-    bouncerTab.add(
-        genericBouncerPreferLoginHintRow, MigLayoutConstraints.SPAN_2_GROW_X_WMIN_0_WRAP);
+    bouncerTab.add(genericBouncerPreferLoginHintRow, MigConstraints.span2GrowXMinWidth0Wrap());
 
     JTextField genericBouncerLoginTemplate = new JTextField(loginTemplateDefault);
     PreferencesUiSupport.placeholder(genericBouncerLoginTemplate, loginTemplateDefault);
@@ -324,8 +277,8 @@ final class NetworkConnectionPanelSupport {
     genericBouncerTemplateHelp.setText(
         "Template tokens: {base} and {network}. Example: {base}/{network}");
     bouncerTab.add(new JLabel("Login template:"));
-    bouncerTab.add(genericBouncerLoginTemplate, MigLayoutConstraints.GROW_X_WMIN_0);
-    bouncerTab.add(genericBouncerTemplateHelp, MigLayoutConstraints.SPAN_2_GROW_X_WMIN_0_WRAP);
+    bouncerTab.add(genericBouncerLoginTemplate, MigConstraints.growXMinWidth0());
+    bouncerTab.add(genericBouncerTemplateHelp, MigConstraints.span2GrowXMinWidth0Wrap());
 
     JTabbedPane networkTabs = new JTabbedPane();
     networkTabs.addTab("Proxy", PreferencesUiSupport.padSubTab(proxyTab));
@@ -335,12 +288,9 @@ final class NetworkConnectionPanelSupport {
 
     JPanel networkIntro =
         new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_12_FILL_X_WRAP_2,
-                MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING,
-                "[]"));
+            MigLayouts.fillXWrap(12, 2, MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING, "[]"));
     networkIntro.setOpaque(false);
-    networkIntro.add(PreferencesUiSupport.tabTitle("Network"), MigLayoutConstraints.GROW_X_WMIN_0);
+    networkIntro.add(PreferencesUiSupport.tabTitle("Network"), MigConstraints.growXMinWidth0());
     networkIntro.add(
         PreferencesUiSupport.whyHelpButton(
             "Network settings",
@@ -348,8 +298,8 @@ final class NetworkConnectionPanelSupport {
                 + "Tip: Most users only touch Proxy. Leave TLS trust-all off unless you're debugging."),
         "align right");
 
-    networkPanel.add(networkIntro, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
-    networkPanel.add(networkTabs, MigLayoutConstraints.GROW_PUSH_WMIN_0);
+    networkPanel.add(networkIntro, MigConstraints.growXMinWidth0Wrap());
+    networkPanel.add(networkTabs, MigConstraints.growPushMinWidth0());
 
     ProxyControls proxyControls =
         new ProxyControls(

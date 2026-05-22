@@ -5,7 +5,9 @@ import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.notifications.api.IrcEventNotificationRulesPort;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
+import cafe.woden.ircclient.ui.util.MigConstraints;
 import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.util.List;
@@ -17,7 +19,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.table.TableColumn;
-import net.miginfocom.swing.MigLayout;
 
 public final class IrcEventNotificationsTabSupport {
   private IrcEventNotificationsTabSupport() {}
@@ -56,10 +57,8 @@ public final class IrcEventNotificationsTabSupport {
       IrcEventNotificationControls controls, Component owner, RuleEditor ruleEditor) {
     JPanel tab =
         new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_WRAP_1,
-                MigLayoutConstraints.GROW_FILL,
-                MigLayoutConstraints.ROW_6_GROW_FILL));
+            MigLayouts.fillWrap(
+                0, 1, MigLayoutConstraints.GROW_FILL, MigLayoutConstraints.ROW_6_GROW_FILL));
     tab.setOpaque(false);
 
     JComboBox<IrcEventNotificationPresetSupport.Preset> defaultsPreset =
@@ -73,14 +72,12 @@ public final class IrcEventNotificationsTabSupport {
             "refresh",
             "Replace all IRC event rules with IRCafe defaults");
 
-    JPanel defaultsRow =
-        new JPanel(
-            new MigLayout(MigLayoutConstraints.INSETS_0_FILL_X, "[]8[grow,fill]8[]8[]", "[]"));
+    JPanel defaultsRow = new JPanel(MigLayouts.fillX("[]8[grow,fill]8[]8[]", "[]"));
     defaultsRow.setOpaque(false);
     defaultsRow.add(new JLabel("Defaults"));
     defaultsRow.add(defaultsPreset, "w 240!");
-    defaultsRow.add(applyDefaults, MigLayoutConstraints.WIDTH_36_HEIGHT_28);
-    defaultsRow.add(resetToIrcafeDefaults, MigLayoutConstraints.WIDTH_36_HEIGHT_28);
+    defaultsRow.add(applyDefaults, MigConstraints.widthHeight(36, 28));
+    defaultsRow.add(resetToIrcafeDefaults, MigConstraints.widthHeight(36, 28));
 
     JButton add = PreferencesUiSupport.iconOnlyButton("Add", "plus", "Add IRC event rule");
     JButton edit =
@@ -241,23 +238,16 @@ public final class IrcEventNotificationsTabSupport {
 
     JPanel presetsPanel =
         PreferencesUiSupport.captionPanelWithPadding(
-            "Presets",
-            MigLayoutConstraints.INSETS_0_FILL_X_WRAP_1,
-            MigLayoutConstraints.GROW_FILL,
-            "[]4[]",
-            10,
-            10,
-            10,
-            10);
-    presetsPanel.add(defaultsRow, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+            "Presets", MigLayouts.singleColumn("[]4[]"), 10, 10, 10, 10);
+    presetsPanel.add(defaultsRow, MigConstraints.growXMinWidth0Wrap());
     presetsPanel.add(
         PreferencesUiSupport.helpText(
             "Configure event actions for kicks, bans, invites, joins, and mode changes.\n"
                 + "Source supports self/others/specific nicks/glob/regex. Channel scope supports Active channel only.\n"
                 + "CTCP rules can filter command/value and include quick templates in the Filters tab.\n"
                 + "Apply defaults merges by event type. Reset to IRCafe defaults replaces the full rule list."),
-        MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
-    tab.add(presetsPanel, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+        MigConstraints.growXMinWidth0Wrap());
+    tab.add(presetsPanel, MigConstraints.growXMinWidth0Wrap());
 
     JPanel rulesPanel =
         PreferencesUiSupport.captionPanelWithPadding(
@@ -272,13 +262,13 @@ public final class IrcEventNotificationsTabSupport {
     JPanel buttons =
         PreferencesUiSupport.actionButtonRow(
             add, edit, enableRule, disableRule, duplicate, remove, up, down);
-    rulesPanel.add(buttons, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    rulesPanel.add(buttons, MigConstraints.growXMinWidth0Wrap());
     scroll.setPreferredSize(new Dimension(400, 260));
-    rulesPanel.add(scroll, MigLayoutConstraints.GROW_PUSH_WMIN_0_WRAP);
+    rulesPanel.add(scroll, MigConstraints.growPushMinWidth0Wrap());
     rulesPanel.add(
         PreferencesUiSupport.helpText("Tip: Double-click a rule to edit it."),
-        MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
-    tab.add(rulesPanel, MigLayoutConstraints.GROW_PUSH_WMIN_0_WRAP);
+        MigConstraints.growXMinWidth0Wrap());
+    tab.add(rulesPanel, MigConstraints.growPushMinWidth0Wrap());
 
     return tab;
   }

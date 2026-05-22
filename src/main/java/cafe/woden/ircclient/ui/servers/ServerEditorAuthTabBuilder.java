@@ -1,6 +1,8 @@
 package cafe.woden.ircclient.ui.servers;
 
+import cafe.woden.ircclient.ui.util.MigConstraints;
 import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import com.formdev.flatlaf.FlatClientProperties;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -8,7 +10,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-import net.miginfocom.swing.MigLayout;
 
 /** Builds the server-editor auth tab and its auth-mode cards from existing widgets. */
 final class ServerEditorAuthTabBuilder {
@@ -17,22 +18,24 @@ final class ServerEditorAuthTabBuilder {
   static JPanel build(AuthTabWidgets widgets) {
     JPanel panel =
         new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_8_FILL_X_WRAP_2_HIDEMODE_3,
+            MigLayouts.fillXWrapWithHideMode(
+                8,
+                2,
+                3,
                 MigLayoutConstraints.RIGHT_12_GROW_FILL_MIN_0,
                 "[]6[]6[]6[]8[grow,fill,min:0]"));
 
     panel.add(widgets.matrixAuthModeLabel());
-    panel.add(widgets.matrixAuthModeCombo(), MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    panel.add(widgets.matrixAuthModeCombo(), MigConstraints.growXMinWidth0Wrap());
     panel.add(widgets.matrixAuthUserLabel());
-    panel.add(widgets.matrixAuthUserField(), MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    panel.add(widgets.matrixAuthUserField(), MigConstraints.growXMinWidth0Wrap());
     panel.add(widgets.serverPasswordLabel());
-    panel.add(widgets.serverPasswordField(), MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    panel.add(widgets.serverPasswordField(), MigConstraints.growXMinWidth0Wrap());
     panel.add(widgets.authModeLabel());
-    panel.add(widgets.authModeCombo(), MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    panel.add(widgets.authModeCombo(), MigConstraints.growXMinWidth0Wrap());
 
     styleHint(widgets.matrixAuthHintLabel(), " ");
-    panel.add(widgets.matrixAuthHintLabel(), MigLayoutConstraints.SPAN_2_GROW_X_WMIN_0_WRAP);
+    panel.add(widgets.matrixAuthHintLabel(), MigConstraints.span2GrowXMinWidth0Wrap());
 
     widgets.authModeCardPanel().removeAll();
     widgets.authModeCardPanel().add(buildDisabledCard(widgets), widgets.disabledCardId());
@@ -44,27 +47,25 @@ final class ServerEditorAuthTabBuilder {
   }
 
   private static JPanel buildDisabledCard(AuthTabWidgets widgets) {
-    JPanel panel = new JPanel(new MigLayout("insets 6 0 0 0, fillx", "[grow,fill,min:0]", "[]"));
+    JPanel panel = new JPanel(MigLayouts.fillX("6 0 0 0", "[grow,fill,min:0]", "[]"));
     styleHint(widgets.authDisabledHintLabel(), asHtml(widgets.authDisabledHintText()));
-    panel.add(widgets.authDisabledHintLabel(), MigLayoutConstraints.GROW_X_WMIN_0);
+    panel.add(widgets.authDisabledHintLabel(), MigConstraints.growXMinWidth0());
     return panel;
   }
 
   private static JPanel buildSaslCard(AuthTabWidgets widgets) {
     JPanel panel =
         new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_2,
-                MigLayoutConstraints.RIGHT_12_GROW_FILL_MIN_0,
-                "[]6[]6[]6[]8[]push"));
+            MigLayouts.fillXWrap(
+                0, 2, MigLayoutConstraints.RIGHT_12_GROW_FILL_MIN_0, "[]6[]6[]6[]8[]push"));
     panel.add(new JLabel("Username"));
-    panel.add(widgets.saslUserField(), MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    panel.add(widgets.saslUserField(), MigConstraints.growXMinWidth0Wrap());
     panel.add(new JLabel("Secret"));
-    panel.add(widgets.saslPasswordField(), MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    panel.add(widgets.saslPasswordField(), MigConstraints.growXMinWidth0Wrap());
     panel.add(new JLabel("Mechanism"));
-    panel.add(widgets.saslMechanismCombo(), MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    panel.add(widgets.saslMechanismCombo(), MigConstraints.growXMinWidth0Wrap());
     panel.add(new JLabel("On failure"), "top");
-    panel.add(widgets.saslContinueOnFailureBox(), MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    panel.add(widgets.saslContinueOnFailureBox(), MigConstraints.growXMinWidth0Wrap());
 
     styleHint(widgets.saslHintLabel(), " ");
     panel.add(widgets.saslHintLabel(), "span 2, growx, wmin 0, pushy");
@@ -74,16 +75,14 @@ final class ServerEditorAuthTabBuilder {
   private static JPanel buildNickservCard(AuthTabWidgets widgets) {
     JPanel panel =
         new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_2,
-                MigLayoutConstraints.RIGHT_12_GROW_FILL_MIN_0,
-                "[]6[]6[]8[]push"));
+            MigLayouts.fillXWrap(
+                0, 2, MigLayoutConstraints.RIGHT_12_GROW_FILL_MIN_0, "[]6[]6[]8[]push"));
     panel.add(new JLabel("Service"));
-    panel.add(widgets.nickservServiceField(), MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    panel.add(widgets.nickservServiceField(), MigConstraints.growXMinWidth0Wrap());
     panel.add(new JLabel("Password"));
-    panel.add(widgets.nickservPasswordField(), MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    panel.add(widgets.nickservPasswordField(), MigConstraints.growXMinWidth0Wrap());
     panel.add(new JLabel("Delay auto-join"), "top");
-    panel.add(widgets.nickservDelayJoinBox(), MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    panel.add(widgets.nickservDelayJoinBox(), MigConstraints.growXMinWidth0Wrap());
 
     styleHint(widgets.nickservHintLabel(), " ");
     panel.add(widgets.nickservHintLabel(), "span 2, growx, wmin 0, pushy");

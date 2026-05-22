@@ -5,7 +5,8 @@ import cafe.woden.ircclient.ui.settings.ColorSwatch;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorPickerDialogSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
-import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
+import cafe.woden.ircclient.ui.util.MigConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.awt.Window;
@@ -19,7 +20,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
-import net.miginfocom.swing.MigLayout;
 
 public final class NotificationRuleDialogSupport {
   private NotificationRuleDialogSupport() {}
@@ -113,18 +113,14 @@ public final class NotificationRuleDialogSupport {
             "WORD supports whole-word matching; REGEX supports Java regular expressions.");
 
     JPanel form =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_10_FILLX_WRAP_2_HIDEMODE_3,
-                MigLayoutConstraints.RIGHT_GROW_FILL,
-                "[]6[]6[]6[]6[]6[]6[]"));
+        new JPanel(MigLayouts.twoColumnFormWithHideMode(10, 0, 3, "[]6[]6[]6[]6[]6[]6[]"));
     form.add(enabled, "span 2,wrap");
     form.add(new JLabel("Label:"));
-    form.add(label, MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0_WRAP);
+    form.add(label, MigConstraints.growXPushXMinWidth0Wrap());
     form.add(new JLabel("Type:"));
     form.add(type, "w 140!,wrap");
     form.add(new JLabel("Pattern:"));
-    form.add(pattern, MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0_WRAP);
+    form.add(pattern, MigConstraints.growXPushXMinWidth0Wrap());
     form.add(new JLabel("Options:"));
     JPanel options = PreferencesUiSupport.leftComponentRow(8, 0, caseSensitive, wholeWord);
     options.setOpaque(false);

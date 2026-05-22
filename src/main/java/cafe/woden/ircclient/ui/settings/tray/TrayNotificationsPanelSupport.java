@@ -3,33 +3,27 @@ package cafe.woden.ircclient.ui.settings.tray;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.ui.settings.DynamicTabbedPane;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.util.MigConstraints;
 import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import java.nio.file.Path;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTabbedPane;
-import net.miginfocom.swing.MigLayout;
 
 public final class TrayNotificationsPanelSupport {
   private TrayNotificationsPanelSupport() {}
 
   public static JPanel buildPanel(TrayControls controls) {
-    JPanel form =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_12_FILL_WRAP_1,
-                MigLayoutConstraints.GROW_FILL,
-                "[]10[]6[grow,fill]"));
-    form.add(
-        PreferencesUiSupport.tabTitle("Tray & Notifications"), MigLayoutConstraints.GROW_X_WRAP);
-    form.add(
-        PreferencesUiSupport.sectionTitle("Categories"), MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    JPanel form = new JPanel(MigLayouts.singleColumnFill(12, "[]10[]6[grow,fill]"));
+    form.add(PreferencesUiSupport.tabTitle("Tray & Notifications"), MigConstraints.growXWrap());
+    form.add(PreferencesUiSupport.sectionTitle("Categories"), MigConstraints.growXMinWidth0Wrap());
     form.add(
         PreferencesUiSupport.helpText(
             "Use the sub-tabs below to configure tray behavior, desktop notifications, notification sounds, and Linux integration."),
-        MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
-    form.add(controls.panel, MigLayoutConstraints.GROW_PUSH_WMIN_0);
+        MigConstraints.growXMinWidth0Wrap());
+    form.add(controls.panel, MigConstraints.growPushMinWidth0());
     return form;
   }
 
@@ -38,113 +32,72 @@ public final class TrayNotificationsPanelSupport {
       RuntimeConfigStore runtimeConfig,
       boolean linux,
       boolean linuxActionsSupported) {
-    JPanel trayTab =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_1, MigLayoutConstraints.GROW_FILL));
+    JPanel trayTab = new JPanel(MigLayouts.singleColumn());
     trayTab.setOpaque(false);
-    JPanel trayBehavior =
-        PreferencesUiSupport.captionPanel(
-            "Tray behavior",
-            MigLayoutConstraints.INSETS_0_FILL_X_WRAP_1,
-            MigLayoutConstraints.GROW_FILL,
-            "");
-    trayBehavior.add(controls.enabled, MigLayoutConstraints.GROW_X);
-    trayBehavior.add(controls.closeToTray, MigLayoutConstraints.GROW_X);
-    trayBehavior.add(controls.minimizeToTray, MigLayoutConstraints.GROW_X);
-    trayBehavior.add(controls.startMinimized, MigLayoutConstraints.GROW_X_WRAP);
-    trayTab.add(trayBehavior, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    JPanel trayBehavior = PreferencesUiSupport.captionPanel("Tray behavior");
+    trayBehavior.add(controls.enabled, MigConstraints.growX());
+    trayBehavior.add(controls.closeToTray, MigConstraints.growX());
+    trayBehavior.add(controls.minimizeToTray, MigConstraints.growX());
+    trayBehavior.add(controls.startMinimized, MigConstraints.growXWrap());
+    trayTab.add(trayBehavior, MigConstraints.growXMinWidth0Wrap());
     trayTab.add(
         PreferencesUiSupport.helpText(
             "Tray availability depends on your desktop environment. If tray support is unavailable, these options will have no effect."),
-        MigLayoutConstraints.GROW_X);
+        MigConstraints.growX());
 
-    JPanel notificationsTab =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_1, MigLayoutConstraints.GROW_FILL));
+    JPanel notificationsTab = new JPanel(MigLayouts.singleColumn());
     notificationsTab.setOpaque(false);
-    JPanel notificationEvents =
-        PreferencesUiSupport.captionPanel(
-            "Notification events",
-            MigLayoutConstraints.INSETS_0_FILL_X_WRAP_1,
-            MigLayoutConstraints.GROW_FILL,
-            "");
-    notificationEvents.add(controls.notifyHighlights, MigLayoutConstraints.GROW_X);
-    notificationEvents.add(controls.notifyPrivateMessages, MigLayoutConstraints.GROW_X);
-    notificationEvents.add(controls.notifyConnectionState, MigLayoutConstraints.GROW_X);
-    notificationsTab.add(notificationEvents, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    JPanel notificationEvents = PreferencesUiSupport.captionPanel("Notification events");
+    notificationEvents.add(controls.notifyHighlights, MigConstraints.growX());
+    notificationEvents.add(controls.notifyPrivateMessages, MigConstraints.growX());
+    notificationEvents.add(controls.notifyConnectionState, MigConstraints.growX());
+    notificationsTab.add(notificationEvents, MigConstraints.growXMinWidth0Wrap());
     JPanel notificationBackendGroup =
-        PreferencesUiSupport.captionPanel(
-            "Delivery backend",
-            MigLayoutConstraints.INSETS_0_FILL_X_WRAP_2,
-            MigLayoutConstraints.RIGHT_8_GROW_FILL,
-            "[]");
+        PreferencesUiSupport.captionPanel("Delivery backend", MigLayouts.twoColumnForm(8, "[]"));
     notificationBackendGroup.add(new JLabel("Mode:"));
     notificationBackendGroup.add(controls.notificationBackend, "w 260!, wrap");
     notificationBackendGroup.add(
         PreferencesUiSupport.helpText(
             "Auto tries native OS notifications first and falls back to two-slices.\n"
                 + "Native only disables fallback. Two-slices only bypasses OS-native backends."),
-        MigLayoutConstraints.SPAN_2_GROW_X);
-    notificationsTab.add(notificationBackendGroup, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+        MigConstraints.span2GrowX());
+    notificationsTab.add(notificationBackendGroup, MigConstraints.growXMinWidth0Wrap());
     JPanel notificationVisibility =
-        PreferencesUiSupport.captionPanel(
-            "Suppression and focus rules",
-            MigLayoutConstraints.INSETS_0_FILL_X_WRAP_1,
-            MigLayoutConstraints.GROW_FILL,
-            "");
-    notificationVisibility.add(controls.updateNotifierEnabled, MigLayoutConstraints.GROW_X);
-    notificationVisibility.add(controls.lagIndicatorEnabled, MigLayoutConstraints.GROW_X);
-    notificationVisibility.add(controls.notifyOnlyWhenUnfocused, MigLayoutConstraints.GROW_X);
-    notificationVisibility.add(
-        controls.notifyOnlyWhenMinimizedOrHidden, MigLayoutConstraints.GROW_X);
-    notificationVisibility.add(
-        controls.notifySuppressWhenTargetActive, MigLayoutConstraints.GROW_X_WRAP);
+        PreferencesUiSupport.captionPanel("Suppression and focus rules");
+    notificationVisibility.add(controls.updateNotifierEnabled, MigConstraints.growX());
+    notificationVisibility.add(controls.lagIndicatorEnabled, MigConstraints.growX());
+    notificationVisibility.add(controls.notifyOnlyWhenUnfocused, MigConstraints.growX());
+    notificationVisibility.add(controls.notifyOnlyWhenMinimizedOrHidden, MigConstraints.growX());
+    notificationVisibility.add(controls.notifySuppressWhenTargetActive, MigConstraints.growXWrap());
     notificationVisibility.add(new JSeparator(), "growx, gaptop 4");
     notificationVisibility.add(controls.testNotification, "w 180!");
-    notificationsTab.add(notificationVisibility, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    notificationsTab.add(notificationVisibility, MigConstraints.growXMinWidth0Wrap());
     notificationsTab.add(
         PreferencesUiSupport.helpText(
             "Desktop notifications are shown when your notification rules trigger (or for connection events, if enabled)."),
-        MigLayoutConstraints.GROW_X);
+        MigConstraints.growX());
 
-    JPanel soundsTab =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_1, MigLayoutConstraints.GROW_FILL));
+    JPanel soundsTab = new JPanel(MigLayouts.singleColumn());
     soundsTab.setOpaque(false);
-    JPanel soundsBehavior =
-        PreferencesUiSupport.captionPanel(
-            "Sound behavior",
-            MigLayoutConstraints.INSETS_0_FILL_X_WRAP_1,
-            MigLayoutConstraints.GROW_FILL,
-            "");
-    soundsBehavior.add(controls.notificationSoundsEnabled, MigLayoutConstraints.GROW_X);
-    soundsBehavior.add(controls.notificationSoundUseCustom, MigLayoutConstraints.GROW_X_WRAP);
-    soundsTab.add(soundsBehavior, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    JPanel soundsBehavior = PreferencesUiSupport.captionPanel("Sound behavior");
+    soundsBehavior.add(controls.notificationSoundsEnabled, MigConstraints.growX());
+    soundsBehavior.add(controls.notificationSoundUseCustom, MigConstraints.growXWrap());
+    soundsTab.add(soundsBehavior, MigConstraints.growXMinWidth0Wrap());
     JPanel customSound =
         PreferencesUiSupport.captionPanel(
-            "Custom sound file",
-            MigLayoutConstraints.INSETS_0_FILL_X_WRAP_4,
-            MigLayoutConstraints.RIGHT_8_GROW_FILL_8_TRAILING_8_TRAILING,
-            "[]");
+            "Custom sound file", MigLayouts.labelFieldActionsForm(8, 2, "[]"));
     customSound.add(new JLabel("File:"));
-    customSound.add(
-        controls.notificationSoundCustomPath, MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0);
-    customSound.add(controls.browseCustomSound, MigLayoutConstraints.WIDTH_110);
+    customSound.add(controls.notificationSoundCustomPath, MigConstraints.growXPushXMinWidth0());
+    customSound.add(controls.browseCustomSound, MigConstraints.width(110));
     customSound.add(controls.clearCustomSound, "w 80!, wrap");
-    soundsTab.add(customSound, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    soundsTab.add(customSound, MigConstraints.growXMinWidth0Wrap());
     JPanel builtInSound =
         PreferencesUiSupport.captionPanel(
-            "Built-in sound",
-            MigLayoutConstraints.INSETS_0_FILL_X_WRAP_3,
-            "[right]8[grow,fill]8[]",
-            "[]");
+            "Built-in sound", MigLayouts.labelFieldActionsForm(8, 1, "[]"));
     builtInSound.add(new JLabel("Preset:"));
     builtInSound.add(controls.notificationSound, "w 240!");
     builtInSound.add(controls.testSound, "w 120!, wrap");
-    soundsTab.add(builtInSound, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    soundsTab.add(builtInSound, MigConstraints.growXMinWidth0Wrap());
 
     Path configPath = runtimeConfig != null ? runtimeConfig.runtimeConfigPath() : null;
     Path base = configPath != null ? configPath.getParent() : null;
@@ -154,45 +107,34 @@ public final class TrayNotificationsPanelSupport {
               "Custom sounds are copied to: "
                   + base.resolve("sounds")
                   + "\nTip: Use small files (short MP3/WAV) for snappy notifications."),
-          MigLayoutConstraints.GROW_X);
+          MigConstraints.growX());
     }
 
-    JPanel pushyTab =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_1, MigLayoutConstraints.GROW_FILL));
+    JPanel pushyTab = new JPanel(MigLayouts.singleColumn());
     pushyTab.setOpaque(false);
 
     JPanel pushyBasics =
-        PreferencesUiSupport.captionPanel(
-            "Pushy integration",
-            MigLayoutConstraints.INSETS_0_FILL_X_WRAP_2,
-            MigLayoutConstraints.RIGHT_8_GROW_FILL,
-            "[]");
-    pushyBasics.add(controls.pushyEnabled, MigLayoutConstraints.SPAN_2_GROW_X_WRAP);
+        PreferencesUiSupport.captionPanel("Pushy integration", MigLayouts.twoColumnForm(8, "[]"));
+    pushyBasics.add(controls.pushyEnabled, MigConstraints.span2GrowXWrap());
     pushyBasics.add(new JLabel("Endpoint:"));
-    pushyBasics.add(controls.pushyEndpoint, MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0_WRAP);
+    pushyBasics.add(controls.pushyEndpoint, MigConstraints.growXPushXMinWidth0Wrap());
     pushyBasics.add(new JLabel("API key:"));
-    pushyBasics.add(controls.pushyApiKey, MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0_WRAP);
+    pushyBasics.add(controls.pushyApiKey, MigConstraints.growXPushXMinWidth0Wrap());
     pushyBasics.add(new JLabel("Title prefix:"));
-    pushyBasics.add(controls.pushyTitlePrefix, MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0_WRAP);
-    pushyTab.add(pushyBasics, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    pushyBasics.add(controls.pushyTitlePrefix, MigConstraints.growXPushXMinWidth0Wrap());
+    pushyTab.add(pushyBasics, MigConstraints.growXMinWidth0Wrap());
 
     JPanel pushyDestination =
-        PreferencesUiSupport.captionPanel(
-            "Destination",
-            MigLayoutConstraints.INSETS_0_FILL_X_WRAP_2,
-            MigLayoutConstraints.RIGHT_8_GROW_FILL,
-            "[]");
+        PreferencesUiSupport.captionPanel("Destination", MigLayouts.twoColumnForm(8, "[]"));
     pushyDestination.add(new JLabel("Target mode:"));
     pushyDestination.add(controls.pushyTargetMode, "w 180!, wrap");
     pushyDestination.add(new JLabel("Target value:"));
-    pushyDestination.add(controls.pushyTargetValue, MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0_WRAP);
+    pushyDestination.add(controls.pushyTargetValue, MigConstraints.growXPushXMinWidth0Wrap());
     pushyDestination.add(
         PreferencesUiSupport.helpText(
             "Choose a destination type and enter the corresponding value."),
-        MigLayoutConstraints.SPAN_2_GROW_X);
-    pushyTab.add(pushyDestination, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+        MigConstraints.span2GrowX());
+    pushyTab.add(pushyDestination, MigConstraints.growXMinWidth0Wrap());
 
     JPanel pushyTimeouts =
         PreferencesUiSupport.captionPanel(
@@ -204,7 +146,7 @@ public final class TrayNotificationsPanelSupport {
     pushyTimeouts.add(controls.pushyConnectTimeoutSeconds, "w 90!");
     pushyTimeouts.add(new JLabel("Read (s):"));
     pushyTimeouts.add(controls.pushyReadTimeoutSeconds, "w 90!, wrap");
-    pushyTab.add(pushyTimeouts, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    pushyTab.add(pushyTimeouts, MigConstraints.growXMinWidth0Wrap());
     JPanel pushyActions =
         PreferencesUiSupport.captionPanel(
             "Validation & testing",
@@ -212,42 +154,34 @@ public final class TrayNotificationsPanelSupport {
             "[]12[grow,fill]",
             "[]");
     pushyActions.add(controls.pushyTest, "w 150!");
-    pushyActions.add(controls.pushyTestStatus, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    pushyActions.add(controls.pushyTestStatus, MigConstraints.growXMinWidth0Wrap());
     pushyActions.add(new JLabel(""));
-    pushyActions.add(controls.pushyValidationLabel, MigLayoutConstraints.GROW_X_WMIN_0);
-    pushyTab.add(pushyActions, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    pushyActions.add(controls.pushyValidationLabel, MigConstraints.growXMinWidth0());
+    pushyTab.add(pushyActions, MigConstraints.growXMinWidth0Wrap());
     pushyTab.add(
         PreferencesUiSupport.helpText(
             "Pushy notifications are triggered by matching IRC event rules in Notifications -> IRC Event Rules."),
-        MigLayoutConstraints.GROW_X);
+        MigConstraints.growX());
 
-    JPanel linuxTab =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_1, MigLayoutConstraints.GROW_FILL));
+    JPanel linuxTab = new JPanel(MigLayouts.singleColumn());
     linuxTab.setOpaque(false);
-    JPanel linuxGroup =
-        PreferencesUiSupport.captionPanel(
-            "Linux integration",
-            MigLayoutConstraints.INSETS_0_FILL_X_WRAP_1,
-            MigLayoutConstraints.GROW_FILL,
-            "");
-    linuxGroup.add(controls.linuxDbusActions, MigLayoutConstraints.GROW_X_WRAP);
+    JPanel linuxGroup = PreferencesUiSupport.captionPanel("Linux integration");
+    linuxGroup.add(controls.linuxDbusActions, MigConstraints.growXWrap());
     if (!linux) {
-      linuxGroup.add(PreferencesUiSupport.helpText("Linux only."), MigLayoutConstraints.GROW_X);
+      linuxGroup.add(PreferencesUiSupport.helpText("Linux only."), MigConstraints.growX());
     } else if (!linuxActionsSupported) {
       linuxGroup.add(
           PreferencesUiSupport.helpText(
               "Linux notification actions were not detected for this session.\n"
                   + "IRCafe will fall back to notify-send."),
-          MigLayoutConstraints.GROW_X);
+          MigConstraints.growX());
     } else {
       linuxGroup.add(
           PreferencesUiSupport.helpText(
               "Uses org.freedesktop.Notifications over D-Bus so clicking a notification can open IRCafe."),
-          MigLayoutConstraints.GROW_X);
+          MigConstraints.growX());
     }
-    linuxTab.add(linuxGroup, MigLayoutConstraints.GROW_X_WMIN_0);
+    linuxTab.add(linuxGroup, MigConstraints.growXMinWidth0());
 
     JTabbedPane subTabs = new DynamicTabbedPane();
     subTabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
@@ -257,12 +191,9 @@ public final class TrayNotificationsPanelSupport {
     subTabs.addTab("Pushy", PreferencesUiSupport.padSubTab(pushyTab));
     subTabs.addTab("Linux / Advanced", PreferencesUiSupport.padSubTab(linuxTab));
 
-    JPanel panel =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_1, MigLayoutConstraints.GROW_FILL));
+    JPanel panel = new JPanel(MigLayouts.singleColumn());
     panel.setOpaque(false);
-    panel.add(subTabs, MigLayoutConstraints.GROW_X_WMIN_0);
+    panel.add(subTabs, MigConstraints.growXMinWidth0());
     return panel;
   }
 }

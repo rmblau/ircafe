@@ -2,7 +2,9 @@ package cafe.woden.ircclient.ui.settings;
 
 import cafe.woden.ircclient.model.BuiltInSound;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.util.MigConstraints;
 import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import cafe.woden.ircclient.ui.util.MouseWheelDecorator;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import cafe.woden.ircclient.ui.util.UiFontKeys;
@@ -70,7 +72,15 @@ public final class PreferencesUiSupport {
   }
 
   public static JPanel captionPanel(String title, String layout, String columns, String rows) {
-    return captionPanelWithPadding(title, layout, columns, rows, 6, 8, 8, 8);
+    return captionPanel(title, new MigLayout(layout, columns, rows));
+  }
+
+  public static JPanel captionPanel(String title) {
+    return captionPanel(title, MigLayouts.singleColumn());
+  }
+
+  public static JPanel captionPanel(String title, MigLayout layout) {
+    return captionPanelWithPadding(title, layout, 6, 8, 8, 8);
   }
 
   public static JPanel captionPanelWithPadding(
@@ -83,6 +93,17 @@ public final class PreferencesUiSupport {
       int bottom,
       int right) {
     JPanel panel = new JPanel(new MigLayout(layout, columns, rows));
+    return captionPanelWithPadding(title, panel, top, left, bottom, right);
+  }
+
+  public static JPanel captionPanelWithPadding(
+      String title, MigLayout layout, int top, int left, int bottom, int right) {
+    JPanel panel = new JPanel(layout);
+    return captionPanelWithPadding(title, panel, top, left, bottom, right);
+  }
+
+  private static JPanel captionPanelWithPadding(
+      String title, JPanel panel, int top, int left, int bottom, int right) {
     panel.setOpaque(false);
     panel.setBorder(
         BorderFactory.createCompoundBorder(
@@ -201,10 +222,7 @@ public final class PreferencesUiSupport {
 
   public static JComponent wrapCheckBox(JCheckBox box, String labelText) {
     box.setText("");
-    JPanel row =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_X, MigLayoutConstraints.ROW_6_GROW_FILL, "[]"));
+    JPanel row = new JPanel(MigLayouts.fillX(MigLayoutConstraints.ROW_6_GROW_FILL, "[]"));
     row.setOpaque(false);
 
     JTextArea label = buttonWrapText(labelText);
@@ -217,8 +235,8 @@ public final class PreferencesUiSupport {
           }
         });
 
-    row.add(box, MigLayoutConstraints.ALIGN_Y_TOP);
-    row.add(label, MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0);
+    row.add(box, MigConstraints.alignYTop());
+    row.add(label, MigConstraints.growXPushXMinWidth0());
     return row;
   }
 

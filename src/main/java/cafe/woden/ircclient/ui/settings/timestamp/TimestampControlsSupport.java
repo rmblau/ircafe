@@ -4,12 +4,12 @@ import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import java.time.format.DateTimeFormatter;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import net.miginfocom.swing.MigLayout;
 
 public final class TimestampControlsSupport {
   private TimestampControlsSupport() {}
@@ -42,20 +42,11 @@ public final class TimestampControlsSupport {
     enabled.addItemListener(e -> syncEnabled.run());
     syncEnabled.run();
 
-    JPanel panel =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_1,
-                MigLayoutConstraints.GROW_FILL,
-                "[]6[]6[]6[]"));
+    JPanel panel = new JPanel(MigLayouts.singleColumn("[]6[]6[]6[]"));
     panel.setOpaque(false);
     panel.add(enabled);
     JPanel formatRow =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_2,
-                MigLayoutConstraints.LEADING_GROW_FILL,
-                "[]"));
+        new JPanel(MigLayouts.fillXWrap(0, 2, MigLayoutConstraints.LEADING_GROW_FILL, "[]"));
     formatRow.setOpaque(false);
     formatRow.add(new JLabel("Format"));
     formatRow.add(format, "w 200!");

@@ -5,7 +5,9 @@ import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.notify.api.NotificationSoundPort;
 import cafe.woden.ircclient.ui.settings.PathChooserControlsSupport;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.util.MigConstraints;
 import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import java.awt.Dimension;
 import java.awt.Window;
 import java.util.Objects;
@@ -17,7 +19,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
-import net.miginfocom.swing.MigLayout;
 
 public final class IrcEventNotificationRuleDialogSupport {
   private IrcEventNotificationRuleDialogSupport() {}
@@ -338,107 +339,85 @@ public final class IrcEventNotificationRuleDialogSupport {
     refreshScriptState.run();
 
     JPanel filtersPanel =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_10_FILLX_WRAP_2_HIDEMODE_3,
-                MigLayoutConstraints.RIGHT_8_GROW_FILL,
-                "[]6[]6[]6[]6[]6[]6[]6[]6[]"));
+        new JPanel(MigLayouts.twoColumnFormWithHideMode(10, 8, 3, "[]6[]6[]6[]6[]6[]6[]6[]6[]"));
     filtersPanel.add(enabled, "span 2,wrap");
     filtersPanel.add(new JLabel("Event"));
     filtersPanel.add(eventType, "growx, wmin 220, wrap");
     filtersPanel.add(new JLabel("Source"));
-    filtersPanel.add(sourceMode, MigLayoutConstraints.GROW_X_WRAP);
+    filtersPanel.add(sourceMode, MigConstraints.growXWrap());
     filtersPanel.add(new JLabel("Source match"));
-    filtersPanel.add(sourcePattern, MigLayoutConstraints.GROW_X_WRAP);
+    filtersPanel.add(sourcePattern, MigConstraints.growXWrap());
     filtersPanel.add(new JLabel("Channel scope"));
-    filtersPanel.add(channelScope, MigLayoutConstraints.GROW_X_WRAP);
+    filtersPanel.add(channelScope, MigConstraints.growXWrap());
     filtersPanel.add(new JLabel("Channels"));
-    filtersPanel.add(channelPatterns, MigLayoutConstraints.GROW_X_WRAP);
+    filtersPanel.add(channelPatterns, MigConstraints.growXWrap());
 
-    JPanel ctcpCommandRow =
-        new JPanel(
-            new MigLayout(MigLayoutConstraints.INSETS_0_FILL_X, "[pref!]8[grow,fill]", "[]"));
-    ctcpCommandRow.add(ctcpCommandMode, MigLayoutConstraints.WIDTH_110);
-    ctcpCommandRow.add(ctcpCommandPattern, MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0);
+    JPanel ctcpCommandRow = new JPanel(MigLayouts.fillX("[pref!]8[grow,fill]", "[]"));
+    ctcpCommandRow.add(ctcpCommandMode, MigConstraints.width(110));
+    ctcpCommandRow.add(ctcpCommandPattern, MigConstraints.growXPushXMinWidth0());
     filtersPanel.add(new JLabel("CTCP command"));
-    filtersPanel.add(ctcpCommandRow, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    filtersPanel.add(ctcpCommandRow, MigConstraints.growXMinWidth0Wrap());
 
-    JPanel ctcpValueRow =
-        new JPanel(
-            new MigLayout(MigLayoutConstraints.INSETS_0_FILL_X, "[pref!]8[grow,fill]", "[]"));
-    ctcpValueRow.add(ctcpValueMode, MigLayoutConstraints.WIDTH_110);
-    ctcpValueRow.add(ctcpValuePattern, MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0);
+    JPanel ctcpValueRow = new JPanel(MigLayouts.fillX("[pref!]8[grow,fill]", "[]"));
+    ctcpValueRow.add(ctcpValueMode, MigConstraints.width(110));
+    ctcpValueRow.add(ctcpValuePattern, MigConstraints.growXPushXMinWidth0());
     filtersPanel.add(new JLabel("CTCP value"));
-    filtersPanel.add(ctcpValueRow, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    filtersPanel.add(ctcpValueRow, MigConstraints.growXMinWidth0Wrap());
 
-    JPanel ctcpTemplateRow =
-        new JPanel(new MigLayout(MigLayoutConstraints.INSETS_0_FILL_X, "[grow,fill]8[]", "[]"));
-    ctcpTemplateRow.add(ctcpTemplate, MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0);
-    ctcpTemplateRow.add(applyCtcpTemplate, MigLayoutConstraints.WIDTH_36_HEIGHT_28);
+    JPanel ctcpTemplateRow = new JPanel(MigLayouts.fillX("[grow,fill]8[]", "[]"));
+    ctcpTemplateRow.add(ctcpTemplate, MigConstraints.growXPushXMinWidth0());
+    ctcpTemplateRow.add(applyCtcpTemplate, MigConstraints.widthHeight(36, 28));
     filtersPanel.add(new JLabel("CTCP template"));
-    filtersPanel.add(ctcpTemplateRow, MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    filtersPanel.add(ctcpTemplateRow, MigConstraints.growXMinWidth0Wrap());
     filtersPanel.add(new JLabel(""));
     filtersPanel.add(
         PreferencesUiSupport.helpText(
             "Active channel only means the event target must match the currently selected channel on the same server.\n"
                 + "CTCP command/value filters only apply when Event is CTCP Request Received."),
-        MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+        MigConstraints.growXMinWidth0Wrap());
 
-    JPanel actionsPanel =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_10_FILLX_WRAP_2_HIDEMODE_3,
-                MigLayoutConstraints.RIGHT_8_GROW_FILL,
-                "[]6[]6[]"));
-    actionsPanel.add(toastEnabled, MigLayoutConstraints.SPAN_2_GROW_X_WRAP);
+    JPanel actionsPanel = new JPanel(MigLayouts.twoColumnFormWithHideMode(10, 8, 3, "[]6[]6[]"));
+    actionsPanel.add(toastEnabled, MigConstraints.span2GrowXWrap());
     actionsPanel.add(new JLabel("Toast focus"));
-    actionsPanel.add(focusScope, MigLayoutConstraints.GROW_X_WRAP);
-    actionsPanel.add(statusBarEnabled, MigLayoutConstraints.SPAN_2_GROW_X_WRAP);
-    actionsPanel.add(notificationsNodeEnabled, MigLayoutConstraints.SPAN_2_GROW_X_WRAP);
+    actionsPanel.add(focusScope, MigConstraints.growXWrap());
+    actionsPanel.add(statusBarEnabled, MigConstraints.span2GrowXWrap());
+    actionsPanel.add(notificationsNodeEnabled, MigConstraints.span2GrowXWrap());
     actionsPanel.add(new JLabel(""));
     actionsPanel.add(
         PreferencesUiSupport.helpText(
             "Tip: combine multiple rules for the same event to split foreground/background behavior."),
-        MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+        MigConstraints.growXMinWidth0Wrap());
 
     JPanel soundPanel =
-        new JPanel(
-            new MigLayout(
-                "insets 10,fillx,wrap 4,hidemode 3",
-                MigLayoutConstraints.RIGHT_8_GROW_FILL_8_TRAILING_8_TRAILING,
-                "[]6[]4[]"));
+        new JPanel(MigLayouts.labelFieldActionsFormWithHideMode(10, 8, 2, 3, "[]6[]4[]"));
     soundPanel.add(soundEnabled, "span 4, growx, wrap");
     soundPanel.add(new JLabel("Built-in"));
-    soundPanel.add(builtInSound, MigLayoutConstraints.GROW_X_WMIN_180);
-    soundPanel.add(testSound, MigLayoutConstraints.WIDTH_36_HEIGHT_28);
+    soundPanel.add(builtInSound, MigConstraints.growXMinWidth(180));
+    soundPanel.add(testSound, MigConstraints.widthHeight(36, 28));
     soundPanel.add(soundUseCustom, "wrap");
     soundPanel.add(new JLabel("Custom file"));
-    soundPanel.add(soundCustomPath, MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0);
-    soundPanel.add(browseCustomSound, MigLayoutConstraints.WIDTH_36_HEIGHT_28);
-    soundPanel.add(clearCustomSound, MigLayoutConstraints.WIDTH_36_HEIGHT_28_WRAP);
+    soundPanel.add(soundCustomPath, MigConstraints.growXPushXMinWidth0());
+    soundPanel.add(browseCustomSound, MigConstraints.widthHeight(36, 28));
+    soundPanel.add(clearCustomSound, MigConstraints.widthHeightWrap(36, 28));
     soundPanel.add(new JLabel(""));
     soundPanel.add(
         PreferencesUiSupport.helpText(
             "When Sound is disabled on a rule, no sound is played for that event."),
-        MigLayoutConstraints.SPAN_3_GROW_X_WMIN_0_WRAP);
+        MigConstraints.spanXGrowXMinWidthWrap(3, 0));
 
     JPanel scriptPanel =
-        new JPanel(
-            new MigLayout(
-                "insets 10,fillx,wrap 4,hidemode 3",
-                MigLayoutConstraints.RIGHT_8_GROW_FILL_8_TRAILING_8_TRAILING,
-                "[]6[]4[]"));
+        new JPanel(MigLayouts.labelFieldActionsFormWithHideMode(10, 8, 2, 3, "[]6[]4[]"));
     scriptPanel.add(scriptEnabled, "span 4, growx, wrap");
     scriptPanel.add(new JLabel("Script path"));
-    scriptPanel.add(scriptPath, MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0);
-    scriptPanel.add(browseScript, MigLayoutConstraints.WIDTH_36_HEIGHT_28);
-    scriptPanel.add(clearScript, MigLayoutConstraints.WIDTH_36_HEIGHT_28_WRAP);
+    scriptPanel.add(scriptPath, MigConstraints.growXPushXMinWidth0());
+    scriptPanel.add(browseScript, MigConstraints.widthHeight(36, 28));
+    scriptPanel.add(clearScript, MigConstraints.widthHeightWrap(36, 28));
     scriptPanel.add(new JLabel("Arguments"));
-    scriptPanel.add(scriptArgs, MigLayoutConstraints.SPAN_3_GROW_X_WMIN_0_WRAP);
+    scriptPanel.add(scriptArgs, MigConstraints.spanXGrowXMinWidthWrap(3, 0));
     scriptPanel.add(new JLabel("Working dir"));
-    scriptPanel.add(scriptWorkingDirectory, MigLayoutConstraints.GROW_X_PUSH_X_WMIN_0);
-    scriptPanel.add(browseScriptWorkingDirectory, MigLayoutConstraints.WIDTH_36_HEIGHT_28);
-    scriptPanel.add(clearScriptWorkingDirectory, MigLayoutConstraints.WIDTH_36_HEIGHT_28_WRAP);
+    scriptPanel.add(scriptWorkingDirectory, MigConstraints.growXPushXMinWidth0());
+    scriptPanel.add(browseScriptWorkingDirectory, MigConstraints.widthHeight(36, 28));
+    scriptPanel.add(clearScriptWorkingDirectory, MigConstraints.widthHeightWrap(36, 28));
     scriptPanel.add(new JLabel(""));
     scriptPanel.add(
         PreferencesUiSupport.helpText(
@@ -447,7 +426,7 @@ public final class IrcEventNotificationRuleDialogSupport {
                 + "IRCAFE_SOURCE_IS_SELF, IRCAFE_TITLE, IRCAFE_BODY,\n"
                 + "IRCAFE_CTCP_COMMAND, IRCAFE_CTCP_VALUE, IRCAFE_TIMESTAMP_MS.\n"
                 + "Arguments support quotes/escapes and are passed directly (no shell expansion)."),
-        MigLayoutConstraints.SPAN_3_GROW_X_WMIN_0_WRAP);
+        MigConstraints.spanXGrowXMinWidthWrap(3, 0));
 
     JTabbedPane tabs = new JTabbedPane();
     tabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
@@ -459,11 +438,9 @@ public final class IrcEventNotificationRuleDialogSupport {
 
     JPanel form =
         new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_WRAP_1,
-                MigLayoutConstraints.GROW_FILL,
-                MigLayoutConstraints.GROW_FILL));
-    form.add(tabs, MigLayoutConstraints.GROW_PUSH_WMIN_0);
+            MigLayouts.fillWrap(
+                0, 1, MigLayoutConstraints.GROW_FILL, MigLayoutConstraints.GROW_FILL));
+    form.add(tabs, MigConstraints.growPushMinWidth0());
 
     String dialogTitle = Objects.toString(title, "IRC Event Rule");
     while (true) {

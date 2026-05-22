@@ -5,13 +5,13 @@ import cafe.woden.ircclient.ui.settings.nickcolor.NickColorControls;
 import cafe.woden.ircclient.ui.settings.outgoing.OutgoingColorControls;
 import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckControls;
 import cafe.woden.ircclient.ui.settings.timestamp.TimestampControls;
-import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
+import cafe.woden.ircclient.ui.util.MigConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
-import net.miginfocom.swing.MigLayout;
 
 public final class ChatPanelSupport {
   private ChatPanelSupport() {}
@@ -25,13 +25,8 @@ public final class ChatPanelSupport {
       TimestampControls timestamps,
       OutgoingColorControls outgoing,
       JCheckBox outgoingDeliveryIndicators) {
-    JPanel form =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_12_FILL_WRAP_1,
-                MigLayoutConstraints.GROW_FILL,
-                "[]10[grow,fill]"));
-    form.add(PreferencesUiSupport.tabTitle("Chat"), MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    JPanel form = new JPanel(MigLayouts.singleColumnFill(12, "[]10[grow,fill]"));
+    form.add(PreferencesUiSupport.tabTitle("Chat"), MigConstraints.growXMinWidth0Wrap());
 
     JTabbedPane chatTabs = new JTabbedPane();
     chatTabs.addTab(
@@ -47,7 +42,7 @@ public final class ChatPanelSupport {
                 outgoingDeliveryIndicators)));
     chatTabs.addTab(
         "Spellcheck", PreferencesUiSupport.padSubTab(buildSpellcheckSubTab(spellcheck)));
-    form.add(chatTabs, MigLayoutConstraints.GROW_PUSH_WMIN_0);
+    form.add(chatTabs, MigConstraints.growPushMinWidth0());
     return form;
   }
 
@@ -59,55 +54,44 @@ public final class ChatPanelSupport {
       TimestampControls timestamps,
       OutgoingColorControls outgoing,
       JCheckBox outgoingDeliveryIndicators) {
-    JPanel panel =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_2,
-                MigLayoutConstraints.RIGHT_12_GROW_FILL,
-                "[]8[]6[]6[]6[]10[]6[]"));
+    JPanel panel = new JPanel(MigLayouts.twoColumnForm(12, "[]8[]6[]6[]6[]10[]6[]"));
     panel.setOpaque(false);
 
     panel.add(
-        PreferencesUiSupport.sectionTitle("Display"),
-        MigLayoutConstraints.SPAN_2_GROW_X_WMIN_0_WRAP);
-    panel.add(new JLabel("Presence events"), MigLayoutConstraints.ALIGN_Y_TOP);
+        PreferencesUiSupport.sectionTitle("Display"), MigConstraints.span2GrowXMinWidth0Wrap());
+    panel.add(new JLabel("Presence events"), MigConstraints.alignYTop());
     panel.add(presenceFolds, "alignx left");
 
-    panel.add(new JLabel("CTCP requests"), MigLayoutConstraints.ALIGN_Y_TOP);
+    panel.add(new JLabel("CTCP requests"), MigConstraints.alignYTop());
     panel.add(ctcpRequestsInActiveTarget, "alignx left");
 
-    panel.add(new JLabel("Nick colors"), MigLayoutConstraints.ALIGN_Y_TOP);
-    panel.add(nickColors.panel(), MigLayoutConstraints.GROW_X_WMIN_0);
+    panel.add(new JLabel("Nick colors"), MigConstraints.alignYTop());
+    panel.add(nickColors.panel(), MigConstraints.growXMinWidth0());
 
-    panel.add(new JLabel("Timestamps"), MigLayoutConstraints.ALIGN_Y_TOP);
-    panel.add(timestamps.panel(), MigLayoutConstraints.GROW_X_WMIN_0);
+    panel.add(new JLabel("Timestamps"), MigConstraints.alignYTop());
+    panel.add(timestamps.panel(), MigConstraints.growXMinWidth0());
 
     panel.add(
         PreferencesUiSupport.sectionTitle("Your messages"),
-        MigLayoutConstraints.SPAN_2_GROW_X_WMIN_0_WRAP);
-    panel.add(new JLabel("Outgoing messages"), MigLayoutConstraints.ALIGN_Y_TOP);
-    panel.add(outgoing.panel(), MigLayoutConstraints.GROW_X_WMIN_0);
-    panel.add(new JLabel("Delivery indicators"), MigLayoutConstraints.ALIGN_Y_TOP);
+        MigConstraints.span2GrowXMinWidth0Wrap());
+    panel.add(new JLabel("Outgoing messages"), MigConstraints.alignYTop());
+    panel.add(outgoing.panel(), MigConstraints.growXMinWidth0());
+    panel.add(new JLabel("Delivery indicators"), MigConstraints.alignYTop());
     panel.add(outgoingDeliveryIndicators, "alignx left");
-    panel.add(new JLabel("Default /quit message"), MigLayoutConstraints.ALIGN_Y_TOP);
-    panel.add(defaultQuitMessage, MigLayoutConstraints.GROW_X_WMIN_0);
+    panel.add(new JLabel("Default /quit message"), MigConstraints.alignYTop());
+    panel.add(defaultQuitMessage, MigConstraints.growXMinWidth0());
 
     return panel;
   }
 
   private static JPanel buildSpellcheckSubTab(SpellcheckControls spellcheck) {
-    JPanel panel =
-        new JPanel(
-            new MigLayout(
-                MigLayoutConstraints.INSETS_0_FILL_X_WRAP_1,
-                MigLayoutConstraints.GROW_FILL,
-                "[]8[]"));
+    JPanel panel = new JPanel(MigLayouts.singleColumn("[]8[]"));
     panel.setOpaque(false);
-    panel.add(PreferencesUiSupport.sectionTitle("Input"), MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
-    panel.add(spellcheck.panel(), MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+    panel.add(PreferencesUiSupport.sectionTitle("Input"), MigConstraints.growXMinWidth0Wrap());
+    panel.add(spellcheck.panel(), MigConstraints.growXMinWidth0Wrap());
     panel.add(
         PreferencesUiSupport.helpText("Spellcheck settings are scoped to the message input bar."),
-        MigLayoutConstraints.GROW_X_WMIN_0_WRAP);
+        MigConstraints.growXMinWidth0Wrap());
     return panel;
   }
 }
