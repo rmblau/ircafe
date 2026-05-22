@@ -67,12 +67,13 @@ public final class NickColorControlsSupport {
           updatePreview.run();
         });
 
-    JPanel panel = new JPanel(MigLayouts.fillXWrap(0, 2, "[grow,fill]8[nogrid]", "[]6[]6[]6[]"));
+    JPanel panel =
+        new JPanel(MigLayouts.fillXWrap(0, 2, "[grow,fill]8[nogrid]", MigLayouts.rows(4, 6)));
     panel.setOpaque(false);
     panel.add(enabled, MigConstraints.spanXWrap(2));
     panel.add(new JLabel("Minimum contrast ratio:"));
     panel.add(minContrast, MigConstraints.widthWrap(110));
-    panel.add(overrides, "span 2, alignx left, wrap");
+    panel.add(overrides, MigConstraints.spanXAlignXLeftWrap(2));
     panel.add(
         PreferencesUiSupport.helpText(
             "Tip: If nick colors look too similar to the background, increase the contrast ratio.\n"

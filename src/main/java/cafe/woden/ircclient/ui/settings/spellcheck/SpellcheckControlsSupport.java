@@ -170,7 +170,7 @@ public final class SpellcheckControlsSupport {
         "Penalty for later suggestions from upstream spelling results.");
 
     JPanel customKnobsPanel =
-        new JPanel(MigLayouts.twoColumnFormWithHideMode(0, 8, 3, "[]2[]2[]2[]2[]"));
+        new JPanel(MigLayouts.twoColumnFormWithHideMode(0, 8, 3, MigLayouts.rows(5, 2)));
     customKnobsPanel.setOpaque(false);
     customKnobsPanel.add(new JLabel("Min prefix length"));
     customKnobsPanel.add(customMinPrefixCompletionTokenLength, MigConstraints.width(120));
@@ -215,7 +215,7 @@ public final class SpellcheckControlsSupport {
     JPanel panel =
         new JPanel(
             MigLayouts.fillXWrapWithHideMode(
-                0, 1, 3, MigLayoutConstraints.GROW_FILL, "[]2[]2[]4[]2[]2[]2[]2[]"));
+                0, 1, 3, MigLayoutConstraints.GROW_FILL, MigLayouts.rowGaps(2, 2, 4, 2, 2, 2, 2)));
     panel.setOpaque(false);
     panel.add(enabled, MigConstraints.growXMinWidth0Wrap());
     panel.add(underline, MigConstraints.growXMinWidthGapLeftWrap(0, 18));
@@ -225,7 +225,7 @@ public final class SpellcheckControlsSupport {
     JPanel langRow = new JPanel(MigLayouts.fillX(MigLayoutConstraints.ROW_8_GROW_FILL, "[]"));
     langRow.setOpaque(false);
     langRow.add(new JLabel("Dictionary language"));
-    langRow.add(languageTag, "growx, wmin 160");
+    langRow.add(languageTag, MigConstraints.growXMinWidth(160));
     panel.add(langRow, MigConstraints.growXMinWidthGapLeftWrap(0, 18));
 
     JPanel presetRow = new JPanel(MigLayouts.fillX(MigLayoutConstraints.ROW_8_GROW_FILL, "[]"));
@@ -237,10 +237,11 @@ public final class SpellcheckControlsSupport {
         PreferencesUiSupport.helpText(
             "Presets tune TAB completion ranking. Select Custom to reveal manual tuning knobs."),
         MigConstraints.growXMinWidthGapLeftWrap(0, 18));
-    panel.add(customKnobsPanel, "growx, wmin 0, gapleft 36, wrap");
+    panel.add(customKnobsPanel, MigConstraints.growXMinWidthGapLeftWrap(0, 36));
 
     panel.add(new JLabel("Custom dictionary"), MigConstraints.growXMinWidthGapLeftWrap(0, 18));
-    panel.add(customScroll, "growx, wmin 0, h 80:110:180, gapleft 18, wrap");
+    panel.add(
+        customScroll, MigConstraints.growXMinWidthHeightBoundsGapLeftWrap(0, "80:110:180", 18));
     panel.add(
         PreferencesUiSupport.helpText(
             "Add channel slang, nick-like words, or terms you use frequently so they are ignored."),

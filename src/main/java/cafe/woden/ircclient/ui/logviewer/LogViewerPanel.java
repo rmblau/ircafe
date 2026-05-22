@@ -90,6 +90,7 @@ import org.slf4j.LoggerFactory;
 public final class LogViewerPanel extends JPanel implements AutoCloseable {
 
   private static final Logger log = LoggerFactory.getLogger(LogViewerPanel.class);
+  private static final String VIEWER_BUTTON_SIZE_GROUP = "viewer-btn";
   private static final int CHANNEL_PICKER_LIMIT = 3000;
   private static final ChatLogViewerMatchMode[] TEXT_MATCH_MODES = {
     ChatLogViewerMatchMode.CONTAINS, ChatLogViewerMatchMode.GLOB, ChatLogViewerMatchMode.REGEX
@@ -277,15 +278,18 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
     JPanel header =
         new JPanel(
             MigLayouts.fillXWrap(
-                "8 10 6 10", 7, "[grow,fill][right][pref!][pref!][pref!][pref!][pref!]", "[]2[]"));
+                "8 10 6 10",
+                7,
+                "[grow,fill][right][pref!][pref!][pref!][pref!][pref!]",
+                MigLayouts.rows(2, 2)));
     header.add(title, MigConstraints.growX());
     header.add(new JLabel("Max rows:"), "");
-    header.add(limitSpinner, "w 84!");
-    header.add(searchButton, "sg viewer-btn");
-    header.add(resetButton, "sg viewer-btn");
-    header.add(columnsButton, "sg viewer-btn");
-    header.add(exportButton, "sg viewer-btn");
-    header.add(subtitle, "span 7,growx");
+    header.add(limitSpinner, MigConstraints.width(84));
+    header.add(searchButton, MigConstraints.sizeGroup(VIEWER_BUTTON_SIZE_GROUP));
+    header.add(resetButton, MigConstraints.sizeGroup(VIEWER_BUTTON_SIZE_GROUP));
+    header.add(columnsButton, MigConstraints.sizeGroup(VIEWER_BUTTON_SIZE_GROUP));
+    header.add(exportButton, MigConstraints.sizeGroup(VIEWER_BUTTON_SIZE_GROUP));
+    header.add(subtitle, MigConstraints.spanXGrowX(7));
     north.add(header, BorderLayout.CENTER);
   }
 
@@ -293,7 +297,7 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
     JPanel filters =
         new JPanel(
             MigLayouts.fillXWrapWithHideMode(
-                "4 10 8 10", 1, 3, MigLayoutConstraints.GROW_FILL, "[]2[]2[]"));
+                "4 10 8 10", 1, 3, MigLayoutConstraints.GROW_FILL, MigLayouts.rows(3, 2)));
 
     nickMode.setRenderer(modeRenderer());
     messageMode.setRenderer(modeRenderer());
@@ -330,7 +334,7 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
     quickRow.add(new JLabel("Channel:"), "");
     quickRow.add(channelField, MigConstraints.pushXGrowX());
     quickRow.add(channelMode, MigConstraints.width(88));
-    quickRow.add(channelListButton, "w 34!");
+    quickRow.add(channelListButton, MigConstraints.width(34));
     filters.add(quickRow, MigConstraints.growX());
 
     JPanel messageRow =
@@ -347,11 +351,11 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
             MigLayouts.fillXWithHideMode(
                 0, 3, "[right][pref!][right][pref!][right][pref!][grow,fill]", "[]"));
     dateRow.add(new JLabel("Range:"), "");
-    dateRow.add(datePreset, "w 100!");
+    dateRow.add(datePreset, MigConstraints.width(100));
     dateRow.add(fromLabel, "");
-    dateRow.add(fromSpinner, "w 145!");
+    dateRow.add(fromSpinner, MigConstraints.width(145));
     dateRow.add(toLabel, "");
-    dateRow.add(toSpinner, "w 145!");
+    dateRow.add(toSpinner, MigConstraints.width(145));
     dateRow.add(new JLabel(""), MigConstraints.pushXGrowX());
     filters.add(dateRow, MigConstraints.growX());
 
@@ -479,14 +483,14 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
     messageArea.setWrapStyleWord(true);
     messageArea.setCaretPosition(0);
     JScrollPane messageScroll = new JScrollPane(messageArea);
-    messagePanel.add(messageScroll, "grow,push,hmin 140");
-    content.add(messagePanel, "grow,push");
+    messagePanel.add(messageScroll, MigConstraints.growPushMinHeight(140));
+    content.add(messagePanel, MigConstraints.growPush());
 
     JButton close = new JButton("Close");
     close.addActionListener(ev -> dialog.dispose());
     JPanel actions = new JPanel(MigLayouts.fillX(MigLayoutConstraints.GROW_FILL_TRAILING, "[]"));
     actions.add(new JLabel(""), MigConstraints.growX());
-    actions.add(close, "tag ok");
+    actions.add(close, MigConstraints.tagOk());
     content.add(actions, MigConstraints.growX());
 
     dialog.setContentPane(content);
@@ -1249,7 +1253,7 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
             MigLayouts.fillWrapWithHideMode(
                 4, 1, 3, MigLayoutConstraints.GROW_FILL, "[]8[grow,fill]8[]"));
     root.add(searchRow, MigConstraints.growX());
-    root.add(scroll, "grow,push,wmin 0,hmin 0");
+    root.add(scroll, MigConstraints.growPushMinWidth0MinHeight(0));
     root.add(buttons, MigConstraints.growX());
     installChannelPickerShortcuts(root, doneButton);
     popup.add(root);

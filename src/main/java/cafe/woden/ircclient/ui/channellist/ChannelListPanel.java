@@ -346,7 +346,7 @@ public final class ChannelListPanel extends JPanel {
     controls.add(runMatrixNextButton);
     controls.add(listDetailsButton);
     controls.add(clearListButton);
-    controls.add(new JLabel("Filter:"), "gapleft 12");
+    controls.add(new JLabel("Filter:"), MigConstraints.gapLeft(12));
     controls.add(filterField, MigConstraints.pushXGrowX());
 
     listSubtitle.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 0));
@@ -485,7 +485,7 @@ public final class ChannelListPanel extends JPanel {
     toolbar.add(moveUpButton);
     toolbar.add(moveDownButton);
     toolbar.add(new JLabel("Order:"));
-    toolbar.add(sortModeCombo, "w 200!");
+    toolbar.add(sortModeCombo, MigConstraints.width(200));
 
     managedTable.setFillsViewportHeight(true);
     managedTable.setRowSelectionAllowed(true);
@@ -1849,7 +1849,7 @@ public final class ChannelListPanel extends JPanel {
     detailsTab.add(new JLabel("Server"));
     detailsTab.add(readOnlyField(details.serverId()), MigConstraints.growX());
     detailsTab.add(new JLabel("Channel"));
-    detailsTab.add(readOnlyField(details.channel()), "span 3,growx");
+    detailsTab.add(readOnlyField(details.channel()), MigConstraints.spanXGrowX(3));
 
     detailsTab.add(new JLabel("Source"));
     detailsTab.add(
@@ -1894,11 +1894,11 @@ public final class ChannelListPanel extends JPanel {
     banStatusPanel.add(new JScrollPane(banListStatusArea), BorderLayout.CENTER);
     banPanel.add(banStatusPanel, BorderLayout.SOUTH);
 
-    detailsTab.add(new JLabel("Mode Summary"), "top");
-    detailsTab.add(modeSummaryPanel, "span 5,growx,hmin 140");
+    detailsTab.add(new JLabel("Mode Summary"), MigConstraints.alignYTop());
+    detailsTab.add(modeSummaryPanel, MigConstraints.spanXGrowXMinHeight(5, 140));
 
-    detailsTab.add(new JLabel("Topic"), "top");
-    detailsTab.add(topicPanel, "span 5,grow,pushy,hmin 160");
+    detailsTab.add(new JLabel("Topic"), MigConstraints.alignYTop());
+    detailsTab.add(topicPanel, MigConstraints.spanXGrowPushYMinHeight(5, 160));
 
     JTabbedPane detailsTabs = new JTabbedPane();
     detailsTabs.addTab("Details", detailsTab);
@@ -1913,7 +1913,7 @@ public final class ChannelListPanel extends JPanel {
         new JPanel(
             MigLayouts.fillWrap(
                 0, 1, MigLayoutConstraints.GROW_FILL, MigLayoutConstraints.GROW_FILL_TRAILING));
-    root.add(detailsTabs, "grow,push");
+    root.add(detailsTabs, MigConstraints.growPush());
     root.add(south, MigConstraints.growX());
 
     Window owner = SwingUtilities.getWindowAncestor(this);

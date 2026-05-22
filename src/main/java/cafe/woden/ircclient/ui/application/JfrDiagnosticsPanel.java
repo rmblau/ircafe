@@ -207,7 +207,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
     controls.add(clearSelectedRowButton);
     controls.add(clearAllRowsButton);
     controls.add(exportMemoryBundleButton);
-    controls.add(rowsLabel, "alignx right");
+    controls.add(rowsLabel, MigConstraints.alignXRight());
 
     JScrollPane scroll = new JScrollPane(table);
     scroll.setBorder(null);
@@ -249,7 +249,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
   }
 
   private JPanel buildCpuSummaryPanel() {
-    JPanel panel = new JPanel(MigLayouts.twoColumnForm(6, 8, "[]4[]4[]4[]"));
+    JPanel panel = new JPanel(MigLayouts.twoColumnForm(6, 8, MigLayouts.rows(4, 4)));
     panel.setBorder(BorderFactory.createTitledBorder("CPU"));
     panel.setOpaque(false);
     addSummaryField(panel, "Machine", cpuMachineValue);
@@ -260,7 +260,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
   }
 
   private JPanel buildHeapSummaryPanel() {
-    JPanel panel = new JPanel(MigLayouts.twoColumnForm(6, 8, "[]4[]4[]4[]"));
+    JPanel panel = new JPanel(MigLayouts.twoColumnForm(6, 8, MigLayouts.rows(4, 4)));
     panel.setBorder(BorderFactory.createTitledBorder("Heap"));
     panel.setOpaque(false);
     addSummaryField(panel, "Used", heapUsedValue);
@@ -271,7 +271,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
   }
 
   private JPanel buildGcSummaryPanel() {
-    JPanel panel = new JPanel(MigLayouts.twoColumnForm(6, 8, "[]4[]4[]4[]"));
+    JPanel panel = new JPanel(MigLayouts.twoColumnForm(6, 8, MigLayouts.rows(4, 4)));
     panel.setBorder(BorderFactory.createTitledBorder("GC"));
     panel.setOpaque(false);
     addSummaryField(panel, "Events (2m)", gcCountValue);
@@ -646,7 +646,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
   private static JPanel buildDetailPanel(RuntimeDiagnosticEvent event) {
     JPanel root = new JPanel(new BorderLayout(0, 10));
 
-    JPanel fields = new JPanel(MigLayouts.twoColumnForm(10, "[]4[]4[]4[]"));
+    JPanel fields = new JPanel(MigLayouts.twoColumnForm(10, MigLayouts.rows(4, 4)));
     addDetailRow(fields, "Time", event.at() == null ? "" : TIME_FMT.format(event.at()));
     addDetailRow(fields, "Level", Objects.toString(event.level(), ""));
     addDetailRow(fields, "Event type", Objects.toString(event.type(), ""));

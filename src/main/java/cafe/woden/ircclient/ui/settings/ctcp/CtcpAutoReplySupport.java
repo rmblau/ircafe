@@ -49,7 +49,7 @@ public final class CtcpAutoReplySupport {
   }
 
   public static JPanel buildPanel(CtcpAutoReplyControls controls) {
-    JPanel form = new JPanel(MigLayouts.singleColumn(12, "[]8[]8[]"));
+    JPanel form = new JPanel(MigLayouts.singleColumn(12, MigLayouts.rows(3, 8)));
 
     form.add(PreferencesUiSupport.tabTitle("CTCP Replies"), MigConstraints.growXMinWidth0Wrap());
     form.add(
@@ -61,7 +61,8 @@ public final class CtcpAutoReplySupport {
 
     JPanel perCommand =
         new JPanel(
-            MigLayouts.fillXWrapWithHideMode(8, 1, 3, MigLayoutConstraints.GROW_FILL, "[]2[]2[]"));
+            MigLayouts.fillXWrapWithHideMode(
+                8, 1, 3, MigLayoutConstraints.GROW_FILL, MigLayouts.rows(3, 2)));
     perCommand.setOpaque(false);
     perCommand.setBorder(
         BorderFactory.createCompoundBorder(

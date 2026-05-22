@@ -75,7 +75,7 @@ public final class IrcEventNotificationsTabSupport {
     JPanel defaultsRow = new JPanel(MigLayouts.fillX("[]8[grow,fill]8[]8[]", "[]"));
     defaultsRow.setOpaque(false);
     defaultsRow.add(new JLabel("Defaults"));
-    defaultsRow.add(defaultsPreset, "w 240!");
+    defaultsRow.add(defaultsPreset, MigConstraints.width(240));
     defaultsRow.add(applyDefaults, MigConstraints.widthHeight(36, 28));
     defaultsRow.add(resetToIrcafeDefaults, MigConstraints.widthHeight(36, 28));
 
@@ -238,7 +238,7 @@ public final class IrcEventNotificationsTabSupport {
 
     JPanel presetsPanel =
         PreferencesUiSupport.captionPanelWithPadding(
-            "Presets", MigLayouts.singleColumn("[]4[]"), 10, 10, 10, 10);
+            "Presets", MigLayouts.singleColumn(MigLayouts.rows(2, 4)), 10, 10, 10, 10);
     presetsPanel.add(defaultsRow, MigConstraints.growXMinWidth0Wrap());
     presetsPanel.add(
         PreferencesUiSupport.helpText(

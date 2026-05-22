@@ -64,9 +64,10 @@ public final class OutgoingColorControlsSupport {
         });
 
     JPanel outgoingColorPanel =
-        new JPanel(MigLayouts.fillXWrap(0, 3, "[grow,fill]8[nogrid]8[nogrid]", "[]4[]"));
+        new JPanel(
+            MigLayouts.fillXWrap(0, 3, "[grow,fill]8[nogrid]8[nogrid]", MigLayouts.rows(2, 4)));
     outgoingColorPanel.setOpaque(false);
-    outgoingColorPanel.add(outgoingColorEnabled, "span 3, wrap");
+    outgoingColorPanel.add(outgoingColorEnabled, MigConstraints.spanXWrap(3));
     outgoingColorPanel.add(outgoingColorHex, MigConstraints.width(110));
     outgoingColorPanel.add(outgoingPick);
     outgoingColorPanel.add(outgoingPreview);

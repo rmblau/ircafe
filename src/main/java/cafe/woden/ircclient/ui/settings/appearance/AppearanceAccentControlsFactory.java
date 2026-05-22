@@ -81,7 +81,7 @@ final class AppearanceAccentControlsFactory {
       JTextField hex,
       JButton pick,
       JButton clear) {
-    JPanel row = new JPanel(MigLayouts.singleColumn("[]6[]"));
+    JPanel row = new JPanel(MigLayouts.singleColumn(MigLayouts.rows(2, 6)));
     row.setOpaque(false);
 
     JPanel top = new JPanel(MigLayouts.fillX("[grow,fill]10[grow,fill]", "[]"));

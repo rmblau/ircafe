@@ -257,7 +257,7 @@ final class SwingUiInteractionPort implements UiInteractionPort {
           authCombo.setEditable(authOptions.size() <= 1);
 
           javax.swing.JPanel panel =
-              new javax.swing.JPanel(MigLayouts.twoColumnForm(12, "[]6[]6[]6[]"));
+              new javax.swing.JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rows(4, 6)));
           panel.add(new javax.swing.JLabel("Admin user"));
           panel.add(adminUserField, MigConstraints.growXWrap());
           panel.add(new javax.swing.JLabel("Admin password"));
@@ -444,7 +444,8 @@ final class SwingUiInteractionPort implements UiInteractionPort {
     javax.swing.JCheckBox tlsCheck = new javax.swing.JCheckBox("Use TLS", true);
     javax.swing.JCheckBox enabledCheck = new javax.swing.JCheckBox("Enabled", true);
 
-    javax.swing.JPanel panel = new javax.swing.JPanel(MigLayouts.twoColumnForm(12, "[]6[]6[]6[]"));
+    javax.swing.JPanel panel =
+        new javax.swing.JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rows(4, 6)));
     panel.add(new javax.swing.JLabel("Network name"));
     panel.add(nameField, MigConstraints.growXWrap());
     panel.add(new javax.swing.JLabel("Server host"));
@@ -523,7 +524,8 @@ final class SwingUiInteractionPort implements UiInteractionPort {
     javax.swing.JCheckBox tlsCheck = new javax.swing.JCheckBox("Use TLS", defaultTls);
     javax.swing.JCheckBox enabledCheck = new javax.swing.JCheckBox("Enabled", defaultEnabled);
 
-    javax.swing.JPanel panel = new javax.swing.JPanel(MigLayouts.twoColumnForm(12, "[]6[]6[]6[]"));
+    javax.swing.JPanel panel =
+        new javax.swing.JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rows(4, 6)));
     panel.add(new javax.swing.JLabel("Network name"));
     panel.add(nameField, MigConstraints.growXWrap());
     panel.add(new javax.swing.JLabel("Server host"));

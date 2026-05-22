@@ -167,7 +167,7 @@ public final class NotificationsPanelSupport {
           notifications.testStatus.setText(" ");
         });
 
-    JPanel rulesTab = new JPanel(MigLayouts.singleColumnFill(0, "[]8[]"));
+    JPanel rulesTab = new JPanel(MigLayouts.singleColumnFill(0, MigLayouts.rows(2, 8)));
     rulesTab.setOpaque(false);
     JPanel rulesBehaviorPanel =
         PreferencesUiSupport.captionPanel("Rule behavior", MigLayouts.twoColumnForm(10, "[]"));
@@ -183,7 +183,7 @@ public final class NotificationsPanelSupport {
             "[]6[grow,fill]4[]4[]");
     JPanel buttons = PreferencesUiSupport.actionButtonRow(add, edit, duplicate, remove, up, down);
     rulesTablePanel.add(buttons, MigConstraints.growXMinWidth0Wrap());
-    rulesTablePanel.add(scroll, "grow, push, h 260!, wmin 0, wrap");
+    rulesTablePanel.add(scroll, MigConstraints.growPushMinWidth0HeightWrap(260));
     rulesTablePanel.add(notifications.validationLabel, MigConstraints.growXMinWidth0Wrap());
     rulesTablePanel.add(
         PreferencesUiSupport.helpText("Tip: Double-click a rule to edit it."),
@@ -194,15 +194,15 @@ public final class NotificationsPanelSupport {
     testTab.setOpaque(false);
     JPanel testRunnerPanel =
         PreferencesUiSupport.captionPanel(
-            "Message test", MigLayouts.twoColumnFillForm(0, 10, "[]6[]4[]4[]"));
+            "Message test", MigLayouts.twoColumnFillForm(0, 10, MigLayouts.rowGaps(6, 4, 4)));
     testRunnerPanel.add(
         PreferencesUiSupport.helpText(
             "Paste a sample message to see which rules match. This is just a preview; it won't create real notifications."),
         MigConstraints.span2GrowXMinWidth0Wrap());
     testRunnerPanel.add(new JLabel("Sample"), MigConstraints.alignYTop());
-    testRunnerPanel.add(testInScroll, "growx, h 100!, wrap");
+    testRunnerPanel.add(testInScroll, MigConstraints.growXHeightWrap(100));
     testRunnerPanel.add(new JLabel("Matches"), MigConstraints.alignYTop());
-    testRunnerPanel.add(testOutScroll, "growx, h 160!, wrap");
+    testRunnerPanel.add(testOutScroll, MigConstraints.growXHeightWrap(160));
     testRunnerPanel.add(new JLabel(""));
     testRunnerPanel.add(testButtons, MigConstraints.growXWrap());
     testTab.add(testRunnerPanel, MigConstraints.growPushMinWidth0());

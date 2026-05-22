@@ -55,7 +55,7 @@ public final class TrayNotificationsPanelSupport {
     JPanel notificationBackendGroup =
         PreferencesUiSupport.captionPanel("Delivery backend", MigLayouts.twoColumnForm(8, "[]"));
     notificationBackendGroup.add(new JLabel("Mode:"));
-    notificationBackendGroup.add(controls.notificationBackend, "w 260!, wrap");
+    notificationBackendGroup.add(controls.notificationBackend, MigConstraints.widthWrap(260));
     notificationBackendGroup.add(
         PreferencesUiSupport.helpText(
             "Auto tries native OS notifications first and falls back to two-slices.\n"
@@ -69,8 +69,8 @@ public final class TrayNotificationsPanelSupport {
     notificationVisibility.add(controls.notifyOnlyWhenUnfocused, MigConstraints.growX());
     notificationVisibility.add(controls.notifyOnlyWhenMinimizedOrHidden, MigConstraints.growX());
     notificationVisibility.add(controls.notifySuppressWhenTargetActive, MigConstraints.growXWrap());
-    notificationVisibility.add(new JSeparator(), "growx, gaptop 4");
-    notificationVisibility.add(controls.testNotification, "w 180!");
+    notificationVisibility.add(new JSeparator(), MigConstraints.growXGapTop(4));
+    notificationVisibility.add(controls.testNotification, MigConstraints.width(180));
     notificationsTab.add(notificationVisibility, MigConstraints.growXMinWidth0Wrap());
     notificationsTab.add(
         PreferencesUiSupport.helpText(
@@ -89,14 +89,14 @@ public final class TrayNotificationsPanelSupport {
     customSound.add(new JLabel("File:"));
     customSound.add(controls.notificationSoundCustomPath, MigConstraints.growXPushXMinWidth0());
     customSound.add(controls.browseCustomSound, MigConstraints.width(110));
-    customSound.add(controls.clearCustomSound, "w 80!, wrap");
+    customSound.add(controls.clearCustomSound, MigConstraints.widthWrap(80));
     soundsTab.add(customSound, MigConstraints.growXMinWidth0Wrap());
     JPanel builtInSound =
         PreferencesUiSupport.captionPanel(
             "Built-in sound", MigLayouts.labelFieldActionsForm(8, 1, "[]"));
     builtInSound.add(new JLabel("Preset:"));
-    builtInSound.add(controls.notificationSound, "w 240!");
-    builtInSound.add(controls.testSound, "w 120!, wrap");
+    builtInSound.add(controls.notificationSound, MigConstraints.width(240));
+    builtInSound.add(controls.testSound, MigConstraints.widthWrap(120));
     soundsTab.add(builtInSound, MigConstraints.growXMinWidth0Wrap());
 
     Path configPath = runtimeConfig != null ? runtimeConfig.runtimeConfigPath() : null;
@@ -127,7 +127,7 @@ public final class TrayNotificationsPanelSupport {
     JPanel pushyDestination =
         PreferencesUiSupport.captionPanel("Destination", MigLayouts.twoColumnForm(8, "[]"));
     pushyDestination.add(new JLabel("Target mode:"));
-    pushyDestination.add(controls.pushyTargetMode, "w 180!, wrap");
+    pushyDestination.add(controls.pushyTargetMode, MigConstraints.widthWrap(180));
     pushyDestination.add(new JLabel("Target value:"));
     pushyDestination.add(controls.pushyTargetValue, MigConstraints.growXPushXMinWidth0Wrap());
     pushyDestination.add(
@@ -143,9 +143,9 @@ public final class TrayNotificationsPanelSupport {
             "[right]8[]20[right]8[]",
             "[]");
     pushyTimeouts.add(new JLabel("Connect (s):"));
-    pushyTimeouts.add(controls.pushyConnectTimeoutSeconds, "w 90!");
+    pushyTimeouts.add(controls.pushyConnectTimeoutSeconds, MigConstraints.width(90));
     pushyTimeouts.add(new JLabel("Read (s):"));
-    pushyTimeouts.add(controls.pushyReadTimeoutSeconds, "w 90!, wrap");
+    pushyTimeouts.add(controls.pushyReadTimeoutSeconds, MigConstraints.widthWrap(90));
     pushyTab.add(pushyTimeouts, MigConstraints.growXMinWidth0Wrap());
     JPanel pushyActions =
         PreferencesUiSupport.captionPanel(
@@ -153,7 +153,7 @@ public final class TrayNotificationsPanelSupport {
             MigLayoutConstraints.INSETS_0_FILL_X_WRAP_2,
             "[]12[grow,fill]",
             "[]");
-    pushyActions.add(controls.pushyTest, "w 150!");
+    pushyActions.add(controls.pushyTest, MigConstraints.width(150));
     pushyActions.add(controls.pushyTestStatus, MigConstraints.growXMinWidth0Wrap());
     pushyActions.add(new JLabel(""));
     pushyActions.add(controls.pushyValidationLabel, MigConstraints.growXMinWidth0());

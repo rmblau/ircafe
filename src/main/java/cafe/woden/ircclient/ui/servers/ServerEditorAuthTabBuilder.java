@@ -41,7 +41,7 @@ final class ServerEditorAuthTabBuilder {
     widgets.authModeCardPanel().add(buildDisabledCard(widgets), widgets.disabledCardId());
     widgets.authModeCardPanel().add(buildSaslCard(widgets), widgets.saslCardId());
     widgets.authModeCardPanel().add(buildNickservCard(widgets), widgets.nickservCardId());
-    panel.add(widgets.authModeCardPanel(), "span 2, grow, push, wmin 0");
+    panel.add(widgets.authModeCardPanel(), MigConstraints.span2GrowPushMinWidth0());
 
     return panel;
   }
@@ -64,11 +64,11 @@ final class ServerEditorAuthTabBuilder {
     panel.add(widgets.saslPasswordField(), MigConstraints.growXMinWidth0Wrap());
     panel.add(new JLabel("Mechanism"));
     panel.add(widgets.saslMechanismCombo(), MigConstraints.growXMinWidth0Wrap());
-    panel.add(new JLabel("On failure"), "top");
+    panel.add(new JLabel("On failure"), MigConstraints.alignYTop());
     panel.add(widgets.saslContinueOnFailureBox(), MigConstraints.growXMinWidth0Wrap());
 
     styleHint(widgets.saslHintLabel(), " ");
-    panel.add(widgets.saslHintLabel(), "span 2, growx, wmin 0, pushy");
+    panel.add(widgets.saslHintLabel(), MigConstraints.span2GrowXMinWidth0PushY());
     return panel;
   }
 
@@ -81,11 +81,11 @@ final class ServerEditorAuthTabBuilder {
     panel.add(widgets.nickservServiceField(), MigConstraints.growXMinWidth0Wrap());
     panel.add(new JLabel("Password"));
     panel.add(widgets.nickservPasswordField(), MigConstraints.growXMinWidth0Wrap());
-    panel.add(new JLabel("Delay auto-join"), "top");
+    panel.add(new JLabel("Delay auto-join"), MigConstraints.alignYTop());
     panel.add(widgets.nickservDelayJoinBox(), MigConstraints.growXMinWidth0Wrap());
 
     styleHint(widgets.nickservHintLabel(), " ");
-    panel.add(widgets.nickservHintLabel(), "span 2, growx, wmin 0, pushy");
+    panel.add(widgets.nickservHintLabel(), MigConstraints.span2GrowXMinWidth0PushY());
     return panel;
   }
 

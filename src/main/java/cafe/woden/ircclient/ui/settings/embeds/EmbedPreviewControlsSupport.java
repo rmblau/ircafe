@@ -61,7 +61,7 @@ public final class EmbedPreviewControlsSupport {
         });
 
     JPanel imagePanel =
-        new JPanel(MigLayouts.fillXWrap(0, 2, "[grow,fill]8[nogrid]", "[]4[]4[]4[]4[]"));
+        new JPanel(MigLayouts.fillXWrap(0, 2, "[grow,fill]8[nogrid]", MigLayouts.rows(5, 4)));
     imagePanel.setOpaque(false);
     imagePanel.add(imageEmbeds, MigConstraints.spanXWrap(2));
     imagePanel.add(imageEmbedsCollapsed, MigConstraints.spanXWrap(2));
@@ -97,14 +97,14 @@ public final class EmbedPreviewControlsSupport {
     cardStyle.setToolTipText(
         "Visual preset for inline cards used by link previews and image embeds.");
 
-    JPanel linkPanel = new JPanel(MigLayouts.singleColumn("[]4[]8[]"));
+    JPanel linkPanel = new JPanel(MigLayouts.singleColumn(MigLayouts.rowGaps(4, 8)));
     linkPanel.setOpaque(false);
     linkPanel.add(linkPreviews);
     linkPanel.add(linkPreviewsCollapsed);
     JPanel styleRow = new JPanel(MigLayouts.insets0(MigLayoutConstraints.LEADING_GROW_FILL, "[]"));
     styleRow.setOpaque(false);
     styleRow.add(new JLabel("Card style"));
-    styleRow.add(cardStyle, "w 180!");
+    styleRow.add(cardStyle, MigConstraints.width(180));
     linkPanel.add(styleRow, MigConstraints.growX());
 
     return new LinkPreviewControls(linkPreviews, linkPreviewsCollapsed, cardStyle, linkPanel);

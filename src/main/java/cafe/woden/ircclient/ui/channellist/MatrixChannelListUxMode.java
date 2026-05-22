@@ -75,7 +75,7 @@ final class MatrixChannelListUxMode implements ChannelListUxMode {
     sinceField.setEnabled(sinceEnabled.isSelected());
     sinceEnabled.addActionListener(e -> sinceField.setEnabled(sinceEnabled.isSelected()));
 
-    JPanel form = new JPanel(MigLayouts.twoColumnForm(0, "[]6[]6[]6[]"));
+    JPanel form = new JPanel(MigLayouts.twoColumnForm(0, MigLayouts.rows(4, 6)));
     form.add(new JLabel("Search:"));
     form.add(queryField, MigConstraints.growX());
     form.add(new JLabel("Limit:"));

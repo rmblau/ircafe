@@ -33,7 +33,7 @@ public final class HistoryStoragePanelSupport {
   }
 
   private static JPanel buildLoggingSubTab(LoggingControls logging) {
-    JPanel tab = new JPanel(MigLayouts.singleColumn("[]8[]8[]"));
+    JPanel tab = new JPanel(MigLayouts.singleColumn(MigLayouts.rows(3, 8)));
     tab.setOpaque(false);
     tab.add(logging.info, MigConstraints.growXMinWidth0Wrap());
 
@@ -47,7 +47,7 @@ public final class HistoryStoragePanelSupport {
     JPanel pmRow = new JPanel(MigLayouts.twoColumnForm(8));
     pmRow.setOpaque(false);
     pmRow.add(new JLabel("PM list settings"));
-    pmRow.add(logging.managePrivateMessageList, "alignx left");
+    pmRow.add(logging.managePrivateMessageList, MigConstraints.alignXLeft());
     behavior.add(pmRow, MigConstraints.growXMinWidth0());
     tab.add(behavior, MigConstraints.growXMinWidth0Wrap());
 
@@ -60,11 +60,11 @@ public final class HistoryStoragePanelSupport {
     JPanel storage =
         PreferencesUiSupport.captionPanel("Storage & writer", MigLayouts.twoColumnForm(8));
     storage.add(new JLabel("Writer queue max"));
-    storage.add(logging.writerQueueMax, "w 130!, wrap");
+    storage.add(logging.writerQueueMax, MigConstraints.widthWrap(130));
     storage.add(new JLabel("Writer batch size"));
-    storage.add(logging.writerBatchSize, "w 130!, wrap");
+    storage.add(logging.writerBatchSize, MigConstraints.widthWrap(130));
     storage.add(new JLabel("DB file base name"));
-    storage.add(logging.dbBaseName, "w 260!, wrap");
+    storage.add(logging.dbBaseName, MigConstraints.widthWrap(260));
     storage.add(new JLabel("DB location"));
     storage.add(logging.dbNextToConfig, MigConstraints.growX());
     tab.add(storage, MigConstraints.growXMinWidth0());
@@ -73,7 +73,7 @@ public final class HistoryStoragePanelSupport {
   }
 
   private static JPanel buildScrollingSubTab(HistoryControls history) {
-    JPanel tab = new JPanel(MigLayouts.singleColumn("[]8[]8[]"));
+    JPanel tab = new JPanel(MigLayouts.singleColumn(MigLayouts.rows(3, 8)));
     tab.setOpaque(false);
     tab.add(
         PreferencesUiSupport.helpText(
@@ -114,7 +114,7 @@ public final class HistoryStoragePanelSupport {
   }
 
   private static JPanel buildRemoteLimitsSubTab(HistoryControls history) {
-    JPanel tab = new JPanel(MigLayouts.singleColumn("[]8[]8[]"));
+    JPanel tab = new JPanel(MigLayouts.singleColumn(MigLayouts.rows(3, 8)));
     tab.setOpaque(false);
     tab.add(
         PreferencesUiSupport.helpText(

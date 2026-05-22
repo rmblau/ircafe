@@ -54,16 +54,16 @@ public final class ChatPanelSupport {
       TimestampControls timestamps,
       OutgoingColorControls outgoing,
       JCheckBox outgoingDeliveryIndicators) {
-    JPanel panel = new JPanel(MigLayouts.twoColumnForm(12, "[]8[]6[]6[]6[]10[]6[]"));
+    JPanel panel = new JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rowGaps(8, 6, 6, 6, 10, 6)));
     panel.setOpaque(false);
 
     panel.add(
         PreferencesUiSupport.sectionTitle("Display"), MigConstraints.span2GrowXMinWidth0Wrap());
     panel.add(new JLabel("Presence events"), MigConstraints.alignYTop());
-    panel.add(presenceFolds, "alignx left");
+    panel.add(presenceFolds, MigConstraints.alignXLeft());
 
     panel.add(new JLabel("CTCP requests"), MigConstraints.alignYTop());
-    panel.add(ctcpRequestsInActiveTarget, "alignx left");
+    panel.add(ctcpRequestsInActiveTarget, MigConstraints.alignXLeft());
 
     panel.add(new JLabel("Nick colors"), MigConstraints.alignYTop());
     panel.add(nickColors.panel(), MigConstraints.growXMinWidth0());
@@ -77,7 +77,7 @@ public final class ChatPanelSupport {
     panel.add(new JLabel("Outgoing messages"), MigConstraints.alignYTop());
     panel.add(outgoing.panel(), MigConstraints.growXMinWidth0());
     panel.add(new JLabel("Delivery indicators"), MigConstraints.alignYTop());
-    panel.add(outgoingDeliveryIndicators, "alignx left");
+    panel.add(outgoingDeliveryIndicators, MigConstraints.alignXLeft());
     panel.add(new JLabel("Default /quit message"), MigConstraints.alignYTop());
     panel.add(defaultQuitMessage, MigConstraints.growXMinWidth0());
 
@@ -85,7 +85,7 @@ public final class ChatPanelSupport {
   }
 
   private static JPanel buildSpellcheckSubTab(SpellcheckControls spellcheck) {
-    JPanel panel = new JPanel(MigLayouts.singleColumn("[]8[]"));
+    JPanel panel = new JPanel(MigLayouts.singleColumn(MigLayouts.rows(2, 8)));
     panel.setOpaque(false);
     panel.add(PreferencesUiSupport.sectionTitle("Input"), MigConstraints.growXMinWidth0Wrap());
     panel.add(spellcheck.panel(), MigConstraints.growXMinWidth0Wrap());

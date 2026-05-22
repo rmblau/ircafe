@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.settings.timestamp;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
+import cafe.woden.ircclient.ui.util.MigConstraints;
 import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import cafe.woden.ircclient.ui.util.MigLayouts;
 import java.time.format.DateTimeFormatter;
@@ -42,14 +43,14 @@ public final class TimestampControlsSupport {
     enabled.addItemListener(e -> syncEnabled.run());
     syncEnabled.run();
 
-    JPanel panel = new JPanel(MigLayouts.singleColumn("[]6[]6[]6[]"));
+    JPanel panel = new JPanel(MigLayouts.singleColumn(MigLayouts.rows(4, 6)));
     panel.setOpaque(false);
     panel.add(enabled);
     JPanel formatRow =
         new JPanel(MigLayouts.fillXWrap(0, 2, MigLayoutConstraints.LEADING_GROW_FILL, "[]"));
     formatRow.setOpaque(false);
     formatRow.add(new JLabel("Format"));
-    formatRow.add(format, "w 200!");
+    formatRow.add(format, MigConstraints.width(200));
     panel.add(formatRow);
     panel.add(includeChatMessages);
     panel.add(includePresenceMessages);

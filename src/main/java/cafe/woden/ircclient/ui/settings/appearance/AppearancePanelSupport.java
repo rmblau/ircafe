@@ -82,17 +82,17 @@ final class AppearancePanelSupport {
           accent.syncPresetFromHex.run();
           tweaks.applyUiFontEnabledState.run();
         });
-    form.add(reset, "split 2, alignx left");
+    form.add(reset, MigConstraints.splitAlignXLeft(2));
     form.add(
         PreferencesUiSupport.helpText("Changes preview live. Use Apply or OK to save."),
-        "alignx left, gapleft 12, growx, wmin 0");
+        MigConstraints.alignXLeftGrowXMinWidthGapLeft(0, 12));
 
     return form;
   }
 
   private static JPanel buildThemeSubTab(
       ThemeControls theme, AccentControls accent, TweakControls tweaks) {
-    JPanel panel = new JPanel(MigLayouts.twoColumnForm(12, "[]8[]6[]6[]6[]6[]"));
+    JPanel panel = new JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rowGaps(8, 6, 6, 6, 6)));
     panel.setOpaque(false);
 
     panel.add(
@@ -125,7 +125,7 @@ final class AppearancePanelSupport {
   }
 
   private static JPanel buildUiFontSubTab(TweakControls tweaks) {
-    JPanel panel = new JPanel(MigLayouts.twoColumnForm(12, "[]8[]6[]6[]"));
+    JPanel panel = new JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rowGaps(8, 6, 6)));
     panel.setOpaque(false);
 
     panel.add(
@@ -147,7 +147,7 @@ final class AppearancePanelSupport {
   }
 
   private static JPanel buildChatColorsSubTab(ChatThemeControls chatTheme) {
-    JPanel panel = new JPanel(MigLayouts.singleColumn("[]8[]12[]8[]"));
+    JPanel panel = new JPanel(MigLayouts.singleColumn(MigLayouts.rowGaps(8, 12, 8)));
     panel.setOpaque(false);
 
     panel.add(PreferencesUiSupport.sectionTitle("Palette"), MigConstraints.growXMinWidth0Wrap());
@@ -161,7 +161,7 @@ final class AppearancePanelSupport {
   }
 
   private static JPanel buildChatTextSubTab(FontControls fonts) {
-    JPanel panel = new JPanel(MigLayouts.twoColumnForm(12, "[]8[]6[]"));
+    JPanel panel = new JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rowGaps(8, 6)));
     panel.setOpaque(false);
 
     panel.add(
@@ -175,7 +175,7 @@ final class AppearancePanelSupport {
   }
 
   private static JPanel buildServerTreeSubTab(AppearanceServerTreeControls serverTree) {
-    JPanel panel = new JPanel(MigLayouts.twoColumnForm(12, "[]8[]6[]"));
+    JPanel panel = new JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rowGaps(8, 6)));
     panel.setOpaque(false);
 
     panel.add(
@@ -197,7 +197,7 @@ final class AppearancePanelSupport {
   }
 
   private static JPanel buildChatThemePaletteSubTab(ChatThemeControls chatTheme) {
-    JPanel panel = new JPanel(MigLayouts.twoColumnForm(12, "[]6[]6[]6[]"));
+    JPanel panel = new JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rows(4, 6)));
     panel.setOpaque(false);
 
     panel.add(new JLabel("Chat theme preset"));
@@ -221,7 +221,7 @@ final class AppearancePanelSupport {
   }
 
   private static JPanel buildChatMessageColorsSubTab(ChatThemeControls chatTheme) {
-    JPanel panel = new JPanel(MigLayouts.twoColumnForm(12, "[]6[]6[]6[]6[]6[]6[]"));
+    JPanel panel = new JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rows(7, 6)));
     panel.setOpaque(false);
 
     panel.add(new JLabel("Server/system"));

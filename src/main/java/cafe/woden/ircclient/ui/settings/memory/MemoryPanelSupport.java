@@ -17,7 +17,7 @@ public final class MemoryPanelSupport {
       JComboBox<MemoryUsageDisplayMode> memoryUsageDisplayMode,
       JSpinner memoryUsageRefreshIntervalMs,
       MemoryWarningControls memoryWarnings) {
-    JPanel form = new JPanel(MigLayouts.twoColumnForm(12, 12, "[]10[]6[]"));
+    JPanel form = new JPanel(MigLayouts.twoColumnForm(12, 12, MigLayouts.rowGaps(10, 6)));
     form.add(PreferencesUiSupport.tabTitle("Memory"), MigConstraints.span2GrowXMinWidth0Wrap());
 
     form.add(PreferencesUiSupport.sectionTitle("Widget"), MigConstraints.span2GrowXMinWidth0Wrap());
@@ -32,7 +32,7 @@ public final class MemoryPanelSupport {
     form.add(memoryWarnings.nearMaxPercent, MigConstraints.width(110));
 
     form.add(new JLabel("Warning actions"), MigConstraints.alignYTop());
-    JPanel warningActions = new JPanel(MigLayouts.singleColumn("[]2[]2[]2[]"));
+    JPanel warningActions = new JPanel(MigLayouts.singleColumn(MigLayouts.rows(4, 2)));
     warningActions.setOpaque(false);
     warningActions.add(memoryWarnings.tooltipEnabled, MigConstraints.growX());
     warningActions.add(memoryWarnings.toastEnabled, MigConstraints.growX());
@@ -59,7 +59,7 @@ public final class MemoryPanelSupport {
           memoryWarnings.soundEnabled.setSelected(false);
         });
     form.add(new JLabel(""));
-    form.add(reset, "alignx left");
+    form.add(reset, MigConstraints.alignXLeft());
 
     return form;
   }

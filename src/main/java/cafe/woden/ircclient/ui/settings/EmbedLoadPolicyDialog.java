@@ -98,7 +98,9 @@ public class EmbedLoadPolicyDialog {
     tabs.addTab("Gates", buildGatePanel(controls));
 
     JPanel scopePanel =
-        new JPanel(MigLayouts.fillXWrap(10, 2, MigLayoutConstraints.LEADING_GROW_FILL, "[]4[]4[]"));
+        new JPanel(
+            MigLayouts.fillXWrap(
+                10, 2, MigLayoutConstraints.LEADING_GROW_FILL, MigLayouts.rows(3, 4)));
     scopePanel.add(new JLabel("Scope:"));
     scopePanel.add(scope, MigConstraints.growXWrap());
     scopePanel.add(inheritGlobal, MigConstraints.spanXWrap(2));
@@ -113,13 +115,13 @@ public class EmbedLoadPolicyDialog {
     JButton save = new JButton("Save");
     JButton cancel = new JButton("Cancel");
     JPanel buttons = new JPanel(MigLayouts.fillX("[grow,fill][pref!][pref!]", "[]"));
-    buttons.add(new JPanel(), "growx, pushx");
+    buttons.add(new JPanel(), MigConstraints.pushXGrowX());
     buttons.add(save);
     buttons.add(cancel);
 
     JPanel root = new JPanel(MigLayouts.singleColumnFill(0, "[][grow,fill][]"));
     root.add(scopePanel, MigConstraints.growX());
-    root.add(tabs, "grow");
+    root.add(tabs, MigConstraints.grow());
     root.add(buttons, MigConstraints.growX());
 
     final EmbedLoadPolicySnapshot[] result = {null};
@@ -285,8 +287,8 @@ public class EmbedLoadPolicyDialog {
         new JPanel(
             MigLayouts.fillWrap(
                 10, 2, MigLayoutConstraints.GROW_FILL_PAIR, MigLayoutConstraints.GROW_FILL));
-    panel.add(buildLabeledPanel(leftTitle, left.panel()), "grow");
-    panel.add(buildLabeledPanel(rightTitle, right.panel()), "grow");
+    panel.add(buildLabeledPanel(leftTitle, left.panel()), MigConstraints.grow());
+    panel.add(buildLabeledPanel(rightTitle, right.panel()), MigConstraints.grow());
     return panel;
   }
 
@@ -296,18 +298,19 @@ public class EmbedLoadPolicyDialog {
             MigLayouts.fillWrap(
                 0, 1, MigLayoutConstraints.GROW_FILL, MigLayoutConstraints.LEADING_GROW_FILL));
     panel.add(new JLabel(title), MigConstraints.growX());
-    panel.add(content, "grow");
+    panel.add(content, MigConstraints.grow());
     return panel;
   }
 
   private static JPanel buildGatePanel(PolicyControls controls) {
     JPanel panel =
         new JPanel(
-            MigLayouts.fillXWrap(10, 2, MigLayoutConstraints.LEADING_GROW_FILL, "[]6[]6[]6[]"));
+            MigLayouts.fillXWrap(
+                10, 2, MigLayoutConstraints.LEADING_GROW_FILL, MigLayouts.rows(4, 6)));
     panel.add(controls.requireVoiceOrOp(), MigConstraints.spanXWrap(2));
     panel.add(controls.requireLoggedIn(), MigConstraints.spanXWrap(2));
     panel.add(new JLabel("Minimum account age (days, 0 = disabled):"));
-    panel.add(controls.minAccountAgeDays(), "w 120!, wrap");
+    panel.add(controls.minAccountAgeDays(), MigConstraints.widthWrap(120));
     panel.add(
         new JLabel("If account age metadata is unavailable for a sender, this check fails closed."),
         MigConstraints.spanXWrap(2));
@@ -403,7 +406,7 @@ public class EmbedLoadPolicyDialog {
         });
 
     JPanel actions =
-        new JPanel(MigLayouts.wrap(0, 1, MigLayoutConstraints.GROW_FILL, "[]4[]4[]4[]"));
+        new JPanel(MigLayouts.wrap(0, 1, MigLayoutConstraints.GROW_FILL, MigLayouts.rows(4, 4)));
     actions.add(add, MigConstraints.growX());
     actions.add(remove, MigConstraints.growX());
     actions.add(up, MigConstraints.growX());
@@ -415,8 +418,8 @@ public class EmbedLoadPolicyDialog {
     JPanel panel = new JPanel(MigLayouts.fillWrap(0, 2, "[grow,fill][pref!]", "[][][grow,fill][]"));
     panel.add(new JLabel(title), MigConstraints.span2GrowXWrap());
     panel.add(new JLabel(hint), MigConstraints.span2GrowXWrap());
-    panel.add(new JScrollPane(table), "grow");
-    panel.add(actions, "top");
+    panel.add(new JScrollPane(table), MigConstraints.grow());
+    panel.add(actions, MigConstraints.alignYTop());
     panel.add(validation, MigConstraints.span2GrowXWrap());
 
     return new PatternTableControls(

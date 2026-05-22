@@ -39,7 +39,8 @@ public final class Ircv3PanelSupport {
     LinkedHashMap<String, JCheckBox> checkboxes = new LinkedHashMap<>();
     JPanel panel =
         new JPanel(
-            MigLayouts.fillXWrapWithHideMode(0, 1, 3, MigLayoutConstraints.GROW_FILL, "[]6[]"));
+            MigLayouts.fillXWrapWithHideMode(
+                0, 1, 3, MigLayoutConstraints.GROW_FILL, MigLayouts.rows(2, 6)));
     panel.setOpaque(false);
 
     LinkedHashMap<Ircv3ExtensionRegistry.UiGroup, List<Ircv3ExtensionRegistry.ExtensionDefinition>>
@@ -68,7 +69,11 @@ public final class Ircv3PanelSupport {
       JPanel groupPanel =
           new JPanel(
               MigLayouts.fillXWrapWithHideMode(
-                  "6 8 8 8", 2, 3, MigLayoutConstraints.GROW_FILL_GAP_12_GROW_FILL, "[]2[]"));
+                  "6 8 8 8",
+                  2,
+                  3,
+                  MigLayoutConstraints.GROW_FILL_GAP_12_GROW_FILL,
+                  MigLayouts.rows(2, 2)));
       groupPanel.setBorder(
           BorderFactory.createCompoundBorder(
               BorderFactory.createTitledBorder(group.getKey().title()),
@@ -89,7 +94,7 @@ public final class Ircv3PanelSupport {
         JPanel row = new JPanel(MigLayouts.fillX("[grow,fill]4[]", "[]"));
         row.setOpaque(false);
         row.add(checkbox, MigConstraints.growXMinWidth0());
-        row.add(help, "aligny center");
+        row.add(help, MigConstraints.alignYCenter());
 
         groupPanel.add(row, MigConstraints.growXMinWidth0());
       }
@@ -139,14 +144,14 @@ public final class Ircv3PanelSupport {
     JPanel typingRow =
         new JPanel(
             MigLayouts.fillXWrapWithHideMode(
-                8, 1, 3, MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING, "[]2[]2[]2[]2[]"));
+                8, 1, 3, MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING, MigLayouts.rows(5, 2)));
     typingRow.setBorder(
         BorderFactory.createCompoundBorder(
             BorderFactory.createTitledBorder("Typing indicators"),
             BorderFactory.createEmptyBorder(4, 6, 4, 6)));
     typingRow.setOpaque(false);
-    typingRow.add(typingIndicatorsSendEnabled, "growx, wmin 0, split 2");
-    typingRow.add(typingHelp, "aligny center");
+    typingRow.add(typingIndicatorsSendEnabled, MigConstraints.growXMinWidthSplit(0, 2));
+    typingRow.add(typingHelp, MigConstraints.alignYCenter());
     typingRow.add(typingIndicatorsReceiveEnabled, MigConstraints.growXMinWidth0());
 
     JPanel treeStyleRow = new JPanel(MigLayouts.fillX(MigLayoutConstraints.ROW_8_GROW_FILL, "[]"));
@@ -156,7 +161,9 @@ public final class Ircv3PanelSupport {
     typingRow.add(treeStyleRow, MigConstraints.growXMinWidth0());
 
     JPanel displaysRow =
-        new JPanel(MigLayouts.fillXWrapWithHideMode(0, 2, 3, "[grow,fill]16[grow,fill]", "[]2[]"));
+        new JPanel(
+            MigLayouts.fillXWrapWithHideMode(
+                0, 2, 3, "[grow,fill]16[grow,fill]", MigLayouts.rows(2, 2)));
     displaysRow.setOpaque(false);
     displaysRow.add(typingIndicatorsTreeDisplayEnabled, MigConstraints.growXMinWidth0());
     displaysRow.add(typingIndicatorsUsersListDisplayEnabled, MigConstraints.growXMinWidth0());
@@ -168,7 +175,7 @@ public final class Ircv3PanelSupport {
         new JPanel(MigLayouts.fillX(MigLayoutConstraints.ROW_8_GROW_FILL, "[]"));
     matrixNamesRow.setOpaque(false);
     matrixNamesRow.add(new JLabel("Matrix user list names"));
-    matrixNamesRow.add(matrixUserListNameDisplayMode, "growx, wmin 220");
+    matrixNamesRow.add(matrixUserListNameDisplayMode, MigConstraints.growXMinWidth(220));
     typingRow.add(matrixNamesRow, MigConstraints.growXMinWidth0());
 
     typingRow.add(serverTreeNotificationBadgesEnabled, MigConstraints.growXMinWidth0());
@@ -176,7 +183,7 @@ public final class Ircv3PanelSupport {
     JPanel badgeScaleRow = new JPanel(MigLayouts.fillX("[]8[]6[]", "[]"));
     badgeScaleRow.setOpaque(false);
     badgeScaleRow.add(new JLabel("Unread badge size"));
-    badgeScaleRow.add(serverTreeUnreadBadgeScalePercent, "w 90!");
+    badgeScaleRow.add(serverTreeUnreadBadgeScalePercent, MigConstraints.width(90));
     badgeScaleRow.add(new JLabel("%"));
     typingRow.add(badgeScaleRow, MigConstraints.growXMinWidth0());
 
@@ -192,7 +199,8 @@ public final class Ircv3PanelSupport {
 
     JPanel typingTab =
         new JPanel(
-            MigLayouts.fillXWrapWithHideMode(6, 1, 3, MigLayoutConstraints.GROW_FILL, "[]6[]"));
+            MigLayouts.fillXWrapWithHideMode(
+                6, 1, 3, MigLayoutConstraints.GROW_FILL, MigLayouts.rows(2, 6)));
     typingTab.setOpaque(false);
     typingTab.add(typingRow, MigConstraints.growXMinWidth0Wrap());
     typingTab.add(typingImpact, MigConstraints.growXMinWidth0Wrap());
@@ -221,7 +229,7 @@ public final class Ircv3PanelSupport {
     capabilityScroll.setViewportBorder(null);
     capabilityScroll.getVerticalScrollBar().setUnitIncrement(16);
     capabilityScroll.setPreferredSize(new Dimension(1, 320));
-    capabilityBlock.add(capabilityScroll, "grow, push, wmin 0, hmin 180");
+    capabilityBlock.add(capabilityScroll, MigConstraints.growPushMinWidth0MinHeight(180));
 
     JPanel capabilitiesTab =
         new JPanel(
@@ -273,9 +281,9 @@ public final class Ircv3PanelSupport {
         });
 
     form.add(typingHeader, MigConstraints.growXMinWidth0Wrap());
-    form.add(typingTab, "growx, wmin 0, wrap, hidemode 3");
+    form.add(typingTab, MigConstraints.growXMinWidthHideModeWrap(0, 3));
     form.add(capabilitiesHeader, MigConstraints.growXMinWidth0Wrap());
-    form.add(capabilitiesTab, "grow, push, wmin 0, hmin 180, hidemode 3");
+    form.add(capabilitiesTab, MigConstraints.growPushMinWidth0MinHeightHideMode(180, 3));
     refreshAccordion.run();
 
     return form;

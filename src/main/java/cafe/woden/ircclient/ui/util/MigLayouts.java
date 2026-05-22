@@ -124,6 +124,14 @@ public final class MigLayouts {
     return new MigLayout(layout(insets, wrap) + ", gap " + gap, columns, rows);
   }
 
+  public static String rows(int count, int gap) {
+    return MigLayoutConstraints.rows(count, gap);
+  }
+
+  public static String rowGaps(int firstGap, int... remainingGaps) {
+    return MigLayoutConstraints.rowGaps(firstGap, remainingGaps);
+  }
+
   public static String rightGrowFill(int gap) {
     return gap > 0 ? "[right]" + gap + "[grow,fill]" : "[right][grow,fill]";
   }

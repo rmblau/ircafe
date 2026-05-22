@@ -51,7 +51,7 @@ public final class FiltersPanelSupport {
   }
 
   private static JComponent buildPlaceholdersTab(FilterControls c) {
-    JPanel panel = new JPanel(MigLayouts.singleColumn(12, "[]8[]8[]"));
+    JPanel panel = new JPanel(MigLayouts.singleColumn(12, MigLayouts.rows(3, 8)));
     panel.setOpaque(false);
 
     JPanel behavior = PreferencesUiSupport.captionPanel("Placeholder behavior");
@@ -59,14 +59,14 @@ public final class FiltersPanelSupport {
     behavior.add(c.placeholdersCollapsedByDefault, MigConstraints.growXWrap());
 
     JPanel previewRow = new JPanel(MigLayouts.insets0("[][grow]", ""));
-    previewRow.add(new JLabel("Placeholder preview lines:"), "split 2");
+    previewRow.add(new JLabel("Placeholder preview lines:"), MigConstraints.split(2));
     previewRow.add(c.placeholderPreviewLines, MigConstraints.width(80));
     behavior.add(previewRow, MigConstraints.growXWrap());
     panel.add(behavior, MigConstraints.growXMinWidth0Wrap());
 
     JPanel limits = PreferencesUiSupport.captionPanel("Preview and run limits");
     JPanel runCapRow = new JPanel(MigLayouts.insets0("[][grow]", ""));
-    runCapRow.add(new JLabel("Max hidden lines per run:"), "split 2");
+    runCapRow.add(new JLabel("Max hidden lines per run:"), MigConstraints.split(2));
     runCapRow.add(c.placeholderMaxLinesPerRun, MigConstraints.width(80));
     limits.add(runCapRow, MigConstraints.growXWrap());
     limits.add(
@@ -77,7 +77,7 @@ public final class FiltersPanelSupport {
 
     JPanel tooltip = PreferencesUiSupport.captionPanel("Tooltip details");
     JPanel tooltipTagsRow = new JPanel(MigLayouts.insets0("[][grow]", ""));
-    tooltipTagsRow.add(new JLabel("Tooltip tag limit:"), "split 2");
+    tooltipTagsRow.add(new JLabel("Tooltip tag limit:"), MigConstraints.split(2));
     tooltipTagsRow.add(c.placeholderTooltipMaxTags, MigConstraints.width(80));
     tooltip.add(tooltipTagsRow, MigConstraints.growXWrap());
     tooltip.add(
@@ -96,7 +96,8 @@ public final class FiltersPanelSupport {
     history.add(c.historyPlaceholdersEnabledByDefault, MigConstraints.growXWrap());
 
     JPanel historyCapRow = new JPanel(MigLayouts.insets0("[][grow]", ""));
-    historyCapRow.add(new JLabel("History placeholder run cap per batch:"), "split 2");
+    historyCapRow.add(
+        new JLabel("History placeholder run cap per batch:"), MigConstraints.split(2));
     historyCapRow.add(c.historyPlaceholderMaxRunsPerBatch, MigConstraints.width(80));
     history.add(historyCapRow, MigConstraints.growXWrap());
     history.add(

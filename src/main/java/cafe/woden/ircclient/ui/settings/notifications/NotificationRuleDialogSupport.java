@@ -112,23 +112,22 @@ public final class NotificationRuleDialogSupport {
         PreferencesUiSupport.helpText(
             "WORD supports whole-word matching; REGEX supports Java regular expressions.");
 
-    JPanel form =
-        new JPanel(MigLayouts.twoColumnFormWithHideMode(10, 0, 3, "[]6[]6[]6[]6[]6[]6[]"));
-    form.add(enabled, "span 2,wrap");
+    JPanel form = new JPanel(MigLayouts.twoColumnFormWithHideMode(10, 0, 3, MigLayouts.rows(7, 6)));
+    form.add(enabled, MigConstraints.spanXWrap(2));
     form.add(new JLabel("Label:"));
     form.add(label, MigConstraints.growXPushXMinWidth0Wrap());
     form.add(new JLabel("Type:"));
-    form.add(type, "w 140!,wrap");
+    form.add(type, MigConstraints.widthWrap(140));
     form.add(new JLabel("Pattern:"));
     form.add(pattern, MigConstraints.growXPushXMinWidth0Wrap());
     form.add(new JLabel("Options:"));
     JPanel options = PreferencesUiSupport.leftComponentRow(8, 0, caseSensitive, wholeWord);
     options.setOpaque(false);
-    form.add(options, "growx,wrap");
+    form.add(options, MigConstraints.growXWrap());
     form.add(new JLabel("Color:"));
-    form.add(colorRow, "growx,wrap");
+    form.add(colorRow, MigConstraints.growXWrap());
     form.add(new JLabel(""));
-    form.add(hint, "growx,wmin 0,wrap");
+    form.add(hint, MigConstraints.growXMinWidth0Wrap());
 
     String dialogTitle = Objects.toString(title, "Notification Rule");
 

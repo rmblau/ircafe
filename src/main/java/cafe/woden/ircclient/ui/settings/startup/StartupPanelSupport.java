@@ -23,7 +23,7 @@ public final class StartupPanelSupport {
   }
 
   public static JPanel buildPanel(JCheckBox autoConnectOnStart, LaunchJvmControls launchJvm) {
-    JPanel form = new JPanel(MigLayouts.singleColumn(12, "[]10[]10[]"));
+    JPanel form = new JPanel(MigLayouts.singleColumn(12, MigLayouts.rows(3, 10)));
     form.add(PreferencesUiSupport.tabTitle("Startup"), MigConstraints.growXWrap());
 
     form.add(PreferencesUiSupport.sectionTitle("On launch"), MigConstraints.growXWrap());
@@ -40,17 +40,17 @@ public final class StartupPanelSupport {
 
     JPanel jvm =
         PreferencesUiSupport.captionPanel(
-            "JVM on next launch", MigLayouts.twoColumnForm(10, "[]4[]4[]4[]4[]"));
+            "JVM on next launch", MigLayouts.twoColumnForm(10, MigLayouts.rows(5, 4)));
     jvm.add(new JLabel("Java command"));
     jvm.add(launchJvm.javaCommand(), MigConstraints.growXMinWidth0Wrap());
     jvm.add(new JLabel("Initial heap (MiB)"));
-    jvm.add(launchJvm.xmsMiB(), "w 140!, wrap");
+    jvm.add(launchJvm.xmsMiB(), MigConstraints.widthWrap(140));
     jvm.add(new JLabel("Max heap (MiB)"));
-    jvm.add(launchJvm.xmxMiB(), "w 140!, wrap");
+    jvm.add(launchJvm.xmxMiB(), MigConstraints.widthWrap(140));
     jvm.add(new JLabel("GC"));
     jvm.add(launchJvm.gc(), MigConstraints.growXMinWidth0Wrap());
     jvm.add(new JLabel("Extra JVM args"), MigConstraints.alignYTop());
-    jvm.add(extraArgsScroll, "growx, h 100!, wmin 0, wrap");
+    jvm.add(extraArgsScroll, MigConstraints.growXMinWidthHeightWrap(0, 100));
     jvm.add(
         PreferencesUiSupport.helpText(
             "These settings are stored in runtime config and applied on a future restart by launcher scripts.\n"

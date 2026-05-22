@@ -339,10 +339,10 @@ public final class IrcEventNotificationRuleDialogSupport {
     refreshScriptState.run();
 
     JPanel filtersPanel =
-        new JPanel(MigLayouts.twoColumnFormWithHideMode(10, 8, 3, "[]6[]6[]6[]6[]6[]6[]6[]6[]"));
-    filtersPanel.add(enabled, "span 2,wrap");
+        new JPanel(MigLayouts.twoColumnFormWithHideMode(10, 8, 3, MigLayouts.rows(9, 6)));
+    filtersPanel.add(enabled, MigConstraints.spanXWrap(2));
     filtersPanel.add(new JLabel("Event"));
-    filtersPanel.add(eventType, "growx, wmin 220, wrap");
+    filtersPanel.add(eventType, MigConstraints.growXMinWidthWrap(220));
     filtersPanel.add(new JLabel("Source"));
     filtersPanel.add(sourceMode, MigConstraints.growXWrap());
     filtersPanel.add(new JLabel("Source match"));
@@ -376,7 +376,8 @@ public final class IrcEventNotificationRuleDialogSupport {
                 + "CTCP command/value filters only apply when Event is CTCP Request Received."),
         MigConstraints.growXMinWidth0Wrap());
 
-    JPanel actionsPanel = new JPanel(MigLayouts.twoColumnFormWithHideMode(10, 8, 3, "[]6[]6[]"));
+    JPanel actionsPanel =
+        new JPanel(MigLayouts.twoColumnFormWithHideMode(10, 8, 3, MigLayouts.rows(3, 6)));
     actionsPanel.add(toastEnabled, MigConstraints.span2GrowXWrap());
     actionsPanel.add(new JLabel("Toast focus"));
     actionsPanel.add(focusScope, MigConstraints.growXWrap());
@@ -389,12 +390,13 @@ public final class IrcEventNotificationRuleDialogSupport {
         MigConstraints.growXMinWidth0Wrap());
 
     JPanel soundPanel =
-        new JPanel(MigLayouts.labelFieldActionsFormWithHideMode(10, 8, 2, 3, "[]6[]4[]"));
-    soundPanel.add(soundEnabled, "span 4, growx, wrap");
+        new JPanel(
+            MigLayouts.labelFieldActionsFormWithHideMode(10, 8, 2, 3, MigLayouts.rowGaps(6, 4)));
+    soundPanel.add(soundEnabled, MigConstraints.spanXGrowXWrap(4));
     soundPanel.add(new JLabel("Built-in"));
     soundPanel.add(builtInSound, MigConstraints.growXMinWidth(180));
     soundPanel.add(testSound, MigConstraints.widthHeight(36, 28));
-    soundPanel.add(soundUseCustom, "wrap");
+    soundPanel.add(soundUseCustom, MigConstraints.wrap());
     soundPanel.add(new JLabel("Custom file"));
     soundPanel.add(soundCustomPath, MigConstraints.growXPushXMinWidth0());
     soundPanel.add(browseCustomSound, MigConstraints.widthHeight(36, 28));
@@ -406,8 +408,9 @@ public final class IrcEventNotificationRuleDialogSupport {
         MigConstraints.spanXGrowXMinWidthWrap(3, 0));
 
     JPanel scriptPanel =
-        new JPanel(MigLayouts.labelFieldActionsFormWithHideMode(10, 8, 2, 3, "[]6[]4[]"));
-    scriptPanel.add(scriptEnabled, "span 4, growx, wrap");
+        new JPanel(
+            MigLayouts.labelFieldActionsFormWithHideMode(10, 8, 2, 3, MigLayouts.rowGaps(6, 4)));
+    scriptPanel.add(scriptEnabled, MigConstraints.spanXGrowXWrap(4));
     scriptPanel.add(new JLabel("Script path"));
     scriptPanel.add(scriptPath, MigConstraints.growXPushXMinWidth0());
     scriptPanel.add(browseScript, MigConstraints.widthHeight(36, 28));

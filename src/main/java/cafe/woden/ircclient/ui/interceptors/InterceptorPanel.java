@@ -258,7 +258,9 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
 
   private void buildHeader() {
     JPanel header =
-        new JPanel(MigLayouts.fillXWrap("8 10 4 10", 1, MigLayoutConstraints.GROW_FILL, "[]2[]"));
+        new JPanel(
+            MigLayouts.fillXWrap(
+                "8 10 4 10", 1, MigLayoutConstraints.GROW_FILL, MigLayouts.rows(2, 2)));
     header.add(title, MigConstraints.growX());
     header.add(subtitle, MigConstraints.growX());
     add(header, BorderLayout.NORTH);
@@ -325,46 +327,47 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
 
     createInterceptorButton.setMargin(new Insets(4, 10, 4, 10));
 
-    emptyStatePanel.add(new JLabel(""), "growy,pushy");
-    emptyStatePanel.add(emptyStateTitle, "center");
-    emptyStatePanel.add(emptyStateBody, "center,wmin 320");
-    emptyStatePanel.add(createInterceptorButton, "center");
-    emptyStatePanel.add(new JLabel(""), "growy,pushy");
+    emptyStatePanel.add(new JLabel(""), MigConstraints.growYPushY());
+    emptyStatePanel.add(emptyStateTitle, MigConstraints.alignCenter());
+    emptyStatePanel.add(emptyStateBody, MigConstraints.alignCenterMinWidth(320));
+    emptyStatePanel.add(createInterceptorButton, MigConstraints.alignCenter());
+    emptyStatePanel.add(new JLabel(""), MigConstraints.growYPushY());
   }
 
   private JPanel buildDefinitionTab() {
     JPanel tab =
         new JPanel(
             MigLayouts.fillXWrapWithHideMode(
-                "8 10 8 10", 1, 3, MigLayoutConstraints.GROW_FILL, "[]8[]6[]"));
+                "8 10 8 10", 1, 3, MigLayoutConstraints.GROW_FILL, MigLayouts.rowGaps(8, 6)));
 
     JPanel identity =
         new JPanel(
             MigLayouts.fillXWrapWithHideMode(
-                8, 4, 3, "[right][grow,fill]16[right][pref!]", "[]6[]"));
+                8, 4, 3, "[right][grow,fill]16[right][pref!]", MigLayouts.rows(2, 6)));
     identity.setBorder(BorderFactory.createTitledBorder("Interceptor"));
     identity.add(new JLabel("Name:"));
     identity.add(interceptorName, MigConstraints.growX());
     identity.add(new JLabel("Enabled:"));
-    identity.add(enabled, "wrap");
+    identity.add(enabled, MigConstraints.wrap());
     identity.add(new JLabel("Server scope:"));
-    identity.add(serverScope, "w 170!, span 3, wrap");
+    identity.add(serverScope, MigConstraints.spanXWidthWrap(3, 170));
 
     JPanel channels =
         new JPanel(
-            MigLayouts.fillXWrapWithHideMode(8, 3, 3, "[right][pref!][grow,fill]", "[]6[]6[]"));
+            MigLayouts.fillXWrapWithHideMode(
+                8, 3, 3, "[right][pref!][grow,fill]", MigLayouts.rows(3, 6)));
     channels.setBorder(BorderFactory.createTitledBorder("Channel Filtering"));
     channels.add(new JLabel("Include:"));
-    channels.add(includeMode, "w 78!");
+    channels.add(includeMode, MigConstraints.width(78));
     channels.add(includes, MigConstraints.growXPushXMinWidth0Wrap());
     channels.add(new JLabel("Exclude:"));
-    channels.add(excludeMode, "w 78!");
+    channels.add(excludeMode, MigConstraints.width(78));
     channels.add(excludes, MigConstraints.growXPushXMinWidth0Wrap());
     channels.add(
         wrappedHint(
             "Use comma, semicolon, or newline-separated patterns. "
                 + "All/None modes override pattern text."),
-        "span 3, growx, pushx, wmin 0");
+        MigConstraints.spanXGrowXPushXMinWidth(3, 0));
 
     tab.add(identity, MigConstraints.growXWrap());
     tab.add(channels, MigConstraints.growXWrap());
@@ -392,7 +395,7 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
     JPanel tab =
         new JPanel(
             MigLayouts.fillXWrapWithHideMode(
-                "8 10 8 10", 1, 3, MigLayoutConstraints.GROW_FILL, "[]8[]8[]"));
+                "8 10 8 10", 1, 3, MigLayoutConstraints.GROW_FILL, MigLayouts.rows(3, 8)));
 
     JPanel notifications =
         new JPanel(
@@ -403,12 +406,13 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
 
     JPanel sound =
         new JPanel(
-            MigLayouts.fillXWrapWithHideMode(8, 3, 3, "[pref!][grow,fill][pref!]", "[]6[]6[]"));
+            MigLayouts.fillXWrapWithHideMode(
+                8, 3, 3, "[pref!][grow,fill][pref!]", MigLayouts.rows(3, 6)));
     sound.setBorder(BorderFactory.createTitledBorder("Sound"));
-    sound.add(actionSoundEnabled, "span 2,growx");
+    sound.add(actionSoundEnabled, MigConstraints.span2GrowX());
     sound.add(testSound, MigConstraints.widthHeightAlignRightWrap(36, 28));
     sound.add(new JLabel("Built-in:"));
-    sound.add(actionSoundId, "span 2,growx,wrap");
+    sound.add(actionSoundId, MigConstraints.span2GrowXWrap());
     sound.add(actionSoundUseCustom, MigConstraints.spanXWrap(3));
     sound.add(new JLabel("File:"));
     sound.add(actionSoundCustomPath, MigConstraints.growXPushXMinWidth0());
@@ -416,14 +420,15 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
 
     JPanel script =
         new JPanel(
-            MigLayouts.fillXWrapWithHideMode(8, 3, 3, "[pref!][grow,fill][pref!]", "[]6[]6[]"));
+            MigLayouts.fillXWrapWithHideMode(
+                8, 3, 3, "[pref!][grow,fill][pref!]", MigLayouts.rows(3, 6)));
     script.setBorder(BorderFactory.createTitledBorder("Script"));
     script.add(actionScriptEnabled, MigConstraints.spanXWrap(3));
     script.add(new JLabel("Path:"));
     script.add(actionScriptPath, MigConstraints.growX());
     script.add(browseScriptPath, MigConstraints.widthHeight(36, 28));
     script.add(new JLabel("Args:"));
-    script.add(actionScriptArgs, "span 2,growx,wrap");
+    script.add(actionScriptArgs, MigConstraints.span2GrowXWrap());
     script.add(new JLabel("CWD:"));
     script.add(actionScriptWorkingDirectory, MigConstraints.growX());
     script.add(browseScriptWorkingDirectory, MigConstraints.widthHeight(36, 28));
@@ -1046,7 +1051,7 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
     JPanel panel =
         new JPanel(
             MigLayouts.fillXWrapWithHideMode(
-                10, 3, 3, "[right][pref!][grow,fill]", "[]6[]6[]6[]6[]6[]6[]"));
+                10, 3, 3, "[right][pref!][grow,fill]", MigLayouts.rows(7, 6)));
 
     panel.add(ruleEnabled, MigConstraints.spanXWrap(3));
 
@@ -1056,7 +1061,7 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
     JPanel eventsGrid =
         new JPanel(
             MigLayouts.fillXWrapWithHideMode(
-                0, 2, 3, MigLayoutConstraints.GROW_FILL_PAIR, "[]2[]"));
+                0, 2, 3, MigLayoutConstraints.GROW_FILL_PAIR, MigLayouts.rows(2, 2)));
     for (JCheckBox selector : eventSelectors.values()) {
       selector.setToolTipText("Match " + selector.getText() + " events.");
       eventsGrid.add(selector, MigConstraints.growX());
@@ -1069,7 +1074,8 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
 
     JPanel eventsPanel =
         new JPanel(
-            MigLayouts.fillXWrapWithHideMode(0, 1, 3, MigLayoutConstraints.GROW_FILL, "[]4[]"));
+            MigLayouts.fillXWrapWithHideMode(
+                0, 1, 3, MigLayoutConstraints.GROW_FILL, MigLayouts.rows(2, 4)));
     eventsPanel.add(anyEventType, MigConstraints.growX());
     eventsPanel.add(eventsScroll, MigConstraints.growXPushXMinWidth0());
 

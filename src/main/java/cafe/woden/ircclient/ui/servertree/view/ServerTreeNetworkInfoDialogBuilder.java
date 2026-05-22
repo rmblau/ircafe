@@ -176,7 +176,7 @@ public final class ServerTreeNetworkInfoDialogBuilder {
     close.addActionListener(ev -> dialog.dispose());
     JPanel actions = new JPanel(MigLayouts.fillX(MigLayoutConstraints.GROW_FILL_TRAILING, "[]"));
     actions.add(new JLabel(""), MigConstraints.growX());
-    actions.add(close, "tag ok");
+    actions.add(close, MigConstraints.tagOk());
 
     JPanel content =
         new JPanel(
@@ -197,7 +197,8 @@ public final class ServerTreeNetworkInfoDialogBuilder {
 
   private JPanel buildNetworkSummaryPanel(
       Context context, String serverId, ServerRuntimeMetadata metadata) {
-    JPanel panel = new JPanel(MigLayouts.fillXWrap(8, 2, "[grow,fill][right]", "[]4[]"));
+    JPanel panel =
+        new JPanel(MigLayouts.fillXWrap(8, 2, "[grow,fill][right]", MigLayouts.rows(2, 4)));
     panel.setBorder(BorderFactory.createTitledBorder("Summary"));
 
     ConnectionState state = context.connectionStateForServer(serverId);
@@ -235,8 +236,8 @@ public final class ServerTreeNetworkInfoDialogBuilder {
     JPanel overview =
         new JPanel(
             MigLayouts.fillWrap(8, 2, MigLayoutConstraints.GROW_FILL_GAP_12_GROW_FILL, "[top]"));
-    overview.add(buildConnectionInfoPanel(context, serverId, metadata), "grow");
-    overview.add(buildServerInfoPanel(metadata), "grow");
+    overview.add(buildConnectionInfoPanel(context, serverId, metadata), MigConstraints.grow());
+    overview.add(buildServerInfoPanel(metadata), MigConstraints.grow());
     return overview;
   }
 
@@ -324,8 +325,8 @@ public final class ServerTreeNetworkInfoDialogBuilder {
     }
 
     if (allCapabilities.isEmpty()) {
-      panel.add(new JLabel("No IRCv3 capabilities observed yet."), "grow");
-      panel.add(buildCapabilityTransitionsPanel(metadata), "grow");
+      panel.add(new JLabel("No IRCv3 capabilities observed yet."), MigConstraints.grow());
+      panel.add(buildCapabilityTransitionsPanel(metadata), MigConstraints.grow());
       return panel;
     }
 
@@ -390,8 +391,8 @@ public final class ServerTreeNetworkInfoDialogBuilder {
     table.getTableHeader().setReorderingAllowed(false);
     JScrollPane scroll = new JScrollPane(table);
     scroll.getVerticalScrollBar().setUnitIncrement(16);
-    panel.add(scroll, "grow");
-    panel.add(buildCapabilityTransitionsPanel(metadata), "grow");
+    panel.add(scroll, MigConstraints.grow());
+    panel.add(buildCapabilityTransitionsPanel(metadata), MigConstraints.grow());
     return panel;
   }
 
@@ -534,7 +535,7 @@ public final class ServerTreeNetworkInfoDialogBuilder {
     JTable table = buildReadOnlyTable(new String[] {"Time", "CAP", "Capability", "State"}, rows);
     JScrollPane scroll = new JScrollPane(table);
     scroll.getVerticalScrollBar().setUnitIncrement(16);
-    panel.add(scroll, "grow");
+    panel.add(scroll, MigConstraints.grow());
     return panel;
   }
 
@@ -544,7 +545,7 @@ public final class ServerTreeNetworkInfoDialogBuilder {
             MigLayouts.fillWrap(
                 8, 1, MigLayoutConstraints.GROW_FILL, MigLayoutConstraints.GROW_FILL));
     if (metadata.isupport.isEmpty()) {
-      panel.add(new JLabel("No ISUPPORT tokens observed yet."), "grow");
+      panel.add(new JLabel("No ISUPPORT tokens observed yet."), MigConstraints.grow());
       return panel;
     }
 
@@ -562,7 +563,7 @@ public final class ServerTreeNetworkInfoDialogBuilder {
     JTable table = buildReadOnlyTable(new String[] {"Token", "Value"}, rows);
     JScrollPane scroll = new JScrollPane(table);
     scroll.getVerticalScrollBar().setUnitIncrement(16);
-    panel.add(scroll, "grow");
+    panel.add(scroll, MigConstraints.grow());
     return panel;
   }
 
@@ -660,7 +661,8 @@ public final class ServerTreeNetworkInfoDialogBuilder {
   }
 
   private static JPanel buildCountChip(String label, int count) {
-    JPanel chip = new JPanel(MigLayouts.wrap(6, 1, MigLayoutConstraints.GROW_FILL, "[]0[]"));
+    JPanel chip =
+        new JPanel(MigLayouts.wrap(6, 1, MigLayoutConstraints.GROW_FILL, MigLayouts.rows(2, 0)));
     Color border = UIManager.getColor(UiColorKeys.SEPARATOR_FOREGROUND);
     if (border == null) {
       border = UIManager.getColor(UiColorKeys.COMPONENT_BORDER_COLOR);
@@ -681,8 +683,8 @@ public final class ServerTreeNetworkInfoDialogBuilder {
       textLabel.setForeground(muted);
     }
 
-    chip.add(countLabel, "alignx center");
-    chip.add(textLabel, "alignx center");
+    chip.add(countLabel, MigConstraints.alignXCenter());
+    chip.add(textLabel, MigConstraints.alignXCenter());
     return chip;
   }
 

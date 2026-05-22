@@ -1048,6 +1048,33 @@ class ArchitectureGuardrailsTest {
               "bouncer internals should remain implementation details used only by bouncer core and backend-specific IRC adapters");
 
   @ArchTest
+  static final ArchRule miglayout_construction_should_stay_in_ui_layout_helpers =
+      noClasses()
+          .that()
+          .resideInAPackage("cafe.woden.ircclient..")
+          .and()
+          .doNotHaveFullyQualifiedName("cafe.woden.ircclient.ui.util.MigLayouts")
+          .and()
+          .doNotHaveFullyQualifiedName("cafe.woden.ircclient.ui.settings.PreferencesUiSupport")
+          .should()
+          .dependOnClassesThat()
+          .haveFullyQualifiedName("net.miginfocom.swing.MigLayout")
+          .because(
+              "MigLayout construction should stay centralized in MigLayouts, with PreferencesUiSupport retaining only legacy compatibility factories");
+
+  @ArchTest
+  static final ArchRule mig_component_constraints_should_stay_in_ui_constraint_helpers =
+      noClasses()
+          .that()
+          .resideInAPackage("cafe.woden.ircclient..")
+          .and()
+          .doNotHaveFullyQualifiedName("cafe.woden.ircclient.ui.util.MigConstraints")
+          .should()
+          .dependOnClassesThat()
+          .haveFullyQualifiedName("net.miginfocom.layout.CC")
+          .because("Mig component constraints should be expressed through MigConstraints helpers");
+
+  @ArchTest
   static final ArchRule only_virtual_threads_factory_should_depend_on_executors =
       noClasses()
           .that()

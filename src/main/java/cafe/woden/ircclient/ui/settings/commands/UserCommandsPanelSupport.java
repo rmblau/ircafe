@@ -54,13 +54,14 @@ public final class UserCommandsPanelSupport {
             MigLayoutConstraints.GROW_FILL,
             MigLayoutConstraints.ROW_6_GROW_FILL);
     aliasList.add(buttons, MigConstraints.growXMinWidth0Wrap());
-    aliasList.add(tableScroll, "grow, push, h 220!, wmin 0");
+    aliasList.add(tableScroll, MigConstraints.growPushMinWidth0Height(220));
     panel.add(aliasList, MigConstraints.growPushMinWidth0Wrap());
 
     JPanel editor =
-        PreferencesUiSupport.captionPanel("Expansion editor", MigLayouts.singleColumn("[]6[]"));
+        PreferencesUiSupport.captionPanel(
+            "Expansion editor", MigLayouts.singleColumn(MigLayouts.rows(2, 6)));
     editor.add(controls.hint(), MigConstraints.growXMinWidth0Wrap());
-    editor.add(templateScroll, "growx, h 140!, wmin 0, wrap");
+    editor.add(templateScroll, MigConstraints.growXMinWidthHeightWrap(0, 140));
     panel.add(editor, MigConstraints.growXMinWidth0Wrap());
 
     return panel;

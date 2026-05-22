@@ -161,7 +161,7 @@ public final class RuntimeEventsPanel extends JPanel {
     controls.add(detailsButton);
     controls.add(clearButton);
     controls.add(exportButton);
-    controls.add(rowsLabel, "alignx right");
+    controls.add(rowsLabel, MigConstraints.alignXRight());
     add(controls, BorderLayout.SOUTH);
 
     refreshTimer = new Timer(1000, e -> refreshNow());
@@ -350,7 +350,7 @@ public final class RuntimeEventsPanel extends JPanel {
   private static JPanel buildDetailPanel(RuntimeDiagnosticEvent event) {
     JPanel root = new JPanel(new BorderLayout(0, 10));
 
-    JPanel fields = new JPanel(MigLayouts.twoColumnForm(10, "[]4[]4[]4[]"));
+    JPanel fields = new JPanel(MigLayouts.twoColumnForm(10, MigLayouts.rows(4, 4)));
     addDetailRow(fields, "Time", event.at() == null ? "" : TIME_FMT.format(event.at()));
     addDetailRow(fields, "Level", Objects.toString(event.level(), ""));
     addDetailRow(fields, "Event type", Objects.toString(event.type(), ""));

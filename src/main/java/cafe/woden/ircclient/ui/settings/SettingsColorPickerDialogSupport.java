@@ -122,7 +122,8 @@ public final class SettingsColorPickerDialogSupport {
           recent.removeAll();
           List<String> rec = snapshotRecentColorHex();
           if (rec.isEmpty()) {
-            recent.add(PreferencesUiSupport.helpText("No recent colors yet."), "span 8");
+            recent.add(
+                PreferencesUiSupport.helpText("No recent colors yet."), MigConstraints.spanX(8));
           } else {
             for (String hx : rec) {
               Color c = SettingsColorSupport.parseHexColorLenient(hx);
@@ -159,18 +160,22 @@ public final class SettingsColorPickerDialogSupport {
     JPanel content =
         new JPanel(
             MigLayouts.fillXWrap(
-                12, 2, MigLayoutConstraints.GROW_FILL_GAP_12_GROW_FILL, "[]10[]6[]10[]6[]10[]"));
+                12,
+                2,
+                MigLayoutConstraints.GROW_FILL_GAP_12_GROW_FILL,
+                MigLayouts.rowGaps(10, 6, 10, 6, 10)));
     content.add(preview, MigConstraints.span2GrowXWrap());
     content.add(contrast, MigConstraints.span2GrowXWrap());
 
     content.add(new JLabel("Hex"));
     JPanel hexRow =
-        new JPanel(MigLayouts.fillXWrap(0, 3, "[grow,fill]6[nogrid]6[nogrid]", "[]2[]"));
+        new JPanel(
+            MigLayouts.fillXWrap(0, 3, "[grow,fill]6[nogrid]6[nogrid]", MigLayouts.rows(2, 2)));
     hexRow.setOpaque(false);
     hexRow.add(hex, MigConstraints.width(110));
     hexRow.add(more);
-    hexRow.add(new JLabel(), "push");
-    hexRow.add(hexStatus, "span 3, growx");
+    hexRow.add(new JLabel(), MigConstraints.push());
+    hexRow.add(hexStatus, MigConstraints.spanXGrowX(3));
     content.add(hexRow, MigConstraints.growXWrap());
 
     content.add(new JLabel("Palette"), MigConstraints.alignYTop());

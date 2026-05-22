@@ -35,7 +35,8 @@ public final class EmbedsAndPreviewsPanelSupport {
 
   public static JPanel buildPanel(
       ImageEmbedControls image, LinkPreviewControls links, JButton advancedPolicyButton) {
-    JPanel form = new JPanel(MigLayouts.twoColumnForm(12, 12, "[]10[]6[]10[]6[]10[]"));
+    JPanel form =
+        new JPanel(MigLayouts.twoColumnForm(12, 12, MigLayouts.rowGaps(10, 6, 10, 6, 10)));
 
     form.add(
         PreferencesUiSupport.tabTitle("Embeds & Previews"),

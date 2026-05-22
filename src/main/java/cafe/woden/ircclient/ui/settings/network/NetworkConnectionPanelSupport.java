@@ -32,7 +32,7 @@ final class NetworkConnectionPanelSupport {
       String loginTemplateDefault) {
     JPanel networkPanel = new JPanel(MigLayouts.singleColumnFill(0, "[]0[grow,fill]"));
 
-    JPanel proxyTab = new JPanel(MigLayouts.twoColumnForm(12, "[]6[]"));
+    JPanel proxyTab = new JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rows(2, 6)));
     proxyTab.setOpaque(false);
 
     JPanel proxyHeader =
@@ -45,7 +45,7 @@ final class NetworkConnectionPanelSupport {
             "SOCKS5 proxy",
             "When enabled, IRCafe routes IRC connections, link previews, embedded images, and file downloads through a SOCKS5 proxy.\n\n"
                 + "Heads up: proxy credentials are stored in your runtime config file in plain text."),
-        "align right");
+        MigConstraints.alignXRight());
     proxyTab.add(proxyHeader, MigConstraints.span2GrowXMinWidth0Wrap());
 
     JTextArea proxyBlurb = PreferencesUiSupport.subtleInfoText();
@@ -165,7 +165,7 @@ final class NetworkConnectionPanelSupport {
     proxyTab.add(new JLabel("Read timeout (sec):"));
     proxyTab.add(readTimeoutSeconds, MigConstraints.width(110));
 
-    JPanel tlsTab = new JPanel(MigLayouts.singleColumn("[]6[]"));
+    JPanel tlsTab = new JPanel(MigLayouts.singleColumn(MigLayouts.rows(2, 6)));
     tlsTab.setOpaque(false);
     JPanel tlsHeader =
         new JPanel(MigLayouts.fillX(MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING, "[]"));
@@ -177,7 +177,7 @@ final class NetworkConnectionPanelSupport {
             "This setting is intentionally dangerous. If enabled, IRCafe will accept any TLS certificate (expired, mismatched, self-signed, etc)\n"
                 + "for IRC-over-TLS connections and for HTTPS fetching (link previews, embedded images, etc).\n\n"
                 + "Only enable this if you understand the risk (MITM becomes trivial)."),
-        "align right");
+        MigConstraints.alignXRight());
     tlsTab.add(tlsHeader, MigConstraints.growXMinWidth0Wrap());
 
     JTextArea tlsBlurb = PreferencesUiSupport.subtleInfoText();
@@ -192,7 +192,7 @@ final class NetworkConnectionPanelSupport {
             trustAllTlsCertificates, "Trust all TLS/SSL certificates (insecure)");
     tlsTab.add(trustAllTlsRow, MigConstraints.growXMinWidth0Wrap());
 
-    JPanel heartbeatTab = new JPanel(MigLayouts.twoColumnForm(12, "[]6[]"));
+    JPanel heartbeatTab = new JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rows(2, 6)));
     heartbeatTab.setOpaque(false);
     JPanel heartbeatHeader =
         new JPanel(MigLayouts.fillX(MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING, "[]"));
@@ -206,7 +206,7 @@ final class NetworkConnectionPanelSupport {
                 + "If no IRC messages are received for the configured timeout, IRCafe will close the socket\n"
                 + "and let the reconnect logic take over (if enabled).\n\n"
                 + "Tip: If your network is very quiet, increase the timeout."),
-        "align right");
+        MigConstraints.alignXRight());
     heartbeatTab.add(heartbeatHeader, MigConstraints.span2GrowXMinWidth0Wrap());
 
     JTextArea heartbeatBlurb = PreferencesUiSupport.subtleInfoText();
@@ -242,7 +242,7 @@ final class NetworkConnectionPanelSupport {
     heartbeatTab.add(new JLabel("Timeout (sec):"));
     heartbeatTab.add(heartbeatTimeoutSeconds, MigConstraints.width(110));
 
-    JPanel bouncerTab = new JPanel(MigLayouts.twoColumnForm(12, "[]6[]"));
+    JPanel bouncerTab = new JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rows(2, 6)));
     bouncerTab.setOpaque(false);
     JPanel bouncerHeader =
         new JPanel(MigLayouts.fillX(MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING, "[]"));
@@ -256,7 +256,7 @@ final class NetworkConnectionPanelSupport {
             "These defaults are used by the generic bouncer mapping strategy for discovered networks.\n\n"
                 + "Use a login template to shape derived usernames.\n"
                 + "Use hint preference to accept or ignore login user hints sent by the bouncer."),
-        "align right");
+        MigConstraints.alignXRight());
     bouncerTab.add(bouncerHeader, MigConstraints.span2GrowXMinWidth0Wrap());
 
     JTextArea bouncerBlurb = PreferencesUiSupport.subtleInfoText();
@@ -296,7 +296,7 @@ final class NetworkConnectionPanelSupport {
             "Network settings",
             "These settings affect how IRCafe connects to networks and fetches external content (link previews, embedded images, etc).\n\n"
                 + "Tip: Most users only touch Proxy. Leave TLS trust-all off unless you're debugging."),
-        "align right");
+        MigConstraints.alignXRight());
 
     networkPanel.add(networkIntro, MigConstraints.growXMinWidth0Wrap());
     networkPanel.add(networkTabs, MigConstraints.growPushMinWidth0());

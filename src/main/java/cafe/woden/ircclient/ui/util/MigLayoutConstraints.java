@@ -20,5 +20,35 @@ public final class MigLayoutConstraints {
   public static final String INSETS_0_FILL_X_WRAP_4 = "insets 0, fillx, wrap 4";
   public static final String INSETS_0_FILL_WRAP_1 = "insets 0, fill, wrap 1";
 
+  public static String rows(int count, int gap) {
+    if (count <= 0) {
+      throw new IllegalArgumentException("count must be positive");
+    }
+    if (gap < 0) {
+      throw new IllegalArgumentException("gap must not be negative");
+    }
+    StringBuilder rows = new StringBuilder("[]");
+    for (int i = 1; i < count; i++) {
+      rows.append(gap).append("[]");
+    }
+    return rows.toString();
+  }
+
+  public static String rowGaps(int firstGap, int... remainingGaps) {
+    StringBuilder rows = new StringBuilder("[]");
+    appendRowGap(rows, firstGap);
+    for (int gap : remainingGaps) {
+      appendRowGap(rows, gap);
+    }
+    return rows.toString();
+  }
+
+  private static void appendRowGap(StringBuilder rows, int gap) {
+    if (gap < 0) {
+      throw new IllegalArgumentException("gaps must not be negative");
+    }
+    rows.append(gap).append("[]");
+  }
+
   private MigLayoutConstraints() {}
 }

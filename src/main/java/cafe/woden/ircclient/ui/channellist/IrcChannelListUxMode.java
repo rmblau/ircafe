@@ -70,7 +70,7 @@ final class IrcChannelListUxMode implements ChannelListUxMode {
             });
     JPanel showFlagsPanel = new JPanel(MigLayouts.fillX("[][grow]", "[]"));
     showFlagsPanel.add(showModes);
-    showFlagsPanel.add(showTopicSetter, "gapleft 10");
+    showFlagsPanel.add(showTopicSetter, MigConstraints.gapLeft(10));
 
     minUsers.setEnabled(false);
     maxUsers.setEnabled(false);
@@ -79,7 +79,7 @@ final class IrcChannelListUxMode implements ChannelListUxMode {
     maxEnabled.addActionListener(e -> maxUsers.setEnabled(maxEnabled.isSelected()));
     skipEnabled.addActionListener(e -> skipCount.setEnabled(skipEnabled.isSelected()));
 
-    JPanel form = new JPanel(MigLayouts.twoColumnForm(0, "[]6[]6[]6[]6[]6[]6[]6[]"));
+    JPanel form = new JPanel(MigLayouts.twoColumnForm(0, MigLayouts.rows(8, 6)));
     form.add(new JLabel("Query pattern:"));
     form.add(queryField, MigConstraints.growX());
     form.add(new JLabel("Topic filter:"));
