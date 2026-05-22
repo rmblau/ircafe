@@ -122,6 +122,7 @@ public class RuntimeConfigStore
   private final Path file;
   private final RuntimeConfigDocumentStore documentStore;
   private final RuntimeConfigServerListStore serverListStore;
+  private final RuntimeConfigMonitorRosterStore monitorRosterStore;
   private Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolver =
       new Ircv3CapabilityNameResolverPort() {};
   public RuntimeConfigStore(
@@ -131,6 +132,7 @@ public class RuntimeConfigStore
     this.file = Paths.get(Objects.requireNonNullElse(filePath, "").trim());
     this.documentStore = new RuntimeConfigDocumentStore(this.file);
     this.serverListStore = new RuntimeConfigServerListStore(this.file, documentStore, defaults);
+    this.monitorRosterStore = new RuntimeConfigMonitorRosterStore(this.file, documentStore);
 
     ensureFileExistsWithServers();
   }
@@ -944,69 +946,21 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberMonitorNick(String serverId, String nick) {
-    updateServer(
-        serverId,
-        server -> {
-          String n = normalizeMonitorNick(nick);
-          if (n.isEmpty()) return;
-
-          List<String> monitorNicks = sanitizeMonitorNickList(server.get("monitorNicks"));
-          if (containsIgnoreCase(monitorNicks, n)) return;
-          monitorNicks.add(n);
-          server.put("monitorNicks", monitorNicks);
-        });
+    monitorRosterStore.rememberMonitorNick(serverId, nick);
   }
 
   public synchronized void forgetMonitorNick(String serverId, String nick) {
-    updateServer(
-        serverId,
-        server -> {
-          String n = normalizeMonitorNick(nick);
-          if (n.isEmpty()) return;
-
-          List<String> monitorNicks = sanitizeMonitorNickList(server.get("monitorNicks"));
-          monitorNicks.removeIf(existing -> existing != null && existing.equalsIgnoreCase(n));
-          if (monitorNicks.isEmpty()) {
-            server.remove("monitorNicks");
-          } else {
-            server.put("monitorNicks", monitorNicks);
-          }
-        });
+    monitorRosterStore.forgetMonitorNick(serverId, nick);
   }
 
   @Override
   public synchronized void replaceMonitorNicks(String serverId, List<String> nicks) {
-    updateServer(
-        serverId,
-        server -> {
-          List<String> monitorNicks = sanitizeMonitorNickList(nicks);
-          if (monitorNicks.isEmpty()) {
-            server.remove("monitorNicks");
-          } else {
-            server.put("monitorNicks", monitorNicks);
-          }
-        });
+    monitorRosterStore.replaceMonitorNicks(serverId, nicks);
   }
 
   @Override
   public synchronized List<String> readMonitorNicks(String serverId) {
-    try {
-      if (file.toString().isBlank()) return List.of();
-      String sid = Objects.toString(serverId, "").trim();
-      if (sid.isEmpty()) return List.of();
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> irc = getOrCreateMap(doc, "irc");
-      List<Map<String, Object>> servers = readServerList(irc).orElse(List.of());
-      for (Map<String, Object> server : servers) {
-        if (server == null) continue;
-        if (!sid.equalsIgnoreCase(Objects.toString(server.get("id"), "").trim())) continue;
-        return List.copyOf(sanitizeMonitorNickList(server.get("monitorNicks")));
-      }
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read monitor nick list from '{}'", file, e);
-    }
-    return List.of();
+    return monitorRosterStore.readMonitorNicks(serverId);
   }
 
   @Override
@@ -5157,32 +5111,6 @@ public class RuntimeConfigStore
   private static String normalizeGenericBouncerLoginTemplate(Object template) {
     String raw = Objects.toString(template, "").trim();
     return raw.isEmpty() ? DEFAULT_GENERIC_BOUNCER_LOGIN_TEMPLATE : raw;
-  }
-
-  private static List<String> sanitizeMonitorNickList(Object rawList) {
-    if (!(rawList instanceof List<?> list) || list.isEmpty()) return new ArrayList<>();
-    ArrayList<String> out = new ArrayList<>();
-    for (Object raw : list) {
-      String nick = normalizeMonitorNick(raw);
-      if (nick.isEmpty()) continue;
-      if (!containsIgnoreCase(out, nick)) out.add(nick);
-    }
-    if (out.isEmpty()) return new ArrayList<>();
-    return out;
-  }
-
-  private static String normalizeMonitorNick(Object rawNick) {
-    String nick = Objects.toString(rawNick, "").trim();
-    if (nick.isEmpty()) return "";
-    if (nick.startsWith(":")) nick = nick.substring(1).trim();
-    int comma = nick.indexOf(',');
-    if (comma >= 0) nick = nick.substring(0, comma).trim();
-    int bang = nick.indexOf('!');
-    if (bang > 0) nick = nick.substring(0, bang).trim();
-    if (nick.isEmpty()) return "";
-    if (nick.indexOf(' ') >= 0 || nick.indexOf('\t') >= 0) return "";
-    if (nick.startsWith("#") || nick.startsWith("&")) return "";
-    return nick;
   }
 
   private static boolean containsIgnoreCase(List<String> values, String needle) {
