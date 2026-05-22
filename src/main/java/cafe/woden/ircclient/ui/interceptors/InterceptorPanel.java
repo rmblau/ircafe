@@ -14,6 +14,7 @@ import cafe.woden.ircclient.ui.util.MigConstraints;
 import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import cafe.woden.ircclient.ui.util.MigLayouts;
 import cafe.woden.ircclient.ui.util.PopupMenuThemeSupport;
+import cafe.woden.ircclient.ui.util.SoundFileChooserSupport;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import cafe.woden.ircclient.ui.util.UiFontKeys;
 import cafe.woden.ircclient.util.VirtualThreads;
@@ -1503,16 +1504,11 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
 
   private void browseForCustomSoundPath() {
     if (!controlsEnabled) return;
-    JFileChooser chooser = new JFileChooser();
-    chooser.setDialogTitle("Choose interceptor sound (MP3 or WAV)");
-    chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-    chooser.setAcceptAllFileFilterUsed(true);
-    chooser.addChoosableFileFilter(
-        new FileNameExtensionFilter("Audio files (MP3, WAV)", "mp3", "wav"));
-    int result = chooser.showOpenDialog(SwingUtilities.getWindowAncestor(this));
-    if (result != JFileChooser.APPROVE_OPTION) return;
-
-    File selected = chooser.getSelectedFile();
+    File selected =
+        SoundFileChooserSupport
+            .chooseSoundFile(
+                SwingUtilities.getWindowAncestor(this), "Choose interceptor sound (MP3 or WAV)")
+            .orElse(null);
     if (selected == null) return;
 
     try {
