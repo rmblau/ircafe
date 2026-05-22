@@ -87,13 +87,9 @@ public final class NotificationsPanelSupport {
     edit.addActionListener(e -> openEditRuleDialog.run());
 
     duplicate.addActionListener(
-        e -> {
-          int modelRow = SettingsTableSupport.selectedModelRow(notifications.table);
-          if (modelRow < 0) return;
-          int dup = notifications.model.duplicateRow(modelRow);
-          SettingsTableSupport.selectModelRow(notifications.table, dup);
-          refreshRuleButtons.run();
-        });
+        e ->
+            NotificationRuleTableSupport.duplicateSelectedRow(
+                notifications.table, notifications.model::duplicateRow, refreshRuleButtons));
 
     remove.addActionListener(
         e -> {
@@ -111,22 +107,14 @@ public final class NotificationsPanelSupport {
         });
 
     up.addActionListener(
-        e -> {
-          int modelRow = SettingsTableSupport.selectedModelRow(notifications.table);
-          if (modelRow < 0) return;
-          int next = notifications.model.moveRow(modelRow, modelRow - 1);
-          SettingsTableSupport.selectModelRow(notifications.table, next);
-          refreshRuleButtons.run();
-        });
+        e ->
+            NotificationRuleTableSupport.moveSelectedRow(
+                notifications.table, -1, notifications.model::moveRow, refreshRuleButtons));
 
     down.addActionListener(
-        e -> {
-          int modelRow = SettingsTableSupport.selectedModelRow(notifications.table);
-          if (modelRow < 0) return;
-          int next = notifications.model.moveRow(modelRow, modelRow + 1);
-          SettingsTableSupport.selectModelRow(notifications.table, next);
-          refreshRuleButtons.run();
-        });
+        e ->
+            NotificationRuleTableSupport.moveSelectedRow(
+                notifications.table, 1, notifications.model::moveRow, refreshRuleButtons));
 
     SettingsTableSupport.refreshOnSelectionChange(notifications.table, refreshRuleButtons);
     SettingsTableSupport.editOnDoubleClick(notifications.table, openEditRuleDialog);

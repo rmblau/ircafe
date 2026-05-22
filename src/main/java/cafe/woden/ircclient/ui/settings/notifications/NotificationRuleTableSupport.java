@@ -25,6 +25,24 @@ final class NotificationRuleTableSupport {
     setEnabled(down, hasSelection && modelRow < safeRowCount(rowCount, table) - 1);
   }
 
+  static void duplicateSelectedRow(
+      JTable table, RowDuplicator duplicator, Runnable afterSelectionChanged) {
+    int modelRow = SettingsTableSupport.selectedModelRow(table);
+    if (modelRow < 0 || duplicator == null) return;
+    int duplicateRow = duplicator.duplicateRow(modelRow);
+    SettingsTableSupport.selectModelRow(table, duplicateRow);
+    run(afterSelectionChanged);
+  }
+
+  static void moveSelectedRow(
+      JTable table, int targetOffset, RowMover mover, Runnable afterSelectionChanged) {
+    int modelRow = SettingsTableSupport.selectedModelRow(table);
+    if (modelRow < 0 || mover == null) return;
+    int movedRow = mover.moveRow(modelRow, modelRow + targetOffset);
+    SettingsTableSupport.selectModelRow(table, movedRow);
+    run(afterSelectionChanged);
+  }
+
   private static int safeRowCount(IntSupplier rowCount, JTable table) {
     if (rowCount != null) return Math.max(0, rowCount.getAsInt());
     return table != null && table.getModel() != null ? table.getModel().getRowCount() : 0;
@@ -32,5 +50,19 @@ final class NotificationRuleTableSupport {
 
   private static void setEnabled(JButton button, boolean enabled) {
     if (button != null) button.setEnabled(enabled);
+  }
+
+  private static void run(Runnable runnable) {
+    if (runnable != null) runnable.run();
+  }
+
+  @FunctionalInterface
+  interface RowDuplicator {
+    int duplicateRow(int row);
+  }
+
+  @FunctionalInterface
+  interface RowMover {
+    int moveRow(int fromRow, int toRow);
   }
 }

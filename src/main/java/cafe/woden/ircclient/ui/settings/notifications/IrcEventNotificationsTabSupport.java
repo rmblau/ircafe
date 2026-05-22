@@ -151,13 +151,9 @@ public final class IrcEventNotificationsTabSupport {
         });
 
     duplicate.addActionListener(
-        e -> {
-          int modelRow = SettingsTableSupport.selectedModelRow(controls.table());
-          if (modelRow < 0) return;
-          int dup = controls.model().duplicateRow(modelRow);
-          SettingsTableSupport.selectModelRow(controls.table(), dup);
-          refreshRuleButtons.run();
-        });
+        e ->
+            NotificationRuleTableSupport.duplicateSelectedRow(
+                controls.table(), controls.model()::duplicateRow, refreshRuleButtons));
 
     remove.addActionListener(
         e -> {
@@ -175,22 +171,14 @@ public final class IrcEventNotificationsTabSupport {
         });
 
     up.addActionListener(
-        e -> {
-          int modelRow = SettingsTableSupport.selectedModelRow(controls.table());
-          if (modelRow < 0) return;
-          int next = controls.model().moveRow(modelRow, modelRow - 1);
-          SettingsTableSupport.selectModelRow(controls.table(), next);
-          refreshRuleButtons.run();
-        });
+        e ->
+            NotificationRuleTableSupport.moveSelectedRow(
+                controls.table(), -1, controls.model()::moveRow, refreshRuleButtons));
 
     down.addActionListener(
-        e -> {
-          int modelRow = SettingsTableSupport.selectedModelRow(controls.table());
-          if (modelRow < 0) return;
-          int next = controls.model().moveRow(modelRow, modelRow + 1);
-          SettingsTableSupport.selectModelRow(controls.table(), next);
-          refreshRuleButtons.run();
-        });
+        e ->
+            NotificationRuleTableSupport.moveSelectedRow(
+                controls.table(), 1, controls.model()::moveRow, refreshRuleButtons));
 
     applyDefaults.addActionListener(
         e -> {
