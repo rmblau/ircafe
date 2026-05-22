@@ -68,6 +68,14 @@ public final class MigLayouts {
     return new MigLayout(MigLayoutConstraints.INSETS_0_FILL_X, columns, rows);
   }
 
+  public static MigLayout fillXGrowTrailing() {
+    return fillX(MigLayoutConstraints.GROW_FILL_TRAILING, MigLayoutConstraints.ROW);
+  }
+
+  public static MigLayout fillXGrowTrailing(int gap) {
+    return fillX(MigLayoutConstraints.growFillGapTrailing(gap), MigLayoutConstraints.ROW);
+  }
+
   public static MigLayout fillX(int insets, String columns, String rows) {
     return new MigLayout(layout(insets, "fillx"), columns, rows);
   }

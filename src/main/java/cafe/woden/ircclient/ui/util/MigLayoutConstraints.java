@@ -4,9 +4,11 @@ package cafe.woden.ircclient.ui.util;
 public final class MigLayoutConstraints {
 
   public static final String LEADING_GROW_FILL = "[][grow,fill]";
+  public static final String LEADING_GROW = "[][grow]";
+  public static final String ROW = "[]";
   public static final String GROW_FILL = "[grow,fill]";
   public static final String GROW_FILL_TRAILING = "[grow,fill][]";
-  public static final String GROW_FILL_GAP_6_TRAILING = "[grow,fill]6[]";
+  public static final String GROW_FILL_GAP_6_TRAILING = growFillGapTrailing(6);
   public static final String GROW_FILL_GAP_12_GROW_FILL = "[grow,fill]12[grow,fill]";
   public static final String GROW_FILL_PAIR = "[grow,fill][grow,fill]";
   public static final String ROW_6_GROW_FILL = "[]6[grow,fill]";
@@ -41,6 +43,13 @@ public final class MigLayoutConstraints {
       appendRowGap(rows, gap);
     }
     return rows.toString();
+  }
+
+  public static String growFillGapTrailing(int gap) {
+    if (gap < 0) {
+      throw new IllegalArgumentException("gap must not be negative");
+    }
+    return GROW_FILL + gap + ROW;
   }
 
   private static void appendRowGap(StringBuilder rows, int gap) {

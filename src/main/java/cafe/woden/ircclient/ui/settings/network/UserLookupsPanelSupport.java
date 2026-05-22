@@ -29,8 +29,7 @@ public final class UserLookupsPanelSupport {
         new JPanel(MigLayouts.fillXWrapWithHideMode(12, 1, 3, MigLayoutConstraints.GROW_FILL, ""));
     userLookupsPanel.add(PreferencesUiSupport.tabTitle("User lookups"), MigConstraints.growXWrap());
 
-    JPanel userLookupsIntro =
-        new JPanel(MigLayouts.fillX(MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING, "[]"));
+    JPanel userLookupsIntro = new JPanel(MigLayouts.fillXGrowTrailing(6));
     userLookupsIntro.setOpaque(false);
     JTextArea userLookupsBlurb =
         PreferencesUiSupport.helpText(
@@ -505,14 +504,12 @@ public final class UserLookupsPanelSupport {
     enrichmentPeriodicRefreshIntervalSeconds.addChangeListener(summaryChange);
     enrichmentPeriodicRefreshNicksPerTick.addChangeListener(summaryChange);
 
-    JPanel enrichmentWhoisRow =
-        new JPanel(MigLayouts.fillX(MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING, "[]"));
+    JPanel enrichmentWhoisRow = new JPanel(MigLayouts.fillXGrowTrailing(6));
     enrichmentWhoisRow.setOpaque(false);
     enrichmentWhoisRow.add(enrichmentWhoisFallbackEnabled, MigConstraints.growX());
     enrichmentWhoisRow.add(whoisHelp, MigConstraints.alignXRight());
 
-    JPanel enrichmentRefreshRow =
-        new JPanel(MigLayouts.fillX(MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING, "[]"));
+    JPanel enrichmentRefreshRow = new JPanel(MigLayouts.fillXGrowTrailing(6));
     enrichmentRefreshRow.setOpaque(false);
     enrichmentRefreshRow.add(enrichmentPeriodicRefreshEnabled, MigConstraints.growX());
     enrichmentRefreshRow.add(refreshHelp, MigConstraints.alignXRight());

@@ -488,7 +488,7 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
 
     JButton close = new JButton("Close");
     close.addActionListener(ev -> dialog.dispose());
-    JPanel actions = new JPanel(MigLayouts.fillX(MigLayoutConstraints.GROW_FILL_TRAILING, "[]"));
+    JPanel actions = new JPanel(MigLayouts.fillXGrowTrailing());
     actions.add(new JLabel(""), MigConstraints.growX());
     actions.add(close, MigConstraints.tagOk());
     content.add(actions, MigConstraints.growX());

@@ -21,10 +21,18 @@ final class MigLayoutConstraintsTest {
   }
 
   @Test
+  void growFillGapTrailingBuildsColumnsWithTrailingControl() {
+    assertEquals("[grow,fill]0[]", MigLayoutConstraints.growFillGapTrailing(0));
+    assertEquals("[grow,fill]6[]", MigLayoutConstraints.growFillGapTrailing(6));
+  }
+
+  @Test
   void rowsRejectsInvalidArguments() {
     assertThrows(IllegalArgumentException.class, () -> MigLayoutConstraints.rows(0, 6));
     assertThrows(IllegalArgumentException.class, () -> MigLayoutConstraints.rows(2, -1));
     assertThrows(IllegalArgumentException.class, () -> MigLayoutConstraints.rowGaps(-1));
     assertThrows(IllegalArgumentException.class, () -> MigLayoutConstraints.rowGaps(6, -1));
+    assertThrows(
+        IllegalArgumentException.class, () -> MigLayoutConstraints.growFillGapTrailing(-1));
   }
 }

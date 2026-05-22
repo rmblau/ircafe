@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings.filters;
 
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.util.MigConstraints;
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import cafe.woden.ircclient.ui.util.MigLayouts;
 import java.awt.Dimension;
 import javax.swing.JComponent;
@@ -58,14 +59,14 @@ public final class FiltersPanelSupport {
     behavior.add(c.placeholdersEnabledByDefault, MigConstraints.growXWrap());
     behavior.add(c.placeholdersCollapsedByDefault, MigConstraints.growXWrap());
 
-    JPanel previewRow = new JPanel(MigLayouts.insets0("[][grow]", ""));
+    JPanel previewRow = new JPanel(MigLayouts.insets0(MigLayoutConstraints.LEADING_GROW, ""));
     previewRow.add(new JLabel("Placeholder preview lines:"), MigConstraints.split(2));
     previewRow.add(c.placeholderPreviewLines, MigConstraints.width(80));
     behavior.add(previewRow, MigConstraints.growXWrap());
     panel.add(behavior, MigConstraints.growXMinWidth0Wrap());
 
     JPanel limits = PreferencesUiSupport.captionPanel("Preview and run limits");
-    JPanel runCapRow = new JPanel(MigLayouts.insets0("[][grow]", ""));
+    JPanel runCapRow = new JPanel(MigLayouts.insets0(MigLayoutConstraints.LEADING_GROW, ""));
     runCapRow.add(new JLabel("Max hidden lines per run:"), MigConstraints.split(2));
     runCapRow.add(c.placeholderMaxLinesPerRun, MigConstraints.width(80));
     limits.add(runCapRow, MigConstraints.growXWrap());
@@ -76,7 +77,7 @@ public final class FiltersPanelSupport {
     panel.add(limits, MigConstraints.growXMinWidth0Wrap());
 
     JPanel tooltip = PreferencesUiSupport.captionPanel("Tooltip details");
-    JPanel tooltipTagsRow = new JPanel(MigLayouts.insets0("[][grow]", ""));
+    JPanel tooltipTagsRow = new JPanel(MigLayouts.insets0(MigLayoutConstraints.LEADING_GROW, ""));
     tooltipTagsRow.add(new JLabel("Tooltip tag limit:"), MigConstraints.split(2));
     tooltipTagsRow.add(c.placeholderTooltipMaxTags, MigConstraints.width(80));
     tooltip.add(tooltipTagsRow, MigConstraints.growXWrap());
@@ -95,7 +96,7 @@ public final class FiltersPanelSupport {
     JPanel history = PreferencesUiSupport.captionPanel("History loading");
     history.add(c.historyPlaceholdersEnabledByDefault, MigConstraints.growXWrap());
 
-    JPanel historyCapRow = new JPanel(MigLayouts.insets0("[][grow]", ""));
+    JPanel historyCapRow = new JPanel(MigLayouts.insets0(MigLayoutConstraints.LEADING_GROW, ""));
     historyCapRow.add(
         new JLabel("History placeholder run cap per batch:"), MigConstraints.split(2));
     historyCapRow.add(c.historyPlaceholderMaxRunsPerBatch, MigConstraints.width(80));

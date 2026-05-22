@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.channellist;
 
 import cafe.woden.ircclient.ui.util.MigConstraints;
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import cafe.woden.ircclient.ui.util.MigLayouts;
 import java.util.Locale;
 import java.util.Objects;
@@ -68,7 +69,7 @@ final class IrcChannelListUxMode implements ChannelListUxMode {
               "Registered channels only (-show r)",
               "Unregistered channels only (-show u)"
             });
-    JPanel showFlagsPanel = new JPanel(MigLayouts.fillX("[][grow]", "[]"));
+    JPanel showFlagsPanel = new JPanel(MigLayouts.fillX(MigLayoutConstraints.LEADING_GROW, "[]"));
     showFlagsPanel.add(showModes);
     showFlagsPanel.add(showTopicSetter, MigConstraints.gapLeft(10));
 

@@ -35,8 +35,7 @@ final class NetworkConnectionPanelSupport {
     JPanel proxyTab = new JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rows(2, 6)));
     proxyTab.setOpaque(false);
 
-    JPanel proxyHeader =
-        new JPanel(MigLayouts.fillX(MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING, "[]"));
+    JPanel proxyHeader = new JPanel(MigLayouts.fillXGrowTrailing(6));
     proxyHeader.setOpaque(false);
     proxyHeader.add(
         PreferencesUiSupport.sectionTitle("SOCKS5 proxy"), MigConstraints.growXMinWidth0());
@@ -88,8 +87,7 @@ final class NetworkConnectionPanelSupport {
     JSpinner readTimeoutSeconds =
         PreferencesUiSupport.numberSpinner(readTimeoutSec, 1, 600, 1, closeables);
 
-    JPanel passwordRow =
-        new JPanel(MigLayouts.fillX(MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING, "[]"));
+    JPanel passwordRow = new JPanel(MigLayouts.fillXGrowTrailing(6));
     passwordRow.setOpaque(false);
     passwordRow.add(proxyPassword, MigConstraints.growXPushXMinWidth0());
     passwordRow.add(clearPassword);
@@ -167,8 +165,7 @@ final class NetworkConnectionPanelSupport {
 
     JPanel tlsTab = new JPanel(MigLayouts.singleColumn(MigLayouts.rows(2, 6)));
     tlsTab.setOpaque(false);
-    JPanel tlsHeader =
-        new JPanel(MigLayouts.fillX(MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING, "[]"));
+    JPanel tlsHeader = new JPanel(MigLayouts.fillXGrowTrailing(6));
     tlsHeader.setOpaque(false);
     tlsHeader.add(PreferencesUiSupport.sectionTitle("TLS / SSL"), MigConstraints.growXMinWidth0());
     tlsHeader.add(
@@ -194,8 +191,7 @@ final class NetworkConnectionPanelSupport {
 
     JPanel heartbeatTab = new JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rows(2, 6)));
     heartbeatTab.setOpaque(false);
-    JPanel heartbeatHeader =
-        new JPanel(MigLayouts.fillX(MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING, "[]"));
+    JPanel heartbeatHeader = new JPanel(MigLayouts.fillXGrowTrailing(6));
     heartbeatHeader.setOpaque(false);
     heartbeatHeader.add(
         PreferencesUiSupport.sectionTitle("Connection heartbeat"), MigConstraints.growXMinWidth0());
@@ -244,8 +240,7 @@ final class NetworkConnectionPanelSupport {
 
     JPanel bouncerTab = new JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rows(2, 6)));
     bouncerTab.setOpaque(false);
-    JPanel bouncerHeader =
-        new JPanel(MigLayouts.fillX(MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING, "[]"));
+    JPanel bouncerHeader = new JPanel(MigLayouts.fillXGrowTrailing(6));
     bouncerHeader.setOpaque(false);
     bouncerHeader.add(
         PreferencesUiSupport.sectionTitle("Bouncer discovery defaults"),
@@ -288,7 +283,8 @@ final class NetworkConnectionPanelSupport {
 
     JPanel networkIntro =
         new JPanel(
-            MigLayouts.fillXWrap(12, 2, MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING, "[]"));
+            MigLayouts.fillXWrap(
+                12, 2, MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING, MigLayoutConstraints.ROW));
     networkIntro.setOpaque(false);
     networkIntro.add(PreferencesUiSupport.tabTitle("Network"), MigConstraints.growXMinWidth0());
     networkIntro.add(
