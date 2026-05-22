@@ -44,9 +44,6 @@ import cafe.woden.ircclient.model.RegexSpec;
 import cafe.woden.ircclient.model.TagSpec;
 import cafe.woden.ircclient.model.UserCommandAlias;
 import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -65,8 +62,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
 
 @Component
 @SecondaryAdapter
@@ -125,43 +120,17 @@ public class RuntimeConfigStore
       ChatCommandRuntimeConfigPort.DEFAULT_QUIT_MESSAGE;
 
   private final Path file;
+  private final RuntimeConfigDocumentStore documentStore;
   private final IrcProperties defaults;
-  private final Yaml yaml;
   private Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolver =
       new Ircv3CapabilityNameResolverPort() {};
-  private int mutationBatchDepth = 0;
-  private Map<String, Object> mutationBatchDoc = null;
-  private boolean mutationBatchDirty = false;
-
-  /**
-   * True if the runtime config file existed before this process started creating/initializing it.
-   */
-  private final boolean fileExistedOnStartup;
-
   public RuntimeConfigStore(
       @Value("${ircafe.runtime-config:${XDG_CONFIG_HOME:${user.home}/.config}/ircafe/ircafe.yml}")
           String filePath,
       IrcProperties defaults) {
     this.file = Paths.get(Objects.requireNonNullElse(filePath, "").trim());
+    this.documentStore = new RuntimeConfigDocumentStore(this.file);
     this.defaults = defaults;
-
-    boolean existed = false;
-    try {
-      existed = !this.file.toString().isBlank() && Files.exists(this.file);
-    } catch (Exception ignored) {
-      existed = false;
-    }
-    this.fileExistedOnStartup = existed;
-
-    DumperOptions opts = new DumperOptions();
-    opts.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-    opts.setPrettyFlow(true);
-    opts.setIndent(2);
-    // SnakeYAML requires indicatorIndent < indent.
-    // With indent=2, indicatorIndent=1 keeps list indicators aligned nicely.
-    opts.setIndicatorIndent(1);
-    opts.setDefaultScalarStyle(DumperOptions.ScalarStyle.PLAIN);
-    this.yaml = new Yaml(opts);
 
     ensureFileExistsWithServers();
   }
@@ -181,7 +150,7 @@ public class RuntimeConfigStore
    * installs, while using new defaults for first-time installs.
    */
   public boolean runtimeConfigFileExistedOnStartup() {
-    return fileExistedOnStartup;
+    return documentStore.fileExistedOnStartup();
   }
 
   /**
@@ -268,51 +237,15 @@ public class RuntimeConfigStore
    * minimized.
    */
   public synchronized void runMutationBatch(Runnable action) {
-    if (action == null) return;
-    beginMutationBatchLocked();
-    try {
-      action.run();
-    } finally {
-      endMutationBatchLocked();
-    }
+    documentStore.runMutationBatch(action);
   }
 
   public synchronized void beginMutationBatch() {
-    beginMutationBatchLocked();
+    documentStore.beginMutationBatch();
   }
 
   public synchronized void endMutationBatch() {
-    endMutationBatchLocked();
-  }
-
-  private void beginMutationBatchLocked() {
-    if (mutationBatchDepth == 0) {
-      try {
-        mutationBatchDoc =
-            (file.toString().isBlank() || !Files.exists(file)) ? new LinkedHashMap<>() : loadFile();
-      } catch (Exception e) {
-        mutationBatchDoc = new LinkedHashMap<>();
-        log.warn("[ircafe] Could not start mutation batch for '{}'", file, e);
-      }
-      mutationBatchDirty = false;
-    }
-    mutationBatchDepth++;
-  }
-
-  private void endMutationBatchLocked() {
-    if (mutationBatchDepth <= 0) return;
-    mutationBatchDepth--;
-    if (mutationBatchDepth > 0) return;
-    try {
-      if (mutationBatchDirty && mutationBatchDoc != null) {
-        writeFileNow(mutationBatchDoc);
-      }
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not flush mutation batch to '{}'", file, e);
-    } finally {
-      mutationBatchDoc = null;
-      mutationBatchDirty = false;
-    }
+    documentStore.endMutationBatch();
   }
 
   public synchronized void ensureFileExistsWithServers() {
@@ -5408,41 +5341,20 @@ public class RuntimeConfigStore
     }
   }
 
-  @SuppressWarnings("unchecked")
   private Map<String, Object> loadFile() throws IOException {
-    if (mutationBatchDepth > 0 && mutationBatchDoc != null) {
-      return mutationBatchDoc;
-    }
-    try (Reader r = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
-      Object o = yaml.load(r);
-      if (o instanceof Map<?, ?> m) {
-        return (Map<String, Object>) m;
-      }
-      return new LinkedHashMap<>();
-    }
+    return documentStore.load();
   }
 
   private Map<String, Object> loadFileOrEmpty() throws IOException {
-    return Files.exists(file) ? loadFile() : new LinkedHashMap<>();
+    return documentStore.loadOrEmpty();
   }
 
   private void writeFile(Map<String, Object> doc) throws IOException {
-    if (mutationBatchDepth > 0) {
-      mutationBatchDoc = (doc == null) ? new LinkedHashMap<>() : doc;
-      mutationBatchDirty = true;
-      return;
-    }
-    writeFileNow(doc);
+    documentStore.write(doc);
   }
 
   private void writeFileNow(Map<String, Object> doc) throws IOException {
-    Path parent = file.getParent();
-    if (parent != null && !Files.exists(parent)) {
-      Files.createDirectories(parent);
-    }
-    try (Writer w = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
-      yaml.dump(doc, w);
-    }
+    documentStore.writeNow(doc);
   }
 
   @SuppressWarnings("unchecked")
