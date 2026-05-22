@@ -123,6 +123,7 @@ public class RuntimeConfigStore
   private final RuntimeConfigDocumentStore documentStore;
   private final RuntimeConfigServerListStore serverListStore;
   private final RuntimeConfigMonitorRosterStore monitorRosterStore;
+  private final RuntimeConfigPrivateMessageTargetStore privateMessageTargetStore;
   private Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolver =
       new Ircv3CapabilityNameResolverPort() {};
   public RuntimeConfigStore(
@@ -133,6 +134,8 @@ public class RuntimeConfigStore
     this.documentStore = new RuntimeConfigDocumentStore(this.file);
     this.serverListStore = new RuntimeConfigServerListStore(this.file, documentStore, defaults);
     this.monitorRosterStore = new RuntimeConfigMonitorRosterStore(this.file, documentStore);
+    this.privateMessageTargetStore =
+        new RuntimeConfigPrivateMessageTargetStore(this.file, documentStore);
 
     ensureFileExistsWithServers();
   }
@@ -882,67 +885,16 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberPrivateMessageTarget(String serverId, String nick) {
-    updateServer(
-        serverId,
-        server -> {
-          String n = Objects.toString(nick, "").trim();
-          if (n.isEmpty()) return;
-
-          List<String> autoJoin = getOrCreateStringList(server, "autoJoin");
-          if (AutoJoinEntryCodec.privateMessageNicks(autoJoin).stream()
-              .anyMatch(existing -> existing.equalsIgnoreCase(n))) {
-            return;
-          }
-          String encoded = AutoJoinEntryCodec.encodePrivateMessageNick(n);
-          if (!encoded.isEmpty()) {
-            autoJoin.add(encoded);
-          }
-        });
+    privateMessageTargetStore.rememberPrivateMessageTarget(serverId, nick);
   }
 
   public synchronized void forgetPrivateMessageTarget(String serverId, String nick) {
-    updateServer(
-        serverId,
-        server -> {
-          String n = Objects.toString(nick, "").trim();
-          if (n.isEmpty()) return;
-
-          Object o = server.get("autoJoin");
-          if (!(o instanceof List<?> list)) return;
-          @SuppressWarnings("unchecked")
-          List<String> autoJoin = (List<String>) list;
-          autoJoin.removeIf(
-              entry -> {
-                String decoded = AutoJoinEntryCodec.decodePrivateMessageNick(entry);
-                return !decoded.isEmpty() && decoded.equalsIgnoreCase(n);
-              });
-        });
+    privateMessageTargetStore.forgetPrivateMessageTarget(serverId, nick);
   }
 
   @Override
   public synchronized List<String> readPrivateMessageTargets(String serverId) {
-    try {
-      if (file.toString().isBlank()) return List.of();
-      String sid = Objects.toString(serverId, "").trim();
-      if (sid.isEmpty()) return List.of();
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> irc = getOrCreateMap(doc, "irc");
-      List<Map<String, Object>> servers = readServerList(irc).orElse(List.of());
-
-      for (Map<String, Object> server : servers) {
-        if (server == null) continue;
-        if (!sid.equalsIgnoreCase(Objects.toString(server.get("id"), "").trim())) continue;
-        Object autoJoinObj = server.get("autoJoin");
-        if (!(autoJoinObj instanceof List<?> rawList)) return List.of();
-        @SuppressWarnings("unchecked")
-        List<String> autoJoin = (List<String>) rawList;
-        return List.copyOf(AutoJoinEntryCodec.privateMessageNicks(autoJoin));
-      }
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read private-message target list from '{}'", file, e);
-    }
-    return List.of();
+    return privateMessageTargetStore.readPrivateMessageTargets(serverId);
   }
 
   public synchronized void rememberMonitorNick(String serverId, String nick) {
