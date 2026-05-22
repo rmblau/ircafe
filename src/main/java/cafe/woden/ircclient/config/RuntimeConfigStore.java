@@ -126,6 +126,7 @@ public class RuntimeConfigStore
   private final RuntimeConfigPrivateMessageTargetStore privateMessageTargetStore;
   private final RuntimeConfigLaunchJvmStore launchJvmStore;
   private final RuntimeConfigCtcpAutoReplyStore ctcpAutoReplyStore;
+  private final RuntimeConfigUserCommandStore userCommandStore;
   private Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolver =
       new Ircv3CapabilityNameResolverPort() {};
   public RuntimeConfigStore(
@@ -140,6 +141,7 @@ public class RuntimeConfigStore
         new RuntimeConfigPrivateMessageTargetStore(this.file, documentStore);
     this.launchJvmStore = new RuntimeConfigLaunchJvmStore(this.file, documentStore);
     this.ctcpAutoReplyStore = new RuntimeConfigCtcpAutoReplyStore(this.file, documentStore);
+    this.userCommandStore = new RuntimeConfigUserCommandStore(this.file, documentStore);
 
     ensureFileExistsWithServers();
   }
@@ -2223,48 +2225,12 @@ public class RuntimeConfigStore
 
   @Override
   public synchronized List<UserCommandAlias> readUserCommandAliases() {
-    try {
-      if (file.toString().isBlank()) return List.of();
-      if (!Files.exists(file)) return List.of();
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return List.of();
-
-      Object commandsObj = ircafe.get("commands");
-      if (!(commandsObj instanceof Map<?, ?> commands)) return List.of();
-
-      Object aliasesObj = commands.get("aliases");
-      if (!(aliasesObj instanceof List<?> raw)) return List.of();
-
-      List<UserCommandAlias> out = new ArrayList<>();
-      for (Object item : raw) {
-        if (!(item instanceof Map<?, ?> m)) continue;
-
-        boolean enabled = asBoolean(m.get("enabled")).orElse(Boolean.TRUE);
-
-        String name = Objects.toString(m.get("name"), "").trim();
-
-        // Accept both "template" and legacy/alternate "expansion" key names.
-        String template = Objects.toString(m.get("template"), "");
-        if (template.isEmpty()) template = Objects.toString(m.get("expansion"), "");
-
-        out.add(new UserCommandAlias(enabled, name, template));
-      }
-
-      return List.copyOf(out);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read user command aliases from '{}'", file, e);
-      return List.of();
-    }
+    return userCommandStore.readAliases();
   }
 
   @Override
   public synchronized boolean readUnknownCommandAsRawEnabled(boolean defaultValue) {
-    return readExistingConfigValue(
-            "commands.unknownCommandAsRaw", "ircafe", "commands", "unknownCommandAsRaw")
-        .flatMap(RuntimeConfigStore::asBoolean)
-        .orElse(defaultValue);
+    return userCommandStore.readUnknownCommandAsRawEnabled(defaultValue);
   }
 
   @Override
@@ -2461,45 +2427,11 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberUserCommandAliases(List<UserCommandAlias> aliases) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> commands = getOrCreateMap(ircafe, "commands");
-
-      List<Map<String, Object>> out = new ArrayList<>();
-      if (aliases != null) {
-        for (UserCommandAlias alias : aliases) {
-          if (alias == null) continue;
-          Map<String, Object> m = new LinkedHashMap<>();
-          m.put("enabled", alias.enabled());
-          m.put("name", Objects.toString(alias.name(), "").trim());
-          m.put("template", Objects.toString(alias.template(), ""));
-          out.add(m);
-        }
-      }
-
-      commands.put("aliases", out);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist user command aliases to '{}'", file, e);
-    }
+    userCommandStore.rememberAliases(aliases);
   }
 
   public synchronized void rememberUnknownCommandAsRawEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> commands = getOrCreateMap(ircafe, "commands");
-
-      commands.put("unknownCommandAsRaw", enabled);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist commands.unknownCommandAsRaw to '{}'", file, e);
-    }
+    userCommandStore.rememberUnknownCommandAsRawEnabled(enabled);
   }
 
   public synchronized void rememberAppDiagnosticsAssertjSwingEnabled(boolean enabled) {
