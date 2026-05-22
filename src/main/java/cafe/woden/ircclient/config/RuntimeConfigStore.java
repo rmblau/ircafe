@@ -125,6 +125,7 @@ public class RuntimeConfigStore
   private final RuntimeConfigMonitorRosterStore monitorRosterStore;
   private final RuntimeConfigPrivateMessageTargetStore privateMessageTargetStore;
   private final RuntimeConfigLaunchJvmStore launchJvmStore;
+  private final RuntimeConfigCtcpAutoReplyStore ctcpAutoReplyStore;
   private Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolver =
       new Ircv3CapabilityNameResolverPort() {};
   public RuntimeConfigStore(
@@ -138,6 +139,7 @@ public class RuntimeConfigStore
     this.privateMessageTargetStore =
         new RuntimeConfigPrivateMessageTargetStore(this.file, documentStore);
     this.launchJvmStore = new RuntimeConfigLaunchJvmStore(this.file, documentStore);
+    this.ctcpAutoReplyStore = new RuntimeConfigCtcpAutoReplyStore(this.file, documentStore);
 
     ensureFileExistsWithServers();
   }
@@ -2440,26 +2442,22 @@ public class RuntimeConfigStore
 
   @Override
   public synchronized boolean readCtcpAutoRepliesEnabled(boolean defaultValue) {
-    return readCtcpAutoReplyValue("enabled", defaultValue);
+    return ctcpAutoReplyStore.readEnabled(defaultValue);
   }
 
   @Override
   public synchronized boolean readCtcpAutoReplyVersionEnabled(boolean defaultValue) {
-    return readCtcpAutoReplyValue("version", defaultValue);
+    return ctcpAutoReplyStore.readVersionEnabled(defaultValue);
   }
 
   @Override
   public synchronized boolean readCtcpAutoReplyPingEnabled(boolean defaultValue) {
-    return readCtcpAutoReplyValue("ping", defaultValue);
+    return ctcpAutoReplyStore.readPingEnabled(defaultValue);
   }
 
   @Override
   public synchronized boolean readCtcpAutoReplyTimeEnabled(boolean defaultValue) {
-    return readCtcpAutoReplyValue("time", defaultValue);
-  }
-
-  private boolean readCtcpAutoReplyValue(String key, boolean defaultValue) {
-    return readUiSectionBoolean("ctcpReplies", key, defaultValue, "ui.ctcpReplies." + key);
+    return ctcpAutoReplyStore.readTimeEnabled(defaultValue);
   }
 
   public synchronized void rememberUserCommandAliases(List<UserCommandAlias> aliases) {
@@ -3089,23 +3087,19 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberCtcpAutoRepliesEnabled(boolean enabled) {
-    rememberCtcpAutoReplyValue("enabled", enabled);
+    ctcpAutoReplyStore.rememberEnabled(enabled);
   }
 
   public synchronized void rememberCtcpAutoReplyVersionEnabled(boolean enabled) {
-    rememberCtcpAutoReplyValue("version", enabled);
+    ctcpAutoReplyStore.rememberVersionEnabled(enabled);
   }
 
   public synchronized void rememberCtcpAutoReplyPingEnabled(boolean enabled) {
-    rememberCtcpAutoReplyValue("ping", enabled);
+    ctcpAutoReplyStore.rememberPingEnabled(enabled);
   }
 
   public synchronized void rememberCtcpAutoReplyTimeEnabled(boolean enabled) {
-    rememberCtcpAutoReplyValue("time", enabled);
-  }
-
-  private void rememberCtcpAutoReplyValue(String key, boolean enabled) {
-    rememberUiSectionScalarSetting("ctcpReplies", key, enabled, "ui.ctcpReplies." + key);
+    ctcpAutoReplyStore.rememberTimeEnabled(enabled);
   }
 
   public synchronized void rememberTypingIndicatorsEnabled(boolean enabled) {
