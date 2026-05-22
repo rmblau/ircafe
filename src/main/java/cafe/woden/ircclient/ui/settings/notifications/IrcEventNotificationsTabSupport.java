@@ -130,20 +130,18 @@ public final class IrcEventNotificationsTabSupport {
     edit.addActionListener(e -> openEditRuleDialog.run());
 
     enableRule.addActionListener(
-        e -> {
-          int modelRow = SettingsTableSupport.selectedModelRow(controls.table());
-          if (modelRow < 0) return;
-          controls.model().setEnabledAt(modelRow, true);
-          refreshRuleButtons.run();
-        });
+        e ->
+            NotificationRuleTableSupport.updateSelectedRow(
+                controls.table(),
+                row -> controls.model().setEnabledAt(row, true),
+                refreshRuleButtons));
 
     disableRule.addActionListener(
-        e -> {
-          int modelRow = SettingsTableSupport.selectedModelRow(controls.table());
-          if (modelRow < 0) return;
-          controls.model().setEnabledAt(modelRow, false);
-          refreshRuleButtons.run();
-        });
+        e ->
+            NotificationRuleTableSupport.updateSelectedRow(
+                controls.table(),
+                row -> controls.model().setEnabledAt(row, false),
+                refreshRuleButtons));
 
     duplicate.addActionListener(
         e ->

@@ -62,6 +62,14 @@ final class NotificationRuleTableSupport {
     run(afterSelectionChanged);
   }
 
+  static void updateSelectedRow(JTable table, RowUpdater updater, Runnable afterSelectionChanged) {
+    int modelRow = SettingsTableSupport.selectedModelRow(table);
+    if (modelRow < 0 || updater == null) return;
+    if (!updater.updateRow(modelRow)) return;
+    SettingsTableSupport.selectModelRow(table, modelRow);
+    run(afterSelectionChanged);
+  }
+
   static void moveSelectedRow(
       JTable table, int targetOffset, RowMover mover, Runnable afterSelectionChanged) {
     int modelRow = SettingsTableSupport.selectedModelRow(table);
@@ -122,6 +130,11 @@ final class NotificationRuleTableSupport {
   @FunctionalInterface
   interface RowDuplicator {
     int duplicateRow(int row);
+  }
+
+  @FunctionalInterface
+  interface RowUpdater {
+    boolean updateRow(int row);
   }
 
   @FunctionalInterface

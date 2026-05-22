@@ -172,6 +172,46 @@ class NotificationRuleTableSupportTest {
   }
 
   @Test
+  void updateSelectedRowUpdatesSelectedValueAndRunsCallback() {
+    DefaultTableModel model =
+        new DefaultTableModel(new Object[][] {{false}, {false}}, new Object[] {"Enabled"});
+    JTable table = new JTable(model);
+    table.setRowSelectionInterval(1, 1);
+    int[] refreshCalls = new int[] {0};
+
+    NotificationRuleTableSupport.updateSelectedRow(
+        table,
+        row -> {
+          model.setValueAt(true, row, 0);
+          return true;
+        },
+        () -> refreshCalls[0]++);
+
+    assertEquals(Boolean.FALSE, model.getValueAt(0, 0));
+    assertEquals(Boolean.TRUE, model.getValueAt(1, 0));
+    assertEquals(1, table.getSelectedRow());
+    assertEquals(1, refreshCalls[0]);
+  }
+
+  @Test
+  void updateSelectedRowDoesNothingWhenUpdaterDeclinesChange() {
+    DefaultTableModel model =
+        new DefaultTableModel(new Object[][] {{false}}, new Object[] {"Enabled"});
+    JTable table = new JTable(model);
+    table.setRowSelectionInterval(0, 0);
+    int[] refreshCalls = new int[] {0};
+
+    NotificationRuleTableSupport.updateSelectedRow(
+        table,
+        row -> false,
+        () -> refreshCalls[0]++);
+
+    assertEquals(Boolean.FALSE, model.getValueAt(0, 0));
+    assertEquals(0, table.getSelectedRow());
+    assertEquals(0, refreshCalls[0]);
+  }
+
+  @Test
   void removeSelectedRowConfirmsRemovesSelectsNextAndRunsCallback() {
     DefaultTableModel model =
         new DefaultTableModel(new Object[][] {{"one"}, {"two"}}, new Object[] {"Rule"});
