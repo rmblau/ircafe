@@ -26,6 +26,7 @@ import cafe.woden.ircclient.app.api.UiEventPort;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.api.UiSettingsPort;
 import cafe.woden.ircclient.app.api.UiSettingsSnapshot;
+import cafe.woden.ircclient.app.api.UiSettingsSnapshotTestFixtures;
 import cafe.woden.ircclient.app.commands.BackendNamedCommandNames;
 import cafe.woden.ircclient.app.commands.CommandParser;
 import cafe.woden.ircclient.app.commands.ParsedInput;
@@ -940,7 +941,10 @@ class IrcMediatorMockVerifyTest {
     when(targetCoordinator.safeStatusTarget()).thenReturn(status);
     when(targetCoordinator.getActiveTarget()).thenReturn(status);
     when(uiSettingsPort.get())
-        .thenReturn(new UiSettingsSnapshot(List.of(), 15, 30, false, true, true, true, true));
+        .thenReturn(
+            UiSettingsSnapshotTestFixtures.builder()
+                .ctcpRequestsInActiveTargetEnabled(false)
+                .build());
 
     invokeOnServerIrcEvent(
         new ServerIrcEvent(

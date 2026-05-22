@@ -13,7 +13,7 @@ import cafe.woden.ircclient.app.api.IrcEventNotifierPort;
 import cafe.woden.ircclient.app.api.NotificationRuleMatcherPort;
 import cafe.woden.ircclient.app.api.TrayNotificationsPort;
 import cafe.woden.ircclient.app.api.UiSettingsPort;
-import cafe.woden.ircclient.app.api.UiSettingsSnapshot;
+import cafe.woden.ircclient.app.api.UiSettingsSnapshotTestFixtures;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.notify.pushy.PushyNotificationService;
@@ -161,7 +161,8 @@ class NotificationsModuleIntegrationTest {
     String serverId = "libera";
     TargetRef channelTarget = new TargetRef(serverId, "#ircafe");
     when(uiSettingsPort.get())
-        .thenReturn(new UiSettingsSnapshot(List.of(), 0, 30, true, true, true, true, true));
+        .thenReturn(
+            UiSettingsSnapshotTestFixtures.builder().notificationRuleCooldownSeconds(0).build());
 
     notificationStore.clearServer(serverId);
     notificationStore.recordRuleMatch(channelTarget, "alice", "Rule A", "first");

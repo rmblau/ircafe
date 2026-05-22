@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import cafe.woden.ircclient.app.api.NotificationRuleMatch;
 import cafe.woden.ircclient.app.api.UiSettingsPort;
 import cafe.woden.ircclient.app.api.UiSettingsSnapshot;
+import cafe.woden.ircclient.app.api.UiSettingsSnapshotTestFixtures;
 import cafe.woden.ircclient.config.NotificationRule;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -98,7 +99,7 @@ class NotificationRuleMatcherTest {
   }
 
   private static UiSettingsSnapshot snapshot(NotificationRule... rules) {
-    return new UiSettingsSnapshot(List.of(rules), 15, 30, true, true, true, true, true);
+    return UiSettingsSnapshotTestFixtures.withNotificationRules(rules);
   }
 
   private static final class MutableUiSettingsPort implements UiSettingsPort {
