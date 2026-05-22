@@ -124,6 +124,7 @@ public class RuntimeConfigStore
   private final RuntimeConfigServerListStore serverListStore;
   private final RuntimeConfigMonitorRosterStore monitorRosterStore;
   private final RuntimeConfigPrivateMessageTargetStore privateMessageTargetStore;
+  private final RuntimeConfigLaunchJvmStore launchJvmStore;
   private Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolver =
       new Ircv3CapabilityNameResolverPort() {};
   public RuntimeConfigStore(
@@ -136,6 +137,7 @@ public class RuntimeConfigStore
     this.monitorRosterStore = new RuntimeConfigMonitorRosterStore(this.file, documentStore);
     this.privateMessageTargetStore =
         new RuntimeConfigPrivateMessageTargetStore(this.file, documentStore);
+    this.launchJvmStore = new RuntimeConfigLaunchJvmStore(this.file, documentStore);
 
     ensureFileExistsWithServers();
   }
@@ -2397,208 +2399,44 @@ public class RuntimeConfigStore
   }
 
   public synchronized String readLaunchJvmJavaCommand(String defaultValue) {
-    String fallback = Objects.toString(defaultValue, "").trim();
-    if (fallback.isEmpty()) fallback = "java";
-    String raw =
-        readLaunchJvmValue("launch.jvm.javaCommand", "javaCommand")
-            .map(value -> Objects.toString(value, "").trim())
-            .orElse("");
-    return raw.isEmpty() ? fallback : raw;
+    return launchJvmStore.readJavaCommand(defaultValue);
   }
 
   public synchronized int readLaunchJvmXmsMiB(int defaultValue) {
-    int fallback = clampLaunchJvmHeapMiB(defaultValue);
-    return readLaunchJvmValue("launch.jvm.xmsMiB", "xmsMiB")
-        .flatMap(RuntimeConfigStore::asInt)
-        .map(RuntimeConfigStore::clampLaunchJvmHeapMiB)
-        .orElse(fallback);
+    return launchJvmStore.readXmsMiB(defaultValue);
   }
 
   public synchronized int readLaunchJvmXmxMiB(int defaultValue) {
-    int fallback = clampLaunchJvmHeapMiB(defaultValue);
-    return readLaunchJvmValue("launch.jvm.xmxMiB", "xmxMiB")
-        .flatMap(RuntimeConfigStore::asInt)
-        .map(RuntimeConfigStore::clampLaunchJvmHeapMiB)
-        .orElse(fallback);
+    return launchJvmStore.readXmxMiB(defaultValue);
   }
 
   public synchronized String readLaunchJvmGc(String defaultValue) {
-    String fallback = normalizeLaunchJvmGc(defaultValue);
-    return readLaunchJvmValue("launch.jvm.gc", "gc")
-        .map(RuntimeConfigStore::normalizeLaunchJvmGc)
-        .orElse(fallback);
+    return launchJvmStore.readGc(defaultValue);
   }
 
   public synchronized List<String> readLaunchJvmArgs(List<String> defaultValue) {
-    List<String> fallback = sanitizeArgs(defaultValue);
-    Object argsObj = readLaunchJvmValue("launch.jvm.args", "args").orElse(null);
-    if (!(argsObj instanceof List<?> raw)) return fallback;
-    return sanitizeArgs(raw);
-  }
-
-  private Optional<Object> readLaunchJvmValue(String description, String key) {
-    return readExistingConfigValue(description, "ircafe", "launch", "jvm", key);
+    return launchJvmStore.readArgs(defaultValue);
   }
 
   public synchronized void rememberLaunchJvmJavaCommand(String javaCommand) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String cmd = Objects.toString(javaCommand, "").trim();
-      if (cmd.isEmpty() || cmd.equalsIgnoreCase("java")) cmd = "";
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      LaunchJvmWritePath path = getOrCreateLaunchJvmWritePath(doc);
-      Map<String, Object> jvm = path.jvm();
-
-      if (cmd.isEmpty()) {
-        jvm.remove("javaCommand");
-      } else {
-        jvm.put("javaCommand", cmd);
-      }
-
-      cleanupLaunchJvm(path);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist launch.jvm.javaCommand to '{}'", file, e);
-    }
+    launchJvmStore.rememberJavaCommand(javaCommand);
   }
 
   public synchronized void rememberLaunchJvmXmsMiB(int xmsMiB) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = clampLaunchJvmHeapMiB(xmsMiB);
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      LaunchJvmWritePath path = getOrCreateLaunchJvmWritePath(doc);
-      Map<String, Object> jvm = path.jvm();
-
-      if (v <= 0) {
-        jvm.remove("xmsMiB");
-      } else {
-        jvm.put("xmsMiB", v);
-      }
-
-      cleanupLaunchJvm(path);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist launch.jvm.xmsMiB to '{}'", file, e);
-    }
+    launchJvmStore.rememberXmsMiB(xmsMiB);
   }
 
   public synchronized void rememberLaunchJvmXmxMiB(int xmxMiB) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = clampLaunchJvmHeapMiB(xmxMiB);
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      LaunchJvmWritePath path = getOrCreateLaunchJvmWritePath(doc);
-      Map<String, Object> jvm = path.jvm();
-
-      if (v <= 0) {
-        jvm.remove("xmxMiB");
-      } else {
-        jvm.put("xmxMiB", v);
-      }
-
-      cleanupLaunchJvm(path);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist launch.jvm.xmxMiB to '{}'", file, e);
-    }
+    launchJvmStore.rememberXmxMiB(xmxMiB);
   }
 
   public synchronized void rememberLaunchJvmGc(String gc) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String normalized = normalizeLaunchJvmGc(gc);
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      LaunchJvmWritePath path = getOrCreateLaunchJvmWritePath(doc);
-      Map<String, Object> jvm = path.jvm();
-
-      if (normalized.isEmpty()) {
-        jvm.remove("gc");
-      } else {
-        jvm.put("gc", normalized);
-      }
-
-      cleanupLaunchJvm(path);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist launch.jvm.gc to '{}'", file, e);
-    }
+    launchJvmStore.rememberGc(gc);
   }
 
   public synchronized void rememberLaunchJvmArgs(List<String> args) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      List<String> sanitized = sanitizeArgs(args);
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      LaunchJvmWritePath path = getOrCreateLaunchJvmWritePath(doc);
-      Map<String, Object> jvm = path.jvm();
-
-      if (sanitized.isEmpty()) {
-        jvm.remove("args");
-      } else {
-        jvm.put("args", sanitized);
-      }
-
-      cleanupLaunchJvm(path);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist launch.jvm.args to '{}'", file, e);
-    }
+    launchJvmStore.rememberArgs(args);
   }
-
-  private static int clampLaunchJvmHeapMiB(int value) {
-    if (value < 0) return 0;
-    if (value > 262_144) return 262_144;
-    return value;
-  }
-
-  private static String normalizeLaunchJvmGc(Object raw) {
-    String v = Objects.toString(raw, "").trim().toLowerCase(Locale.ROOT);
-    return switch (v) {
-      case "", "default", "auto", "none" -> "";
-      case "g1", "g1gc", "useg1gc", "useg1" -> "g1";
-      case "z", "zgc", "usezgc", "usez" -> "zgc";
-      case "shenandoah", "shenandoahgc", "useshenandoahgc", "useshenandoah" -> "shenandoah";
-      case "parallel", "parallelgc", "useparallelgc", "useparallel" -> "parallel";
-      case "serial", "serialgc", "useserialgc", "useserial" -> "serial";
-      case "epsilon", "epsilongc", "useepsilongc", "useepsilon" -> "epsilon";
-      default -> "";
-    };
-  }
-
-  private static void cleanupLaunchJvm(
-      Map<String, Object> ircafe, Map<String, Object> launch, Map<String, Object> jvm) {
-    if (jvm.isEmpty()) {
-      launch.remove("jvm");
-    }
-    if (launch.isEmpty()) {
-      ircafe.remove("launch");
-    }
-  }
-
-  private static void cleanupLaunchJvm(LaunchJvmWritePath path) {
-    cleanupLaunchJvm(path.ircafe(), path.launch(), path.jvm());
-  }
-
-  private static LaunchJvmWritePath getOrCreateLaunchJvmWritePath(Map<String, Object> doc) {
-    Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-    Map<String, Object> launch = getOrCreateMap(ircafe, "launch");
-    Map<String, Object> jvm = getOrCreateMap(launch, "jvm");
-    return new LaunchJvmWritePath(ircafe, launch, jvm);
-  }
-
-  private record LaunchJvmWritePath(
-      Map<String, Object> ircafe, Map<String, Object> launch, Map<String, Object> jvm) {}
 
   @Override
   public synchronized boolean readCtcpAutoRepliesEnabled(boolean defaultValue) {
