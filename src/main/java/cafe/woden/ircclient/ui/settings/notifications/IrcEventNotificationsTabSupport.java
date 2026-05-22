@@ -156,19 +156,18 @@ public final class IrcEventNotificationsTabSupport {
                 controls.table(), controls.model()::duplicateRow, refreshRuleButtons));
 
     remove.addActionListener(
-        e -> {
-          int modelRow = SettingsTableSupport.selectedModelRow(controls.table());
-          if (modelRow < 0) return;
-          IrcEventNotificationRule rule = controls.model().ruleAt(modelRow);
-          String label = IrcEventNotificationTableModel.effectiveRuleLabel(rule);
-          if (!PreferencesUiSupport.confirmOkCancel(
-              owner, "Remove IRC event rule \"" + label + "\"?", "Remove IRC Event Rule")) {
-            return;
-          }
-          controls.model().removeRow(modelRow);
-          SettingsTableSupport.selectAfterModelRowRemoval(controls.table(), modelRow);
-          refreshRuleButtons.run();
-        });
+        e ->
+            NotificationRuleTableSupport.removeSelectedRow(
+                controls.table(),
+                row ->
+                    IrcEventNotificationTableModel.effectiveRuleLabel(controls.model().ruleAt(row)),
+                label ->
+                    PreferencesUiSupport.confirmOkCancel(
+                        owner,
+                        "Remove IRC event rule \"" + label + "\"?",
+                        "Remove IRC Event Rule"),
+                controls.model()::removeRow,
+                refreshRuleButtons));
 
     up.addActionListener(
         e ->

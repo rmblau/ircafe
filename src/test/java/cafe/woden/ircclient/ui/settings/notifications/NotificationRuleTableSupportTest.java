@@ -89,4 +89,46 @@ class NotificationRuleTableSupportTest {
     assertEquals(0, table.getSelectedRow());
     assertEquals(1, refreshCalls[0]);
   }
+
+  @Test
+  void removeSelectedRowConfirmsRemovesSelectsNextAndRunsCallback() {
+    DefaultTableModel model =
+        new DefaultTableModel(new Object[][] {{"one"}, {"two"}}, new Object[] {"Rule"});
+    JTable table = new JTable(model);
+    table.setRowSelectionInterval(0, 0);
+    int[] refreshCalls = new int[] {0};
+
+    NotificationRuleTableSupport.removeSelectedRow(
+        table,
+        row -> (String) model.getValueAt(row, 0),
+        label -> "one".equals(label),
+        model::removeRow,
+        () -> refreshCalls[0]++);
+
+    assertEquals(1, model.getRowCount());
+    assertEquals("two", model.getValueAt(0, 0));
+    assertEquals(0, table.getSelectedRow());
+    assertEquals(1, refreshCalls[0]);
+  }
+
+  @Test
+  void removeSelectedRowDoesNothingWhenConfirmationIsRejected() {
+    DefaultTableModel model =
+        new DefaultTableModel(new Object[][] {{"one"}, {"two"}}, new Object[] {"Rule"});
+    JTable table = new JTable(model);
+    table.setRowSelectionInterval(0, 0);
+    int[] refreshCalls = new int[] {0};
+
+    NotificationRuleTableSupport.removeSelectedRow(
+        table,
+        row -> (String) model.getValueAt(row, 0),
+        label -> false,
+        model::removeRow,
+        () -> refreshCalls[0]++);
+
+    assertEquals(2, model.getRowCount());
+    assertEquals("one", model.getValueAt(0, 0));
+    assertEquals(0, table.getSelectedRow());
+    assertEquals(0, refreshCalls[0]);
+  }
 }

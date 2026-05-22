@@ -43,6 +43,21 @@ final class NotificationRuleTableSupport {
     run(afterSelectionChanged);
   }
 
+  static void removeSelectedRow(
+      JTable table,
+      RowLabelProvider labelProvider,
+      RowRemovalConfirmer confirmer,
+      RowRemover remover,
+      Runnable afterSelectionChanged) {
+    int modelRow = SettingsTableSupport.selectedModelRow(table);
+    if (modelRow < 0 || labelProvider == null || remover == null) return;
+    String label = labelProvider.labelForRow(modelRow);
+    if (confirmer != null && !confirmer.confirmRemoval(label)) return;
+    remover.removeRow(modelRow);
+    SettingsTableSupport.selectAfterModelRowRemoval(table, modelRow);
+    run(afterSelectionChanged);
+  }
+
   private static int safeRowCount(IntSupplier rowCount, JTable table) {
     if (rowCount != null) return Math.max(0, rowCount.getAsInt());
     return table != null && table.getModel() != null ? table.getModel().getRowCount() : 0;
@@ -64,5 +79,20 @@ final class NotificationRuleTableSupport {
   @FunctionalInterface
   interface RowMover {
     int moveRow(int fromRow, int toRow);
+  }
+
+  @FunctionalInterface
+  interface RowLabelProvider {
+    String labelForRow(int row);
+  }
+
+  @FunctionalInterface
+  interface RowRemovalConfirmer {
+    boolean confirmRemoval(String label);
+  }
+
+  @FunctionalInterface
+  interface RowRemover {
+    void removeRow(int row);
   }
 }

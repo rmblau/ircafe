@@ -92,19 +92,18 @@ public final class NotificationsPanelSupport {
                 notifications.table, notifications.model::duplicateRow, refreshRuleButtons));
 
     remove.addActionListener(
-        e -> {
-          int modelRow = SettingsTableSupport.selectedModelRow(notifications.table);
-          if (modelRow < 0) return;
-          NotificationRule rule = notifications.model.ruleAt(modelRow);
-          String label = NotificationRulesTableModel.effectiveRuleLabel(rule);
-          if (!PreferencesUiSupport.confirmOkCancel(
-              owner, "Remove notification rule \"" + label + "\"?", "Remove Notification Rule")) {
-            return;
-          }
-          notifications.model.removeRow(modelRow);
-          SettingsTableSupport.selectAfterModelRowRemoval(notifications.table, modelRow);
-          refreshRuleButtons.run();
-        });
+        e ->
+            NotificationRuleTableSupport.removeSelectedRow(
+                notifications.table,
+                row ->
+                    NotificationRulesTableModel.effectiveRuleLabel(notifications.model.ruleAt(row)),
+                label ->
+                    PreferencesUiSupport.confirmOkCancel(
+                        owner,
+                        "Remove notification rule \"" + label + "\"?",
+                        "Remove Notification Rule"),
+                notifications.model::removeRow,
+                refreshRuleButtons));
 
     up.addActionListener(
         e ->
