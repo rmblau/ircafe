@@ -63,26 +63,21 @@ public final class NotificationsPanelSupport {
                 down);
 
     Runnable openEditRuleDialog =
-        () -> {
-          int modelRow = SettingsTableSupport.selectedModelRow(notifications.table);
-          if (modelRow < 0) return;
-          NotificationRule seed = notifications.model.ruleAt(modelRow);
-          if (seed == null) return;
-          NotificationRule edited = notificationRuleEditor.prompt("Edit Notification Rule", seed);
-          if (edited == null) return;
-          notifications.model.setRule(modelRow, edited);
-          SettingsTableSupport.selectModelRow(notifications.table, modelRow);
-          refreshRuleButtons.run();
-        };
+        () ->
+            NotificationRuleTableSupport.editSelectedRow(
+                notifications.table,
+                notifications.model::ruleAt,
+                seed -> notificationRuleEditor.prompt("Edit Notification Rule", seed),
+                notifications.model::setRule,
+                refreshRuleButtons);
 
     add.addActionListener(
-        e -> {
-          NotificationRule created = notificationRuleEditor.prompt("Add Notification Rule", null);
-          if (created == null) return;
-          int row = notifications.model.addRule(created);
-          SettingsTableSupport.selectModelRow(notifications.table, row);
-          refreshRuleButtons.run();
-        });
+        e ->
+            NotificationRuleTableSupport.addRow(
+                notifications.table,
+                () -> notificationRuleEditor.prompt("Add Notification Rule", null),
+                notifications.model::addRule,
+                refreshRuleButtons));
 
     edit.addActionListener(e -> openEditRuleDialog.run());
 

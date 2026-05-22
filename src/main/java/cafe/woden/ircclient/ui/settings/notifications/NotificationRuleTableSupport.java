@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings.notifications;
 
 import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
 import java.util.function.IntSupplier;
+import java.util.function.Supplier;
 import javax.swing.JButton;
 import javax.swing.JTable;
 
@@ -23,6 +24,33 @@ final class NotificationRuleTableSupport {
     setEnabled(remove, hasSelection);
     setEnabled(up, hasSelection && modelRow > 0);
     setEnabled(down, hasSelection && modelRow < safeRowCount(rowCount, table) - 1);
+  }
+
+  static <T> void addRow(
+      JTable table, Supplier<T> rowCreator, RowAdder<T> adder, Runnable afterSelectionChanged) {
+    if (rowCreator == null || adder == null) return;
+    T rowValue = rowCreator.get();
+    if (rowValue == null) return;
+    int modelRow = adder.addRow(rowValue);
+    SettingsTableSupport.selectModelRow(table, modelRow);
+    run(afterSelectionChanged);
+  }
+
+  static <T> void editSelectedRow(
+      JTable table,
+      RowValueProvider<T> valueProvider,
+      RowEditor<T> editor,
+      RowSetter<T> setter,
+      Runnable afterSelectionChanged) {
+    int modelRow = SettingsTableSupport.selectedModelRow(table);
+    if (modelRow < 0 || valueProvider == null || editor == null || setter == null) return;
+    T seed = valueProvider.valueAt(modelRow);
+    if (seed == null) return;
+    T edited = editor.edit(seed);
+    if (edited == null) return;
+    setter.setRow(modelRow, edited);
+    SettingsTableSupport.selectModelRow(table, modelRow);
+    run(afterSelectionChanged);
   }
 
   static void duplicateSelectedRow(
@@ -69,6 +97,26 @@ final class NotificationRuleTableSupport {
 
   private static void run(Runnable runnable) {
     if (runnable != null) runnable.run();
+  }
+
+  @FunctionalInterface
+  interface RowAdder<T> {
+    int addRow(T value);
+  }
+
+  @FunctionalInterface
+  interface RowValueProvider<T> {
+    T valueAt(int row);
+  }
+
+  @FunctionalInterface
+  interface RowEditor<T> {
+    T edit(T seed);
+  }
+
+  @FunctionalInterface
+  interface RowSetter<T> {
+    void setRow(int row, T value);
   }
 
   @FunctionalInterface

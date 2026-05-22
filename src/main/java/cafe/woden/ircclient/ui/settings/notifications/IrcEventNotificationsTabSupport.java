@@ -111,26 +111,21 @@ public final class IrcEventNotificationsTabSupport {
         };
 
     Runnable openEditRuleDialog =
-        () -> {
-          int modelRow = SettingsTableSupport.selectedModelRow(controls.table());
-          if (modelRow < 0) return;
-          IrcEventNotificationRule seed = controls.model().ruleAt(modelRow);
-          if (seed == null) return;
-          IrcEventNotificationRule edited = ruleEditor.prompt("Edit IRC Event Rule", seed);
-          if (edited == null) return;
-          controls.model().setRule(modelRow, edited);
-          SettingsTableSupport.selectModelRow(controls.table(), modelRow);
-          refreshRuleButtons.run();
-        };
+        () ->
+            NotificationRuleTableSupport.editSelectedRow(
+                controls.table(),
+                controls.model()::ruleAt,
+                seed -> ruleEditor.prompt("Edit IRC Event Rule", seed),
+                controls.model()::setRule,
+                refreshRuleButtons);
 
     add.addActionListener(
-        e -> {
-          IrcEventNotificationRule created = ruleEditor.prompt("Add IRC Event Rule", null);
-          if (created == null) return;
-          int row = controls.model().addRule(created);
-          SettingsTableSupport.selectModelRow(controls.table(), row);
-          refreshRuleButtons.run();
-        });
+        e ->
+            NotificationRuleTableSupport.addRow(
+                controls.table(),
+                () -> ruleEditor.prompt("Add IRC Event Rule", null),
+                controls.model()::addRule,
+                refreshRuleButtons));
 
     edit.addActionListener(e -> openEditRuleDialog.run());
 

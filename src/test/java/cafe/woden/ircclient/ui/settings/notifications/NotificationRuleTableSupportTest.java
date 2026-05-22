@@ -46,6 +46,87 @@ class NotificationRuleTableSupportTest {
   }
 
   @Test
+  void addRowSelectsCreatedRowAndRunsCallback() {
+    DefaultTableModel model = new DefaultTableModel(new Object[] {"Rule"}, 0);
+    JTable table = new JTable(model);
+    int[] refreshCalls = new int[] {0};
+
+    NotificationRuleTableSupport.addRow(
+        table,
+        () -> "created",
+        value -> {
+          model.addRow(new Object[] {value});
+          return model.getRowCount() - 1;
+        },
+        () -> refreshCalls[0]++);
+
+    assertEquals(1, model.getRowCount());
+    assertEquals("created", model.getValueAt(0, 0));
+    assertEquals(0, table.getSelectedRow());
+    assertEquals(1, refreshCalls[0]);
+  }
+
+  @Test
+  void addRowDoesNothingWhenCreatorIsCancelled() {
+    DefaultTableModel model = new DefaultTableModel(new Object[] {"Rule"}, 0);
+    JTable table = new JTable(model);
+    int[] refreshCalls = new int[] {0};
+
+    NotificationRuleTableSupport.addRow(
+        table,
+        () -> null,
+        value -> {
+          model.addRow(new Object[] {value});
+          return model.getRowCount() - 1;
+        },
+        () -> refreshCalls[0]++);
+
+    assertEquals(0, model.getRowCount());
+    assertEquals(-1, table.getSelectedRow());
+    assertEquals(0, refreshCalls[0]);
+  }
+
+  @Test
+  void editSelectedRowReplacesSelectedValueAndRunsCallback() {
+    DefaultTableModel model =
+        new DefaultTableModel(new Object[][] {{"one"}}, new Object[] {"Rule"});
+    JTable table = new JTable(model);
+    table.setRowSelectionInterval(0, 0);
+    int[] refreshCalls = new int[] {0};
+
+    NotificationRuleTableSupport.editSelectedRow(
+        table,
+        row -> (String) model.getValueAt(row, 0),
+        seed -> seed + " edited",
+        (row, value) -> model.setValueAt(value, row, 0),
+        () -> refreshCalls[0]++);
+
+    assertEquals("one edited", model.getValueAt(0, 0));
+    assertEquals(0, table.getSelectedRow());
+    assertEquals(1, refreshCalls[0]);
+  }
+
+  @Test
+  void editSelectedRowDoesNothingWhenEditorIsCancelled() {
+    DefaultTableModel model =
+        new DefaultTableModel(new Object[][] {{"one"}}, new Object[] {"Rule"});
+    JTable table = new JTable(model);
+    table.setRowSelectionInterval(0, 0);
+    int[] refreshCalls = new int[] {0};
+
+    NotificationRuleTableSupport.editSelectedRow(
+        table,
+        row -> (String) model.getValueAt(row, 0),
+        seed -> null,
+        (row, value) -> model.setValueAt(value, row, 0),
+        () -> refreshCalls[0]++);
+
+    assertEquals("one", model.getValueAt(0, 0));
+    assertEquals(0, table.getSelectedRow());
+    assertEquals(0, refreshCalls[0]);
+  }
+
+  @Test
   void duplicateSelectedRowSelectsDuplicateAndRunsCallback() {
     DefaultTableModel model =
         new DefaultTableModel(new Object[][] {{"one"}}, new Object[] {"Rule"});
