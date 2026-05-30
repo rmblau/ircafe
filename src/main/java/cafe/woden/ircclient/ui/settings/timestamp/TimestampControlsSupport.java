@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.settings.timestamp;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.TimestampRuntimeConfigPort;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.util.MigConstraints;
@@ -82,7 +82,7 @@ public final class TimestampControlsSupport {
   }
 
   public static void rememberSettings(
-      RuntimeConfigStore runtimeConfig, TimestampSettings settings) {
+      TimestampRuntimeConfigPort runtimeConfig, TimestampSettings settings) {
     runtimeConfig.rememberTimestampsEnabled(settings.enabled());
     runtimeConfig.rememberTimestampFormat(settings.format());
     runtimeConfig.rememberTimestampsIncludeChatMessages(settings.includeChatMessages());
