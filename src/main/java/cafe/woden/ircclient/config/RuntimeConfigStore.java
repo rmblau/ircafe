@@ -108,7 +108,6 @@ public class RuntimeConfigStore
           "HILIGHT",
           "NOHILIGHT",
           "CRAP");
-  private static final String DEFAULT_GENERIC_BOUNCER_LOGIN_TEMPLATE = "{base}/{network}";
   public static final String DEFAULT_QUIT_MESSAGE =
       ChatCommandRuntimeConfigPort.DEFAULT_QUIT_MESSAGE;
 
@@ -141,6 +140,7 @@ public class RuntimeConfigStore
   private final RuntimeConfigServerAutoConnectStore serverAutoConnectStore;
   private final RuntimeConfigIrcv3StsPolicyStore ircv3StsPolicyStore;
   private final RuntimeConfigIrcv3CapabilityStore ircv3CapabilityStore;
+  private final RuntimeConfigBouncerDiscoveryStore bouncerDiscoveryStore;
 
   public RuntimeConfigStore(
       @Value("${ircafe.runtime-config:${XDG_CONFIG_HOME:${user.home}/.config}/ircafe/ircafe.yml}")
@@ -176,6 +176,7 @@ public class RuntimeConfigStore
     this.serverAutoConnectStore = new RuntimeConfigServerAutoConnectStore(this.file, documentStore);
     this.ircv3StsPolicyStore = new RuntimeConfigIrcv3StsPolicyStore(this.file, documentStore);
     this.ircv3CapabilityStore = new RuntimeConfigIrcv3CapabilityStore(this.file, documentStore);
+    this.bouncerDiscoveryStore = new RuntimeConfigBouncerDiscoveryStore(this.file, documentStore);
 
     ensureFileExistsWithServers();
   }
@@ -2789,183 +2790,43 @@ public class RuntimeConfigStore
   @Override
   public synchronized void rememberSojuAutoConnectNetwork(
       String bouncerServerId, String networkName, boolean enabled) {
-    rememberBouncerAutoConnectNetwork("soju", bouncerServerId, networkName, enabled);
+    bouncerDiscoveryStore.rememberSojuAutoConnectNetwork(bouncerServerId, networkName, enabled);
   }
 
   @Override
   public synchronized void rememberZncAutoConnectNetwork(
       String bouncerServerId, String networkName, boolean enabled) {
-    rememberBouncerAutoConnectNetwork("znc", bouncerServerId, networkName, enabled);
+    bouncerDiscoveryStore.rememberZncAutoConnectNetwork(bouncerServerId, networkName, enabled);
   }
 
   @Override
   public synchronized Map<String, Map<String, Boolean>> readGenericBouncerAutoConnectRules() {
-    try {
-      if (file.toString().isBlank()) return Map.of();
-      if (!Files.exists(file)) return Map.of();
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return Map.of();
-
-      Object bouncerObj = ircafe.get("bouncer");
-      if (!(bouncerObj instanceof Map<?, ?> bouncer)) return Map.of();
-
-      Object autoConnectObj = bouncer.get("autoConnect");
-      if (!(autoConnectObj instanceof Map<?, ?> autoConnectByBouncer)) return Map.of();
-
-      LinkedHashMap<String, Map<String, Boolean>> out = new LinkedHashMap<>();
-      for (var bouncerEntry : autoConnectByBouncer.entrySet()) {
-        String bouncerServerId = Objects.toString(bouncerEntry.getKey(), "").trim();
-        if (bouncerServerId.isEmpty()) continue;
-        if (!(bouncerEntry.getValue() instanceof Map<?, ?> byNetwork)) continue;
-
-        LinkedHashMap<String, Boolean> networks = new LinkedHashMap<>();
-        for (var networkEntry : byNetwork.entrySet()) {
-          String networkName = Objects.toString(networkEntry.getKey(), "").trim();
-          if (networkName.isEmpty()) continue;
-          boolean enabled = asBoolean(networkEntry.getValue()).orElse(false);
-          if (enabled) networks.put(networkName, true);
-        }
-
-        if (!networks.isEmpty()) {
-          out.put(bouncerServerId, Map.copyOf(networks));
-        }
-      }
-      return out.isEmpty() ? Map.of() : Map.copyOf(out);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read bouncer.autoConnect settings from '{}'", file, e);
-      return Map.of();
-    }
+    return bouncerDiscoveryStore.readGenericBouncerAutoConnectRules();
   }
 
   @Override
   public synchronized void rememberGenericBouncerAutoConnectNetwork(
       String bouncerServerId, String networkName, boolean enabled) {
-    rememberBouncerAutoConnectNetwork("bouncer", bouncerServerId, networkName, enabled);
+    bouncerDiscoveryStore.rememberGenericBouncerAutoConnectNetwork(
+        bouncerServerId, networkName, enabled);
   }
 
   @Override
   public synchronized String readGenericBouncerLoginTemplate(String defaultValue) {
-    String fallback = normalizeGenericBouncerLoginTemplate(defaultValue);
-    return readGenericBouncerValue("bouncer.generic.loginTemplate", "loginTemplate")
-        .map(RuntimeConfigStore::normalizeGenericBouncerLoginTemplate)
-        .orElse(fallback);
+    return bouncerDiscoveryStore.readGenericBouncerLoginTemplate(defaultValue);
   }
 
   @Override
   public synchronized boolean readGenericBouncerPreferLoginHint(boolean defaultValue) {
-    return readGenericBouncerValue("bouncer.generic.preferLoginHint", "preferLoginHint")
-        .flatMap(RuntimeConfigStore::asBoolean)
-        .orElse(defaultValue);
-  }
-
-  private Optional<Object> readGenericBouncerValue(String description, String key) {
-    return readExistingConfigValue(description, "ircafe", "bouncer", "generic", key);
+    return bouncerDiscoveryStore.readGenericBouncerPreferLoginHint(defaultValue);
   }
 
   public synchronized void rememberGenericBouncerLoginTemplate(String template) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String normalized = Objects.toString(template, "").trim();
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> bouncer = getOrCreateMap(ircafe, "bouncer");
-      Map<String, Object> generic = getOrCreateMap(bouncer, "generic");
-
-      if (normalized.isEmpty()) {
-        generic.remove("loginTemplate");
-      } else {
-        generic.put("loginTemplate", normalized);
-      }
-
-      if (generic.isEmpty()) bouncer.remove("generic");
-      if (bouncer.isEmpty()) ircafe.remove("bouncer");
-      if (ircafe.isEmpty()) doc.remove("ircafe");
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist bouncer.generic.loginTemplate to '{}'", file, e);
-    }
+    bouncerDiscoveryStore.rememberGenericBouncerLoginTemplate(template);
   }
 
   public synchronized void rememberGenericBouncerPreferLoginHint(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> bouncer = getOrCreateMap(ircafe, "bouncer");
-      Map<String, Object> generic = getOrCreateMap(bouncer, "generic");
-
-      generic.put("preferLoginHint", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist bouncer.generic.preferLoginHint to '{}'", file, e);
-    }
-  }
-
-  private void rememberBouncerAutoConnectNetwork(
-      String backendKey, String bouncerServerId, String networkName, boolean enabled) {
-    String backend = Objects.toString(backendKey, "").trim().toLowerCase(Locale.ROOT);
-    if (backend.isEmpty()) return;
-    try {
-      if (file.toString().isBlank()) return;
-
-      String sid = Objects.toString(bouncerServerId, "").trim();
-      String net = Objects.toString(networkName, "").trim();
-      if (sid.isEmpty() || net.isEmpty()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> bouncerSection = getOrCreateMap(ircafe, backend);
-      Map<String, Object> autoConnect = getOrCreateMap(bouncerSection, "autoConnect");
-
-      @SuppressWarnings("unchecked")
-      Map<String, Object> nets =
-          (autoConnect.get(sid) instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
-
-      if (enabled) {
-        nets.put(net, true);
-        autoConnect.put(sid, nets);
-      } else {
-        // Remove case-insensitively so users can toggle based on what the bouncer returns.
-        nets.keySet().removeIf(k -> k != null && k.equalsIgnoreCase(net));
-        if (nets.isEmpty()) {
-          autoConnect.remove(sid);
-        } else {
-          autoConnect.put(sid, nets);
-        }
-
-        // Clean up empty structures to keep the YAML tidy.
-        if (autoConnect.isEmpty()) {
-          bouncerSection.remove("autoConnect");
-        }
-        if (bouncerSection.isEmpty()) {
-          ircafe.remove(backend);
-        }
-        if (ircafe.isEmpty()) {
-          doc.remove("ircafe");
-        }
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist {} auto-connect setting to '{}'",
-          Objects.toString(backendKey, "").trim().toLowerCase(Locale.ROOT),
-          file,
-          e);
-    }
-  }
-
-  private static String normalizeGenericBouncerLoginTemplate(Object template) {
-    String raw = Objects.toString(template, "").trim();
-    return raw.isEmpty() ? DEFAULT_GENERIC_BOUNCER_LOGIN_TEMPLATE : raw;
+    bouncerDiscoveryStore.rememberGenericBouncerPreferLoginHint(enabled);
   }
 
   private static boolean containsIgnoreCase(List<String> values, String needle) {
