@@ -13,4 +13,8 @@ public interface UserCommandAliasesConfigPort {
   List<UserCommandAlias> readUserCommandAliases();
 
   boolean readUnknownCommandAsRawEnabled(boolean defaultValue);
+
+  void rememberUserCommandAliases(List<UserCommandAlias> aliases);
+
+  void rememberUnknownCommandAsRawEnabled(boolean enabled);
 }

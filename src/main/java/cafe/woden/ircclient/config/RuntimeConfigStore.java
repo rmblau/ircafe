@@ -823,10 +823,12 @@ public class RuntimeConfigStore
     return stores.ctcpAutoReplyStore.readTimeEnabled(defaultValue);
   }
 
+  @Override
   public synchronized void rememberUserCommandAliases(List<UserCommandAlias> aliases) {
     stores.userCommandStore.rememberAliases(aliases);
   }
 
+  @Override
   public synchronized void rememberUnknownCommandAsRawEnabled(boolean enabled) {
     stores.userCommandStore.rememberUnknownCommandAsRawEnabled(enabled);
   }
