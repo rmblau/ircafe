@@ -135,6 +135,7 @@ public class RuntimeConfigStore
   private final RuntimeConfigOutgoingMessageStore outgoingMessageStore;
   private final RuntimeConfigEmbedLoadPolicyStore embedLoadPolicyStore;
   private final RuntimeConfigSpellcheckStore spellcheckStore;
+  private final RuntimeConfigUiFeatureToggleStore uiFeatureToggleStore;
   private Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolver =
       new Ircv3CapabilityNameResolverPort() {};
 
@@ -163,6 +164,7 @@ public class RuntimeConfigStore
     this.outgoingMessageStore = new RuntimeConfigOutgoingMessageStore(this.file, documentStore);
     this.embedLoadPolicyStore = new RuntimeConfigEmbedLoadPolicyStore(this.file, documentStore);
     this.spellcheckStore = new RuntimeConfigSpellcheckStore(this.file, documentStore);
+    this.uiFeatureToggleStore = new RuntimeConfigUiFeatureToggleStore(this.file, documentStore);
 
     ensureFileExistsWithServers();
   }
@@ -211,8 +213,7 @@ public class RuntimeConfigStore
    */
   @Override
   public synchronized boolean readInviteAutoJoinEnabled(boolean defaultValue) {
-    return readUiSectionBoolean(
-        "invites", "autoJoinOnInvite", defaultValue, "invites.autoJoinOnInvite");
+    return uiFeatureToggleStore.readInviteAutoJoinEnabled(defaultValue);
   }
 
   /**
@@ -221,8 +222,7 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when the key is missing or invalid.
    */
   public synchronized boolean readUpdateNotifierEnabled(boolean defaultValue) {
-    return readUiSectionBoolean(
-        "updateNotifier", "enabled", defaultValue, "ui.updateNotifier.enabled");
+    return uiFeatureToggleStore.readUpdateNotifierEnabled(defaultValue);
   }
 
   /**
@@ -231,7 +231,7 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when the key is missing or invalid.
    */
   public synchronized boolean readLagIndicatorEnabled(boolean defaultValue) {
-    return readUiSectionBoolean("lagIndicator", "enabled", defaultValue, "ui.lagIndicator.enabled");
+    return uiFeatureToggleStore.readLagIndicatorEnabled(defaultValue);
   }
 
   public Path runtimeConfigPath() {
@@ -1922,54 +1922,15 @@ public class RuntimeConfigStore
 
   @Override
   public synchronized void rememberInviteAutoJoinEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> invites = getOrCreateMap(ui, "invites");
-
-      invites.put("autoJoinOnInvite", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist invites.autoJoinOnInvite setting to '{}'", file, e);
-    }
+    uiFeatureToggleStore.rememberInviteAutoJoinEnabled(enabled);
   }
 
   public synchronized void rememberUpdateNotifierEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> updateNotifier = getOrCreateMap(ui, "updateNotifier");
-
-      updateNotifier.put("enabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.updateNotifier.enabled setting to '{}'", file, e);
-    }
+    uiFeatureToggleStore.rememberUpdateNotifierEnabled(enabled);
   }
 
   public synchronized void rememberLagIndicatorEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> lagIndicator = getOrCreateMap(ui, "lagIndicator");
-
-      lagIndicator.put("enabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.lagIndicator.enabled setting to '{}'", file, e);
-    }
+    uiFeatureToggleStore.rememberLagIndicatorEnabled(enabled);
   }
 
   public synchronized void rememberTrayEnabled(boolean enabled) {
@@ -3150,11 +3111,6 @@ public class RuntimeConfigStore
     return readUiValue(description, key)
         .flatMap(RuntimeConfigStore::asBoolean)
         .orElse(defaultValue);
-  }
-
-  private boolean readUiSectionBoolean(
-      String section, String key, boolean defaultValue, String description) {
-    return readUiNestedBoolean(defaultValue, description, section, key);
   }
 
   private boolean readUiNestedBoolean(boolean defaultValue, String description, String... path) {
