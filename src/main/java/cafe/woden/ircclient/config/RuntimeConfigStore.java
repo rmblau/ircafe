@@ -132,6 +132,7 @@ public class RuntimeConfigStore
   private final RuntimeConfigChatHistoryStore chatHistoryStore;
   private final RuntimeConfigTrayStore trayStore;
   private final RuntimeConfigEmbedStore embedStore;
+  private final RuntimeConfigChatBehaviorStore chatBehaviorStore;
   private Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolver =
       new Ircv3CapabilityNameResolverPort() {};
 
@@ -156,6 +157,7 @@ public class RuntimeConfigStore
     this.chatHistoryStore = new RuntimeConfigChatHistoryStore(this.file, documentStore);
     this.trayStore = new RuntimeConfigTrayStore(this.file, documentStore);
     this.embedStore = new RuntimeConfigEmbedStore(this.file, documentStore);
+    this.chatBehaviorStore = new RuntimeConfigChatBehaviorStore(this.file, documentStore);
 
     ensureFileExistsWithServers();
   }
@@ -2158,9 +2160,7 @@ public class RuntimeConfigStore
 
   @Override
   public synchronized String readDefaultQuitMessage() {
-    return readUiValue("ui.defaultQuitMessage", "defaultQuitMessage")
-        .map(RuntimeConfigStore::normalizeQuitMessage)
-        .orElse(DEFAULT_QUIT_MESSAGE);
+    return chatBehaviorStore.readDefaultQuitMessage();
   }
 
   public synchronized boolean readAppDiagnosticsAssertjSwingEnabled(boolean defaultValue) {
@@ -2832,30 +2832,15 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberPresenceFoldsEnabled(boolean enabled) {
-    rememberUiScalarSetting("presenceFoldsEnabled", enabled, "presence folds");
+    chatBehaviorStore.rememberPresenceFoldsEnabled(enabled);
   }
 
   public synchronized void rememberDefaultQuitMessage(String message) {
-    String normalized = normalizeQuitMessage(message);
-    updateUiSetting(
-        "ui.defaultQuitMessage",
-        ui -> {
-          if (DEFAULT_QUIT_MESSAGE.equals(normalized)) {
-            ui.remove("defaultQuitMessage");
-          } else {
-            ui.put("defaultQuitMessage", normalized);
-          }
-        });
-  }
-
-  private static String normalizeQuitMessage(Object message) {
-    String normalized = Objects.toString(message, "").replace('\r', ' ').replace('\n', ' ').trim();
-    if (normalized.isEmpty()) return DEFAULT_QUIT_MESSAGE;
-    return normalized;
+    chatBehaviorStore.rememberDefaultQuitMessage(message);
   }
 
   public synchronized void rememberCtcpRequestsInActiveTargetEnabled(boolean enabled) {
-    rememberUiScalarSetting("ctcpRequestsInActiveTargetEnabled", enabled, "CTCP request routing");
+    chatBehaviorStore.rememberCtcpRequestsInActiveTargetEnabled(enabled);
   }
 
   public synchronized void rememberCtcpAutoRepliesEnabled(boolean enabled) {
@@ -2875,65 +2860,43 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberTypingIndicatorsEnabled(boolean enabled) {
-    rememberUiScalarSetting("typingIndicatorsEnabled", enabled, "typing indicators");
+    chatBehaviorStore.rememberTypingIndicatorsEnabled(enabled);
   }
 
   public synchronized void rememberTypingIndicatorsReceiveEnabled(boolean enabled) {
-    rememberUiScalarSetting(
-        "typingIndicatorsReceiveEnabled", enabled, "incoming typing indicators");
+    chatBehaviorStore.rememberTypingIndicatorsReceiveEnabled(enabled);
   }
 
   public synchronized void rememberTypingTreeIndicatorStyle(String style) {
-    String normalized = UiProperties.normalizeTypingTreeIndicatorStyle(style);
-    rememberUiScalarSetting("typingTreeIndicatorStyle", normalized, "typing tree indicator style");
+    chatBehaviorStore.rememberTypingTreeIndicatorStyle(style);
   }
 
   public synchronized void rememberTypingIndicatorsTreeEnabled(boolean enabled) {
-    rememberTypingIndicatorDisplayBoolean("typingIndicatorsTreeEnabled", enabled);
+    chatBehaviorStore.rememberTypingIndicatorsTreeEnabled(enabled);
   }
 
   public synchronized void rememberTypingIndicatorsUsersListEnabled(boolean enabled) {
-    rememberTypingIndicatorDisplayBoolean("typingIndicatorsUsersListEnabled", enabled);
+    chatBehaviorStore.rememberTypingIndicatorsUsersListEnabled(enabled);
   }
 
   public synchronized void rememberMatrixUserListNameDisplayMode(String mode) {
-    String normalized = UiProperties.normalizeMatrixUserListNameDisplayMode(mode);
-    rememberUiScalarSetting(
-        "matrixUserListNameDisplayMode", normalized, "Matrix user list name display mode");
+    chatBehaviorStore.rememberMatrixUserListNameDisplayMode(mode);
   }
 
   public synchronized void rememberTypingIndicatorsTranscriptEnabled(boolean enabled) {
-    rememberTypingIndicatorDisplayBoolean("typingIndicatorsTranscriptEnabled", enabled);
+    chatBehaviorStore.rememberTypingIndicatorsTranscriptEnabled(enabled);
   }
 
   public synchronized void rememberTypingIndicatorsSendSignalEnabled(boolean enabled) {
-    rememberTypingIndicatorDisplayBoolean("typingIndicatorsSendSignalEnabled", enabled);
-  }
-
-  private void rememberTypingIndicatorDisplayBoolean(String key, boolean enabled) {
-    rememberUiScalarSetting(key, enabled, key);
+    chatBehaviorStore.rememberTypingIndicatorsSendSignalEnabled(enabled);
   }
 
   public synchronized int readServerTreeUnreadBadgeScalePercent(int defaultValue) {
-    return readUiInt(
-        "serverTreeUnreadBadgeScalePercent",
-        defaultValue,
-        this::clampServerTreeUnreadBadgeScalePercent,
-        "ui.serverTreeUnreadBadgeScalePercent");
+    return chatBehaviorStore.readServerTreeUnreadBadgeScalePercent(defaultValue);
   }
 
   public synchronized void rememberServerTreeUnreadBadgeScalePercent(int percent) {
-    int normalized = clampServerTreeUnreadBadgeScalePercent(percent);
-    rememberUiScalarSetting(
-        "serverTreeUnreadBadgeScalePercent", normalized, "ui.serverTreeUnreadBadgeScalePercent");
-  }
-
-  private int clampServerTreeUnreadBadgeScalePercent(int percent) {
-    int v = percent;
-    if (v <= 0) v = 100;
-    if (v < 50) v = 50;
-    if (v > 150) v = 150;
-    return v;
+    chatBehaviorStore.rememberServerTreeUnreadBadgeScalePercent(percent);
   }
 
   public synchronized void rememberSpellcheckEnabled(boolean enabled) {
@@ -3531,8 +3494,7 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberServerTreeNotificationBadgesEnabled(boolean enabled) {
-    rememberUiScalarSetting(
-        "serverTreeNotificationBadgesEnabled", enabled, "server tree notification badges");
+    chatBehaviorStore.rememberServerTreeNotificationBadgesEnabled(enabled);
   }
 
   public synchronized void rememberUserhostDiscoveryEnabled(boolean enabled) {
