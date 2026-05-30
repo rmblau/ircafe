@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.settings.notifications;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.NotificationRuntimeConfigPort;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.notifications.api.IrcEventNotificationRulesPort;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
@@ -257,7 +257,7 @@ public final class IrcEventNotificationsTabSupport {
   }
 
   public static void rememberSettings(
-      RuntimeConfigStore runtimeConfig,
+      NotificationRuntimeConfigPort runtimeConfig,
       IrcEventNotificationRulesPort rulesBus,
       IrcEventNotificationSettings settings) {
     runtimeConfig.rememberIrcEventNotificationRules(settings.rules());
