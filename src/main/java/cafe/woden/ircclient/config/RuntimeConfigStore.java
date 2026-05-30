@@ -6,7 +6,6 @@ import cafe.woden.ircclient.config.api.ConnectionRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
-import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicyScope;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
 import cafe.woden.ircclient.config.api.IgnoreRulesConfigPort;
@@ -134,6 +133,7 @@ public class RuntimeConfigStore
   private final RuntimeConfigEmbedStore embedStore;
   private final RuntimeConfigChatBehaviorStore chatBehaviorStore;
   private final RuntimeConfigOutgoingMessageStore outgoingMessageStore;
+  private final RuntimeConfigEmbedLoadPolicyStore embedLoadPolicyStore;
   private Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolver =
       new Ircv3CapabilityNameResolverPort() {};
 
@@ -160,6 +160,7 @@ public class RuntimeConfigStore
     this.embedStore = new RuntimeConfigEmbedStore(this.file, documentStore);
     this.chatBehaviorStore = new RuntimeConfigChatBehaviorStore(this.file, documentStore);
     this.outgoingMessageStore = new RuntimeConfigOutgoingMessageStore(this.file, documentStore);
+    this.embedLoadPolicyStore = new RuntimeConfigEmbedLoadPolicyStore(this.file, documentStore);
 
     ensureFileExistsWithServers();
   }
@@ -826,52 +827,6 @@ public class RuntimeConfigStore
       if (!v.isEmpty()) out.add(v);
     }
     return out.isEmpty() ? List.of() : List.copyOf(out);
-  }
-
-  private static List<String> sanitizePolicyPatternList(List<String> raw) {
-    if (raw == null || raw.isEmpty()) return List.of();
-    ArrayList<String> out = new ArrayList<>(raw.size());
-    for (String entry : raw) {
-      String v = Objects.toString(entry, "").trim();
-      if (v.isEmpty()) continue;
-      if (out.contains(v)) continue;
-      out.add(v);
-    }
-    return out.isEmpty() ? List.of() : List.copyOf(out);
-  }
-
-  private static EmbedLoadPolicyScope parseEmbedLoadPolicyScope(Object raw) {
-    if (!(raw instanceof Map<?, ?> scope)) return EmbedLoadPolicyScope.defaults();
-    return new EmbedLoadPolicyScope(
-        sanitizeStringList(scope.get("userWhitelist")),
-        sanitizeStringList(scope.get("userBlacklist")),
-        sanitizeStringList(scope.get("channelWhitelist")),
-        sanitizeStringList(scope.get("channelBlacklist")),
-        asBoolean(scope.get("requireVoiceOrOp")).orElse(Boolean.FALSE),
-        asBoolean(scope.get("requireLoggedIn")).orElse(Boolean.FALSE),
-        Math.max(0, asInt(scope.get("minAccountAgeDays")).orElse(0)),
-        sanitizeStringList(scope.get("linkWhitelist")),
-        sanitizeStringList(scope.get("linkBlacklist")),
-        sanitizeStringList(scope.get("domainWhitelist")),
-        sanitizeStringList(scope.get("domainBlacklist")));
-  }
-
-  private static void writeEmbedLoadPolicyScopeMap(
-      Map<String, Object> out, EmbedLoadPolicyScope scope) {
-    if (out == null) return;
-    out.clear();
-    EmbedLoadPolicyScope s = (scope == null) ? EmbedLoadPolicyScope.defaults() : scope;
-    if (!s.userWhitelist().isEmpty()) out.put("userWhitelist", s.userWhitelist());
-    if (!s.userBlacklist().isEmpty()) out.put("userBlacklist", s.userBlacklist());
-    if (!s.channelWhitelist().isEmpty()) out.put("channelWhitelist", s.channelWhitelist());
-    if (!s.channelBlacklist().isEmpty()) out.put("channelBlacklist", s.channelBlacklist());
-    if (s.requireVoiceOrOp()) out.put("requireVoiceOrOp", true);
-    if (s.requireLoggedIn()) out.put("requireLoggedIn", true);
-    if (s.minAccountAgeDays() > 0) out.put("minAccountAgeDays", s.minAccountAgeDays());
-    if (!s.linkWhitelist().isEmpty()) out.put("linkWhitelist", s.linkWhitelist());
-    if (!s.linkBlacklist().isEmpty()) out.put("linkBlacklist", s.linkBlacklist());
-    if (!s.domainWhitelist().isEmpty()) out.put("domainWhitelist", s.domainWhitelist());
-    if (!s.domainBlacklist().isEmpty()) out.put("domainBlacklist", s.domainBlacklist());
   }
 
   private static String normalizeChannelName(Object channel) {
@@ -2744,93 +2699,14 @@ public class RuntimeConfigStore
 
   /** Reads advanced embed/link loading policy settings under {@code ircafe.ui.embedLoadPolicy}. */
   public synchronized EmbedLoadPolicySnapshot readEmbedLoadPolicy() {
-    try {
-      if (file.toString().isBlank()) return EmbedLoadPolicySnapshot.defaults();
-      if (!Files.exists(file)) return EmbedLoadPolicySnapshot.defaults();
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return EmbedLoadPolicySnapshot.defaults();
-
-      Object uiObj = ircafe.get("ui");
-      if (!(uiObj instanceof Map<?, ?> ui)) return EmbedLoadPolicySnapshot.defaults();
-
-      Object rawPolicy = ui.get("embedLoadPolicy");
-      if (!(rawPolicy instanceof Map<?, ?> policy)) return EmbedLoadPolicySnapshot.defaults();
-
-      EmbedLoadPolicyScope global = parseEmbedLoadPolicyScope(policy.get("global"));
-
-      LinkedHashMap<String, EmbedLoadPolicyScope> byServer = new LinkedHashMap<>();
-      Object rawByServer = policy.get("byServer");
-      if (rawByServer instanceof Map<?, ?> map) {
-        for (Map.Entry<?, ?> entry : map.entrySet()) {
-          String serverId = Objects.toString(entry.getKey(), "").trim();
-          if (serverId.isEmpty()) continue;
-          EmbedLoadPolicyScope scope = parseEmbedLoadPolicyScope(entry.getValue());
-          if (scope.isDefaultScope()) continue;
-          byServer.put(serverId, scope);
-        }
-      }
-
-      return new EmbedLoadPolicySnapshot(global, byServer);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read embed/link load policy from '{}'", file, e);
-      return EmbedLoadPolicySnapshot.defaults();
-    }
+    return embedLoadPolicyStore.read();
   }
 
   /**
    * Persists advanced embed/link loading policy settings under {@code ircafe.ui.embedLoadPolicy}.
    */
   public synchronized void rememberEmbedLoadPolicy(EmbedLoadPolicySnapshot snapshot) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      EmbedLoadPolicySnapshot normalized =
-          snapshot == null ? EmbedLoadPolicySnapshot.defaults() : snapshot;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      if (normalized.isDefaultPolicy()) {
-        ui.remove("embedLoadPolicy");
-        writeFile(doc);
-        return;
-      }
-
-      Map<String, Object> policy = getOrCreateMap(ui, "embedLoadPolicy");
-      Map<String, Object> global = getOrCreateMap(policy, "global");
-      writeEmbedLoadPolicyScopeMap(global, normalized.global());
-
-      if (normalized.byServer() == null || normalized.byServer().isEmpty()) {
-        policy.remove("byServer");
-      } else {
-        Map<String, Object> byServer = getOrCreateMap(policy, "byServer");
-        byServer.clear();
-        for (Map.Entry<String, EmbedLoadPolicyScope> entry : normalized.byServer().entrySet()) {
-          String serverId = Objects.toString(entry.getKey(), "").trim();
-          if (serverId.isEmpty()) continue;
-          EmbedLoadPolicyScope scope =
-              entry.getValue() == null ? EmbedLoadPolicyScope.defaults() : entry.getValue();
-          if (scope.isDefaultScope()) continue;
-          Map<String, Object> scopeMap = new LinkedHashMap<>();
-          writeEmbedLoadPolicyScopeMap(scopeMap, scope);
-          byServer.put(serverId, scopeMap);
-        }
-        if (byServer.isEmpty()) {
-          policy.remove("byServer");
-        }
-      }
-
-      if (policy.isEmpty()) {
-        ui.remove("embedLoadPolicy");
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist embed/link load policy to '{}'", file, e);
-    }
+    embedLoadPolicyStore.remember(snapshot);
   }
 
   public synchronized void rememberPresenceFoldsEnabled(boolean enabled) {
