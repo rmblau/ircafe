@@ -1020,18 +1020,22 @@ public class RuntimeConfigStore
     stores.chatBehaviorStore.rememberCtcpRequestsInActiveTargetEnabled(enabled);
   }
 
+  @Override
   public synchronized void rememberCtcpAutoRepliesEnabled(boolean enabled) {
     stores.ctcpAutoReplyStore.rememberEnabled(enabled);
   }
 
+  @Override
   public synchronized void rememberCtcpAutoReplyVersionEnabled(boolean enabled) {
     stores.ctcpAutoReplyStore.rememberVersionEnabled(enabled);
   }
 
+  @Override
   public synchronized void rememberCtcpAutoReplyPingEnabled(boolean enabled) {
     stores.ctcpAutoReplyStore.rememberPingEnabled(enabled);
   }
 
+  @Override
   public synchronized void rememberCtcpAutoReplyTimeEnabled(boolean enabled) {
     stores.ctcpAutoReplyStore.rememberTimeEnabled(enabled);
   }

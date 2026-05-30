@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.settings.ctcp;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.util.MigConstraints;
 import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
@@ -113,7 +113,7 @@ public final class CtcpAutoReplySupport {
   }
 
   public static void rememberSettings(
-      RuntimeConfigStore runtimeConfig, CtcpAutoReplySettings settings) {
+      CtcpReplyRuntimeConfigPort runtimeConfig, CtcpAutoReplySettings settings) {
     runtimeConfig.rememberCtcpAutoRepliesEnabled(settings.enabled());
     runtimeConfig.rememberCtcpAutoReplyVersionEnabled(settings.versionEnabled());
     runtimeConfig.rememberCtcpAutoReplyPingEnabled(settings.pingEnabled());
