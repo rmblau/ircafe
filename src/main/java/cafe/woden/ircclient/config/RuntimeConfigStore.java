@@ -3377,31 +3377,6 @@ public class RuntimeConfigStore
         .orElse(fallback);
   }
 
-  private void rememberUiScalarSetting(String key, Object value, String description) {
-    updateUiSetting(description, ui -> ui.put(key, value));
-  }
-
-  private void rememberUiSectionScalarSetting(
-      String section, String key, Object value, String description) {
-    updateUiSetting(description, ui -> getOrCreateMap(ui, section).put(key, value));
-  }
-
-  private void updateUiSetting(String description, UiUpdater updater) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      updater.update(ui);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist {} setting to '{}'", description, file, e);
-    }
-  }
-
   @Deprecated
   public synchronized void rememberChatMessageTimestampsEnabled(boolean enabled) {
     // Back-compat alias for older callers.
@@ -4390,11 +4365,6 @@ public class RuntimeConfigStore
 
   private interface ServerUpdater {
     void update(Map<String, Object> serverMap);
-  }
-
-  @FunctionalInterface
-  private interface UiUpdater {
-    void update(Map<String, Object> ui);
   }
 
   private void updateServer(String serverId, ServerUpdater updater) {
