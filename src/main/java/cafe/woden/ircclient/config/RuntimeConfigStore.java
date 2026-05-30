@@ -130,6 +130,7 @@ public class RuntimeConfigStore
   private final RuntimeConfigTimestampStore timestampStore;
   private final RuntimeConfigUserLookupStore userLookupStore;
   private final RuntimeConfigChatHistoryStore chatHistoryStore;
+  private final RuntimeConfigTrayStore trayStore;
   private Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolver =
       new Ircv3CapabilityNameResolverPort() {};
 
@@ -152,6 +153,7 @@ public class RuntimeConfigStore
     this.timestampStore = new RuntimeConfigTimestampStore(this.file, documentStore);
     this.userLookupStore = new RuntimeConfigUserLookupStore(this.file, documentStore);
     this.chatHistoryStore = new RuntimeConfigChatHistoryStore(this.file, documentStore);
+    this.trayStore = new RuntimeConfigTrayStore(this.file, documentStore);
 
     ensureFileExistsWithServers();
   }
@@ -181,30 +183,7 @@ public class RuntimeConfigStore
    * <p>If the key is absent (or the file doesn't exist), returns {@link Optional#empty()}.
    */
   public synchronized Optional<Boolean> readTrayCloseToTrayIfPresent() {
-    try {
-      if (file.toString().isBlank()) return Optional.empty();
-      if (!Files.exists(file)) return Optional.empty();
-
-      Map<String, Object> doc = loadFile();
-      Optional<Object> value =
-          RuntimeConfigDocumentPathReader.readValue(doc, "ircafe", "ui", "tray", "closeToTray");
-      if (value.isEmpty()) return Optional.empty();
-
-      Object v = value.get();
-      if (v == null) return Optional.empty();
-
-      if (v instanceof Boolean b) return Optional.of(b);
-      if (v instanceof String s) {
-        String t = s.trim();
-        if (t.equalsIgnoreCase("true")) return Optional.of(Boolean.TRUE);
-        if (t.equalsIgnoreCase("false")) return Optional.of(Boolean.FALSE);
-      }
-
-      return Optional.empty();
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read tray.closeToTray from '{}'", file, e);
-      return Optional.empty();
-    }
+    return trayStore.readCloseToTrayIfPresent();
   }
 
   /**
@@ -213,8 +192,7 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when the key is missing or invalid.
    */
   public synchronized boolean readTrayCloseToTrayHintShown(boolean defaultValue) {
-    return readUiSectionBoolean(
-        "tray", "closeToTrayHintShown", defaultValue, "tray.closeToTrayHintShown");
+    return trayStore.readCloseToTrayHintShown(defaultValue);
   }
 
   /**
@@ -2032,94 +2010,71 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberTrayEnabled(boolean enabled) {
-    rememberUiSectionScalarSetting("tray", "enabled", enabled, "tray.enabled");
+    trayStore.rememberEnabled(enabled);
   }
 
   public synchronized void rememberTrayCloseToTray(boolean enabled) {
-    rememberUiSectionScalarSetting("tray", "closeToTray", enabled, "tray.closeToTray");
+    trayStore.rememberCloseToTray(enabled);
   }
 
   public synchronized void rememberTrayCloseToTrayHintShown(boolean shown) {
-    rememberUiSectionScalarSetting(
-        "tray", "closeToTrayHintShown", shown, "tray.closeToTrayHintShown");
+    trayStore.rememberCloseToTrayHintShown(shown);
   }
 
   public synchronized void rememberTrayMinimizeToTray(boolean enabled) {
-    rememberUiSectionScalarSetting("tray", "minimizeToTray", enabled, "tray.minimizeToTray");
+    trayStore.rememberMinimizeToTray(enabled);
   }
 
   public synchronized void rememberTrayStartMinimized(boolean enabled) {
-    rememberUiSectionScalarSetting("tray", "startMinimized", enabled, "tray.startMinimized");
+    trayStore.rememberStartMinimized(enabled);
   }
 
   public synchronized void rememberTrayNotifyHighlights(boolean enabled) {
-    rememberUiSectionScalarSetting("tray", "notifyHighlights", enabled, "tray.notifyHighlights");
+    trayStore.rememberNotifyHighlights(enabled);
   }
 
   public synchronized void rememberTrayNotifyPrivateMessages(boolean enabled) {
-    rememberUiSectionScalarSetting(
-        "tray", "notifyPrivateMessages", enabled, "tray.notifyPrivateMessages");
+    trayStore.rememberNotifyPrivateMessages(enabled);
   }
 
   public synchronized void rememberTrayNotifyConnectionState(boolean enabled) {
-    rememberUiSectionScalarSetting(
-        "tray", "notifyConnectionState", enabled, "tray.notifyConnectionState");
+    trayStore.rememberNotifyConnectionState(enabled);
   }
 
   public synchronized void rememberTrayNotifyOnlyWhenUnfocused(boolean enabled) {
-    rememberUiSectionScalarSetting(
-        "tray", "notifyOnlyWhenUnfocused", enabled, "tray.notifyOnlyWhenUnfocused");
+    trayStore.rememberNotifyOnlyWhenUnfocused(enabled);
   }
 
   public synchronized void rememberTrayNotifyOnlyWhenMinimizedOrHidden(boolean enabled) {
-    rememberUiSectionScalarSetting(
-        "tray", "notifyOnlyWhenMinimizedOrHidden", enabled, "tray.notifyOnlyWhenMinimizedOrHidden");
+    trayStore.rememberNotifyOnlyWhenMinimizedOrHidden(enabled);
   }
 
   public synchronized void rememberTrayNotifySuppressWhenTargetActive(boolean enabled) {
-    rememberUiSectionScalarSetting(
-        "tray", "notifySuppressWhenTargetActive", enabled, "tray.notifySuppressWhenTargetActive");
+    trayStore.rememberNotifySuppressWhenTargetActive(enabled);
   }
 
   public synchronized void rememberTrayLinuxDbusActionsEnabled(boolean enabled) {
-    rememberUiSectionScalarSetting(
-        "tray", "linuxDbusActionsEnabled", enabled, "tray.linuxDbusActionsEnabled");
+    trayStore.rememberLinuxDbusActionsEnabled(enabled);
   }
 
   public synchronized void rememberTrayNotificationBackend(String backendToken) {
-    String v = Objects.toString(backendToken, "").trim().toLowerCase(Locale.ROOT);
-    if (v.isEmpty()) v = "auto";
-    rememberUiSectionScalarSetting("tray", "notificationBackend", v, "tray.notificationBackend");
+    trayStore.rememberNotificationBackend(backendToken);
   }
 
   public synchronized void rememberTrayNotificationSoundsEnabled(boolean enabled) {
-    rememberUiSectionScalarSetting(
-        "tray", "notificationSoundsEnabled", enabled, "tray.notificationSoundsEnabled");
+    trayStore.rememberNotificationSoundsEnabled(enabled);
   }
 
   public synchronized void rememberTrayNotificationSound(String soundId) {
-    String v = Objects.toString(soundId, "").trim();
-    if (v.isEmpty()) v = "NOTIF_1";
-    rememberUiSectionScalarSetting("tray", "notificationSound", v, "tray.notificationSound");
+    trayStore.rememberNotificationSound(soundId);
   }
 
   public synchronized void rememberTrayNotificationSoundUseCustom(boolean useCustom) {
-    rememberUiSectionScalarSetting(
-        "tray", "notificationSoundUseCustom", useCustom, "tray.notificationSoundUseCustom");
+    trayStore.rememberNotificationSoundUseCustom(useCustom);
   }
 
   public synchronized void rememberTrayNotificationSoundCustomPath(String relativePath) {
-    String v = Objects.toString(relativePath, "").trim();
-    updateUiSetting(
-        "tray.notificationSoundCustomPath",
-        ui -> {
-          Map<String, Object> tray = getOrCreateMap(ui, "tray");
-          if (v.isEmpty()) {
-            tray.remove("notificationSoundCustomPath");
-          } else {
-            tray.put("notificationSoundCustomPath", v);
-          }
-        });
+    trayStore.rememberNotificationSoundCustomPath(relativePath);
   }
 
   public synchronized void rememberPushySettings(PushyProperties settings) {
