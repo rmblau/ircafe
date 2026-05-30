@@ -126,6 +126,7 @@ public class RuntimeConfigStore
   private final RuntimeConfigUserCommandStore userCommandStore;
   private final RuntimeConfigNotificationStore notificationStore;
   private final RuntimeConfigFilterStore filterStore;
+  private final RuntimeConfigNickColorStore nickColorStore;
   private Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolver =
       new Ircv3CapabilityNameResolverPort() {};
 
@@ -144,6 +145,7 @@ public class RuntimeConfigStore
     this.userCommandStore = new RuntimeConfigUserCommandStore(this.file, documentStore);
     this.notificationStore = new RuntimeConfigNotificationStore(this.file, documentStore);
     this.filterStore = new RuntimeConfigFilterStore(this.file, documentStore);
+    this.nickColorStore = new RuntimeConfigNickColorStore(this.file, documentStore);
 
     ensureFileExistsWithServers();
   }
@@ -3380,37 +3382,11 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberNickColoringEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("nickColoringEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist nick coloring enabled setting to '{}'", file, e);
-    }
+    nickColorStore.rememberColoringEnabled(enabled);
   }
 
   public synchronized void rememberNickColorMinContrast(double minContrast) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      double mc = (minContrast > 0) ? minContrast : 3.0;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("nickColorMinContrast", mc);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist nick color contrast setting to '{}'", file, e);
-    }
+    nickColorStore.rememberMinContrast(minContrast);
   }
 
   public synchronized void rememberTimestampsEnabled(boolean enabled) {
@@ -4392,30 +4368,7 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberNickColorOverrides(Map<String, String> overrides) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      if (overrides == null || overrides.isEmpty()) {
-        ui.remove("nickColorOverrides");
-      } else {
-        Map<String, Object> out = new LinkedHashMap<>();
-        for (Map.Entry<String, String> e : overrides.entrySet()) {
-          String nick = Objects.toString(e.getKey(), "").trim();
-          String color = Objects.toString(e.getValue(), "").trim();
-          if (nick.isEmpty() || color.isEmpty()) continue;
-          out.put(nick, color);
-        }
-        ui.put("nickColorOverrides", out);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist nick color overrides to '{}'", file, e);
-    }
+    nickColorStore.rememberOverrides(overrides);
   }
 
   @Override
