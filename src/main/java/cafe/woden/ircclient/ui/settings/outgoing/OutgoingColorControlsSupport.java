@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.settings.outgoing;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.OutgoingMessageRuntimeConfigPort;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorPickerDialogSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
@@ -116,7 +116,7 @@ public final class OutgoingColorControlsSupport {
   }
 
   public static void rememberSettings(
-      RuntimeConfigStore runtimeConfig, OutgoingLineSettings settings) {
+      OutgoingMessageRuntimeConfigPort runtimeConfig, OutgoingLineSettings settings) {
     runtimeConfig.rememberClientLineColorEnabled(settings.clientLineColorEnabled());
     runtimeConfig.rememberClientLineColor(settings.clientLineColor());
     runtimeConfig.rememberOutgoingDeliveryIndicatorsEnabled(
