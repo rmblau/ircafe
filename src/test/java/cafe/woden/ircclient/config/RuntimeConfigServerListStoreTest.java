@@ -61,8 +61,7 @@ class RuntimeConfigServerListStoreTest {
 
     store.writeServers(
         List.of(
-            IrcPropertiesTestFixtures.server("libera"),
-            IrcPropertiesTestFixtures.server("oftc")));
+            IrcPropertiesTestFixtures.server("libera"), IrcPropertiesTestFixtures.server("oftc")));
 
     assertEquals(List.of("libera", "oftc"), store.readServerIds());
   }

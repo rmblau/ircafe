@@ -273,8 +273,8 @@ public final class NotificationSoundControlsSupport {
     private void browseCustomSound() {
       try {
         File selectedFile =
-            SoundFileChooserSupport
-                .chooseSoundFile(dialogOwner(), "Choose notification sound (MP3 or WAV)")
+            SoundFileChooserSupport.chooseSoundFile(
+                    dialogOwner(), "Choose notification sound (MP3 or WAV)")
                 .orElse(null);
         if (selectedFile == null || soundFileImporter == null) return;
         String relativePath = soundFileImporter.importFile(selectedFile);

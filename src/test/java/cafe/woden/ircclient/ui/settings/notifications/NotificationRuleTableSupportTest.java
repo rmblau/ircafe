@@ -201,10 +201,7 @@ class NotificationRuleTableSupportTest {
     table.setRowSelectionInterval(0, 0);
     int[] refreshCalls = new int[] {0};
 
-    NotificationRuleTableSupport.updateSelectedRow(
-        table,
-        row -> false,
-        () -> refreshCalls[0]++);
+    NotificationRuleTableSupport.updateSelectedRow(table, row -> false, () -> refreshCalls[0]++);
 
     assertEquals(Boolean.FALSE, model.getValueAt(0, 0));
     assertEquals(0, table.getSelectedRow());

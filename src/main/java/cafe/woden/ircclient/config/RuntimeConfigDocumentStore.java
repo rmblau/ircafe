@@ -16,8 +16,8 @@ import org.yaml.snakeyaml.Yaml;
 /**
  * Owns low-level runtime config document IO and write batching.
  *
- * <p>{@link RuntimeConfigStore} still owns the domain-specific document shape; this class only knows
- * how to load, write, and coalesce mutations for the YAML document backing the store.
+ * <p>{@link RuntimeConfigStore} still owns the domain-specific document shape; this class only
+ * knows how to load, write, and coalesce mutations for the YAML document backing the store.
  */
 class RuntimeConfigDocumentStore {
 

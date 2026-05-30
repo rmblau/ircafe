@@ -1505,8 +1505,7 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
   private void browseForCustomSoundPath() {
     if (!controlsEnabled) return;
     File selected =
-        SoundFileChooserSupport
-            .chooseSoundFile(
+        SoundFileChooserSupport.chooseSoundFile(
                 SwingUtilities.getWindowAncestor(this), "Choose interceptor sound (MP3 or WAV)")
             .orElse(null);
     if (selected == null) return;

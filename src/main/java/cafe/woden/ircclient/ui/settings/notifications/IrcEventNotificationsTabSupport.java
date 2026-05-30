@@ -156,9 +156,7 @@ public final class IrcEventNotificationsTabSupport {
                     IrcEventNotificationTableModel.effectiveRuleLabel(controls.model().ruleAt(row)),
                 label ->
                     PreferencesUiSupport.confirmOkCancel(
-                        owner,
-                        "Remove IRC event rule \"" + label + "\"?",
-                        "Remove IRC Event Rule"),
+                        owner, "Remove IRC event rule \"" + label + "\"?", "Remove IRC Event Rule"),
                 controls.model()::removeRow,
                 refreshRuleButtons));
 
