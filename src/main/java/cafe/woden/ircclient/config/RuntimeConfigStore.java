@@ -134,6 +134,7 @@ public class RuntimeConfigStore
   private final RuntimeConfigChatBehaviorStore chatBehaviorStore;
   private final RuntimeConfigOutgoingMessageStore outgoingMessageStore;
   private final RuntimeConfigEmbedLoadPolicyStore embedLoadPolicyStore;
+  private final RuntimeConfigSpellcheckStore spellcheckStore;
   private Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolver =
       new Ircv3CapabilityNameResolverPort() {};
 
@@ -161,6 +162,7 @@ public class RuntimeConfigStore
     this.chatBehaviorStore = new RuntimeConfigChatBehaviorStore(this.file, documentStore);
     this.outgoingMessageStore = new RuntimeConfigOutgoingMessageStore(this.file, documentStore);
     this.embedLoadPolicyStore = new RuntimeConfigEmbedLoadPolicyStore(this.file, documentStore);
+    this.spellcheckStore = new RuntimeConfigSpellcheckStore(this.file, documentStore);
 
     ensureFileExistsWithServers();
   }
@@ -2778,134 +2780,51 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberSpellcheckEnabled(boolean enabled) {
-    rememberSpellcheckBoolean("spellcheckEnabled", enabled);
+    spellcheckStore.rememberEnabled(enabled);
   }
 
   public synchronized void rememberSpellcheckUnderlineEnabled(boolean enabled) {
-    rememberSpellcheckBoolean("spellcheckUnderlineEnabled", enabled);
+    spellcheckStore.rememberUnderlineEnabled(enabled);
   }
 
   public synchronized void rememberSpellcheckSuggestOnTabEnabled(boolean enabled) {
-    rememberSpellcheckBoolean("spellcheckSuggestOnTabEnabled", enabled);
+    spellcheckStore.rememberSuggestOnTabEnabled(enabled);
   }
 
   public synchronized void rememberSpellcheckHoverSuggestionsEnabled(boolean enabled) {
-    rememberSpellcheckBoolean("spellcheckHoverSuggestionsEnabled", enabled);
+    spellcheckStore.rememberHoverSuggestionsEnabled(enabled);
   }
 
   public synchronized void rememberSpellcheckCompletionPreset(String preset) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String normalized = UiProperties.normalizeSpellcheckCompletionPreset(preset);
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("spellcheckCompletionPreset", normalized);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist spellcheck completion preset to '{}'", file, e);
-    }
+    spellcheckStore.rememberCompletionPreset(preset);
   }
 
   public synchronized void rememberSpellcheckCustomMinPrefixCompletionTokenLength(int value) {
-    rememberSpellcheckInteger(
-        "spellcheckCustomMinPrefixCompletionTokenLength", Math.max(2, Math.min(6, value)));
+    spellcheckStore.rememberCustomMinPrefixCompletionTokenLength(value);
   }
 
   public synchronized void rememberSpellcheckCustomMaxPrefixCompletionExtraChars(int value) {
-    rememberSpellcheckInteger(
-        "spellcheckCustomMaxPrefixCompletionExtraChars", Math.max(4, Math.min(24, value)));
+    spellcheckStore.rememberCustomMaxPrefixCompletionExtraChars(value);
   }
 
   public synchronized void rememberSpellcheckCustomMaxPrefixLexiconCandidates(int value) {
-    rememberSpellcheckInteger(
-        "spellcheckCustomMaxPrefixLexiconCandidates", Math.max(16, Math.min(256, value)));
+    spellcheckStore.rememberCustomMaxPrefixLexiconCandidates(value);
   }
 
   public synchronized void rememberSpellcheckCustomPrefixCompletionBonusScore(int value) {
-    rememberSpellcheckInteger(
-        "spellcheckCustomPrefixCompletionBonusScore", Math.max(0, Math.min(400, value)));
+    spellcheckStore.rememberCustomPrefixCompletionBonusScore(value);
   }
 
   public synchronized void rememberSpellcheckCustomSourceOrderWeight(int value) {
-    rememberSpellcheckInteger(
-        "spellcheckCustomSourceOrderWeight", Math.max(0, Math.min(20, value)));
+    spellcheckStore.rememberCustomSourceOrderWeight(value);
   }
 
   public synchronized void rememberSpellcheckLanguageTag(String languageTag) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String normalized = UiProperties.normalizeSpellcheckLanguageTag(languageTag);
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("spellcheckLanguageTag", normalized);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist spellcheck language tag to '{}'", file, e);
-    }
+    spellcheckStore.rememberLanguageTag(languageTag);
   }
 
   public synchronized void rememberSpellcheckCustomDictionary(List<String> words) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      List<String> cleaned = sanitizeStringList(words);
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      if (cleaned.isEmpty()) {
-        ui.remove("spellcheckCustomDictionary");
-      } else {
-        ui.put("spellcheckCustomDictionary", cleaned);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist spellcheck custom dictionary to '{}'", file, e);
-    }
-  }
-
-  private synchronized void rememberSpellcheckBoolean(String key, boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put(key, enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.{} setting to '{}'", key, file, e);
-    }
-  }
-
-  private synchronized void rememberSpellcheckInteger(String key, int value) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put(key, value);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.{} setting to '{}'", key, file, e);
-    }
+    spellcheckStore.rememberCustomDictionary(words);
   }
 
   /**
