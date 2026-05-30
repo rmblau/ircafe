@@ -133,6 +133,7 @@ public class RuntimeConfigStore
   private final RuntimeConfigTrayStore trayStore;
   private final RuntimeConfigEmbedStore embedStore;
   private final RuntimeConfigChatBehaviorStore chatBehaviorStore;
+  private final RuntimeConfigOutgoingMessageStore outgoingMessageStore;
   private Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolver =
       new Ircv3CapabilityNameResolverPort() {};
 
@@ -158,6 +159,7 @@ public class RuntimeConfigStore
     this.trayStore = new RuntimeConfigTrayStore(this.file, documentStore);
     this.embedStore = new RuntimeConfigEmbedStore(this.file, documentStore);
     this.chatBehaviorStore = new RuntimeConfigChatBehaviorStore(this.file, documentStore);
+    this.outgoingMessageStore = new RuntimeConfigOutgoingMessageStore(this.file, documentStore);
 
     ensureFileExistsWithServers();
   }
@@ -3480,17 +3482,15 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberClientLineColorEnabled(boolean enabled) {
-    rememberUiScalarSetting("clientLineColorEnabled", enabled, "outgoing message color enabled");
+    outgoingMessageStore.rememberClientLineColorEnabled(enabled);
   }
 
   public synchronized void rememberClientLineColor(String hex) {
-    rememberUiScalarSetting(
-        "clientLineColor", Objects.toString(hex, "").trim(), "outgoing message color");
+    outgoingMessageStore.rememberClientLineColor(hex);
   }
 
   public synchronized void rememberOutgoingDeliveryIndicatorsEnabled(boolean enabled) {
-    rememberUiScalarSetting(
-        "outgoingDeliveryIndicatorsEnabled", enabled, "outgoing delivery indicators");
+    outgoingMessageStore.rememberOutgoingDeliveryIndicatorsEnabled(enabled);
   }
 
   public synchronized void rememberServerTreeNotificationBadgesEnabled(boolean enabled) {
