@@ -128,6 +128,7 @@ public class RuntimeConfigStore
   private final RuntimeConfigFilterStore filterStore;
   private final RuntimeConfigNickColorStore nickColorStore;
   private final RuntimeConfigTimestampStore timestampStore;
+  private final RuntimeConfigUserLookupStore userLookupStore;
   private Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolver =
       new Ircv3CapabilityNameResolverPort() {};
 
@@ -148,6 +149,7 @@ public class RuntimeConfigStore
     this.filterStore = new RuntimeConfigFilterStore(this.file, documentStore);
     this.nickColorStore = new RuntimeConfigNickColorStore(this.file, documentStore);
     this.timestampStore = new RuntimeConfigTimestampStore(this.file, documentStore);
+    this.userLookupStore = new RuntimeConfigUserLookupStore(this.file, documentStore);
 
     ensureFileExistsWithServers();
   }
@@ -3602,134 +3604,74 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberUserhostDiscoveryEnabled(boolean enabled) {
-    rememberUiSectionScalarSetting(
-        "hostmaskDiscovery", "userhostEnabled", enabled, "USERHOST discovery enabled");
+    userLookupStore.rememberUserhostDiscoveryEnabled(enabled);
   }
 
   public synchronized void rememberUserhostMinIntervalSeconds(int seconds) {
-    rememberUiSectionScalarSetting(
-        "hostmaskDiscovery",
-        "userhostMinIntervalSeconds",
-        Math.max(1, seconds),
-        "USERHOST min interval");
+    userLookupStore.rememberUserhostMinIntervalSeconds(seconds);
   }
 
   public synchronized void rememberUserhostMaxCommandsPerMinute(int maxPerMinute) {
-    rememberUiSectionScalarSetting(
-        "hostmaskDiscovery",
-        "userhostMaxCommandsPerMinute",
-        Math.max(1, maxPerMinute),
-        "USERHOST max commands/min");
+    userLookupStore.rememberUserhostMaxCommandsPerMinute(maxPerMinute);
   }
 
   public synchronized void rememberUserhostNickCooldownMinutes(int minutes) {
-    rememberUiSectionScalarSetting(
-        "hostmaskDiscovery",
-        "userhostNickCooldownMinutes",
-        Math.max(1, minutes),
-        "USERHOST nick cooldown");
+    userLookupStore.rememberUserhostNickCooldownMinutes(minutes);
   }
 
   public synchronized void rememberUserhostMaxNicksPerCommand(int maxNicks) {
-    int capped = Math.max(1, Math.min(5, maxNicks));
-    rememberUiSectionScalarSetting(
-        "hostmaskDiscovery", "userhostMaxNicksPerCommand", capped, "USERHOST max nicks/command");
+    userLookupStore.rememberUserhostMaxNicksPerCommand(maxNicks);
   }
 
   public synchronized void rememberMonitorIsonPollIntervalSeconds(int seconds) {
-    int v = Math.max(5, Math.min(600, seconds));
-    rememberUiSectionScalarSetting(
-        "monitorFallback", "isonPollIntervalSeconds", v, "monitor fallback ISON interval");
+    userLookupStore.rememberMonitorIsonPollIntervalSeconds(seconds);
   }
 
   // --- User info enrichment fallback (ircafe.ui.userInfoEnrichment.*) ---
 
   public synchronized void rememberUserInfoEnrichmentEnabled(boolean enabled) {
-    rememberUiSectionScalarSetting(
-        "userInfoEnrichment", "enabled", enabled, "user info enrichment enabled");
+    userLookupStore.rememberUserInfoEnrichmentEnabled(enabled);
   }
 
   public synchronized void rememberUserInfoEnrichmentWhoisFallbackEnabled(boolean enabled) {
-    rememberUiSectionScalarSetting(
-        "userInfoEnrichment",
-        "whoisFallbackEnabled",
-        enabled,
-        "user info enrichment WHOIS fallback enabled");
+    userLookupStore.rememberUserInfoEnrichmentWhoisFallbackEnabled(enabled);
   }
 
   public synchronized void rememberUserInfoEnrichmentUserhostMinIntervalSeconds(int seconds) {
-    rememberUiSectionScalarSetting(
-        "userInfoEnrichment",
-        "userhostMinIntervalSeconds",
-        Math.max(1, seconds),
-        "user info enrichment USERHOST min interval");
+    userLookupStore.rememberUserInfoEnrichmentUserhostMinIntervalSeconds(seconds);
   }
 
   public synchronized void rememberUserInfoEnrichmentUserhostMaxCommandsPerMinute(
       int maxPerMinute) {
-    rememberUiSectionScalarSetting(
-        "userInfoEnrichment",
-        "userhostMaxCommandsPerMinute",
-        Math.max(1, maxPerMinute),
-        "user info enrichment USERHOST max commands/min");
+    userLookupStore.rememberUserInfoEnrichmentUserhostMaxCommandsPerMinute(maxPerMinute);
   }
 
   public synchronized void rememberUserInfoEnrichmentUserhostNickCooldownMinutes(int minutes) {
-    rememberUiSectionScalarSetting(
-        "userInfoEnrichment",
-        "userhostNickCooldownMinutes",
-        Math.max(1, minutes),
-        "user info enrichment USERHOST nick cooldown");
+    userLookupStore.rememberUserInfoEnrichmentUserhostNickCooldownMinutes(minutes);
   }
 
   public synchronized void rememberUserInfoEnrichmentUserhostMaxNicksPerCommand(int maxNicks) {
-    int capped = Math.max(1, Math.min(5, maxNicks));
-    rememberUiSectionScalarSetting(
-        "userInfoEnrichment",
-        "userhostMaxNicksPerCommand",
-        capped,
-        "user info enrichment USERHOST max nicks/command");
+    userLookupStore.rememberUserInfoEnrichmentUserhostMaxNicksPerCommand(maxNicks);
   }
 
   public synchronized void rememberUserInfoEnrichmentWhoisMinIntervalSeconds(int seconds) {
-    rememberUiSectionScalarSetting(
-        "userInfoEnrichment",
-        "whoisMinIntervalSeconds",
-        Math.max(1, seconds),
-        "user info enrichment WHOIS min interval");
+    userLookupStore.rememberUserInfoEnrichmentWhoisMinIntervalSeconds(seconds);
   }
 
   public synchronized void rememberUserInfoEnrichmentWhoisNickCooldownMinutes(int minutes) {
-    rememberUiSectionScalarSetting(
-        "userInfoEnrichment",
-        "whoisNickCooldownMinutes",
-        Math.max(1, minutes),
-        "user info enrichment WHOIS nick cooldown");
+    userLookupStore.rememberUserInfoEnrichmentWhoisNickCooldownMinutes(minutes);
   }
 
   public synchronized void rememberUserInfoEnrichmentPeriodicRefreshEnabled(boolean enabled) {
-    rememberUiSectionScalarSetting(
-        "userInfoEnrichment",
-        "periodicRefreshEnabled",
-        enabled,
-        "user info enrichment periodic refresh enabled");
+    userLookupStore.rememberUserInfoEnrichmentPeriodicRefreshEnabled(enabled);
   }
 
   public synchronized void rememberUserInfoEnrichmentPeriodicRefreshIntervalSeconds(int seconds) {
-    rememberUiSectionScalarSetting(
-        "userInfoEnrichment",
-        "periodicRefreshIntervalSeconds",
-        Math.max(5, seconds),
-        "user info enrichment periodic refresh interval");
+    userLookupStore.rememberUserInfoEnrichmentPeriodicRefreshIntervalSeconds(seconds);
   }
 
   public synchronized void rememberUserInfoEnrichmentPeriodicRefreshNicksPerTick(int nicksPerTick) {
-    int capped = Math.max(1, Math.min(20, nicksPerTick));
-    rememberUiSectionScalarSetting(
-        "userInfoEnrichment",
-        "periodicRefreshNicksPerTick",
-        capped,
-        "user info enrichment periodic refresh nicks/tick");
+    userLookupStore.rememberUserInfoEnrichmentPeriodicRefreshNicksPerTick(nicksPerTick);
   }
 
   public synchronized void rememberClientTlsTrustAllCertificates(boolean trustAllCertificates) {
