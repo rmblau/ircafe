@@ -50,7 +50,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.IntUnaryOperator;
 import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 import org.slf4j.Logger;
@@ -136,6 +135,7 @@ public class RuntimeConfigStore
   private final RuntimeConfigEmbedLoadPolicyStore embedLoadPolicyStore;
   private final RuntimeConfigSpellcheckStore spellcheckStore;
   private final RuntimeConfigUiFeatureToggleStore uiFeatureToggleStore;
+  private final RuntimeConfigMemoryUsageStore memoryUsageStore;
   private Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolver =
       new Ircv3CapabilityNameResolverPort() {};
 
@@ -165,6 +165,7 @@ public class RuntimeConfigStore
     this.embedLoadPolicyStore = new RuntimeConfigEmbedLoadPolicyStore(this.file, documentStore);
     this.spellcheckStore = new RuntimeConfigSpellcheckStore(this.file, documentStore);
     this.uiFeatureToggleStore = new RuntimeConfigUiFeatureToggleStore(this.file, documentStore);
+    this.memoryUsageStore = new RuntimeConfigMemoryUsageStore(this.file, documentStore);
 
     ensureFileExistsWithServers();
   }
@@ -954,97 +955,35 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberMemoryUsageDisplayMode(String mode) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      String normalized = Objects.toString(mode, "").trim().toLowerCase(Locale.ROOT);
-      normalized =
-          switch (normalized) {
-            case "short", "compact" -> "short";
-            case "indicator", "gauge", "bar" -> "indicator";
-            case "moon", "moon-phase", "moon-phases", "lunar" -> "moon";
-            case "hidden", "off", "none", "disable", "disabled" -> "hidden";
-            default -> "long";
-          };
-      ui.put("memoryUsageDisplayMode", normalized);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.memoryUsageDisplayMode setting to '{}'", file, e);
-    }
+    memoryUsageStore.rememberDisplayMode(mode);
   }
 
   public synchronized int readMemoryUsageRefreshIntervalMs(int defaultValue) {
-    return readUiInt(
-        "memoryUsageRefreshIntervalMs",
-        defaultValue,
-        this::clampMemoryUsageRefreshIntervalMs,
-        "ui.memoryUsageRefreshIntervalMs");
+    return memoryUsageStore.readRefreshIntervalMs(defaultValue);
   }
 
   public synchronized void rememberMemoryUsageRefreshIntervalMs(int intervalMs) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int normalized = clampMemoryUsageRefreshIntervalMs(intervalMs);
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      ui.put("memoryUsageRefreshIntervalMs", normalized);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist ui.memoryUsageRefreshIntervalMs setting to '{}'", file, e);
-    }
+    memoryUsageStore.rememberRefreshIntervalMs(intervalMs);
   }
 
   public synchronized void rememberMemoryUsageWarningNearMaxPercent(int percent) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      int p = Math.max(1, Math.min(50, percent));
-      ui.put("memoryUsageWarningNearMaxPercent", p);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist ui.memoryUsageWarningNearMaxPercent setting to '{}'",
-          file,
-          e);
-    }
+    memoryUsageStore.rememberWarningNearMaxPercent(percent);
   }
 
   public synchronized void rememberMemoryUsageWarningTooltipEnabled(boolean enabled) {
-    rememberMemoryUsageWarningBoolean("memoryUsageWarningTooltipEnabled", enabled);
+    memoryUsageStore.rememberWarningTooltipEnabled(enabled);
   }
 
   public synchronized void rememberMemoryUsageWarningToastEnabled(boolean enabled) {
-    rememberMemoryUsageWarningBoolean("memoryUsageWarningToastEnabled", enabled);
+    memoryUsageStore.rememberWarningToastEnabled(enabled);
   }
 
   public synchronized void rememberMemoryUsageWarningPushyEnabled(boolean enabled) {
-    rememberMemoryUsageWarningBoolean("memoryUsageWarningPushyEnabled", enabled);
+    memoryUsageStore.rememberWarningPushyEnabled(enabled);
   }
 
   public synchronized void rememberMemoryUsageWarningSoundEnabled(boolean enabled) {
-    rememberMemoryUsageWarningBoolean("memoryUsageWarningSoundEnabled", enabled);
-  }
-
-  private int clampMemoryUsageRefreshIntervalMs(int intervalMs) {
-    int value = intervalMs;
-    if (value <= 0) value = 1000;
-    if (value < 250) value = 250;
-    if (value > 60_000) value = 60_000;
-    return value;
+    memoryUsageStore.rememberWarningSoundEnabled(enabled);
   }
 
   /**
@@ -1073,20 +1012,6 @@ public class RuntimeConfigStore
       writeFile(doc);
     } catch (Exception e) {
       log.warn("[ircafe] Could not persist ui.appDiagnostics.jfr.enabled to '{}'", file, e);
-    }
-  }
-
-  private synchronized void rememberMemoryUsageWarningBoolean(String key, boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      ui.put(key, enabled);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.{} setting to '{}'", key, file, e);
     }
   }
 
@@ -3117,15 +3042,6 @@ public class RuntimeConfigStore
     return readUiValue(description, path)
         .flatMap(RuntimeConfigStore::asBoolean)
         .orElse(defaultValue);
-  }
-
-  private int readUiInt(
-      String key, int defaultValue, IntUnaryOperator normalizer, String description) {
-    int fallback = normalizer.applyAsInt(defaultValue);
-    return readUiValue(description, key)
-        .flatMap(RuntimeConfigStore::asInt)
-        .map(normalizer::applyAsInt)
-        .orElse(fallback);
   }
 
   @Deprecated
