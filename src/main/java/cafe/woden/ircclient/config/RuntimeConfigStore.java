@@ -129,6 +129,7 @@ public class RuntimeConfigStore
   private final RuntimeConfigNickColorStore nickColorStore;
   private final RuntimeConfigTimestampStore timestampStore;
   private final RuntimeConfigUserLookupStore userLookupStore;
+  private final RuntimeConfigChatHistoryStore chatHistoryStore;
   private Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolver =
       new Ircv3CapabilityNameResolverPort() {};
 
@@ -150,6 +151,7 @@ public class RuntimeConfigStore
     this.nickColorStore = new RuntimeConfigNickColorStore(this.file, documentStore);
     this.timestampStore = new RuntimeConfigTimestampStore(this.file, documentStore);
     this.userLookupStore = new RuntimeConfigUserLookupStore(this.file, documentStore);
+    this.chatHistoryStore = new RuntimeConfigChatHistoryStore(this.file, documentStore);
 
     ensureFileExistsWithServers();
   }
@@ -3489,40 +3491,31 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberChatHistoryInitialLoadLines(int lines) {
-    rememberUiScalarSetting(
-        "chatHistoryInitialLoadLines", Math.max(0, lines), "chat history initial load");
+    chatHistoryStore.rememberInitialLoadLines(lines);
   }
 
   public synchronized void rememberChatHistoryPageSize(int pageSize) {
-    rememberUiScalarSetting("chatHistoryPageSize", Math.max(1, pageSize), "chat history page size");
+    chatHistoryStore.rememberPageSize(pageSize);
   }
 
   public synchronized void rememberChatHistoryAutoLoadWheelDebounceMs(int debounceMs) {
-    int v = Math.max(100, Math.min(30_000, debounceMs));
-    rememberUiScalarSetting("chatHistoryAutoLoadWheelDebounceMs", v, "chat history wheel debounce");
+    chatHistoryStore.rememberAutoLoadWheelDebounceMs(debounceMs);
   }
 
   public synchronized void rememberChatHistoryLoadOlderChunkSize(int chunkSize) {
-    int v = Math.max(1, Math.min(500, chunkSize));
-    rememberUiScalarSetting(
-        "chatHistoryLoadOlderChunkSize", v, "chat history load-older chunk-size");
+    chatHistoryStore.rememberLoadOlderChunkSize(chunkSize);
   }
 
   public synchronized void rememberChatHistoryLoadOlderChunkDelayMs(int chunkDelayMs) {
-    int v = Math.max(0, Math.min(1_000, chunkDelayMs));
-    rememberUiScalarSetting(
-        "chatHistoryLoadOlderChunkDelayMs", v, "chat history load-older chunk-delay");
+    chatHistoryStore.rememberLoadOlderChunkDelayMs(chunkDelayMs);
   }
 
   public synchronized void rememberChatHistoryLoadOlderChunkEdtBudgetMs(int chunkEdtBudgetMs) {
-    int v = Math.max(1, Math.min(33, chunkEdtBudgetMs));
-    rememberUiScalarSetting(
-        "chatHistoryLoadOlderChunkEdtBudgetMs", v, "chat history load-older EDT budget");
+    chatHistoryStore.rememberLoadOlderChunkEdtBudgetMs(chunkEdtBudgetMs);
   }
 
   public synchronized void rememberChatHistoryDeferRichTextDuringBatch(boolean enabled) {
-    rememberUiScalarSetting(
-        "chatHistoryDeferRichTextDuringBatch", enabled, "chat history deferred-rich-text");
+    chatHistoryStore.rememberDeferRichTextDuringBatch(enabled);
   }
 
   /**
@@ -3536,8 +3529,7 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberChatSmoothWheelScrollingEnabled(boolean enabled) {
-    rememberUiScalarSetting(
-        "chatSmoothWheelScrollingEnabled", enabled, "chat smooth-wheel scrolling");
+    chatHistoryStore.rememberSmoothWheelScrollingEnabled(enabled);
   }
 
   public synchronized boolean readChatHistoryLockViewportDuringLoadOlder(boolean defaultValue) {
@@ -3548,40 +3540,27 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberChatHistoryLockViewportDuringLoadOlder(boolean enabled) {
-    rememberUiScalarSetting(
-        "chatHistoryLockViewportDuringLoadOlder", enabled, "chat history viewport-lock");
+    chatHistoryStore.rememberLockViewportDuringLoadOlder(enabled);
   }
 
   public synchronized void rememberChatHistoryRemoteRequestTimeoutSeconds(int seconds) {
-    int v = Math.max(1, Math.min(120, seconds));
-    rememberUiScalarSetting(
-        "chatHistoryRemoteRequestTimeoutSeconds", v, "chat history remote-timeout");
+    chatHistoryStore.rememberRemoteRequestTimeoutSeconds(seconds);
   }
 
   public synchronized void rememberChatHistoryRemoteZncPlaybackTimeoutSeconds(int seconds) {
-    int v = Math.max(1, Math.min(300, seconds));
-    rememberUiScalarSetting(
-        "chatHistoryRemoteZncPlaybackTimeoutSeconds", v, "chat history remote ZNC-timeout");
+    chatHistoryStore.rememberRemoteZncPlaybackTimeoutSeconds(seconds);
   }
 
   public synchronized void rememberChatHistoryRemoteZncPlaybackWindowMinutes(int minutes) {
-    int v = Math.max(1, Math.min(1440, minutes));
-    rememberUiScalarSetting(
-        "chatHistoryRemoteZncPlaybackWindowMinutes", v, "chat history remote ZNC window");
+    chatHistoryStore.rememberRemoteZncPlaybackWindowMinutes(minutes);
   }
 
   public synchronized void rememberCommandHistoryMaxSize(int maxSize) {
-    int v = maxSize;
-    if (v <= 0) v = 500;
-    if (v > 500) v = 500;
-    rememberUiScalarSetting("commandHistoryMaxSize", v, "command history max size");
+    chatHistoryStore.rememberCommandHistoryMaxSize(maxSize);
   }
 
   public synchronized void rememberChatTranscriptMaxLinesPerTarget(int maxLines) {
-    int v = Math.max(0, maxLines);
-    if (v > 200_000) v = 200_000;
-    rememberUiScalarSetting(
-        "chatTranscriptMaxLinesPerTarget", v, "chat transcript max-lines-per-target");
+    chatHistoryStore.rememberTranscriptMaxLinesPerTarget(maxLines);
   }
 
   public synchronized void rememberClientLineColorEnabled(boolean enabled) {
