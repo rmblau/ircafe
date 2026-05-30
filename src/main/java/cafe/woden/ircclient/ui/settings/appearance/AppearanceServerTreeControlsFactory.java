@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.settings.appearance;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.AppearanceRuntimeConfigPort;
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import javax.swing.JCheckBox;
@@ -48,7 +48,7 @@ final class AppearanceServerTreeControlsFactory {
   }
 
   static void remember(
-      RuntimeConfigStore runtimeConfig,
+      AppearanceRuntimeConfigPort runtimeConfig,
       AppearanceControlsSupport.ServerTreeAppearanceSettings settings) {
     runtimeConfig.rememberServerTreeUnreadChannelColor(settings.unreadChannelColor());
     runtimeConfig.rememberServerTreeHighlightChannelColor(settings.highlightChannelColor());

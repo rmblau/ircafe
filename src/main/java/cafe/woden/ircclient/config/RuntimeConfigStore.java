@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.config;
 
+import cafe.woden.ircclient.config.api.AppearanceRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
 import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
@@ -54,7 +55,8 @@ import org.springframework.stereotype.Component;
 @SecondaryAdapter
 @ApplicationLayer
 public class RuntimeConfigStore
-    implements BouncerDiscoveryConfigPort,
+    implements AppearanceRuntimeConfigPort,
+        BouncerDiscoveryConfigPort,
         ChatBehaviorRuntimeConfigPort,
         ChatCommandRuntimeConfigPort,
         ChatHistoryRuntimeConfigPort,
