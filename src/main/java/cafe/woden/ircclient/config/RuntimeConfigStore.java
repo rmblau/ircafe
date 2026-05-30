@@ -3,6 +3,7 @@ package cafe.woden.ircclient.config;
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
 import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ChatHistoryRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ConnectionRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
@@ -54,6 +55,7 @@ public class RuntimeConfigStore
     implements BouncerDiscoveryConfigPort,
         ChatBehaviorRuntimeConfigPort,
         ChatCommandRuntimeConfigPort,
+        ChatHistoryRuntimeConfigPort,
         InviteAutoJoinConfigPort,
         ConnectionRuntimeConfigPort,
         CtcpReplyRuntimeConfigPort,
