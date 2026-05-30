@@ -126,6 +126,7 @@ public class RuntimeConfigStore
   private final RuntimeConfigTimestampStore timestampStore;
   private final RuntimeConfigUserLookupStore userLookupStore;
   private final RuntimeConfigChatHistoryStore chatHistoryStore;
+  private final RuntimeConfigChatLoggingStore chatLoggingStore;
   private final RuntimeConfigTrayStore trayStore;
   private final RuntimeConfigUiSettingsStore uiSettingsStore;
   private final RuntimeConfigEmbedStore embedStore;
@@ -160,6 +161,7 @@ public class RuntimeConfigStore
     this.timestampStore = new RuntimeConfigTimestampStore(this.file, documentStore);
     this.userLookupStore = new RuntimeConfigUserLookupStore(this.file, documentStore);
     this.chatHistoryStore = new RuntimeConfigChatHistoryStore(this.file, documentStore);
+    this.chatLoggingStore = new RuntimeConfigChatLoggingStore(this.file, documentStore);
     this.trayStore = new RuntimeConfigTrayStore(this.file, documentStore);
     this.uiSettingsStore = new RuntimeConfigUiSettingsStore(this.file, documentStore);
     this.embedStore = new RuntimeConfigEmbedStore(this.file, documentStore);
@@ -1632,99 +1634,51 @@ public class RuntimeConfigStore
   // --- Chat logging / history persistence (ircafe.logging.*) ---
 
   public synchronized boolean readChatLoggingEnabled(boolean defaultValue) {
-    return readExistingConfigValue("logging.enabled", "ircafe", "logging", "enabled")
-        .flatMap(RuntimeConfigStore::asBoolean)
-        .orElse(defaultValue);
+    return chatLoggingStore.readEnabled(defaultValue);
   }
 
   public synchronized void rememberChatLoggingEnabled(boolean enabled) {
-    rememberChatLoggingScalarSetting("enabled", enabled, "chat logging enabled");
+    chatLoggingStore.rememberEnabled(enabled);
   }
 
   public synchronized void rememberChatLoggingLogSoftIgnoredLines(boolean enabled) {
-    rememberChatLoggingScalarSetting("logSoftIgnoredLines", enabled, "chat logging soft-ignore");
+    chatLoggingStore.rememberLogSoftIgnoredLines(enabled);
   }
 
   public synchronized void rememberChatLoggingRedactionAuditEnabled(boolean enabled) {
-    rememberChatLoggingScalarSetting(
-        "redactionAuditEnabled", enabled, "chat logging redaction-audit");
+    chatLoggingStore.rememberRedactionAuditEnabled(enabled);
   }
 
   public synchronized void rememberChatLoggingLogPrivateMessages(boolean enabled) {
-    rememberChatLoggingScalarSetting("logPrivateMessages", enabled, "chat logging PM-history");
+    chatLoggingStore.rememberLogPrivateMessages(enabled);
   }
 
   public synchronized void rememberChatLoggingSavePrivateMessageList(boolean enabled) {
-    rememberChatLoggingScalarSetting("savePrivateMessageList", enabled, "chat logging PM-list");
+    chatLoggingStore.rememberSavePrivateMessageList(enabled);
   }
 
   public synchronized void rememberChatLoggingDbFileBaseName(String fileBaseName) {
-    String base = Objects.toString(fileBaseName, "").trim();
-    if (base.isEmpty()) base = "ircafe-chatlog";
-
-    rememberChatLoggingHsqldbScalarSetting("fileBaseName", base, "chat logging DB file base name");
+    chatLoggingStore.rememberDbFileBaseName(fileBaseName);
   }
 
   public synchronized void rememberChatLoggingDbNextToRuntimeConfig(boolean nextToRuntimeConfig) {
-    rememberChatLoggingHsqldbScalarSetting(
-        "nextToRuntimeConfig", nextToRuntimeConfig, "chat logging DB location");
+    chatLoggingStore.rememberDbNextToRuntimeConfig(nextToRuntimeConfig);
   }
 
   public synchronized void rememberChatLoggingKeepForever(boolean keepForever) {
-    rememberChatLoggingScalarSetting("keepForever", keepForever, "chat logging keepForever");
+    chatLoggingStore.rememberKeepForever(keepForever);
   }
 
   public synchronized void rememberChatLoggingRetentionDays(int retentionDays) {
-    rememberChatLoggingScalarSetting(
-        "retentionDays", Math.max(0, retentionDays), "chat logging retentionDays");
+    chatLoggingStore.rememberRetentionDays(retentionDays);
   }
 
   public synchronized void rememberChatLoggingWriterQueueMax(int writerQueueMax) {
-    rememberChatLoggingScalarSetting(
-        "writerQueueMax",
-        Math.max(100, Math.min(1_000_000, writerQueueMax)),
-        "chat logging writerQueueMax");
+    chatLoggingStore.rememberWriterQueueMax(writerQueueMax);
   }
 
   public synchronized void rememberChatLoggingWriterBatchSize(int writerBatchSize) {
-    rememberChatLoggingScalarSetting(
-        "writerBatchSize",
-        Math.max(1, Math.min(10_000, writerBatchSize)),
-        "chat logging writerBatchSize");
-  }
-
-  private void rememberChatLoggingScalarSetting(String key, Object value, String description) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
-
-      logging.put(key, value);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist {} setting to '{}'", description, file, e);
-    }
-  }
-
-  private void rememberChatLoggingHsqldbScalarSetting(
-      String key, Object value, String description) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
-      Map<String, Object> hsqldb = getOrCreateMap(logging, "hsqldb");
-
-      hsqldb.put(key, value);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist {} setting to '{}'", description, file, e);
-    }
+    chatLoggingStore.rememberWriterBatchSize(writerBatchSize);
   }
 
   public synchronized void rememberImageEmbedsEnabled(boolean enabled) {
@@ -3240,16 +3194,8 @@ public class RuntimeConfigStore
     return documentStore.load();
   }
 
-  private Map<String, Object> loadFileOrEmpty() throws IOException {
-    return documentStore.loadOrEmpty();
-  }
-
   private void writeFile(Map<String, Object> doc) throws IOException {
     documentStore.write(doc);
-  }
-
-  private void writeFileNow(Map<String, Object> doc) throws IOException {
-    documentStore.writeNow(doc);
   }
 
   @SuppressWarnings("unchecked")
@@ -3259,14 +3205,6 @@ public class RuntimeConfigStore
     Map<String, Object> created = new LinkedHashMap<>();
     parent.put(key, created);
     return created;
-  }
-
-  private static Map<String, Object> getOrCreateMapPath(Map<String, Object> root, String... path) {
-    Map<String, Object> current = root;
-    for (String segment : path) {
-      current = getOrCreateMap(current, segment);
-    }
-    return current;
   }
 
   @SuppressWarnings("unchecked")
