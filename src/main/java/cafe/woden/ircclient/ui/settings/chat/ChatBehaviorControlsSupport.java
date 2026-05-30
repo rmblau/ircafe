@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.settings.chat;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
@@ -37,7 +37,8 @@ public final class ChatBehaviorControlsSupport {
     return ctcp;
   }
 
-  public static JTextField buildDefaultQuitMessageField(RuntimeConfigStore runtimeConfig) {
+  public static JTextField buildDefaultQuitMessageField(
+      ChatBehaviorRuntimeConfigPort runtimeConfig) {
     JTextField field =
         new JTextField(runtimeConfig != null ? runtimeConfig.readDefaultQuitMessage() : "");
     field.setToolTipText(
@@ -190,7 +191,7 @@ public final class ChatBehaviorControlsSupport {
   }
 
   public static JSpinner buildServerTreeUnreadBadgeScalePercentSpinner(
-      RuntimeConfigStore runtimeConfig) {
+      ChatBehaviorRuntimeConfigPort runtimeConfig) {
     int current =
         runtimeConfig != null ? runtimeConfig.readServerTreeUnreadBadgeScalePercent(100) : 100;
     JSpinner spinner =
@@ -202,6 +203,7 @@ public final class ChatBehaviorControlsSupport {
   }
 
   public static ChatBehaviorSettings readSettings(
+      ChatBehaviorRuntimeConfigPort runtimeConfig,
       JCheckBox presenceFolds,
       JCheckBox ctcpRequestsInActiveTarget,
       JTextField defaultQuitMessage,
@@ -215,7 +217,7 @@ public final class ChatBehaviorControlsSupport {
       JComboBox<?> matrixUserListNameDisplayMode,
       JCheckBox serverTreeNotificationBadgesEnabled,
       JSpinner serverTreeUnreadBadgeScalePercent) {
-    String quitMessage = normalizeDefaultQuitMessage(defaultQuitMessage.getText());
+    String quitMessage = normalizeDefaultQuitMessage(runtimeConfig, defaultQuitMessage.getText());
     defaultQuitMessage.setText(quitMessage);
 
     return new ChatBehaviorSettings(
@@ -236,7 +238,7 @@ public final class ChatBehaviorControlsSupport {
   }
 
   public static void rememberServerTreeSettings(
-      RuntimeConfigStore runtimeConfig, ChatBehaviorSettings settings) {
+      ChatBehaviorRuntimeConfigPort runtimeConfig, ChatBehaviorSettings settings) {
     runtimeConfig.rememberServerTreeUnreadBadgeScalePercent(
         settings.serverTreeUnreadBadgeScalePercent());
     runtimeConfig.rememberServerTreeNotificationBadgesEnabled(
@@ -244,7 +246,7 @@ public final class ChatBehaviorControlsSupport {
   }
 
   public static void rememberSettings(
-      RuntimeConfigStore runtimeConfig, ChatBehaviorSettings settings) {
+      ChatBehaviorRuntimeConfigPort runtimeConfig, ChatBehaviorSettings settings) {
     runtimeConfig.rememberPresenceFoldsEnabled(settings.presenceFoldsEnabled());
     runtimeConfig.rememberCtcpRequestsInActiveTargetEnabled(
         settings.ctcpRequestsInActiveTargetEnabled());
@@ -279,10 +281,14 @@ public final class ChatBehaviorControlsSupport {
     return "compact";
   }
 
-  private static String normalizeDefaultQuitMessage(String raw) {
+  private static String normalizeDefaultQuitMessage(
+      ChatBehaviorRuntimeConfigPort runtimeConfig, String raw) {
+    if (runtimeConfig != null) {
+      return runtimeConfig.normalizeDefaultQuitMessage(raw);
+    }
     String message =
         java.util.Objects.toString(raw, "").replace('\r', ' ').replace('\n', ' ').trim();
-    return message.isEmpty() ? RuntimeConfigStore.DEFAULT_QUIT_MESSAGE : message;
+    return message.isEmpty() ? ChatBehaviorRuntimeConfigPort.DEFAULT_QUIT_MESSAGE : message;
   }
 
   public record ChatBehaviorSettings(

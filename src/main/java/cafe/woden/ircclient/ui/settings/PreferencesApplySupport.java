@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings;
 
+import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.ui.chat.NickColorSettings;
 import cafe.woden.ircclient.ui.settings.appearance.AppearanceControlsSupport;
@@ -65,6 +66,7 @@ final class PreferencesApplySupport {
     TimestampControlsSupport.TimestampSettings timestamp = readTimestamp(request);
     ChatBehaviorControlsSupport.ChatBehaviorSettings chatBehavior =
         ChatBehaviorControlsSupport.readSettings(
+            request.chatBehaviorConfig(),
             request.presenceFolds(),
             request.ctcpRequestsInActiveTarget(),
             request.defaultQuitMessage(),
@@ -120,7 +122,7 @@ final class PreferencesApplySupport {
     DiagnosticsControlsSupport.DiagnosticsSettings diagnostics =
         DiagnosticsControlsSupport.readSettings(request.diagnostics());
     boolean diagnosticsChanged =
-        DiagnosticsControlsSupport.settingsChanged(request.runtimeConfig(), diagnostics);
+        DiagnosticsControlsSupport.settingsChanged(request.diagnosticsConfig(), diagnostics);
     UiSettings next =
         buildUiSettings(
             appearance,
@@ -380,7 +382,8 @@ final class PreferencesApplySupport {
       IrcEventNotificationControls ircEventNotifications,
       UserCommandAliasesControls userCommands,
       DiagnosticsControls diagnostics,
-      DiagnosticsRuntimeConfigPort runtimeConfig) {}
+      ChatBehaviorRuntimeConfigPort chatBehaviorConfig,
+      DiagnosticsRuntimeConfigPort diagnosticsConfig) {}
 
   record Snapshot(
       AppearanceSettingsSelection appearance,

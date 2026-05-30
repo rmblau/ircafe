@@ -329,6 +329,7 @@ public class PreferencesDialog {
                         chatThemeSettingsBus,
                         embedCardStyleBus,
                         settingsBus,
+                        runtimeConfig,
                         runtimeConfig));
           } catch (PreferencesApplySupport.ApplyException ex) {
             PreferencesUiSupport.showErrorMessage(dialog, ex.getMessage(), ex.title());
