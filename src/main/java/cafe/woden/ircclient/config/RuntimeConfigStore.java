@@ -1346,40 +1346,11 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberAccentColor(String accentColor) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      // Persist "disabled" explicitly as an empty string so app defaults don't re-enable the accent
-      // on restart.
-      // (UiProperties treats blank as "no override".)
-      String c = accentColor != null ? accentColor.trim() : "";
-      ui.put("accentColor", c);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist accentColor setting to '{}'", file, e);
-    }
+    uiSettingsStore.rememberAccentColor(accentColor);
   }
 
   public synchronized void rememberAccentStrength(int strength) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      int s = Math.max(0, Math.min(100, strength));
-      ui.put("accentStrength", s);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist accentStrength setting to '{}'", file, e);
-    }
+    uiSettingsStore.rememberAccentStrength(strength);
   }
 
   /**
@@ -1389,300 +1360,97 @@ public class RuntimeConfigStore
    */
   public synchronized void rememberDockLayoutWidths(
       Integer serverDockWidthPx, Integer userDockWidthPx) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> layout = getOrCreateMap(ui, "layout");
-
-      if (serverDockWidthPx != null && serverDockWidthPx > 0) {
-        layout.put("serverDockWidthPx", serverDockWidthPx);
-      }
-      if (userDockWidthPx != null && userDockWidthPx > 0) {
-        layout.put("userDockWidthPx", userDockWidthPx);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist dock layout widths to '{}'", file, e);
-    }
+    uiSettingsStore.rememberDockLayoutWidths(serverDockWidthPx, userDockWidthPx);
   }
 
   public synchronized void rememberServerDockWidthPx(int serverDockWidthPx) {
-    rememberDockLayoutWidths(serverDockWidthPx, null);
+    uiSettingsStore.rememberServerDockWidthPx(serverDockWidthPx);
   }
 
   public synchronized void rememberUserDockWidthPx(int userDockWidthPx) {
-    rememberDockLayoutWidths(null, userDockWidthPx);
+    uiSettingsStore.rememberUserDockWidthPx(userDockWidthPx);
   }
 
   public synchronized void rememberPreserveDockLayout(boolean preserveDockLayout) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> layout = getOrCreateMap(ui, "layout");
-
-      layout.put("preserveDockLayout", preserveDockLayout);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.layout.preserveDockLayout to '{}'", file, e);
-    }
+    uiSettingsStore.rememberPreserveDockLayout(preserveDockLayout);
   }
 
   /** Reads {@code ircafe.ui.lastSelectedTarget} if present and valid. */
   public synchronized Optional<LastSelectedTarget> readLastSelectedTarget() {
-    try {
-      if (file.toString().isBlank()) return Optional.empty();
-      if (!Files.exists(file)) return Optional.empty();
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return Optional.empty();
-
-      Object uiObj = ircafe.get("ui");
-      if (!(uiObj instanceof Map<?, ?> ui)) return Optional.empty();
-
-      Object raw = ui.get("lastSelectedTarget");
-      if (!(raw instanceof Map<?, ?> selected)) return Optional.empty();
-
-      LastSelectedTarget out =
-          new LastSelectedTarget(
-              Objects.toString(selected.get("serverId"), ""),
-              Objects.toString(selected.get("target"), ""));
-      if (!out.isValid()) return Optional.empty();
-      return Optional.of(out);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.lastSelectedTarget from '{}'", file, e);
-      return Optional.empty();
-    }
+    return uiSettingsStore.readLastSelectedTarget();
   }
 
   /** Persists {@code ircafe.ui.lastSelectedTarget}. Blank values clear the persisted target. */
   public synchronized void rememberLastSelectedTarget(String serverId, String target) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      LastSelectedTarget next = new LastSelectedTarget(serverId, target);
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      if (!next.isValid()) {
-        ui.remove("lastSelectedTarget");
-      } else {
-        Map<String, Object> selected = getOrCreateMap(ui, "lastSelectedTarget");
-        selected.put("serverId", next.serverId());
-        selected.put("target", next.target());
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.lastSelectedTarget to '{}'", file, e);
-    }
+    uiSettingsStore.rememberLastSelectedTarget(serverId, target);
   }
 
   public synchronized void rememberUiDensity(String density) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      String d = density != null ? density.trim().toLowerCase(java.util.Locale.ROOT) : "";
-      if (d.isEmpty()) {
-        ui.remove("density");
-      } else if (d.equals("auto")
-          || d.equals("compact")
-          || d.equals("cozy")
-          || d.equals("spacious")) {
-        ui.put("density", d);
-      } else {
-        ui.put("density", "auto");
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.density setting to '{}'", file, e);
-    }
+    uiSettingsStore.rememberUiDensity(density);
   }
 
   public synchronized void rememberUiFontOverrideEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("uiFontOverrideEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.uiFontOverrideEnabled setting to '{}'", file, e);
-    }
+    uiSettingsStore.rememberUiFontOverrideEnabled(enabled);
   }
 
   public synchronized void rememberUiFontFamily(String family) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      String f = family != null ? family.trim() : "";
-      if (f.isBlank()) {
-        ui.remove("uiFontFamily");
-      } else {
-        ui.put("uiFontFamily", f);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.uiFontFamily setting to '{}'", file, e);
-    }
+    uiSettingsStore.rememberUiFontFamily(family);
   }
 
   public synchronized void rememberUiFontSize(int size) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      int s = Math.max(8, Math.min(48, size));
-      ui.put("uiFontSize", s);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.uiFontSize setting to '{}'", file, e);
-    }
+    uiSettingsStore.rememberUiFontSize(size);
   }
 
   public synchronized void rememberCornerRadius(int cornerRadius) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      int r = Math.max(0, Math.min(20, cornerRadius));
-      ui.put("cornerRadius", r);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.cornerRadius setting to '{}'", file, e);
-    }
+    uiSettingsStore.rememberCornerRadius(cornerRadius);
   }
 
   public synchronized void rememberChatThemePreset(String preset) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      String p = preset != null ? preset.trim() : "";
-      if (p.isEmpty()) {
-        ui.remove("chatThemePreset");
-      } else {
-        ui.put("chatThemePreset", p);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chatThemePreset setting to '{}'", file, e);
-    }
+    uiSettingsStore.rememberChatThemePreset(preset);
   }
 
   public synchronized void rememberChatTimestampColor(String hex) {
-    rememberOptionalUiHex("chatTimestampColor", hex, "chatTimestampColor");
+    uiSettingsStore.rememberChatTimestampColor(hex);
   }
 
   public synchronized void rememberChatSystemColor(String hex) {
-    rememberOptionalUiHex("chatSystemColor", hex, "chatSystemColor");
+    uiSettingsStore.rememberChatSystemColor(hex);
   }
 
   public synchronized void rememberChatMessageColor(String hex) {
-    rememberOptionalUiHex("chatMessageColor", hex, "chatMessageColor");
+    uiSettingsStore.rememberChatMessageColor(hex);
   }
 
   public synchronized void rememberChatNoticeColor(String hex) {
-    rememberOptionalUiHex("chatNoticeColor", hex, "chatNoticeColor");
+    uiSettingsStore.rememberChatNoticeColor(hex);
   }
 
   public synchronized void rememberChatActionColor(String hex) {
-    rememberOptionalUiHex("chatActionColor", hex, "chatActionColor");
+    uiSettingsStore.rememberChatActionColor(hex);
   }
 
   public synchronized void rememberChatErrorColor(String hex) {
-    rememberOptionalUiHex("chatErrorColor", hex, "chatErrorColor");
+    uiSettingsStore.rememberChatErrorColor(hex);
   }
 
   public synchronized void rememberChatPresenceColor(String hex) {
-    rememberOptionalUiHex("chatPresenceColor", hex, "chatPresenceColor");
+    uiSettingsStore.rememberChatPresenceColor(hex);
   }
 
   public synchronized void rememberChatMentionBgColor(String hex) {
-    rememberOptionalUiHex("chatMentionBgColor", hex, "chatMentionBgColor");
+    uiSettingsStore.rememberChatMentionBgColor(hex);
   }
 
   public synchronized void rememberServerTreeUnreadChannelColor(String hex) {
-    rememberOptionalUiHex("serverTreeUnreadChannelColor", hex, "serverTreeUnreadChannelColor");
+    uiSettingsStore.rememberServerTreeUnreadChannelColor(hex);
   }
 
   public synchronized void rememberServerTreeHighlightChannelColor(String hex) {
-    rememberOptionalUiHex(
-        "serverTreeHighlightChannelColor", hex, "serverTreeHighlightChannelColor");
+    uiSettingsStore.rememberServerTreeHighlightChannelColor(hex);
   }
 
   public synchronized void rememberChatMentionStrength(int strength) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      int s = Math.max(0, Math.min(100, strength));
-      ui.put("chatMentionStrength", s);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chatMentionStrength setting to '{}'", file, e);
-    }
-  }
-
-  private synchronized void rememberOptionalUiHex(String key, String hex, String label) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      String c = hex != null ? hex.trim() : "";
-      if (c.isEmpty()) {
-        ui.remove(key);
-      } else {
-        ui.put(key, c);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist {} setting to '{}'", label, file, e);
-    }
+    uiSettingsStore.rememberChatMentionStrength(strength);
   }
 
   public synchronized void rememberAutoConnectOnStart(boolean enabled) {
