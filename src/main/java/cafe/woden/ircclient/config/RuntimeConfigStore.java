@@ -131,6 +131,7 @@ public class RuntimeConfigStore
   private final RuntimeConfigUserLookupStore userLookupStore;
   private final RuntimeConfigChatHistoryStore chatHistoryStore;
   private final RuntimeConfigTrayStore trayStore;
+  private final RuntimeConfigEmbedStore embedStore;
   private Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolver =
       new Ircv3CapabilityNameResolverPort() {};
 
@@ -154,6 +155,7 @@ public class RuntimeConfigStore
     this.userLookupStore = new RuntimeConfigUserLookupStore(this.file, documentStore);
     this.chatHistoryStore = new RuntimeConfigChatHistoryStore(this.file, documentStore);
     this.trayStore = new RuntimeConfigTrayStore(this.file, documentStore);
+    this.embedStore = new RuntimeConfigEmbedStore(this.file, documentStore);
 
     ensureFileExistsWithServers();
   }
@@ -2707,39 +2709,35 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberImageEmbedsEnabled(boolean enabled) {
-    rememberUiScalarSetting("imageEmbedsEnabled", enabled, "image embed");
+    embedStore.rememberImageEmbedsEnabled(enabled);
   }
 
   public synchronized void rememberImageEmbedsCollapsedByDefault(boolean collapsed) {
-    rememberUiScalarSetting("imageEmbedsCollapsedByDefault", collapsed, "image embed collapse");
+    embedStore.rememberImageEmbedsCollapsedByDefault(collapsed);
   }
 
   public synchronized void rememberImageEmbedsMaxWidthPx(int maxWidthPx) {
-    rememberUiScalarSetting(
-        "imageEmbedsMaxWidthPx", Math.max(0, maxWidthPx), "image embed max width");
+    embedStore.rememberImageEmbedsMaxWidthPx(maxWidthPx);
   }
 
   public synchronized void rememberImageEmbedsMaxHeightPx(int maxHeightPx) {
-    rememberUiScalarSetting(
-        "imageEmbedsMaxHeightPx", Math.max(0, maxHeightPx), "image embed max height");
+    embedStore.rememberImageEmbedsMaxHeightPx(maxHeightPx);
   }
 
   public synchronized void rememberImageEmbedsAnimateGifs(boolean animate) {
-    rememberUiScalarSetting("imageEmbedsAnimateGifs", animate, "image embed GIF animation");
+    embedStore.rememberImageEmbedsAnimateGifs(animate);
   }
 
   public synchronized void rememberLinkPreviewsEnabled(boolean enabled) {
-    rememberUiScalarSetting("linkPreviewsEnabled", enabled, "link preview");
+    embedStore.rememberLinkPreviewsEnabled(enabled);
   }
 
   public synchronized void rememberLinkPreviewsCollapsedByDefault(boolean collapsed) {
-    rememberUiScalarSetting("linkPreviewsCollapsedByDefault", collapsed, "link preview collapse");
+    embedStore.rememberLinkPreviewsCollapsedByDefault(collapsed);
   }
 
   public synchronized void rememberEmbedCardStyle(String styleToken) {
-    String token = Objects.toString(styleToken, "").trim().toLowerCase(Locale.ROOT);
-    if (token.isBlank()) token = "default";
-    rememberUiScalarSetting("embedCardStyle", token, "embed card style");
+    embedStore.rememberEmbedCardStyle(styleToken);
   }
 
   /** Reads advanced embed/link loading policy settings under {@code ircafe.ui.embedLoadPolicy}. */
