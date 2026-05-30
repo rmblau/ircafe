@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.settings.diagnostics;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
@@ -14,7 +14,7 @@ import javax.swing.JTextField;
 public final class DiagnosticsControlsSupport {
   private DiagnosticsControlsSupport() {}
 
-  public static DiagnosticsControls buildControls(RuntimeConfigStore runtimeConfig) {
+  public static DiagnosticsControls buildControls(DiagnosticsRuntimeConfigPort runtimeConfig) {
     JCheckBox assertjSwingEnabled = new JCheckBox("Enable AssertJ Swing diagnostics");
     assertjSwingEnabled.setSelected(runtimeConfig.readAppDiagnosticsAssertjSwingEnabled(true));
     assertjSwingEnabled.setToolTipText(
@@ -123,7 +123,7 @@ public final class DiagnosticsControlsSupport {
   }
 
   public static boolean settingsChanged(
-      RuntimeConfigStore runtimeConfig, DiagnosticsSettings settings) {
+      DiagnosticsRuntimeConfigPort runtimeConfig, DiagnosticsSettings settings) {
     return runtimeConfig.readAppDiagnosticsAssertjSwingEnabled(true)
             != settings.assertjSwingEnabled()
         || runtimeConfig.readAppDiagnosticsAssertjSwingFreezeWatchdogEnabled(true)
@@ -149,7 +149,7 @@ public final class DiagnosticsControlsSupport {
   }
 
   public static void rememberSettings(
-      RuntimeConfigStore runtimeConfig, DiagnosticsSettings settings) {
+      DiagnosticsRuntimeConfigPort runtimeConfig, DiagnosticsSettings settings) {
     runtimeConfig.rememberAppDiagnosticsAssertjSwingEnabled(settings.assertjSwingEnabled());
     runtimeConfig.rememberAppDiagnosticsAssertjSwingFreezeWatchdogEnabled(
         settings.assertjSwingFreezeWatchdogEnabled());

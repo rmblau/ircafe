@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.settings;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.ui.chat.NickColorSettings;
 import cafe.woden.ircclient.ui.settings.appearance.AppearanceControlsSupport;
 import cafe.woden.ircclient.ui.settings.appearance.AppearancePreferencesSection;
@@ -380,7 +380,7 @@ final class PreferencesApplySupport {
       IrcEventNotificationControls ircEventNotifications,
       UserCommandAliasesControls userCommands,
       DiagnosticsControls diagnostics,
-      RuntimeConfigStore runtimeConfig) {}
+      DiagnosticsRuntimeConfigPort runtimeConfig) {}
 
   record Snapshot(
       AppearanceSettingsSelection appearance,

@@ -5,6 +5,7 @@ import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
 import cafe.woden.ircclient.config.LogProperties;
 import cafe.woden.ircclient.config.PushyProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionCatalog;
 import cafe.woden.ircclient.model.BuiltInSound;
@@ -380,7 +381,7 @@ record PreferencesDialogControls(
       ChatThemeSettingsBus chatThemeSettingsBus,
       EmbedCardStyleBus embedCardStyleBus,
       UiSettingsBus settingsBus,
-      RuntimeConfigStore runtimeConfig) {
+      DiagnosticsRuntimeConfigPort runtimeConfig) {
     return new PreferencesApplySupport.ApplyRequest(
         appearance,
         accentSettingsBus,
