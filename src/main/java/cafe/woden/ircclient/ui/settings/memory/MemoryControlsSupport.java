@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.settings.memory;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
@@ -90,7 +90,8 @@ public final class MemoryControlsSupport {
         warnings.soundEnabled.isSelected());
   }
 
-  public static void rememberSettings(RuntimeConfigStore runtimeConfig, MemorySettings settings) {
+  public static void rememberSettings(
+      UiShellRuntimeConfigPort runtimeConfig, MemorySettings settings) {
     runtimeConfig.rememberMemoryUsageDisplayMode(settings.displayMode().token());
     runtimeConfig.rememberMemoryUsageRefreshIntervalMs(settings.refreshIntervalMs());
     runtimeConfig.rememberMemoryUsageWarningNearMaxPercent(settings.warningNearMaxPercent());

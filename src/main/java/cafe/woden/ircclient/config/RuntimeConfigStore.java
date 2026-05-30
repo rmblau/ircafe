@@ -365,34 +365,42 @@ public class RuntimeConfigStore
     stores.uiSettingsStore.clearStartupThemePending();
   }
 
+  @Override
   public synchronized void rememberMemoryUsageDisplayMode(String mode) {
     stores.memoryUsageStore.rememberDisplayMode(mode);
   }
 
+  @Override
   public synchronized int readMemoryUsageRefreshIntervalMs(int defaultValue) {
     return stores.memoryUsageStore.readRefreshIntervalMs(defaultValue);
   }
 
+  @Override
   public synchronized void rememberMemoryUsageRefreshIntervalMs(int intervalMs) {
     stores.memoryUsageStore.rememberRefreshIntervalMs(intervalMs);
   }
 
+  @Override
   public synchronized void rememberMemoryUsageWarningNearMaxPercent(int percent) {
     stores.memoryUsageStore.rememberWarningNearMaxPercent(percent);
   }
 
+  @Override
   public synchronized void rememberMemoryUsageWarningTooltipEnabled(boolean enabled) {
     stores.memoryUsageStore.rememberWarningTooltipEnabled(enabled);
   }
 
+  @Override
   public synchronized void rememberMemoryUsageWarningToastEnabled(boolean enabled) {
     stores.memoryUsageStore.rememberWarningToastEnabled(enabled);
   }
 
+  @Override
   public synchronized void rememberMemoryUsageWarningPushyEnabled(boolean enabled) {
     stores.memoryUsageStore.rememberWarningPushyEnabled(enabled);
   }
 
+  @Override
   public synchronized void rememberMemoryUsageWarningSoundEnabled(boolean enabled) {
     stores.memoryUsageStore.rememberWarningSoundEnabled(enabled);
   }

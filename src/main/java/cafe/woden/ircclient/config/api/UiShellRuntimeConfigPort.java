@@ -36,6 +36,16 @@ public interface UiShellRuntimeConfigPort
 
   void rememberMemoryUsageRefreshIntervalMs(int intervalMs);
 
+  void rememberMemoryUsageWarningNearMaxPercent(int percent);
+
+  void rememberMemoryUsageWarningTooltipEnabled(boolean enabled);
+
+  void rememberMemoryUsageWarningToastEnabled(boolean enabled);
+
+  void rememberMemoryUsageWarningPushyEnabled(boolean enabled);
+
+  void rememberMemoryUsageWarningSoundEnabled(boolean enabled);
+
   void rememberServerDockWidthPx(int serverDockWidthPx);
 
   void rememberUserDockWidthPx(int userDockWidthPx);
