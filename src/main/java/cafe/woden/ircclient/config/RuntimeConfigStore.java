@@ -34,20 +34,14 @@ import cafe.woden.ircclient.model.FilterScopeOverride;
 import cafe.woden.ircclient.model.InterceptorDefinition;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.model.UserCommandAlias;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
 import org.jmolecules.architecture.layered.ApplicationLayer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -79,7 +73,6 @@ public class RuntimeConfigStore
         UiSettingsRuntimeConfigPort,
         UserCommandAliasesConfigPort {
 
-  private static final Logger log = LoggerFactory.getLogger(RuntimeConfigStore.class);
   public static final String DEFAULT_QUIT_MESSAGE =
       ChatCommandRuntimeConfigPort.DEFAULT_QUIT_MESSAGE;
 
@@ -88,6 +81,7 @@ public class RuntimeConfigStore
   private final RuntimeConfigServerListStore serverListStore;
   private final RuntimeConfigMonitorRosterStore monitorRosterStore;
   private final RuntimeConfigPrivateMessageTargetStore privateMessageTargetStore;
+  private final RuntimeConfigServerIdentityStore serverIdentityStore;
   private final RuntimeConfigLaunchJvmStore launchJvmStore;
   private final RuntimeConfigCtcpAutoReplyStore ctcpAutoReplyStore;
   private final RuntimeConfigUserCommandStore userCommandStore;
@@ -129,6 +123,7 @@ public class RuntimeConfigStore
     this.monitorRosterStore = new RuntimeConfigMonitorRosterStore(this.file, documentStore);
     this.privateMessageTargetStore =
         new RuntimeConfigPrivateMessageTargetStore(this.file, documentStore);
+    this.serverIdentityStore = new RuntimeConfigServerIdentityStore(this.file, documentStore);
     this.launchJvmStore = new RuntimeConfigLaunchJvmStore(this.file, documentStore);
     this.ctcpAutoReplyStore = new RuntimeConfigCtcpAutoReplyStore(this.file, documentStore);
     this.userCommandStore = new RuntimeConfigUserCommandStore(this.file, documentStore);
@@ -398,12 +393,7 @@ public class RuntimeConfigStore
 
   @Override
   public synchronized void rememberNick(String serverId, String nick) {
-    updateServer(
-        serverId,
-        server -> {
-          String n = Objects.toString(nick, "").trim();
-          if (!n.isEmpty()) server.put("nick", n);
-        });
+    serverIdentityStore.rememberNick(serverId, nick);
   }
 
   public synchronized void rememberUiSettings(
@@ -1548,68 +1538,4 @@ public class RuntimeConfigStore
     bouncerDiscoveryStore.rememberGenericBouncerPreferLoginHint(enabled);
   }
 
-  private interface ServerUpdater {
-    void update(Map<String, Object> serverMap);
-  }
-
-  private void updateServer(String serverId, ServerUpdater updater) {
-    try {
-      if (file.toString().isBlank()) return;
-      String sid = Objects.toString(serverId, "").trim();
-      if (sid.isEmpty()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> irc = getOrCreateMap(doc, "irc");
-      List<Map<String, Object>> servers = readServerList(irc).orElseGet(ArrayList::new);
-
-      Map<String, Object> found = null;
-      for (Map<String, Object> s : servers) {
-        if (sid.equalsIgnoreCase(Objects.toString(s.get("id"), "").trim())) {
-          found = s;
-          break;
-        }
-      }
-
-      // IMPORTANT: Do not auto-create missing servers here.
-      // If a user removed a server at runtime, we must not "resurrect" it
-      // just because some runtime state (e.g. /join) tries to persist.
-      if (found == null) {
-        return;
-      }
-
-      updater.update(found);
-
-      irc.put("servers", servers);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist runtime config to '{}'", file, e);
-    }
-  }
-
-  private Map<String, Object> loadFile() throws IOException {
-    return documentStore.load();
-  }
-
-  private void writeFile(Map<String, Object> doc) throws IOException {
-    documentStore.write(doc);
-  }
-
-  @SuppressWarnings("unchecked")
-  private static Map<String, Object> getOrCreateMap(Map<String, Object> parent, String key) {
-    Object o = parent.get(key);
-    if (o instanceof Map<?, ?> m) return (Map<String, Object>) m;
-    Map<String, Object> created = new LinkedHashMap<>();
-    parent.put(key, created);
-    return created;
-  }
-
-  @SuppressWarnings("unchecked")
-  private static Optional<List<Map<String, Object>>> readServerList(Map<String, Object> irc) {
-    Object o = irc.get("servers");
-    if (o instanceof List<?>) {
-      // We expect a list of maps.
-      return Optional.of((List<Map<String, Object>>) o);
-    }
-    return Optional.empty();
-  }
 }
