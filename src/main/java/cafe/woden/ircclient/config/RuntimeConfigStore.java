@@ -125,6 +125,7 @@ public class RuntimeConfigStore
   private final RuntimeConfigChatHistoryStore chatHistoryStore;
   private final RuntimeConfigChatLoggingStore chatLoggingStore;
   private final RuntimeConfigTrayStore trayStore;
+  private final RuntimeConfigPushyStore pushyStore;
   private final RuntimeConfigUiSettingsStore uiSettingsStore;
   private final RuntimeConfigEmbedStore embedStore;
   private final RuntimeConfigChatBehaviorStore chatBehaviorStore;
@@ -164,6 +165,7 @@ public class RuntimeConfigStore
     this.chatHistoryStore = new RuntimeConfigChatHistoryStore(this.file, documentStore);
     this.chatLoggingStore = new RuntimeConfigChatLoggingStore(this.file, documentStore);
     this.trayStore = new RuntimeConfigTrayStore(this.file, documentStore);
+    this.pushyStore = new RuntimeConfigPushyStore(this.file, documentStore);
     this.uiSettingsStore = new RuntimeConfigUiSettingsStore(this.file, documentStore);
     this.embedStore = new RuntimeConfigEmbedStore(this.file, documentStore);
     this.chatBehaviorStore = new RuntimeConfigChatBehaviorStore(this.file, documentStore);
@@ -754,62 +756,7 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberPushySettings(PushyProperties settings) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      PushyProperties safe =
-          settings != null
-              ? settings
-              : new PushyProperties(false, null, null, null, null, null, null, null);
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> pushy = getOrCreateMap(ircafe, "pushy");
-
-      pushy.put("enabled", safe.enabled());
-
-      String endpoint = Objects.toString(safe.endpoint(), "").trim();
-      if (endpoint.isEmpty() || "https://api.pushy.me/push".equals(endpoint)) {
-        pushy.remove("endpoint");
-      } else {
-        pushy.put("endpoint", endpoint);
-      }
-
-      String apiKey = Objects.toString(safe.apiKey(), "").trim();
-      if (apiKey.isEmpty()) {
-        pushy.remove("apiKey");
-      } else {
-        pushy.put("apiKey", apiKey);
-      }
-
-      String deviceToken = Objects.toString(safe.deviceToken(), "").trim();
-      if (deviceToken.isEmpty()) {
-        pushy.remove("deviceToken");
-      } else {
-        pushy.put("deviceToken", deviceToken);
-      }
-
-      String topic = Objects.toString(safe.topic(), "").trim();
-      if (topic.isEmpty()) {
-        pushy.remove("topic");
-      } else {
-        pushy.put("topic", topic);
-      }
-
-      String titlePrefix = Objects.toString(safe.titlePrefix(), "").trim();
-      if (titlePrefix.isEmpty() || "IRCafe".equals(titlePrefix)) {
-        pushy.remove("titlePrefix");
-      } else {
-        pushy.put("titlePrefix", titlePrefix);
-      }
-
-      pushy.put("connectTimeoutSeconds", safe.connectTimeoutSeconds());
-      pushy.put("readTimeoutSeconds", safe.readTimeoutSeconds());
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist pushy settings to '{}'", file, e);
-    }
+    pushyStore.rememberSettings(settings);
   }
 
   public synchronized void rememberNotificationRuleCooldownSeconds(int seconds) {
