@@ -136,6 +136,7 @@ public class RuntimeConfigStore
   private final RuntimeConfigSpellcheckStore spellcheckStore;
   private final RuntimeConfigUiFeatureToggleStore uiFeatureToggleStore;
   private final RuntimeConfigMemoryUsageStore memoryUsageStore;
+  private final RuntimeConfigAppDiagnosticsStore appDiagnosticsStore;
   private Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolver =
       new Ircv3CapabilityNameResolverPort() {};
 
@@ -166,6 +167,7 @@ public class RuntimeConfigStore
     this.spellcheckStore = new RuntimeConfigSpellcheckStore(this.file, documentStore);
     this.uiFeatureToggleStore = new RuntimeConfigUiFeatureToggleStore(this.file, documentStore);
     this.memoryUsageStore = new RuntimeConfigMemoryUsageStore(this.file, documentStore);
+    this.appDiagnosticsStore = new RuntimeConfigAppDiagnosticsStore(this.file, documentStore);
 
     ensureFileExistsWithServers();
   }
@@ -992,8 +994,7 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when the key is missing or invalid.
    */
   public synchronized boolean readApplicationJfrEnabled(boolean defaultValue) {
-    return readUiNestedBoolean(
-        defaultValue, "ui.appDiagnostics.jfr.enabled", "appDiagnostics", "jfr", "enabled");
+    return appDiagnosticsStore.readApplicationJfrEnabled(defaultValue);
   }
 
   /**
@@ -1002,17 +1003,7 @@ public class RuntimeConfigStore
    * <p>This controls runtime JFR diagnostics visibility/collection in the Application -> JFR view.
    */
   public synchronized void rememberApplicationJfrEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> jfr = getOrCreateMapPath(doc, "ircafe", "ui", "appDiagnostics", "jfr");
-      jfr.put("enabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.appDiagnostics.jfr.enabled to '{}'", file, e);
-    }
+    appDiagnosticsStore.rememberApplicationJfrEnabled(enabled);
   }
 
   /**
@@ -2009,129 +2000,50 @@ public class RuntimeConfigStore
   }
 
   public synchronized boolean readAppDiagnosticsAssertjSwingEnabled(boolean defaultValue) {
-    return readAppDiagnosticsAssertjSwingBoolean("enabled", defaultValue);
+    return appDiagnosticsStore.readAssertjSwingEnabled(defaultValue);
   }
 
   public synchronized boolean readAppDiagnosticsAssertjSwingFreezeWatchdogEnabled(
       boolean defaultValue) {
-    return readAppDiagnosticsAssertjSwingBoolean("edtFreezeWatchdogEnabled", defaultValue);
+    return appDiagnosticsStore.readAssertjSwingFreezeWatchdogEnabled(defaultValue);
   }
 
   public synchronized int readAppDiagnosticsAssertjSwingFreezeThresholdMs(int defaultValue) {
-    int fallback = clampAssertjFreezeThresholdMs(defaultValue);
-    return readAppDiagnosticsSetting(
-            "ui.appDiagnostics.assertjSwing.edtFreezeThresholdMs",
-            "assertjSwing",
-            "edtFreezeThresholdMs")
-        .flatMap(RuntimeConfigStore::asInt)
-        .map(RuntimeConfigStore::clampAssertjFreezeThresholdMs)
-        .orElse(fallback);
+    return appDiagnosticsStore.readAssertjSwingFreezeThresholdMs(defaultValue);
   }
 
   public synchronized int readAppDiagnosticsAssertjSwingWatchdogPollMs(int defaultValue) {
-    int fallback = clampAssertjWatchdogPollMs(defaultValue);
-    return readAppDiagnosticsSetting(
-            "ui.appDiagnostics.assertjSwing.edtWatchdogPollMs", "assertjSwing", "edtWatchdogPollMs")
-        .flatMap(RuntimeConfigStore::asInt)
-        .map(RuntimeConfigStore::clampAssertjWatchdogPollMs)
-        .orElse(fallback);
+    return appDiagnosticsStore.readAssertjSwingWatchdogPollMs(defaultValue);
   }
 
   public synchronized int readAppDiagnosticsAssertjSwingFallbackViolationReportMs(
       int defaultValue) {
-    int fallback = clampAssertjFallbackViolationReportMs(defaultValue);
-    return readAppDiagnosticsSetting(
-            "ui.appDiagnostics.assertjSwing.edtFallbackViolationReportMs",
-            "assertjSwing",
-            "edtFallbackViolationReportMs")
-        .flatMap(RuntimeConfigStore::asInt)
-        .map(RuntimeConfigStore::clampAssertjFallbackViolationReportMs)
-        .orElse(fallback);
+    return appDiagnosticsStore.readAssertjSwingFallbackViolationReportMs(defaultValue);
   }
 
   public synchronized boolean readAppDiagnosticsAssertjSwingIssuePlaySound(boolean defaultValue) {
-    return readAppDiagnosticsAssertjSwingBoolean("onIssuePlaySound", defaultValue);
+    return appDiagnosticsStore.readAssertjSwingIssuePlaySound(defaultValue);
   }
 
   public synchronized boolean readAppDiagnosticsAssertjSwingIssueShowNotification(
       boolean defaultValue) {
-    return readAppDiagnosticsAssertjSwingBoolean("onIssueShowNotification", defaultValue);
+    return appDiagnosticsStore.readAssertjSwingIssueShowNotification(defaultValue);
   }
 
   public synchronized boolean readAppDiagnosticsJhiccupEnabled(boolean defaultValue) {
-    return readAppDiagnosticsSetting("ui.appDiagnostics.jhiccup.enabled", "jhiccup", "enabled")
-        .flatMap(RuntimeConfigStore::asBoolean)
-        .orElse(defaultValue);
+    return appDiagnosticsStore.readJhiccupEnabled(defaultValue);
   }
 
   public synchronized String readAppDiagnosticsJhiccupJarPath(String defaultValue) {
-    String fallback = Objects.toString(defaultValue, "").trim();
-    String raw =
-        readAppDiagnosticsSetting("ui.appDiagnostics.jhiccup.jarPath", "jhiccup", "jarPath")
-            .map(value -> Objects.toString(value, "").trim())
-            .orElse("");
-    return raw.isEmpty() ? fallback : raw;
+    return appDiagnosticsStore.readJhiccupJarPath(defaultValue);
   }
 
   public synchronized String readAppDiagnosticsJhiccupJavaCommand(String defaultValue) {
-    String fallback = Objects.toString(defaultValue, "").trim();
-    if (fallback.isEmpty()) fallback = "java";
-    String raw =
-        readAppDiagnosticsSetting("ui.appDiagnostics.jhiccup.javaCommand", "jhiccup", "javaCommand")
-            .map(value -> Objects.toString(value, "").trim())
-            .orElse("");
-    return raw.isEmpty() ? fallback : raw;
+    return appDiagnosticsStore.readJhiccupJavaCommand(defaultValue);
   }
 
   public synchronized List<String> readAppDiagnosticsJhiccupArgs(List<String> defaultValue) {
-    List<String> fallback = sanitizeArgs(defaultValue);
-    Object argsObj =
-        readAppDiagnosticsSetting("ui.appDiagnostics.jhiccup.args", "jhiccup", "args").orElse(null);
-    if (!(argsObj instanceof List<?> raw)) return fallback;
-    return sanitizeArgs(raw);
-  }
-
-  private boolean readAppDiagnosticsAssertjSwingBoolean(String key, boolean defaultValue) {
-    return readAppDiagnosticsSetting("ui.appDiagnostics.assertjSwing." + key, "assertjSwing", key)
-        .flatMap(RuntimeConfigStore::asBoolean)
-        .orElse(defaultValue);
-  }
-
-  private Optional<Object> readAppDiagnosticsSetting(String description, String... path) {
-    String[] fullPath = new String[path.length + 3];
-    fullPath[0] = "ircafe";
-    fullPath[1] = "ui";
-    fullPath[2] = "appDiagnostics";
-    System.arraycopy(path, 0, fullPath, 3, path.length);
-    return readExistingConfigValue(description, fullPath);
-  }
-
-  private static int clampAssertjFreezeThresholdMs(int value) {
-    if (value < 500) return 500;
-    if (value > 120_000) return 120_000;
-    return value;
-  }
-
-  private static int clampAssertjWatchdogPollMs(int value) {
-    if (value < 100) return 100;
-    if (value > 10_000) return 10_000;
-    return value;
-  }
-
-  private static int clampAssertjFallbackViolationReportMs(int value) {
-    if (value < 250) return 250;
-    if (value > 120_000) return 120_000;
-    return value;
-  }
-
-  private static List<String> sanitizeArgs(List<?> args) {
-    if (args == null || args.isEmpty()) return List.of();
-    List<String> out = new ArrayList<>();
-    for (Object arg : args) {
-      String t = Objects.toString(arg, "").trim();
-      if (!t.isEmpty()) out.add(t);
-    }
-    return List.copyOf(out);
+    return appDiagnosticsStore.readJhiccupArgs(defaultValue);
   }
 
   public synchronized String readLaunchJvmJavaCommand(String defaultValue) {
@@ -2203,85 +2115,49 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberAppDiagnosticsAssertjSwingEnabled(boolean enabled) {
-    rememberAppDiagnosticsAssertjSwingSetting("enabled", enabled);
+    appDiagnosticsStore.rememberAssertjSwingEnabled(enabled);
   }
 
   public synchronized void rememberAppDiagnosticsAssertjSwingFreezeWatchdogEnabled(
       boolean enabled) {
-    rememberAppDiagnosticsAssertjSwingSetting("edtFreezeWatchdogEnabled", enabled);
+    appDiagnosticsStore.rememberAssertjSwingFreezeWatchdogEnabled(enabled);
   }
 
   public synchronized void rememberAppDiagnosticsAssertjSwingFreezeThresholdMs(int ms) {
-    rememberAppDiagnosticsAssertjSwingSetting(
-        "edtFreezeThresholdMs", clampAssertjFreezeThresholdMs(ms));
+    appDiagnosticsStore.rememberAssertjSwingFreezeThresholdMs(ms);
   }
 
   public synchronized void rememberAppDiagnosticsAssertjSwingWatchdogPollMs(int ms) {
-    rememberAppDiagnosticsAssertjSwingSetting("edtWatchdogPollMs", clampAssertjWatchdogPollMs(ms));
+    appDiagnosticsStore.rememberAssertjSwingWatchdogPollMs(ms);
   }
 
   public synchronized void rememberAppDiagnosticsAssertjSwingFallbackViolationReportMs(int ms) {
-    rememberAppDiagnosticsAssertjSwingSetting(
-        "edtFallbackViolationReportMs", clampAssertjFallbackViolationReportMs(ms));
+    appDiagnosticsStore.rememberAssertjSwingFallbackViolationReportMs(ms);
   }
 
   public synchronized void rememberAppDiagnosticsAssertjSwingIssuePlaySound(boolean enabled) {
-    rememberAppDiagnosticsAssertjSwingSetting("onIssuePlaySound", enabled);
+    appDiagnosticsStore.rememberAssertjSwingIssuePlaySound(enabled);
   }
 
   public synchronized void rememberAppDiagnosticsAssertjSwingIssueShowNotification(
       boolean enabled) {
-    rememberAppDiagnosticsAssertjSwingSetting("onIssueShowNotification", enabled);
+    appDiagnosticsStore.rememberAssertjSwingIssueShowNotification(enabled);
   }
 
   public synchronized void rememberAppDiagnosticsJhiccupEnabled(boolean enabled) {
-    rememberAppDiagnosticsSectionSetting("jhiccup", "enabled", enabled, false);
+    appDiagnosticsStore.rememberJhiccupEnabled(enabled);
   }
 
   public synchronized void rememberAppDiagnosticsJhiccupJarPath(String jarPath) {
-    rememberAppDiagnosticsSectionSetting(
-        "jhiccup", "jarPath", Objects.toString(jarPath, "").trim(), true);
+    appDiagnosticsStore.rememberJhiccupJarPath(jarPath);
   }
 
   public synchronized void rememberAppDiagnosticsJhiccupJavaCommand(String javaCommand) {
-    rememberAppDiagnosticsSectionSetting(
-        "jhiccup", "javaCommand", Objects.toString(javaCommand, "").trim(), true);
+    appDiagnosticsStore.rememberJhiccupJavaCommand(javaCommand);
   }
 
   public synchronized void rememberAppDiagnosticsJhiccupArgs(List<String> args) {
-    rememberAppDiagnosticsSectionSetting("jhiccup", "args", sanitizeArgs(args), true);
-  }
-
-  private void rememberAppDiagnosticsAssertjSwingSetting(String key, Object value) {
-    rememberAppDiagnosticsSectionSetting("assertjSwing", key, value, false);
-  }
-
-  private void rememberAppDiagnosticsSectionSetting(
-      String section, String key, Object value, boolean removeEmpty) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> settings =
-          getOrCreateMapPath(doc, "ircafe", "ui", "appDiagnostics", section);
-
-      if (removeEmpty && isEmptySettingValue(value)) {
-        settings.remove(key);
-      } else {
-        settings.put(key, value);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.appDiagnostics.{}.{} to '{}'", section, key, file, e);
-    }
-  }
-
-  private static boolean isEmptySettingValue(Object value) {
-    if (value == null) return true;
-    if (value instanceof CharSequence text) return text.toString().isBlank();
-    if (value instanceof java.util.Collection<?> collection) return collection.isEmpty();
-    return false;
+    appDiagnosticsStore.rememberJhiccupArgs(args);
   }
 
   public synchronized void rememberIrcEventNotificationRules(List<IrcEventNotificationRule> rules) {
@@ -3034,12 +2910,6 @@ public class RuntimeConfigStore
 
   private boolean readUiBoolean(String key, boolean defaultValue, String description) {
     return readUiValue(description, key)
-        .flatMap(RuntimeConfigStore::asBoolean)
-        .orElse(defaultValue);
-  }
-
-  private boolean readUiNestedBoolean(boolean defaultValue, String description, String... path) {
-    return readUiValue(description, path)
         .flatMap(RuntimeConfigStore::asBoolean)
         .orElse(defaultValue);
   }
