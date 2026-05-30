@@ -137,6 +137,7 @@ public class RuntimeConfigStore
   private final RuntimeConfigMemoryUsageStore memoryUsageStore;
   private final RuntimeConfigAppDiagnosticsStore appDiagnosticsStore;
   private final RuntimeConfigServerTreeLayoutStore serverTreeLayoutStore;
+  private final RuntimeConfigServerAutoConnectStore serverAutoConnectStore;
   private Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolver =
       new Ircv3CapabilityNameResolverPort() {};
 
@@ -170,6 +171,7 @@ public class RuntimeConfigStore
     this.memoryUsageStore = new RuntimeConfigMemoryUsageStore(this.file, documentStore);
     this.appDiagnosticsStore = new RuntimeConfigAppDiagnosticsStore(this.file, documentStore);
     this.serverTreeLayoutStore = new RuntimeConfigServerTreeLayoutStore(this.file, documentStore);
+    this.serverAutoConnectStore = new RuntimeConfigServerAutoConnectStore(this.file, documentStore);
 
     ensureFileExistsWithServers();
   }
@@ -1100,19 +1102,7 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberAutoConnectOnStart(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("autoConnectOnStart", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist autoConnectOnStart setting to '{}'", file, e);
-    }
+    serverAutoConnectStore.rememberAutoConnectOnStart(enabled);
   }
 
   /**
@@ -1123,34 +1113,7 @@ public class RuntimeConfigStore
    */
   @Override
   public synchronized Map<String, Boolean> readServerAutoConnectOnStartByServer() {
-    try {
-      if (file.toString().isBlank()) return Map.of();
-      if (!Files.exists(file)) return Map.of();
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return Map.of();
-
-      Object uiObj = ircafe.get("ui");
-      if (!(uiObj instanceof Map<?, ?> ui)) return Map.of();
-
-      Object byServerObj = ui.get("serverAutoConnectOnStartByServer");
-      if (!(byServerObj instanceof Map<?, ?> byServer)) return Map.of();
-
-      LinkedHashMap<String, Boolean> out = new LinkedHashMap<>();
-      for (Map.Entry<?, ?> entry : byServer.entrySet()) {
-        String sid = Objects.toString(entry.getKey(), "").trim();
-        if (sid.isEmpty()) continue;
-        Optional<Boolean> enabled = asBoolean(entry.getValue());
-        enabled.ifPresent(value -> out.put(sid, value));
-      }
-      if (out.isEmpty()) return Map.of();
-      return Map.copyOf(out);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not read per-server startup auto-connect settings from '{}'", file, e);
-      return Map.of();
-    }
+    return serverAutoConnectStore.readServerAutoConnectOnStartByServer();
   }
 
   /**
@@ -1159,19 +1122,7 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when no override is present.
    */
   public synchronized boolean readServerAutoConnectOnStart(String serverId, boolean defaultValue) {
-    String sid = Objects.toString(serverId, "").trim();
-    if (sid.isEmpty()) return defaultValue;
-
-    Map<String, Boolean> byServer = readServerAutoConnectOnStartByServer();
-    Boolean exact = byServer.get(sid);
-    if (exact != null) return exact;
-
-    for (Map.Entry<String, Boolean> entry : byServer.entrySet()) {
-      if (sid.equalsIgnoreCase(Objects.toString(entry.getKey(), "").trim())) {
-        return Boolean.TRUE.equals(entry.getValue());
-      }
-    }
-    return defaultValue;
+    return serverAutoConnectStore.readServerAutoConnectOnStart(serverId, defaultValue);
   }
 
   /**
@@ -1180,30 +1131,7 @@ public class RuntimeConfigStore
    * <p>Enabled is the default, so enabled values are removed to keep the YAML concise.
    */
   public synchronized void rememberServerAutoConnectOnStart(String serverId, boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-      String sid = Objects.toString(serverId, "").trim();
-      if (sid.isEmpty()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> byServer = getOrCreateMap(ui, "serverAutoConnectOnStartByServer");
-
-      if (enabled) {
-        byServer.remove(sid);
-      } else {
-        byServer.put(sid, false);
-      }
-      if (byServer.isEmpty()) {
-        ui.remove("serverAutoConnectOnStartByServer");
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist per-server startup auto-connect settings to '{}'", file, e);
-    }
+    serverAutoConnectStore.rememberServerAutoConnectOnStart(serverId, enabled);
   }
 
   @Override
