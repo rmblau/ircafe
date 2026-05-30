@@ -129,6 +129,7 @@ public class RuntimeConfigStore
   private final RuntimeConfigUserLookupStore userLookupStore;
   private final RuntimeConfigChatHistoryStore chatHistoryStore;
   private final RuntimeConfigTrayStore trayStore;
+  private final RuntimeConfigUiSettingsStore uiSettingsStore;
   private final RuntimeConfigEmbedStore embedStore;
   private final RuntimeConfigChatBehaviorStore chatBehaviorStore;
   private final RuntimeConfigOutgoingMessageStore outgoingMessageStore;
@@ -160,6 +161,7 @@ public class RuntimeConfigStore
     this.userLookupStore = new RuntimeConfigUserLookupStore(this.file, documentStore);
     this.chatHistoryStore = new RuntimeConfigChatHistoryStore(this.file, documentStore);
     this.trayStore = new RuntimeConfigTrayStore(this.file, documentStore);
+    this.uiSettingsStore = new RuntimeConfigUiSettingsStore(this.file, documentStore);
     this.embedStore = new RuntimeConfigEmbedStore(this.file, documentStore);
     this.chatBehaviorStore = new RuntimeConfigChatBehaviorStore(this.file, documentStore);
     this.outgoingMessageStore = new RuntimeConfigOutgoingMessageStore(this.file, documentStore);
@@ -887,22 +889,7 @@ public class RuntimeConfigStore
 
   public synchronized void rememberUiSettings(
       String theme, String chatFontFamily, int chatFontSize) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      if (theme != null && !theme.isBlank()) ui.put("theme", theme);
-      if (chatFontFamily != null && !chatFontFamily.isBlank())
-        ui.put("chatFontFamily", chatFontFamily);
-      if (chatFontSize > 0) ui.put("chatFontSize", chatFontSize);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist UI config to '{}'", file, e);
-    }
+    uiSettingsStore.rememberUiSettings(theme, chatFontFamily, chatFontSize);
   }
 
   /**
@@ -912,48 +899,17 @@ public class RuntimeConfigStore
    * The value is used as a recovery hint on the next launch.
    */
   public synchronized Optional<String> readStartupThemePending() {
-    try {
-      if (file.toString().isBlank()) return Optional.empty();
-      if (!Files.exists(file)) return Optional.empty();
-
-      Map<String, Object> doc = loadFile();
-      String theme =
-          RuntimeConfigDocumentPathReader.readValue(doc, "ircafe", "ui", "startupThemePending")
-              .map(raw -> Objects.toString(raw, "").trim())
-              .orElse("");
-      if (theme.isEmpty()) return Optional.empty();
-      return Optional.of(theme);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.startupThemePending from '{}'", file, e);
-      return Optional.empty();
-    }
+    return uiSettingsStore.readStartupThemePending();
   }
 
   /** Persists {@code ircafe.ui.startupThemePending}. Blank values remove the key. */
   public synchronized void rememberStartupThemePending(String theme) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      String normalized = Objects.toString(theme, "").trim();
-      if (normalized.isEmpty()) {
-        ui.remove("startupThemePending");
-      } else {
-        ui.put("startupThemePending", normalized);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.startupThemePending to '{}'", file, e);
-    }
+    uiSettingsStore.rememberStartupThemePending(theme);
   }
 
   /** Removes {@code ircafe.ui.startupThemePending}. */
   public synchronized void clearStartupThemePending() {
-    rememberStartupThemePending(null);
+    uiSettingsStore.clearStartupThemePending();
   }
 
   public synchronized void rememberMemoryUsageDisplayMode(String mode) {
