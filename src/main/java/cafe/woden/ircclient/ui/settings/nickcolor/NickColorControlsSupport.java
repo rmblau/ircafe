@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.settings.nickcolor;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.NickColorRuntimeConfigPort;
 import cafe.woden.ircclient.ui.chat.NickColorService;
 import cafe.woden.ircclient.ui.chat.NickColorSettings;
 import cafe.woden.ircclient.ui.chat.NickColorSettingsBus;
@@ -92,7 +92,7 @@ public final class NickColorControlsSupport {
   }
 
   public static void rememberSettings(
-      RuntimeConfigStore runtimeConfig,
+      NickColorRuntimeConfigPort runtimeConfig,
       NickColorSettingsBus nickColorSettingsBus,
       NickColorSettings settings) {
     if (nickColorSettingsBus != null) {
