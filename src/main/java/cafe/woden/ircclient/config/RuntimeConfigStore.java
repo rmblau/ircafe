@@ -140,8 +140,7 @@ public class RuntimeConfigStore
   private final RuntimeConfigServerTreeLayoutStore serverTreeLayoutStore;
   private final RuntimeConfigServerAutoConnectStore serverAutoConnectStore;
   private final RuntimeConfigIrcv3StsPolicyStore ircv3StsPolicyStore;
-  private Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolver =
-      new Ircv3CapabilityNameResolverPort() {};
+  private final RuntimeConfigIrcv3CapabilityStore ircv3CapabilityStore;
 
   public RuntimeConfigStore(
       @Value("${ircafe.runtime-config:${XDG_CONFIG_HOME:${user.home}/.config}/ircafe/ircafe.yml}")
@@ -176,16 +175,14 @@ public class RuntimeConfigStore
     this.serverTreeLayoutStore = new RuntimeConfigServerTreeLayoutStore(this.file, documentStore);
     this.serverAutoConnectStore = new RuntimeConfigServerAutoConnectStore(this.file, documentStore);
     this.ircv3StsPolicyStore = new RuntimeConfigIrcv3StsPolicyStore(this.file, documentStore);
+    this.ircv3CapabilityStore = new RuntimeConfigIrcv3CapabilityStore(this.file, documentStore);
 
     ensureFileExistsWithServers();
   }
 
   @Autowired(required = false)
   void setIrcv3CapabilityNameResolver(Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolver) {
-    this.ircv3CapabilityNameResolver =
-        ircv3CapabilityNameResolver == null
-            ? new Ircv3CapabilityNameResolverPort() {}
-            : ircv3CapabilityNameResolver;
+    ircv3CapabilityStore.setCapabilityNameResolver(ircv3CapabilityNameResolver);
   }
 
   /**
@@ -1879,32 +1876,7 @@ public class RuntimeConfigStore
    * <p>Keys are normalized to lowercase, values are booleans. Missing/invalid entries are ignored.
    */
   public synchronized Map<String, Boolean> readIrcv3Capabilities() {
-    try {
-      if (file.toString().isBlank()) return Map.of();
-      if (!Files.exists(file)) return Map.of();
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return Map.of();
-
-      Object uiObj = ircafe.get("ui");
-      if (!(uiObj instanceof Map<?, ?> ui)) return Map.of();
-
-      Object capsObj = ui.get("ircv3Capabilities");
-      if (!(capsObj instanceof Map<?, ?> caps)) return Map.of();
-
-      Map<String, Boolean> out = new LinkedHashMap<>();
-      for (Map.Entry<?, ?> e : caps.entrySet()) {
-        String key = normalizeCapabilityKey(Objects.toString(e.getKey(), ""));
-        if (key == null) continue;
-        Optional<Boolean> b = asBoolean(e.getValue());
-        b.ifPresent(value -> out.put(key, value));
-      }
-      return out;
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read IRCv3 capability settings from '{}'", file, e);
-      return Map.of();
-    }
+    return ircv3CapabilityStore.readCapabilities();
   }
 
   /**
@@ -1913,10 +1885,7 @@ public class RuntimeConfigStore
    */
   @Override
   public synchronized boolean isIrcv3CapabilityEnabled(String capability, boolean defaultEnabled) {
-    String key = normalizeCapabilityKey(capability);
-    if (key == null) return defaultEnabled;
-    Map<String, Boolean> caps = readIrcv3Capabilities();
-    return caps.getOrDefault(key, defaultEnabled);
+    return ircv3CapabilityStore.isCapabilityEnabled(capability, defaultEnabled);
   }
 
   /**
@@ -1926,31 +1895,7 @@ public class RuntimeConfigStore
    */
   @Override
   public synchronized void rememberIrcv3CapabilityEnabled(String capability, boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String key = normalizeCapabilityKey(capability);
-      if (key == null) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> caps = getOrCreateMap(ui, "ircv3Capabilities");
-
-      if (enabled) {
-        caps.remove(key);
-      } else {
-        caps.put(key, false);
-      }
-      if (caps.isEmpty()) {
-        ui.remove("ircv3Capabilities");
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist IRCv3 capability '{}' setting to '{}'", capability, file, e);
-    }
+    ircv3CapabilityStore.rememberCapabilityEnabled(capability, enabled);
   }
 
   // --- WeeChat-style filters (ircafe.ui.filters.*) ---
@@ -3254,10 +3199,6 @@ public class RuntimeConfigStore
     } catch (Exception ignored) {
       return fallback;
     }
-  }
-
-  private String normalizeCapabilityKey(String capability) {
-    return ircv3CapabilityNameResolver.normalizePreferenceKey(capability);
   }
 
   private static Optional<Boolean> asBoolean(Object value) {
