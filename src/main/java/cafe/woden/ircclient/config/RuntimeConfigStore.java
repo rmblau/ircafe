@@ -33,15 +33,12 @@ import cafe.woden.ircclient.config.api.ServerTreeRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UserCommandAliasesConfigPort;
-import cafe.woden.ircclient.model.FilterPlaceholderRanges;
 import cafe.woden.ircclient.model.FilterRule;
 import cafe.woden.ircclient.model.FilterScopeOverride;
 import cafe.woden.ircclient.model.InterceptorDefinition;
 import cafe.woden.ircclient.model.InterceptorRule;
 import cafe.woden.ircclient.model.InterceptorRuleMode;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
-import cafe.woden.ircclient.model.RegexSpec;
-import cafe.woden.ircclient.model.TagSpec;
 import cafe.woden.ircclient.model.UserCommandAlias;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -128,6 +125,7 @@ public class RuntimeConfigStore
   private final RuntimeConfigCtcpAutoReplyStore ctcpAutoReplyStore;
   private final RuntimeConfigUserCommandStore userCommandStore;
   private final RuntimeConfigNotificationStore notificationStore;
+  private final RuntimeConfigFilterStore filterStore;
   private Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolver =
       new Ircv3CapabilityNameResolverPort() {};
 
@@ -145,6 +143,7 @@ public class RuntimeConfigStore
     this.ctcpAutoReplyStore = new RuntimeConfigCtcpAutoReplyStore(this.file, documentStore);
     this.userCommandStore = new RuntimeConfigUserCommandStore(this.file, documentStore);
     this.notificationStore = new RuntimeConfigNotificationStore(this.file, documentStore);
+    this.filterStore = new RuntimeConfigFilterStore(this.file, documentStore);
 
     ensureFileExistsWithServers();
   }
@@ -3341,151 +3340,43 @@ public class RuntimeConfigStore
   // --- WeeChat-style filters (ircafe.ui.filters.*) ---
 
   public synchronized void rememberFiltersEnabledByDefault(boolean enabled) {
-    rememberFilterScalarSetting("enabledByDefault", enabled);
+    filterStore.rememberEnabledByDefault(enabled);
   }
 
   public synchronized void rememberFilterPlaceholdersEnabledByDefault(boolean enabled) {
-    rememberFilterScalarSetting("placeholdersEnabledByDefault", enabled);
+    filterStore.rememberPlaceholdersEnabledByDefault(enabled);
   }
 
   public synchronized void rememberFilterPlaceholdersCollapsedByDefault(boolean collapsed) {
-    rememberFilterScalarSetting("placeholdersCollapsedByDefault", collapsed);
+    filterStore.rememberPlaceholdersCollapsedByDefault(collapsed);
   }
 
   public synchronized void rememberFilterPlaceholderMaxPreviewLines(int maxLines) {
-    rememberFilterScalarSetting(
-        "placeholderMaxPreviewLines", FilterPlaceholderRanges.normalizeMaxPreviewLines(maxLines));
+    filterStore.rememberPlaceholderMaxPreviewLines(maxLines);
   }
 
   public synchronized void rememberFilterPlaceholderMaxLinesPerRun(int maxLines) {
-    rememberFilterScalarSetting(
-        "placeholderMaxLinesPerRun", FilterPlaceholderRanges.normalizeMaxLinesPerRun(maxLines));
+    filterStore.rememberPlaceholderMaxLinesPerRun(maxLines);
   }
 
   public synchronized void rememberFilterPlaceholderTooltipMaxTags(int maxTags) {
-    rememberFilterScalarSetting(
-        "placeholderTooltipMaxTags", FilterPlaceholderRanges.normalizeTooltipMaxTags(maxTags));
+    filterStore.rememberPlaceholderTooltipMaxTags(maxTags);
   }
 
   public synchronized void rememberFilterHistoryPlaceholderMaxRunsPerBatch(int maxRuns) {
-    rememberFilterScalarSetting(
-        "historyPlaceholderMaxRunsPerBatch",
-        FilterPlaceholderRanges.normalizeHistoryMaxRunsPerBatch(maxRuns));
+    filterStore.rememberHistoryPlaceholderMaxRunsPerBatch(maxRuns);
   }
 
   public synchronized void rememberFilterHistoryPlaceholdersEnabledByDefault(boolean enabled) {
-    rememberFilterScalarSetting("historyPlaceholdersEnabledByDefault", enabled);
-  }
-
-  private void rememberFilterScalarSetting(String key, Object value) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> filters = getOrCreateFilterSettingsMap(doc);
-      filters.put(key, value);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist filters {} setting to '{}'", key, file, e);
-    }
-  }
-
-  private static Map<String, Object> getOrCreateFilterSettingsMap(Map<String, Object> doc) {
-    return getOrCreateMapPath(doc, "ircafe", "ui", "filters");
+    filterStore.rememberHistoryPlaceholdersEnabledByDefault(enabled);
   }
 
   public synchronized void rememberFilterRules(List<FilterRule> rules) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> filters = getOrCreateFilterSettingsMap(doc);
-      List<Map<String, Object>> out = new ArrayList<>();
-      if (rules != null) {
-        for (FilterRule r : rules) {
-          if (r == null) continue;
-          Map<String, Object> m = new LinkedHashMap<>();
-          m.put("name", Objects.toString(r.name(), "").trim());
-          m.put("enabled", r.enabled());
-          m.put("scope", Objects.toString(r.scopePattern(), "*").trim());
-          m.put("action", r.action() != null ? r.action().name() : "HIDE");
-          m.put("dir", r.direction() != null ? r.direction().name() : "ANY");
-
-          if (r.kinds() != null && !r.kinds().isEmpty()) {
-            m.put("kinds", r.kinds().stream().filter(Objects::nonNull).map(Enum::name).toList());
-          }
-          if (r.fromNickGlobs() != null && !r.fromNickGlobs().isEmpty()) {
-            m.put(
-                "from",
-                r.fromNickGlobs().stream()
-                    .filter(Objects::nonNull)
-                    .map(s -> Objects.toString(s, "").trim())
-                    .filter(s -> !s.isEmpty())
-                    .toList());
-          }
-
-          TagSpec tags = r.tags();
-          if (tags != null && !tags.isEmpty()) {
-            String expr = Objects.toString(tags.expr(), "").trim();
-            if (!expr.isEmpty()) {
-              m.put("tags", expr);
-            }
-          }
-
-          RegexSpec re = r.textRegex();
-          if (re != null && !re.isEmpty()) {
-            Map<String, Object> tm = new LinkedHashMap<>();
-            tm.put("pattern", re.pattern());
-            if (re.flags() != null && !re.flags().isEmpty()) {
-              String flags =
-                  re.flags().stream()
-                      .map(Enum::name)
-                      .map(String::toLowerCase)
-                      .sorted()
-                      .reduce("", (a, b) -> a + b);
-              tm.put("flags", flags);
-            }
-            m.put("text", tm);
-          }
-
-          out.add(m);
-        }
-      }
-
-      filters.put("rules", out);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist filter rules to '{}'", file, e);
-    }
+    filterStore.rememberRules(rules);
   }
 
   public synchronized void rememberFilterOverrides(List<FilterScopeOverride> overrides) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> filters = getOrCreateFilterSettingsMap(doc);
-      List<Map<String, Object>> out = new ArrayList<>();
-      if (overrides != null) {
-        for (FilterScopeOverride o : overrides) {
-          if (o == null) continue;
-          Map<String, Object> m = new LinkedHashMap<>();
-          m.put("scope", Objects.toString(o.scopePattern(), "*").trim());
-          if (o.filtersEnabled() != null) m.put("filtersEnabled", o.filtersEnabled());
-          if (o.placeholdersEnabled() != null)
-            m.put("placeholdersEnabled", o.placeholdersEnabled());
-          if (o.placeholdersCollapsed() != null)
-            m.put("placeholdersCollapsed", o.placeholdersCollapsed());
-          out.add(m);
-        }
-      }
-
-      filters.put("overrides", out);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist filter overrides to '{}'", file, e);
-    }
+    filterStore.rememberOverrides(overrides);
   }
 
   public synchronized void rememberNickColoringEnabled(boolean enabled) {
