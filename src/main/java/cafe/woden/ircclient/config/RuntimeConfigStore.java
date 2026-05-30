@@ -127,6 +127,7 @@ public class RuntimeConfigStore
   private final RuntimeConfigNotificationStore notificationStore;
   private final RuntimeConfigFilterStore filterStore;
   private final RuntimeConfigNickColorStore nickColorStore;
+  private final RuntimeConfigTimestampStore timestampStore;
   private Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolver =
       new Ircv3CapabilityNameResolverPort() {};
 
@@ -146,6 +147,7 @@ public class RuntimeConfigStore
     this.notificationStore = new RuntimeConfigNotificationStore(this.file, documentStore);
     this.filterStore = new RuntimeConfigFilterStore(this.file, documentStore);
     this.nickColorStore = new RuntimeConfigNickColorStore(this.file, documentStore);
+    this.timestampStore = new RuntimeConfigTimestampStore(this.file, documentStore);
 
     ensureFileExistsWithServers();
   }
@@ -3390,33 +3392,20 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberTimestampsEnabled(boolean enabled) {
-    rememberTimestampSetting("enabled", enabled);
+    timestampStore.rememberEnabled(enabled);
   }
 
   public synchronized void rememberTimestampFormat(String format) {
-    String fmt = (format == null || format.isBlank()) ? "HH:mm:ss" : format.trim();
-    rememberTimestampSetting("format", fmt);
+    timestampStore.rememberFormat(format);
   }
 
   public synchronized void rememberTimestampsIncludeChatMessages(boolean includeChatMessages) {
-    rememberTimestampSetting("includeChatMessages", includeChatMessages);
+    timestampStore.rememberIncludeChatMessages(includeChatMessages);
   }
 
   public synchronized void rememberTimestampsIncludePresenceMessages(
       boolean includePresenceMessages) {
-    rememberTimestampSetting("includePresenceMessages", includePresenceMessages);
-  }
-
-  private void rememberTimestampSetting(String key, Object value) {
-    updateUiSetting(
-        "timestamp " + key,
-        ui -> {
-          Map<String, Object> timestamps = getOrCreateMap(ui, "timestamps");
-
-          timestamps.put(key, value);
-          // Clean up legacy flat key.
-          ui.remove("chatMessageTimestampsEnabled");
-        });
+    timestampStore.rememberIncludePresenceMessages(includePresenceMessages);
   }
 
   private Optional<Object> readUiValue(String description, String... path) {
