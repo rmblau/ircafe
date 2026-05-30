@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.ui.settings.history;
 
 import cafe.woden.ircclient.config.LogProperties;
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
 import cafe.woden.ircclient.ui.servers.ServerDialogs;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
@@ -17,7 +17,7 @@ public final class LoggingControlsSupport {
   private LoggingControlsSupport() {}
 
   public static LoggingControls buildControls(
-      RuntimeConfigStore runtimeConfig,
+      ChatLoggingRuntimeConfigPort runtimeConfig,
       LogProperties logProps,
       java.util.List<AutoCloseable> closeables,
       ServerDialogs serverDialogs,
@@ -202,7 +202,8 @@ public final class LoggingControlsSupport {
         controls.dbNextToConfig.isSelected());
   }
 
-  public static void rememberSettings(RuntimeConfigStore runtimeConfig, LoggingSettings settings) {
+  public static void rememberSettings(
+      ChatLoggingRuntimeConfigPort runtimeConfig, LoggingSettings settings) {
     runtimeConfig.rememberChatLoggingEnabled(settings.enabled());
     runtimeConfig.rememberChatLoggingLogSoftIgnoredLines(settings.logSoftIgnored());
     runtimeConfig.rememberChatLoggingRedactionAuditEnabled(settings.redactionAuditEnabled());
