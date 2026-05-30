@@ -1,8 +1,10 @@
 package cafe.woden.ircclient.config;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,9 +57,21 @@ class RuntimeConfigChatHistoryStore {
         "chatHistoryDeferRichTextDuringBatch", enabled, "chat history deferred-rich-text");
   }
 
+  synchronized boolean readSmoothWheelScrollingEnabled(boolean defaultValue) {
+    return readUiBoolean(
+        "chatSmoothWheelScrollingEnabled", defaultValue, "ui.chatSmoothWheelScrollingEnabled");
+  }
+
   synchronized void rememberSmoothWheelScrollingEnabled(boolean enabled) {
     rememberScalarSetting(
         "chatSmoothWheelScrollingEnabled", enabled, "chat smooth-wheel scrolling");
+  }
+
+  synchronized boolean readLockViewportDuringLoadOlder(boolean defaultValue) {
+    return readUiBoolean(
+        "chatHistoryLockViewportDuringLoadOlder",
+        defaultValue,
+        "ui.chatHistoryLockViewportDuringLoadOlder");
   }
 
   synchronized void rememberLockViewportDuringLoadOlder(boolean enabled) {
@@ -95,6 +109,48 @@ class RuntimeConfigChatHistoryStore {
     if (v > 200_000) v = 200_000;
     rememberScalarSetting(
         "chatTranscriptMaxLinesPerTarget", v, "chat transcript max-lines-per-target");
+  }
+
+  private boolean readUiBoolean(String key, boolean defaultValue, String description) {
+    return readUiValue(description, key)
+        .flatMap(RuntimeConfigChatHistoryStore::asBoolean)
+        .orElse(defaultValue);
+  }
+
+  private Optional<Object> readUiValue(String description, String... path) {
+    String[] fullPath = new String[path.length + 2];
+    fullPath[0] = "ircafe";
+    fullPath[1] = "ui";
+    System.arraycopy(path, 0, fullPath, 2, path.length);
+    return readExistingConfigValue(description, fullPath);
+  }
+
+  private Optional<Object> readExistingConfigValue(String description, String... path) {
+    try {
+      if (file.toString().isBlank()) return Optional.empty();
+      if (!Files.exists(file)) return Optional.empty();
+
+      Map<String, Object> doc = documentStore.load();
+      return RuntimeConfigDocumentPathReader.readValue(doc, path);
+    } catch (Exception e) {
+      log.warn("[ircafe] Could not read {} from '{}'", description, file, e);
+      return Optional.empty();
+    }
+  }
+
+  private static Optional<Boolean> asBoolean(Object value) {
+    if (value instanceof Boolean b) return Optional.of(b);
+    if (value instanceof String s) {
+      String t = s.trim();
+      if (t.equalsIgnoreCase("true")) return Optional.of(Boolean.TRUE);
+      if (t.equalsIgnoreCase("false")) return Optional.of(Boolean.FALSE);
+    }
+    if (value instanceof Number n) {
+      int i = n.intValue();
+      if (i == 0) return Optional.of(Boolean.FALSE);
+      if (i == 1) return Optional.of(Boolean.TRUE);
+    }
+    return Optional.empty();
   }
 
   private void rememberScalarSetting(String key, Object value, String description) {

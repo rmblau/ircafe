@@ -1268,33 +1268,6 @@ public class RuntimeConfigStore
     timestampStore.rememberIncludePresenceMessages(includePresenceMessages);
   }
 
-  private Optional<Object> readUiValue(String description, String... path) {
-    String[] fullPath = new String[path.length + 2];
-    fullPath[0] = "ircafe";
-    fullPath[1] = "ui";
-    System.arraycopy(path, 0, fullPath, 2, path.length);
-    return readExistingConfigValue(description, fullPath);
-  }
-
-  private Optional<Object> readExistingConfigValue(String description, String... path) {
-    try {
-      if (file.toString().isBlank()) return Optional.empty();
-      if (!Files.exists(file)) return Optional.empty();
-
-      Map<String, Object> doc = loadFile();
-      return RuntimeConfigDocumentPathReader.readValue(doc, path);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read {} from '{}'", description, file, e);
-      return Optional.empty();
-    }
-  }
-
-  private boolean readUiBoolean(String key, boolean defaultValue, String description) {
-    return readUiValue(description, key)
-        .flatMap(RuntimeConfigStore::asBoolean)
-        .orElse(defaultValue);
-  }
-
   @Deprecated
   public synchronized void rememberChatMessageTimestampsEnabled(boolean enabled) {
     // Back-compat alias for older callers.
@@ -1335,8 +1308,7 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when the key is missing or invalid.
    */
   public synchronized boolean readChatSmoothWheelScrollingEnabled(boolean defaultValue) {
-    return readUiBoolean(
-        "chatSmoothWheelScrollingEnabled", defaultValue, "ui.chatSmoothWheelScrollingEnabled");
+    return chatHistoryStore.readSmoothWheelScrollingEnabled(defaultValue);
   }
 
   public synchronized void rememberChatSmoothWheelScrollingEnabled(boolean enabled) {
@@ -1344,10 +1316,7 @@ public class RuntimeConfigStore
   }
 
   public synchronized boolean readChatHistoryLockViewportDuringLoadOlder(boolean defaultValue) {
-    return readUiBoolean(
-        "chatHistoryLockViewportDuringLoadOlder",
-        defaultValue,
-        "ui.chatHistoryLockViewportDuringLoadOlder");
+    return chatHistoryStore.readLockViewportDuringLoadOlder(defaultValue);
   }
 
   public synchronized void rememberChatHistoryLockViewportDuringLoadOlder(boolean enabled) {
@@ -1640,21 +1609,6 @@ public class RuntimeConfigStore
     if (o instanceof List<?>) {
       // We expect a list of maps.
       return Optional.of((List<Map<String, Object>>) o);
-    }
-    return Optional.empty();
-  }
-
-  private static Optional<Boolean> asBoolean(Object value) {
-    if (value instanceof Boolean b) return Optional.of(b);
-    if (value instanceof String s) {
-      String t = s.trim();
-      if (t.equalsIgnoreCase("true")) return Optional.of(Boolean.TRUE);
-      if (t.equalsIgnoreCase("false")) return Optional.of(Boolean.FALSE);
-    }
-    if (value instanceof Number n) {
-      int i = n.intValue();
-      if (i == 0) return Optional.of(Boolean.FALSE);
-      if (i == 1) return Optional.of(Boolean.TRUE);
     }
     return Optional.empty();
   }
