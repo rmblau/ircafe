@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.settings.spellcheck;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.SpellcheckRuntimeConfigPort;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import cafe.woden.ircclient.ui.util.MigConstraints;
@@ -280,7 +280,7 @@ public final class SpellcheckControlsSupport {
   }
 
   public static void rememberSettings(
-      RuntimeConfigStore runtimeConfig, SpellcheckSettings settings) {
+      SpellcheckRuntimeConfigPort runtimeConfig, SpellcheckSettings settings) {
     runtimeConfig.rememberSpellcheckEnabled(settings.enabled());
     runtimeConfig.rememberSpellcheckUnderlineEnabled(settings.underlineEnabled());
     runtimeConfig.rememberSpellcheckSuggestOnTabEnabled(settings.suggestOnTabEnabled());
