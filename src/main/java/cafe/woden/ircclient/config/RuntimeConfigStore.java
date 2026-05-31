@@ -35,6 +35,7 @@ import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeRoot
 import cafe.woden.ircclient.config.api.ServerTreeRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.SpellcheckRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.TimestampRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.TrayRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UserCommandAliasesConfigPort;
@@ -87,6 +88,7 @@ public class RuntimeConfigStore
         ServerAutoConnectRuntimeConfigPort,
         SpellcheckRuntimeConfigPort,
         TimestampRuntimeConfigPort,
+        TrayRuntimeConfigPort,
         UiShellRuntimeConfigPort,
         UiSettingsRuntimeConfigPort,
         UserCommandAliasesConfigPort {

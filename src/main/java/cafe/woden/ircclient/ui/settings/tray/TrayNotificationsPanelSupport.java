@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.settings.tray;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.TrayRuntimeConfigPort;
 import cafe.woden.ircclient.ui.settings.DynamicTabbedPane;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.util.MigConstraints;
@@ -29,7 +29,7 @@ public final class TrayNotificationsPanelSupport {
 
   static JPanel buildTabsPanel(
       TrayControls controls,
-      RuntimeConfigStore runtimeConfig,
+      TrayRuntimeConfigPort runtimeConfig,
       boolean linux,
       boolean linuxActionsSupported) {
     JPanel trayTab = new JPanel(MigLayouts.singleColumn());
