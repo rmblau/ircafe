@@ -94,24 +94,24 @@ class RuntimeConfigLaunchJvmStore {
   }
 
   private void rememberJvmSetting(String description, String key, Object value) {
-    try {
-      if (file.toString().isBlank()) return;
+    RuntimeConfigYamlSupport.mutateDocument(
+        file,
+        documentStore,
+        log,
+        description,
+        doc -> {
+          LaunchJvmWritePath path = getOrCreateWritePath(doc);
+          Map<String, Object> jvm = path.jvm();
 
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      LaunchJvmWritePath path = getOrCreateWritePath(doc);
-      Map<String, Object> jvm = path.jvm();
+          if (isEmptyJvmSettingValue(value)) {
+            jvm.remove(key);
+          } else {
+            jvm.put(key, value);
+          }
 
-      if (isEmptyJvmSettingValue(value)) {
-        jvm.remove(key);
-      } else {
-        jvm.put(key, value);
-      }
-
-      cleanup(path);
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist {} to '{}'", description, file, e);
-    }
+          cleanup(path);
+          return true;
+        });
   }
 
   private static boolean isEmptyJvmSettingValue(Object value) {
