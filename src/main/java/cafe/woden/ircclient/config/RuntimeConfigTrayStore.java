@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.config;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import java.nio.file.Path;
 import java.util.Locale;
@@ -14,30 +15,20 @@ class RuntimeConfigTrayStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigTrayStore.class);
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigYamlSection traySection;
 
   RuntimeConfigTrayStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.traySection =
+        new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui", "tray");
   }
 
   synchronized Optional<Boolean> readCloseToTrayIfPresent() {
-    return RuntimeConfigYamlSupport.readValue(
-            file, documentStore, log, "tray.closeToTray", "ircafe", "ui", "tray", "closeToTray")
+    return traySection.readValue("tray.closeToTray", "closeToTray")
         .flatMap(RuntimeConfigYamlSupport::asBoolean);
   }
 
   synchronized boolean readCloseToTrayHintShown(boolean defaultValue) {
-    return RuntimeConfigYamlSupport.readValue(
-            file,
-            documentStore,
-            log,
-            "tray.closeToTrayHintShown",
-            "ircafe",
-            "ui",
-            "tray",
-            "closeToTrayHintShown")
+    return traySection.readValue("tray.closeToTrayHintShown", "closeToTrayHintShown")
         .flatMap(RuntimeConfigYamlSupport::asBoolean)
         .orElse(defaultValue);
   }
@@ -116,15 +107,8 @@ class RuntimeConfigTrayStore {
   synchronized void rememberNotificationSoundCustomPath(String relativePath) {
     String v = Objects.toString(relativePath, "").trim();
     if (v.isEmpty()) {
-      RuntimeConfigYamlSupport.removeValue(
-          file,
-          documentStore,
-          log,
-          "tray.notificationSoundCustomPath",
-          "ircafe",
-          "ui",
-          "tray",
-          "notificationSoundCustomPath");
+      traySection.removeValue(
+          "tray.notificationSoundCustomPath", "notificationSoundCustomPath");
       return;
     }
 
@@ -132,8 +116,7 @@ class RuntimeConfigTrayStore {
   }
 
   private void rememberScalarSetting(String key, Object value, String description) {
-    RuntimeConfigYamlSupport.putValue(
-        file, documentStore, log, description, value, "ircafe", "ui", "tray", key);
+    traySection.putValue(description, value, key);
   }
 
 }

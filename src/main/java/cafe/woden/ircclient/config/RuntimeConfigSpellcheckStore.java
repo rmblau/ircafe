@@ -1,12 +1,10 @@
 package cafe.woden.ircclient.config;
 
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateMap;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.putValue;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.sanitizeStringList;
 
 import cafe.woden.ircclient.config.properties.UiProperties;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
-import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import java.nio.file.Path;
 import java.util.List;
 import org.slf4j.Logger;
@@ -17,12 +15,11 @@ class RuntimeConfigSpellcheckStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigSpellcheckStore.class);
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigYamlSection uiSection;
 
   RuntimeConfigSpellcheckStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.uiSection =
+        new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui");
   }
 
   synchronized void rememberEnabled(boolean enabled) {
@@ -77,10 +74,7 @@ class RuntimeConfigSpellcheckStore {
 
   synchronized void rememberCustomDictionary(List<String> words) {
     List<String> cleaned = sanitizeStringList(words);
-    mutateMap(
-        file,
-        documentStore,
-        log,
+    uiSection.mutateMap(
         "spellcheck custom dictionary",
         ui -> {
           if (cleaned.isEmpty()) {
@@ -88,9 +82,7 @@ class RuntimeConfigSpellcheckStore {
           } else {
             ui.put("spellcheckCustomDictionary", cleaned);
           }
-        },
-        "ircafe",
-        "ui");
+        });
   }
 
   private void rememberBoolean(String key, boolean enabled) {
@@ -102,7 +94,7 @@ class RuntimeConfigSpellcheckStore {
   }
 
   private void rememberScalar(String key, Object value) {
-    putValue(file, documentStore, log, "ui." + key, value, "ircafe", "ui", key);
+    uiSection.putValue("ui." + key, value, key);
   }
 
 }

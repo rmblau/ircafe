@@ -1,10 +1,8 @@
 package cafe.woden.ircclient.config;
 
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateMap;
-
 import cafe.woden.ircclient.config.api.NotificationRule;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
-import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -12,7 +10,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,12 +18,11 @@ class RuntimeConfigNotificationStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigNotificationStore.class);
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigYamlSection uiSection;
 
   RuntimeConfigNotificationStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.uiSection =
+        new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui");
   }
 
   synchronized void rememberRuleCooldownSeconds(int seconds) {
@@ -35,23 +31,20 @@ class RuntimeConfigNotificationStore {
     if (v > 3600) v = 3600;
     int cooldownSeconds = v;
 
-    mutateUi(
+    uiSection.mutateMap(
         "notificationRuleCooldownSeconds setting",
         ui -> ui.put("notificationRuleCooldownSeconds", cooldownSeconds));
   }
 
   synchronized void rememberRules(List<NotificationRule> rules) {
-    mutateUi("notificationRules", ui -> ui.put("notificationRules", toRuleMaps(rules)));
+    uiSection.mutateMap(
+        "notificationRules", ui -> ui.put("notificationRules", toRuleMaps(rules)));
   }
 
   synchronized void rememberIrcEventRules(List<IrcEventNotificationRule> rules) {
-    mutateUi(
+    uiSection.mutateMap(
         "ircEventNotificationRules",
         ui -> ui.put("ircEventNotificationRules", toIrcEventRuleMaps(rules)));
-  }
-
-  private void mutateUi(String description, Consumer<Map<String, Object>> mutation) {
-    mutateMap(file, documentStore, log, description, mutation, "ircafe", "ui");
   }
 
   private static List<Map<String, Object>> toRuleMaps(List<NotificationRule> rules) {

@@ -1,9 +1,7 @@
 package cafe.woden.ircclient.config;
 
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateMap;
-
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
-import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import cafe.woden.ircclient.model.FilterPlaceholderRanges;
 import cafe.woden.ircclient.model.FilterRule;
 import cafe.woden.ircclient.model.FilterScopeOverride;
@@ -15,7 +13,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,12 +21,11 @@ class RuntimeConfigFilterStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigFilterStore.class);
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigYamlSection filtersSection;
 
   RuntimeConfigFilterStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.filtersSection =
+        new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui", "filters");
   }
 
   synchronized void rememberEnabledByDefault(boolean enabled) {
@@ -70,21 +66,17 @@ class RuntimeConfigFilterStore {
   }
 
   synchronized void rememberRules(List<FilterRule> rules) {
-    mutateFilterSettings("filter rules", filters -> filters.put("rules", serializeRules(rules)));
+    filtersSection.mutateMap(
+        "filter rules", filters -> filters.put("rules", serializeRules(rules)));
   }
 
   synchronized void rememberOverrides(List<FilterScopeOverride> overrides) {
-    mutateFilterSettings(
+    filtersSection.mutateMap(
         "filter overrides", filters -> filters.put("overrides", serializeOverrides(overrides)));
   }
 
   private void rememberScalarSetting(String key, Object value) {
-    mutateFilterSettings("filters " + key + " setting", filters -> filters.put(key, value));
-  }
-
-  private void mutateFilterSettings(
-      String description, Consumer<Map<String, Object>> mutation) {
-    mutateMap(file, documentStore, log, description, mutation, "ircafe", "ui", "filters");
+    filtersSection.mutateMap("filters " + key + " setting", filters -> filters.put(key, value));
   }
 
   private static List<Map<String, Object>> serializeRules(List<FilterRule> rules) {

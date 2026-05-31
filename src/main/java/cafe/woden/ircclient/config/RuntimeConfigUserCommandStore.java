@@ -1,11 +1,9 @@
 package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asBoolean;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateMap;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.readExistingValue;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
-import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import cafe.woden.ircclient.model.UserCommandAlias;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -21,55 +19,34 @@ class RuntimeConfigUserCommandStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigUserCommandStore.class);
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigYamlSection commandsSection;
 
   RuntimeConfigUserCommandStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.commandsSection =
+        new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "commands");
   }
 
   synchronized List<UserCommandAlias> readAliases() {
-    return readExistingValue(
-            file, documentStore, log, "user command aliases", "ircafe", "commands", "aliases")
+    return commandsSection.readExistingValue("user command aliases", "aliases")
         .filter(List.class::isInstance)
         .map(value -> parseAliases((List<?>) value))
         .orElseGet(List::of);
   }
 
   synchronized boolean readUnknownCommandAsRawEnabled(boolean defaultValue) {
-    return readExistingValue(
-            file,
-            documentStore,
-            log,
-            "commands.unknownCommandAsRaw",
-            "ircafe",
-            "commands",
-            "unknownCommandAsRaw")
-        .flatMap(RuntimeConfigYamlSupport::asBoolean)
+    return commandsSection.readExistingValue("commands.unknownCommandAsRaw", "unknownCommandAsRaw")
+        .flatMap(value -> asBoolean(value))
         .orElse(defaultValue);
   }
 
   synchronized void rememberAliases(List<UserCommandAlias> aliases) {
-    mutateMap(
-        file,
-        documentStore,
-        log,
-        "user command aliases",
-        commands -> commands.put("aliases", serializeAliases(aliases)),
-        "ircafe",
-        "commands");
+    commandsSection.mutateMap(
+        "user command aliases", commands -> commands.put("aliases", serializeAliases(aliases)));
   }
 
   synchronized void rememberUnknownCommandAsRawEnabled(boolean enabled) {
-    mutateMap(
-        file,
-        documentStore,
-        log,
-        "commands.unknownCommandAsRaw",
-        commands -> commands.put("unknownCommandAsRaw", enabled),
-        "ircafe",
-        "commands");
+    commandsSection.mutateMap(
+        "commands.unknownCommandAsRaw", commands -> commands.put("unknownCommandAsRaw", enabled));
   }
 
   private static List<UserCommandAlias> parseAliases(List<?> raw) {
