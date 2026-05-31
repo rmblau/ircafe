@@ -1,11 +1,9 @@
 package cafe.woden.ircclient.config;
 
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSupport.mutateExistingServer;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.containsIgnoreCase;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSupport.readExistingServer;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
-import cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSupport;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSection;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,12 +18,11 @@ class RuntimeConfigMonitorRosterStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigMonitorRosterStore.class);
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigServerYamlSection servers;
 
   RuntimeConfigMonitorRosterStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.servers =
+        new RuntimeConfigServerYamlSection(file, documentStore, log, "monitor nick list");
   }
 
   synchronized void rememberMonitorNick(String serverId, String nick) {
@@ -73,13 +70,13 @@ class RuntimeConfigMonitorRosterStore {
   }
 
   synchronized List<String> readMonitorNicks(String serverId) {
-    return readExistingServer(file, documentStore, log, "monitor nick list", serverId)
+    return servers.readExistingServer(serverId)
         .map(server -> List.copyOf(sanitizeMonitorNickList(server.get("monitorNicks"))))
         .orElse(List.of());
   }
 
   private void updateServer(String serverId, Consumer<Map<String, Object>> updater) {
-    mutateExistingServer(file, documentStore, log, "monitor nick list", serverId, updater);
+    servers.mutateExistingServer(serverId, updater);
   }
 
   private static List<String> sanitizeMonitorNickList(Object rawList) {

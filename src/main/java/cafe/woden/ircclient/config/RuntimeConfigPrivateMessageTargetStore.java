@@ -1,13 +1,10 @@
 package cafe.woden.ircclient.config;
 
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSupport.mutateExistingServer;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSupport.readExistingServer;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateStringList;
 
 import cafe.woden.ircclient.config.api.AutoJoinEntryCodec;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
-import cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSupport;
-import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSection;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -22,12 +19,11 @@ class RuntimeConfigPrivateMessageTargetStore {
   private static final Logger log =
       LoggerFactory.getLogger(RuntimeConfigPrivateMessageTargetStore.class);
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigServerYamlSection servers;
 
   RuntimeConfigPrivateMessageTargetStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.servers =
+        new RuntimeConfigServerYamlSection(file, documentStore, log, "private-message target list");
   }
 
   synchronized void rememberPrivateMessageTarget(String serverId, String nick) {
@@ -69,15 +65,13 @@ class RuntimeConfigPrivateMessageTargetStore {
   }
 
   synchronized List<String> readPrivateMessageTargets(String serverId) {
-    return readExistingServer(
-            file, documentStore, log, "private-message target list", serverId)
+    return servers.readExistingServer(serverId)
         .map(RuntimeConfigPrivateMessageTargetStore::readPrivateMessageTargets)
         .orElse(List.of());
   }
 
   private void updateServer(String serverId, Consumer<Map<String, Object>> updater) {
-    mutateExistingServer(
-        file, documentStore, log, "private-message target list", serverId, updater);
+    servers.mutateExistingServer(serverId, updater);
   }
 
   @SuppressWarnings("unchecked")

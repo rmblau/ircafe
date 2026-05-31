@@ -1,9 +1,7 @@
 package cafe.woden.ircclient.config;
 
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSupport.mutateExistingServer;
-
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
-import cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSupport;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSection;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Objects;
@@ -16,12 +14,11 @@ class RuntimeConfigServerIdentityStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigServerIdentityStore.class);
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigServerYamlSection servers;
 
   RuntimeConfigServerIdentityStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.servers =
+        new RuntimeConfigServerYamlSection(file, documentStore, log, "server identity settings");
   }
 
   synchronized void rememberNick(String serverId, String nick) {
@@ -34,7 +31,6 @@ class RuntimeConfigServerIdentityStore {
   }
 
   private void updateServer(String serverId, Consumer<Map<String, Object>> updater) {
-    mutateExistingServer(
-        file, documentStore, log, "server identity settings", serverId, updater);
+    servers.mutateExistingServer(serverId, updater);
   }
 }
