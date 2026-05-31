@@ -2,17 +2,14 @@ package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asBoolean;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMapPath;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateDocument;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.readExistingValue;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.readMap;
 
-import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.api.ServerTreeBuiltInVisibilityConfigPort.ServerTreeBuiltInNodesVisibility;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayout;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayoutNode;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeRootSiblingNode;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeRootSiblingOrder;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -29,12 +26,10 @@ class RuntimeConfigServerTreeLayoutStore {
   private static final Logger log =
       LoggerFactory.getLogger(RuntimeConfigServerTreeLayoutStore.class);
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigYamlSection uiSection;
 
   RuntimeConfigServerTreeLayoutStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.uiSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui");
   }
 
   /**
@@ -321,8 +316,7 @@ class RuntimeConfigServerTreeLayoutStore {
   }
 
   private Optional<Object> readServerTreeSection(String description, String key) {
-    return readExistingValue(
-        file, documentStore, log, "server-tree " + description, "ircafe", "ui", "serverTree", key);
+    return uiSection.readExistingValue("server-tree " + description, "serverTree", key);
   }
 
   private void mutateServerTreeByServer(
@@ -330,36 +324,17 @@ class RuntimeConfigServerTreeLayoutStore {
       String key,
       String serverId,
       java.util.function.Consumer<Map<String, Object>> mutation) {
-    mutateDocument(
-        file,
-        documentStore,
-        log,
+    uiSection.mutateMap(
         "server-tree " + description,
-        doc -> {
-          Map<String, Object> serverTree = serverTreeMap(doc);
+        ui -> {
+          Map<String, Object> serverTree = getOrCreateMap(ui, "serverTree");
           Map<String, Object> byServer = getOrCreateMap(serverTree, key);
 
           mutation.accept(byServer);
 
           if (byServer.isEmpty()) serverTree.remove(key);
-          pruneEmptyServerTree(doc, serverTree);
-          return true;
+          if (serverTree.isEmpty()) ui.remove("serverTree");
         });
-  }
-
-  private static void pruneEmptyServerTree(
-      Map<String, Object> doc, Map<String, Object> serverTree) {
-    if (!serverTree.isEmpty()) return;
-    Object uiObj = readMap(doc, "ircafe").map(ircafe -> ircafe.get("ui")).orElse(null);
-    if (uiObj instanceof Map<?, ?> ui) {
-      @SuppressWarnings("unchecked")
-      Map<String, Object> mutableUi = (Map<String, Object>) ui;
-      mutableUi.remove("serverTree");
-    }
-  }
-
-  private static Map<String, Object> serverTreeMap(Map<String, Object> doc) {
-    return getOrCreateMapPath(doc, "ircafe", "ui", "serverTree");
   }
 
 }

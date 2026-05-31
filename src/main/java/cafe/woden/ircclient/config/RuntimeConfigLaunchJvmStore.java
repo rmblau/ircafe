@@ -3,6 +3,7 @@ package cafe.woden.ircclient.config;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import java.nio.file.Path;
 import java.util.Collection;
@@ -19,12 +20,10 @@ class RuntimeConfigLaunchJvmStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigLaunchJvmStore.class);
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigYamlSection ircafeSection;
 
   RuntimeConfigLaunchJvmStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.ircafeSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe");
   }
 
   synchronized String readJavaCommand(String defaultValue) {
@@ -91,18 +90,14 @@ class RuntimeConfigLaunchJvmStore {
   }
 
   private Optional<Object> readValue(String description, String key) {
-    return RuntimeConfigYamlSupport.readExistingValue(
-        file, documentStore, log, description, "ircafe", "launch", "jvm", key);
+    return ircafeSection.readExistingValue(description, "launch", "jvm", key);
   }
 
   private void rememberJvmSetting(String description, String key, Object value) {
-    RuntimeConfigYamlSupport.mutateDocument(
-        file,
-        documentStore,
-        log,
+    ircafeSection.mutateMap(
         description,
-        doc -> {
-          LaunchJvmWritePath path = getOrCreateWritePath(doc);
+        ircafe -> {
+          LaunchJvmWritePath path = getOrCreateWritePath(ircafe);
           Map<String, Object> jvm = path.jvm();
 
           if (isEmptyJvmSettingValue(value)) {
@@ -112,7 +107,6 @@ class RuntimeConfigLaunchJvmStore {
           }
 
           cleanup(path);
-          return true;
         });
   }
 
@@ -144,22 +138,16 @@ class RuntimeConfigLaunchJvmStore {
     };
   }
 
-  private static void cleanup(
-      Map<String, Object> ircafe, Map<String, Object> launch, Map<String, Object> jvm) {
-    if (jvm.isEmpty()) {
-      launch.remove("jvm");
-    }
-    if (launch.isEmpty()) {
-      ircafe.remove("launch");
-    }
-  }
-
   private static void cleanup(LaunchJvmWritePath path) {
-    cleanup(path.ircafe(), path.launch(), path.jvm());
+    if (path.jvm().isEmpty()) {
+      path.launch().remove("jvm");
+    }
+    if (path.launch().isEmpty()) {
+      path.ircafe().remove("launch");
+    }
   }
 
-  private static LaunchJvmWritePath getOrCreateWritePath(Map<String, Object> doc) {
-    Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
+  private static LaunchJvmWritePath getOrCreateWritePath(Map<String, Object> ircafe) {
     Map<String, Object> launch = getOrCreateMap(ircafe, "launch");
     Map<String, Object> jvm = getOrCreateMap(launch, "jvm");
     return new LaunchJvmWritePath(ircafe, launch, jvm);

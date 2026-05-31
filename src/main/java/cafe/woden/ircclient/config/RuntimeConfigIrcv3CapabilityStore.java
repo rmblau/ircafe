@@ -2,12 +2,10 @@ package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asBoolean;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateDocument;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.readExistingValue;
 
-import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
-import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import cafe.woden.ircclient.config.api.Ircv3CapabilityNameResolverPort;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -22,14 +20,12 @@ class RuntimeConfigIrcv3CapabilityStore {
   private static final Logger log =
       LoggerFactory.getLogger(RuntimeConfigIrcv3CapabilityStore.class);
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigYamlSection uiSection;
   private Ircv3CapabilityNameResolverPort capabilityNameResolver =
       new Ircv3CapabilityNameResolverPort() {};
 
   RuntimeConfigIrcv3CapabilityStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.uiSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui");
   }
 
   void setCapabilityNameResolver(Ircv3CapabilityNameResolverPort capabilityNameResolver) {
@@ -46,14 +42,7 @@ class RuntimeConfigIrcv3CapabilityStore {
    */
   synchronized Map<String, Boolean> readCapabilities() {
     Optional<Object> capsObj =
-        readExistingValue(
-            file,
-            documentStore,
-            log,
-            "IRCv3 capability settings",
-            "ircafe",
-            "ui",
-            "ircv3Capabilities");
+        uiSection.readExistingValue("IRCv3 capability settings", "ircv3Capabilities");
     if (capsObj.isEmpty()) return Map.of();
     if (!(capsObj.get() instanceof Map<?, ?> caps)) return Map.of();
 
@@ -87,14 +76,9 @@ class RuntimeConfigIrcv3CapabilityStore {
     String key = normalizeCapabilityKey(capability);
     if (key == null) return;
 
-    mutateDocument(
-        file,
-        documentStore,
-        log,
+    uiSection.mutateMap(
         "IRCv3 capability '" + capability + "' setting",
-        doc -> {
-          Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-          Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
+        ui -> {
           Map<String, Object> caps = getOrCreateMap(ui, "ircv3Capabilities");
 
           if (enabled) {
@@ -105,7 +89,6 @@ class RuntimeConfigIrcv3CapabilityStore {
           if (caps.isEmpty()) {
             ui.remove("ircv3Capabilities");
           }
-          return true;
         });
   }
 
