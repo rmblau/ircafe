@@ -3,7 +3,7 @@ package cafe.woden.ircclient.logging;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.api.UiTranscriptPort;
 import cafe.woden.ircclient.config.ConfigPropertyKeys;
-import cafe.woden.ircclient.config.LogProperties;
+import cafe.woden.ircclient.config.properties.LogProperties;
 import cafe.woden.ircclient.logging.viewer.ChatRedactionAuditService;
 import org.jmolecules.architecture.layered.InfrastructureLayer;
 import org.springframework.beans.factory.annotation.Qualifier;

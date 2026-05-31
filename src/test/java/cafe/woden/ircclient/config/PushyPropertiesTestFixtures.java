@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.config;
 
+import cafe.woden.ircclient.config.properties.PushyProperties;
+
 /** Test fixture builder for {@link PushyProperties}. */
 public final class PushyPropertiesTestFixtures {
 

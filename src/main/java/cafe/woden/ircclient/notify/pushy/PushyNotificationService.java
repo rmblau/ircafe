@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.notify.pushy;
 
 import cafe.woden.ircclient.config.ExecutorConfig;
-import cafe.woden.ircclient.config.PushyProperties;
+import cafe.woden.ircclient.config.properties.PushyProperties;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.net.HttpHeaderNames;
 import cafe.woden.ircclient.notify.api.PushyNotificationPort;
