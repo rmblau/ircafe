@@ -4,6 +4,7 @@ import static cafe.woden.ircclient.config.RuntimeConfigServerYamlSupport.findSer
 import static cafe.woden.ircclient.config.RuntimeConfigServerYamlSupport.readServerList;
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.asBoolean;
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.sanitizeStringList;
 
 import cafe.woden.ircclient.config.api.ServerTreeChannelStateConfigPort.ServerTreeChannelPreference;
 import cafe.woden.ircclient.config.api.ServerTreeChannelStateConfigPort.ServerTreeChannelSortMode;
@@ -559,16 +560,6 @@ class RuntimeConfigServerTreeChannelStateStore {
       return (Map<String, Object>) m;
     }
     return Map.of();
-  }
-
-  private static List<String> sanitizeStringList(Object raw) {
-    if (!(raw instanceof List<?> list) || list.isEmpty()) return List.of();
-    ArrayList<String> out = new ArrayList<>(list.size());
-    for (Object entry : list) {
-      String v = Objects.toString(entry, "").trim();
-      if (!v.isEmpty()) out.add(v);
-    }
-    return out.isEmpty() ? List.of() : List.copyOf(out);
   }
 
   private static String normalizeChannelName(Object channel) {

@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -190,6 +191,17 @@ final class RuntimeConfigYamlSupport {
     List<String> created = new ArrayList<>();
     parent.put(key, created);
     return created;
+  }
+
+  static List<String> sanitizeStringList(Object raw) {
+    if (!(raw instanceof List<?> list) || list.isEmpty()) return List.of();
+
+    ArrayList<String> out = new ArrayList<>(list.size());
+    for (Object entry : list) {
+      String value = Objects.toString(entry, "").trim();
+      if (!value.isEmpty()) out.add(value);
+    }
+    return out.isEmpty() ? List.of() : List.copyOf(out);
   }
 
   static Optional<Integer> asInt(Object value) {

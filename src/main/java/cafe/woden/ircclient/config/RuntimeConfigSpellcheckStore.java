@@ -1,12 +1,11 @@
 package cafe.woden.ircclient.config;
 
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMapPath;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.mutateMap;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.putValue;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.sanitizeStringList;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,24 +73,21 @@ class RuntimeConfigSpellcheckStore {
   }
 
   synchronized void rememberCustomDictionary(List<String> words) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      List<String> cleaned = sanitizeStringList(words);
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ui = getOrCreateMapPath(doc, "ircafe", "ui");
-
-      if (cleaned.isEmpty()) {
-        ui.remove("spellcheckCustomDictionary");
-      } else {
-        ui.put("spellcheckCustomDictionary", cleaned);
-      }
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist spellcheck custom dictionary to '{}'", file, e);
-    }
+    List<String> cleaned = sanitizeStringList(words);
+    mutateMap(
+        file,
+        documentStore,
+        log,
+        "spellcheck custom dictionary",
+        ui -> {
+          if (cleaned.isEmpty()) {
+            ui.remove("spellcheckCustomDictionary");
+          } else {
+            ui.put("spellcheckCustomDictionary", cleaned);
+          }
+        },
+        "ircafe",
+        "ui");
   }
 
   private void rememberBoolean(String key, boolean enabled) {
@@ -103,28 +99,7 @@ class RuntimeConfigSpellcheckStore {
   }
 
   private void rememberScalar(String key, Object value) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ui = getOrCreateMapPath(doc, "ircafe", "ui");
-
-      ui.put(key, value);
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.{} setting to '{}'", key, file, e);
-    }
-  }
-
-  private static List<String> sanitizeStringList(List<String> raw) {
-    if (raw == null || raw.isEmpty()) return List.of();
-    ArrayList<String> out = new ArrayList<>(raw.size());
-    for (String entry : raw) {
-      String v = Objects.toString(entry, "").trim();
-      if (!v.isEmpty()) out.add(v);
-    }
-    return out.isEmpty() ? List.of() : List.copyOf(out);
+    putValue(file, documentStore, log, "ui." + key, value, "ircafe", "ui", key);
   }
 
 }

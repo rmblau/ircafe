@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.sanitizeStringList;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -160,16 +161,6 @@ class RuntimeConfigServerListStore {
   private static Map<String, Object> readMap(Object raw) {
     if (raw instanceof Map<?, ?> m) return (Map<String, Object>) m;
     return Map.of();
-  }
-
-  private static List<String> sanitizeStringList(Object raw) {
-    if (!(raw instanceof List<?> list)) return List.of();
-    ArrayList<String> out = new ArrayList<>();
-    for (Object item : list) {
-      String s = Objects.toString(item, "").trim();
-      if (!s.isEmpty()) out.add(s);
-    }
-    return out.isEmpty() ? List.of() : List.copyOf(out);
   }
 
   private static boolean containsIgnoreCase(List<String> values, String needle) {

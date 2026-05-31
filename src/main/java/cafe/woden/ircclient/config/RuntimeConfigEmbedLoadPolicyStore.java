@@ -4,13 +4,12 @@ import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.asBoolean;
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.asInt;
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMapPath;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.sanitizeStringList;
 
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicyScope;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import org.slf4j.Logger;
@@ -146,16 +145,6 @@ class RuntimeConfigEmbedLoadPolicyStore {
     if (!s.linkBlacklist().isEmpty()) out.put("linkBlacklist", s.linkBlacklist());
     if (!s.domainWhitelist().isEmpty()) out.put("domainWhitelist", s.domainWhitelist());
     if (!s.domainBlacklist().isEmpty()) out.put("domainBlacklist", s.domainBlacklist());
-  }
-
-  private static List<String> sanitizeStringList(Object raw) {
-    if (!(raw instanceof List<?> list) || list.isEmpty()) return List.of();
-    ArrayList<String> out = new ArrayList<>(list.size());
-    for (Object entry : list) {
-      String v = Objects.toString(entry, "").trim();
-      if (!v.isEmpty()) out.add(v);
-    }
-    return out.isEmpty() ? List.of() : List.copyOf(out);
   }
 
 }
