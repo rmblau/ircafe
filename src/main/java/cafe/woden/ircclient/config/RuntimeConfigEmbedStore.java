@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.config;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
-import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Objects;
@@ -13,12 +13,10 @@ class RuntimeConfigEmbedStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigEmbedStore.class);
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigYamlSection uiSection;
 
   RuntimeConfigEmbedStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.uiSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui");
   }
 
   synchronized void rememberImageEmbedsEnabled(boolean enabled) {
@@ -58,8 +56,7 @@ class RuntimeConfigEmbedStore {
   }
 
   private void rememberScalarSetting(String key, Object value, String description) {
-    RuntimeConfigYamlSupport.putValue(
-        file, documentStore, log, description, value, "ircafe", "ui", key);
+    uiSection.putValue(description, value, key);
   }
 
 }

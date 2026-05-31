@@ -4,7 +4,7 @@ import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCre
 
 import cafe.woden.ircclient.config.properties.UiProperties;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
-import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort.LastSelectedTarget;
 import java.nio.file.Path;
 import java.util.Locale;
@@ -19,19 +19,14 @@ class RuntimeConfigUiSettingsStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigUiSettingsStore.class);
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigYamlSection uiSection;
 
   RuntimeConfigUiSettingsStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.uiSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui");
   }
 
   synchronized void rememberUiSettings(String theme, String chatFontFamily, int chatFontSize) {
-    RuntimeConfigYamlSupport.mutateMap(
-        file,
-        documentStore,
-        log,
+    uiSection.mutateMap(
         "UI config",
         ui -> {
           if (theme != null && !theme.isBlank()) ui.put("theme", theme);
@@ -39,20 +34,11 @@ class RuntimeConfigUiSettingsStore {
             ui.put("chatFontFamily", chatFontFamily);
           }
           if (chatFontSize > 0) ui.put("chatFontSize", chatFontSize);
-        },
-        "ircafe",
-        "ui");
+        });
   }
 
   synchronized Optional<String> readStartupThemePending() {
-    return RuntimeConfigYamlSupport.readExistingValue(
-            file,
-            documentStore,
-            log,
-            "ui.startupThemePending",
-            "ircafe",
-            "ui",
-            "startupThemePending")
+    return uiSection.readExistingValue("ui.startupThemePending", "startupThemePending")
         .map(raw -> Objects.toString(raw, "").trim())
         .filter(theme -> !theme.isEmpty());
   }
@@ -60,26 +46,11 @@ class RuntimeConfigUiSettingsStore {
   synchronized void rememberStartupThemePending(String theme) {
     String normalized = Objects.toString(theme, "").trim();
     if (normalized.isEmpty()) {
-      RuntimeConfigYamlSupport.removeValue(
-          file,
-          documentStore,
-          log,
-          "ui.startupThemePending",
-          "ircafe",
-          "ui",
-          "startupThemePending");
+      uiSection.removeValue("ui.startupThemePending", "startupThemePending");
       return;
     }
 
-    RuntimeConfigYamlSupport.putValue(
-        file,
-        documentStore,
-        log,
-        "ui.startupThemePending",
-        normalized,
-        "ircafe",
-        "ui",
-        "startupThemePending");
+    uiSection.putValue("ui.startupThemePending", normalized, "startupThemePending");
   }
 
   synchronized void clearStartupThemePending() {
@@ -100,10 +71,7 @@ class RuntimeConfigUiSettingsStore {
   }
 
   synchronized void rememberDockLayoutWidths(Integer serverDockWidthPx, Integer userDockWidthPx) {
-    RuntimeConfigYamlSupport.mutateMap(
-        file,
-        documentStore,
-        log,
+    uiSection.mutateMap(
         "dock layout widths",
         layout -> {
           if (serverDockWidthPx != null && serverDockWidthPx > 0) {
@@ -113,8 +81,6 @@ class RuntimeConfigUiSettingsStore {
             layout.put("userDockWidthPx", userDockWidthPx);
           }
         },
-        "ircafe",
-        "ui",
         "layout");
   }
 
@@ -133,14 +99,7 @@ class RuntimeConfigUiSettingsStore {
 
   synchronized Optional<LastSelectedTarget> readLastSelectedTarget() {
     Object raw =
-        RuntimeConfigYamlSupport.readExistingValue(
-                file,
-                documentStore,
-                log,
-                "ui.lastSelectedTarget",
-                "ircafe",
-                "ui",
-                "lastSelectedTarget")
+        uiSection.readExistingValue("ui.lastSelectedTarget", "lastSelectedTarget")
             .orElse(null);
     if (!(raw instanceof Map<?, ?> selected)) return Optional.empty();
 
@@ -154,10 +113,7 @@ class RuntimeConfigUiSettingsStore {
 
   synchronized void rememberLastSelectedTarget(String serverId, String target) {
     LastSelectedTarget next = new LastSelectedTarget(serverId, target);
-    RuntimeConfigYamlSupport.mutateMap(
-        file,
-        documentStore,
-        log,
+    uiSection.mutateMap(
         "ui.lastSelectedTarget",
         ui -> {
           if (!next.isValid()) {
@@ -167,9 +123,7 @@ class RuntimeConfigUiSettingsStore {
             selected.put("serverId", next.serverId());
             selected.put("target", next.target());
           }
-        },
-        "ircafe",
-        "ui");
+        });
   }
 
   synchronized void rememberUiDensity(String density) {
@@ -263,18 +217,15 @@ class RuntimeConfigUiSettingsStore {
   }
 
   private void rememberUiLayoutScalar(String key, Object value, String description) {
-    RuntimeConfigYamlSupport.putValue(
-        file, documentStore, log, description, value, "ircafe", "ui", "layout", key);
+    uiSection.putValue(description, value, "layout", key);
   }
 
   private void rememberUiScalar(String key, Object value, String description) {
-    RuntimeConfigYamlSupport.putValue(
-        file, documentStore, log, description, value, "ircafe", "ui", key);
+    uiSection.putValue(description, value, key);
   }
 
   private void removeUiValue(String key, String description) {
-    RuntimeConfigYamlSupport.removeValue(
-        file, documentStore, log, description, "ircafe", "ui", key);
+    uiSection.removeValue(description, key);
   }
 
   private static String normalizeDensity(String density) {

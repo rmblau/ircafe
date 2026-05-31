@@ -1,10 +1,9 @@
 package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateMap;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
-import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,12 +13,10 @@ class RuntimeConfigUserLookupStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigUserLookupStore.class);
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigYamlSection uiSection;
 
   RuntimeConfigUserLookupStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.uiSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui");
   }
 
   synchronized void rememberUserhostDiscoveryEnabled(boolean enabled) {
@@ -152,14 +149,8 @@ class RuntimeConfigUserLookupStore {
 
   private void rememberSectionScalarSetting(
       String section, String key, Object value, String description) {
-    mutateMap(
-        file,
-        documentStore,
-        log,
-        description + " setting",
-        ui -> getOrCreateMap(ui, section).put(key, value),
-        "ircafe",
-        "ui");
+    uiSection.mutateMap(
+        description + " setting", ui -> getOrCreateMap(ui, section).put(key, value));
   }
 
 }

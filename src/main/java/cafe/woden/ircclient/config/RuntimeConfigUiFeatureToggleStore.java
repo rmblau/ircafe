@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.config;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import java.nio.file.Path;
 import org.slf4j.Logger;
@@ -12,12 +13,10 @@ class RuntimeConfigUiFeatureToggleStore {
   private static final Logger log =
       LoggerFactory.getLogger(RuntimeConfigUiFeatureToggleStore.class);
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigYamlSection uiSection;
 
   RuntimeConfigUiFeatureToggleStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.uiSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui");
   }
 
   synchronized boolean readInviteAutoJoinEnabled(boolean defaultValue) {
@@ -48,16 +47,14 @@ class RuntimeConfigUiFeatureToggleStore {
 
   private boolean readSectionBoolean(
       String section, String key, boolean defaultValue, String description) {
-    return RuntimeConfigYamlSupport.readValue(
-            file, documentStore, log, description, "ircafe", "ui", section, key)
+    return uiSection.readValue(description, section, key)
         .flatMap(RuntimeConfigYamlSupport::asBoolean)
         .orElse(defaultValue);
   }
 
   private void rememberSectionBoolean(
       String section, String key, boolean enabled, String description) {
-    RuntimeConfigYamlSupport.putValue(
-        file, documentStore, log, description, enabled, "ircafe", "ui", section, key);
+    uiSection.putValue(description, enabled, section, key);
   }
 
 }

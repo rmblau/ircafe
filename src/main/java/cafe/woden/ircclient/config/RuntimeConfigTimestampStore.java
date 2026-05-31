@@ -1,10 +1,8 @@
 package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateMap;
-
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
-import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,12 +12,10 @@ class RuntimeConfigTimestampStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigTimestampStore.class);
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigYamlSection uiSection;
 
   RuntimeConfigTimestampStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.uiSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui");
   }
 
   synchronized void rememberEnabled(boolean enabled) {
@@ -40,16 +36,11 @@ class RuntimeConfigTimestampStore {
   }
 
   private void rememberSetting(String key, Object value) {
-    mutateMap(
-        file,
-        documentStore,
-        log,
+    uiSection.mutateMap(
         "timestamp " + key + " setting",
         ui -> {
           getOrCreateMap(ui, "timestamps").put(key, value);
           ui.remove("chatMessageTimestampsEnabled");
-        },
-        "ircafe",
-        "ui");
+        });
   }
 }

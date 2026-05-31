@@ -2,6 +2,7 @@ package cafe.woden.ircclient.config;
 
 import cafe.woden.ircclient.config.properties.UiProperties;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
 import java.nio.file.Path;
@@ -17,12 +18,10 @@ class RuntimeConfigChatBehaviorStore {
   private static final String DEFAULT_QUIT_MESSAGE =
       ChatCommandRuntimeConfigPort.DEFAULT_QUIT_MESSAGE;
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigYamlSection uiSection;
 
   RuntimeConfigChatBehaviorStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.uiSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui");
   }
 
   synchronized String readDefaultQuitMessage() {
@@ -52,20 +51,11 @@ class RuntimeConfigChatBehaviorStore {
   synchronized void rememberDefaultQuitMessage(String message) {
     String normalized = normalizeQuitMessage(message);
     if (DEFAULT_QUIT_MESSAGE.equals(normalized)) {
-      RuntimeConfigYamlSupport.removeValue(
-          file, documentStore, log, "ui.defaultQuitMessage", "ircafe", "ui", "defaultQuitMessage");
+      uiSection.removeValue("ui.defaultQuitMessage", "defaultQuitMessage");
       return;
     }
 
-    RuntimeConfigYamlSupport.putValue(
-        file,
-        documentStore,
-        log,
-        "ui.defaultQuitMessage",
-        normalized,
-        "ircafe",
-        "ui",
-        "defaultQuitMessage");
+    uiSection.putValue("ui.defaultQuitMessage", normalized, "defaultQuitMessage");
   }
 
   synchronized void rememberCtcpRequestsInActiveTargetEnabled(boolean enabled) {
@@ -141,16 +131,11 @@ class RuntimeConfigChatBehaviorStore {
   }
 
   private Optional<Object> readUiValue(String description, String... path) {
-    String[] fullPath = new String[path.length + 2];
-    fullPath[0] = "ircafe";
-    fullPath[1] = "ui";
-    System.arraycopy(path, 0, fullPath, 2, path.length);
-    return RuntimeConfigYamlSupport.readValue(file, documentStore, log, description, fullPath);
+    return uiSection.readValue(description, path);
   }
 
   private void rememberScalarSetting(String key, Object value, String description) {
-    RuntimeConfigYamlSupport.putValue(
-        file, documentStore, log, description, value, "ircafe", "ui", key);
+    uiSection.putValue(description, value, key);
   }
 
   private static String normalizeQuitMessage(Object message) {

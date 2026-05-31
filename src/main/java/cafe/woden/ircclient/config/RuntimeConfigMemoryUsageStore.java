@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.config;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import java.nio.file.Path;
 import java.util.Locale;
@@ -14,12 +15,10 @@ class RuntimeConfigMemoryUsageStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigMemoryUsageStore.class);
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigYamlSection uiSection;
 
   RuntimeConfigMemoryUsageStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.uiSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui");
   }
 
   synchronized void rememberDisplayMode(String mode) {
@@ -65,8 +64,7 @@ class RuntimeConfigMemoryUsageStore {
   private int readUiInt(
       String key, int defaultValue, IntUnaryOperator normalizer, String description) {
     int fallback = normalizer.applyAsInt(defaultValue);
-    return RuntimeConfigYamlSupport.readValue(
-            file, documentStore, log, description, "ircafe", "ui", key)
+    return uiSection.readValue(description, key)
         .flatMap(RuntimeConfigYamlSupport::asInt)
         .map(normalizer::applyAsInt)
         .orElse(fallback);
@@ -77,8 +75,7 @@ class RuntimeConfigMemoryUsageStore {
   }
 
   private void rememberScalar(String key, Object value, String description) {
-    RuntimeConfigYamlSupport.putValue(
-        file, documentStore, log, description, value, "ircafe", "ui", key);
+    uiSection.putValue(description, value, key);
   }
 
   private static String normalizeDisplayMode(String mode) {

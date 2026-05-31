@@ -1,9 +1,7 @@
 package cafe.woden.ircclient.config;
 
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.putValue;
-
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
-import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import java.nio.file.Path;
 import java.util.Objects;
 import org.slf4j.Logger;
@@ -15,12 +13,10 @@ class RuntimeConfigOutgoingMessageStore {
   private static final Logger log =
       LoggerFactory.getLogger(RuntimeConfigOutgoingMessageStore.class);
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigYamlSection uiSection;
 
   RuntimeConfigOutgoingMessageStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.uiSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui");
   }
 
   synchronized void rememberClientLineColorEnabled(boolean enabled) {
@@ -38,6 +34,6 @@ class RuntimeConfigOutgoingMessageStore {
   }
 
   private void rememberScalarSetting(String key, Object value, String description) {
-    putValue(file, documentStore, log, description, value, "ircafe", "ui", key);
+    uiSection.putValue(description, value, key);
   }
 }
