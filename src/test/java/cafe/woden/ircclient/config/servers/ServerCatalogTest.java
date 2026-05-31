@@ -1,6 +1,5 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.servers;
 
-import cafe.woden.ircclient.config.api.ServerEntry;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -11,6 +10,9 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
+import cafe.woden.ircclient.config.api.ServerEntry;
 import io.reactivex.rxjava3.processors.BehaviorProcessor;
 import java.util.ArrayList;
 import java.util.List;

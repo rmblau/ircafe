@@ -16,7 +16,7 @@ import cafe.woden.ircclient.app.outbound.backend.*;
 import cafe.woden.ircclient.app.outbound.support.CommandTargetPolicy;
 import cafe.woden.ircclient.app.outbound.support.OutboundCommandAvailabilitySupport;
 import cafe.woden.ircclient.app.outbound.support.OutboundConnectionStatusSupport;
-import cafe.woden.ircclient.config.ServerCatalog;
+import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.config.api.Ircv3CapabilityNameResolverPort;
 import cafe.woden.ircclient.irc.backend.IrcBackendClientService;
 import cafe.woden.ircclient.irc.port.IrcNegotiatedFeaturePort;

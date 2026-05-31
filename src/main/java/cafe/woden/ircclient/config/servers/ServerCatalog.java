@@ -1,5 +1,6 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.servers;
 
+import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.ServerEntry;
 import io.reactivex.rxjava3.core.Flowable;
 import java.util.ArrayList;

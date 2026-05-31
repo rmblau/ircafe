@@ -1,8 +1,8 @@
 package cafe.woden.ircclient.ui.servers;
 
-import cafe.woden.ircclient.config.EphemeralServerRegistry;
+import cafe.woden.ircclient.config.servers.EphemeralServerRegistry;
 import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.ServerRegistry;
+import cafe.woden.ircclient.config.servers.ServerRegistry;
 import cafe.woden.ircclient.config.api.ServerAutoConnectRuntimeConfigPort;
 import java.awt.Window;
 import java.util.Objects;

@@ -1,11 +1,13 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.servers;
 
-import cafe.woden.ircclient.config.api.ServerEntry;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
+import cafe.woden.ircclient.config.api.ServerEntry;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
