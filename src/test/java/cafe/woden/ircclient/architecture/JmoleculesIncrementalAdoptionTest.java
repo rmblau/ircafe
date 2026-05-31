@@ -72,7 +72,7 @@ import cafe.woden.ircclient.bouncer.GenericBouncerEphemeralNetworkImporter;
 import cafe.woden.ircclient.bouncer.GenericBouncerNetworkMappingStrategy;
 import cafe.woden.ircclient.bouncer.ResolvedBouncerNetwork;
 import cafe.woden.ircclient.config.EphemeralServerRegistry;
-import cafe.woden.ircclient.config.NotificationRule;
+import cafe.woden.ircclient.config.api.NotificationRule;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.config.ServerRegistry;

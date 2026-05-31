@@ -2,6 +2,7 @@ package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateMap;
 
+import cafe.woden.ircclient.config.api.NotificationRule;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;

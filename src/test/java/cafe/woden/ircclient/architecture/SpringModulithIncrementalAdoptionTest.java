@@ -45,7 +45,7 @@ import cafe.woden.ircclient.app.outbound.upload.spi.UploadCommandTranslationHand
 import cafe.woden.ircclient.bouncer.AbstractBouncerAutoConnectStore;
 import cafe.woden.ircclient.bouncer.BouncerConnectionPort;
 import cafe.woden.ircclient.bouncer.BouncerNetworkDiscoveryOrchestrator;
-import cafe.woden.ircclient.config.NotificationRule;
+import cafe.woden.ircclient.config.api.NotificationRule;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
 import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;

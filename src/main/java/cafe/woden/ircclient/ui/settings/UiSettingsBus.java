@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.settings;
 
-import cafe.woden.ircclient.config.NotificationRule;
+import cafe.woden.ircclient.config.api.NotificationRule;
 import cafe.woden.ircclient.config.UiProperties;
 import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
 import cafe.woden.ircclient.ui.settings.memory.MemoryUsageDisplayMode;

@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.api;
 
 import cafe.woden.ircclient.util.HexColorSupport;
 import java.util.Objects;

@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.settings.notifications;
 
-import cafe.woden.ircclient.config.NotificationRule;
+import cafe.woden.ircclient.config.api.NotificationRule;
 import cafe.woden.ircclient.ui.settings.ColorSwatch;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorPickerDialogSupport;

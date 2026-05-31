@@ -3,6 +3,7 @@ package cafe.woden.ircclient.config;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import cafe.woden.ircclient.config.api.NotificationRule;
 import org.junit.jupiter.api.Test;
 
 class NotificationRuleColorNormalizationTest {

@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.app.api;
 
-import cafe.woden.ircclient.config.NotificationRule;
+import cafe.woden.ircclient.config.api.NotificationRule;
 import java.util.Arrays;
 import java.util.List;
 
