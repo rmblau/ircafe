@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.config;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -12,12 +13,10 @@ class RuntimeConfigChatHistoryStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigChatHistoryStore.class);
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigYamlSection uiSection;
 
   RuntimeConfigChatHistoryStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.uiSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui");
   }
 
   synchronized void rememberInitialLoadLines(int lines) {
@@ -117,20 +116,11 @@ class RuntimeConfigChatHistoryStore {
   }
 
   private Optional<Object> readUiValue(String description, String... path) {
-    String[] fullPath = new String[path.length + 2];
-    fullPath[0] = "ircafe";
-    fullPath[1] = "ui";
-    System.arraycopy(path, 0, fullPath, 2, path.length);
-    return readExistingConfigValue(description, fullPath);
-  }
-
-  private Optional<Object> readExistingConfigValue(String description, String... path) {
-    return RuntimeConfigYamlSupport.readExistingValue(file, documentStore, log, description, path);
+    return uiSection.readExistingValue(description, path);
   }
 
   private void rememberScalarSetting(String key, Object value, String description) {
-    RuntimeConfigYamlSupport.putValue(
-        file, documentStore, log, description, value, "ircafe", "ui", key);
+    uiSection.putValue(description, value, key);
   }
 
 }

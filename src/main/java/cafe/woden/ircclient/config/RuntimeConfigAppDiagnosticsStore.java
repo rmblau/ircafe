@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.config;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import java.nio.file.Path;
 import java.util.List;
@@ -14,12 +15,11 @@ class RuntimeConfigAppDiagnosticsStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigAppDiagnosticsStore.class);
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigYamlSection diagnosticsSection;
 
   RuntimeConfigAppDiagnosticsStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.diagnosticsSection =
+        new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui", "appDiagnostics");
   }
 
   synchronized boolean readApplicationJfrEnabled(boolean defaultValue) {
@@ -167,12 +167,7 @@ class RuntimeConfigAppDiagnosticsStore {
   }
 
   private Optional<Object> readSetting(String description, String... path) {
-    String[] fullPath = new String[path.length + 3];
-    fullPath[0] = "ircafe";
-    fullPath[1] = "ui";
-    fullPath[2] = "appDiagnostics";
-    System.arraycopy(path, 0, fullPath, 3, path.length);
-    return RuntimeConfigYamlSupport.readValue(file, documentStore, log, description, fullPath);
+    return diagnosticsSection.readValue(description, path);
   }
 
   private void rememberAssertjSwingSetting(String key, Object value) {
@@ -181,10 +176,7 @@ class RuntimeConfigAppDiagnosticsStore {
 
   private void rememberSectionSetting(
       String section, String key, Object value, boolean removeEmpty) {
-    RuntimeConfigYamlSupport.mutateMap(
-        file,
-        documentStore,
-        log,
+    diagnosticsSection.mutateMap(
         "ui.appDiagnostics." + section + "." + key,
         settings -> {
           if (removeEmpty && RuntimeConfigYamlSupport.isEmptySettingValue(value)) {
@@ -193,9 +185,6 @@ class RuntimeConfigAppDiagnosticsStore {
             settings.put(key, value);
           }
         },
-        "ircafe",
-        "ui",
-        "appDiagnostics",
         section);
   }
 

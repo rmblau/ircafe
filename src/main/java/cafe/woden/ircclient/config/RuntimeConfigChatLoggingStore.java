@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.config;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import java.nio.file.Path;
 import java.util.Objects;
@@ -12,17 +13,15 @@ class RuntimeConfigChatLoggingStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigChatLoggingStore.class);
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigYamlSection loggingSection;
 
   RuntimeConfigChatLoggingStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.loggingSection =
+        new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "logging");
   }
 
   synchronized boolean readEnabled(boolean defaultValue) {
-    return RuntimeConfigYamlSupport.readExistingValue(
-            file, documentStore, log, "chat logging enabled", "ircafe", "logging", "enabled")
+    return loggingSection.readExistingValue("chat logging enabled", "enabled")
         .flatMap(RuntimeConfigYamlSupport::asBoolean)
         .orElse(defaultValue);
   }
@@ -83,13 +82,11 @@ class RuntimeConfigChatLoggingStore {
   }
 
   private void rememberScalarSetting(String key, Object value, String description) {
-    RuntimeConfigYamlSupport.putValue(
-        file, documentStore, log, description, value, "ircafe", "logging", key);
+    loggingSection.putValue(description, value, key);
   }
 
   private void rememberHsqldbScalarSetting(String key, Object value, String description) {
-    RuntimeConfigYamlSupport.putValue(
-        file, documentStore, log, description, value, "ircafe", "logging", "hsqldb", key);
+    loggingSection.putValue(description, value, "hsqldb", key);
   }
 
 }

@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.config;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import java.nio.file.Path;
 import org.slf4j.Logger;
@@ -11,12 +12,11 @@ class RuntimeConfigCtcpAutoReplyStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigCtcpAutoReplyStore.class);
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigYamlSection ctcpRepliesSection;
 
   RuntimeConfigCtcpAutoReplyStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.ctcpRepliesSection =
+        new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui", "ctcpReplies");
   }
 
   synchronized boolean readEnabled(boolean defaultValue) {
@@ -52,23 +52,13 @@ class RuntimeConfigCtcpAutoReplyStore {
   }
 
   private boolean readBoolean(String key, boolean defaultValue) {
-    return RuntimeConfigYamlSupport.readExistingValue(
-            file, documentStore, log, "ui.ctcpReplies." + key, "ircafe", "ui", "ctcpReplies", key)
+    return ctcpRepliesSection.readExistingValue("ui.ctcpReplies." + key, key)
         .flatMap(RuntimeConfigYamlSupport::asBoolean)
         .orElse(defaultValue);
   }
 
   private void rememberBoolean(String key, boolean enabled) {
-    RuntimeConfigYamlSupport.putValue(
-        file,
-        documentStore,
-        log,
-        "ui.ctcpReplies." + key,
-        enabled,
-        "ircafe",
-        "ui",
-        "ctcpReplies",
-        key);
+    ctcpRepliesSection.putValue("ui.ctcpReplies." + key, enabled, key);
   }
 
 }
