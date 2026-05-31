@@ -639,7 +639,7 @@ class JmoleculesIncrementalAdoptionTest {
         "cafe.woden.ircclient.irc.playback.ZncPlaybackCaptureLifecycle", InfrastructureLayer.class);
     assertAnnotatedByName("cafe.woden.ircclient.config.ExecutorConfig", InfrastructureLayer.class);
     assertAnnotatedByName(
-        "cafe.woden.ircclient.config.IgnoreProperties", InfrastructureLayer.class);
+        "cafe.woden.ircclient.config.properties.IgnoreProperties", InfrastructureLayer.class);
     assertAnnotatedByName("cafe.woden.ircclient.config.IrcProperties", InfrastructureLayer.class);
     assertAnnotatedByName("cafe.woden.ircclient.config.properties.LogProperties", InfrastructureLayer.class);
     assertAnnotatedByName("cafe.woden.ircclient.config.properties.PushyProperties", InfrastructureLayer.class);

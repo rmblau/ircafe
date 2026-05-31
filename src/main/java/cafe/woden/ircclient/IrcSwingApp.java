@@ -2,7 +2,7 @@ package cafe.woden.ircclient;
 
 import cafe.woden.ircclient.app.api.MediatorControlPort;
 import cafe.woden.ircclient.app.api.UiPort;
-import cafe.woden.ircclient.config.IgnoreProperties;
+import cafe.woden.ircclient.config.properties.IgnoreProperties;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.properties.LogProperties;
 import cafe.woden.ircclient.config.properties.PushyProperties;

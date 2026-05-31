@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ignore;
 
-import cafe.woden.ircclient.config.IgnoreProperties;
+import cafe.woden.ircclient.config.properties.IgnoreProperties;
 import cafe.woden.ircclient.config.api.IgnoreRulesConfigPort;
 import cafe.woden.ircclient.ignore.api.IgnoreAddMaskResult;
 import cafe.woden.ircclient.ignore.api.IgnoreLevels;
