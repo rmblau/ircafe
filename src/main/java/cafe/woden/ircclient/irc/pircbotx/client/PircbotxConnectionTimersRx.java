@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.irc.pircbotx.client;
 
-import cafe.woden.ircclient.config.ExecutorConfig;
+import cafe.woden.ircclient.config.execution.ExecutorConfig;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.irc.*;

@@ -2,7 +2,7 @@ package cafe.woden.ircclient.app;
 
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.util.RestartableRxTimer;
-import cafe.woden.ircclient.config.ExecutorConfig;
+import cafe.woden.ircclient.config.execution.ExecutorConfig;
 import cafe.woden.ircclient.model.TargetRef;
 import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.schedulers.Schedulers;

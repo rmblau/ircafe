@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.diagnostics;
 
-import cafe.woden.ircclient.config.ExecutorConfig;
+import cafe.woden.ircclient.config.execution.ExecutorConfig;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.InstalledPluginProblem;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;

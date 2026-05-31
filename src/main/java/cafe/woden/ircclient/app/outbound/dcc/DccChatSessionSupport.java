@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.app.outbound.dcc;
 
 import cafe.woden.ircclient.app.api.UiPort;
-import cafe.woden.ircclient.config.ExecutorConfig;
+import cafe.woden.ircclient.config.execution.ExecutorConfig;
 import cafe.woden.ircclient.dcc.api.DccActionHint;
 import cafe.woden.ircclient.irc.port.IrcMediatorInteractionPort;
 import cafe.woden.ircclient.model.TargetRef;

@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.execution;
 
 import cafe.woden.ircclient.util.VirtualThreads;
 import java.util.concurrent.ExecutorService;

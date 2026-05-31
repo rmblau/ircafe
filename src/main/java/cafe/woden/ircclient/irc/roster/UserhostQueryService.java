@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.irc.roster;
 
-import cafe.woden.ircclient.config.ExecutorConfig;
+import cafe.woden.ircclient.config.execution.ExecutorConfig;
 import cafe.woden.ircclient.irc.IrcClientService;
 import cafe.woden.ircclient.irc.runtime.IrcRuntimeSettings;
 import cafe.woden.ircclient.irc.runtime.IrcRuntimeSettingsProvider;

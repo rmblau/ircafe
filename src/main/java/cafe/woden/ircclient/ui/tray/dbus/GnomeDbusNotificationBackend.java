@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.tray.dbus;
 
-import cafe.woden.ircclient.config.ExecutorConfig;
+import cafe.woden.ircclient.config.execution.ExecutorConfig;
 import jakarta.annotation.PreDestroy;
 import java.time.Duration;
 import java.time.Instant;

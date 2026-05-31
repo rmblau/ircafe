@@ -637,7 +637,8 @@ class JmoleculesIncrementalAdoptionTest {
         InfrastructureLayer.class);
     assertAnnotatedByName(
         "cafe.woden.ircclient.irc.playback.ZncPlaybackCaptureLifecycle", InfrastructureLayer.class);
-    assertAnnotatedByName("cafe.woden.ircclient.config.ExecutorConfig", InfrastructureLayer.class);
+    assertAnnotatedByName(
+        "cafe.woden.ircclient.config.execution.ExecutorConfig", InfrastructureLayer.class);
     assertAnnotatedByName(
         "cafe.woden.ircclient.config.properties.ConfigPropertyKeys", InfrastructureLayer.class);
     assertAnnotatedByName(
