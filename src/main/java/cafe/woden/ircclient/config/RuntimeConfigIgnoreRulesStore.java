@@ -78,8 +78,7 @@ class RuntimeConfigIgnoreRulesStore {
     }
   }
 
-  synchronized void rememberIgnoreMaskLevels(
-      String serverId, String mask, List<String> levels) {
+  synchronized void rememberIgnoreMaskLevels(String serverId, String mask, List<String> levels) {
     try {
       if (file.toString().isBlank()) return;
 
@@ -591,7 +590,6 @@ class RuntimeConfigIgnoreRulesStore {
       log.warn("[ircafe] Could not persist soft-ignore CTCP setting to '{}'", file, e);
     }
   }
-
 
   @SuppressWarnings("unchecked")
   private static Map<String, Object> getOrCreateMap(Map<String, Object> parent, String key) {

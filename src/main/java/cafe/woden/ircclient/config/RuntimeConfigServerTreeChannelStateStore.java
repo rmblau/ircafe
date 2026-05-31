@@ -217,8 +217,7 @@ class RuntimeConfigServerTreeChannelStateStore {
     return defaultValue;
   }
 
-  synchronized void rememberServerTreeChannelMuted(
-      String serverId, String channel, boolean muted) {
+  synchronized void rememberServerTreeChannelMuted(String serverId, String channel, boolean muted) {
     String sid = Objects.toString(serverId, "").trim();
     String chan = normalizeChannelName(channel);
     if (sid.isEmpty() || chan.isEmpty()) return;
