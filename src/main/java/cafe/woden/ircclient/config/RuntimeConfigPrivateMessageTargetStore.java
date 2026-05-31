@@ -4,6 +4,7 @@ import static cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSupport.mu
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSupport.readExistingServer;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateStringList;
 
+import cafe.woden.ircclient.config.api.AutoJoinEntryCodec;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSupport;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;

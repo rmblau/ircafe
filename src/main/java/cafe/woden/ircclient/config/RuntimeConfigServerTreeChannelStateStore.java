@@ -9,12 +9,13 @@ import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateDo
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.readExistingValue;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.sanitizeStringList;
 
-import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
-import cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSupport;
-import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
+import cafe.woden.ircclient.config.api.AutoJoinEntryCodec;
 import cafe.woden.ircclient.config.api.ServerTreeChannelStateConfigPort.ServerTreeChannelPreference;
 import cafe.woden.ircclient.config.api.ServerTreeChannelStateConfigPort.ServerTreeChannelSortMode;
 import cafe.woden.ircclient.config.api.ServerTreeChannelStateConfigPort.ServerTreeChannelState;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSupport;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

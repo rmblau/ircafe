@@ -2,7 +2,7 @@ package cafe.woden.ircclient.irc.pircbotx.client;
 
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.SOJU_BOUNCER_NETWORKS;
 
-import cafe.woden.ircclient.config.AutoJoinEntryCodec;
+import cafe.woden.ircclient.config.api.AutoJoinEntryCodec;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.SojuProperties;
 import cafe.woden.ircclient.config.api.IrcSessionRuntimeConfigPort;

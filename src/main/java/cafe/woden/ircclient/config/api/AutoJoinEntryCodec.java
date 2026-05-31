@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.api;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

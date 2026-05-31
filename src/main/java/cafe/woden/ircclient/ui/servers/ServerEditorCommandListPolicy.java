@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.servers;
 
-import cafe.woden.ircclient.config.AutoJoinEntryCodec;
+import cafe.woden.ircclient.config.api.AutoJoinEntryCodec;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
