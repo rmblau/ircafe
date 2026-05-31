@@ -5,7 +5,7 @@ import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCre
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.removeIfEmpty;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
-import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,12 +45,10 @@ class RuntimeConfigIgnoreRulesStore {
           "NOHILIGHT",
           "CRAP");
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigYamlSection ignoreSection;
 
   RuntimeConfigIgnoreRulesStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.ignoreSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ignore");
   }
 
   synchronized void rememberIgnoreMask(String serverId, String mask) {
@@ -191,32 +189,23 @@ class RuntimeConfigIgnoreRulesStore {
 
   private void mutateIgnoreServer(
       String serverId, String description, Consumer<Map<String, Object>> mutation) {
-    RuntimeConfigYamlSupport.mutateMap(
-        file,
-        documentStore,
-        log,
+    ignoreSection.mutateMap(
         description,
         ignore -> {
           Map<String, Object> servers = getOrCreateMap(ignore, "servers");
           Map<String, Object> server = getOrCreateMap(servers, serverId);
           mutation.accept(server);
-        },
-        "ircafe",
-        "ignore");
+        });
   }
 
   private void mutateIgnore(
       String description, Consumer<Map<String, Object>> mutation) {
-    RuntimeConfigYamlSupport.mutateMap(
-        file, documentStore, log, description, mutation, "ircafe", "ignore");
+    ignoreSection.mutateMap(description, mutation);
   }
 
   private void mutateExistingIgnoreServer(
       String serverId, String description, ExistingIgnoreServerMutation mutation) {
-    RuntimeConfigYamlSupport.mutateDocument(
-        file,
-        documentStore,
-        log,
+    ignoreSection.mutateDocument(
         description,
         doc -> {
           Map<String, Object> ircafe = existingMap(doc, "ircafe");
