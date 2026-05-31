@@ -1,13 +1,10 @@
 package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSupport.findServerById;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSupport.readExistingServer;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSupport.readServerList;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asBoolean;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.containsIgnoreCase;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateDocument;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.readExistingValue;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.sanitizeStringList;
 
 import cafe.woden.ircclient.config.api.AutoJoinEntryCodec;
@@ -15,8 +12,8 @@ import cafe.woden.ircclient.config.api.ServerTreeChannelStateConfigPort.ServerTr
 import cafe.woden.ircclient.config.api.ServerTreeChannelStateConfigPort.ServerTreeChannelSortMode;
 import cafe.woden.ircclient.config.api.ServerTreeChannelStateConfigPort.ServerTreeChannelState;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
-import cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSupport;
-import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSection;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -33,12 +30,15 @@ class RuntimeConfigServerTreeChannelStateStore {
   private static final Logger log =
       LoggerFactory.getLogger(RuntimeConfigServerTreeChannelStateStore.class);
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigServerYamlSection servers;
+  private final RuntimeConfigYamlSection channelsByServerSection;
 
   RuntimeConfigServerTreeChannelStateStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.servers =
+        new RuntimeConfigServerYamlSection(file, documentStore, log, "joined-channel list");
+    this.channelsByServerSection =
+        new RuntimeConfigYamlSection(
+            file, documentStore, log, "ircafe", "ui", "serverTree", "channelsByServer");
   }
 
   synchronized void rememberJoinedChannel(String serverId, String channel) {
@@ -307,7 +307,7 @@ class RuntimeConfigServerTreeChannelStateStore {
     String sid = Objects.toString(serverId, "").trim();
     if (sid.isEmpty()) return List.of();
 
-    return readExistingServer(file, documentStore, log, "joined-channel list", sid)
+    return servers.readExistingServer(sid)
         .map(server -> sanitizeStringList(server.get("autoJoin")))
         .map(AutoJoinEntryCodec::channelEntries)
         .map(List::copyOf)
@@ -315,7 +315,6 @@ class RuntimeConfigServerTreeChannelStateStore {
   }
 
   private void writeServerTreeChannelState(String serverId, ServerTreeChannelState state) {
-    if (file.toString().isBlank()) return;
     String sid = Objects.toString(serverId, "").trim();
     if (sid.isEmpty()) return;
 
@@ -325,10 +324,7 @@ class RuntimeConfigServerTreeChannelStateStore {
     ServerTreeChannelSortMode sortMode =
         nextState.sortMode() == null ? ServerTreeChannelSortMode.CUSTOM : nextState.sortMode();
 
-    mutateDocument(
-        file,
-        documentStore,
-        log,
+    channelsByServerSection.mutateDocument(
         "server-tree channel state",
         doc -> {
           writeLegacyAutoJoinState(doc, sid, byKey);
@@ -338,16 +334,7 @@ class RuntimeConfigServerTreeChannelStateStore {
   }
 
   private Map<String, Object> readServerTreeChannelStateMap(String serverId) {
-    return readExistingValue(
-            file,
-            documentStore,
-            log,
-            "server-tree channel state",
-            "ircafe",
-            "ui",
-            "serverTree",
-            "channelsByServer",
-            serverId)
+    return channelsByServerSection.readExistingValue("server-tree channel state", serverId)
         .map(RuntimeConfigServerTreeChannelStateStore::readMap)
         .orElse(Map.of());
   }
