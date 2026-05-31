@@ -1,9 +1,12 @@
 package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.mutateDocument;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.mutateMap;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.readExistingValue;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.readValue;
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.sanitizeStringList;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -36,81 +39,47 @@ class RuntimeConfigServerListStore {
   }
 
   synchronized void ensureFileExistsWithServers() {
-    try {
-      if (file.toString().isBlank()) return;
+    mutateDocument(
+        file,
+        documentStore,
+        log,
+        "runtime config file",
+        doc -> {
+          Map<String, Object> irc = getOrCreateMap(doc, "irc");
 
-      Path parent = file.getParent();
-      if (parent != null && !Files.exists(parent)) {
-        Files.createDirectories(parent);
-      }
+          // If the key exists, don't overwrite it. This is what makes removals stick.
+          if (irc.containsKey("servers")) return false;
 
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> irc = getOrCreateMap(doc, "irc");
-
-      // If the key exists, don't overwrite it. This is what makes removals stick.
-      if (!irc.containsKey("servers")) {
-        List<Map<String, Object>> seeded = new ArrayList<>();
-        if (defaults != null && defaults.servers() != null) {
-          for (IrcProperties.Server s : defaults.servers()) {
-            if (s == null) continue;
-            seeded.add(toServerMap(s));
-          }
-        }
-        irc.put("servers", seeded);
-        documentStore.write(doc);
-      }
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not ensure runtime config file '{}'", file, e);
-    }
+          irc.put("servers", serverMaps(defaults == null ? null : defaults.servers()));
+          return true;
+        });
   }
 
   synchronized void writeServers(List<IrcProperties.Server> servers) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> irc = getOrCreateMap(doc, "irc");
-
-      List<Map<String, Object>> out = new ArrayList<>();
-      if (servers != null) {
-        for (IrcProperties.Server s : servers) {
-          if (s == null) continue;
-          out.add(toServerMap(s));
-        }
-      }
-
-      irc.put("servers", out);
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist servers list to '{}'", file, e);
-    }
+    mutateMap(
+        file,
+        documentStore,
+        log,
+        "servers list",
+        irc -> irc.put("servers", serverMaps(servers)),
+        "irc");
   }
 
   /** Returns configured server ids from runtime config, falling back to boot defaults. */
   synchronized List<String> readServerIds() {
-    try {
-      if (file.toString().isBlank()) return defaultServerIds();
+    Object raw = readValue(file, documentStore, log, "server ids", "irc", "servers").orElse(null);
+    if (!(raw instanceof List<?> servers) || servers.isEmpty()) return defaultServerIds();
 
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Object ircObj = doc.get("irc");
-      if (!(ircObj instanceof Map<?, ?> irc)) return defaultServerIds();
-      Object serversObj = irc.get("servers");
-      if (!(serversObj instanceof List<?> servers) || servers.isEmpty()) return defaultServerIds();
-
-      ArrayList<String> out = new ArrayList<>();
-      for (Object item : servers) {
-        if (!(item instanceof Map<?, ?> server)) continue;
-        String id = Objects.toString(server.get("id"), "").trim();
-        if (id.isEmpty()) continue;
-        if (containsIgnoreCase(out, id)) continue;
-        out.add(id);
-      }
-      if (out.isEmpty()) return defaultServerIds();
-      return List.copyOf(out);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read server ids from '{}'", file, e);
-      return defaultServerIds();
+    ArrayList<String> out = new ArrayList<>();
+    for (Object item : servers) {
+      if (!(item instanceof Map<?, ?> server)) continue;
+      String id = Objects.toString(server.get("id"), "").trim();
+      if (id.isEmpty()) continue;
+      if (containsIgnoreCase(out, id)) continue;
+      out.add(id);
     }
+    if (out.isEmpty()) return defaultServerIds();
+    return List.copyOf(out);
   }
 
   /**
@@ -120,28 +89,20 @@ class RuntimeConfigServerListStore {
    * treat runtime config as authoritative without conflating missing keys with inherited defaults.
    */
   synchronized Map<String, List<String>> readExplicitServerAutoJoinById() {
-    try {
-      if (file.toString().isBlank()) return Map.of();
-      if (!Files.exists(file)) return Map.of();
+    Object raw =
+        readExistingValue(file, documentStore, log, "explicit auto-join lists", "irc", "servers")
+            .orElse(null);
+    if (!(raw instanceof List<?> servers) || servers.isEmpty()) return Map.of();
 
-      Map<String, Object> doc = documentStore.load();
-      Map<String, Object> irc = readMap(doc.get("irc"));
-      Object serversObj = irc.get("servers");
-      if (!(serversObj instanceof List<?> servers) || servers.isEmpty()) return Map.of();
-
-      LinkedHashMap<String, List<String>> out = new LinkedHashMap<>();
-      for (Object item : servers) {
-        if (!(item instanceof Map<?, ?> server)) continue;
-        String id = Objects.toString(server.get("id"), "").trim();
-        if (id.isEmpty()) continue;
-        if (!server.containsKey("autoJoin")) continue;
-        out.put(id, sanitizeStringList(server.get("autoJoin")));
-      }
-      return out.isEmpty() ? Map.of() : Map.copyOf(out);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read explicit auto-join lists from '{}'", file, e);
-      return Map.of();
+    LinkedHashMap<String, List<String>> out = new LinkedHashMap<>();
+    for (Object item : servers) {
+      if (!(item instanceof Map<?, ?> server)) continue;
+      String id = Objects.toString(server.get("id"), "").trim();
+      if (id.isEmpty()) continue;
+      if (!server.containsKey("autoJoin")) continue;
+      out.put(id, sanitizeStringList(server.get("autoJoin")));
     }
+    return out.isEmpty() ? Map.of() : Map.copyOf(out);
   }
 
   private List<String> defaultServerIds() {
@@ -157,10 +118,15 @@ class RuntimeConfigServerListStore {
     return List.copyOf(ids);
   }
 
-  @SuppressWarnings("unchecked")
-  private static Map<String, Object> readMap(Object raw) {
-    if (raw instanceof Map<?, ?> m) return (Map<String, Object>) m;
-    return Map.of();
+  private static List<Map<String, Object>> serverMaps(List<IrcProperties.Server> servers) {
+    ArrayList<Map<String, Object>> out = new ArrayList<>();
+    if (servers == null) return out;
+
+    for (IrcProperties.Server server : servers) {
+      if (server == null) continue;
+      out.add(toServerMap(server));
+    }
+    return out;
   }
 
   private static boolean containsIgnoreCase(List<String> values, String needle) {
