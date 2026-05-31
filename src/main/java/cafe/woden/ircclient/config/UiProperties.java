@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.config;
 
+import cafe.woden.ircclient.config.properties.FilterRuleProperties;
+import cafe.woden.ircclient.config.properties.FilterScopeOverrideProperties;
 import cafe.woden.ircclient.config.properties.IrcEventNotificationRuleProperties;
 import cafe.woden.ircclient.config.properties.NotificationRuleProperties;
 import cafe.woden.ircclient.model.FilterPlaceholderRanges;
