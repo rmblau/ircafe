@@ -33,7 +33,7 @@ class RuntimeConfigChatBehaviorStore {
 
   synchronized boolean readNickCompletionCycleWithTabEnabled(boolean defaultValue) {
     return readUiValue("ui.nickCompletionCycleWithTabEnabled", "nickCompletionCycleWithTabEnabled")
-        .flatMap(RuntimeConfigChatBehaviorStore::asBoolean)
+        .flatMap(RuntimeConfigYamlSupport::asBoolean)
         .orElse(defaultValue);
   }
 
@@ -41,7 +41,7 @@ class RuntimeConfigChatBehaviorStore {
     return readUiValue(
             "ui.nickCompletionAppendAddressSuffixEnabled",
             "nickCompletionAppendAddressSuffixEnabled")
-        .flatMap(RuntimeConfigChatBehaviorStore::asBoolean)
+        .flatMap(RuntimeConfigYamlSupport::asBoolean)
         .orElse(defaultValue);
   }
 
@@ -186,13 +186,4 @@ class RuntimeConfigChatBehaviorStore {
     return v;
   }
 
-  private static Optional<Boolean> asBoolean(Object value) {
-    if (value instanceof Boolean b) return Optional.of(b);
-    if (value instanceof String s) {
-      String t = s.trim();
-      if (t.equalsIgnoreCase("true")) return Optional.of(true);
-      if (t.equalsIgnoreCase("false")) return Optional.of(false);
-    }
-    return Optional.empty();
-  }
 }

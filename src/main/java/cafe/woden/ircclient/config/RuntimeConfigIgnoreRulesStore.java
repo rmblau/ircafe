@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateStringList;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -591,17 +592,5 @@ class RuntimeConfigIgnoreRulesStore {
     } catch (Exception e) {
       log.warn("[ircafe] Could not persist soft-ignore CTCP setting to '{}'", file, e);
     }
-  }
-
-  @SuppressWarnings("unchecked")
-  private static List<String> getOrCreateStringList(Map<String, Object> m, String key) {
-    Object o = m.get(key);
-    if (o instanceof List<?>) {
-      // Cast defensively; we only store strings.
-      return (List<String>) o;
-    }
-    List<String> created = new ArrayList<>();
-    m.put(key, created);
-    return created;
   }
 }

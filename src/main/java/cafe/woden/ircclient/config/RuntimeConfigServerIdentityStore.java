@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.config;
 
+import static cafe.woden.ircclient.config.RuntimeConfigServerYamlSupport.findServerById;
+import static cafe.woden.ircclient.config.RuntimeConfigServerYamlSupport.readServerList;
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
 
 import java.nio.file.Files;
@@ -9,7 +11,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,13 +46,7 @@ class RuntimeConfigServerIdentityStore {
       Map<String, Object> irc = getOrCreateMap(doc, "irc");
       List<Map<String, Object>> servers = readServerList(irc).orElseGet(ArrayList::new);
 
-      Map<String, Object> found = null;
-      for (Map<String, Object> server : servers) {
-        if (sid.equalsIgnoreCase(Objects.toString(server.get("id"), "").trim())) {
-          found = server;
-          break;
-        }
-      }
+      Map<String, Object> found = findServerById(servers, sid).orElse(null);
 
       // Do not auto-create missing servers: removed servers must stay removed.
       if (found == null) return;
@@ -63,15 +58,6 @@ class RuntimeConfigServerIdentityStore {
     } catch (Exception e) {
       log.warn("[ircafe] Could not persist server identity settings to '{}'", file, e);
     }
-  }
-
-  @SuppressWarnings("unchecked")
-  private static Optional<List<Map<String, Object>>> readServerList(Map<String, Object> irc) {
-    Object o = irc.get("servers");
-    if (o instanceof List<?>) {
-      return Optional.of((List<Map<String, Object>>) o);
-    }
-    return Optional.empty();
   }
 
   @FunctionalInterface

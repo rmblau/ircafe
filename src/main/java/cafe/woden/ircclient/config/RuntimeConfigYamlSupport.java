@@ -1,6 +1,8 @@
 package cafe.woden.ircclient.config;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import org.jmolecules.architecture.layered.InfrastructureLayer;
@@ -41,6 +43,17 @@ final class RuntimeConfigYamlSupport {
       if (i == 1) return Optional.of(Boolean.TRUE);
     }
     return Optional.empty();
+  }
+
+  @SuppressWarnings("unchecked")
+  static List<String> getOrCreateStringList(Map<String, Object> parent, String key) {
+    Object existing = parent.get(key);
+    if (existing instanceof List<?>) {
+      return (List<String>) existing;
+    }
+    List<String> created = new ArrayList<>();
+    parent.put(key, created);
+    return created;
   }
 
   static Optional<Integer> asInt(Object value) {

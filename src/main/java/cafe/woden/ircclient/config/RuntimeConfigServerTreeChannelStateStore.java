@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.config;
 
+import static cafe.woden.ircclient.config.RuntimeConfigServerYamlSupport.findServerById;
+import static cafe.woden.ircclient.config.RuntimeConfigServerYamlSupport.readServerList;
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.asBoolean;
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
 
@@ -14,7 +16,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -362,9 +363,8 @@ class RuntimeConfigServerTreeChannelStateStore {
       Map<String, Object> irc = getOrCreateMap(doc, "irc");
       List<Map<String, Object>> servers = readServerList(irc).orElse(List.of());
 
-      for (Map<String, Object> server : servers) {
-        if (server == null) continue;
-        if (!sid.equalsIgnoreCase(Objects.toString(server.get("id"), "").trim())) continue;
+      Map<String, Object> server = findServerById(servers, sid).orElse(null);
+      if (server != null) {
         Object autoJoinObj = server.get("autoJoin");
         if (!(autoJoinObj instanceof List<?> rawList)) return List.of();
         @SuppressWarnings("unchecked")
@@ -393,14 +393,7 @@ class RuntimeConfigServerTreeChannelStateStore {
 
       Map<String, Object> irc = getOrCreateMap(doc, "irc");
       List<Map<String, Object>> servers = readServerList(irc).orElseGet(ArrayList::new);
-      Map<String, Object> serverMap = null;
-      for (Map<String, Object> server : servers) {
-        if (server == null) continue;
-        if (sid.equalsIgnoreCase(Objects.toString(server.get("id"), "").trim())) {
-          serverMap = server;
-          break;
-        }
-      }
+      Map<String, Object> serverMap = findServerById(servers, sid).orElse(null);
       if (serverMap != null) {
         List<String> previousAutoJoin = sanitizeStringList(serverMap.get("autoJoin"));
         List<String> previousPmTargets = AutoJoinEntryCodec.privateMessageNicks(previousAutoJoin);
@@ -595,14 +588,5 @@ class RuntimeConfigServerTreeChannelStateStore {
       if (n.equalsIgnoreCase(Objects.toString(value, "").trim())) return true;
     }
     return false;
-  }
-
-  @SuppressWarnings("unchecked")
-  private static Optional<List<Map<String, Object>>> readServerList(Map<String, Object> irc) {
-    Object raw = irc.get("servers");
-    if (raw instanceof List<?> list) {
-      return Optional.of((List<Map<String, Object>>) list);
-    }
-    return Optional.empty();
   }
 }

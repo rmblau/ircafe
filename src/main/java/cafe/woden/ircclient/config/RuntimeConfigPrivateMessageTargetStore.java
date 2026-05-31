@@ -1,6 +1,9 @@
 package cafe.woden.ircclient.config;
 
+import static cafe.woden.ircclient.config.RuntimeConfigServerYamlSupport.findServerById;
+import static cafe.woden.ircclient.config.RuntimeConfigServerYamlSupport.readServerList;
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateStringList;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -9,7 +12,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,9 +77,8 @@ class RuntimeConfigPrivateMessageTargetStore {
       Map<String, Object> irc = getOrCreateMap(doc, "irc");
       List<Map<String, Object>> servers = readServerList(irc).orElse(List.of());
 
-      for (Map<String, Object> server : servers) {
-        if (server == null) continue;
-        if (!sid.equalsIgnoreCase(Objects.toString(server.get("id"), "").trim())) continue;
+      Map<String, Object> server = findServerById(servers, sid).orElse(null);
+      if (server != null) {
         Object autoJoinObj = server.get("autoJoin");
         if (!(autoJoinObj instanceof List<?> rawList)) return List.of();
         @SuppressWarnings("unchecked")
@@ -100,13 +101,7 @@ class RuntimeConfigPrivateMessageTargetStore {
       Map<String, Object> irc = getOrCreateMap(doc, "irc");
       List<Map<String, Object>> servers = readServerList(irc).orElseGet(ArrayList::new);
 
-      Map<String, Object> found = null;
-      for (Map<String, Object> server : servers) {
-        if (sid.equalsIgnoreCase(Objects.toString(server.get("id"), "").trim())) {
-          found = server;
-          break;
-        }
-      }
+      Map<String, Object> found = findServerById(servers, sid).orElse(null);
 
       // Do not auto-create missing servers: removed servers must stay removed.
       if (found == null) return;
@@ -117,26 +112,6 @@ class RuntimeConfigPrivateMessageTargetStore {
     } catch (Exception e) {
       log.warn("[ircafe] Could not persist private-message target list to '{}'", file, e);
     }
-  }
-
-  @SuppressWarnings("unchecked")
-  private static Optional<List<Map<String, Object>>> readServerList(Map<String, Object> irc) {
-    Object o = irc.get("servers");
-    if (o instanceof List<?>) {
-      return Optional.of((List<Map<String, Object>>) o);
-    }
-    return Optional.empty();
-  }
-
-  @SuppressWarnings("unchecked")
-  private static List<String> getOrCreateStringList(Map<String, Object> m, String key) {
-    Object o = m.get(key);
-    if (o instanceof List<?>) {
-      return (List<String>) o;
-    }
-    List<String> created = new ArrayList<>();
-    m.put(key, created);
-    return created;
   }
 
   @FunctionalInterface
