@@ -6,9 +6,10 @@ import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asLong;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateDocument;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.readExistingValue;
+import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.readMap;
+import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.removeIfEmpty;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
-import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import cafe.woden.ircclient.config.api.Ircv3StsPolicyConfigPort;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -136,20 +137,17 @@ class RuntimeConfigIrcv3StsPolicyStore {
         log,
         "IRCv3 STS policy removal for host '" + host + "'",
         doc -> {
-          Object ircafeObj = doc.get("ircafe");
-          if (!(ircafeObj instanceof Map<?, ?> ircafeRaw)) return false;
-          @SuppressWarnings("unchecked")
-          Map<String, Object> ircafe = (Map<String, Object>) ircafeRaw;
+          Optional<Map<String, Object>> ircafeObj = readMap(doc, "ircafe");
+          if (ircafeObj.isEmpty()) return false;
+          Map<String, Object> ircafe = ircafeObj.get();
 
-          Object ircv3Obj = ircafe.get("ircv3");
-          if (!(ircv3Obj instanceof Map<?, ?> ircv3Raw)) return false;
-          @SuppressWarnings("unchecked")
-          Map<String, Object> ircv3 = (Map<String, Object>) ircv3Raw;
+          Optional<Map<String, Object>> ircv3Obj = readMap(ircafe, "ircv3");
+          if (ircv3Obj.isEmpty()) return false;
+          Map<String, Object> ircv3 = ircv3Obj.get();
 
-          Object policiesObj = ircv3.get("stsPolicies");
-          if (!(policiesObj instanceof Map<?, ?> policiesRaw)) return false;
-          @SuppressWarnings("unchecked")
-          Map<String, Object> policies = (Map<String, Object>) policiesRaw;
+          Optional<Map<String, Object>> policiesObj = readMap(ircv3, "stsPolicies");
+          if (policiesObj.isEmpty()) return false;
+          Map<String, Object> policies = policiesObj.get();
 
           boolean removed = false;
           for (String k : new ArrayList<>(policies.keySet())) {
@@ -160,15 +158,9 @@ class RuntimeConfigIrcv3StsPolicyStore {
           }
           if (!removed) return false;
 
-          if (policies.isEmpty()) {
-            ircv3.remove("stsPolicies");
-          }
-          if (ircv3.isEmpty()) {
-            ircafe.remove("ircv3");
-          }
-          if (ircafe.isEmpty()) {
-            doc.remove("ircafe");
-          }
+          removeIfEmpty(ircv3, "stsPolicies", policies);
+          removeIfEmpty(ircafe, "ircv3", ircv3);
+          removeIfEmpty(doc, "ircafe", ircafe);
           return true;
         });
   }

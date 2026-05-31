@@ -5,9 +5,9 @@ import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCre
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMapPath;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateDocument;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.readExistingValue;
+import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.readMap;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
-import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import cafe.woden.ircclient.config.api.ServerTreeBuiltInVisibilityConfigPort.ServerTreeBuiltInNodesVisibility;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayout;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayoutNode;
@@ -360,13 +360,6 @@ class RuntimeConfigServerTreeLayoutStore {
 
   private static Map<String, Object> serverTreeMap(Map<String, Object> doc) {
     return getOrCreateMapPath(doc, "ircafe", "ui", "serverTree");
-  }
-
-  @SuppressWarnings("unchecked")
-  private static Optional<Map<String, Object>> readMap(Map<String, Object> map, String key) {
-    Object value = map.get(key);
-    if (value instanceof Map<?, ?> m) return Optional.of((Map<String, Object>) m);
-    return Optional.empty();
   }
 
 }

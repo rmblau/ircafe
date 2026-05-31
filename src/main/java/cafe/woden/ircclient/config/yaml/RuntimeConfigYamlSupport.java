@@ -131,6 +131,22 @@ public final class RuntimeConfigYamlSupport {
     return created;
   }
 
+  @SuppressWarnings("unchecked")
+  public static Optional<Map<String, Object>> readMap(Map<String, Object> parent, String key) {
+    if (parent == null) return Optional.empty();
+
+    Object existing = parent.get(key);
+    if (existing instanceof Map<?, ?> map) return Optional.of((Map<String, Object>) map);
+    return Optional.empty();
+  }
+
+  public static void removeIfEmpty(
+      Map<String, Object> parent, String key, Map<String, Object> child) {
+    if (parent != null && child != null && child.isEmpty()) {
+      parent.remove(key);
+    }
+  }
+
   private static void mutateValue(
       Path file,
       RuntimeConfigDocumentStore documentStore,

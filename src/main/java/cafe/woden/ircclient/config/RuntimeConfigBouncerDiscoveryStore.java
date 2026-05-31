@@ -4,6 +4,7 @@ import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asBoolea
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateDocument;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.readExistingValue;
+import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.removeIfEmpty;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
@@ -81,9 +82,9 @@ class RuntimeConfigBouncerDiscoveryStore {
             generic.put("loginTemplate", normalized);
           }
 
-          if (generic.isEmpty()) bouncer.remove("generic");
-          if (bouncer.isEmpty()) ircafe.remove("bouncer");
-          if (ircafe.isEmpty()) doc.remove("ircafe");
+          removeIfEmpty(bouncer, "generic", generic);
+          removeIfEmpty(ircafe, "bouncer", bouncer);
+          removeIfEmpty(doc, "ircafe", ircafe);
           return true;
         });
   }
@@ -134,20 +135,12 @@ class RuntimeConfigBouncerDiscoveryStore {
 
           // Remove case-insensitively so users can toggle based on what the bouncer returns.
           nets.keySet().removeIf(k -> k != null && k.equalsIgnoreCase(net));
-          if (nets.isEmpty()) {
-            autoConnect.remove(sid);
-          }
+          removeIfEmpty(autoConnect, sid, nets);
 
           // Clean up empty structures to keep the YAML tidy.
-          if (autoConnect.isEmpty()) {
-            bouncerSection.remove("autoConnect");
-          }
-          if (bouncerSection.isEmpty()) {
-            ircafe.remove(backend);
-          }
-          if (ircafe.isEmpty()) {
-            doc.remove("ircafe");
-          }
+          removeIfEmpty(bouncerSection, "autoConnect", autoConnect);
+          removeIfEmpty(ircafe, backend, bouncerSection);
+          removeIfEmpty(doc, "ircafe", ircafe);
           return true;
         });
   }

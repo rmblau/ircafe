@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.config.yaml;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
+import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.readMap;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -91,13 +92,6 @@ public final class RuntimeConfigServerYamlSupport {
     } catch (Exception e) {
       log.warn("[ircafe] Could not persist {} to '{}'", description, file, e);
     }
-  }
-
-  @SuppressWarnings("unchecked")
-  private static Optional<Map<String, Object>> readMap(Map<String, Object> parent, String key) {
-    Object raw = parent.get(key);
-    if (raw instanceof Map<?, ?> map) return Optional.of((Map<String, Object>) map);
-    return Optional.empty();
   }
 
   private static String normalizeServerId(String serverId) {
