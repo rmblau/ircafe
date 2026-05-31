@@ -3,8 +3,6 @@ package cafe.woden.ircclient.config;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asBoolean;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asInt;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asLong;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.readMap;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.removeIfEmpty;
 
 import cafe.woden.ircclient.config.api.Ircv3StsPolicyConfigPort;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
@@ -113,21 +111,9 @@ class RuntimeConfigIrcv3StsPolicyStore {
     String hostKey = normalizeHostKey(host);
     if (hostKey == null) return;
 
-    ircv3Section.mutateDocument(
+    ircv3Section.mutateExistingMapAndRemoveIfEmpty(
         "IRCv3 STS policy removal for host '" + host + "'",
-        doc -> {
-          Optional<Map<String, Object>> ircafeObj = readMap(doc, "ircafe");
-          if (ircafeObj.isEmpty()) return false;
-          Map<String, Object> ircafe = ircafeObj.get();
-
-          Optional<Map<String, Object>> ircv3Obj = readMap(ircafe, "ircv3");
-          if (ircv3Obj.isEmpty()) return false;
-          Map<String, Object> ircv3 = ircv3Obj.get();
-
-          Optional<Map<String, Object>> policiesObj = readMap(ircv3, "stsPolicies");
-          if (policiesObj.isEmpty()) return false;
-          Map<String, Object> policies = policiesObj.get();
-
+        policies -> {
           boolean removed = false;
           for (String k : new ArrayList<>(policies.keySet())) {
             if (hostKey.equalsIgnoreCase(Objects.toString(k, "").trim())) {
@@ -135,13 +121,9 @@ class RuntimeConfigIrcv3StsPolicyStore {
               removed = true;
             }
           }
-          if (!removed) return false;
-
-          removeIfEmpty(ircv3, "stsPolicies", policies);
-          removeIfEmpty(ircafe, "ircv3", ircv3);
-          removeIfEmpty(doc, "ircafe", ircafe);
-          return true;
-        });
+          return removed;
+        },
+        "stsPolicies");
   }
 
   private static String normalizeHostKey(String host) {

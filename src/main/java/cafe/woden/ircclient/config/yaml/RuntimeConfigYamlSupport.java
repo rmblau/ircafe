@@ -107,14 +107,32 @@ public final class RuntimeConfigYamlSupport {
       if (file.toString().isBlank()) return;
 
       Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> parent = parentMap(doc, path);
-      String key = last(path);
-      Map<String, Object> target = getOrCreateMap(parent, key);
+      Map<String, Object> target = getOrCreateMapPath(doc, path);
       mutation.accept(target);
-      if (target.isEmpty()) {
-        parent.remove(key);
-      }
+      pruneEmptyMapPath(doc, path);
 
+      documentStore.write(doc);
+    } catch (Exception e) {
+      log.warn("[ircafe] Could not persist {} to '{}'", description, file, e);
+    }
+  }
+
+  public static void mutateExistingMapAndRemoveIfEmpty(
+      Path file,
+      RuntimeConfigDocumentStore documentStore,
+      Logger log,
+      String description,
+      Function<Map<String, Object>, Boolean> mutation,
+      String... path) {
+    try {
+      if (file.toString().isBlank()) return;
+
+      Map<String, Object> doc = documentStore.loadOrEmpty();
+      Optional<Map<String, Object>> target = readMapPath(doc, path);
+      if (target.isEmpty()) return;
+      if (!Boolean.TRUE.equals(mutation.apply(target.get()))) return;
+
+      pruneEmptyMapPath(doc, path);
       documentStore.write(doc);
     } catch (Exception e) {
       log.warn("[ircafe] Could not persist {} to '{}'", description, file, e);
@@ -147,6 +165,17 @@ public final class RuntimeConfigYamlSupport {
     return current;
   }
 
+  public static Optional<Map<String, Object>> readMapPath(
+      Map<String, Object> root, String... path) {
+    Map<String, Object> current = root;
+    for (String segment : path) {
+      Optional<Map<String, Object>> next = readMap(current, segment);
+      if (next.isEmpty()) return Optional.empty();
+      current = next.get();
+    }
+    return Optional.of(current);
+  }
+
   @SuppressWarnings("unchecked")
   public static Map<String, Object> getOrCreateMap(Map<String, Object> parent, String key) {
     Object existing = parent.get(key);
@@ -169,6 +198,28 @@ public final class RuntimeConfigYamlSupport {
       Map<String, Object> parent, String key, Map<String, Object> child) {
     if (parent != null && child != null && child.isEmpty()) {
       parent.remove(key);
+    }
+  }
+
+  private static void pruneEmptyMapPath(Map<String, Object> doc, String[] path) {
+    if (path.length == 0) {
+      throw new IllegalArgumentException("Runtime config YAML path must not be empty");
+    }
+
+    List<Map<String, Object>> parents = new ArrayList<>(path.length);
+    Map<String, Object> current = doc;
+    for (String segment : path) {
+      Optional<Map<String, Object>> child = readMap(current, segment);
+      if (child.isEmpty()) return;
+      parents.add(current);
+      current = child.get();
+    }
+
+    for (int i = path.length - 1; i >= 0; i--) {
+      Map<String, Object> parent = parents.get(i);
+      Optional<Map<String, Object>> child = readMap(parent, path[i]);
+      if (child.isEmpty() || !child.get().isEmpty()) return;
+      parent.remove(path[i]);
     }
   }
 

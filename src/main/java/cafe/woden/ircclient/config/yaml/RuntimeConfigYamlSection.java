@@ -65,6 +65,12 @@ public final class RuntimeConfigYamlSection {
         file, documentStore, log, description, mutation, resolve(path));
   }
 
+  public void mutateExistingMapAndRemoveIfEmpty(
+      String description, Function<Map<String, Object>, Boolean> mutation, String... path) {
+    RuntimeConfigYamlSupport.mutateExistingMapAndRemoveIfEmpty(
+        file, documentStore, log, description, mutation, resolve(path));
+  }
+
   public void mutateDocument(
       String description, Function<Map<String, Object>, Boolean> mutation) {
     RuntimeConfigYamlSupport.mutateDocument(file, documentStore, log, description, mutation);

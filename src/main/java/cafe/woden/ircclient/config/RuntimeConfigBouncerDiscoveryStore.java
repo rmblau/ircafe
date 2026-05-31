@@ -1,8 +1,6 @@
 package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asBoolean;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.removeIfEmpty;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
@@ -63,24 +61,17 @@ class RuntimeConfigBouncerDiscoveryStore {
 
   synchronized void rememberGenericBouncerLoginTemplate(String template) {
     String normalized = Objects.toString(template, "").trim();
-    ircafeSection.mutateDocument(
+    ircafeSection.mutateMapAndRemoveIfEmpty(
         "bouncer.generic.loginTemplate",
-        doc -> {
-          Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-          Map<String, Object> bouncer = getOrCreateMap(ircafe, "bouncer");
-          Map<String, Object> generic = getOrCreateMap(bouncer, "generic");
-
+        generic -> {
           if (normalized.isEmpty()) {
             generic.remove("loginTemplate");
           } else {
             generic.put("loginTemplate", normalized);
           }
-
-          removeIfEmpty(bouncer, "generic", generic);
-          removeIfEmpty(ircafe, "bouncer", bouncer);
-          removeIfEmpty(doc, "ircafe", ircafe);
-          return true;
-        });
+        },
+        "bouncer",
+        "generic");
   }
 
   synchronized void rememberGenericBouncerPreferLoginHint(boolean enabled) {
@@ -102,29 +93,20 @@ class RuntimeConfigBouncerDiscoveryStore {
     String net = Objects.toString(networkName, "").trim();
     if (backend.isEmpty() || sid.isEmpty() || net.isEmpty()) return;
 
-    ircafeSection.mutateDocument(
+    ircafeSection.mutateMapAndRemoveIfEmpty(
         backend + " auto-connect setting",
-        doc -> {
-          Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-          Map<String, Object> bouncerSection = getOrCreateMap(ircafe, backend);
-          Map<String, Object> autoConnect = getOrCreateMap(bouncerSection, "autoConnect");
-          Map<String, Object> nets = getOrCreateMap(autoConnect, sid);
-
+        nets -> {
           if (enabled) {
             nets.put(net, true);
-            return true;
+            return;
           }
 
           // Remove case-insensitively so users can toggle based on what the bouncer returns.
           nets.keySet().removeIf(k -> k != null && k.equalsIgnoreCase(net));
-          removeIfEmpty(autoConnect, sid, nets);
-
-          // Clean up empty structures to keep the YAML tidy.
-          removeIfEmpty(bouncerSection, "autoConnect", autoConnect);
-          removeIfEmpty(ircafe, backend, bouncerSection);
-          removeIfEmpty(doc, "ircafe", ircafe);
-          return true;
-        });
+        },
+        backend,
+        "autoConnect",
+        sid);
   }
 
   private Map<String, Map<String, Boolean>> readBouncerAutoConnectRules(
