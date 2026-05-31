@@ -1,6 +1,5 @@
 package cafe.woden.ircclient.config.properties;
 
-import cafe.woden.ircclient.config.ConfigPropertyKeys;
 import java.util.Objects;
 import org.jmolecules.architecture.layered.InfrastructureLayer;
 import org.springframework.boot.context.properties.ConfigurationProperties;

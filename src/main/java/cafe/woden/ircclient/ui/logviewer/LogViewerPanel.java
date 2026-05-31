@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.logviewer;
 
-import cafe.woden.ircclient.config.ConfigPropertyKeys;
+import cafe.woden.ircclient.config.properties.ConfigPropertyKeys;
 import cafe.woden.ircclient.logging.viewer.ChatLogViewerMatchMode;
 import cafe.woden.ircclient.logging.viewer.ChatLogViewerQuery;
 import cafe.woden.ircclient.logging.viewer.ChatLogViewerResult;

@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.logging;
 
-import cafe.woden.ircclient.config.ConfigPropertyKeys;
+import cafe.woden.ircclient.config.properties.ConfigPropertyKeys;
 import cafe.woden.ircclient.irc.playback.PlaybackCursorProvider;
 import java.util.OptionalLong;
 import lombok.RequiredArgsConstructor;

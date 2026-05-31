@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.properties;
 
 /** Shared Spring configuration property names and prefixes. */
 public final class ConfigPropertyKeys {
