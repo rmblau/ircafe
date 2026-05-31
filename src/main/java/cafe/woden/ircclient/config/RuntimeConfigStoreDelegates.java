@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.config;
 
+import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigTimestampStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import java.nio.file.Path;
 
