@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime.ui;
 
 import cafe.woden.ircclient.config.properties.UiProperties;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Owns chat behavior and server-tree presentation settings under {@code ircafe.ui}. */
-class RuntimeConfigChatBehaviorStore {
+public class RuntimeConfigChatBehaviorStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigChatBehaviorStore.class);
   private static final String DEFAULT_QUIT_MESSAGE =
@@ -20,23 +20,23 @@ class RuntimeConfigChatBehaviorStore {
 
   private final RuntimeConfigYamlSection uiSection;
 
-  RuntimeConfigChatBehaviorStore(Path file, RuntimeConfigDocumentStore documentStore) {
+  public RuntimeConfigChatBehaviorStore(Path file, RuntimeConfigDocumentStore documentStore) {
     this.uiSection = RuntimeConfigYamlSection.ircafeUi(file, documentStore, log);
   }
 
-  synchronized String readDefaultQuitMessage() {
+  public synchronized String readDefaultQuitMessage() {
     return readUiValue("ui.defaultQuitMessage", "defaultQuitMessage")
         .map(RuntimeConfigChatBehaviorStore::normalizeQuitMessage)
         .orElse(DEFAULT_QUIT_MESSAGE);
   }
 
-  synchronized boolean readNickCompletionCycleWithTabEnabled(boolean defaultValue) {
+  public synchronized boolean readNickCompletionCycleWithTabEnabled(boolean defaultValue) {
     return readUiValue("ui.nickCompletionCycleWithTabEnabled", "nickCompletionCycleWithTabEnabled")
         .flatMap(RuntimeConfigYamlSupport::asBoolean)
         .orElse(defaultValue);
   }
 
-  synchronized boolean readNickCompletionAppendAddressSuffixEnabled(boolean defaultValue) {
+  public synchronized boolean readNickCompletionAppendAddressSuffixEnabled(boolean defaultValue) {
     return readUiValue(
             "ui.nickCompletionAppendAddressSuffixEnabled",
             "nickCompletionAppendAddressSuffixEnabled")
@@ -44,11 +44,11 @@ class RuntimeConfigChatBehaviorStore {
         .orElse(defaultValue);
   }
 
-  synchronized void rememberPresenceFoldsEnabled(boolean enabled) {
+  public synchronized void rememberPresenceFoldsEnabled(boolean enabled) {
     rememberScalarSetting("presenceFoldsEnabled", enabled, "presence folds");
   }
 
-  synchronized void rememberDefaultQuitMessage(String message) {
+  public synchronized void rememberDefaultQuitMessage(String message) {
     String normalized = normalizeQuitMessage(message);
     if (DEFAULT_QUIT_MESSAGE.equals(normalized)) {
       uiSection.removeExistingValueAndPruneEmptyParents(
@@ -59,56 +59,56 @@ class RuntimeConfigChatBehaviorStore {
     uiSection.putValue("ui.defaultQuitMessage", normalized, "defaultQuitMessage");
   }
 
-  synchronized void rememberCtcpRequestsInActiveTargetEnabled(boolean enabled) {
+  public synchronized void rememberCtcpRequestsInActiveTargetEnabled(boolean enabled) {
     rememberScalarSetting("ctcpRequestsInActiveTargetEnabled", enabled, "CTCP request routing");
   }
 
-  synchronized void rememberNickCompletionCycleWithTabEnabled(boolean enabled) {
+  public synchronized void rememberNickCompletionCycleWithTabEnabled(boolean enabled) {
     rememberScalarSetting(
         "nickCompletionCycleWithTabEnabled", enabled, "nick completion tab cycling");
   }
 
-  synchronized void rememberNickCompletionAppendAddressSuffixEnabled(boolean enabled) {
+  public synchronized void rememberNickCompletionAppendAddressSuffixEnabled(boolean enabled) {
     rememberScalarSetting(
         "nickCompletionAppendAddressSuffixEnabled", enabled, "nick completion address suffix");
   }
 
-  synchronized void rememberTypingIndicatorsEnabled(boolean enabled) {
+  public synchronized void rememberTypingIndicatorsEnabled(boolean enabled) {
     rememberScalarSetting("typingIndicatorsEnabled", enabled, "typing indicators");
   }
 
-  synchronized void rememberTypingIndicatorsReceiveEnabled(boolean enabled) {
+  public synchronized void rememberTypingIndicatorsReceiveEnabled(boolean enabled) {
     rememberScalarSetting("typingIndicatorsReceiveEnabled", enabled, "incoming typing indicators");
   }
 
-  synchronized void rememberTypingTreeIndicatorStyle(String style) {
+  public synchronized void rememberTypingTreeIndicatorStyle(String style) {
     String normalized = UiProperties.normalizeTypingTreeIndicatorStyle(style);
     rememberScalarSetting("typingTreeIndicatorStyle", normalized, "typing tree indicator style");
   }
 
-  synchronized void rememberTypingIndicatorsTreeEnabled(boolean enabled) {
+  public synchronized void rememberTypingIndicatorsTreeEnabled(boolean enabled) {
     rememberTypingIndicatorDisplayBoolean("typingIndicatorsTreeEnabled", enabled);
   }
 
-  synchronized void rememberTypingIndicatorsUsersListEnabled(boolean enabled) {
+  public synchronized void rememberTypingIndicatorsUsersListEnabled(boolean enabled) {
     rememberTypingIndicatorDisplayBoolean("typingIndicatorsUsersListEnabled", enabled);
   }
 
-  synchronized void rememberMatrixUserListNameDisplayMode(String mode) {
+  public synchronized void rememberMatrixUserListNameDisplayMode(String mode) {
     String normalized = UiProperties.normalizeMatrixUserListNameDisplayMode(mode);
     rememberScalarSetting(
         "matrixUserListNameDisplayMode", normalized, "Matrix user list name display mode");
   }
 
-  synchronized void rememberTypingIndicatorsTranscriptEnabled(boolean enabled) {
+  public synchronized void rememberTypingIndicatorsTranscriptEnabled(boolean enabled) {
     rememberTypingIndicatorDisplayBoolean("typingIndicatorsTranscriptEnabled", enabled);
   }
 
-  synchronized void rememberTypingIndicatorsSendSignalEnabled(boolean enabled) {
+  public synchronized void rememberTypingIndicatorsSendSignalEnabled(boolean enabled) {
     rememberTypingIndicatorDisplayBoolean("typingIndicatorsSendSignalEnabled", enabled);
   }
 
-  synchronized int readServerTreeUnreadBadgeScalePercent(int defaultValue) {
+  public synchronized int readServerTreeUnreadBadgeScalePercent(int defaultValue) {
     int fallback = clampServerTreeUnreadBadgeScalePercent(defaultValue);
     return readUiValue("ui.serverTreeUnreadBadgeScalePercent", "serverTreeUnreadBadgeScalePercent")
         .flatMap(RuntimeConfigYamlSupport::asInt)
@@ -116,13 +116,13 @@ class RuntimeConfigChatBehaviorStore {
         .orElse(fallback);
   }
 
-  synchronized void rememberServerTreeUnreadBadgeScalePercent(int percent) {
+  public synchronized void rememberServerTreeUnreadBadgeScalePercent(int percent) {
     int normalized = clampServerTreeUnreadBadgeScalePercent(percent);
     rememberScalarSetting(
         "serverTreeUnreadBadgeScalePercent", normalized, "ui.serverTreeUnreadBadgeScalePercent");
   }
 
-  synchronized void rememberServerTreeNotificationBadgesEnabled(boolean enabled) {
+  public synchronized void rememberServerTreeNotificationBadgesEnabled(boolean enabled) {
     rememberScalarSetting(
         "serverTreeNotificationBadgesEnabled", enabled, "server tree notification badges");
   }
