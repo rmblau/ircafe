@@ -5,11 +5,11 @@ import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateSt
 
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,282 +51,167 @@ class RuntimeConfigIgnoreRulesStore {
   }
 
   synchronized void rememberIgnoreMask(String serverId, String mask) {
-    try {
-      if (file.toString().isBlank()) return;
+    String sid = Objects.toString(serverId, "").trim();
+    String m = Objects.toString(mask, "").trim();
+    if (sid.isEmpty() || m.isEmpty()) return;
 
-      String sid = Objects.toString(serverId, "").trim();
-      String m = Objects.toString(mask, "").trim();
-      if (sid.isEmpty() || m.isEmpty()) return;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ignore = getOrCreateMap(ircafe, "ignore");
-      Map<String, Object> servers = getOrCreateMap(ignore, "servers");
-
-      @SuppressWarnings("unchecked")
-      Map<String, Object> server =
-          (servers.get(sid) instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
-      servers.put(sid, server);
-
-      List<String> masks = getOrCreateStringList(server, "masks");
-      if (masks.stream().noneMatch(x -> x != null && x.equalsIgnoreCase(m))) {
-        masks.add(m);
-      }
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ignore mask to '{}'", file, e);
-    }
+    mutateIgnoreServer(
+        sid,
+        "ignore mask",
+        server -> {
+          List<String> masks = getOrCreateStringList(server, "masks");
+          if (masks.stream().noneMatch(x -> x != null && x.equalsIgnoreCase(m))) {
+            masks.add(m);
+          }
+        });
   }
 
   synchronized void rememberIgnoreMaskLevels(String serverId, String mask, List<String> levels) {
-    try {
-      if (file.toString().isBlank()) return;
+    String sid = Objects.toString(serverId, "").trim();
+    String m = Objects.toString(mask, "").trim();
+    if (sid.isEmpty() || m.isEmpty()) return;
 
-      String sid = Objects.toString(serverId, "").trim();
-      String m = Objects.toString(mask, "").trim();
-      if (sid.isEmpty() || m.isEmpty()) return;
+    List<String> normalized = normalizeIgnoreLevels(levels);
+    boolean isDefaultAll =
+        normalized.size() == 1 && "ALL".equalsIgnoreCase(normalized.getFirst());
 
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ignore = getOrCreateMap(ircafe, "ignore");
-      Map<String, Object> servers = getOrCreateMap(ignore, "servers");
+    mutateIgnoreServer(
+        sid,
+        "ignore mask levels",
+        server -> {
+          Map<String, Object> byMask = getOrCreateMap(server, "maskLevels");
+          byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
 
-      @SuppressWarnings("unchecked")
-      Map<String, Object> server =
-          (servers.get(sid) instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
-      servers.put(sid, server);
-
-      List<String> normalized = normalizeIgnoreLevels(levels);
-      boolean isDefaultAll =
-          normalized.size() == 1 && "ALL".equalsIgnoreCase(normalized.getFirst());
-
-      @SuppressWarnings("unchecked")
-      Map<String, Object> byMask =
-          (server.get("maskLevels") instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
-
-      if (isDefaultAll) {
-        byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-      } else {
-        byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-        byMask.put(m, new java.util.ArrayList<>(normalized));
-      }
-
-      if (byMask.isEmpty()) {
-        server.remove("maskLevels");
-      } else {
-        server.put("maskLevels", byMask);
-      }
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ignore mask levels to '{}'", file, e);
-    }
+          if (!isDefaultAll) {
+            byMask.put(m, new ArrayList<>(normalized));
+          }
+          removeIfEmpty(server, "maskLevels", byMask);
+        });
   }
 
   synchronized void rememberIgnoreMaskChannels(
       String serverId, String mask, List<String> channels) {
-    try {
-      if (file.toString().isBlank()) return;
+    String sid = Objects.toString(serverId, "").trim();
+    String m = Objects.toString(mask, "").trim();
+    if (sid.isEmpty() || m.isEmpty()) return;
 
-      String sid = Objects.toString(serverId, "").trim();
-      String m = Objects.toString(mask, "").trim();
-      if (sid.isEmpty() || m.isEmpty()) return;
+    List<String> normalized = normalizeIgnoreChannels(channels);
 
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ignore = getOrCreateMap(ircafe, "ignore");
-      Map<String, Object> servers = getOrCreateMap(ignore, "servers");
+    mutateIgnoreServer(
+        sid,
+        "ignore mask channels",
+        server -> {
+          Map<String, Object> byMask = getOrCreateMap(server, "maskChannels");
+          byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
 
-      @SuppressWarnings("unchecked")
-      Map<String, Object> server =
-          (servers.get(sid) instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
-      servers.put(sid, server);
-
-      List<String> normalized = normalizeIgnoreChannels(channels);
-
-      @SuppressWarnings("unchecked")
-      Map<String, Object> byMask =
-          (server.get("maskChannels") instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
-
-      byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-      if (normalized.isEmpty()) {
-        // Empty means no channel restriction; omit per-mask override from persisted YAML.
-      } else {
-        byMask.put(m, new java.util.ArrayList<>(normalized));
-      }
-
-      if (byMask.isEmpty()) {
-        server.remove("maskChannels");
-      } else {
-        server.put("maskChannels", byMask);
-      }
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ignore mask channels to '{}'", file, e);
-    }
+          if (!normalized.isEmpty()) {
+            byMask.put(m, new ArrayList<>(normalized));
+          }
+          removeIfEmpty(server, "maskChannels", byMask);
+        });
   }
 
   synchronized void rememberIgnoreMaskExpiresAt(
       String serverId, String mask, Long expiresAtEpochMs) {
-    try {
-      if (file.toString().isBlank()) return;
+    String sid = Objects.toString(serverId, "").trim();
+    String m = Objects.toString(mask, "").trim();
+    if (sid.isEmpty() || m.isEmpty()) return;
 
-      String sid = Objects.toString(serverId, "").trim();
-      String m = Objects.toString(mask, "").trim();
-      if (sid.isEmpty() || m.isEmpty()) return;
+    long expiresAt = (expiresAtEpochMs == null) ? 0L : expiresAtEpochMs;
 
-      long expiresAt = (expiresAtEpochMs == null) ? 0L : expiresAtEpochMs;
+    mutateIgnoreServer(
+        sid,
+        "ignore mask expiry",
+        server -> {
+          Map<String, Object> byMask = getOrCreateMap(server, "maskExpiresAt");
+          byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
 
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ignore = getOrCreateMap(ircafe, "ignore");
-      Map<String, Object> servers = getOrCreateMap(ignore, "servers");
-
-      @SuppressWarnings("unchecked")
-      Map<String, Object> server =
-          (servers.get(sid) instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
-      servers.put(sid, server);
-
-      @SuppressWarnings("unchecked")
-      Map<String, Object> byMask =
-          (server.get("maskExpiresAt") instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
-
-      byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-      if (expiresAt > 0L) {
-        byMask.put(m, expiresAt);
-      }
-
-      if (byMask.isEmpty()) {
-        server.remove("maskExpiresAt");
-      } else {
-        server.put("maskExpiresAt", byMask);
-      }
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ignore mask expiry to '{}'", file, e);
-    }
+          if (expiresAt > 0L) {
+            byMask.put(m, expiresAt);
+          }
+          removeIfEmpty(server, "maskExpiresAt", byMask);
+        });
   }
 
   synchronized void rememberIgnoreMaskPattern(
       String serverId, String mask, String pattern, String modeToken) {
-    try {
-      if (file.toString().isBlank()) return;
+    String sid = Objects.toString(serverId, "").trim();
+    String m = Objects.toString(mask, "").trim();
+    if (sid.isEmpty() || m.isEmpty()) return;
 
-      String sid = Objects.toString(serverId, "").trim();
-      String m = Objects.toString(mask, "").trim();
-      if (sid.isEmpty() || m.isEmpty()) return;
+    String normalizedPattern = Objects.toString(pattern, "").trim();
+    String normalizedMode = normalizeIgnorePatternMode(modeToken);
 
-      String normalizedPattern = Objects.toString(pattern, "").trim();
-      String normalizedMode = normalizeIgnorePatternMode(modeToken);
+    mutateIgnoreServer(
+        sid,
+        "ignore mask pattern",
+        server -> {
+          Map<String, Object> patternsByMask = getOrCreateMap(server, "maskPatterns");
+          Map<String, Object> modesByMask = getOrCreateMap(server, "maskPatternModes");
 
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ignore = getOrCreateMap(ircafe, "ignore");
-      Map<String, Object> servers = getOrCreateMap(ignore, "servers");
+          patternsByMask.entrySet()
+              .removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
+          modesByMask.entrySet()
+              .removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
 
-      @SuppressWarnings("unchecked")
-      Map<String, Object> server =
-          (servers.get(sid) instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
-      servers.put(sid, server);
+          if (!normalizedPattern.isEmpty()) {
+            patternsByMask.put(m, normalizedPattern);
+            if (!"glob".equals(normalizedMode)) {
+              modesByMask.put(m, normalizedMode);
+            }
+          }
 
-      @SuppressWarnings("unchecked")
-      Map<String, Object> patternsByMask =
-          (server.get("maskPatterns") instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
-      @SuppressWarnings("unchecked")
-      Map<String, Object> modesByMask =
-          (server.get("maskPatternModes") instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
-
-      patternsByMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-      modesByMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-
-      if (!normalizedPattern.isEmpty()) {
-        patternsByMask.put(m, normalizedPattern);
-        if (!"glob".equals(normalizedMode)) {
-          modesByMask.put(m, normalizedMode);
-        }
-      }
-
-      if (patternsByMask.isEmpty()) {
-        server.remove("maskPatterns");
-      } else {
-        server.put("maskPatterns", patternsByMask);
-      }
-      if (modesByMask.isEmpty()) {
-        server.remove("maskPatternModes");
-      } else {
-        server.put("maskPatternModes", modesByMask);
-      }
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ignore mask pattern to '{}'", file, e);
-    }
+          removeIfEmpty(server, "maskPatterns", patternsByMask);
+          removeIfEmpty(server, "maskPatternModes", modesByMask);
+        });
   }
 
   synchronized void rememberIgnoreMaskReplies(
       String serverId, String mask, boolean repliesEnabled) {
-    try {
-      if (file.toString().isBlank()) return;
+    String sid = Objects.toString(serverId, "").trim();
+    String m = Objects.toString(mask, "").trim();
+    if (sid.isEmpty() || m.isEmpty()) return;
 
-      String sid = Objects.toString(serverId, "").trim();
-      String m = Objects.toString(mask, "").trim();
-      if (sid.isEmpty() || m.isEmpty()) return;
+    mutateIgnoreServer(
+        sid,
+        "ignore mask replies flag",
+        server -> {
+          Map<String, Object> byMask = getOrCreateMap(server, "maskReplies");
+          byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
 
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ignore = getOrCreateMap(ircafe, "ignore");
-      Map<String, Object> servers = getOrCreateMap(ignore, "servers");
+          if (repliesEnabled) {
+            byMask.put(m, Boolean.TRUE);
+          }
+          removeIfEmpty(server, "maskReplies", byMask);
+        });
+  }
 
-      @SuppressWarnings("unchecked")
-      Map<String, Object> server =
-          (servers.get(sid) instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
-      servers.put(sid, server);
+  private void mutateIgnoreServer(
+      String serverId, String description, Consumer<Map<String, Object>> mutation) {
+    RuntimeConfigYamlSupport.mutateMap(
+        file,
+        documentStore,
+        log,
+        description,
+        ignore -> {
+          Map<String, Object> servers = getOrCreateMap(ignore, "servers");
+          Map<String, Object> server = getOrCreateMap(servers, serverId);
+          mutation.accept(server);
+        },
+        "ircafe",
+        "ignore");
+  }
 
-      @SuppressWarnings("unchecked")
-      Map<String, Object> byMask =
-          (server.get("maskReplies") instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
+  private void mutateIgnore(
+      String description, Consumer<Map<String, Object>> mutation) {
+    RuntimeConfigYamlSupport.mutateMap(
+        file, documentStore, log, description, mutation, "ircafe", "ignore");
+  }
 
-      byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-      if (repliesEnabled) {
-        byMask.put(m, Boolean.TRUE);
-      }
-
-      if (byMask.isEmpty()) {
-        server.remove("maskReplies");
-      } else {
-        server.put("maskReplies", byMask);
-      }
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ignore mask replies flag to '{}'", file, e);
+  private static void removeIfEmpty(
+      Map<String, Object> parent, String key, Map<String, Object> value) {
+    if (value.isEmpty()) {
+      parent.remove(key);
     }
   }
 
@@ -487,34 +372,19 @@ class RuntimeConfigIgnoreRulesStore {
   }
 
   synchronized void rememberSoftIgnoreMask(String serverId, String mask) {
-    try {
-      if (file.toString().isBlank()) return;
+    String sid = Objects.toString(serverId, "").trim();
+    String m = Objects.toString(mask, "").trim();
+    if (sid.isEmpty() || m.isEmpty()) return;
 
-      String sid = Objects.toString(serverId, "").trim();
-      String m = Objects.toString(mask, "").trim();
-      if (sid.isEmpty() || m.isEmpty()) return;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ignore = getOrCreateMap(ircafe, "ignore");
-      Map<String, Object> servers = getOrCreateMap(ignore, "servers");
-
-      @SuppressWarnings("unchecked")
-      Map<String, Object> server =
-          (servers.get(sid) instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
-      servers.put(sid, server);
-
-      List<String> masks = getOrCreateStringList(server, "softMasks");
-      if (masks.stream().noneMatch(x -> x != null && x.equalsIgnoreCase(m))) {
-        masks.add(m);
-      }
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist soft-ignore mask to '{}'", file, e);
-    }
+    mutateIgnoreServer(
+        sid,
+        "soft-ignore mask",
+        server -> {
+          List<String> masks = getOrCreateStringList(server, "softMasks");
+          if (masks.stream().noneMatch(x -> x != null && x.equalsIgnoreCase(m))) {
+            masks.add(m);
+          }
+        });
   }
 
   synchronized void forgetSoftIgnoreMask(String serverId, String mask) {
@@ -563,34 +433,12 @@ class RuntimeConfigIgnoreRulesStore {
   }
 
   synchronized void rememberHardIgnoreIncludesCtcp(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ignore = getOrCreateMap(ircafe, "ignore");
-
-      ignore.put("hardIgnoreIncludesCtcp", enabled);
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist hard-ignore CTCP setting to '{}'", file, e);
-    }
+    mutateIgnore(
+        "hard-ignore CTCP setting", ignore -> ignore.put("hardIgnoreIncludesCtcp", enabled));
   }
 
   synchronized void rememberSoftIgnoreIncludesCtcp(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ignore = getOrCreateMap(ircafe, "ignore");
-
-      ignore.put("softIgnoreIncludesCtcp", enabled);
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist soft-ignore CTCP setting to '{}'", file, e);
-    }
+    mutateIgnore(
+        "soft-ignore CTCP setting", ignore -> ignore.put("softIgnoreIncludesCtcp", enabled));
   }
 }
