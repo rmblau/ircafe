@@ -10,7 +10,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.app.api.TrayNotificationsPort;
-import cafe.woden.ircclient.config.UiProperties;
+import cafe.woden.ircclient.config.properties.UiProperties;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.notify.api.NotificationSoundPort;
 import java.lang.reflect.Field;

@@ -1,10 +1,5 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.properties;
 
-import cafe.woden.ircclient.config.properties.ConfigPropertyKeys;
-import cafe.woden.ircclient.config.properties.FilterRuleProperties;
-import cafe.woden.ircclient.config.properties.FilterScopeOverrideProperties;
-import cafe.woden.ircclient.config.properties.IrcEventNotificationRuleProperties;
-import cafe.woden.ircclient.config.properties.NotificationRuleProperties;
 import cafe.woden.ircclient.model.FilterPlaceholderRanges;
 import java.awt.Font;
 import java.util.List;
@@ -978,7 +973,7 @@ public record UiProperties(
     }
   }
 
-  static String normalizeTypingTreeIndicatorStyle(String raw) {
+  public static String normalizeTypingTreeIndicatorStyle(String raw) {
     String s = raw == null ? "" : raw.trim().toLowerCase(Locale.ROOT);
     if (s.isEmpty()) return "dots";
     return switch (s) {
@@ -989,7 +984,7 @@ public record UiProperties(
     };
   }
 
-  static String normalizeMatrixUserListNameDisplayMode(String raw) {
+  public static String normalizeMatrixUserListNameDisplayMode(String raw) {
     String s = raw == null ? "" : raw.trim().toLowerCase(Locale.ROOT);
     if (s.isEmpty()) return "compact";
     return switch (s) {
@@ -1009,7 +1004,7 @@ public record UiProperties(
     };
   }
 
-  static String normalizeSpellcheckLanguageTag(String raw) {
+  public static String normalizeSpellcheckLanguageTag(String raw) {
     String s = raw == null ? "" : raw.trim();
     if (s.isEmpty()) return "en-US";
     String folded = s.replace('_', '-');
@@ -1018,7 +1013,7 @@ public record UiProperties(
     return "en-US";
   }
 
-  static String normalizeSpellcheckCompletionPreset(String raw) {
+  public static String normalizeSpellcheckCompletionPreset(String raw) {
     String s = raw == null ? "" : raw.trim().toLowerCase(Locale.ROOT);
     if (s.isEmpty()) return "android-like";
     return switch (s) {

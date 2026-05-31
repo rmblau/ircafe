@@ -2,7 +2,7 @@ package cafe.woden.ircclient.diagnostics;
 
 import cafe.woden.ircclient.app.api.TrayNotificationsPort;
 import cafe.woden.ircclient.config.execution.ExecutorConfig;
-import cafe.woden.ircclient.config.UiProperties;
+import cafe.woden.ircclient.config.properties.UiProperties;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.model.TargetRef;

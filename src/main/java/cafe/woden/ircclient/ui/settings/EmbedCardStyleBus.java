@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.settings;
 
-import cafe.woden.ircclient.config.UiProperties;
+import cafe.woden.ircclient.config.properties.UiProperties;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import org.jmolecules.architecture.layered.InterfaceLayer;

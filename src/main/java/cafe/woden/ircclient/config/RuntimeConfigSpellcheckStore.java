@@ -4,6 +4,7 @@ import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateMa
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.putValue;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.sanitizeStringList;
 
+import cafe.woden.ircclient.config.properties.UiProperties;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import java.nio.file.Path;

@@ -6,7 +6,7 @@ import cafe.woden.ircclient.config.properties.IgnoreProperties;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.properties.LogProperties;
 import cafe.woden.ircclient.config.properties.PushyProperties;
-import cafe.woden.ircclient.config.UiProperties;
+import cafe.woden.ircclient.config.properties.UiProperties;
 import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
 import cafe.woden.ircclient.config.properties.SojuProperties;
 import cafe.woden.ircclient.config.properties.ZncProperties;

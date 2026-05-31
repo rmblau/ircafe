@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.chat.transcript.runtime;
 
-import cafe.woden.ircclient.config.UiProperties;
+import cafe.woden.ircclient.config.properties.UiProperties;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import java.time.Instant;
