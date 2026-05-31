@@ -2,9 +2,9 @@ package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -67,132 +67,59 @@ class RuntimeConfigLaunchJvmStore {
   }
 
   synchronized void rememberJavaCommand(String javaCommand) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String cmd = Objects.toString(javaCommand, "").trim();
-      if (cmd.isEmpty() || cmd.equalsIgnoreCase("java")) cmd = "";
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      LaunchJvmWritePath path = getOrCreateWritePath(doc);
-      Map<String, Object> jvm = path.jvm();
-
-      if (cmd.isEmpty()) {
-        jvm.remove("javaCommand");
-      } else {
-        jvm.put("javaCommand", cmd);
-      }
-
-      cleanup(path);
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist launch.jvm.javaCommand to '{}'", file, e);
-    }
+    String cmd = Objects.toString(javaCommand, "").trim();
+    if (cmd.isEmpty() || cmd.equalsIgnoreCase("java")) cmd = "";
+    rememberJvmSetting("launch.jvm.javaCommand", "javaCommand", cmd);
   }
 
   synchronized void rememberXmsMiB(int xmsMiB) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = clampHeapMiB(xmsMiB);
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      LaunchJvmWritePath path = getOrCreateWritePath(doc);
-      Map<String, Object> jvm = path.jvm();
-
-      if (v <= 0) {
-        jvm.remove("xmsMiB");
-      } else {
-        jvm.put("xmsMiB", v);
-      }
-
-      cleanup(path);
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist launch.jvm.xmsMiB to '{}'", file, e);
-    }
+    rememberJvmSetting("launch.jvm.xmsMiB", "xmsMiB", clampHeapMiB(xmsMiB));
   }
 
   synchronized void rememberXmxMiB(int xmxMiB) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = clampHeapMiB(xmxMiB);
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      LaunchJvmWritePath path = getOrCreateWritePath(doc);
-      Map<String, Object> jvm = path.jvm();
-
-      if (v <= 0) {
-        jvm.remove("xmxMiB");
-      } else {
-        jvm.put("xmxMiB", v);
-      }
-
-      cleanup(path);
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist launch.jvm.xmxMiB to '{}'", file, e);
-    }
+    rememberJvmSetting("launch.jvm.xmxMiB", "xmxMiB", clampHeapMiB(xmxMiB));
   }
 
   synchronized void rememberGc(String gc) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String normalized = normalizeGc(gc);
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      LaunchJvmWritePath path = getOrCreateWritePath(doc);
-      Map<String, Object> jvm = path.jvm();
-
-      if (normalized.isEmpty()) {
-        jvm.remove("gc");
-      } else {
-        jvm.put("gc", normalized);
-      }
-
-      cleanup(path);
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist launch.jvm.gc to '{}'", file, e);
-    }
+    rememberJvmSetting("launch.jvm.gc", "gc", normalizeGc(gc));
   }
 
   synchronized void rememberArgs(List<String> args) {
+    rememberJvmSetting("launch.jvm.args", "args", sanitizeArgs(args));
+  }
+
+  private Optional<Object> readValue(String description, String key) {
+    return RuntimeConfigYamlSupport.readExistingValue(
+        file, documentStore, log, description, "ircafe", "launch", "jvm", key);
+  }
+
+  private void rememberJvmSetting(String description, String key, Object value) {
     try {
       if (file.toString().isBlank()) return;
-
-      List<String> sanitized = sanitizeArgs(args);
 
       Map<String, Object> doc = documentStore.loadOrEmpty();
       LaunchJvmWritePath path = getOrCreateWritePath(doc);
       Map<String, Object> jvm = path.jvm();
 
-      if (sanitized.isEmpty()) {
-        jvm.remove("args");
+      if (isEmptyJvmSettingValue(value)) {
+        jvm.remove(key);
       } else {
-        jvm.put("args", sanitized);
+        jvm.put(key, value);
       }
 
       cleanup(path);
       documentStore.write(doc);
     } catch (Exception e) {
-      log.warn("[ircafe] Could not persist launch.jvm.args to '{}'", file, e);
+      log.warn("[ircafe] Could not persist {} to '{}'", description, file, e);
     }
   }
 
-  private Optional<Object> readValue(String description, String key) {
-    try {
-      if (file.toString().isBlank()) return Optional.empty();
-      if (!Files.exists(file)) return Optional.empty();
-
-      Map<String, Object> doc = documentStore.load();
-      return RuntimeConfigDocumentPathReader.readValue(doc, "ircafe", "launch", "jvm", key);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read {} from '{}'", description, file, e);
-      return Optional.empty();
-    }
+  private static boolean isEmptyJvmSettingValue(Object value) {
+    if (value == null) return true;
+    if (value instanceof String s) return s.isBlank();
+    if (value instanceof Number n) return n.intValue() <= 0;
+    if (value instanceof Collection<?> c) return c.isEmpty();
+    return false;
   }
 
   private static int clampHeapMiB(int value) {
