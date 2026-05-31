@@ -2,6 +2,7 @@ package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateStringList;
+import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.removeIfEmpty;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
@@ -208,13 +209,6 @@ class RuntimeConfigIgnoreRulesStore {
       String description, Consumer<Map<String, Object>> mutation) {
     RuntimeConfigYamlSupport.mutateMap(
         file, documentStore, log, description, mutation, "ircafe", "ignore");
-  }
-
-  private static void removeIfEmpty(
-      Map<String, Object> parent, String key, Map<String, Object> value) {
-    if (value.isEmpty()) {
-      parent.remove(key);
-    }
   }
 
   private void mutateExistingIgnoreServer(

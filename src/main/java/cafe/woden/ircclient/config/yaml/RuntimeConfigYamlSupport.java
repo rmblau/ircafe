@@ -221,6 +221,16 @@ public final class RuntimeConfigYamlSupport {
     return out.isEmpty() ? List.of() : List.copyOf(out);
   }
 
+  public static boolean containsIgnoreCase(List<String> values, String needle) {
+    if (values == null || values.isEmpty()) return false;
+    String normalizedNeedle = Objects.toString(needle, "").trim();
+    if (normalizedNeedle.isEmpty()) return false;
+    for (String value : values) {
+      if (normalizedNeedle.equalsIgnoreCase(Objects.toString(value, "").trim())) return true;
+    }
+    return false;
+  }
+
   public static boolean isEmptySettingValue(Object value) {
     if (value == null) return true;
     if (value instanceof CharSequence text) return text.toString().isBlank();

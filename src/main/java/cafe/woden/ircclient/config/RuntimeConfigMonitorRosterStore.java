@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSupport.mutateExistingServer;
+import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.containsIgnoreCase;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSupport.readExistingServer;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
@@ -105,15 +106,5 @@ class RuntimeConfigMonitorRosterStore {
     if (nick.indexOf(' ') >= 0 || nick.indexOf('\t') >= 0) return "";
     if (nick.startsWith("#") || nick.startsWith("&")) return "";
     return nick;
-  }
-
-  private static boolean containsIgnoreCase(List<String> values, String needle) {
-    if (values == null || values.isEmpty()) return false;
-    String n = Objects.toString(needle, "").trim();
-    if (n.isEmpty()) return false;
-    for (String value : values) {
-      if (value != null && value.equalsIgnoreCase(n)) return true;
-    }
-    return false;
   }
 }

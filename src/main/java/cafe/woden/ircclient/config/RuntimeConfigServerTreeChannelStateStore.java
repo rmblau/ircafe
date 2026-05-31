@@ -4,6 +4,7 @@ import static cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSupport.fi
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSupport.readExistingServer;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSupport.readServerList;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asBoolean;
+import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.containsIgnoreCase;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateDocument;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.readExistingValue;
@@ -587,14 +588,5 @@ class RuntimeConfigServerTreeChannelStateStore {
 
   private static String foldChannelKey(String channel) {
     return Objects.toString(channel, "").trim().toLowerCase(Locale.ROOT);
-  }
-
-  private static boolean containsIgnoreCase(List<String> values, String needle) {
-    String n = Objects.toString(needle, "").trim();
-    if (n.isEmpty()) return false;
-    for (String value : values) {
-      if (n.equalsIgnoreCase(Objects.toString(value, "").trim())) return true;
-    }
-    return false;
   }
 }

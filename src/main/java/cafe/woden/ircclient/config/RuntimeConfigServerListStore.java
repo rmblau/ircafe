@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.config;
 
+import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.containsIgnoreCase;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateDocument;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateMap;
@@ -130,14 +131,6 @@ class RuntimeConfigServerListStore {
       out.add(toServerMap(server));
     }
     return out;
-  }
-
-  private static boolean containsIgnoreCase(List<String> values, String needle) {
-    if (values == null || needle == null) return false;
-    for (String v : values) {
-      if (v != null && v.equalsIgnoreCase(needle)) return true;
-    }
-    return false;
   }
 
   private static Map<String, Object> toServerMap(IrcProperties.Server s) {
