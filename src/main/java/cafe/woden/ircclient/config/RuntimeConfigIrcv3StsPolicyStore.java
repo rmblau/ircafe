@@ -3,14 +3,12 @@ package cafe.woden.ircclient.config;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asBoolean;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asInt;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asLong;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateDocument;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.readExistingValue;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.readMap;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.removeIfEmpty;
 
-import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.api.Ircv3StsPolicyConfigPort;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -25,12 +23,10 @@ class RuntimeConfigIrcv3StsPolicyStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigIrcv3StsPolicyStore.class);
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigYamlSection ircv3Section;
 
   RuntimeConfigIrcv3StsPolicyStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.ircv3Section = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ircv3");
   }
 
   /**
@@ -40,14 +36,7 @@ class RuntimeConfigIrcv3StsPolicyStore {
    */
   synchronized Map<String, Ircv3StsPolicyConfigPort.StsPolicySnapshot> readPolicies() {
     Optional<Object> policiesObj =
-        readExistingValue(
-            file,
-            documentStore,
-            log,
-            "IRCv3 STS policy cache",
-            "ircafe",
-            "ircv3",
-            "stsPolicies");
+        ircv3Section.readExistingValue("IRCv3 STS policy cache", "stsPolicies");
     if (policiesObj.isEmpty()) return Map.of();
     if (!(policiesObj.get() instanceof Map<?, ?> policies)) return Map.of();
 
@@ -98,16 +87,9 @@ class RuntimeConfigIrcv3StsPolicyStore {
     Integer persistedPort = normalizedPort;
     String normalizedRawValue = Objects.toString(rawValue, "").trim();
 
-    mutateDocument(
-        file,
-        documentStore,
-        log,
+    ircv3Section.mutateMap(
         "IRCv3 STS policy for host '" + host + "'",
-        doc -> {
-          Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-          Map<String, Object> ircv3 = getOrCreateMap(ircafe, "ircv3");
-          Map<String, Object> policies = getOrCreateMap(ircv3, "stsPolicies");
-
+        policies -> {
           Map<String, Object> policy = new LinkedHashMap<>();
           policy.put("expiresAtEpochMs", expiresAtEpochMs);
           policy.put("durationSeconds", durationSeconds);
@@ -122,8 +104,8 @@ class RuntimeConfigIrcv3StsPolicyStore {
           }
 
           policies.put(hostKey, policy);
-          return true;
-        });
+        },
+        "stsPolicies");
   }
 
   /** Removes a persisted IRCv3 STS policy snapshot from {@code ircafe.ircv3.stsPolicies}. */
@@ -131,10 +113,7 @@ class RuntimeConfigIrcv3StsPolicyStore {
     String hostKey = normalizeHostKey(host);
     if (hostKey == null) return;
 
-    mutateDocument(
-        file,
-        documentStore,
-        log,
+    ircv3Section.mutateDocument(
         "IRCv3 STS policy removal for host '" + host + "'",
         doc -> {
           Optional<Map<String, Object>> ircafeObj = readMap(doc, "ircafe");

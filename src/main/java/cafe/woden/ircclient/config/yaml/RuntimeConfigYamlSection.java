@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import org.jmolecules.architecture.layered.InfrastructureLayer;
 import org.slf4j.Logger;
 
@@ -56,6 +57,11 @@ public final class RuntimeConfigYamlSection {
       String description, Consumer<Map<String, Object>> mutation, String... path) {
     RuntimeConfigYamlSupport.mutateMap(
         file, documentStore, log, description, mutation, resolve(path));
+  }
+
+  public void mutateDocument(
+      String description, Function<Map<String, Object>, Boolean> mutation) {
+    RuntimeConfigYamlSupport.mutateDocument(file, documentStore, log, description, mutation);
   }
 
   private String[] resolve(String... path) {

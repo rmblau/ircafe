@@ -2,11 +2,10 @@ package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asBoolean;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateDocument;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.readExistingValue;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.removeIfEmpty;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
@@ -24,12 +23,10 @@ class RuntimeConfigBouncerDiscoveryStore {
       LoggerFactory.getLogger(RuntimeConfigBouncerDiscoveryStore.class);
   private static final String DEFAULT_GENERIC_BOUNCER_LOGIN_TEMPLATE = "{base}/{network}";
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigYamlSection ircafeSection;
 
   RuntimeConfigBouncerDiscoveryStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.ircafeSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe");
   }
 
   synchronized void rememberSojuAutoConnectNetwork(
@@ -66,10 +63,7 @@ class RuntimeConfigBouncerDiscoveryStore {
 
   synchronized void rememberGenericBouncerLoginTemplate(String template) {
     String normalized = Objects.toString(template, "").trim();
-    mutateDocument(
-        file,
-        documentStore,
-        log,
+    ircafeSection.mutateDocument(
         "bouncer.generic.loginTemplate",
         doc -> {
           Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
@@ -90,24 +84,15 @@ class RuntimeConfigBouncerDiscoveryStore {
   }
 
   synchronized void rememberGenericBouncerPreferLoginHint(boolean enabled) {
-    mutateDocument(
-        file,
-        documentStore,
-        log,
+    ircafeSection.mutateMap(
         "bouncer.generic.preferLoginHint",
-        doc -> {
-          Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-          Map<String, Object> bouncer = getOrCreateMap(ircafe, "bouncer");
-          Map<String, Object> generic = getOrCreateMap(bouncer, "generic");
-
-          generic.put("preferLoginHint", enabled);
-          return true;
-        });
+        generic -> generic.put("preferLoginHint", enabled),
+        "bouncer",
+        "generic");
   }
 
   private Optional<Object> readGenericBouncerValue(String description, String key) {
-    return readExistingValue(
-        file, documentStore, log, description, "ircafe", "bouncer", "generic", key);
+    return ircafeSection.readExistingValue(description, "bouncer", "generic", key);
   }
 
   private void rememberBouncerAutoConnectNetwork(
@@ -117,10 +102,7 @@ class RuntimeConfigBouncerDiscoveryStore {
     String net = Objects.toString(networkName, "").trim();
     if (backend.isEmpty() || sid.isEmpty() || net.isEmpty()) return;
 
-    mutateDocument(
-        file,
-        documentStore,
-        log,
+    ircafeSection.mutateDocument(
         backend + " auto-connect setting",
         doc -> {
           Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
@@ -148,7 +130,7 @@ class RuntimeConfigBouncerDiscoveryStore {
   private Map<String, Map<String, Boolean>> readBouncerAutoConnectRules(
       String backend, String description) {
     Optional<Object> autoConnectObj =
-        readExistingValue(file, documentStore, log, description, "ircafe", backend, "autoConnect");
+        ircafeSection.readExistingValue(description, backend, "autoConnect");
     if (autoConnectObj.isEmpty()) return Map.of();
     if (!(autoConnectObj.get() instanceof Map<?, ?> autoConnectByBouncer)) return Map.of();
 
@@ -177,5 +159,4 @@ class RuntimeConfigBouncerDiscoveryStore {
     String raw = Objects.toString(template, "").trim();
     return raw.isEmpty() ? DEFAULT_GENERIC_BOUNCER_LOGIN_TEMPLATE : raw;
   }
-
 }
