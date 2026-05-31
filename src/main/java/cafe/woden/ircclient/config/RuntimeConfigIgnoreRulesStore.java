@@ -13,6 +13,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -204,36 +205,8 @@ class RuntimeConfigIgnoreRulesStore {
   }
 
   private void mutateExistingIgnoreServer(
-      String serverId, String description, ExistingIgnoreServerMutation mutation) {
-    ignoreSection.mutateDocument(
-        description,
-        doc -> {
-          Map<String, Object> ircafe = existingMap(doc, "ircafe");
-          if (ircafe == null) return false;
-          Map<String, Object> ignore = existingMap(ircafe, "ignore");
-          if (ignore == null) return false;
-          Map<String, Object> servers = existingMap(ignore, "servers");
-          if (servers == null) return false;
-          Map<String, Object> server = existingMap(servers, serverId);
-          if (server == null) return false;
-
-          return mutation.mutate(ircafe, ignore, servers, server);
-        });
-  }
-
-  @FunctionalInterface
-  private interface ExistingIgnoreServerMutation {
-    boolean mutate(
-        Map<String, Object> ircafe,
-        Map<String, Object> ignore,
-        Map<String, Object> servers,
-        Map<String, Object> server);
-  }
-
-  @SuppressWarnings("unchecked")
-  private static Map<String, Object> existingMap(Map<String, Object> parent, String key) {
-    Object value = parent.get(key);
-    return (value instanceof Map<?, ?> map) ? (Map<String, Object>) map : null;
+      String serverId, String description, Function<Map<String, Object>, Boolean> mutation) {
+    ignoreSection.mutateExistingMapAndRemoveIfEmpty(description, mutation, "servers", serverId);
   }
 
   @SuppressWarnings("unchecked")
@@ -263,23 +236,6 @@ class RuntimeConfigIgnoreRulesStore {
     byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(mask));
     if (byMask.isEmpty()) {
       server.remove(mapKey);
-    }
-  }
-
-  private static void cleanupIgnoreServer(
-      Map<String, Object> ircafe,
-      Map<String, Object> ignore,
-      Map<String, Object> servers,
-      String serverId,
-      Map<String, Object> server) {
-    if (server.isEmpty()) {
-      servers.remove(serverId);
-    }
-    if (servers.isEmpty()) {
-      ignore.remove("servers");
-    }
-    if (ignore.isEmpty()) {
-      ircafe.remove("ignore");
     }
   }
 
@@ -341,7 +297,7 @@ class RuntimeConfigIgnoreRulesStore {
     mutateExistingIgnoreServer(
         sid,
         "ignore mask removal",
-        (ircafe, ignore, servers, server) -> {
+        server -> {
           if (!removeMaskFromList(server, "masks", m)) {
             return false;
           }
@@ -352,7 +308,6 @@ class RuntimeConfigIgnoreRulesStore {
           removeMaskKey(server, "maskPatterns", m);
           removeMaskKey(server, "maskPatternModes", m);
           removeMaskKey(server, "maskReplies", m);
-          cleanupIgnoreServer(ircafe, ignore, servers, sid, server);
           return true;
         });
   }
@@ -381,12 +336,11 @@ class RuntimeConfigIgnoreRulesStore {
     mutateExistingIgnoreServer(
         sid,
         "soft-ignore mask removal",
-        (ircafe, ignore, servers, server) -> {
+        server -> {
           if (!removeMaskFromList(server, "softMasks", m)) {
             return false;
           }
 
-          cleanupIgnoreServer(ircafe, ignore, servers, sid, server);
           return true;
         });
   }
