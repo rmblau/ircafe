@@ -3,7 +3,6 @@ package cafe.woden.ircclient.config;
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
 
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
@@ -60,10 +59,10 @@ class RuntimeConfigLaunchJvmStore {
   }
 
   synchronized List<String> readArgs(List<String> defaultValue) {
-    List<String> fallback = sanitizeArgs(defaultValue);
+    List<String> fallback = RuntimeConfigYamlSupport.sanitizeStringList(defaultValue);
     Object argsObj = readValue("launch.jvm.args", "args").orElse(null);
     if (!(argsObj instanceof List<?> raw)) return fallback;
-    return sanitizeArgs(raw);
+    return RuntimeConfigYamlSupport.sanitizeStringList(raw);
   }
 
   synchronized void rememberJavaCommand(String javaCommand) {
@@ -85,7 +84,8 @@ class RuntimeConfigLaunchJvmStore {
   }
 
   synchronized void rememberArgs(List<String> args) {
-    rememberJvmSetting("launch.jvm.args", "args", sanitizeArgs(args));
+    rememberJvmSetting(
+        "launch.jvm.args", "args", RuntimeConfigYamlSupport.sanitizeStringList(args));
   }
 
   private Optional<Object> readValue(String description, String key) {
@@ -140,16 +140,6 @@ class RuntimeConfigLaunchJvmStore {
       case "epsilon", "epsilongc", "useepsilongc", "useepsilon" -> "epsilon";
       default -> "";
     };
-  }
-
-  private static List<String> sanitizeArgs(List<?> args) {
-    if (args == null || args.isEmpty()) return List.of();
-    List<String> out = new ArrayList<>();
-    for (Object arg : args) {
-      String t = Objects.toString(arg, "").trim();
-      if (!t.isEmpty()) out.add(t);
-    }
-    return List.copyOf(out);
   }
 
   private static void cleanup(

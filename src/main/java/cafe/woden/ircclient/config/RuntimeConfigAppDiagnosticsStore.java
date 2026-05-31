@@ -1,12 +1,7 @@
 package cafe.woden.ircclient.config;
 
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMapPath;
-
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -105,10 +100,10 @@ class RuntimeConfigAppDiagnosticsStore {
   }
 
   synchronized List<String> readJhiccupArgs(List<String> defaultValue) {
-    List<String> fallback = sanitizeArgs(defaultValue);
+    List<String> fallback = RuntimeConfigYamlSupport.sanitizeStringList(defaultValue);
     Object argsObj = readSetting("ui.appDiagnostics.jhiccup.args", "jhiccup", "args").orElse(null);
-    if (!(argsObj instanceof List<?> raw)) return fallback;
-    return sanitizeArgs(raw);
+    if (!(argsObj instanceof List<?>)) return fallback;
+    return RuntimeConfigYamlSupport.sanitizeStringList(argsObj);
   }
 
   synchronized void rememberAssertjSwingEnabled(boolean enabled) {
@@ -154,7 +149,8 @@ class RuntimeConfigAppDiagnosticsStore {
   }
 
   synchronized void rememberJhiccupArgs(List<String> args) {
-    rememberSectionSetting("jhiccup", "args", sanitizeArgs(args), true);
+    rememberSectionSetting(
+        "jhiccup", "args", RuntimeConfigYamlSupport.sanitizeStringList(args), true);
   }
 
   private boolean readAssertjSwingBoolean(String key, boolean defaultValue) {
@@ -169,20 +165,12 @@ class RuntimeConfigAppDiagnosticsStore {
   }
 
   private Optional<Object> readSetting(String description, String... path) {
-    try {
-      if (file.toString().isBlank()) return Optional.empty();
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      String[] fullPath = new String[path.length + 3];
-      fullPath[0] = "ircafe";
-      fullPath[1] = "ui";
-      fullPath[2] = "appDiagnostics";
-      System.arraycopy(path, 0, fullPath, 3, path.length);
-      return RuntimeConfigDocumentPathReader.readValue(doc, fullPath);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read {} from '{}'", description, file, e);
-      return Optional.empty();
-    }
+    String[] fullPath = new String[path.length + 3];
+    fullPath[0] = "ircafe";
+    fullPath[1] = "ui";
+    fullPath[2] = "appDiagnostics";
+    System.arraycopy(path, 0, fullPath, 3, path.length);
+    return RuntimeConfigYamlSupport.readValue(file, documentStore, log, description, fullPath);
   }
 
   private void rememberAssertjSwingSetting(String key, Object value) {
@@ -191,23 +179,22 @@ class RuntimeConfigAppDiagnosticsStore {
 
   private void rememberSectionSetting(
       String section, String key, Object value, boolean removeEmpty) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> settings =
-          getOrCreateMapPath(doc, "ircafe", "ui", "appDiagnostics", section);
-
-      if (removeEmpty && isEmptySettingValue(value)) {
-        settings.remove(key);
-      } else {
-        settings.put(key, value);
-      }
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.appDiagnostics.{}.{} to '{}'", section, key, file, e);
-    }
+    RuntimeConfigYamlSupport.mutateMap(
+        file,
+        documentStore,
+        log,
+        "ui.appDiagnostics." + section + "." + key,
+        settings -> {
+          if (removeEmpty && RuntimeConfigYamlSupport.isEmptySettingValue(value)) {
+            settings.remove(key);
+          } else {
+            settings.put(key, value);
+          }
+        },
+        "ircafe",
+        "ui",
+        "appDiagnostics",
+        section);
   }
 
   private static int clampAssertjFreezeThresholdMs(int value) {
@@ -226,23 +213,6 @@ class RuntimeConfigAppDiagnosticsStore {
     if (value < 250) return 250;
     if (value > 120_000) return 120_000;
     return value;
-  }
-
-  private static List<String> sanitizeArgs(List<?> args) {
-    if (args == null || args.isEmpty()) return List.of();
-    List<String> out = new ArrayList<>();
-    for (Object arg : args) {
-      String t = Objects.toString(arg, "").trim();
-      if (!t.isEmpty()) out.add(t);
-    }
-    return List.copyOf(out);
-  }
-
-  private static boolean isEmptySettingValue(Object value) {
-    if (value == null) return true;
-    if (value instanceof CharSequence text) return text.toString().isBlank();
-    if (value instanceof Collection<?> collection) return collection.isEmpty();
-    return false;
   }
 
 }

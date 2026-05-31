@@ -4,6 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -202,6 +203,13 @@ final class RuntimeConfigYamlSupport {
       if (!value.isEmpty()) out.add(value);
     }
     return out.isEmpty() ? List.of() : List.copyOf(out);
+  }
+
+  static boolean isEmptySettingValue(Object value) {
+    if (value == null) return true;
+    if (value instanceof CharSequence text) return text.toString().isBlank();
+    if (value instanceof Collection<?> collection) return collection.isEmpty();
+    return false;
   }
 
   static Optional<Integer> asInt(Object value) {
