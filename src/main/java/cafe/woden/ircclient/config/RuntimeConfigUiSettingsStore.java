@@ -1,7 +1,6 @@
 package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMapPath;
 
 import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort.LastSelectedTarget;
 import java.nio.file.Path;
@@ -26,22 +25,20 @@ class RuntimeConfigUiSettingsStore {
   }
 
   synchronized void rememberUiSettings(String theme, String chatFontFamily, int chatFontSize) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ui = uiMap(doc);
-
-      if (theme != null && !theme.isBlank()) ui.put("theme", theme);
-      if (chatFontFamily != null && !chatFontFamily.isBlank()) {
-        ui.put("chatFontFamily", chatFontFamily);
-      }
-      if (chatFontSize > 0) ui.put("chatFontSize", chatFontSize);
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist UI config to '{}'", file, e);
-    }
+    RuntimeConfigYamlSupport.mutateMap(
+        file,
+        documentStore,
+        log,
+        "UI config",
+        ui -> {
+          if (theme != null && !theme.isBlank()) ui.put("theme", theme);
+          if (chatFontFamily != null && !chatFontFamily.isBlank()) {
+            ui.put("chatFontFamily", chatFontFamily);
+          }
+          if (chatFontSize > 0) ui.put("chatFontSize", chatFontSize);
+        },
+        "ircafe",
+        "ui");
   }
 
   synchronized Optional<String> readStartupThemePending() {
@@ -100,23 +97,22 @@ class RuntimeConfigUiSettingsStore {
   }
 
   synchronized void rememberDockLayoutWidths(Integer serverDockWidthPx, Integer userDockWidthPx) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> layout = getOrCreateMap(uiMap(doc), "layout");
-
-      if (serverDockWidthPx != null && serverDockWidthPx > 0) {
-        layout.put("serverDockWidthPx", serverDockWidthPx);
-      }
-      if (userDockWidthPx != null && userDockWidthPx > 0) {
-        layout.put("userDockWidthPx", userDockWidthPx);
-      }
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist dock layout widths to '{}'", file, e);
-    }
+    RuntimeConfigYamlSupport.mutateMap(
+        file,
+        documentStore,
+        log,
+        "dock layout widths",
+        layout -> {
+          if (serverDockWidthPx != null && serverDockWidthPx > 0) {
+            layout.put("serverDockWidthPx", serverDockWidthPx);
+          }
+          if (userDockWidthPx != null && userDockWidthPx > 0) {
+            layout.put("userDockWidthPx", userDockWidthPx);
+          }
+        },
+        "ircafe",
+        "ui",
+        "layout");
   }
 
   synchronized void rememberServerDockWidthPx(int serverDockWidthPx) {
@@ -154,26 +150,23 @@ class RuntimeConfigUiSettingsStore {
   }
 
   synchronized void rememberLastSelectedTarget(String serverId, String target) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      LastSelectedTarget next = new LastSelectedTarget(serverId, target);
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ui = uiMap(doc);
-
-      if (!next.isValid()) {
-        ui.remove("lastSelectedTarget");
-      } else {
-        Map<String, Object> selected = getOrCreateMap(ui, "lastSelectedTarget");
-        selected.put("serverId", next.serverId());
-        selected.put("target", next.target());
-      }
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.lastSelectedTarget to '{}'", file, e);
-    }
+    LastSelectedTarget next = new LastSelectedTarget(serverId, target);
+    RuntimeConfigYamlSupport.mutateMap(
+        file,
+        documentStore,
+        log,
+        "ui.lastSelectedTarget",
+        ui -> {
+          if (!next.isValid()) {
+            ui.remove("lastSelectedTarget");
+          } else {
+            Map<String, Object> selected = getOrCreateMap(ui, "lastSelectedTarget");
+            selected.put("serverId", next.serverId());
+            selected.put("target", next.target());
+          }
+        },
+        "ircafe",
+        "ui");
   }
 
   synchronized void rememberUiDensity(String density) {
@@ -293,7 +286,4 @@ class RuntimeConfigUiSettingsStore {
     return "auto";
   }
 
-  private static Map<String, Object> uiMap(Map<String, Object> doc) {
-    return getOrCreateMapPath(doc, "ircafe", "ui");
-  }
 }
