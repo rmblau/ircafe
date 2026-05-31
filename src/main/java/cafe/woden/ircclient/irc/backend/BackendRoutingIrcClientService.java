@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.irc.backend;
 
 import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
-import cafe.woden.ircclient.config.InstalledPluginServices;
+import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.config.api.BackendMetadataPort;

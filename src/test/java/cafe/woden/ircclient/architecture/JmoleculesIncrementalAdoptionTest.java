@@ -340,6 +340,8 @@ class JmoleculesIncrementalAdoptionTest {
     assertAnnotated(ServerRegistry.class, ApplicationLayer.class);
     assertAnnotated(ServerCatalog.class, ApplicationLayer.class);
     assertAnnotated(EphemeralServerRegistry.class, ApplicationLayer.class);
+    assertAnnotatedByName(
+        "cafe.woden.ircclient.config.plugins.InstalledPluginServices", ApplicationLayer.class);
     assertAnnotated(NetProxyBootstrap.class, ApplicationLayer.class);
     assertAnnotated(NetHeartbeatBootstrap.class, ApplicationLayer.class);
     assertAnnotated(NetTlsBootstrap.class, ApplicationLayer.class);

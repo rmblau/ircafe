@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.app.outbound.backend;
 
 import cafe.woden.ircclient.app.outbound.backend.spi.BackendExtension;
-import cafe.woden.ircclient.config.InstalledPluginServices;
+import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
 import java.util.List;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
