@@ -2,9 +2,10 @@ package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.asBoolean;
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.mutateDocument;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.readExistingValue;
 
 import cafe.woden.ircclient.config.api.Ircv3CapabilityNameResolverPort;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -42,32 +43,26 @@ class RuntimeConfigIrcv3CapabilityStore {
    * <p>Keys are normalized to lowercase, values are booleans. Missing/invalid entries are ignored.
    */
   synchronized Map<String, Boolean> readCapabilities() {
-    try {
-      if (file.toString().isBlank()) return Map.of();
-      if (!Files.exists(file)) return Map.of();
+    Optional<Object> capsObj =
+        readExistingValue(
+            file,
+            documentStore,
+            log,
+            "IRCv3 capability settings",
+            "ircafe",
+            "ui",
+            "ircv3Capabilities");
+    if (capsObj.isEmpty()) return Map.of();
+    if (!(capsObj.get() instanceof Map<?, ?> caps)) return Map.of();
 
-      Map<String, Object> doc = documentStore.load();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return Map.of();
-
-      Object uiObj = ircafe.get("ui");
-      if (!(uiObj instanceof Map<?, ?> ui)) return Map.of();
-
-      Object capsObj = ui.get("ircv3Capabilities");
-      if (!(capsObj instanceof Map<?, ?> caps)) return Map.of();
-
-      Map<String, Boolean> out = new LinkedHashMap<>();
-      for (Map.Entry<?, ?> e : caps.entrySet()) {
-        String key = normalizeCapabilityKey(Objects.toString(e.getKey(), ""));
-        if (key == null) continue;
-        Optional<Boolean> b = asBoolean(e.getValue());
-        b.ifPresent(value -> out.put(key, value));
-      }
-      return out;
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read IRCv3 capability settings from '{}'", file, e);
-      return Map.of();
+    Map<String, Boolean> out = new LinkedHashMap<>();
+    for (Map.Entry<?, ?> e : caps.entrySet()) {
+      String key = normalizeCapabilityKey(Objects.toString(e.getKey(), ""));
+      if (key == null) continue;
+      Optional<Boolean> b = asBoolean(e.getValue());
+      b.ifPresent(value -> out.put(key, value));
     }
+    return out;
   }
 
   /**
@@ -87,35 +82,32 @@ class RuntimeConfigIrcv3CapabilityStore {
    * <p>Default behavior is "enabled", so enabled values are removed to keep YAML concise.
    */
   synchronized void rememberCapabilityEnabled(String capability, boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
+    String key = normalizeCapabilityKey(capability);
+    if (key == null) return;
 
-      String key = normalizeCapabilityKey(capability);
-      if (key == null) return;
+    mutateDocument(
+        file,
+        documentStore,
+        log,
+        "IRCv3 capability '" + capability + "' setting",
+        doc -> {
+          Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
+          Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
+          Map<String, Object> caps = getOrCreateMap(ui, "ircv3Capabilities");
 
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> caps = getOrCreateMap(ui, "ircv3Capabilities");
-
-      if (enabled) {
-        caps.remove(key);
-      } else {
-        caps.put(key, false);
-      }
-      if (caps.isEmpty()) {
-        ui.remove("ircv3Capabilities");
-      }
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist IRCv3 capability '{}' setting to '{}'", capability, file, e);
-    }
+          if (enabled) {
+            caps.remove(key);
+          } else {
+            caps.put(key, false);
+          }
+          if (caps.isEmpty()) {
+            ui.remove("ircv3Capabilities");
+          }
+          return true;
+        });
   }
 
   private String normalizeCapabilityKey(String capability) {
     return capabilityNameResolver.normalizePreferenceKey(capability);
   }
-
 }

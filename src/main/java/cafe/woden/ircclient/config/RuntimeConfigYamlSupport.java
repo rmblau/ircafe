@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import org.jmolecules.architecture.layered.InfrastructureLayer;
 import org.slf4j.Logger;
 
@@ -86,6 +87,24 @@ final class RuntimeConfigYamlSupport {
       Map<String, Object> doc = documentStore.loadOrEmpty();
       Map<String, Object> target = getOrCreateMapPath(doc, path);
       mutation.accept(target);
+
+      documentStore.write(doc);
+    } catch (Exception e) {
+      log.warn("[ircafe] Could not persist {} to '{}'", description, file, e);
+    }
+  }
+
+  static void mutateDocument(
+      Path file,
+      RuntimeConfigDocumentStore documentStore,
+      Logger log,
+      String description,
+      Function<Map<String, Object>, Boolean> mutation) {
+    try {
+      if (file.toString().isBlank()) return;
+
+      Map<String, Object> doc = documentStore.loadOrEmpty();
+      if (!Boolean.TRUE.equals(mutation.apply(doc))) return;
 
       documentStore.write(doc);
     } catch (Exception e) {
@@ -180,6 +199,20 @@ final class RuntimeConfigYamlSupport {
       if (t.isEmpty()) return Optional.empty();
       try {
         return Optional.of(Integer.parseInt(t));
+      } catch (Exception ignored) {
+        return Optional.empty();
+      }
+    }
+    return Optional.empty();
+  }
+
+  static Optional<Long> asLong(Object value) {
+    if (value instanceof Number n) return Optional.of(n.longValue());
+    if (value instanceof String s) {
+      String t = s.trim();
+      if (t.isEmpty()) return Optional.empty();
+      try {
+        return Optional.of(Long.parseLong(t));
       } catch (Exception ignored) {
         return Optional.empty();
       }
