@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.app.api.ConnectionState;
-import cafe.woden.ircclient.config.ServerEntry;
+import cafe.woden.ircclient.config.api.ServerEntry;
 import cafe.woden.ircclient.ui.servertree.ServerTreeBouncerBackends;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;

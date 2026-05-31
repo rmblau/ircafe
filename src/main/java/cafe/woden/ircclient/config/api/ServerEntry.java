@@ -1,5 +1,6 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.api;
 
+import cafe.woden.ircclient.config.IrcProperties;
 import java.util.Objects;
 
 public record ServerEntry(IrcProperties.Server server, boolean ephemeral, String originId) {
