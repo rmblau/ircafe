@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.config;
 
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -151,15 +153,6 @@ class RuntimeConfigMonitorRosterStore {
       if (value != null && value.equalsIgnoreCase(n)) return true;
     }
     return false;
-  }
-
-  @SuppressWarnings("unchecked")
-  private static Map<String, Object> getOrCreateMap(Map<String, Object> parent, String key) {
-    Object o = parent.get(key);
-    if (o instanceof Map<?, ?> m) return (Map<String, Object>) m;
-    Map<String, Object> created = new LinkedHashMap<>();
-    parent.put(key, created);
-    return created;
   }
 
   @SuppressWarnings("unchecked")

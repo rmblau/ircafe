@@ -1,9 +1,10 @@
 package cafe.woden.ircclient.config;
 
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -38,7 +39,7 @@ class RuntimeConfigLaunchJvmStore {
   synchronized int readXmsMiB(int defaultValue) {
     int fallback = clampHeapMiB(defaultValue);
     return readValue("launch.jvm.xmsMiB", "xmsMiB")
-        .flatMap(RuntimeConfigLaunchJvmStore::asInt)
+        .flatMap(RuntimeConfigYamlSupport::asInt)
         .map(RuntimeConfigLaunchJvmStore::clampHeapMiB)
         .orElse(fallback);
   }
@@ -46,7 +47,7 @@ class RuntimeConfigLaunchJvmStore {
   synchronized int readXmxMiB(int defaultValue) {
     int fallback = clampHeapMiB(defaultValue);
     return readValue("launch.jvm.xmxMiB", "xmxMiB")
-        .flatMap(RuntimeConfigLaunchJvmStore::asInt)
+        .flatMap(RuntimeConfigYamlSupport::asInt)
         .map(RuntimeConfigLaunchJvmStore::clampHeapMiB)
         .orElse(fallback);
   }
@@ -243,29 +244,6 @@ class RuntimeConfigLaunchJvmStore {
     Map<String, Object> launch = getOrCreateMap(ircafe, "launch");
     Map<String, Object> jvm = getOrCreateMap(launch, "jvm");
     return new LaunchJvmWritePath(ircafe, launch, jvm);
-  }
-
-  @SuppressWarnings("unchecked")
-  private static Map<String, Object> getOrCreateMap(Map<String, Object> parent, String key) {
-    Object o = parent.get(key);
-    if (o instanceof Map<?, ?> m) return (Map<String, Object>) m;
-    Map<String, Object> created = new LinkedHashMap<>();
-    parent.put(key, created);
-    return created;
-  }
-
-  private static Optional<Integer> asInt(Object value) {
-    if (value instanceof Number n) return Optional.of(n.intValue());
-    if (value instanceof String s) {
-      String t = s.trim();
-      if (t.isEmpty()) return Optional.empty();
-      try {
-        return Optional.of(Integer.parseInt(t));
-      } catch (Exception ignored) {
-        return Optional.empty();
-      }
-    }
-    return Optional.empty();
   }
 
   private record LaunchJvmWritePath(

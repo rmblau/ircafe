@@ -1,5 +1,9 @@
 package cafe.woden.ircclient.config;
 
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.asBoolean;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMapPath;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
@@ -124,35 +128,4 @@ class RuntimeConfigServerAutoConnectStore {
     }
   }
 
-  private static Map<String, Object> getOrCreateMapPath(Map<String, Object> root, String... path) {
-    Map<String, Object> current = root;
-    for (String segment : path) {
-      current = getOrCreateMap(current, segment);
-    }
-    return current;
-  }
-
-  @SuppressWarnings("unchecked")
-  private static Map<String, Object> getOrCreateMap(Map<String, Object> parent, String key) {
-    Object o = parent.get(key);
-    if (o instanceof Map<?, ?> m) return (Map<String, Object>) m;
-    Map<String, Object> created = new LinkedHashMap<>();
-    parent.put(key, created);
-    return created;
-  }
-
-  private static Optional<Boolean> asBoolean(Object value) {
-    if (value instanceof Boolean b) return Optional.of(b);
-    if (value instanceof String s) {
-      String t = s.trim();
-      if (t.equalsIgnoreCase("true")) return Optional.of(Boolean.TRUE);
-      if (t.equalsIgnoreCase("false")) return Optional.of(Boolean.FALSE);
-    }
-    if (value instanceof Number n) {
-      int i = n.intValue();
-      if (i == 0) return Optional.of(Boolean.FALSE);
-      if (i == 1) return Optional.of(Boolean.TRUE);
-    }
-    return Optional.empty();
-  }
 }

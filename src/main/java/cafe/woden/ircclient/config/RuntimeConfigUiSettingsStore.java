@@ -1,9 +1,11 @@
 package cafe.woden.ircclient.config;
 
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMapPath;
+
 import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort.LastSelectedTarget;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -328,20 +330,4 @@ class RuntimeConfigUiSettingsStore {
     return getOrCreateMapPath(doc, "ircafe", "ui");
   }
 
-  private static Map<String, Object> getOrCreateMapPath(Map<String, Object> root, String... path) {
-    Map<String, Object> current = root;
-    for (String segment : path) {
-      current = getOrCreateMap(current, segment);
-    }
-    return current;
-  }
-
-  @SuppressWarnings("unchecked")
-  private static Map<String, Object> getOrCreateMap(Map<String, Object> parent, String key) {
-    Object o = parent.get(key);
-    if (o instanceof Map<?, ?> m) return (Map<String, Object>) m;
-    Map<String, Object> created = new LinkedHashMap<>();
-    parent.put(key, created);
-    return created;
-  }
 }

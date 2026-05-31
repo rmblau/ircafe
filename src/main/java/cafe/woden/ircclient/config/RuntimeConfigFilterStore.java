@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.config;
 
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMapPath;
+
 import cafe.woden.ircclient.model.FilterPlaceholderRanges;
 import cafe.woden.ircclient.model.FilterRule;
 import cafe.woden.ircclient.model.FilterScopeOverride;
@@ -175,20 +177,4 @@ class RuntimeConfigFilterStore {
     return getOrCreateMapPath(doc, "ircafe", "ui", "filters");
   }
 
-  private static Map<String, Object> getOrCreateMapPath(Map<String, Object> root, String... path) {
-    Map<String, Object> current = root;
-    for (String segment : path) {
-      current = getOrCreateMap(current, segment);
-    }
-    return current;
-  }
-
-  @SuppressWarnings("unchecked")
-  private static Map<String, Object> getOrCreateMap(Map<String, Object> parent, String key) {
-    Object o = parent.get(key);
-    if (o instanceof Map<?, ?> m) return (Map<String, Object>) m;
-    Map<String, Object> created = new LinkedHashMap<>();
-    parent.put(key, created);
-    return created;
-  }
 }
