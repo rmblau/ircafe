@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
-import cafe.woden.ircclient.config.ZncProperties;
+import cafe.woden.ircclient.config.properties.ZncProperties;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 

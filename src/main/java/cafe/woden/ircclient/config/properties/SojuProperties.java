@@ -1,23 +1,25 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.properties;
 
+import cafe.woden.ircclient.config.ConfigPropertyKeys;
 import java.util.Map;
 import org.jmolecules.architecture.layered.InfrastructureLayer;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-/** ZNC bouncer integration settings. */
-@ConfigurationProperties(prefix = ConfigPropertyKeys.IRCAFE_ZNC_PREFIX)
+/** Soju bouncer integration settings. */
+@ConfigurationProperties(prefix = ConfigPropertyKeys.IRCAFE_SOJU_PREFIX)
 @InfrastructureLayer
-public record ZncProperties(Map<String, Map<String, Boolean>> autoConnect, Discovery discovery) {
+public record SojuProperties(Map<String, Map<String, Boolean>> autoConnect, Discovery discovery) {
 
-  public ZncProperties {
+  public SojuProperties {
     if (autoConnect == null) autoConnect = Map.of();
     if (discovery == null) discovery = new Discovery(true);
   }
 
-  /** ZNC network discovery settings. */
+  /** Soju discovery settings. */
   public record Discovery(boolean enabled) {
     public Discovery {
-      // Defaults are handled by the parent record ctor (enabled=true).
+      // Keep defaults stable even when config sections are partially present.
+      // If the user omits this value entirely, we default to true.
     }
   }
 

@@ -1,8 +1,8 @@
 package cafe.woden.ircclient.irc.znc;
 
 import cafe.woden.ircclient.bouncer.AbstractBouncerAutoConnectStore;
-import cafe.woden.ircclient.config.ZncProperties;
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
+import cafe.woden.ircclient.config.properties.ZncProperties;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;

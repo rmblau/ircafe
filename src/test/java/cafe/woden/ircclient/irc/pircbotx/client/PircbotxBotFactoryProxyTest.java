@@ -7,7 +7,7 @@ import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
-import cafe.woden.ircclient.config.SojuProperties;
+import cafe.woden.ircclient.config.properties.SojuProperties;
 import cafe.woden.ircclient.net.DeferredConnectSocksSocketFactory;
 import cafe.woden.ircclient.net.ProxyPlan;
 import cafe.woden.ircclient.net.ServerProxyResolver;

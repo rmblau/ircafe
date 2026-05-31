@@ -643,9 +643,9 @@ class JmoleculesIncrementalAdoptionTest {
     assertAnnotatedByName("cafe.woden.ircclient.config.IrcProperties", InfrastructureLayer.class);
     assertAnnotatedByName("cafe.woden.ircclient.config.LogProperties", InfrastructureLayer.class);
     assertAnnotatedByName("cafe.woden.ircclient.config.PushyProperties", InfrastructureLayer.class);
-    assertAnnotatedByName("cafe.woden.ircclient.config.SojuProperties", InfrastructureLayer.class);
+    assertAnnotatedByName("cafe.woden.ircclient.config.properties.SojuProperties", InfrastructureLayer.class);
     assertAnnotatedByName("cafe.woden.ircclient.config.UiProperties", InfrastructureLayer.class);
-    assertAnnotatedByName("cafe.woden.ircclient.config.ZncProperties", InfrastructureLayer.class);
+    assertAnnotatedByName("cafe.woden.ircclient.config.properties.ZncProperties", InfrastructureLayer.class);
     assertAnnotatedByName(
         "cafe.woden.ircclient.logging.ChatLogDatabaseConfig", InfrastructureLayer.class);
     assertAnnotatedByName(
