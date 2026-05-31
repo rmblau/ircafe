@@ -2,12 +2,9 @@ package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asBoolean;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateMap;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.putValue;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.readExistingValue;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
-import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -22,24 +19,14 @@ class RuntimeConfigServerAutoConnectStore {
   private static final Logger log =
       LoggerFactory.getLogger(RuntimeConfigServerAutoConnectStore.class);
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigYamlSection uiSection;
 
   RuntimeConfigServerAutoConnectStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.uiSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui");
   }
 
   synchronized void rememberAutoConnectOnStart(boolean enabled) {
-    putValue(
-        file,
-        documentStore,
-        log,
-        "autoConnectOnStart",
-        enabled,
-        "ircafe",
-        "ui",
-        "autoConnectOnStart");
+    uiSection.putValue("autoConnectOnStart", enabled, "autoConnectOnStart");
   }
 
   /**
@@ -49,14 +36,9 @@ class RuntimeConfigServerAutoConnectStore {
    * is enabled, so this map usually contains only {@code false} entries.
    */
   synchronized Map<String, Boolean> readServerAutoConnectOnStartByServer() {
-    return readExistingValue(
-            file,
-            documentStore,
-            log,
-            "per-server startup auto-connect settings",
-            "ircafe",
-            "ui",
-            "serverAutoConnectOnStartByServer")
+    return uiSection
+        .readExistingValue(
+            "per-server startup auto-connect settings", "serverAutoConnectOnStartByServer")
         .map(RuntimeConfigServerAutoConnectStore::readBooleanMap)
         .orElse(Map.of());
   }
@@ -91,10 +73,7 @@ class RuntimeConfigServerAutoConnectStore {
     String sid = Objects.toString(serverId, "").trim();
     if (sid.isEmpty()) return;
 
-    mutateMap(
-        file,
-        documentStore,
-        log,
+    uiSection.mutateMap(
         "per-server startup auto-connect settings",
         ui -> {
           Map<String, Object> byServer = getOrCreateMap(ui, "serverAutoConnectOnStartByServer");
@@ -106,9 +85,7 @@ class RuntimeConfigServerAutoConnectStore {
           if (byServer.isEmpty()) {
             ui.remove("serverAutoConnectOnStartByServer");
           }
-        },
-        "ircafe",
-        "ui");
+        });
   }
 
   private static Map<String, Boolean> readBooleanMap(Object raw) {

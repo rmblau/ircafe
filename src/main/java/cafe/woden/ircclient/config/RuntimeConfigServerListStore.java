@@ -3,14 +3,11 @@ package cafe.woden.ircclient.config;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.containsIgnoreCase;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateDocument;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateMap;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.readExistingValue;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.readValue;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.sanitizeStringList;
 
 import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
-import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -33,12 +30,14 @@ class RuntimeConfigServerListStore {
 
   private final Path file;
   private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigYamlSection ircSection;
   private final IrcProperties defaults;
 
   RuntimeConfigServerListStore(
       Path file, RuntimeConfigDocumentStore documentStore, IrcProperties defaults) {
     this.file = file;
     this.documentStore = documentStore;
+    this.ircSection = new RuntimeConfigYamlSection(file, documentStore, log, "irc");
     this.defaults = defaults;
   }
 
@@ -60,18 +59,12 @@ class RuntimeConfigServerListStore {
   }
 
   synchronized void writeServers(List<IrcProperties.Server> servers) {
-    mutateMap(
-        file,
-        documentStore,
-        log,
-        "servers list",
-        irc -> irc.put("servers", serverMaps(servers)),
-        "irc");
+    ircSection.putValue("servers list", serverMaps(servers), "servers");
   }
 
   /** Returns configured server ids from runtime config, falling back to boot defaults. */
   synchronized List<String> readServerIds() {
-    Object raw = readValue(file, documentStore, log, "server ids", "irc", "servers").orElse(null);
+    Object raw = ircSection.readValue("server ids", "servers").orElse(null);
     if (!(raw instanceof List<?> servers) || servers.isEmpty()) return defaultServerIds();
 
     ArrayList<String> out = new ArrayList<>();
@@ -93,9 +86,7 @@ class RuntimeConfigServerListStore {
    * treat runtime config as authoritative without conflating missing keys with inherited defaults.
    */
   synchronized Map<String, List<String>> readExplicitServerAutoJoinById() {
-    Object raw =
-        readExistingValue(file, documentStore, log, "explicit auto-join lists", "irc", "servers")
-            .orElse(null);
+    Object raw = ircSection.readExistingValue("explicit auto-join lists", "servers").orElse(null);
     if (!(raw instanceof List<?> servers) || servers.isEmpty()) return Map.of();
 
     LinkedHashMap<String, List<String>> out = new LinkedHashMap<>();

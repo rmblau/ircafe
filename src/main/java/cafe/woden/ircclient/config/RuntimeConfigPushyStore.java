@@ -1,10 +1,8 @@
 package cafe.woden.ircclient.config;
 
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateMap;
-
 import cafe.woden.ircclient.config.properties.PushyProperties;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
-import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Objects;
@@ -18,12 +16,10 @@ class RuntimeConfigPushyStore {
   private static final String DEFAULT_ENDPOINT = "https://api.pushy.me/push";
   private static final String DEFAULT_TITLE_PREFIX = "IRCafe";
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigYamlSection pushySection;
 
   RuntimeConfigPushyStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.pushySection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "pushy");
   }
 
   synchronized void rememberSettings(PushyProperties settings) {
@@ -32,10 +28,7 @@ class RuntimeConfigPushyStore {
             ? settings
             : new PushyProperties(false, null, null, null, null, null, null, null);
 
-    mutateMap(
-        file,
-        documentStore,
-        log,
+    pushySection.mutateMap(
         "pushy settings",
         pushy -> {
           pushy.put("enabled", safe.enabled());
@@ -46,9 +39,7 @@ class RuntimeConfigPushyStore {
           rememberOptionalString(pushy, "titlePrefix", safe.titlePrefix(), DEFAULT_TITLE_PREFIX);
           pushy.put("connectTimeoutSeconds", safe.connectTimeoutSeconds());
           pushy.put("readTimeoutSeconds", safe.readTimeoutSeconds());
-        },
-        "ircafe",
-        "pushy");
+        });
   }
 
   private static void rememberOptionalString(

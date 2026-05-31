@@ -3,14 +3,12 @@ package cafe.woden.ircclient.config;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asBoolean;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asInt;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateMap;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.readValue;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.sanitizeStringList;
 
-import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
-import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicyScope;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -24,23 +22,15 @@ class RuntimeConfigEmbedLoadPolicyStore {
   private static final Logger log =
       LoggerFactory.getLogger(RuntimeConfigEmbedLoadPolicyStore.class);
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
+  private final RuntimeConfigYamlSection uiSection;
 
   RuntimeConfigEmbedLoadPolicyStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.file = file;
-    this.documentStore = documentStore;
+    this.uiSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui");
   }
 
   synchronized EmbedLoadPolicySnapshot read() {
-    return readValue(
-            file,
-            documentStore,
-            log,
-            "embed/link load policy",
-            "ircafe",
-            "ui",
-            "embedLoadPolicy")
+    return uiSection
+        .readValue("embed/link load policy", "embedLoadPolicy")
         .filter(Map.class::isInstance)
         .map(Map.class::cast)
         .map(RuntimeConfigEmbedLoadPolicyStore::parseSnapshot)
@@ -51,14 +41,7 @@ class RuntimeConfigEmbedLoadPolicyStore {
     EmbedLoadPolicySnapshot normalized =
         snapshot == null ? EmbedLoadPolicySnapshot.defaults() : snapshot;
 
-    mutateMap(
-        file,
-        documentStore,
-        log,
-        "embed/link load policy",
-        ui -> writePolicy(ui, normalized),
-        "ircafe",
-        "ui");
+    uiSection.mutateMap("embed/link load policy", ui -> writePolicy(ui, normalized));
   }
 
   private static EmbedLoadPolicySnapshot parseSnapshot(Map<?, ?> policy) {
