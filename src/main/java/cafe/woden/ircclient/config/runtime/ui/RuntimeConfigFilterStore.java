@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime.ui;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
@@ -17,60 +17,60 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Owns WeeChat-style filter settings under {@code ircafe.ui.filters}. */
-class RuntimeConfigFilterStore {
+public final class RuntimeConfigFilterStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigFilterStore.class);
 
   private final RuntimeConfigYamlSection filtersSection;
 
-  RuntimeConfigFilterStore(Path file, RuntimeConfigDocumentStore documentStore) {
+  public RuntimeConfigFilterStore(Path file, RuntimeConfigDocumentStore documentStore) {
     this.filtersSection =
         RuntimeConfigYamlSection.ircafeUi(file, documentStore, log, "filters");
   }
 
-  synchronized void rememberEnabledByDefault(boolean enabled) {
+  public synchronized void rememberEnabledByDefault(boolean enabled) {
     rememberScalarSetting("enabledByDefault", enabled);
   }
 
-  synchronized void rememberPlaceholdersEnabledByDefault(boolean enabled) {
+  public synchronized void rememberPlaceholdersEnabledByDefault(boolean enabled) {
     rememberScalarSetting("placeholdersEnabledByDefault", enabled);
   }
 
-  synchronized void rememberPlaceholdersCollapsedByDefault(boolean collapsed) {
+  public synchronized void rememberPlaceholdersCollapsedByDefault(boolean collapsed) {
     rememberScalarSetting("placeholdersCollapsedByDefault", collapsed);
   }
 
-  synchronized void rememberPlaceholderMaxPreviewLines(int maxLines) {
+  public synchronized void rememberPlaceholderMaxPreviewLines(int maxLines) {
     rememberScalarSetting(
         "placeholderMaxPreviewLines", FilterPlaceholderRanges.normalizeMaxPreviewLines(maxLines));
   }
 
-  synchronized void rememberPlaceholderMaxLinesPerRun(int maxLines) {
+  public synchronized void rememberPlaceholderMaxLinesPerRun(int maxLines) {
     rememberScalarSetting(
         "placeholderMaxLinesPerRun", FilterPlaceholderRanges.normalizeMaxLinesPerRun(maxLines));
   }
 
-  synchronized void rememberPlaceholderTooltipMaxTags(int maxTags) {
+  public synchronized void rememberPlaceholderTooltipMaxTags(int maxTags) {
     rememberScalarSetting(
         "placeholderTooltipMaxTags", FilterPlaceholderRanges.normalizeTooltipMaxTags(maxTags));
   }
 
-  synchronized void rememberHistoryPlaceholderMaxRunsPerBatch(int maxRuns) {
+  public synchronized void rememberHistoryPlaceholderMaxRunsPerBatch(int maxRuns) {
     rememberScalarSetting(
         "historyPlaceholderMaxRunsPerBatch",
         FilterPlaceholderRanges.normalizeHistoryMaxRunsPerBatch(maxRuns));
   }
 
-  synchronized void rememberHistoryPlaceholdersEnabledByDefault(boolean enabled) {
+  public synchronized void rememberHistoryPlaceholdersEnabledByDefault(boolean enabled) {
     rememberScalarSetting("historyPlaceholdersEnabledByDefault", enabled);
   }
 
-  synchronized void rememberRules(List<FilterRule> rules) {
+  public synchronized void rememberRules(List<FilterRule> rules) {
     filtersSection.mutateMap(
         "filter rules", filters -> filters.put("rules", serializeRules(rules)));
   }
 
-  synchronized void rememberOverrides(List<FilterScopeOverride> overrides) {
+  public synchronized void rememberOverrides(List<FilterScopeOverride> overrides) {
     filtersSection.mutateMap(
         "filter overrides", filters -> filters.put("overrides", serializeOverrides(overrides)));
   }

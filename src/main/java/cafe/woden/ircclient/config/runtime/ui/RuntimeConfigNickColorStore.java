@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime.ui;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
@@ -10,28 +10,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Owns nick color settings under {@code ircafe.ui}. */
-class RuntimeConfigNickColorStore {
+public final class RuntimeConfigNickColorStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigNickColorStore.class);
 
   private final RuntimeConfigYamlSection uiSection;
 
-  RuntimeConfigNickColorStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.uiSection =
-        new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui");
+  public RuntimeConfigNickColorStore(Path file, RuntimeConfigDocumentStore documentStore) {
+    this.uiSection = RuntimeConfigYamlSection.ircafeUi(file, documentStore, log);
   }
 
-  synchronized void rememberColoringEnabled(boolean enabled) {
+  public synchronized void rememberColoringEnabled(boolean enabled) {
     uiSection.mutateMap(
         "nick coloring enabled setting", ui -> ui.put("nickColoringEnabled", enabled));
   }
 
-  synchronized void rememberMinContrast(double minContrast) {
+  public synchronized void rememberMinContrast(double minContrast) {
     double mc = (minContrast > 0) ? minContrast : 3.0;
     uiSection.mutateMap("nick color contrast setting", ui -> ui.put("nickColorMinContrast", mc));
   }
 
-  synchronized void rememberOverrides(Map<String, String> overrides) {
+  public synchronized void rememberOverrides(Map<String, String> overrides) {
     uiSection.mutateMap(
         "nick color overrides",
         ui -> {
