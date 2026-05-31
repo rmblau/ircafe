@@ -2,8 +2,9 @@ package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.asBoolean;
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.mutateDocument;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.readExistingValue;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -39,39 +40,7 @@ class RuntimeConfigBouncerDiscoveryStore {
   }
 
   synchronized Map<String, Map<String, Boolean>> readGenericBouncerAutoConnectRules() {
-    try {
-      if (file.toString().isBlank()) return Map.of();
-      if (!Files.exists(file)) return Map.of();
-
-      Map<String, Object> doc = documentStore.load();
-      Optional<Object> autoConnectObj =
-          RuntimeConfigDocumentPathReader.readValue(doc, "ircafe", "bouncer", "autoConnect");
-      if (autoConnectObj.isEmpty()) return Map.of();
-      if (!(autoConnectObj.get() instanceof Map<?, ?> autoConnectByBouncer)) return Map.of();
-
-      LinkedHashMap<String, Map<String, Boolean>> out = new LinkedHashMap<>();
-      for (var bouncerEntry : autoConnectByBouncer.entrySet()) {
-        String bouncerServerId = Objects.toString(bouncerEntry.getKey(), "").trim();
-        if (bouncerServerId.isEmpty()) continue;
-        if (!(bouncerEntry.getValue() instanceof Map<?, ?> byNetwork)) continue;
-
-        LinkedHashMap<String, Boolean> networks = new LinkedHashMap<>();
-        for (var networkEntry : byNetwork.entrySet()) {
-          String networkName = Objects.toString(networkEntry.getKey(), "").trim();
-          if (networkName.isEmpty()) continue;
-          boolean enabled = asBoolean(networkEntry.getValue()).orElse(false);
-          if (enabled) networks.put(networkName, true);
-        }
-
-        if (!networks.isEmpty()) {
-          out.put(bouncerServerId, Map.copyOf(networks));
-        }
-      }
-      return out.isEmpty() ? Map.of() : Map.copyOf(out);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read bouncer.autoConnect settings from '{}'", file, e);
-      return Map.of();
-    }
+    return readBouncerAutoConnectRules("bouncer", "bouncer.autoConnect settings");
   }
 
   synchronized void rememberGenericBouncerAutoConnectNetwork(
@@ -93,115 +62,120 @@ class RuntimeConfigBouncerDiscoveryStore {
   }
 
   synchronized void rememberGenericBouncerLoginTemplate(String template) {
-    try {
-      if (file.toString().isBlank()) return;
+    String normalized = Objects.toString(template, "").trim();
+    mutateDocument(
+        file,
+        documentStore,
+        log,
+        "bouncer.generic.loginTemplate",
+        doc -> {
+          Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
+          Map<String, Object> bouncer = getOrCreateMap(ircafe, "bouncer");
+          Map<String, Object> generic = getOrCreateMap(bouncer, "generic");
 
-      String normalized = Objects.toString(template, "").trim();
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> bouncer = getOrCreateMap(ircafe, "bouncer");
-      Map<String, Object> generic = getOrCreateMap(bouncer, "generic");
+          if (normalized.isEmpty()) {
+            generic.remove("loginTemplate");
+          } else {
+            generic.put("loginTemplate", normalized);
+          }
 
-      if (normalized.isEmpty()) {
-        generic.remove("loginTemplate");
-      } else {
-        generic.put("loginTemplate", normalized);
-      }
-
-      if (generic.isEmpty()) bouncer.remove("generic");
-      if (bouncer.isEmpty()) ircafe.remove("bouncer");
-      if (ircafe.isEmpty()) doc.remove("ircafe");
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist bouncer.generic.loginTemplate to '{}'", file, e);
-    }
+          if (generic.isEmpty()) bouncer.remove("generic");
+          if (bouncer.isEmpty()) ircafe.remove("bouncer");
+          if (ircafe.isEmpty()) doc.remove("ircafe");
+          return true;
+        });
   }
 
   synchronized void rememberGenericBouncerPreferLoginHint(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
+    mutateDocument(
+        file,
+        documentStore,
+        log,
+        "bouncer.generic.preferLoginHint",
+        doc -> {
+          Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
+          Map<String, Object> bouncer = getOrCreateMap(ircafe, "bouncer");
+          Map<String, Object> generic = getOrCreateMap(bouncer, "generic");
 
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> bouncer = getOrCreateMap(ircafe, "bouncer");
-      Map<String, Object> generic = getOrCreateMap(bouncer, "generic");
-
-      generic.put("preferLoginHint", enabled);
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist bouncer.generic.preferLoginHint to '{}'", file, e);
-    }
+          generic.put("preferLoginHint", enabled);
+          return true;
+        });
   }
 
   private Optional<Object> readGenericBouncerValue(String description, String key) {
-    try {
-      if (file.toString().isBlank()) return Optional.empty();
-      if (!Files.exists(file)) return Optional.empty();
-
-      Map<String, Object> doc = documentStore.load();
-      return RuntimeConfigDocumentPathReader.readValue(doc, "ircafe", "bouncer", "generic", key);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read {} from '{}'", description, file, e);
-      return Optional.empty();
-    }
+    return readExistingValue(
+        file, documentStore, log, description, "ircafe", "bouncer", "generic", key);
   }
 
   private void rememberBouncerAutoConnectNetwork(
       String backendKey, String bouncerServerId, String networkName, boolean enabled) {
     String backend = Objects.toString(backendKey, "").trim().toLowerCase(Locale.ROOT);
-    if (backend.isEmpty()) return;
-    try {
-      if (file.toString().isBlank()) return;
+    String sid = Objects.toString(bouncerServerId, "").trim();
+    String net = Objects.toString(networkName, "").trim();
+    if (backend.isEmpty() || sid.isEmpty() || net.isEmpty()) return;
 
-      String sid = Objects.toString(bouncerServerId, "").trim();
-      String net = Objects.toString(networkName, "").trim();
-      if (sid.isEmpty() || net.isEmpty()) return;
+    mutateDocument(
+        file,
+        documentStore,
+        log,
+        backend + " auto-connect setting",
+        doc -> {
+          Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
+          Map<String, Object> bouncerSection = getOrCreateMap(ircafe, backend);
+          Map<String, Object> autoConnect = getOrCreateMap(bouncerSection, "autoConnect");
+          Map<String, Object> nets = getOrCreateMap(autoConnect, sid);
 
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> bouncerSection = getOrCreateMap(ircafe, backend);
-      Map<String, Object> autoConnect = getOrCreateMap(bouncerSection, "autoConnect");
+          if (enabled) {
+            nets.put(net, true);
+            return true;
+          }
 
-      @SuppressWarnings("unchecked")
-      Map<String, Object> nets =
-          (autoConnect.get(sid) instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
+          // Remove case-insensitively so users can toggle based on what the bouncer returns.
+          nets.keySet().removeIf(k -> k != null && k.equalsIgnoreCase(net));
+          if (nets.isEmpty()) {
+            autoConnect.remove(sid);
+          }
 
-      if (enabled) {
-        nets.put(net, true);
-        autoConnect.put(sid, nets);
-      } else {
-        // Remove case-insensitively so users can toggle based on what the bouncer returns.
-        nets.keySet().removeIf(k -> k != null && k.equalsIgnoreCase(net));
-        if (nets.isEmpty()) {
-          autoConnect.remove(sid);
-        } else {
-          autoConnect.put(sid, nets);
-        }
+          // Clean up empty structures to keep the YAML tidy.
+          if (autoConnect.isEmpty()) {
+            bouncerSection.remove("autoConnect");
+          }
+          if (bouncerSection.isEmpty()) {
+            ircafe.remove(backend);
+          }
+          if (ircafe.isEmpty()) {
+            doc.remove("ircafe");
+          }
+          return true;
+        });
+  }
 
-        // Clean up empty structures to keep the YAML tidy.
-        if (autoConnect.isEmpty()) {
-          bouncerSection.remove("autoConnect");
-        }
-        if (bouncerSection.isEmpty()) {
-          ircafe.remove(backend);
-        }
-        if (ircafe.isEmpty()) {
-          doc.remove("ircafe");
-        }
+  private Map<String, Map<String, Boolean>> readBouncerAutoConnectRules(
+      String backend, String description) {
+    Optional<Object> autoConnectObj =
+        readExistingValue(file, documentStore, log, description, "ircafe", backend, "autoConnect");
+    if (autoConnectObj.isEmpty()) return Map.of();
+    if (!(autoConnectObj.get() instanceof Map<?, ?> autoConnectByBouncer)) return Map.of();
+
+    LinkedHashMap<String, Map<String, Boolean>> out = new LinkedHashMap<>();
+    for (var bouncerEntry : autoConnectByBouncer.entrySet()) {
+      String bouncerServerId = Objects.toString(bouncerEntry.getKey(), "").trim();
+      if (bouncerServerId.isEmpty()) continue;
+      if (!(bouncerEntry.getValue() instanceof Map<?, ?> byNetwork)) continue;
+
+      LinkedHashMap<String, Boolean> networks = new LinkedHashMap<>();
+      for (var networkEntry : byNetwork.entrySet()) {
+        String networkName = Objects.toString(networkEntry.getKey(), "").trim();
+        if (networkName.isEmpty()) continue;
+        boolean enabled = asBoolean(networkEntry.getValue()).orElse(false);
+        if (enabled) networks.put(networkName, true);
       }
 
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist {} auto-connect setting to '{}'",
-          Objects.toString(backendKey, "").trim().toLowerCase(Locale.ROOT),
-          file,
-          e);
+      if (!networks.isEmpty()) {
+        out.put(bouncerServerId, Map.copyOf(networks));
+      }
     }
+    return out.isEmpty() ? Map.of() : Map.copyOf(out);
   }
 
   private static String normalizeGenericBouncerLoginTemplate(Object template) {
