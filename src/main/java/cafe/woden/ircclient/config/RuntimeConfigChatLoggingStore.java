@@ -1,10 +1,6 @@
 package cafe.woden.ircclient.config;
 
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMapPath;
-
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,18 +19,10 @@ class RuntimeConfigChatLoggingStore {
   }
 
   synchronized boolean readEnabled(boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-      if (!Files.exists(file)) return defaultValue;
-
-      Map<String, Object> doc = documentStore.load();
-      return RuntimeConfigDocumentPathReader.readValue(doc, "ircafe", "logging", "enabled")
-          .flatMap(RuntimeConfigYamlSupport::asBoolean)
-          .orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read chat logging enabled setting from '{}'", file, e);
-      return defaultValue;
-    }
+    return RuntimeConfigYamlSupport.readExistingValue(
+            file, documentStore, log, "chat logging enabled", "ircafe", "logging", "enabled")
+        .flatMap(RuntimeConfigYamlSupport::asBoolean)
+        .orElse(defaultValue);
   }
 
   synchronized void rememberEnabled(boolean enabled) {
@@ -93,33 +81,13 @@ class RuntimeConfigChatLoggingStore {
   }
 
   private void rememberScalarSetting(String key, Object value, String description) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> logging = getOrCreateMapPath(doc, "ircafe", "logging");
-
-      logging.put(key, value);
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist {} setting to '{}'", description, file, e);
-    }
+    RuntimeConfigYamlSupport.putValue(
+        file, documentStore, log, description, value, "ircafe", "logging", key);
   }
 
   private void rememberHsqldbScalarSetting(String key, Object value, String description) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> hsqldb = getOrCreateMapPath(doc, "ircafe", "logging", "hsqldb");
-
-      hsqldb.put(key, value);
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist {} setting to '{}'", description, file, e);
-    }
+    RuntimeConfigYamlSupport.putValue(
+        file, documentStore, log, description, value, "ircafe", "logging", "hsqldb", key);
   }
 
 }

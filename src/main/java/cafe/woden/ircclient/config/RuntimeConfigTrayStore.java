@@ -1,10 +1,7 @@
 package cafe.woden.ircclient.config;
 
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMapPath;
-
 import java.nio.file.Path;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -24,42 +21,23 @@ class RuntimeConfigTrayStore {
   }
 
   synchronized Optional<Boolean> readCloseToTrayIfPresent() {
-    try {
-      if (file.toString().isBlank()) return Optional.empty();
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Optional<Object> value =
-          RuntimeConfigDocumentPathReader.readValue(doc, "ircafe", "ui", "tray", "closeToTray");
-      if (value.isEmpty()) return Optional.empty();
-
-      Object v = value.get();
-      if (v instanceof Boolean b) return Optional.of(b);
-      if (v instanceof String s) {
-        String t = s.trim();
-        if (t.equalsIgnoreCase("true")) return Optional.of(Boolean.TRUE);
-        if (t.equalsIgnoreCase("false")) return Optional.of(Boolean.FALSE);
-      }
-
-      return Optional.empty();
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read tray.closeToTray from '{}'", file, e);
-      return Optional.empty();
-    }
+    return RuntimeConfigYamlSupport.readValue(
+            file, documentStore, log, "tray.closeToTray", "ircafe", "ui", "tray", "closeToTray")
+        .flatMap(RuntimeConfigYamlSupport::asBoolean);
   }
 
   synchronized boolean readCloseToTrayHintShown(boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      return RuntimeConfigDocumentPathReader.readValue(
-              doc, "ircafe", "ui", "tray", "closeToTrayHintShown")
-          .flatMap(RuntimeConfigYamlSupport::asBoolean)
-          .orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read tray.closeToTrayHintShown from '{}'", file, e);
-      return defaultValue;
-    }
+    return RuntimeConfigYamlSupport.readValue(
+            file,
+            documentStore,
+            log,
+            "tray.closeToTrayHintShown",
+            "ircafe",
+            "ui",
+            "tray",
+            "closeToTrayHintShown")
+        .flatMap(RuntimeConfigYamlSupport::asBoolean)
+        .orElse(defaultValue);
   }
 
   synchronized void rememberEnabled(boolean enabled) {
@@ -135,37 +113,25 @@ class RuntimeConfigTrayStore {
 
   synchronized void rememberNotificationSoundCustomPath(String relativePath) {
     String v = Objects.toString(relativePath, "").trim();
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> tray = getOrCreateMapPath(doc, "ircafe", "ui", "tray");
-      if (v.isEmpty()) {
-        tray.remove("notificationSoundCustomPath");
-      } else {
-        tray.put("notificationSoundCustomPath", v);
-      }
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist tray.notificationSoundCustomPath setting to '{}'", file, e);
+    if (v.isEmpty()) {
+      RuntimeConfigYamlSupport.removeValue(
+          file,
+          documentStore,
+          log,
+          "tray.notificationSoundCustomPath",
+          "ircafe",
+          "ui",
+          "tray",
+          "notificationSoundCustomPath");
+      return;
     }
+
+    rememberScalarSetting("notificationSoundCustomPath", v, "tray.notificationSoundCustomPath");
   }
 
   private void rememberScalarSetting(String key, Object value, String description) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> tray = getOrCreateMapPath(doc, "ircafe", "ui", "tray");
-
-      tray.put(key, value);
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist {} setting to '{}'", description, file, e);
-    }
+    RuntimeConfigYamlSupport.putValue(
+        file, documentStore, log, description, value, "ircafe", "ui", "tray", key);
   }
 
 }

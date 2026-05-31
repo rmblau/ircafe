@@ -1,10 +1,7 @@
 package cafe.woden.ircclient.config;
 
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMapPath;
-
 import java.nio.file.Path;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,18 +56,8 @@ class RuntimeConfigEmbedStore {
   }
 
   private void rememberScalarSetting(String key, Object value, String description) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ui = getOrCreateMapPath(doc, "ircafe", "ui");
-
-      ui.put(key, value);
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist {} setting to '{}'", description, file, e);
-    }
+    RuntimeConfigYamlSupport.putValue(
+        file, documentStore, log, description, value, "ircafe", "ui", key);
   }
 
 }

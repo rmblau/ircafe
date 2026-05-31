@@ -1,10 +1,7 @@
 package cafe.woden.ircclient.config;
 
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMapPath;
-
 import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
 import java.nio.file.Path;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -51,22 +48,21 @@ class RuntimeConfigChatBehaviorStore {
 
   synchronized void rememberDefaultQuitMessage(String message) {
     String normalized = normalizeQuitMessage(message);
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ui = getOrCreateMapPath(doc, "ircafe", "ui");
-
-      if (DEFAULT_QUIT_MESSAGE.equals(normalized)) {
-        ui.remove("defaultQuitMessage");
-      } else {
-        ui.put("defaultQuitMessage", normalized);
-      }
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.defaultQuitMessage setting to '{}'", file, e);
+    if (DEFAULT_QUIT_MESSAGE.equals(normalized)) {
+      RuntimeConfigYamlSupport.removeValue(
+          file, documentStore, log, "ui.defaultQuitMessage", "ircafe", "ui", "defaultQuitMessage");
+      return;
     }
+
+    RuntimeConfigYamlSupport.putValue(
+        file,
+        documentStore,
+        log,
+        "ui.defaultQuitMessage",
+        normalized,
+        "ircafe",
+        "ui",
+        "defaultQuitMessage");
   }
 
   synchronized void rememberCtcpRequestsInActiveTargetEnabled(boolean enabled) {
@@ -142,34 +138,16 @@ class RuntimeConfigChatBehaviorStore {
   }
 
   private Optional<Object> readUiValue(String description, String... path) {
-    try {
-      if (file.toString().isBlank()) return Optional.empty();
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      String[] fullPath = new String[path.length + 2];
-      fullPath[0] = "ircafe";
-      fullPath[1] = "ui";
-      System.arraycopy(path, 0, fullPath, 2, path.length);
-      return RuntimeConfigDocumentPathReader.readValue(doc, fullPath);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read {} from '{}'", description, file, e);
-      return Optional.empty();
-    }
+    String[] fullPath = new String[path.length + 2];
+    fullPath[0] = "ircafe";
+    fullPath[1] = "ui";
+    System.arraycopy(path, 0, fullPath, 2, path.length);
+    return RuntimeConfigYamlSupport.readValue(file, documentStore, log, description, fullPath);
   }
 
   private void rememberScalarSetting(String key, Object value, String description) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ui = getOrCreateMapPath(doc, "ircafe", "ui");
-
-      ui.put(key, value);
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist {} setting to '{}'", description, file, e);
-    }
+    RuntimeConfigYamlSupport.putValue(
+        file, documentStore, log, description, value, "ircafe", "ui", key);
   }
 
   private static String normalizeQuitMessage(Object message) {

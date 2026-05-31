@@ -1,17 +1,77 @@
 package cafe.woden.ircclient.config;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import org.jmolecules.architecture.layered.InfrastructureLayer;
+import org.slf4j.Logger;
 
 /** Shared YAML document helpers for the focused runtime-configuration stores. */
 @InfrastructureLayer
 final class RuntimeConfigYamlSupport {
 
   private RuntimeConfigYamlSupport() {}
+
+  static Optional<Object> readValue(
+      Path file,
+      RuntimeConfigDocumentStore documentStore,
+      Logger log,
+      String description,
+      String... path) {
+    try {
+      if (file.toString().isBlank()) return Optional.empty();
+
+      Map<String, Object> doc = documentStore.loadOrEmpty();
+      return RuntimeConfigDocumentPathReader.readValue(doc, path);
+    } catch (Exception e) {
+      log.warn("[ircafe] Could not read {} from '{}'", description, file, e);
+      return Optional.empty();
+    }
+  }
+
+  static Optional<Object> readExistingValue(
+      Path file,
+      RuntimeConfigDocumentStore documentStore,
+      Logger log,
+      String description,
+      String... path) {
+    try {
+      if (file.toString().isBlank()) return Optional.empty();
+      if (!Files.exists(file)) return Optional.empty();
+
+      Map<String, Object> doc = documentStore.load();
+      return RuntimeConfigDocumentPathReader.readValue(doc, path);
+    } catch (Exception e) {
+      log.warn("[ircafe] Could not read {} from '{}'", description, file, e);
+      return Optional.empty();
+    }
+  }
+
+  static void putValue(
+      Path file,
+      RuntimeConfigDocumentStore documentStore,
+      Logger log,
+      String description,
+      Object value,
+      String... path) {
+    mutateValue(
+        file, documentStore, log, description, path, parent -> parent.put(last(path), value));
+  }
+
+  static void removeValue(
+      Path file,
+      RuntimeConfigDocumentStore documentStore,
+      Logger log,
+      String description,
+      String... path) {
+    mutateValue(file, documentStore, log, description, path, parent -> parent.remove(last(path)));
+  }
 
   static Map<String, Object> getOrCreateMapPath(Map<String, Object> root, String... path) {
     Map<String, Object> current = root;
@@ -28,6 +88,43 @@ final class RuntimeConfigYamlSupport {
     Map<String, Object> created = new LinkedHashMap<>();
     parent.put(key, created);
     return created;
+  }
+
+  private static void mutateValue(
+      Path file,
+      RuntimeConfigDocumentStore documentStore,
+      Logger log,
+      String description,
+      String[] path,
+      Consumer<Map<String, Object>> mutation) {
+    try {
+      if (file.toString().isBlank()) return;
+
+      Map<String, Object> doc = documentStore.loadOrEmpty();
+      Map<String, Object> parent = parentMap(doc, path);
+      mutation.accept(parent);
+
+      documentStore.write(doc);
+    } catch (Exception e) {
+      log.warn("[ircafe] Could not persist {} setting to '{}'", description, file, e);
+    }
+  }
+
+  private static Map<String, Object> parentMap(Map<String, Object> doc, String[] path) {
+    if (path.length == 0) {
+      throw new IllegalArgumentException("Runtime config YAML path must not be empty");
+    }
+    if (path.length == 1) return doc;
+
+    String[] parentPath = Arrays.copyOf(path, path.length - 1);
+    return getOrCreateMapPath(doc, parentPath);
+  }
+
+  private static String last(String[] path) {
+    if (path.length == 0) {
+      throw new IllegalArgumentException("Runtime config YAML path must not be empty");
+    }
+    return path[path.length - 1];
   }
 
   static Optional<Boolean> asBoolean(Object value) {
