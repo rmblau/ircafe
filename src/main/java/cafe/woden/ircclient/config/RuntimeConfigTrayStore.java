@@ -107,7 +107,7 @@ class RuntimeConfigTrayStore {
   synchronized void rememberNotificationSoundCustomPath(String relativePath) {
     String v = Objects.toString(relativePath, "").trim();
     if (v.isEmpty()) {
-      traySection.removeValue(
+      traySection.removeExistingValueAndPruneEmptyParents(
           "tray.notificationSoundCustomPath", "notificationSoundCustomPath");
       return;
     }

@@ -53,6 +53,11 @@ public final class RuntimeConfigYamlSection {
     RuntimeConfigYamlSupport.removeValue(file, documentStore, log, description, resolve(path));
   }
 
+  public void removeExistingValueAndPruneEmptyParents(String description, String... path) {
+    RuntimeConfigYamlSupport.removeExistingValueAndPruneEmptyParents(
+        file, documentStore, log, description, resolve(path));
+  }
+
   public void mutateMap(
       String description, Consumer<Map<String, Object>> mutation, String... path) {
     RuntimeConfigYamlSupport.mutateMap(

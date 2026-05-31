@@ -76,6 +76,35 @@ public final class RuntimeConfigYamlSupport {
     mutateValue(file, documentStore, log, description, path, parent -> parent.remove(last(path)));
   }
 
+  public static void removeExistingValueAndPruneEmptyParents(
+      Path file,
+      RuntimeConfigDocumentStore documentStore,
+      Logger log,
+      String description,
+      String... path) {
+    try {
+      if (file.toString().isBlank()) return;
+      if (!Files.exists(file)) return;
+      if (path.length == 0) {
+        throw new IllegalArgumentException("Runtime config YAML path must not be empty");
+      }
+
+      Map<String, Object> doc = documentStore.load();
+      String[] parentPath = Arrays.copyOf(path, path.length - 1);
+      Map<String, Object> parent =
+          parentPath.length == 0 ? doc : readMapPath(doc, parentPath).orElse(null);
+      if (parent == null || !parent.containsKey(last(path))) return;
+
+      parent.remove(last(path));
+      if (parentPath.length > 0) {
+        pruneEmptyMapPath(doc, parentPath);
+      }
+      documentStore.write(doc);
+    } catch (Exception e) {
+      log.warn("[ircafe] Could not remove {} setting from '{}'", description, file, e);
+    }
+  }
+
   public static void mutateMap(
       Path file,
       RuntimeConfigDocumentStore documentStore,

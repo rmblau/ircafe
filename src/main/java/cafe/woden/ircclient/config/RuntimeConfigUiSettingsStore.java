@@ -46,7 +46,8 @@ class RuntimeConfigUiSettingsStore {
   synchronized void rememberStartupThemePending(String theme) {
     String normalized = Objects.toString(theme, "").trim();
     if (normalized.isEmpty()) {
-      uiSection.removeValue("ui.startupThemePending", "startupThemePending");
+      uiSection.removeExistingValueAndPruneEmptyParents(
+          "ui.startupThemePending", "startupThemePending");
       return;
     }
 
@@ -225,7 +226,7 @@ class RuntimeConfigUiSettingsStore {
   }
 
   private void removeUiValue(String key, String description) {
-    uiSection.removeValue(description, key);
+    uiSection.removeExistingValueAndPruneEmptyParents(description, key);
   }
 
   private static String normalizeDensity(String density) {

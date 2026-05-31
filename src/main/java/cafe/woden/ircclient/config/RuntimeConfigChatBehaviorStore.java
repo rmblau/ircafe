@@ -51,7 +51,8 @@ class RuntimeConfigChatBehaviorStore {
   synchronized void rememberDefaultQuitMessage(String message) {
     String normalized = normalizeQuitMessage(message);
     if (DEFAULT_QUIT_MESSAGE.equals(normalized)) {
-      uiSection.removeValue("ui.defaultQuitMessage", "defaultQuitMessage");
+      uiSection.removeExistingValueAndPruneEmptyParents(
+          "ui.defaultQuitMessage", "defaultQuitMessage");
       return;
     }
 
