@@ -1,7 +1,5 @@
 package cafe.woden.ircclient.config;
 
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
-
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
@@ -9,7 +7,6 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
@@ -94,20 +91,17 @@ class RuntimeConfigLaunchJvmStore {
   }
 
   private void rememberJvmSetting(String description, String key, Object value) {
-    ircafeSection.mutateMap(
+    ircafeSection.mutateMapAndRemoveIfEmpty(
         description,
-        ircafe -> {
-          LaunchJvmWritePath path = getOrCreateWritePath(ircafe);
-          Map<String, Object> jvm = path.jvm();
-
+        jvm -> {
           if (isEmptyJvmSettingValue(value)) {
             jvm.remove(key);
           } else {
             jvm.put(key, value);
           }
-
-          cleanup(path);
-        });
+        },
+        "launch",
+        "jvm");
   }
 
   private static boolean isEmptyJvmSettingValue(Object value) {
@@ -138,21 +132,4 @@ class RuntimeConfigLaunchJvmStore {
     };
   }
 
-  private static void cleanup(LaunchJvmWritePath path) {
-    if (path.jvm().isEmpty()) {
-      path.launch().remove("jvm");
-    }
-    if (path.launch().isEmpty()) {
-      path.ircafe().remove("launch");
-    }
-  }
-
-  private static LaunchJvmWritePath getOrCreateWritePath(Map<String, Object> ircafe) {
-    Map<String, Object> launch = getOrCreateMap(ircafe, "launch");
-    Map<String, Object> jvm = getOrCreateMap(launch, "jvm");
-    return new LaunchJvmWritePath(ircafe, launch, jvm);
-  }
-
-  private record LaunchJvmWritePath(
-      Map<String, Object> ircafe, Map<String, Object> launch, Map<String, Object> jvm) {}
 }

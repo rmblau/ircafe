@@ -1,8 +1,6 @@
 package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asBoolean;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
-
 import cafe.woden.ircclient.config.api.ServerTreeBuiltInVisibilityConfigPort.ServerTreeBuiltInNodesVisibility;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayout;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayoutNode;
@@ -324,17 +322,8 @@ class RuntimeConfigServerTreeLayoutStore {
       String key,
       String serverId,
       java.util.function.Consumer<Map<String, Object>> mutation) {
-    uiSection.mutateMap(
-        "server-tree " + description,
-        ui -> {
-          Map<String, Object> serverTree = getOrCreateMap(ui, "serverTree");
-          Map<String, Object> byServer = getOrCreateMap(serverTree, key);
-
-          mutation.accept(byServer);
-
-          if (byServer.isEmpty()) serverTree.remove(key);
-          if (serverTree.isEmpty()) ui.remove("serverTree");
-        });
+    uiSection.mutateMapAndRemoveIfEmpty(
+        "server-tree " + description, mutation, "serverTree", key);
   }
 
 }
