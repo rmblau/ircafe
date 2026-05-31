@@ -2,11 +2,12 @@ package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.asBoolean;
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.mutateDocument;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.readExistingValue;
 
 import cafe.woden.ircclient.model.InterceptorDefinition;
 import cafe.woden.ircclient.model.InterceptorRule;
 import cafe.woden.ircclient.model.InterceptorRuleMode;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -31,170 +32,178 @@ class RuntimeConfigInterceptorStore {
   }
 
   synchronized Map<String, List<InterceptorDefinition>> readDefinitions() {
-    try {
-      if (file.toString().isBlank()) return Map.of();
-      if (!Files.exists(file)) return Map.of();
-
-      Map<String, Object> doc = documentStore.load();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return Map.of();
-
-      Object uiObj = ircafe.get("ui");
-      if (!(uiObj instanceof Map<?, ?> ui)) return Map.of();
-
-      Object interceptorsObj = ui.get("interceptors");
-      if (!(interceptorsObj instanceof Map<?, ?> interceptors)) return Map.of();
-
-      Object serversObj = interceptors.get("servers");
-      if (!(serversObj instanceof Map<?, ?> servers)) return Map.of();
-
-      LinkedHashMap<String, List<InterceptorDefinition>> out = new LinkedHashMap<>();
-      for (Map.Entry<?, ?> entry : servers.entrySet()) {
-        String sid = Objects.toString(entry.getKey(), "").trim();
-        if (sid.isEmpty()) continue;
-        List<InterceptorDefinition> defs =
-            parseInterceptorDefinitionsForServer(entry.getValue(), sid);
-        if (!defs.isEmpty()) {
-          out.put(sid, defs);
-        }
-      }
-
-      if (out.isEmpty()) return Map.of();
-      return Map.copyOf(out);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read interceptor definitions from '{}'", file, e);
-      return Map.of();
-    }
+    return readExistingValue(
+            file,
+            documentStore,
+            log,
+            "interceptor definitions",
+            "ircafe",
+            "ui",
+            "interceptors",
+            "servers")
+        .map(RuntimeConfigInterceptorStore::parseInterceptorDefinitionsByServer)
+        .orElseGet(Map::of);
   }
 
   synchronized void rememberDefinitions(Map<String, List<InterceptorDefinition>> defsByServer) {
-    try {
-      if (file.toString().isBlank()) return;
+    mutateDocument(
+        file,
+        documentStore,
+        log,
+        "interceptor definitions",
+        doc -> {
+          Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
+          Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
+          Map<String, Object> interceptors = getOrCreateMap(ui, "interceptors");
+          Map<String, Object> serversOut = serializeDefinitionsByServer(defsByServer);
 
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> interceptors = getOrCreateMap(ui, "interceptors");
-
-      LinkedHashMap<String, Object> serversOut = new LinkedHashMap<>();
-      if (defsByServer != null) {
-        for (Map.Entry<String, List<InterceptorDefinition>> entry : defsByServer.entrySet()) {
-          String sid = Objects.toString(entry.getKey(), "").trim();
-          if (sid.isEmpty()) continue;
-
-          List<Map<String, Object>> defsOut = new ArrayList<>();
-          List<InterceptorDefinition> defs = entry.getValue();
-          if (defs != null) {
-            for (InterceptorDefinition def : defs) {
-              if (def == null) continue;
-              String id = Objects.toString(def.id(), "").trim();
-              if (id.isEmpty()) continue;
-
-              Map<String, Object> m = new LinkedHashMap<>();
-              m.put("id", id);
-              m.put("name", Objects.toString(def.name(), "").trim());
-              m.put("enabled", def.enabled());
-
-              String scopeServerId = Objects.toString(def.scopeServerId(), "").trim();
-              // Keep this key even when blank so "any server" survives round-trip.
-              m.put("scopeServerId", scopeServerId);
-
-              m.put(
-                  "channelIncludeMode",
-                  def.channelIncludeMode() != null
-                      ? def.channelIncludeMode().name()
-                      : InterceptorRuleMode.GLOB.name());
-              String channelIncludes = Objects.toString(def.channelIncludes(), "").trim();
-              if (!channelIncludes.isEmpty()) m.put("channelIncludes", channelIncludes);
-
-              m.put(
-                  "channelExcludeMode",
-                  def.channelExcludeMode() != null
-                      ? def.channelExcludeMode().name()
-                      : InterceptorRuleMode.GLOB.name());
-              String channelExcludes = Objects.toString(def.channelExcludes(), "").trim();
-              if (!channelExcludes.isEmpty()) m.put("channelExcludes", channelExcludes);
-
-              m.put("actionSoundEnabled", def.actionSoundEnabled());
-              m.put("actionStatusBarEnabled", def.actionStatusBarEnabled());
-              m.put("actionToastEnabled", def.actionToastEnabled());
-              String soundId = Objects.toString(def.actionSoundId(), "").trim();
-              m.put("actionSoundId", soundId.isEmpty() ? "NOTIF_1" : soundId);
-              m.put("actionSoundUseCustom", def.actionSoundUseCustom());
-              String soundCustom = Objects.toString(def.actionSoundCustomPath(), "").trim();
-              if (!soundCustom.isEmpty()) m.put("actionSoundCustomPath", soundCustom);
-
-              m.put("actionScriptEnabled", def.actionScriptEnabled());
-              String scriptPath = Objects.toString(def.actionScriptPath(), "").trim();
-              if (!scriptPath.isEmpty()) m.put("actionScriptPath", scriptPath);
-              String scriptArgs = Objects.toString(def.actionScriptArgs(), "").trim();
-              if (!scriptArgs.isEmpty()) m.put("actionScriptArgs", scriptArgs);
-              String scriptWorkingDirectory =
-                  Objects.toString(def.actionScriptWorkingDirectory(), "").trim();
-              if (!scriptWorkingDirectory.isEmpty()) {
-                m.put("actionScriptWorkingDirectory", scriptWorkingDirectory);
-              }
-
-              List<Map<String, Object>> rulesOut = new ArrayList<>();
-              if (def.rules() != null) {
-                for (InterceptorRule rule : def.rules()) {
-                  if (rule == null) continue;
-                  Map<String, Object> rm = new LinkedHashMap<>();
-                  rm.put("enabled", rule.enabled());
-                  rm.put("label", Objects.toString(rule.label(), "").trim());
-                  String eventTypesCsv = Objects.toString(rule.eventTypesCsv(), "").trim();
-                  if (!eventTypesCsv.isEmpty()) rm.put("eventTypesCsv", eventTypesCsv);
-
-                  rm.put(
-                      "messageMode",
-                      rule.messageMode() != null
-                          ? rule.messageMode().name()
-                          : InterceptorRuleMode.LIKE.name());
-                  String messagePattern = Objects.toString(rule.messagePattern(), "").trim();
-                  if (!messagePattern.isEmpty()) rm.put("messagePattern", messagePattern);
-
-                  rm.put(
-                      "nickMode",
-                      rule.nickMode() != null
-                          ? rule.nickMode().name()
-                          : InterceptorRuleMode.LIKE.name());
-                  String nickPattern = Objects.toString(rule.nickPattern(), "").trim();
-                  if (!nickPattern.isEmpty()) rm.put("nickPattern", nickPattern);
-
-                  rm.put(
-                      "hostmaskMode",
-                      rule.hostmaskMode() != null
-                          ? rule.hostmaskMode().name()
-                          : InterceptorRuleMode.GLOB.name());
-                  String hostmaskPattern = Objects.toString(rule.hostmaskPattern(), "").trim();
-                  if (!hostmaskPattern.isEmpty()) rm.put("hostmaskPattern", hostmaskPattern);
-                  rulesOut.add(rm);
-                }
-              }
-              m.put("rules", rulesOut);
-              defsOut.add(m);
+          if (serversOut.isEmpty()) {
+            interceptors.remove("servers");
+            if (interceptors.isEmpty()) {
+              ui.remove("interceptors");
             }
+          } else {
+            interceptors.put("servers", serversOut);
           }
+          return true;
+        });
+  }
 
-          if (!defsOut.isEmpty()) {
-            serversOut.put(sid, defsOut);
-          }
-        }
+  private static Map<String, List<InterceptorDefinition>> parseInterceptorDefinitionsByServer(
+      Object rawServers) {
+    if (!(rawServers instanceof Map<?, ?> servers)) return Map.of();
+
+    LinkedHashMap<String, List<InterceptorDefinition>> out = new LinkedHashMap<>();
+    for (Map.Entry<?, ?> entry : servers.entrySet()) {
+      String sid = Objects.toString(entry.getKey(), "").trim();
+      if (sid.isEmpty()) continue;
+      List<InterceptorDefinition> defs =
+          parseInterceptorDefinitionsForServer(entry.getValue(), sid);
+      if (!defs.isEmpty()) {
+        out.put(sid, defs);
       }
-
-      if (serversOut.isEmpty()) {
-        interceptors.remove("servers");
-        if (interceptors.isEmpty()) {
-          ui.remove("interceptors");
-        }
-      } else {
-        interceptors.put("servers", serversOut);
-      }
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist interceptor definitions to '{}'", file, e);
     }
+    return out.isEmpty() ? Map.of() : Map.copyOf(out);
+  }
+
+  private static Map<String, Object> serializeDefinitionsByServer(
+      Map<String, List<InterceptorDefinition>> defsByServer) {
+    LinkedHashMap<String, Object> out = new LinkedHashMap<>();
+    if (defsByServer == null) return out;
+
+    for (Map.Entry<String, List<InterceptorDefinition>> entry : defsByServer.entrySet()) {
+      String sid = Objects.toString(entry.getKey(), "").trim();
+      if (sid.isEmpty()) continue;
+
+      List<Map<String, Object>> defsOut = serializeDefinitions(entry.getValue());
+      if (!defsOut.isEmpty()) {
+        out.put(sid, defsOut);
+      }
+    }
+    return out;
+  }
+
+  private static List<Map<String, Object>> serializeDefinitions(
+      List<InterceptorDefinition> definitions) {
+    List<Map<String, Object>> out = new ArrayList<>();
+    if (definitions == null) return out;
+
+    for (InterceptorDefinition def : definitions) {
+      Map<String, Object> serialized = serializeDefinition(def);
+      if (!serialized.isEmpty()) out.add(serialized);
+    }
+    return out;
+  }
+
+  private static Map<String, Object> serializeDefinition(InterceptorDefinition def) {
+    if (def == null) return Map.of();
+    String id = Objects.toString(def.id(), "").trim();
+    if (id.isEmpty()) return Map.of();
+
+    Map<String, Object> m = new LinkedHashMap<>();
+    m.put("id", id);
+    m.put("name", Objects.toString(def.name(), "").trim());
+    m.put("enabled", def.enabled());
+
+    String scopeServerId = Objects.toString(def.scopeServerId(), "").trim();
+    // Keep this key even when blank so "any server" survives round-trip.
+    m.put("scopeServerId", scopeServerId);
+
+    m.put(
+        "channelIncludeMode",
+        def.channelIncludeMode() != null
+            ? def.channelIncludeMode().name()
+            : InterceptorRuleMode.GLOB.name());
+    String channelIncludes = Objects.toString(def.channelIncludes(), "").trim();
+    if (!channelIncludes.isEmpty()) m.put("channelIncludes", channelIncludes);
+
+    m.put(
+        "channelExcludeMode",
+        def.channelExcludeMode() != null
+            ? def.channelExcludeMode().name()
+            : InterceptorRuleMode.GLOB.name());
+    String channelExcludes = Objects.toString(def.channelExcludes(), "").trim();
+    if (!channelExcludes.isEmpty()) m.put("channelExcludes", channelExcludes);
+
+    m.put("actionSoundEnabled", def.actionSoundEnabled());
+    m.put("actionStatusBarEnabled", def.actionStatusBarEnabled());
+    m.put("actionToastEnabled", def.actionToastEnabled());
+    String soundId = Objects.toString(def.actionSoundId(), "").trim();
+    m.put("actionSoundId", soundId.isEmpty() ? "NOTIF_1" : soundId);
+    m.put("actionSoundUseCustom", def.actionSoundUseCustom());
+    String soundCustom = Objects.toString(def.actionSoundCustomPath(), "").trim();
+    if (!soundCustom.isEmpty()) m.put("actionSoundCustomPath", soundCustom);
+
+    m.put("actionScriptEnabled", def.actionScriptEnabled());
+    String scriptPath = Objects.toString(def.actionScriptPath(), "").trim();
+    if (!scriptPath.isEmpty()) m.put("actionScriptPath", scriptPath);
+    String scriptArgs = Objects.toString(def.actionScriptArgs(), "").trim();
+    if (!scriptArgs.isEmpty()) m.put("actionScriptArgs", scriptArgs);
+    String scriptWorkingDirectory = Objects.toString(def.actionScriptWorkingDirectory(), "").trim();
+    if (!scriptWorkingDirectory.isEmpty()) {
+      m.put("actionScriptWorkingDirectory", scriptWorkingDirectory);
+    }
+
+    m.put("rules", serializeRules(def.rules()));
+    return m;
+  }
+
+  private static List<Map<String, Object>> serializeRules(List<InterceptorRule> rules) {
+    List<Map<String, Object>> out = new ArrayList<>();
+    if (rules == null) return out;
+
+    for (InterceptorRule rule : rules) {
+      if (rule == null) continue;
+      Map<String, Object> m = new LinkedHashMap<>();
+      m.put("enabled", rule.enabled());
+      m.put("label", Objects.toString(rule.label(), "").trim());
+      String eventTypesCsv = Objects.toString(rule.eventTypesCsv(), "").trim();
+      if (!eventTypesCsv.isEmpty()) m.put("eventTypesCsv", eventTypesCsv);
+
+      m.put(
+          "messageMode",
+          rule.messageMode() != null
+              ? rule.messageMode().name()
+              : InterceptorRuleMode.LIKE.name());
+      String messagePattern = Objects.toString(rule.messagePattern(), "").trim();
+      if (!messagePattern.isEmpty()) m.put("messagePattern", messagePattern);
+
+      m.put(
+          "nickMode",
+          rule.nickMode() != null ? rule.nickMode().name() : InterceptorRuleMode.LIKE.name());
+      String nickPattern = Objects.toString(rule.nickPattern(), "").trim();
+      if (!nickPattern.isEmpty()) m.put("nickPattern", nickPattern);
+
+      m.put(
+          "hostmaskMode",
+          rule.hostmaskMode() != null
+              ? rule.hostmaskMode().name()
+              : InterceptorRuleMode.GLOB.name());
+      String hostmaskPattern = Objects.toString(rule.hostmaskPattern(), "").trim();
+      if (!hostmaskPattern.isEmpty()) m.put("hostmaskPattern", hostmaskPattern);
+      out.add(m);
+    }
+    return out;
   }
 
   private static List<InterceptorDefinition> parseInterceptorDefinitionsForServer(
