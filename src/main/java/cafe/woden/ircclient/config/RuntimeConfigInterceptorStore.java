@@ -1,7 +1,6 @@
 package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asBoolean;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
@@ -37,21 +36,17 @@ class RuntimeConfigInterceptorStore {
   }
 
   synchronized void rememberDefinitions(Map<String, List<InterceptorDefinition>> defsByServer) {
-    uiSection.mutateMap(
+    uiSection.mutateMapAndRemoveIfEmpty(
         "interceptor definitions",
-        ui -> {
-          Map<String, Object> interceptors = getOrCreateMap(ui, "interceptors");
+        interceptors -> {
           Map<String, Object> serversOut = serializeDefinitionsByServer(defsByServer);
-
           if (serversOut.isEmpty()) {
             interceptors.remove("servers");
-            if (interceptors.isEmpty()) {
-              ui.remove("interceptors");
-            }
           } else {
             interceptors.put("servers", serversOut);
           }
-        });
+        },
+        "interceptors");
   }
 
   private static Map<String, List<InterceptorDefinition>> parseInterceptorDefinitionsByServer(

@@ -1,7 +1,6 @@
 package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asBoolean;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
@@ -73,19 +72,16 @@ class RuntimeConfigServerAutoConnectStore {
     String sid = Objects.toString(serverId, "").trim();
     if (sid.isEmpty()) return;
 
-    uiSection.mutateMap(
+    uiSection.mutateMapAndRemoveIfEmpty(
         "per-server startup auto-connect settings",
-        ui -> {
-          Map<String, Object> byServer = getOrCreateMap(ui, "serverAutoConnectOnStartByServer");
+        byServer -> {
           if (enabled) {
             byServer.remove(sid);
           } else {
             byServer.put(sid, false);
           }
-          if (byServer.isEmpty()) {
-            ui.remove("serverAutoConnectOnStartByServer");
-          }
-        });
+        },
+        "serverAutoConnectOnStartByServer");
   }
 
   private static Map<String, Boolean> readBooleanMap(Object raw) {

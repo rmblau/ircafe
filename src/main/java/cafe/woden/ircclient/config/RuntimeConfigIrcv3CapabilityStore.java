@@ -1,7 +1,6 @@
 package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asBoolean;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
 
 import cafe.woden.ircclient.config.api.Ircv3CapabilityNameResolverPort;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
@@ -76,20 +75,16 @@ class RuntimeConfigIrcv3CapabilityStore {
     String key = normalizeCapabilityKey(capability);
     if (key == null) return;
 
-    uiSection.mutateMap(
+    uiSection.mutateMapAndRemoveIfEmpty(
         "IRCv3 capability '" + capability + "' setting",
-        ui -> {
-          Map<String, Object> caps = getOrCreateMap(ui, "ircv3Capabilities");
-
+        caps -> {
           if (enabled) {
             caps.remove(key);
           } else {
             caps.put(key, false);
           }
-          if (caps.isEmpty()) {
-            ui.remove("ircv3Capabilities");
-          }
-        });
+        },
+        "ircv3Capabilities");
   }
 
   private String normalizeCapabilityKey(String capability) {
