@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime.ui;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.sanitizeStringList;
 
@@ -11,68 +11,68 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Owns spellcheck settings under {@code ircafe.ui}. */
-class RuntimeConfigSpellcheckStore {
+public class RuntimeConfigSpellcheckStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigSpellcheckStore.class);
 
   private final RuntimeConfigYamlSection uiSection;
 
-  RuntimeConfigSpellcheckStore(Path file, RuntimeConfigDocumentStore documentStore) {
+  public RuntimeConfigSpellcheckStore(Path file, RuntimeConfigDocumentStore documentStore) {
     this.uiSection =
-        new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui");
+        RuntimeConfigYamlSection.ircafeUi(file, documentStore, log);
   }
 
-  synchronized void rememberEnabled(boolean enabled) {
+  public synchronized void rememberEnabled(boolean enabled) {
     rememberBoolean("spellcheckEnabled", enabled);
   }
 
-  synchronized void rememberUnderlineEnabled(boolean enabled) {
+  public synchronized void rememberUnderlineEnabled(boolean enabled) {
     rememberBoolean("spellcheckUnderlineEnabled", enabled);
   }
 
-  synchronized void rememberSuggestOnTabEnabled(boolean enabled) {
+  public synchronized void rememberSuggestOnTabEnabled(boolean enabled) {
     rememberBoolean("spellcheckSuggestOnTabEnabled", enabled);
   }
 
-  synchronized void rememberHoverSuggestionsEnabled(boolean enabled) {
+  public synchronized void rememberHoverSuggestionsEnabled(boolean enabled) {
     rememberBoolean("spellcheckHoverSuggestionsEnabled", enabled);
   }
 
-  synchronized void rememberCompletionPreset(String preset) {
+  public synchronized void rememberCompletionPreset(String preset) {
     String normalized = UiProperties.normalizeSpellcheckCompletionPreset(preset);
     rememberScalar("spellcheckCompletionPreset", normalized);
   }
 
-  synchronized void rememberCustomMinPrefixCompletionTokenLength(int value) {
+  public synchronized void rememberCustomMinPrefixCompletionTokenLength(int value) {
     rememberInteger(
         "spellcheckCustomMinPrefixCompletionTokenLength", Math.max(2, Math.min(6, value)));
   }
 
-  synchronized void rememberCustomMaxPrefixCompletionExtraChars(int value) {
+  public synchronized void rememberCustomMaxPrefixCompletionExtraChars(int value) {
     rememberInteger(
         "spellcheckCustomMaxPrefixCompletionExtraChars", Math.max(4, Math.min(24, value)));
   }
 
-  synchronized void rememberCustomMaxPrefixLexiconCandidates(int value) {
+  public synchronized void rememberCustomMaxPrefixLexiconCandidates(int value) {
     rememberInteger(
         "spellcheckCustomMaxPrefixLexiconCandidates", Math.max(16, Math.min(256, value)));
   }
 
-  synchronized void rememberCustomPrefixCompletionBonusScore(int value) {
+  public synchronized void rememberCustomPrefixCompletionBonusScore(int value) {
     rememberInteger(
         "spellcheckCustomPrefixCompletionBonusScore", Math.max(0, Math.min(400, value)));
   }
 
-  synchronized void rememberCustomSourceOrderWeight(int value) {
+  public synchronized void rememberCustomSourceOrderWeight(int value) {
     rememberInteger("spellcheckCustomSourceOrderWeight", Math.max(0, Math.min(20, value)));
   }
 
-  synchronized void rememberLanguageTag(String languageTag) {
+  public synchronized void rememberLanguageTag(String languageTag) {
     String normalized = UiProperties.normalizeSpellcheckLanguageTag(languageTag);
     rememberScalar("spellcheckLanguageTag", normalized);
   }
 
-  synchronized void rememberCustomDictionary(List<String> words) {
+  public synchronized void rememberCustomDictionary(List<String> words) {
     List<String> cleaned = sanitizeStringList(words);
     uiSection.mutateMap(
         "spellcheck custom dictionary",

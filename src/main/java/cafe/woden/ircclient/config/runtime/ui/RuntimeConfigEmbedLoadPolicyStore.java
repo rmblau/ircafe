@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime.ui;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asBoolean;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asInt;
@@ -17,18 +17,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Owns advanced embed/link loading policy settings under {@code ircafe.ui.embedLoadPolicy}. */
-class RuntimeConfigEmbedLoadPolicyStore {
+public class RuntimeConfigEmbedLoadPolicyStore {
 
   private static final Logger log =
       LoggerFactory.getLogger(RuntimeConfigEmbedLoadPolicyStore.class);
 
   private final RuntimeConfigYamlSection uiSection;
 
-  RuntimeConfigEmbedLoadPolicyStore(Path file, RuntimeConfigDocumentStore documentStore) {
+  public RuntimeConfigEmbedLoadPolicyStore(Path file, RuntimeConfigDocumentStore documentStore) {
     this.uiSection = RuntimeConfigYamlSection.ircafeUi(file, documentStore, log);
   }
 
-  synchronized EmbedLoadPolicySnapshot read() {
+  public synchronized EmbedLoadPolicySnapshot read() {
     return uiSection
         .readValue("embed/link load policy", "embedLoadPolicy")
         .filter(Map.class::isInstance)
@@ -37,7 +37,7 @@ class RuntimeConfigEmbedLoadPolicyStore {
         .orElseGet(EmbedLoadPolicySnapshot::defaults);
   }
 
-  synchronized void remember(EmbedLoadPolicySnapshot snapshot) {
+  public synchronized void remember(EmbedLoadPolicySnapshot snapshot) {
     EmbedLoadPolicySnapshot normalized =
         snapshot == null ? EmbedLoadPolicySnapshot.defaults() : snapshot;
 

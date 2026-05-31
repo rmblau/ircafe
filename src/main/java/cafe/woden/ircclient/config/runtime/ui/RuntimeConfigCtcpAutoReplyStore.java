@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime.ui;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
@@ -8,46 +8,46 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Owns CTCP auto-reply settings under {@code ircafe.ui.ctcpReplies}. */
-class RuntimeConfigCtcpAutoReplyStore {
+public class RuntimeConfigCtcpAutoReplyStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigCtcpAutoReplyStore.class);
 
   private final RuntimeConfigYamlSection ctcpRepliesSection;
 
-  RuntimeConfigCtcpAutoReplyStore(Path file, RuntimeConfigDocumentStore documentStore) {
+  public RuntimeConfigCtcpAutoReplyStore(Path file, RuntimeConfigDocumentStore documentStore) {
     this.ctcpRepliesSection =
         RuntimeConfigYamlSection.ircafeUi(file, documentStore, log, "ctcpReplies");
   }
 
-  synchronized boolean readEnabled(boolean defaultValue) {
+  public synchronized boolean readEnabled(boolean defaultValue) {
     return readBoolean("enabled", defaultValue);
   }
 
-  synchronized boolean readVersionEnabled(boolean defaultValue) {
+  public synchronized boolean readVersionEnabled(boolean defaultValue) {
     return readBoolean("version", defaultValue);
   }
 
-  synchronized boolean readPingEnabled(boolean defaultValue) {
+  public synchronized boolean readPingEnabled(boolean defaultValue) {
     return readBoolean("ping", defaultValue);
   }
 
-  synchronized boolean readTimeEnabled(boolean defaultValue) {
+  public synchronized boolean readTimeEnabled(boolean defaultValue) {
     return readBoolean("time", defaultValue);
   }
 
-  synchronized void rememberEnabled(boolean enabled) {
+  public synchronized void rememberEnabled(boolean enabled) {
     rememberBoolean("enabled", enabled);
   }
 
-  synchronized void rememberVersionEnabled(boolean enabled) {
+  public synchronized void rememberVersionEnabled(boolean enabled) {
     rememberBoolean("version", enabled);
   }
 
-  synchronized void rememberPingEnabled(boolean enabled) {
+  public synchronized void rememberPingEnabled(boolean enabled) {
     rememberBoolean("ping", enabled);
   }
 
-  synchronized void rememberTimeEnabled(boolean enabled) {
+  public synchronized void rememberTimeEnabled(boolean enabled) {
     rememberBoolean("time", enabled);
   }
 

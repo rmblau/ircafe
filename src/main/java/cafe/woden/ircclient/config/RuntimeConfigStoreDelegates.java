@@ -1,7 +1,11 @@
 package cafe.woden.ircclient.config;
 
+import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigCtcpAutoReplyStore;
+import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigEmbedLoadPolicyStore;
+import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigEmbedStore;
 import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigMemoryUsageStore;
 import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigOutgoingMessageStore;
+import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigSpellcheckStore;
 import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigTimestampStore;
 import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigUiFeatureToggleStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
