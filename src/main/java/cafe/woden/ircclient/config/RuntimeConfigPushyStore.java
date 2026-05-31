@@ -1,7 +1,9 @@
 package cafe.woden.ircclient.config;
 
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.mutateMap;
+import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateMap;
 
+import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Objects;

@@ -1,7 +1,9 @@
 package cafe.woden.ircclient.config;
 
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.putValue;
+import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.putValue;
 
+import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import java.nio.file.Path;
 import java.util.Objects;
 import org.slf4j.Logger;

@@ -1,12 +1,14 @@
 package cafe.woden.ircclient.config;
 
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.asBoolean;
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.asInt;
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.mutateMap;
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.readValue;
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.sanitizeStringList;
+import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asBoolean;
+import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asInt;
+import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
+import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateMap;
+import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.readValue;
+import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.sanitizeStringList;
 
+import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicyScope;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import java.nio.file.Path;

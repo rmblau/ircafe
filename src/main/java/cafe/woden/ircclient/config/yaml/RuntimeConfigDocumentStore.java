@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.yaml;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -16,10 +16,10 @@ import org.yaml.snakeyaml.Yaml;
 /**
  * Owns low-level runtime config document IO and write batching.
  *
- * <p>{@link RuntimeConfigStore} still owns the domain-specific document shape; this class only
+ * <p>{@code RuntimeConfigStore} still owns the domain-specific document shape; this class only
  * knows how to load, write, and coalesce mutations for the YAML document backing the store.
  */
-class RuntimeConfigDocumentStore {
+public class RuntimeConfigDocumentStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigDocumentStore.class);
 
@@ -31,17 +31,17 @@ class RuntimeConfigDocumentStore {
   private Map<String, Object> mutationBatchDoc = null;
   private boolean mutationBatchDirty = false;
 
-  RuntimeConfigDocumentStore(Path file) {
+  public RuntimeConfigDocumentStore(Path file) {
     this.file = file;
     this.fileExistedOnStartup = existsSafely(file);
     this.yaml = new Yaml(dumperOptions());
   }
 
-  boolean fileExistedOnStartup() {
+  public boolean fileExistedOnStartup() {
     return fileExistedOnStartup;
   }
 
-  synchronized void runMutationBatch(Runnable action) {
+  public synchronized void runMutationBatch(Runnable action) {
     if (action == null) return;
     beginMutationBatch();
     try {
@@ -51,7 +51,7 @@ class RuntimeConfigDocumentStore {
     }
   }
 
-  synchronized void beginMutationBatch() {
+  public synchronized void beginMutationBatch() {
     if (mutationBatchDepth == 0) {
       try {
         mutationBatchDoc = loadOrEmpty();
@@ -64,7 +64,7 @@ class RuntimeConfigDocumentStore {
     mutationBatchDepth++;
   }
 
-  synchronized void endMutationBatch() {
+  public synchronized void endMutationBatch() {
     if (mutationBatchDepth <= 0) return;
     mutationBatchDepth--;
     if (mutationBatchDepth > 0) return;

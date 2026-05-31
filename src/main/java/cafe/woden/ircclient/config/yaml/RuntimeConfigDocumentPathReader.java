@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.yaml;
 
 import java.util.Map;
 import java.util.Optional;

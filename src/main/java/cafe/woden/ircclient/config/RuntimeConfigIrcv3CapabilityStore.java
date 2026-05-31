@@ -1,10 +1,12 @@
 package cafe.woden.ircclient.config;
 
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.asBoolean;
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.mutateDocument;
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.readExistingValue;
+import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asBoolean;
+import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
+import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateDocument;
+import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.readExistingValue;
 
+import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import cafe.woden.ircclient.config.api.Ircv3CapabilityNameResolverPort;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;

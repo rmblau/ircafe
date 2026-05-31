@@ -1,8 +1,10 @@
 package cafe.woden.ircclient.config;
 
-import static cafe.woden.ircclient.config.RuntimeConfigServerYamlSupport.mutateExistingServer;
-import static cafe.woden.ircclient.config.RuntimeConfigServerYamlSupport.readExistingServer;
+import static cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSupport.mutateExistingServer;
+import static cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSupport.readExistingServer;
 
+import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSupport;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.yaml;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,11 +17,11 @@ import org.slf4j.Logger;
 
 /** Shared YAML document helpers for the focused runtime-configuration stores. */
 @InfrastructureLayer
-final class RuntimeConfigYamlSupport {
+public final class RuntimeConfigYamlSupport {
 
   private RuntimeConfigYamlSupport() {}
 
-  static Optional<Object> readValue(
+  public static Optional<Object> readValue(
       Path file,
       RuntimeConfigDocumentStore documentStore,
       Logger log,
@@ -38,7 +38,7 @@ final class RuntimeConfigYamlSupport {
     }
   }
 
-  static Optional<Object> readExistingValue(
+  public static Optional<Object> readExistingValue(
       Path file,
       RuntimeConfigDocumentStore documentStore,
       Logger log,
@@ -56,7 +56,7 @@ final class RuntimeConfigYamlSupport {
     }
   }
 
-  static void putValue(
+  public static void putValue(
       Path file,
       RuntimeConfigDocumentStore documentStore,
       Logger log,
@@ -67,7 +67,7 @@ final class RuntimeConfigYamlSupport {
         file, documentStore, log, description, path, parent -> parent.put(last(path), value));
   }
 
-  static void removeValue(
+  public static void removeValue(
       Path file,
       RuntimeConfigDocumentStore documentStore,
       Logger log,
@@ -76,7 +76,7 @@ final class RuntimeConfigYamlSupport {
     mutateValue(file, documentStore, log, description, path, parent -> parent.remove(last(path)));
   }
 
-  static void mutateMap(
+  public static void mutateMap(
       Path file,
       RuntimeConfigDocumentStore documentStore,
       Logger log,
@@ -96,7 +96,7 @@ final class RuntimeConfigYamlSupport {
     }
   }
 
-  static void mutateDocument(
+  public static void mutateDocument(
       Path file,
       RuntimeConfigDocumentStore documentStore,
       Logger log,
@@ -114,7 +114,7 @@ final class RuntimeConfigYamlSupport {
     }
   }
 
-  static Map<String, Object> getOrCreateMapPath(Map<String, Object> root, String... path) {
+  public static Map<String, Object> getOrCreateMapPath(Map<String, Object> root, String... path) {
     Map<String, Object> current = root;
     for (String segment : path) {
       current = getOrCreateMap(current, segment);
@@ -123,7 +123,7 @@ final class RuntimeConfigYamlSupport {
   }
 
   @SuppressWarnings("unchecked")
-  static Map<String, Object> getOrCreateMap(Map<String, Object> parent, String key) {
+  public static Map<String, Object> getOrCreateMap(Map<String, Object> parent, String key) {
     Object existing = parent.get(key);
     if (existing instanceof Map<?, ?> map) return (Map<String, Object>) map;
     Map<String, Object> created = new LinkedHashMap<>();
@@ -168,7 +168,7 @@ final class RuntimeConfigYamlSupport {
     return path[path.length - 1];
   }
 
-  static Optional<Boolean> asBoolean(Object value) {
+  public static Optional<Boolean> asBoolean(Object value) {
     if (value instanceof Boolean b) return Optional.of(b);
     if (value instanceof String s) {
       String t = s.trim();
@@ -184,7 +184,7 @@ final class RuntimeConfigYamlSupport {
   }
 
   @SuppressWarnings("unchecked")
-  static List<String> getOrCreateStringList(Map<String, Object> parent, String key) {
+  public static List<String> getOrCreateStringList(Map<String, Object> parent, String key) {
     Object existing = parent.get(key);
     if (existing instanceof List<?>) {
       return (List<String>) existing;
@@ -194,7 +194,7 @@ final class RuntimeConfigYamlSupport {
     return created;
   }
 
-  static List<String> sanitizeStringList(Object raw) {
+  public static List<String> sanitizeStringList(Object raw) {
     if (!(raw instanceof List<?> list) || list.isEmpty()) return List.of();
 
     ArrayList<String> out = new ArrayList<>(list.size());
@@ -205,14 +205,14 @@ final class RuntimeConfigYamlSupport {
     return out.isEmpty() ? List.of() : List.copyOf(out);
   }
 
-  static boolean isEmptySettingValue(Object value) {
+  public static boolean isEmptySettingValue(Object value) {
     if (value == null) return true;
     if (value instanceof CharSequence text) return text.toString().isBlank();
     if (value instanceof Collection<?> collection) return collection.isEmpty();
     return false;
   }
 
-  static Optional<Integer> asInt(Object value) {
+  public static Optional<Integer> asInt(Object value) {
     if (value instanceof Number n) return Optional.of(n.intValue());
     if (value instanceof String s) {
       String t = s.trim();
@@ -226,7 +226,7 @@ final class RuntimeConfigYamlSupport {
     return Optional.empty();
   }
 
-  static Optional<Long> asLong(Object value) {
+  public static Optional<Long> asLong(Object value) {
     if (value instanceof Number n) return Optional.of(n.longValue());
     if (value instanceof String s) {
       String t = s.trim();

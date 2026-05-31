@@ -1,6 +1,6 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.yaml;
 
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
+import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,12 +15,12 @@ import org.slf4j.Logger;
 
 /** Shared helpers for runtime configuration stored under {@code irc.servers[]}. */
 @InfrastructureLayer
-final class RuntimeConfigServerYamlSupport {
+public final class RuntimeConfigServerYamlSupport {
 
   private RuntimeConfigServerYamlSupport() {}
 
   @SuppressWarnings("unchecked")
-  static Optional<List<Map<String, Object>>> readServerList(Map<String, Object> irc) {
+  public static Optional<List<Map<String, Object>>> readServerList(Map<String, Object> irc) {
     Object raw = irc.get("servers");
     if (raw instanceof List<?>) {
       return Optional.of((List<Map<String, Object>>) raw);
@@ -28,7 +28,7 @@ final class RuntimeConfigServerYamlSupport {
     return Optional.empty();
   }
 
-  static Optional<Map<String, Object>> findServerById(
+  public static Optional<Map<String, Object>> findServerById(
       List<Map<String, Object>> servers, String serverId) {
     String sid = Objects.toString(serverId, "").trim();
     if (sid.isEmpty() || servers == null || servers.isEmpty()) return Optional.empty();
@@ -42,7 +42,7 @@ final class RuntimeConfigServerYamlSupport {
     return Optional.empty();
   }
 
-  static Optional<Map<String, Object>> readExistingServer(
+  public static Optional<Map<String, Object>> readExistingServer(
       Path file,
       RuntimeConfigDocumentStore documentStore,
       Logger log,
@@ -65,7 +65,7 @@ final class RuntimeConfigServerYamlSupport {
     }
   }
 
-  static void mutateExistingServer(
+  public static void mutateExistingServer(
       Path file,
       RuntimeConfigDocumentStore documentStore,
       Logger log,
