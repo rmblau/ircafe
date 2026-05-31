@@ -3,7 +3,8 @@ package cafe.woden.ircclient.config;
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.asBoolean;
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.asInt;
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMapPath;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.mutateMap;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.readValue;
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.sanitizeStringList;
 
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicyScope;
@@ -30,87 +31,84 @@ class RuntimeConfigEmbedLoadPolicyStore {
   }
 
   synchronized EmbedLoadPolicySnapshot read() {
-    try {
-      if (file.toString().isBlank()) return EmbedLoadPolicySnapshot.defaults();
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return EmbedLoadPolicySnapshot.defaults();
-
-      Object uiObj = ircafe.get("ui");
-      if (!(uiObj instanceof Map<?, ?> ui)) return EmbedLoadPolicySnapshot.defaults();
-
-      Object rawPolicy = ui.get("embedLoadPolicy");
-      if (!(rawPolicy instanceof Map<?, ?> policy)) return EmbedLoadPolicySnapshot.defaults();
-
-      EmbedLoadPolicyScope global = parseScope(policy.get("global"));
-
-      LinkedHashMap<String, EmbedLoadPolicyScope> byServer = new LinkedHashMap<>();
-      Object rawByServer = policy.get("byServer");
-      if (rawByServer instanceof Map<?, ?> map) {
-        for (Map.Entry<?, ?> entry : map.entrySet()) {
-          String serverId = Objects.toString(entry.getKey(), "").trim();
-          if (serverId.isEmpty()) continue;
-          EmbedLoadPolicyScope scope = parseScope(entry.getValue());
-          if (scope.isDefaultScope()) continue;
-          byServer.put(serverId, scope);
-        }
-      }
-
-      return new EmbedLoadPolicySnapshot(global, byServer);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read embed/link load policy from '{}'", file, e);
-      return EmbedLoadPolicySnapshot.defaults();
-    }
+    return readValue(
+            file,
+            documentStore,
+            log,
+            "embed/link load policy",
+            "ircafe",
+            "ui",
+            "embedLoadPolicy")
+        .filter(Map.class::isInstance)
+        .map(Map.class::cast)
+        .map(RuntimeConfigEmbedLoadPolicyStore::parseSnapshot)
+        .orElseGet(EmbedLoadPolicySnapshot::defaults);
   }
 
   synchronized void remember(EmbedLoadPolicySnapshot snapshot) {
-    try {
-      if (file.toString().isBlank()) return;
+    EmbedLoadPolicySnapshot normalized =
+        snapshot == null ? EmbedLoadPolicySnapshot.defaults() : snapshot;
 
-      EmbedLoadPolicySnapshot normalized =
-          snapshot == null ? EmbedLoadPolicySnapshot.defaults() : snapshot;
+    mutateMap(
+        file,
+        documentStore,
+        log,
+        "embed/link load policy",
+        ui -> writePolicy(ui, normalized),
+        "ircafe",
+        "ui");
+  }
 
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ui = getOrCreateMapPath(doc, "ircafe", "ui");
+  private static EmbedLoadPolicySnapshot parseSnapshot(Map<?, ?> policy) {
+    EmbedLoadPolicyScope global = parseScope(policy.get("global"));
 
-      if (normalized.isDefaultPolicy()) {
-        ui.remove("embedLoadPolicy");
-        documentStore.write(doc);
-        return;
+    LinkedHashMap<String, EmbedLoadPolicyScope> byServer = new LinkedHashMap<>();
+    Object rawByServer = policy.get("byServer");
+    if (rawByServer instanceof Map<?, ?> map) {
+      for (Map.Entry<?, ?> entry : map.entrySet()) {
+        String serverId = Objects.toString(entry.getKey(), "").trim();
+        if (serverId.isEmpty()) continue;
+        EmbedLoadPolicyScope scope = parseScope(entry.getValue());
+        if (scope.isDefaultScope()) continue;
+        byServer.put(serverId, scope);
       }
+    }
 
-      Map<String, Object> policy = getOrCreateMap(ui, "embedLoadPolicy");
-      Map<String, Object> global = getOrCreateMap(policy, "global");
-      writeScopeMap(global, normalized.global());
+    return new EmbedLoadPolicySnapshot(global, byServer);
+  }
 
-      if (normalized.byServer() == null || normalized.byServer().isEmpty()) {
+  private static void writePolicy(Map<String, Object> ui, EmbedLoadPolicySnapshot normalized) {
+    if (normalized.isDefaultPolicy()) {
+      ui.remove("embedLoadPolicy");
+      return;
+    }
+
+    Map<String, Object> policy = getOrCreateMap(ui, "embedLoadPolicy");
+    Map<String, Object> global = getOrCreateMap(policy, "global");
+    writeScopeMap(global, normalized.global());
+
+    if (normalized.byServer() == null || normalized.byServer().isEmpty()) {
+      policy.remove("byServer");
+    } else {
+      Map<String, Object> byServer = getOrCreateMap(policy, "byServer");
+      byServer.clear();
+      for (Map.Entry<String, EmbedLoadPolicyScope> entry : normalized.byServer().entrySet()) {
+        String serverId = Objects.toString(entry.getKey(), "").trim();
+        if (serverId.isEmpty()) continue;
+        EmbedLoadPolicyScope scope =
+            entry.getValue() == null ? EmbedLoadPolicyScope.defaults() : entry.getValue();
+        if (scope.isDefaultScope()) continue;
+        Map<String, Object> scopeMap = new LinkedHashMap<>();
+        writeScopeMap(scopeMap, scope);
+        byServer.put(serverId, scopeMap);
+      }
+      if (byServer.isEmpty()) {
         policy.remove("byServer");
-      } else {
-        Map<String, Object> byServer = getOrCreateMap(policy, "byServer");
-        byServer.clear();
-        for (Map.Entry<String, EmbedLoadPolicyScope> entry : normalized.byServer().entrySet()) {
-          String serverId = Objects.toString(entry.getKey(), "").trim();
-          if (serverId.isEmpty()) continue;
-          EmbedLoadPolicyScope scope =
-              entry.getValue() == null ? EmbedLoadPolicyScope.defaults() : entry.getValue();
-          if (scope.isDefaultScope()) continue;
-          Map<String, Object> scopeMap = new LinkedHashMap<>();
-          writeScopeMap(scopeMap, scope);
-          byServer.put(serverId, scopeMap);
-        }
-        if (byServer.isEmpty()) {
-          policy.remove("byServer");
-        }
       }
+    }
 
-      if (policy.isEmpty()) {
-        ui.remove("embedLoadPolicy");
-      }
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist embed/link load policy to '{}'", file, e);
+    if (policy.isEmpty()) {
+      ui.remove("embedLoadPolicy");
     }
   }
 
