@@ -1,10 +1,10 @@
 package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.asBoolean;
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMapPath;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.mutateMap;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.readExistingValue;
 
 import cafe.woden.ircclient.model.UserCommandAlias;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -28,91 +28,78 @@ class RuntimeConfigUserCommandStore {
   }
 
   synchronized List<UserCommandAlias> readAliases() {
-    try {
-      if (file.toString().isBlank()) return List.of();
-      if (!Files.exists(file)) return List.of();
-
-      Map<String, Object> doc = documentStore.load();
-      Object aliasesObj =
-          RuntimeConfigDocumentPathReader.readValue(doc, "ircafe", "commands", "aliases")
-              .orElse(null);
-      if (!(aliasesObj instanceof List<?> raw)) return List.of();
-
-      List<UserCommandAlias> out = new ArrayList<>();
-      for (Object item : raw) {
-        if (!(item instanceof Map<?, ?> m)) continue;
-
-        boolean enabled = asBoolean(m.get("enabled")).orElse(Boolean.TRUE);
-        String name = Objects.toString(m.get("name"), "").trim();
-
-        // Accept both "template" and legacy/alternate "expansion" key names.
-        String template = Objects.toString(m.get("template"), "");
-        if (template.isEmpty()) template = Objects.toString(m.get("expansion"), "");
-
-        out.add(new UserCommandAlias(enabled, name, template));
-      }
-
-      return List.copyOf(out);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read user command aliases from '{}'", file, e);
-      return List.of();
-    }
+    return readExistingValue(
+            file, documentStore, log, "user command aliases", "ircafe", "commands", "aliases")
+        .filter(List.class::isInstance)
+        .map(value -> parseAliases((List<?>) value))
+        .orElseGet(List::of);
   }
 
   synchronized boolean readUnknownCommandAsRawEnabled(boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-      if (!Files.exists(file)) return defaultValue;
-
-      Map<String, Object> doc = documentStore.load();
-      return RuntimeConfigDocumentPathReader.readValue(
-              doc, "ircafe", "commands", "unknownCommandAsRaw")
-          .flatMap(RuntimeConfigYamlSupport::asBoolean)
-          .orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read commands.unknownCommandAsRaw from '{}'", file, e);
-      return defaultValue;
-    }
+    return readExistingValue(
+            file,
+            documentStore,
+            log,
+            "commands.unknownCommandAsRaw",
+            "ircafe",
+            "commands",
+            "unknownCommandAsRaw")
+        .flatMap(RuntimeConfigYamlSupport::asBoolean)
+        .orElse(defaultValue);
   }
 
   synchronized void rememberAliases(List<UserCommandAlias> aliases) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> commands = getOrCreateMapPath(doc, "ircafe", "commands");
-
-      List<Map<String, Object>> out = new ArrayList<>();
-      if (aliases != null) {
-        for (UserCommandAlias alias : aliases) {
-          if (alias == null) continue;
-          Map<String, Object> m = new LinkedHashMap<>();
-          m.put("enabled", alias.enabled());
-          m.put("name", Objects.toString(alias.name(), "").trim());
-          m.put("template", Objects.toString(alias.template(), ""));
-          out.add(m);
-        }
-      }
-
-      commands.put("aliases", out);
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist user command aliases to '{}'", file, e);
-    }
+    mutateMap(
+        file,
+        documentStore,
+        log,
+        "user command aliases",
+        commands -> commands.put("aliases", serializeAliases(aliases)),
+        "ircafe",
+        "commands");
   }
 
   synchronized void rememberUnknownCommandAsRawEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
+    mutateMap(
+        file,
+        documentStore,
+        log,
+        "commands.unknownCommandAsRaw",
+        commands -> commands.put("unknownCommandAsRaw", enabled),
+        "ircafe",
+        "commands");
+  }
 
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> commands = getOrCreateMapPath(doc, "ircafe", "commands");
+  private static List<UserCommandAlias> parseAliases(List<?> raw) {
+    List<UserCommandAlias> out = new ArrayList<>();
+    for (Object item : raw) {
+      if (!(item instanceof Map<?, ?> m)) continue;
 
-      commands.put("unknownCommandAsRaw", enabled);
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist commands.unknownCommandAsRaw to '{}'", file, e);
+      boolean enabled = asBoolean(m.get("enabled")).orElse(Boolean.TRUE);
+      String name = Objects.toString(m.get("name"), "").trim();
+
+      // Accept both "template" and legacy/alternate "expansion" key names.
+      String template = Objects.toString(m.get("template"), "");
+      if (template.isEmpty()) template = Objects.toString(m.get("expansion"), "");
+
+      out.add(new UserCommandAlias(enabled, name, template));
     }
+    return List.copyOf(out);
+  }
+
+  private static List<Map<String, Object>> serializeAliases(List<UserCommandAlias> aliases) {
+    List<Map<String, Object>> out = new ArrayList<>();
+    if (aliases != null) {
+      for (UserCommandAlias alias : aliases) {
+        if (alias == null) continue;
+        Map<String, Object> m = new LinkedHashMap<>();
+        m.put("enabled", alias.enabled());
+        m.put("name", Objects.toString(alias.name(), "").trim());
+        m.put("template", Objects.toString(alias.template(), ""));
+        out.add(m);
+      }
+    }
+    return out;
   }
 
 }
