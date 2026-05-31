@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -364,16 +365,16 @@ final class MessageInputNickCompletionSupport {
               if (tryCycleNickCompletion(beforeText, beforeCaret)) {
                 return;
               }
-              boolean forcePopupForNickHint =
+              boolean forcePopupInsteadOfImmediateCompletion =
                   shouldForcePopupInsteadOfImmediateCompletion(beforeText, beforeCaret);
               boolean prevSingleChoice = autoCompletion.getAutoCompleteSingleChoices();
-              if (forcePopupForNickHint) {
+              if (forcePopupInsteadOfImmediateCompletion) {
                 autoCompletion.setAutoCompleteSingleChoices(false);
               }
               try {
                 delegate.actionPerformed(e);
               } finally {
-                if (forcePopupForNickHint) {
+                if (forcePopupInsteadOfImmediateCompletion) {
                   autoCompletion.setAutoCompleteSingleChoices(prevSingleChoice);
                 }
               }
@@ -391,9 +392,9 @@ final class MessageInputNickCompletionSupport {
                     }
 
                     boolean appended = maybeAppendNickAddressSuffix(beforeText, beforeCaret);
+                    String afterText = input.getText();
+                    int afterCaret = input.getCaretPosition();
                     if (!appended) {
-                      String afterText = input.getText();
-                      int afterCaret = input.getCaretPosition();
                       pendingNickAddressSuffix = false;
                       if (shouldArmPendingNickAddressSuffix(
                           beforeText, beforeCaret, afterText, afterCaret)) {
@@ -405,6 +406,8 @@ final class MessageInputNickCompletionSupport {
                     } else {
                       pendingNickAddressSuffix = false;
                     }
+                    maybeScheduleAsyncWordCompletionPopup(
+                        beforeText, beforeCaret, afterText, afterCaret);
                   });
             }
           });
@@ -526,7 +529,82 @@ final class MessageInputNickCompletionSupport {
 
     String token = completionProvider.getAlreadyEnteredText(input);
     if (token == null || token.isBlank()) return false;
-    return firstCompletionHint(token) != null;
+    if (firstCompletionHint(token) != null) return true;
+    return shouldForcePopupForWordSuggestion(beforeText, beforeCaret, token);
+  }
+
+  private boolean shouldForcePopupForWordSuggestion(String text, int caret, String token) {
+    if (wordSuggestionProvider == null) return false;
+    if (startsWithSlashCommand(text)) return false;
+    if (caret < 0 || text == null || caret > text.length()) return false;
+    if (isKnownNick(token)) return false;
+    return isPotentialWordSuggestionToken(token);
+  }
+
+  private void maybeScheduleAsyncWordCompletionPopup(
+      String beforeText, int beforeCaret, String afterText, int afterCaret) {
+    if (wordSuggestionProvider == null) return;
+    if (!Objects.equals(beforeText, afterText) || beforeCaret != afterCaret) return;
+    if (autoCompletion.isPopupVisible()) return;
+
+    String token = tokenAt(beforeText, beforeCaret);
+    if (!shouldForcePopupForWordSuggestion(beforeText, beforeCaret, token)) return;
+
+    CompletableFuture<List<String>> future;
+    try {
+      future = wordSuggestionProvider.suggestWordsAsync(token, MAX_WORD_SUGGESTIONS);
+    } catch (RuntimeException ex) {
+      return;
+    }
+    if (future == null) return;
+    future.thenAccept(
+        suggestions -> {
+          if (suggestions == null || suggestions.isEmpty()) return;
+          SwingUtilities.invokeLater(
+              () -> {
+                if (!input.isEditable() || !input.isEnabled()) return;
+                if (!Objects.equals(input.getText(), beforeText)) return;
+                if (input.getCaretPosition() != beforeCaret) return;
+                if (autoCompletion.isPopupVisible()) return;
+                showCompletionPopupWithoutSingleChoiceInsertion();
+              });
+        });
+  }
+
+  private void showCompletionPopupWithoutSingleChoiceInsertion() {
+    boolean prevSingleChoice = autoCompletion.getAutoCompleteSingleChoices();
+    autoCompletion.setAutoCompleteSingleChoices(false);
+    try {
+      autoCompletion.doCompletion();
+    } finally {
+      autoCompletion.setAutoCompleteSingleChoices(prevSingleChoice);
+    }
+  }
+
+  private static String tokenAt(String text, int caret) {
+    if (text == null || caret < 0 || caret > text.length()) return "";
+    int start = wordStart(text, caret);
+    int end = wordEnd(text, start);
+    if (start < 0 || end < start || caret < start || caret > end) return "";
+    return text.substring(start, caret).trim();
+  }
+
+  private static boolean isPotentialWordSuggestionToken(String token) {
+    String t = token == null ? "" : token.trim();
+    if (t.length() < 2) return false;
+    if (t.startsWith("#") || t.startsWith("&") || t.startsWith("@")) return false;
+    if (t.startsWith("/") || t.contains("://")) return false;
+    boolean hasLetter = false;
+    for (int i = 0; i < t.length(); i++) {
+      char c = t.charAt(i);
+      if (Character.isLetter(c)) {
+        hasLetter = true;
+        continue;
+      }
+      if (c == '\'' || c == '-') continue;
+      return false;
+    }
+    return hasLetter;
   }
 
   private void installPendingNickAddressSuffixListener() {

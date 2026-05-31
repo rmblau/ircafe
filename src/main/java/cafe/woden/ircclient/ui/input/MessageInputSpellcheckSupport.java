@@ -14,6 +14,7 @@ import java.awt.Color;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -36,6 +37,9 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 import javax.swing.text.JTextComponent;
+import morfologik.stemming.Dictionary;
+import morfologik.stemming.DictionaryLookup;
+import morfologik.stemming.WordData;
 import org.languagetool.JLanguageTool;
 import org.languagetool.Language;
 import org.languagetool.Languages;
@@ -67,6 +71,12 @@ final class MessageInputSpellcheckSupport implements MessageInputWordSuggestionP
   private static final long CHECKER_FAILURE_LOG_INTERVAL_MS = 60_000L;
   private static final String EN_PREFIX_COMPLETIONS_RESOURCE =
       "/cafe/woden/ircclient/ui/spellcheck/en-prefix-completions.txt";
+  private static final String EN_MORFOLOGIK_DICTIONARY_RESOURCE =
+      "/org/languagetool/resource/en/english.dict";
+  private static final String EN_US_MORFOLOGIK_DICTIONARY_RESOURCE =
+      "/org/languagetool/resource/en/hunspell/en_US.dict";
+  private static final String EN_GB_MORFOLOGIK_DICTIONARY_RESOURCE =
+      "/org/languagetool/resource/en/hunspell/en_GB.dict";
 
   private static final Object SPELLCHECK_EXECUTOR_LOCK = new Object();
   private static ExecutorService spellcheckExecutor;
@@ -284,26 +294,9 @@ final class MessageInputSpellcheckSupport implements MessageInputWordSuggestionP
   @Override
   public List<String> suggestWords(String token, int maxSuggestions) {
     SpellcheckSettings snapshot = settings;
-    if (snapshot == null || !snapshot.enabled() || !snapshot.suggestOnTabEnabled())
-      return List.of();
-
-    String raw = token == null ? "" : token.trim();
-    if (raw.isEmpty()) return List.of();
-    if (raw.startsWith("#") || raw.startsWith("&") || raw.startsWith("@")) return List.of();
-    if (raw.startsWith("/") || raw.contains("://")) return List.of();
-
-    String candidate = normalizeToken(raw);
-    if (candidate.isEmpty() || maxSuggestions <= 0) return List.of();
-    if (isKnownNick(candidate)) return List.of();
-    if (isCustomDictionaryWord(candidate)) return List.of();
-    if (!isWordCandidate(candidate)) return List.of();
-    if (candidate.length() < 2) return List.of();
-
-    SuggestionCacheKey key =
-        new SuggestionCacheKey(
-            candidate.toLowerCase(Locale.ROOT),
-            SpellcheckSettings.normalizeLanguageTag(snapshot.languageTag()),
-            snapshot.completionProfile());
+    Optional<SuggestionCacheKey> maybeKey = suggestionCacheKey(token, maxSuggestions, snapshot);
+    if (maybeKey.isEmpty()) return List.of();
+    SuggestionCacheKey key = maybeKey.get();
 
     Optional<List<String>> completed = completedSuggestionsIfReady(key);
     if (completed.isPresent()) return filterAndLimit(completed.get(), maxSuggestions);
@@ -317,9 +310,58 @@ final class MessageInputSpellcheckSupport implements MessageInputWordSuggestionP
       return filterAndLimit(suggestionCache.get(key).join(), maxSuggestions);
     } catch (RuntimeException ex) {
       suggestionCache.synchronous().invalidate(key);
-      log.debug("[MessageInputSpellcheckSupport] suggestion lookup failed for '{}'", candidate, ex);
+      log.debug(
+          "[MessageInputSpellcheckSupport] suggestion lookup failed for '{}'",
+          key.tokenLower(),
+          ex);
       return List.of();
     }
+  }
+
+  @Override
+  public CompletableFuture<List<String>> suggestWordsAsync(String token, int maxSuggestions) {
+    SpellcheckSettings snapshot = settings;
+    Optional<SuggestionCacheKey> maybeKey = suggestionCacheKey(token, maxSuggestions, snapshot);
+    if (maybeKey.isEmpty()) return CompletableFuture.completedFuture(List.of());
+    SuggestionCacheKey key = maybeKey.get();
+    return suggestionCache
+        .get(key)
+        .handle(
+            (suggestions, err) -> {
+              if (err != null) {
+                suggestionCache.synchronous().invalidate(key);
+                log.debug(
+                    "[MessageInputSpellcheckSupport] async suggestion lookup failed for '{}'",
+                    key.tokenLower(),
+                    err);
+                return List.of();
+              }
+              return filterAndLimit(suggestions, maxSuggestions);
+            });
+  }
+
+  private Optional<SuggestionCacheKey> suggestionCacheKey(
+      String token, int maxSuggestions, SpellcheckSettings snapshot) {
+    if (snapshot == null || !snapshot.enabled() || !snapshot.suggestOnTabEnabled())
+      return Optional.empty();
+
+    String raw = token == null ? "" : token.trim();
+    if (raw.isEmpty()) return Optional.empty();
+    if (raw.startsWith("#") || raw.startsWith("&") || raw.startsWith("@")) return Optional.empty();
+    if (raw.startsWith("/") || raw.contains("://")) return Optional.empty();
+
+    String candidate = normalizeToken(raw);
+    if (candidate.isEmpty() || maxSuggestions <= 0) return Optional.empty();
+    if (isKnownNick(candidate)) return Optional.empty();
+    if (isCustomDictionaryWord(candidate)) return Optional.empty();
+    if (!isWordCandidate(candidate)) return Optional.empty();
+    if (candidate.length() < 2) return Optional.empty();
+
+    return Optional.of(
+        new SuggestionCacheKey(
+            candidate.toLowerCase(Locale.ROOT),
+            SpellcheckSettings.normalizeLanguageTag(snapshot.languageTag()),
+            snapshot.completionProfile()));
   }
 
   private Optional<List<String>> completedSuggestionsIfReady(SuggestionCacheKey key) {
@@ -336,33 +378,16 @@ final class MessageInputSpellcheckSupport implements MessageInputWordSuggestionP
 
   private List<String> suggestWordsBlocking(String token, int maxSuggestions) {
     SpellcheckSettings snapshot = settings;
-    if (snapshot == null || !snapshot.enabled() || !snapshot.suggestOnTabEnabled())
-      return List.of();
-
-    String raw = token == null ? "" : token.trim();
-    if (raw.isEmpty()) return List.of();
-    if (raw.startsWith("#") || raw.startsWith("&") || raw.startsWith("@")) return List.of();
-    if (raw.startsWith("/") || raw.contains("://")) return List.of();
-
-    String candidate = normalizeToken(raw);
-    if (candidate.isEmpty() || maxSuggestions <= 0) return List.of();
-    if (isKnownNick(candidate)) return List.of();
-    if (isCustomDictionaryWord(candidate)) return List.of();
-    if (!isWordCandidate(candidate)) return List.of();
-    if (candidate.length() < 2) return List.of();
-
-    SuggestionCacheKey key =
-        new SuggestionCacheKey(
-            candidate.toLowerCase(Locale.ROOT),
-            SpellcheckSettings.normalizeLanguageTag(snapshot.languageTag()),
-            snapshot.completionProfile());
+    Optional<SuggestionCacheKey> maybeKey = suggestionCacheKey(token, maxSuggestions, snapshot);
+    if (maybeKey.isEmpty()) return List.of();
+    SuggestionCacheKey key = maybeKey.get();
     try {
       return filterAndLimit(suggestionCache.get(key).join(), maxSuggestions);
     } catch (RuntimeException ex) {
       suggestionCache.synchronous().invalidate(key);
       log.debug(
           "[MessageInputSpellcheckSupport] blocking suggestion lookup failed for '{}'",
-          candidate,
+          key.tokenLower(),
           ex);
       return List.of();
     }
@@ -961,11 +986,14 @@ final class MessageInputSpellcheckSupport implements MessageInputWordSuggestionP
     addLexiconWords(out, "/org/languagetool/resource/en/common_words.txt");
     addLexiconWords(out, "/org/languagetool/resource/en/added.txt");
     addLexiconWords(out, "/org/languagetool/resource/en/hunspell/spelling.txt");
+    addMorfologikDictionaryWords(out, EN_MORFOLOGIK_DICTIONARY_RESOURCE);
 
     if ("en-GB".equalsIgnoreCase(normalizedLanguageTag)) {
       addLexiconWords(out, "/org/languagetool/resource/en/hunspell/spelling_en-GB.txt");
+      addMorfologikDictionaryWords(out, EN_GB_MORFOLOGIK_DICTIONARY_RESOURCE);
     } else {
       addLexiconWords(out, "/org/languagetool/resource/en/hunspell/spelling_en-US.txt");
+      addMorfologikDictionaryWords(out, EN_US_MORFOLOGIK_DICTIONARY_RESOURCE);
     }
 
     addConfusionSetLexiconWords(out, "/org/languagetool/resource/en/confusion_sets_extended.txt");
@@ -987,6 +1015,24 @@ final class MessageInputSpellcheckSupport implements MessageInputWordSuggestionP
         }
       }
     } catch (Exception ignored) {
+    }
+  }
+
+  private static void addMorfologikDictionaryWords(Set<String> out, String resourcePath) {
+    URL dictionaryUrl = MessageInputSpellcheckSupport.class.getResource(resourcePath);
+    if (dictionaryUrl == null) return;
+    try {
+      DictionaryLookup lookup = new DictionaryLookup(Dictionary.read(dictionaryUrl));
+      for (WordData wordData : lookup) {
+        if (wordData == null) continue;
+        addLexiconWord(out, Objects.toString(wordData.getWord(), ""));
+        addLexiconWord(out, Objects.toString(wordData.getStem(), ""));
+      }
+    } catch (Exception ex) {
+      log.debug(
+          "[MessageInputSpellcheckSupport] failed to load prefix dictionary '{}'",
+          resourcePath,
+          ex);
     }
   }
 

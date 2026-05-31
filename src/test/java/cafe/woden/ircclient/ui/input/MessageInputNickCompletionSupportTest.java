@@ -210,18 +210,18 @@ class MessageInputNickCompletionSupportTest {
   }
 
   @Test
-  void tabGuardDoesNotForcePopupWhenOnlyWordSuggestionsExist() throws Exception {
+  void tabGuardForcesPopupWhenOnlyWordSuggestionsExist() throws Exception {
     JTextField input = new JTextField();
     MessageInputUndoSupport undoSupport = new MessageInputUndoSupport(input, () -> false);
     MessageInputNickCompletionSupport support =
         new MessageInputNickCompletionSupport(
-            new JPanel(), input, undoSupport, (token, maxSuggestions) -> List.of("hello"));
+            new JPanel(), input, undoSupport, (token, maxSuggestions) -> List.of("forensic"));
     support.setNickCompletions(List.of("alice"));
 
-    input.setText("helo");
-    input.setCaretPosition(4);
+    input.setText("forensi");
+    input.setCaretPosition(7);
 
-    assertFalse(shouldForcePopupInsteadOfImmediateCompletion(support, "helo", 4));
+    assertTrue(shouldForcePopupInsteadOfImmediateCompletion(support, "forensi", 7));
   }
 
   @Test
