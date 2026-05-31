@@ -215,6 +215,89 @@ class RuntimeConfigIgnoreRulesStore {
     }
   }
 
+  private void mutateExistingIgnoreServer(
+      String serverId, String description, ExistingIgnoreServerMutation mutation) {
+    RuntimeConfigYamlSupport.mutateDocument(
+        file,
+        documentStore,
+        log,
+        description,
+        doc -> {
+          Map<String, Object> ircafe = existingMap(doc, "ircafe");
+          if (ircafe == null) return false;
+          Map<String, Object> ignore = existingMap(ircafe, "ignore");
+          if (ignore == null) return false;
+          Map<String, Object> servers = existingMap(ignore, "servers");
+          if (servers == null) return false;
+          Map<String, Object> server = existingMap(servers, serverId);
+          if (server == null) return false;
+
+          return mutation.mutate(ircafe, ignore, servers, server);
+        });
+  }
+
+  @FunctionalInterface
+  private interface ExistingIgnoreServerMutation {
+    boolean mutate(
+        Map<String, Object> ircafe,
+        Map<String, Object> ignore,
+        Map<String, Object> servers,
+        Map<String, Object> server);
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Map<String, Object> existingMap(Map<String, Object> parent, String key) {
+    Object value = parent.get(key);
+    return (value instanceof Map<?, ?> map) ? (Map<String, Object>) map : null;
+  }
+
+  @SuppressWarnings("unchecked")
+  private static boolean removeMaskFromList(
+      Map<String, Object> server, String listKey, String mask) {
+    Object value = server.get(listKey);
+    if (!(value instanceof List<?> list)) {
+      return false;
+    }
+
+    List<String> masks = (List<String>) list;
+    masks.removeIf(x -> x != null && x.equalsIgnoreCase(mask));
+    if (masks.isEmpty()) {
+      server.remove(listKey);
+    }
+    return true;
+  }
+
+  @SuppressWarnings("unchecked")
+  private static void removeMaskKey(Map<String, Object> server, String mapKey, String mask) {
+    Object value = server.get(mapKey);
+    if (!(value instanceof Map<?, ?> map)) {
+      return;
+    }
+
+    Map<String, Object> byMask = (Map<String, Object>) map;
+    byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(mask));
+    if (byMask.isEmpty()) {
+      server.remove(mapKey);
+    }
+  }
+
+  private static void cleanupIgnoreServer(
+      Map<String, Object> ircafe,
+      Map<String, Object> ignore,
+      Map<String, Object> servers,
+      String serverId,
+      Map<String, Object> server) {
+    if (server.isEmpty()) {
+      servers.remove(serverId);
+    }
+    if (servers.isEmpty()) {
+      ignore.remove("servers");
+    }
+    if (ignore.isEmpty()) {
+      ircafe.remove("ignore");
+    }
+  }
+
   private static List<String> normalizeIgnoreLevels(List<String> levels) {
     java.util.LinkedHashSet<String> out = new java.util.LinkedHashSet<>();
     if (levels != null) {
@@ -266,109 +349,27 @@ class RuntimeConfigIgnoreRulesStore {
   }
 
   synchronized void forgetIgnoreMask(String serverId, String mask) {
-    try {
-      if (file.toString().isBlank()) return;
+    String sid = Objects.toString(serverId, "").trim();
+    String m = Objects.toString(mask, "").trim();
+    if (sid.isEmpty() || m.isEmpty()) return;
 
-      String sid = Objects.toString(serverId, "").trim();
-      String m = Objects.toString(mask, "").trim();
-      if (sid.isEmpty() || m.isEmpty()) return;
+    mutateExistingIgnoreServer(
+        sid,
+        "ignore mask removal",
+        (ircafe, ignore, servers, server) -> {
+          if (!removeMaskFromList(server, "masks", m)) {
+            return false;
+          }
 
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ignore = getOrCreateMap(ircafe, "ignore");
-      Map<String, Object> servers = getOrCreateMap(ignore, "servers");
-
-      Object so = servers.get(sid);
-      if (!(so instanceof Map<?, ?>)) return;
-      @SuppressWarnings("unchecked")
-      Map<String, Object> server = (Map<String, Object>) so;
-
-      Object o = server.get("masks");
-      if (!(o instanceof List<?> list)) return;
-      @SuppressWarnings("unchecked")
-      List<String> masks = (List<String>) list;
-
-      masks.removeIf(x -> x != null && x.equalsIgnoreCase(m));
-
-      // Clean up empty structures to keep the YAML tidy.
-      if (masks.isEmpty()) {
-        server.remove("masks");
-      }
-
-      Object levelsObj = server.get("maskLevels");
-      if (levelsObj instanceof Map<?, ?> levelsMap) {
-        @SuppressWarnings("unchecked")
-        Map<String, Object> byMask = (Map<String, Object>) levelsMap;
-        byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-        if (byMask.isEmpty()) {
-          server.remove("maskLevels");
-        }
-      }
-
-      Object channelsObj = server.get("maskChannels");
-      if (channelsObj instanceof Map<?, ?> channelsMap) {
-        @SuppressWarnings("unchecked")
-        Map<String, Object> byMask = (Map<String, Object>) channelsMap;
-        byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-        if (byMask.isEmpty()) {
-          server.remove("maskChannels");
-        }
-      }
-
-      Object expiresObj = server.get("maskExpiresAt");
-      if (expiresObj instanceof Map<?, ?> expiresMap) {
-        @SuppressWarnings("unchecked")
-        Map<String, Object> byMask = (Map<String, Object>) expiresMap;
-        byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-        if (byMask.isEmpty()) {
-          server.remove("maskExpiresAt");
-        }
-      }
-
-      Object patternsObj = server.get("maskPatterns");
-      if (patternsObj instanceof Map<?, ?> patternsMap) {
-        @SuppressWarnings("unchecked")
-        Map<String, Object> byMask = (Map<String, Object>) patternsMap;
-        byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-        if (byMask.isEmpty()) {
-          server.remove("maskPatterns");
-        }
-      }
-
-      Object patternModesObj = server.get("maskPatternModes");
-      if (patternModesObj instanceof Map<?, ?> modesMap) {
-        @SuppressWarnings("unchecked")
-        Map<String, Object> byMask = (Map<String, Object>) modesMap;
-        byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-        if (byMask.isEmpty()) {
-          server.remove("maskPatternModes");
-        }
-      }
-
-      Object repliesObj = server.get("maskReplies");
-      if (repliesObj instanceof Map<?, ?> repliesMap) {
-        @SuppressWarnings("unchecked")
-        Map<String, Object> byMask = (Map<String, Object>) repliesMap;
-        byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-        if (byMask.isEmpty()) {
-          server.remove("maskReplies");
-        }
-      }
-
-      if (server.isEmpty()) {
-        servers.remove(sid);
-      }
-      if (servers.isEmpty()) {
-        ignore.remove("servers");
-      }
-      if (ignore.isEmpty()) {
-        ircafe.remove("ignore");
-      }
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not remove ignore mask from '{}'", file, e);
-    }
+          removeMaskKey(server, "maskLevels", m);
+          removeMaskKey(server, "maskChannels", m);
+          removeMaskKey(server, "maskExpiresAt", m);
+          removeMaskKey(server, "maskPatterns", m);
+          removeMaskKey(server, "maskPatternModes", m);
+          removeMaskKey(server, "maskReplies", m);
+          cleanupIgnoreServer(ircafe, ignore, servers, sid, server);
+          return true;
+        });
   }
 
   synchronized void rememberSoftIgnoreMask(String serverId, String mask) {
@@ -388,48 +389,21 @@ class RuntimeConfigIgnoreRulesStore {
   }
 
   synchronized void forgetSoftIgnoreMask(String serverId, String mask) {
-    try {
-      if (file.toString().isBlank()) return;
+    String sid = Objects.toString(serverId, "").trim();
+    String m = Objects.toString(mask, "").trim();
+    if (sid.isEmpty() || m.isEmpty()) return;
 
-      String sid = Objects.toString(serverId, "").trim();
-      String m = Objects.toString(mask, "").trim();
-      if (sid.isEmpty() || m.isEmpty()) return;
+    mutateExistingIgnoreServer(
+        sid,
+        "soft-ignore mask removal",
+        (ircafe, ignore, servers, server) -> {
+          if (!removeMaskFromList(server, "softMasks", m)) {
+            return false;
+          }
 
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ignore = getOrCreateMap(ircafe, "ignore");
-      Map<String, Object> servers = getOrCreateMap(ignore, "servers");
-
-      Object so = servers.get(sid);
-      if (!(so instanceof Map<?, ?>)) return;
-      @SuppressWarnings("unchecked")
-      Map<String, Object> server = (Map<String, Object>) so;
-
-      Object o = server.get("softMasks");
-      if (!(o instanceof List<?> list)) return;
-      @SuppressWarnings("unchecked")
-      List<String> masks = (List<String>) list;
-
-      masks.removeIf(x -> x != null && x.equalsIgnoreCase(m));
-
-      // Clean up empty structures to keep the YAML tidy.
-      if (masks.isEmpty()) {
-        server.remove("softMasks");
-      }
-      if (server.isEmpty()) {
-        servers.remove(sid);
-      }
-      if (servers.isEmpty()) {
-        ignore.remove("servers");
-      }
-      if (ignore.isEmpty()) {
-        ircafe.remove("ignore");
-      }
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not remove soft-ignore mask from '{}'", file, e);
-    }
+          cleanupIgnoreServer(ircafe, ignore, servers, sid, server);
+          return true;
+        });
   }
 
   synchronized void rememberHardIgnoreIncludesCtcp(boolean enabled) {
