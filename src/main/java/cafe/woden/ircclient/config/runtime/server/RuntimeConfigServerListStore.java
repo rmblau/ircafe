@@ -1,8 +1,9 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime.server;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.containsIgnoreCase;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.sanitizeStringList;
 
+import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
@@ -22,20 +23,20 @@ import org.slf4j.LoggerFactory;
  * channels, monitor nicks, and server-tree state. This helper only covers the seed/write/read paths
  * for the server list itself.
  */
-class RuntimeConfigServerListStore {
+public class RuntimeConfigServerListStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigServerListStore.class);
 
   private final RuntimeConfigYamlSection ircSection;
   private final IrcProperties defaults;
 
-  RuntimeConfigServerListStore(
+  public RuntimeConfigServerListStore(
       Path file, RuntimeConfigDocumentStore documentStore, IrcProperties defaults) {
     this.ircSection = new RuntimeConfigYamlSection(file, documentStore, log, "irc");
     this.defaults = defaults;
   }
 
-  synchronized void ensureFileExistsWithServers() {
+  public synchronized void ensureFileExistsWithServers() {
     ircSection.mutateMapIfChanged(
         "runtime config file",
         irc -> {
@@ -47,12 +48,12 @@ class RuntimeConfigServerListStore {
         });
   }
 
-  synchronized void writeServers(List<IrcProperties.Server> servers) {
+  public synchronized void writeServers(List<IrcProperties.Server> servers) {
     ircSection.putValue("servers list", serverMaps(servers), "servers");
   }
 
   /** Returns configured server ids from runtime config, falling back to boot defaults. */
-  synchronized List<String> readServerIds() {
+  public synchronized List<String> readServerIds() {
     Object raw = ircSection.readValue("server ids", "servers").orElse(null);
     if (!(raw instanceof List<?> servers) || servers.isEmpty()) return defaultServerIds();
 
@@ -74,7 +75,7 @@ class RuntimeConfigServerListStore {
    * <p>Only servers with an explicit {@code autoJoin} key are included. This allows callers to
    * treat runtime config as authoritative without conflating missing keys with inherited defaults.
    */
-  synchronized Map<String, List<String>> readExplicitServerAutoJoinById() {
+  public synchronized Map<String, List<String>> readExplicitServerAutoJoinById() {
     Object raw = ircSection.readExistingValue("explicit auto-join lists", "servers").orElse(null);
     if (!(raw instanceof List<?> servers) || servers.isEmpty()) return Map.of();
 

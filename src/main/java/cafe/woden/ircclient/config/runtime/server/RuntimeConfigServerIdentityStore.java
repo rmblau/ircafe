@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime.server;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSection;
@@ -10,18 +10,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Owns per-server identity persistence in {@code irc.servers[]}. */
-class RuntimeConfigServerIdentityStore {
+public class RuntimeConfigServerIdentityStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigServerIdentityStore.class);
 
   private final RuntimeConfigServerYamlSection servers;
 
-  RuntimeConfigServerIdentityStore(Path file, RuntimeConfigDocumentStore documentStore) {
+  public RuntimeConfigServerIdentityStore(Path file, RuntimeConfigDocumentStore documentStore) {
     this.servers =
         new RuntimeConfigServerYamlSection(file, documentStore, log, "server identity settings");
   }
 
-  synchronized void rememberNick(String serverId, String nick) {
+  public synchronized void rememberNick(String serverId, String nick) {
     updateServer(
         serverId,
         server -> {

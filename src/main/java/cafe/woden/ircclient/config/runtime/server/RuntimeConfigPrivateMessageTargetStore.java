@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime.server;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateStringList;
 
@@ -14,19 +14,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Owns per-server private-message target persistence in {@code irc.servers[].autoJoin}. */
-class RuntimeConfigPrivateMessageTargetStore {
+public class RuntimeConfigPrivateMessageTargetStore {
 
   private static final Logger log =
       LoggerFactory.getLogger(RuntimeConfigPrivateMessageTargetStore.class);
 
   private final RuntimeConfigServerYamlSection servers;
 
-  RuntimeConfigPrivateMessageTargetStore(Path file, RuntimeConfigDocumentStore documentStore) {
+  public RuntimeConfigPrivateMessageTargetStore(Path file, RuntimeConfigDocumentStore documentStore) {
     this.servers =
         new RuntimeConfigServerYamlSection(file, documentStore, log, "private-message target list");
   }
 
-  synchronized void rememberPrivateMessageTarget(String serverId, String nick) {
+  public synchronized void rememberPrivateMessageTarget(String serverId, String nick) {
     updateServer(
         serverId,
         server -> {
@@ -45,7 +45,7 @@ class RuntimeConfigPrivateMessageTargetStore {
         });
   }
 
-  synchronized void forgetPrivateMessageTarget(String serverId, String nick) {
+  public synchronized void forgetPrivateMessageTarget(String serverId, String nick) {
     updateServer(
         serverId,
         server -> {
@@ -64,7 +64,7 @@ class RuntimeConfigPrivateMessageTargetStore {
         });
   }
 
-  synchronized List<String> readPrivateMessageTargets(String serverId) {
+  public synchronized List<String> readPrivateMessageTargets(String serverId) {
     return servers.readExistingServer(serverId)
         .map(RuntimeConfigPrivateMessageTargetStore::readPrivateMessageTargets)
         .orElse(List.of());

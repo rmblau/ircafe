@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime.server;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.containsIgnoreCase;
 
@@ -14,18 +14,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Owns per-server IRCv3 MONITOR roster persistence under {@code irc.servers[].monitorNicks}. */
-class RuntimeConfigMonitorRosterStore {
+public class RuntimeConfigMonitorRosterStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigMonitorRosterStore.class);
 
   private final RuntimeConfigServerYamlSection servers;
 
-  RuntimeConfigMonitorRosterStore(Path file, RuntimeConfigDocumentStore documentStore) {
+  public RuntimeConfigMonitorRosterStore(Path file, RuntimeConfigDocumentStore documentStore) {
     this.servers =
         new RuntimeConfigServerYamlSection(file, documentStore, log, "monitor nick list");
   }
 
-  synchronized void rememberMonitorNick(String serverId, String nick) {
+  public synchronized void rememberMonitorNick(String serverId, String nick) {
     updateServer(
         serverId,
         server -> {
@@ -39,7 +39,7 @@ class RuntimeConfigMonitorRosterStore {
         });
   }
 
-  synchronized void forgetMonitorNick(String serverId, String nick) {
+  public synchronized void forgetMonitorNick(String serverId, String nick) {
     updateServer(
         serverId,
         server -> {
@@ -56,7 +56,7 @@ class RuntimeConfigMonitorRosterStore {
         });
   }
 
-  synchronized void replaceMonitorNicks(String serverId, List<String> nicks) {
+  public synchronized void replaceMonitorNicks(String serverId, List<String> nicks) {
     updateServer(
         serverId,
         server -> {
@@ -69,7 +69,7 @@ class RuntimeConfigMonitorRosterStore {
         });
   }
 
-  synchronized List<String> readMonitorNicks(String serverId) {
+  public synchronized List<String> readMonitorNicks(String serverId) {
     return servers.readExistingServer(serverId)
         .map(server -> List.copyOf(sanitizeMonitorNickList(server.get("monitorNicks"))))
         .orElse(List.of());

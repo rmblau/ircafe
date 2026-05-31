@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime.server;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asBoolean;
 
@@ -13,18 +13,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Owns startup auto-connect settings under {@code ircafe.ui}. */
-class RuntimeConfigServerAutoConnectStore {
+public class RuntimeConfigServerAutoConnectStore {
 
   private static final Logger log =
       LoggerFactory.getLogger(RuntimeConfigServerAutoConnectStore.class);
 
   private final RuntimeConfigYamlSection uiSection;
 
-  RuntimeConfigServerAutoConnectStore(Path file, RuntimeConfigDocumentStore documentStore) {
+  public RuntimeConfigServerAutoConnectStore(Path file, RuntimeConfigDocumentStore documentStore) {
     this.uiSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui");
   }
 
-  synchronized void rememberAutoConnectOnStart(boolean enabled) {
+  public synchronized void rememberAutoConnectOnStart(boolean enabled) {
     uiSection.putValue("autoConnectOnStart", enabled, "autoConnectOnStart");
   }
 
@@ -34,7 +34,7 @@ class RuntimeConfigServerAutoConnectStore {
    * <p>Stored under {@code ircafe.ui.serverAutoConnectOnStartByServer.<serverId>}. Default behavior
    * is enabled, so this map usually contains only {@code false} entries.
    */
-  synchronized Map<String, Boolean> readServerAutoConnectOnStartByServer() {
+  public synchronized Map<String, Boolean> readServerAutoConnectOnStartByServer() {
     return uiSection
         .readExistingValue(
             "per-server startup auto-connect settings", "serverAutoConnectOnStartByServer")
@@ -47,7 +47,7 @@ class RuntimeConfigServerAutoConnectStore {
    *
    * <p>Returns {@code defaultValue} when no override is present.
    */
-  synchronized boolean readServerAutoConnectOnStart(String serverId, boolean defaultValue) {
+  public synchronized boolean readServerAutoConnectOnStart(String serverId, boolean defaultValue) {
     String sid = Objects.toString(serverId, "").trim();
     if (sid.isEmpty()) return defaultValue;
 
@@ -68,7 +68,7 @@ class RuntimeConfigServerAutoConnectStore {
    *
    * <p>Enabled is the default, so enabled values are removed to keep the YAML concise.
    */
-  synchronized void rememberServerAutoConnectOnStart(String serverId, boolean enabled) {
+  public synchronized void rememberServerAutoConnectOnStart(String serverId, boolean enabled) {
     String sid = Objects.toString(serverId, "").trim();
     if (sid.isEmpty()) return;
 
