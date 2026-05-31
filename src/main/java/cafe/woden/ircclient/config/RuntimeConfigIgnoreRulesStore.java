@@ -80,15 +80,9 @@ class RuntimeConfigIgnoreRulesStore {
     mutateIgnoreServer(
         sid,
         "ignore mask levels",
-        server -> {
-          Map<String, Object> byMask = getOrCreateMap(server, "maskLevels");
-          byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-
-          if (!isDefaultAll) {
-            byMask.put(m, new ArrayList<>(normalized));
-          }
-          removeIfEmpty(server, "maskLevels", byMask);
-        });
+        server ->
+            rememberMaskScopedValue(
+                server, "maskLevels", m, isDefaultAll ? null : new ArrayList<>(normalized)));
   }
 
   synchronized void rememberIgnoreMaskChannels(
@@ -102,15 +96,12 @@ class RuntimeConfigIgnoreRulesStore {
     mutateIgnoreServer(
         sid,
         "ignore mask channels",
-        server -> {
-          Map<String, Object> byMask = getOrCreateMap(server, "maskChannels");
-          byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-
-          if (!normalized.isEmpty()) {
-            byMask.put(m, new ArrayList<>(normalized));
-          }
-          removeIfEmpty(server, "maskChannels", byMask);
-        });
+        server ->
+            rememberMaskScopedValue(
+                server,
+                "maskChannels",
+                m,
+                normalized.isEmpty() ? null : new ArrayList<>(normalized)));
   }
 
   synchronized void rememberIgnoreMaskExpiresAt(
@@ -124,15 +115,8 @@ class RuntimeConfigIgnoreRulesStore {
     mutateIgnoreServer(
         sid,
         "ignore mask expiry",
-        server -> {
-          Map<String, Object> byMask = getOrCreateMap(server, "maskExpiresAt");
-          byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-
-          if (expiresAt > 0L) {
-            byMask.put(m, expiresAt);
-          }
-          removeIfEmpty(server, "maskExpiresAt", byMask);
-        });
+        server ->
+            rememberMaskScopedValue(server, "maskExpiresAt", m, expiresAt > 0L ? expiresAt : null));
   }
 
   synchronized void rememberIgnoreMaskPattern(
@@ -148,23 +132,15 @@ class RuntimeConfigIgnoreRulesStore {
         sid,
         "ignore mask pattern",
         server -> {
-          Map<String, Object> patternsByMask = getOrCreateMap(server, "maskPatterns");
-          Map<String, Object> modesByMask = getOrCreateMap(server, "maskPatternModes");
-
-          patternsByMask.entrySet()
-              .removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-          modesByMask.entrySet()
-              .removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-
-          if (!normalizedPattern.isEmpty()) {
-            patternsByMask.put(m, normalizedPattern);
-            if (!"glob".equals(normalizedMode)) {
-              modesByMask.put(m, normalizedMode);
-            }
-          }
-
-          removeIfEmpty(server, "maskPatterns", patternsByMask);
-          removeIfEmpty(server, "maskPatternModes", modesByMask);
+          rememberMaskScopedValue(
+              server, "maskPatterns", m, normalizedPattern.isEmpty() ? null : normalizedPattern);
+          rememberMaskScopedValue(
+              server,
+              "maskPatternModes",
+              m,
+              !normalizedPattern.isEmpty() && !"glob".equals(normalizedMode)
+                  ? normalizedMode
+                  : null);
         });
   }
 
@@ -177,15 +153,18 @@ class RuntimeConfigIgnoreRulesStore {
     mutateIgnoreServer(
         sid,
         "ignore mask replies flag",
-        server -> {
-          Map<String, Object> byMask = getOrCreateMap(server, "maskReplies");
-          byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
+        server ->
+            rememberMaskScopedValue(server, "maskReplies", m, repliesEnabled ? Boolean.TRUE : null));
+  }
 
-          if (repliesEnabled) {
-            byMask.put(m, Boolean.TRUE);
-          }
-          removeIfEmpty(server, "maskReplies", byMask);
-        });
+  private static void rememberMaskScopedValue(
+      Map<String, Object> server, String mapKey, String mask, Object value) {
+    Map<String, Object> byMask = getOrCreateMap(server, mapKey);
+    byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(mask));
+    if (value != null) {
+      byMask.put(mask, value);
+    }
+    removeIfEmpty(server, mapKey, byMask);
   }
 
   private void mutateIgnoreServer(
