@@ -1,10 +1,6 @@
 package cafe.woden.ircclient.config;
 
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMapPath;
-
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,32 +50,23 @@ class RuntimeConfigCtcpAutoReplyStore {
   }
 
   private boolean readBoolean(String key, boolean defaultValue) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-      if (!Files.exists(file)) return defaultValue;
-
-      Map<String, Object> doc = documentStore.load();
-      return RuntimeConfigDocumentPathReader.readValue(doc, "ircafe", "ui", "ctcpReplies", key)
-          .flatMap(RuntimeConfigYamlSupport::asBoolean)
-          .orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.ctcpReplies.{} from '{}'", key, file, e);
-      return defaultValue;
-    }
+    return RuntimeConfigYamlSupport.readExistingValue(
+            file, documentStore, log, "ui.ctcpReplies." + key, "ircafe", "ui", "ctcpReplies", key)
+        .flatMap(RuntimeConfigYamlSupport::asBoolean)
+        .orElse(defaultValue);
   }
 
   private void rememberBoolean(String key, boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ctcpReplies = getOrCreateMapPath(doc, "ircafe", "ui", "ctcpReplies");
-
-      ctcpReplies.put(key, enabled);
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.ctcpReplies.{} setting to '{}'", key, file, e);
-    }
+    RuntimeConfigYamlSupport.putValue(
+        file,
+        documentStore,
+        log,
+        "ui.ctcpReplies." + key,
+        enabled,
+        "ircafe",
+        "ui",
+        "ctcpReplies",
+        key);
   }
 
 }

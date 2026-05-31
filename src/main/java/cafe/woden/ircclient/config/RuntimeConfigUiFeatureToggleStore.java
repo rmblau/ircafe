@@ -1,9 +1,6 @@
 package cafe.woden.ircclient.config;
 
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMapPath;
-
 import java.nio.file.Path;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,33 +46,16 @@ class RuntimeConfigUiFeatureToggleStore {
 
   private boolean readSectionBoolean(
       String section, String key, boolean defaultValue, String description) {
-    try {
-      if (file.toString().isBlank()) return defaultValue;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      return RuntimeConfigDocumentPathReader.readValue(doc, "ircafe", "ui", section, key)
-          .flatMap(RuntimeConfigYamlSupport::asBoolean)
-          .orElse(defaultValue);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read {} from '{}'", description, file, e);
-      return defaultValue;
-    }
+    return RuntimeConfigYamlSupport.readValue(
+            file, documentStore, log, description, "ircafe", "ui", section, key)
+        .flatMap(RuntimeConfigYamlSupport::asBoolean)
+        .orElse(defaultValue);
   }
 
   private void rememberSectionBoolean(
       String section, String key, boolean enabled, String description) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> uiSection = getOrCreateMapPath(doc, "ircafe", "ui", section);
-
-      uiSection.put(key, enabled);
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist {} setting to '{}'", description, file, e);
-    }
+    RuntimeConfigYamlSupport.putValue(
+        file, documentStore, log, description, enabled, "ircafe", "ui", section, key);
   }
 
 }

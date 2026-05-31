@@ -1,10 +1,7 @@
 package cafe.woden.ircclient.config;
 
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMapPath;
-
 import java.nio.file.Path;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.IntUnaryOperator;
 import org.slf4j.Logger;
@@ -66,18 +63,11 @@ class RuntimeConfigMemoryUsageStore {
   private int readUiInt(
       String key, int defaultValue, IntUnaryOperator normalizer, String description) {
     int fallback = normalizer.applyAsInt(defaultValue);
-    try {
-      if (file.toString().isBlank()) return fallback;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      return RuntimeConfigDocumentPathReader.readValue(doc, "ircafe", "ui", key)
-          .flatMap(RuntimeConfigYamlSupport::asInt)
-          .map(normalizer::applyAsInt)
-          .orElse(fallback);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read {} from '{}'", description, file, e);
-      return fallback;
-    }
+    return RuntimeConfigYamlSupport.readValue(
+            file, documentStore, log, description, "ircafe", "ui", key)
+        .flatMap(RuntimeConfigYamlSupport::asInt)
+        .map(normalizer::applyAsInt)
+        .orElse(fallback);
   }
 
   private void rememberWarningBoolean(String key, boolean enabled) {
@@ -85,18 +75,8 @@ class RuntimeConfigMemoryUsageStore {
   }
 
   private void rememberScalar(String key, Object value, String description) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ui = getOrCreateMapPath(doc, "ircafe", "ui");
-
-      ui.put(key, value);
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist {} setting to '{}'", description, file, e);
-    }
+    RuntimeConfigYamlSupport.putValue(
+        file, documentStore, log, description, value, "ircafe", "ui", key);
   }
 
   private static String normalizeDisplayMode(String mode) {

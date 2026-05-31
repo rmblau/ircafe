@@ -4,7 +4,6 @@ import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMa
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMapPath;
 
 import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort.LastSelectedTarget;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Map;
@@ -46,41 +45,41 @@ class RuntimeConfigUiSettingsStore {
   }
 
   synchronized Optional<String> readStartupThemePending() {
-    try {
-      if (file.toString().isBlank()) return Optional.empty();
-      if (!Files.exists(file)) return Optional.empty();
-
-      Map<String, Object> doc = documentStore.load();
-      String theme =
-          RuntimeConfigDocumentPathReader.readValue(doc, "ircafe", "ui", "startupThemePending")
-              .map(raw -> Objects.toString(raw, "").trim())
-              .orElse("");
-      if (theme.isEmpty()) return Optional.empty();
-      return Optional.of(theme);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.startupThemePending from '{}'", file, e);
-      return Optional.empty();
-    }
+    return RuntimeConfigYamlSupport.readExistingValue(
+            file,
+            documentStore,
+            log,
+            "ui.startupThemePending",
+            "ircafe",
+            "ui",
+            "startupThemePending")
+        .map(raw -> Objects.toString(raw, "").trim())
+        .filter(theme -> !theme.isEmpty());
   }
 
   synchronized void rememberStartupThemePending(String theme) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ui = uiMap(doc);
-
-      String normalized = Objects.toString(theme, "").trim();
-      if (normalized.isEmpty()) {
-        ui.remove("startupThemePending");
-      } else {
-        ui.put("startupThemePending", normalized);
-      }
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.startupThemePending to '{}'", file, e);
+    String normalized = Objects.toString(theme, "").trim();
+    if (normalized.isEmpty()) {
+      RuntimeConfigYamlSupport.removeValue(
+          file,
+          documentStore,
+          log,
+          "ui.startupThemePending",
+          "ircafe",
+          "ui",
+          "startupThemePending");
+      return;
     }
+
+    RuntimeConfigYamlSupport.putValue(
+        file,
+        documentStore,
+        log,
+        "ui.startupThemePending",
+        normalized,
+        "ircafe",
+        "ui",
+        "startupThemePending");
   }
 
   synchronized void clearStartupThemePending() {
@@ -134,26 +133,24 @@ class RuntimeConfigUiSettingsStore {
   }
 
   synchronized Optional<LastSelectedTarget> readLastSelectedTarget() {
-    try {
-      if (file.toString().isBlank()) return Optional.empty();
-      if (!Files.exists(file)) return Optional.empty();
+    Object raw =
+        RuntimeConfigYamlSupport.readExistingValue(
+                file,
+                documentStore,
+                log,
+                "ui.lastSelectedTarget",
+                "ircafe",
+                "ui",
+                "lastSelectedTarget")
+            .orElse(null);
+    if (!(raw instanceof Map<?, ?> selected)) return Optional.empty();
 
-      Map<String, Object> doc = documentStore.load();
-      Object raw =
-          RuntimeConfigDocumentPathReader.readValue(doc, "ircafe", "ui", "lastSelectedTarget")
-              .orElse(null);
-      if (!(raw instanceof Map<?, ?> selected)) return Optional.empty();
-
-      LastSelectedTarget out =
-          new LastSelectedTarget(
-              Objects.toString(selected.get("serverId"), ""),
-              Objects.toString(selected.get("target"), ""));
-      if (!out.isValid()) return Optional.empty();
-      return Optional.of(out);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.lastSelectedTarget from '{}'", file, e);
-      return Optional.empty();
-    }
+    LastSelectedTarget out =
+        new LastSelectedTarget(
+            Objects.toString(selected.get("serverId"), ""),
+            Objects.toString(selected.get("target"), ""));
+    if (!out.isValid()) return Optional.empty();
+    return Optional.of(out);
   }
 
   synchronized void rememberLastSelectedTarget(String serverId, String target) {
@@ -270,48 +267,18 @@ class RuntimeConfigUiSettingsStore {
   }
 
   private void rememberUiLayoutScalar(String key, Object value, String description) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> layout = getOrCreateMap(uiMap(doc), "layout");
-
-      layout.put(key, value);
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist {} to '{}'", description, file, e);
-    }
+    RuntimeConfigYamlSupport.putValue(
+        file, documentStore, log, description, value, "ircafe", "ui", "layout", key);
   }
 
   private void rememberUiScalar(String key, Object value, String description) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ui = uiMap(doc);
-
-      ui.put(key, value);
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist {} setting to '{}'", description, file, e);
-    }
+    RuntimeConfigYamlSupport.putValue(
+        file, documentStore, log, description, value, "ircafe", "ui", key);
   }
 
   private void removeUiValue(String key, String description) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ui = uiMap(doc);
-
-      ui.remove(key);
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist {} setting to '{}'", description, file, e);
-    }
+    RuntimeConfigYamlSupport.removeValue(
+        file, documentStore, log, description, "ircafe", "ui", key);
   }
 
   private static String normalizeDensity(String density) {
@@ -329,5 +296,4 @@ class RuntimeConfigUiSettingsStore {
   private static Map<String, Object> uiMap(Map<String, Object> doc) {
     return getOrCreateMapPath(doc, "ircafe", "ui");
   }
-
 }
