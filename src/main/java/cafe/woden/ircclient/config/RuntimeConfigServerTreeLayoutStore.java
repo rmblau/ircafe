@@ -3,13 +3,14 @@ package cafe.woden.ircclient.config;
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.asBoolean;
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMapPath;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.mutateDocument;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.readExistingValue;
 
 import cafe.woden.ircclient.config.api.ServerTreeBuiltInVisibilityConfigPort.ServerTreeBuiltInNodesVisibility;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayout;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayoutNode;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeRootSiblingNode;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeRootSiblingOrder;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -40,39 +41,30 @@ class RuntimeConfigServerTreeLayoutStore {
    * <p>Stored under {@code ircafe.ui.serverTree.builtInNodesByServer.<serverId>}.
    */
   synchronized Map<String, ServerTreeBuiltInNodesVisibility> readBuiltInNodesVisibility() {
-    try {
-      if (file.toString().isBlank()) return Map.of();
-      if (!Files.exists(file)) return Map.of();
+    Object byServerObj = readServerTreeSection("built-in node visibility", "builtInNodesByServer");
+    if (!(byServerObj instanceof Map<?, ?> byServer)) return Map.of();
 
-      Map<String, Object> doc = documentStore.load();
-      Object byServerObj = readServerTreeValue(doc, "builtInNodesByServer").orElse(null);
-      if (!(byServerObj instanceof Map<?, ?> byServer)) return Map.of();
+    LinkedHashMap<String, ServerTreeBuiltInNodesVisibility> out = new LinkedHashMap<>();
+    for (Map.Entry<?, ?> entry : byServer.entrySet()) {
+      String sid = Objects.toString(entry.getKey(), "").trim();
+      if (sid.isEmpty()) continue;
+      if (!(entry.getValue() instanceof Map<?, ?> raw)) continue;
 
-      LinkedHashMap<String, ServerTreeBuiltInNodesVisibility> out = new LinkedHashMap<>();
-      for (Map.Entry<?, ?> entry : byServer.entrySet()) {
-        String sid = Objects.toString(entry.getKey(), "").trim();
-        if (sid.isEmpty()) continue;
-        if (!(entry.getValue() instanceof Map<?, ?> raw)) continue;
+      ServerTreeBuiltInNodesVisibility d = ServerTreeBuiltInNodesVisibility.defaults();
+      boolean server = asBoolean(raw.get("server")).orElse(d.server());
+      boolean notifications = asBoolean(raw.get("notifications")).orElse(d.notifications());
+      boolean logViewer = asBoolean(raw.get("logViewer")).orElse(d.logViewer());
+      boolean monitor = asBoolean(raw.get("monitor")).orElse(d.monitor());
+      boolean interceptors = asBoolean(raw.get("interceptors")).orElse(d.interceptors());
 
-        ServerTreeBuiltInNodesVisibility d = ServerTreeBuiltInNodesVisibility.defaults();
-        boolean server = asBoolean(raw.get("server")).orElse(d.server());
-        boolean notifications = asBoolean(raw.get("notifications")).orElse(d.notifications());
-        boolean logViewer = asBoolean(raw.get("logViewer")).orElse(d.logViewer());
-        boolean monitor = asBoolean(raw.get("monitor")).orElse(d.monitor());
-        boolean interceptors = asBoolean(raw.get("interceptors")).orElse(d.interceptors());
-
-        out.put(
-            sid,
-            new ServerTreeBuiltInNodesVisibility(
-                server, notifications, logViewer, monitor, interceptors));
-      }
-
-      if (out.isEmpty()) return Map.of();
-      return Map.copyOf(out);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read server-tree built-in node visibility from '{}'", file, e);
-      return Map.of();
+      out.put(
+          sid,
+          new ServerTreeBuiltInNodesVisibility(
+              server, notifications, logViewer, monitor, interceptors));
     }
+
+    if (out.isEmpty()) return Map.of();
+    return Map.copyOf(out);
   }
 
   /**
@@ -82,18 +74,13 @@ class RuntimeConfigServerTreeLayoutStore {
    */
   synchronized void rememberBuiltInNodesVisibility(
       String serverId, ServerTreeBuiltInNodesVisibility visibility) {
-    try {
-      if (file.toString().isBlank()) return;
-      String sid = Objects.toString(serverId, "").trim();
-      if (sid.isEmpty()) return;
+    String sid = Objects.toString(serverId, "").trim();
+    if (sid.isEmpty()) return;
 
-      ServerTreeBuiltInNodesVisibility v =
-          visibility != null ? visibility : ServerTreeBuiltInNodesVisibility.defaults();
+    ServerTreeBuiltInNodesVisibility v =
+        visibility != null ? visibility : ServerTreeBuiltInNodesVisibility.defaults();
 
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> serverTree = serverTreeMap(doc);
-      Map<String, Object> byServer = getOrCreateMap(serverTree, "builtInNodesByServer");
-
+    mutateServerTreeByServer("built-in node visibility", "builtInNodesByServer", sid, byServer -> {
       if (v.isDefaultVisible()) {
         byServer.remove(sid);
       } else {
@@ -105,14 +92,7 @@ class RuntimeConfigServerTreeLayoutStore {
         out.put("interceptors", v.interceptors());
         byServer.put(sid, out);
       }
-
-      if (byServer.isEmpty()) serverTree.remove("builtInNodesByServer");
-      pruneEmptyServerTree(doc, serverTree);
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist server-tree built-in node visibility to '{}'", file, e);
-    }
+    });
   }
 
   /**
@@ -121,36 +101,27 @@ class RuntimeConfigServerTreeLayoutStore {
    * <p>Stored under {@code ircafe.ui.serverTree.builtInLayoutByServer.<serverId>}.
    */
   synchronized Map<String, ServerTreeBuiltInLayout> readBuiltInLayoutByServer() {
-    try {
-      if (file.toString().isBlank()) return Map.of();
-      if (!Files.exists(file)) return Map.of();
+    Object byServerObj = readServerTreeSection("built-in layout", "builtInLayoutByServer");
+    if (!(byServerObj instanceof Map<?, ?> byServer)) return Map.of();
 
-      Map<String, Object> doc = documentStore.load();
-      Object byServerObj = readServerTreeValue(doc, "builtInLayoutByServer").orElse(null);
-      if (!(byServerObj instanceof Map<?, ?> byServer)) return Map.of();
+    LinkedHashMap<String, ServerTreeBuiltInLayout> out = new LinkedHashMap<>();
+    for (Map.Entry<?, ?> entry : byServer.entrySet()) {
+      String sid = Objects.toString(entry.getKey(), "").trim();
+      if (sid.isEmpty()) continue;
+      if (!(entry.getValue() instanceof Map<?, ?> raw)) continue;
 
-      LinkedHashMap<String, ServerTreeBuiltInLayout> out = new LinkedHashMap<>();
-      for (Map.Entry<?, ?> entry : byServer.entrySet()) {
-        String sid = Objects.toString(entry.getKey(), "").trim();
-        if (sid.isEmpty()) continue;
-        if (!(entry.getValue() instanceof Map<?, ?> raw)) continue;
-
-        List<ServerTreeBuiltInLayoutNode> root =
-            parseBuiltInLayoutNodeOrder(raw.get("root"), List.of());
-        List<ServerTreeBuiltInLayoutNode> other =
-            parseBuiltInLayoutNodeOrder(raw.get("other"), List.of());
-        ServerTreeBuiltInLayout layout =
-            normalizeBuiltInLayout(new ServerTreeBuiltInLayout(root, other));
-        if (layout.isDefaultLayout()) continue;
-        out.put(sid, layout);
-      }
-
-      if (out.isEmpty()) return Map.of();
-      return Map.copyOf(out);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read server-tree built-in layout from '{}'", file, e);
-      return Map.of();
+      List<ServerTreeBuiltInLayoutNode> root =
+          parseBuiltInLayoutNodeOrder(raw.get("root"), List.of());
+      List<ServerTreeBuiltInLayoutNode> other =
+          parseBuiltInLayoutNodeOrder(raw.get("other"), List.of());
+      ServerTreeBuiltInLayout layout =
+          normalizeBuiltInLayout(new ServerTreeBuiltInLayout(root, other));
+      if (layout.isDefaultLayout()) continue;
+      out.put(sid, layout);
     }
+
+    if (out.isEmpty()) return Map.of();
+    return Map.copyOf(out);
   }
 
   /**
@@ -159,18 +130,13 @@ class RuntimeConfigServerTreeLayoutStore {
    * <p>When layout matches defaults, the server entry is removed to keep config compact.
    */
   synchronized void rememberBuiltInLayout(String serverId, ServerTreeBuiltInLayout layout) {
-    try {
-      if (file.toString().isBlank()) return;
-      String sid = Objects.toString(serverId, "").trim();
-      if (sid.isEmpty()) return;
+    String sid = Objects.toString(serverId, "").trim();
+    if (sid.isEmpty()) return;
 
-      ServerTreeBuiltInLayout next =
-          normalizeBuiltInLayout(layout == null ? ServerTreeBuiltInLayout.defaults() : layout);
+    ServerTreeBuiltInLayout next =
+        normalizeBuiltInLayout(layout == null ? ServerTreeBuiltInLayout.defaults() : layout);
 
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> serverTree = serverTreeMap(doc);
-      Map<String, Object> byServer = getOrCreateMap(serverTree, "builtInLayoutByServer");
-
+    mutateServerTreeByServer("built-in layout", "builtInLayoutByServer", sid, byServer -> {
       if (next.isDefaultLayout()) {
         byServer.remove(sid);
       } else {
@@ -181,14 +147,7 @@ class RuntimeConfigServerTreeLayoutStore {
         if (!other.isEmpty()) out.put("other", other);
         byServer.put(sid, out);
       }
-
-      if (byServer.isEmpty()) serverTree.remove("builtInLayoutByServer");
-      pruneEmptyServerTree(doc, serverTree);
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist server-tree built-in layout to '{}'", file, e);
-    }
+    });
   }
 
   /**
@@ -197,33 +156,24 @@ class RuntimeConfigServerTreeLayoutStore {
    * <p>Stored under {@code ircafe.ui.serverTree.rootSiblingOrderByServer.<serverId>}.
    */
   synchronized Map<String, ServerTreeRootSiblingOrder> readRootSiblingOrderByServer() {
-    try {
-      if (file.toString().isBlank()) return Map.of();
-      if (!Files.exists(file)) return Map.of();
+    Object byServerObj = readServerTreeSection("root sibling order", "rootSiblingOrderByServer");
+    if (!(byServerObj instanceof Map<?, ?> byServer)) return Map.of();
 
-      Map<String, Object> doc = documentStore.load();
-      Object byServerObj = readServerTreeValue(doc, "rootSiblingOrderByServer").orElse(null);
-      if (!(byServerObj instanceof Map<?, ?> byServer)) return Map.of();
+    LinkedHashMap<String, ServerTreeRootSiblingOrder> out = new LinkedHashMap<>();
+    for (Map.Entry<?, ?> entry : byServer.entrySet()) {
+      String sid = Objects.toString(entry.getKey(), "").trim();
+      if (sid.isEmpty()) continue;
 
-      LinkedHashMap<String, ServerTreeRootSiblingOrder> out = new LinkedHashMap<>();
-      for (Map.Entry<?, ?> entry : byServer.entrySet()) {
-        String sid = Objects.toString(entry.getKey(), "").trim();
-        if (sid.isEmpty()) continue;
-
-        List<ServerTreeRootSiblingNode> parsed =
-            parseRootSiblingNodeOrder(entry.getValue(), List.of());
-        ServerTreeRootSiblingOrder order =
-            normalizeRootSiblingOrder(new ServerTreeRootSiblingOrder(parsed));
-        if (order.isDefaultOrder()) continue;
-        out.put(sid, order);
-      }
-
-      if (out.isEmpty()) return Map.of();
-      return Map.copyOf(out);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read server-tree root sibling order from '{}'", file, e);
-      return Map.of();
+      List<ServerTreeRootSiblingNode> parsed =
+          parseRootSiblingNodeOrder(entry.getValue(), List.of());
+      ServerTreeRootSiblingOrder order =
+          normalizeRootSiblingOrder(new ServerTreeRootSiblingOrder(parsed));
+      if (order.isDefaultOrder()) continue;
+      out.put(sid, order);
     }
+
+    if (out.isEmpty()) return Map.of();
+    return Map.copyOf(out);
   }
 
   /**
@@ -232,31 +182,19 @@ class RuntimeConfigServerTreeLayoutStore {
    * <p>When order matches defaults, the server entry is removed to keep config compact.
    */
   synchronized void rememberRootSiblingOrder(String serverId, ServerTreeRootSiblingOrder order) {
-    try {
-      if (file.toString().isBlank()) return;
-      String sid = Objects.toString(serverId, "").trim();
-      if (sid.isEmpty()) return;
+    String sid = Objects.toString(serverId, "").trim();
+    if (sid.isEmpty()) return;
 
-      ServerTreeRootSiblingOrder next =
-          normalizeRootSiblingOrder(order == null ? ServerTreeRootSiblingOrder.defaults() : order);
+    ServerTreeRootSiblingOrder next =
+        normalizeRootSiblingOrder(order == null ? ServerTreeRootSiblingOrder.defaults() : order);
 
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> serverTree = serverTreeMap(doc);
-      Map<String, Object> byServer = getOrCreateMap(serverTree, "rootSiblingOrderByServer");
-
+    mutateServerTreeByServer("root sibling order", "rootSiblingOrderByServer", sid, byServer -> {
       if (next.isDefaultOrder()) {
         byServer.remove(sid);
       } else {
         byServer.put(sid, rootSiblingNodeTokens(next.order()));
       }
-
-      if (byServer.isEmpty()) serverTree.remove("rootSiblingOrderByServer");
-      pruneEmptyServerTree(doc, serverTree);
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist server-tree root sibling order to '{}'", file, e);
-    }
+    });
   }
 
   private static ServerTreeBuiltInLayout normalizeBuiltInLayout(ServerTreeBuiltInLayout layout) {
@@ -380,17 +318,31 @@ class RuntimeConfigServerTreeLayoutStore {
     return out.isEmpty() ? List.of() : List.copyOf(out);
   }
 
-  private Optional<Object> readServerTreeValue(Map<String, Object> doc, String key) {
-    Object ircafeObj = doc.get("ircafe");
-    if (!(ircafeObj instanceof Map<?, ?> ircafe)) return Optional.empty();
+  private Optional<Object> readServerTreeSection(String description, String key) {
+    return readExistingValue(
+        file, documentStore, log, "server-tree " + description, "ircafe", "ui", "serverTree", key);
+  }
 
-    Object uiObj = ircafe.get("ui");
-    if (!(uiObj instanceof Map<?, ?> ui)) return Optional.empty();
+  private void mutateServerTreeByServer(
+      String description,
+      String key,
+      String serverId,
+      java.util.function.Consumer<Map<String, Object>> mutation) {
+    mutateDocument(
+        file,
+        documentStore,
+        log,
+        "server-tree " + description,
+        doc -> {
+          Map<String, Object> serverTree = serverTreeMap(doc);
+          Map<String, Object> byServer = getOrCreateMap(serverTree, key);
 
-    Object serverTreeObj = ui.get("serverTree");
-    if (!(serverTreeObj instanceof Map<?, ?> serverTree)) return Optional.empty();
+          mutation.accept(byServer);
 
-    return Optional.ofNullable(serverTree.get(key));
+          if (byServer.isEmpty()) serverTree.remove(key);
+          pruneEmptyServerTree(doc, serverTree);
+          return true;
+        });
   }
 
   private static void pruneEmptyServerTree(
