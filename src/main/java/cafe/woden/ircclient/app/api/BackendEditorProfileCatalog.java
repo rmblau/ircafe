@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.app.api;
 
-import cafe.woden.ircclient.config.BackendDescriptorCatalog;
+import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import cafe.woden.ircclient.config.IrcProperties;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

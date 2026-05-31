@@ -1,5 +1,6 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.api;
 
+import cafe.woden.ircclient.config.IrcProperties;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;

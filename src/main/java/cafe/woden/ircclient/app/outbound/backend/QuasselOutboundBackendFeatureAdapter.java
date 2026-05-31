@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.app.outbound.backend;
 
 import cafe.woden.ircclient.app.outbound.backend.spi.OutboundBackendFeatureAdapter;
-import cafe.woden.ircclient.config.BackendDescriptorCatalog;
+import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import cafe.woden.ircclient.config.IrcProperties;
 import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
 import org.jmolecules.architecture.layered.ApplicationLayer;

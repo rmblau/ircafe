@@ -4,7 +4,7 @@ import cafe.woden.ircclient.app.api.AvailableBackendIdsPort;
 import cafe.woden.ircclient.app.api.BackendEditorProfileCatalog;
 import cafe.woden.ircclient.app.api.BackendUiMode;
 import cafe.woden.ircclient.app.outbound.backend.BackendExtensionCatalog;
-import cafe.woden.ircclient.config.BackendDescriptorCatalog;
+import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.model.TargetRef;

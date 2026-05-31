@@ -1,8 +1,9 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.api;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cafe.woden.ircclient.config.IrcProperties;
 import org.junit.jupiter.api.Test;
 
 class BackendDescriptorCatalogTest {

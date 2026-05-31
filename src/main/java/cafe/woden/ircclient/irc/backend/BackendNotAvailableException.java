@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.irc.backend;
 
-import cafe.woden.ircclient.config.BackendDescriptorCatalog;
+import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import cafe.woden.ircclient.config.IrcProperties;
 import java.util.Objects;
 import java.util.function.Function;

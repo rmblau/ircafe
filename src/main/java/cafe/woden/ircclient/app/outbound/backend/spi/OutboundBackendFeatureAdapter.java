@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.app.outbound.backend.spi;
 
-import cafe.woden.ircclient.config.BackendDescriptorCatalog;
+import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.irc.port.IrcNegotiatedFeaturePort;
 import org.jmolecules.architecture.hexagonal.SecondaryPort;

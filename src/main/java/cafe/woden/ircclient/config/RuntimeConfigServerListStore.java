@@ -7,6 +7,7 @@ import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.readExis
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.readValue;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.sanitizeStringList;
 
+import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import java.nio.file.Path;

@@ -18,7 +18,7 @@ import static cafe.woden.ircclient.util.Ircv3CapabilityNames.REPLY;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.STANDARD_REPLIES;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.TYPING;
 
-import cafe.woden.ircclient.config.BackendDescriptorCatalog;
+import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.irc.*;

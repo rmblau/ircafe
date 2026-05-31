@@ -1,6 +1,5 @@
 package cafe.woden.ircclient.config.api;
 
-import cafe.woden.ircclient.config.BackendDescriptorCatalog;
 import java.util.Locale;
 import java.util.Objects;
 import org.jmolecules.architecture.hexagonal.SecondaryPort;
