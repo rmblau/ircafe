@@ -1,5 +1,8 @@
 package cafe.woden.ircclient.config;
 
+import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigChatHistoryStore;
+import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigTrayStore;
+import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigUserLookupStore;
 import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigCtcpAutoReplyStore;
 import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigEmbedLoadPolicyStore;
 import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigEmbedStore;

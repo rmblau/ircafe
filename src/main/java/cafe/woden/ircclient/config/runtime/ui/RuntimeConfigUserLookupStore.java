@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime.ui;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
@@ -7,22 +7,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Owns user lookup settings under {@code ircafe.ui}. */
-class RuntimeConfigUserLookupStore {
+public class RuntimeConfigUserLookupStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigUserLookupStore.class);
 
   private final RuntimeConfigYamlSection uiSection;
 
-  RuntimeConfigUserLookupStore(Path file, RuntimeConfigDocumentStore documentStore) {
+  public RuntimeConfigUserLookupStore(Path file, RuntimeConfigDocumentStore documentStore) {
     this.uiSection = RuntimeConfigYamlSection.ircafeUi(file, documentStore, log);
   }
 
-  synchronized void rememberUserhostDiscoveryEnabled(boolean enabled) {
+  public synchronized void rememberUserhostDiscoveryEnabled(boolean enabled) {
     rememberSectionScalarSetting(
         "hostmaskDiscovery", "userhostEnabled", enabled, "USERHOST discovery enabled");
   }
 
-  synchronized void rememberUserhostMinIntervalSeconds(int seconds) {
+  public synchronized void rememberUserhostMinIntervalSeconds(int seconds) {
     rememberSectionScalarSetting(
         "hostmaskDiscovery",
         "userhostMinIntervalSeconds",
@@ -30,7 +30,7 @@ class RuntimeConfigUserLookupStore {
         "USERHOST min interval");
   }
 
-  synchronized void rememberUserhostMaxCommandsPerMinute(int maxPerMinute) {
+  public synchronized void rememberUserhostMaxCommandsPerMinute(int maxPerMinute) {
     rememberSectionScalarSetting(
         "hostmaskDiscovery",
         "userhostMaxCommandsPerMinute",
@@ -38,7 +38,7 @@ class RuntimeConfigUserLookupStore {
         "USERHOST max commands/min");
   }
 
-  synchronized void rememberUserhostNickCooldownMinutes(int minutes) {
+  public synchronized void rememberUserhostNickCooldownMinutes(int minutes) {
     rememberSectionScalarSetting(
         "hostmaskDiscovery",
         "userhostNickCooldownMinutes",
@@ -46,24 +46,24 @@ class RuntimeConfigUserLookupStore {
         "USERHOST nick cooldown");
   }
 
-  synchronized void rememberUserhostMaxNicksPerCommand(int maxNicks) {
+  public synchronized void rememberUserhostMaxNicksPerCommand(int maxNicks) {
     int capped = Math.max(1, Math.min(5, maxNicks));
     rememberSectionScalarSetting(
         "hostmaskDiscovery", "userhostMaxNicksPerCommand", capped, "USERHOST max nicks/command");
   }
 
-  synchronized void rememberMonitorIsonPollIntervalSeconds(int seconds) {
+  public synchronized void rememberMonitorIsonPollIntervalSeconds(int seconds) {
     int v = Math.max(5, Math.min(600, seconds));
     rememberSectionScalarSetting(
         "monitorFallback", "isonPollIntervalSeconds", v, "monitor fallback ISON interval");
   }
 
-  synchronized void rememberUserInfoEnrichmentEnabled(boolean enabled) {
+  public synchronized void rememberUserInfoEnrichmentEnabled(boolean enabled) {
     rememberSectionScalarSetting(
         "userInfoEnrichment", "enabled", enabled, "user info enrichment enabled");
   }
 
-  synchronized void rememberUserInfoEnrichmentWhoisFallbackEnabled(boolean enabled) {
+  public synchronized void rememberUserInfoEnrichmentWhoisFallbackEnabled(boolean enabled) {
     rememberSectionScalarSetting(
         "userInfoEnrichment",
         "whoisFallbackEnabled",
@@ -71,7 +71,7 @@ class RuntimeConfigUserLookupStore {
         "user info enrichment WHOIS fallback enabled");
   }
 
-  synchronized void rememberUserInfoEnrichmentUserhostMinIntervalSeconds(int seconds) {
+  public synchronized void rememberUserInfoEnrichmentUserhostMinIntervalSeconds(int seconds) {
     rememberSectionScalarSetting(
         "userInfoEnrichment",
         "userhostMinIntervalSeconds",
@@ -79,7 +79,7 @@ class RuntimeConfigUserLookupStore {
         "user info enrichment USERHOST min interval");
   }
 
-  synchronized void rememberUserInfoEnrichmentUserhostMaxCommandsPerMinute(int maxPerMinute) {
+  public synchronized void rememberUserInfoEnrichmentUserhostMaxCommandsPerMinute(int maxPerMinute) {
     rememberSectionScalarSetting(
         "userInfoEnrichment",
         "userhostMaxCommandsPerMinute",
@@ -87,7 +87,7 @@ class RuntimeConfigUserLookupStore {
         "user info enrichment USERHOST max commands/min");
   }
 
-  synchronized void rememberUserInfoEnrichmentUserhostNickCooldownMinutes(int minutes) {
+  public synchronized void rememberUserInfoEnrichmentUserhostNickCooldownMinutes(int minutes) {
     rememberSectionScalarSetting(
         "userInfoEnrichment",
         "userhostNickCooldownMinutes",
@@ -95,7 +95,7 @@ class RuntimeConfigUserLookupStore {
         "user info enrichment USERHOST nick cooldown");
   }
 
-  synchronized void rememberUserInfoEnrichmentUserhostMaxNicksPerCommand(int maxNicks) {
+  public synchronized void rememberUserInfoEnrichmentUserhostMaxNicksPerCommand(int maxNicks) {
     int capped = Math.max(1, Math.min(5, maxNicks));
     rememberSectionScalarSetting(
         "userInfoEnrichment",
@@ -104,7 +104,7 @@ class RuntimeConfigUserLookupStore {
         "user info enrichment USERHOST max nicks/command");
   }
 
-  synchronized void rememberUserInfoEnrichmentWhoisMinIntervalSeconds(int seconds) {
+  public synchronized void rememberUserInfoEnrichmentWhoisMinIntervalSeconds(int seconds) {
     rememberSectionScalarSetting(
         "userInfoEnrichment",
         "whoisMinIntervalSeconds",
@@ -112,7 +112,7 @@ class RuntimeConfigUserLookupStore {
         "user info enrichment WHOIS min interval");
   }
 
-  synchronized void rememberUserInfoEnrichmentWhoisNickCooldownMinutes(int minutes) {
+  public synchronized void rememberUserInfoEnrichmentWhoisNickCooldownMinutes(int minutes) {
     rememberSectionScalarSetting(
         "userInfoEnrichment",
         "whoisNickCooldownMinutes",
@@ -120,7 +120,7 @@ class RuntimeConfigUserLookupStore {
         "user info enrichment WHOIS nick cooldown");
   }
 
-  synchronized void rememberUserInfoEnrichmentPeriodicRefreshEnabled(boolean enabled) {
+  public synchronized void rememberUserInfoEnrichmentPeriodicRefreshEnabled(boolean enabled) {
     rememberSectionScalarSetting(
         "userInfoEnrichment",
         "periodicRefreshEnabled",
@@ -128,7 +128,7 @@ class RuntimeConfigUserLookupStore {
         "user info enrichment periodic refresh enabled");
   }
 
-  synchronized void rememberUserInfoEnrichmentPeriodicRefreshIntervalSeconds(int seconds) {
+  public synchronized void rememberUserInfoEnrichmentPeriodicRefreshIntervalSeconds(int seconds) {
     rememberSectionScalarSetting(
         "userInfoEnrichment",
         "periodicRefreshIntervalSeconds",
@@ -136,7 +136,7 @@ class RuntimeConfigUserLookupStore {
         "user info enrichment periodic refresh interval");
   }
 
-  synchronized void rememberUserInfoEnrichmentPeriodicRefreshNicksPerTick(int nicksPerTick) {
+  public synchronized void rememberUserInfoEnrichmentPeriodicRefreshNicksPerTick(int nicksPerTick) {
     int capped = Math.max(1, Math.min(20, nicksPerTick));
     rememberSectionScalarSetting(
         "userInfoEnrichment",
