@@ -1,15 +1,17 @@
 package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.RuntimeConfigServerYamlSupport.findServerById;
+import static cafe.woden.ircclient.config.RuntimeConfigServerYamlSupport.readExistingServer;
 import static cafe.woden.ircclient.config.RuntimeConfigServerYamlSupport.readServerList;
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.asBoolean;
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.mutateDocument;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.readExistingValue;
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.sanitizeStringList;
 
 import cafe.woden.ircclient.config.api.ServerTreeChannelStateConfigPort.ServerTreeChannelPreference;
 import cafe.woden.ircclient.config.api.ServerTreeChannelStateConfigPort.ServerTreeChannelSortMode;
 import cafe.woden.ircclient.config.api.ServerTreeChannelStateConfigPort.ServerTreeChannelState;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -292,22 +294,62 @@ class RuntimeConfigServerTreeChannelStateStore {
     if (sid.isEmpty()) return ServerTreeChannelState.defaults();
 
     List<String> joinedChannels = readServerAutoJoinChannels(sid);
+    Map<String, Object> raw = readServerTreeChannelStateMap(sid);
+    return parseServerTreeChannelState(raw, joinedChannels);
+  }
 
+  private synchronized List<String> readServerAutoJoinChannels(String serverId) {
+    String sid = Objects.toString(serverId, "").trim();
+    if (sid.isEmpty()) return List.of();
+
+    return readExistingServer(file, documentStore, log, "joined-channel list", sid)
+        .map(server -> sanitizeStringList(server.get("autoJoin")))
+        .map(AutoJoinEntryCodec::channelEntries)
+        .map(List::copyOf)
+        .orElse(List.of());
+  }
+
+  private void writeServerTreeChannelState(String serverId, ServerTreeChannelState state) {
+    if (file.toString().isBlank()) return;
+    String sid = Objects.toString(serverId, "").trim();
+    if (sid.isEmpty()) return;
+
+    ServerTreeChannelState nextState = state != null ? state : ServerTreeChannelState.defaults();
+    LinkedHashMap<String, ServerTreeChannelPreference> byKey = channelPreferencesByKey(nextState);
+    ArrayList<String> customOrder = sanitizeCustomOrder(nextState.customOrder(), byKey);
+    ServerTreeChannelSortMode sortMode =
+        nextState.sortMode() == null ? ServerTreeChannelSortMode.CUSTOM : nextState.sortMode();
+
+    mutateDocument(
+        file,
+        documentStore,
+        log,
+        "server-tree channel state",
+        doc -> {
+          writeLegacyAutoJoinState(doc, sid, byKey);
+          writeServerTreeChannelStateMap(doc, sid, byKey, customOrder, sortMode);
+          return true;
+        });
+  }
+
+  private Map<String, Object> readServerTreeChannelStateMap(String serverId) {
+    return readExistingValue(
+            file,
+            documentStore,
+            log,
+            "server-tree channel state",
+            "ircafe",
+            "ui",
+            "serverTree",
+            "channelsByServer",
+            serverId)
+        .map(RuntimeConfigServerTreeChannelStateStore::readMap)
+        .orElse(Map.of());
+  }
+
+  private static ServerTreeChannelState parseServerTreeChannelState(
+      Map<String, Object> raw, List<String> joinedChannels) {
     try {
-      if (file.toString().isBlank()) {
-        return stateFromLegacyAutoJoin(joinedChannels);
-      }
-      if (!Files.exists(file)) {
-        return stateFromLegacyAutoJoin(joinedChannels);
-      }
-
-      Map<String, Object> doc = documentStore.load();
-      Map<String, Object> ircafe = readMap(doc.get("ircafe"));
-      Map<String, Object> ui = readMap(ircafe.get("ui"));
-      Map<String, Object> serverTree = readMap(ui.get("serverTree"));
-      Map<String, Object> channelsByServer = readMap(serverTree.get("channelsByServer"));
-      Map<String, Object> raw = readMap(channelsByServer.get(sid));
-
       ServerTreeChannelSortMode sortMode =
           ServerTreeChannelSortMode.fromToken(Objects.toString(raw.get("sortMode"), ""));
 
@@ -349,134 +391,105 @@ class RuntimeConfigServerTreeChannelStateStore {
       return new ServerTreeChannelState(
           sortMode, List.copyOf(customOrder), List.copyOf(byKey.values()));
     } catch (Exception e) {
-      log.warn("[ircafe] Could not read server-tree channel state from '{}'", file, e);
+      log.warn("[ircafe] Could not parse server-tree channel state", e);
       return stateFromLegacyAutoJoin(joinedChannels);
     }
   }
 
-  private synchronized List<String> readServerAutoJoinChannels(String serverId) {
-    try {
-      if (file.toString().isBlank()) return List.of();
-      String sid = Objects.toString(serverId, "").trim();
-      if (sid.isEmpty()) return List.of();
+  private static void writeLegacyAutoJoinState(
+      Map<String, Object> doc,
+      String serverId,
+      Map<String, ServerTreeChannelPreference> channelsByKey) {
+    Map<String, Object> irc = getOrCreateMap(doc, "irc");
+    List<Map<String, Object>> servers = readServerList(irc).orElseGet(ArrayList::new);
+    Map<String, Object> serverMap = findServerById(servers, serverId).orElse(null);
+    if (serverMap == null) return;
 
-      Map<String, Object> doc = Files.exists(file) ? documentStore.load() : new LinkedHashMap<>();
-      Map<String, Object> irc = getOrCreateMap(doc, "irc");
-      List<Map<String, Object>> servers = readServerList(irc).orElse(List.of());
+    List<String> previousAutoJoin = sanitizeStringList(serverMap.get("autoJoin"));
+    List<String> previousPmTargets = AutoJoinEntryCodec.privateMessageNicks(previousAutoJoin);
 
-      Map<String, Object> server = findServerById(servers, sid).orElse(null);
-      if (server != null) {
-        Object autoJoinObj = server.get("autoJoin");
-        if (!(autoJoinObj instanceof List<?> rawList)) return List.of();
-        @SuppressWarnings("unchecked")
-        List<String> autoJoin = (List<String>) rawList;
-        return List.copyOf(AutoJoinEntryCodec.channelEntries(autoJoin));
-      }
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read joined-channel list from '{}'", file, e);
+    ArrayList<String> nextAutoJoin = new ArrayList<>();
+    for (ServerTreeChannelPreference pref : channelsByKey.values()) {
+      if (pref == null || !pref.autoReattach()) continue;
+      String channel = normalizeChannelName(pref.channel());
+      if (channel.isEmpty()) continue;
+      if (containsIgnoreCase(nextAutoJoin, channel)) continue;
+      nextAutoJoin.add(channel);
     }
-    return List.of();
+    for (String nick : previousPmTargets) {
+      String n = Objects.toString(nick, "").trim();
+      if (n.isEmpty()) continue;
+      String encoded = AutoJoinEntryCodec.encodePrivateMessageNick(n);
+      if (encoded.isEmpty()) continue;
+      if (nextAutoJoin.stream().anyMatch(existing -> existing.equalsIgnoreCase(encoded))) continue;
+      nextAutoJoin.add(encoded);
+    }
+    // Keep an explicit empty override so restart logic doesn't fall back to seeded defaults
+    // after the user closes-and-parts their last auto-reattach channel.
+    serverMap.put("autoJoin", nextAutoJoin);
+    irc.put("servers", servers);
   }
 
-  private void writeServerTreeChannelState(String serverId, ServerTreeChannelState state) {
-    try {
-      if (file.toString().isBlank()) return;
-      String sid = Objects.toString(serverId, "").trim();
-      if (sid.isEmpty()) return;
+  private static void writeServerTreeChannelStateMap(
+      Map<String, Object> doc,
+      String serverId,
+      Map<String, ServerTreeChannelPreference> channelsByKey,
+      List<String> customOrder,
+      ServerTreeChannelSortMode sortMode) {
+    Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
+    Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
+    Map<String, Object> serverTree = getOrCreateMap(ui, "serverTree");
+    Map<String, Object> channelsByServer = getOrCreateMap(serverTree, "channelsByServer");
 
-      ServerTreeChannelState nextState = state != null ? state : ServerTreeChannelState.defaults();
-      LinkedHashMap<String, ServerTreeChannelPreference> byKey = channelPreferencesByKey(nextState);
-      ArrayList<String> customOrder = sanitizeCustomOrder(nextState.customOrder(), byKey);
-      ServerTreeChannelSortMode sortMode =
-          nextState.sortMode() == null ? ServerTreeChannelSortMode.CUSTOM : nextState.sortMode();
+    boolean shouldKeepState =
+        !channelsByKey.isEmpty()
+            || !customOrder.isEmpty()
+            || sortMode != ServerTreeChannelSortMode.CUSTOM;
 
-      Map<String, Object> doc = Files.exists(file) ? documentStore.load() : new LinkedHashMap<>();
-
-      Map<String, Object> irc = getOrCreateMap(doc, "irc");
-      List<Map<String, Object>> servers = readServerList(irc).orElseGet(ArrayList::new);
-      Map<String, Object> serverMap = findServerById(servers, sid).orElse(null);
-      if (serverMap != null) {
-        List<String> previousAutoJoin = sanitizeStringList(serverMap.get("autoJoin"));
-        List<String> previousPmTargets = AutoJoinEntryCodec.privateMessageNicks(previousAutoJoin);
-
-        ArrayList<String> nextAutoJoin = new ArrayList<>();
-        for (ServerTreeChannelPreference pref : byKey.values()) {
-          if (pref == null || !pref.autoReattach()) continue;
-          String channel = normalizeChannelName(pref.channel());
-          if (channel.isEmpty()) continue;
-          if (containsIgnoreCase(nextAutoJoin, channel)) continue;
-          nextAutoJoin.add(channel);
-        }
-        for (String nick : previousPmTargets) {
-          String n = Objects.toString(nick, "").trim();
-          if (n.isEmpty()) continue;
-          String encoded = AutoJoinEntryCodec.encodePrivateMessageNick(n);
-          if (encoded.isEmpty()) continue;
-          if (nextAutoJoin.stream().anyMatch(existing -> existing.equalsIgnoreCase(encoded)))
-            continue;
-          nextAutoJoin.add(encoded);
-        }
-        // Keep an explicit empty override so restart logic doesn't fall back to seeded defaults
-        // after the user closes-and-parts their last auto-reattach channel.
-        serverMap.put("autoJoin", nextAutoJoin);
-        irc.put("servers", servers);
+    if (!shouldKeepState) {
+      channelsByServer.remove(serverId);
+    } else {
+      Map<String, Object> out = new LinkedHashMap<>();
+      if (sortMode != ServerTreeChannelSortMode.CUSTOM) {
+        out.put("sortMode", sortMode.token());
       }
-
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> serverTree = getOrCreateMap(ui, "serverTree");
-      Map<String, Object> channelsByServer = getOrCreateMap(serverTree, "channelsByServer");
-
-      boolean shouldKeepState =
-          !byKey.isEmpty()
-              || !customOrder.isEmpty()
-              || sortMode != ServerTreeChannelSortMode.CUSTOM;
-
-      if (!shouldKeepState) {
-        channelsByServer.remove(sid);
-      } else {
-        Map<String, Object> out = new LinkedHashMap<>();
-        if (sortMode != ServerTreeChannelSortMode.CUSTOM) {
-          out.put("sortMode", sortMode.token());
-        }
-        if (!customOrder.isEmpty()) {
-          out.put("customOrder", List.copyOf(customOrder));
-        }
-        if (!byKey.isEmpty()) {
-          ArrayList<Map<String, Object>> channelsOut = new ArrayList<>();
-          for (ServerTreeChannelPreference pref : byKey.values()) {
-            if (pref == null) continue;
-            String channel = normalizeChannelName(pref.channel());
-            if (channel.isEmpty()) continue;
-            Map<String, Object> item = new LinkedHashMap<>();
-            item.put("name", channel);
-            item.put("autoReattach", pref.autoReattach());
-            if (pref.pinned()) {
-              item.put("pinned", true);
-            }
-            if (pref.muted()) {
-              item.put("muted", true);
-            }
-            channelsOut.add(item);
-          }
-          if (!channelsOut.isEmpty()) {
-            out.put("channels", channelsOut);
-          }
-        }
-        channelsByServer.put(sid, out);
+      if (!customOrder.isEmpty()) {
+        out.put("customOrder", List.copyOf(customOrder));
       }
-
-      if (channelsByServer.isEmpty()) {
-        serverTree.remove("channelsByServer");
+      List<Map<String, Object>> channelsOut = serializeChannelPreferences(channelsByKey.values());
+      if (!channelsOut.isEmpty()) {
+        out.put("channels", channelsOut);
       }
-      if (serverTree.isEmpty()) {
-        ui.remove("serverTree");
-      }
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist server-tree channel state to '{}'", file, e);
+      channelsByServer.put(serverId, out);
     }
+
+    if (channelsByServer.isEmpty()) {
+      serverTree.remove("channelsByServer");
+    }
+    if (serverTree.isEmpty()) {
+      ui.remove("serverTree");
+    }
+  }
+
+  private static List<Map<String, Object>> serializeChannelPreferences(
+      Iterable<ServerTreeChannelPreference> preferences) {
+    ArrayList<Map<String, Object>> channelsOut = new ArrayList<>();
+    for (ServerTreeChannelPreference pref : preferences) {
+      if (pref == null) continue;
+      String channel = normalizeChannelName(pref.channel());
+      if (channel.isEmpty()) continue;
+      Map<String, Object> item = new LinkedHashMap<>();
+      item.put("name", channel);
+      item.put("autoReattach", pref.autoReattach());
+      if (pref.pinned()) {
+        item.put("pinned", true);
+      }
+      if (pref.muted()) {
+        item.put("muted", true);
+      }
+      channelsOut.add(item);
+    }
+    return channelsOut.isEmpty() ? List.of() : List.copyOf(channelsOut);
   }
 
   private static ServerTreeChannelState stateFromLegacyAutoJoin(List<String> joinedChannels) {
