@@ -2,6 +2,7 @@ package cafe.woden.ircclient.config;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
