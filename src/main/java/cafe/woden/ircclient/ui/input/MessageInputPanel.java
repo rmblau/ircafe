@@ -607,6 +607,7 @@ public class MessageInputPanel extends JPanel {
 
       // Mark completion popup UI dirty when appearance changes (e.g., accent sliders).
       // Refresh existing popup windows if present.
+      applyNickCompletionPreferences();
       nickCompletionSupport.markUiDirtyAndRefreshAsync();
     } catch (Exception ex) {
       log.warn("[MessageInputPanel] applySettings failed", ex);
@@ -614,6 +615,13 @@ public class MessageInputPanel extends JPanel {
 
     queueInputEmojiRestyle();
     typingSupport.onSettingsApplied(s);
+  }
+
+  private void applyNickCompletionPreferences() {
+    boolean cycleWithTab = settingsBus != null && settingsBus.nickCompletionCycleWithTabEnabled();
+    boolean appendAddressSuffix =
+        settingsBus == null || settingsBus.nickCompletionAppendAddressSuffixEnabled();
+    nickCompletionSupport.setCompletionPreferences(cycleWithTab, appendAddressSuffix);
   }
 
   public void setNickCompletions(List<String> nicks) {

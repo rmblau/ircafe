@@ -46,6 +46,26 @@ public final class ChatBehaviorControlsSupport {
     return field;
   }
 
+  public static JCheckBox buildNickCompletionCycleWithTabCheckbox(boolean cycleWithTabEnabled) {
+    JCheckBox checkbox = new JCheckBox("Cycle matching nicks with repeated Tab");
+    checkbox.setSelected(cycleWithTabEnabled);
+    checkbox.setToolTipText(
+        "When enabled, Tab replaces the current token with the next matching nick instead of opening the completion popup.\n"
+            + "Press Tab again to cycle through the available matches.");
+    return checkbox;
+  }
+
+  public static JCheckBox buildNickCompletionAppendAddressSuffixCheckbox(
+      boolean appendAddressSuffixEnabled) {
+    JCheckBox checkbox =
+        new JCheckBox("Append ': ' after completing a nick at the start of a line");
+    checkbox.setSelected(appendAddressSuffixEnabled);
+    checkbox.setToolTipText(
+        "When enabled, first-word nick completion addresses the user as \"nick: \".\n"
+            + "Nick completion elsewhere in the message is unchanged.");
+    return checkbox;
+  }
+
   public static JCheckBox buildOutgoingDeliveryIndicatorsCheckbox(UiSettings current) {
     JCheckBox checkbox =
         new JCheckBox("Show send-status indicators for my outgoing messages (spinner + green dot)");
@@ -207,6 +227,8 @@ public final class ChatBehaviorControlsSupport {
       JCheckBox presenceFolds,
       JCheckBox ctcpRequestsInActiveTarget,
       JTextField defaultQuitMessage,
+      JCheckBox nickCompletionCycleWithTab,
+      JCheckBox nickCompletionAppendAddressSuffix,
       JCheckBox typingIndicatorsSendEnabled,
       JCheckBox typingIndicatorsReceiveEnabled,
       JComboBox<?> typingTreeIndicatorStyle,
@@ -224,6 +246,8 @@ public final class ChatBehaviorControlsSupport {
         presenceFolds.isSelected(),
         ctcpRequestsInActiveTarget.isSelected(),
         quitMessage,
+        nickCompletionCycleWithTab.isSelected(),
+        nickCompletionAppendAddressSuffix.isSelected(),
         typingIndicatorsSendEnabled.isSelected(),
         typingIndicatorsReceiveEnabled.isSelected(),
         typingTreeIndicatorStyleValue(typingTreeIndicatorStyle),
@@ -251,6 +275,10 @@ public final class ChatBehaviorControlsSupport {
     runtimeConfig.rememberCtcpRequestsInActiveTargetEnabled(
         settings.ctcpRequestsInActiveTargetEnabled());
     runtimeConfig.rememberDefaultQuitMessage(settings.defaultQuitMessage());
+    runtimeConfig.rememberNickCompletionCycleWithTabEnabled(
+        settings.nickCompletionCycleWithTabEnabled());
+    runtimeConfig.rememberNickCompletionAppendAddressSuffixEnabled(
+        settings.nickCompletionAppendAddressSuffixEnabled());
     runtimeConfig.rememberTypingIndicatorsEnabled(settings.typingIndicatorsSendEnabled());
     runtimeConfig.rememberTypingIndicatorsReceiveEnabled(settings.typingIndicatorsReceiveEnabled());
     runtimeConfig.rememberTypingTreeIndicatorStyle(settings.typingIndicatorsTreeStyle());
@@ -295,6 +323,8 @@ public final class ChatBehaviorControlsSupport {
       boolean presenceFoldsEnabled,
       boolean ctcpRequestsInActiveTargetEnabled,
       String defaultQuitMessage,
+      boolean nickCompletionCycleWithTabEnabled,
+      boolean nickCompletionAppendAddressSuffixEnabled,
       boolean typingIndicatorsSendEnabled,
       boolean typingIndicatorsReceiveEnabled,
       String typingIndicatorsTreeStyle,

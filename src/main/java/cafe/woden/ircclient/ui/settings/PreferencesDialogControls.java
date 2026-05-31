@@ -104,6 +104,8 @@ record PreferencesDialogControls(
     JCheckBox presenceFolds,
     JCheckBox ctcpRequestsInActiveTarget,
     JTextField defaultQuitMessage,
+    JCheckBox nickCompletionCycleWithTab,
+    JCheckBox nickCompletionAppendAddressSuffix,
     SpellcheckControls spellcheck,
     CtcpAutoReplyControls ctcpAutoReplies,
     JCheckBox typingIndicatorsSendEnabled,
@@ -179,6 +181,12 @@ record PreferencesDialogControls(
         ChatBehaviorControlsSupport.buildCtcpRequestsInActiveTargetCheckbox(request.current());
     JTextField defaultQuitMessage =
         ChatBehaviorControlsSupport.buildDefaultQuitMessageField(request.runtimeConfig());
+    JCheckBox nickCompletionCycleWithTab =
+        ChatBehaviorControlsSupport.buildNickCompletionCycleWithTabCheckbox(
+            nickCompletionCycleWithTabEnabled(request));
+    JCheckBox nickCompletionAppendAddressSuffix =
+        ChatBehaviorControlsSupport.buildNickCompletionAppendAddressSuffixCheckbox(
+            nickCompletionAppendAddressSuffixEnabled(request));
     SpellcheckControls spellcheck =
         SpellcheckControlsSupport.buildControls(initialSpellcheckSettings(request));
     CtcpAutoReplyControls ctcpAutoReplies =
@@ -289,6 +297,8 @@ record PreferencesDialogControls(
         presenceFolds,
         ctcpRequestsInActiveTarget,
         defaultQuitMessage,
+        nickCompletionCycleWithTab,
+        nickCompletionAppendAddressSuffix,
         spellcheck,
         ctcpAutoReplies,
         typingIndicatorsSendEnabled,
@@ -343,6 +353,16 @@ record PreferencesDialogControls(
     return request.settingsBus() == null || request.settingsBus().chatSmoothWheelScrollingEnabled();
   }
 
+  private static boolean nickCompletionCycleWithTabEnabled(BuildRequest request) {
+    return request.settingsBus() != null
+        && request.settingsBus().nickCompletionCycleWithTabEnabled();
+  }
+
+  private static boolean nickCompletionAppendAddressSuffixEnabled(BuildRequest request) {
+    return request.settingsBus() == null
+        || request.settingsBus().nickCompletionAppendAddressSuffixEnabled();
+  }
+
   private static boolean historyLockViewportDuringLoadOlder(BuildRequest request) {
     return request.runtimeConfig() == null
         || request.runtimeConfig().readChatHistoryLockViewportDuringLoadOlder(true);
@@ -395,6 +415,8 @@ record PreferencesDialogControls(
         presenceFolds,
         ctcpRequestsInActiveTarget,
         defaultQuitMessage,
+        nickCompletionCycleWithTab,
+        nickCompletionAppendAddressSuffix,
         typingIndicatorsSendEnabled,
         typingIndicatorsReceiveEnabled,
         typingTreeIndicatorStyle,

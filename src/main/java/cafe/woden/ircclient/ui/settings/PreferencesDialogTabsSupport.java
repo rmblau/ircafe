@@ -36,6 +36,8 @@ final class PreferencesDialogTabsSupport {
             controls.presenceFolds(),
             controls.ctcpRequestsInActiveTarget(),
             controls.defaultQuitMessage(),
+            controls.nickCompletionCycleWithTab(),
+            controls.nickCompletionAppendAddressSuffix(),
             controls.spellcheck(),
             controls.nickColors(),
             controls.timestamps(),

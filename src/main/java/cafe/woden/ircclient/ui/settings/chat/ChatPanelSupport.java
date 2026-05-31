@@ -20,6 +20,8 @@ public final class ChatPanelSupport {
       JCheckBox presenceFolds,
       JCheckBox ctcpRequestsInActiveTarget,
       JTextField defaultQuitMessage,
+      JCheckBox nickCompletionCycleWithTab,
+      JCheckBox nickCompletionAppendAddressSuffix,
       SpellcheckControls spellcheck,
       NickColorControls nickColors,
       TimestampControls timestamps,
@@ -36,6 +38,8 @@ public final class ChatPanelSupport {
                 presenceFolds,
                 ctcpRequestsInActiveTarget,
                 defaultQuitMessage,
+                nickCompletionCycleWithTab,
+                nickCompletionAppendAddressSuffix,
                 nickColors,
                 timestamps,
                 outgoing,
@@ -50,6 +54,8 @@ public final class ChatPanelSupport {
       JCheckBox presenceFolds,
       JCheckBox ctcpRequestsInActiveTarget,
       JTextField defaultQuitMessage,
+      JCheckBox nickCompletionCycleWithTab,
+      JCheckBox nickCompletionAppendAddressSuffix,
       NickColorControls nickColors,
       TimestampControls timestamps,
       OutgoingColorControls outgoing,
@@ -80,6 +86,14 @@ public final class ChatPanelSupport {
     panel.add(outgoingDeliveryIndicators, MigConstraints.alignXLeft());
     panel.add(new JLabel("Default /quit message"), MigConstraints.alignYTop());
     panel.add(defaultQuitMessage, MigConstraints.growXMinWidth0());
+
+    panel.add(
+        PreferencesUiSupport.sectionTitle("Nick completion"),
+        MigConstraints.span2GrowXMinWidth0Wrap());
+    panel.add(new JLabel("Tab behavior"), MigConstraints.alignYTop());
+    panel.add(nickCompletionCycleWithTab, MigConstraints.alignXLeft());
+    panel.add(new JLabel("Addressing suffix"), MigConstraints.alignYTop());
+    panel.add(nickCompletionAppendAddressSuffix, MigConstraints.alignXLeft());
 
     return panel;
   }

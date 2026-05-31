@@ -22,6 +22,8 @@ public class UiSettingsBus {
   private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
   private volatile UiSettings current;
   private volatile boolean chatSmoothWheelScrollingEnabled;
+  private volatile boolean nickCompletionCycleWithTabEnabled;
+  private volatile boolean nickCompletionAppendAddressSuffixEnabled;
 
   public UiSettingsBus(UiProperties props, UiSettingsRuntimeConfigPort runtimeConfig) {
     UiProperties.HostmaskDiscovery hm = props.hostmaskDiscovery();
@@ -158,6 +160,10 @@ public class UiSettingsBus {
                 .toList();
 
     this.chatSmoothWheelScrollingEnabled = runtimeConfig.readChatSmoothWheelScrollingEnabled(true);
+    this.nickCompletionCycleWithTabEnabled =
+        runtimeConfig.readNickCompletionCycleWithTabEnabled(false);
+    this.nickCompletionAppendAddressSuffixEnabled =
+        runtimeConfig.readNickCompletionAppendAddressSuffixEnabled(true);
 
     this.current =
         new UiSettings(
@@ -323,5 +329,21 @@ public class UiSettingsBus {
 
   public void setChatSmoothWheelScrollingEnabled(boolean enabled) {
     this.chatSmoothWheelScrollingEnabled = enabled;
+  }
+
+  public boolean nickCompletionCycleWithTabEnabled() {
+    return nickCompletionCycleWithTabEnabled;
+  }
+
+  public void setNickCompletionCycleWithTabEnabled(boolean enabled) {
+    this.nickCompletionCycleWithTabEnabled = enabled;
+  }
+
+  public boolean nickCompletionAppendAddressSuffixEnabled() {
+    return nickCompletionAppendAddressSuffixEnabled;
+  }
+
+  public void setNickCompletionAppendAddressSuffixEnabled(boolean enabled) {
+    this.nickCompletionAppendAddressSuffixEnabled = enabled;
   }
 }

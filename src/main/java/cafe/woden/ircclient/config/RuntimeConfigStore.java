@@ -712,6 +712,16 @@ public class RuntimeConfigStore
   }
 
   @Override
+  public synchronized boolean readNickCompletionCycleWithTabEnabled(boolean defaultValue) {
+    return stores.chatBehaviorStore.readNickCompletionCycleWithTabEnabled(defaultValue);
+  }
+
+  @Override
+  public synchronized boolean readNickCompletionAppendAddressSuffixEnabled(boolean defaultValue) {
+    return stores.chatBehaviorStore.readNickCompletionAppendAddressSuffixEnabled(defaultValue);
+  }
+
+  @Override
   public synchronized boolean readAppDiagnosticsAssertjSwingEnabled(boolean defaultValue) {
     return stores.appDiagnosticsStore.readAssertjSwingEnabled(defaultValue);
   }
@@ -1026,6 +1036,14 @@ public class RuntimeConfigStore
 
   public synchronized void rememberCtcpRequestsInActiveTargetEnabled(boolean enabled) {
     stores.chatBehaviorStore.rememberCtcpRequestsInActiveTargetEnabled(enabled);
+  }
+
+  public synchronized void rememberNickCompletionCycleWithTabEnabled(boolean enabled) {
+    stores.chatBehaviorStore.rememberNickCompletionCycleWithTabEnabled(enabled);
+  }
+
+  public synchronized void rememberNickCompletionAppendAddressSuffixEnabled(boolean enabled) {
+    stores.chatBehaviorStore.rememberNickCompletionAppendAddressSuffixEnabled(enabled);
   }
 
   @Override
@@ -1548,5 +1566,4 @@ public class RuntimeConfigStore
   public synchronized void rememberGenericBouncerPreferLoginHint(boolean enabled) {
     stores.bouncerDiscoveryStore.rememberGenericBouncerPreferLoginHint(enabled);
   }
-
 }

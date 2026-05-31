@@ -30,6 +30,20 @@ class RuntimeConfigChatBehaviorStore {
         .orElse(DEFAULT_QUIT_MESSAGE);
   }
 
+  synchronized boolean readNickCompletionCycleWithTabEnabled(boolean defaultValue) {
+    return readUiValue("ui.nickCompletionCycleWithTabEnabled", "nickCompletionCycleWithTabEnabled")
+        .flatMap(RuntimeConfigChatBehaviorStore::asBoolean)
+        .orElse(defaultValue);
+  }
+
+  synchronized boolean readNickCompletionAppendAddressSuffixEnabled(boolean defaultValue) {
+    return readUiValue(
+            "ui.nickCompletionAppendAddressSuffixEnabled",
+            "nickCompletionAppendAddressSuffixEnabled")
+        .flatMap(RuntimeConfigChatBehaviorStore::asBoolean)
+        .orElse(defaultValue);
+  }
+
   synchronized void rememberPresenceFoldsEnabled(boolean enabled) {
     rememberScalarSetting("presenceFoldsEnabled", enabled, "presence folds");
   }
@@ -56,6 +70,16 @@ class RuntimeConfigChatBehaviorStore {
 
   synchronized void rememberCtcpRequestsInActiveTargetEnabled(boolean enabled) {
     rememberScalarSetting("ctcpRequestsInActiveTargetEnabled", enabled, "CTCP request routing");
+  }
+
+  synchronized void rememberNickCompletionCycleWithTabEnabled(boolean enabled) {
+    rememberScalarSetting(
+        "nickCompletionCycleWithTabEnabled", enabled, "nick completion tab cycling");
+  }
+
+  synchronized void rememberNickCompletionAppendAddressSuffixEnabled(boolean enabled) {
+    rememberScalarSetting(
+        "nickCompletionAppendAddressSuffixEnabled", enabled, "nick completion address suffix");
   }
 
   synchronized void rememberTypingIndicatorsEnabled(boolean enabled) {
@@ -188,6 +212,16 @@ class RuntimeConfigChatBehaviorStore {
       } catch (Exception ignored) {
         return Optional.empty();
       }
+    }
+    return Optional.empty();
+  }
+
+  private static Optional<Boolean> asBoolean(Object value) {
+    if (value instanceof Boolean b) return Optional.of(b);
+    if (value instanceof String s) {
+      String t = s.trim();
+      if (t.equalsIgnoreCase("true")) return Optional.of(true);
+      if (t.equalsIgnoreCase("false")) return Optional.of(false);
     }
     return Optional.empty();
   }

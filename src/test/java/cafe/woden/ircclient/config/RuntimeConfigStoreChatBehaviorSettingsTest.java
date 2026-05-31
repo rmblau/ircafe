@@ -1,6 +1,8 @@
 package cafe.woden.ircclient.config;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.file.Path;
 import java.util.Map;
@@ -19,6 +21,8 @@ class RuntimeConfigStoreChatBehaviorSettingsTest {
     store.rememberPresenceFoldsEnabled(false);
     store.rememberDefaultQuitMessage("Bye\nnow");
     store.rememberCtcpRequestsInActiveTargetEnabled(false);
+    store.rememberNickCompletionCycleWithTabEnabled(true);
+    store.rememberNickCompletionAppendAddressSuffixEnabled(false);
     store.rememberTypingIndicatorsEnabled(false);
     store.rememberTypingIndicatorsReceiveEnabled(false);
     store.rememberTypingTreeIndicatorStyle("KBD");
@@ -32,6 +36,8 @@ class RuntimeConfigStoreChatBehaviorSettingsTest {
     assertEquals(false, ui.get("presenceFoldsEnabled"));
     assertEquals("Bye now", ui.get("defaultQuitMessage"));
     assertEquals(false, ui.get("ctcpRequestsInActiveTargetEnabled"));
+    assertEquals(true, ui.get("nickCompletionCycleWithTabEnabled"));
+    assertEquals(false, ui.get("nickCompletionAppendAddressSuffixEnabled"));
     assertEquals(false, ui.get("typingIndicatorsEnabled"));
     assertEquals(false, ui.get("typingIndicatorsReceiveEnabled"));
     assertEquals("keyboard", ui.get("typingTreeIndicatorStyle"));
@@ -40,5 +46,19 @@ class RuntimeConfigStoreChatBehaviorSettingsTest {
     assertEquals("verbose", ui.get("matrixUserListNameDisplayMode"));
     assertEquals(false, ui.get("typingIndicatorsTranscriptEnabled"));
     assertEquals(false, ui.get("typingIndicatorsSendSignalEnabled"));
+  }
+
+  @Test
+  void nickCompletionSettingsDefaultWhenUnsetAndCanBeReadBack() {
+    RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+
+    assertFalse(store.readNickCompletionCycleWithTabEnabled(false));
+    assertTrue(store.readNickCompletionAppendAddressSuffixEnabled(true));
+
+    store.rememberNickCompletionCycleWithTabEnabled(true);
+    store.rememberNickCompletionAppendAddressSuffixEnabled(false);
+
+    assertTrue(store.readNickCompletionCycleWithTabEnabled(false));
+    assertFalse(store.readNickCompletionAppendAddressSuffixEnabled(true));
   }
 }

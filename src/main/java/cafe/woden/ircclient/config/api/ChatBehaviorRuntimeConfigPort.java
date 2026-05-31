@@ -13,6 +13,10 @@ public interface ChatBehaviorRuntimeConfigPort {
 
   String readDefaultQuitMessage();
 
+  boolean readNickCompletionCycleWithTabEnabled(boolean defaultValue);
+
+  boolean readNickCompletionAppendAddressSuffixEnabled(boolean defaultValue);
+
   int readServerTreeUnreadBadgeScalePercent(int defaultValue);
 
   void rememberPresenceFoldsEnabled(boolean enabled);
@@ -20,6 +24,10 @@ public interface ChatBehaviorRuntimeConfigPort {
   void rememberCtcpRequestsInActiveTargetEnabled(boolean enabled);
 
   void rememberDefaultQuitMessage(String message);
+
+  void rememberNickCompletionCycleWithTabEnabled(boolean enabled);
+
+  void rememberNickCompletionAppendAddressSuffixEnabled(boolean enabled);
 
   void rememberTypingIndicatorsEnabled(boolean enabled);
 

@@ -32,9 +32,12 @@ class ChatBehaviorControlsSupportTest {
 
     ChatBehaviorControlsSupport.ChatBehaviorSettings settings =
         ChatBehaviorControlsSupport.readSettings(
+            null,
             selected(true),
             selected(false),
             defaultQuitMessage,
+            selected(true),
+            selected(false),
             selected(true),
             selected(false),
             typingStyle,
@@ -50,6 +53,8 @@ class ChatBehaviorControlsSupportTest {
     assertFalse(settings.ctcpRequestsInActiveTargetEnabled());
     assertEquals("Bye  now", settings.defaultQuitMessage());
     assertEquals("Bye  now", defaultQuitMessage.getText());
+    assertTrue(settings.nickCompletionCycleWithTabEnabled());
+    assertFalse(settings.nickCompletionAppendAddressSuffixEnabled());
     assertTrue(settings.typingIndicatorsSendEnabled());
     assertFalse(settings.typingIndicatorsReceiveEnabled());
     assertEquals("keyboard", settings.typingIndicatorsTreeStyle());
@@ -68,9 +73,12 @@ class ChatBehaviorControlsSupportTest {
 
     ChatBehaviorControlsSupport.ChatBehaviorSettings settings =
         ChatBehaviorControlsSupport.readSettings(
+            null,
             selected(false),
             selected(false),
             defaultQuitMessage,
+            selected(false),
+            selected(true),
             selected(false),
             selected(false),
             new JComboBox<>(),
@@ -99,6 +107,8 @@ class ChatBehaviorControlsSupportTest {
             "Bye",
             true,
             false,
+            true,
+            false,
             "glow-dot",
             true,
             false,
@@ -116,6 +126,8 @@ class ChatBehaviorControlsSupportTest {
     verify(runtimeConfig).rememberPresenceFoldsEnabled(true);
     verify(runtimeConfig).rememberCtcpRequestsInActiveTargetEnabled(false);
     verify(runtimeConfig).rememberDefaultQuitMessage("Bye");
+    verify(runtimeConfig).rememberNickCompletionCycleWithTabEnabled(true);
+    verify(runtimeConfig).rememberNickCompletionAppendAddressSuffixEnabled(false);
     verify(runtimeConfig).rememberTypingIndicatorsEnabled(true);
     verify(runtimeConfig).rememberTypingIndicatorsReceiveEnabled(false);
     verify(runtimeConfig).rememberTypingTreeIndicatorStyle("glow-dot");
