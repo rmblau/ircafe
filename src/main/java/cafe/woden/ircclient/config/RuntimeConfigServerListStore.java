@@ -1,8 +1,6 @@
 package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.containsIgnoreCase;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.mutateDocument;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.sanitizeStringList;
 
 import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
@@ -28,28 +26,19 @@ class RuntimeConfigServerListStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigServerListStore.class);
 
-  private final Path file;
-  private final RuntimeConfigDocumentStore documentStore;
   private final RuntimeConfigYamlSection ircSection;
   private final IrcProperties defaults;
 
   RuntimeConfigServerListStore(
       Path file, RuntimeConfigDocumentStore documentStore, IrcProperties defaults) {
-    this.file = file;
-    this.documentStore = documentStore;
     this.ircSection = new RuntimeConfigYamlSection(file, documentStore, log, "irc");
     this.defaults = defaults;
   }
 
   synchronized void ensureFileExistsWithServers() {
-    mutateDocument(
-        file,
-        documentStore,
-        log,
+    ircSection.mutateMapIfChanged(
         "runtime config file",
-        doc -> {
-          Map<String, Object> irc = getOrCreateMap(doc, "irc");
-
+        irc -> {
           // If the key exists, don't overwrite it. This is what makes removals stick.
           if (irc.containsKey("servers")) return false;
 

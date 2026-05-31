@@ -96,6 +96,26 @@ public final class RuntimeConfigYamlSupport {
     }
   }
 
+  public static void mutateMapIfChanged(
+      Path file,
+      RuntimeConfigDocumentStore documentStore,
+      Logger log,
+      String description,
+      Function<Map<String, Object>, Boolean> mutation,
+      String... path) {
+    try {
+      if (file.toString().isBlank()) return;
+
+      Map<String, Object> doc = documentStore.loadOrEmpty();
+      Map<String, Object> target = getOrCreateMapPath(doc, path);
+      if (!Boolean.TRUE.equals(mutation.apply(target))) return;
+
+      documentStore.write(doc);
+    } catch (Exception e) {
+      log.warn("[ircafe] Could not persist {} to '{}'", description, file, e);
+    }
+  }
+
   public static void mutateMapAndRemoveIfEmpty(
       Path file,
       RuntimeConfigDocumentStore documentStore,
