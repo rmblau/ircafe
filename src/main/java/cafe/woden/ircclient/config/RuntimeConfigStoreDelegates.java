@@ -21,6 +21,7 @@ import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigSpellcheckStore;
 import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigTimestampStore;
 import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigTrayStore;
 import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigUiFeatureToggleStore;
+import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigUiSettingsStore;
 import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigUserLookupStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import java.nio.file.Path;

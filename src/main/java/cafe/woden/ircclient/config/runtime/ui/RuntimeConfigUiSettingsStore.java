@@ -1,11 +1,10 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime.ui;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
 
-import cafe.woden.ircclient.config.properties.UiProperties;
+import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort.LastSelectedTarget;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
-import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort.LastSelectedTarget;
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Map;
@@ -15,17 +14,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Owns persisted UI settings and startup theme recovery state under {@code ircafe.ui}. */
-class RuntimeConfigUiSettingsStore {
+public class RuntimeConfigUiSettingsStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigUiSettingsStore.class);
 
   private final RuntimeConfigYamlSection uiSection;
 
-  RuntimeConfigUiSettingsStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.uiSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui");
+  public RuntimeConfigUiSettingsStore(Path file, RuntimeConfigDocumentStore documentStore) {
+    this.uiSection = RuntimeConfigYamlSection.ircafeUi(file, documentStore, log);
   }
 
-  synchronized void rememberUiSettings(String theme, String chatFontFamily, int chatFontSize) {
+  public synchronized void rememberUiSettings(String theme, String chatFontFamily, int chatFontSize) {
     uiSection.mutateMap(
         "UI config",
         ui -> {
@@ -37,13 +36,13 @@ class RuntimeConfigUiSettingsStore {
         });
   }
 
-  synchronized Optional<String> readStartupThemePending() {
+  public synchronized Optional<String> readStartupThemePending() {
     return uiSection.readExistingValue("ui.startupThemePending", "startupThemePending")
         .map(raw -> Objects.toString(raw, "").trim())
         .filter(theme -> !theme.isEmpty());
   }
 
-  synchronized void rememberStartupThemePending(String theme) {
+  public synchronized void rememberStartupThemePending(String theme) {
     String normalized = Objects.toString(theme, "").trim();
     if (normalized.isEmpty()) {
       uiSection.removeExistingValueAndPruneEmptyParents(
@@ -54,11 +53,11 @@ class RuntimeConfigUiSettingsStore {
     uiSection.putValue("ui.startupThemePending", normalized, "startupThemePending");
   }
 
-  synchronized void clearStartupThemePending() {
+  public synchronized void clearStartupThemePending() {
     rememberStartupThemePending(null);
   }
 
-  synchronized void rememberAccentColor(String accentColor) {
+  public synchronized void rememberAccentColor(String accentColor) {
     // Persist "disabled" explicitly as an empty string so app defaults don't re-enable the accent
     // on restart.
     // (UiProperties treats blank as "no override".)
@@ -66,12 +65,13 @@ class RuntimeConfigUiSettingsStore {
     rememberUiScalar("accentColor", normalized, "accentColor");
   }
 
-  synchronized void rememberAccentStrength(int strength) {
+  public synchronized void rememberAccentStrength(int strength) {
     int normalized = Math.max(0, Math.min(100, strength));
     rememberUiScalar("accentStrength", normalized, "accentStrength");
   }
 
-  synchronized void rememberDockLayoutWidths(Integer serverDockWidthPx, Integer userDockWidthPx) {
+  public synchronized void rememberDockLayoutWidths(
+      Integer serverDockWidthPx, Integer userDockWidthPx) {
     uiSection.mutateMap(
         "dock layout widths",
         layout -> {
@@ -85,20 +85,20 @@ class RuntimeConfigUiSettingsStore {
         "layout");
   }
 
-  synchronized void rememberServerDockWidthPx(int serverDockWidthPx) {
+  public synchronized void rememberServerDockWidthPx(int serverDockWidthPx) {
     rememberDockLayoutWidths(serverDockWidthPx, null);
   }
 
-  synchronized void rememberUserDockWidthPx(int userDockWidthPx) {
+  public synchronized void rememberUserDockWidthPx(int userDockWidthPx) {
     rememberDockLayoutWidths(null, userDockWidthPx);
   }
 
-  synchronized void rememberPreserveDockLayout(boolean preserveDockLayout) {
+  public synchronized void rememberPreserveDockLayout(boolean preserveDockLayout) {
     rememberUiLayoutScalar(
         "preserveDockLayout", preserveDockLayout, "ui.layout.preserveDockLayout");
   }
 
-  synchronized Optional<LastSelectedTarget> readLastSelectedTarget() {
+  public synchronized Optional<LastSelectedTarget> readLastSelectedTarget() {
     Object raw =
         uiSection.readExistingValue("ui.lastSelectedTarget", "lastSelectedTarget")
             .orElse(null);
@@ -112,7 +112,7 @@ class RuntimeConfigUiSettingsStore {
     return Optional.of(out);
   }
 
-  synchronized void rememberLastSelectedTarget(String serverId, String target) {
+  public synchronized void rememberLastSelectedTarget(String serverId, String target) {
     LastSelectedTarget next = new LastSelectedTarget(serverId, target);
     uiSection.mutateMap(
         "ui.lastSelectedTarget",
@@ -127,7 +127,7 @@ class RuntimeConfigUiSettingsStore {
         });
   }
 
-  synchronized void rememberUiDensity(String density) {
+  public synchronized void rememberUiDensity(String density) {
     String normalized = normalizeDensity(density);
     if (normalized.isEmpty()) {
       removeUiValue("density", "ui.density");
@@ -136,70 +136,70 @@ class RuntimeConfigUiSettingsStore {
     }
   }
 
-  synchronized void rememberUiFontOverrideEnabled(boolean enabled) {
+  public synchronized void rememberUiFontOverrideEnabled(boolean enabled) {
     rememberUiScalar("uiFontOverrideEnabled", enabled, "ui.uiFontOverrideEnabled");
   }
 
-  synchronized void rememberUiFontFamily(String family) {
+  public synchronized void rememberUiFontFamily(String family) {
     rememberOptionalUiString("uiFontFamily", family, "ui.uiFontFamily");
   }
 
-  synchronized void rememberUiFontSize(int size) {
+  public synchronized void rememberUiFontSize(int size) {
     int normalized = Math.max(8, Math.min(48, size));
     rememberUiScalar("uiFontSize", normalized, "ui.uiFontSize");
   }
 
-  synchronized void rememberCornerRadius(int cornerRadius) {
+  public synchronized void rememberCornerRadius(int cornerRadius) {
     int normalized = Math.max(0, Math.min(20, cornerRadius));
     rememberUiScalar("cornerRadius", normalized, "ui.cornerRadius");
   }
 
-  synchronized void rememberChatThemePreset(String preset) {
+  public synchronized void rememberChatThemePreset(String preset) {
     rememberOptionalUiString("chatThemePreset", preset, "chatThemePreset");
   }
 
-  synchronized void rememberChatTimestampColor(String hex) {
+  public synchronized void rememberChatTimestampColor(String hex) {
     rememberOptionalUiHex("chatTimestampColor", hex, "chatTimestampColor");
   }
 
-  synchronized void rememberChatSystemColor(String hex) {
+  public synchronized void rememberChatSystemColor(String hex) {
     rememberOptionalUiHex("chatSystemColor", hex, "chatSystemColor");
   }
 
-  synchronized void rememberChatMessageColor(String hex) {
+  public synchronized void rememberChatMessageColor(String hex) {
     rememberOptionalUiHex("chatMessageColor", hex, "chatMessageColor");
   }
 
-  synchronized void rememberChatNoticeColor(String hex) {
+  public synchronized void rememberChatNoticeColor(String hex) {
     rememberOptionalUiHex("chatNoticeColor", hex, "chatNoticeColor");
   }
 
-  synchronized void rememberChatActionColor(String hex) {
+  public synchronized void rememberChatActionColor(String hex) {
     rememberOptionalUiHex("chatActionColor", hex, "chatActionColor");
   }
 
-  synchronized void rememberChatErrorColor(String hex) {
+  public synchronized void rememberChatErrorColor(String hex) {
     rememberOptionalUiHex("chatErrorColor", hex, "chatErrorColor");
   }
 
-  synchronized void rememberChatPresenceColor(String hex) {
+  public synchronized void rememberChatPresenceColor(String hex) {
     rememberOptionalUiHex("chatPresenceColor", hex, "chatPresenceColor");
   }
 
-  synchronized void rememberChatMentionBgColor(String hex) {
+  public synchronized void rememberChatMentionBgColor(String hex) {
     rememberOptionalUiHex("chatMentionBgColor", hex, "chatMentionBgColor");
   }
 
-  synchronized void rememberServerTreeUnreadChannelColor(String hex) {
+  public synchronized void rememberServerTreeUnreadChannelColor(String hex) {
     rememberOptionalUiHex("serverTreeUnreadChannelColor", hex, "serverTreeUnreadChannelColor");
   }
 
-  synchronized void rememberServerTreeHighlightChannelColor(String hex) {
+  public synchronized void rememberServerTreeHighlightChannelColor(String hex) {
     rememberOptionalUiHex(
         "serverTreeHighlightChannelColor", hex, "serverTreeHighlightChannelColor");
   }
 
-  synchronized void rememberChatMentionStrength(int strength) {
+  public synchronized void rememberChatMentionStrength(int strength) {
     int normalized = Math.max(0, Math.min(100, strength));
     rememberUiScalar("chatMentionStrength", normalized, "chatMentionStrength");
   }
