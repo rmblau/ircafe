@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.notifications;
 
-import cafe.woden.ircclient.config.IrcEventNotificationRuleProperties;
+import cafe.woden.ircclient.config.properties.IrcEventNotificationRuleProperties;
 import cafe.woden.ircclient.config.UiProperties;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.notifications.api.IrcEventNotificationRulesPort;

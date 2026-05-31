@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.properties;
 
 import cafe.woden.ircclient.model.BuiltInSound;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
