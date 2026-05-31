@@ -1,10 +1,17 @@
 package cafe.woden.ircclient.config;
 
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 import org.jmolecules.architecture.layered.InfrastructureLayer;
+import org.slf4j.Logger;
 
 /** Shared helpers for runtime configuration stored under {@code irc.servers[]}. */
 @InfrastructureLayer
@@ -33,5 +40,67 @@ final class RuntimeConfigServerYamlSupport {
       }
     }
     return Optional.empty();
+  }
+
+  static Optional<Map<String, Object>> readExistingServer(
+      Path file,
+      RuntimeConfigDocumentStore documentStore,
+      Logger log,
+      String description,
+      String serverId) {
+    try {
+      if (file.toString().isBlank()) return Optional.empty();
+      String sid = normalizeServerId(serverId);
+      if (sid.isEmpty()) return Optional.empty();
+      if (!Files.exists(file)) return Optional.empty();
+
+      Map<String, Object> doc = documentStore.load();
+      Map<String, Object> irc = readMap(doc, "irc").orElse(null);
+      if (irc == null) return Optional.empty();
+
+      return readServerList(irc).flatMap(servers -> findServerById(servers, sid));
+    } catch (Exception e) {
+      log.warn("[ircafe] Could not read {} from '{}'", description, file, e);
+      return Optional.empty();
+    }
+  }
+
+  static void mutateExistingServer(
+      Path file,
+      RuntimeConfigDocumentStore documentStore,
+      Logger log,
+      String description,
+      String serverId,
+      Consumer<Map<String, Object>> mutation) {
+    try {
+      if (file.toString().isBlank()) return;
+      String sid = normalizeServerId(serverId);
+      if (sid.isEmpty()) return;
+
+      Map<String, Object> doc = documentStore.loadOrEmpty();
+      Map<String, Object> irc = getOrCreateMap(doc, "irc");
+      List<Map<String, Object>> servers = readServerList(irc).orElseGet(ArrayList::new);
+      Map<String, Object> found = findServerById(servers, sid).orElse(null);
+
+      // Do not auto-create missing servers: removed servers must stay removed.
+      if (found == null) return;
+
+      mutation.accept(found);
+      irc.put("servers", servers);
+      documentStore.write(doc);
+    } catch (Exception e) {
+      log.warn("[ircafe] Could not persist {} to '{}'", description, file, e);
+    }
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Optional<Map<String, Object>> readMap(Map<String, Object> parent, String key) {
+    Object raw = parent.get(key);
+    if (raw instanceof Map<?, ?> map) return Optional.of((Map<String, Object>) map);
+    return Optional.empty();
+  }
+
+  private static String normalizeServerId(String serverId) {
+    return Objects.toString(serverId, "").trim();
   }
 }

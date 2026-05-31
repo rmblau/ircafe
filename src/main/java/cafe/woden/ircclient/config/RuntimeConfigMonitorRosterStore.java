@@ -1,16 +1,14 @@
 package cafe.woden.ircclient.config;
 
-import static cafe.woden.ircclient.config.RuntimeConfigServerYamlSupport.findServerById;
-import static cafe.woden.ircclient.config.RuntimeConfigServerYamlSupport.readServerList;
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
+import static cafe.woden.ircclient.config.RuntimeConfigServerYamlSupport.mutateExistingServer;
+import static cafe.woden.ircclient.config.RuntimeConfigServerYamlSupport.readExistingServer;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,45 +70,13 @@ class RuntimeConfigMonitorRosterStore {
   }
 
   synchronized List<String> readMonitorNicks(String serverId) {
-    try {
-      if (file.toString().isBlank()) return List.of();
-      String sid = Objects.toString(serverId, "").trim();
-      if (sid.isEmpty()) return List.of();
-
-      Map<String, Object> doc = Files.exists(file) ? documentStore.load() : new LinkedHashMap<>();
-      Map<String, Object> irc = getOrCreateMap(doc, "irc");
-      List<Map<String, Object>> servers = readServerList(irc).orElse(List.of());
-      Map<String, Object> server = findServerById(servers, sid).orElse(null);
-      if (server != null) {
-        return List.copyOf(sanitizeMonitorNickList(server.get("monitorNicks")));
-      }
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read monitor nick list from '{}'", file, e);
-    }
-    return List.of();
+    return readExistingServer(file, documentStore, log, "monitor nick list", serverId)
+        .map(server -> List.copyOf(sanitizeMonitorNickList(server.get("monitorNicks"))))
+        .orElse(List.of());
   }
 
-  private void updateServer(String serverId, ServerUpdater updater) {
-    try {
-      if (file.toString().isBlank()) return;
-      String sid = Objects.toString(serverId, "").trim();
-      if (sid.isEmpty()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? documentStore.load() : new LinkedHashMap<>();
-      Map<String, Object> irc = getOrCreateMap(doc, "irc");
-      List<Map<String, Object>> servers = readServerList(irc).orElseGet(ArrayList::new);
-
-      Map<String, Object> found = findServerById(servers, sid).orElse(null);
-
-      // Do not auto-create missing servers: removed servers must stay removed.
-      if (found == null) return;
-
-      updater.update(found);
-      irc.put("servers", servers);
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist monitor nick list to '{}'", file, e);
-    }
+  private void updateServer(String serverId, Consumer<Map<String, Object>> updater) {
+    mutateExistingServer(file, documentStore, log, "monitor nick list", serverId, updater);
   }
 
   private static List<String> sanitizeMonitorNickList(Object rawList) {
@@ -147,10 +113,5 @@ class RuntimeConfigMonitorRosterStore {
       if (value != null && value.equalsIgnoreCase(n)) return true;
     }
     return false;
-  }
-
-  @FunctionalInterface
-  private interface ServerUpdater {
-    void update(Map<String, Object> serverMap);
   }
 }

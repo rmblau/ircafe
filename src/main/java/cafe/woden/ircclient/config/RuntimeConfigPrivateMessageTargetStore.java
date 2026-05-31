@@ -1,17 +1,14 @@
 package cafe.woden.ircclient.config;
 
-import static cafe.woden.ircclient.config.RuntimeConfigServerYamlSupport.findServerById;
-import static cafe.woden.ircclient.config.RuntimeConfigServerYamlSupport.readServerList;
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
+import static cafe.woden.ircclient.config.RuntimeConfigServerYamlSupport.mutateExistingServer;
+import static cafe.woden.ircclient.config.RuntimeConfigServerYamlSupport.readExistingServer;
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateStringList;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,54 +65,21 @@ class RuntimeConfigPrivateMessageTargetStore {
   }
 
   synchronized List<String> readPrivateMessageTargets(String serverId) {
-    try {
-      if (file.toString().isBlank()) return List.of();
-      String sid = Objects.toString(serverId, "").trim();
-      if (sid.isEmpty()) return List.of();
-
-      Map<String, Object> doc = Files.exists(file) ? documentStore.load() : new LinkedHashMap<>();
-      Map<String, Object> irc = getOrCreateMap(doc, "irc");
-      List<Map<String, Object>> servers = readServerList(irc).orElse(List.of());
-
-      Map<String, Object> server = findServerById(servers, sid).orElse(null);
-      if (server != null) {
-        Object autoJoinObj = server.get("autoJoin");
-        if (!(autoJoinObj instanceof List<?> rawList)) return List.of();
-        @SuppressWarnings("unchecked")
-        List<String> autoJoin = (List<String>) rawList;
-        return List.copyOf(AutoJoinEntryCodec.privateMessageNicks(autoJoin));
-      }
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read private-message target list from '{}'", file, e);
-    }
-    return List.of();
+    return readExistingServer(
+            file, documentStore, log, "private-message target list", serverId)
+        .map(RuntimeConfigPrivateMessageTargetStore::readPrivateMessageTargets)
+        .orElse(List.of());
   }
 
-  private void updateServer(String serverId, ServerUpdater updater) {
-    try {
-      if (file.toString().isBlank()) return;
-      String sid = Objects.toString(serverId, "").trim();
-      if (sid.isEmpty()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? documentStore.load() : new LinkedHashMap<>();
-      Map<String, Object> irc = getOrCreateMap(doc, "irc");
-      List<Map<String, Object>> servers = readServerList(irc).orElseGet(ArrayList::new);
-
-      Map<String, Object> found = findServerById(servers, sid).orElse(null);
-
-      // Do not auto-create missing servers: removed servers must stay removed.
-      if (found == null) return;
-
-      updater.update(found);
-      irc.put("servers", servers);
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist private-message target list to '{}'", file, e);
-    }
+  private void updateServer(String serverId, Consumer<Map<String, Object>> updater) {
+    mutateExistingServer(
+        file, documentStore, log, "private-message target list", serverId, updater);
   }
 
-  @FunctionalInterface
-  private interface ServerUpdater {
-    void update(Map<String, Object> serverMap);
+  @SuppressWarnings("unchecked")
+  private static List<String> readPrivateMessageTargets(Map<String, Object> server) {
+    Object autoJoinObj = server.get("autoJoin");
+    if (!(autoJoinObj instanceof List<?> rawList)) return List.of();
+    return List.copyOf(AutoJoinEntryCodec.privateMessageNicks((List<String>) rawList));
   }
 }
