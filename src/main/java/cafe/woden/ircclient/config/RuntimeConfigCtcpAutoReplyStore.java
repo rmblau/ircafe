@@ -16,7 +16,7 @@ class RuntimeConfigCtcpAutoReplyStore {
 
   RuntimeConfigCtcpAutoReplyStore(Path file, RuntimeConfigDocumentStore documentStore) {
     this.ctcpRepliesSection =
-        new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui", "ctcpReplies");
+        RuntimeConfigYamlSection.ircafeUi(file, documentStore, log, "ctcpReplies");
   }
 
   synchronized boolean readEnabled(boolean defaultValue) {

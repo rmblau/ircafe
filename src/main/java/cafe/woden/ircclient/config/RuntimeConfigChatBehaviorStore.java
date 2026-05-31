@@ -21,7 +21,7 @@ class RuntimeConfigChatBehaviorStore {
   private final RuntimeConfigYamlSection uiSection;
 
   RuntimeConfigChatBehaviorStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.uiSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui");
+    this.uiSection = RuntimeConfigYamlSection.ircafeUi(file, documentStore, log);
   }
 
   synchronized String readDefaultQuitMessage() {

@@ -19,7 +19,7 @@ class RuntimeConfigAppDiagnosticsStore {
 
   RuntimeConfigAppDiagnosticsStore(Path file, RuntimeConfigDocumentStore documentStore) {
     this.diagnosticsSection =
-        new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui", "appDiagnostics");
+        RuntimeConfigYamlSection.ircafeUi(file, documentStore, log, "appDiagnostics");
   }
 
   synchronized boolean readApplicationJfrEnabled(boolean defaultValue) {

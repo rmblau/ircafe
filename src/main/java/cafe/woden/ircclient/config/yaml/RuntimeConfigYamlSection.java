@@ -34,6 +34,21 @@ public final class RuntimeConfigYamlSection {
     this.basePath = Arrays.copyOf(basePath, basePath.length);
   }
 
+  public static RuntimeConfigYamlSection ircafe(
+      Path file, RuntimeConfigDocumentStore documentStore, Logger log, String... childPath) {
+    return new RuntimeConfigYamlSection(file, documentStore, log, prepend("ircafe", childPath));
+  }
+
+  public static RuntimeConfigYamlSection ircafeUi(
+      Path file, RuntimeConfigDocumentStore documentStore, Logger log, String... childPath) {
+    return ircafe(file, documentStore, log, prepend("ui", childPath));
+  }
+
+  public static RuntimeConfigYamlSection irc(
+      Path file, RuntimeConfigDocumentStore documentStore, Logger log, String... childPath) {
+    return new RuntimeConfigYamlSection(file, documentStore, log, prepend("irc", childPath));
+  }
+
   public Optional<Object> readValue(String description, String... path) {
     return RuntimeConfigYamlSupport.readValue(
         file, documentStore, log, description, resolve(path));
@@ -94,5 +109,15 @@ public final class RuntimeConfigYamlSection {
       System.arraycopy(path, 0, resolved, basePath.length, childLength);
     }
     return resolved;
+  }
+
+  private static String[] prepend(String first, String... path) {
+    int childLength = path == null ? 0 : path.length;
+    String[] out = new String[childLength + 1];
+    out[0] = first;
+    if (childLength > 0) {
+      System.arraycopy(path, 0, out, 1, childLength);
+    }
+    return out;
   }
 }

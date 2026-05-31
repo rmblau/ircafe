@@ -14,7 +14,7 @@ class RuntimeConfigUserLookupStore {
   private final RuntimeConfigYamlSection uiSection;
 
   RuntimeConfigUserLookupStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.uiSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui");
+    this.uiSection = RuntimeConfigYamlSection.ircafeUi(file, documentStore, log);
   }
 
   synchronized void rememberUserhostDiscoveryEnabled(boolean enabled) {

@@ -18,7 +18,7 @@ class RuntimeConfigMemoryUsageStore {
   private final RuntimeConfigYamlSection uiSection;
 
   RuntimeConfigMemoryUsageStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.uiSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui");
+    this.uiSection = RuntimeConfigYamlSection.ircafeUi(file, documentStore, log);
   }
 
   synchronized void rememberDisplayMode(String mode) {

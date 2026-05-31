@@ -25,7 +25,7 @@ class RuntimeConfigFilterStore {
 
   RuntimeConfigFilterStore(Path file, RuntimeConfigDocumentStore documentStore) {
     this.filtersSection =
-        new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui", "filters");
+        RuntimeConfigYamlSection.ircafeUi(file, documentStore, log, "filters");
   }
 
   synchronized void rememberEnabledByDefault(boolean enabled) {

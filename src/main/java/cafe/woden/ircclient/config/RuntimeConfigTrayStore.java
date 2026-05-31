@@ -19,7 +19,7 @@ class RuntimeConfigTrayStore {
 
   RuntimeConfigTrayStore(Path file, RuntimeConfigDocumentStore documentStore) {
     this.traySection =
-        new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui", "tray");
+        RuntimeConfigYamlSection.ircafeUi(file, documentStore, log, "tray");
   }
 
   synchronized Optional<Boolean> readCloseToTrayIfPresent() {

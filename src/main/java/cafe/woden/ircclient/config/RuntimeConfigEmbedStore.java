@@ -16,7 +16,7 @@ class RuntimeConfigEmbedStore {
   private final RuntimeConfigYamlSection uiSection;
 
   RuntimeConfigEmbedStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.uiSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui");
+    this.uiSection = RuntimeConfigYamlSection.ircafeUi(file, documentStore, log);
   }
 
   synchronized void rememberImageEmbedsEnabled(boolean enabled) {
