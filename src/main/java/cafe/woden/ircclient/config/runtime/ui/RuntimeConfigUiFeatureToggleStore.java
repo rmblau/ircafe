@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime.ui;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
@@ -8,40 +8,40 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Owns simple section-scoped UI feature toggles under {@code ircafe.ui}. */
-class RuntimeConfigUiFeatureToggleStore {
+public class RuntimeConfigUiFeatureToggleStore {
 
   private static final Logger log =
       LoggerFactory.getLogger(RuntimeConfigUiFeatureToggleStore.class);
 
   private final RuntimeConfigYamlSection uiSection;
 
-  RuntimeConfigUiFeatureToggleStore(Path file, RuntimeConfigDocumentStore documentStore) {
+  public RuntimeConfigUiFeatureToggleStore(Path file, RuntimeConfigDocumentStore documentStore) {
     this.uiSection = RuntimeConfigYamlSection.ircafeUi(file, documentStore, log);
   }
 
-  synchronized boolean readInviteAutoJoinEnabled(boolean defaultValue) {
+  public synchronized boolean readInviteAutoJoinEnabled(boolean defaultValue) {
     return readSectionBoolean(
         "invites", "autoJoinOnInvite", defaultValue, "invites.autoJoinOnInvite");
   }
 
-  synchronized void rememberInviteAutoJoinEnabled(boolean enabled) {
+  public synchronized void rememberInviteAutoJoinEnabled(boolean enabled) {
     rememberSectionBoolean("invites", "autoJoinOnInvite", enabled, "invites.autoJoinOnInvite");
   }
 
-  synchronized boolean readUpdateNotifierEnabled(boolean defaultValue) {
+  public synchronized boolean readUpdateNotifierEnabled(boolean defaultValue) {
     return readSectionBoolean(
         "updateNotifier", "enabled", defaultValue, "ui.updateNotifier.enabled");
   }
 
-  synchronized void rememberUpdateNotifierEnabled(boolean enabled) {
+  public synchronized void rememberUpdateNotifierEnabled(boolean enabled) {
     rememberSectionBoolean("updateNotifier", "enabled", enabled, "ui.updateNotifier.enabled");
   }
 
-  synchronized boolean readLagIndicatorEnabled(boolean defaultValue) {
+  public synchronized boolean readLagIndicatorEnabled(boolean defaultValue) {
     return readSectionBoolean("lagIndicator", "enabled", defaultValue, "ui.lagIndicator.enabled");
   }
 
-  synchronized void rememberLagIndicatorEnabled(boolean enabled) {
+  public synchronized void rememberLagIndicatorEnabled(boolean enabled) {
     rememberSectionBoolean("lagIndicator", "enabled", enabled, "ui.lagIndicator.enabled");
   }
 

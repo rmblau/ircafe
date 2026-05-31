@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime.ui;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
@@ -11,22 +11,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Owns memory usage indicator settings under {@code ircafe.ui}. */
-class RuntimeConfigMemoryUsageStore {
+public class RuntimeConfigMemoryUsageStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigMemoryUsageStore.class);
 
   private final RuntimeConfigYamlSection uiSection;
 
-  RuntimeConfigMemoryUsageStore(Path file, RuntimeConfigDocumentStore documentStore) {
+  public RuntimeConfigMemoryUsageStore(Path file, RuntimeConfigDocumentStore documentStore) {
     this.uiSection = RuntimeConfigYamlSection.ircafeUi(file, documentStore, log);
   }
 
-  synchronized void rememberDisplayMode(String mode) {
+  public synchronized void rememberDisplayMode(String mode) {
     String normalized = normalizeDisplayMode(mode);
     rememberScalar("memoryUsageDisplayMode", normalized, "ui.memoryUsageDisplayMode");
   }
 
-  synchronized int readRefreshIntervalMs(int defaultValue) {
+  public synchronized int readRefreshIntervalMs(int defaultValue) {
     return readUiInt(
         "memoryUsageRefreshIntervalMs",
         defaultValue,
@@ -34,30 +34,30 @@ class RuntimeConfigMemoryUsageStore {
         "ui.memoryUsageRefreshIntervalMs");
   }
 
-  synchronized void rememberRefreshIntervalMs(int intervalMs) {
+  public synchronized void rememberRefreshIntervalMs(int intervalMs) {
     int normalized = clampRefreshIntervalMs(intervalMs);
     rememberScalar("memoryUsageRefreshIntervalMs", normalized, "ui.memoryUsageRefreshIntervalMs");
   }
 
-  synchronized void rememberWarningNearMaxPercent(int percent) {
+  public synchronized void rememberWarningNearMaxPercent(int percent) {
     int normalized = Math.max(1, Math.min(50, percent));
     rememberScalar(
         "memoryUsageWarningNearMaxPercent", normalized, "ui.memoryUsageWarningNearMaxPercent");
   }
 
-  synchronized void rememberWarningTooltipEnabled(boolean enabled) {
+  public synchronized void rememberWarningTooltipEnabled(boolean enabled) {
     rememberWarningBoolean("memoryUsageWarningTooltipEnabled", enabled);
   }
 
-  synchronized void rememberWarningToastEnabled(boolean enabled) {
+  public synchronized void rememberWarningToastEnabled(boolean enabled) {
     rememberWarningBoolean("memoryUsageWarningToastEnabled", enabled);
   }
 
-  synchronized void rememberWarningPushyEnabled(boolean enabled) {
+  public synchronized void rememberWarningPushyEnabled(boolean enabled) {
     rememberWarningBoolean("memoryUsageWarningPushyEnabled", enabled);
   }
 
-  synchronized void rememberWarningSoundEnabled(boolean enabled) {
+  public synchronized void rememberWarningSoundEnabled(boolean enabled) {
     rememberWarningBoolean("memoryUsageWarningSoundEnabled", enabled);
   }
 

@@ -1,6 +1,9 @@
 package cafe.woden.ircclient.config;
 
+import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigMemoryUsageStore;
+import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigOutgoingMessageStore;
 import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigTimestampStore;
+import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigUiFeatureToggleStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import java.nio.file.Path;
 

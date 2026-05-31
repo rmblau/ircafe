@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime.ui;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
@@ -8,27 +8,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Owns outgoing message presentation settings under {@code ircafe.ui}. */
-class RuntimeConfigOutgoingMessageStore {
+public class RuntimeConfigOutgoingMessageStore {
 
   private static final Logger log =
       LoggerFactory.getLogger(RuntimeConfigOutgoingMessageStore.class);
 
   private final RuntimeConfigYamlSection uiSection;
 
-  RuntimeConfigOutgoingMessageStore(Path file, RuntimeConfigDocumentStore documentStore) {
+  public RuntimeConfigOutgoingMessageStore(Path file, RuntimeConfigDocumentStore documentStore) {
     this.uiSection = RuntimeConfigYamlSection.ircafeUi(file, documentStore, log);
   }
 
-  synchronized void rememberClientLineColorEnabled(boolean enabled) {
+  public synchronized void rememberClientLineColorEnabled(boolean enabled) {
     rememberScalarSetting("clientLineColorEnabled", enabled, "outgoing message color enabled");
   }
 
-  synchronized void rememberClientLineColor(String hex) {
+  public synchronized void rememberClientLineColor(String hex) {
     rememberScalarSetting(
         "clientLineColor", Objects.toString(hex, "").trim(), "outgoing message color");
   }
 
-  synchronized void rememberOutgoingDeliveryIndicatorsEnabled(boolean enabled) {
+  public synchronized void rememberOutgoingDeliveryIndicatorsEnabled(boolean enabled) {
     rememberScalarSetting(
         "outgoingDeliveryIndicatorsEnabled", enabled, "outgoing delivery indicators");
   }
