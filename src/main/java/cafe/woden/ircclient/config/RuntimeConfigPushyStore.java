@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.config;
 
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMapPath;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.mutateMap;
 
 import java.nio.file.Path;
 import java.util.Map;
@@ -24,30 +24,28 @@ class RuntimeConfigPushyStore {
   }
 
   synchronized void rememberSettings(PushyProperties settings) {
-    try {
-      if (file.toString().isBlank()) return;
+    PushyProperties safe =
+        settings != null
+            ? settings
+            : new PushyProperties(false, null, null, null, null, null, null, null);
 
-      PushyProperties safe =
-          settings != null
-              ? settings
-              : new PushyProperties(false, null, null, null, null, null, null, null);
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> pushy = getOrCreateMapPath(doc, "ircafe", "pushy");
-
-      pushy.put("enabled", safe.enabled());
-      rememberOptionalString(pushy, "endpoint", safe.endpoint(), DEFAULT_ENDPOINT);
-      rememberOptionalString(pushy, "apiKey", safe.apiKey(), null);
-      rememberOptionalString(pushy, "deviceToken", safe.deviceToken(), null);
-      rememberOptionalString(pushy, "topic", safe.topic(), null);
-      rememberOptionalString(pushy, "titlePrefix", safe.titlePrefix(), DEFAULT_TITLE_PREFIX);
-      pushy.put("connectTimeoutSeconds", safe.connectTimeoutSeconds());
-      pushy.put("readTimeoutSeconds", safe.readTimeoutSeconds());
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist pushy settings to '{}'", file, e);
-    }
+    mutateMap(
+        file,
+        documentStore,
+        log,
+        "pushy settings",
+        pushy -> {
+          pushy.put("enabled", safe.enabled());
+          rememberOptionalString(pushy, "endpoint", safe.endpoint(), DEFAULT_ENDPOINT);
+          rememberOptionalString(pushy, "apiKey", safe.apiKey(), null);
+          rememberOptionalString(pushy, "deviceToken", safe.deviceToken(), null);
+          rememberOptionalString(pushy, "topic", safe.topic(), null);
+          rememberOptionalString(pushy, "titlePrefix", safe.titlePrefix(), DEFAULT_TITLE_PREFIX);
+          pushy.put("connectTimeoutSeconds", safe.connectTimeoutSeconds());
+          pushy.put("readTimeoutSeconds", safe.readTimeoutSeconds());
+        },
+        "ircafe",
+        "pushy");
   }
 
   private static void rememberOptionalString(
@@ -59,5 +57,4 @@ class RuntimeConfigPushyStore {
       target.put(key, normalized);
     }
   }
-
 }

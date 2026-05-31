@@ -73,6 +73,26 @@ final class RuntimeConfigYamlSupport {
     mutateValue(file, documentStore, log, description, path, parent -> parent.remove(last(path)));
   }
 
+  static void mutateMap(
+      Path file,
+      RuntimeConfigDocumentStore documentStore,
+      Logger log,
+      String description,
+      Consumer<Map<String, Object>> mutation,
+      String... path) {
+    try {
+      if (file.toString().isBlank()) return;
+
+      Map<String, Object> doc = documentStore.loadOrEmpty();
+      Map<String, Object> target = getOrCreateMapPath(doc, path);
+      mutation.accept(target);
+
+      documentStore.write(doc);
+    } catch (Exception e) {
+      log.warn("[ircafe] Could not persist {} to '{}'", description, file, e);
+    }
+  }
+
   static Map<String, Object> getOrCreateMapPath(Map<String, Object> root, String... path) {
     Map<String, Object> current = root;
     for (String segment : path) {

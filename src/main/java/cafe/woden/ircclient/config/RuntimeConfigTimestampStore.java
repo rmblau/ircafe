@@ -1,10 +1,9 @@
 package cafe.woden.ircclient.config;
 
 import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMap;
-import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.getOrCreateMapPath;
+import static cafe.woden.ircclient.config.RuntimeConfigYamlSupport.mutateMap;
 
 import java.nio.file.Path;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,21 +38,16 @@ class RuntimeConfigTimestampStore {
   }
 
   private void rememberSetting(String key, Object value) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = documentStore.loadOrEmpty();
-      Map<String, Object> ui = getOrCreateMapPath(doc, "ircafe", "ui");
-      Map<String, Object> timestamps = getOrCreateMap(ui, "timestamps");
-
-      timestamps.put(key, value);
-      // Clean up legacy flat key.
-      ui.remove("chatMessageTimestampsEnabled");
-
-      documentStore.write(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist timestamp {} setting to '{}'", key, file, e);
-    }
+    mutateMap(
+        file,
+        documentStore,
+        log,
+        "timestamp " + key + " setting",
+        ui -> {
+          getOrCreateMap(ui, "timestamps").put(key, value);
+          ui.remove("chatMessageTimestampsEnabled");
+        },
+        "ircafe",
+        "ui");
   }
-
 }
