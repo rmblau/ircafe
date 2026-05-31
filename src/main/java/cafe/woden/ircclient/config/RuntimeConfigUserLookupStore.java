@@ -1,7 +1,5 @@
 package cafe.woden.ircclient.config;
 
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
-
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import java.nio.file.Path;
@@ -149,8 +147,7 @@ class RuntimeConfigUserLookupStore {
 
   private void rememberSectionScalarSetting(
       String section, String key, Object value, String description) {
-    uiSection.mutateMap(
-        description + " setting", ui -> getOrCreateMap(ui, section).put(key, value));
+    uiSection.putValue(description + " setting", value, section, key);
   }
 
 }
