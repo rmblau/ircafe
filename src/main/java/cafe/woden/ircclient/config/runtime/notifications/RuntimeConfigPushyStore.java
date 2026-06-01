@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime.notifications;
 
 import cafe.woden.ircclient.config.properties.PushyProperties;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Owns Pushy notification settings under {@code ircafe.pushy}. */
-class RuntimeConfigPushyStore {
+public class RuntimeConfigPushyStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigPushyStore.class);
   private static final String DEFAULT_ENDPOINT = "https://api.pushy.me/push";
@@ -18,11 +18,11 @@ class RuntimeConfigPushyStore {
 
   private final RuntimeConfigYamlSection pushySection;
 
-  RuntimeConfigPushyStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.pushySection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "pushy");
+  public RuntimeConfigPushyStore(Path file, RuntimeConfigDocumentStore documentStore) {
+    this.pushySection = RuntimeConfigYamlSection.ircafe(file, documentStore, log, "pushy");
   }
 
-  synchronized void rememberSettings(PushyProperties settings) {
+  public synchronized void rememberSettings(PushyProperties settings) {
     PushyProperties safe =
         settings != null
             ? settings
