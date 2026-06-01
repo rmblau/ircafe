@@ -19,23 +19,7 @@ import cafe.woden.ircclient.config.runtime.server.RuntimeConfigServerIdentitySto
 import cafe.woden.ircclient.config.runtime.server.RuntimeConfigServerListStore;
 import cafe.woden.ircclient.config.runtime.server.RuntimeConfigServerTreeChannelStateStore;
 import cafe.woden.ircclient.config.runtime.server.RuntimeConfigServerTreeLayoutStore;
-import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigAppDiagnosticsStore;
-import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigChatBehaviorStore;
-import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigChatHistoryStore;
-import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigCtcpAutoReplyStore;
-import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigEmbedLoadPolicyStore;
-import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigEmbedStore;
-import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigFilterStore;
-import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigMemoryUsageStore;
-import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigNickColorStore;
-import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigNotificationStore;
-import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigOutgoingMessageStore;
-import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigSpellcheckStore;
-import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigTimestampStore;
-import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigTrayStore;
-import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigUiFeatureToggleStore;
-import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigUiSettingsStore;
-import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigUserLookupStore;
+import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigUiStoreDelegates;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import java.nio.file.Path;
 
@@ -43,33 +27,17 @@ import java.nio.file.Path;
 public final class RuntimeConfigStoreDelegates {
 
   public final RuntimeConfigDocumentStore documentStore;
+  public final RuntimeConfigUiStoreDelegates uiStores;
   public final RuntimeConfigServerListStore serverListStore;
   public final RuntimeConfigMonitorRosterStore monitorRosterStore;
   public final RuntimeConfigPrivateMessageTargetStore privateMessageTargetStore;
   public final RuntimeConfigServerIdentityStore serverIdentityStore;
   public final RuntimeConfigLaunchJvmStore launchJvmStore;
-  public final RuntimeConfigCtcpAutoReplyStore ctcpAutoReplyStore;
   public final RuntimeConfigUserCommandStore userCommandStore;
-  public final RuntimeConfigNotificationStore notificationStore;
   public final RuntimeConfigInterceptorStore interceptorStore;
-  public final RuntimeConfigFilterStore filterStore;
   public final RuntimeConfigIgnoreRulesStore ignoreRulesStore;
-  public final RuntimeConfigNickColorStore nickColorStore;
-  public final RuntimeConfigTimestampStore timestampStore;
-  public final RuntimeConfigUserLookupStore userLookupStore;
-  public final RuntimeConfigChatHistoryStore chatHistoryStore;
   public final RuntimeConfigChatLoggingStore chatLoggingStore;
-  public final RuntimeConfigTrayStore trayStore;
   public final RuntimeConfigPushyStore pushyStore;
-  public final RuntimeConfigUiSettingsStore uiSettingsStore;
-  public final RuntimeConfigEmbedStore embedStore;
-  public final RuntimeConfigChatBehaviorStore chatBehaviorStore;
-  public final RuntimeConfigOutgoingMessageStore outgoingMessageStore;
-  public final RuntimeConfigEmbedLoadPolicyStore embedLoadPolicyStore;
-  public final RuntimeConfigSpellcheckStore spellcheckStore;
-  public final RuntimeConfigUiFeatureToggleStore uiFeatureToggleStore;
-  public final RuntimeConfigMemoryUsageStore memoryUsageStore;
-  public final RuntimeConfigAppDiagnosticsStore appDiagnosticsStore;
   public final RuntimeConfigServerTreeLayoutStore serverTreeLayoutStore;
   public final RuntimeConfigServerTreeChannelStateStore serverTreeChannelStateStore;
   public final RuntimeConfigServerAutoConnectStore serverAutoConnectStore;
@@ -80,34 +48,18 @@ public final class RuntimeConfigStoreDelegates {
 
   public RuntimeConfigStoreDelegates(Path file, IrcProperties defaults) {
     this.documentStore = new RuntimeConfigDocumentStore(file);
+    this.uiStores = new RuntimeConfigUiStoreDelegates(file, documentStore);
     this.serverListStore = new RuntimeConfigServerListStore(file, documentStore, defaults);
     this.monitorRosterStore = new RuntimeConfigMonitorRosterStore(file, documentStore);
     this.privateMessageTargetStore =
         new RuntimeConfigPrivateMessageTargetStore(file, documentStore);
     this.serverIdentityStore = new RuntimeConfigServerIdentityStore(file, documentStore);
     this.launchJvmStore = new RuntimeConfigLaunchJvmStore(file, documentStore);
-    this.ctcpAutoReplyStore = new RuntimeConfigCtcpAutoReplyStore(file, documentStore);
     this.userCommandStore = new RuntimeConfigUserCommandStore(file, documentStore);
-    this.notificationStore = new RuntimeConfigNotificationStore(file, documentStore);
     this.interceptorStore = new RuntimeConfigInterceptorStore(file, documentStore);
-    this.filterStore = new RuntimeConfigFilterStore(file, documentStore);
     this.ignoreRulesStore = new RuntimeConfigIgnoreRulesStore(file, documentStore);
-    this.nickColorStore = new RuntimeConfigNickColorStore(file, documentStore);
-    this.timestampStore = new RuntimeConfigTimestampStore(file, documentStore);
-    this.userLookupStore = new RuntimeConfigUserLookupStore(file, documentStore);
-    this.chatHistoryStore = new RuntimeConfigChatHistoryStore(file, documentStore);
     this.chatLoggingStore = new RuntimeConfigChatLoggingStore(file, documentStore);
-    this.trayStore = new RuntimeConfigTrayStore(file, documentStore);
     this.pushyStore = new RuntimeConfigPushyStore(file, documentStore);
-    this.uiSettingsStore = new RuntimeConfigUiSettingsStore(file, documentStore);
-    this.embedStore = new RuntimeConfigEmbedStore(file, documentStore);
-    this.chatBehaviorStore = new RuntimeConfigChatBehaviorStore(file, documentStore);
-    this.outgoingMessageStore = new RuntimeConfigOutgoingMessageStore(file, documentStore);
-    this.embedLoadPolicyStore = new RuntimeConfigEmbedLoadPolicyStore(file, documentStore);
-    this.spellcheckStore = new RuntimeConfigSpellcheckStore(file, documentStore);
-    this.uiFeatureToggleStore = new RuntimeConfigUiFeatureToggleStore(file, documentStore);
-    this.memoryUsageStore = new RuntimeConfigMemoryUsageStore(file, documentStore);
-    this.appDiagnosticsStore = new RuntimeConfigAppDiagnosticsStore(file, documentStore);
     this.serverTreeLayoutStore = new RuntimeConfigServerTreeLayoutStore(file, documentStore);
     this.serverTreeChannelStateStore =
         new RuntimeConfigServerTreeChannelStateStore(file, documentStore);

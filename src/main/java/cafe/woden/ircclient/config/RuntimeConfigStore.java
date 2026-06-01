@@ -134,7 +134,7 @@ public class RuntimeConfigStore
    * <p>If the key is absent (or the file doesn't exist), returns {@link Optional#empty()}.
    */
   public synchronized Optional<Boolean> readTrayCloseToTrayIfPresent() {
-    return stores.trayStore.readCloseToTrayIfPresent();
+    return stores.uiStores.trayStore.readCloseToTrayIfPresent();
   }
 
   /**
@@ -143,7 +143,7 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when the key is missing or invalid.
    */
   public synchronized boolean readTrayCloseToTrayHintShown(boolean defaultValue) {
-    return stores.trayStore.readCloseToTrayHintShown(defaultValue);
+    return stores.uiStores.trayStore.readCloseToTrayHintShown(defaultValue);
   }
 
   /**
@@ -153,7 +153,7 @@ public class RuntimeConfigStore
    */
   @Override
   public synchronized boolean readInviteAutoJoinEnabled(boolean defaultValue) {
-    return stores.uiFeatureToggleStore.readInviteAutoJoinEnabled(defaultValue);
+    return stores.uiStores.uiFeatureToggleStore.readInviteAutoJoinEnabled(defaultValue);
   }
 
   /**
@@ -162,7 +162,7 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when the key is missing or invalid.
    */
   public synchronized boolean readUpdateNotifierEnabled(boolean defaultValue) {
-    return stores.uiFeatureToggleStore.readUpdateNotifierEnabled(defaultValue);
+    return stores.uiStores.uiFeatureToggleStore.readUpdateNotifierEnabled(defaultValue);
   }
 
   /**
@@ -171,7 +171,7 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when the key is missing or invalid.
    */
   public synchronized boolean readLagIndicatorEnabled(boolean defaultValue) {
-    return stores.uiFeatureToggleStore.readLagIndicatorEnabled(defaultValue);
+    return stores.uiStores.uiFeatureToggleStore.readLagIndicatorEnabled(defaultValue);
   }
 
   public Path runtimeConfigPath() {
@@ -353,7 +353,7 @@ public class RuntimeConfigStore
 
   public synchronized void rememberUiSettings(
       String theme, String chatFontFamily, int chatFontSize) {
-    stores.uiSettingsStore.rememberUiSettings(theme, chatFontFamily, chatFontSize);
+    stores.uiStores.uiSettingsStore.rememberUiSettings(theme, chatFontFamily, chatFontSize);
   }
 
   /**
@@ -363,57 +363,57 @@ public class RuntimeConfigStore
    * The value is used as a recovery hint on the next launch.
    */
   public synchronized Optional<String> readStartupThemePending() {
-    return stores.uiSettingsStore.readStartupThemePending();
+    return stores.uiStores.uiSettingsStore.readStartupThemePending();
   }
 
   /** Persists {@code ircafe.ui.startupThemePending}. Blank values remove the key. */
   public synchronized void rememberStartupThemePending(String theme) {
-    stores.uiSettingsStore.rememberStartupThemePending(theme);
+    stores.uiStores.uiSettingsStore.rememberStartupThemePending(theme);
   }
 
   /** Removes {@code ircafe.ui.startupThemePending}. */
   public synchronized void clearStartupThemePending() {
-    stores.uiSettingsStore.clearStartupThemePending();
+    stores.uiStores.uiSettingsStore.clearStartupThemePending();
   }
 
   @Override
   public synchronized void rememberMemoryUsageDisplayMode(String mode) {
-    stores.memoryUsageStore.rememberDisplayMode(mode);
+    stores.uiStores.memoryUsageStore.rememberDisplayMode(mode);
   }
 
   @Override
   public synchronized int readMemoryUsageRefreshIntervalMs(int defaultValue) {
-    return stores.memoryUsageStore.readRefreshIntervalMs(defaultValue);
+    return stores.uiStores.memoryUsageStore.readRefreshIntervalMs(defaultValue);
   }
 
   @Override
   public synchronized void rememberMemoryUsageRefreshIntervalMs(int intervalMs) {
-    stores.memoryUsageStore.rememberRefreshIntervalMs(intervalMs);
+    stores.uiStores.memoryUsageStore.rememberRefreshIntervalMs(intervalMs);
   }
 
   @Override
   public synchronized void rememberMemoryUsageWarningNearMaxPercent(int percent) {
-    stores.memoryUsageStore.rememberWarningNearMaxPercent(percent);
+    stores.uiStores.memoryUsageStore.rememberWarningNearMaxPercent(percent);
   }
 
   @Override
   public synchronized void rememberMemoryUsageWarningTooltipEnabled(boolean enabled) {
-    stores.memoryUsageStore.rememberWarningTooltipEnabled(enabled);
+    stores.uiStores.memoryUsageStore.rememberWarningTooltipEnabled(enabled);
   }
 
   @Override
   public synchronized void rememberMemoryUsageWarningToastEnabled(boolean enabled) {
-    stores.memoryUsageStore.rememberWarningToastEnabled(enabled);
+    stores.uiStores.memoryUsageStore.rememberWarningToastEnabled(enabled);
   }
 
   @Override
   public synchronized void rememberMemoryUsageWarningPushyEnabled(boolean enabled) {
-    stores.memoryUsageStore.rememberWarningPushyEnabled(enabled);
+    stores.uiStores.memoryUsageStore.rememberWarningPushyEnabled(enabled);
   }
 
   @Override
   public synchronized void rememberMemoryUsageWarningSoundEnabled(boolean enabled) {
-    stores.memoryUsageStore.rememberWarningSoundEnabled(enabled);
+    stores.uiStores.memoryUsageStore.rememberWarningSoundEnabled(enabled);
   }
 
   /**
@@ -422,7 +422,7 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when the key is missing or invalid.
    */
   public synchronized boolean readApplicationJfrEnabled(boolean defaultValue) {
-    return stores.appDiagnosticsStore.readApplicationJfrEnabled(defaultValue);
+    return stores.uiStores.appDiagnosticsStore.readApplicationJfrEnabled(defaultValue);
   }
 
   /**
@@ -431,7 +431,7 @@ public class RuntimeConfigStore
    * <p>This controls runtime JFR diagnostics visibility/collection in the Application -> JFR view.
    */
   public synchronized void rememberApplicationJfrEnabled(boolean enabled) {
-    stores.appDiagnosticsStore.rememberApplicationJfrEnabled(enabled);
+    stores.uiStores.appDiagnosticsStore.rememberApplicationJfrEnabled(enabled);
   }
 
   public synchronized Map<String, ServerTreeBuiltInNodesVisibility>
@@ -464,11 +464,11 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberAccentColor(String accentColor) {
-    stores.uiSettingsStore.rememberAccentColor(accentColor);
+    stores.uiStores.uiSettingsStore.rememberAccentColor(accentColor);
   }
 
   public synchronized void rememberAccentStrength(int strength) {
-    stores.uiSettingsStore.rememberAccentStrength(strength);
+    stores.uiStores.uiSettingsStore.rememberAccentStrength(strength);
   }
 
   /**
@@ -478,97 +478,97 @@ public class RuntimeConfigStore
    */
   public synchronized void rememberDockLayoutWidths(
       Integer serverDockWidthPx, Integer userDockWidthPx) {
-    stores.uiSettingsStore.rememberDockLayoutWidths(serverDockWidthPx, userDockWidthPx);
+    stores.uiStores.uiSettingsStore.rememberDockLayoutWidths(serverDockWidthPx, userDockWidthPx);
   }
 
   public synchronized void rememberServerDockWidthPx(int serverDockWidthPx) {
-    stores.uiSettingsStore.rememberServerDockWidthPx(serverDockWidthPx);
+    stores.uiStores.uiSettingsStore.rememberServerDockWidthPx(serverDockWidthPx);
   }
 
   public synchronized void rememberUserDockWidthPx(int userDockWidthPx) {
-    stores.uiSettingsStore.rememberUserDockWidthPx(userDockWidthPx);
+    stores.uiStores.uiSettingsStore.rememberUserDockWidthPx(userDockWidthPx);
   }
 
   public synchronized void rememberPreserveDockLayout(boolean preserveDockLayout) {
-    stores.uiSettingsStore.rememberPreserveDockLayout(preserveDockLayout);
+    stores.uiStores.uiSettingsStore.rememberPreserveDockLayout(preserveDockLayout);
   }
 
   /** Reads {@code ircafe.ui.lastSelectedTarget} if present and valid. */
   public synchronized Optional<LastSelectedTarget> readLastSelectedTarget() {
-    return stores.uiSettingsStore.readLastSelectedTarget();
+    return stores.uiStores.uiSettingsStore.readLastSelectedTarget();
   }
 
   /** Persists {@code ircafe.ui.lastSelectedTarget}. Blank values clear the persisted target. */
   public synchronized void rememberLastSelectedTarget(String serverId, String target) {
-    stores.uiSettingsStore.rememberLastSelectedTarget(serverId, target);
+    stores.uiStores.uiSettingsStore.rememberLastSelectedTarget(serverId, target);
   }
 
   public synchronized void rememberUiDensity(String density) {
-    stores.uiSettingsStore.rememberUiDensity(density);
+    stores.uiStores.uiSettingsStore.rememberUiDensity(density);
   }
 
   public synchronized void rememberUiFontOverrideEnabled(boolean enabled) {
-    stores.uiSettingsStore.rememberUiFontOverrideEnabled(enabled);
+    stores.uiStores.uiSettingsStore.rememberUiFontOverrideEnabled(enabled);
   }
 
   public synchronized void rememberUiFontFamily(String family) {
-    stores.uiSettingsStore.rememberUiFontFamily(family);
+    stores.uiStores.uiSettingsStore.rememberUiFontFamily(family);
   }
 
   public synchronized void rememberUiFontSize(int size) {
-    stores.uiSettingsStore.rememberUiFontSize(size);
+    stores.uiStores.uiSettingsStore.rememberUiFontSize(size);
   }
 
   public synchronized void rememberCornerRadius(int cornerRadius) {
-    stores.uiSettingsStore.rememberCornerRadius(cornerRadius);
+    stores.uiStores.uiSettingsStore.rememberCornerRadius(cornerRadius);
   }
 
   public synchronized void rememberChatThemePreset(String preset) {
-    stores.uiSettingsStore.rememberChatThemePreset(preset);
+    stores.uiStores.uiSettingsStore.rememberChatThemePreset(preset);
   }
 
   public synchronized void rememberChatTimestampColor(String hex) {
-    stores.uiSettingsStore.rememberChatTimestampColor(hex);
+    stores.uiStores.uiSettingsStore.rememberChatTimestampColor(hex);
   }
 
   public synchronized void rememberChatSystemColor(String hex) {
-    stores.uiSettingsStore.rememberChatSystemColor(hex);
+    stores.uiStores.uiSettingsStore.rememberChatSystemColor(hex);
   }
 
   public synchronized void rememberChatMessageColor(String hex) {
-    stores.uiSettingsStore.rememberChatMessageColor(hex);
+    stores.uiStores.uiSettingsStore.rememberChatMessageColor(hex);
   }
 
   public synchronized void rememberChatNoticeColor(String hex) {
-    stores.uiSettingsStore.rememberChatNoticeColor(hex);
+    stores.uiStores.uiSettingsStore.rememberChatNoticeColor(hex);
   }
 
   public synchronized void rememberChatActionColor(String hex) {
-    stores.uiSettingsStore.rememberChatActionColor(hex);
+    stores.uiStores.uiSettingsStore.rememberChatActionColor(hex);
   }
 
   public synchronized void rememberChatErrorColor(String hex) {
-    stores.uiSettingsStore.rememberChatErrorColor(hex);
+    stores.uiStores.uiSettingsStore.rememberChatErrorColor(hex);
   }
 
   public synchronized void rememberChatPresenceColor(String hex) {
-    stores.uiSettingsStore.rememberChatPresenceColor(hex);
+    stores.uiStores.uiSettingsStore.rememberChatPresenceColor(hex);
   }
 
   public synchronized void rememberChatMentionBgColor(String hex) {
-    stores.uiSettingsStore.rememberChatMentionBgColor(hex);
+    stores.uiStores.uiSettingsStore.rememberChatMentionBgColor(hex);
   }
 
   public synchronized void rememberServerTreeUnreadChannelColor(String hex) {
-    stores.uiSettingsStore.rememberServerTreeUnreadChannelColor(hex);
+    stores.uiStores.uiSettingsStore.rememberServerTreeUnreadChannelColor(hex);
   }
 
   public synchronized void rememberServerTreeHighlightChannelColor(String hex) {
-    stores.uiSettingsStore.rememberServerTreeHighlightChannelColor(hex);
+    stores.uiStores.uiSettingsStore.rememberServerTreeHighlightChannelColor(hex);
   }
 
   public synchronized void rememberChatMentionStrength(int strength) {
-    stores.uiSettingsStore.rememberChatMentionStrength(strength);
+    stores.uiStores.uiSettingsStore.rememberChatMentionStrength(strength);
   }
 
   public synchronized void rememberAutoConnectOnStart(boolean enabled) {
@@ -606,83 +606,83 @@ public class RuntimeConfigStore
 
   @Override
   public synchronized void rememberInviteAutoJoinEnabled(boolean enabled) {
-    stores.uiFeatureToggleStore.rememberInviteAutoJoinEnabled(enabled);
+    stores.uiStores.uiFeatureToggleStore.rememberInviteAutoJoinEnabled(enabled);
   }
 
   public synchronized void rememberUpdateNotifierEnabled(boolean enabled) {
-    stores.uiFeatureToggleStore.rememberUpdateNotifierEnabled(enabled);
+    stores.uiStores.uiFeatureToggleStore.rememberUpdateNotifierEnabled(enabled);
   }
 
   public synchronized void rememberLagIndicatorEnabled(boolean enabled) {
-    stores.uiFeatureToggleStore.rememberLagIndicatorEnabled(enabled);
+    stores.uiStores.uiFeatureToggleStore.rememberLagIndicatorEnabled(enabled);
   }
 
   public synchronized void rememberTrayEnabled(boolean enabled) {
-    stores.trayStore.rememberEnabled(enabled);
+    stores.uiStores.trayStore.rememberEnabled(enabled);
   }
 
   public synchronized void rememberTrayCloseToTray(boolean enabled) {
-    stores.trayStore.rememberCloseToTray(enabled);
+    stores.uiStores.trayStore.rememberCloseToTray(enabled);
   }
 
   public synchronized void rememberTrayCloseToTrayHintShown(boolean shown) {
-    stores.trayStore.rememberCloseToTrayHintShown(shown);
+    stores.uiStores.trayStore.rememberCloseToTrayHintShown(shown);
   }
 
   public synchronized void rememberTrayMinimizeToTray(boolean enabled) {
-    stores.trayStore.rememberMinimizeToTray(enabled);
+    stores.uiStores.trayStore.rememberMinimizeToTray(enabled);
   }
 
   public synchronized void rememberTrayStartMinimized(boolean enabled) {
-    stores.trayStore.rememberStartMinimized(enabled);
+    stores.uiStores.trayStore.rememberStartMinimized(enabled);
   }
 
   public synchronized void rememberTrayNotifyHighlights(boolean enabled) {
-    stores.trayStore.rememberNotifyHighlights(enabled);
+    stores.uiStores.trayStore.rememberNotifyHighlights(enabled);
   }
 
   public synchronized void rememberTrayNotifyPrivateMessages(boolean enabled) {
-    stores.trayStore.rememberNotifyPrivateMessages(enabled);
+    stores.uiStores.trayStore.rememberNotifyPrivateMessages(enabled);
   }
 
   public synchronized void rememberTrayNotifyConnectionState(boolean enabled) {
-    stores.trayStore.rememberNotifyConnectionState(enabled);
+    stores.uiStores.trayStore.rememberNotifyConnectionState(enabled);
   }
 
   public synchronized void rememberTrayNotifyOnlyWhenUnfocused(boolean enabled) {
-    stores.trayStore.rememberNotifyOnlyWhenUnfocused(enabled);
+    stores.uiStores.trayStore.rememberNotifyOnlyWhenUnfocused(enabled);
   }
 
   public synchronized void rememberTrayNotifyOnlyWhenMinimizedOrHidden(boolean enabled) {
-    stores.trayStore.rememberNotifyOnlyWhenMinimizedOrHidden(enabled);
+    stores.uiStores.trayStore.rememberNotifyOnlyWhenMinimizedOrHidden(enabled);
   }
 
   public synchronized void rememberTrayNotifySuppressWhenTargetActive(boolean enabled) {
-    stores.trayStore.rememberNotifySuppressWhenTargetActive(enabled);
+    stores.uiStores.trayStore.rememberNotifySuppressWhenTargetActive(enabled);
   }
 
   public synchronized void rememberTrayLinuxDbusActionsEnabled(boolean enabled) {
-    stores.trayStore.rememberLinuxDbusActionsEnabled(enabled);
+    stores.uiStores.trayStore.rememberLinuxDbusActionsEnabled(enabled);
   }
 
   public synchronized void rememberTrayNotificationBackend(String backendToken) {
-    stores.trayStore.rememberNotificationBackend(backendToken);
+    stores.uiStores.trayStore.rememberNotificationBackend(backendToken);
   }
 
   public synchronized void rememberTrayNotificationSoundsEnabled(boolean enabled) {
-    stores.trayStore.rememberNotificationSoundsEnabled(enabled);
+    stores.uiStores.trayStore.rememberNotificationSoundsEnabled(enabled);
   }
 
   public synchronized void rememberTrayNotificationSound(String soundId) {
-    stores.trayStore.rememberNotificationSound(soundId);
+    stores.uiStores.trayStore.rememberNotificationSound(soundId);
   }
 
   public synchronized void rememberTrayNotificationSoundUseCustom(boolean useCustom) {
-    stores.trayStore.rememberNotificationSoundUseCustom(useCustom);
+    stores.uiStores.trayStore.rememberNotificationSoundUseCustom(useCustom);
   }
 
   public synchronized void rememberTrayNotificationSoundCustomPath(String relativePath) {
-    stores.trayStore.rememberNotificationSoundCustomPath(relativePath);
+    stores.uiStores.trayStore.rememberNotificationSoundCustomPath(relativePath);
   }
 
   public synchronized void rememberPushySettings(PushyProperties settings) {
@@ -691,12 +691,12 @@ public class RuntimeConfigStore
 
   @Override
   public synchronized void rememberNotificationRuleCooldownSeconds(int seconds) {
-    stores.notificationStore.rememberRuleCooldownSeconds(seconds);
+    stores.uiStores.notificationStore.rememberRuleCooldownSeconds(seconds);
   }
 
   @Override
   public synchronized void rememberNotificationRules(List<NotificationRule> rules) {
-    stores.notificationStore.rememberRules(rules);
+    stores.uiStores.notificationStore.rememberRules(rules);
   }
 
   @Override
@@ -711,75 +711,77 @@ public class RuntimeConfigStore
 
   @Override
   public synchronized String readDefaultQuitMessage() {
-    return stores.chatBehaviorStore.readDefaultQuitMessage();
+    return stores.uiStores.chatBehaviorStore.readDefaultQuitMessage();
   }
 
   @Override
   public synchronized boolean readNickCompletionCycleWithTabEnabled(boolean defaultValue) {
-    return stores.chatBehaviorStore.readNickCompletionCycleWithTabEnabled(defaultValue);
+    return stores.uiStores.chatBehaviorStore.readNickCompletionCycleWithTabEnabled(defaultValue);
   }
 
   @Override
   public synchronized boolean readNickCompletionAppendAddressSuffixEnabled(boolean defaultValue) {
-    return stores.chatBehaviorStore.readNickCompletionAppendAddressSuffixEnabled(defaultValue);
+    return stores.uiStores.chatBehaviorStore.readNickCompletionAppendAddressSuffixEnabled(
+        defaultValue);
   }
 
   @Override
   public synchronized boolean readAppDiagnosticsAssertjSwingEnabled(boolean defaultValue) {
-    return stores.appDiagnosticsStore.readAssertjSwingEnabled(defaultValue);
+    return stores.uiStores.appDiagnosticsStore.readAssertjSwingEnabled(defaultValue);
   }
 
   @Override
   public synchronized boolean readAppDiagnosticsAssertjSwingFreezeWatchdogEnabled(
       boolean defaultValue) {
-    return stores.appDiagnosticsStore.readAssertjSwingFreezeWatchdogEnabled(defaultValue);
+    return stores.uiStores.appDiagnosticsStore.readAssertjSwingFreezeWatchdogEnabled(defaultValue);
   }
 
   @Override
   public synchronized int readAppDiagnosticsAssertjSwingFreezeThresholdMs(int defaultValue) {
-    return stores.appDiagnosticsStore.readAssertjSwingFreezeThresholdMs(defaultValue);
+    return stores.uiStores.appDiagnosticsStore.readAssertjSwingFreezeThresholdMs(defaultValue);
   }
 
   @Override
   public synchronized int readAppDiagnosticsAssertjSwingWatchdogPollMs(int defaultValue) {
-    return stores.appDiagnosticsStore.readAssertjSwingWatchdogPollMs(defaultValue);
+    return stores.uiStores.appDiagnosticsStore.readAssertjSwingWatchdogPollMs(defaultValue);
   }
 
   @Override
   public synchronized int readAppDiagnosticsAssertjSwingFallbackViolationReportMs(
       int defaultValue) {
-    return stores.appDiagnosticsStore.readAssertjSwingFallbackViolationReportMs(defaultValue);
+    return stores.uiStores.appDiagnosticsStore.readAssertjSwingFallbackViolationReportMs(
+        defaultValue);
   }
 
   @Override
   public synchronized boolean readAppDiagnosticsAssertjSwingIssuePlaySound(boolean defaultValue) {
-    return stores.appDiagnosticsStore.readAssertjSwingIssuePlaySound(defaultValue);
+    return stores.uiStores.appDiagnosticsStore.readAssertjSwingIssuePlaySound(defaultValue);
   }
 
   @Override
   public synchronized boolean readAppDiagnosticsAssertjSwingIssueShowNotification(
       boolean defaultValue) {
-    return stores.appDiagnosticsStore.readAssertjSwingIssueShowNotification(defaultValue);
+    return stores.uiStores.appDiagnosticsStore.readAssertjSwingIssueShowNotification(defaultValue);
   }
 
   @Override
   public synchronized boolean readAppDiagnosticsJhiccupEnabled(boolean defaultValue) {
-    return stores.appDiagnosticsStore.readJhiccupEnabled(defaultValue);
+    return stores.uiStores.appDiagnosticsStore.readJhiccupEnabled(defaultValue);
   }
 
   @Override
   public synchronized String readAppDiagnosticsJhiccupJarPath(String defaultValue) {
-    return stores.appDiagnosticsStore.readJhiccupJarPath(defaultValue);
+    return stores.uiStores.appDiagnosticsStore.readJhiccupJarPath(defaultValue);
   }
 
   @Override
   public synchronized String readAppDiagnosticsJhiccupJavaCommand(String defaultValue) {
-    return stores.appDiagnosticsStore.readJhiccupJavaCommand(defaultValue);
+    return stores.uiStores.appDiagnosticsStore.readJhiccupJavaCommand(defaultValue);
   }
 
   @Override
   public synchronized List<String> readAppDiagnosticsJhiccupArgs(List<String> defaultValue) {
-    return stores.appDiagnosticsStore.readJhiccupArgs(defaultValue);
+    return stores.uiStores.appDiagnosticsStore.readJhiccupArgs(defaultValue);
   }
 
   public synchronized String readLaunchJvmJavaCommand(String defaultValue) {
@@ -824,22 +826,22 @@ public class RuntimeConfigStore
 
   @Override
   public synchronized boolean readCtcpAutoRepliesEnabled(boolean defaultValue) {
-    return stores.ctcpAutoReplyStore.readEnabled(defaultValue);
+    return stores.uiStores.ctcpAutoReplyStore.readEnabled(defaultValue);
   }
 
   @Override
   public synchronized boolean readCtcpAutoReplyVersionEnabled(boolean defaultValue) {
-    return stores.ctcpAutoReplyStore.readVersionEnabled(defaultValue);
+    return stores.uiStores.ctcpAutoReplyStore.readVersionEnabled(defaultValue);
   }
 
   @Override
   public synchronized boolean readCtcpAutoReplyPingEnabled(boolean defaultValue) {
-    return stores.ctcpAutoReplyStore.readPingEnabled(defaultValue);
+    return stores.uiStores.ctcpAutoReplyStore.readPingEnabled(defaultValue);
   }
 
   @Override
   public synchronized boolean readCtcpAutoReplyTimeEnabled(boolean defaultValue) {
-    return stores.ctcpAutoReplyStore.readTimeEnabled(defaultValue);
+    return stores.uiStores.ctcpAutoReplyStore.readTimeEnabled(defaultValue);
   }
 
   @Override
@@ -854,64 +856,64 @@ public class RuntimeConfigStore
 
   @Override
   public synchronized void rememberAppDiagnosticsAssertjSwingEnabled(boolean enabled) {
-    stores.appDiagnosticsStore.rememberAssertjSwingEnabled(enabled);
+    stores.uiStores.appDiagnosticsStore.rememberAssertjSwingEnabled(enabled);
   }
 
   @Override
   public synchronized void rememberAppDiagnosticsAssertjSwingFreezeWatchdogEnabled(
       boolean enabled) {
-    stores.appDiagnosticsStore.rememberAssertjSwingFreezeWatchdogEnabled(enabled);
+    stores.uiStores.appDiagnosticsStore.rememberAssertjSwingFreezeWatchdogEnabled(enabled);
   }
 
   @Override
   public synchronized void rememberAppDiagnosticsAssertjSwingFreezeThresholdMs(int ms) {
-    stores.appDiagnosticsStore.rememberAssertjSwingFreezeThresholdMs(ms);
+    stores.uiStores.appDiagnosticsStore.rememberAssertjSwingFreezeThresholdMs(ms);
   }
 
   @Override
   public synchronized void rememberAppDiagnosticsAssertjSwingWatchdogPollMs(int ms) {
-    stores.appDiagnosticsStore.rememberAssertjSwingWatchdogPollMs(ms);
+    stores.uiStores.appDiagnosticsStore.rememberAssertjSwingWatchdogPollMs(ms);
   }
 
   @Override
   public synchronized void rememberAppDiagnosticsAssertjSwingFallbackViolationReportMs(int ms) {
-    stores.appDiagnosticsStore.rememberAssertjSwingFallbackViolationReportMs(ms);
+    stores.uiStores.appDiagnosticsStore.rememberAssertjSwingFallbackViolationReportMs(ms);
   }
 
   @Override
   public synchronized void rememberAppDiagnosticsAssertjSwingIssuePlaySound(boolean enabled) {
-    stores.appDiagnosticsStore.rememberAssertjSwingIssuePlaySound(enabled);
+    stores.uiStores.appDiagnosticsStore.rememberAssertjSwingIssuePlaySound(enabled);
   }
 
   @Override
   public synchronized void rememberAppDiagnosticsAssertjSwingIssueShowNotification(
       boolean enabled) {
-    stores.appDiagnosticsStore.rememberAssertjSwingIssueShowNotification(enabled);
+    stores.uiStores.appDiagnosticsStore.rememberAssertjSwingIssueShowNotification(enabled);
   }
 
   @Override
   public synchronized void rememberAppDiagnosticsJhiccupEnabled(boolean enabled) {
-    stores.appDiagnosticsStore.rememberJhiccupEnabled(enabled);
+    stores.uiStores.appDiagnosticsStore.rememberJhiccupEnabled(enabled);
   }
 
   @Override
   public synchronized void rememberAppDiagnosticsJhiccupJarPath(String jarPath) {
-    stores.appDiagnosticsStore.rememberJhiccupJarPath(jarPath);
+    stores.uiStores.appDiagnosticsStore.rememberJhiccupJarPath(jarPath);
   }
 
   @Override
   public synchronized void rememberAppDiagnosticsJhiccupJavaCommand(String javaCommand) {
-    stores.appDiagnosticsStore.rememberJhiccupJavaCommand(javaCommand);
+    stores.uiStores.appDiagnosticsStore.rememberJhiccupJavaCommand(javaCommand);
   }
 
   @Override
   public synchronized void rememberAppDiagnosticsJhiccupArgs(List<String> args) {
-    stores.appDiagnosticsStore.rememberJhiccupArgs(args);
+    stores.uiStores.appDiagnosticsStore.rememberJhiccupArgs(args);
   }
 
   @Override
   public synchronized void rememberIrcEventNotificationRules(List<IrcEventNotificationRule> rules) {
-    stores.notificationStore.rememberIrcEventRules(rules);
+    stores.uiStores.notificationStore.rememberIrcEventRules(rules);
   }
 
   public synchronized Map<String, List<InterceptorDefinition>> readInterceptorDefinitions() {
@@ -986,175 +988,175 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberImageEmbedsEnabled(boolean enabled) {
-    stores.embedStore.rememberImageEmbedsEnabled(enabled);
+    stores.uiStores.embedStore.rememberImageEmbedsEnabled(enabled);
   }
 
   public synchronized void rememberImageEmbedsCollapsedByDefault(boolean collapsed) {
-    stores.embedStore.rememberImageEmbedsCollapsedByDefault(collapsed);
+    stores.uiStores.embedStore.rememberImageEmbedsCollapsedByDefault(collapsed);
   }
 
   public synchronized void rememberImageEmbedsMaxWidthPx(int maxWidthPx) {
-    stores.embedStore.rememberImageEmbedsMaxWidthPx(maxWidthPx);
+    stores.uiStores.embedStore.rememberImageEmbedsMaxWidthPx(maxWidthPx);
   }
 
   public synchronized void rememberImageEmbedsMaxHeightPx(int maxHeightPx) {
-    stores.embedStore.rememberImageEmbedsMaxHeightPx(maxHeightPx);
+    stores.uiStores.embedStore.rememberImageEmbedsMaxHeightPx(maxHeightPx);
   }
 
   public synchronized void rememberImageEmbedsAnimateGifs(boolean animate) {
-    stores.embedStore.rememberImageEmbedsAnimateGifs(animate);
+    stores.uiStores.embedStore.rememberImageEmbedsAnimateGifs(animate);
   }
 
   public synchronized void rememberLinkPreviewsEnabled(boolean enabled) {
-    stores.embedStore.rememberLinkPreviewsEnabled(enabled);
+    stores.uiStores.embedStore.rememberLinkPreviewsEnabled(enabled);
   }
 
   public synchronized void rememberLinkPreviewsCollapsedByDefault(boolean collapsed) {
-    stores.embedStore.rememberLinkPreviewsCollapsedByDefault(collapsed);
+    stores.uiStores.embedStore.rememberLinkPreviewsCollapsedByDefault(collapsed);
   }
 
   public synchronized void rememberEmbedCardStyle(String styleToken) {
-    stores.embedStore.rememberEmbedCardStyle(styleToken);
+    stores.uiStores.embedStore.rememberEmbedCardStyle(styleToken);
   }
 
   /** Reads advanced embed/link loading policy settings under {@code ircafe.ui.embedLoadPolicy}. */
   public synchronized EmbedLoadPolicySnapshot readEmbedLoadPolicy() {
-    return stores.embedLoadPolicyStore.read();
+    return stores.uiStores.embedLoadPolicyStore.read();
   }
 
   /**
    * Persists advanced embed/link loading policy settings under {@code ircafe.ui.embedLoadPolicy}.
    */
   public synchronized void rememberEmbedLoadPolicy(EmbedLoadPolicySnapshot snapshot) {
-    stores.embedLoadPolicyStore.remember(snapshot);
+    stores.uiStores.embedLoadPolicyStore.remember(snapshot);
   }
 
   public synchronized void rememberPresenceFoldsEnabled(boolean enabled) {
-    stores.chatBehaviorStore.rememberPresenceFoldsEnabled(enabled);
+    stores.uiStores.chatBehaviorStore.rememberPresenceFoldsEnabled(enabled);
   }
 
   public synchronized void rememberDefaultQuitMessage(String message) {
-    stores.chatBehaviorStore.rememberDefaultQuitMessage(message);
+    stores.uiStores.chatBehaviorStore.rememberDefaultQuitMessage(message);
   }
 
   public synchronized void rememberCtcpRequestsInActiveTargetEnabled(boolean enabled) {
-    stores.chatBehaviorStore.rememberCtcpRequestsInActiveTargetEnabled(enabled);
+    stores.uiStores.chatBehaviorStore.rememberCtcpRequestsInActiveTargetEnabled(enabled);
   }
 
   public synchronized void rememberNickCompletionCycleWithTabEnabled(boolean enabled) {
-    stores.chatBehaviorStore.rememberNickCompletionCycleWithTabEnabled(enabled);
+    stores.uiStores.chatBehaviorStore.rememberNickCompletionCycleWithTabEnabled(enabled);
   }
 
   public synchronized void rememberNickCompletionAppendAddressSuffixEnabled(boolean enabled) {
-    stores.chatBehaviorStore.rememberNickCompletionAppendAddressSuffixEnabled(enabled);
+    stores.uiStores.chatBehaviorStore.rememberNickCompletionAppendAddressSuffixEnabled(enabled);
   }
 
   @Override
   public synchronized void rememberCtcpAutoRepliesEnabled(boolean enabled) {
-    stores.ctcpAutoReplyStore.rememberEnabled(enabled);
+    stores.uiStores.ctcpAutoReplyStore.rememberEnabled(enabled);
   }
 
   @Override
   public synchronized void rememberCtcpAutoReplyVersionEnabled(boolean enabled) {
-    stores.ctcpAutoReplyStore.rememberVersionEnabled(enabled);
+    stores.uiStores.ctcpAutoReplyStore.rememberVersionEnabled(enabled);
   }
 
   @Override
   public synchronized void rememberCtcpAutoReplyPingEnabled(boolean enabled) {
-    stores.ctcpAutoReplyStore.rememberPingEnabled(enabled);
+    stores.uiStores.ctcpAutoReplyStore.rememberPingEnabled(enabled);
   }
 
   @Override
   public synchronized void rememberCtcpAutoReplyTimeEnabled(boolean enabled) {
-    stores.ctcpAutoReplyStore.rememberTimeEnabled(enabled);
+    stores.uiStores.ctcpAutoReplyStore.rememberTimeEnabled(enabled);
   }
 
   public synchronized void rememberTypingIndicatorsEnabled(boolean enabled) {
-    stores.chatBehaviorStore.rememberTypingIndicatorsEnabled(enabled);
+    stores.uiStores.chatBehaviorStore.rememberTypingIndicatorsEnabled(enabled);
   }
 
   public synchronized void rememberTypingIndicatorsReceiveEnabled(boolean enabled) {
-    stores.chatBehaviorStore.rememberTypingIndicatorsReceiveEnabled(enabled);
+    stores.uiStores.chatBehaviorStore.rememberTypingIndicatorsReceiveEnabled(enabled);
   }
 
   public synchronized void rememberTypingTreeIndicatorStyle(String style) {
-    stores.chatBehaviorStore.rememberTypingTreeIndicatorStyle(style);
+    stores.uiStores.chatBehaviorStore.rememberTypingTreeIndicatorStyle(style);
   }
 
   public synchronized void rememberTypingIndicatorsTreeEnabled(boolean enabled) {
-    stores.chatBehaviorStore.rememberTypingIndicatorsTreeEnabled(enabled);
+    stores.uiStores.chatBehaviorStore.rememberTypingIndicatorsTreeEnabled(enabled);
   }
 
   public synchronized void rememberTypingIndicatorsUsersListEnabled(boolean enabled) {
-    stores.chatBehaviorStore.rememberTypingIndicatorsUsersListEnabled(enabled);
+    stores.uiStores.chatBehaviorStore.rememberTypingIndicatorsUsersListEnabled(enabled);
   }
 
   public synchronized void rememberMatrixUserListNameDisplayMode(String mode) {
-    stores.chatBehaviorStore.rememberMatrixUserListNameDisplayMode(mode);
+    stores.uiStores.chatBehaviorStore.rememberMatrixUserListNameDisplayMode(mode);
   }
 
   public synchronized void rememberTypingIndicatorsTranscriptEnabled(boolean enabled) {
-    stores.chatBehaviorStore.rememberTypingIndicatorsTranscriptEnabled(enabled);
+    stores.uiStores.chatBehaviorStore.rememberTypingIndicatorsTranscriptEnabled(enabled);
   }
 
   public synchronized void rememberTypingIndicatorsSendSignalEnabled(boolean enabled) {
-    stores.chatBehaviorStore.rememberTypingIndicatorsSendSignalEnabled(enabled);
+    stores.uiStores.chatBehaviorStore.rememberTypingIndicatorsSendSignalEnabled(enabled);
   }
 
   public synchronized int readServerTreeUnreadBadgeScalePercent(int defaultValue) {
-    return stores.chatBehaviorStore.readServerTreeUnreadBadgeScalePercent(defaultValue);
+    return stores.uiStores.chatBehaviorStore.readServerTreeUnreadBadgeScalePercent(defaultValue);
   }
 
   public synchronized void rememberServerTreeUnreadBadgeScalePercent(int percent) {
-    stores.chatBehaviorStore.rememberServerTreeUnreadBadgeScalePercent(percent);
+    stores.uiStores.chatBehaviorStore.rememberServerTreeUnreadBadgeScalePercent(percent);
   }
 
   public synchronized void rememberSpellcheckEnabled(boolean enabled) {
-    stores.spellcheckStore.rememberEnabled(enabled);
+    stores.uiStores.spellcheckStore.rememberEnabled(enabled);
   }
 
   public synchronized void rememberSpellcheckUnderlineEnabled(boolean enabled) {
-    stores.spellcheckStore.rememberUnderlineEnabled(enabled);
+    stores.uiStores.spellcheckStore.rememberUnderlineEnabled(enabled);
   }
 
   public synchronized void rememberSpellcheckSuggestOnTabEnabled(boolean enabled) {
-    stores.spellcheckStore.rememberSuggestOnTabEnabled(enabled);
+    stores.uiStores.spellcheckStore.rememberSuggestOnTabEnabled(enabled);
   }
 
   public synchronized void rememberSpellcheckHoverSuggestionsEnabled(boolean enabled) {
-    stores.spellcheckStore.rememberHoverSuggestionsEnabled(enabled);
+    stores.uiStores.spellcheckStore.rememberHoverSuggestionsEnabled(enabled);
   }
 
   public synchronized void rememberSpellcheckCompletionPreset(String preset) {
-    stores.spellcheckStore.rememberCompletionPreset(preset);
+    stores.uiStores.spellcheckStore.rememberCompletionPreset(preset);
   }
 
   public synchronized void rememberSpellcheckCustomMinPrefixCompletionTokenLength(int value) {
-    stores.spellcheckStore.rememberCustomMinPrefixCompletionTokenLength(value);
+    stores.uiStores.spellcheckStore.rememberCustomMinPrefixCompletionTokenLength(value);
   }
 
   public synchronized void rememberSpellcheckCustomMaxPrefixCompletionExtraChars(int value) {
-    stores.spellcheckStore.rememberCustomMaxPrefixCompletionExtraChars(value);
+    stores.uiStores.spellcheckStore.rememberCustomMaxPrefixCompletionExtraChars(value);
   }
 
   public synchronized void rememberSpellcheckCustomMaxPrefixLexiconCandidates(int value) {
-    stores.spellcheckStore.rememberCustomMaxPrefixLexiconCandidates(value);
+    stores.uiStores.spellcheckStore.rememberCustomMaxPrefixLexiconCandidates(value);
   }
 
   public synchronized void rememberSpellcheckCustomPrefixCompletionBonusScore(int value) {
-    stores.spellcheckStore.rememberCustomPrefixCompletionBonusScore(value);
+    stores.uiStores.spellcheckStore.rememberCustomPrefixCompletionBonusScore(value);
   }
 
   public synchronized void rememberSpellcheckCustomSourceOrderWeight(int value) {
-    stores.spellcheckStore.rememberCustomSourceOrderWeight(value);
+    stores.uiStores.spellcheckStore.rememberCustomSourceOrderWeight(value);
   }
 
   public synchronized void rememberSpellcheckLanguageTag(String languageTag) {
-    stores.spellcheckStore.rememberLanguageTag(languageTag);
+    stores.uiStores.spellcheckStore.rememberLanguageTag(languageTag);
   }
 
   public synchronized void rememberSpellcheckCustomDictionary(List<String> words) {
-    stores.spellcheckStore.rememberCustomDictionary(words);
+    stores.uiStores.spellcheckStore.rememberCustomDictionary(words);
   }
 
   /**
@@ -1218,74 +1220,74 @@ public class RuntimeConfigStore
   // --- WeeChat-style filters (ircafe.ui.filters.*) ---
 
   public synchronized void rememberFiltersEnabledByDefault(boolean enabled) {
-    stores.filterStore.rememberEnabledByDefault(enabled);
+    stores.uiStores.filterStore.rememberEnabledByDefault(enabled);
   }
 
   public synchronized void rememberFilterPlaceholdersEnabledByDefault(boolean enabled) {
-    stores.filterStore.rememberPlaceholdersEnabledByDefault(enabled);
+    stores.uiStores.filterStore.rememberPlaceholdersEnabledByDefault(enabled);
   }
 
   public synchronized void rememberFilterPlaceholdersCollapsedByDefault(boolean collapsed) {
-    stores.filterStore.rememberPlaceholdersCollapsedByDefault(collapsed);
+    stores.uiStores.filterStore.rememberPlaceholdersCollapsedByDefault(collapsed);
   }
 
   public synchronized void rememberFilterPlaceholderMaxPreviewLines(int maxLines) {
-    stores.filterStore.rememberPlaceholderMaxPreviewLines(maxLines);
+    stores.uiStores.filterStore.rememberPlaceholderMaxPreviewLines(maxLines);
   }
 
   public synchronized void rememberFilterPlaceholderMaxLinesPerRun(int maxLines) {
-    stores.filterStore.rememberPlaceholderMaxLinesPerRun(maxLines);
+    stores.uiStores.filterStore.rememberPlaceholderMaxLinesPerRun(maxLines);
   }
 
   public synchronized void rememberFilterPlaceholderTooltipMaxTags(int maxTags) {
-    stores.filterStore.rememberPlaceholderTooltipMaxTags(maxTags);
+    stores.uiStores.filterStore.rememberPlaceholderTooltipMaxTags(maxTags);
   }
 
   public synchronized void rememberFilterHistoryPlaceholderMaxRunsPerBatch(int maxRuns) {
-    stores.filterStore.rememberHistoryPlaceholderMaxRunsPerBatch(maxRuns);
+    stores.uiStores.filterStore.rememberHistoryPlaceholderMaxRunsPerBatch(maxRuns);
   }
 
   public synchronized void rememberFilterHistoryPlaceholdersEnabledByDefault(boolean enabled) {
-    stores.filterStore.rememberHistoryPlaceholdersEnabledByDefault(enabled);
+    stores.uiStores.filterStore.rememberHistoryPlaceholdersEnabledByDefault(enabled);
   }
 
   public synchronized void rememberFilterRules(List<FilterRule> rules) {
-    stores.filterStore.rememberRules(rules);
+    stores.uiStores.filterStore.rememberRules(rules);
   }
 
   public synchronized void rememberFilterOverrides(List<FilterScopeOverride> overrides) {
-    stores.filterStore.rememberOverrides(overrides);
+    stores.uiStores.filterStore.rememberOverrides(overrides);
   }
 
   @Override
   public synchronized void rememberNickColoringEnabled(boolean enabled) {
-    stores.nickColorStore.rememberColoringEnabled(enabled);
+    stores.uiStores.nickColorStore.rememberColoringEnabled(enabled);
   }
 
   @Override
   public synchronized void rememberNickColorMinContrast(double minContrast) {
-    stores.nickColorStore.rememberMinContrast(minContrast);
+    stores.uiStores.nickColorStore.rememberMinContrast(minContrast);
   }
 
   @Override
   public synchronized void rememberTimestampsEnabled(boolean enabled) {
-    stores.timestampStore.rememberEnabled(enabled);
+    stores.uiStores.timestampStore.rememberEnabled(enabled);
   }
 
   @Override
   public synchronized void rememberTimestampFormat(String format) {
-    stores.timestampStore.rememberFormat(format);
+    stores.uiStores.timestampStore.rememberFormat(format);
   }
 
   @Override
   public synchronized void rememberTimestampsIncludeChatMessages(boolean includeChatMessages) {
-    stores.timestampStore.rememberIncludeChatMessages(includeChatMessages);
+    stores.uiStores.timestampStore.rememberIncludeChatMessages(includeChatMessages);
   }
 
   @Override
   public synchronized void rememberTimestampsIncludePresenceMessages(
       boolean includePresenceMessages) {
-    stores.timestampStore.rememberIncludePresenceMessages(includePresenceMessages);
+    stores.uiStores.timestampStore.rememberIncludePresenceMessages(includePresenceMessages);
   }
 
   @Deprecated
@@ -1295,31 +1297,31 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberChatHistoryInitialLoadLines(int lines) {
-    stores.chatHistoryStore.rememberInitialLoadLines(lines);
+    stores.uiStores.chatHistoryStore.rememberInitialLoadLines(lines);
   }
 
   public synchronized void rememberChatHistoryPageSize(int pageSize) {
-    stores.chatHistoryStore.rememberPageSize(pageSize);
+    stores.uiStores.chatHistoryStore.rememberPageSize(pageSize);
   }
 
   public synchronized void rememberChatHistoryAutoLoadWheelDebounceMs(int debounceMs) {
-    stores.chatHistoryStore.rememberAutoLoadWheelDebounceMs(debounceMs);
+    stores.uiStores.chatHistoryStore.rememberAutoLoadWheelDebounceMs(debounceMs);
   }
 
   public synchronized void rememberChatHistoryLoadOlderChunkSize(int chunkSize) {
-    stores.chatHistoryStore.rememberLoadOlderChunkSize(chunkSize);
+    stores.uiStores.chatHistoryStore.rememberLoadOlderChunkSize(chunkSize);
   }
 
   public synchronized void rememberChatHistoryLoadOlderChunkDelayMs(int chunkDelayMs) {
-    stores.chatHistoryStore.rememberLoadOlderChunkDelayMs(chunkDelayMs);
+    stores.uiStores.chatHistoryStore.rememberLoadOlderChunkDelayMs(chunkDelayMs);
   }
 
   public synchronized void rememberChatHistoryLoadOlderChunkEdtBudgetMs(int chunkEdtBudgetMs) {
-    stores.chatHistoryStore.rememberLoadOlderChunkEdtBudgetMs(chunkEdtBudgetMs);
+    stores.uiStores.chatHistoryStore.rememberLoadOlderChunkEdtBudgetMs(chunkEdtBudgetMs);
   }
 
   public synchronized void rememberChatHistoryDeferRichTextDuringBatch(boolean enabled) {
-    stores.chatHistoryStore.rememberDeferRichTextDuringBatch(enabled);
+    stores.uiStores.chatHistoryStore.rememberDeferRichTextDuringBatch(enabled);
   }
 
   /**
@@ -1328,126 +1330,129 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when the key is missing or invalid.
    */
   public synchronized boolean readChatSmoothWheelScrollingEnabled(boolean defaultValue) {
-    return stores.chatHistoryStore.readSmoothWheelScrollingEnabled(defaultValue);
+    return stores.uiStores.chatHistoryStore.readSmoothWheelScrollingEnabled(defaultValue);
   }
 
   public synchronized void rememberChatSmoothWheelScrollingEnabled(boolean enabled) {
-    stores.chatHistoryStore.rememberSmoothWheelScrollingEnabled(enabled);
+    stores.uiStores.chatHistoryStore.rememberSmoothWheelScrollingEnabled(enabled);
   }
 
   public synchronized boolean readChatHistoryLockViewportDuringLoadOlder(boolean defaultValue) {
-    return stores.chatHistoryStore.readLockViewportDuringLoadOlder(defaultValue);
+    return stores.uiStores.chatHistoryStore.readLockViewportDuringLoadOlder(defaultValue);
   }
 
   public synchronized void rememberChatHistoryLockViewportDuringLoadOlder(boolean enabled) {
-    stores.chatHistoryStore.rememberLockViewportDuringLoadOlder(enabled);
+    stores.uiStores.chatHistoryStore.rememberLockViewportDuringLoadOlder(enabled);
   }
 
   public synchronized void rememberChatHistoryRemoteRequestTimeoutSeconds(int seconds) {
-    stores.chatHistoryStore.rememberRemoteRequestTimeoutSeconds(seconds);
+    stores.uiStores.chatHistoryStore.rememberRemoteRequestTimeoutSeconds(seconds);
   }
 
   public synchronized void rememberChatHistoryRemoteZncPlaybackTimeoutSeconds(int seconds) {
-    stores.chatHistoryStore.rememberRemoteZncPlaybackTimeoutSeconds(seconds);
+    stores.uiStores.chatHistoryStore.rememberRemoteZncPlaybackTimeoutSeconds(seconds);
   }
 
   public synchronized void rememberChatHistoryRemoteZncPlaybackWindowMinutes(int minutes) {
-    stores.chatHistoryStore.rememberRemoteZncPlaybackWindowMinutes(minutes);
+    stores.uiStores.chatHistoryStore.rememberRemoteZncPlaybackWindowMinutes(minutes);
   }
 
   public synchronized void rememberCommandHistoryMaxSize(int maxSize) {
-    stores.chatHistoryStore.rememberCommandHistoryMaxSize(maxSize);
+    stores.uiStores.chatHistoryStore.rememberCommandHistoryMaxSize(maxSize);
   }
 
   public synchronized void rememberChatTranscriptMaxLinesPerTarget(int maxLines) {
-    stores.chatHistoryStore.rememberTranscriptMaxLinesPerTarget(maxLines);
+    stores.uiStores.chatHistoryStore.rememberTranscriptMaxLinesPerTarget(maxLines);
   }
 
   public synchronized void rememberClientLineColorEnabled(boolean enabled) {
-    stores.outgoingMessageStore.rememberClientLineColorEnabled(enabled);
+    stores.uiStores.outgoingMessageStore.rememberClientLineColorEnabled(enabled);
   }
 
   public synchronized void rememberClientLineColor(String hex) {
-    stores.outgoingMessageStore.rememberClientLineColor(hex);
+    stores.uiStores.outgoingMessageStore.rememberClientLineColor(hex);
   }
 
   public synchronized void rememberOutgoingDeliveryIndicatorsEnabled(boolean enabled) {
-    stores.outgoingMessageStore.rememberOutgoingDeliveryIndicatorsEnabled(enabled);
+    stores.uiStores.outgoingMessageStore.rememberOutgoingDeliveryIndicatorsEnabled(enabled);
   }
 
   public synchronized void rememberServerTreeNotificationBadgesEnabled(boolean enabled) {
-    stores.chatBehaviorStore.rememberServerTreeNotificationBadgesEnabled(enabled);
+    stores.uiStores.chatBehaviorStore.rememberServerTreeNotificationBadgesEnabled(enabled);
   }
 
   public synchronized void rememberUserhostDiscoveryEnabled(boolean enabled) {
-    stores.userLookupStore.rememberUserhostDiscoveryEnabled(enabled);
+    stores.uiStores.userLookupStore.rememberUserhostDiscoveryEnabled(enabled);
   }
 
   public synchronized void rememberUserhostMinIntervalSeconds(int seconds) {
-    stores.userLookupStore.rememberUserhostMinIntervalSeconds(seconds);
+    stores.uiStores.userLookupStore.rememberUserhostMinIntervalSeconds(seconds);
   }
 
   public synchronized void rememberUserhostMaxCommandsPerMinute(int maxPerMinute) {
-    stores.userLookupStore.rememberUserhostMaxCommandsPerMinute(maxPerMinute);
+    stores.uiStores.userLookupStore.rememberUserhostMaxCommandsPerMinute(maxPerMinute);
   }
 
   public synchronized void rememberUserhostNickCooldownMinutes(int minutes) {
-    stores.userLookupStore.rememberUserhostNickCooldownMinutes(minutes);
+    stores.uiStores.userLookupStore.rememberUserhostNickCooldownMinutes(minutes);
   }
 
   public synchronized void rememberUserhostMaxNicksPerCommand(int maxNicks) {
-    stores.userLookupStore.rememberUserhostMaxNicksPerCommand(maxNicks);
+    stores.uiStores.userLookupStore.rememberUserhostMaxNicksPerCommand(maxNicks);
   }
 
   public synchronized void rememberMonitorIsonPollIntervalSeconds(int seconds) {
-    stores.userLookupStore.rememberMonitorIsonPollIntervalSeconds(seconds);
+    stores.uiStores.userLookupStore.rememberMonitorIsonPollIntervalSeconds(seconds);
   }
 
   // --- User info enrichment fallback (ircafe.ui.userInfoEnrichment.*) ---
 
   public synchronized void rememberUserInfoEnrichmentEnabled(boolean enabled) {
-    stores.userLookupStore.rememberUserInfoEnrichmentEnabled(enabled);
+    stores.uiStores.userLookupStore.rememberUserInfoEnrichmentEnabled(enabled);
   }
 
   public synchronized void rememberUserInfoEnrichmentWhoisFallbackEnabled(boolean enabled) {
-    stores.userLookupStore.rememberUserInfoEnrichmentWhoisFallbackEnabled(enabled);
+    stores.uiStores.userLookupStore.rememberUserInfoEnrichmentWhoisFallbackEnabled(enabled);
   }
 
   public synchronized void rememberUserInfoEnrichmentUserhostMinIntervalSeconds(int seconds) {
-    stores.userLookupStore.rememberUserInfoEnrichmentUserhostMinIntervalSeconds(seconds);
+    stores.uiStores.userLookupStore.rememberUserInfoEnrichmentUserhostMinIntervalSeconds(seconds);
   }
 
   public synchronized void rememberUserInfoEnrichmentUserhostMaxCommandsPerMinute(
       int maxPerMinute) {
-    stores.userLookupStore.rememberUserInfoEnrichmentUserhostMaxCommandsPerMinute(maxPerMinute);
+    stores.uiStores.userLookupStore.rememberUserInfoEnrichmentUserhostMaxCommandsPerMinute(
+        maxPerMinute);
   }
 
   public synchronized void rememberUserInfoEnrichmentUserhostNickCooldownMinutes(int minutes) {
-    stores.userLookupStore.rememberUserInfoEnrichmentUserhostNickCooldownMinutes(minutes);
+    stores.uiStores.userLookupStore.rememberUserInfoEnrichmentUserhostNickCooldownMinutes(minutes);
   }
 
   public synchronized void rememberUserInfoEnrichmentUserhostMaxNicksPerCommand(int maxNicks) {
-    stores.userLookupStore.rememberUserInfoEnrichmentUserhostMaxNicksPerCommand(maxNicks);
+    stores.uiStores.userLookupStore.rememberUserInfoEnrichmentUserhostMaxNicksPerCommand(maxNicks);
   }
 
   public synchronized void rememberUserInfoEnrichmentWhoisMinIntervalSeconds(int seconds) {
-    stores.userLookupStore.rememberUserInfoEnrichmentWhoisMinIntervalSeconds(seconds);
+    stores.uiStores.userLookupStore.rememberUserInfoEnrichmentWhoisMinIntervalSeconds(seconds);
   }
 
   public synchronized void rememberUserInfoEnrichmentWhoisNickCooldownMinutes(int minutes) {
-    stores.userLookupStore.rememberUserInfoEnrichmentWhoisNickCooldownMinutes(minutes);
+    stores.uiStores.userLookupStore.rememberUserInfoEnrichmentWhoisNickCooldownMinutes(minutes);
   }
 
   public synchronized void rememberUserInfoEnrichmentPeriodicRefreshEnabled(boolean enabled) {
-    stores.userLookupStore.rememberUserInfoEnrichmentPeriodicRefreshEnabled(enabled);
+    stores.uiStores.userLookupStore.rememberUserInfoEnrichmentPeriodicRefreshEnabled(enabled);
   }
 
   public synchronized void rememberUserInfoEnrichmentPeriodicRefreshIntervalSeconds(int seconds) {
-    stores.userLookupStore.rememberUserInfoEnrichmentPeriodicRefreshIntervalSeconds(seconds);
+    stores.uiStores.userLookupStore.rememberUserInfoEnrichmentPeriodicRefreshIntervalSeconds(
+        seconds);
   }
 
   public synchronized void rememberUserInfoEnrichmentPeriodicRefreshNicksPerTick(int nicksPerTick) {
-    stores.userLookupStore.rememberUserInfoEnrichmentPeriodicRefreshNicksPerTick(nicksPerTick);
+    stores.uiStores.userLookupStore.rememberUserInfoEnrichmentPeriodicRefreshNicksPerTick(
+        nicksPerTick);
   }
 
   public synchronized void rememberClientTlsTrustAllCertificates(boolean trustAllCertificates) {
@@ -1523,7 +1528,7 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberNickColorOverrides(Map<String, String> overrides) {
-    stores.nickColorStore.rememberOverrides(overrides);
+    stores.uiStores.nickColorStore.rememberOverrides(overrides);
   }
 
   @Override
