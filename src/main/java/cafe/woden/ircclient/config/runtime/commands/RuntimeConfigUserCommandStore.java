@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime.commands;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asBoolean;
 
@@ -15,36 +15,36 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Owns user-command alias settings under {@code ircafe.commands}. */
-class RuntimeConfigUserCommandStore {
+public class RuntimeConfigUserCommandStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigUserCommandStore.class);
 
   private final RuntimeConfigYamlSection commandsSection;
 
-  RuntimeConfigUserCommandStore(Path file, RuntimeConfigDocumentStore documentStore) {
+  public RuntimeConfigUserCommandStore(Path file, RuntimeConfigDocumentStore documentStore) {
     this.commandsSection =
         new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "commands");
   }
 
-  synchronized List<UserCommandAlias> readAliases() {
+  public synchronized List<UserCommandAlias> readAliases() {
     return commandsSection.readExistingValue("user command aliases", "aliases")
         .filter(List.class::isInstance)
         .map(value -> parseAliases((List<?>) value))
         .orElseGet(List::of);
   }
 
-  synchronized boolean readUnknownCommandAsRawEnabled(boolean defaultValue) {
+  public synchronized boolean readUnknownCommandAsRawEnabled(boolean defaultValue) {
     return commandsSection.readExistingValue("commands.unknownCommandAsRaw", "unknownCommandAsRaw")
         .flatMap(value -> asBoolean(value))
         .orElse(defaultValue);
   }
 
-  synchronized void rememberAliases(List<UserCommandAlias> aliases) {
+  public synchronized void rememberAliases(List<UserCommandAlias> aliases) {
     commandsSection.mutateMap(
         "user command aliases", commands -> commands.put("aliases", serializeAliases(aliases)));
   }
 
-  synchronized void rememberUnknownCommandAsRawEnabled(boolean enabled) {
+  public synchronized void rememberUnknownCommandAsRawEnabled(boolean enabled) {
     commandsSection.mutateMap(
         "commands.unknownCommandAsRaw", commands -> commands.put("unknownCommandAsRaw", enabled));
   }
