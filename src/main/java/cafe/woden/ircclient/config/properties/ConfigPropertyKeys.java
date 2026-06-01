@@ -1,6 +1,9 @@
 package cafe.woden.ircclient.config.properties;
 
+import org.jmolecules.architecture.layered.InfrastructureLayer;
+
 /** Shared Spring configuration property names and prefixes. */
+@InfrastructureLayer
 public final class ConfigPropertyKeys {
 
   public static final String IRC_PREFIX = "irc";

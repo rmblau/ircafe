@@ -76,12 +76,17 @@ public final class RuntimeConfigIgnoreLegacyMapKeySanitizer
   }
 
   private static Path runtimeConfigPath(ConfigurableEnvironment environment) {
-    String configured =
-        environment == null
-            ? ""
-            : Objects.toString(environment.getProperty("ircafe.runtime-config"), "");
-    configured = configured.trim();
-    if (configured.isEmpty()) {
+    boolean explicitRuntimeConfig =
+        environment != null && environment.containsProperty("ircafe.runtime-config");
+    String configured = "";
+    if (explicitRuntimeConfig) {
+      try {
+        configured = Objects.toString(environment.getProperty("ircafe.runtime-config"), "").trim();
+      } catch (IllegalArgumentException ex) {
+        return null;
+      }
+      if (configured.contains("${")) return null;
+    } else {
       String xdgConfigHome = Objects.toString(System.getenv("XDG_CONFIG_HOME"), "").trim();
       if (!xdgConfigHome.isEmpty()) {
         configured = xdgConfigHome + "/ircafe/ircafe.yml";

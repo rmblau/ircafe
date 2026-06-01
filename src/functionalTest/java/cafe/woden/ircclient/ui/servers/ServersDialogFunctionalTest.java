@@ -8,7 +8,7 @@ import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
-import cafe.woden.ircclient.config.ServerRegistry;
+import cafe.woden.ircclient.config.servers.ServerRegistry;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.GraphicsEnvironment;

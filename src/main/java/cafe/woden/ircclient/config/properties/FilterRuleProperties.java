@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import org.jmolecules.architecture.layered.InfrastructureLayer;
 
 /**
  * Config-backed filter rule definition.
@@ -15,6 +16,7 @@ import java.util.Objects;
  *
  * <p>YAML binding location: {@code ircafe.ui.filters.rules}.
  */
+@InfrastructureLayer
 public record FilterRuleProperties(
     String name,
     Boolean enabled,
