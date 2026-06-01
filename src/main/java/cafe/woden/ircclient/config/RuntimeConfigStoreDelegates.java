@@ -3,6 +3,7 @@ package cafe.woden.ircclient.config;
 import cafe.woden.ircclient.config.runtime.bouncer.RuntimeConfigBouncerDiscoveryStore;
 import cafe.woden.ircclient.config.runtime.client.RuntimeConfigClientSettingsStore;
 import cafe.woden.ircclient.config.runtime.commands.RuntimeConfigUserCommandStore;
+import cafe.woden.ircclient.config.runtime.ignore.RuntimeConfigIgnoreRulesStore;
 import cafe.woden.ircclient.config.runtime.interceptors.RuntimeConfigInterceptorStore;
 import cafe.woden.ircclient.config.runtime.ircv3.RuntimeConfigIrcv3CapabilityStore;
 import cafe.woden.ircclient.config.runtime.ircv3.RuntimeConfigIrcv3StsPolicyStore;

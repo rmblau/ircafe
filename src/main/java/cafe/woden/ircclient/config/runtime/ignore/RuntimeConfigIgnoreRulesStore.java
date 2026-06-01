@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime.ignore;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateStringList;
@@ -18,7 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Owns persisted ignore-list rules and toggles under {@code ircafe.ignore}. */
-class RuntimeConfigIgnoreRulesStore {
+public class RuntimeConfigIgnoreRulesStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigIgnoreRulesStore.class);
   private static final java.util.Set<String> KNOWN_IGNORE_LEVELS =
@@ -48,11 +48,11 @@ class RuntimeConfigIgnoreRulesStore {
 
   private final RuntimeConfigYamlSection ignoreSection;
 
-  RuntimeConfigIgnoreRulesStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.ignoreSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ignore");
+  public RuntimeConfigIgnoreRulesStore(Path file, RuntimeConfigDocumentStore documentStore) {
+    this.ignoreSection = RuntimeConfigYamlSection.ircafe(file, documentStore, log, "ignore");
   }
 
-  synchronized void rememberIgnoreMask(String serverId, String mask) {
+  public synchronized void rememberIgnoreMask(String serverId, String mask) {
     String sid = Objects.toString(serverId, "").trim();
     String m = Objects.toString(mask, "").trim();
     if (sid.isEmpty() || m.isEmpty()) return;
@@ -68,7 +68,8 @@ class RuntimeConfigIgnoreRulesStore {
         });
   }
 
-  synchronized void rememberIgnoreMaskLevels(String serverId, String mask, List<String> levels) {
+  public synchronized void rememberIgnoreMaskLevels(
+      String serverId, String mask, List<String> levels) {
     String sid = Objects.toString(serverId, "").trim();
     String m = Objects.toString(mask, "").trim();
     if (sid.isEmpty() || m.isEmpty()) return;
@@ -85,7 +86,7 @@ class RuntimeConfigIgnoreRulesStore {
                 server, "maskLevels", m, isDefaultAll ? null : new ArrayList<>(normalized)));
   }
 
-  synchronized void rememberIgnoreMaskChannels(
+  public synchronized void rememberIgnoreMaskChannels(
       String serverId, String mask, List<String> channels) {
     String sid = Objects.toString(serverId, "").trim();
     String m = Objects.toString(mask, "").trim();
@@ -104,7 +105,7 @@ class RuntimeConfigIgnoreRulesStore {
                 normalized.isEmpty() ? null : new ArrayList<>(normalized)));
   }
 
-  synchronized void rememberIgnoreMaskExpiresAt(
+  public synchronized void rememberIgnoreMaskExpiresAt(
       String serverId, String mask, Long expiresAtEpochMs) {
     String sid = Objects.toString(serverId, "").trim();
     String m = Objects.toString(mask, "").trim();
@@ -119,7 +120,7 @@ class RuntimeConfigIgnoreRulesStore {
             rememberMaskScopedValue(server, "maskExpiresAt", m, expiresAt > 0L ? expiresAt : null));
   }
 
-  synchronized void rememberIgnoreMaskPattern(
+  public synchronized void rememberIgnoreMaskPattern(
       String serverId, String mask, String pattern, String modeToken) {
     String sid = Objects.toString(serverId, "").trim();
     String m = Objects.toString(mask, "").trim();
@@ -144,7 +145,7 @@ class RuntimeConfigIgnoreRulesStore {
         });
   }
 
-  synchronized void rememberIgnoreMaskReplies(
+  public synchronized void rememberIgnoreMaskReplies(
       String serverId, String mask, boolean repliesEnabled) {
     String sid = Objects.toString(serverId, "").trim();
     String m = Objects.toString(mask, "").trim();
@@ -154,7 +155,8 @@ class RuntimeConfigIgnoreRulesStore {
         sid,
         "ignore mask replies flag",
         server ->
-            rememberMaskScopedValue(server, "maskReplies", m, repliesEnabled ? Boolean.TRUE : null));
+            rememberMaskScopedValue(
+                server, "maskReplies", m, repliesEnabled ? Boolean.TRUE : null));
   }
 
   private static void rememberMaskScopedValue(
@@ -268,7 +270,7 @@ class RuntimeConfigIgnoreRulesStore {
     };
   }
 
-  synchronized void forgetIgnoreMask(String serverId, String mask) {
+  public synchronized void forgetIgnoreMask(String serverId, String mask) {
     String sid = Objects.toString(serverId, "").trim();
     String m = Objects.toString(mask, "").trim();
     if (sid.isEmpty() || m.isEmpty()) return;
@@ -291,7 +293,7 @@ class RuntimeConfigIgnoreRulesStore {
         });
   }
 
-  synchronized void rememberSoftIgnoreMask(String serverId, String mask) {
+  public synchronized void rememberSoftIgnoreMask(String serverId, String mask) {
     String sid = Objects.toString(serverId, "").trim();
     String m = Objects.toString(mask, "").trim();
     if (sid.isEmpty() || m.isEmpty()) return;
@@ -307,7 +309,7 @@ class RuntimeConfigIgnoreRulesStore {
         });
   }
 
-  synchronized void forgetSoftIgnoreMask(String serverId, String mask) {
+  public synchronized void forgetSoftIgnoreMask(String serverId, String mask) {
     String sid = Objects.toString(serverId, "").trim();
     String m = Objects.toString(mask, "").trim();
     if (sid.isEmpty() || m.isEmpty()) return;
@@ -324,12 +326,12 @@ class RuntimeConfigIgnoreRulesStore {
         });
   }
 
-  synchronized void rememberHardIgnoreIncludesCtcp(boolean enabled) {
+  public synchronized void rememberHardIgnoreIncludesCtcp(boolean enabled) {
     mutateIgnore(
         "hard-ignore CTCP setting", ignore -> ignore.put("hardIgnoreIncludesCtcp", enabled));
   }
 
-  synchronized void rememberSoftIgnoreIncludesCtcp(boolean enabled) {
+  public synchronized void rememberSoftIgnoreIncludesCtcp(boolean enabled) {
     mutateIgnore(
         "soft-ignore CTCP setting", ignore -> ignore.put("softIgnoreIncludesCtcp", enabled));
   }
