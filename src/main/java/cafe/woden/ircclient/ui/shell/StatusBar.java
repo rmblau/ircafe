@@ -48,6 +48,7 @@ public class StatusBar extends JPanel {
 
   // TODO: Make these their own individual Spring components.
   private final JLabel channelLabel = new JLabel("Channel: -");
+  private final JLabel identityLabel = new JLabel("Nick: -");
   private final JLabel usersLabel = new JLabel("Users: 0");
   private final JLabel opsLabel = new JLabel("Ops: 0");
   private final JLabel serverLabel = new JLabel(SERVER_DISCONNECTED_TEXT);
@@ -95,12 +96,15 @@ public class StatusBar extends JPanel {
 
   private record ServerLabelDisplay(String label, String tooltip) {}
 
+  private record IdentityLabelDisplay(String label, String tooltip) {}
+
   public StatusBar() {
     super(new BorderLayout(12, 0));
     setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
 
     JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 3));
     left.add(channelLabel);
+    left.add(identityLabel);
     left.add(usersLabel);
     left.add(opsLabel);
 
@@ -256,6 +260,12 @@ public class StatusBar extends JPanel {
 
   public void setChannel(String channel) {
     channelLabel.setText("Channel: " + (channel == null ? "-" : channel));
+  }
+
+  public void setIdentity(String nick, String userModes) {
+    IdentityLabelDisplay display = identityLabelDisplay(nick, userModes);
+    identityLabel.setText(display.label());
+    identityLabel.setToolTipText(display.tooltip());
   }
 
   public void setCounts(int users, int ops) {
@@ -705,6 +715,7 @@ public class StatusBar extends JPanel {
 
     setFont(base);
     channelLabel.setFont(base);
+    identityLabel.setFont(base);
     usersLabel.setFont(base);
     opsLabel.setFont(base);
     serverLabel.setFont(base);
@@ -1077,6 +1088,37 @@ public class StatusBar extends JPanel {
     }
 
     return new ServerLabelDisplay(normalized, null);
+  }
+
+  private static IdentityLabelDisplay identityLabelDisplay(String nick, String userModes) {
+    String normalizedNick = Objects.toString(nick, "").trim();
+    if (normalizedNick.isEmpty()) {
+      return new IdentityLabelDisplay(
+          "Nick: -", "Current nick is not known for the active server.");
+    }
+
+    String normalizedModes = normalizeUserModes(userModes);
+    String label =
+        normalizedModes.isEmpty()
+            ? "Nick: " + normalizedNick
+            : "Nick: " + normalizedNick + "(" + normalizedModes + ")";
+    String tooltip =
+        normalizedModes.isEmpty()
+            ? "Current nick: " + normalizedNick
+            : "Current nick: " + normalizedNick + " | User modes: " + normalizedModes;
+    return new IdentityLabelDisplay(label, tooltip);
+  }
+
+  private static String normalizeUserModes(String userModes) {
+    String modes = Objects.toString(userModes, "").trim();
+    if (modes.isEmpty() || "0".equals(modes)) return "";
+    if (modes.startsWith("(") && modes.endsWith(")") && modes.length() > 2) {
+      modes = modes.substring(1, modes.length() - 1).trim();
+    }
+    modes = modes.replaceAll("\\s+", "");
+    if (modes.isEmpty() || "0".equals(modes)) return "";
+    if (modes.startsWith("+") || modes.startsWith("-")) return modes;
+    return "+" + modes;
   }
 
   private final class NoticeHistoryTableModel extends AbstractTableModel {

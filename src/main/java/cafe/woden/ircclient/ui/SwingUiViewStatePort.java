@@ -34,6 +34,9 @@ final class SwingUiViewStatePort implements UiViewStatePort {
   private final ActiveInputRouter activeInputRouter;
   private final Object quasselNetworkTooltipLock = new Object();
   private final Map<String, Map<String, String>> quasselNetworkTooltipByServer = new HashMap<>();
+  private final Map<String, String> statusNickByServer = new HashMap<>();
+  private final Map<String, String> statusUserModesByServer = new HashMap<>();
+  private String activeStatusServerId = "";
 
   // Avoid rebuilding nick completions on every metadata refresh (away/account/hostmask) by
   // skipping completion updates if the nick *set* hasn't changed.
@@ -176,7 +179,22 @@ final class SwingUiViewStatePort implements UiViewStatePort {
 
   @Override
   public void setChatCurrentNick(String serverId, String nick) {
-    edt.run(() -> mentions.setCurrentNick(serverId, nick));
+    edt.run(
+        () -> {
+          String sid = normalizeServerId(serverId);
+          String normalizedNick = Objects.toString(nick, "").trim();
+          mentions.setCurrentNick(serverId, normalizedNick);
+          if (!sid.isEmpty() && normalizedNick.isEmpty()) {
+            statusNickByServer.remove(sid);
+            statusUserModesByServer.remove(sid);
+            refreshStatusBarIdentityIfActive(sid);
+            return;
+          }
+          if (!sid.isEmpty() && !normalizedNick.isEmpty()) {
+            statusNickByServer.put(sid, normalizedNick);
+            refreshStatusBarIdentityIfActive(sid);
+          }
+        });
   }
 
   @Override
@@ -272,6 +290,46 @@ final class SwingUiViewStatePort implements UiViewStatePort {
   @Override
   public void setStatusBarServer(String serverText) {
     edt.run(() -> statusBar.setServer(serverText));
+  }
+
+  @Override
+  public void setStatusBarIdentity(String serverId, String nick, String userModes) {
+    edt.run(
+        () -> {
+          String sid = normalizeServerId(serverId);
+          activeStatusServerId = sid;
+          if (sid.isEmpty()) {
+            statusBar.setIdentity("", "");
+            return;
+          }
+          String normalizedNick = Objects.toString(nick, "").trim();
+          if (!normalizedNick.isEmpty()) {
+            statusNickByServer.put(sid, normalizedNick);
+          } else {
+            statusNickByServer.remove(sid);
+          }
+          String normalizedModes = Objects.toString(userModes, "").trim();
+          if (!normalizedModes.isEmpty()) {
+            statusUserModesByServer.put(sid, normalizedModes);
+          }
+          refreshStatusBarIdentityIfActive(sid);
+        });
+  }
+
+  @Override
+  public void setServerUserModes(String serverId, String userModes) {
+    edt.run(
+        () -> {
+          String sid = normalizeServerId(serverId);
+          if (sid.isEmpty()) return;
+          String normalizedModes = Objects.toString(userModes, "").trim();
+          if (normalizedModes.isEmpty() || "0".equals(normalizedModes)) {
+            statusUserModesByServer.remove(sid);
+          } else {
+            statusUserModesByServer.put(sid, normalizedModes);
+          }
+          refreshStatusBarIdentityIfActive(sid);
+        });
   }
 
   @Override
@@ -389,6 +447,17 @@ final class SwingUiViewStatePort implements UiViewStatePort {
     if (!value.startsWith("@")) return false;
     int colon = value.indexOf(':');
     return colon > 1 && colon < value.length() - 1;
+  }
+
+  private void refreshStatusBarIdentityIfActive(String serverId) {
+    String sid = normalizeServerId(serverId);
+    if (sid.isEmpty() || !Objects.equals(activeStatusServerId, sid)) return;
+    statusBar.setIdentity(
+        statusNickByServer.getOrDefault(sid, ""), statusUserModesByServer.getOrDefault(sid, ""));
+  }
+
+  private static String normalizeServerId(String serverId) {
+    return Objects.toString(serverId, "").trim();
   }
 
   private String quasselNetworkTooltip(String serverId, String networkToken) {

@@ -1,7 +1,5 @@
 package cafe.woden.ircclient.config;
 
-import cafe.woden.ircclient.config.properties.PushyProperties;
-import cafe.woden.ircclient.config.runtime.RuntimeConfigStoreDelegates;
 import cafe.woden.ircclient.config.api.AppearanceRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
 import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
@@ -23,8 +21,8 @@ import cafe.woden.ircclient.config.api.Ircv3StsPolicyConfigPort;
 import cafe.woden.ircclient.config.api.MonitorRosterConfigPort;
 import cafe.woden.ircclient.config.api.NickColorOverridesConfigPort;
 import cafe.woden.ircclient.config.api.NickColorRuntimeConfigPort;
-import cafe.woden.ircclient.config.api.NotificationRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.NotificationRule;
+import cafe.woden.ircclient.config.api.NotificationRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.OutgoingMessageRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ServerAutoConnectRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ServerTreeBuiltInVisibilityConfigPort;
@@ -42,6 +40,8 @@ import cafe.woden.ircclient.config.api.TrayRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UserCommandAliasesConfigPort;
+import cafe.woden.ircclient.config.properties.PushyProperties;
+import cafe.woden.ircclient.config.runtime.RuntimeConfigStoreDelegates;
 import cafe.woden.ircclient.model.FilterRule;
 import cafe.woden.ircclient.model.FilterScopeOverride;
 import cafe.woden.ircclient.model.InterceptorDefinition;
@@ -507,6 +507,18 @@ public class RuntimeConfigStore
   /** Persists {@code ircafe.ui.lastSelectedTarget}. Blank values clear the persisted target. */
   public synchronized void rememberLastSelectedTarget(String serverId, String target) {
     stores.uiStores.uiSettingsStore.rememberLastSelectedTarget(serverId, target);
+  }
+
+  public synchronized Optional<Boolean> readApplicationRootVisibleIfPresent() {
+    return stores.uiStores.uiSettingsStore.readApplicationRootVisibleIfPresent();
+  }
+
+  public synchronized boolean readApplicationRootVisible(boolean defaultValue) {
+    return readApplicationRootVisibleIfPresent().orElse(defaultValue);
+  }
+
+  public synchronized void rememberApplicationRootVisible(boolean visible) {
+    stores.uiStores.uiSettingsStore.rememberApplicationRootVisible(visible);
   }
 
   public synchronized void rememberUiDensity(String density) {

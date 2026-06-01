@@ -13,11 +13,14 @@ import cafe.woden.ircclient.notifications.NotificationStore;
 import cafe.woden.ircclient.ui.ChatDockable;
 import cafe.woden.ircclient.ui.channellist.ChannelListPanel;
 import io.reactivex.rxjava3.subscribers.TestSubscriber;
+import java.awt.Component;
+import java.awt.Container;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
+import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import org.junit.jupiter.api.Test;
@@ -72,6 +75,21 @@ class ChatTopicCoordinatorTest {
 
     JSplitPane split = (JSplitPane) coordinator.topicSplit();
     assertTrue(split.getDividerSize() > 0);
+  }
+
+  @Test
+  void channelModesAppearInTopicHeaderEvenWithoutTopic() {
+    ChannelListPanel channelListPanel = mock(ChannelListPanel.class);
+    ChatTopicCoordinator coordinator = newCoordinator(channelListPanel, () -> {});
+    TargetRef channel = new TargetRef("libera", "#ircafe");
+
+    coordinator.updateTopicPanelForActiveTarget(channel);
+    coordinator.setChannelModeSnapshot("libera", "#ircafe", "+nt", channel);
+
+    JSplitPane split = (JSplitPane) coordinator.topicSplit();
+    assertTrue(split.getDividerSize() > 0);
+    JLabel header = firstLabel((Container) split.getTopComponent());
+    assertEquals("Channel — #ircafe (+nt)", header.getText());
   }
 
   @Test
@@ -213,5 +231,16 @@ class ChatTopicCoordinatorTest {
         persistedSink,
         persistedHeightLookup,
         persistedHeightSink);
+  }
+
+  private static JLabel firstLabel(Container container) {
+    for (Component component : container.getComponents()) {
+      if (component instanceof JLabel label) return label;
+      if (component instanceof Container child) {
+        JLabel label = firstLabel(child);
+        if (label != null) return label;
+      }
+    }
+    return null;
   }
 }

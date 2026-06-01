@@ -52,6 +52,7 @@ public final class ChatTopicCoordinator {
       DateTimeFormatter.ofPattern("HH:mm:ss").withZone(ZoneId.systemDefault());
 
   private final Map<TargetRef, String> topicByTarget = new HashMap<>();
+  private final Map<TargetRef, String> channelModesByTarget = new HashMap<>();
   private final FlowableProcessor<ChatDockable.TopicUpdate> topicUpdates =
       PublishProcessor.<ChatDockable.TopicUpdate>create().toSerialized();
   private final TopicPanel topicPanel = new TopicPanel();
@@ -245,7 +246,7 @@ public final class ChatTopicCoordinator {
   public void updateTopicPanelForActiveTarget(TargetRef activeTarget) {
     this.activeTarget = activeTarget;
     if (activeTarget == null || !activeTarget.isChannel()) {
-      topicPanel.setTopic("", "");
+      topicPanel.setTopic("", "", "");
       topicPanel.setNotificationState(false, 0);
       topicPanel.setNotificationTooltip("No recent channel notifications.");
       hideTopicPanel();
@@ -258,16 +259,56 @@ public final class ChatTopicCoordinator {
     lastTopicHeightPx = topicPanelHeightPxFor(activeTarget);
 
     String topic = topicFor(activeTarget).trim();
-    topicPanel.setTopic(activeTarget.target(), topic);
+    String channelModes = channelModesFor(activeTarget).trim();
+    topicPanel.setTopic(activeTarget.target(), channelModes, topic);
 
     boolean hasTopic = !topic.isEmpty();
-    if (hasTopic) {
+    boolean hasChannelModes = !channelModes.isEmpty();
+    if (hasTopic || hasChannelModes) {
       showTopicPanel(false);
     } else if (summary.totalCount() > 0) {
       showTopicPanel(true);
     } else {
       hideTopicPanel();
     }
+  }
+
+  public void setChannelModeSnapshot(
+      String serverId, String channel, String rawModes, TargetRef activeTarget) {
+    String sid = Objects.toString(serverId, "").trim();
+    String targetName = Objects.toString(channel, "").trim();
+    if (sid.isEmpty() || targetName.isEmpty()) return;
+
+    TargetRef target;
+    try {
+      target = new TargetRef(sid, targetName);
+    } catch (IllegalArgumentException ignored) {
+      return;
+    }
+    if (!target.isChannel()) return;
+
+    String normalized = sanitizeChannelModes(rawModes);
+    String before = channelModesByTarget.getOrDefault(target, "");
+    if (Objects.equals(before, normalized)) {
+      if (target.equals(activeTarget)) {
+        updateTopicPanelForActiveTarget(activeTarget);
+      }
+      return;
+    }
+
+    if (normalized.isBlank()) {
+      channelModesByTarget.remove(target);
+    } else {
+      channelModesByTarget.put(target, normalized);
+    }
+    if (target.equals(activeTarget)) {
+      updateTopicPanelForActiveTarget(activeTarget);
+    }
+  }
+
+  public String channelModesFor(TargetRef target) {
+    if (target == null || !target.isChannel()) return "";
+    return channelModesByTarget.getOrDefault(target, "");
   }
 
   private void showTopicPanel(boolean compact) {
@@ -476,6 +517,11 @@ public final class ChatTopicCoordinator {
     return topic.replaceAll("[\\x00-\\x1F\\x7F]", "");
   }
 
+  private static String sanitizeChannelModes(String rawModes) {
+    if (rawModes == null) return "";
+    return rawModes.replaceAll("[\\x00-\\x1F\\x7F]", "").trim();
+  }
+
   private static int normalizeTopicHeightPx(int heightPx) {
     return Math.max(MIN_TOPIC_HEIGHT_PX, Math.min(MAX_TOPIC_HEIGHT_PX, heightPx));
   }
@@ -525,12 +571,16 @@ public final class ChatTopicCoordinator {
       add(text, BorderLayout.CENTER);
     }
 
-    public void setTopic(String channelName, String topic) {
+    public void setTopic(String channelName, String channelModes, String topic) {
       String channel = Objects.toString(channelName, "").trim();
+      String modes = Objects.toString(channelModes, "").trim();
       String raw = Objects.toString(topic, "").trim();
       boolean hasTopic = !raw.isEmpty();
+      String suffix = modes.isEmpty() ? "" : " (" + modes + ")";
       header.setText(
-          channel.isEmpty() ? "Topic" : (hasTopic ? "Topic — " + channel : "Channel — " + channel));
+          channel.isEmpty()
+              ? "Topic"
+              : (hasTopic ? "Topic — " + channel + suffix : "Channel — " + channel + suffix));
       text.setVisible(hasTopic);
       text.setText(hasTopic ? raw : "");
       if (hasTopic) text.setCaretPosition(0);

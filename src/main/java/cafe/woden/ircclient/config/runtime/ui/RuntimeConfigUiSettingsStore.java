@@ -5,6 +5,7 @@ import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCre
 import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort.LastSelectedTarget;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
+import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Map;
@@ -24,7 +25,8 @@ public class RuntimeConfigUiSettingsStore {
     this.uiSection = RuntimeConfigYamlSection.ircafeUi(file, documentStore, log);
   }
 
-  public synchronized void rememberUiSettings(String theme, String chatFontFamily, int chatFontSize) {
+  public synchronized void rememberUiSettings(
+      String theme, String chatFontFamily, int chatFontSize) {
     uiSection.mutateMap(
         "UI config",
         ui -> {
@@ -37,7 +39,8 @@ public class RuntimeConfigUiSettingsStore {
   }
 
   public synchronized Optional<String> readStartupThemePending() {
-    return uiSection.readExistingValue("ui.startupThemePending", "startupThemePending")
+    return uiSection
+        .readExistingValue("ui.startupThemePending", "startupThemePending")
         .map(raw -> Objects.toString(raw, "").trim())
         .filter(theme -> !theme.isEmpty());
   }
@@ -100,8 +103,7 @@ public class RuntimeConfigUiSettingsStore {
 
   public synchronized Optional<LastSelectedTarget> readLastSelectedTarget() {
     Object raw =
-        uiSection.readExistingValue("ui.lastSelectedTarget", "lastSelectedTarget")
-            .orElse(null);
+        uiSection.readExistingValue("ui.lastSelectedTarget", "lastSelectedTarget").orElse(null);
     if (!(raw instanceof Map<?, ?> selected)) return Optional.empty();
 
     LastSelectedTarget out =
@@ -125,6 +127,21 @@ public class RuntimeConfigUiSettingsStore {
             selected.put("target", next.target());
           }
         });
+  }
+
+  public synchronized Optional<Boolean> readApplicationRootVisibleIfPresent() {
+    return uiSection
+        .readValue("ui.serverTree.applicationRootVisible", "serverTree", "applicationRootVisible")
+        .flatMap(RuntimeConfigYamlSupport::asBoolean);
+  }
+
+  public synchronized boolean readApplicationRootVisible(boolean defaultValue) {
+    return readApplicationRootVisibleIfPresent().orElse(defaultValue);
+  }
+
+  public synchronized void rememberApplicationRootVisible(boolean visible) {
+    uiSection.putValue(
+        "ui.serverTree.applicationRootVisible", visible, "serverTree", "applicationRootVisible");
   }
 
   public synchronized void rememberUiDensity(String density) {
@@ -240,5 +257,4 @@ public class RuntimeConfigUiSettingsStore {
     }
     return "auto";
   }
-
 }

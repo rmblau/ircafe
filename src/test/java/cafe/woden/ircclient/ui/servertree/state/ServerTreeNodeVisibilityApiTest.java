@@ -173,6 +173,7 @@ class ServerTreeNodeVisibilityApiTest {
         "notificationsNodesVisible",
         "monitorNodesVisible",
         "interceptorsNodesVisible",
-        "applicationRootVisible");
+        "applicationRootVisible",
+        true);
   }
 }

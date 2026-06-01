@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.config.runtime.ignore;
 
+import static cafe.woden.ircclient.config.runtime.ignore.RuntimeConfigIgnoreMapKeySupport.maskMapKeysMatch;
+import static cafe.woden.ircclient.config.runtime.ignore.RuntimeConfigIgnoreMapKeySupport.persistedMaskMapKey;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateStringList;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.removeIfEmpty;
@@ -75,8 +77,7 @@ public class RuntimeConfigIgnoreRulesStore {
     if (sid.isEmpty() || m.isEmpty()) return;
 
     List<String> normalized = normalizeIgnoreLevels(levels);
-    boolean isDefaultAll =
-        normalized.size() == 1 && "ALL".equalsIgnoreCase(normalized.getFirst());
+    boolean isDefaultAll = normalized.size() == 1 && "ALL".equalsIgnoreCase(normalized.getFirst());
 
     mutateIgnoreServer(
         sid,
@@ -162,9 +163,9 @@ public class RuntimeConfigIgnoreRulesStore {
   private static void rememberMaskScopedValue(
       Map<String, Object> server, String mapKey, String mask, Object value) {
     Map<String, Object> byMask = getOrCreateMap(server, mapKey);
-    byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(mask));
+    byMask.entrySet().removeIf(e -> maskMapKeysMatch(Objects.toString(e.getKey(), ""), mask));
     if (value != null) {
-      byMask.put(mask, value);
+      byMask.put(persistedMaskMapKey(mask), value);
     }
     removeIfEmpty(server, mapKey, byMask);
   }
@@ -180,8 +181,7 @@ public class RuntimeConfigIgnoreRulesStore {
         });
   }
 
-  private void mutateIgnore(
-      String description, Consumer<Map<String, Object>> mutation) {
+  private void mutateIgnore(String description, Consumer<Map<String, Object>> mutation) {
     ignoreSection.mutateMap(description, mutation);
   }
 
@@ -214,7 +214,7 @@ public class RuntimeConfigIgnoreRulesStore {
     }
 
     Map<String, Object> byMask = (Map<String, Object>) map;
-    byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(mask));
+    byMask.entrySet().removeIf(e -> maskMapKeysMatch(Objects.toString(e.getKey(), ""), mask));
     if (byMask.isEmpty()) {
       server.remove(mapKey);
     }

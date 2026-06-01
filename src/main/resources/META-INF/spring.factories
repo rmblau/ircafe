@@ -1,0 +1,2 @@
+org.springframework.boot.env.EnvironmentPostProcessor=\
+cafe.woden.ircclient.config.runtime.ignore.RuntimeConfigIgnoreLegacyMapKeySanitizer

@@ -80,6 +80,10 @@ public interface UiViewStatePort {
 
   void setStatusBarServer(String serverText);
 
+  default void setStatusBarIdentity(String serverId, String nick, String userModes) {}
+
+  default void setServerUserModes(String serverId, String userModes) {}
+
   default void enqueueStatusNotice(String text, TargetRef clickTarget) {}
 
   void setConnectionControlsEnabled(boolean connectEnabled, boolean disconnectEnabled);

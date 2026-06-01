@@ -54,6 +54,16 @@ public interface UiShellRuntimeConfigPort
 
   void rememberLastSelectedTarget(String serverId, String target);
 
+  default Optional<Boolean> readApplicationRootVisibleIfPresent() {
+    return Optional.empty();
+  }
+
+  default boolean readApplicationRootVisible(boolean defaultValue) {
+    return readApplicationRootVisibleIfPresent().orElse(defaultValue);
+  }
+
+  void rememberApplicationRootVisible(boolean visible);
+
   boolean readTrayCloseToTrayHintShown(boolean defaultValue);
 
   void rememberTrayCloseToTrayHintShown(boolean shown);

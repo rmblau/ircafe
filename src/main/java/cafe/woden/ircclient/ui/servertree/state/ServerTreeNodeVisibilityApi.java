@@ -40,7 +40,8 @@ public final class ServerTreeNodeVisibilityApi {
       String propNotificationsNodesVisible,
       String propMonitorNodesVisible,
       String propInterceptorsNodesVisible,
-      String propApplicationRootVisible) {
+      String propApplicationRootVisible,
+      boolean initialApplicationRootVisible) {
     this.builtInVisibilitySettings =
         Objects.requireNonNull(builtInVisibilitySettings, "builtInVisibilitySettings");
     this.builtInVisibilitySettingsContext =
@@ -66,6 +67,7 @@ public final class ServerTreeNodeVisibilityApi {
         Objects.requireNonNull(propInterceptorsNodesVisible, "propInterceptorsNodesVisible");
     this.propApplicationRootVisible =
         Objects.requireNonNull(propApplicationRootVisible, "propApplicationRootVisible");
+    this.showApplicationRoot = initialApplicationRootVisible;
   }
 
   public boolean isChannelListNodesVisible() {

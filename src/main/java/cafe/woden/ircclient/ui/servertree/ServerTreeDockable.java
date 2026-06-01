@@ -5,14 +5,14 @@ import cafe.woden.ircclient.app.api.Ircv3CapabilityToggleRequest;
 import cafe.woden.ircclient.bouncer.BouncerAutoConnectStore;
 import cafe.woden.ircclient.bouncer.GenericBouncerAutoConnectStore;
 import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.properties.LogProperties;
-import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.config.api.ServerEntry;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayout;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayoutNode;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeRootSiblingNode;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeRootSiblingOrder;
 import cafe.woden.ircclient.config.api.ServerTreeRuntimeConfigPort;
+import cafe.woden.ircclient.config.properties.LogProperties;
+import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.diagnostics.JfrRuntimeEventsService;
 import cafe.woden.ircclient.interceptors.InterceptorScope;
 import cafe.woden.ircclient.interceptors.InterceptorStore;
@@ -125,6 +125,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.BiPredicate;
@@ -566,7 +567,8 @@ public class ServerTreeDockable extends JPanel implements Dockable, Scrollable {
             PROP_NOTIFICATIONS_NODES_VISIBLE,
             PROP_MONITOR_NODES_VISIBLE,
             PROP_INTERCEPTORS_NODES_VISIBLE,
-            PROP_APPLICATION_ROOT_VISIBLE);
+            PROP_APPLICATION_ROOT_VISIBLE,
+            initialApplicationRootVisible(runtimeConfig));
     Map<String, BouncerAutoConnectStore> autoConnectStoreByBackendId =
         createAutoConnectStoreByBackendId(genericAutoConnect, sojuAutoConnect, zncAutoConnect);
     this.serverLabelPolicy = Objects.requireNonNull(serverLabelPolicy, "serverLabelPolicy");
@@ -1282,6 +1284,12 @@ public class ServerTreeDockable extends JPanel implements Dockable, Scrollable {
     return ServerTreeConventions.normalizeServerId(serverId);
   }
 
+  private static boolean initialApplicationRootVisible(ServerTreeRuntimeConfigPort runtimeConfig) {
+    if (runtimeConfig == null) return true;
+    Optional<Boolean> configured = runtimeConfig.readApplicationRootVisibleIfPresent();
+    return configured == null ? true : configured.orElse(true);
+  }
+
   private static boolean isServerGroupNodeSelectable(
       ServerTreeServerNodeResolver serverNodeResolver,
       ServerTreeServerNodeResolver.Context serverNodeResolverContext,
@@ -1768,7 +1776,11 @@ public class ServerTreeDockable extends JPanel implements Dockable, Scrollable {
   }
 
   public void setApplicationRootVisible(boolean visible) {
+    boolean old = nodeVisibilityApi.isApplicationRootVisible();
     nodeVisibilityApi.setApplicationRootVisible(visible);
+    if (runtimeConfig != null && old != nodeVisibilityApi.isApplicationRootVisible()) {
+      runtimeConfig.rememberApplicationRootVisible(visible);
+    }
   }
 
   public boolean canOpenSelectedNodeInChatDock() {

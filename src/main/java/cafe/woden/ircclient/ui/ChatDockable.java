@@ -5,9 +5,9 @@ import cafe.woden.ircclient.app.api.Ircv3ReadMarkerFeatureSupport;
 import cafe.woden.ircclient.app.api.PrivateMessageRequest;
 import cafe.woden.ircclient.app.api.UserActionRequest;
 import cafe.woden.ircclient.app.commands.SlashCommandPresentationCatalog;
-import cafe.woden.ircclient.config.execution.ExecutorConfig;
 import cafe.woden.ircclient.config.api.InstalledPluginProblem;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.config.execution.ExecutorConfig;
 import cafe.woden.ircclient.dcc.api.DccTransferQueryPort;
 import cafe.woden.ircclient.diagnostics.ApplicationDiagnosticsService;
 import cafe.woden.ircclient.diagnostics.JfrRuntimeEventsService;
@@ -1310,6 +1310,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
   public void setChannelModeSnapshot(
       String serverId, String channel, String rawModes, String friendlySummary) {
     channelListPanel.setChannelModeSnapshot(serverId, channel, rawModes, friendlySummary);
+    topicCoordinator.setChannelModeSnapshot(serverId, channel, rawModes, activeTarget);
   }
 
   public void setPrivateMessageOnlineState(String serverId, String nick, boolean online) {
