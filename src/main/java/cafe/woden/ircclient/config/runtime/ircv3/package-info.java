@@ -1,3 +1,4 @@
+/** Runtime persistence for IRCv3 capability and STS policy state. */
 @InfrastructureLayer
 package cafe.woden.ircclient.config.runtime.ircv3;
 
