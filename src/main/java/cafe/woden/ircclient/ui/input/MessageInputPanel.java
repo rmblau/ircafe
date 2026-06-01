@@ -654,7 +654,7 @@ public class MessageInputPanel extends JPanel {
     SwingUtilities.invokeLater(
         () -> {
           inputEmojiRestyleQueued = false;
-          applyInputEmojiStyles(doc);
+          runProgrammaticEdit(() -> applyInputEmojiStyles(doc));
         });
   }
 
