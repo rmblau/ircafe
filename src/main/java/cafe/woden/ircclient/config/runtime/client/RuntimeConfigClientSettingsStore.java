@@ -1,5 +1,6 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime.client;
 
+import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import java.nio.file.Path;
@@ -8,22 +9,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Owns persisted IRC client transport settings under {@code irc.client}. */
-class RuntimeConfigClientSettingsStore {
+public class RuntimeConfigClientSettingsStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigClientSettingsStore.class);
 
   private final RuntimeConfigYamlSection clientSection;
 
-  RuntimeConfigClientSettingsStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.clientSection = new RuntimeConfigYamlSection(file, documentStore, log, "irc", "client");
+  public RuntimeConfigClientSettingsStore(Path file, RuntimeConfigDocumentStore documentStore) {
+    this.clientSection = RuntimeConfigYamlSection.irc(file, documentStore, log, "client");
   }
 
-  synchronized void rememberTlsTrustAllCertificates(boolean trustAllCertificates) {
+  public synchronized void rememberTlsTrustAllCertificates(boolean trustAllCertificates) {
     clientSection.putValue(
         "TLS trust-all setting", trustAllCertificates, "tls", "trustAllCertificates");
   }
 
-  synchronized void rememberHeartbeat(IrcProperties.Heartbeat heartbeat) {
+  public synchronized void rememberHeartbeat(IrcProperties.Heartbeat heartbeat) {
     IrcProperties.Heartbeat hb =
         (heartbeat != null) ? heartbeat : new IrcProperties.Heartbeat(true, 15_000, 360_000);
 
@@ -37,7 +38,7 @@ class RuntimeConfigClientSettingsStore {
         "heartbeat");
   }
 
-  synchronized void rememberProxy(IrcProperties.Proxy proxy) {
+  public synchronized void rememberProxy(IrcProperties.Proxy proxy) {
     IrcProperties.Proxy p =
         (proxy != null)
             ? proxy
