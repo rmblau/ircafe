@@ -197,16 +197,16 @@ public class RuntimeConfigStore
   }
 
   public synchronized void ensureFileExistsWithServers() {
-    stores.serverListStore.ensureFileExistsWithServers();
+    stores.serverStores.serverListStore.ensureFileExistsWithServers();
   }
 
   public synchronized void writeServers(List<IrcProperties.Server> servers) {
-    stores.serverListStore.writeServers(servers);
+    stores.serverStores.serverListStore.writeServers(servers);
   }
 
   /** Returns configured server ids from runtime config, falling back to boot defaults. */
   public synchronized List<String> readServerIds() {
-    return stores.serverListStore.readServerIds();
+    return stores.serverStores.serverListStore.readServerIds();
   }
 
   /**
@@ -216,7 +216,7 @@ public class RuntimeConfigStore
    * treat runtime config as authoritative without conflating missing keys with inherited defaults.
    */
   public synchronized Map<String, List<String>> readExplicitServerAutoJoinById() {
-    return stores.serverListStore.readExplicitServerAutoJoinById();
+    return stores.serverStores.serverListStore.readExplicitServerAutoJoinById();
   }
 
   @Override
@@ -231,124 +231,130 @@ public class RuntimeConfigStore
 
   @Override
   public synchronized List<String> readJoinedChannels(String serverId) {
-    return stores.serverTreeChannelStateStore.readJoinedChannels(serverId);
+    return stores.serverStores.serverTreeChannelStateStore.readJoinedChannels(serverId);
   }
 
   /** Returns known channels for this server (attached + detached). */
   @Override
   public synchronized List<String> readKnownChannels(String serverId) {
-    return stores.serverTreeChannelStateStore.readKnownChannels(serverId);
+    return stores.serverStores.serverTreeChannelStateStore.readKnownChannels(serverId);
   }
 
   @Override
   public synchronized boolean readServerTreeChannelAutoReattach(
       String serverId, String channel, boolean defaultValue) {
-    return stores.serverTreeChannelStateStore.readServerTreeChannelAutoReattach(
+    return stores.serverStores.serverTreeChannelStateStore.readServerTreeChannelAutoReattach(
         serverId, channel, defaultValue);
   }
 
   @Override
   public synchronized void rememberServerTreeChannel(String serverId, String channel) {
-    stores.serverTreeChannelStateStore.rememberServerTreeChannel(serverId, channel);
+    stores.serverStores.serverTreeChannelStateStore.rememberServerTreeChannel(serverId, channel);
   }
 
   public synchronized void forgetServerTreeChannel(String serverId, String channel) {
-    stores.serverTreeChannelStateStore.forgetServerTreeChannel(serverId, channel);
+    stores.serverStores.serverTreeChannelStateStore.forgetServerTreeChannel(serverId, channel);
   }
 
   @Override
   public synchronized void rememberServerTreeChannelAutoReattach(
       String serverId, String channel, boolean autoReattach) {
-    stores.serverTreeChannelStateStore.rememberServerTreeChannelAutoReattach(
+    stores.serverStores.serverTreeChannelStateStore.rememberServerTreeChannelAutoReattach(
         serverId, channel, autoReattach);
   }
 
   @Override
   public synchronized boolean readServerTreeChannelPinned(
       String serverId, String channel, boolean defaultValue) {
-    return stores.serverTreeChannelStateStore.readServerTreeChannelPinned(
+    return stores.serverStores.serverTreeChannelStateStore.readServerTreeChannelPinned(
         serverId, channel, defaultValue);
   }
 
   @Override
   public synchronized void rememberServerTreeChannelPinned(
       String serverId, String channel, boolean pinned) {
-    stores.serverTreeChannelStateStore.rememberServerTreeChannelPinned(serverId, channel, pinned);
+    stores.serverStores.serverTreeChannelStateStore.rememberServerTreeChannelPinned(
+        serverId, channel, pinned);
   }
 
   @Override
   public synchronized boolean readServerTreeChannelMuted(
       String serverId, String channel, boolean defaultValue) {
-    return stores.serverTreeChannelStateStore.readServerTreeChannelMuted(
+    return stores.serverStores.serverTreeChannelStateStore.readServerTreeChannelMuted(
         serverId, channel, defaultValue);
   }
 
   @Override
   public synchronized void rememberServerTreeChannelMuted(
       String serverId, String channel, boolean muted) {
-    stores.serverTreeChannelStateStore.rememberServerTreeChannelMuted(serverId, channel, muted);
+    stores.serverStores.serverTreeChannelStateStore.rememberServerTreeChannelMuted(
+        serverId, channel, muted);
   }
 
   public synchronized ServerTreeChannelSortMode readServerTreeChannelSortMode(
       String serverId, ServerTreeChannelSortMode defaultValue) {
-    return stores.serverTreeChannelStateStore.readServerTreeChannelSortMode(serverId, defaultValue);
+    return stores.serverStores.serverTreeChannelStateStore.readServerTreeChannelSortMode(
+        serverId, defaultValue);
   }
 
   @Override
   public synchronized void rememberServerTreeChannelSortMode(
       String serverId, ServerTreeChannelSortMode mode) {
-    stores.serverTreeChannelStateStore.rememberServerTreeChannelSortMode(serverId, mode);
+    stores.serverStores.serverTreeChannelStateStore.rememberServerTreeChannelSortMode(
+        serverId, mode);
   }
 
   public synchronized List<String> readServerTreeChannelCustomOrder(String serverId) {
-    return stores.serverTreeChannelStateStore.readServerTreeChannelCustomOrder(serverId);
+    return stores.serverStores.serverTreeChannelStateStore.readServerTreeChannelCustomOrder(
+        serverId);
   }
 
   @Override
   public synchronized void rememberServerTreeChannelCustomOrder(
       String serverId, List<String> customOrder) {
-    stores.serverTreeChannelStateStore.rememberServerTreeChannelCustomOrder(serverId, customOrder);
+    stores.serverStores.serverTreeChannelStateStore.rememberServerTreeChannelCustomOrder(
+        serverId, customOrder);
   }
 
   @Override
   public synchronized ServerTreeChannelState readServerTreeChannelState(String serverId) {
-    return stores.serverTreeChannelStateStore.readServerTreeChannelState(serverId);
+    return stores.serverStores.serverTreeChannelStateStore.readServerTreeChannelState(serverId);
   }
 
   public synchronized void rememberPrivateMessageTarget(String serverId, String nick) {
-    stores.privateMessageTargetStore.rememberPrivateMessageTarget(serverId, nick);
+    stores.serverStores.privateMessageTargetStore.rememberPrivateMessageTarget(serverId, nick);
   }
 
   public synchronized void forgetPrivateMessageTarget(String serverId, String nick) {
-    stores.privateMessageTargetStore.forgetPrivateMessageTarget(serverId, nick);
+    stores.serverStores.privateMessageTargetStore.forgetPrivateMessageTarget(serverId, nick);
   }
 
   @Override
   public synchronized List<String> readPrivateMessageTargets(String serverId) {
-    return stores.privateMessageTargetStore.readPrivateMessageTargets(serverId);
+    return stores.serverStores.privateMessageTargetStore.readPrivateMessageTargets(serverId);
   }
 
   public synchronized void rememberMonitorNick(String serverId, String nick) {
-    stores.monitorRosterStore.rememberMonitorNick(serverId, nick);
+    stores.serverStores.monitorRosterStore.rememberMonitorNick(serverId, nick);
   }
 
   public synchronized void forgetMonitorNick(String serverId, String nick) {
-    stores.monitorRosterStore.forgetMonitorNick(serverId, nick);
+    stores.serverStores.monitorRosterStore.forgetMonitorNick(serverId, nick);
   }
 
   @Override
   public synchronized void replaceMonitorNicks(String serverId, List<String> nicks) {
-    stores.monitorRosterStore.replaceMonitorNicks(serverId, nicks);
+    stores.serverStores.monitorRosterStore.replaceMonitorNicks(serverId, nicks);
   }
 
   @Override
   public synchronized List<String> readMonitorNicks(String serverId) {
-    return stores.monitorRosterStore.readMonitorNicks(serverId);
+    return stores.serverStores.monitorRosterStore.readMonitorNicks(serverId);
   }
 
   @Override
   public synchronized void rememberNick(String serverId, String nick) {
-    stores.serverIdentityStore.rememberNick(serverId, nick);
+    stores.serverStores.serverIdentityStore.rememberNick(serverId, nick);
   }
 
   public synchronized void rememberUiSettings(
@@ -436,31 +442,31 @@ public class RuntimeConfigStore
 
   public synchronized Map<String, ServerTreeBuiltInNodesVisibility>
       readServerTreeBuiltInNodesVisibility() {
-    return stores.serverTreeLayoutStore.readBuiltInNodesVisibility();
+    return stores.serverStores.serverTreeLayoutStore.readBuiltInNodesVisibility();
   }
 
   public synchronized void rememberServerTreeBuiltInNodesVisibility(
       String serverId, ServerTreeBuiltInNodesVisibility visibility) {
-    stores.serverTreeLayoutStore.rememberBuiltInNodesVisibility(serverId, visibility);
+    stores.serverStores.serverTreeLayoutStore.rememberBuiltInNodesVisibility(serverId, visibility);
   }
 
   public synchronized Map<String, ServerTreeBuiltInLayout> readServerTreeBuiltInLayoutByServer() {
-    return stores.serverTreeLayoutStore.readBuiltInLayoutByServer();
+    return stores.serverStores.serverTreeLayoutStore.readBuiltInLayoutByServer();
   }
 
   public synchronized void rememberServerTreeBuiltInLayout(
       String serverId, ServerTreeBuiltInLayout layout) {
-    stores.serverTreeLayoutStore.rememberBuiltInLayout(serverId, layout);
+    stores.serverStores.serverTreeLayoutStore.rememberBuiltInLayout(serverId, layout);
   }
 
   public synchronized Map<String, ServerTreeRootSiblingOrder>
       readServerTreeRootSiblingOrderByServer() {
-    return stores.serverTreeLayoutStore.readRootSiblingOrderByServer();
+    return stores.serverStores.serverTreeLayoutStore.readRootSiblingOrderByServer();
   }
 
   public synchronized void rememberServerTreeRootSiblingOrder(
       String serverId, ServerTreeRootSiblingOrder order) {
-    stores.serverTreeLayoutStore.rememberRootSiblingOrder(serverId, order);
+    stores.serverStores.serverTreeLayoutStore.rememberRootSiblingOrder(serverId, order);
   }
 
   public synchronized void rememberAccentColor(String accentColor) {
@@ -572,7 +578,7 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberAutoConnectOnStart(boolean enabled) {
-    stores.serverAutoConnectStore.rememberAutoConnectOnStart(enabled);
+    stores.serverStores.serverAutoConnectStore.rememberAutoConnectOnStart(enabled);
   }
 
   /**
@@ -583,7 +589,7 @@ public class RuntimeConfigStore
    */
   @Override
   public synchronized Map<String, Boolean> readServerAutoConnectOnStartByServer() {
-    return stores.serverAutoConnectStore.readServerAutoConnectOnStartByServer();
+    return stores.serverStores.serverAutoConnectStore.readServerAutoConnectOnStartByServer();
   }
 
   /**
@@ -592,7 +598,8 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when no override is present.
    */
   public synchronized boolean readServerAutoConnectOnStart(String serverId, boolean defaultValue) {
-    return stores.serverAutoConnectStore.readServerAutoConnectOnStart(serverId, defaultValue);
+    return stores.serverStores.serverAutoConnectStore.readServerAutoConnectOnStart(
+        serverId, defaultValue);
   }
 
   /**
@@ -601,7 +608,7 @@ public class RuntimeConfigStore
    * <p>Enabled is the default, so enabled values are removed to keep the YAML concise.
    */
   public synchronized void rememberServerAutoConnectOnStart(String serverId, boolean enabled) {
-    stores.serverAutoConnectStore.rememberServerAutoConnectOnStart(serverId, enabled);
+    stores.serverStores.serverAutoConnectStore.rememberServerAutoConnectOnStart(serverId, enabled);
   }
 
   @Override
