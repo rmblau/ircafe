@@ -338,7 +338,7 @@ public class MediatorServerStatusEventHandler {
           status, event.at(), "(server)", rendered, event.messageId(), event.ircv3Tags());
     }
 
-    if (event.code() == 465 || event.code() == 466 || event.code() == 463 || event.code() == 464) {
+    if (isExplicitServerRestrictionNumeric(event.code())) {
       String msgTrim = Objects.toString(event.message(), "").trim();
       String body =
           msgTrim.isBlank()
@@ -351,9 +351,17 @@ public class MediatorServerStatusEventHandler {
           null,
           "Server restriction",
           body);
-    } else {
+    } else if (isErrorNumeric(event.code())) {
       maybeNotifyKline(callbacks, sid, event.message(), "Server restriction");
     }
+  }
+
+  private static boolean isExplicitServerRestrictionNumeric(int code) {
+    return code == 463 || code == 464 || code == 465 || code == 466 || code == 484;
+  }
+
+  private static boolean isErrorNumeric(int code) {
+    return code >= 400 && code < 600;
   }
 
   private void handleStandardReply(

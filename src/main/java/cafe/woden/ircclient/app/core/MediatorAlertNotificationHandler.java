@@ -11,6 +11,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 import org.springframework.stereotype.Component;
@@ -22,6 +23,17 @@ import org.springframework.stereotype.Component;
 public class MediatorAlertNotificationHandler {
   private static final long NETSPLIT_NOTIFY_DEBOUNCE_MS = 20_000L;
   private static final int NETSPLIT_NOTIFY_MAX_KEYS = 512;
+  private static final Pattern LINE_RESTRICTION_DIRECT_PATTERN =
+      Pattern.compile(
+          "\\b(?:k|g|z)[ -]?lined\\b"
+              + "|\\b(?:k|g|z)-line\\b"
+              + "|\\b(?:akilled|auto[ -]?killed)\\b"
+              + "|\\bbanned from this server\\b");
+  private static final Pattern LINE_RESTRICTION_CONTEXT_PATTERN =
+      Pattern.compile(
+          "\\b(?:kline|gline|zline|akill|autokill)\\b\\s*[:(]"
+              + "|\\b(?:kline|gline|zline|akill|autokill)\\b.{0,80}\\b(?:active|added|ban|banned|denied|expires|matched|matches|permanent|placed|reason|reject|rejected|restricted|temporary)\\b"
+              + "|\\b(?:active|added|ban|banned|denied|expires|matched|matches|permanent|placed|reason|reject|rejected|restricted|temporary)\\b.{0,80}\\b(?:kline|gline|zline|akill|autokill)\\b");
 
   interface Callbacks {
     boolean notifyIrcEvent(
@@ -225,16 +237,8 @@ public class MediatorAlertNotificationHandler {
     if (m.isEmpty()) {
       return false;
     }
-    return m.contains("k-line")
-        || m.contains("klined")
-        || m.contains("kline")
-        || m.contains("g-line")
-        || m.contains("gline")
-        || m.contains("z-line")
-        || m.contains("zline")
-        || m.contains("akill")
-        || m.contains("autokill")
-        || m.contains("banned from this server");
+    return LINE_RESTRICTION_DIRECT_PATTERN.matcher(m).find()
+        || LINE_RESTRICTION_CONTEXT_PATTERN.matcher(m).find();
   }
 
   private boolean isSelfModeTargetForEvent(
