@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime.bouncer;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asBoolean;
 
@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Owns persisted bouncer discovery and auto-connect settings under {@code ircafe.*}. */
-class RuntimeConfigBouncerDiscoveryStore {
+public class RuntimeConfigBouncerDiscoveryStore {
 
   private static final Logger log =
       LoggerFactory.getLogger(RuntimeConfigBouncerDiscoveryStore.class);
@@ -23,43 +23,43 @@ class RuntimeConfigBouncerDiscoveryStore {
 
   private final RuntimeConfigYamlSection ircafeSection;
 
-  RuntimeConfigBouncerDiscoveryStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.ircafeSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe");
+  public RuntimeConfigBouncerDiscoveryStore(Path file, RuntimeConfigDocumentStore documentStore) {
+    this.ircafeSection = RuntimeConfigYamlSection.ircafe(file, documentStore, log);
   }
 
-  synchronized void rememberSojuAutoConnectNetwork(
+  public synchronized void rememberSojuAutoConnectNetwork(
       String bouncerServerId, String networkName, boolean enabled) {
     rememberBouncerAutoConnectNetwork("soju", bouncerServerId, networkName, enabled);
   }
 
-  synchronized void rememberZncAutoConnectNetwork(
+  public synchronized void rememberZncAutoConnectNetwork(
       String bouncerServerId, String networkName, boolean enabled) {
     rememberBouncerAutoConnectNetwork("znc", bouncerServerId, networkName, enabled);
   }
 
-  synchronized Map<String, Map<String, Boolean>> readGenericBouncerAutoConnectRules() {
+  public synchronized Map<String, Map<String, Boolean>> readGenericBouncerAutoConnectRules() {
     return readBouncerAutoConnectRules("bouncer", "bouncer.autoConnect settings");
   }
 
-  synchronized void rememberGenericBouncerAutoConnectNetwork(
+  public synchronized void rememberGenericBouncerAutoConnectNetwork(
       String bouncerServerId, String networkName, boolean enabled) {
     rememberBouncerAutoConnectNetwork("bouncer", bouncerServerId, networkName, enabled);
   }
 
-  synchronized String readGenericBouncerLoginTemplate(String defaultValue) {
+  public synchronized String readGenericBouncerLoginTemplate(String defaultValue) {
     String fallback = normalizeGenericBouncerLoginTemplate(defaultValue);
     return readGenericBouncerValue("bouncer.generic.loginTemplate", "loginTemplate")
         .map(RuntimeConfigBouncerDiscoveryStore::normalizeGenericBouncerLoginTemplate)
         .orElse(fallback);
   }
 
-  synchronized boolean readGenericBouncerPreferLoginHint(boolean defaultValue) {
+  public synchronized boolean readGenericBouncerPreferLoginHint(boolean defaultValue) {
     return readGenericBouncerValue("bouncer.generic.preferLoginHint", "preferLoginHint")
         .flatMap(RuntimeConfigYamlSupport::asBoolean)
         .orElse(defaultValue);
   }
 
-  synchronized void rememberGenericBouncerLoginTemplate(String template) {
+  public synchronized void rememberGenericBouncerLoginTemplate(String template) {
     String normalized = Objects.toString(template, "").trim();
     ircafeSection.mutateMapAndRemoveIfEmpty(
         "bouncer.generic.loginTemplate",
@@ -74,7 +74,7 @@ class RuntimeConfigBouncerDiscoveryStore {
         "generic");
   }
 
-  synchronized void rememberGenericBouncerPreferLoginHint(boolean enabled) {
+  public synchronized void rememberGenericBouncerPreferLoginHint(boolean enabled) {
     ircafeSection.mutateMap(
         "bouncer.generic.preferLoginHint",
         generic -> generic.put("preferLoginHint", enabled),
