@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime.interceptors;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asBoolean;
 
@@ -18,24 +18,24 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Owns persisted interceptor definitions under {@code ircafe.ui.interceptors}. */
-class RuntimeConfigInterceptorStore {
+public class RuntimeConfigInterceptorStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigInterceptorStore.class);
 
   private final RuntimeConfigYamlSection uiSection;
 
-  RuntimeConfigInterceptorStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.uiSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui");
+  public RuntimeConfigInterceptorStore(Path file, RuntimeConfigDocumentStore documentStore) {
+    this.uiSection = RuntimeConfigYamlSection.ircafeUi(file, documentStore, log);
   }
 
-  synchronized Map<String, List<InterceptorDefinition>> readDefinitions() {
+  public synchronized Map<String, List<InterceptorDefinition>> readDefinitions() {
     return uiSection
         .readExistingValue("interceptor definitions", "interceptors", "servers")
         .map(RuntimeConfigInterceptorStore::parseInterceptorDefinitionsByServer)
         .orElseGet(Map::of);
   }
 
-  synchronized void rememberDefinitions(Map<String, List<InterceptorDefinition>> defsByServer) {
+  public synchronized void rememberDefinitions(Map<String, List<InterceptorDefinition>> defsByServer) {
     uiSection.mutateMapAndRemoveIfEmpty(
         "interceptor definitions",
         interceptors -> {
