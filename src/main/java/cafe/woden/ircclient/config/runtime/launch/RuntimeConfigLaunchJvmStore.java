@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime.launch;
 
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
@@ -13,17 +13,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Owns optional child-JVM launch settings under {@code ircafe.launch.jvm}. */
-class RuntimeConfigLaunchJvmStore {
+public class RuntimeConfigLaunchJvmStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigLaunchJvmStore.class);
 
   private final RuntimeConfigYamlSection ircafeSection;
 
-  RuntimeConfigLaunchJvmStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.ircafeSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe");
+  public RuntimeConfigLaunchJvmStore(Path file, RuntimeConfigDocumentStore documentStore) {
+    this.ircafeSection = RuntimeConfigYamlSection.ircafe(file, documentStore, log);
   }
 
-  synchronized String readJavaCommand(String defaultValue) {
+  public synchronized String readJavaCommand(String defaultValue) {
     String fallback = Objects.toString(defaultValue, "").trim();
     if (fallback.isEmpty()) fallback = "java";
     String raw =
@@ -33,7 +33,7 @@ class RuntimeConfigLaunchJvmStore {
     return raw.isEmpty() ? fallback : raw;
   }
 
-  synchronized int readXmsMiB(int defaultValue) {
+  public synchronized int readXmsMiB(int defaultValue) {
     int fallback = clampHeapMiB(defaultValue);
     return readValue("launch.jvm.xmsMiB", "xmsMiB")
         .flatMap(RuntimeConfigYamlSupport::asInt)
@@ -41,7 +41,7 @@ class RuntimeConfigLaunchJvmStore {
         .orElse(fallback);
   }
 
-  synchronized int readXmxMiB(int defaultValue) {
+  public synchronized int readXmxMiB(int defaultValue) {
     int fallback = clampHeapMiB(defaultValue);
     return readValue("launch.jvm.xmxMiB", "xmxMiB")
         .flatMap(RuntimeConfigYamlSupport::asInt)
@@ -49,39 +49,39 @@ class RuntimeConfigLaunchJvmStore {
         .orElse(fallback);
   }
 
-  synchronized String readGc(String defaultValue) {
+  public synchronized String readGc(String defaultValue) {
     String fallback = normalizeGc(defaultValue);
     return readValue("launch.jvm.gc", "gc")
         .map(RuntimeConfigLaunchJvmStore::normalizeGc)
         .orElse(fallback);
   }
 
-  synchronized List<String> readArgs(List<String> defaultValue) {
+  public synchronized List<String> readArgs(List<String> defaultValue) {
     List<String> fallback = RuntimeConfigYamlSupport.sanitizeStringList(defaultValue);
     Object argsObj = readValue("launch.jvm.args", "args").orElse(null);
     if (!(argsObj instanceof List<?> raw)) return fallback;
     return RuntimeConfigYamlSupport.sanitizeStringList(raw);
   }
 
-  synchronized void rememberJavaCommand(String javaCommand) {
+  public synchronized void rememberJavaCommand(String javaCommand) {
     String cmd = Objects.toString(javaCommand, "").trim();
     if (cmd.isEmpty() || cmd.equalsIgnoreCase("java")) cmd = "";
     rememberJvmSetting("launch.jvm.javaCommand", "javaCommand", cmd);
   }
 
-  synchronized void rememberXmsMiB(int xmsMiB) {
+  public synchronized void rememberXmsMiB(int xmsMiB) {
     rememberJvmSetting("launch.jvm.xmsMiB", "xmsMiB", clampHeapMiB(xmsMiB));
   }
 
-  synchronized void rememberXmxMiB(int xmxMiB) {
+  public synchronized void rememberXmxMiB(int xmxMiB) {
     rememberJvmSetting("launch.jvm.xmxMiB", "xmxMiB", clampHeapMiB(xmxMiB));
   }
 
-  synchronized void rememberGc(String gc) {
+  public synchronized void rememberGc(String gc) {
     rememberJvmSetting("launch.jvm.gc", "gc", normalizeGc(gc));
   }
 
-  synchronized void rememberArgs(List<String> args) {
+  public synchronized void rememberArgs(List<String> args) {
     rememberJvmSetting(
         "launch.jvm.args", "args", RuntimeConfigYamlSupport.sanitizeStringList(args));
   }

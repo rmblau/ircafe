@@ -4,6 +4,7 @@ import cafe.woden.ircclient.config.runtime.bouncer.RuntimeConfigBouncerDiscovery
 import cafe.woden.ircclient.config.runtime.commands.RuntimeConfigUserCommandStore;
 import cafe.woden.ircclient.config.runtime.ircv3.RuntimeConfigIrcv3CapabilityStore;
 import cafe.woden.ircclient.config.runtime.ircv3.RuntimeConfigIrcv3StsPolicyStore;
+import cafe.woden.ircclient.config.runtime.launch.RuntimeConfigLaunchJvmStore;
 import cafe.woden.ircclient.config.runtime.logging.RuntimeConfigChatLoggingStore;
 import cafe.woden.ircclient.config.runtime.notifications.RuntimeConfigPushyStore;
 import cafe.woden.ircclient.config.runtime.server.RuntimeConfigMonitorRosterStore;
