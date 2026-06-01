@@ -1,5 +1,7 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime;
 
+import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.runtime.bouncer.RuntimeConfigBouncerDiscoveryStore;
 import cafe.woden.ircclient.config.runtime.client.RuntimeConfigClientSettingsStore;
 import cafe.woden.ircclient.config.runtime.commands.RuntimeConfigUserCommandStore;
@@ -38,45 +40,45 @@ import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import java.nio.file.Path;
 
 /** Wires the focused runtime-config stores used by {@link RuntimeConfigStore}. */
-final class RuntimeConfigStoreDelegates {
+public final class RuntimeConfigStoreDelegates {
 
-  final RuntimeConfigDocumentStore documentStore;
-  final RuntimeConfigServerListStore serverListStore;
-  final RuntimeConfigMonitorRosterStore monitorRosterStore;
-  final RuntimeConfigPrivateMessageTargetStore privateMessageTargetStore;
-  final RuntimeConfigServerIdentityStore serverIdentityStore;
-  final RuntimeConfigLaunchJvmStore launchJvmStore;
-  final RuntimeConfigCtcpAutoReplyStore ctcpAutoReplyStore;
-  final RuntimeConfigUserCommandStore userCommandStore;
-  final RuntimeConfigNotificationStore notificationStore;
-  final RuntimeConfigInterceptorStore interceptorStore;
-  final RuntimeConfigFilterStore filterStore;
-  final RuntimeConfigIgnoreRulesStore ignoreRulesStore;
-  final RuntimeConfigNickColorStore nickColorStore;
-  final RuntimeConfigTimestampStore timestampStore;
-  final RuntimeConfigUserLookupStore userLookupStore;
-  final RuntimeConfigChatHistoryStore chatHistoryStore;
-  final RuntimeConfigChatLoggingStore chatLoggingStore;
-  final RuntimeConfigTrayStore trayStore;
-  final RuntimeConfigPushyStore pushyStore;
-  final RuntimeConfigUiSettingsStore uiSettingsStore;
-  final RuntimeConfigEmbedStore embedStore;
-  final RuntimeConfigChatBehaviorStore chatBehaviorStore;
-  final RuntimeConfigOutgoingMessageStore outgoingMessageStore;
-  final RuntimeConfigEmbedLoadPolicyStore embedLoadPolicyStore;
-  final RuntimeConfigSpellcheckStore spellcheckStore;
-  final RuntimeConfigUiFeatureToggleStore uiFeatureToggleStore;
-  final RuntimeConfigMemoryUsageStore memoryUsageStore;
-  final RuntimeConfigAppDiagnosticsStore appDiagnosticsStore;
-  final RuntimeConfigServerTreeLayoutStore serverTreeLayoutStore;
-  final RuntimeConfigServerTreeChannelStateStore serverTreeChannelStateStore;
-  final RuntimeConfigServerAutoConnectStore serverAutoConnectStore;
-  final RuntimeConfigIrcv3StsPolicyStore ircv3StsPolicyStore;
-  final RuntimeConfigIrcv3CapabilityStore ircv3CapabilityStore;
-  final RuntimeConfigBouncerDiscoveryStore bouncerDiscoveryStore;
-  final RuntimeConfigClientSettingsStore clientSettingsStore;
+  public final RuntimeConfigDocumentStore documentStore;
+  public final RuntimeConfigServerListStore serverListStore;
+  public final RuntimeConfigMonitorRosterStore monitorRosterStore;
+  public final RuntimeConfigPrivateMessageTargetStore privateMessageTargetStore;
+  public final RuntimeConfigServerIdentityStore serverIdentityStore;
+  public final RuntimeConfigLaunchJvmStore launchJvmStore;
+  public final RuntimeConfigCtcpAutoReplyStore ctcpAutoReplyStore;
+  public final RuntimeConfigUserCommandStore userCommandStore;
+  public final RuntimeConfigNotificationStore notificationStore;
+  public final RuntimeConfigInterceptorStore interceptorStore;
+  public final RuntimeConfigFilterStore filterStore;
+  public final RuntimeConfigIgnoreRulesStore ignoreRulesStore;
+  public final RuntimeConfigNickColorStore nickColorStore;
+  public final RuntimeConfigTimestampStore timestampStore;
+  public final RuntimeConfigUserLookupStore userLookupStore;
+  public final RuntimeConfigChatHistoryStore chatHistoryStore;
+  public final RuntimeConfigChatLoggingStore chatLoggingStore;
+  public final RuntimeConfigTrayStore trayStore;
+  public final RuntimeConfigPushyStore pushyStore;
+  public final RuntimeConfigUiSettingsStore uiSettingsStore;
+  public final RuntimeConfigEmbedStore embedStore;
+  public final RuntimeConfigChatBehaviorStore chatBehaviorStore;
+  public final RuntimeConfigOutgoingMessageStore outgoingMessageStore;
+  public final RuntimeConfigEmbedLoadPolicyStore embedLoadPolicyStore;
+  public final RuntimeConfigSpellcheckStore spellcheckStore;
+  public final RuntimeConfigUiFeatureToggleStore uiFeatureToggleStore;
+  public final RuntimeConfigMemoryUsageStore memoryUsageStore;
+  public final RuntimeConfigAppDiagnosticsStore appDiagnosticsStore;
+  public final RuntimeConfigServerTreeLayoutStore serverTreeLayoutStore;
+  public final RuntimeConfigServerTreeChannelStateStore serverTreeChannelStateStore;
+  public final RuntimeConfigServerAutoConnectStore serverAutoConnectStore;
+  public final RuntimeConfigIrcv3StsPolicyStore ircv3StsPolicyStore;
+  public final RuntimeConfigIrcv3CapabilityStore ircv3CapabilityStore;
+  public final RuntimeConfigBouncerDiscoveryStore bouncerDiscoveryStore;
+  public final RuntimeConfigClientSettingsStore clientSettingsStore;
 
-  RuntimeConfigStoreDelegates(Path file, IrcProperties defaults) {
+  public RuntimeConfigStoreDelegates(Path file, IrcProperties defaults) {
     this.documentStore = new RuntimeConfigDocumentStore(file);
     this.serverListStore = new RuntimeConfigServerListStore(file, documentStore, defaults);
     this.monitorRosterStore = new RuntimeConfigMonitorRosterStore(file, documentStore);
