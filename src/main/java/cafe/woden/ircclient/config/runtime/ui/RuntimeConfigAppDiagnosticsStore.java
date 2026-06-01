@@ -205,5 +205,4 @@ public class RuntimeConfigAppDiagnosticsStore {
     if (value > 120_000) return 120_000;
     return value;
   }
-
 }

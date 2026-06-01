@@ -21,7 +21,8 @@ public class RuntimeConfigPrivateMessageTargetStore {
 
   private final RuntimeConfigServerYamlSection servers;
 
-  public RuntimeConfigPrivateMessageTargetStore(Path file, RuntimeConfigDocumentStore documentStore) {
+  public RuntimeConfigPrivateMessageTargetStore(
+      Path file, RuntimeConfigDocumentStore documentStore) {
     this.servers =
         new RuntimeConfigServerYamlSection(file, documentStore, log, "private-message target list");
   }
@@ -65,7 +66,8 @@ public class RuntimeConfigPrivateMessageTargetStore {
   }
 
   public synchronized List<String> readPrivateMessageTargets(String serverId) {
-    return servers.readExistingServer(serverId)
+    return servers
+        .readExistingServer(serverId)
         .map(RuntimeConfigPrivateMessageTargetStore::readPrivateMessageTargets)
         .orElse(List.of());
   }

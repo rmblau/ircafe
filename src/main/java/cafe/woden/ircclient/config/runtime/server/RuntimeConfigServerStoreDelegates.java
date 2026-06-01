@@ -19,10 +19,12 @@ public final class RuntimeConfigServerStoreDelegates {
       Path file, RuntimeConfigDocumentStore documentStore, IrcProperties defaults) {
     this.serverListStore = new RuntimeConfigServerListStore(file, documentStore, defaults);
     this.monitorRosterStore = new RuntimeConfigMonitorRosterStore(file, documentStore);
-    this.privateMessageTargetStore = new RuntimeConfigPrivateMessageTargetStore(file, documentStore);
+    this.privateMessageTargetStore =
+        new RuntimeConfigPrivateMessageTargetStore(file, documentStore);
     this.serverIdentityStore = new RuntimeConfigServerIdentityStore(file, documentStore);
     this.serverTreeLayoutStore = new RuntimeConfigServerTreeLayoutStore(file, documentStore);
-    this.serverTreeChannelStateStore = new RuntimeConfigServerTreeChannelStateStore(file, documentStore);
+    this.serverTreeChannelStateStore =
+        new RuntimeConfigServerTreeChannelStateStore(file, documentStore);
     this.serverAutoConnectStore = new RuntimeConfigServerAutoConnectStore(file, documentStore);
   }
 }

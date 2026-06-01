@@ -129,5 +129,4 @@ public class RuntimeConfigEmbedLoadPolicyStore {
     if (!s.domainWhitelist().isEmpty()) out.put("domainWhitelist", s.domainWhitelist());
     if (!s.domainBlacklist().isEmpty()) out.put("domainBlacklist", s.domainBlacklist());
   }
-
 }

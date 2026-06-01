@@ -4,8 +4,8 @@ import static cafe.woden.ircclient.config.IrcPropertiesTestFixtures.server;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import cafe.woden.ircclient.config.properties.IgnoreProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
+import cafe.woden.ircclient.config.properties.IgnoreProperties;
 import cafe.woden.ircclient.ignore.api.IgnoreListCommandPort;
 import cafe.woden.ircclient.ignore.api.IgnoreListQueryPort;
 import java.nio.file.Path;

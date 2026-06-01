@@ -49,5 +49,4 @@ public final class RuntimeConfigNickColorStore {
           ui.put("nickColorOverrides", out);
         });
   }
-
 }

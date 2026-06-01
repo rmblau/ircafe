@@ -64,7 +64,8 @@ public class RuntimeConfigMemoryUsageStore {
   private int readUiInt(
       String key, int defaultValue, IntUnaryOperator normalizer, String description) {
     int fallback = normalizer.applyAsInt(defaultValue);
-    return uiSection.readValue(description, key)
+    return uiSection
+        .readValue(description, key)
         .flatMap(RuntimeConfigYamlSupport::asInt)
         .map(normalizer::applyAsInt)
         .orElse(fallback);
@@ -96,5 +97,4 @@ public class RuntimeConfigMemoryUsageStore {
     if (value > 60_000) value = 60_000;
     return value;
   }
-
 }

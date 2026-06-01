@@ -18,17 +18,18 @@ public class RuntimeConfigTrayStore {
   private final RuntimeConfigYamlSection traySection;
 
   public RuntimeConfigTrayStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.traySection =
-        RuntimeConfigYamlSection.ircafeUi(file, documentStore, log, "tray");
+    this.traySection = RuntimeConfigYamlSection.ircafeUi(file, documentStore, log, "tray");
   }
 
   public synchronized Optional<Boolean> readCloseToTrayIfPresent() {
-    return traySection.readValue("tray.closeToTray", "closeToTray")
+    return traySection
+        .readValue("tray.closeToTray", "closeToTray")
         .flatMap(RuntimeConfigYamlSupport::asBoolean);
   }
 
   public synchronized boolean readCloseToTrayHintShown(boolean defaultValue) {
-    return traySection.readValue("tray.closeToTrayHintShown", "closeToTrayHintShown")
+    return traySection
+        .readValue("tray.closeToTrayHintShown", "closeToTrayHintShown")
         .flatMap(RuntimeConfigYamlSupport::asBoolean)
         .orElse(defaultValue);
   }
@@ -118,5 +119,4 @@ public class RuntimeConfigTrayStore {
   private void rememberScalarSetting(String key, Object value, String description) {
     traySection.putValue(description, value, key);
   }
-
 }

@@ -24,8 +24,7 @@ public final class RuntimeConfigFilterStore {
   private final RuntimeConfigYamlSection filtersSection;
 
   public RuntimeConfigFilterStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.filtersSection =
-        RuntimeConfigYamlSection.ircafeUi(file, documentStore, log, "filters");
+    this.filtersSection = RuntimeConfigYamlSection.ircafeUi(file, documentStore, log, "filters");
   }
 
   public synchronized void rememberEnabledByDefault(boolean enabled) {
@@ -134,8 +133,7 @@ public final class RuntimeConfigFilterStore {
     return out;
   }
 
-  private static List<Map<String, Object>> serializeOverrides(
-      List<FilterScopeOverride> overrides) {
+  private static List<Map<String, Object>> serializeOverrides(List<FilterScopeOverride> overrides) {
     List<Map<String, Object>> out = new ArrayList<>();
     if (overrides == null) return out;
 
@@ -145,10 +143,10 @@ public final class RuntimeConfigFilterStore {
       m.put("scope", Objects.toString(o.scopePattern(), "*").trim());
       if (o.filtersEnabled() != null) m.put("filtersEnabled", o.filtersEnabled());
       if (o.placeholdersEnabled() != null) m.put("placeholdersEnabled", o.placeholdersEnabled());
-      if (o.placeholdersCollapsed() != null) m.put("placeholdersCollapsed", o.placeholdersCollapsed());
+      if (o.placeholdersCollapsed() != null)
+        m.put("placeholdersCollapsed", o.placeholdersCollapsed());
       out.add(m);
     }
     return out;
   }
-
 }

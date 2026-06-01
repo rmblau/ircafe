@@ -122,5 +122,4 @@ public class RuntimeConfigChatHistoryStore {
   private void rememberScalarSetting(String key, Object value, String description) {
     uiSection.putValue(description, value, key);
   }
-
 }

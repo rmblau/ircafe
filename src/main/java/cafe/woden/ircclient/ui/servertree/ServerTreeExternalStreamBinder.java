@@ -1,8 +1,8 @@
 package cafe.woden.ircclient.ui.servertree;
 
 import cafe.woden.ircclient.bouncer.GenericBouncerAutoConnectStore;
-import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.config.api.ServerEntry;
+import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.interceptors.InterceptorStore;
 import cafe.woden.ircclient.irc.soju.SojuAutoConnectStore;
 import cafe.woden.ircclient.irc.znc.ZncAutoConnectStore;

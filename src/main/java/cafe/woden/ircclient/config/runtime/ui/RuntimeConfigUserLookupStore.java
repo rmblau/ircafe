@@ -79,7 +79,8 @@ public class RuntimeConfigUserLookupStore {
         "user info enrichment USERHOST min interval");
   }
 
-  public synchronized void rememberUserInfoEnrichmentUserhostMaxCommandsPerMinute(int maxPerMinute) {
+  public synchronized void rememberUserInfoEnrichmentUserhostMaxCommandsPerMinute(
+      int maxPerMinute) {
     rememberSectionScalarSetting(
         "userInfoEnrichment",
         "userhostMaxCommandsPerMinute",
@@ -149,5 +150,4 @@ public class RuntimeConfigUserLookupStore {
       String section, String key, Object value, String description) {
     uiSection.putValue(description + " setting", value, section, key);
   }
-
 }

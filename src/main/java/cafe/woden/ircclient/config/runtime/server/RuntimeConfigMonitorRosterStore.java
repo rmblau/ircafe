@@ -70,7 +70,8 @@ public class RuntimeConfigMonitorRosterStore {
   }
 
   public synchronized List<String> readMonitorNicks(String serverId) {
-    return servers.readExistingServer(serverId)
+    return servers
+        .readExistingServer(serverId)
         .map(server -> List.copyOf(sanitizeMonitorNickList(server.get("monitorNicks"))))
         .orElse(List.of());
   }

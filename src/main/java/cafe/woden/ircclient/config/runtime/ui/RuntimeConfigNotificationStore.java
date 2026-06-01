@@ -36,8 +36,7 @@ public final class RuntimeConfigNotificationStore {
   }
 
   public synchronized void rememberRules(List<NotificationRule> rules) {
-    uiSection.mutateMap(
-        "notificationRules", ui -> ui.put("notificationRules", toRuleMaps(rules)));
+    uiSection.mutateMap("notificationRules", ui -> ui.put("notificationRules", toRuleMaps(rules)));
   }
 
   public synchronized void rememberIrcEventRules(List<IrcEventNotificationRule> rules) {

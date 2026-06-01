@@ -230,7 +230,8 @@ public class RuntimeConfigServerTreeChannelStateStore {
     return defaultValue;
   }
 
-  public synchronized void rememberServerTreeChannelMuted(String serverId, String channel, boolean muted) {
+  public synchronized void rememberServerTreeChannelMuted(
+      String serverId, String channel, boolean muted) {
     String sid = Objects.toString(serverId, "").trim();
     String chan = normalizeChannelName(channel);
     if (sid.isEmpty() || chan.isEmpty()) return;
@@ -308,7 +309,8 @@ public class RuntimeConfigServerTreeChannelStateStore {
     String sid = Objects.toString(serverId, "").trim();
     if (sid.isEmpty()) return List.of();
 
-    return servers.readExistingServer(sid)
+    return servers
+        .readExistingServer(sid)
         .map(server -> sanitizeStringList(server.get("autoJoin")))
         .map(AutoJoinEntryCodec::channelEntries)
         .map(List::copyOf)
@@ -335,7 +337,8 @@ public class RuntimeConfigServerTreeChannelStateStore {
   }
 
   private Map<String, Object> readServerTreeChannelStateMap(String serverId) {
-    return channelsByServerSection.readExistingValue("server-tree channel state", serverId)
+    return channelsByServerSection
+        .readExistingValue("server-tree channel state", serverId)
         .map(RuntimeConfigServerTreeChannelStateStore::readMap)
         .orElse(Map.of());
   }

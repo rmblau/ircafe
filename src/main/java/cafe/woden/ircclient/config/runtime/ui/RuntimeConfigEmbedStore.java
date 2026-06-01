@@ -58,5 +58,4 @@ public class RuntimeConfigEmbedStore {
   private void rememberScalarSetting(String key, Object value, String description) {
     uiSection.putValue(description, value, key);
   }
-
 }

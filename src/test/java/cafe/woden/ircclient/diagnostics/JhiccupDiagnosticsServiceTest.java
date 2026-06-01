@@ -5,8 +5,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-import cafe.woden.ircclient.config.properties.UiProperties;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
+import cafe.woden.ircclient.config.properties.UiProperties;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 

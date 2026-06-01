@@ -21,7 +21,8 @@ public class RuntimeConfigChatLoggingStore {
   }
 
   public synchronized boolean readEnabled(boolean defaultValue) {
-    return loggingSection.readExistingValue("chat logging enabled", "enabled")
+    return loggingSection
+        .readExistingValue("chat logging enabled", "enabled")
         .flatMap(RuntimeConfigYamlSupport::asBoolean)
         .orElse(defaultValue);
   }
@@ -88,5 +89,4 @@ public class RuntimeConfigChatLoggingStore {
   private void rememberHsqldbScalarSetting(String key, Object value, String description) {
     loggingSection.putValue(description, value, "hsqldb", key);
   }
-
 }

@@ -1,10 +1,10 @@
 package cafe.woden.ircclient.config.runtime.ui;
 
+import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
 import cafe.woden.ircclient.config.properties.UiProperties;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
-import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
 import java.nio.file.Path;
 import java.util.Objects;
 import java.util.Optional;
@@ -152,5 +152,4 @@ public class RuntimeConfigChatBehaviorStore {
     if (v > 150) v = 150;
     return v;
   }
-
 }

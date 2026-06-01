@@ -2,8 +2,8 @@ package cafe.woden.ircclient.ui.shell;
 
 import cafe.woden.ircclient.app.ApplicationShutdownCoordinator;
 import cafe.woden.ircclient.app.api.ActiveTargetPort;
-import cafe.woden.ircclient.config.properties.UiProperties;
 import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
+import cafe.woden.ircclient.config.properties.UiProperties;
 import cafe.woden.ircclient.diagnostics.RuntimeJfrService;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.model.TargetRef;

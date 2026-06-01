@@ -27,14 +27,16 @@ public class RuntimeConfigUserCommandStore {
   }
 
   public synchronized List<UserCommandAlias> readAliases() {
-    return commandsSection.readExistingValue("user command aliases", "aliases")
+    return commandsSection
+        .readExistingValue("user command aliases", "aliases")
         .filter(List.class::isInstance)
         .map(value -> parseAliases((List<?>) value))
         .orElseGet(List::of);
   }
 
   public synchronized boolean readUnknownCommandAsRawEnabled(boolean defaultValue) {
-    return commandsSection.readExistingValue("commands.unknownCommandAsRaw", "unknownCommandAsRaw")
+    return commandsSection
+        .readExistingValue("commands.unknownCommandAsRaw", "unknownCommandAsRaw")
         .flatMap(value -> asBoolean(value))
         .orElse(defaultValue);
   }
@@ -80,5 +82,4 @@ public class RuntimeConfigUserCommandStore {
     }
     return out;
   }
-
 }

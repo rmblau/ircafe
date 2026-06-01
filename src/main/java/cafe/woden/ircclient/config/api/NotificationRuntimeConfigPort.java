@@ -1,6 +1,5 @@
 package cafe.woden.ircclient.config.api;
 
-import cafe.woden.ircclient.config.api.NotificationRule;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import java.util.List;
 import org.jmolecules.architecture.hexagonal.SecondaryPort;

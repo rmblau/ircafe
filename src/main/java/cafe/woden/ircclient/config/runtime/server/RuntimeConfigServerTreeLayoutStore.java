@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.config.runtime.server;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asBoolean;
+
 import cafe.woden.ircclient.config.api.ServerTreeBuiltInVisibilityConfigPort.ServerTreeBuiltInNodesVisibility;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayout;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayoutNode;
@@ -75,19 +76,22 @@ public class RuntimeConfigServerTreeLayoutStore {
     ServerTreeBuiltInNodesVisibility v =
         visibility != null ? visibility : ServerTreeBuiltInNodesVisibility.defaults();
 
-    mutateServerTreeByServer("built-in node visibility", "builtInNodesByServer", sid, byServer -> {
-      if (v.isDefaultVisible()) {
-        byServer.remove(sid);
-      } else {
-        Map<String, Object> out = new LinkedHashMap<>();
-        out.put("server", v.server());
-        out.put("notifications", v.notifications());
-        out.put("logViewer", v.logViewer());
-        out.put("monitor", v.monitor());
-        out.put("interceptors", v.interceptors());
-        byServer.put(sid, out);
-      }
-    });
+    mutateServerTreeByServer(
+        "built-in node visibility",
+        "builtInNodesByServer",
+        byServer -> {
+          if (v.isDefaultVisible()) {
+            byServer.remove(sid);
+          } else {
+            Map<String, Object> out = new LinkedHashMap<>();
+            out.put("server", v.server());
+            out.put("notifications", v.notifications());
+            out.put("logViewer", v.logViewer());
+            out.put("monitor", v.monitor());
+            out.put("interceptors", v.interceptors());
+            byServer.put(sid, out);
+          }
+        });
   }
 
   /**
@@ -131,18 +135,21 @@ public class RuntimeConfigServerTreeLayoutStore {
     ServerTreeBuiltInLayout next =
         normalizeBuiltInLayout(layout == null ? ServerTreeBuiltInLayout.defaults() : layout);
 
-    mutateServerTreeByServer("built-in layout", "builtInLayoutByServer", sid, byServer -> {
-      if (next.isDefaultLayout()) {
-        byServer.remove(sid);
-      } else {
-        Map<String, Object> out = new LinkedHashMap<>();
-        List<String> root = builtInLayoutNodeTokens(next.rootOrder());
-        List<String> other = builtInLayoutNodeTokens(next.otherOrder());
-        if (!root.isEmpty()) out.put("root", root);
-        if (!other.isEmpty()) out.put("other", other);
-        byServer.put(sid, out);
-      }
-    });
+    mutateServerTreeByServer(
+        "built-in layout",
+        "builtInLayoutByServer",
+        byServer -> {
+          if (next.isDefaultLayout()) {
+            byServer.remove(sid);
+          } else {
+            Map<String, Object> out = new LinkedHashMap<>();
+            List<String> root = builtInLayoutNodeTokens(next.rootOrder());
+            List<String> other = builtInLayoutNodeTokens(next.otherOrder());
+            if (!root.isEmpty()) out.put("root", root);
+            if (!other.isEmpty()) out.put("other", other);
+            byServer.put(sid, out);
+          }
+        });
   }
 
   /**
@@ -176,20 +183,24 @@ public class RuntimeConfigServerTreeLayoutStore {
    *
    * <p>When order matches defaults, the server entry is removed to keep config compact.
    */
-  public synchronized void rememberRootSiblingOrder(String serverId, ServerTreeRootSiblingOrder order) {
+  public synchronized void rememberRootSiblingOrder(
+      String serverId, ServerTreeRootSiblingOrder order) {
     String sid = Objects.toString(serverId, "").trim();
     if (sid.isEmpty()) return;
 
     ServerTreeRootSiblingOrder next =
         normalizeRootSiblingOrder(order == null ? ServerTreeRootSiblingOrder.defaults() : order);
 
-    mutateServerTreeByServer("root sibling order", "rootSiblingOrderByServer", sid, byServer -> {
-      if (next.isDefaultOrder()) {
-        byServer.remove(sid);
-      } else {
-        byServer.put(sid, rootSiblingNodeTokens(next.order()));
-      }
-    });
+    mutateServerTreeByServer(
+        "root sibling order",
+        "rootSiblingOrderByServer",
+        byServer -> {
+          if (next.isDefaultOrder()) {
+            byServer.remove(sid);
+          } else {
+            byServer.put(sid, rootSiblingNodeTokens(next.order()));
+          }
+        });
   }
 
   private static ServerTreeBuiltInLayout normalizeBuiltInLayout(ServerTreeBuiltInLayout layout) {
@@ -318,12 +329,7 @@ public class RuntimeConfigServerTreeLayoutStore {
   }
 
   private void mutateServerTreeByServer(
-      String description,
-      String key,
-      String serverId,
-      java.util.function.Consumer<Map<String, Object>> mutation) {
-    uiSection.mutateMapAndRemoveIfEmpty(
-        "server-tree " + description, mutation, "serverTree", key);
+      String description, String key, java.util.function.Consumer<Map<String, Object>> mutation) {
+    uiSection.mutateMapAndRemoveIfEmpty("server-tree " + description, mutation, "serverTree", key);
   }
-
 }

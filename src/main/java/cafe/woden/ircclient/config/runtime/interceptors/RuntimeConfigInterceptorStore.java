@@ -35,7 +35,8 @@ public class RuntimeConfigInterceptorStore {
         .orElseGet(Map::of);
   }
 
-  public synchronized void rememberDefinitions(Map<String, List<InterceptorDefinition>> defsByServer) {
+  public synchronized void rememberDefinitions(
+      Map<String, List<InterceptorDefinition>> defsByServer) {
     uiSection.mutateMapAndRemoveIfEmpty(
         "interceptor definitions",
         interceptors -> {
@@ -162,9 +163,7 @@ public class RuntimeConfigInterceptorStore {
 
       m.put(
           "messageMode",
-          rule.messageMode() != null
-              ? rule.messageMode().name()
-              : InterceptorRuleMode.LIKE.name());
+          rule.messageMode() != null ? rule.messageMode().name() : InterceptorRuleMode.LIKE.name());
       String messagePattern = Objects.toString(rule.messagePattern(), "").trim();
       if (!messagePattern.isEmpty()) m.put("messagePattern", messagePattern);
 
@@ -331,5 +330,4 @@ public class RuntimeConfigInterceptorStore {
       return fallback;
     }
   }
-
 }

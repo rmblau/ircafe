@@ -2,8 +2,8 @@ package cafe.woden.ircclient.config.runtime;
 
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
-import cafe.woden.ircclient.config.runtime.connection.RuntimeConfigConnectionStoreDelegates;
 import cafe.woden.ircclient.config.runtime.commands.RuntimeConfigUserCommandStore;
+import cafe.woden.ircclient.config.runtime.connection.RuntimeConfigConnectionStoreDelegates;
 import cafe.woden.ircclient.config.runtime.ignore.RuntimeConfigIgnoreRulesStore;
 import cafe.woden.ircclient.config.runtime.interceptors.RuntimeConfigInterceptorStore;
 import cafe.woden.ircclient.config.runtime.ircv3.RuntimeConfigIrcv3StoreDelegates;

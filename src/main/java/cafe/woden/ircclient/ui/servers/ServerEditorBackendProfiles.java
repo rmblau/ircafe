@@ -2,8 +2,8 @@ package cafe.woden.ircclient.ui.servers;
 
 import cafe.woden.ircclient.app.api.BackendEditorProfileCatalog;
 import cafe.woden.ircclient.app.api.BackendEditorProfileSpec;
-import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;

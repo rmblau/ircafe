@@ -96,5 +96,4 @@ public class RuntimeConfigServerAutoConnectStore {
     }
     return out.isEmpty() ? Map.of() : Map.copyOf(out);
   }
-
 }

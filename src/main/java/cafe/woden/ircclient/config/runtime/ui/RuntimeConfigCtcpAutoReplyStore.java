@@ -52,7 +52,8 @@ public class RuntimeConfigCtcpAutoReplyStore {
   }
 
   private boolean readBoolean(String key, boolean defaultValue) {
-    return ctcpRepliesSection.readExistingValue("ui.ctcpReplies." + key, key)
+    return ctcpRepliesSection
+        .readExistingValue("ui.ctcpReplies." + key, key)
         .flatMap(RuntimeConfigYamlSupport::asBoolean)
         .orElse(defaultValue);
   }
@@ -60,5 +61,4 @@ public class RuntimeConfigCtcpAutoReplyStore {
   private void rememberBoolean(String key, boolean enabled) {
     ctcpRepliesSection.putValue("ui.ctcpReplies." + key, enabled, key);
   }
-
 }

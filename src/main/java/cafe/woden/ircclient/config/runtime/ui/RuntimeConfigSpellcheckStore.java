@@ -18,8 +18,7 @@ public class RuntimeConfigSpellcheckStore {
   private final RuntimeConfigYamlSection uiSection;
 
   public RuntimeConfigSpellcheckStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.uiSection =
-        RuntimeConfigYamlSection.ircafeUi(file, documentStore, log);
+    this.uiSection = RuntimeConfigYamlSection.ircafeUi(file, documentStore, log);
   }
 
   public synchronized void rememberEnabled(boolean enabled) {
@@ -96,5 +95,4 @@ public class RuntimeConfigSpellcheckStore {
   private void rememberScalar(String key, Object value) {
     uiSection.putValue("ui." + key, value, key);
   }
-
 }

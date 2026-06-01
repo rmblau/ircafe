@@ -1,11 +1,11 @@
 package cafe.woden.ircclient.irc.backend;
 
-import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
-import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
 import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.servers.ServerCatalog;
+import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import cafe.woden.ircclient.config.api.BackendMetadataPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
+import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
+import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.irc.DisconnectRequestSource;
 import cafe.woden.ircclient.irc.IrcClientService;
 import cafe.woden.ircclient.irc.IrcDisconnectWithSourcePort;

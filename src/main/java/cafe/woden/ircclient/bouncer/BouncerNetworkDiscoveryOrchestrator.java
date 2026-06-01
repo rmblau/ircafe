@@ -1,9 +1,9 @@
 package cafe.woden.ircclient.bouncer;
 
-import cafe.woden.ircclient.config.servers.EphemeralServerRegistry;
 import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.servers.ServerRegistry;
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
+import cafe.woden.ircclient.config.servers.EphemeralServerRegistry;
+import cafe.woden.ircclient.config.servers.ServerRegistry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

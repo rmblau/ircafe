@@ -50,8 +50,7 @@ public final class RuntimeConfigYamlSection {
   }
 
   public Optional<Object> readValue(String description, String... path) {
-    return RuntimeConfigYamlSupport.readValue(
-        file, documentStore, log, description, resolve(path));
+    return RuntimeConfigYamlSupport.readValue(file, documentStore, log, description, resolve(path));
   }
 
   public Optional<Object> readExistingValue(String description, String... path) {
@@ -60,8 +59,7 @@ public final class RuntimeConfigYamlSection {
   }
 
   public void putValue(String description, Object value, String... path) {
-    RuntimeConfigYamlSupport.putValue(
-        file, documentStore, log, description, value, resolve(path));
+    RuntimeConfigYamlSupport.putValue(file, documentStore, log, description, value, resolve(path));
   }
 
   public void removeValue(String description, String... path) {
@@ -97,8 +95,7 @@ public final class RuntimeConfigYamlSection {
         file, documentStore, log, description, mutation, resolve(path));
   }
 
-  public void mutateDocument(
-      String description, Function<Map<String, Object>, Boolean> mutation) {
+  public void mutateDocument(String description, Function<Map<String, Object>, Boolean> mutation) {
     RuntimeConfigYamlSupport.mutateDocument(file, documentStore, log, description, mutation);
   }
 

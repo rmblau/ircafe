@@ -47,7 +47,8 @@ public class RuntimeConfigUiFeatureToggleStore {
 
   private boolean readSectionBoolean(
       String section, String key, boolean defaultValue, String description) {
-    return uiSection.readValue(description, section, key)
+    return uiSection
+        .readValue(description, section, key)
         .flatMap(RuntimeConfigYamlSupport::asBoolean)
         .orElse(defaultValue);
   }
@@ -56,5 +57,4 @@ public class RuntimeConfigUiFeatureToggleStore {
       String section, String key, boolean enabled, String description) {
     uiSection.putValue(description, enabled, section, key);
   }
-
 }
