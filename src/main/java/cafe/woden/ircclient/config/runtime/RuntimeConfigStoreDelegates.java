@@ -7,8 +7,7 @@ import cafe.woden.ircclient.config.runtime.client.RuntimeConfigClientSettingsSto
 import cafe.woden.ircclient.config.runtime.commands.RuntimeConfigUserCommandStore;
 import cafe.woden.ircclient.config.runtime.ignore.RuntimeConfigIgnoreRulesStore;
 import cafe.woden.ircclient.config.runtime.interceptors.RuntimeConfigInterceptorStore;
-import cafe.woden.ircclient.config.runtime.ircv3.RuntimeConfigIrcv3CapabilityStore;
-import cafe.woden.ircclient.config.runtime.ircv3.RuntimeConfigIrcv3StsPolicyStore;
+import cafe.woden.ircclient.config.runtime.ircv3.RuntimeConfigIrcv3StoreDelegates;
 import cafe.woden.ircclient.config.runtime.launch.RuntimeConfigLaunchJvmStore;
 import cafe.woden.ircclient.config.runtime.logging.RuntimeConfigChatLoggingStore;
 import cafe.woden.ircclient.config.runtime.notifications.RuntimeConfigPushyStore;
@@ -29,8 +28,7 @@ public final class RuntimeConfigStoreDelegates {
   public final RuntimeConfigIgnoreRulesStore ignoreRulesStore;
   public final RuntimeConfigChatLoggingStore chatLoggingStore;
   public final RuntimeConfigPushyStore pushyStore;
-  public final RuntimeConfigIrcv3StsPolicyStore ircv3StsPolicyStore;
-  public final RuntimeConfigIrcv3CapabilityStore ircv3CapabilityStore;
+  public final RuntimeConfigIrcv3StoreDelegates ircv3Stores;
   public final RuntimeConfigBouncerDiscoveryStore bouncerDiscoveryStore;
   public final RuntimeConfigClientSettingsStore clientSettingsStore;
 
@@ -44,8 +42,7 @@ public final class RuntimeConfigStoreDelegates {
     this.ignoreRulesStore = new RuntimeConfigIgnoreRulesStore(file, documentStore);
     this.chatLoggingStore = new RuntimeConfigChatLoggingStore(file, documentStore);
     this.pushyStore = new RuntimeConfigPushyStore(file, documentStore);
-    this.ircv3StsPolicyStore = new RuntimeConfigIrcv3StsPolicyStore(file, documentStore);
-    this.ircv3CapabilityStore = new RuntimeConfigIrcv3CapabilityStore(file, documentStore);
+    this.ircv3Stores = new RuntimeConfigIrcv3StoreDelegates(file, documentStore);
     this.bouncerDiscoveryStore = new RuntimeConfigBouncerDiscoveryStore(file, documentStore);
     this.clientSettingsStore = new RuntimeConfigClientSettingsStore(file, documentStore);
   }

@@ -114,7 +114,7 @@ public class RuntimeConfigStore
 
   @Autowired(required = false)
   void setIrcv3CapabilityNameResolver(Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolver) {
-    stores.ircv3CapabilityStore.setCapabilityNameResolver(ircv3CapabilityNameResolver);
+    stores.ircv3Stores.capabilityStore.setCapabilityNameResolver(ircv3CapabilityNameResolver);
   }
 
   /**
@@ -1174,7 +1174,7 @@ public class RuntimeConfigStore
   @Override
   public synchronized Map<String, Ircv3StsPolicyConfigPort.StsPolicySnapshot>
       readIrcv3StsPolicies() {
-    return stores.ircv3StsPolicyStore.readPolicies();
+    return stores.ircv3Stores.stsPolicyStore.readPolicies();
   }
 
   /** Persists one IRCv3 STS policy snapshot under {@code ircafe.ircv3.stsPolicies.<host>}. */
@@ -1186,14 +1186,14 @@ public class RuntimeConfigStore
       boolean preload,
       long durationSeconds,
       String rawValue) {
-    stores.ircv3StsPolicyStore.rememberPolicy(
+    stores.ircv3Stores.stsPolicyStore.rememberPolicy(
         host, expiresAtEpochMs, port, preload, durationSeconds, rawValue);
   }
 
   /** Removes a persisted IRCv3 STS policy snapshot from {@code ircafe.ircv3.stsPolicies}. */
   @Override
   public synchronized void forgetIrcv3StsPolicy(String host) {
-    stores.ircv3StsPolicyStore.forgetPolicy(host);
+    stores.ircv3Stores.stsPolicyStore.forgetPolicy(host);
   }
 
   /**
@@ -1202,7 +1202,7 @@ public class RuntimeConfigStore
    * <p>Keys are normalized to lowercase, values are booleans. Missing/invalid entries are ignored.
    */
   public synchronized Map<String, Boolean> readIrcv3Capabilities() {
-    return stores.ircv3CapabilityStore.readCapabilities();
+    return stores.ircv3Stores.capabilityStore.readCapabilities();
   }
 
   /**
@@ -1211,7 +1211,7 @@ public class RuntimeConfigStore
    */
   @Override
   public synchronized boolean isIrcv3CapabilityEnabled(String capability, boolean defaultEnabled) {
-    return stores.ircv3CapabilityStore.isCapabilityEnabled(capability, defaultEnabled);
+    return stores.ircv3Stores.capabilityStore.isCapabilityEnabled(capability, defaultEnabled);
   }
 
   /**
@@ -1221,7 +1221,7 @@ public class RuntimeConfigStore
    */
   @Override
   public synchronized void rememberIrcv3CapabilityEnabled(String capability, boolean enabled) {
-    stores.ircv3CapabilityStore.rememberCapabilityEnabled(capability, enabled);
+    stores.ircv3Stores.capabilityStore.rememberCapabilityEnabled(capability, enabled);
   }
 
   // --- WeeChat-style filters (ircafe.ui.filters.*) ---
