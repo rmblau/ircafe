@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime.ircv3;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asBoolean;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asInt;
@@ -17,14 +17,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Owns persisted IRCv3 STS policy snapshots under {@code ircafe.ircv3.stsPolicies}. */
-class RuntimeConfigIrcv3StsPolicyStore {
+public class RuntimeConfigIrcv3StsPolicyStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigIrcv3StsPolicyStore.class);
 
   private final RuntimeConfigYamlSection ircv3Section;
 
-  RuntimeConfigIrcv3StsPolicyStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.ircv3Section = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ircv3");
+  public RuntimeConfigIrcv3StsPolicyStore(Path file, RuntimeConfigDocumentStore documentStore) {
+    this.ircv3Section = RuntimeConfigYamlSection.ircafe(file, documentStore, log, "ircv3");
   }
 
   /**
@@ -32,7 +32,7 @@ class RuntimeConfigIrcv3StsPolicyStore {
    *
    * <p>Entries with invalid hosts or missing/invalid expiry are ignored.
    */
-  synchronized Map<String, Ircv3StsPolicyConfigPort.StsPolicySnapshot> readPolicies() {
+  public synchronized Map<String, Ircv3StsPolicyConfigPort.StsPolicySnapshot> readPolicies() {
     Optional<Object> policiesObj =
         ircv3Section.readExistingValue("IRCv3 STS policy cache", "stsPolicies");
     if (policiesObj.isEmpty()) return Map.of();
@@ -64,7 +64,7 @@ class RuntimeConfigIrcv3StsPolicyStore {
   }
 
   /** Persists one IRCv3 STS policy snapshot under {@code ircafe.ircv3.stsPolicies.<host>}. */
-  synchronized void rememberPolicy(
+  public synchronized void rememberPolicy(
       String host,
       long expiresAtEpochMs,
       Integer port,
@@ -107,7 +107,7 @@ class RuntimeConfigIrcv3StsPolicyStore {
   }
 
   /** Removes a persisted IRCv3 STS policy snapshot from {@code ircafe.ircv3.stsPolicies}. */
-  synchronized void forgetPolicy(String host) {
+  public synchronized void forgetPolicy(String host) {
     String hostKey = normalizeHostKey(host);
     if (hostKey == null) return;
 

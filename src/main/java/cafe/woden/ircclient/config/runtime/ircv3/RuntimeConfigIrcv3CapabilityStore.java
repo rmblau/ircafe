@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime.ircv3;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asBoolean;
 
@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Owns persisted IRCv3 capability request overrides under {@code ircafe.ui.ircv3Capabilities}. */
-class RuntimeConfigIrcv3CapabilityStore {
+public class RuntimeConfigIrcv3CapabilityStore {
 
   private static final Logger log =
       LoggerFactory.getLogger(RuntimeConfigIrcv3CapabilityStore.class);
@@ -23,11 +23,11 @@ class RuntimeConfigIrcv3CapabilityStore {
   private Ircv3CapabilityNameResolverPort capabilityNameResolver =
       new Ircv3CapabilityNameResolverPort() {};
 
-  RuntimeConfigIrcv3CapabilityStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.uiSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui");
+  public RuntimeConfigIrcv3CapabilityStore(Path file, RuntimeConfigDocumentStore documentStore) {
+    this.uiSection = RuntimeConfigYamlSection.ircafeUi(file, documentStore, log);
   }
 
-  void setCapabilityNameResolver(Ircv3CapabilityNameResolverPort capabilityNameResolver) {
+  public void setCapabilityNameResolver(Ircv3CapabilityNameResolverPort capabilityNameResolver) {
     this.capabilityNameResolver =
         capabilityNameResolver == null
             ? new Ircv3CapabilityNameResolverPort() {}
@@ -39,7 +39,7 @@ class RuntimeConfigIrcv3CapabilityStore {
    *
    * <p>Keys are normalized to lowercase, values are booleans. Missing/invalid entries are ignored.
    */
-  synchronized Map<String, Boolean> readCapabilities() {
+  public synchronized Map<String, Boolean> readCapabilities() {
     Optional<Object> capsObj =
         uiSection.readExistingValue("IRCv3 capability settings", "ircv3Capabilities");
     if (capsObj.isEmpty()) return Map.of();
@@ -59,7 +59,7 @@ class RuntimeConfigIrcv3CapabilityStore {
    * Returns whether a given IRCv3 capability should be requested, falling back to {@code
    * defaultEnabled} when no explicit override is present.
    */
-  synchronized boolean isCapabilityEnabled(String capability, boolean defaultEnabled) {
+  public synchronized boolean isCapabilityEnabled(String capability, boolean defaultEnabled) {
     String key = normalizeCapabilityKey(capability);
     if (key == null) return defaultEnabled;
     Map<String, Boolean> caps = readCapabilities();
@@ -71,7 +71,7 @@ class RuntimeConfigIrcv3CapabilityStore {
    *
    * <p>Default behavior is "enabled", so enabled values are removed to keep YAML concise.
    */
-  synchronized void rememberCapabilityEnabled(String capability, boolean enabled) {
+  public synchronized void rememberCapabilityEnabled(String capability, boolean enabled) {
     String key = normalizeCapabilityKey(capability);
     if (key == null) return;
 

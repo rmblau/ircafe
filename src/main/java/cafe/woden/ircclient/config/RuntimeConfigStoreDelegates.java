@@ -2,6 +2,8 @@ package cafe.woden.ircclient.config;
 
 import cafe.woden.ircclient.config.runtime.commands.RuntimeConfigUserCommandStore;
 import cafe.woden.ircclient.config.runtime.logging.RuntimeConfigChatLoggingStore;
+import cafe.woden.ircclient.config.runtime.ircv3.RuntimeConfigIrcv3CapabilityStore;
+import cafe.woden.ircclient.config.runtime.ircv3.RuntimeConfigIrcv3StsPolicyStore;
 import cafe.woden.ircclient.config.runtime.server.RuntimeConfigMonitorRosterStore;
 import cafe.woden.ircclient.config.runtime.server.RuntimeConfigPrivateMessageTargetStore;
 import cafe.woden.ircclient.config.runtime.server.RuntimeConfigServerAutoConnectStore;
