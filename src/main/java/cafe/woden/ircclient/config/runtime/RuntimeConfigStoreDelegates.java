@@ -2,8 +2,7 @@ package cafe.woden.ircclient.config.runtime;
 
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
-import cafe.woden.ircclient.config.runtime.bouncer.RuntimeConfigBouncerDiscoveryStore;
-import cafe.woden.ircclient.config.runtime.client.RuntimeConfigClientSettingsStore;
+import cafe.woden.ircclient.config.runtime.connection.RuntimeConfigConnectionStoreDelegates;
 import cafe.woden.ircclient.config.runtime.commands.RuntimeConfigUserCommandStore;
 import cafe.woden.ircclient.config.runtime.ignore.RuntimeConfigIgnoreRulesStore;
 import cafe.woden.ircclient.config.runtime.interceptors.RuntimeConfigInterceptorStore;
@@ -29,8 +28,7 @@ public final class RuntimeConfigStoreDelegates {
   public final RuntimeConfigChatLoggingStore chatLoggingStore;
   public final RuntimeConfigPushyStore pushyStore;
   public final RuntimeConfigIrcv3StoreDelegates ircv3Stores;
-  public final RuntimeConfigBouncerDiscoveryStore bouncerDiscoveryStore;
-  public final RuntimeConfigClientSettingsStore clientSettingsStore;
+  public final RuntimeConfigConnectionStoreDelegates connectionStores;
 
   public RuntimeConfigStoreDelegates(Path file, IrcProperties defaults) {
     this.documentStore = new RuntimeConfigDocumentStore(file);
@@ -43,7 +41,6 @@ public final class RuntimeConfigStoreDelegates {
     this.chatLoggingStore = new RuntimeConfigChatLoggingStore(file, documentStore);
     this.pushyStore = new RuntimeConfigPushyStore(file, documentStore);
     this.ircv3Stores = new RuntimeConfigIrcv3StoreDelegates(file, documentStore);
-    this.bouncerDiscoveryStore = new RuntimeConfigBouncerDiscoveryStore(file, documentStore);
-    this.clientSettingsStore = new RuntimeConfigClientSettingsStore(file, documentStore);
+    this.connectionStores = new RuntimeConfigConnectionStoreDelegates(file, documentStore);
   }
 }

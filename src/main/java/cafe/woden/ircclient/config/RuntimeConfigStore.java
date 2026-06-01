@@ -1463,15 +1463,16 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberClientTlsTrustAllCertificates(boolean trustAllCertificates) {
-    stores.clientSettingsStore.rememberTlsTrustAllCertificates(trustAllCertificates);
+    stores.connectionStores.clientSettingsStore.rememberTlsTrustAllCertificates(
+        trustAllCertificates);
   }
 
   public synchronized void rememberClientHeartbeat(IrcProperties.Heartbeat heartbeat) {
-    stores.clientSettingsStore.rememberHeartbeat(heartbeat);
+    stores.connectionStores.clientSettingsStore.rememberHeartbeat(heartbeat);
   }
 
   public synchronized void rememberClientProxy(IrcProperties.Proxy proxy) {
-    stores.clientSettingsStore.rememberProxy(proxy);
+    stores.connectionStores.clientSettingsStore.rememberProxy(proxy);
   }
 
   @Override
@@ -1541,44 +1542,46 @@ public class RuntimeConfigStore
   @Override
   public synchronized void rememberSojuAutoConnectNetwork(
       String bouncerServerId, String networkName, boolean enabled) {
-    stores.bouncerDiscoveryStore.rememberSojuAutoConnectNetwork(
+    stores.connectionStores.bouncerDiscoveryStore.rememberSojuAutoConnectNetwork(
         bouncerServerId, networkName, enabled);
   }
 
   @Override
   public synchronized void rememberZncAutoConnectNetwork(
       String bouncerServerId, String networkName, boolean enabled) {
-    stores.bouncerDiscoveryStore.rememberZncAutoConnectNetwork(
+    stores.connectionStores.bouncerDiscoveryStore.rememberZncAutoConnectNetwork(
         bouncerServerId, networkName, enabled);
   }
 
   @Override
   public synchronized Map<String, Map<String, Boolean>> readGenericBouncerAutoConnectRules() {
-    return stores.bouncerDiscoveryStore.readGenericBouncerAutoConnectRules();
+    return stores.connectionStores.bouncerDiscoveryStore.readGenericBouncerAutoConnectRules();
   }
 
   @Override
   public synchronized void rememberGenericBouncerAutoConnectNetwork(
       String bouncerServerId, String networkName, boolean enabled) {
-    stores.bouncerDiscoveryStore.rememberGenericBouncerAutoConnectNetwork(
+    stores.connectionStores.bouncerDiscoveryStore.rememberGenericBouncerAutoConnectNetwork(
         bouncerServerId, networkName, enabled);
   }
 
   @Override
   public synchronized String readGenericBouncerLoginTemplate(String defaultValue) {
-    return stores.bouncerDiscoveryStore.readGenericBouncerLoginTemplate(defaultValue);
+    return stores.connectionStores.bouncerDiscoveryStore.readGenericBouncerLoginTemplate(
+        defaultValue);
   }
 
   @Override
   public synchronized boolean readGenericBouncerPreferLoginHint(boolean defaultValue) {
-    return stores.bouncerDiscoveryStore.readGenericBouncerPreferLoginHint(defaultValue);
+    return stores.connectionStores.bouncerDiscoveryStore.readGenericBouncerPreferLoginHint(
+        defaultValue);
   }
 
   public synchronized void rememberGenericBouncerLoginTemplate(String template) {
-    stores.bouncerDiscoveryStore.rememberGenericBouncerLoginTemplate(template);
+    stores.connectionStores.bouncerDiscoveryStore.rememberGenericBouncerLoginTemplate(template);
   }
 
   public synchronized void rememberGenericBouncerPreferLoginHint(boolean enabled) {
-    stores.bouncerDiscoveryStore.rememberGenericBouncerPreferLoginHint(enabled);
+    stores.connectionStores.bouncerDiscoveryStore.rememberGenericBouncerPreferLoginHint(enabled);
   }
 }
