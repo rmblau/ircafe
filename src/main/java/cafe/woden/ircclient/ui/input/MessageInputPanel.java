@@ -817,6 +817,30 @@ public class MessageInputPanel extends JPanel {
       }
       return support != null && fallback != null && fallback.importData(support);
     }
+
+    @Override
+    public int getSourceActions(JComponent c) {
+      return fallback != null ? fallback.getSourceActions(c) : super.getSourceActions(c);
+    }
+
+    @Override
+    public void exportToClipboard(JComponent comp, Clipboard clip, int action)
+        throws IllegalStateException {
+      if (fallback != null) {
+        fallback.exportToClipboard(comp, clip, action);
+        return;
+      }
+      super.exportToClipboard(comp, clip, action);
+    }
+
+    @Override
+    public void exportAsDrag(JComponent comp, java.awt.event.InputEvent e, int action) {
+      if (fallback != null) {
+        fallback.exportAsDrag(comp, e, action);
+        return;
+      }
+      super.exportAsDrag(comp, e, action);
+    }
   }
 
   private final class MessageInputUploadUxContext implements MessageInputUploadUxMode.Context {
