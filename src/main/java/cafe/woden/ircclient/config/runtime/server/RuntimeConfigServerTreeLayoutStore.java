@@ -15,7 +15,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -324,8 +323,10 @@ public class RuntimeConfigServerTreeLayoutStore {
     return out.isEmpty() ? List.of() : List.copyOf(out);
   }
 
-  private Optional<Object> readServerTreeSection(String description, String key) {
-    return uiSection.readExistingValue("server-tree " + description, "serverTree", key);
+  private Object readServerTreeSection(String description, String key) {
+    return uiSection
+        .readExistingValue("server-tree " + description, "serverTree", key)
+        .orElse(null);
   }
 
   private void mutateServerTreeByServer(
