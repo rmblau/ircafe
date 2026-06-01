@@ -19,6 +19,10 @@ public interface UiSettingsRuntimeConfigPort {
 
   boolean readChatHistoryLockViewportDuringLoadOlder(boolean defaultValue);
 
+  boolean readNickCompletionCycleWithTabEnabled(boolean defaultValue);
+
+  boolean readNickCompletionAppendAddressSuffixEnabled(boolean defaultValue);
+
   int readServerTreeUnreadBadgeScalePercent(int defaultValue);
 
   void rememberUiSettings(String theme, String chatFontFamily, int chatFontSize);

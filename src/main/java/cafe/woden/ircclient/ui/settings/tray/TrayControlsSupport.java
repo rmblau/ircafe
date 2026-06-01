@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.ui.settings.tray;
 
-import cafe.woden.ircclient.config.PushyProperties;
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.TrayRuntimeConfigPort;
+import cafe.woden.ircclient.config.properties.PushyProperties;
 import cafe.woden.ircclient.model.BuiltInSound;
 import cafe.woden.ircclient.notify.api.NotificationSoundPort;
 import cafe.woden.ircclient.notify.api.PushyNotificationPort;
@@ -40,7 +40,7 @@ public final class TrayControlsSupport {
       UiSettings current,
       NotificationSoundSettings soundSettings,
       PushyProperties pushySettings,
-      RuntimeConfigStore runtimeConfig,
+      TrayRuntimeConfigPort runtimeConfig,
       GnomeDbusNotificationBackend gnomeDbusBackend,
       TrayNotificationService trayNotificationService,
       NotificationSoundPort notificationSoundService,
@@ -468,7 +468,7 @@ public final class TrayControlsSupport {
   }
 
   public static void rememberSettings(
-      RuntimeConfigStore runtimeConfig,
+      TrayRuntimeConfigPort runtimeConfig,
       NotificationSoundSettingsBus notificationSoundSettingsBus,
       PushySettingsBus pushySettingsBus,
       UpdateNotifierService updateNotifierService,

@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.ui.servertree.view;
 
 import cafe.woden.ircclient.app.api.ConnectionState;
-import cafe.woden.ircclient.config.ServerEntry;
+import cafe.woden.ircclient.config.api.ServerEntry;
 import cafe.woden.ircclient.interceptors.InterceptorScope;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.icons.SvgIcons;

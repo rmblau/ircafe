@@ -2,9 +2,9 @@ package cafe.woden.ircclient.logging.history;
 
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.CHATHISTORY;
 
-import cafe.woden.ircclient.config.ConfigPropertyKeys;
-import cafe.woden.ircclient.config.ExecutorConfig;
-import cafe.woden.ircclient.config.LogProperties;
+import cafe.woden.ircclient.config.execution.ExecutorConfig;
+import cafe.woden.ircclient.config.properties.ConfigPropertyKeys;
+import cafe.woden.ircclient.config.properties.LogProperties;
 import cafe.woden.ircclient.irc.ChatHistoryEntry;
 import cafe.woden.ircclient.logging.ChatLogRepository;
 import cafe.woden.ircclient.logging.LogLine;

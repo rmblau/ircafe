@@ -5,10 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import cafe.woden.ircclient.config.InstalledPluginServices;
 import cafe.woden.ircclient.config.api.InstalledPluginProblem;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
+import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.nio.file.Files;
 import java.nio.file.Path;

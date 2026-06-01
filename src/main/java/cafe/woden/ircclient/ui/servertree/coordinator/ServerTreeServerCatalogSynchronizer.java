@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.coordinator;
 
-import cafe.woden.ircclient.config.ServerEntry;
+import cafe.woden.ircclient.config.api.ServerEntry;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.servertree.ServerTreeBouncerBackends;
 import cafe.woden.ircclient.ui.servertree.model.ServerNodes;

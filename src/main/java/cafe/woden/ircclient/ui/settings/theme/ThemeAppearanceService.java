@@ -2,6 +2,8 @@ package cafe.woden.ircclient.ui.settings.theme;
 
 import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
+import cafe.woden.ircclient.ui.util.UiDefaultKeys;
+import cafe.woden.ircclient.ui.util.UiFontKeys;
 import com.formdev.flatlaf.FlatLaf;
 import java.awt.Color;
 import java.awt.Font;
@@ -22,23 +24,23 @@ import org.springframework.stereotype.Component;
 class ThemeAppearanceService {
 
   private static final String[] COMMON_TWEAK_OVERRIDE_KEYS = {
-    "Component.arc",
-    "Button.arc",
-    "TextComponent.arc",
-    "ProgressBar.arc",
-    "ScrollPane.arc",
-    "Tree.rowHeight",
-    "Table.rowHeight",
-    "List.cellHeight",
-    "Button.margin",
-    "ToggleButton.margin",
-    "RadioButton.margin",
-    "CheckBox.margin",
-    "TextComponent.margin",
-    "TextField.margin",
-    "PasswordField.margin",
-    "TextArea.margin",
-    "ComboBox.padding"
+    UiDefaultKeys.COMPONENT_ARC,
+    UiDefaultKeys.BUTTON_ARC,
+    UiDefaultKeys.TEXT_COMPONENT_ARC,
+    UiDefaultKeys.PROGRESS_BAR_ARC,
+    UiDefaultKeys.SCROLL_PANE_ARC,
+    UiDefaultKeys.TREE_ROW_HEIGHT,
+    UiDefaultKeys.TABLE_ROW_HEIGHT,
+    UiDefaultKeys.LIST_CELL_HEIGHT,
+    UiDefaultKeys.BUTTON_MARGIN,
+    UiDefaultKeys.TOGGLE_BUTTON_MARGIN,
+    UiDefaultKeys.RADIO_BUTTON_MARGIN,
+    UiDefaultKeys.CHECK_BOX_MARGIN,
+    UiDefaultKeys.TEXT_COMPONENT_MARGIN,
+    UiDefaultKeys.TEXT_FIELD_MARGIN,
+    UiDefaultKeys.PASSWORD_FIELD_MARGIN,
+    UiDefaultKeys.TEXT_AREA_MARGIN,
+    UiDefaultKeys.COMBO_BOX_PADDING
   };
 
   private static final String[] ACCENT_OVERRIDE_KEYS = {
@@ -59,27 +61,27 @@ class ThemeAppearanceService {
 
   private static final Object NULL_SENTINEL = new Object();
   private static final String[] UI_FONT_PRIORITY_KEYS = {
-    "defaultFont",
-    "Label.font",
-    "Button.font",
-    "Table.font",
-    "TableHeader.font",
-    "TextField.font",
-    "TextArea.font",
-    "CheckBox.font",
-    "ComboBox.font",
-    "Tree.font",
-    "TabbedPane.font",
-    "TitledBorder.font",
-    "MenuBar.font",
-    "Menu.font",
-    "MenuItem.font",
-    "CheckBoxMenuItem.font",
-    "RadioButtonMenuItem.font",
-    "PopupMenu.font",
-    "MenuItem.acceleratorFont",
-    "CheckBoxMenuItem.acceleratorFont",
-    "RadioButtonMenuItem.acceleratorFont"
+    UiFontKeys.DEFAULT_FONT,
+    UiFontKeys.LABEL_FONT,
+    UiFontKeys.BUTTON_FONT,
+    UiFontKeys.TABLE_FONT,
+    UiFontKeys.TABLE_HEADER_FONT,
+    UiFontKeys.TEXT_FIELD_FONT,
+    UiFontKeys.TEXT_AREA_FONT,
+    UiFontKeys.CHECK_BOX_FONT,
+    UiFontKeys.COMBO_BOX_FONT,
+    UiFontKeys.TREE_FONT,
+    UiFontKeys.TABBED_PANE_FONT,
+    UiFontKeys.TITLED_BORDER_FONT,
+    UiFontKeys.MENU_BAR_FONT,
+    UiFontKeys.MENU_FONT,
+    UiFontKeys.MENU_ITEM_FONT,
+    UiFontKeys.CHECK_BOX_MENU_ITEM_FONT,
+    UiFontKeys.RADIO_BUTTON_MENU_ITEM_FONT,
+    UiFontKeys.POPUP_MENU_FONT,
+    UiFontKeys.MENU_ITEM_ACCELERATOR_FONT,
+    UiFontKeys.CHECK_BOX_MENU_ITEM_ACCELERATOR_FONT,
+    UiFontKeys.RADIO_BUTTON_MENU_ITEM_ACCELERATOR_FONT
   };
 
   private final Map<String, Object> accentBaselineValues = new HashMap<>();
@@ -99,11 +101,11 @@ class ThemeAppearanceService {
     }
 
     int arc = resolved.cornerRadius();
-    UIManager.put("Component.arc", arc);
-    UIManager.put("Button.arc", arc);
-    UIManager.put("TextComponent.arc", arc);
-    UIManager.put("ProgressBar.arc", arc);
-    UIManager.put("ScrollPane.arc", arc);
+    UIManager.put(UiDefaultKeys.COMPONENT_ARC, arc);
+    UIManager.put(UiDefaultKeys.BUTTON_ARC, arc);
+    UIManager.put(UiDefaultKeys.TEXT_COMPONENT_ARC, arc);
+    UIManager.put(UiDefaultKeys.PROGRESS_BAR_ARC, arc);
+    UIManager.put(UiDefaultKeys.SCROLL_PANE_ARC, arc);
 
     ThemeTweakSettings.ThemeDensity density = resolved.density();
     if (density == ThemeTweakSettings.ThemeDensity.AUTO) {
@@ -117,9 +119,9 @@ class ThemeAppearanceService {
           default -> 22;
         };
 
-    UIManager.put("Tree.rowHeight", rowHeight);
-    UIManager.put("Table.rowHeight", rowHeight);
-    UIManager.put("List.cellHeight", rowHeight);
+    UIManager.put(UiDefaultKeys.TREE_ROW_HEIGHT, rowHeight);
+    UIManager.put(UiDefaultKeys.TABLE_ROW_HEIGHT, rowHeight);
+    UIManager.put(UiDefaultKeys.LIST_CELL_HEIGHT, rowHeight);
 
     Insets buttonMargin =
         switch (density) {
@@ -135,16 +137,16 @@ class ThemeAppearanceService {
           default -> new Insets(5, 7, 5, 7);
         };
 
-    UIManager.put("Button.margin", buttonMargin);
-    UIManager.put("ToggleButton.margin", buttonMargin);
-    UIManager.put("RadioButton.margin", buttonMargin);
-    UIManager.put("CheckBox.margin", buttonMargin);
+    UIManager.put(UiDefaultKeys.BUTTON_MARGIN, buttonMargin);
+    UIManager.put(UiDefaultKeys.TOGGLE_BUTTON_MARGIN, buttonMargin);
+    UIManager.put(UiDefaultKeys.RADIO_BUTTON_MARGIN, buttonMargin);
+    UIManager.put(UiDefaultKeys.CHECK_BOX_MARGIN, buttonMargin);
 
-    UIManager.put("TextComponent.margin", textMargin);
-    UIManager.put("TextField.margin", textMargin);
-    UIManager.put("PasswordField.margin", textMargin);
-    UIManager.put("TextArea.margin", textMargin);
-    UIManager.put("ComboBox.padding", textMargin);
+    UIManager.put(UiDefaultKeys.TEXT_COMPONENT_MARGIN, textMargin);
+    UIManager.put(UiDefaultKeys.TEXT_FIELD_MARGIN, textMargin);
+    UIManager.put(UiDefaultKeys.PASSWORD_FIELD_MARGIN, textMargin);
+    UIManager.put(UiDefaultKeys.TEXT_AREA_MARGIN, textMargin);
+    UIManager.put(UiDefaultKeys.COMBO_BOX_PADDING, textMargin);
   }
 
   private void applyUiFontOverrides(ThemeTweakSettings tweaks) {
@@ -154,8 +156,8 @@ class ThemeAppearanceService {
 
     captureUiFontBaseline();
 
-    Font defaultFont = UIManager.getFont("defaultFont");
-    if (defaultFont == null) defaultFont = UIManager.getFont("Label.font");
+    Font defaultFont = UIManager.getFont(UiFontKeys.DEFAULT_FONT);
+    if (defaultFont == null) defaultFont = UIManager.getFont(UiFontKeys.LABEL_FONT);
     if (defaultFont == null) {
       defaultFont =
           new Font(
@@ -178,7 +180,7 @@ class ThemeAppearanceService {
     }
 
     UIManager.put(
-        "defaultFont",
+        UiFontKeys.DEFAULT_FONT,
         new FontUIResource(new Font(tweaks.uiFontFamily(), Font.PLAIN, tweaks.uiFontSize())));
   }
 
@@ -279,9 +281,10 @@ class ThemeAppearanceService {
       }
     }
 
-    Object defaultFont = UIManager.get("defaultFont");
-    if (!uiFontBaselineValues.containsKey("defaultFont")) {
-      uiFontBaselineValues.put("defaultFont", defaultFont != null ? defaultFont : NULL_SENTINEL);
+    Object defaultFont = UIManager.get(UiFontKeys.DEFAULT_FONT);
+    if (!uiFontBaselineValues.containsKey(UiFontKeys.DEFAULT_FONT)) {
+      uiFontBaselineValues.put(
+          UiFontKeys.DEFAULT_FONT, defaultFont != null ? defaultFont : NULL_SENTINEL);
     }
 
     // Some LAFs expose menu fonts via LazyValue entries; resolve them explicitly.

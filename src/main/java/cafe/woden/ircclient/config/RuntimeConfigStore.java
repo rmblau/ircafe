@@ -1,12 +1,15 @@
 package cafe.woden.ircclient.config;
 
+import cafe.woden.ircclient.config.api.AppearanceRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
+import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ChatHistoryRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ConnectionRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
-import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicyScope;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
 import cafe.woden.ircclient.config.api.IgnoreRulesConfigPort;
@@ -17,63 +20,55 @@ import cafe.woden.ircclient.config.api.Ircv3CapabilityNameResolverPort;
 import cafe.woden.ircclient.config.api.Ircv3StsPolicyConfigPort;
 import cafe.woden.ircclient.config.api.MonitorRosterConfigPort;
 import cafe.woden.ircclient.config.api.NickColorOverridesConfigPort;
+import cafe.woden.ircclient.config.api.NickColorRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.NotificationRule;
+import cafe.woden.ircclient.config.api.NotificationRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.OutgoingMessageRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ServerAutoConnectRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ServerTreeBuiltInVisibilityConfigPort;
 import cafe.woden.ircclient.config.api.ServerTreeBuiltInVisibilityConfigPort.ServerTreeBuiltInNodesVisibility;
 import cafe.woden.ircclient.config.api.ServerTreeChannelStateConfigPort;
-import cafe.woden.ircclient.config.api.ServerTreeChannelStateConfigPort.ServerTreeChannelPreference;
 import cafe.woden.ircclient.config.api.ServerTreeChannelStateConfigPort.ServerTreeChannelSortMode;
 import cafe.woden.ircclient.config.api.ServerTreeChannelStateConfigPort.ServerTreeChannelState;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayout;
-import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayoutNode;
-import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeRootSiblingNode;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeRootSiblingOrder;
 import cafe.woden.ircclient.config.api.ServerTreeRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.SpellcheckRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.TimestampRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.TrayRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UserCommandAliasesConfigPort;
-import cafe.woden.ircclient.model.FilterPlaceholderRanges;
+import cafe.woden.ircclient.config.properties.PushyProperties;
+import cafe.woden.ircclient.config.runtime.RuntimeConfigStoreDelegates;
 import cafe.woden.ircclient.model.FilterRule;
 import cafe.woden.ircclient.model.FilterScopeOverride;
 import cafe.woden.ircclient.model.InterceptorDefinition;
-import cafe.woden.ircclient.model.InterceptorRule;
-import cafe.woden.ircclient.model.InterceptorRuleMode;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
-import cafe.woden.ircclient.model.RegexSpec;
-import cafe.woden.ircclient.model.TagSpec;
 import cafe.woden.ircclient.model.UserCommandAlias;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.IntUnaryOperator;
 import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
 import org.jmolecules.architecture.layered.ApplicationLayer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.yaml.snakeyaml.DumperOptions;
-import org.yaml.snakeyaml.Yaml;
 
 @Component
 @SecondaryAdapter
 @ApplicationLayer
 public class RuntimeConfigStore
-    implements BouncerDiscoveryConfigPort,
+    implements AppearanceRuntimeConfigPort,
+        BouncerDiscoveryConfigPort,
+        ChatBehaviorRuntimeConfigPort,
         ChatCommandRuntimeConfigPort,
+        ChatHistoryRuntimeConfigPort,
+        ChatLoggingRuntimeConfigPort,
         InviteAutoJoinConfigPort,
         ConnectionRuntimeConfigPort,
         CtcpReplyRuntimeConfigPort,
@@ -86,92 +81,40 @@ public class RuntimeConfigStore
         IrcSessionRuntimeConfigPort,
         MonitorRosterConfigPort,
         NickColorOverridesConfigPort,
+        NickColorRuntimeConfigPort,
+        NotificationRuntimeConfigPort,
+        OutgoingMessageRuntimeConfigPort,
         ServerTreeBuiltInVisibilityConfigPort,
         ServerTreeChannelStateConfigPort,
         ServerTreeLayoutConfigPort,
         ServerTreeRuntimeConfigPort,
         ServerAutoConnectRuntimeConfigPort,
+        SpellcheckRuntimeConfigPort,
+        TimestampRuntimeConfigPort,
+        TrayRuntimeConfigPort,
         UiShellRuntimeConfigPort,
         UiSettingsRuntimeConfigPort,
         UserCommandAliasesConfigPort {
 
-  private static final Logger log = LoggerFactory.getLogger(RuntimeConfigStore.class);
-  private static final java.util.Set<String> KNOWN_IGNORE_LEVELS =
-      java.util.Set.of(
-          "ALL",
-          "MSGS",
-          "PUBLIC",
-          "NOTICES",
-          "CTCPS",
-          "ACTIONS",
-          "JOINS",
-          "PARTS",
-          "QUITS",
-          "NICKS",
-          "TOPICS",
-          "WALLOPS",
-          "INVITES",
-          "MODES",
-          "DCC",
-          "DCCMSGS",
-          "CLIENTCRAP",
-          "CLIENTNOTICE",
-          "CLIENTERRORS",
-          "HILIGHT",
-          "NOHILIGHT",
-          "CRAP");
-  private static final String DEFAULT_GENERIC_BOUNCER_LOGIN_TEMPLATE = "{base}/{network}";
   public static final String DEFAULT_QUIT_MESSAGE =
       ChatCommandRuntimeConfigPort.DEFAULT_QUIT_MESSAGE;
 
   private final Path file;
-  private final IrcProperties defaults;
-  private final Yaml yaml;
-  private Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolver =
-      new Ircv3CapabilityNameResolverPort() {};
-  private int mutationBatchDepth = 0;
-  private Map<String, Object> mutationBatchDoc = null;
-  private boolean mutationBatchDirty = false;
-
-  /**
-   * True if the runtime config file existed before this process started creating/initializing it.
-   */
-  private final boolean fileExistedOnStartup;
+  private final RuntimeConfigStoreDelegates stores;
 
   public RuntimeConfigStore(
       @Value("${ircafe.runtime-config:${XDG_CONFIG_HOME:${user.home}/.config}/ircafe/ircafe.yml}")
           String filePath,
       IrcProperties defaults) {
     this.file = Paths.get(Objects.requireNonNullElse(filePath, "").trim());
-    this.defaults = defaults;
-
-    boolean existed = false;
-    try {
-      existed = !this.file.toString().isBlank() && Files.exists(this.file);
-    } catch (Exception ignored) {
-      existed = false;
-    }
-    this.fileExistedOnStartup = existed;
-
-    DumperOptions opts = new DumperOptions();
-    opts.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
-    opts.setPrettyFlow(true);
-    opts.setIndent(2);
-    // SnakeYAML requires indicatorIndent < indent.
-    // With indent=2, indicatorIndent=1 keeps list indicators aligned nicely.
-    opts.setIndicatorIndent(1);
-    opts.setDefaultScalarStyle(DumperOptions.ScalarStyle.PLAIN);
-    this.yaml = new Yaml(opts);
+    this.stores = new RuntimeConfigStoreDelegates(this.file, defaults);
 
     ensureFileExistsWithServers();
   }
 
   @Autowired(required = false)
   void setIrcv3CapabilityNameResolver(Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolver) {
-    this.ircv3CapabilityNameResolver =
-        ircv3CapabilityNameResolver == null
-            ? new Ircv3CapabilityNameResolverPort() {}
-            : ircv3CapabilityNameResolver;
+    stores.ircv3Stores.capabilityStore.setCapabilityNameResolver(ircv3CapabilityNameResolver);
   }
 
   /**
@@ -181,7 +124,7 @@ public class RuntimeConfigStore
    * installs, while using new defaults for first-time installs.
    */
   public boolean runtimeConfigFileExistedOnStartup() {
-    return fileExistedOnStartup;
+    return stores.documentStore.fileExistedOnStartup();
   }
 
   /**
@@ -191,30 +134,7 @@ public class RuntimeConfigStore
    * <p>If the key is absent (or the file doesn't exist), returns {@link Optional#empty()}.
    */
   public synchronized Optional<Boolean> readTrayCloseToTrayIfPresent() {
-    try {
-      if (file.toString().isBlank()) return Optional.empty();
-      if (!Files.exists(file)) return Optional.empty();
-
-      Map<String, Object> doc = loadFile();
-      Optional<Object> value =
-          RuntimeConfigDocumentPathReader.readValue(doc, "ircafe", "ui", "tray", "closeToTray");
-      if (value.isEmpty()) return Optional.empty();
-
-      Object v = value.get();
-      if (v == null) return Optional.empty();
-
-      if (v instanceof Boolean b) return Optional.of(b);
-      if (v instanceof String s) {
-        String t = s.trim();
-        if (t.equalsIgnoreCase("true")) return Optional.of(Boolean.TRUE);
-        if (t.equalsIgnoreCase("false")) return Optional.of(Boolean.FALSE);
-      }
-
-      return Optional.empty();
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read tray.closeToTray from '{}'", file, e);
-      return Optional.empty();
-    }
+    return stores.uiStores.trayStore.readCloseToTrayIfPresent();
   }
 
   /**
@@ -223,8 +143,7 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when the key is missing or invalid.
    */
   public synchronized boolean readTrayCloseToTrayHintShown(boolean defaultValue) {
-    return readUiSectionBoolean(
-        "tray", "closeToTrayHintShown", defaultValue, "tray.closeToTrayHintShown");
+    return stores.uiStores.trayStore.readCloseToTrayHintShown(defaultValue);
   }
 
   /**
@@ -234,8 +153,7 @@ public class RuntimeConfigStore
    */
   @Override
   public synchronized boolean readInviteAutoJoinEnabled(boolean defaultValue) {
-    return readUiSectionBoolean(
-        "invites", "autoJoinOnInvite", defaultValue, "invites.autoJoinOnInvite");
+    return stores.uiStores.uiFeatureToggleStore.readInviteAutoJoinEnabled(defaultValue);
   }
 
   /**
@@ -244,8 +162,7 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when the key is missing or invalid.
    */
   public synchronized boolean readUpdateNotifierEnabled(boolean defaultValue) {
-    return readUiSectionBoolean(
-        "updateNotifier", "enabled", defaultValue, "ui.updateNotifier.enabled");
+    return stores.uiStores.uiFeatureToggleStore.readUpdateNotifierEnabled(defaultValue);
   }
 
   /**
@@ -254,7 +171,7 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when the key is missing or invalid.
    */
   public synchronized boolean readLagIndicatorEnabled(boolean defaultValue) {
-    return readUiSectionBoolean("lagIndicator", "enabled", defaultValue, "ui.lagIndicator.enabled");
+    return stores.uiStores.uiFeatureToggleStore.readLagIndicatorEnabled(defaultValue);
   }
 
   public Path runtimeConfigPath() {
@@ -268,131 +185,28 @@ public class RuntimeConfigStore
    * minimized.
    */
   public synchronized void runMutationBatch(Runnable action) {
-    if (action == null) return;
-    beginMutationBatchLocked();
-    try {
-      action.run();
-    } finally {
-      endMutationBatchLocked();
-    }
+    stores.documentStore.runMutationBatch(action);
   }
 
   public synchronized void beginMutationBatch() {
-    beginMutationBatchLocked();
+    stores.documentStore.beginMutationBatch();
   }
 
   public synchronized void endMutationBatch() {
-    endMutationBatchLocked();
-  }
-
-  private void beginMutationBatchLocked() {
-    if (mutationBatchDepth == 0) {
-      try {
-        mutationBatchDoc =
-            (file.toString().isBlank() || !Files.exists(file)) ? new LinkedHashMap<>() : loadFile();
-      } catch (Exception e) {
-        mutationBatchDoc = new LinkedHashMap<>();
-        log.warn("[ircafe] Could not start mutation batch for '{}'", file, e);
-      }
-      mutationBatchDirty = false;
-    }
-    mutationBatchDepth++;
-  }
-
-  private void endMutationBatchLocked() {
-    if (mutationBatchDepth <= 0) return;
-    mutationBatchDepth--;
-    if (mutationBatchDepth > 0) return;
-    try {
-      if (mutationBatchDirty && mutationBatchDoc != null) {
-        writeFileNow(mutationBatchDoc);
-      }
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not flush mutation batch to '{}'", file, e);
-    } finally {
-      mutationBatchDoc = null;
-      mutationBatchDirty = false;
-    }
+    stores.documentStore.endMutationBatch();
   }
 
   public synchronized void ensureFileExistsWithServers() {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Path parent = file.getParent();
-      if (parent != null && !Files.exists(parent)) {
-        Files.createDirectories(parent);
-      }
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-
-      Map<String, Object> irc = getOrCreateMap(doc, "irc");
-
-      // If the key exists, don't overwrite it. This is what makes removals stick.
-      if (!irc.containsKey("servers")) {
-        List<Map<String, Object>> seeded = new ArrayList<>();
-        if (defaults != null && defaults.servers() != null) {
-          for (IrcProperties.Server s : defaults.servers()) {
-            if (s == null) continue;
-            seeded.add(toServerMap(s));
-          }
-        }
-        irc.put("servers", seeded);
-        writeFile(doc);
-      }
-    } catch (Exception e) {
-
-      log.warn("[ircafe] Could not ensure runtime config file '{}'", file, e);
-    }
+    stores.serverStores.serverListStore.ensureFileExistsWithServers();
   }
 
   public synchronized void writeServers(List<IrcProperties.Server> servers) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> irc = getOrCreateMap(doc, "irc");
-
-      List<Map<String, Object>> out = new ArrayList<>();
-      if (servers != null) {
-        for (IrcProperties.Server s : servers) {
-          if (s == null) continue;
-          out.add(toServerMap(s));
-        }
-      }
-
-      irc.put("servers", out);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist servers list to '{}'", file, e);
-    }
+    stores.serverStores.serverListStore.writeServers(servers);
   }
 
   /** Returns configured server ids from runtime config, falling back to boot defaults. */
   public synchronized List<String> readServerIds() {
-    try {
-      if (file.toString().isBlank()) return defaultServerIds();
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Object ircObj = doc.get("irc");
-      if (!(ircObj instanceof Map<?, ?> irc)) return defaultServerIds();
-      Object serversObj = irc.get("servers");
-      if (!(serversObj instanceof List<?> servers) || servers.isEmpty()) return defaultServerIds();
-
-      ArrayList<String> out = new ArrayList<>();
-      for (Object item : servers) {
-        if (!(item instanceof Map<?, ?> server)) continue;
-        String id = Objects.toString(server.get("id"), "").trim();
-        if (id.isEmpty()) continue;
-        if (containsIgnoreCase(out, id)) continue;
-        out.add(id);
-      }
-      if (out.isEmpty()) return defaultServerIds();
-      return List.copyOf(out);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read server ids from '{}'", file, e);
-      return defaultServerIds();
-    }
+    return stores.serverStores.serverListStore.readServerIds();
   }
 
   /**
@@ -402,28 +216,7 @@ public class RuntimeConfigStore
    * treat runtime config as authoritative without conflating missing keys with inherited defaults.
    */
   public synchronized Map<String, List<String>> readExplicitServerAutoJoinById() {
-    try {
-      if (file.toString().isBlank()) return Map.of();
-      if (!Files.exists(file)) return Map.of();
-
-      Map<String, Object> doc = loadFile();
-      Map<String, Object> irc = readMap(doc.get("irc"));
-      Object serversObj = irc.get("servers");
-      if (!(serversObj instanceof List<?> servers) || servers.isEmpty()) return Map.of();
-
-      LinkedHashMap<String, List<String>> out = new LinkedHashMap<>();
-      for (Object item : servers) {
-        if (!(item instanceof Map<?, ?> server)) continue;
-        String id = Objects.toString(server.get("id"), "").trim();
-        if (id.isEmpty()) continue;
-        if (!server.containsKey("autoJoin")) continue;
-        out.put(id, sanitizeStringList(server.get("autoJoin")));
-      }
-      return out.isEmpty() ? Map.of() : Map.copyOf(out);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read explicit auto-join lists from '{}'", file, e);
-      return Map.of();
-    }
+    return stores.serverStores.serverListStore.readExplicitServerAutoJoinById();
   }
 
   @Override
@@ -438,775 +231,135 @@ public class RuntimeConfigStore
 
   @Override
   public synchronized List<String> readJoinedChannels(String serverId) {
-    return readServerAutoJoinChannels(serverId);
+    return stores.serverStores.serverTreeChannelStateStore.readJoinedChannels(serverId);
   }
 
   /** Returns known channels for this server (attached + detached). */
   @Override
   public synchronized List<String> readKnownChannels(String serverId) {
-    ServerTreeChannelState state = readServerTreeChannelState(serverId);
-    if (state == null || state.channels() == null || state.channels().isEmpty()) {
-      return List.of();
-    }
-    ArrayList<String> out = new ArrayList<>();
-    for (ServerTreeChannelPreference pref : state.channels()) {
-      if (pref == null) continue;
-      String ch = normalizeChannelName(pref.channel());
-      if (ch.isEmpty()) continue;
-      if (containsIgnoreCase(out, ch)) continue;
-      out.add(ch);
-    }
-    return out.isEmpty() ? List.of() : List.copyOf(out);
+    return stores.serverStores.serverTreeChannelStateStore.readKnownChannels(serverId);
   }
 
   @Override
   public synchronized boolean readServerTreeChannelAutoReattach(
       String serverId, String channel, boolean defaultValue) {
-    String sid = Objects.toString(serverId, "").trim();
-    String chan = normalizeChannelName(channel);
-    if (sid.isEmpty() || chan.isEmpty()) return defaultValue;
-
-    ServerTreeChannelState state = readServerTreeChannelState(sid);
-    if (state == null || state.channels() == null) return defaultValue;
-
-    for (ServerTreeChannelPreference pref : state.channels()) {
-      if (pref == null) continue;
-      String existing = normalizeChannelName(pref.channel());
-      if (existing.isEmpty()) continue;
-      if (existing.equalsIgnoreCase(chan)) {
-        return pref.autoReattach();
-      }
-    }
-    return defaultValue;
+    return stores.serverStores.serverTreeChannelStateStore.readServerTreeChannelAutoReattach(
+        serverId, channel, defaultValue);
   }
 
+  @Override
   public synchronized void rememberServerTreeChannel(String serverId, String channel) {
-    String sid = Objects.toString(serverId, "").trim();
-    String chan = normalizeChannelName(channel);
-    if (sid.isEmpty() || chan.isEmpty()) return;
-
-    ServerTreeChannelState state = readServerTreeChannelState(sid);
-    LinkedHashMap<String, ServerTreeChannelPreference> byKey = channelPreferencesByKey(state);
-    String key = foldChannelKey(chan);
-    if (!byKey.containsKey(key)) {
-      byKey.put(key, new ServerTreeChannelPreference(chan, true));
-    }
-
-    ArrayList<String> customOrder = sanitizeCustomOrder(state, byKey);
-    if (!containsIgnoreCase(customOrder, chan)) {
-      customOrder.add(chan);
-    }
-
-    writeServerTreeChannelState(
-        sid,
-        new ServerTreeChannelState(
-            state.sortMode(), List.copyOf(customOrder), List.copyOf(byKey.values())));
+    stores.serverStores.serverTreeChannelStateStore.rememberServerTreeChannel(serverId, channel);
   }
 
   public synchronized void forgetServerTreeChannel(String serverId, String channel) {
-    String sid = Objects.toString(serverId, "").trim();
-    String chan = normalizeChannelName(channel);
-    if (sid.isEmpty() || chan.isEmpty()) return;
-
-    ServerTreeChannelState state = readServerTreeChannelState(sid);
-    LinkedHashMap<String, ServerTreeChannelPreference> byKey = channelPreferencesByKey(state);
-    String key = foldChannelKey(chan);
-    if (!byKey.containsKey(key)) return;
-    byKey.remove(key);
-
-    ArrayList<String> customOrder = sanitizeCustomOrder(state, byKey);
-    customOrder.removeIf(c -> foldChannelKey(c).equals(key));
-
-    writeServerTreeChannelState(
-        sid,
-        new ServerTreeChannelState(
-            state.sortMode(), List.copyOf(customOrder), List.copyOf(byKey.values())));
+    stores.serverStores.serverTreeChannelStateStore.forgetServerTreeChannel(serverId, channel);
   }
 
+  @Override
   public synchronized void rememberServerTreeChannelAutoReattach(
       String serverId, String channel, boolean autoReattach) {
-    String sid = Objects.toString(serverId, "").trim();
-    String chan = normalizeChannelName(channel);
-    if (sid.isEmpty() || chan.isEmpty()) return;
-
-    ServerTreeChannelState state = readServerTreeChannelState(sid);
-    LinkedHashMap<String, ServerTreeChannelPreference> byKey = channelPreferencesByKey(state);
-    String key = foldChannelKey(chan);
-    ServerTreeChannelPreference current = byKey.get(key);
-    byKey.put(
-        key,
-        new ServerTreeChannelPreference(
-            chan,
-            autoReattach,
-            current != null && current.pinned(),
-            current != null && current.muted()));
-
-    ArrayList<String> customOrder = sanitizeCustomOrder(state, byKey);
-    if (!containsIgnoreCase(customOrder, chan)) {
-      customOrder.add(chan);
-    }
-
-    writeServerTreeChannelState(
-        sid,
-        new ServerTreeChannelState(
-            state.sortMode(), List.copyOf(customOrder), List.copyOf(byKey.values())));
+    stores.serverStores.serverTreeChannelStateStore.rememberServerTreeChannelAutoReattach(
+        serverId, channel, autoReattach);
   }
 
+  @Override
   public synchronized boolean readServerTreeChannelPinned(
       String serverId, String channel, boolean defaultValue) {
-    String sid = Objects.toString(serverId, "").trim();
-    String chan = normalizeChannelName(channel);
-    if (sid.isEmpty() || chan.isEmpty()) return defaultValue;
-
-    ServerTreeChannelState state = readServerTreeChannelState(sid);
-    if (state == null || state.channels() == null) return defaultValue;
-
-    for (ServerTreeChannelPreference pref : state.channels()) {
-      if (pref == null) continue;
-      String existing = normalizeChannelName(pref.channel());
-      if (existing.isEmpty()) continue;
-      if (existing.equalsIgnoreCase(chan)) {
-        return pref.pinned();
-      }
-    }
-    return defaultValue;
+    return stores.serverStores.serverTreeChannelStateStore.readServerTreeChannelPinned(
+        serverId, channel, defaultValue);
   }
 
+  @Override
   public synchronized void rememberServerTreeChannelPinned(
       String serverId, String channel, boolean pinned) {
-    String sid = Objects.toString(serverId, "").trim();
-    String chan = normalizeChannelName(channel);
-    if (sid.isEmpty() || chan.isEmpty()) return;
-
-    ServerTreeChannelState state = readServerTreeChannelState(sid);
-    LinkedHashMap<String, ServerTreeChannelPreference> byKey = channelPreferencesByKey(state);
-    String key = foldChannelKey(chan);
-    ServerTreeChannelPreference current = byKey.get(key);
-    boolean autoReattach = current == null || current.autoReattach();
-    byKey.put(
-        key,
-        new ServerTreeChannelPreference(
-            chan, autoReattach, pinned, current != null && current.muted()));
-
-    ArrayList<String> customOrder = sanitizeCustomOrder(state, byKey);
-    if (!containsIgnoreCase(customOrder, chan)) {
-      customOrder.add(chan);
-    }
-
-    writeServerTreeChannelState(
-        sid,
-        new ServerTreeChannelState(
-            state.sortMode(), List.copyOf(customOrder), List.copyOf(byKey.values())));
+    stores.serverStores.serverTreeChannelStateStore.rememberServerTreeChannelPinned(
+        serverId, channel, pinned);
   }
 
+  @Override
   public synchronized boolean readServerTreeChannelMuted(
       String serverId, String channel, boolean defaultValue) {
-    String sid = Objects.toString(serverId, "").trim();
-    String chan = normalizeChannelName(channel);
-    if (sid.isEmpty() || chan.isEmpty()) return defaultValue;
-
-    ServerTreeChannelState state = readServerTreeChannelState(sid);
-    if (state == null || state.channels() == null) return defaultValue;
-
-    for (ServerTreeChannelPreference pref : state.channels()) {
-      if (pref == null) continue;
-      String existing = normalizeChannelName(pref.channel());
-      if (existing.isEmpty()) continue;
-      if (existing.equalsIgnoreCase(chan)) {
-        return pref.muted();
-      }
-    }
-    return defaultValue;
+    return stores.serverStores.serverTreeChannelStateStore.readServerTreeChannelMuted(
+        serverId, channel, defaultValue);
   }
 
+  @Override
   public synchronized void rememberServerTreeChannelMuted(
       String serverId, String channel, boolean muted) {
-    String sid = Objects.toString(serverId, "").trim();
-    String chan = normalizeChannelName(channel);
-    if (sid.isEmpty() || chan.isEmpty()) return;
-
-    ServerTreeChannelState state = readServerTreeChannelState(sid);
-    LinkedHashMap<String, ServerTreeChannelPreference> byKey = channelPreferencesByKey(state);
-    String key = foldChannelKey(chan);
-    ServerTreeChannelPreference current = byKey.get(key);
-    boolean autoReattach = current == null || current.autoReattach();
-    boolean pinned = current != null && current.pinned();
-    byKey.put(key, new ServerTreeChannelPreference(chan, autoReattach, pinned, muted));
-
-    ArrayList<String> customOrder = sanitizeCustomOrder(state, byKey);
-    if (!containsIgnoreCase(customOrder, chan)) {
-      customOrder.add(chan);
-    }
-
-    writeServerTreeChannelState(
-        sid,
-        new ServerTreeChannelState(
-            state.sortMode(), List.copyOf(customOrder), List.copyOf(byKey.values())));
+    stores.serverStores.serverTreeChannelStateStore.rememberServerTreeChannelMuted(
+        serverId, channel, muted);
   }
 
   public synchronized ServerTreeChannelSortMode readServerTreeChannelSortMode(
       String serverId, ServerTreeChannelSortMode defaultValue) {
-    String sid = Objects.toString(serverId, "").trim();
-    if (sid.isEmpty()) return defaultValue;
-    ServerTreeChannelState state = readServerTreeChannelState(sid);
-    if (state == null || state.sortMode() == null) return defaultValue;
-    return state.sortMode();
+    return stores.serverStores.serverTreeChannelStateStore.readServerTreeChannelSortMode(
+        serverId, defaultValue);
   }
 
+  @Override
   public synchronized void rememberServerTreeChannelSortMode(
       String serverId, ServerTreeChannelSortMode mode) {
-    String sid = Objects.toString(serverId, "").trim();
-    if (sid.isEmpty()) return;
-
-    ServerTreeChannelState state = readServerTreeChannelState(sid);
-    ServerTreeChannelSortMode nextMode = (mode == null) ? ServerTreeChannelSortMode.CUSTOM : mode;
-
-    writeServerTreeChannelState(
-        sid, new ServerTreeChannelState(nextMode, state.customOrder(), state.channels()));
+    stores.serverStores.serverTreeChannelStateStore.rememberServerTreeChannelSortMode(
+        serverId, mode);
   }
 
   public synchronized List<String> readServerTreeChannelCustomOrder(String serverId) {
-    ServerTreeChannelState state = readServerTreeChannelState(serverId);
-    return state.customOrder();
+    return stores.serverStores.serverTreeChannelStateStore.readServerTreeChannelCustomOrder(
+        serverId);
   }
 
+  @Override
   public synchronized void rememberServerTreeChannelCustomOrder(
       String serverId, List<String> customOrder) {
-    String sid = Objects.toString(serverId, "").trim();
-    if (sid.isEmpty()) return;
-
-    ServerTreeChannelState state = readServerTreeChannelState(sid);
-    LinkedHashMap<String, ServerTreeChannelPreference> byKey = channelPreferencesByKey(state);
-    ArrayList<String> nextCustomOrder = sanitizeCustomOrder(customOrder, byKey);
-
-    writeServerTreeChannelState(
-        sid,
-        new ServerTreeChannelState(
-            state.sortMode(), List.copyOf(nextCustomOrder), state.channels()));
+    stores.serverStores.serverTreeChannelStateStore.rememberServerTreeChannelCustomOrder(
+        serverId, customOrder);
   }
 
+  @Override
   public synchronized ServerTreeChannelState readServerTreeChannelState(String serverId) {
-    String sid = Objects.toString(serverId, "").trim();
-    if (sid.isEmpty()) return ServerTreeChannelState.defaults();
-
-    List<String> joinedChannels = readServerAutoJoinChannels(sid);
-
-    try {
-      if (file.toString().isBlank()) {
-        return stateFromLegacyAutoJoin(joinedChannels);
-      }
-      if (!Files.exists(file)) {
-        return stateFromLegacyAutoJoin(joinedChannels);
-      }
-
-      Map<String, Object> doc = loadFile();
-      Map<String, Object> ircafe = readMap(doc.get("ircafe"));
-      Map<String, Object> ui = readMap(ircafe.get("ui"));
-      Map<String, Object> serverTree = readMap(ui.get("serverTree"));
-      Map<String, Object> channelsByServer = readMap(serverTree.get("channelsByServer"));
-      Map<String, Object> raw = readMap(channelsByServer.get(sid));
-
-      ServerTreeChannelSortMode sortMode =
-          ServerTreeChannelSortMode.fromToken(Objects.toString(raw.get("sortMode"), ""));
-
-      LinkedHashMap<String, ServerTreeChannelPreference> byKey = new LinkedHashMap<>();
-      Object channelsObj = raw.get("channels");
-      if (channelsObj instanceof List<?> list) {
-        for (Object entry : list) {
-          if (!(entry instanceof Map<?, ?> item)) continue;
-          String channel = normalizeChannelName(item.get("name"));
-          if (channel.isEmpty()) continue;
-          String key = foldChannelKey(channel);
-          if (byKey.containsKey(key)) continue;
-          boolean auto = asBoolean(item.get("autoReattach")).orElse(Boolean.TRUE);
-          boolean pinned = asBoolean(item.get("pinned")).orElse(Boolean.FALSE);
-          boolean muted = asBoolean(item.get("muted")).orElse(Boolean.FALSE);
-          byKey.put(key, new ServerTreeChannelPreference(channel, auto, pinned, muted));
-        }
-      }
-
-      for (String joined : joinedChannels) {
-        String channel = normalizeChannelName(joined);
-        if (channel.isEmpty()) continue;
-        String key = foldChannelKey(channel);
-        byKey.putIfAbsent(key, new ServerTreeChannelPreference(channel, true));
-      }
-
-      ArrayList<String> customOrder = sanitizeCustomOrder(raw.get("customOrder"), byKey);
-
-      if (customOrder.isEmpty()) {
-        for (ServerTreeChannelPreference pref : byKey.values()) {
-          customOrder.add(pref.channel());
-        }
-      }
-
-      if (byKey.isEmpty() && joinedChannels.isEmpty()) {
-        return ServerTreeChannelState.defaults();
-      }
-
-      return new ServerTreeChannelState(
-          sortMode, List.copyOf(customOrder), List.copyOf(byKey.values()));
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read server-tree channel state from '{}'", file, e);
-      return stateFromLegacyAutoJoin(joinedChannels);
-    }
-  }
-
-  private synchronized List<String> readServerAutoJoinChannels(String serverId) {
-    try {
-      if (file.toString().isBlank()) return List.of();
-      String sid = Objects.toString(serverId, "").trim();
-      if (sid.isEmpty()) return List.of();
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> irc = getOrCreateMap(doc, "irc");
-      List<Map<String, Object>> servers = readServerList(irc).orElse(List.of());
-
-      for (Map<String, Object> server : servers) {
-        if (server == null) continue;
-        if (!sid.equalsIgnoreCase(Objects.toString(server.get("id"), "").trim())) continue;
-        Object autoJoinObj = server.get("autoJoin");
-        if (!(autoJoinObj instanceof List<?> rawList)) return List.of();
-        @SuppressWarnings("unchecked")
-        List<String> autoJoin = (List<String>) rawList;
-        return List.copyOf(AutoJoinEntryCodec.channelEntries(autoJoin));
-      }
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read joined-channel list from '{}'", file, e);
-    }
-    return List.of();
-  }
-
-  private void writeServerTreeChannelState(String serverId, ServerTreeChannelState state) {
-    try {
-      if (file.toString().isBlank()) return;
-      String sid = Objects.toString(serverId, "").trim();
-      if (sid.isEmpty()) return;
-
-      ServerTreeChannelState nextState = state != null ? state : ServerTreeChannelState.defaults();
-      LinkedHashMap<String, ServerTreeChannelPreference> byKey = channelPreferencesByKey(nextState);
-      ArrayList<String> customOrder = sanitizeCustomOrder(nextState.customOrder(), byKey);
-      ServerTreeChannelSortMode sortMode =
-          nextState.sortMode() == null ? ServerTreeChannelSortMode.CUSTOM : nextState.sortMode();
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-
-      Map<String, Object> irc = getOrCreateMap(doc, "irc");
-      List<Map<String, Object>> servers = readServerList(irc).orElseGet(ArrayList::new);
-      Map<String, Object> serverMap = null;
-      for (Map<String, Object> server : servers) {
-        if (server == null) continue;
-        if (sid.equalsIgnoreCase(Objects.toString(server.get("id"), "").trim())) {
-          serverMap = server;
-          break;
-        }
-      }
-      if (serverMap != null) {
-        List<String> previousAutoJoin = sanitizeStringList(serverMap.get("autoJoin"));
-        List<String> previousPmTargets = AutoJoinEntryCodec.privateMessageNicks(previousAutoJoin);
-
-        ArrayList<String> nextAutoJoin = new ArrayList<>();
-        for (ServerTreeChannelPreference pref : byKey.values()) {
-          if (pref == null || !pref.autoReattach()) continue;
-          String channel = normalizeChannelName(pref.channel());
-          if (channel.isEmpty()) continue;
-          if (containsIgnoreCase(nextAutoJoin, channel)) continue;
-          nextAutoJoin.add(channel);
-        }
-        for (String nick : previousPmTargets) {
-          String n = Objects.toString(nick, "").trim();
-          if (n.isEmpty()) continue;
-          String encoded = AutoJoinEntryCodec.encodePrivateMessageNick(n);
-          if (encoded.isEmpty()) continue;
-          if (nextAutoJoin.stream().anyMatch(existing -> existing.equalsIgnoreCase(encoded)))
-            continue;
-          nextAutoJoin.add(encoded);
-        }
-        // Keep an explicit empty override so restart logic doesn't fall back to seeded defaults
-        // after the user closes-and-parts their last auto-reattach channel.
-        serverMap.put("autoJoin", nextAutoJoin);
-        irc.put("servers", servers);
-      }
-
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> serverTree = getOrCreateMap(ui, "serverTree");
-      Map<String, Object> channelsByServer = getOrCreateMap(serverTree, "channelsByServer");
-
-      boolean shouldKeepState =
-          !byKey.isEmpty()
-              || !customOrder.isEmpty()
-              || sortMode != ServerTreeChannelSortMode.CUSTOM;
-
-      if (!shouldKeepState) {
-        channelsByServer.remove(sid);
-      } else {
-        Map<String, Object> out = new LinkedHashMap<>();
-        if (sortMode != ServerTreeChannelSortMode.CUSTOM) {
-          out.put("sortMode", sortMode.token());
-        }
-        if (!customOrder.isEmpty()) {
-          out.put("customOrder", List.copyOf(customOrder));
-        }
-        if (!byKey.isEmpty()) {
-          ArrayList<Map<String, Object>> channelsOut = new ArrayList<>();
-          for (ServerTreeChannelPreference pref : byKey.values()) {
-            if (pref == null) continue;
-            String channel = normalizeChannelName(pref.channel());
-            if (channel.isEmpty()) continue;
-            Map<String, Object> item = new LinkedHashMap<>();
-            item.put("name", channel);
-            item.put("autoReattach", pref.autoReattach());
-            if (pref.pinned()) {
-              item.put("pinned", true);
-            }
-            if (pref.muted()) {
-              item.put("muted", true);
-            }
-            channelsOut.add(item);
-          }
-          if (!channelsOut.isEmpty()) {
-            out.put("channels", channelsOut);
-          }
-        }
-        channelsByServer.put(sid, out);
-      }
-
-      if (channelsByServer.isEmpty()) {
-        serverTree.remove("channelsByServer");
-      }
-      if (serverTree.isEmpty()) {
-        ui.remove("serverTree");
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist server-tree channel state to '{}'", file, e);
-    }
-  }
-
-  private static ServerTreeChannelState stateFromLegacyAutoJoin(List<String> joinedChannels) {
-    if (joinedChannels == null || joinedChannels.isEmpty()) {
-      return ServerTreeChannelState.defaults();
-    }
-
-    ArrayList<ServerTreeChannelPreference> channels = new ArrayList<>();
-    for (String entry : joinedChannels) {
-      String channel = normalizeChannelName(entry);
-      if (channel.isEmpty()) continue;
-      if (channels.stream().anyMatch(pref -> channel.equalsIgnoreCase(pref.channel()))) continue;
-      channels.add(new ServerTreeChannelPreference(channel, true));
-    }
-
-    if (channels.isEmpty()) {
-      return ServerTreeChannelState.defaults();
-    }
-
-    ArrayList<String> customOrder = new ArrayList<>();
-    for (ServerTreeChannelPreference pref : channels) {
-      customOrder.add(pref.channel());
-    }
-    return new ServerTreeChannelState(
-        ServerTreeChannelSortMode.CUSTOM, List.copyOf(customOrder), List.copyOf(channels));
-  }
-
-  private static LinkedHashMap<String, ServerTreeChannelPreference> channelPreferencesByKey(
-      ServerTreeChannelState state) {
-    LinkedHashMap<String, ServerTreeChannelPreference> byKey = new LinkedHashMap<>();
-    if (state == null || state.channels() == null) return byKey;
-    for (ServerTreeChannelPreference pref : state.channels()) {
-      if (pref == null) continue;
-      String channel = normalizeChannelName(pref.channel());
-      if (channel.isEmpty()) continue;
-      String key = foldChannelKey(channel);
-      byKey.put(
-          key,
-          new ServerTreeChannelPreference(
-              channel, pref.autoReattach(), pref.pinned(), pref.muted()));
-    }
-    return byKey;
-  }
-
-  private static ArrayList<String> sanitizeCustomOrder(
-      ServerTreeChannelState state, Map<String, ServerTreeChannelPreference> channelsByKey) {
-    if (state == null) return sanitizeCustomOrder((Object) null, channelsByKey);
-    return sanitizeCustomOrder(state.customOrder(), channelsByKey);
-  }
-
-  private static ArrayList<String> sanitizeCustomOrder(
-      Object rawOrder, Map<String, ServerTreeChannelPreference> channelsByKey) {
-    ArrayList<String> out = new ArrayList<>();
-
-    if (rawOrder instanceof List<?> rawList) {
-      for (Object entry : rawList) {
-        String channel = normalizeChannelName(entry);
-        if (channel.isEmpty()) continue;
-        String key = foldChannelKey(channel);
-        if (!channelsByKey.containsKey(key)) continue;
-        if (containsIgnoreCase(out, channel)) continue;
-        out.add(channelsByKey.get(key).channel());
-      }
-    } else if (rawOrder instanceof ServerTreeChannelState state) {
-      return sanitizeCustomOrder(state.customOrder(), channelsByKey);
-    }
-
-    for (ServerTreeChannelPreference pref : channelsByKey.values()) {
-      if (pref == null) continue;
-      String channel = normalizeChannelName(pref.channel());
-      if (channel.isEmpty()) continue;
-      if (containsIgnoreCase(out, channel)) continue;
-      out.add(channel);
-    }
-    return out;
-  }
-
-  @SuppressWarnings("unchecked")
-  private static Map<String, Object> readMap(Object raw) {
-    if (raw instanceof Map<?, ?> m) {
-      return (Map<String, Object>) m;
-    }
-    return Map.of();
-  }
-
-  private static List<String> sanitizeStringList(Object raw) {
-    if (!(raw instanceof List<?> list) || list.isEmpty()) return List.of();
-    ArrayList<String> out = new ArrayList<>(list.size());
-    for (Object entry : list) {
-      String v = Objects.toString(entry, "").trim();
-      if (!v.isEmpty()) out.add(v);
-    }
-    return out.isEmpty() ? List.of() : List.copyOf(out);
-  }
-
-  private List<String> defaultServerIds() {
-    if (defaults == null || defaults.servers() == null || defaults.servers().isEmpty()) {
-      return List.of();
-    }
-    ArrayList<String> out = new ArrayList<>();
-    for (IrcProperties.Server server : defaults.servers()) {
-      if (server == null) continue;
-      String id = Objects.toString(server.id(), "").trim();
-      if (id.isEmpty()) continue;
-      if (containsIgnoreCase(out, id)) continue;
-      out.add(id);
-    }
-    return out.isEmpty() ? List.of() : List.copyOf(out);
-  }
-
-  private static List<String> sanitizePolicyPatternList(List<String> raw) {
-    if (raw == null || raw.isEmpty()) return List.of();
-    ArrayList<String> out = new ArrayList<>(raw.size());
-    for (String entry : raw) {
-      String v = Objects.toString(entry, "").trim();
-      if (v.isEmpty()) continue;
-      if (out.contains(v)) continue;
-      out.add(v);
-    }
-    return out.isEmpty() ? List.of() : List.copyOf(out);
-  }
-
-  private static EmbedLoadPolicyScope parseEmbedLoadPolicyScope(Object raw) {
-    if (!(raw instanceof Map<?, ?> scope)) return EmbedLoadPolicyScope.defaults();
-    return new EmbedLoadPolicyScope(
-        sanitizeStringList(scope.get("userWhitelist")),
-        sanitizeStringList(scope.get("userBlacklist")),
-        sanitizeStringList(scope.get("channelWhitelist")),
-        sanitizeStringList(scope.get("channelBlacklist")),
-        asBoolean(scope.get("requireVoiceOrOp")).orElse(Boolean.FALSE),
-        asBoolean(scope.get("requireLoggedIn")).orElse(Boolean.FALSE),
-        Math.max(0, asInt(scope.get("minAccountAgeDays")).orElse(0)),
-        sanitizeStringList(scope.get("linkWhitelist")),
-        sanitizeStringList(scope.get("linkBlacklist")),
-        sanitizeStringList(scope.get("domainWhitelist")),
-        sanitizeStringList(scope.get("domainBlacklist")));
-  }
-
-  private static void writeEmbedLoadPolicyScopeMap(
-      Map<String, Object> out, EmbedLoadPolicyScope scope) {
-    if (out == null) return;
-    out.clear();
-    EmbedLoadPolicyScope s = (scope == null) ? EmbedLoadPolicyScope.defaults() : scope;
-    if (!s.userWhitelist().isEmpty()) out.put("userWhitelist", s.userWhitelist());
-    if (!s.userBlacklist().isEmpty()) out.put("userBlacklist", s.userBlacklist());
-    if (!s.channelWhitelist().isEmpty()) out.put("channelWhitelist", s.channelWhitelist());
-    if (!s.channelBlacklist().isEmpty()) out.put("channelBlacklist", s.channelBlacklist());
-    if (s.requireVoiceOrOp()) out.put("requireVoiceOrOp", true);
-    if (s.requireLoggedIn()) out.put("requireLoggedIn", true);
-    if (s.minAccountAgeDays() > 0) out.put("minAccountAgeDays", s.minAccountAgeDays());
-    if (!s.linkWhitelist().isEmpty()) out.put("linkWhitelist", s.linkWhitelist());
-    if (!s.linkBlacklist().isEmpty()) out.put("linkBlacklist", s.linkBlacklist());
-    if (!s.domainWhitelist().isEmpty()) out.put("domainWhitelist", s.domainWhitelist());
-    if (!s.domainBlacklist().isEmpty()) out.put("domainBlacklist", s.domainBlacklist());
-  }
-
-  private static String normalizeChannelName(Object channel) {
-    String ch = Objects.toString(channel, "").trim();
-    if (ch.isEmpty()) return "";
-    return (ch.startsWith("#") || ch.startsWith("&")) ? ch : "";
-  }
-
-  private static String foldChannelKey(String channel) {
-    return Objects.toString(channel, "").trim().toLowerCase(Locale.ROOT);
+    return stores.serverStores.serverTreeChannelStateStore.readServerTreeChannelState(serverId);
   }
 
   public synchronized void rememberPrivateMessageTarget(String serverId, String nick) {
-    updateServer(
-        serverId,
-        server -> {
-          String n = Objects.toString(nick, "").trim();
-          if (n.isEmpty()) return;
-
-          List<String> autoJoin = getOrCreateStringList(server, "autoJoin");
-          if (AutoJoinEntryCodec.privateMessageNicks(autoJoin).stream()
-              .anyMatch(existing -> existing.equalsIgnoreCase(n))) {
-            return;
-          }
-          String encoded = AutoJoinEntryCodec.encodePrivateMessageNick(n);
-          if (!encoded.isEmpty()) {
-            autoJoin.add(encoded);
-          }
-        });
+    stores.serverStores.privateMessageTargetStore.rememberPrivateMessageTarget(serverId, nick);
   }
 
   public synchronized void forgetPrivateMessageTarget(String serverId, String nick) {
-    updateServer(
-        serverId,
-        server -> {
-          String n = Objects.toString(nick, "").trim();
-          if (n.isEmpty()) return;
-
-          Object o = server.get("autoJoin");
-          if (!(o instanceof List<?> list)) return;
-          @SuppressWarnings("unchecked")
-          List<String> autoJoin = (List<String>) list;
-          autoJoin.removeIf(
-              entry -> {
-                String decoded = AutoJoinEntryCodec.decodePrivateMessageNick(entry);
-                return !decoded.isEmpty() && decoded.equalsIgnoreCase(n);
-              });
-        });
+    stores.serverStores.privateMessageTargetStore.forgetPrivateMessageTarget(serverId, nick);
   }
 
   @Override
   public synchronized List<String> readPrivateMessageTargets(String serverId) {
-    try {
-      if (file.toString().isBlank()) return List.of();
-      String sid = Objects.toString(serverId, "").trim();
-      if (sid.isEmpty()) return List.of();
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> irc = getOrCreateMap(doc, "irc");
-      List<Map<String, Object>> servers = readServerList(irc).orElse(List.of());
-
-      for (Map<String, Object> server : servers) {
-        if (server == null) continue;
-        if (!sid.equalsIgnoreCase(Objects.toString(server.get("id"), "").trim())) continue;
-        Object autoJoinObj = server.get("autoJoin");
-        if (!(autoJoinObj instanceof List<?> rawList)) return List.of();
-        @SuppressWarnings("unchecked")
-        List<String> autoJoin = (List<String>) rawList;
-        return List.copyOf(AutoJoinEntryCodec.privateMessageNicks(autoJoin));
-      }
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read private-message target list from '{}'", file, e);
-    }
-    return List.of();
+    return stores.serverStores.privateMessageTargetStore.readPrivateMessageTargets(serverId);
   }
 
   public synchronized void rememberMonitorNick(String serverId, String nick) {
-    updateServer(
-        serverId,
-        server -> {
-          String n = normalizeMonitorNick(nick);
-          if (n.isEmpty()) return;
-
-          List<String> monitorNicks = sanitizeMonitorNickList(server.get("monitorNicks"));
-          if (containsIgnoreCase(monitorNicks, n)) return;
-          monitorNicks.add(n);
-          server.put("monitorNicks", monitorNicks);
-        });
+    stores.serverStores.monitorRosterStore.rememberMonitorNick(serverId, nick);
   }
 
   public synchronized void forgetMonitorNick(String serverId, String nick) {
-    updateServer(
-        serverId,
-        server -> {
-          String n = normalizeMonitorNick(nick);
-          if (n.isEmpty()) return;
-
-          List<String> monitorNicks = sanitizeMonitorNickList(server.get("monitorNicks"));
-          monitorNicks.removeIf(existing -> existing != null && existing.equalsIgnoreCase(n));
-          if (monitorNicks.isEmpty()) {
-            server.remove("monitorNicks");
-          } else {
-            server.put("monitorNicks", monitorNicks);
-          }
-        });
+    stores.serverStores.monitorRosterStore.forgetMonitorNick(serverId, nick);
   }
 
   @Override
   public synchronized void replaceMonitorNicks(String serverId, List<String> nicks) {
-    updateServer(
-        serverId,
-        server -> {
-          List<String> monitorNicks = sanitizeMonitorNickList(nicks);
-          if (monitorNicks.isEmpty()) {
-            server.remove("monitorNicks");
-          } else {
-            server.put("monitorNicks", monitorNicks);
-          }
-        });
+    stores.serverStores.monitorRosterStore.replaceMonitorNicks(serverId, nicks);
   }
 
   @Override
   public synchronized List<String> readMonitorNicks(String serverId) {
-    try {
-      if (file.toString().isBlank()) return List.of();
-      String sid = Objects.toString(serverId, "").trim();
-      if (sid.isEmpty()) return List.of();
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> irc = getOrCreateMap(doc, "irc");
-      List<Map<String, Object>> servers = readServerList(irc).orElse(List.of());
-      for (Map<String, Object> server : servers) {
-        if (server == null) continue;
-        if (!sid.equalsIgnoreCase(Objects.toString(server.get("id"), "").trim())) continue;
-        return List.copyOf(sanitizeMonitorNickList(server.get("monitorNicks")));
-      }
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read monitor nick list from '{}'", file, e);
-    }
-    return List.of();
+    return stores.serverStores.monitorRosterStore.readMonitorNicks(serverId);
   }
 
   @Override
   public synchronized void rememberNick(String serverId, String nick) {
-    updateServer(
-        serverId,
-        server -> {
-          String n = Objects.toString(nick, "").trim();
-          if (!n.isEmpty()) server.put("nick", n);
-        });
+    stores.serverStores.serverIdentityStore.rememberNick(serverId, nick);
   }
 
   public synchronized void rememberUiSettings(
       String theme, String chatFontFamily, int chatFontSize) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      if (theme != null && !theme.isBlank()) ui.put("theme", theme);
-      if (chatFontFamily != null && !chatFontFamily.isBlank())
-        ui.put("chatFontFamily", chatFontFamily);
-      if (chatFontSize > 0) ui.put("chatFontSize", chatFontSize);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist UI config to '{}'", file, e);
-    }
+    stores.uiStores.uiSettingsStore.rememberUiSettings(theme, chatFontFamily, chatFontSize);
   }
 
   /**
@@ -1216,142 +369,57 @@ public class RuntimeConfigStore
    * The value is used as a recovery hint on the next launch.
    */
   public synchronized Optional<String> readStartupThemePending() {
-    try {
-      if (file.toString().isBlank()) return Optional.empty();
-      if (!Files.exists(file)) return Optional.empty();
-
-      Map<String, Object> doc = loadFile();
-      String theme =
-          RuntimeConfigDocumentPathReader.readValue(doc, "ircafe", "ui", "startupThemePending")
-              .map(raw -> Objects.toString(raw, "").trim())
-              .orElse("");
-      if (theme.isEmpty()) return Optional.empty();
-      return Optional.of(theme);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.startupThemePending from '{}'", file, e);
-      return Optional.empty();
-    }
+    return stores.uiStores.uiSettingsStore.readStartupThemePending();
   }
 
   /** Persists {@code ircafe.ui.startupThemePending}. Blank values remove the key. */
   public synchronized void rememberStartupThemePending(String theme) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      String normalized = Objects.toString(theme, "").trim();
-      if (normalized.isEmpty()) {
-        ui.remove("startupThemePending");
-      } else {
-        ui.put("startupThemePending", normalized);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.startupThemePending to '{}'", file, e);
-    }
+    stores.uiStores.uiSettingsStore.rememberStartupThemePending(theme);
   }
 
   /** Removes {@code ircafe.ui.startupThemePending}. */
   public synchronized void clearStartupThemePending() {
-    rememberStartupThemePending(null);
+    stores.uiStores.uiSettingsStore.clearStartupThemePending();
   }
 
+  @Override
   public synchronized void rememberMemoryUsageDisplayMode(String mode) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      String normalized = Objects.toString(mode, "").trim().toLowerCase(Locale.ROOT);
-      normalized =
-          switch (normalized) {
-            case "short", "compact" -> "short";
-            case "indicator", "gauge", "bar" -> "indicator";
-            case "moon", "moon-phase", "moon-phases", "lunar" -> "moon";
-            case "hidden", "off", "none", "disable", "disabled" -> "hidden";
-            default -> "long";
-          };
-      ui.put("memoryUsageDisplayMode", normalized);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.memoryUsageDisplayMode setting to '{}'", file, e);
-    }
+    stores.uiStores.memoryUsageStore.rememberDisplayMode(mode);
   }
 
+  @Override
   public synchronized int readMemoryUsageRefreshIntervalMs(int defaultValue) {
-    return readUiInt(
-        "memoryUsageRefreshIntervalMs",
-        defaultValue,
-        this::clampMemoryUsageRefreshIntervalMs,
-        "ui.memoryUsageRefreshIntervalMs");
+    return stores.uiStores.memoryUsageStore.readRefreshIntervalMs(defaultValue);
   }
 
+  @Override
   public synchronized void rememberMemoryUsageRefreshIntervalMs(int intervalMs) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int normalized = clampMemoryUsageRefreshIntervalMs(intervalMs);
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      ui.put("memoryUsageRefreshIntervalMs", normalized);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist ui.memoryUsageRefreshIntervalMs setting to '{}'", file, e);
-    }
+    stores.uiStores.memoryUsageStore.rememberRefreshIntervalMs(intervalMs);
   }
 
+  @Override
   public synchronized void rememberMemoryUsageWarningNearMaxPercent(int percent) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      int p = Math.max(1, Math.min(50, percent));
-      ui.put("memoryUsageWarningNearMaxPercent", p);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist ui.memoryUsageWarningNearMaxPercent setting to '{}'",
-          file,
-          e);
-    }
+    stores.uiStores.memoryUsageStore.rememberWarningNearMaxPercent(percent);
   }
 
+  @Override
   public synchronized void rememberMemoryUsageWarningTooltipEnabled(boolean enabled) {
-    rememberMemoryUsageWarningBoolean("memoryUsageWarningTooltipEnabled", enabled);
+    stores.uiStores.memoryUsageStore.rememberWarningTooltipEnabled(enabled);
   }
 
+  @Override
   public synchronized void rememberMemoryUsageWarningToastEnabled(boolean enabled) {
-    rememberMemoryUsageWarningBoolean("memoryUsageWarningToastEnabled", enabled);
+    stores.uiStores.memoryUsageStore.rememberWarningToastEnabled(enabled);
   }
 
+  @Override
   public synchronized void rememberMemoryUsageWarningPushyEnabled(boolean enabled) {
-    rememberMemoryUsageWarningBoolean("memoryUsageWarningPushyEnabled", enabled);
+    stores.uiStores.memoryUsageStore.rememberWarningPushyEnabled(enabled);
   }
 
+  @Override
   public synchronized void rememberMemoryUsageWarningSoundEnabled(boolean enabled) {
-    rememberMemoryUsageWarningBoolean("memoryUsageWarningSoundEnabled", enabled);
-  }
-
-  private int clampMemoryUsageRefreshIntervalMs(int intervalMs) {
-    int value = intervalMs;
-    if (value <= 0) value = 1000;
-    if (value < 250) value = 250;
-    if (value > 60_000) value = 60_000;
-    return value;
+    stores.uiStores.memoryUsageStore.rememberWarningSoundEnabled(enabled);
   }
 
   /**
@@ -1360,8 +428,7 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when the key is missing or invalid.
    */
   public synchronized boolean readApplicationJfrEnabled(boolean defaultValue) {
-    return readUiNestedBoolean(
-        defaultValue, "ui.appDiagnostics.jfr.enabled", "appDiagnostics", "jfr", "enabled");
+    return stores.uiStores.appDiagnosticsStore.readApplicationJfrEnabled(defaultValue);
   }
 
   /**
@@ -1370,451 +437,44 @@ public class RuntimeConfigStore
    * <p>This controls runtime JFR diagnostics visibility/collection in the Application -> JFR view.
    */
   public synchronized void rememberApplicationJfrEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> jfr = getOrCreateMapPath(doc, "ircafe", "ui", "appDiagnostics", "jfr");
-      jfr.put("enabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.appDiagnostics.jfr.enabled to '{}'", file, e);
-    }
+    stores.uiStores.appDiagnosticsStore.rememberApplicationJfrEnabled(enabled);
   }
 
-  private synchronized void rememberMemoryUsageWarningBoolean(String key, boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      ui.put(key, enabled);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.{} setting to '{}'", key, file, e);
-    }
-  }
-
-  /**
-   * Reads persisted per-server visibility for built-in server tree nodes.
-   *
-   * <p>Stored under {@code ircafe.ui.serverTree.builtInNodesByServer.<serverId>}.
-   */
   public synchronized Map<String, ServerTreeBuiltInNodesVisibility>
       readServerTreeBuiltInNodesVisibility() {
-    try {
-      if (file.toString().isBlank()) return Map.of();
-      if (!Files.exists(file)) return Map.of();
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return Map.of();
-
-      Object uiObj = ircafe.get("ui");
-      if (!(uiObj instanceof Map<?, ?> ui)) return Map.of();
-
-      Object serverTreeObj = ui.get("serverTree");
-      if (!(serverTreeObj instanceof Map<?, ?> serverTree)) return Map.of();
-
-      Object byServerObj = serverTree.get("builtInNodesByServer");
-      if (!(byServerObj instanceof Map<?, ?> byServer)) return Map.of();
-
-      LinkedHashMap<String, ServerTreeBuiltInNodesVisibility> out = new LinkedHashMap<>();
-      for (Map.Entry<?, ?> entry : byServer.entrySet()) {
-        String sid = Objects.toString(entry.getKey(), "").trim();
-        if (sid.isEmpty()) continue;
-        if (!(entry.getValue() instanceof Map<?, ?> raw)) continue;
-
-        ServerTreeBuiltInNodesVisibility d = ServerTreeBuiltInNodesVisibility.defaults();
-        boolean server = asBoolean(raw.get("server")).orElse(d.server());
-        boolean notifications = asBoolean(raw.get("notifications")).orElse(d.notifications());
-        boolean logViewer = asBoolean(raw.get("logViewer")).orElse(d.logViewer());
-        boolean monitor = asBoolean(raw.get("monitor")).orElse(d.monitor());
-        boolean interceptors = asBoolean(raw.get("interceptors")).orElse(d.interceptors());
-
-        out.put(
-            sid,
-            new ServerTreeBuiltInNodesVisibility(
-                server, notifications, logViewer, monitor, interceptors));
-      }
-
-      if (out.isEmpty()) return Map.of();
-      return Map.copyOf(out);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read server-tree built-in node visibility from '{}'", file, e);
-      return Map.of();
-    }
+    return stores.serverStores.serverTreeLayoutStore.readBuiltInNodesVisibility();
   }
 
-  /**
-   * Persists per-server visibility for built-in server tree nodes.
-   *
-   * <p>When all flags are {@code true}, the server entry is removed to keep config compact.
-   */
   public synchronized void rememberServerTreeBuiltInNodesVisibility(
       String serverId, ServerTreeBuiltInNodesVisibility visibility) {
-    try {
-      if (file.toString().isBlank()) return;
-      String sid = Objects.toString(serverId, "").trim();
-      if (sid.isEmpty()) return;
-
-      ServerTreeBuiltInNodesVisibility v =
-          visibility != null ? visibility : ServerTreeBuiltInNodesVisibility.defaults();
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> serverTree = getOrCreateMap(ui, "serverTree");
-      Map<String, Object> byServer = getOrCreateMap(serverTree, "builtInNodesByServer");
-
-      if (v.isDefaultVisible()) {
-        byServer.remove(sid);
-      } else {
-        Map<String, Object> out = new LinkedHashMap<>();
-        out.put("server", v.server());
-        out.put("notifications", v.notifications());
-        out.put("logViewer", v.logViewer());
-        out.put("monitor", v.monitor());
-        out.put("interceptors", v.interceptors());
-        byServer.put(sid, out);
-      }
-
-      if (byServer.isEmpty()) serverTree.remove("builtInNodesByServer");
-      if (serverTree.isEmpty()) ui.remove("serverTree");
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist server-tree built-in node visibility to '{}'", file, e);
-    }
+    stores.serverStores.serverTreeLayoutStore.rememberBuiltInNodesVisibility(serverId, visibility);
   }
 
-  /**
-   * Reads persisted per-server layout for movable built-in server tree nodes.
-   *
-   * <p>Stored under {@code ircafe.ui.serverTree.builtInLayoutByServer.<serverId>}.
-   */
   public synchronized Map<String, ServerTreeBuiltInLayout> readServerTreeBuiltInLayoutByServer() {
-    try {
-      if (file.toString().isBlank()) return Map.of();
-      if (!Files.exists(file)) return Map.of();
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return Map.of();
-
-      Object uiObj = ircafe.get("ui");
-      if (!(uiObj instanceof Map<?, ?> ui)) return Map.of();
-
-      Object serverTreeObj = ui.get("serverTree");
-      if (!(serverTreeObj instanceof Map<?, ?> serverTree)) return Map.of();
-
-      Object byServerObj = serverTree.get("builtInLayoutByServer");
-      if (!(byServerObj instanceof Map<?, ?> byServer)) return Map.of();
-
-      LinkedHashMap<String, ServerTreeBuiltInLayout> out = new LinkedHashMap<>();
-      for (Map.Entry<?, ?> entry : byServer.entrySet()) {
-        String sid = Objects.toString(entry.getKey(), "").trim();
-        if (sid.isEmpty()) continue;
-        if (!(entry.getValue() instanceof Map<?, ?> raw)) continue;
-
-        List<ServerTreeBuiltInLayoutNode> root =
-            parseBuiltInLayoutNodeOrder(raw.get("root"), List.of());
-        List<ServerTreeBuiltInLayoutNode> other =
-            parseBuiltInLayoutNodeOrder(raw.get("other"), List.of());
-        ServerTreeBuiltInLayout layout =
-            normalizeBuiltInLayout(new ServerTreeBuiltInLayout(root, other));
-        if (layout.isDefaultLayout()) continue;
-        out.put(sid, layout);
-      }
-
-      if (out.isEmpty()) return Map.of();
-      return Map.copyOf(out);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read server-tree built-in layout from '{}'", file, e);
-      return Map.of();
-    }
+    return stores.serverStores.serverTreeLayoutStore.readBuiltInLayoutByServer();
   }
 
-  /**
-   * Persists per-server layout for movable built-in server tree nodes.
-   *
-   * <p>When layout matches defaults, the server entry is removed to keep config compact.
-   */
   public synchronized void rememberServerTreeBuiltInLayout(
       String serverId, ServerTreeBuiltInLayout layout) {
-    try {
-      if (file.toString().isBlank()) return;
-      String sid = Objects.toString(serverId, "").trim();
-      if (sid.isEmpty()) return;
-
-      ServerTreeBuiltInLayout next =
-          normalizeBuiltInLayout(layout == null ? ServerTreeBuiltInLayout.defaults() : layout);
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> serverTree = getOrCreateMap(ui, "serverTree");
-      Map<String, Object> byServer = getOrCreateMap(serverTree, "builtInLayoutByServer");
-
-      if (next.isDefaultLayout()) {
-        byServer.remove(sid);
-      } else {
-        Map<String, Object> out = new LinkedHashMap<>();
-        List<String> root = builtInLayoutNodeTokens(next.rootOrder());
-        List<String> other = builtInLayoutNodeTokens(next.otherOrder());
-        if (!root.isEmpty()) out.put("root", root);
-        if (!other.isEmpty()) out.put("other", other);
-        byServer.put(sid, out);
-      }
-
-      if (byServer.isEmpty()) serverTree.remove("builtInLayoutByServer");
-      if (serverTree.isEmpty()) ui.remove("serverTree");
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist server-tree built-in layout to '{}'", file, e);
-    }
+    stores.serverStores.serverTreeLayoutStore.rememberBuiltInLayout(serverId, layout);
   }
 
-  /**
-   * Reads persisted per-server order for top-level server sibling nodes.
-   *
-   * <p>Stored under {@code ircafe.ui.serverTree.rootSiblingOrderByServer.<serverId>}.
-   */
   public synchronized Map<String, ServerTreeRootSiblingOrder>
       readServerTreeRootSiblingOrderByServer() {
-    try {
-      if (file.toString().isBlank()) return Map.of();
-      if (!Files.exists(file)) return Map.of();
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return Map.of();
-
-      Object uiObj = ircafe.get("ui");
-      if (!(uiObj instanceof Map<?, ?> ui)) return Map.of();
-
-      Object serverTreeObj = ui.get("serverTree");
-      if (!(serverTreeObj instanceof Map<?, ?> serverTree)) return Map.of();
-
-      Object byServerObj = serverTree.get("rootSiblingOrderByServer");
-      if (!(byServerObj instanceof Map<?, ?> byServer)) return Map.of();
-
-      LinkedHashMap<String, ServerTreeRootSiblingOrder> out = new LinkedHashMap<>();
-      for (Map.Entry<?, ?> entry : byServer.entrySet()) {
-        String sid = Objects.toString(entry.getKey(), "").trim();
-        if (sid.isEmpty()) continue;
-
-        List<ServerTreeRootSiblingNode> parsed =
-            parseRootSiblingNodeOrder(entry.getValue(), List.of());
-        ServerTreeRootSiblingOrder order =
-            normalizeRootSiblingOrder(new ServerTreeRootSiblingOrder(parsed));
-        if (order.isDefaultOrder()) continue;
-        out.put(sid, order);
-      }
-
-      if (out.isEmpty()) return Map.of();
-      return Map.copyOf(out);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read server-tree root sibling order from '{}'", file, e);
-      return Map.of();
-    }
+    return stores.serverStores.serverTreeLayoutStore.readRootSiblingOrderByServer();
   }
 
-  /**
-   * Persists per-server order for top-level server sibling nodes.
-   *
-   * <p>When order matches defaults, the server entry is removed to keep config compact.
-   */
   public synchronized void rememberServerTreeRootSiblingOrder(
       String serverId, ServerTreeRootSiblingOrder order) {
-    try {
-      if (file.toString().isBlank()) return;
-      String sid = Objects.toString(serverId, "").trim();
-      if (sid.isEmpty()) return;
-
-      ServerTreeRootSiblingOrder next =
-          normalizeRootSiblingOrder(order == null ? ServerTreeRootSiblingOrder.defaults() : order);
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> serverTree = getOrCreateMap(ui, "serverTree");
-      Map<String, Object> byServer = getOrCreateMap(serverTree, "rootSiblingOrderByServer");
-
-      if (next.isDefaultOrder()) {
-        byServer.remove(sid);
-      } else {
-        byServer.put(sid, rootSiblingNodeTokens(next.order()));
-      }
-
-      if (byServer.isEmpty()) serverTree.remove("rootSiblingOrderByServer");
-      if (serverTree.isEmpty()) ui.remove("serverTree");
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist server-tree root sibling order to '{}'", file, e);
-    }
-  }
-
-  private static ServerTreeBuiltInLayout normalizeBuiltInLayout(ServerTreeBuiltInLayout layout) {
-    ServerTreeBuiltInLayout defaults = ServerTreeBuiltInLayout.defaults();
-    List<ServerTreeBuiltInLayoutNode> defaultOther = defaults.otherOrder();
-
-    List<ServerTreeBuiltInLayoutNode> rawRoot =
-        layout == null ? List.of() : parseBuiltInLayoutNodeOrder(layout.rootOrder(), List.of());
-    List<ServerTreeBuiltInLayoutNode> rawOther =
-        layout == null ? List.of() : parseBuiltInLayoutNodeOrder(layout.otherOrder(), List.of());
-
-    ArrayList<ServerTreeBuiltInLayoutNode> root = new ArrayList<>();
-    java.util.EnumSet<ServerTreeBuiltInLayoutNode> seen =
-        java.util.EnumSet.noneOf(ServerTreeBuiltInLayoutNode.class);
-    for (ServerTreeBuiltInLayoutNode node : rawRoot) {
-      if (node == null || seen.contains(node)) continue;
-      root.add(node);
-      seen.add(node);
-    }
-
-    ArrayList<ServerTreeBuiltInLayoutNode> other = new ArrayList<>();
-    for (ServerTreeBuiltInLayoutNode node : rawOther) {
-      if (node == null || seen.contains(node)) continue;
-      other.add(node);
-      seen.add(node);
-    }
-
-    for (ServerTreeBuiltInLayoutNode node : defaultOther) {
-      if (node == null || seen.contains(node)) continue;
-      other.add(node);
-      seen.add(node);
-    }
-
-    return new ServerTreeBuiltInLayout(List.copyOf(root), List.copyOf(other));
-  }
-
-  private static List<ServerTreeBuiltInLayoutNode> parseBuiltInLayoutNodeOrder(
-      Object rawOrder, List<ServerTreeBuiltInLayoutNode> fallback) {
-    ArrayList<ServerTreeBuiltInLayoutNode> out = new ArrayList<>();
-
-    if (rawOrder instanceof List<?> list) {
-      for (Object entry : list) {
-        ServerTreeBuiltInLayoutNode node =
-            ServerTreeBuiltInLayoutNode.fromToken(Objects.toString(entry, ""));
-        if (node == null || out.contains(node)) continue;
-        out.add(node);
-      }
-    } else if (rawOrder instanceof ServerTreeBuiltInLayoutNode node) {
-      out.add(node);
-    } else if (rawOrder instanceof String token) {
-      ServerTreeBuiltInLayoutNode node = ServerTreeBuiltInLayoutNode.fromToken(token);
-      if (node != null) out.add(node);
-    }
-
-    if (out.isEmpty()) return fallback == null ? List.of() : List.copyOf(fallback);
-    return List.copyOf(out);
-  }
-
-  private static List<String> builtInLayoutNodeTokens(List<ServerTreeBuiltInLayoutNode> order) {
-    if (order == null || order.isEmpty()) return List.of();
-    ArrayList<String> out = new ArrayList<>(order.size());
-    for (ServerTreeBuiltInLayoutNode node : order) {
-      if (node == null) continue;
-      out.add(node.token());
-    }
-    return out.isEmpty() ? List.of() : List.copyOf(out);
-  }
-
-  private static ServerTreeRootSiblingOrder normalizeRootSiblingOrder(
-      ServerTreeRootSiblingOrder order) {
-    ServerTreeRootSiblingOrder defaults = ServerTreeRootSiblingOrder.defaults();
-    List<ServerTreeRootSiblingNode> raw =
-        order == null ? List.of() : parseRootSiblingNodeOrder(order.order(), List.of());
-
-    ArrayList<ServerTreeRootSiblingNode> out = new ArrayList<>();
-    for (ServerTreeRootSiblingNode node : raw) {
-      if (node == null || out.contains(node)) continue;
-      out.add(node);
-    }
-    for (ServerTreeRootSiblingNode node : defaults.order()) {
-      if (node == null || out.contains(node)) continue;
-      out.add(node);
-    }
-
-    return new ServerTreeRootSiblingOrder(List.copyOf(out));
-  }
-
-  private static List<ServerTreeRootSiblingNode> parseRootSiblingNodeOrder(
-      Object rawOrder, List<ServerTreeRootSiblingNode> fallback) {
-    Object raw = rawOrder;
-    if (raw instanceof Map<?, ?> map) {
-      raw = map.get("order");
-    }
-
-    ArrayList<ServerTreeRootSiblingNode> out = new ArrayList<>();
-    if (raw instanceof List<?> list) {
-      for (Object entry : list) {
-        ServerTreeRootSiblingNode node =
-            ServerTreeRootSiblingNode.fromToken(Objects.toString(entry, ""));
-        if (node == null || out.contains(node)) continue;
-        out.add(node);
-      }
-    } else if (raw instanceof ServerTreeRootSiblingNode node) {
-      out.add(node);
-    } else if (raw instanceof String token) {
-      ServerTreeRootSiblingNode node = ServerTreeRootSiblingNode.fromToken(token);
-      if (node != null) out.add(node);
-    }
-
-    if (out.isEmpty()) return fallback == null ? List.of() : List.copyOf(fallback);
-    return List.copyOf(out);
-  }
-
-  private static List<String> rootSiblingNodeTokens(List<ServerTreeRootSiblingNode> order) {
-    if (order == null || order.isEmpty()) return List.of();
-    ArrayList<String> out = new ArrayList<>(order.size());
-    for (ServerTreeRootSiblingNode node : order) {
-      if (node == null) continue;
-      out.add(node.token());
-    }
-    return out.isEmpty() ? List.of() : List.copyOf(out);
+    stores.serverStores.serverTreeLayoutStore.rememberRootSiblingOrder(serverId, order);
   }
 
   public synchronized void rememberAccentColor(String accentColor) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      // Persist "disabled" explicitly as an empty string so app defaults don't re-enable the accent
-      // on restart.
-      // (UiProperties treats blank as "no override".)
-      String c = accentColor != null ? accentColor.trim() : "";
-      ui.put("accentColor", c);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist accentColor setting to '{}'", file, e);
-    }
+    stores.uiStores.uiSettingsStore.rememberAccentColor(accentColor);
   }
 
   public synchronized void rememberAccentStrength(int strength) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      int s = Math.max(0, Math.min(100, strength));
-      ui.put("accentStrength", s);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist accentStrength setting to '{}'", file, e);
-    }
+    stores.uiStores.uiSettingsStore.rememberAccentStrength(strength);
   }
 
   /**
@@ -1824,316 +484,113 @@ public class RuntimeConfigStore
    */
   public synchronized void rememberDockLayoutWidths(
       Integer serverDockWidthPx, Integer userDockWidthPx) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> layout = getOrCreateMap(ui, "layout");
-
-      if (serverDockWidthPx != null && serverDockWidthPx > 0) {
-        layout.put("serverDockWidthPx", serverDockWidthPx);
-      }
-      if (userDockWidthPx != null && userDockWidthPx > 0) {
-        layout.put("userDockWidthPx", userDockWidthPx);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist dock layout widths to '{}'", file, e);
-    }
+    stores.uiStores.uiSettingsStore.rememberDockLayoutWidths(serverDockWidthPx, userDockWidthPx);
   }
 
   public synchronized void rememberServerDockWidthPx(int serverDockWidthPx) {
-    rememberDockLayoutWidths(serverDockWidthPx, null);
+    stores.uiStores.uiSettingsStore.rememberServerDockWidthPx(serverDockWidthPx);
   }
 
   public synchronized void rememberUserDockWidthPx(int userDockWidthPx) {
-    rememberDockLayoutWidths(null, userDockWidthPx);
+    stores.uiStores.uiSettingsStore.rememberUserDockWidthPx(userDockWidthPx);
   }
 
   public synchronized void rememberPreserveDockLayout(boolean preserveDockLayout) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> layout = getOrCreateMap(ui, "layout");
-
-      layout.put("preserveDockLayout", preserveDockLayout);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.layout.preserveDockLayout to '{}'", file, e);
-    }
+    stores.uiStores.uiSettingsStore.rememberPreserveDockLayout(preserveDockLayout);
   }
 
   /** Reads {@code ircafe.ui.lastSelectedTarget} if present and valid. */
   public synchronized Optional<LastSelectedTarget> readLastSelectedTarget() {
-    try {
-      if (file.toString().isBlank()) return Optional.empty();
-      if (!Files.exists(file)) return Optional.empty();
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return Optional.empty();
-
-      Object uiObj = ircafe.get("ui");
-      if (!(uiObj instanceof Map<?, ?> ui)) return Optional.empty();
-
-      Object raw = ui.get("lastSelectedTarget");
-      if (!(raw instanceof Map<?, ?> selected)) return Optional.empty();
-
-      LastSelectedTarget out =
-          new LastSelectedTarget(
-              Objects.toString(selected.get("serverId"), ""),
-              Objects.toString(selected.get("target"), ""));
-      if (!out.isValid()) return Optional.empty();
-      return Optional.of(out);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read ui.lastSelectedTarget from '{}'", file, e);
-      return Optional.empty();
-    }
+    return stores.uiStores.uiSettingsStore.readLastSelectedTarget();
   }
 
   /** Persists {@code ircafe.ui.lastSelectedTarget}. Blank values clear the persisted target. */
   public synchronized void rememberLastSelectedTarget(String serverId, String target) {
-    try {
-      if (file.toString().isBlank()) return;
+    stores.uiStores.uiSettingsStore.rememberLastSelectedTarget(serverId, target);
+  }
 
-      LastSelectedTarget next = new LastSelectedTarget(serverId, target);
+  public synchronized Optional<Boolean> readApplicationRootVisibleIfPresent() {
+    return stores.uiStores.uiSettingsStore.readApplicationRootVisibleIfPresent();
+  }
 
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
+  public synchronized boolean readApplicationRootVisible(boolean defaultValue) {
+    return readApplicationRootVisibleIfPresent().orElse(defaultValue);
+  }
 
-      if (!next.isValid()) {
-        ui.remove("lastSelectedTarget");
-      } else {
-        Map<String, Object> selected = getOrCreateMap(ui, "lastSelectedTarget");
-        selected.put("serverId", next.serverId());
-        selected.put("target", next.target());
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.lastSelectedTarget to '{}'", file, e);
-    }
+  public synchronized void rememberApplicationRootVisible(boolean visible) {
+    stores.uiStores.uiSettingsStore.rememberApplicationRootVisible(visible);
   }
 
   public synchronized void rememberUiDensity(String density) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      String d = density != null ? density.trim().toLowerCase(java.util.Locale.ROOT) : "";
-      if (d.isEmpty()) {
-        ui.remove("density");
-      } else if (d.equals("auto")
-          || d.equals("compact")
-          || d.equals("cozy")
-          || d.equals("spacious")) {
-        ui.put("density", d);
-      } else {
-        ui.put("density", "auto");
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.density setting to '{}'", file, e);
-    }
+    stores.uiStores.uiSettingsStore.rememberUiDensity(density);
   }
 
   public synchronized void rememberUiFontOverrideEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("uiFontOverrideEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.uiFontOverrideEnabled setting to '{}'", file, e);
-    }
+    stores.uiStores.uiSettingsStore.rememberUiFontOverrideEnabled(enabled);
   }
 
   public synchronized void rememberUiFontFamily(String family) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      String f = family != null ? family.trim() : "";
-      if (f.isBlank()) {
-        ui.remove("uiFontFamily");
-      } else {
-        ui.put("uiFontFamily", f);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.uiFontFamily setting to '{}'", file, e);
-    }
+    stores.uiStores.uiSettingsStore.rememberUiFontFamily(family);
   }
 
   public synchronized void rememberUiFontSize(int size) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      int s = Math.max(8, Math.min(48, size));
-      ui.put("uiFontSize", s);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.uiFontSize setting to '{}'", file, e);
-    }
+    stores.uiStores.uiSettingsStore.rememberUiFontSize(size);
   }
 
   public synchronized void rememberCornerRadius(int cornerRadius) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      int r = Math.max(0, Math.min(20, cornerRadius));
-      ui.put("cornerRadius", r);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.cornerRadius setting to '{}'", file, e);
-    }
+    stores.uiStores.uiSettingsStore.rememberCornerRadius(cornerRadius);
   }
 
   public synchronized void rememberChatThemePreset(String preset) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      String p = preset != null ? preset.trim() : "";
-      if (p.isEmpty()) {
-        ui.remove("chatThemePreset");
-      } else {
-        ui.put("chatThemePreset", p);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chatThemePreset setting to '{}'", file, e);
-    }
+    stores.uiStores.uiSettingsStore.rememberChatThemePreset(preset);
   }
 
   public synchronized void rememberChatTimestampColor(String hex) {
-    rememberOptionalUiHex("chatTimestampColor", hex, "chatTimestampColor");
+    stores.uiStores.uiSettingsStore.rememberChatTimestampColor(hex);
   }
 
   public synchronized void rememberChatSystemColor(String hex) {
-    rememberOptionalUiHex("chatSystemColor", hex, "chatSystemColor");
+    stores.uiStores.uiSettingsStore.rememberChatSystemColor(hex);
   }
 
   public synchronized void rememberChatMessageColor(String hex) {
-    rememberOptionalUiHex("chatMessageColor", hex, "chatMessageColor");
+    stores.uiStores.uiSettingsStore.rememberChatMessageColor(hex);
   }
 
   public synchronized void rememberChatNoticeColor(String hex) {
-    rememberOptionalUiHex("chatNoticeColor", hex, "chatNoticeColor");
+    stores.uiStores.uiSettingsStore.rememberChatNoticeColor(hex);
   }
 
   public synchronized void rememberChatActionColor(String hex) {
-    rememberOptionalUiHex("chatActionColor", hex, "chatActionColor");
+    stores.uiStores.uiSettingsStore.rememberChatActionColor(hex);
   }
 
   public synchronized void rememberChatErrorColor(String hex) {
-    rememberOptionalUiHex("chatErrorColor", hex, "chatErrorColor");
+    stores.uiStores.uiSettingsStore.rememberChatErrorColor(hex);
   }
 
   public synchronized void rememberChatPresenceColor(String hex) {
-    rememberOptionalUiHex("chatPresenceColor", hex, "chatPresenceColor");
+    stores.uiStores.uiSettingsStore.rememberChatPresenceColor(hex);
   }
 
   public synchronized void rememberChatMentionBgColor(String hex) {
-    rememberOptionalUiHex("chatMentionBgColor", hex, "chatMentionBgColor");
+    stores.uiStores.uiSettingsStore.rememberChatMentionBgColor(hex);
   }
 
   public synchronized void rememberServerTreeUnreadChannelColor(String hex) {
-    rememberOptionalUiHex("serverTreeUnreadChannelColor", hex, "serverTreeUnreadChannelColor");
+    stores.uiStores.uiSettingsStore.rememberServerTreeUnreadChannelColor(hex);
   }
 
   public synchronized void rememberServerTreeHighlightChannelColor(String hex) {
-    rememberOptionalUiHex(
-        "serverTreeHighlightChannelColor", hex, "serverTreeHighlightChannelColor");
+    stores.uiStores.uiSettingsStore.rememberServerTreeHighlightChannelColor(hex);
   }
 
   public synchronized void rememberChatMentionStrength(int strength) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      int s = Math.max(0, Math.min(100, strength));
-      ui.put("chatMentionStrength", s);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist chatMentionStrength setting to '{}'", file, e);
-    }
-  }
-
-  private synchronized void rememberOptionalUiHex(String key, String hex, String label) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      String c = hex != null ? hex.trim() : "";
-      if (c.isEmpty()) {
-        ui.remove(key);
-      } else {
-        ui.put(key, c);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist {} setting to '{}'", label, file, e);
-    }
+    stores.uiStores.uiSettingsStore.rememberChatMentionStrength(strength);
   }
 
   public synchronized void rememberAutoConnectOnStart(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("autoConnectOnStart", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist autoConnectOnStart setting to '{}'", file, e);
-    }
+    stores.serverStores.serverAutoConnectStore.rememberAutoConnectOnStart(enabled);
   }
 
   /**
@@ -2144,34 +601,7 @@ public class RuntimeConfigStore
    */
   @Override
   public synchronized Map<String, Boolean> readServerAutoConnectOnStartByServer() {
-    try {
-      if (file.toString().isBlank()) return Map.of();
-      if (!Files.exists(file)) return Map.of();
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return Map.of();
-
-      Object uiObj = ircafe.get("ui");
-      if (!(uiObj instanceof Map<?, ?> ui)) return Map.of();
-
-      Object byServerObj = ui.get("serverAutoConnectOnStartByServer");
-      if (!(byServerObj instanceof Map<?, ?> byServer)) return Map.of();
-
-      LinkedHashMap<String, Boolean> out = new LinkedHashMap<>();
-      for (Map.Entry<?, ?> entry : byServer.entrySet()) {
-        String sid = Objects.toString(entry.getKey(), "").trim();
-        if (sid.isEmpty()) continue;
-        Optional<Boolean> enabled = asBoolean(entry.getValue());
-        enabled.ifPresent(value -> out.put(sid, value));
-      }
-      if (out.isEmpty()) return Map.of();
-      return Map.copyOf(out);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not read per-server startup auto-connect settings from '{}'", file, e);
-      return Map.of();
-    }
+    return stores.serverStores.serverAutoConnectStore.readServerAutoConnectOnStartByServer();
   }
 
   /**
@@ -2180,19 +610,8 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when no override is present.
    */
   public synchronized boolean readServerAutoConnectOnStart(String serverId, boolean defaultValue) {
-    String sid = Objects.toString(serverId, "").trim();
-    if (sid.isEmpty()) return defaultValue;
-
-    Map<String, Boolean> byServer = readServerAutoConnectOnStartByServer();
-    Boolean exact = byServer.get(sid);
-    if (exact != null) return exact;
-
-    for (Map.Entry<String, Boolean> entry : byServer.entrySet()) {
-      if (sid.equalsIgnoreCase(Objects.toString(entry.getKey(), "").trim())) {
-        return Boolean.TRUE.equals(entry.getValue());
-      }
-    }
-    return defaultValue;
+    return stores.serverStores.serverAutoConnectStore.readServerAutoConnectOnStart(
+        serverId, defaultValue);
   }
 
   /**
@@ -2201,1530 +620,562 @@ public class RuntimeConfigStore
    * <p>Enabled is the default, so enabled values are removed to keep the YAML concise.
    */
   public synchronized void rememberServerAutoConnectOnStart(String serverId, boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-      String sid = Objects.toString(serverId, "").trim();
-      if (sid.isEmpty()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> byServer = getOrCreateMap(ui, "serverAutoConnectOnStartByServer");
-
-      if (enabled) {
-        byServer.remove(sid);
-      } else {
-        byServer.put(sid, false);
-      }
-      if (byServer.isEmpty()) {
-        ui.remove("serverAutoConnectOnStartByServer");
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist per-server startup auto-connect settings to '{}'", file, e);
-    }
+    stores.serverStores.serverAutoConnectStore.rememberServerAutoConnectOnStart(serverId, enabled);
   }
 
   @Override
   public synchronized void rememberInviteAutoJoinEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> invites = getOrCreateMap(ui, "invites");
-
-      invites.put("autoJoinOnInvite", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist invites.autoJoinOnInvite setting to '{}'", file, e);
-    }
+    stores.uiStores.uiFeatureToggleStore.rememberInviteAutoJoinEnabled(enabled);
   }
 
   public synchronized void rememberUpdateNotifierEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> updateNotifier = getOrCreateMap(ui, "updateNotifier");
-
-      updateNotifier.put("enabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.updateNotifier.enabled setting to '{}'", file, e);
-    }
+    stores.uiStores.uiFeatureToggleStore.rememberUpdateNotifierEnabled(enabled);
   }
 
   public synchronized void rememberLagIndicatorEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> lagIndicator = getOrCreateMap(ui, "lagIndicator");
-
-      lagIndicator.put("enabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.lagIndicator.enabled setting to '{}'", file, e);
-    }
+    stores.uiStores.uiFeatureToggleStore.rememberLagIndicatorEnabled(enabled);
   }
 
   public synchronized void rememberTrayEnabled(boolean enabled) {
-    rememberUiSectionScalarSetting("tray", "enabled", enabled, "tray.enabled");
+    stores.uiStores.trayStore.rememberEnabled(enabled);
   }
 
   public synchronized void rememberTrayCloseToTray(boolean enabled) {
-    rememberUiSectionScalarSetting("tray", "closeToTray", enabled, "tray.closeToTray");
+    stores.uiStores.trayStore.rememberCloseToTray(enabled);
   }
 
   public synchronized void rememberTrayCloseToTrayHintShown(boolean shown) {
-    rememberUiSectionScalarSetting(
-        "tray", "closeToTrayHintShown", shown, "tray.closeToTrayHintShown");
+    stores.uiStores.trayStore.rememberCloseToTrayHintShown(shown);
   }
 
   public synchronized void rememberTrayMinimizeToTray(boolean enabled) {
-    rememberUiSectionScalarSetting("tray", "minimizeToTray", enabled, "tray.minimizeToTray");
+    stores.uiStores.trayStore.rememberMinimizeToTray(enabled);
   }
 
   public synchronized void rememberTrayStartMinimized(boolean enabled) {
-    rememberUiSectionScalarSetting("tray", "startMinimized", enabled, "tray.startMinimized");
+    stores.uiStores.trayStore.rememberStartMinimized(enabled);
   }
 
   public synchronized void rememberTrayNotifyHighlights(boolean enabled) {
-    rememberUiSectionScalarSetting("tray", "notifyHighlights", enabled, "tray.notifyHighlights");
+    stores.uiStores.trayStore.rememberNotifyHighlights(enabled);
   }
 
   public synchronized void rememberTrayNotifyPrivateMessages(boolean enabled) {
-    rememberUiSectionScalarSetting(
-        "tray", "notifyPrivateMessages", enabled, "tray.notifyPrivateMessages");
+    stores.uiStores.trayStore.rememberNotifyPrivateMessages(enabled);
   }
 
   public synchronized void rememberTrayNotifyConnectionState(boolean enabled) {
-    rememberUiSectionScalarSetting(
-        "tray", "notifyConnectionState", enabled, "tray.notifyConnectionState");
+    stores.uiStores.trayStore.rememberNotifyConnectionState(enabled);
   }
 
   public synchronized void rememberTrayNotifyOnlyWhenUnfocused(boolean enabled) {
-    rememberUiSectionScalarSetting(
-        "tray", "notifyOnlyWhenUnfocused", enabled, "tray.notifyOnlyWhenUnfocused");
+    stores.uiStores.trayStore.rememberNotifyOnlyWhenUnfocused(enabled);
   }
 
   public synchronized void rememberTrayNotifyOnlyWhenMinimizedOrHidden(boolean enabled) {
-    rememberUiSectionScalarSetting(
-        "tray", "notifyOnlyWhenMinimizedOrHidden", enabled, "tray.notifyOnlyWhenMinimizedOrHidden");
+    stores.uiStores.trayStore.rememberNotifyOnlyWhenMinimizedOrHidden(enabled);
   }
 
   public synchronized void rememberTrayNotifySuppressWhenTargetActive(boolean enabled) {
-    rememberUiSectionScalarSetting(
-        "tray", "notifySuppressWhenTargetActive", enabled, "tray.notifySuppressWhenTargetActive");
+    stores.uiStores.trayStore.rememberNotifySuppressWhenTargetActive(enabled);
   }
 
   public synchronized void rememberTrayLinuxDbusActionsEnabled(boolean enabled) {
-    rememberUiSectionScalarSetting(
-        "tray", "linuxDbusActionsEnabled", enabled, "tray.linuxDbusActionsEnabled");
+    stores.uiStores.trayStore.rememberLinuxDbusActionsEnabled(enabled);
   }
 
   public synchronized void rememberTrayNotificationBackend(String backendToken) {
-    String v = Objects.toString(backendToken, "").trim().toLowerCase(Locale.ROOT);
-    if (v.isEmpty()) v = "auto";
-    rememberUiSectionScalarSetting("tray", "notificationBackend", v, "tray.notificationBackend");
+    stores.uiStores.trayStore.rememberNotificationBackend(backendToken);
   }
 
   public synchronized void rememberTrayNotificationSoundsEnabled(boolean enabled) {
-    rememberUiSectionScalarSetting(
-        "tray", "notificationSoundsEnabled", enabled, "tray.notificationSoundsEnabled");
+    stores.uiStores.trayStore.rememberNotificationSoundsEnabled(enabled);
   }
 
   public synchronized void rememberTrayNotificationSound(String soundId) {
-    String v = Objects.toString(soundId, "").trim();
-    if (v.isEmpty()) v = "NOTIF_1";
-    rememberUiSectionScalarSetting("tray", "notificationSound", v, "tray.notificationSound");
+    stores.uiStores.trayStore.rememberNotificationSound(soundId);
   }
 
   public synchronized void rememberTrayNotificationSoundUseCustom(boolean useCustom) {
-    rememberUiSectionScalarSetting(
-        "tray", "notificationSoundUseCustom", useCustom, "tray.notificationSoundUseCustom");
+    stores.uiStores.trayStore.rememberNotificationSoundUseCustom(useCustom);
   }
 
   public synchronized void rememberTrayNotificationSoundCustomPath(String relativePath) {
-    String v = Objects.toString(relativePath, "").trim();
-    updateUiSetting(
-        "tray.notificationSoundCustomPath",
-        ui -> {
-          Map<String, Object> tray = getOrCreateMap(ui, "tray");
-          if (v.isEmpty()) {
-            tray.remove("notificationSoundCustomPath");
-          } else {
-            tray.put("notificationSoundCustomPath", v);
-          }
-        });
+    stores.uiStores.trayStore.rememberNotificationSoundCustomPath(relativePath);
   }
 
   public synchronized void rememberPushySettings(PushyProperties settings) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      PushyProperties safe =
-          settings != null
-              ? settings
-              : new PushyProperties(false, null, null, null, null, null, null, null);
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> pushy = getOrCreateMap(ircafe, "pushy");
-
-      pushy.put("enabled", safe.enabled());
-
-      String endpoint = Objects.toString(safe.endpoint(), "").trim();
-      if (endpoint.isEmpty() || "https://api.pushy.me/push".equals(endpoint)) {
-        pushy.remove("endpoint");
-      } else {
-        pushy.put("endpoint", endpoint);
-      }
-
-      String apiKey = Objects.toString(safe.apiKey(), "").trim();
-      if (apiKey.isEmpty()) {
-        pushy.remove("apiKey");
-      } else {
-        pushy.put("apiKey", apiKey);
-      }
-
-      String deviceToken = Objects.toString(safe.deviceToken(), "").trim();
-      if (deviceToken.isEmpty()) {
-        pushy.remove("deviceToken");
-      } else {
-        pushy.put("deviceToken", deviceToken);
-      }
-
-      String topic = Objects.toString(safe.topic(), "").trim();
-      if (topic.isEmpty()) {
-        pushy.remove("topic");
-      } else {
-        pushy.put("topic", topic);
-      }
-
-      String titlePrefix = Objects.toString(safe.titlePrefix(), "").trim();
-      if (titlePrefix.isEmpty() || "IRCafe".equals(titlePrefix)) {
-        pushy.remove("titlePrefix");
-      } else {
-        pushy.put("titlePrefix", titlePrefix);
-      }
-
-      pushy.put("connectTimeoutSeconds", safe.connectTimeoutSeconds());
-      pushy.put("readTimeoutSeconds", safe.readTimeoutSeconds());
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist pushy settings to '{}'", file, e);
-    }
+    stores.pushyStore.rememberSettings(settings);
   }
 
+  @Override
   public synchronized void rememberNotificationRuleCooldownSeconds(int seconds) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = seconds;
-      if (v < 0) v = 15;
-      if (v > 3600) v = 3600;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("notificationRuleCooldownSeconds", v);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist notificationRuleCooldownSeconds setting to '{}'", file, e);
-    }
+    stores.uiStores.notificationStore.rememberRuleCooldownSeconds(seconds);
   }
 
+  @Override
   public synchronized void rememberNotificationRules(List<NotificationRule> rules) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      List<Map<String, Object>> out = new ArrayList<>();
-      if (rules != null) {
-        for (NotificationRule r : rules) {
-          if (r == null) continue;
-          Map<String, Object> m = new LinkedHashMap<>();
-          m.put("enabled", r.enabled());
-          m.put("label", Objects.toString(r.label(), "").trim());
-          m.put("type", r.type() != null ? r.type().name() : "WORD");
-          m.put("pattern", Objects.toString(r.pattern(), "").trim());
-          m.put("caseSensitive", r.caseSensitive());
-          m.put("wholeWord", r.wholeWord());
-          String fg = Objects.toString(r.highlightFg(), "").trim();
-          if (!fg.isEmpty()) m.put("highlightFg", fg);
-          out.add(m);
-        }
-      }
-
-      ui.put("notificationRules", out);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist notificationRules to '{}'", file, e);
-    }
+    stores.uiStores.notificationStore.rememberRules(rules);
   }
 
   @Override
   public synchronized List<UserCommandAlias> readUserCommandAliases() {
-    try {
-      if (file.toString().isBlank()) return List.of();
-      if (!Files.exists(file)) return List.of();
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return List.of();
-
-      Object commandsObj = ircafe.get("commands");
-      if (!(commandsObj instanceof Map<?, ?> commands)) return List.of();
-
-      Object aliasesObj = commands.get("aliases");
-      if (!(aliasesObj instanceof List<?> raw)) return List.of();
-
-      List<UserCommandAlias> out = new ArrayList<>();
-      for (Object item : raw) {
-        if (!(item instanceof Map<?, ?> m)) continue;
-
-        boolean enabled = asBoolean(m.get("enabled")).orElse(Boolean.TRUE);
-
-        String name = Objects.toString(m.get("name"), "").trim();
-
-        // Accept both "template" and legacy/alternate "expansion" key names.
-        String template = Objects.toString(m.get("template"), "");
-        if (template.isEmpty()) template = Objects.toString(m.get("expansion"), "");
-
-        out.add(new UserCommandAlias(enabled, name, template));
-      }
-
-      return List.copyOf(out);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read user command aliases from '{}'", file, e);
-      return List.of();
-    }
+    return stores.userCommandStore.readAliases();
   }
 
   @Override
   public synchronized boolean readUnknownCommandAsRawEnabled(boolean defaultValue) {
-    return readExistingConfigValue(
-            "commands.unknownCommandAsRaw", "ircafe", "commands", "unknownCommandAsRaw")
-        .flatMap(RuntimeConfigStore::asBoolean)
-        .orElse(defaultValue);
+    return stores.userCommandStore.readUnknownCommandAsRawEnabled(defaultValue);
   }
 
   @Override
   public synchronized String readDefaultQuitMessage() {
-    return readUiValue("ui.defaultQuitMessage", "defaultQuitMessage")
-        .map(RuntimeConfigStore::normalizeQuitMessage)
-        .orElse(DEFAULT_QUIT_MESSAGE);
+    return stores.uiStores.chatBehaviorStore.readDefaultQuitMessage();
   }
 
+  @Override
+  public synchronized boolean readNickCompletionCycleWithTabEnabled(boolean defaultValue) {
+    return stores.uiStores.chatBehaviorStore.readNickCompletionCycleWithTabEnabled(defaultValue);
+  }
+
+  @Override
+  public synchronized boolean readNickCompletionAppendAddressSuffixEnabled(boolean defaultValue) {
+    return stores.uiStores.chatBehaviorStore.readNickCompletionAppendAddressSuffixEnabled(
+        defaultValue);
+  }
+
+  @Override
   public synchronized boolean readAppDiagnosticsAssertjSwingEnabled(boolean defaultValue) {
-    return readAppDiagnosticsAssertjSwingBoolean("enabled", defaultValue);
+    return stores.uiStores.appDiagnosticsStore.readAssertjSwingEnabled(defaultValue);
   }
 
+  @Override
   public synchronized boolean readAppDiagnosticsAssertjSwingFreezeWatchdogEnabled(
       boolean defaultValue) {
-    return readAppDiagnosticsAssertjSwingBoolean("edtFreezeWatchdogEnabled", defaultValue);
+    return stores.uiStores.appDiagnosticsStore.readAssertjSwingFreezeWatchdogEnabled(defaultValue);
   }
 
+  @Override
   public synchronized int readAppDiagnosticsAssertjSwingFreezeThresholdMs(int defaultValue) {
-    int fallback = clampAssertjFreezeThresholdMs(defaultValue);
-    return readAppDiagnosticsSetting(
-            "ui.appDiagnostics.assertjSwing.edtFreezeThresholdMs",
-            "assertjSwing",
-            "edtFreezeThresholdMs")
-        .flatMap(RuntimeConfigStore::asInt)
-        .map(RuntimeConfigStore::clampAssertjFreezeThresholdMs)
-        .orElse(fallback);
+    return stores.uiStores.appDiagnosticsStore.readAssertjSwingFreezeThresholdMs(defaultValue);
   }
 
+  @Override
   public synchronized int readAppDiagnosticsAssertjSwingWatchdogPollMs(int defaultValue) {
-    int fallback = clampAssertjWatchdogPollMs(defaultValue);
-    return readAppDiagnosticsSetting(
-            "ui.appDiagnostics.assertjSwing.edtWatchdogPollMs", "assertjSwing", "edtWatchdogPollMs")
-        .flatMap(RuntimeConfigStore::asInt)
-        .map(RuntimeConfigStore::clampAssertjWatchdogPollMs)
-        .orElse(fallback);
+    return stores.uiStores.appDiagnosticsStore.readAssertjSwingWatchdogPollMs(defaultValue);
   }
 
+  @Override
   public synchronized int readAppDiagnosticsAssertjSwingFallbackViolationReportMs(
       int defaultValue) {
-    int fallback = clampAssertjFallbackViolationReportMs(defaultValue);
-    return readAppDiagnosticsSetting(
-            "ui.appDiagnostics.assertjSwing.edtFallbackViolationReportMs",
-            "assertjSwing",
-            "edtFallbackViolationReportMs")
-        .flatMap(RuntimeConfigStore::asInt)
-        .map(RuntimeConfigStore::clampAssertjFallbackViolationReportMs)
-        .orElse(fallback);
+    return stores.uiStores.appDiagnosticsStore.readAssertjSwingFallbackViolationReportMs(
+        defaultValue);
   }
 
+  @Override
   public synchronized boolean readAppDiagnosticsAssertjSwingIssuePlaySound(boolean defaultValue) {
-    return readAppDiagnosticsAssertjSwingBoolean("onIssuePlaySound", defaultValue);
+    return stores.uiStores.appDiagnosticsStore.readAssertjSwingIssuePlaySound(defaultValue);
   }
 
+  @Override
   public synchronized boolean readAppDiagnosticsAssertjSwingIssueShowNotification(
       boolean defaultValue) {
-    return readAppDiagnosticsAssertjSwingBoolean("onIssueShowNotification", defaultValue);
+    return stores.uiStores.appDiagnosticsStore.readAssertjSwingIssueShowNotification(defaultValue);
   }
 
+  @Override
   public synchronized boolean readAppDiagnosticsJhiccupEnabled(boolean defaultValue) {
-    return readAppDiagnosticsSetting("ui.appDiagnostics.jhiccup.enabled", "jhiccup", "enabled")
-        .flatMap(RuntimeConfigStore::asBoolean)
-        .orElse(defaultValue);
+    return stores.uiStores.appDiagnosticsStore.readJhiccupEnabled(defaultValue);
   }
 
+  @Override
   public synchronized String readAppDiagnosticsJhiccupJarPath(String defaultValue) {
-    String fallback = Objects.toString(defaultValue, "").trim();
-    String raw =
-        readAppDiagnosticsSetting("ui.appDiagnostics.jhiccup.jarPath", "jhiccup", "jarPath")
-            .map(value -> Objects.toString(value, "").trim())
-            .orElse("");
-    return raw.isEmpty() ? fallback : raw;
+    return stores.uiStores.appDiagnosticsStore.readJhiccupJarPath(defaultValue);
   }
 
+  @Override
   public synchronized String readAppDiagnosticsJhiccupJavaCommand(String defaultValue) {
-    String fallback = Objects.toString(defaultValue, "").trim();
-    if (fallback.isEmpty()) fallback = "java";
-    String raw =
-        readAppDiagnosticsSetting("ui.appDiagnostics.jhiccup.javaCommand", "jhiccup", "javaCommand")
-            .map(value -> Objects.toString(value, "").trim())
-            .orElse("");
-    return raw.isEmpty() ? fallback : raw;
+    return stores.uiStores.appDiagnosticsStore.readJhiccupJavaCommand(defaultValue);
   }
 
+  @Override
   public synchronized List<String> readAppDiagnosticsJhiccupArgs(List<String> defaultValue) {
-    List<String> fallback = sanitizeArgs(defaultValue);
-    Object argsObj =
-        readAppDiagnosticsSetting("ui.appDiagnostics.jhiccup.args", "jhiccup", "args").orElse(null);
-    if (!(argsObj instanceof List<?> raw)) return fallback;
-    return sanitizeArgs(raw);
-  }
-
-  private boolean readAppDiagnosticsAssertjSwingBoolean(String key, boolean defaultValue) {
-    return readAppDiagnosticsSetting("ui.appDiagnostics.assertjSwing." + key, "assertjSwing", key)
-        .flatMap(RuntimeConfigStore::asBoolean)
-        .orElse(defaultValue);
-  }
-
-  private Optional<Object> readAppDiagnosticsSetting(String description, String... path) {
-    String[] fullPath = new String[path.length + 3];
-    fullPath[0] = "ircafe";
-    fullPath[1] = "ui";
-    fullPath[2] = "appDiagnostics";
-    System.arraycopy(path, 0, fullPath, 3, path.length);
-    return readExistingConfigValue(description, fullPath);
-  }
-
-  private static int clampAssertjFreezeThresholdMs(int value) {
-    if (value < 500) return 500;
-    if (value > 120_000) return 120_000;
-    return value;
-  }
-
-  private static int clampAssertjWatchdogPollMs(int value) {
-    if (value < 100) return 100;
-    if (value > 10_000) return 10_000;
-    return value;
-  }
-
-  private static int clampAssertjFallbackViolationReportMs(int value) {
-    if (value < 250) return 250;
-    if (value > 120_000) return 120_000;
-    return value;
-  }
-
-  private static List<String> sanitizeArgs(List<?> args) {
-    if (args == null || args.isEmpty()) return List.of();
-    List<String> out = new ArrayList<>();
-    for (Object arg : args) {
-      String t = Objects.toString(arg, "").trim();
-      if (!t.isEmpty()) out.add(t);
-    }
-    return List.copyOf(out);
+    return stores.uiStores.appDiagnosticsStore.readJhiccupArgs(defaultValue);
   }
 
   public synchronized String readLaunchJvmJavaCommand(String defaultValue) {
-    String fallback = Objects.toString(defaultValue, "").trim();
-    if (fallback.isEmpty()) fallback = "java";
-    String raw =
-        readLaunchJvmValue("launch.jvm.javaCommand", "javaCommand")
-            .map(value -> Objects.toString(value, "").trim())
-            .orElse("");
-    return raw.isEmpty() ? fallback : raw;
+    return stores.launchJvmStore.readJavaCommand(defaultValue);
   }
 
   public synchronized int readLaunchJvmXmsMiB(int defaultValue) {
-    int fallback = clampLaunchJvmHeapMiB(defaultValue);
-    return readLaunchJvmValue("launch.jvm.xmsMiB", "xmsMiB")
-        .flatMap(RuntimeConfigStore::asInt)
-        .map(RuntimeConfigStore::clampLaunchJvmHeapMiB)
-        .orElse(fallback);
+    return stores.launchJvmStore.readXmsMiB(defaultValue);
   }
 
   public synchronized int readLaunchJvmXmxMiB(int defaultValue) {
-    int fallback = clampLaunchJvmHeapMiB(defaultValue);
-    return readLaunchJvmValue("launch.jvm.xmxMiB", "xmxMiB")
-        .flatMap(RuntimeConfigStore::asInt)
-        .map(RuntimeConfigStore::clampLaunchJvmHeapMiB)
-        .orElse(fallback);
+    return stores.launchJvmStore.readXmxMiB(defaultValue);
   }
 
   public synchronized String readLaunchJvmGc(String defaultValue) {
-    String fallback = normalizeLaunchJvmGc(defaultValue);
-    return readLaunchJvmValue("launch.jvm.gc", "gc")
-        .map(RuntimeConfigStore::normalizeLaunchJvmGc)
-        .orElse(fallback);
+    return stores.launchJvmStore.readGc(defaultValue);
   }
 
   public synchronized List<String> readLaunchJvmArgs(List<String> defaultValue) {
-    List<String> fallback = sanitizeArgs(defaultValue);
-    Object argsObj = readLaunchJvmValue("launch.jvm.args", "args").orElse(null);
-    if (!(argsObj instanceof List<?> raw)) return fallback;
-    return sanitizeArgs(raw);
-  }
-
-  private Optional<Object> readLaunchJvmValue(String description, String key) {
-    return readExistingConfigValue(description, "ircafe", "launch", "jvm", key);
+    return stores.launchJvmStore.readArgs(defaultValue);
   }
 
   public synchronized void rememberLaunchJvmJavaCommand(String javaCommand) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String cmd = Objects.toString(javaCommand, "").trim();
-      if (cmd.isEmpty() || cmd.equalsIgnoreCase("java")) cmd = "";
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      LaunchJvmWritePath path = getOrCreateLaunchJvmWritePath(doc);
-      Map<String, Object> jvm = path.jvm();
-
-      if (cmd.isEmpty()) {
-        jvm.remove("javaCommand");
-      } else {
-        jvm.put("javaCommand", cmd);
-      }
-
-      cleanupLaunchJvm(path);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist launch.jvm.javaCommand to '{}'", file, e);
-    }
+    stores.launchJvmStore.rememberJavaCommand(javaCommand);
   }
 
   public synchronized void rememberLaunchJvmXmsMiB(int xmsMiB) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = clampLaunchJvmHeapMiB(xmsMiB);
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      LaunchJvmWritePath path = getOrCreateLaunchJvmWritePath(doc);
-      Map<String, Object> jvm = path.jvm();
-
-      if (v <= 0) {
-        jvm.remove("xmsMiB");
-      } else {
-        jvm.put("xmsMiB", v);
-      }
-
-      cleanupLaunchJvm(path);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist launch.jvm.xmsMiB to '{}'", file, e);
-    }
+    stores.launchJvmStore.rememberXmsMiB(xmsMiB);
   }
 
   public synchronized void rememberLaunchJvmXmxMiB(int xmxMiB) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      int v = clampLaunchJvmHeapMiB(xmxMiB);
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      LaunchJvmWritePath path = getOrCreateLaunchJvmWritePath(doc);
-      Map<String, Object> jvm = path.jvm();
-
-      if (v <= 0) {
-        jvm.remove("xmxMiB");
-      } else {
-        jvm.put("xmxMiB", v);
-      }
-
-      cleanupLaunchJvm(path);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist launch.jvm.xmxMiB to '{}'", file, e);
-    }
+    stores.launchJvmStore.rememberXmxMiB(xmxMiB);
   }
 
   public synchronized void rememberLaunchJvmGc(String gc) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String normalized = normalizeLaunchJvmGc(gc);
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      LaunchJvmWritePath path = getOrCreateLaunchJvmWritePath(doc);
-      Map<String, Object> jvm = path.jvm();
-
-      if (normalized.isEmpty()) {
-        jvm.remove("gc");
-      } else {
-        jvm.put("gc", normalized);
-      }
-
-      cleanupLaunchJvm(path);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist launch.jvm.gc to '{}'", file, e);
-    }
+    stores.launchJvmStore.rememberGc(gc);
   }
 
   public synchronized void rememberLaunchJvmArgs(List<String> args) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      List<String> sanitized = sanitizeArgs(args);
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      LaunchJvmWritePath path = getOrCreateLaunchJvmWritePath(doc);
-      Map<String, Object> jvm = path.jvm();
-
-      if (sanitized.isEmpty()) {
-        jvm.remove("args");
-      } else {
-        jvm.put("args", sanitized);
-      }
-
-      cleanupLaunchJvm(path);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist launch.jvm.args to '{}'", file, e);
-    }
+    stores.launchJvmStore.rememberArgs(args);
   }
-
-  private static int clampLaunchJvmHeapMiB(int value) {
-    if (value < 0) return 0;
-    if (value > 262_144) return 262_144;
-    return value;
-  }
-
-  private static String normalizeLaunchJvmGc(Object raw) {
-    String v = Objects.toString(raw, "").trim().toLowerCase(Locale.ROOT);
-    return switch (v) {
-      case "", "default", "auto", "none" -> "";
-      case "g1", "g1gc", "useg1gc", "useg1" -> "g1";
-      case "z", "zgc", "usezgc", "usez" -> "zgc";
-      case "shenandoah", "shenandoahgc", "useshenandoahgc", "useshenandoah" -> "shenandoah";
-      case "parallel", "parallelgc", "useparallelgc", "useparallel" -> "parallel";
-      case "serial", "serialgc", "useserialgc", "useserial" -> "serial";
-      case "epsilon", "epsilongc", "useepsilongc", "useepsilon" -> "epsilon";
-      default -> "";
-    };
-  }
-
-  private static void cleanupLaunchJvm(
-      Map<String, Object> ircafe, Map<String, Object> launch, Map<String, Object> jvm) {
-    if (jvm.isEmpty()) {
-      launch.remove("jvm");
-    }
-    if (launch.isEmpty()) {
-      ircafe.remove("launch");
-    }
-  }
-
-  private static void cleanupLaunchJvm(LaunchJvmWritePath path) {
-    cleanupLaunchJvm(path.ircafe(), path.launch(), path.jvm());
-  }
-
-  private static LaunchJvmWritePath getOrCreateLaunchJvmWritePath(Map<String, Object> doc) {
-    Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-    Map<String, Object> launch = getOrCreateMap(ircafe, "launch");
-    Map<String, Object> jvm = getOrCreateMap(launch, "jvm");
-    return new LaunchJvmWritePath(ircafe, launch, jvm);
-  }
-
-  private record LaunchJvmWritePath(
-      Map<String, Object> ircafe, Map<String, Object> launch, Map<String, Object> jvm) {}
 
   @Override
   public synchronized boolean readCtcpAutoRepliesEnabled(boolean defaultValue) {
-    return readCtcpAutoReplyValue("enabled", defaultValue);
+    return stores.uiStores.ctcpAutoReplyStore.readEnabled(defaultValue);
   }
 
   @Override
   public synchronized boolean readCtcpAutoReplyVersionEnabled(boolean defaultValue) {
-    return readCtcpAutoReplyValue("version", defaultValue);
+    return stores.uiStores.ctcpAutoReplyStore.readVersionEnabled(defaultValue);
   }
 
   @Override
   public synchronized boolean readCtcpAutoReplyPingEnabled(boolean defaultValue) {
-    return readCtcpAutoReplyValue("ping", defaultValue);
+    return stores.uiStores.ctcpAutoReplyStore.readPingEnabled(defaultValue);
   }
 
   @Override
   public synchronized boolean readCtcpAutoReplyTimeEnabled(boolean defaultValue) {
-    return readCtcpAutoReplyValue("time", defaultValue);
+    return stores.uiStores.ctcpAutoReplyStore.readTimeEnabled(defaultValue);
   }
 
-  private boolean readCtcpAutoReplyValue(String key, boolean defaultValue) {
-    return readUiSectionBoolean("ctcpReplies", key, defaultValue, "ui.ctcpReplies." + key);
-  }
-
+  @Override
   public synchronized void rememberUserCommandAliases(List<UserCommandAlias> aliases) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> commands = getOrCreateMap(ircafe, "commands");
-
-      List<Map<String, Object>> out = new ArrayList<>();
-      if (aliases != null) {
-        for (UserCommandAlias alias : aliases) {
-          if (alias == null) continue;
-          Map<String, Object> m = new LinkedHashMap<>();
-          m.put("enabled", alias.enabled());
-          m.put("name", Objects.toString(alias.name(), "").trim());
-          m.put("template", Objects.toString(alias.template(), ""));
-          out.add(m);
-        }
-      }
-
-      commands.put("aliases", out);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist user command aliases to '{}'", file, e);
-    }
+    stores.userCommandStore.rememberAliases(aliases);
   }
 
+  @Override
   public synchronized void rememberUnknownCommandAsRawEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> commands = getOrCreateMap(ircafe, "commands");
-
-      commands.put("unknownCommandAsRaw", enabled);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist commands.unknownCommandAsRaw to '{}'", file, e);
-    }
+    stores.userCommandStore.rememberUnknownCommandAsRawEnabled(enabled);
   }
 
+  @Override
   public synchronized void rememberAppDiagnosticsAssertjSwingEnabled(boolean enabled) {
-    rememberAppDiagnosticsAssertjSwingSetting("enabled", enabled);
+    stores.uiStores.appDiagnosticsStore.rememberAssertjSwingEnabled(enabled);
   }
 
+  @Override
   public synchronized void rememberAppDiagnosticsAssertjSwingFreezeWatchdogEnabled(
       boolean enabled) {
-    rememberAppDiagnosticsAssertjSwingSetting("edtFreezeWatchdogEnabled", enabled);
+    stores.uiStores.appDiagnosticsStore.rememberAssertjSwingFreezeWatchdogEnabled(enabled);
   }
 
+  @Override
   public synchronized void rememberAppDiagnosticsAssertjSwingFreezeThresholdMs(int ms) {
-    rememberAppDiagnosticsAssertjSwingSetting(
-        "edtFreezeThresholdMs", clampAssertjFreezeThresholdMs(ms));
+    stores.uiStores.appDiagnosticsStore.rememberAssertjSwingFreezeThresholdMs(ms);
   }
 
+  @Override
   public synchronized void rememberAppDiagnosticsAssertjSwingWatchdogPollMs(int ms) {
-    rememberAppDiagnosticsAssertjSwingSetting("edtWatchdogPollMs", clampAssertjWatchdogPollMs(ms));
+    stores.uiStores.appDiagnosticsStore.rememberAssertjSwingWatchdogPollMs(ms);
   }
 
+  @Override
   public synchronized void rememberAppDiagnosticsAssertjSwingFallbackViolationReportMs(int ms) {
-    rememberAppDiagnosticsAssertjSwingSetting(
-        "edtFallbackViolationReportMs", clampAssertjFallbackViolationReportMs(ms));
+    stores.uiStores.appDiagnosticsStore.rememberAssertjSwingFallbackViolationReportMs(ms);
   }
 
+  @Override
   public synchronized void rememberAppDiagnosticsAssertjSwingIssuePlaySound(boolean enabled) {
-    rememberAppDiagnosticsAssertjSwingSetting("onIssuePlaySound", enabled);
+    stores.uiStores.appDiagnosticsStore.rememberAssertjSwingIssuePlaySound(enabled);
   }
 
+  @Override
   public synchronized void rememberAppDiagnosticsAssertjSwingIssueShowNotification(
       boolean enabled) {
-    rememberAppDiagnosticsAssertjSwingSetting("onIssueShowNotification", enabled);
+    stores.uiStores.appDiagnosticsStore.rememberAssertjSwingIssueShowNotification(enabled);
   }
 
+  @Override
   public synchronized void rememberAppDiagnosticsJhiccupEnabled(boolean enabled) {
-    rememberAppDiagnosticsSectionSetting("jhiccup", "enabled", enabled, false);
+    stores.uiStores.appDiagnosticsStore.rememberJhiccupEnabled(enabled);
   }
 
+  @Override
   public synchronized void rememberAppDiagnosticsJhiccupJarPath(String jarPath) {
-    rememberAppDiagnosticsSectionSetting(
-        "jhiccup", "jarPath", Objects.toString(jarPath, "").trim(), true);
+    stores.uiStores.appDiagnosticsStore.rememberJhiccupJarPath(jarPath);
   }
 
+  @Override
   public synchronized void rememberAppDiagnosticsJhiccupJavaCommand(String javaCommand) {
-    rememberAppDiagnosticsSectionSetting(
-        "jhiccup", "javaCommand", Objects.toString(javaCommand, "").trim(), true);
+    stores.uiStores.appDiagnosticsStore.rememberJhiccupJavaCommand(javaCommand);
   }
 
+  @Override
   public synchronized void rememberAppDiagnosticsJhiccupArgs(List<String> args) {
-    rememberAppDiagnosticsSectionSetting("jhiccup", "args", sanitizeArgs(args), true);
+    stores.uiStores.appDiagnosticsStore.rememberJhiccupArgs(args);
   }
 
-  private void rememberAppDiagnosticsAssertjSwingSetting(String key, Object value) {
-    rememberAppDiagnosticsSectionSetting("assertjSwing", key, value, false);
-  }
-
-  private void rememberAppDiagnosticsSectionSetting(
-      String section, String key, Object value, boolean removeEmpty) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> settings =
-          getOrCreateMapPath(doc, "ircafe", "ui", "appDiagnostics", section);
-
-      if (removeEmpty && isEmptySettingValue(value)) {
-        settings.remove(key);
-      } else {
-        settings.put(key, value);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.appDiagnostics.{}.{} to '{}'", section, key, file, e);
-    }
-  }
-
-  private static boolean isEmptySettingValue(Object value) {
-    if (value == null) return true;
-    if (value instanceof CharSequence text) return text.toString().isBlank();
-    if (value instanceof java.util.Collection<?> collection) return collection.isEmpty();
-    return false;
-  }
-
+  @Override
   public synchronized void rememberIrcEventNotificationRules(List<IrcEventNotificationRule> rules) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      List<Map<String, Object>> out = new ArrayList<>();
-      if (rules != null) {
-        for (IrcEventNotificationRule r : rules) {
-          if (r == null) continue;
-
-          Map<String, Object> m = new LinkedHashMap<>();
-          m.put("enabled", r.enabled());
-          m.put("eventType", r.eventType() != null ? r.eventType().name() : "INVITE_RECEIVED");
-          m.put("sourceMode", r.sourceMode() != null ? r.sourceMode().name() : "ANY");
-          String sourcePattern = Objects.toString(r.sourcePattern(), "").trim();
-          if (!sourcePattern.isEmpty()) m.put("sourcePattern", sourcePattern);
-
-          m.put("channelScope", r.channelScope() != null ? r.channelScope().name() : "ALL");
-          String channelPatterns = Objects.toString(r.channelPatterns(), "").trim();
-          if (!channelPatterns.isEmpty()) m.put("channelPatterns", channelPatterns);
-
-          m.put("toastEnabled", r.toastEnabled());
-          IrcEventNotificationRule.FocusScope focusScope =
-              r.focusScope() != null
-                  ? r.focusScope()
-                  : IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY;
-          m.put("focusScope", focusScope.name());
-          // Legacy compatibility for older builds that only understand toastWhenFocused.
-          m.put(
-              "toastWhenFocused",
-              focusScope != IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY);
-          m.put("statusBarEnabled", r.statusBarEnabled());
-          m.put("notificationsNodeEnabled", r.notificationsNodeEnabled());
-          m.put("soundEnabled", r.soundEnabled());
-          m.put(
-              "soundId",
-              Objects.toString(r.soundId(), "").trim().isEmpty() ? "NOTIF_1" : r.soundId().trim());
-          m.put("soundUseCustom", r.soundUseCustom());
-
-          String custom = Objects.toString(r.soundCustomPath(), "").trim();
-          if (!custom.isEmpty()) m.put("soundCustomPath", custom);
-
-          m.put("scriptEnabled", r.scriptEnabled());
-          String scriptPath = Objects.toString(r.scriptPath(), "").trim();
-          if (!scriptPath.isEmpty()) m.put("scriptPath", scriptPath);
-          String scriptArgs = Objects.toString(r.scriptArgs(), "").trim();
-          if (!scriptArgs.isEmpty()) m.put("scriptArgs", scriptArgs);
-          String scriptWorkingDirectory = Objects.toString(r.scriptWorkingDirectory(), "").trim();
-          if (!scriptWorkingDirectory.isEmpty())
-            m.put("scriptWorkingDirectory", scriptWorkingDirectory);
-
-          if (r.eventType() == IrcEventNotificationRule.EventType.CTCP_RECEIVED) {
-            IrcEventNotificationRule.CtcpMatchMode ctcpCommandMode =
-                r.ctcpCommandMode() != null
-                    ? r.ctcpCommandMode()
-                    : IrcEventNotificationRule.CtcpMatchMode.ANY;
-            IrcEventNotificationRule.CtcpMatchMode ctcpValueMode =
-                r.ctcpValueMode() != null
-                    ? r.ctcpValueMode()
-                    : IrcEventNotificationRule.CtcpMatchMode.ANY;
-            m.put("ctcpCommandMode", ctcpCommandMode.name());
-            m.put("ctcpValueMode", ctcpValueMode.name());
-
-            String ctcpCommandPattern = Objects.toString(r.ctcpCommandPattern(), "").trim();
-            if (!ctcpCommandPattern.isEmpty()) m.put("ctcpCommandPattern", ctcpCommandPattern);
-            String ctcpValuePattern = Objects.toString(r.ctcpValuePattern(), "").trim();
-            if (!ctcpValuePattern.isEmpty()) m.put("ctcpValuePattern", ctcpValuePattern);
-          }
-
-          out.add(m);
-        }
-      }
-
-      ui.put("ircEventNotificationRules", out);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ircEventNotificationRules to '{}'", file, e);
-    }
+    stores.uiStores.notificationStore.rememberIrcEventRules(rules);
   }
 
   public synchronized Map<String, List<InterceptorDefinition>> readInterceptorDefinitions() {
-    try {
-      if (file.toString().isBlank()) return Map.of();
-      if (!Files.exists(file)) return Map.of();
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return Map.of();
-
-      Object uiObj = ircafe.get("ui");
-      if (!(uiObj instanceof Map<?, ?> ui)) return Map.of();
-
-      Object interceptorsObj = ui.get("interceptors");
-      if (!(interceptorsObj instanceof Map<?, ?> interceptors)) return Map.of();
-
-      Object serversObj = interceptors.get("servers");
-      if (!(serversObj instanceof Map<?, ?> servers)) return Map.of();
-
-      LinkedHashMap<String, List<InterceptorDefinition>> out = new LinkedHashMap<>();
-      for (Map.Entry<?, ?> entry : servers.entrySet()) {
-        String sid = Objects.toString(entry.getKey(), "").trim();
-        if (sid.isEmpty()) continue;
-        List<InterceptorDefinition> defs =
-            parseInterceptorDefinitionsForServer(entry.getValue(), sid);
-        if (!defs.isEmpty()) {
-          out.put(sid, defs);
-        }
-      }
-
-      if (out.isEmpty()) return Map.of();
-      return Map.copyOf(out);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read interceptor definitions from '{}'", file, e);
-      return Map.of();
-    }
+    return stores.interceptorStore.readDefinitions();
   }
 
   public synchronized void rememberInterceptorDefinitions(
       Map<String, List<InterceptorDefinition>> defsByServer) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> interceptors = getOrCreateMap(ui, "interceptors");
-
-      LinkedHashMap<String, Object> serversOut = new LinkedHashMap<>();
-      if (defsByServer != null) {
-        for (Map.Entry<String, List<InterceptorDefinition>> entry : defsByServer.entrySet()) {
-          String sid = Objects.toString(entry.getKey(), "").trim();
-          if (sid.isEmpty()) continue;
-
-          List<Map<String, Object>> defsOut = new ArrayList<>();
-          List<InterceptorDefinition> defs = entry.getValue();
-          if (defs != null) {
-            for (InterceptorDefinition def : defs) {
-              if (def == null) continue;
-              String id = Objects.toString(def.id(), "").trim();
-              if (id.isEmpty()) continue;
-
-              Map<String, Object> m = new LinkedHashMap<>();
-              m.put("id", id);
-              m.put("name", Objects.toString(def.name(), "").trim());
-              m.put("enabled", def.enabled());
-
-              String scopeServerId = Objects.toString(def.scopeServerId(), "").trim();
-              // Keep this key even when blank so "any server" survives round-trip.
-              m.put("scopeServerId", scopeServerId);
-
-              m.put(
-                  "channelIncludeMode",
-                  def.channelIncludeMode() != null
-                      ? def.channelIncludeMode().name()
-                      : InterceptorRuleMode.GLOB.name());
-              String channelIncludes = Objects.toString(def.channelIncludes(), "").trim();
-              if (!channelIncludes.isEmpty()) m.put("channelIncludes", channelIncludes);
-
-              m.put(
-                  "channelExcludeMode",
-                  def.channelExcludeMode() != null
-                      ? def.channelExcludeMode().name()
-                      : InterceptorRuleMode.GLOB.name());
-              String channelExcludes = Objects.toString(def.channelExcludes(), "").trim();
-              if (!channelExcludes.isEmpty()) m.put("channelExcludes", channelExcludes);
-
-              m.put("actionSoundEnabled", def.actionSoundEnabled());
-              m.put("actionStatusBarEnabled", def.actionStatusBarEnabled());
-              m.put("actionToastEnabled", def.actionToastEnabled());
-              String soundId = Objects.toString(def.actionSoundId(), "").trim();
-              m.put("actionSoundId", soundId.isEmpty() ? "NOTIF_1" : soundId);
-              m.put("actionSoundUseCustom", def.actionSoundUseCustom());
-              String soundCustom = Objects.toString(def.actionSoundCustomPath(), "").trim();
-              if (!soundCustom.isEmpty()) m.put("actionSoundCustomPath", soundCustom);
-
-              m.put("actionScriptEnabled", def.actionScriptEnabled());
-              String scriptPath = Objects.toString(def.actionScriptPath(), "").trim();
-              if (!scriptPath.isEmpty()) m.put("actionScriptPath", scriptPath);
-              String scriptArgs = Objects.toString(def.actionScriptArgs(), "").trim();
-              if (!scriptArgs.isEmpty()) m.put("actionScriptArgs", scriptArgs);
-              String scriptWorkingDirectory =
-                  Objects.toString(def.actionScriptWorkingDirectory(), "").trim();
-              if (!scriptWorkingDirectory.isEmpty())
-                m.put("actionScriptWorkingDirectory", scriptWorkingDirectory);
-
-              List<Map<String, Object>> rulesOut = new ArrayList<>();
-              if (def.rules() != null) {
-                for (InterceptorRule rule : def.rules()) {
-                  if (rule == null) continue;
-                  Map<String, Object> rm = new LinkedHashMap<>();
-                  rm.put("enabled", rule.enabled());
-                  rm.put("label", Objects.toString(rule.label(), "").trim());
-                  String eventTypesCsv = Objects.toString(rule.eventTypesCsv(), "").trim();
-                  if (!eventTypesCsv.isEmpty()) rm.put("eventTypesCsv", eventTypesCsv);
-
-                  rm.put(
-                      "messageMode",
-                      rule.messageMode() != null
-                          ? rule.messageMode().name()
-                          : InterceptorRuleMode.LIKE.name());
-                  String messagePattern = Objects.toString(rule.messagePattern(), "").trim();
-                  if (!messagePattern.isEmpty()) rm.put("messagePattern", messagePattern);
-
-                  rm.put(
-                      "nickMode",
-                      rule.nickMode() != null
-                          ? rule.nickMode().name()
-                          : InterceptorRuleMode.LIKE.name());
-                  String nickPattern = Objects.toString(rule.nickPattern(), "").trim();
-                  if (!nickPattern.isEmpty()) rm.put("nickPattern", nickPattern);
-
-                  rm.put(
-                      "hostmaskMode",
-                      rule.hostmaskMode() != null
-                          ? rule.hostmaskMode().name()
-                          : InterceptorRuleMode.GLOB.name());
-                  String hostmaskPattern = Objects.toString(rule.hostmaskPattern(), "").trim();
-                  if (!hostmaskPattern.isEmpty()) rm.put("hostmaskPattern", hostmaskPattern);
-                  rulesOut.add(rm);
-                }
-              }
-              m.put("rules", rulesOut);
-              defsOut.add(m);
-            }
-          }
-
-          if (!defsOut.isEmpty()) {
-            serversOut.put(sid, defsOut);
-          }
-        }
-      }
-
-      if (serversOut.isEmpty()) {
-        interceptors.remove("servers");
-        if (interceptors.isEmpty()) {
-          ui.remove("interceptors");
-        }
-      } else {
-        interceptors.put("servers", serversOut);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist interceptor definitions to '{}'", file, e);
-    }
+    stores.interceptorStore.rememberDefinitions(defsByServer);
   }
 
   // --- Chat logging / history persistence (ircafe.logging.*) ---
 
+  @Override
   public synchronized boolean readChatLoggingEnabled(boolean defaultValue) {
-    return readExistingConfigValue("logging.enabled", "ircafe", "logging", "enabled")
-        .flatMap(RuntimeConfigStore::asBoolean)
-        .orElse(defaultValue);
+    return stores.chatLoggingStore.readEnabled(defaultValue);
   }
 
+  @Override
   public synchronized void rememberChatLoggingEnabled(boolean enabled) {
-    rememberChatLoggingScalarSetting("enabled", enabled, "chat logging enabled");
+    stores.chatLoggingStore.rememberEnabled(enabled);
   }
 
+  @Override
   public synchronized void rememberChatLoggingLogSoftIgnoredLines(boolean enabled) {
-    rememberChatLoggingScalarSetting("logSoftIgnoredLines", enabled, "chat logging soft-ignore");
+    stores.chatLoggingStore.rememberLogSoftIgnoredLines(enabled);
   }
 
+  @Override
   public synchronized void rememberChatLoggingRedactionAuditEnabled(boolean enabled) {
-    rememberChatLoggingScalarSetting(
-        "redactionAuditEnabled", enabled, "chat logging redaction-audit");
+    stores.chatLoggingStore.rememberRedactionAuditEnabled(enabled);
   }
 
+  @Override
   public synchronized void rememberChatLoggingLogPrivateMessages(boolean enabled) {
-    rememberChatLoggingScalarSetting("logPrivateMessages", enabled, "chat logging PM-history");
+    stores.chatLoggingStore.rememberLogPrivateMessages(enabled);
   }
 
+  @Override
   public synchronized void rememberChatLoggingSavePrivateMessageList(boolean enabled) {
-    rememberChatLoggingScalarSetting("savePrivateMessageList", enabled, "chat logging PM-list");
+    stores.chatLoggingStore.rememberSavePrivateMessageList(enabled);
   }
 
+  @Override
   public synchronized void rememberChatLoggingDbFileBaseName(String fileBaseName) {
-    String base = Objects.toString(fileBaseName, "").trim();
-    if (base.isEmpty()) base = "ircafe-chatlog";
-
-    rememberChatLoggingHsqldbScalarSetting("fileBaseName", base, "chat logging DB file base name");
+    stores.chatLoggingStore.rememberDbFileBaseName(fileBaseName);
   }
 
+  @Override
   public synchronized void rememberChatLoggingDbNextToRuntimeConfig(boolean nextToRuntimeConfig) {
-    rememberChatLoggingHsqldbScalarSetting(
-        "nextToRuntimeConfig", nextToRuntimeConfig, "chat logging DB location");
+    stores.chatLoggingStore.rememberDbNextToRuntimeConfig(nextToRuntimeConfig);
   }
 
+  @Override
   public synchronized void rememberChatLoggingKeepForever(boolean keepForever) {
-    rememberChatLoggingScalarSetting("keepForever", keepForever, "chat logging keepForever");
+    stores.chatLoggingStore.rememberKeepForever(keepForever);
   }
 
+  @Override
   public synchronized void rememberChatLoggingRetentionDays(int retentionDays) {
-    rememberChatLoggingScalarSetting(
-        "retentionDays", Math.max(0, retentionDays), "chat logging retentionDays");
+    stores.chatLoggingStore.rememberRetentionDays(retentionDays);
   }
 
+  @Override
   public synchronized void rememberChatLoggingWriterQueueMax(int writerQueueMax) {
-    rememberChatLoggingScalarSetting(
-        "writerQueueMax",
-        Math.max(100, Math.min(1_000_000, writerQueueMax)),
-        "chat logging writerQueueMax");
+    stores.chatLoggingStore.rememberWriterQueueMax(writerQueueMax);
   }
 
+  @Override
   public synchronized void rememberChatLoggingWriterBatchSize(int writerBatchSize) {
-    rememberChatLoggingScalarSetting(
-        "writerBatchSize",
-        Math.max(1, Math.min(10_000, writerBatchSize)),
-        "chat logging writerBatchSize");
-  }
-
-  private void rememberChatLoggingScalarSetting(String key, Object value, String description) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
-
-      logging.put(key, value);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist {} setting to '{}'", description, file, e);
-    }
-  }
-
-  private void rememberChatLoggingHsqldbScalarSetting(
-      String key, Object value, String description) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> logging = getOrCreateMap(ircafe, "logging");
-      Map<String, Object> hsqldb = getOrCreateMap(logging, "hsqldb");
-
-      hsqldb.put(key, value);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist {} setting to '{}'", description, file, e);
-    }
+    stores.chatLoggingStore.rememberWriterBatchSize(writerBatchSize);
   }
 
   public synchronized void rememberImageEmbedsEnabled(boolean enabled) {
-    rememberUiScalarSetting("imageEmbedsEnabled", enabled, "image embed");
+    stores.uiStores.embedStore.rememberImageEmbedsEnabled(enabled);
   }
 
   public synchronized void rememberImageEmbedsCollapsedByDefault(boolean collapsed) {
-    rememberUiScalarSetting("imageEmbedsCollapsedByDefault", collapsed, "image embed collapse");
+    stores.uiStores.embedStore.rememberImageEmbedsCollapsedByDefault(collapsed);
   }
 
   public synchronized void rememberImageEmbedsMaxWidthPx(int maxWidthPx) {
-    rememberUiScalarSetting(
-        "imageEmbedsMaxWidthPx", Math.max(0, maxWidthPx), "image embed max width");
+    stores.uiStores.embedStore.rememberImageEmbedsMaxWidthPx(maxWidthPx);
   }
 
   public synchronized void rememberImageEmbedsMaxHeightPx(int maxHeightPx) {
-    rememberUiScalarSetting(
-        "imageEmbedsMaxHeightPx", Math.max(0, maxHeightPx), "image embed max height");
+    stores.uiStores.embedStore.rememberImageEmbedsMaxHeightPx(maxHeightPx);
   }
 
   public synchronized void rememberImageEmbedsAnimateGifs(boolean animate) {
-    rememberUiScalarSetting("imageEmbedsAnimateGifs", animate, "image embed GIF animation");
+    stores.uiStores.embedStore.rememberImageEmbedsAnimateGifs(animate);
   }
 
   public synchronized void rememberLinkPreviewsEnabled(boolean enabled) {
-    rememberUiScalarSetting("linkPreviewsEnabled", enabled, "link preview");
+    stores.uiStores.embedStore.rememberLinkPreviewsEnabled(enabled);
   }
 
   public synchronized void rememberLinkPreviewsCollapsedByDefault(boolean collapsed) {
-    rememberUiScalarSetting("linkPreviewsCollapsedByDefault", collapsed, "link preview collapse");
+    stores.uiStores.embedStore.rememberLinkPreviewsCollapsedByDefault(collapsed);
   }
 
   public synchronized void rememberEmbedCardStyle(String styleToken) {
-    String token = Objects.toString(styleToken, "").trim().toLowerCase(Locale.ROOT);
-    if (token.isBlank()) token = "default";
-    rememberUiScalarSetting("embedCardStyle", token, "embed card style");
+    stores.uiStores.embedStore.rememberEmbedCardStyle(styleToken);
   }
 
   /** Reads advanced embed/link loading policy settings under {@code ircafe.ui.embedLoadPolicy}. */
   public synchronized EmbedLoadPolicySnapshot readEmbedLoadPolicy() {
-    try {
-      if (file.toString().isBlank()) return EmbedLoadPolicySnapshot.defaults();
-      if (!Files.exists(file)) return EmbedLoadPolicySnapshot.defaults();
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return EmbedLoadPolicySnapshot.defaults();
-
-      Object uiObj = ircafe.get("ui");
-      if (!(uiObj instanceof Map<?, ?> ui)) return EmbedLoadPolicySnapshot.defaults();
-
-      Object rawPolicy = ui.get("embedLoadPolicy");
-      if (!(rawPolicy instanceof Map<?, ?> policy)) return EmbedLoadPolicySnapshot.defaults();
-
-      EmbedLoadPolicyScope global = parseEmbedLoadPolicyScope(policy.get("global"));
-
-      LinkedHashMap<String, EmbedLoadPolicyScope> byServer = new LinkedHashMap<>();
-      Object rawByServer = policy.get("byServer");
-      if (rawByServer instanceof Map<?, ?> map) {
-        for (Map.Entry<?, ?> entry : map.entrySet()) {
-          String serverId = Objects.toString(entry.getKey(), "").trim();
-          if (serverId.isEmpty()) continue;
-          EmbedLoadPolicyScope scope = parseEmbedLoadPolicyScope(entry.getValue());
-          if (scope.isDefaultScope()) continue;
-          byServer.put(serverId, scope);
-        }
-      }
-
-      return new EmbedLoadPolicySnapshot(global, byServer);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read embed/link load policy from '{}'", file, e);
-      return EmbedLoadPolicySnapshot.defaults();
-    }
+    return stores.uiStores.embedLoadPolicyStore.read();
   }
 
   /**
    * Persists advanced embed/link loading policy settings under {@code ircafe.ui.embedLoadPolicy}.
    */
   public synchronized void rememberEmbedLoadPolicy(EmbedLoadPolicySnapshot snapshot) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      EmbedLoadPolicySnapshot normalized =
-          snapshot == null ? EmbedLoadPolicySnapshot.defaults() : snapshot;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      if (normalized.isDefaultPolicy()) {
-        ui.remove("embedLoadPolicy");
-        writeFile(doc);
-        return;
-      }
-
-      Map<String, Object> policy = getOrCreateMap(ui, "embedLoadPolicy");
-      Map<String, Object> global = getOrCreateMap(policy, "global");
-      writeEmbedLoadPolicyScopeMap(global, normalized.global());
-
-      if (normalized.byServer() == null || normalized.byServer().isEmpty()) {
-        policy.remove("byServer");
-      } else {
-        Map<String, Object> byServer = getOrCreateMap(policy, "byServer");
-        byServer.clear();
-        for (Map.Entry<String, EmbedLoadPolicyScope> entry : normalized.byServer().entrySet()) {
-          String serverId = Objects.toString(entry.getKey(), "").trim();
-          if (serverId.isEmpty()) continue;
-          EmbedLoadPolicyScope scope =
-              entry.getValue() == null ? EmbedLoadPolicyScope.defaults() : entry.getValue();
-          if (scope.isDefaultScope()) continue;
-          Map<String, Object> scopeMap = new LinkedHashMap<>();
-          writeEmbedLoadPolicyScopeMap(scopeMap, scope);
-          byServer.put(serverId, scopeMap);
-        }
-        if (byServer.isEmpty()) {
-          policy.remove("byServer");
-        }
-      }
-
-      if (policy.isEmpty()) {
-        ui.remove("embedLoadPolicy");
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist embed/link load policy to '{}'", file, e);
-    }
+    stores.uiStores.embedLoadPolicyStore.remember(snapshot);
   }
 
   public synchronized void rememberPresenceFoldsEnabled(boolean enabled) {
-    rememberUiScalarSetting("presenceFoldsEnabled", enabled, "presence folds");
+    stores.uiStores.chatBehaviorStore.rememberPresenceFoldsEnabled(enabled);
   }
 
   public synchronized void rememberDefaultQuitMessage(String message) {
-    String normalized = normalizeQuitMessage(message);
-    updateUiSetting(
-        "ui.defaultQuitMessage",
-        ui -> {
-          if (DEFAULT_QUIT_MESSAGE.equals(normalized)) {
-            ui.remove("defaultQuitMessage");
-          } else {
-            ui.put("defaultQuitMessage", normalized);
-          }
-        });
-  }
-
-  private static String normalizeQuitMessage(Object message) {
-    String normalized = Objects.toString(message, "").replace('\r', ' ').replace('\n', ' ').trim();
-    if (normalized.isEmpty()) return DEFAULT_QUIT_MESSAGE;
-    return normalized;
+    stores.uiStores.chatBehaviorStore.rememberDefaultQuitMessage(message);
   }
 
   public synchronized void rememberCtcpRequestsInActiveTargetEnabled(boolean enabled) {
-    rememberUiScalarSetting("ctcpRequestsInActiveTargetEnabled", enabled, "CTCP request routing");
+    stores.uiStores.chatBehaviorStore.rememberCtcpRequestsInActiveTargetEnabled(enabled);
   }
 
+  public synchronized void rememberNickCompletionCycleWithTabEnabled(boolean enabled) {
+    stores.uiStores.chatBehaviorStore.rememberNickCompletionCycleWithTabEnabled(enabled);
+  }
+
+  public synchronized void rememberNickCompletionAppendAddressSuffixEnabled(boolean enabled) {
+    stores.uiStores.chatBehaviorStore.rememberNickCompletionAppendAddressSuffixEnabled(enabled);
+  }
+
+  @Override
   public synchronized void rememberCtcpAutoRepliesEnabled(boolean enabled) {
-    rememberCtcpAutoReplyValue("enabled", enabled);
+    stores.uiStores.ctcpAutoReplyStore.rememberEnabled(enabled);
   }
 
+  @Override
   public synchronized void rememberCtcpAutoReplyVersionEnabled(boolean enabled) {
-    rememberCtcpAutoReplyValue("version", enabled);
+    stores.uiStores.ctcpAutoReplyStore.rememberVersionEnabled(enabled);
   }
 
+  @Override
   public synchronized void rememberCtcpAutoReplyPingEnabled(boolean enabled) {
-    rememberCtcpAutoReplyValue("ping", enabled);
+    stores.uiStores.ctcpAutoReplyStore.rememberPingEnabled(enabled);
   }
 
+  @Override
   public synchronized void rememberCtcpAutoReplyTimeEnabled(boolean enabled) {
-    rememberCtcpAutoReplyValue("time", enabled);
-  }
-
-  private void rememberCtcpAutoReplyValue(String key, boolean enabled) {
-    rememberUiSectionScalarSetting("ctcpReplies", key, enabled, "ui.ctcpReplies." + key);
+    stores.uiStores.ctcpAutoReplyStore.rememberTimeEnabled(enabled);
   }
 
   public synchronized void rememberTypingIndicatorsEnabled(boolean enabled) {
-    rememberUiScalarSetting("typingIndicatorsEnabled", enabled, "typing indicators");
+    stores.uiStores.chatBehaviorStore.rememberTypingIndicatorsEnabled(enabled);
   }
 
   public synchronized void rememberTypingIndicatorsReceiveEnabled(boolean enabled) {
-    rememberUiScalarSetting(
-        "typingIndicatorsReceiveEnabled", enabled, "incoming typing indicators");
+    stores.uiStores.chatBehaviorStore.rememberTypingIndicatorsReceiveEnabled(enabled);
   }
 
   public synchronized void rememberTypingTreeIndicatorStyle(String style) {
-    String normalized = UiProperties.normalizeTypingTreeIndicatorStyle(style);
-    rememberUiScalarSetting("typingTreeIndicatorStyle", normalized, "typing tree indicator style");
+    stores.uiStores.chatBehaviorStore.rememberTypingTreeIndicatorStyle(style);
   }
 
   public synchronized void rememberTypingIndicatorsTreeEnabled(boolean enabled) {
-    rememberTypingIndicatorDisplayBoolean("typingIndicatorsTreeEnabled", enabled);
+    stores.uiStores.chatBehaviorStore.rememberTypingIndicatorsTreeEnabled(enabled);
   }
 
   public synchronized void rememberTypingIndicatorsUsersListEnabled(boolean enabled) {
-    rememberTypingIndicatorDisplayBoolean("typingIndicatorsUsersListEnabled", enabled);
+    stores.uiStores.chatBehaviorStore.rememberTypingIndicatorsUsersListEnabled(enabled);
   }
 
   public synchronized void rememberMatrixUserListNameDisplayMode(String mode) {
-    String normalized = UiProperties.normalizeMatrixUserListNameDisplayMode(mode);
-    rememberUiScalarSetting(
-        "matrixUserListNameDisplayMode", normalized, "Matrix user list name display mode");
+    stores.uiStores.chatBehaviorStore.rememberMatrixUserListNameDisplayMode(mode);
   }
 
   public synchronized void rememberTypingIndicatorsTranscriptEnabled(boolean enabled) {
-    rememberTypingIndicatorDisplayBoolean("typingIndicatorsTranscriptEnabled", enabled);
+    stores.uiStores.chatBehaviorStore.rememberTypingIndicatorsTranscriptEnabled(enabled);
   }
 
   public synchronized void rememberTypingIndicatorsSendSignalEnabled(boolean enabled) {
-    rememberTypingIndicatorDisplayBoolean("typingIndicatorsSendSignalEnabled", enabled);
-  }
-
-  private void rememberTypingIndicatorDisplayBoolean(String key, boolean enabled) {
-    rememberUiScalarSetting(key, enabled, key);
+    stores.uiStores.chatBehaviorStore.rememberTypingIndicatorsSendSignalEnabled(enabled);
   }
 
   public synchronized int readServerTreeUnreadBadgeScalePercent(int defaultValue) {
-    return readUiInt(
-        "serverTreeUnreadBadgeScalePercent",
-        defaultValue,
-        this::clampServerTreeUnreadBadgeScalePercent,
-        "ui.serverTreeUnreadBadgeScalePercent");
+    return stores.uiStores.chatBehaviorStore.readServerTreeUnreadBadgeScalePercent(defaultValue);
   }
 
   public synchronized void rememberServerTreeUnreadBadgeScalePercent(int percent) {
-    int normalized = clampServerTreeUnreadBadgeScalePercent(percent);
-    rememberUiScalarSetting(
-        "serverTreeUnreadBadgeScalePercent", normalized, "ui.serverTreeUnreadBadgeScalePercent");
-  }
-
-  private int clampServerTreeUnreadBadgeScalePercent(int percent) {
-    int v = percent;
-    if (v <= 0) v = 100;
-    if (v < 50) v = 50;
-    if (v > 150) v = 150;
-    return v;
+    stores.uiStores.chatBehaviorStore.rememberServerTreeUnreadBadgeScalePercent(percent);
   }
 
   public synchronized void rememberSpellcheckEnabled(boolean enabled) {
-    rememberSpellcheckBoolean("spellcheckEnabled", enabled);
+    stores.uiStores.spellcheckStore.rememberEnabled(enabled);
   }
 
   public synchronized void rememberSpellcheckUnderlineEnabled(boolean enabled) {
-    rememberSpellcheckBoolean("spellcheckUnderlineEnabled", enabled);
+    stores.uiStores.spellcheckStore.rememberUnderlineEnabled(enabled);
   }
 
   public synchronized void rememberSpellcheckSuggestOnTabEnabled(boolean enabled) {
-    rememberSpellcheckBoolean("spellcheckSuggestOnTabEnabled", enabled);
+    stores.uiStores.spellcheckStore.rememberSuggestOnTabEnabled(enabled);
   }
 
   public synchronized void rememberSpellcheckHoverSuggestionsEnabled(boolean enabled) {
-    rememberSpellcheckBoolean("spellcheckHoverSuggestionsEnabled", enabled);
+    stores.uiStores.spellcheckStore.rememberHoverSuggestionsEnabled(enabled);
   }
 
   public synchronized void rememberSpellcheckCompletionPreset(String preset) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String normalized = UiProperties.normalizeSpellcheckCompletionPreset(preset);
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("spellcheckCompletionPreset", normalized);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist spellcheck completion preset to '{}'", file, e);
-    }
+    stores.uiStores.spellcheckStore.rememberCompletionPreset(preset);
   }
 
   public synchronized void rememberSpellcheckCustomMinPrefixCompletionTokenLength(int value) {
-    rememberSpellcheckInteger(
-        "spellcheckCustomMinPrefixCompletionTokenLength", Math.max(2, Math.min(6, value)));
+    stores.uiStores.spellcheckStore.rememberCustomMinPrefixCompletionTokenLength(value);
   }
 
   public synchronized void rememberSpellcheckCustomMaxPrefixCompletionExtraChars(int value) {
-    rememberSpellcheckInteger(
-        "spellcheckCustomMaxPrefixCompletionExtraChars", Math.max(4, Math.min(24, value)));
+    stores.uiStores.spellcheckStore.rememberCustomMaxPrefixCompletionExtraChars(value);
   }
 
   public synchronized void rememberSpellcheckCustomMaxPrefixLexiconCandidates(int value) {
-    rememberSpellcheckInteger(
-        "spellcheckCustomMaxPrefixLexiconCandidates", Math.max(16, Math.min(256, value)));
+    stores.uiStores.spellcheckStore.rememberCustomMaxPrefixLexiconCandidates(value);
   }
 
   public synchronized void rememberSpellcheckCustomPrefixCompletionBonusScore(int value) {
-    rememberSpellcheckInteger(
-        "spellcheckCustomPrefixCompletionBonusScore", Math.max(0, Math.min(400, value)));
+    stores.uiStores.spellcheckStore.rememberCustomPrefixCompletionBonusScore(value);
   }
 
   public synchronized void rememberSpellcheckCustomSourceOrderWeight(int value) {
-    rememberSpellcheckInteger(
-        "spellcheckCustomSourceOrderWeight", Math.max(0, Math.min(20, value)));
+    stores.uiStores.spellcheckStore.rememberCustomSourceOrderWeight(value);
   }
 
   public synchronized void rememberSpellcheckLanguageTag(String languageTag) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String normalized = UiProperties.normalizeSpellcheckLanguageTag(languageTag);
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("spellcheckLanguageTag", normalized);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist spellcheck language tag to '{}'", file, e);
-    }
+    stores.uiStores.spellcheckStore.rememberLanguageTag(languageTag);
   }
 
   public synchronized void rememberSpellcheckCustomDictionary(List<String> words) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      List<String> cleaned = sanitizeStringList(words);
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      if (cleaned.isEmpty()) {
-        ui.remove("spellcheckCustomDictionary");
-      } else {
-        ui.put("spellcheckCustomDictionary", cleaned);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist spellcheck custom dictionary to '{}'", file, e);
-    }
-  }
-
-  private synchronized void rememberSpellcheckBoolean(String key, boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put(key, enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.{} setting to '{}'", key, file, e);
-    }
-  }
-
-  private synchronized void rememberSpellcheckInteger(String key, int value) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put(key, value);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ui.{} setting to '{}'", key, file, e);
-    }
+    stores.uiStores.spellcheckStore.rememberCustomDictionary(words);
   }
 
   /**
@@ -3735,47 +1186,7 @@ public class RuntimeConfigStore
   @Override
   public synchronized Map<String, Ircv3StsPolicyConfigPort.StsPolicySnapshot>
       readIrcv3StsPolicies() {
-    try {
-      if (file.toString().isBlank()) return Map.of();
-      if (!Files.exists(file)) return Map.of();
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return Map.of();
-
-      Object ircv3Obj = ircafe.get("ircv3");
-      if (!(ircv3Obj instanceof Map<?, ?> ircv3)) return Map.of();
-
-      Object policiesObj = ircv3.get("stsPolicies");
-      if (!(policiesObj instanceof Map<?, ?> policies)) return Map.of();
-
-      Map<String, Ircv3StsPolicyConfigPort.StsPolicySnapshot> out = new LinkedHashMap<>();
-      for (Map.Entry<?, ?> entry : policies.entrySet()) {
-        String host = normalizeHostKey(Objects.toString(entry.getKey(), ""));
-        if (host == null) continue;
-        if (!(entry.getValue() instanceof Map<?, ?> rawPolicy)) continue;
-
-        long expiresAtEpochMs = asLong(rawPolicy.get("expiresAtEpochMs")).orElse(0L);
-        if (expiresAtEpochMs <= 0L) continue;
-
-        long durationSeconds = Math.max(0L, asLong(rawPolicy.get("durationSeconds")).orElse(0L));
-        Integer port = asInt(rawPolicy.get("port")).orElse(null);
-        if (port != null && (port <= 0 || port > 65_535)) {
-          port = null;
-        }
-        boolean preload = asBoolean(rawPolicy.get("preload")).orElse(false);
-        String rawValue = Objects.toString(rawPolicy.get("rawValue"), "").trim();
-
-        out.put(
-            host,
-            new Ircv3StsPolicyConfigPort.StsPolicySnapshot(
-                expiresAtEpochMs, port, preload, durationSeconds, rawValue));
-      }
-      return out;
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read IRCv3 STS policy cache from '{}'", file, e);
-      return Map.of();
-    }
+    return stores.ircv3Stores.stsPolicyStore.readPolicies();
   }
 
   /** Persists one IRCv3 STS policy snapshot under {@code ircafe.ircv3.stsPolicies.<host>}. */
@@ -3787,95 +1198,14 @@ public class RuntimeConfigStore
       boolean preload,
       long durationSeconds,
       String rawValue) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String hostKey = normalizeHostKey(host);
-      if (hostKey == null) return;
-      if (expiresAtEpochMs <= 0L || durationSeconds <= 0L) {
-        forgetIrcv3StsPolicy(hostKey);
-        return;
-      }
-
-      Integer normalizedPort = port;
-      if (normalizedPort != null && (normalizedPort <= 0 || normalizedPort > 65_535)) {
-        normalizedPort = null;
-      }
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ircv3 = getOrCreateMap(ircafe, "ircv3");
-      Map<String, Object> policies = getOrCreateMap(ircv3, "stsPolicies");
-
-      Map<String, Object> policy = new LinkedHashMap<>();
-      policy.put("expiresAtEpochMs", expiresAtEpochMs);
-      policy.put("durationSeconds", durationSeconds);
-      if (normalizedPort != null) {
-        policy.put("port", normalizedPort);
-      }
-      if (preload) {
-        policy.put("preload", true);
-      }
-      String normalizedRawValue = Objects.toString(rawValue, "").trim();
-      if (!normalizedRawValue.isEmpty()) {
-        policy.put("rawValue", normalizedRawValue);
-      }
-
-      policies.put(hostKey, policy);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist IRCv3 STS policy for host '{}' to '{}'", host, file, e);
-    }
+    stores.ircv3Stores.stsPolicyStore.rememberPolicy(
+        host, expiresAtEpochMs, port, preload, durationSeconds, rawValue);
   }
 
   /** Removes a persisted IRCv3 STS policy snapshot from {@code ircafe.ircv3.stsPolicies}. */
   @Override
   public synchronized void forgetIrcv3StsPolicy(String host) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String hostKey = normalizeHostKey(host);
-      if (hostKey == null) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafeRaw)) return;
-      @SuppressWarnings("unchecked")
-      Map<String, Object> ircafe = (Map<String, Object>) ircafeRaw;
-
-      Object ircv3Obj = ircafe.get("ircv3");
-      if (!(ircv3Obj instanceof Map<?, ?> ircv3Raw)) return;
-      @SuppressWarnings("unchecked")
-      Map<String, Object> ircv3 = (Map<String, Object>) ircv3Raw;
-
-      Object policiesObj = ircv3.get("stsPolicies");
-      if (!(policiesObj instanceof Map<?, ?> policiesRaw)) return;
-      @SuppressWarnings("unchecked")
-      Map<String, Object> policies = (Map<String, Object>) policiesRaw;
-
-      boolean removed = false;
-      for (String k : new ArrayList<>(policies.keySet())) {
-        if (hostKey.equalsIgnoreCase(Objects.toString(k, "").trim())) {
-          policies.remove(k);
-          removed = true;
-        }
-      }
-      if (!removed) return;
-
-      if (policies.isEmpty()) {
-        ircv3.remove("stsPolicies");
-      }
-      if (ircv3.isEmpty()) {
-        ircafe.remove("ircv3");
-      }
-      if (ircafe.isEmpty()) {
-        doc.remove("ircafe");
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not remove IRCv3 STS policy for host '{}' from '{}'", host, file, e);
-    }
+    stores.ircv3Stores.stsPolicyStore.forgetPolicy(host);
   }
 
   /**
@@ -3884,32 +1214,7 @@ public class RuntimeConfigStore
    * <p>Keys are normalized to lowercase, values are booleans. Missing/invalid entries are ignored.
    */
   public synchronized Map<String, Boolean> readIrcv3Capabilities() {
-    try {
-      if (file.toString().isBlank()) return Map.of();
-      if (!Files.exists(file)) return Map.of();
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return Map.of();
-
-      Object uiObj = ircafe.get("ui");
-      if (!(uiObj instanceof Map<?, ?> ui)) return Map.of();
-
-      Object capsObj = ui.get("ircv3Capabilities");
-      if (!(capsObj instanceof Map<?, ?> caps)) return Map.of();
-
-      Map<String, Boolean> out = new LinkedHashMap<>();
-      for (Map.Entry<?, ?> e : caps.entrySet()) {
-        String key = normalizeCapabilityKey(Objects.toString(e.getKey(), ""));
-        if (key == null) continue;
-        Optional<Boolean> b = asBoolean(e.getValue());
-        b.ifPresent(value -> out.put(key, value));
-      }
-      return out;
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read IRCv3 capability settings from '{}'", file, e);
-      return Map.of();
-    }
+    return stores.ircv3Stores.capabilityStore.readCapabilities();
   }
 
   /**
@@ -3918,10 +1223,7 @@ public class RuntimeConfigStore
    */
   @Override
   public synchronized boolean isIrcv3CapabilityEnabled(String capability, boolean defaultEnabled) {
-    String key = normalizeCapabilityKey(capability);
-    if (key == null) return defaultEnabled;
-    Map<String, Boolean> caps = readIrcv3Capabilities();
-    return caps.getOrDefault(key, defaultEnabled);
+    return stores.ircv3Stores.capabilityStore.isCapabilityEnabled(capability, defaultEnabled);
   }
 
   /**
@@ -3931,317 +1233,80 @@ public class RuntimeConfigStore
    */
   @Override
   public synchronized void rememberIrcv3CapabilityEnabled(String capability, boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String key = normalizeCapabilityKey(capability);
-      if (key == null) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-      Map<String, Object> caps = getOrCreateMap(ui, "ircv3Capabilities");
-
-      if (enabled) {
-        caps.remove(key);
-      } else {
-        caps.put(key, false);
-      }
-      if (caps.isEmpty()) {
-        ui.remove("ircv3Capabilities");
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist IRCv3 capability '{}' setting to '{}'", capability, file, e);
-    }
+    stores.ircv3Stores.capabilityStore.rememberCapabilityEnabled(capability, enabled);
   }
 
   // --- WeeChat-style filters (ircafe.ui.filters.*) ---
 
   public synchronized void rememberFiltersEnabledByDefault(boolean enabled) {
-    rememberFilterScalarSetting("enabledByDefault", enabled);
+    stores.uiStores.filterStore.rememberEnabledByDefault(enabled);
   }
 
   public synchronized void rememberFilterPlaceholdersEnabledByDefault(boolean enabled) {
-    rememberFilterScalarSetting("placeholdersEnabledByDefault", enabled);
+    stores.uiStores.filterStore.rememberPlaceholdersEnabledByDefault(enabled);
   }
 
   public synchronized void rememberFilterPlaceholdersCollapsedByDefault(boolean collapsed) {
-    rememberFilterScalarSetting("placeholdersCollapsedByDefault", collapsed);
+    stores.uiStores.filterStore.rememberPlaceholdersCollapsedByDefault(collapsed);
   }
 
   public synchronized void rememberFilterPlaceholderMaxPreviewLines(int maxLines) {
-    rememberFilterScalarSetting(
-        "placeholderMaxPreviewLines", FilterPlaceholderRanges.normalizeMaxPreviewLines(maxLines));
+    stores.uiStores.filterStore.rememberPlaceholderMaxPreviewLines(maxLines);
   }
 
   public synchronized void rememberFilterPlaceholderMaxLinesPerRun(int maxLines) {
-    rememberFilterScalarSetting(
-        "placeholderMaxLinesPerRun", FilterPlaceholderRanges.normalizeMaxLinesPerRun(maxLines));
+    stores.uiStores.filterStore.rememberPlaceholderMaxLinesPerRun(maxLines);
   }
 
   public synchronized void rememberFilterPlaceholderTooltipMaxTags(int maxTags) {
-    rememberFilterScalarSetting(
-        "placeholderTooltipMaxTags", FilterPlaceholderRanges.normalizeTooltipMaxTags(maxTags));
+    stores.uiStores.filterStore.rememberPlaceholderTooltipMaxTags(maxTags);
   }
 
   public synchronized void rememberFilterHistoryPlaceholderMaxRunsPerBatch(int maxRuns) {
-    rememberFilterScalarSetting(
-        "historyPlaceholderMaxRunsPerBatch",
-        FilterPlaceholderRanges.normalizeHistoryMaxRunsPerBatch(maxRuns));
+    stores.uiStores.filterStore.rememberHistoryPlaceholderMaxRunsPerBatch(maxRuns);
   }
 
   public synchronized void rememberFilterHistoryPlaceholdersEnabledByDefault(boolean enabled) {
-    rememberFilterScalarSetting("historyPlaceholdersEnabledByDefault", enabled);
-  }
-
-  private void rememberFilterScalarSetting(String key, Object value) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> filters = getOrCreateFilterSettingsMap(doc);
-      filters.put(key, value);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist filters {} setting to '{}'", key, file, e);
-    }
-  }
-
-  private static Map<String, Object> getOrCreateFilterSettingsMap(Map<String, Object> doc) {
-    return getOrCreateMapPath(doc, "ircafe", "ui", "filters");
+    stores.uiStores.filterStore.rememberHistoryPlaceholdersEnabledByDefault(enabled);
   }
 
   public synchronized void rememberFilterRules(List<FilterRule> rules) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> filters = getOrCreateFilterSettingsMap(doc);
-      List<Map<String, Object>> out = new ArrayList<>();
-      if (rules != null) {
-        for (FilterRule r : rules) {
-          if (r == null) continue;
-          Map<String, Object> m = new LinkedHashMap<>();
-          m.put("name", Objects.toString(r.name(), "").trim());
-          m.put("enabled", r.enabled());
-          m.put("scope", Objects.toString(r.scopePattern(), "*").trim());
-          m.put("action", r.action() != null ? r.action().name() : "HIDE");
-          m.put("dir", r.direction() != null ? r.direction().name() : "ANY");
-
-          if (r.kinds() != null && !r.kinds().isEmpty()) {
-            m.put("kinds", r.kinds().stream().filter(Objects::nonNull).map(Enum::name).toList());
-          }
-          if (r.fromNickGlobs() != null && !r.fromNickGlobs().isEmpty()) {
-            m.put(
-                "from",
-                r.fromNickGlobs().stream()
-                    .filter(Objects::nonNull)
-                    .map(s -> Objects.toString(s, "").trim())
-                    .filter(s -> !s.isEmpty())
-                    .toList());
-          }
-
-          TagSpec tags = r.tags();
-          if (tags != null && !tags.isEmpty()) {
-            String expr = Objects.toString(tags.expr(), "").trim();
-            if (!expr.isEmpty()) {
-              m.put("tags", expr);
-            }
-          }
-
-          RegexSpec re = r.textRegex();
-          if (re != null && !re.isEmpty()) {
-            Map<String, Object> tm = new LinkedHashMap<>();
-            tm.put("pattern", re.pattern());
-            if (re.flags() != null && !re.flags().isEmpty()) {
-              String flags =
-                  re.flags().stream()
-                      .map(Enum::name)
-                      .map(String::toLowerCase)
-                      .sorted()
-                      .reduce("", (a, b) -> a + b);
-              tm.put("flags", flags);
-            }
-            m.put("text", tm);
-          }
-
-          out.add(m);
-        }
-      }
-
-      filters.put("rules", out);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist filter rules to '{}'", file, e);
-    }
+    stores.uiStores.filterStore.rememberRules(rules);
   }
 
   public synchronized void rememberFilterOverrides(List<FilterScopeOverride> overrides) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> filters = getOrCreateFilterSettingsMap(doc);
-      List<Map<String, Object>> out = new ArrayList<>();
-      if (overrides != null) {
-        for (FilterScopeOverride o : overrides) {
-          if (o == null) continue;
-          Map<String, Object> m = new LinkedHashMap<>();
-          m.put("scope", Objects.toString(o.scopePattern(), "*").trim());
-          if (o.filtersEnabled() != null) m.put("filtersEnabled", o.filtersEnabled());
-          if (o.placeholdersEnabled() != null)
-            m.put("placeholdersEnabled", o.placeholdersEnabled());
-          if (o.placeholdersCollapsed() != null)
-            m.put("placeholdersCollapsed", o.placeholdersCollapsed());
-          out.add(m);
-        }
-      }
-
-      filters.put("overrides", out);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist filter overrides to '{}'", file, e);
-    }
+    stores.uiStores.filterStore.rememberOverrides(overrides);
   }
 
+  @Override
   public synchronized void rememberNickColoringEnabled(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("nickColoringEnabled", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist nick coloring enabled setting to '{}'", file, e);
-    }
+    stores.uiStores.nickColorStore.rememberColoringEnabled(enabled);
   }
 
+  @Override
   public synchronized void rememberNickColorMinContrast(double minContrast) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      double mc = (minContrast > 0) ? minContrast : 3.0;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      ui.put("nickColorMinContrast", mc);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist nick color contrast setting to '{}'", file, e);
-    }
+    stores.uiStores.nickColorStore.rememberMinContrast(minContrast);
   }
 
+  @Override
   public synchronized void rememberTimestampsEnabled(boolean enabled) {
-    rememberTimestampSetting("enabled", enabled);
+    stores.uiStores.timestampStore.rememberEnabled(enabled);
   }
 
+  @Override
   public synchronized void rememberTimestampFormat(String format) {
-    String fmt = (format == null || format.isBlank()) ? "HH:mm:ss" : format.trim();
-    rememberTimestampSetting("format", fmt);
+    stores.uiStores.timestampStore.rememberFormat(format);
   }
 
+  @Override
   public synchronized void rememberTimestampsIncludeChatMessages(boolean includeChatMessages) {
-    rememberTimestampSetting("includeChatMessages", includeChatMessages);
+    stores.uiStores.timestampStore.rememberIncludeChatMessages(includeChatMessages);
   }
 
+  @Override
   public synchronized void rememberTimestampsIncludePresenceMessages(
       boolean includePresenceMessages) {
-    rememberTimestampSetting("includePresenceMessages", includePresenceMessages);
-  }
-
-  private void rememberTimestampSetting(String key, Object value) {
-    updateUiSetting(
-        "timestamp " + key,
-        ui -> {
-          Map<String, Object> timestamps = getOrCreateMap(ui, "timestamps");
-
-          timestamps.put(key, value);
-          // Clean up legacy flat key.
-          ui.remove("chatMessageTimestampsEnabled");
-        });
-  }
-
-  private Optional<Object> readUiValue(String description, String... path) {
-    String[] fullPath = new String[path.length + 2];
-    fullPath[0] = "ircafe";
-    fullPath[1] = "ui";
-    System.arraycopy(path, 0, fullPath, 2, path.length);
-    return readExistingConfigValue(description, fullPath);
-  }
-
-  private Optional<Object> readExistingConfigValue(String description, String... path) {
-    try {
-      if (file.toString().isBlank()) return Optional.empty();
-      if (!Files.exists(file)) return Optional.empty();
-
-      Map<String, Object> doc = loadFile();
-      return RuntimeConfigDocumentPathReader.readValue(doc, path);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read {} from '{}'", description, file, e);
-      return Optional.empty();
-    }
-  }
-
-  private boolean readUiBoolean(String key, boolean defaultValue, String description) {
-    return readUiValue(description, key)
-        .flatMap(RuntimeConfigStore::asBoolean)
-        .orElse(defaultValue);
-  }
-
-  private boolean readUiSectionBoolean(
-      String section, String key, boolean defaultValue, String description) {
-    return readUiNestedBoolean(defaultValue, description, section, key);
-  }
-
-  private boolean readUiNestedBoolean(boolean defaultValue, String description, String... path) {
-    return readUiValue(description, path)
-        .flatMap(RuntimeConfigStore::asBoolean)
-        .orElse(defaultValue);
-  }
-
-  private int readUiInt(
-      String key, int defaultValue, IntUnaryOperator normalizer, String description) {
-    int fallback = normalizer.applyAsInt(defaultValue);
-    return readUiValue(description, key)
-        .flatMap(RuntimeConfigStore::asInt)
-        .map(normalizer::applyAsInt)
-        .orElse(fallback);
-  }
-
-  private void rememberUiScalarSetting(String key, Object value, String description) {
-    updateUiSetting(description, ui -> ui.put(key, value));
-  }
-
-  private void rememberUiSectionScalarSetting(
-      String section, String key, Object value, String description) {
-    updateUiSetting(description, ui -> getOrCreateMap(ui, section).put(key, value));
-  }
-
-  private void updateUiSetting(String description, UiUpdater updater) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = loadFileOrEmpty();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      updater.update(ui);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist {} setting to '{}'", description, file, e);
-    }
+    stores.uiStores.timestampStore.rememberIncludePresenceMessages(includePresenceMessages);
   }
 
   @Deprecated
@@ -4251,40 +1316,31 @@ public class RuntimeConfigStore
   }
 
   public synchronized void rememberChatHistoryInitialLoadLines(int lines) {
-    rememberUiScalarSetting(
-        "chatHistoryInitialLoadLines", Math.max(0, lines), "chat history initial load");
+    stores.uiStores.chatHistoryStore.rememberInitialLoadLines(lines);
   }
 
   public synchronized void rememberChatHistoryPageSize(int pageSize) {
-    rememberUiScalarSetting("chatHistoryPageSize", Math.max(1, pageSize), "chat history page size");
+    stores.uiStores.chatHistoryStore.rememberPageSize(pageSize);
   }
 
   public synchronized void rememberChatHistoryAutoLoadWheelDebounceMs(int debounceMs) {
-    int v = Math.max(100, Math.min(30_000, debounceMs));
-    rememberUiScalarSetting("chatHistoryAutoLoadWheelDebounceMs", v, "chat history wheel debounce");
+    stores.uiStores.chatHistoryStore.rememberAutoLoadWheelDebounceMs(debounceMs);
   }
 
   public synchronized void rememberChatHistoryLoadOlderChunkSize(int chunkSize) {
-    int v = Math.max(1, Math.min(500, chunkSize));
-    rememberUiScalarSetting(
-        "chatHistoryLoadOlderChunkSize", v, "chat history load-older chunk-size");
+    stores.uiStores.chatHistoryStore.rememberLoadOlderChunkSize(chunkSize);
   }
 
   public synchronized void rememberChatHistoryLoadOlderChunkDelayMs(int chunkDelayMs) {
-    int v = Math.max(0, Math.min(1_000, chunkDelayMs));
-    rememberUiScalarSetting(
-        "chatHistoryLoadOlderChunkDelayMs", v, "chat history load-older chunk-delay");
+    stores.uiStores.chatHistoryStore.rememberLoadOlderChunkDelayMs(chunkDelayMs);
   }
 
   public synchronized void rememberChatHistoryLoadOlderChunkEdtBudgetMs(int chunkEdtBudgetMs) {
-    int v = Math.max(1, Math.min(33, chunkEdtBudgetMs));
-    rememberUiScalarSetting(
-        "chatHistoryLoadOlderChunkEdtBudgetMs", v, "chat history load-older EDT budget");
+    stores.uiStores.chatHistoryStore.rememberLoadOlderChunkEdtBudgetMs(chunkEdtBudgetMs);
   }
 
   public synchronized void rememberChatHistoryDeferRichTextDuringBatch(boolean enabled) {
-    rememberUiScalarSetting(
-        "chatHistoryDeferRichTextDuringBatch", enabled, "chat history deferred-rich-text");
+    stores.uiStores.chatHistoryStore.rememberDeferRichTextDuringBatch(enabled);
   }
 
   /**
@@ -4293,1462 +1349,251 @@ public class RuntimeConfigStore
    * <p>Returns {@code defaultValue} when the key is missing or invalid.
    */
   public synchronized boolean readChatSmoothWheelScrollingEnabled(boolean defaultValue) {
-    return readUiBoolean(
-        "chatSmoothWheelScrollingEnabled", defaultValue, "ui.chatSmoothWheelScrollingEnabled");
+    return stores.uiStores.chatHistoryStore.readSmoothWheelScrollingEnabled(defaultValue);
   }
 
   public synchronized void rememberChatSmoothWheelScrollingEnabled(boolean enabled) {
-    rememberUiScalarSetting(
-        "chatSmoothWheelScrollingEnabled", enabled, "chat smooth-wheel scrolling");
+    stores.uiStores.chatHistoryStore.rememberSmoothWheelScrollingEnabled(enabled);
   }
 
   public synchronized boolean readChatHistoryLockViewportDuringLoadOlder(boolean defaultValue) {
-    return readUiBoolean(
-        "chatHistoryLockViewportDuringLoadOlder",
-        defaultValue,
-        "ui.chatHistoryLockViewportDuringLoadOlder");
+    return stores.uiStores.chatHistoryStore.readLockViewportDuringLoadOlder(defaultValue);
   }
 
   public synchronized void rememberChatHistoryLockViewportDuringLoadOlder(boolean enabled) {
-    rememberUiScalarSetting(
-        "chatHistoryLockViewportDuringLoadOlder", enabled, "chat history viewport-lock");
+    stores.uiStores.chatHistoryStore.rememberLockViewportDuringLoadOlder(enabled);
   }
 
   public synchronized void rememberChatHistoryRemoteRequestTimeoutSeconds(int seconds) {
-    int v = Math.max(1, Math.min(120, seconds));
-    rememberUiScalarSetting(
-        "chatHistoryRemoteRequestTimeoutSeconds", v, "chat history remote-timeout");
+    stores.uiStores.chatHistoryStore.rememberRemoteRequestTimeoutSeconds(seconds);
   }
 
   public synchronized void rememberChatHistoryRemoteZncPlaybackTimeoutSeconds(int seconds) {
-    int v = Math.max(1, Math.min(300, seconds));
-    rememberUiScalarSetting(
-        "chatHistoryRemoteZncPlaybackTimeoutSeconds", v, "chat history remote ZNC-timeout");
+    stores.uiStores.chatHistoryStore.rememberRemoteZncPlaybackTimeoutSeconds(seconds);
   }
 
   public synchronized void rememberChatHistoryRemoteZncPlaybackWindowMinutes(int minutes) {
-    int v = Math.max(1, Math.min(1440, minutes));
-    rememberUiScalarSetting(
-        "chatHistoryRemoteZncPlaybackWindowMinutes", v, "chat history remote ZNC window");
+    stores.uiStores.chatHistoryStore.rememberRemoteZncPlaybackWindowMinutes(minutes);
   }
 
   public synchronized void rememberCommandHistoryMaxSize(int maxSize) {
-    int v = maxSize;
-    if (v <= 0) v = 500;
-    if (v > 500) v = 500;
-    rememberUiScalarSetting("commandHistoryMaxSize", v, "command history max size");
+    stores.uiStores.chatHistoryStore.rememberCommandHistoryMaxSize(maxSize);
   }
 
   public synchronized void rememberChatTranscriptMaxLinesPerTarget(int maxLines) {
-    int v = Math.max(0, maxLines);
-    if (v > 200_000) v = 200_000;
-    rememberUiScalarSetting(
-        "chatTranscriptMaxLinesPerTarget", v, "chat transcript max-lines-per-target");
+    stores.uiStores.chatHistoryStore.rememberTranscriptMaxLinesPerTarget(maxLines);
   }
 
   public synchronized void rememberClientLineColorEnabled(boolean enabled) {
-    rememberUiScalarSetting("clientLineColorEnabled", enabled, "outgoing message color enabled");
+    stores.uiStores.outgoingMessageStore.rememberClientLineColorEnabled(enabled);
   }
 
   public synchronized void rememberClientLineColor(String hex) {
-    rememberUiScalarSetting(
-        "clientLineColor", Objects.toString(hex, "").trim(), "outgoing message color");
+    stores.uiStores.outgoingMessageStore.rememberClientLineColor(hex);
   }
 
   public synchronized void rememberOutgoingDeliveryIndicatorsEnabled(boolean enabled) {
-    rememberUiScalarSetting(
-        "outgoingDeliveryIndicatorsEnabled", enabled, "outgoing delivery indicators");
+    stores.uiStores.outgoingMessageStore.rememberOutgoingDeliveryIndicatorsEnabled(enabled);
   }
 
   public synchronized void rememberServerTreeNotificationBadgesEnabled(boolean enabled) {
-    rememberUiScalarSetting(
-        "serverTreeNotificationBadgesEnabled", enabled, "server tree notification badges");
+    stores.uiStores.chatBehaviorStore.rememberServerTreeNotificationBadgesEnabled(enabled);
   }
 
   public synchronized void rememberUserhostDiscoveryEnabled(boolean enabled) {
-    rememberUiSectionScalarSetting(
-        "hostmaskDiscovery", "userhostEnabled", enabled, "USERHOST discovery enabled");
+    stores.uiStores.userLookupStore.rememberUserhostDiscoveryEnabled(enabled);
   }
 
   public synchronized void rememberUserhostMinIntervalSeconds(int seconds) {
-    rememberUiSectionScalarSetting(
-        "hostmaskDiscovery",
-        "userhostMinIntervalSeconds",
-        Math.max(1, seconds),
-        "USERHOST min interval");
+    stores.uiStores.userLookupStore.rememberUserhostMinIntervalSeconds(seconds);
   }
 
   public synchronized void rememberUserhostMaxCommandsPerMinute(int maxPerMinute) {
-    rememberUiSectionScalarSetting(
-        "hostmaskDiscovery",
-        "userhostMaxCommandsPerMinute",
-        Math.max(1, maxPerMinute),
-        "USERHOST max commands/min");
+    stores.uiStores.userLookupStore.rememberUserhostMaxCommandsPerMinute(maxPerMinute);
   }
 
   public synchronized void rememberUserhostNickCooldownMinutes(int minutes) {
-    rememberUiSectionScalarSetting(
-        "hostmaskDiscovery",
-        "userhostNickCooldownMinutes",
-        Math.max(1, minutes),
-        "USERHOST nick cooldown");
+    stores.uiStores.userLookupStore.rememberUserhostNickCooldownMinutes(minutes);
   }
 
   public synchronized void rememberUserhostMaxNicksPerCommand(int maxNicks) {
-    int capped = Math.max(1, Math.min(5, maxNicks));
-    rememberUiSectionScalarSetting(
-        "hostmaskDiscovery", "userhostMaxNicksPerCommand", capped, "USERHOST max nicks/command");
+    stores.uiStores.userLookupStore.rememberUserhostMaxNicksPerCommand(maxNicks);
   }
 
   public synchronized void rememberMonitorIsonPollIntervalSeconds(int seconds) {
-    int v = Math.max(5, Math.min(600, seconds));
-    rememberUiSectionScalarSetting(
-        "monitorFallback", "isonPollIntervalSeconds", v, "monitor fallback ISON interval");
+    stores.uiStores.userLookupStore.rememberMonitorIsonPollIntervalSeconds(seconds);
   }
 
   // --- User info enrichment fallback (ircafe.ui.userInfoEnrichment.*) ---
 
   public synchronized void rememberUserInfoEnrichmentEnabled(boolean enabled) {
-    rememberUiSectionScalarSetting(
-        "userInfoEnrichment", "enabled", enabled, "user info enrichment enabled");
+    stores.uiStores.userLookupStore.rememberUserInfoEnrichmentEnabled(enabled);
   }
 
   public synchronized void rememberUserInfoEnrichmentWhoisFallbackEnabled(boolean enabled) {
-    rememberUiSectionScalarSetting(
-        "userInfoEnrichment",
-        "whoisFallbackEnabled",
-        enabled,
-        "user info enrichment WHOIS fallback enabled");
+    stores.uiStores.userLookupStore.rememberUserInfoEnrichmentWhoisFallbackEnabled(enabled);
   }
 
   public synchronized void rememberUserInfoEnrichmentUserhostMinIntervalSeconds(int seconds) {
-    rememberUiSectionScalarSetting(
-        "userInfoEnrichment",
-        "userhostMinIntervalSeconds",
-        Math.max(1, seconds),
-        "user info enrichment USERHOST min interval");
+    stores.uiStores.userLookupStore.rememberUserInfoEnrichmentUserhostMinIntervalSeconds(seconds);
   }
 
   public synchronized void rememberUserInfoEnrichmentUserhostMaxCommandsPerMinute(
       int maxPerMinute) {
-    rememberUiSectionScalarSetting(
-        "userInfoEnrichment",
-        "userhostMaxCommandsPerMinute",
-        Math.max(1, maxPerMinute),
-        "user info enrichment USERHOST max commands/min");
+    stores.uiStores.userLookupStore.rememberUserInfoEnrichmentUserhostMaxCommandsPerMinute(
+        maxPerMinute);
   }
 
   public synchronized void rememberUserInfoEnrichmentUserhostNickCooldownMinutes(int minutes) {
-    rememberUiSectionScalarSetting(
-        "userInfoEnrichment",
-        "userhostNickCooldownMinutes",
-        Math.max(1, minutes),
-        "user info enrichment USERHOST nick cooldown");
+    stores.uiStores.userLookupStore.rememberUserInfoEnrichmentUserhostNickCooldownMinutes(minutes);
   }
 
   public synchronized void rememberUserInfoEnrichmentUserhostMaxNicksPerCommand(int maxNicks) {
-    int capped = Math.max(1, Math.min(5, maxNicks));
-    rememberUiSectionScalarSetting(
-        "userInfoEnrichment",
-        "userhostMaxNicksPerCommand",
-        capped,
-        "user info enrichment USERHOST max nicks/command");
+    stores.uiStores.userLookupStore.rememberUserInfoEnrichmentUserhostMaxNicksPerCommand(maxNicks);
   }
 
   public synchronized void rememberUserInfoEnrichmentWhoisMinIntervalSeconds(int seconds) {
-    rememberUiSectionScalarSetting(
-        "userInfoEnrichment",
-        "whoisMinIntervalSeconds",
-        Math.max(1, seconds),
-        "user info enrichment WHOIS min interval");
+    stores.uiStores.userLookupStore.rememberUserInfoEnrichmentWhoisMinIntervalSeconds(seconds);
   }
 
   public synchronized void rememberUserInfoEnrichmentWhoisNickCooldownMinutes(int minutes) {
-    rememberUiSectionScalarSetting(
-        "userInfoEnrichment",
-        "whoisNickCooldownMinutes",
-        Math.max(1, minutes),
-        "user info enrichment WHOIS nick cooldown");
+    stores.uiStores.userLookupStore.rememberUserInfoEnrichmentWhoisNickCooldownMinutes(minutes);
   }
 
   public synchronized void rememberUserInfoEnrichmentPeriodicRefreshEnabled(boolean enabled) {
-    rememberUiSectionScalarSetting(
-        "userInfoEnrichment",
-        "periodicRefreshEnabled",
-        enabled,
-        "user info enrichment periodic refresh enabled");
+    stores.uiStores.userLookupStore.rememberUserInfoEnrichmentPeriodicRefreshEnabled(enabled);
   }
 
   public synchronized void rememberUserInfoEnrichmentPeriodicRefreshIntervalSeconds(int seconds) {
-    rememberUiSectionScalarSetting(
-        "userInfoEnrichment",
-        "periodicRefreshIntervalSeconds",
-        Math.max(5, seconds),
-        "user info enrichment periodic refresh interval");
+    stores.uiStores.userLookupStore.rememberUserInfoEnrichmentPeriodicRefreshIntervalSeconds(
+        seconds);
   }
 
   public synchronized void rememberUserInfoEnrichmentPeriodicRefreshNicksPerTick(int nicksPerTick) {
-    int capped = Math.max(1, Math.min(20, nicksPerTick));
-    rememberUiSectionScalarSetting(
-        "userInfoEnrichment",
-        "periodicRefreshNicksPerTick",
-        capped,
-        "user info enrichment periodic refresh nicks/tick");
+    stores.uiStores.userLookupStore.rememberUserInfoEnrichmentPeriodicRefreshNicksPerTick(
+        nicksPerTick);
   }
 
   public synchronized void rememberClientTlsTrustAllCertificates(boolean trustAllCertificates) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> irc = getOrCreateMap(doc, "irc");
-      Map<String, Object> client = getOrCreateMap(irc, "client");
-      Map<String, Object> tls = getOrCreateMap(client, "tls");
-
-      tls.put("trustAllCertificates", trustAllCertificates);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist TLS trust-all setting to '{}'", file, e);
-    }
+    stores.connectionStores.clientSettingsStore.rememberTlsTrustAllCertificates(
+        trustAllCertificates);
   }
 
   public synchronized void rememberClientHeartbeat(IrcProperties.Heartbeat heartbeat) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      IrcProperties.Heartbeat hb =
-          (heartbeat != null) ? heartbeat : new IrcProperties.Heartbeat(true, 15_000, 360_000);
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> irc = getOrCreateMap(doc, "irc");
-      Map<String, Object> client = getOrCreateMap(irc, "client");
-      Map<String, Object> hbMap = getOrCreateMap(client, "heartbeat");
-
-      hbMap.put("enabled", hb.enabled());
-      hbMap.put("checkPeriodMs", Math.max(1_000L, hb.checkPeriodMs()));
-      hbMap.put("timeoutMs", Math.max(1_000L, hb.timeoutMs()));
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist heartbeat settings to '{}'", file, e);
-    }
+    stores.connectionStores.clientSettingsStore.rememberHeartbeat(heartbeat);
   }
 
   public synchronized void rememberClientProxy(IrcProperties.Proxy proxy) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      IrcProperties.Proxy p =
-          (proxy != null)
-              ? proxy
-              : new IrcProperties.Proxy(false, "", 0, "", "", true, 20_000, 30_000);
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> irc = getOrCreateMap(doc, "irc");
-      Map<String, Object> client = getOrCreateMap(irc, "client");
-      Map<String, Object> proxyMap = getOrCreateMap(client, "proxy");
-
-      proxyMap.put("enabled", p.enabled());
-      proxyMap.put("host", Objects.toString(p.host(), "").trim());
-      proxyMap.put("port", Math.max(0, p.port()));
-      proxyMap.put("username", Objects.toString(p.username(), "").trim());
-      proxyMap.put("password", Objects.toString(p.password(), ""));
-      proxyMap.put("remoteDns", p.remoteDns());
-      proxyMap.put("connectTimeoutMs", Math.max(0L, p.connectTimeoutMs()));
-      proxyMap.put("readTimeoutMs", Math.max(0L, p.readTimeoutMs()));
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist SOCKS proxy settings to '{}'", file, e);
-    }
+    stores.connectionStores.clientSettingsStore.rememberProxy(proxy);
   }
 
   @Override
   public synchronized void rememberIgnoreMask(String serverId, String mask) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String sid = Objects.toString(serverId, "").trim();
-      String m = Objects.toString(mask, "").trim();
-      if (sid.isEmpty() || m.isEmpty()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ignore = getOrCreateMap(ircafe, "ignore");
-      Map<String, Object> servers = getOrCreateMap(ignore, "servers");
-
-      @SuppressWarnings("unchecked")
-      Map<String, Object> server =
-          (servers.get(sid) instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
-      servers.put(sid, server);
-
-      List<String> masks = getOrCreateStringList(server, "masks");
-      if (masks.stream().noneMatch(x -> x != null && x.equalsIgnoreCase(m))) {
-        masks.add(m);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ignore mask to '{}'", file, e);
-    }
+    stores.ignoreRulesStore.rememberIgnoreMask(serverId, mask);
   }
 
   @Override
   public synchronized void rememberIgnoreMaskLevels(
       String serverId, String mask, List<String> levels) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String sid = Objects.toString(serverId, "").trim();
-      String m = Objects.toString(mask, "").trim();
-      if (sid.isEmpty() || m.isEmpty()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ignore = getOrCreateMap(ircafe, "ignore");
-      Map<String, Object> servers = getOrCreateMap(ignore, "servers");
-
-      @SuppressWarnings("unchecked")
-      Map<String, Object> server =
-          (servers.get(sid) instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
-      servers.put(sid, server);
-
-      List<String> normalized = normalizeIgnoreLevels(levels);
-      boolean isDefaultAll =
-          normalized.size() == 1 && "ALL".equalsIgnoreCase(normalized.getFirst());
-
-      @SuppressWarnings("unchecked")
-      Map<String, Object> byMask =
-          (server.get("maskLevels") instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
-
-      if (isDefaultAll) {
-        byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-      } else {
-        byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-        byMask.put(m, new java.util.ArrayList<>(normalized));
-      }
-
-      if (byMask.isEmpty()) {
-        server.remove("maskLevels");
-      } else {
-        server.put("maskLevels", byMask);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ignore mask levels to '{}'", file, e);
-    }
+    stores.ignoreRulesStore.rememberIgnoreMaskLevels(serverId, mask, levels);
   }
 
   @Override
   public synchronized void rememberIgnoreMaskChannels(
       String serverId, String mask, List<String> channels) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String sid = Objects.toString(serverId, "").trim();
-      String m = Objects.toString(mask, "").trim();
-      if (sid.isEmpty() || m.isEmpty()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ignore = getOrCreateMap(ircafe, "ignore");
-      Map<String, Object> servers = getOrCreateMap(ignore, "servers");
-
-      @SuppressWarnings("unchecked")
-      Map<String, Object> server =
-          (servers.get(sid) instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
-      servers.put(sid, server);
-
-      List<String> normalized = normalizeIgnoreChannels(channels);
-
-      @SuppressWarnings("unchecked")
-      Map<String, Object> byMask =
-          (server.get("maskChannels") instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
-
-      byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-      if (normalized.isEmpty()) {
-        // Empty means no channel restriction; omit per-mask override from persisted YAML.
-      } else {
-        byMask.put(m, new java.util.ArrayList<>(normalized));
-      }
-
-      if (byMask.isEmpty()) {
-        server.remove("maskChannels");
-      } else {
-        server.put("maskChannels", byMask);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ignore mask channels to '{}'", file, e);
-    }
+    stores.ignoreRulesStore.rememberIgnoreMaskChannels(serverId, mask, channels);
   }
 
   @Override
   public synchronized void rememberIgnoreMaskExpiresAt(
       String serverId, String mask, Long expiresAtEpochMs) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String sid = Objects.toString(serverId, "").trim();
-      String m = Objects.toString(mask, "").trim();
-      if (sid.isEmpty() || m.isEmpty()) return;
-
-      long expiresAt = (expiresAtEpochMs == null) ? 0L : expiresAtEpochMs;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ignore = getOrCreateMap(ircafe, "ignore");
-      Map<String, Object> servers = getOrCreateMap(ignore, "servers");
-
-      @SuppressWarnings("unchecked")
-      Map<String, Object> server =
-          (servers.get(sid) instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
-      servers.put(sid, server);
-
-      @SuppressWarnings("unchecked")
-      Map<String, Object> byMask =
-          (server.get("maskExpiresAt") instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
-
-      byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-      if (expiresAt > 0L) {
-        byMask.put(m, expiresAt);
-      }
-
-      if (byMask.isEmpty()) {
-        server.remove("maskExpiresAt");
-      } else {
-        server.put("maskExpiresAt", byMask);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ignore mask expiry to '{}'", file, e);
-    }
+    stores.ignoreRulesStore.rememberIgnoreMaskExpiresAt(serverId, mask, expiresAtEpochMs);
   }
 
   @Override
   public synchronized void rememberIgnoreMaskPattern(
       String serverId, String mask, String pattern, String modeToken) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String sid = Objects.toString(serverId, "").trim();
-      String m = Objects.toString(mask, "").trim();
-      if (sid.isEmpty() || m.isEmpty()) return;
-
-      String normalizedPattern = Objects.toString(pattern, "").trim();
-      String normalizedMode = normalizeIgnorePatternMode(modeToken);
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ignore = getOrCreateMap(ircafe, "ignore");
-      Map<String, Object> servers = getOrCreateMap(ignore, "servers");
-
-      @SuppressWarnings("unchecked")
-      Map<String, Object> server =
-          (servers.get(sid) instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
-      servers.put(sid, server);
-
-      @SuppressWarnings("unchecked")
-      Map<String, Object> patternsByMask =
-          (server.get("maskPatterns") instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
-      @SuppressWarnings("unchecked")
-      Map<String, Object> modesByMask =
-          (server.get("maskPatternModes") instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
-
-      patternsByMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-      modesByMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-
-      if (!normalizedPattern.isEmpty()) {
-        patternsByMask.put(m, normalizedPattern);
-        if (!"glob".equals(normalizedMode)) {
-          modesByMask.put(m, normalizedMode);
-        }
-      }
-
-      if (patternsByMask.isEmpty()) {
-        server.remove("maskPatterns");
-      } else {
-        server.put("maskPatterns", patternsByMask);
-      }
-      if (modesByMask.isEmpty()) {
-        server.remove("maskPatternModes");
-      } else {
-        server.put("maskPatternModes", modesByMask);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ignore mask pattern to '{}'", file, e);
-    }
+    stores.ignoreRulesStore.rememberIgnoreMaskPattern(serverId, mask, pattern, modeToken);
   }
 
   @Override
   public synchronized void rememberIgnoreMaskReplies(
       String serverId, String mask, boolean repliesEnabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String sid = Objects.toString(serverId, "").trim();
-      String m = Objects.toString(mask, "").trim();
-      if (sid.isEmpty() || m.isEmpty()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ignore = getOrCreateMap(ircafe, "ignore");
-      Map<String, Object> servers = getOrCreateMap(ignore, "servers");
-
-      @SuppressWarnings("unchecked")
-      Map<String, Object> server =
-          (servers.get(sid) instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
-      servers.put(sid, server);
-
-      @SuppressWarnings("unchecked")
-      Map<String, Object> byMask =
-          (server.get("maskReplies") instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
-
-      byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-      if (repliesEnabled) {
-        byMask.put(m, Boolean.TRUE);
-      }
-
-      if (byMask.isEmpty()) {
-        server.remove("maskReplies");
-      } else {
-        server.put("maskReplies", byMask);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist ignore mask replies flag to '{}'", file, e);
-    }
-  }
-
-  private static List<String> normalizeIgnoreLevels(List<String> levels) {
-    java.util.LinkedHashSet<String> out = new java.util.LinkedHashSet<>();
-    if (levels != null) {
-      for (String raw : levels) {
-        String v = normalizeIgnoreLevel(raw);
-        if (!v.isEmpty()) out.add(v);
-      }
-    }
-    if (out.isEmpty()) out.add("ALL");
-    return List.copyOf(out);
-  }
-
-  private static String normalizeIgnoreLevel(String raw) {
-    String v = Objects.toString(raw, "").trim().toUpperCase(Locale.ROOT);
-    if (v.isEmpty()) return "";
-    while (v.startsWith("+") || v.startsWith("-")) {
-      v = v.substring(1).trim();
-    }
-    if (v.isEmpty()) return "";
-    if ("*".equals(v)) v = "ALL";
-    return KNOWN_IGNORE_LEVELS.contains(v) ? v : "";
-  }
-
-  private static List<String> normalizeIgnoreChannels(List<String> channels) {
-    java.util.LinkedHashSet<String> out = new java.util.LinkedHashSet<>();
-    if (channels != null) {
-      for (String raw : channels) {
-        String v = normalizeIgnoreChannel(raw);
-        if (!v.isEmpty()) out.add(v);
-      }
-    }
-    if (out.isEmpty()) return List.of();
-    return List.copyOf(out);
-  }
-
-  private static String normalizeIgnoreChannel(String raw) {
-    String v = Objects.toString(raw, "").trim();
-    if (v.isEmpty()) return "";
-    return (v.startsWith("#") || v.startsWith("&")) ? v : "";
-  }
-
-  private static String normalizeIgnorePatternMode(String raw) {
-    String v = Objects.toString(raw, "").trim().toLowerCase(Locale.ROOT);
-    return switch (v) {
-      case "regexp", "regex" -> "regexp";
-      case "full" -> "full";
-      default -> "glob";
-    };
+    stores.ignoreRulesStore.rememberIgnoreMaskReplies(serverId, mask, repliesEnabled);
   }
 
   @Override
   public synchronized void forgetIgnoreMask(String serverId, String mask) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String sid = Objects.toString(serverId, "").trim();
-      String m = Objects.toString(mask, "").trim();
-      if (sid.isEmpty() || m.isEmpty()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ignore = getOrCreateMap(ircafe, "ignore");
-      Map<String, Object> servers = getOrCreateMap(ignore, "servers");
-
-      Object so = servers.get(sid);
-      if (!(so instanceof Map<?, ?>)) return;
-      @SuppressWarnings("unchecked")
-      Map<String, Object> server = (Map<String, Object>) so;
-
-      Object o = server.get("masks");
-      if (!(o instanceof List<?> list)) return;
-      @SuppressWarnings("unchecked")
-      List<String> masks = (List<String>) list;
-
-      masks.removeIf(x -> x != null && x.equalsIgnoreCase(m));
-
-      // Clean up empty structures to keep the YAML tidy.
-      if (masks.isEmpty()) {
-        server.remove("masks");
-      }
-
-      Object levelsObj = server.get("maskLevels");
-      if (levelsObj instanceof Map<?, ?> levelsMap) {
-        @SuppressWarnings("unchecked")
-        Map<String, Object> byMask = (Map<String, Object>) levelsMap;
-        byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-        if (byMask.isEmpty()) {
-          server.remove("maskLevels");
-        }
-      }
-
-      Object channelsObj = server.get("maskChannels");
-      if (channelsObj instanceof Map<?, ?> channelsMap) {
-        @SuppressWarnings("unchecked")
-        Map<String, Object> byMask = (Map<String, Object>) channelsMap;
-        byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-        if (byMask.isEmpty()) {
-          server.remove("maskChannels");
-        }
-      }
-
-      Object expiresObj = server.get("maskExpiresAt");
-      if (expiresObj instanceof Map<?, ?> expiresMap) {
-        @SuppressWarnings("unchecked")
-        Map<String, Object> byMask = (Map<String, Object>) expiresMap;
-        byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-        if (byMask.isEmpty()) {
-          server.remove("maskExpiresAt");
-        }
-      }
-
-      Object patternsObj = server.get("maskPatterns");
-      if (patternsObj instanceof Map<?, ?> patternsMap) {
-        @SuppressWarnings("unchecked")
-        Map<String, Object> byMask = (Map<String, Object>) patternsMap;
-        byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-        if (byMask.isEmpty()) {
-          server.remove("maskPatterns");
-        }
-      }
-
-      Object patternModesObj = server.get("maskPatternModes");
-      if (patternModesObj instanceof Map<?, ?> modesMap) {
-        @SuppressWarnings("unchecked")
-        Map<String, Object> byMask = (Map<String, Object>) modesMap;
-        byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-        if (byMask.isEmpty()) {
-          server.remove("maskPatternModes");
-        }
-      }
-
-      Object repliesObj = server.get("maskReplies");
-      if (repliesObj instanceof Map<?, ?> repliesMap) {
-        @SuppressWarnings("unchecked")
-        Map<String, Object> byMask = (Map<String, Object>) repliesMap;
-        byMask.entrySet().removeIf(e -> Objects.toString(e.getKey(), "").equalsIgnoreCase(m));
-        if (byMask.isEmpty()) {
-          server.remove("maskReplies");
-        }
-      }
-
-      if (server.isEmpty()) {
-        servers.remove(sid);
-      }
-      if (servers.isEmpty()) {
-        ignore.remove("servers");
-      }
-      if (ignore.isEmpty()) {
-        ircafe.remove("ignore");
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not remove ignore mask from '{}'", file, e);
-    }
+    stores.ignoreRulesStore.forgetIgnoreMask(serverId, mask);
   }
 
   @Override
   public synchronized void rememberSoftIgnoreMask(String serverId, String mask) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String sid = Objects.toString(serverId, "").trim();
-      String m = Objects.toString(mask, "").trim();
-      if (sid.isEmpty() || m.isEmpty()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ignore = getOrCreateMap(ircafe, "ignore");
-      Map<String, Object> servers = getOrCreateMap(ignore, "servers");
-
-      @SuppressWarnings("unchecked")
-      Map<String, Object> server =
-          (servers.get(sid) instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
-      servers.put(sid, server);
-
-      List<String> masks = getOrCreateStringList(server, "softMasks");
-      if (masks.stream().noneMatch(x -> x != null && x.equalsIgnoreCase(m))) {
-        masks.add(m);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist soft-ignore mask to '{}'", file, e);
-    }
+    stores.ignoreRulesStore.rememberSoftIgnoreMask(serverId, mask);
   }
 
   @Override
   public synchronized void forgetSoftIgnoreMask(String serverId, String mask) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String sid = Objects.toString(serverId, "").trim();
-      String m = Objects.toString(mask, "").trim();
-      if (sid.isEmpty() || m.isEmpty()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ignore = getOrCreateMap(ircafe, "ignore");
-      Map<String, Object> servers = getOrCreateMap(ignore, "servers");
-
-      Object so = servers.get(sid);
-      if (!(so instanceof Map<?, ?>)) return;
-      @SuppressWarnings("unchecked")
-      Map<String, Object> server = (Map<String, Object>) so;
-
-      Object o = server.get("softMasks");
-      if (!(o instanceof List<?> list)) return;
-      @SuppressWarnings("unchecked")
-      List<String> masks = (List<String>) list;
-
-      masks.removeIf(x -> x != null && x.equalsIgnoreCase(m));
-
-      // Clean up empty structures to keep the YAML tidy.
-      if (masks.isEmpty()) {
-        server.remove("softMasks");
-      }
-      if (server.isEmpty()) {
-        servers.remove(sid);
-      }
-      if (servers.isEmpty()) {
-        ignore.remove("servers");
-      }
-      if (ignore.isEmpty()) {
-        ircafe.remove("ignore");
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not remove soft-ignore mask from '{}'", file, e);
-    }
+    stores.ignoreRulesStore.forgetSoftIgnoreMask(serverId, mask);
   }
 
   @Override
   public synchronized void rememberHardIgnoreIncludesCtcp(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ignore = getOrCreateMap(ircafe, "ignore");
-
-      ignore.put("hardIgnoreIncludesCtcp", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist hard-ignore CTCP setting to '{}'", file, e);
-    }
+    stores.ignoreRulesStore.rememberHardIgnoreIncludesCtcp(enabled);
   }
 
   @Override
   public synchronized void rememberSoftIgnoreIncludesCtcp(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ignore = getOrCreateMap(ircafe, "ignore");
-
-      ignore.put("softIgnoreIncludesCtcp", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist soft-ignore CTCP setting to '{}'", file, e);
-    }
+    stores.ignoreRulesStore.rememberSoftIgnoreIncludesCtcp(enabled);
   }
 
   public synchronized void rememberNickColorOverrides(Map<String, String> overrides) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> ui = getOrCreateMap(ircafe, "ui");
-
-      if (overrides == null || overrides.isEmpty()) {
-        ui.remove("nickColorOverrides");
-      } else {
-        Map<String, Object> out = new LinkedHashMap<>();
-        for (Map.Entry<String, String> e : overrides.entrySet()) {
-          String nick = Objects.toString(e.getKey(), "").trim();
-          String color = Objects.toString(e.getValue(), "").trim();
-          if (nick.isEmpty() || color.isEmpty()) continue;
-          out.put(nick, color);
-        }
-        ui.put("nickColorOverrides", out);
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist nick color overrides to '{}'", file, e);
-    }
+    stores.uiStores.nickColorStore.rememberOverrides(overrides);
   }
 
   @Override
   public synchronized void rememberSojuAutoConnectNetwork(
       String bouncerServerId, String networkName, boolean enabled) {
-    rememberBouncerAutoConnectNetwork("soju", bouncerServerId, networkName, enabled);
+    stores.connectionStores.bouncerDiscoveryStore.rememberSojuAutoConnectNetwork(
+        bouncerServerId, networkName, enabled);
   }
 
   @Override
   public synchronized void rememberZncAutoConnectNetwork(
       String bouncerServerId, String networkName, boolean enabled) {
-    rememberBouncerAutoConnectNetwork("znc", bouncerServerId, networkName, enabled);
+    stores.connectionStores.bouncerDiscoveryStore.rememberZncAutoConnectNetwork(
+        bouncerServerId, networkName, enabled);
   }
 
   @Override
   public synchronized Map<String, Map<String, Boolean>> readGenericBouncerAutoConnectRules() {
-    try {
-      if (file.toString().isBlank()) return Map.of();
-      if (!Files.exists(file)) return Map.of();
-
-      Map<String, Object> doc = loadFile();
-      Object ircafeObj = doc.get("ircafe");
-      if (!(ircafeObj instanceof Map<?, ?> ircafe)) return Map.of();
-
-      Object bouncerObj = ircafe.get("bouncer");
-      if (!(bouncerObj instanceof Map<?, ?> bouncer)) return Map.of();
-
-      Object autoConnectObj = bouncer.get("autoConnect");
-      if (!(autoConnectObj instanceof Map<?, ?> autoConnectByBouncer)) return Map.of();
-
-      LinkedHashMap<String, Map<String, Boolean>> out = new LinkedHashMap<>();
-      for (var bouncerEntry : autoConnectByBouncer.entrySet()) {
-        String bouncerServerId = Objects.toString(bouncerEntry.getKey(), "").trim();
-        if (bouncerServerId.isEmpty()) continue;
-        if (!(bouncerEntry.getValue() instanceof Map<?, ?> byNetwork)) continue;
-
-        LinkedHashMap<String, Boolean> networks = new LinkedHashMap<>();
-        for (var networkEntry : byNetwork.entrySet()) {
-          String networkName = Objects.toString(networkEntry.getKey(), "").trim();
-          if (networkName.isEmpty()) continue;
-          boolean enabled = asBoolean(networkEntry.getValue()).orElse(false);
-          if (enabled) networks.put(networkName, true);
-        }
-
-        if (!networks.isEmpty()) {
-          out.put(bouncerServerId, Map.copyOf(networks));
-        }
-      }
-      return out.isEmpty() ? Map.of() : Map.copyOf(out);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not read bouncer.autoConnect settings from '{}'", file, e);
-      return Map.of();
-    }
+    return stores.connectionStores.bouncerDiscoveryStore.readGenericBouncerAutoConnectRules();
   }
 
   @Override
   public synchronized void rememberGenericBouncerAutoConnectNetwork(
       String bouncerServerId, String networkName, boolean enabled) {
-    rememberBouncerAutoConnectNetwork("bouncer", bouncerServerId, networkName, enabled);
+    stores.connectionStores.bouncerDiscoveryStore.rememberGenericBouncerAutoConnectNetwork(
+        bouncerServerId, networkName, enabled);
   }
 
   @Override
   public synchronized String readGenericBouncerLoginTemplate(String defaultValue) {
-    String fallback = normalizeGenericBouncerLoginTemplate(defaultValue);
-    return readGenericBouncerValue("bouncer.generic.loginTemplate", "loginTemplate")
-        .map(RuntimeConfigStore::normalizeGenericBouncerLoginTemplate)
-        .orElse(fallback);
+    return stores.connectionStores.bouncerDiscoveryStore.readGenericBouncerLoginTemplate(
+        defaultValue);
   }
 
   @Override
   public synchronized boolean readGenericBouncerPreferLoginHint(boolean defaultValue) {
-    return readGenericBouncerValue("bouncer.generic.preferLoginHint", "preferLoginHint")
-        .flatMap(RuntimeConfigStore::asBoolean)
-        .orElse(defaultValue);
-  }
-
-  private Optional<Object> readGenericBouncerValue(String description, String key) {
-    return readExistingConfigValue(description, "ircafe", "bouncer", "generic", key);
+    return stores.connectionStores.bouncerDiscoveryStore.readGenericBouncerPreferLoginHint(
+        defaultValue);
   }
 
   public synchronized void rememberGenericBouncerLoginTemplate(String template) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      String normalized = Objects.toString(template, "").trim();
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> bouncer = getOrCreateMap(ircafe, "bouncer");
-      Map<String, Object> generic = getOrCreateMap(bouncer, "generic");
-
-      if (normalized.isEmpty()) {
-        generic.remove("loginTemplate");
-      } else {
-        generic.put("loginTemplate", normalized);
-      }
-
-      if (generic.isEmpty()) bouncer.remove("generic");
-      if (bouncer.isEmpty()) ircafe.remove("bouncer");
-      if (ircafe.isEmpty()) doc.remove("ircafe");
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist bouncer.generic.loginTemplate to '{}'", file, e);
-    }
+    stores.connectionStores.bouncerDiscoveryStore.rememberGenericBouncerLoginTemplate(template);
   }
 
   public synchronized void rememberGenericBouncerPreferLoginHint(boolean enabled) {
-    try {
-      if (file.toString().isBlank()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> bouncer = getOrCreateMap(ircafe, "bouncer");
-      Map<String, Object> generic = getOrCreateMap(bouncer, "generic");
-
-      generic.put("preferLoginHint", enabled);
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist bouncer.generic.preferLoginHint to '{}'", file, e);
-    }
-  }
-
-  private void rememberBouncerAutoConnectNetwork(
-      String backendKey, String bouncerServerId, String networkName, boolean enabled) {
-    String backend = Objects.toString(backendKey, "").trim().toLowerCase(Locale.ROOT);
-    if (backend.isEmpty()) return;
-    try {
-      if (file.toString().isBlank()) return;
-
-      String sid = Objects.toString(bouncerServerId, "").trim();
-      String net = Objects.toString(networkName, "").trim();
-      if (sid.isEmpty() || net.isEmpty()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> ircafe = getOrCreateMap(doc, "ircafe");
-      Map<String, Object> bouncerSection = getOrCreateMap(ircafe, backend);
-      Map<String, Object> autoConnect = getOrCreateMap(bouncerSection, "autoConnect");
-
-      @SuppressWarnings("unchecked")
-      Map<String, Object> nets =
-          (autoConnect.get(sid) instanceof Map<?, ?> mm)
-              ? (Map<String, Object>) mm
-              : new LinkedHashMap<>();
-
-      if (enabled) {
-        nets.put(net, true);
-        autoConnect.put(sid, nets);
-      } else {
-        // Remove case-insensitively so users can toggle based on what the bouncer returns.
-        nets.keySet().removeIf(k -> k != null && k.equalsIgnoreCase(net));
-        if (nets.isEmpty()) {
-          autoConnect.remove(sid);
-        } else {
-          autoConnect.put(sid, nets);
-        }
-
-        // Clean up empty structures to keep the YAML tidy.
-        if (autoConnect.isEmpty()) {
-          bouncerSection.remove("autoConnect");
-        }
-        if (bouncerSection.isEmpty()) {
-          ircafe.remove(backend);
-        }
-        if (ircafe.isEmpty()) {
-          doc.remove("ircafe");
-        }
-      }
-
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn(
-          "[ircafe] Could not persist {} auto-connect setting to '{}'",
-          Objects.toString(backendKey, "").trim().toLowerCase(Locale.ROOT),
-          file,
-          e);
-    }
-  }
-
-  private static String normalizeGenericBouncerLoginTemplate(Object template) {
-    String raw = Objects.toString(template, "").trim();
-    return raw.isEmpty() ? DEFAULT_GENERIC_BOUNCER_LOGIN_TEMPLATE : raw;
-  }
-
-  private static List<String> sanitizeMonitorNickList(Object rawList) {
-    if (!(rawList instanceof List<?> list) || list.isEmpty()) return new ArrayList<>();
-    ArrayList<String> out = new ArrayList<>();
-    for (Object raw : list) {
-      String nick = normalizeMonitorNick(raw);
-      if (nick.isEmpty()) continue;
-      if (!containsIgnoreCase(out, nick)) out.add(nick);
-    }
-    if (out.isEmpty()) return new ArrayList<>();
-    return out;
-  }
-
-  private static String normalizeMonitorNick(Object rawNick) {
-    String nick = Objects.toString(rawNick, "").trim();
-    if (nick.isEmpty()) return "";
-    if (nick.startsWith(":")) nick = nick.substring(1).trim();
-    int comma = nick.indexOf(',');
-    if (comma >= 0) nick = nick.substring(0, comma).trim();
-    int bang = nick.indexOf('!');
-    if (bang > 0) nick = nick.substring(0, bang).trim();
-    if (nick.isEmpty()) return "";
-    if (nick.indexOf(' ') >= 0 || nick.indexOf('\t') >= 0) return "";
-    if (nick.startsWith("#") || nick.startsWith("&")) return "";
-    return nick;
-  }
-
-  private static boolean containsIgnoreCase(List<String> values, String needle) {
-    if (values == null || values.isEmpty()) return false;
-    String n = Objects.toString(needle, "").trim();
-    if (n.isEmpty()) return false;
-    for (String value : values) {
-      if (value != null && value.equalsIgnoreCase(n)) return true;
-    }
-    return false;
-  }
-
-  private interface ServerUpdater {
-    void update(Map<String, Object> serverMap);
-  }
-
-  @FunctionalInterface
-  private interface UiUpdater {
-    void update(Map<String, Object> ui);
-  }
-
-  private void updateServer(String serverId, ServerUpdater updater) {
-    try {
-      if (file.toString().isBlank()) return;
-      String sid = Objects.toString(serverId, "").trim();
-      if (sid.isEmpty()) return;
-
-      Map<String, Object> doc = Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-      Map<String, Object> irc = getOrCreateMap(doc, "irc");
-      List<Map<String, Object>> servers = readServerList(irc).orElseGet(ArrayList::new);
-
-      Map<String, Object> found = null;
-      for (Map<String, Object> s : servers) {
-        if (sid.equalsIgnoreCase(Objects.toString(s.get("id"), "").trim())) {
-          found = s;
-          break;
-        }
-      }
-
-      // IMPORTANT: Do not auto-create missing servers here.
-      // If a user removed a server at runtime, we must not "resurrect" it
-      // just because some runtime state (e.g. /join) tries to persist.
-      if (found == null) {
-        return;
-      }
-
-      updater.update(found);
-
-      irc.put("servers", servers);
-      writeFile(doc);
-    } catch (Exception e) {
-      log.warn("[ircafe] Could not persist runtime config to '{}'", file, e);
-    }
-  }
-
-  @SuppressWarnings("unchecked")
-  private Map<String, Object> loadFile() throws IOException {
-    if (mutationBatchDepth > 0 && mutationBatchDoc != null) {
-      return mutationBatchDoc;
-    }
-    try (Reader r = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
-      Object o = yaml.load(r);
-      if (o instanceof Map<?, ?> m) {
-        return (Map<String, Object>) m;
-      }
-      return new LinkedHashMap<>();
-    }
-  }
-
-  private Map<String, Object> loadFileOrEmpty() throws IOException {
-    return Files.exists(file) ? loadFile() : new LinkedHashMap<>();
-  }
-
-  private void writeFile(Map<String, Object> doc) throws IOException {
-    if (mutationBatchDepth > 0) {
-      mutationBatchDoc = (doc == null) ? new LinkedHashMap<>() : doc;
-      mutationBatchDirty = true;
-      return;
-    }
-    writeFileNow(doc);
-  }
-
-  private void writeFileNow(Map<String, Object> doc) throws IOException {
-    Path parent = file.getParent();
-    if (parent != null && !Files.exists(parent)) {
-      Files.createDirectories(parent);
-    }
-    try (Writer w = Files.newBufferedWriter(file, StandardCharsets.UTF_8)) {
-      yaml.dump(doc, w);
-    }
-  }
-
-  @SuppressWarnings("unchecked")
-  private static Map<String, Object> getOrCreateMap(Map<String, Object> parent, String key) {
-    Object o = parent.get(key);
-    if (o instanceof Map<?, ?> m) return (Map<String, Object>) m;
-    Map<String, Object> created = new LinkedHashMap<>();
-    parent.put(key, created);
-    return created;
-  }
-
-  private static Map<String, Object> getOrCreateMapPath(Map<String, Object> root, String... path) {
-    Map<String, Object> current = root;
-    for (String segment : path) {
-      current = getOrCreateMap(current, segment);
-    }
-    return current;
-  }
-
-  @SuppressWarnings("unchecked")
-  private static Optional<List<Map<String, Object>>> readServerList(Map<String, Object> irc) {
-    Object o = irc.get("servers");
-    if (o instanceof List<?>) {
-      // We expect a list of maps.
-      return Optional.of((List<Map<String, Object>>) o);
-    }
-    return Optional.empty();
-  }
-
-  private static Map<String, Object> toServerMap(IrcProperties.Server s) {
-    Map<String, Object> m = new LinkedHashMap<>();
-    m.put("id", s.id());
-    m.put("host", s.host());
-    m.put("port", s.port());
-    m.put("tls", s.tls());
-    String backendId = BackendDescriptorCatalog.builtIns().normalizeIdOrDefault(s.backendId());
-    if (!backendId.equals(
-        BackendDescriptorCatalog.builtIns().idFor(IrcProperties.Server.Backend.IRC))) {
-      m.put("backend", backendId);
-    }
-    if (s.serverPassword() != null && !s.serverPassword().isBlank()) {
-      m.put("serverPassword", s.serverPassword());
-    }
-    if (s.nick() != null) m.put("nick", s.nick());
-    if (s.login() != null && !s.login().isBlank()) m.put("login", s.login());
-    if (s.realName() != null && !s.realName().isBlank()) m.put("realName", s.realName());
-    if (s.autoJoin() != null && !s.autoJoin().isEmpty())
-      m.put("autoJoin", new ArrayList<>(s.autoJoin()));
-    if (s.perform() != null && !s.perform().isEmpty())
-      m.put("perform", new ArrayList<>(s.perform()));
-    if (s.sasl() != null && s.sasl().enabled()) {
-      Map<String, Object> sasl = new LinkedHashMap<>();
-      sasl.put("enabled", true);
-      sasl.put("username", s.sasl().username());
-      sasl.put("password", s.sasl().password());
-      if (s.sasl().mechanism() != null && !s.sasl().mechanism().isBlank()) {
-        sasl.put("mechanism", s.sasl().mechanism());
-      }
-      // Persist only when diverging from the default strict behavior.
-      // Default (when omitted) is: disconnectOnFailure = true.
-      if (s.sasl().disconnectOnFailure() != null && !s.sasl().disconnectOnFailure()) {
-        sasl.put("disconnectOnFailure", false);
-      }
-      m.put("sasl", sasl);
-    }
-    if (s.nickserv() != null && s.nickserv().enabled()) {
-      Map<String, Object> nickserv = new LinkedHashMap<>();
-      nickserv.put("enabled", true);
-      nickserv.put("password", s.nickserv().password());
-      if (s.nickserv().service() != null
-          && !s.nickserv().service().isBlank()
-          && !"NickServ".equalsIgnoreCase(s.nickserv().service().trim())) {
-        nickserv.put("service", s.nickserv().service());
-      }
-      if (s.nickserv().delayJoinUntilIdentified() != null
-          && !s.nickserv().delayJoinUntilIdentified()) {
-        nickserv.put("delayJoinUntilIdentified", false);
-      }
-      m.put("nickserv", nickserv);
-    }
-
-    // Optional per-server SOCKS5 proxy override.
-    // If present with enabled=false, this represents an explicit "disable proxy" for this server.
-    if (s.proxy() != null) {
-      IrcProperties.Proxy p = s.proxy();
-      Map<String, Object> proxy = new LinkedHashMap<>();
-      proxy.put("enabled", p.enabled());
-      proxy.put("host", Objects.toString(p.host(), "").trim());
-      proxy.put("port", Math.max(0, p.port()));
-      proxy.put("username", Objects.toString(p.username(), "").trim());
-      proxy.put("password", Objects.toString(p.password(), ""));
-      proxy.put("remoteDns", p.remoteDns());
-      proxy.put("connectTimeoutMs", Math.max(0L, p.connectTimeoutMs()));
-      proxy.put("readTimeoutMs", Math.max(0L, p.readTimeoutMs()));
-      m.put("proxy", proxy);
-    }
-    return m;
-  }
-
-  @SuppressWarnings("unchecked")
-  private static List<String> getOrCreateStringList(Map<String, Object> m, String key) {
-    Object o = m.get(key);
-    if (o instanceof List<?>) {
-      // Cast defensively; we only store strings.
-      return (List<String>) o;
-    }
-    List<String> created = new ArrayList<>();
-    m.put(key, created);
-    return created;
-  }
-
-  private static List<InterceptorDefinition> parseInterceptorDefinitionsForServer(
-      Object rawList, String ownerServerId) {
-    String owner = Objects.toString(ownerServerId, "").trim();
-    if (!(rawList instanceof List<?> list) || owner.isEmpty()) return List.of();
-
-    ArrayList<InterceptorDefinition> out = new ArrayList<>();
-    for (Object item : list) {
-      if (!(item instanceof Map<?, ?> m)) continue;
-
-      String id = Objects.toString(m.get("id"), "").trim();
-      if (id.isEmpty()) continue;
-      String name = Objects.toString(m.get("name"), "").trim();
-      boolean enabled = asBoolean(m.get("enabled")).orElse(Boolean.TRUE);
-
-      String scopeServerId = Objects.toString(m.get("scopeServerId"), "").trim();
-      if (!m.containsKey("scopeServerId")) {
-        // Backward compatibility: old definitions were server-local.
-        scopeServerId = owner;
-      }
-
-      InterceptorRuleMode channelIncludeMode =
-          asRuleMode(m.get("channelIncludeMode"), InterceptorRuleMode.GLOB);
-      String channelIncludes = Objects.toString(m.get("channelIncludes"), "").trim();
-      if (channelIncludes.isEmpty()) {
-        // Backward compatibility with the old "channelsCsv" shape.
-        channelIncludes = Objects.toString(m.get("channelsCsv"), "").trim();
-      }
-
-      InterceptorRuleMode channelExcludeMode =
-          asRuleMode(m.get("channelExcludeMode"), InterceptorRuleMode.GLOB);
-      String channelExcludes = Objects.toString(m.get("channelExcludes"), "").trim();
-
-      boolean actionSoundEnabled = asBoolean(m.get("actionSoundEnabled")).orElse(Boolean.FALSE);
-      boolean actionStatusBarEnabled =
-          asBoolean(m.get("actionStatusBarEnabled")).orElse(Boolean.FALSE);
-      boolean actionToastEnabled = asBoolean(m.get("actionToastEnabled")).orElse(Boolean.FALSE);
-      String actionSoundId = Objects.toString(m.get("actionSoundId"), "").trim();
-      if (actionSoundId.isEmpty()) actionSoundId = "NOTIF_1";
-      boolean actionSoundUseCustom = asBoolean(m.get("actionSoundUseCustom")).orElse(Boolean.FALSE);
-      String actionSoundCustomPath = Objects.toString(m.get("actionSoundCustomPath"), "").trim();
-
-      boolean actionScriptEnabled = asBoolean(m.get("actionScriptEnabled")).orElse(Boolean.FALSE);
-      String actionScriptPath = Objects.toString(m.get("actionScriptPath"), "").trim();
-      String actionScriptArgs = Objects.toString(m.get("actionScriptArgs"), "").trim();
-      String actionScriptWorkingDirectory =
-          Objects.toString(m.get("actionScriptWorkingDirectory"), "").trim();
-
-      List<InterceptorRule> rules = parseInterceptorRules(m.get("rules"));
-      if (rules.isEmpty()) {
-        // Backward compatibility with the old single-dimension rule shape.
-        rules =
-            List.of(
-                new InterceptorRule(
-                    true,
-                    "Rule 1",
-                    "message,action",
-                    asRuleMode(m.get("mode"), InterceptorRuleMode.LIKE),
-                    Objects.toString(m.get("pattern"), "").trim(),
-                    InterceptorRuleMode.LIKE,
-                    "",
-                    InterceptorRuleMode.GLOB,
-                    ""));
-      }
-
-      out.add(
-          new InterceptorDefinition(
-              id,
-              name,
-              enabled,
-              scopeServerId,
-              channelIncludeMode,
-              channelIncludes,
-              channelExcludeMode,
-              channelExcludes,
-              actionSoundEnabled,
-              actionStatusBarEnabled,
-              actionToastEnabled,
-              actionSoundId,
-              actionSoundUseCustom,
-              actionSoundCustomPath,
-              actionScriptEnabled,
-              actionScriptPath,
-              actionScriptArgs,
-              actionScriptWorkingDirectory,
-              rules));
-    }
-    return List.copyOf(out);
-  }
-
-  private static List<InterceptorRule> parseInterceptorRules(Object rawRules) {
-    if (!(rawRules instanceof List<?> list)) return List.of();
-
-    ArrayList<InterceptorRule> out = new ArrayList<>();
-    for (Object item : list) {
-      if (!(item instanceof Map<?, ?> m)) continue;
-
-      boolean enabled = asBoolean(m.get("enabled")).orElse(Boolean.TRUE);
-      String label = Objects.toString(m.get("label"), "").trim();
-      String eventTypesCsv = Objects.toString(m.get("eventTypesCsv"), "").trim();
-      if (eventTypesCsv.isEmpty()) {
-        // Backward compatibility with key variants.
-        eventTypesCsv = Objects.toString(m.get("eventTypes"), "").trim();
-      }
-
-      InterceptorRuleMode messageMode =
-          asRuleMode(
-              m.containsKey("messageMode") ? m.get("messageMode") : m.get("mode"),
-              InterceptorRuleMode.LIKE);
-      String messagePattern =
-          Objects.toString(
-                  m.containsKey("messagePattern") ? m.get("messagePattern") : m.get("pattern"), "")
-              .trim();
-
-      InterceptorRuleMode nickMode = asRuleMode(m.get("nickMode"), InterceptorRuleMode.LIKE);
-      String nickPattern = Objects.toString(m.get("nickPattern"), "").trim();
-
-      InterceptorRuleMode hostmaskMode =
-          asRuleMode(m.get("hostmaskMode"), InterceptorRuleMode.GLOB);
-      String hostmaskPattern = Objects.toString(m.get("hostmaskPattern"), "").trim();
-
-      out.add(
-          new InterceptorRule(
-              enabled,
-              label,
-              eventTypesCsv,
-              messageMode,
-              messagePattern,
-              nickMode,
-              nickPattern,
-              hostmaskMode,
-              hostmaskPattern));
-    }
-    return List.copyOf(out);
-  }
-
-  private static InterceptorRuleMode asRuleMode(Object value, InterceptorRuleMode fallback) {
-    if (value instanceof InterceptorRuleMode mode) return mode;
-    String raw = Objects.toString(value, "").trim();
-    if (raw.isEmpty()) return fallback;
-    try {
-      return InterceptorRuleMode.valueOf(raw.toUpperCase(Locale.ROOT));
-    } catch (Exception ignored) {
-      return fallback;
-    }
-  }
-
-  private String normalizeCapabilityKey(String capability) {
-    return ircv3CapabilityNameResolver.normalizePreferenceKey(capability);
-  }
-
-  private static String normalizeHostKey(String host) {
-    String h = Objects.toString(host, "").trim().toLowerCase(Locale.ROOT);
-    return h.isEmpty() ? null : h;
-  }
-
-  private static Optional<Long> asLong(Object value) {
-    if (value instanceof Number n) return Optional.of(n.longValue());
-    if (value instanceof String s) {
-      String t = s.trim();
-      if (t.isEmpty()) return Optional.empty();
-      try {
-        return Optional.of(Long.parseLong(t));
-      } catch (Exception ignored) {
-        return Optional.empty();
-      }
-    }
-    return Optional.empty();
-  }
-
-  private static Optional<Integer> asInt(Object value) {
-    if (value instanceof Number n) return Optional.of(n.intValue());
-    if (value instanceof String s) {
-      String t = s.trim();
-      if (t.isEmpty()) return Optional.empty();
-      try {
-        return Optional.of(Integer.parseInt(t));
-      } catch (Exception ignored) {
-        return Optional.empty();
-      }
-    }
-    return Optional.empty();
-  }
-
-  private static Optional<Boolean> asBoolean(Object value) {
-    if (value instanceof Boolean b) return Optional.of(b);
-    if (value instanceof String s) {
-      String t = s.trim();
-      if (t.equalsIgnoreCase("true")) return Optional.of(Boolean.TRUE);
-      if (t.equalsIgnoreCase("false")) return Optional.of(Boolean.FALSE);
-    }
-    if (value instanceof Number n) {
-      int i = n.intValue();
-      if (i == 0) return Optional.of(Boolean.FALSE);
-      if (i == 1) return Optional.of(Boolean.TRUE);
-    }
-    return Optional.empty();
+    stores.connectionStores.bouncerDiscoveryStore.rememberGenericBouncerPreferLoginHint(enabled);
   }
 }

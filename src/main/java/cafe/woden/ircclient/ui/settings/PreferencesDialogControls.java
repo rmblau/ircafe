@@ -2,10 +2,12 @@ package cafe.woden.ircclient.ui.settings;
 
 import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
-import cafe.woden.ircclient.config.LogProperties;
-import cafe.woden.ircclient.config.PushyProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
+import cafe.woden.ircclient.config.properties.LogProperties;
+import cafe.woden.ircclient.config.properties.PushyProperties;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionCatalog;
 import cafe.woden.ircclient.model.BuiltInSound;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
@@ -102,6 +104,8 @@ record PreferencesDialogControls(
     JCheckBox presenceFolds,
     JCheckBox ctcpRequestsInActiveTarget,
     JTextField defaultQuitMessage,
+    JCheckBox nickCompletionCycleWithTab,
+    JCheckBox nickCompletionAppendAddressSuffix,
     SpellcheckControls spellcheck,
     CtcpAutoReplyControls ctcpAutoReplies,
     JCheckBox typingIndicatorsSendEnabled,
@@ -177,6 +181,12 @@ record PreferencesDialogControls(
         ChatBehaviorControlsSupport.buildCtcpRequestsInActiveTargetCheckbox(request.current());
     JTextField defaultQuitMessage =
         ChatBehaviorControlsSupport.buildDefaultQuitMessageField(request.runtimeConfig());
+    JCheckBox nickCompletionCycleWithTab =
+        ChatBehaviorControlsSupport.buildNickCompletionCycleWithTabCheckbox(
+            nickCompletionCycleWithTabEnabled(request));
+    JCheckBox nickCompletionAppendAddressSuffix =
+        ChatBehaviorControlsSupport.buildNickCompletionAppendAddressSuffixCheckbox(
+            nickCompletionAppendAddressSuffixEnabled(request));
     SpellcheckControls spellcheck =
         SpellcheckControlsSupport.buildControls(initialSpellcheckSettings(request));
     CtcpAutoReplyControls ctcpAutoReplies =
@@ -287,6 +297,8 @@ record PreferencesDialogControls(
         presenceFolds,
         ctcpRequestsInActiveTarget,
         defaultQuitMessage,
+        nickCompletionCycleWithTab,
+        nickCompletionAppendAddressSuffix,
         spellcheck,
         ctcpAutoReplies,
         typingIndicatorsSendEnabled,
@@ -341,6 +353,16 @@ record PreferencesDialogControls(
     return request.settingsBus() == null || request.settingsBus().chatSmoothWheelScrollingEnabled();
   }
 
+  private static boolean nickCompletionCycleWithTabEnabled(BuildRequest request) {
+    return request.settingsBus() != null
+        && request.settingsBus().nickCompletionCycleWithTabEnabled();
+  }
+
+  private static boolean nickCompletionAppendAddressSuffixEnabled(BuildRequest request) {
+    return request.settingsBus() == null
+        || request.settingsBus().nickCompletionAppendAddressSuffixEnabled();
+  }
+
   private static boolean historyLockViewportDuringLoadOlder(BuildRequest request) {
     return request.runtimeConfig() == null
         || request.runtimeConfig().readChatHistoryLockViewportDuringLoadOlder(true);
@@ -380,7 +402,8 @@ record PreferencesDialogControls(
       ChatThemeSettingsBus chatThemeSettingsBus,
       EmbedCardStyleBus embedCardStyleBus,
       UiSettingsBus settingsBus,
-      RuntimeConfigStore runtimeConfig) {
+      ChatBehaviorRuntimeConfigPort chatBehaviorConfig,
+      DiagnosticsRuntimeConfigPort diagnosticsConfig) {
     return new PreferencesApplySupport.ApplyRequest(
         appearance,
         accentSettingsBus,
@@ -392,6 +415,8 @@ record PreferencesDialogControls(
         presenceFolds,
         ctcpRequestsInActiveTarget,
         defaultQuitMessage,
+        nickCompletionCycleWithTab,
+        nickCompletionAppendAddressSuffix,
         typingIndicatorsSendEnabled,
         typingIndicatorsReceiveEnabled,
         typingTreeIndicatorStyle,
@@ -426,7 +451,8 @@ record PreferencesDialogControls(
         ircEventNotifications,
         userCommands,
         diagnostics,
-        runtimeConfig);
+        chatBehaviorConfig,
+        diagnosticsConfig);
   }
 
   record BuildRequest(

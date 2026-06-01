@@ -4,6 +4,9 @@ import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
+import cafe.woden.ircclient.ui.util.MigConstraints;
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import java.awt.Font;
 import java.util.List;
 import java.util.function.Consumer;
@@ -16,7 +19,6 @@ import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
-import net.miginfocom.swing.MigLayout;
 
 public final class UserLookupsPanelSupport {
   private UserLookupsPanelSupport() {}
@@ -24,10 +26,10 @@ public final class UserLookupsPanelSupport {
   static UserLookupsPanelControls buildControls(
       UiSettings current, List<AutoCloseable> closeables) {
     JPanel userLookupsPanel =
-        new JPanel(new MigLayout("insets 12, fillx, wrap 1, hidemode 3", "[grow,fill]", ""));
-    userLookupsPanel.add(PreferencesUiSupport.tabTitle("User lookups"), "growx, wrap");
+        new JPanel(MigLayouts.fillXWrapWithHideMode(12, 1, 3, MigLayoutConstraints.GROW_FILL, ""));
+    userLookupsPanel.add(PreferencesUiSupport.tabTitle("User lookups"), MigConstraints.growXWrap());
 
-    JPanel userLookupsIntro = new JPanel(new MigLayout("insets 0, fillx", "[grow,fill]6[]", "[]"));
+    JPanel userLookupsIntro = new JPanel(MigLayouts.fillXGrowTrailing(6));
     userLookupsIntro.setOpaque(false);
     JTextArea userLookupsBlurb =
         PreferencesUiSupport.helpText(
@@ -38,11 +40,10 @@ public final class UserLookupsPanelSupport {
             "Most modern IRC networks provide account and presence information via IRCv3 (e.g., account-tag, account-notify, away-notify, extended-join).\n\n"
                 + "However, some networks (or some pieces of data) still require fallback lookups. IRCafe can optionally use USERHOST and (as a last resort) WHOIS to fill missing metadata.\n\n"
                 + "If you're on an IRCv3-capable network and don't use hostmask-based ignore rules, you can usually leave these disabled.");
-    userLookupsIntro.add(userLookupsBlurb, "growx, wmin 0");
-    userLookupsIntro.add(userLookupsHelp, "align right");
+    userLookupsIntro.add(userLookupsBlurb, MigConstraints.growXMinWidth0());
+    userLookupsIntro.add(userLookupsHelp, MigConstraints.alignXRight());
 
-    JPanel lookupPresetPanel =
-        new JPanel(new MigLayout("insets 0, fillx, wrap 2", "[right]12[grow,fill]", "[]6[]"));
+    JPanel lookupPresetPanel = new JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rows(2, 6)));
     lookupPresetPanel.setOpaque(false);
 
     JComboBox<LookupRatePreset> lookupPreset = new JComboBox<>(LookupRatePreset.values());
@@ -68,8 +69,8 @@ public final class UserLookupsPanelSupport {
     updateLookupPresetHint.run();
 
     lookupPresetPanel.add(new JLabel("Rate limit preset:"));
-    lookupPresetPanel.add(lookupPreset, "w 220!");
-    lookupPresetPanel.add(lookupPresetHint, "span 2, growx, wmin 0, wrap");
+    lookupPresetPanel.add(lookupPreset, MigConstraints.width(220));
+    lookupPresetPanel.add(lookupPresetHint, MigConstraints.span2GrowXMinWidth0Wrap());
 
     JSpinner monitorIsonPollIntervalSeconds =
         PreferencesUiSupport.numberSpinner(
@@ -77,11 +78,9 @@ public final class UserLookupsPanelSupport {
     monitorIsonPollIntervalSeconds.setToolTipText(
         "Polling interval for ISON monitor fallback when IRC MONITOR is unavailable.");
     lookupPresetPanel.add(new JLabel("MONITOR fallback poll (sec):"));
-    lookupPresetPanel.add(monitorIsonPollIntervalSeconds, "w 110!, wrap");
+    lookupPresetPanel.add(monitorIsonPollIntervalSeconds, MigConstraints.widthWrap(110));
 
-    JPanel hostmaskPanel =
-        new JPanel(
-            new MigLayout("insets 8, fillx, wrap 2, hidemode 3", "[right]12[grow,fill]", ""));
+    JPanel hostmaskPanel = new JPanel(MigLayouts.twoColumnFormWithHideMode(8, 12, 3, ""));
     hostmaskPanel.setBorder(
         BorderFactory.createCompoundBorder(
             BorderFactory.createTitledBorder("Hostmask discovery"),
@@ -128,21 +127,18 @@ public final class UserLookupsPanelSupport {
     userhostMaxNicksPerCommand.setToolTipText(
         "How many nicks to include per USERHOST command (servers typically allow up to 5).");
 
-    JPanel hostmaskAdvanced =
-        new JPanel(new MigLayout("insets 0, fillx, wrap 2", "[right]12[grow,fill]", "[]6[]6[]6[]"));
+    JPanel hostmaskAdvanced = new JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rows(4, 6)));
     hostmaskAdvanced.setOpaque(false);
     hostmaskAdvanced.add(new JLabel("Min interval (sec):"));
-    hostmaskAdvanced.add(userhostMinIntervalSeconds, "w 110!");
+    hostmaskAdvanced.add(userhostMinIntervalSeconds, MigConstraints.width(110));
     hostmaskAdvanced.add(new JLabel("Max commands/min:"));
-    hostmaskAdvanced.add(userhostMaxPerMinute, "w 110!");
+    hostmaskAdvanced.add(userhostMaxPerMinute, MigConstraints.width(110));
     hostmaskAdvanced.add(new JLabel("Nick cooldown (min):"));
-    hostmaskAdvanced.add(userhostNickCooldownMinutes, "w 110!");
+    hostmaskAdvanced.add(userhostNickCooldownMinutes, MigConstraints.width(110));
     hostmaskAdvanced.add(new JLabel("Max nicks/command:"));
-    hostmaskAdvanced.add(userhostMaxNicksPerCommand, "w 110!");
+    hostmaskAdvanced.add(userhostMaxNicksPerCommand, MigConstraints.width(110));
 
-    JPanel enrichmentPanel =
-        new JPanel(
-            new MigLayout("insets 8, fillx, wrap 2, hidemode 3", "[right]12[grow,fill]", ""));
+    JPanel enrichmentPanel = new JPanel(MigLayouts.twoColumnFormWithHideMode(8, 12, 3, ""));
     enrichmentPanel.setBorder(
         BorderFactory.createCompoundBorder(
             BorderFactory.createTitledBorder("Roster enrichment (fallback)"),
@@ -246,37 +242,33 @@ public final class UserLookupsPanelSupport {
         "How many nicks to probe per periodic tick.\nKeep this small (e.g., 1-3).");
 
     JPanel enrichmentAdvanced =
-        new JPanel(
-            new MigLayout(
-                "insets 0, fillx, wrap 2",
-                "[right]12[grow,fill]",
-                "[]6[]6[]6[]10[]6[]6[]10[]6[]6[]"));
+        new JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rowGaps(6, 6, 6, 10, 6, 6, 10, 6, 6)));
     enrichmentAdvanced.setOpaque(false);
     JLabel userhostHdr = new JLabel("USERHOST tuning");
     userhostHdr.setFont(userhostHdr.getFont().deriveFont(Font.BOLD));
-    enrichmentAdvanced.add(userhostHdr, "span 2, growx, wmin 0, wrap");
+    enrichmentAdvanced.add(userhostHdr, MigConstraints.span2GrowXMinWidth0Wrap());
     enrichmentAdvanced.add(new JLabel("Min interval (sec):"));
-    enrichmentAdvanced.add(enrichmentUserhostMinIntervalSeconds, "w 110!");
+    enrichmentAdvanced.add(enrichmentUserhostMinIntervalSeconds, MigConstraints.width(110));
     enrichmentAdvanced.add(new JLabel("Max cmd/min:"));
-    enrichmentAdvanced.add(enrichmentUserhostMaxPerMinute, "w 110!");
+    enrichmentAdvanced.add(enrichmentUserhostMaxPerMinute, MigConstraints.width(110));
     enrichmentAdvanced.add(new JLabel("Nick cooldown (min):"));
-    enrichmentAdvanced.add(enrichmentUserhostNickCooldownMinutes, "w 110!");
+    enrichmentAdvanced.add(enrichmentUserhostNickCooldownMinutes, MigConstraints.width(110));
     enrichmentAdvanced.add(new JLabel("Max nicks/cmd:"));
-    enrichmentAdvanced.add(enrichmentUserhostMaxNicksPerCommand, "w 110!");
+    enrichmentAdvanced.add(enrichmentUserhostMaxNicksPerCommand, MigConstraints.width(110));
     JLabel whoisHdr = new JLabel("WHOIS tuning");
     whoisHdr.setFont(whoisHdr.getFont().deriveFont(Font.BOLD));
-    enrichmentAdvanced.add(whoisHdr, "span 2, growx, wmin 0, wrap");
+    enrichmentAdvanced.add(whoisHdr, MigConstraints.span2GrowXMinWidth0Wrap());
     enrichmentAdvanced.add(new JLabel("Min interval (sec):"));
-    enrichmentAdvanced.add(enrichmentWhoisMinIntervalSeconds, "w 110!");
+    enrichmentAdvanced.add(enrichmentWhoisMinIntervalSeconds, MigConstraints.width(110));
     enrichmentAdvanced.add(new JLabel("Nick cooldown (min):"));
-    enrichmentAdvanced.add(enrichmentWhoisNickCooldownMinutes, "w 110!");
+    enrichmentAdvanced.add(enrichmentWhoisNickCooldownMinutes, MigConstraints.width(110));
     JLabel refreshHdr = new JLabel("Periodic refresh tuning");
     refreshHdr.setFont(refreshHdr.getFont().deriveFont(Font.BOLD));
-    enrichmentAdvanced.add(refreshHdr, "span 2, growx, wmin 0, wrap");
+    enrichmentAdvanced.add(refreshHdr, MigConstraints.span2GrowXMinWidth0Wrap());
     enrichmentAdvanced.add(new JLabel("Interval (sec):"));
-    enrichmentAdvanced.add(enrichmentPeriodicRefreshIntervalSeconds, "w 110!");
+    enrichmentAdvanced.add(enrichmentPeriodicRefreshIntervalSeconds, MigConstraints.width(110));
     enrichmentAdvanced.add(new JLabel("Nicks per tick:"));
-    enrichmentAdvanced.add(enrichmentPeriodicRefreshNicksPerTick, "w 110!");
+    enrichmentAdvanced.add(enrichmentPeriodicRefreshNicksPerTick, MigConstraints.width(110));
 
     Consumer<LookupRatePreset> applyLookupPreset =
         preset -> {
@@ -512,46 +504,43 @@ public final class UserLookupsPanelSupport {
     enrichmentPeriodicRefreshIntervalSeconds.addChangeListener(summaryChange);
     enrichmentPeriodicRefreshNicksPerTick.addChangeListener(summaryChange);
 
-    JPanel enrichmentWhoisRow =
-        new JPanel(new MigLayout("insets 0, fillx", "[grow,fill]6[]", "[]"));
+    JPanel enrichmentWhoisRow = new JPanel(MigLayouts.fillXGrowTrailing(6));
     enrichmentWhoisRow.setOpaque(false);
-    enrichmentWhoisRow.add(enrichmentWhoisFallbackEnabled, "growx");
-    enrichmentWhoisRow.add(whoisHelp, "align right");
+    enrichmentWhoisRow.add(enrichmentWhoisFallbackEnabled, MigConstraints.growX());
+    enrichmentWhoisRow.add(whoisHelp, MigConstraints.alignXRight());
 
-    JPanel enrichmentRefreshRow =
-        new JPanel(new MigLayout("insets 0, fillx", "[grow,fill]6[]", "[]"));
+    JPanel enrichmentRefreshRow = new JPanel(MigLayouts.fillXGrowTrailing(6));
     enrichmentRefreshRow.setOpaque(false);
-    enrichmentRefreshRow.add(enrichmentPeriodicRefreshEnabled, "growx");
-    enrichmentRefreshRow.add(refreshHelp, "align right");
+    enrichmentRefreshRow.add(enrichmentPeriodicRefreshEnabled, MigConstraints.growX());
+    enrichmentRefreshRow.add(refreshHelp, MigConstraints.alignXRight());
 
-    hostmaskPanel.add(userhostEnabled, "growx");
-    hostmaskPanel.add(hostmaskHelp, "align right, wrap");
-    hostmaskPanel.add(hostmaskSummary, "span 2, growx, wmin 0, wrap");
-    hostmaskPanel.add(hostmaskAdvanced, "span 2, growx, wrap, hidemode 3");
+    hostmaskPanel.add(userhostEnabled, MigConstraints.growX());
+    hostmaskPanel.add(hostmaskHelp, MigConstraints.alignXRightWrap());
+    hostmaskPanel.add(hostmaskSummary, MigConstraints.span2GrowXMinWidth0Wrap());
+    hostmaskPanel.add(hostmaskAdvanced, MigConstraints.spanXGrowXHideModeWrap(2, 3));
 
-    enrichmentPanel.add(enrichmentEnabled, "growx");
-    enrichmentPanel.add(enrichmentHelp, "align right, wrap");
-    enrichmentPanel.add(enrichmentSummary, "span 2, growx, wmin 0, wrap");
-    enrichmentPanel.add(enrichmentWhoisRow, "span 2, gapleft 18, growx, wrap");
-    enrichmentPanel.add(enrichmentRefreshRow, "span 2, gapleft 18, growx, wrap");
-    enrichmentPanel.add(enrichmentAdvanced, "span 2, growx, wrap, hidemode 3");
+    enrichmentPanel.add(enrichmentEnabled, MigConstraints.growX());
+    enrichmentPanel.add(enrichmentHelp, MigConstraints.alignXRightWrap());
+    enrichmentPanel.add(enrichmentSummary, MigConstraints.span2GrowXMinWidth0Wrap());
+    enrichmentPanel.add(enrichmentWhoisRow, MigConstraints.spanXGrowXGapLeftWrap(2, 18));
+    enrichmentPanel.add(enrichmentRefreshRow, MigConstraints.spanXGrowXGapLeftWrap(2, 18));
+    enrichmentPanel.add(enrichmentAdvanced, MigConstraints.spanXGrowXHideModeWrap(2, 3));
     hostmaskAdvanced.setVisible(false);
     enrichmentAdvanced.setVisible(false);
     updateHostmaskState.run();
     updateEnrichmentState.run();
 
     JTabbedPane lookupsTabs = new JTabbedPane();
-    JPanel lookupsOverview =
-        new JPanel(new MigLayout("insets 0, fillx, wrap 1", "[grow,fill]", "[]10[]"));
+    JPanel lookupsOverview = new JPanel(MigLayouts.singleColumn(MigLayouts.rows(2, 10)));
     lookupsOverview.setOpaque(false);
-    lookupsOverview.add(userLookupsIntro, "growx, wmin 0, wrap");
-    lookupsOverview.add(lookupPresetPanel, "growx, wmin 0, wrap");
+    lookupsOverview.add(userLookupsIntro, MigConstraints.growXMinWidth0Wrap());
+    lookupsOverview.add(lookupPresetPanel, MigConstraints.growXMinWidth0Wrap());
 
     lookupsTabs.addTab("Overview", PreferencesUiSupport.padSubTab(lookupsOverview));
     lookupsTabs.addTab("Hostmask discovery", PreferencesUiSupport.padSubTab(hostmaskPanel));
     lookupsTabs.addTab("Roster enrichment", PreferencesUiSupport.padSubTab(enrichmentPanel));
 
-    userLookupsPanel.add(lookupsTabs, "growx, wmin 0, wrap");
+    userLookupsPanel.add(lookupsTabs, MigConstraints.growXMinWidth0Wrap());
 
     UserhostControls userhostControls =
         new UserhostControls(

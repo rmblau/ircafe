@@ -3,7 +3,7 @@ package cafe.woden.ircclient.logging;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import cafe.woden.ircclient.config.LogProperties;
+import cafe.woden.ircclient.config.properties.LogProperties;
 import cafe.woden.ircclient.model.LogDirection;
 import cafe.woden.ircclient.model.LogKind;
 import java.util.ArrayList;

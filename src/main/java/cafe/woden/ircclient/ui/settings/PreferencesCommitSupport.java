@@ -59,6 +59,14 @@ final class PreferencesCommitSupport {
         request.runtimeConfig(), snapshot.chatBehavior());
     AppearanceControlsSupport.rememberServerTreeSettings(
         request.runtimeConfig(), snapshot.serverTreeAppearance());
+    request
+        .settingsBus()
+        .setNickCompletionCycleWithTabEnabled(
+            snapshot.chatBehavior().nickCompletionCycleWithTabEnabled());
+    request
+        .settingsBus()
+        .setNickCompletionAppendAddressSuffixEnabled(
+            snapshot.chatBehavior().nickCompletionAppendAddressSuffixEnabled());
     request.settingsBus().set(next);
     request
         .settingsBus()

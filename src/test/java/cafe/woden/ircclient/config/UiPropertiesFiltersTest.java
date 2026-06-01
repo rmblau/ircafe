@@ -2,6 +2,7 @@ package cafe.woden.ircclient.config;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import cafe.woden.ircclient.config.properties.UiProperties;
 import cafe.woden.ircclient.model.FilterPlaceholderRanges;
 import java.util.List;
 import org.junit.jupiter.api.Test;

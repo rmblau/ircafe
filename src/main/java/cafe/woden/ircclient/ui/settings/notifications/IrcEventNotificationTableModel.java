@@ -38,11 +38,12 @@ final class IrcEventNotificationTableModel
     setRowAt(row, MutableRule.from(rule));
   }
 
-  void setEnabledAt(int row, boolean enabled) {
+  boolean setEnabledAt(int row, boolean enabled) {
     MutableRule current = rowAtOrNull(row);
-    if (current == null || current.enabled == enabled) return;
+    if (current == null || current.enabled == enabled) return false;
     current.enabled = enabled;
     fireTableRowsUpdated(row, row);
+    return true;
   }
 
   static String effectiveRuleLabel(IrcEventNotificationRule rule) {

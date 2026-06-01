@@ -2,6 +2,8 @@ package cafe.woden.ircclient.ui.application;
 
 import cafe.woden.ircclient.diagnostics.RuntimeDiagnosticEvent;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.util.MigConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import cafe.woden.ircclient.util.VirtualThreads;
 import io.reactivex.rxjava3.core.Flowable;
 import java.awt.BorderLayout;
@@ -34,7 +36,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
-import net.miginfocom.swing.MigLayout;
 
 /** Dedicated diagnostics UI for inbound duplicate suppression telemetry. */
 public final class InboundDedupDiagnosticsPanel extends JPanel {
@@ -81,10 +82,12 @@ public final class InboundDedupDiagnosticsPanel extends JPanel {
     add(eventsPanel, BorderLayout.CENTER);
 
     configureExportSupportButton();
-    JPanel footer = new JPanel(new MigLayout("insets 0 8 8 8, fillx", "[]push[]", "[]"));
+    JPanel footer = new JPanel(MigLayouts.fillX("0 8 8 8", "[]push[]", "[]"));
     footer.setOpaque(false);
     footer.add(exportSupportButton);
-    footer.add(new JLabel("Export ZIP (CSV + summary) for support/debugging"), "alignx right");
+    footer.add(
+        new JLabel("Export ZIP (CSV + summary) for support/debugging"),
+        MigConstraints.alignXRight());
     add(footer, BorderLayout.SOUTH);
   }
 

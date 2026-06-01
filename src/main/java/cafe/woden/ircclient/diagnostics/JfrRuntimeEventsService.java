@@ -1,9 +1,9 @@
 package cafe.woden.ircclient.diagnostics;
 
-import cafe.woden.ircclient.config.ExecutorConfig;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.InstalledPluginProblem;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.config.execution.ExecutorConfig;
 import cafe.woden.ircclient.util.InstalledPluginDescriptor;
 import cafe.woden.ircclient.util.VirtualThreads;
 import com.sun.management.HotSpotDiagnosticMXBean;

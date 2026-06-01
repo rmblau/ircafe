@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.notify.pushy;
 
-import cafe.woden.ircclient.config.PushyProperties;
+import cafe.woden.ircclient.config.properties.PushyProperties;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;

@@ -20,7 +20,7 @@ import cafe.woden.ircclient.app.api.ZncPlaybackEventsPort;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.IrcMediator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
-import cafe.woden.ircclient.config.ServerRegistry;
+import cafe.woden.ircclient.config.servers.ServerRegistry;
 import cafe.woden.ircclient.dcc.DccTransferStore;
 import cafe.woden.ircclient.irc.port.IrcConnectionLifecyclePort;
 import cafe.woden.ircclient.irc.roster.UserListStore;

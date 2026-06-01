@@ -6,8 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.app.api.BackendEditorProfileSpec;
 import cafe.woden.ircclient.app.api.BackendUiMode;
-import cafe.woden.ircclient.config.BackendDescriptorCatalog;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import org.junit.jupiter.api.Test;
 
 class ServerEditorBackendProfilesTest {

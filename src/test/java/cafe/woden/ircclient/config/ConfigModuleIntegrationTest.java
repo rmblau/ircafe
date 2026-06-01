@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cafe.woden.ircclient.config.servers.ServerCatalog;
+import cafe.woden.ircclient.config.servers.ServerRegistry;
 import cafe.woden.ircclient.modulith.AbstractApplicationModuleIntegrationTest;
 import java.nio.file.Files;
 import java.nio.file.Path;

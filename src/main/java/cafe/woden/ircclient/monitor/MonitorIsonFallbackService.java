@@ -3,7 +3,7 @@ package cafe.woden.ircclient.monitor;
 import cafe.woden.ircclient.app.api.MonitorFallbackPort;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.api.UiSettingsPort;
-import cafe.woden.ircclient.config.ExecutorConfig;
+import cafe.woden.ircclient.config.execution.ExecutorConfig;
 import cafe.woden.ircclient.irc.IrcClientService;
 import cafe.woden.ircclient.irc.IrcEvent;
 import cafe.woden.ircclient.irc.ServerIrcEvent;

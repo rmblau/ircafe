@@ -3,7 +3,7 @@ package cafe.woden.ircclient.ui.backend;
 import cafe.woden.ircclient.app.api.AvailableBackendIdsPort;
 import cafe.woden.ircclient.app.api.BackendEditorProfileCatalog;
 import cafe.woden.ircclient.app.api.BackendUiMode;
-import cafe.woden.ircclient.config.BackendDescriptorCatalog;
+import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import cafe.woden.ircclient.irc.backend.IrcBackendModePort;
 import java.util.Objects;
 import org.jmolecules.architecture.layered.InterfaceLayer;

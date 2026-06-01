@@ -8,7 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.ServerCatalog;
+import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.net.ProxyPlan;
 import cafe.woden.ircclient.net.ServerProxyResolver;
 import com.fasterxml.jackson.databind.JsonNode;

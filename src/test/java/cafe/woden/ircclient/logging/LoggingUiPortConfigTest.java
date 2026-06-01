@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.logging;
 
-import static cafe.woden.ircclient.config.ConfigPropertyKeys.LOGGING_ENABLED_FALSE;
-import static cafe.woden.ircclient.config.ConfigPropertyKeys.LOGGING_ENABLED_TRUE;
+import static cafe.woden.ircclient.config.properties.ConfigPropertyKeys.LOGGING_ENABLED_FALSE;
+import static cafe.woden.ircclient.config.properties.ConfigPropertyKeys.LOGGING_ENABLED_TRUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.inOrder;
@@ -9,7 +9,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.api.UiTranscriptPort;
-import cafe.woden.ircclient.config.LogProperties;
+import cafe.woden.ircclient.config.properties.LogProperties;
 import cafe.woden.ircclient.logging.viewer.ChatRedactionAuditService;
 import cafe.woden.ircclient.ui.SwingUiPort;
 import org.junit.jupiter.api.Test;

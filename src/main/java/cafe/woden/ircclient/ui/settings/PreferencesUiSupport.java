@@ -2,8 +2,12 @@ package cafe.woden.ircclient.ui.settings;
 
 import cafe.woden.ircclient.model.BuiltInSound;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.util.MigConstraints;
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import cafe.woden.ircclient.ui.util.MouseWheelDecorator;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
+import cafe.woden.ircclient.ui.util.UiFontKeys;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -68,7 +72,15 @@ public final class PreferencesUiSupport {
   }
 
   public static JPanel captionPanel(String title, String layout, String columns, String rows) {
-    return captionPanelWithPadding(title, layout, columns, rows, 6, 8, 8, 8);
+    return captionPanel(title, new MigLayout(layout, columns, rows));
+  }
+
+  public static JPanel captionPanel(String title) {
+    return captionPanel(title, MigLayouts.singleColumn());
+  }
+
+  public static JPanel captionPanel(String title, MigLayout layout) {
+    return captionPanelWithPadding(title, layout, 6, 8, 8, 8);
   }
 
   public static JPanel captionPanelWithPadding(
@@ -81,6 +93,17 @@ public final class PreferencesUiSupport {
       int bottom,
       int right) {
     JPanel panel = new JPanel(new MigLayout(layout, columns, rows));
+    return captionPanelWithPadding(title, panel, top, left, bottom, right);
+  }
+
+  public static JPanel captionPanelWithPadding(
+      String title, MigLayout layout, int top, int left, int bottom, int right) {
+    JPanel panel = new JPanel(layout);
+    return captionPanelWithPadding(title, panel, top, left, bottom, right);
+  }
+
+  private static JPanel captionPanelWithPadding(
+      String title, JPanel panel, int top, int left, int bottom, int right) {
     panel.setOpaque(false);
     panel.setBorder(
         BorderFactory.createCompoundBorder(
@@ -97,7 +120,7 @@ public final class PreferencesUiSupport {
     area.setOpaque(false);
     area.setFocusable(false);
     area.setBorder(null);
-    area.setFont(UIManager.getFont("Label.font"));
+    area.setFont(UIManager.getFont(UiFontKeys.LABEL_FONT));
     area.setForeground(UIManager.getColor(UiColorKeys.LABEL_FOREGROUND));
     Dimension preferred = area.getPreferredSize();
     area.setMinimumSize(new Dimension(0, preferred != null ? preferred.height : 0));
@@ -113,7 +136,7 @@ public final class PreferencesUiSupport {
     area.setFocusable(false);
     area.setBorder(null);
 
-    Font font = UIManager.getFont("Label.font");
+    Font font = UIManager.getFont(UiFontKeys.LABEL_FONT);
     if (font != null) {
       area.setFont(font.deriveFont(Font.ITALIC));
     } else {
@@ -199,7 +222,7 @@ public final class PreferencesUiSupport {
 
   public static JComponent wrapCheckBox(JCheckBox box, String labelText) {
     box.setText("");
-    JPanel row = new JPanel(new MigLayout("insets 0, fillx", "[]6[grow,fill]", "[]"));
+    JPanel row = new JPanel(MigLayouts.fillX(MigLayoutConstraints.ROW_6_GROW_FILL, "[]"));
     row.setOpaque(false);
 
     JTextArea label = buttonWrapText(labelText);
@@ -212,8 +235,8 @@ public final class PreferencesUiSupport {
           }
         });
 
-    row.add(box, "aligny top");
-    row.add(label, "growx, pushx, wmin 0");
+    row.add(box, MigConstraints.alignYTop());
+    row.add(label, MigConstraints.growXPushXMinWidth0());
     return row;
   }
 
@@ -413,9 +436,9 @@ public final class PreferencesUiSupport {
     area.setFocusable(false);
     area.setBorder(null);
 
-    Font font = UIManager.getFont("CheckBox.font");
-    if (font == null) font = UIManager.getFont("Button.font");
-    if (font == null) font = UIManager.getFont("Label.font");
+    Font font = UIManager.getFont(UiFontKeys.CHECK_BOX_FONT);
+    if (font == null) font = UIManager.getFont(UiFontKeys.BUTTON_FONT);
+    if (font == null) font = UIManager.getFont(UiFontKeys.LABEL_FONT);
     if (font != null) area.setFont(font);
 
     Color color = UIManager.getColor(UiColorKeys.CHECK_BOX_FOREGROUND);
@@ -434,7 +457,7 @@ public final class PreferencesUiSupport {
     area.setWrapStyleWord(true);
     area.setOpaque(false);
     area.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
-    area.setFont(UIManager.getFont("Label.font"));
+    area.setFont(UIManager.getFont(UiFontKeys.LABEL_FONT));
 
     JScrollPane scroll = new JScrollPane(area);
     scroll.setBorder(BorderFactory.createEmptyBorder());

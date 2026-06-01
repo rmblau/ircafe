@@ -10,7 +10,7 @@ import cafe.woden.ircclient.app.api.BackendEditorProfileSpec;
 import cafe.woden.ircclient.app.api.BackendUiMode;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
-import cafe.woden.ircclient.config.ServerCatalog;
+import cafe.woden.ircclient.config.servers.ServerCatalog;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;

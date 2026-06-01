@@ -1,10 +1,13 @@
 package cafe.woden.ircclient.ui.settings.notifications;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.NotificationRuntimeConfigPort;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.notifications.api.IrcEventNotificationRulesPort;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
+import cafe.woden.ircclient.ui.util.MigConstraints;
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.util.List;
@@ -16,7 +19,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.table.TableColumn;
-import net.miginfocom.swing.MigLayout;
 
 public final class IrcEventNotificationsTabSupport {
   private IrcEventNotificationsTabSupport() {}
@@ -54,7 +56,9 @@ public final class IrcEventNotificationsTabSupport {
   public static JPanel buildTab(
       IrcEventNotificationControls controls, Component owner, RuleEditor ruleEditor) {
     JPanel tab =
-        new JPanel(new MigLayout("insets 0, fill, wrap 1", "[grow,fill]", "[]6[grow,fill]"));
+        new JPanel(
+            MigLayouts.fillWrap(
+                0, 1, MigLayoutConstraints.GROW_FILL, MigLayoutConstraints.ROW_6_GROW_FILL));
     tab.setOpaque(false);
 
     JComboBox<IrcEventNotificationPresetSupport.Preset> defaultsPreset =
@@ -68,12 +72,12 @@ public final class IrcEventNotificationsTabSupport {
             "refresh",
             "Replace all IRC event rules with IRCafe defaults");
 
-    JPanel defaultsRow = new JPanel(new MigLayout("insets 0, fillx", "[]8[grow,fill]8[]8[]", "[]"));
+    JPanel defaultsRow = new JPanel(MigLayouts.fillX("[]8[grow,fill]8[]8[]", "[]"));
     defaultsRow.setOpaque(false);
     defaultsRow.add(new JLabel("Defaults"));
-    defaultsRow.add(defaultsPreset, "w 240!");
-    defaultsRow.add(applyDefaults, "w 36!, h 28!");
-    defaultsRow.add(resetToIrcafeDefaults, "w 36!, h 28!");
+    defaultsRow.add(defaultsPreset, MigConstraints.width(240));
+    defaultsRow.add(applyDefaults, MigConstraints.widthHeight(36, 28));
+    defaultsRow.add(resetToIrcafeDefaults, MigConstraints.widthHeight(36, 28));
 
     JButton add = PreferencesUiSupport.iconOnlyButton("Add", "plus", "Add IRC event rule");
     JButton edit =
@@ -107,86 +111,64 @@ public final class IrcEventNotificationsTabSupport {
         };
 
     Runnable openEditRuleDialog =
-        () -> {
-          int modelRow = SettingsTableSupport.selectedModelRow(controls.table());
-          if (modelRow < 0) return;
-          IrcEventNotificationRule seed = controls.model().ruleAt(modelRow);
-          if (seed == null) return;
-          IrcEventNotificationRule edited = ruleEditor.prompt("Edit IRC Event Rule", seed);
-          if (edited == null) return;
-          controls.model().setRule(modelRow, edited);
-          SettingsTableSupport.selectModelRow(controls.table(), modelRow);
-          refreshRuleButtons.run();
-        };
+        () ->
+            NotificationRuleTableSupport.editSelectedRow(
+                controls.table(),
+                controls.model()::ruleAt,
+                seed -> ruleEditor.prompt("Edit IRC Event Rule", seed),
+                controls.model()::setRule,
+                refreshRuleButtons);
 
     add.addActionListener(
-        e -> {
-          IrcEventNotificationRule created = ruleEditor.prompt("Add IRC Event Rule", null);
-          if (created == null) return;
-          int row = controls.model().addRule(created);
-          SettingsTableSupport.selectModelRow(controls.table(), row);
-          refreshRuleButtons.run();
-        });
+        e ->
+            NotificationRuleTableSupport.addRow(
+                controls.table(),
+                () -> ruleEditor.prompt("Add IRC Event Rule", null),
+                controls.model()::addRule,
+                refreshRuleButtons));
 
     edit.addActionListener(e -> openEditRuleDialog.run());
 
     enableRule.addActionListener(
-        e -> {
-          int modelRow = SettingsTableSupport.selectedModelRow(controls.table());
-          if (modelRow < 0) return;
-          controls.model().setEnabledAt(modelRow, true);
-          refreshRuleButtons.run();
-        });
+        e ->
+            NotificationRuleTableSupport.updateSelectedRow(
+                controls.table(),
+                row -> controls.model().setEnabledAt(row, true),
+                refreshRuleButtons));
 
     disableRule.addActionListener(
-        e -> {
-          int modelRow = SettingsTableSupport.selectedModelRow(controls.table());
-          if (modelRow < 0) return;
-          controls.model().setEnabledAt(modelRow, false);
-          refreshRuleButtons.run();
-        });
+        e ->
+            NotificationRuleTableSupport.updateSelectedRow(
+                controls.table(),
+                row -> controls.model().setEnabledAt(row, false),
+                refreshRuleButtons));
 
     duplicate.addActionListener(
-        e -> {
-          int modelRow = SettingsTableSupport.selectedModelRow(controls.table());
-          if (modelRow < 0) return;
-          int dup = controls.model().duplicateRow(modelRow);
-          SettingsTableSupport.selectModelRow(controls.table(), dup);
-          refreshRuleButtons.run();
-        });
+        e ->
+            NotificationRuleTableSupport.duplicateSelectedRow(
+                controls.table(), controls.model()::duplicateRow, refreshRuleButtons));
 
     remove.addActionListener(
-        e -> {
-          int modelRow = SettingsTableSupport.selectedModelRow(controls.table());
-          if (modelRow < 0) return;
-          IrcEventNotificationRule rule = controls.model().ruleAt(modelRow);
-          String label = IrcEventNotificationTableModel.effectiveRuleLabel(rule);
-          if (!PreferencesUiSupport.confirmOkCancel(
-              owner, "Remove IRC event rule \"" + label + "\"?", "Remove IRC Event Rule")) {
-            return;
-          }
-          controls.model().removeRow(modelRow);
-          SettingsTableSupport.selectAfterModelRowRemoval(controls.table(), modelRow);
-          refreshRuleButtons.run();
-        });
+        e ->
+            NotificationRuleTableSupport.removeSelectedRow(
+                controls.table(),
+                row ->
+                    IrcEventNotificationTableModel.effectiveRuleLabel(controls.model().ruleAt(row)),
+                label ->
+                    PreferencesUiSupport.confirmOkCancel(
+                        owner, "Remove IRC event rule \"" + label + "\"?", "Remove IRC Event Rule"),
+                controls.model()::removeRow,
+                refreshRuleButtons));
 
     up.addActionListener(
-        e -> {
-          int modelRow = SettingsTableSupport.selectedModelRow(controls.table());
-          if (modelRow < 0) return;
-          int next = controls.model().moveRow(modelRow, modelRow - 1);
-          SettingsTableSupport.selectModelRow(controls.table(), next);
-          refreshRuleButtons.run();
-        });
+        e ->
+            NotificationRuleTableSupport.moveSelectedRow(
+                controls.table(), -1, controls.model()::moveRow, refreshRuleButtons));
 
     down.addActionListener(
-        e -> {
-          int modelRow = SettingsTableSupport.selectedModelRow(controls.table());
-          if (modelRow < 0) return;
-          int next = controls.model().moveRow(modelRow, modelRow + 1);
-          SettingsTableSupport.selectModelRow(controls.table(), next);
-          refreshRuleButtons.run();
-        });
+        e ->
+            NotificationRuleTableSupport.moveSelectedRow(
+                controls.table(), 1, controls.model()::moveRow, refreshRuleButtons));
 
     applyDefaults.addActionListener(
         e -> {
@@ -234,30 +216,37 @@ public final class IrcEventNotificationsTabSupport {
 
     JPanel presetsPanel =
         PreferencesUiSupport.captionPanelWithPadding(
-            "Presets", "insets 0, fillx, wrap 1", "[grow,fill]", "[]4[]", 10, 10, 10, 10);
-    presetsPanel.add(defaultsRow, "growx, wmin 0, wrap");
+            "Presets", MigLayouts.singleColumn(MigLayouts.rows(2, 4)), 10, 10, 10, 10);
+    presetsPanel.add(defaultsRow, MigConstraints.growXMinWidth0Wrap());
     presetsPanel.add(
         PreferencesUiSupport.helpText(
             "Configure event actions for kicks, bans, invites, joins, and mode changes.\n"
                 + "Source supports self/others/specific nicks/glob/regex. Channel scope supports Active channel only.\n"
                 + "CTCP rules can filter command/value and include quick templates in the Filters tab.\n"
                 + "Apply defaults merges by event type. Reset to IRCafe defaults replaces the full rule list."),
-        "growx, wmin 0, wrap");
-    tab.add(presetsPanel, "growx, wmin 0, wrap");
+        MigConstraints.growXMinWidth0Wrap());
+    tab.add(presetsPanel, MigConstraints.growXMinWidth0Wrap());
 
     JPanel rulesPanel =
         PreferencesUiSupport.captionPanelWithPadding(
-            "Rules", "insets 0, fill, wrap 1", "[grow,fill]", "[]6[grow,fill]4[]", 10, 10, 10, 10);
+            "Rules",
+            MigLayoutConstraints.INSETS_0_FILL_WRAP_1,
+            MigLayoutConstraints.GROW_FILL,
+            "[]6[grow,fill]4[]",
+            10,
+            10,
+            10,
+            10);
     JPanel buttons =
         PreferencesUiSupport.actionButtonRow(
             add, edit, enableRule, disableRule, duplicate, remove, up, down);
-    rulesPanel.add(buttons, "growx, wmin 0, wrap");
+    rulesPanel.add(buttons, MigConstraints.growXMinWidth0Wrap());
     scroll.setPreferredSize(new Dimension(400, 260));
-    rulesPanel.add(scroll, "grow, push, wmin 0, wrap");
+    rulesPanel.add(scroll, MigConstraints.growPushMinWidth0Wrap());
     rulesPanel.add(
         PreferencesUiSupport.helpText("Tip: Double-click a rule to edit it."),
-        "growx, wmin 0, wrap");
-    tab.add(rulesPanel, "grow, push, wmin 0, wrap");
+        MigConstraints.growXMinWidth0Wrap());
+    tab.add(rulesPanel, MigConstraints.growPushMinWidth0Wrap());
 
     return tab;
   }
@@ -268,7 +257,7 @@ public final class IrcEventNotificationsTabSupport {
   }
 
   public static void rememberSettings(
-      RuntimeConfigStore runtimeConfig,
+      NotificationRuntimeConfigPort runtimeConfig,
       IrcEventNotificationRulesPort rulesBus,
       IrcEventNotificationSettings settings) {
     runtimeConfig.rememberIrcEventNotificationRules(settings.rules());

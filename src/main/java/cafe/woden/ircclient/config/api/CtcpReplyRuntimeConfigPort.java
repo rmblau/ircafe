@@ -15,4 +15,12 @@ public interface CtcpReplyRuntimeConfigPort {
   boolean readCtcpAutoReplyPingEnabled(boolean defaultValue);
 
   boolean readCtcpAutoReplyTimeEnabled(boolean defaultValue);
+
+  void rememberCtcpAutoRepliesEnabled(boolean enabled);
+
+  void rememberCtcpAutoReplyVersionEnabled(boolean enabled);
+
+  void rememberCtcpAutoReplyPingEnabled(boolean enabled);
+
+  void rememberCtcpAutoReplyTimeEnabled(boolean enabled);
 }

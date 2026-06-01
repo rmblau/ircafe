@@ -282,6 +282,16 @@ public class SwingUiPort implements UiPort {
   }
 
   @Override
+  public void setStatusBarIdentity(String serverId, String nick, String userModes) {
+    viewStatePort.setStatusBarIdentity(serverId, nick, userModes);
+  }
+
+  @Override
+  public void setServerUserModes(String serverId, String userModes) {
+    viewStatePort.setServerUserModes(serverId, userModes);
+  }
+
+  @Override
   public void enqueueStatusNotice(String text, TargetRef clickTarget) {
     viewStatePort.enqueueStatusNotice(text, clickTarget);
   }

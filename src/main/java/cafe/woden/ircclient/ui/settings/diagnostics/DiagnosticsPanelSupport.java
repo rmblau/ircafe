@@ -1,50 +1,52 @@
 package cafe.woden.ircclient.ui.settings.diagnostics;
 
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.util.MigConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
-import net.miginfocom.swing.MigLayout;
 
 public final class DiagnosticsPanelSupport {
   private DiagnosticsPanelSupport() {}
 
   public static JPanel buildPanel(DiagnosticsControls controls) {
-    JPanel panel = new JPanel(new MigLayout("insets 12, fill, wrap 1", "[grow,fill]", "[]8[]8[]"));
+    JPanel panel = new JPanel(MigLayouts.singleColumnFill(12, MigLayouts.rows(3, 8)));
 
-    panel.add(PreferencesUiSupport.tabTitle("Diagnostics"), "growx, wmin 0, wrap");
+    panel.add(PreferencesUiSupport.tabTitle("Diagnostics"), MigConstraints.growXMinWidth0Wrap());
     panel.add(
         PreferencesUiSupport.helpText(
             "Configure optional application diagnostics integrations exposed under the Application tree node.\n"
                 + "Startup-related changes apply after restarting IRCafe."),
-        "growx, wmin 0, wrap");
+        MigConstraints.growXMinWidth0Wrap());
 
     JPanel assertjPanel =
         PreferencesUiSupport.captionPanel(
-            "AssertJ Swing / EDT watchdog",
-            "insets 0, fillx, wrap 2",
-            "[right]10[grow,fill]",
-            "[]4[]4[]4[]4[]4[]");
-    assertjPanel.add(controls.assertjSwingEnabled(), "span 2, growx, wmin 0, wrap");
+            "AssertJ Swing / EDT watchdog", MigLayouts.twoColumnForm(10, MigLayouts.rows(6, 4)));
+    assertjPanel.add(controls.assertjSwingEnabled(), MigConstraints.span2GrowXMinWidth0Wrap());
     assertjPanel.add(
-        controls.assertjSwingFreezeWatchdogEnabled(), "span 2, growx, wmin 0, gapleft 14, wrap");
-    assertjPanel.add(new JLabel("Freeze threshold (ms)"), "gapleft 24");
-    assertjPanel.add(controls.assertjSwingFreezeThresholdMs(), "w 140!");
-    assertjPanel.add(new JLabel("Watchdog poll (ms)"), "gapleft 24");
-    assertjPanel.add(controls.assertjSwingWatchdogPollMs(), "w 140!");
-    assertjPanel.add(new JLabel("Fallback violation report interval (ms)"), "gapleft 24");
-    assertjPanel.add(controls.assertjSwingFallbackViolationReportMs(), "w 140!");
+        controls.assertjSwingFreezeWatchdogEnabled(),
+        MigConstraints.spanXGrowXMinWidthGapLeftWrap(2, 0, 14));
+    assertjPanel.add(new JLabel("Freeze threshold (ms)"), MigConstraints.gapLeft(24));
+    assertjPanel.add(controls.assertjSwingFreezeThresholdMs(), MigConstraints.width(140));
+    assertjPanel.add(new JLabel("Watchdog poll (ms)"), MigConstraints.gapLeft(24));
+    assertjPanel.add(controls.assertjSwingWatchdogPollMs(), MigConstraints.width(140));
     assertjPanel.add(
-        controls.assertjSwingOnIssuePlaySound(), "span 2, growx, wmin 0, gapleft 24, wrap");
+        new JLabel("Fallback violation report interval (ms)"), MigConstraints.gapLeft(24));
+    assertjPanel.add(controls.assertjSwingFallbackViolationReportMs(), MigConstraints.width(140));
     assertjPanel.add(
-        controls.assertjSwingOnIssueShowNotification(), "span 2, growx, wmin 0, gapleft 24, wrap");
+        controls.assertjSwingOnIssuePlaySound(),
+        MigConstraints.spanXGrowXMinWidthGapLeftWrap(2, 0, 24));
+    assertjPanel.add(
+        controls.assertjSwingOnIssueShowNotification(),
+        MigConstraints.spanXGrowXMinWidthGapLeftWrap(2, 0, 24));
     assertjPanel.add(
         PreferencesUiSupport.helpText(
             "Watchdog logs stalls when EDT lag exceeds the threshold. Fallback interval controls how often "
                 + "off-EDT Swing violations are re-reported."),
-        "span 2, gapleft 24, growx, wrap");
-    panel.add(assertjPanel, "growx, wmin 0, wrap");
+        MigConstraints.spanXGrowXGapLeftWrap(2, 24));
+    panel.add(assertjPanel, MigConstraints.growXMinWidth0Wrap());
 
     JScrollPane argsScroll = new JScrollPane(controls.jhiccupArgs());
     argsScroll.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
@@ -52,23 +54,20 @@ public final class DiagnosticsPanelSupport {
 
     JPanel jhiccupPanel =
         PreferencesUiSupport.captionPanel(
-            "jHiccup integration",
-            "insets 0, fillx, wrap 2",
-            "[right]10[grow,fill]",
-            "[]4[]4[]4[]");
-    jhiccupPanel.add(controls.jhiccupEnabled(), "span 2, growx, wmin 0, wrap");
-    jhiccupPanel.add(new JLabel("jHiccup jar"), "aligny top");
-    jhiccupPanel.add(controls.jhiccupJarPath(), "growx, wmin 0, wrap");
-    jhiccupPanel.add(new JLabel("Java command"), "aligny top");
-    jhiccupPanel.add(controls.jhiccupJavaCommand(), "growx, wmin 0, wrap");
-    jhiccupPanel.add(new JLabel("Arguments"), "aligny top");
-    jhiccupPanel.add(argsScroll, "growx, wmin 0, h 110!, wrap");
+            "jHiccup integration", MigLayouts.twoColumnForm(10, MigLayouts.rows(4, 4)));
+    jhiccupPanel.add(controls.jhiccupEnabled(), MigConstraints.span2GrowXMinWidth0Wrap());
+    jhiccupPanel.add(new JLabel("jHiccup jar"), MigConstraints.alignYTop());
+    jhiccupPanel.add(controls.jhiccupJarPath(), MigConstraints.growXMinWidth0Wrap());
+    jhiccupPanel.add(new JLabel("Java command"), MigConstraints.alignYTop());
+    jhiccupPanel.add(controls.jhiccupJavaCommand(), MigConstraints.growXMinWidth0Wrap());
+    jhiccupPanel.add(new JLabel("Arguments"), MigConstraints.alignYTop());
+    jhiccupPanel.add(argsScroll, MigConstraints.growXMinWidthHeightWrap(0, 110));
     jhiccupPanel.add(
         PreferencesUiSupport.helpText(
             "One argument per line. Example flags: -i 1000, -l 2000000.\n"
                 + "Relative jar paths are resolved from the runtime-config directory."),
-        "span 2, growx, wmin 0, wrap");
-    panel.add(jhiccupPanel, "growx, wmin 0, wrap");
+        MigConstraints.span2GrowXMinWidth0Wrap());
+    panel.add(jhiccupPanel, MigConstraints.growXMinWidth0Wrap());
 
     return panel;
   }

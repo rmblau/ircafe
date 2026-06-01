@@ -1,33 +1,34 @@
 package cafe.woden.ircclient.ui.settings.commands;
 
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.util.MigConstraints;
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
-import net.miginfocom.swing.MigLayout;
 
 public final class UserCommandsPanelSupport {
   private UserCommandsPanelSupport() {}
 
   public static JPanel buildPanel(UserCommandAliasesControls controls) {
-    JPanel panel =
-        new JPanel(
-            new MigLayout("insets 12, fill, wrap 1", "[grow,fill]", "[]8[]6[]8[grow,fill]8[]"));
+    JPanel panel = new JPanel(MigLayouts.singleColumnFill(12, "[]8[]6[]8[grow,fill]8[]"));
 
-    panel.add(PreferencesUiSupport.tabTitle("Commands"), "growx, wmin 0, wrap");
-    panel.add(PreferencesUiSupport.sectionTitle("User command aliases"), "growx, wmin 0, wrap");
+    panel.add(PreferencesUiSupport.tabTitle("Commands"), MigConstraints.growXMinWidth0Wrap());
+    panel.add(
+        PreferencesUiSupport.sectionTitle("User command aliases"),
+        MigConstraints.growXMinWidth0Wrap());
     panel.add(
         PreferencesUiSupport.helpText(
             "Define custom /commands that expand before built-in parsing.\n"
                 + "Placeholders: %1..%9 (positional), %1- (rest from arg), %* (all args), &1..&9 (from end), %c (channel), %t (target), %s/%e (server), %n (nick).\n"
                 + "HexChat import maps %t (time), %m and %v into IRCafe-compatible placeholders.\n"
                 + "Multi-command expansion: separate commands with ';' or new lines."),
-        "growx, wmin 0, wrap");
+        MigConstraints.growXMinWidth0Wrap());
 
-    JPanel behavior =
-        PreferencesUiSupport.captionPanel("Behavior", "insets 0, fillx, wrap 1", "[grow,fill]", "");
-    behavior.add(controls.unknownCommandAsRaw(), "growx, wmin 0, wrap");
-    panel.add(behavior, "growx, wmin 0, wrap");
+    JPanel behavior = PreferencesUiSupport.captionPanel("Behavior");
+    behavior.add(controls.unknownCommandAsRaw(), MigConstraints.growXMinWidth0Wrap());
+    panel.add(behavior, MigConstraints.growXMinWidth0Wrap());
 
     JPanel buttons =
         PreferencesUiSupport.actionButtonRow(
@@ -48,17 +49,20 @@ public final class UserCommandsPanelSupport {
 
     JPanel aliasList =
         PreferencesUiSupport.captionPanel(
-            "Alias list", "insets 0, fill, wrap 1", "[grow,fill]", "[]6[grow,fill]");
-    aliasList.add(buttons, "growx, wmin 0, wrap");
-    aliasList.add(tableScroll, "grow, push, h 220!, wmin 0");
-    panel.add(aliasList, "grow, push, wmin 0, wrap");
+            "Alias list",
+            MigLayoutConstraints.INSETS_0_FILL_WRAP_1,
+            MigLayoutConstraints.GROW_FILL,
+            MigLayoutConstraints.ROW_6_GROW_FILL);
+    aliasList.add(buttons, MigConstraints.growXMinWidth0Wrap());
+    aliasList.add(tableScroll, MigConstraints.growPushMinWidth0Height(220));
+    panel.add(aliasList, MigConstraints.growPushMinWidth0Wrap());
 
     JPanel editor =
         PreferencesUiSupport.captionPanel(
-            "Expansion editor", "insets 0, fillx, wrap 1", "[grow,fill]", "[]6[]");
-    editor.add(controls.hint(), "growx, wmin 0, wrap");
-    editor.add(templateScroll, "growx, h 140!, wmin 0, wrap");
-    panel.add(editor, "growx, wmin 0, wrap");
+            "Expansion editor", MigLayouts.singleColumn(MigLayouts.rows(2, 6)));
+    editor.add(controls.hint(), MigConstraints.growXMinWidth0Wrap());
+    editor.add(templateScroll, MigConstraints.growXMinWidthHeightWrap(0, 140));
+    panel.add(editor, MigConstraints.growXMinWidth0Wrap());
 
     return panel;
   }

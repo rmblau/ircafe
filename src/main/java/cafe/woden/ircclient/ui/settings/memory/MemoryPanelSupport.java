@@ -1,13 +1,14 @@
 package cafe.woden.ircclient.ui.settings.memory;
 
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.util.MigConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.JTextArea;
-import net.miginfocom.swing.MigLayout;
 
 public final class MemoryPanelSupport {
   private MemoryPanelSupport() {}
@@ -16,35 +17,34 @@ public final class MemoryPanelSupport {
       JComboBox<MemoryUsageDisplayMode> memoryUsageDisplayMode,
       JSpinner memoryUsageRefreshIntervalMs,
       MemoryWarningControls memoryWarnings) {
-    JPanel form =
-        new JPanel(new MigLayout("insets 12, fillx, wrap 2", "[right]12[grow,fill]", "[]10[]6[]"));
-    form.add(PreferencesUiSupport.tabTitle("Memory"), "span 2, growx, wmin 0, wrap");
+    JPanel form = new JPanel(MigLayouts.twoColumnForm(12, 12, MigLayouts.rowGaps(10, 6)));
+    form.add(PreferencesUiSupport.tabTitle("Memory"), MigConstraints.span2GrowXMinWidth0Wrap());
 
-    form.add(PreferencesUiSupport.sectionTitle("Widget"), "span 2, growx, wmin 0, wrap");
+    form.add(PreferencesUiSupport.sectionTitle("Widget"), MigConstraints.span2GrowXMinWidth0Wrap());
     form.add(new JLabel("Memory usage widget"));
-    form.add(memoryUsageDisplayMode, "growx");
+    form.add(memoryUsageDisplayMode, MigConstraints.growX());
     form.add(new JLabel("Refresh interval (ms)"));
-    form.add(memoryUsageRefreshIntervalMs, "w 140!");
+    form.add(memoryUsageRefreshIntervalMs, MigConstraints.width(140));
 
-    form.add(PreferencesUiSupport.sectionTitle("Warnings"), "span 2, growx, wmin 0, wrap");
+    form.add(
+        PreferencesUiSupport.sectionTitle("Warnings"), MigConstraints.span2GrowXMinWidth0Wrap());
     form.add(new JLabel("Warn near max (%)"));
-    form.add(memoryWarnings.nearMaxPercent, "w 110!");
+    form.add(memoryWarnings.nearMaxPercent, MigConstraints.width(110));
 
-    form.add(new JLabel("Warning actions"), "aligny top");
-    JPanel warningActions =
-        new JPanel(new MigLayout("insets 0, fillx, wrap 1", "[grow,fill]", "[]2[]2[]2[]"));
+    form.add(new JLabel("Warning actions"), MigConstraints.alignYTop());
+    JPanel warningActions = new JPanel(MigLayouts.singleColumn(MigLayouts.rows(4, 2)));
     warningActions.setOpaque(false);
-    warningActions.add(memoryWarnings.tooltipEnabled, "growx");
-    warningActions.add(memoryWarnings.toastEnabled, "growx");
-    warningActions.add(memoryWarnings.pushyEnabled, "growx");
-    warningActions.add(memoryWarnings.soundEnabled, "growx");
-    form.add(warningActions, "growx");
+    warningActions.add(memoryWarnings.tooltipEnabled, MigConstraints.growX());
+    warningActions.add(memoryWarnings.toastEnabled, MigConstraints.growX());
+    warningActions.add(memoryWarnings.pushyEnabled, MigConstraints.growX());
+    warningActions.add(memoryWarnings.soundEnabled, MigConstraints.growX());
+    form.add(warningActions, MigConstraints.growX());
 
     JTextArea hint = PreferencesUiSupport.subtleInfoText();
     hint.setText(
         "Controls the memory widget in the top menu bar and threshold-triggered warning behavior.");
     form.add(new JLabel(""));
-    form.add(hint, "growx, wmin 0");
+    form.add(hint, MigConstraints.growXMinWidth0());
 
     JButton reset = new JButton("Reset memory defaults");
     reset.setToolTipText("Reset memory mode and warning actions to defaults.");
@@ -59,7 +59,7 @@ public final class MemoryPanelSupport {
           memoryWarnings.soundEnabled.setSelected(false);
         });
     form.add(new JLabel(""));
-    form.add(reset, "alignx left");
+    form.add(reset, MigConstraints.alignXLeft());
 
     return form;
   }

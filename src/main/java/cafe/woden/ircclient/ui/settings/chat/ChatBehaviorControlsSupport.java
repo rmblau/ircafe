@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.settings.chat;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
@@ -37,12 +37,33 @@ public final class ChatBehaviorControlsSupport {
     return ctcp;
   }
 
-  public static JTextField buildDefaultQuitMessageField(RuntimeConfigStore runtimeConfig) {
+  public static JTextField buildDefaultQuitMessageField(
+      ChatBehaviorRuntimeConfigPort runtimeConfig) {
     JTextField field =
         new JTextField(runtimeConfig != null ? runtimeConfig.readDefaultQuitMessage() : "");
     field.setToolTipText(
         "Used when /quit has no explicit reason, and when IRCafe closes IRC connections during shutdown.");
     return field;
+  }
+
+  public static JCheckBox buildNickCompletionCycleWithTabCheckbox(boolean cycleWithTabEnabled) {
+    JCheckBox checkbox = new JCheckBox("Cycle matching nicks with repeated Tab");
+    checkbox.setSelected(cycleWithTabEnabled);
+    checkbox.setToolTipText(
+        "When enabled, Tab replaces the current token with the next matching nick instead of opening the completion popup.\n"
+            + "Press Tab again to cycle through the available matches.");
+    return checkbox;
+  }
+
+  public static JCheckBox buildNickCompletionAppendAddressSuffixCheckbox(
+      boolean appendAddressSuffixEnabled) {
+    JCheckBox checkbox =
+        new JCheckBox("Append ': ' after completing a nick at the start of a line");
+    checkbox.setSelected(appendAddressSuffixEnabled);
+    checkbox.setToolTipText(
+        "When enabled, first-word nick completion addresses the user as \"nick: \".\n"
+            + "Nick completion elsewhere in the message is unchanged.");
+    return checkbox;
   }
 
   public static JCheckBox buildOutgoingDeliveryIndicatorsCheckbox(UiSettings current) {
@@ -190,7 +211,7 @@ public final class ChatBehaviorControlsSupport {
   }
 
   public static JSpinner buildServerTreeUnreadBadgeScalePercentSpinner(
-      RuntimeConfigStore runtimeConfig) {
+      ChatBehaviorRuntimeConfigPort runtimeConfig) {
     int current =
         runtimeConfig != null ? runtimeConfig.readServerTreeUnreadBadgeScalePercent(100) : 100;
     JSpinner spinner =
@@ -202,9 +223,12 @@ public final class ChatBehaviorControlsSupport {
   }
 
   public static ChatBehaviorSettings readSettings(
+      ChatBehaviorRuntimeConfigPort runtimeConfig,
       JCheckBox presenceFolds,
       JCheckBox ctcpRequestsInActiveTarget,
       JTextField defaultQuitMessage,
+      JCheckBox nickCompletionCycleWithTab,
+      JCheckBox nickCompletionAppendAddressSuffix,
       JCheckBox typingIndicatorsSendEnabled,
       JCheckBox typingIndicatorsReceiveEnabled,
       JComboBox<?> typingTreeIndicatorStyle,
@@ -215,13 +239,15 @@ public final class ChatBehaviorControlsSupport {
       JComboBox<?> matrixUserListNameDisplayMode,
       JCheckBox serverTreeNotificationBadgesEnabled,
       JSpinner serverTreeUnreadBadgeScalePercent) {
-    String quitMessage = normalizeDefaultQuitMessage(defaultQuitMessage.getText());
+    String quitMessage = normalizeDefaultQuitMessage(runtimeConfig, defaultQuitMessage.getText());
     defaultQuitMessage.setText(quitMessage);
 
     return new ChatBehaviorSettings(
         presenceFolds.isSelected(),
         ctcpRequestsInActiveTarget.isSelected(),
         quitMessage,
+        nickCompletionCycleWithTab.isSelected(),
+        nickCompletionAppendAddressSuffix.isSelected(),
         typingIndicatorsSendEnabled.isSelected(),
         typingIndicatorsReceiveEnabled.isSelected(),
         typingTreeIndicatorStyleValue(typingTreeIndicatorStyle),
@@ -236,7 +262,7 @@ public final class ChatBehaviorControlsSupport {
   }
 
   public static void rememberServerTreeSettings(
-      RuntimeConfigStore runtimeConfig, ChatBehaviorSettings settings) {
+      ChatBehaviorRuntimeConfigPort runtimeConfig, ChatBehaviorSettings settings) {
     runtimeConfig.rememberServerTreeUnreadBadgeScalePercent(
         settings.serverTreeUnreadBadgeScalePercent());
     runtimeConfig.rememberServerTreeNotificationBadgesEnabled(
@@ -244,11 +270,15 @@ public final class ChatBehaviorControlsSupport {
   }
 
   public static void rememberSettings(
-      RuntimeConfigStore runtimeConfig, ChatBehaviorSettings settings) {
+      ChatBehaviorRuntimeConfigPort runtimeConfig, ChatBehaviorSettings settings) {
     runtimeConfig.rememberPresenceFoldsEnabled(settings.presenceFoldsEnabled());
     runtimeConfig.rememberCtcpRequestsInActiveTargetEnabled(
         settings.ctcpRequestsInActiveTargetEnabled());
     runtimeConfig.rememberDefaultQuitMessage(settings.defaultQuitMessage());
+    runtimeConfig.rememberNickCompletionCycleWithTabEnabled(
+        settings.nickCompletionCycleWithTabEnabled());
+    runtimeConfig.rememberNickCompletionAppendAddressSuffixEnabled(
+        settings.nickCompletionAppendAddressSuffixEnabled());
     runtimeConfig.rememberTypingIndicatorsEnabled(settings.typingIndicatorsSendEnabled());
     runtimeConfig.rememberTypingIndicatorsReceiveEnabled(settings.typingIndicatorsReceiveEnabled());
     runtimeConfig.rememberTypingTreeIndicatorStyle(settings.typingIndicatorsTreeStyle());
@@ -279,16 +309,22 @@ public final class ChatBehaviorControlsSupport {
     return "compact";
   }
 
-  private static String normalizeDefaultQuitMessage(String raw) {
+  private static String normalizeDefaultQuitMessage(
+      ChatBehaviorRuntimeConfigPort runtimeConfig, String raw) {
+    if (runtimeConfig != null) {
+      return runtimeConfig.normalizeDefaultQuitMessage(raw);
+    }
     String message =
         java.util.Objects.toString(raw, "").replace('\r', ' ').replace('\n', ' ').trim();
-    return message.isEmpty() ? RuntimeConfigStore.DEFAULT_QUIT_MESSAGE : message;
+    return message.isEmpty() ? ChatBehaviorRuntimeConfigPort.DEFAULT_QUIT_MESSAGE : message;
   }
 
   public record ChatBehaviorSettings(
       boolean presenceFoldsEnabled,
       boolean ctcpRequestsInActiveTargetEnabled,
       String defaultQuitMessage,
+      boolean nickCompletionCycleWithTabEnabled,
+      boolean nickCompletionAppendAddressSuffixEnabled,
       boolean typingIndicatorsSendEnabled,
       boolean typingIndicatorsReceiveEnabled,
       String typingIndicatorsTreeStyle,

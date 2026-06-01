@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -26,6 +27,7 @@ import javax.swing.text.JTextComponent;
 import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.autocomplete.BasicCompletion;
 import org.fife.ui.autocomplete.Completion;
+import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.autocomplete.DefaultCompletionProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -77,10 +79,13 @@ final class MessageInputNickCompletionSupport {
   private volatile long pendingNickAddressSetAtMs = 0L;
 
   private volatile List<String> nickSnapshot = List.of();
+  private volatile boolean cycleNickCompletionsWithTab = false;
+  private volatile boolean appendNickAddressSuffix = true;
 
   private boolean installed;
   private boolean pendingSuffixListenerInstalled;
   private boolean lafListenerInstalled;
+  private NickCycleState nickCycleState;
 
   private final PropertyChangeListener lafListener =
       evt -> {
@@ -116,7 +121,8 @@ final class MessageInputNickCompletionSupport {
     this.undoSupport = undoSupport;
     this.wordSuggestionProvider = wordSuggestionProvider;
     this.slashCommands = mergeSlashCommands(slashCommandDescriptors);
-    this.completionProvider = new FastCompletionProvider(this::dynamicWordCompletions);
+    this.completionProvider =
+        new FastCompletionProvider(this::dynamicWordCompletions, this::contextualCompletions);
     this.autoCompletion = new AutoCompletion(completionProvider);
     this.slashCommandCompletions = buildSlashCommandCompletions();
     rebuildCompletionModel(List.of());
@@ -183,9 +189,22 @@ final class MessageInputNickCompletionSupport {
     return firstNickStartingWith(token);
   }
 
+  void setCompletionPreferences(
+      boolean cycleNickCompletionsWithTab, boolean appendNickAddressSuffix) {
+    this.cycleNickCompletionsWithTab = cycleNickCompletionsWithTab;
+    this.appendNickAddressSuffix = appendNickAddressSuffix;
+    if (!cycleNickCompletionsWithTab) {
+      nickCycleState = null;
+    }
+    if (!appendNickAddressSuffix) {
+      pendingNickAddressSuffix = false;
+    }
+  }
+
   void setNickCompletions(List<String> nicks) {
     List<String> cleaned = cleanNickList(nicks);
     nickSnapshot = cleaned;
+    nickCycleState = null;
     rebuildCompletionModel(cleaned);
   }
 
@@ -285,6 +304,45 @@ final class MessageInputNickCompletionSupport {
     return List.copyOf(out);
   }
 
+  private List<Completion> contextualCompletions(
+      JTextComponent component, String token, List<Completion> completions) {
+    if (!appendNickAddressSuffix) return completions;
+    if (component == null || completions == null || completions.isEmpty()) return completions;
+    if (!isFirstWordNickAddressContext(component)) return completions;
+
+    ArrayList<Completion> out = new ArrayList<>(completions.size());
+    boolean changed = false;
+    for (Completion completion : completions) {
+      Completion next = maybeWithAddressingReplacement(completion);
+      if (next != completion) changed = true;
+      out.add(next);
+    }
+    return changed ? out : completions;
+  }
+
+  private Completion maybeWithAddressingReplacement(Completion completion) {
+    if (completion == null || completion.getRelevance() != RELEVANCE_NICK) return completion;
+    String replacement = completion.getReplacementText();
+    if (replacement == null || replacement.isBlank()) return completion;
+    String nick = replacement.trim();
+    if (!isKnownNick(nick)) return completion;
+    BasicCompletion addressed = new AddressedNickCompletion(completionProvider, nick, nick + ": ");
+    addressed.setRelevance(completion.getRelevance());
+    return addressed;
+  }
+
+  private static boolean isFirstWordNickAddressContext(JTextComponent component) {
+    String text = component.getText();
+    if (text == null) text = "";
+    if (text.stripLeading().startsWith("/")) return false;
+    int caret = component.getCaretPosition();
+    if (caret < 0 || caret > text.length()) return false;
+    int start = firstNonWhitespace(text);
+    if (start < 0) return false;
+    int end = wordEnd(text, start);
+    return caret >= start && caret <= end;
+  }
+
   private void installNickCompletionAddressingSuffix() {
     try {
       KeyStroke ks = KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0);
@@ -304,16 +362,19 @@ final class MessageInputNickCompletionSupport {
             public void actionPerformed(ActionEvent e) {
               String beforeText = input.getText();
               int beforeCaret = input.getCaretPosition();
-              boolean forcePopupForNickHint =
+              if (tryCycleNickCompletion(beforeText, beforeCaret)) {
+                return;
+              }
+              boolean forcePopupInsteadOfImmediateCompletion =
                   shouldForcePopupInsteadOfImmediateCompletion(beforeText, beforeCaret);
               boolean prevSingleChoice = autoCompletion.getAutoCompleteSingleChoices();
-              if (forcePopupForNickHint) {
+              if (forcePopupInsteadOfImmediateCompletion) {
                 autoCompletion.setAutoCompleteSingleChoices(false);
               }
               try {
                 delegate.actionPerformed(e);
               } finally {
-                if (forcePopupForNickHint) {
+                if (forcePopupInsteadOfImmediateCompletion) {
                   autoCompletion.setAutoCompleteSingleChoices(prevSingleChoice);
                 }
               }
@@ -331,9 +392,9 @@ final class MessageInputNickCompletionSupport {
                     }
 
                     boolean appended = maybeAppendNickAddressSuffix(beforeText, beforeCaret);
+                    String afterText = input.getText();
+                    int afterCaret = input.getCaretPosition();
                     if (!appended) {
-                      String afterText = input.getText();
-                      int afterCaret = input.getCaretPosition();
                       pendingNickAddressSuffix = false;
                       if (shouldArmPendingNickAddressSuffix(
                           beforeText, beforeCaret, afterText, afterCaret)) {
@@ -345,6 +406,8 @@ final class MessageInputNickCompletionSupport {
                     } else {
                       pendingNickAddressSuffix = false;
                     }
+                    maybeScheduleAsyncWordCompletionPopup(
+                        beforeText, beforeCaret, afterText, afterCaret);
                   });
             }
           });
@@ -355,7 +418,110 @@ final class MessageInputNickCompletionSupport {
     }
   }
 
+  private boolean tryCycleNickCompletion(String beforeText, int beforeCaret) {
+    if (!cycleNickCompletionsWithTab) return false;
+    NickCycleRequest request = nickCycleRequest(beforeText, beforeCaret);
+    if (request == null || request.matches().isEmpty()) {
+      nickCycleState = null;
+      return false;
+    }
+
+    int nextIndex =
+        request.continuing()
+            ? (request.currentIndex() + 1) % request.matches().size()
+            : request.currentIndex();
+    String nick = request.matches().get(nextIndex);
+    if (nick == null || nick.isBlank()) return false;
+
+    String suffix = request.appendAddressSuffix() ? ": " : "";
+    try {
+      if (undoSupport != null) {
+        undoSupport.endCompoundEdit();
+      }
+      Document doc = input.getDocument();
+      doc.remove(request.replaceStart(), request.replaceEnd() - request.replaceStart());
+      String replacement = nick + suffix;
+      doc.insertString(request.replaceStart(), replacement, null);
+      int caret = request.replaceStart() + replacement.length();
+      input.setCaretPosition(caret);
+      pendingNickAddressSuffix = false;
+      nickCycleState =
+          new NickCycleState(
+              request.sourcePrefix(),
+              request.replaceStart(),
+              caret,
+              request.matches(),
+              nextIndex,
+              request.appendAddressSuffix());
+      return true;
+    } catch (Exception ignored) {
+      nickCycleState = null;
+      return false;
+    }
+  }
+
+  private NickCycleRequest nickCycleRequest(String beforeText, int beforeCaret) {
+    String text = beforeText == null ? "" : beforeText;
+    if (text.stripLeading().startsWith("/")) return null;
+    if (beforeCaret < 0 || beforeCaret > text.length()) return null;
+
+    NickCycleState state = nickCycleState;
+    if (state != null && state.matchesCurrent(text, beforeCaret)) {
+      return new NickCycleRequest(
+          state.sourcePrefix(),
+          state.replaceStart(),
+          state.replaceEnd(),
+          state.matches(),
+          state.index(),
+          state.appendAddressSuffix(),
+          true);
+    }
+
+    int start = wordStart(text, beforeCaret);
+    int end = wordEnd(text, start);
+    if (start < 0 || end < start || beforeCaret < start || beforeCaret > end) return null;
+
+    String prefix = text.substring(start, beforeCaret).trim();
+    if (prefix.isEmpty()) return null;
+    List<String> matches = nickPrefixMatches(prefix);
+    if (matches.isEmpty()) return null;
+
+    boolean appendSuffix =
+        appendNickAddressSuffix && isEligibleForNickAddressSuffix(text, beforeCaret);
+    int replaceEnd = appendSuffix ? skipWhitespaceAfter(text, end) : end;
+    int initialIndex = 0;
+    for (int i = 0; i < matches.size(); i++) {
+      String match = matches.get(i);
+      if (match != null && match.equalsIgnoreCase(prefix) && matches.size() > 1) {
+        initialIndex = (i + 1) % matches.size();
+        break;
+      }
+    }
+    return new NickCycleRequest(
+        prefix, start, replaceEnd, matches, initialIndex, appendSuffix, false);
+  }
+
+  private List<String> nickPrefixMatches(String prefix) {
+    if (prefix == null || prefix.isBlank()) return List.of();
+    String p = prefix.trim();
+    String pLower = p.toLowerCase(Locale.ROOT);
+    ArrayList<String> matches = new ArrayList<>();
+    for (String nick : nickSnapshot) {
+      if (nick == null || nick.isBlank()) continue;
+      if (nick.toLowerCase(Locale.ROOT).startsWith(pLower)) {
+        matches.add(nick);
+      }
+    }
+    if (matches.size() < 2) return List.copyOf(matches);
+    matches.sort(
+        (left, right) ->
+            NickMatchRank.forCandidate(left, p, pLower)
+                .compareTo(NickMatchRank.forCandidate(right, p, pLower)));
+    return List.copyOf(matches);
+  }
+
   private boolean shouldForcePopupInsteadOfImmediateCompletion(String beforeText, int beforeCaret) {
+    if (cycleNickCompletionsWithTab) return false;
     if (autoCompletion.isPopupVisible()) return false;
     if (beforeText == null) beforeText = "";
     if (startsWithSlashCommand(beforeText)) return false;
@@ -363,7 +529,82 @@ final class MessageInputNickCompletionSupport {
 
     String token = completionProvider.getAlreadyEnteredText(input);
     if (token == null || token.isBlank()) return false;
-    return firstCompletionHint(token) != null;
+    if (firstCompletionHint(token) != null) return true;
+    return shouldForcePopupForWordSuggestion(beforeText, beforeCaret, token);
+  }
+
+  private boolean shouldForcePopupForWordSuggestion(String text, int caret, String token) {
+    if (wordSuggestionProvider == null) return false;
+    if (startsWithSlashCommand(text)) return false;
+    if (caret < 0 || text == null || caret > text.length()) return false;
+    if (isKnownNick(token)) return false;
+    return isPotentialWordSuggestionToken(token);
+  }
+
+  private void maybeScheduleAsyncWordCompletionPopup(
+      String beforeText, int beforeCaret, String afterText, int afterCaret) {
+    if (wordSuggestionProvider == null) return;
+    if (!Objects.equals(beforeText, afterText) || beforeCaret != afterCaret) return;
+    if (autoCompletion.isPopupVisible()) return;
+
+    String token = tokenAt(beforeText, beforeCaret);
+    if (!shouldForcePopupForWordSuggestion(beforeText, beforeCaret, token)) return;
+
+    CompletableFuture<List<String>> future;
+    try {
+      future = wordSuggestionProvider.suggestWordsAsync(token, MAX_WORD_SUGGESTIONS);
+    } catch (RuntimeException ex) {
+      return;
+    }
+    if (future == null) return;
+    future.thenAccept(
+        suggestions -> {
+          if (suggestions == null || suggestions.isEmpty()) return;
+          SwingUtilities.invokeLater(
+              () -> {
+                if (!input.isEditable() || !input.isEnabled()) return;
+                if (!Objects.equals(input.getText(), beforeText)) return;
+                if (input.getCaretPosition() != beforeCaret) return;
+                if (autoCompletion.isPopupVisible()) return;
+                showCompletionPopupWithoutSingleChoiceInsertion();
+              });
+        });
+  }
+
+  private void showCompletionPopupWithoutSingleChoiceInsertion() {
+    boolean prevSingleChoice = autoCompletion.getAutoCompleteSingleChoices();
+    autoCompletion.setAutoCompleteSingleChoices(false);
+    try {
+      autoCompletion.doCompletion();
+    } finally {
+      autoCompletion.setAutoCompleteSingleChoices(prevSingleChoice);
+    }
+  }
+
+  private static String tokenAt(String text, int caret) {
+    if (text == null || caret < 0 || caret > text.length()) return "";
+    int start = wordStart(text, caret);
+    int end = wordEnd(text, start);
+    if (start < 0 || end < start || caret < start || caret > end) return "";
+    return text.substring(start, caret).trim();
+  }
+
+  private static boolean isPotentialWordSuggestionToken(String token) {
+    String t = token == null ? "" : token.trim();
+    if (t.length() < 2) return false;
+    if (t.startsWith("#") || t.startsWith("&") || t.startsWith("@")) return false;
+    if (t.startsWith("/") || t.contains("://")) return false;
+    boolean hasLetter = false;
+    for (int i = 0; i < t.length(); i++) {
+      char c = t.charAt(i);
+      if (Character.isLetter(c)) {
+        hasLetter = true;
+        continue;
+      }
+      if (c == '\'' || c == '-') continue;
+      return false;
+    }
+    return hasLetter;
   }
 
   private void installPendingNickAddressSuffixListener() {
@@ -492,6 +733,7 @@ final class MessageInputNickCompletionSupport {
 
   private boolean maybeAppendNickAddressSuffix(String beforeText, int beforeCaret) {
     try {
+      if (!appendNickAddressSuffix) return false;
       if (beforeText == null) beforeText = "";
 
       // Only apply when the user was tab-completing inside the first word.
@@ -596,6 +838,7 @@ final class MessageInputNickCompletionSupport {
     // If TAB only opened/updated a multi-choice completion popup, the completion text may be
     // inserted later (e.g., after selecting an item). Arm a one-shot suffix append so the chosen
     // nick becomes "nick: " when it's the first word.
+    if (!appendNickAddressSuffix) return false;
     if (!isEligibleForNickAddressSuffix(beforeText, beforeCaret)) return false;
 
     String beforePrefix = firstWordPrefix(beforeText);
@@ -617,6 +860,24 @@ final class MessageInputNickCompletionSupport {
       if (!Character.isWhitespace(s.charAt(i))) return i;
     }
     return -1;
+  }
+
+  private static int wordStart(String s, int caret) {
+    if (s == null || caret < 0 || caret > s.length()) return -1;
+    int i = caret;
+    while (i > 0 && !Character.isWhitespace(s.charAt(i - 1))) {
+      i--;
+    }
+    return i;
+  }
+
+  private static int skipWhitespaceAfter(String s, int offset) {
+    if (s == null) return offset;
+    int i = Math.max(0, Math.min(offset, s.length()));
+    while (i < s.length() && Character.isWhitespace(s.charAt(i))) {
+      i++;
+    }
+    return i;
   }
 
   private static boolean startsWithSlashCommand(String text) {
@@ -706,6 +967,47 @@ final class MessageInputNickCompletionSupport {
   }
 
   private record SlashCommand(String command, String summary) {}
+
+  private record NickCycleRequest(
+      String sourcePrefix,
+      int replaceStart,
+      int replaceEnd,
+      List<String> matches,
+      int currentIndex,
+      boolean appendAddressSuffix,
+      boolean continuing) {}
+
+  private record NickCycleState(
+      String sourcePrefix,
+      int replaceStart,
+      int replaceEnd,
+      List<String> matches,
+      int index,
+      boolean appendAddressSuffix) {
+    boolean matchesCurrent(String text, int caret) {
+      if (text == null || caret != replaceEnd) return false;
+      if (replaceStart < 0 || replaceEnd < replaceStart || replaceEnd > text.length()) return false;
+      if (matches == null || matches.isEmpty() || index < 0 || index >= matches.size())
+        return false;
+      String expected = matches.get(index) + (appendAddressSuffix ? ": " : "");
+      return text.regionMatches(replaceStart, expected, 0, expected.length());
+    }
+  }
+
+  private static final class AddressedNickCompletion extends BasicCompletion {
+    private final String displayText;
+
+    AddressedNickCompletion(
+        CompletionProvider provider, String displayText, String replacementText) {
+      super(provider, replacementText, "IRC nick");
+      this.displayText = displayText;
+    }
+
+    @Override
+    public String getInputText() {
+      return displayText;
+    }
+  }
 
   private void installAutoCompletionUiRefreshOnLafChange() {
     if (lafListenerInstalled) return;
@@ -817,10 +1119,14 @@ final class MessageInputNickCompletionSupport {
         };
 
     private final DynamicCompletionSource dynamicCompletionSource;
+    private final ContextualCompletionSource contextualCompletionSource;
     private static final Field COMPLETIONS_FIELD = findCompletionsField();
 
-    FastCompletionProvider(DynamicCompletionSource dynamicCompletionSource) {
+    FastCompletionProvider(
+        DynamicCompletionSource dynamicCompletionSource,
+        ContextualCompletionSource contextualCompletionSource) {
       this.dynamicCompletionSource = dynamicCompletionSource;
+      this.contextualCompletionSource = contextualCompletionSource;
     }
 
     private static Field findCompletionsField() {
@@ -908,6 +1214,7 @@ final class MessageInputNickCompletionSupport {
     public List<Completion> getCompletions(JTextComponent comp) {
       List<Completion> base = super.getCompletions(comp);
       String token = getAlreadyEnteredText(comp);
+      base = contextualize(comp, token, base);
       if (dynamicCompletionSource == null) {
         if (base.size() < 2) return base;
         ArrayList<Completion> ranked = new ArrayList<>(base);
@@ -998,10 +1305,24 @@ final class MessageInputNickCompletionSupport {
     protected boolean isValidChar(char ch) {
       return super.isValidChar(ch) || ch == '/';
     }
+
+    private List<Completion> contextualize(
+        JTextComponent component, String token, List<Completion> completions) {
+      if (contextualCompletionSource == null || completions == null || completions.isEmpty()) {
+        return completions;
+      }
+      List<Completion> contextual = contextualCompletionSource.apply(component, token, completions);
+      return contextual == null ? completions : contextual;
+    }
   }
 
   @FunctionalInterface
   private interface DynamicCompletionSource {
     List<Completion> lookup(JTextComponent component, String token);
+  }
+
+  @FunctionalInterface
+  private interface ContextualCompletionSource {
+    List<Completion> apply(JTextComponent component, String token, List<Completion> completions);
   }
 }

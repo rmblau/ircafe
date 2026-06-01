@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.settings.history;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.ChatHistoryRuntimeConfigPort;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
@@ -144,7 +144,8 @@ public final class HistoryControlsSupport {
         PreferencesUiSupport.spinnerInt(controls.chatTranscriptMaxLinesPerTarget));
   }
 
-  public static void rememberSettings(RuntimeConfigStore runtimeConfig, HistorySettings settings) {
+  public static void rememberSettings(
+      ChatHistoryRuntimeConfigPort runtimeConfig, HistorySettings settings) {
     runtimeConfig.rememberChatHistoryInitialLoadLines(settings.initialLoadLines());
     runtimeConfig.rememberChatHistoryPageSize(settings.pageSize());
     runtimeConfig.rememberChatHistoryAutoLoadWheelDebounceMs(settings.autoLoadWheelDebounceMs());

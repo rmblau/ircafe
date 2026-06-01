@@ -3,6 +3,8 @@ package cafe.woden.ircclient.ui.settings.appearance;
 import cafe.woden.ircclient.ui.settings.SettingsColorPickerDialogSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
+import cafe.woden.ircclient.ui.util.MigConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import javax.swing.JButton;
@@ -10,7 +12,6 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import net.miginfocom.swing.MigLayout;
 
 final class AppearanceColorFieldFactory {
   private AppearanceColorFieldFactory() {}
@@ -52,8 +53,8 @@ final class AppearanceColorFieldFactory {
 
     hex.getDocument().addDocumentListener(new SettingsDocumentListener(updateIcon));
 
-    JPanel panel = new JPanel(new MigLayout("insets 0, fillx", "[grow]6[]6[]"));
-    panel.add(hex, "growx");
+    JPanel panel = new JPanel(MigLayouts.fillX("[grow]6[]6[]", ""));
+    panel.add(hex, MigConstraints.growX());
     panel.add(pick);
     panel.add(clear);
 

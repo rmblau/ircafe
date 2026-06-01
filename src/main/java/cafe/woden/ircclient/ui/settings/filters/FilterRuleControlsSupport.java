@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.ui.settings.filters;
 
 import cafe.woden.ircclient.app.api.ActiveTargetPort;
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
 import cafe.woden.ircclient.model.FilterRule;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.transcript.rebuild.TranscriptRebuildService;
@@ -36,7 +36,7 @@ final class FilterRuleControlsSupport {
       FilterSettings current,
       Window owner,
       FilterSettingsBus filterSettingsBus,
-      RuntimeConfigStore runtimeConfig,
+      FilterSettingsConfigPort runtimeConfig,
       ActiveTargetPort targetCoordinator,
       TranscriptRebuildService transcriptRebuildService,
       List<AutoCloseable> closeables) {
@@ -533,7 +533,7 @@ final class FilterRuleControlsSupport {
   private static void applyRules(
       FilterSettings next,
       FilterSettingsBus filterSettingsBus,
-      RuntimeConfigStore runtimeConfig,
+      FilterSettingsConfigPort runtimeConfig,
       ActiveTargetPort targetCoordinator,
       TranscriptRebuildService transcriptRebuildService) {
     filterSettingsBus.set(next);

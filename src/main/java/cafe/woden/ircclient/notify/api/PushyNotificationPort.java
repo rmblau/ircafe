@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.notify.api;
 
-import cafe.woden.ircclient.config.PushyProperties;
+import cafe.woden.ircclient.config.properties.PushyProperties;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import java.util.Objects;
 import org.jmolecules.architecture.hexagonal.PrimaryPort;

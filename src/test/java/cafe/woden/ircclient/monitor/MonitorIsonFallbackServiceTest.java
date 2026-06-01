@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.api.UiSettingsPort;
 import cafe.woden.ircclient.app.api.UiSettingsSnapshot;
+import cafe.woden.ircclient.app.api.UiSettingsSnapshotTestFixtures;
 import cafe.woden.ircclient.irc.IrcClientService;
 import cafe.woden.ircclient.irc.IrcEvent;
 import cafe.woden.ircclient.irc.ServerIrcEvent;
@@ -98,6 +99,6 @@ class MonitorIsonFallbackServiceTest {
   }
 
   private static UiSettingsSnapshot defaultUiSettings() {
-    return new UiSettingsSnapshot(List.of(), 15, 30, true, true, true, true, true);
+    return UiSettingsSnapshotTestFixtures.defaults();
   }
 }

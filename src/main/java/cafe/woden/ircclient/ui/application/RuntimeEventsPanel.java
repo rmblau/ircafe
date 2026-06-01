@@ -2,6 +2,8 @@ package cafe.woden.ircclient.ui.application;
 
 import cafe.woden.ircclient.diagnostics.RuntimeDiagnosticEvent;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.util.MigConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.disposables.Disposable;
 import java.awt.BorderLayout;
@@ -39,7 +41,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.table.AbstractTableModel;
-import net.miginfocom.swing.MigLayout;
 
 /** Generic table panel for displaying rolling runtime diagnostic events with row actions. */
 public final class RuntimeEventsPanel extends JPanel {
@@ -145,7 +146,7 @@ public final class RuntimeEventsPanel extends JPanel {
     configureActionButton(clearButton, "trash", "Clear all rows", "Clear all rows");
     configureActionButton(exportButton, "copy", "Export rows as CSV", "Export rows as CSV");
 
-    JPanel controls = new JPanel(new MigLayout("insets 6 8 8 8, fillx", "[]4[]4[]4[]push[]", "[]"));
+    JPanel controls = new JPanel(MigLayouts.fillX("6 8 8 8", "[]4[]4[]4[]push[]", "[]"));
     controls.setOpaque(false);
     refreshButton.addActionListener(e -> refreshNow());
     detailsButton.addActionListener(e -> showDetailsForSelectedRow());
@@ -160,7 +161,7 @@ public final class RuntimeEventsPanel extends JPanel {
     controls.add(detailsButton);
     controls.add(clearButton);
     controls.add(exportButton);
-    controls.add(rowsLabel, "alignx right");
+    controls.add(rowsLabel, MigConstraints.alignXRight());
     add(controls, BorderLayout.SOUTH);
 
     refreshTimer = new Timer(1000, e -> refreshNow());
@@ -349,8 +350,7 @@ public final class RuntimeEventsPanel extends JPanel {
   private static JPanel buildDetailPanel(RuntimeDiagnosticEvent event) {
     JPanel root = new JPanel(new BorderLayout(0, 10));
 
-    JPanel fields =
-        new JPanel(new MigLayout("insets 0, fillx, wrap 2", "[right]10[grow,fill]", "[]4[]4[]4[]"));
+    JPanel fields = new JPanel(MigLayouts.twoColumnForm(10, MigLayouts.rows(4, 4)));
     addDetailRow(fields, "Time", event.at() == null ? "" : TIME_FMT.format(event.at()));
     addDetailRow(fields, "Level", Objects.toString(event.level(), ""));
     addDetailRow(fields, "Event type", Objects.toString(event.type(), ""));
@@ -388,7 +388,7 @@ public final class RuntimeEventsPanel extends JPanel {
     v.setOpaque(false);
     v.setBorder(null);
     v.setFocusable(false);
-    panel.add(v, "growx, wmin 0");
+    panel.add(v, MigConstraints.growXMinWidth0());
   }
 
   private static void addDetailRowIfPresent(JPanel panel, String label, String value) {

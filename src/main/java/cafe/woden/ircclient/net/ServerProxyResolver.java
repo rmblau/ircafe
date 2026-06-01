@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.net;
 
 import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.ServerCatalog;
+import cafe.woden.ircclient.config.servers.ServerCatalog;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.layered.ApplicationLayer;

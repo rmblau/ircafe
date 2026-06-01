@@ -14,7 +14,7 @@ import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
-import cafe.woden.ircclient.config.ServerCatalog;
+import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
 import cafe.woden.ircclient.irc.quassel.control.QuasselCoreControlPort;

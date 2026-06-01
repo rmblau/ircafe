@@ -1,8 +1,8 @@
 package cafe.woden.ircclient.ui.filter;
 
-import cafe.woden.ircclient.config.FilterRuleProperties;
-import cafe.woden.ircclient.config.FilterScopeOverrideProperties;
-import cafe.woden.ircclient.config.UiProperties;
+import cafe.woden.ircclient.config.properties.FilterRuleProperties;
+import cafe.woden.ircclient.config.properties.FilterScopeOverrideProperties;
+import cafe.woden.ircclient.config.properties.UiProperties;
 import cafe.woden.ircclient.model.FilterAction;
 import cafe.woden.ircclient.model.FilterDirection;
 import cafe.woden.ircclient.model.FilterRule;

@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.logging.history;
 
-import cafe.woden.ircclient.config.ExecutorConfig;
+import cafe.woden.ircclient.config.execution.ExecutorConfig;
 import java.util.concurrent.ScheduledExecutorService;
 import org.jmolecules.architecture.layered.InfrastructureLayer;
 import org.slf4j.Logger;

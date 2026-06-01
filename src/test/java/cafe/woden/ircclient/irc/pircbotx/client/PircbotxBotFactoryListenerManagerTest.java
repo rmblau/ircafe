@@ -8,7 +8,7 @@ import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
-import cafe.woden.ircclient.config.SojuProperties;
+import cafe.woden.ircclient.config.properties.SojuProperties;
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
 import cafe.woden.ircclient.irc.ircv3.*;

@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.ui.settings.filters;
 
 import cafe.woden.ircclient.app.api.ActiveTargetPort;
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
 import cafe.woden.ircclient.model.FilterPlaceholderRanges;
 import cafe.woden.ircclient.ui.chat.transcript.rebuild.TranscriptRebuildService;
 import cafe.woden.ircclient.ui.filter.FilterSettings;
@@ -21,7 +21,7 @@ public final class FilterControlsSupport {
       Window owner,
       List<AutoCloseable> closeables,
       FilterSettingsBus filterSettingsBus,
-      RuntimeConfigStore runtimeConfig,
+      FilterSettingsConfigPort runtimeConfig,
       ActiveTargetPort targetCoordinator,
       TranscriptRebuildService transcriptRebuildService) {
     Objects.requireNonNull(current);

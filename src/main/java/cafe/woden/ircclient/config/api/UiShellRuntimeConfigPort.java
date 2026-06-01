@@ -36,6 +36,16 @@ public interface UiShellRuntimeConfigPort
 
   void rememberMemoryUsageRefreshIntervalMs(int intervalMs);
 
+  void rememberMemoryUsageWarningNearMaxPercent(int percent);
+
+  void rememberMemoryUsageWarningTooltipEnabled(boolean enabled);
+
+  void rememberMemoryUsageWarningToastEnabled(boolean enabled);
+
+  void rememberMemoryUsageWarningPushyEnabled(boolean enabled);
+
+  void rememberMemoryUsageWarningSoundEnabled(boolean enabled);
+
   void rememberServerDockWidthPx(int serverDockWidthPx);
 
   void rememberUserDockWidthPx(int userDockWidthPx);
@@ -43,6 +53,16 @@ public interface UiShellRuntimeConfigPort
   Optional<LastSelectedTarget> readLastSelectedTarget();
 
   void rememberLastSelectedTarget(String serverId, String target);
+
+  default Optional<Boolean> readApplicationRootVisibleIfPresent() {
+    return Optional.empty();
+  }
+
+  default boolean readApplicationRootVisible(boolean defaultValue) {
+    return readApplicationRootVisibleIfPresent().orElse(defaultValue);
+  }
+
+  void rememberApplicationRootVisible(boolean visible);
 
   boolean readTrayCloseToTrayHintShown(boolean defaultValue);
 

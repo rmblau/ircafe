@@ -1,8 +1,9 @@
 package cafe.woden.ircclient.ui.servertree.composition;
 
 import cafe.woden.ircclient.bouncer.BouncerAutoConnectStore;
-import cafe.woden.ircclient.config.ServerCatalog;
 import cafe.woden.ircclient.config.api.ServerAutoConnectRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ServerEntry;
+import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.interceptors.InterceptorScope;
 import cafe.woden.ircclient.interceptors.InterceptorStore;
 import cafe.woden.ircclient.model.InterceptorDefinition;
@@ -36,6 +37,7 @@ import java.awt.event.MouseEvent;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
@@ -276,9 +278,8 @@ public final class ServerTreeViewInteractionCollaboratorsFactory {
     return choice == JOptionPane.YES_OPTION;
   }
 
-  private static java.util.Optional<cafe.woden.ircclient.config.ServerEntry> serverEntry(
-      ServerCatalog serverCatalog, String serverId) {
-    return serverCatalog == null ? java.util.Optional.empty() : serverCatalog.findEntry(serverId);
+  private static Optional<ServerEntry> serverEntry(ServerCatalog serverCatalog, String serverId) {
+    return serverCatalog == null ? Optional.empty() : serverCatalog.findEntry(serverId);
   }
 
   private static void openSaveEphemeralServer(Inputs in, String serverId) {

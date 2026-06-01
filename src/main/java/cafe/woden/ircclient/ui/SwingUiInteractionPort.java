@@ -15,6 +15,9 @@ import cafe.woden.ircclient.ui.bus.TargetActivationBus;
 import cafe.woden.ircclient.ui.controls.ConnectButton;
 import cafe.woden.ircclient.ui.controls.DisconnectButton;
 import cafe.woden.ircclient.ui.servertree.ServerTreeDockable;
+import cafe.woden.ircclient.ui.util.MigConstraints;
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import cafe.woden.ircclient.ui.util.SwingClientProperties;
 import io.reactivex.rxjava3.core.Flowable;
 import java.util.ArrayList;
@@ -23,7 +26,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import javax.swing.JOptionPane;
-import net.miginfocom.swing.MigLayout;
 
 /** Swing adapter for user-initiated streams and UI prompts. */
 final class SwingUiInteractionPort implements UiInteractionPort {
@@ -255,16 +257,15 @@ final class SwingUiInteractionPort implements UiInteractionPort {
           authCombo.setEditable(authOptions.size() <= 1);
 
           javax.swing.JPanel panel =
-              new javax.swing.JPanel(
-                  new MigLayout("insets 0, fillx, wrap 2", "[right]12[grow,fill]", "[]6[]6[]6[]"));
+              new javax.swing.JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rows(4, 6)));
           panel.add(new javax.swing.JLabel("Admin user"));
-          panel.add(adminUserField, "growx, wrap");
+          panel.add(adminUserField, MigConstraints.growXWrap());
           panel.add(new javax.swing.JLabel("Admin password"));
-          panel.add(adminPasswordField, "growx, wrap");
+          panel.add(adminPasswordField, MigConstraints.growXWrap());
           panel.add(new javax.swing.JLabel("Storage backend"));
-          panel.add(storageCombo, "growx, wrap");
+          panel.add(storageCombo, MigConstraints.growXWrap());
           panel.add(new javax.swing.JLabel("Authenticator"));
-          panel.add(authCombo, "growx, wrap");
+          panel.add(authCombo, MigConstraints.growXWrap());
 
           String title = sid.isEmpty() ? "Quassel Core Setup" : ("Quassel Core Setup - " + sid);
           while (true) {
@@ -346,9 +347,15 @@ final class SwingUiInteractionPort implements UiInteractionPort {
 
             javax.swing.JPanel panel =
                 new javax.swing.JPanel(
-                    new MigLayout("insets 0, fill, wrap 1", "[grow,fill]", "[]6[grow,fill]"));
-            panel.add(new javax.swing.JLabel("Select a network and choose an action."), "growx");
-            panel.add(scroll, "grow, push");
+                    MigLayouts.fillWrap(
+                        0,
+                        1,
+                        MigLayoutConstraints.GROW_FILL,
+                        MigLayoutConstraints.ROW_6_GROW_FILL));
+            panel.add(
+                new javax.swing.JLabel("Select a network and choose an action."),
+                MigConstraints.growX());
+            panel.add(scroll, MigConstraints.growPush());
 
             Object[] options = {
               "Connect", "Disconnect", "Add...", "Edit...", "Remove", "Refresh", "Close"
@@ -438,18 +445,17 @@ final class SwingUiInteractionPort implements UiInteractionPort {
     javax.swing.JCheckBox enabledCheck = new javax.swing.JCheckBox("Enabled", true);
 
     javax.swing.JPanel panel =
-        new javax.swing.JPanel(
-            new MigLayout("insets 0, fillx, wrap 2", "[right]12[grow,fill]", "[]6[]6[]6[]"));
+        new javax.swing.JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rows(4, 6)));
     panel.add(new javax.swing.JLabel("Network name"));
-    panel.add(nameField, "growx, wrap");
+    panel.add(nameField, MigConstraints.growXWrap());
     panel.add(new javax.swing.JLabel("Server host"));
-    panel.add(hostField, "growx, wrap");
+    panel.add(hostField, MigConstraints.growXWrap());
     panel.add(new javax.swing.JLabel("Server port"));
-    panel.add(portField, "growx, wrap");
+    panel.add(portField, MigConstraints.growXWrap());
     panel.add(new javax.swing.JLabel(""));
-    panel.add(tlsCheck, "growx, wrap");
+    panel.add(tlsCheck, MigConstraints.growXWrap());
     panel.add(new javax.swing.JLabel(""));
-    panel.add(enabledCheck, "growx, wrap");
+    panel.add(enabledCheck, MigConstraints.growXWrap());
 
     while (true) {
       int result =
@@ -519,18 +525,17 @@ final class SwingUiInteractionPort implements UiInteractionPort {
     javax.swing.JCheckBox enabledCheck = new javax.swing.JCheckBox("Enabled", defaultEnabled);
 
     javax.swing.JPanel panel =
-        new javax.swing.JPanel(
-            new MigLayout("insets 0, fillx, wrap 2", "[right]12[grow,fill]", "[]6[]6[]6[]"));
+        new javax.swing.JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rows(4, 6)));
     panel.add(new javax.swing.JLabel("Network name"));
-    panel.add(nameField, "growx, wrap");
+    panel.add(nameField, MigConstraints.growXWrap());
     panel.add(new javax.swing.JLabel("Server host"));
-    panel.add(hostField, "growx, wrap");
+    panel.add(hostField, MigConstraints.growXWrap());
     panel.add(new javax.swing.JLabel("Server port"));
-    panel.add(portField, "growx, wrap");
+    panel.add(portField, MigConstraints.growXWrap());
     panel.add(new javax.swing.JLabel(""));
-    panel.add(tlsCheck, "growx, wrap");
+    panel.add(tlsCheck, MigConstraints.growXWrap());
     panel.add(new javax.swing.JLabel(""));
-    panel.add(enabledCheck, "growx, wrap");
+    panel.add(enabledCheck, MigConstraints.growXWrap());
 
     while (true) {
       int result =

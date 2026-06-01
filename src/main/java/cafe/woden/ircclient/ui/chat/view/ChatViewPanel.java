@@ -15,6 +15,7 @@ import cafe.woden.ircclient.ui.util.CloseableScope;
 import cafe.woden.ircclient.ui.util.EmojiFontSupport;
 import cafe.woden.ircclient.ui.util.FollowTailScrollDecorator;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
+import cafe.woden.ircclient.ui.util.UiFontKeys;
 import cafe.woden.ircclient.ui.util.ViewportWrapRevalidateDecorator;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -224,9 +225,9 @@ public abstract class ChatViewPanel extends JPanel implements Scrollable {
   }
 
   private Font defaultMonospaceChatFont() {
-    Font base = UIManager.getFont("TextPane.font");
-    if (base == null) base = UIManager.getFont("TextArea.font");
-    if (base == null) base = UIManager.getFont("Label.font");
+    Font base = UIManager.getFont(UiFontKeys.TEXT_PANE_FONT);
+    if (base == null) base = UIManager.getFont(UiFontKeys.TEXT_AREA_FONT);
+    if (base == null) base = UIManager.getFont(UiFontKeys.LABEL_FONT);
     int size = base != null ? base.getSize() : 12;
     return new Font(Font.MONOSPACED, Font.PLAIN, Math.max(10, size));
   }

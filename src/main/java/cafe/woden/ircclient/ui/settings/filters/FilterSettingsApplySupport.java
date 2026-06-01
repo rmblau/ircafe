@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.ui.settings.filters;
 
 import cafe.woden.ircclient.app.api.ActiveTargetPort;
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
 import cafe.woden.ircclient.model.FilterPlaceholderRanges;
 import cafe.woden.ircclient.model.FilterScopeOverride;
 import cafe.woden.ircclient.model.TargetRef;
@@ -18,7 +18,7 @@ public final class FilterSettingsApplySupport {
   public static void applyFromUi(
       FilterControls c,
       FilterSettingsBus filterSettingsBus,
-      RuntimeConfigStore runtimeConfig,
+      FilterSettingsConfigPort runtimeConfig,
       ActiveTargetPort targetCoordinator,
       TranscriptRebuildService transcriptRebuildService) {
     if (c == null) return;

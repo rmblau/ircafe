@@ -8,9 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import cafe.woden.ircclient.config.PushyProperties;
 import cafe.woden.ircclient.config.PushyPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.properties.PushyProperties;
 import cafe.woden.ircclient.model.BuiltInSound;
 import cafe.woden.ircclient.notify.pushy.PushySettingsBus;
 import cafe.woden.ircclient.notify.sound.NotificationSoundSettings;

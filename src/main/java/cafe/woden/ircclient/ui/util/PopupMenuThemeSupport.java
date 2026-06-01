@@ -73,12 +73,26 @@ public final class PopupMenuThemeSupport {
             UiColorKeys.POPUP_MENU_BORDER_COLOR,
             UiColorKeys.NIMBUS_BORDER,
             UiColorKeys.SEPARATOR_FOREGROUND);
-    Font menuFont = firstFont("Menu.font", "MenuBar.font", "MenuItem.font", "Label.font");
-    Font menuItemFont = firstFont("MenuItem.font", "Menu.font", "Label.font");
+    Font menuFont =
+        firstFont(
+            UiFontKeys.MENU_FONT,
+            UiFontKeys.MENU_BAR_FONT,
+            UiFontKeys.MENU_ITEM_FONT,
+            UiFontKeys.LABEL_FONT);
+    Font menuItemFont =
+        firstFont(UiFontKeys.MENU_ITEM_FONT, UiFontKeys.MENU_FONT, UiFontKeys.LABEL_FONT);
     Font checkItemFont =
-        firstFont("CheckBoxMenuItem.font", "MenuItem.font", "Menu.font", "Label.font");
+        firstFont(
+            UiFontKeys.CHECK_BOX_MENU_ITEM_FONT,
+            UiFontKeys.MENU_ITEM_FONT,
+            UiFontKeys.MENU_FONT,
+            UiFontKeys.LABEL_FONT);
     Font radioItemFont =
-        firstFont("RadioButtonMenuItem.font", "MenuItem.font", "Menu.font", "Label.font");
+        firstFont(
+            UiFontKeys.RADIO_BUTTON_MENU_ITEM_FONT,
+            UiFontKeys.MENU_ITEM_FONT,
+            UiFontKeys.MENU_FONT,
+            UiFontKeys.LABEL_FONT);
 
     applyPopupPalette(
         menu,

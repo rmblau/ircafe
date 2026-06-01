@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.input;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 /** Supplies word suggestions for the message input completion popup. */
 interface MessageInputWordSuggestionProvider {
@@ -12,4 +13,8 @@ interface MessageInputWordSuggestionProvider {
    * @param maxSuggestions maximum number of suggestions to return
    */
   List<String> suggestWords(String token, int maxSuggestions);
+
+  default CompletableFuture<List<String>> suggestWordsAsync(String token, int maxSuggestions) {
+    return CompletableFuture.completedFuture(suggestWords(token, maxSuggestions));
+  }
 }

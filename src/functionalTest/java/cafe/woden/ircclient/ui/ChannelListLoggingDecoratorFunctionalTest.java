@@ -8,14 +8,14 @@ import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.app.api.ChannelMetadataPort;
 import cafe.woden.ircclient.app.api.UiPort;
-import cafe.woden.ircclient.config.EphemeralServerRegistry;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
-import cafe.woden.ircclient.config.LogProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
-import cafe.woden.ircclient.config.ServerCatalog;
-import cafe.woden.ircclient.config.ServerRegistry;
+import cafe.woden.ircclient.config.properties.LogProperties;
+import cafe.woden.ircclient.config.servers.EphemeralServerRegistry;
+import cafe.woden.ircclient.config.servers.ServerCatalog;
+import cafe.woden.ircclient.config.servers.ServerRegistry;
 import cafe.woden.ircclient.dcc.DccTransferStore;
 import cafe.woden.ircclient.diagnostics.ApplicationDiagnosticsService;
 import cafe.woden.ircclient.diagnostics.JfrRuntimeEventsService;

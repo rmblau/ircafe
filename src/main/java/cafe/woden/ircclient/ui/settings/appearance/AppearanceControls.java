@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.settings.appearance;
 
-import cafe.woden.ircclient.config.UiProperties;
+import cafe.woden.ircclient.config.properties.UiProperties;
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettings;
 import java.awt.Color;

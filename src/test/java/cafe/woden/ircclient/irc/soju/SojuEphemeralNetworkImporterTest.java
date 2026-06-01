@@ -5,13 +5,13 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import cafe.woden.ircclient.bouncer.BouncerConnectionPort;
-import cafe.woden.ircclient.config.EphemeralServerRegistry;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
-import cafe.woden.ircclient.config.ServerRegistry;
-import cafe.woden.ircclient.config.SojuProperties;
+import cafe.woden.ircclient.config.properties.SojuProperties;
+import cafe.woden.ircclient.config.servers.EphemeralServerRegistry;
+import cafe.woden.ircclient.config.servers.ServerRegistry;
 import io.reactivex.rxjava3.core.Completable;
 import java.nio.file.Files;
 import java.nio.file.Path;

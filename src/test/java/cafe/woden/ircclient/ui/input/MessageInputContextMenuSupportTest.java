@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettings;
 import java.awt.Point;
 import java.awt.geom.Point2D;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import org.junit.jupiter.api.Test;
@@ -41,6 +42,21 @@ class MessageInputContextMenuSupportTest {
             assertEquals(2, fixture.input().getCaretPosition());
             assertEquals(2, fixture.input().getSelectionStart());
             assertEquals(2, fixture.input().getSelectionEnd());
+          }
+        });
+  }
+
+  @Test
+  void installAttachesPopupListenerToInputViewport() throws Exception {
+    SwingUtilities.invokeAndWait(
+        () -> {
+          try (ContextMenuFixture fixture = newFixture("")) {
+            JScrollPane scrollPane = new JScrollPane(fixture.input());
+            int before = scrollPane.getViewport().getMouseListeners().length;
+
+            fixture.support().install();
+
+            assertEquals(before + 1, scrollPane.getViewport().getMouseListeners().length);
           }
         });
   }

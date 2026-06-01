@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
-import cafe.woden.ircclient.config.UiProperties;
+import cafe.woden.ircclient.config.properties.UiProperties;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;

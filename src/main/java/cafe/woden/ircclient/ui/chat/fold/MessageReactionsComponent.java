@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.chat.fold;
 
 import cafe.woden.ircclient.ui.util.UiColorKeys;
+import cafe.woden.ircclient.ui.util.UiFontKeys;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.FlowLayout;
@@ -153,8 +154,8 @@ public final class MessageReactionsComponent extends JPanel {
   private void applyChipFont(JLabel l) {
     Font base = transcriptBaseFont;
     if (base == null) {
-      base = UIManager.getFont("TextPane.font");
-      if (base == null) base = UIManager.getFont("Label.font");
+      base = UIManager.getFont(UiFontKeys.TEXT_PANE_FONT);
+      if (base == null) base = UIManager.getFont(UiFontKeys.LABEL_FONT);
     }
     if (base != null) {
       float size = Math.max(9f, base.getSize2D() - 1f);

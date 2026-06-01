@@ -2,11 +2,11 @@ package cafe.woden.ircclient.irc.pircbotx.client;
 
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
-import cafe.woden.ircclient.config.ServerCatalog;
-import cafe.woden.ircclient.config.SojuProperties;
-import cafe.woden.ircclient.config.ZncProperties;
 import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
+import cafe.woden.ircclient.config.properties.SojuProperties;
+import cafe.woden.ircclient.config.properties.ZncProperties;
+import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.irc.IrcEvent;
 import cafe.woden.ircclient.irc.ServerIrcEvent;
 import cafe.woden.ircclient.irc.ircv3.Ircv3StsPolicyService;

@@ -4,6 +4,7 @@ import cafe.woden.ircclient.model.BuiltInSound;
 import cafe.woden.ircclient.notify.api.NotificationSoundPort;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
+import cafe.woden.ircclient.ui.util.SoundFileChooserSupport;
 import java.awt.Component;
 import java.io.File;
 import java.util.Objects;
@@ -11,10 +12,8 @@ import java.util.function.BooleanSupplier;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import javax.swing.filechooser.FileNameExtensionFilter;
 
 public final class NotificationSoundControlsSupport {
   private NotificationSoundControlsSupport() {}
@@ -273,16 +272,10 @@ public final class NotificationSoundControlsSupport {
 
     private void browseCustomSound() {
       try {
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle("Choose notification sound (MP3 or WAV)");
-        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setAcceptAllFileFilterUsed(true);
-        chooser.addChoosableFileFilter(
-            new FileNameExtensionFilter("Audio files (MP3, WAV)", "mp3", "wav"));
-        int result = chooser.showOpenDialog(dialogOwner());
-        if (result != JFileChooser.APPROVE_OPTION) return;
-
-        File selectedFile = chooser.getSelectedFile();
+        File selectedFile =
+            SoundFileChooserSupport.chooseSoundFile(
+                    dialogOwner(), "Choose notification sound (MP3 or WAV)")
+                .orElse(null);
         if (selectedFile == null || soundFileImporter == null) return;
         String relativePath = soundFileImporter.importFile(selectedFile);
         if (relativePath != null && !relativePath.isBlank()) {

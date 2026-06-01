@@ -1,9 +1,12 @@
 package cafe.woden.ircclient.ui.settings.notifications;
 
-import cafe.woden.ircclient.config.NotificationRule;
+import cafe.woden.ircclient.config.api.NotificationRule;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
+import cafe.woden.ircclient.ui.util.MigConstraints;
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import java.awt.Component;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -12,7 +15,6 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.ScrollPaneConstants;
-import net.miginfocom.swing.MigLayout;
 
 public final class NotificationsPanelSupport {
   private NotificationsPanelSupport() {}
@@ -24,15 +26,16 @@ public final class NotificationsPanelSupport {
       NotificationRuleEditor notificationRuleEditor,
       ValidationRefresher validationRefresher) {
     JPanel panel =
-        new JPanel(new MigLayout("insets 10, fill, wrap 1", "[grow,fill]", "[]8[]4[grow,fill]"));
+        new JPanel(MigLayouts.fillWrap(10, 1, MigLayoutConstraints.GROW_FILL, "[]8[]4[grow,fill]"));
 
-    panel.add(PreferencesUiSupport.tabTitle("Notifications"), "growx, wmin 0, wrap");
-    panel.add(PreferencesUiSupport.sectionTitle("Rule matches"), "growx, wmin 0, wrap");
+    panel.add(PreferencesUiSupport.tabTitle("Notifications"), MigConstraints.growXMinWidth0Wrap());
+    panel.add(
+        PreferencesUiSupport.sectionTitle("Rule matches"), MigConstraints.growXMinWidth0Wrap());
     panel.add(
         PreferencesUiSupport.helpText(
             "Add custom word/regex rules to create notifications when messages match.\n"
                 + "Rules only trigger for channels (not PMs), including the active channel."),
-        "growx, wmin 0, wrap");
+        MigConstraints.growXMinWidth0Wrap());
 
     JButton add = PreferencesUiSupport.iconOnlyButton("Add", "plus", "Add notification rule");
     JButton edit =
@@ -60,70 +63,52 @@ public final class NotificationsPanelSupport {
                 down);
 
     Runnable openEditRuleDialog =
-        () -> {
-          int modelRow = SettingsTableSupport.selectedModelRow(notifications.table);
-          if (modelRow < 0) return;
-          NotificationRule seed = notifications.model.ruleAt(modelRow);
-          if (seed == null) return;
-          NotificationRule edited = notificationRuleEditor.prompt("Edit Notification Rule", seed);
-          if (edited == null) return;
-          notifications.model.setRule(modelRow, edited);
-          SettingsTableSupport.selectModelRow(notifications.table, modelRow);
-          refreshRuleButtons.run();
-        };
+        () ->
+            NotificationRuleTableSupport.editSelectedRow(
+                notifications.table,
+                notifications.model::ruleAt,
+                seed -> notificationRuleEditor.prompt("Edit Notification Rule", seed),
+                notifications.model::setRule,
+                refreshRuleButtons);
 
     add.addActionListener(
-        e -> {
-          NotificationRule created = notificationRuleEditor.prompt("Add Notification Rule", null);
-          if (created == null) return;
-          int row = notifications.model.addRule(created);
-          SettingsTableSupport.selectModelRow(notifications.table, row);
-          refreshRuleButtons.run();
-        });
+        e ->
+            NotificationRuleTableSupport.addRow(
+                notifications.table,
+                () -> notificationRuleEditor.prompt("Add Notification Rule", null),
+                notifications.model::addRule,
+                refreshRuleButtons));
 
     edit.addActionListener(e -> openEditRuleDialog.run());
 
     duplicate.addActionListener(
-        e -> {
-          int modelRow = SettingsTableSupport.selectedModelRow(notifications.table);
-          if (modelRow < 0) return;
-          int dup = notifications.model.duplicateRow(modelRow);
-          SettingsTableSupport.selectModelRow(notifications.table, dup);
-          refreshRuleButtons.run();
-        });
+        e ->
+            NotificationRuleTableSupport.duplicateSelectedRow(
+                notifications.table, notifications.model::duplicateRow, refreshRuleButtons));
 
     remove.addActionListener(
-        e -> {
-          int modelRow = SettingsTableSupport.selectedModelRow(notifications.table);
-          if (modelRow < 0) return;
-          NotificationRule rule = notifications.model.ruleAt(modelRow);
-          String label = NotificationRulesTableModel.effectiveRuleLabel(rule);
-          if (!PreferencesUiSupport.confirmOkCancel(
-              owner, "Remove notification rule \"" + label + "\"?", "Remove Notification Rule")) {
-            return;
-          }
-          notifications.model.removeRow(modelRow);
-          SettingsTableSupport.selectAfterModelRowRemoval(notifications.table, modelRow);
-          refreshRuleButtons.run();
-        });
+        e ->
+            NotificationRuleTableSupport.removeSelectedRow(
+                notifications.table,
+                row ->
+                    NotificationRulesTableModel.effectiveRuleLabel(notifications.model.ruleAt(row)),
+                label ->
+                    PreferencesUiSupport.confirmOkCancel(
+                        owner,
+                        "Remove notification rule \"" + label + "\"?",
+                        "Remove Notification Rule"),
+                notifications.model::removeRow,
+                refreshRuleButtons));
 
     up.addActionListener(
-        e -> {
-          int modelRow = SettingsTableSupport.selectedModelRow(notifications.table);
-          if (modelRow < 0) return;
-          int next = notifications.model.moveRow(modelRow, modelRow - 1);
-          SettingsTableSupport.selectModelRow(notifications.table, next);
-          refreshRuleButtons.run();
-        });
+        e ->
+            NotificationRuleTableSupport.moveSelectedRow(
+                notifications.table, -1, notifications.model::moveRow, refreshRuleButtons));
 
     down.addActionListener(
-        e -> {
-          int modelRow = SettingsTableSupport.selectedModelRow(notifications.table);
-          if (modelRow < 0) return;
-          int next = notifications.model.moveRow(modelRow, modelRow + 1);
-          SettingsTableSupport.selectModelRow(notifications.table, next);
-          refreshRuleButtons.run();
-        });
+        e ->
+            NotificationRuleTableSupport.moveSelectedRow(
+                notifications.table, 1, notifications.model::moveRow, refreshRuleButtons));
 
     SettingsTableSupport.refreshOnSelectionChange(notifications.table, refreshRuleButtons);
     SettingsTableSupport.editOnDoubleClick(notifications.table, openEditRuleDialog);
@@ -164,43 +149,45 @@ public final class NotificationsPanelSupport {
           notifications.testStatus.setText(" ");
         });
 
-    JPanel rulesTab = new JPanel(new MigLayout("insets 0, fill, wrap 1", "[grow,fill]", "[]8[]"));
+    JPanel rulesTab = new JPanel(MigLayouts.singleColumnFill(0, MigLayouts.rows(2, 8)));
     rulesTab.setOpaque(false);
     JPanel rulesBehaviorPanel =
-        PreferencesUiSupport.captionPanel(
-            "Rule behavior", "insets 0, fillx, wrap 2", "[right]10[grow,fill]", "[]");
+        PreferencesUiSupport.captionPanel("Rule behavior", MigLayouts.twoColumnForm(10, "[]"));
     rulesBehaviorPanel.add(new JLabel("Cooldown (sec)"));
-    rulesBehaviorPanel.add(notifications.cooldownSeconds, "w 110!, wrap");
-    rulesTab.add(rulesBehaviorPanel, "growx, wmin 0, wrap");
+    rulesBehaviorPanel.add(notifications.cooldownSeconds, MigConstraints.widthWrap(110));
+    rulesTab.add(rulesBehaviorPanel, MigConstraints.growXMinWidth0Wrap());
 
     JPanel rulesTablePanel =
         PreferencesUiSupport.captionPanel(
-            "Rule list", "insets 0, fill, wrap 1", "[grow,fill]", "[]6[grow,fill]4[]4[]");
+            "Rule list",
+            MigLayoutConstraints.INSETS_0_FILL_WRAP_1,
+            MigLayoutConstraints.GROW_FILL,
+            "[]6[grow,fill]4[]4[]");
     JPanel buttons = PreferencesUiSupport.actionButtonRow(add, edit, duplicate, remove, up, down);
-    rulesTablePanel.add(buttons, "growx, wmin 0, wrap");
-    rulesTablePanel.add(scroll, "grow, push, h 260!, wmin 0, wrap");
-    rulesTablePanel.add(notifications.validationLabel, "growx, wmin 0, wrap");
+    rulesTablePanel.add(buttons, MigConstraints.growXMinWidth0Wrap());
+    rulesTablePanel.add(scroll, MigConstraints.growPushMinWidth0HeightWrap(260));
+    rulesTablePanel.add(notifications.validationLabel, MigConstraints.growXMinWidth0Wrap());
     rulesTablePanel.add(
         PreferencesUiSupport.helpText("Tip: Double-click a rule to edit it."),
-        "growx, wmin 0, wrap");
-    rulesTab.add(rulesTablePanel, "grow, push, wmin 0");
+        MigConstraints.growXMinWidth0Wrap());
+    rulesTab.add(rulesTablePanel, MigConstraints.growPushMinWidth0());
 
-    JPanel testTab = new JPanel(new MigLayout("insets 0, fill, wrap 1", "[grow,fill]", "[]"));
+    JPanel testTab = new JPanel(MigLayouts.singleColumnFill(0, "[]"));
     testTab.setOpaque(false);
     JPanel testRunnerPanel =
         PreferencesUiSupport.captionPanel(
-            "Message test", "insets 0, fill, wrap 2", "[right]10[grow,fill]", "[]6[]4[]4[]");
+            "Message test", MigLayouts.twoColumnFillForm(0, 10, MigLayouts.rowGaps(6, 4, 4)));
     testRunnerPanel.add(
         PreferencesUiSupport.helpText(
             "Paste a sample message to see which rules match. This is just a preview; it won't create real notifications."),
-        "span 2, growx, wmin 0, wrap");
-    testRunnerPanel.add(new JLabel("Sample"), "aligny top");
-    testRunnerPanel.add(testInScroll, "growx, h 100!, wrap");
-    testRunnerPanel.add(new JLabel("Matches"), "aligny top");
-    testRunnerPanel.add(testOutScroll, "growx, h 160!, wrap");
+        MigConstraints.span2GrowXMinWidth0Wrap());
+    testRunnerPanel.add(new JLabel("Sample"), MigConstraints.alignYTop());
+    testRunnerPanel.add(testInScroll, MigConstraints.growXHeightWrap(100));
+    testRunnerPanel.add(new JLabel("Matches"), MigConstraints.alignYTop());
+    testRunnerPanel.add(testOutScroll, MigConstraints.growXHeightWrap(160));
     testRunnerPanel.add(new JLabel(""));
-    testRunnerPanel.add(testButtons, "growx, wrap");
-    testTab.add(testRunnerPanel, "grow, push, wmin 0");
+    testRunnerPanel.add(testButtons, MigConstraints.growXWrap());
+    testTab.add(testRunnerPanel, MigConstraints.growPushMinWidth0());
 
     JTabbedPane subTabs = new JTabbedPane();
     Icon rulesTabIcon = SvgIcons.action("edit", 14);
@@ -221,7 +208,7 @@ public final class NotificationsPanelSupport {
         PreferencesUiSupport.padSubTab(ircEventTab),
         "Configure notifications for IRC events like kick/ban/invite/mode updates");
 
-    panel.add(subTabs, "grow, push, wmin 0");
+    panel.add(subTabs, MigConstraints.growPushMinWidth0());
 
     validationRefresher.refresh(notifications);
     return panel;

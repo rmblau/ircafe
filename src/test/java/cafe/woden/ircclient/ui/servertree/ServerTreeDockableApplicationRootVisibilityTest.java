@@ -4,6 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
+import cafe.woden.ircclient.config.api.ServerTreeRuntimeConfigPort;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.controls.ConnectButton;
 import cafe.woden.ircclient.ui.controls.DisconnectButton;
@@ -11,14 +14,41 @@ import cafe.woden.ircclient.ui.servertree.model.ServerTreeNodeClassifier;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.nio.file.Path;
 import java.util.Map;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.TreePath;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class ServerTreeDockableApplicationRootVisibilityTest {
+
+  @TempDir Path tempDir;
+
+  @Test
+  void applicationRootVisibilityInitializesFromRuntimeConfigAndPersistsChanges() throws Exception {
+    RuntimeConfigStore runtimeConfig =
+        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    runtimeConfig.rememberApplicationRootVisible(false);
+
+    onEdt(
+        () -> {
+          try {
+            ServerTreeDockable dockable = newDockable(runtimeConfig);
+
+            assertFalse(dockable.isApplicationRootVisible());
+
+            dockable.setApplicationRootVisible(true);
+
+            assertTrue(dockable.isApplicationRootVisible());
+            assertTrue(runtimeConfig.readApplicationRootVisible(false));
+          } catch (Exception e) {
+            throw new RuntimeException(e);
+          }
+        });
+  }
 
   @Test
   void hidingApplicationRootDoesNotCollapseIrcRoot() throws Exception {
@@ -129,9 +159,13 @@ class ServerTreeDockableApplicationRootVisibilityTest {
   }
 
   private static ServerTreeDockable newDockable() {
+    return newDockable(null);
+  }
+
+  private static ServerTreeDockable newDockable(ServerTreeRuntimeConfigPort runtimeConfig) {
     return ServerTreeDockableTestSupport.newDockable(
         null,
-        null,
+        runtimeConfig,
         null,
         null,
         null,

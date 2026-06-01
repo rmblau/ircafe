@@ -1,12 +1,14 @@
 package cafe.woden.ircclient.ui.settings.appearance;
 
-import cafe.woden.ircclient.config.UiProperties;
+import cafe.woden.ircclient.config.properties.UiProperties;
 import cafe.woden.ircclient.ui.settings.ColorSwatch;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorPickerDialogSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
 import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettings;
+import cafe.woden.ircclient.ui.util.MigConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.Color;
@@ -24,7 +26,6 @@ import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import net.miginfocom.swing.MigLayout;
 
 final class AppearanceAccentControlsFactory {
   private AppearanceAccentControlsFactory() {}
@@ -80,21 +81,21 @@ final class AppearanceAccentControlsFactory {
       JTextField hex,
       JButton pick,
       JButton clear) {
-    JPanel row = new JPanel(new MigLayout("insets 0, fillx, wrap 1", "[grow,fill]", "[]6[]"));
+    JPanel row = new JPanel(MigLayouts.singleColumn(MigLayouts.rows(2, 6)));
     row.setOpaque(false);
 
-    JPanel top = new JPanel(new MigLayout("insets 0, fillx", "[grow,fill]10[grow,fill]", "[]"));
+    JPanel top = new JPanel(MigLayouts.fillX("[grow,fill]10[grow,fill]", "[]"));
     top.setOpaque(false);
-    top.add(enabled, "growx");
-    top.add(preset, "growx, wmin 0");
-    row.add(top, "growx, wrap");
+    top.add(enabled, MigConstraints.growX());
+    top.add(preset, MigConstraints.growXMinWidth0());
+    row.add(top, MigConstraints.growXWrap());
 
-    JPanel bottom = new JPanel(new MigLayout("insets 0, fillx", "[grow,fill]6[]6[]", "[]"));
+    JPanel bottom = new JPanel(MigLayouts.fillX("[grow,fill]6[]6[]", "[]"));
     bottom.setOpaque(false);
-    bottom.add(hex, "w 110!");
+    bottom.add(hex, MigConstraints.width(110));
     bottom.add(pick);
     bottom.add(clear);
-    row.add(bottom, "growx");
+    row.add(bottom, MigConstraints.growX());
     return row;
   }
 

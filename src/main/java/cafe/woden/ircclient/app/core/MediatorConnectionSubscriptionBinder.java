@@ -3,7 +3,7 @@ package cafe.woden.ircclient.app.core;
 import cafe.woden.ircclient.app.AppSchedulers;
 import cafe.woden.ircclient.app.api.UiEventPort;
 import cafe.woden.ircclient.app.api.UiPort;
-import cafe.woden.ircclient.config.ServerRegistry;
+import cafe.woden.ircclient.config.servers.ServerRegistry;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 import org.springframework.stereotype.Component;

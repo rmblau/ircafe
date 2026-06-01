@@ -1,11 +1,13 @@
 package cafe.woden.ircclient.ui.settings.outgoing;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.OutgoingMessageRuntimeConfigPort;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorPickerDialogSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
 import cafe.woden.ircclient.ui.settings.UiSettings;
+import cafe.woden.ircclient.ui.util.MigConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -17,7 +19,6 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
-import net.miginfocom.swing.MigLayout;
 
 public final class OutgoingColorControlsSupport {
   private OutgoingColorControlsSupport() {}
@@ -64,10 +65,10 @@ public final class OutgoingColorControlsSupport {
 
     JPanel outgoingColorPanel =
         new JPanel(
-            new MigLayout("insets 0, fillx, wrap 3", "[grow,fill]8[nogrid]8[nogrid]", "[]4[]"));
+            MigLayouts.fillXWrap(0, 3, "[grow,fill]8[nogrid]8[nogrid]", MigLayouts.rows(2, 4)));
     outgoingColorPanel.setOpaque(false);
-    outgoingColorPanel.add(outgoingColorEnabled, "span 3, wrap");
-    outgoingColorPanel.add(outgoingColorHex, "w 110!");
+    outgoingColorPanel.add(outgoingColorEnabled, MigConstraints.spanXWrap(3));
+    outgoingColorPanel.add(outgoingColorHex, MigConstraints.width(110));
     outgoingColorPanel.add(outgoingPick);
     outgoingColorPanel.add(outgoingPreview);
 
@@ -115,7 +116,7 @@ public final class OutgoingColorControlsSupport {
   }
 
   public static void rememberSettings(
-      RuntimeConfigStore runtimeConfig, OutgoingLineSettings settings) {
+      OutgoingMessageRuntimeConfigPort runtimeConfig, OutgoingLineSettings settings) {
     runtimeConfig.rememberClientLineColorEnabled(settings.clientLineColorEnabled());
     runtimeConfig.rememberClientLineColor(settings.clientLineColor());
     runtimeConfig.rememberOutgoingDeliveryIndicatorsEnabled(

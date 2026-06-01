@@ -66,6 +66,20 @@ class StatusBarTest {
   }
 
   @Test
+  void identityLabelShowsNickAndCurrentUserModes() throws Exception {
+    StatusBar statusBar = onEdt(StatusBar::new);
+
+    onEdtVoid(() -> statusBar.setIdentity("agarose", "g"));
+
+    JLabel identityLabel = readLabel(statusBar, "identityLabel");
+    assertEquals("Nick: agarose(+g)", identityLabel.getText());
+    assertEquals("Current nick: agarose | User modes: +g", identityLabel.getToolTipText());
+
+    onEdtVoid(() -> statusBar.setIdentity("", ""));
+    assertEquals("Nick: -", identityLabel.getText());
+  }
+
+  @Test
   void lagIndicatorUsesSameForegroundAsStatusText() throws Exception {
     StatusBar statusBar = onEdt(StatusBar::new);
 

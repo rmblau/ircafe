@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.chat.fold;
 
 import cafe.woden.ircclient.ui.util.UiColorKeys;
+import cafe.woden.ircclient.ui.util.UiFontKeys;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Insets;
@@ -38,8 +39,8 @@ public final class HistoryDividerComponent extends JPanel {
     label.setText(text == null ? "" : text);
 
     // Match transcript fonts as closely as we can.
-    Font base = UIManager.getFont("TextPane.font");
-    if (base == null) base = UIManager.getFont("Label.font");
+    Font base = UIManager.getFont(UiFontKeys.TEXT_PANE_FONT);
+    if (base == null) base = UIManager.getFont(UiFontKeys.LABEL_FONT);
     setTranscriptFont(base);
 
     applyTheme();

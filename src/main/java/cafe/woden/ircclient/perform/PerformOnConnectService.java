@@ -6,7 +6,7 @@ import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.commands.CommandParser;
 import cafe.woden.ircclient.app.commands.ParsedInput;
 import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.ServerCatalog;
+import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.irc.DisconnectRequestSource;
 import cafe.woden.ircclient.irc.IrcClientService;
 import cafe.woden.ircclient.irc.IrcDisconnectWithSourcePort;

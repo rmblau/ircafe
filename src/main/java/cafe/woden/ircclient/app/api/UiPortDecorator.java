@@ -199,6 +199,16 @@ public abstract class UiPortDecorator implements UiPort {
   }
 
   @Override
+  public void setStatusBarIdentity(String serverId, String nick, String userModes) {
+    delegate.setStatusBarIdentity(serverId, nick, userModes);
+  }
+
+  @Override
+  public void setServerUserModes(String serverId, String userModes) {
+    delegate.setServerUserModes(serverId, userModes);
+  }
+
+  @Override
   public void enqueueStatusNotice(String text, TargetRef clickTarget) {
     delegate.enqueueStatusNotice(text, clickTarget);
   }

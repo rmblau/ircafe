@@ -13,9 +13,9 @@ import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesBus;
-import cafe.woden.ircclient.config.LogProperties;
 import cafe.woden.ircclient.config.PushyPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.properties.LogProperties;
 import cafe.woden.ircclient.irc.backend.IrcHeartbeatMaintenanceService;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionCatalog;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
@@ -383,8 +383,8 @@ class PreferencesDialogFunctionalTest {
     when(accentSettingsBus.get())
         .thenReturn(
             ThemeAppearanceSettingsTestFixtures.accent(
-                cafe.woden.ircclient.config.UiProperties.DEFAULT_ACCENT_COLOR,
-                cafe.woden.ircclient.config.UiProperties.DEFAULT_ACCENT_STRENGTH));
+                cafe.woden.ircclient.config.properties.UiProperties.DEFAULT_ACCENT_COLOR,
+                cafe.woden.ircclient.config.properties.UiProperties.DEFAULT_ACCENT_STRENGTH));
     ThemeTweakSettingsBus tweakSettingsBus = mock(ThemeTweakSettingsBus.class);
     when(tweakSettingsBus.get()).thenReturn(ThemeAppearanceSettingsTestFixtures.tweakDefaults());
     ChatThemeSettingsBus chatThemeSettingsBus = mock(ChatThemeSettingsBus.class);

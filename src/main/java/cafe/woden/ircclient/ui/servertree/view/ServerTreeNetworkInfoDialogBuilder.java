@@ -7,6 +7,9 @@ import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionRegistry;
 import cafe.woden.ircclient.ui.servertree.ServerTreeConventions;
 import cafe.woden.ircclient.ui.servertree.state.ServerRuntimeMetadata;
 import cafe.woden.ircclient.ui.servertree.viewmodel.ServerTreeConnectionStateViewModel;
+import cafe.woden.ircclient.ui.util.MigConstraints;
+import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.awt.Dialog;
@@ -40,7 +43,6 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.table.DefaultTableModel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import net.miginfocom.swing.MigLayout;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
 
@@ -148,8 +150,10 @@ public final class ServerTreeNetworkInfoDialogBuilder {
     dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 
     JPanel body =
-        new JPanel(new MigLayout("insets 12, fill, wrap 1", "[grow,fill]", "[][grow,fill]"));
-    body.add(buildNetworkSummaryPanel(context, sid, metadata), "growx");
+        new JPanel(
+            MigLayouts.fillWrap(
+                12, 1, MigLayoutConstraints.GROW_FILL, MigLayoutConstraints.LEADING_GROW_FILL));
+    body.add(buildNetworkSummaryPanel(context, sid, metadata), MigConstraints.growX());
 
     JTabbedPane tabs = new JTabbedPane();
     tabs.addTab("Overview", buildOverviewTab(context, sid, metadata));
@@ -157,7 +161,7 @@ public final class ServerTreeNetworkInfoDialogBuilder {
         "Capabilities (" + metadata.ircv3Caps.size() + ")",
         buildCapabilitiesInfoPanel(context, sid, metadata));
     tabs.addTab("ISUPPORT (" + metadata.isupport.size() + ")", buildIsupportInfoPanel(metadata));
-    body.add(tabs, "grow, push");
+    body.add(tabs, MigConstraints.growPush());
 
     JScrollPane bodyScroll =
         new JScrollPane(
@@ -170,14 +174,16 @@ public final class ServerTreeNetworkInfoDialogBuilder {
 
     JButton close = new JButton("Close");
     close.addActionListener(ev -> dialog.dispose());
-    JPanel actions = new JPanel(new MigLayout("insets 0, fillx", "[grow,fill][]", "[]"));
-    actions.add(new JLabel(""), "growx");
-    actions.add(close, "tag ok");
+    JPanel actions = new JPanel(MigLayouts.fillXGrowTrailing());
+    actions.add(new JLabel(""), MigConstraints.growX());
+    actions.add(close, MigConstraints.tagOk());
 
     JPanel content =
-        new JPanel(new MigLayout("insets 0, fill, wrap 1", "[grow,fill]", "[grow,fill][]"));
-    content.add(bodyScroll, "grow, push");
-    content.add(actions, "growx");
+        new JPanel(
+            MigLayouts.fillWrap(
+                0, 1, MigLayoutConstraints.GROW_FILL, MigLayoutConstraints.GROW_FILL_TRAILING));
+    content.add(bodyScroll, MigConstraints.growPush());
+    content.add(actions, MigConstraints.growX());
 
     dialog.setContentPane(content);
     dialog.getRootPane().setDefaultButton(close);
@@ -192,7 +198,7 @@ public final class ServerTreeNetworkInfoDialogBuilder {
   private JPanel buildNetworkSummaryPanel(
       Context context, String serverId, ServerRuntimeMetadata metadata) {
     JPanel panel =
-        new JPanel(new MigLayout("insets 8, fillx, wrap 2", "[grow,fill][right]", "[]4[]"));
+        new JPanel(MigLayouts.fillXWrap(8, 2, "[grow,fill][right]", MigLayouts.rows(2, 4)));
     panel.setBorder(BorderFactory.createTitledBorder("Summary"));
 
     ConnectionState state = context.connectionStateForServer(serverId);
@@ -203,12 +209,12 @@ public final class ServerTreeNetworkInfoDialogBuilder {
     if (base != null) {
       title.setFont(base.deriveFont(Font.BOLD, base.getSize2D() + 1.5f));
     }
-    panel.add(title, "growx");
+    panel.add(title, MigConstraints.growX());
     panel.add(new JLabel("State: " + ServerTreeConnectionStateViewModel.stateLabel(state)));
 
     String endpoint = formatConnectedEndpoint(metadata.connectedHost, metadata.connectedPort);
     String nick = fallbackInfoValue(metadata.nick);
-    panel.add(new JLabel("Network ID: " + serverId), "span 2, growx");
+    panel.add(new JLabel("Network ID: " + serverId), MigConstraints.span2GrowX());
     panel.add(
         new JLabel(
             "Endpoint: "
@@ -221,22 +227,23 @@ public final class ServerTreeNetworkInfoDialogBuilder {
                 + renderBackendInfo(
                     context.backendDisplayNameForServer(serverId),
                     context.backendIdForServer(serverId))),
-        "span 2, growx");
+        MigConstraints.span2GrowX());
     return panel;
   }
 
   private JComponent buildOverviewTab(
       Context context, String serverId, ServerRuntimeMetadata metadata) {
     JPanel overview =
-        new JPanel(new MigLayout("insets 8, fill, wrap 2", "[grow,fill]12[grow,fill]", "[top]"));
-    overview.add(buildConnectionInfoPanel(context, serverId, metadata), "grow");
-    overview.add(buildServerInfoPanel(metadata), "grow");
+        new JPanel(
+            MigLayouts.fillWrap(8, 2, MigLayoutConstraints.GROW_FILL_GAP_12_GROW_FILL, "[top]"));
+    overview.add(buildConnectionInfoPanel(context, serverId, metadata), MigConstraints.grow());
+    overview.add(buildServerInfoPanel(metadata), MigConstraints.grow());
     return overview;
   }
 
   private JPanel buildConnectionInfoPanel(
       Context context, String serverId, ServerRuntimeMetadata metadata) {
-    JPanel panel = new JPanel(new MigLayout("insets 8, fillx, wrap 2", "[right][grow,fill]"));
+    JPanel panel = new JPanel(MigLayouts.fillXWrap(8, 2, MigLayoutConstraints.RIGHT_GROW_FILL, ""));
     panel.setBorder(BorderFactory.createTitledBorder("Connection"));
     for (InfoRow row : connectionInfoRows(context, serverId, metadata)) {
       addInfoRow(panel, row.key(), row.value());
@@ -281,7 +288,7 @@ public final class ServerTreeNetworkInfoDialogBuilder {
   }
 
   private JPanel buildServerInfoPanel(ServerRuntimeMetadata metadata) {
-    JPanel panel = new JPanel(new MigLayout("insets 8, fillx, wrap 2", "[right][grow,fill]"));
+    JPanel panel = new JPanel(MigLayouts.fillXWrap(8, 2, MigLayoutConstraints.RIGHT_GROW_FILL, ""));
     panel.setBorder(BorderFactory.createTitledBorder("Server"));
     addInfoRow(panel, "Server name", fallbackInfoValue(metadata.serverName));
     addInfoRow(panel, "Version", fallbackInfoValue(metadata.serverVersion));
@@ -294,14 +301,14 @@ public final class ServerTreeNetworkInfoDialogBuilder {
       Context context, String serverId, ServerRuntimeMetadata metadata) {
     JPanel panel =
         new JPanel(
-            new MigLayout(
-                "insets 8, fill, wrap 1", "[grow,fill]", "[]6[]6[]6[]6[grow,fill]6[grow,fill]"));
-    panel.add(buildCapabilityCountsRow(metadata), "growx");
-    panel.add(new JLabel(capabilityStatusSummary(metadata)), "growx");
+            MigLayouts.fillWrap(
+                8, 1, MigLayoutConstraints.GROW_FILL, "[]6[]6[]6[]6[grow,fill]6[grow,fill]"));
+    panel.add(buildCapabilityCountsRow(metadata), MigConstraints.growX());
+    panel.add(new JLabel(capabilityStatusSummary(metadata)), MigConstraints.growX());
     panel.add(
         new JLabel("Toggle Requested to send CAP REQ now and persist the startup preference."),
-        "growx");
-    panel.add(buildCapabilityFeatureSummaryPanel(metadata), "growx");
+        MigConstraints.growX());
+    panel.add(buildCapabilityFeatureSummaryPanel(metadata), MigConstraints.growX());
 
     TreeMap<String, ServerRuntimeMetadata.CapabilityState> sortedObserved =
         new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
@@ -318,8 +325,8 @@ public final class ServerTreeNetworkInfoDialogBuilder {
     }
 
     if (allCapabilities.isEmpty()) {
-      panel.add(new JLabel("No IRCv3 capabilities observed yet."), "grow");
-      panel.add(buildCapabilityTransitionsPanel(metadata), "grow");
+      panel.add(new JLabel("No IRCv3 capabilities observed yet."), MigConstraints.grow());
+      panel.add(buildCapabilityTransitionsPanel(metadata), MigConstraints.grow());
       return panel;
     }
 
@@ -384,20 +391,22 @@ public final class ServerTreeNetworkInfoDialogBuilder {
     table.getTableHeader().setReorderingAllowed(false);
     JScrollPane scroll = new JScrollPane(table);
     scroll.getVerticalScrollBar().setUnitIncrement(16);
-    panel.add(scroll, "grow");
-    panel.add(buildCapabilityTransitionsPanel(metadata), "grow");
+    panel.add(scroll, MigConstraints.grow());
+    panel.add(buildCapabilityTransitionsPanel(metadata), MigConstraints.grow());
     return panel;
   }
 
   private JComponent buildCapabilityFeatureSummaryPanel(ServerRuntimeMetadata metadata) {
     JPanel panel =
-        new JPanel(new MigLayout("insets 0, fill, wrap 1", "[grow,fill]", "[][grow,fill]"));
+        new JPanel(
+            MigLayouts.fillWrap(
+                0, 1, MigLayoutConstraints.GROW_FILL, MigLayoutConstraints.LEADING_GROW_FILL));
     panel.setBorder(BorderFactory.createTitledBorder("Feature readiness"));
 
     List<CapabilityFeatureStatus> statuses =
         computeCapabilityFeatureStatuses(metadata, ircv3ExtensionCatalog.visibleFeatures());
     if (statuses.isEmpty()) {
-      panel.add(new JLabel("No mapped IRCv3 feature requirements."), "growx");
+      panel.add(new JLabel("No mapped IRCv3 feature requirements."), MigConstraints.growX());
       return panel;
     }
 
@@ -413,7 +422,7 @@ public final class ServerTreeNetworkInfoDialogBuilder {
     JScrollPane scroll = new JScrollPane(table);
     scroll.setPreferredSize(new Dimension(1, 140));
     scroll.getVerticalScrollBar().setUnitIncrement(16);
-    panel.add(scroll, "growx");
+    panel.add(scroll, MigConstraints.growX());
     return panel;
   }
 
@@ -501,10 +510,12 @@ public final class ServerTreeNetworkInfoDialogBuilder {
 
   private JComponent buildCapabilityTransitionsPanel(ServerRuntimeMetadata metadata) {
     JPanel panel =
-        new JPanel(new MigLayout("insets 0, fill, wrap 1", "[grow,fill]", "[][grow,fill]"));
+        new JPanel(
+            MigLayouts.fillWrap(
+                0, 1, MigLayoutConstraints.GROW_FILL, MigLayoutConstraints.LEADING_GROW_FILL));
     panel.setBorder(BorderFactory.createTitledBorder("Recent CAP transitions"));
     if (metadata.ircv3CapTransitions.isEmpty()) {
-      panel.add(new JLabel("No CAP transitions observed yet."), "growx");
+      panel.add(new JLabel("No CAP transitions observed yet."), MigConstraints.growX());
       return panel;
     }
 
@@ -524,15 +535,17 @@ public final class ServerTreeNetworkInfoDialogBuilder {
     JTable table = buildReadOnlyTable(new String[] {"Time", "CAP", "Capability", "State"}, rows);
     JScrollPane scroll = new JScrollPane(table);
     scroll.getVerticalScrollBar().setUnitIncrement(16);
-    panel.add(scroll, "grow");
+    panel.add(scroll, MigConstraints.grow());
     return panel;
   }
 
   private JPanel buildIsupportInfoPanel(ServerRuntimeMetadata metadata) {
     JPanel panel =
-        new JPanel(new MigLayout("insets 8, fill, wrap 1", "[grow,fill]", "[grow,fill]"));
+        new JPanel(
+            MigLayouts.fillWrap(
+                8, 1, MigLayoutConstraints.GROW_FILL, MigLayoutConstraints.GROW_FILL));
     if (metadata.isupport.isEmpty()) {
-      panel.add(new JLabel("No ISUPPORT tokens observed yet."), "grow");
+      panel.add(new JLabel("No ISUPPORT tokens observed yet."), MigConstraints.grow());
       return panel;
     }
 
@@ -550,7 +563,7 @@ public final class ServerTreeNetworkInfoDialogBuilder {
     JTable table = buildReadOnlyTable(new String[] {"Token", "Value"}, rows);
     JScrollPane scroll = new JScrollPane(table);
     scroll.getVerticalScrollBar().setUnitIncrement(16);
-    panel.add(scroll, "grow");
+    panel.add(scroll, MigConstraints.grow());
     return panel;
   }
 
@@ -570,26 +583,23 @@ public final class ServerTreeNetworkInfoDialogBuilder {
 
     JPanel row =
         new JPanel(
-            new MigLayout(
-                "insets 0, fillx, wrap 4",
-                "[grow,fill]8[grow,fill]8[grow,fill]8[grow,fill]",
-                "[]"));
+            MigLayouts.fillXWrap(0, 4, "[grow,fill]8[grow,fill]8[grow,fill]8[grow,fill]", "[]"));
     row.add(
         buildCountChip(
             "Enabled", counts.getOrDefault(ServerRuntimeMetadata.CapabilityState.ENABLED, 0)),
-        "growx");
+        MigConstraints.growX());
     row.add(
         buildCountChip(
             "Available", counts.getOrDefault(ServerRuntimeMetadata.CapabilityState.AVAILABLE, 0)),
-        "growx");
+        MigConstraints.growX());
     row.add(
         buildCountChip(
             "Disabled", counts.getOrDefault(ServerRuntimeMetadata.CapabilityState.DISABLED, 0)),
-        "growx");
+        MigConstraints.growX());
     row.add(
         buildCountChip(
             "Removed", counts.getOrDefault(ServerRuntimeMetadata.CapabilityState.REMOVED, 0)),
-        "growx");
+        MigConstraints.growX());
     return row;
   }
 
@@ -651,7 +661,8 @@ public final class ServerTreeNetworkInfoDialogBuilder {
   }
 
   private static JPanel buildCountChip(String label, int count) {
-    JPanel chip = new JPanel(new MigLayout("insets 6, wrap 1", "[grow,fill]", "[]0[]"));
+    JPanel chip =
+        new JPanel(MigLayouts.wrap(6, 1, MigLayoutConstraints.GROW_FILL, MigLayouts.rows(2, 0)));
     Color border = UIManager.getColor(UiColorKeys.SEPARATOR_FOREGROUND);
     if (border == null) {
       border = UIManager.getColor(UiColorKeys.COMPONENT_BORDER_COLOR);
@@ -672,8 +683,8 @@ public final class ServerTreeNetworkInfoDialogBuilder {
       textLabel.setForeground(muted);
     }
 
-    chip.add(countLabel, "alignx center");
-    chip.add(textLabel, "alignx center");
+    chip.add(countLabel, MigConstraints.alignXCenter());
+    chip.add(textLabel, MigConstraints.alignXCenter());
     return chip;
   }
 
@@ -696,10 +707,10 @@ public final class ServerTreeNetworkInfoDialogBuilder {
   }
 
   private static void addInfoRow(JPanel panel, String key, String value) {
-    panel.add(new JLabel(key + ":"), "aligny top");
+    panel.add(new JLabel(key + ":"), MigConstraints.alignYTop());
     JLabel valueLabel = new JLabel(fallbackInfoValue(value));
     valueLabel.setToolTipText(fallbackInfoValue(value));
-    panel.add(valueLabel, "growx, wrap");
+    panel.add(valueLabel, MigConstraints.growXWrap());
   }
 
   private static String renderBackendInfo(String backendDisplayName, String backendId) {

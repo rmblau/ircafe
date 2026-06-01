@@ -1,11 +1,13 @@
 package cafe.woden.ircclient.ui.settings.nickcolor;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.NickColorRuntimeConfigPort;
 import cafe.woden.ircclient.ui.chat.NickColorService;
 import cafe.woden.ircclient.ui.chat.NickColorSettings;
 import cafe.woden.ircclient.ui.chat.NickColorSettingsBus;
 import cafe.woden.ircclient.ui.nickcolors.NickColorOverridesDialog;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
+import cafe.woden.ircclient.ui.util.MigConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import java.awt.Window;
 import java.util.List;
 import javax.swing.JButton;
@@ -13,7 +15,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
-import net.miginfocom.swing.MigLayout;
 
 public final class NickColorControlsSupport {
   private NickColorControlsSupport() {}
@@ -67,19 +68,19 @@ public final class NickColorControlsSupport {
         });
 
     JPanel panel =
-        new JPanel(new MigLayout("insets 0, fillx, wrap 2", "[grow,fill]8[nogrid]", "[]6[]6[]6[]"));
+        new JPanel(MigLayouts.fillXWrap(0, 2, "[grow,fill]8[nogrid]", MigLayouts.rows(4, 6)));
     panel.setOpaque(false);
-    panel.add(enabled, "span 2, wrap");
+    panel.add(enabled, MigConstraints.spanXWrap(2));
     panel.add(new JLabel("Minimum contrast ratio:"));
-    panel.add(minContrast, "w 110!, wrap");
-    panel.add(overrides, "span 2, alignx left, wrap");
+    panel.add(minContrast, MigConstraints.widthWrap(110));
+    panel.add(overrides, MigConstraints.spanXAlignXLeftWrap(2));
     panel.add(
         PreferencesUiSupport.helpText(
             "Tip: If nick colors look too similar to the background, increase the contrast ratio.\n"
                 + "Overrides always win over the palette."),
-        "span 2, growx, wmin 0, wrap");
-    panel.add(new JLabel("Preview:"), "span 2, wrap");
-    panel.add(preview, "span 2, growx");
+        MigConstraints.span2GrowXMinWidth0Wrap());
+    panel.add(new JLabel("Preview:"), MigConstraints.spanXWrap(2));
+    panel.add(preview, MigConstraints.span2GrowX());
     updatePreview.run();
 
     return new NickColorControls(enabled, minContrast, overrides, panel);
@@ -91,7 +92,7 @@ public final class NickColorControlsSupport {
   }
 
   public static void rememberSettings(
-      RuntimeConfigStore runtimeConfig,
+      NickColorRuntimeConfigPort runtimeConfig,
       NickColorSettingsBus nickColorSettingsBus,
       NickColorSettings settings) {
     if (nickColorSettingsBus != null) {

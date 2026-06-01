@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.ui.settings.commands;
 
 import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.UserCommandAliasesConfigPort;
 import cafe.woden.ircclient.model.UserCommandAlias;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
@@ -191,7 +191,7 @@ public final class UserCommandAliasesControlsSupport {
   }
 
   public static void rememberSettings(
-      RuntimeConfigStore runtimeConfig,
+      UserCommandAliasesConfigPort runtimeConfig,
       UserCommandAliasesPort aliasesBus,
       UserCommandAliasSettings settings) {
     runtimeConfig.rememberUserCommandAliases(settings.aliases());

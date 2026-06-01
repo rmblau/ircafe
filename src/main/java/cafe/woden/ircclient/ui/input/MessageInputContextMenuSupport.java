@@ -239,32 +239,39 @@ public final class MessageInputContextMenuSupport {
           public void popupMenuCanceled(PopupMenuEvent e) {}
         });
 
-    // Use an explicit listener so enablement refreshes before showing.
-    input.addMouseListener(
-        new MouseAdapter() {
-          private void maybeShow(MouseEvent e) {
-            if (!e.isPopupTrigger()) return;
-            if (!input.isShowing()) return;
+    MouseAdapter popupTriggerListener = createPopupTriggerListener(menu, refreshEnabledStates);
+    input.addMouseListener(popupTriggerListener);
+    if (input.getParent() instanceof JViewport viewport) {
+      viewport.addMouseListener(popupTriggerListener);
+    }
+  }
 
-            if (!input.hasFocus()) input.requestFocusInWindow();
+  private MouseAdapter createPopupTriggerListener(JPopupMenu menu, Runnable refreshEnabledStates) {
+    return new MouseAdapter() {
+      private void maybeShow(MouseEvent e) {
+        if (!e.isPopupTrigger()) return;
+        if (!input.isShowing()) return;
 
-            positionCaretForPopup(e.getPoint());
+        if (!input.hasFocus()) input.requestFocusInWindow();
 
-            refreshEnabledStates.run();
-            PopupMenuThemeSupport.prepareForDisplay(menu);
-            menu.show(e.getComponent(), e.getX(), e.getY());
-          }
+        Point inputPoint = SwingUtilities.convertPoint(e.getComponent(), e.getPoint(), input);
+        positionCaretForPopup(inputPoint);
 
-          @Override
-          public void mousePressed(MouseEvent e) {
-            maybeShow(e);
-          }
+        refreshEnabledStates.run();
+        PopupMenuThemeSupport.prepareForDisplay(menu);
+        menu.show(e.getComponent(), e.getX(), e.getY());
+      }
 
-          @Override
-          public void mouseReleased(MouseEvent e) {
-            maybeShow(e);
-          }
-        });
+      @Override
+      public void mousePressed(MouseEvent e) {
+        maybeShow(e);
+      }
+
+      @Override
+      public void mouseReleased(MouseEvent e) {
+        maybeShow(e);
+      }
+    };
   }
 
   void positionCaretForPopup(Point point) {

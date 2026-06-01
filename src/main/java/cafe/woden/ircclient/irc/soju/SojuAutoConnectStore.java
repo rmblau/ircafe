@@ -1,8 +1,8 @@
 package cafe.woden.ircclient.irc.soju;
 
 import cafe.woden.ircclient.bouncer.AbstractBouncerAutoConnectStore;
-import cafe.woden.ircclient.config.SojuProperties;
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
+import cafe.woden.ircclient.config.properties.SojuProperties;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;

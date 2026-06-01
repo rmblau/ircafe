@@ -89,12 +89,12 @@ class MessageInputNickCompletionSupportTest {
     input.setCaretPosition(2);
 
     List<String> replacements = replacementTextsForCurrentToken(support, input);
-    assertTrue(replacements.contains("alice"));
-    assertTrue(replacements.contains("alina"));
+    assertTrue(replacements.contains("alice: "));
+    assertTrue(replacements.contains("alina: "));
     assertTrue(replacements.contains("almost"));
     assertTrue(replacements.contains("almond"));
-    assertTrue(replacements.indexOf("alice") < replacements.indexOf("almost"));
-    assertTrue(replacements.indexOf("alina") < replacements.indexOf("almost"));
+    assertTrue(replacements.indexOf("alice: ") < replacements.indexOf("almost"));
+    assertTrue(replacements.indexOf("alina: ") < replacements.indexOf("almost"));
     assertTrue(replacements.indexOf("almost") < replacements.indexOf("almond"));
   }
 
@@ -110,9 +110,9 @@ class MessageInputNickCompletionSupportTest {
     input.setCaretPosition(1);
 
     List<String> replacements = replacementTextsForCurrentToken(support, input);
-    assertEquals("al", replacements.getFirst());
-    assertTrue(replacements.indexOf("al") < replacements.indexOf("alice"));
-    assertTrue(replacements.indexOf("alice") < replacements.indexOf("aardvark"));
+    assertEquals("al: ", replacements.getFirst());
+    assertTrue(replacements.indexOf("al: ") < replacements.indexOf("alice: "));
+    assertTrue(replacements.indexOf("alice: ") < replacements.indexOf("aardvark: "));
   }
 
   @Test
@@ -127,7 +127,37 @@ class MessageInputNickCompletionSupportTest {
     input.setCaretPosition(3);
 
     List<String> replacements = replacementTextsForCurrentToken(support, input);
-    assertEquals(List.of("otr", "otrbot"), replacements);
+    assertEquals(List.of("otr: ", "otrbot: "), replacements);
+  }
+
+  @Test
+  void completionPopupDisplaysBareNickButReplacesWithAddressingSuffixForFirstWordNick()
+      throws Exception {
+    JTextField input = new JTextField();
+    MessageInputUndoSupport undoSupport = new MessageInputUndoSupport(input, () -> false);
+    MessageInputNickCompletionSupport support =
+        new MessageInputNickCompletionSupport(new JPanel(), input, undoSupport);
+    support.setNickCompletions(List.of("agarose"));
+
+    input.setText("aga");
+    input.setCaretPosition(3);
+
+    assertEquals(List.of("agarose"), inputTextsForCurrentToken(support, input));
+    assertEquals(List.of("agarose: "), replacementTextsForCurrentToken(support, input));
+  }
+
+  @Test
+  void completionPopupDoesNotUseAddressingReplacementAfterFirstWord() throws Exception {
+    JTextField input = new JTextField();
+    MessageInputUndoSupport undoSupport = new MessageInputUndoSupport(input, () -> false);
+    MessageInputNickCompletionSupport support =
+        new MessageInputNickCompletionSupport(new JPanel(), input, undoSupport);
+    support.setNickCompletions(List.of("agarose"));
+
+    input.setText("hello aga");
+    input.setCaretPosition(input.getText().length());
+
+    assertEquals(List.of("agarose"), replacementTextsForCurrentToken(support, input));
   }
 
   @Test
@@ -180,18 +210,79 @@ class MessageInputNickCompletionSupportTest {
   }
 
   @Test
-  void tabGuardDoesNotForcePopupWhenOnlyWordSuggestionsExist() throws Exception {
+  void tabGuardForcesPopupWhenOnlyWordSuggestionsExist() throws Exception {
     JTextField input = new JTextField();
     MessageInputUndoSupport undoSupport = new MessageInputUndoSupport(input, () -> false);
     MessageInputNickCompletionSupport support =
         new MessageInputNickCompletionSupport(
-            new JPanel(), input, undoSupport, (token, maxSuggestions) -> List.of("hello"));
+            new JPanel(), input, undoSupport, (token, maxSuggestions) -> List.of("forensic"));
     support.setNickCompletions(List.of("alice"));
 
-    input.setText("helo");
-    input.setCaretPosition(4);
+    input.setText("forensi");
+    input.setCaretPosition(7);
 
-    assertFalse(shouldForcePopupInsteadOfImmediateCompletion(support, "helo", 4));
+    assertTrue(shouldForcePopupInsteadOfImmediateCompletion(support, "forensi", 7));
+  }
+
+  @Test
+  void tabCyclingReplacesFirstWordNickAndCyclesThroughMatches() throws Exception {
+    JTextField input = new JTextField();
+    MessageInputUndoSupport undoSupport = new MessageInputUndoSupport(input, () -> false);
+    MessageInputNickCompletionSupport support =
+        new MessageInputNickCompletionSupport(new JPanel(), input, undoSupport);
+    support.setNickCompletions(List.of("alice", "alina"));
+    support.setCompletionPreferences(true, true);
+
+    input.setText("ali");
+    input.setCaretPosition(3);
+
+    assertTrue(tryCycleNickCompletion(support, "ali", 3));
+    assertEquals("alice: ", input.getText());
+    assertEquals(input.getText().length(), input.getCaretPosition());
+
+    assertTrue(tryCycleNickCompletion(support, input.getText(), input.getCaretPosition()));
+    assertEquals("alina: ", input.getText());
+    assertEquals(input.getText().length(), input.getCaretPosition());
+  }
+
+  @Test
+  void tabCyclingHonorsDisabledAddressSuffixPreference() throws Exception {
+    JTextField input = new JTextField();
+    MessageInputUndoSupport undoSupport = new MessageInputUndoSupport(input, () -> false);
+    MessageInputNickCompletionSupport support =
+        new MessageInputNickCompletionSupport(new JPanel(), input, undoSupport);
+    support.setNickCompletions(List.of("alice"));
+    support.setCompletionPreferences(true, false);
+
+    input.setText("ali");
+    input.setCaretPosition(3);
+
+    assertTrue(tryCycleNickCompletion(support, "ali", 3));
+    assertEquals("alice", input.getText());
+  }
+
+  @Test
+  void tabCyclingAddressSuffixNormalizesWhitespaceBeforeRemainingText() throws Exception {
+    JTextField input = new JTextField();
+    MessageInputUndoSupport undoSupport = new MessageInputUndoSupport(input, () -> false);
+    MessageInputNickCompletionSupport support =
+        new MessageInputNickCompletionSupport(new JPanel(), input, undoSupport);
+    support.setNickCompletions(List.of("alice"));
+    support.setCompletionPreferences(true, true);
+
+    input.setText("ali  hello");
+    input.setCaretPosition(3);
+
+    assertTrue(tryCycleNickCompletion(support, "ali  hello", 3));
+    assertEquals("alice: hello", input.getText());
+  }
+
+  @Test
+  void disabledAddressSuffixPreferenceSuppressesPopupSelectionSuffix() throws Exception {
+    MessageInputNickCompletionSupport support = newSupport(List.of("alice", "alina"));
+    support.setCompletionPreferences(false, false);
+
+    assertFalse(shouldArmPendingSuffix(support, "a", 1, "al", 2));
   }
 
   @Test
@@ -248,11 +339,24 @@ class MessageInputNickCompletionSupportTest {
 
   private static List<String> replacementTextsForCurrentToken(
       MessageInputNickCompletionSupport support, JTextField input) throws Exception {
+    return completionsForCurrentToken(support, input).stream()
+        .map(Completion::getReplacementText)
+        .toList();
+  }
+
+  private static List<String> inputTextsForCurrentToken(
+      MessageInputNickCompletionSupport support, JTextField input) throws Exception {
+    return completionsForCurrentToken(support, input).stream()
+        .map(Completion::getInputText)
+        .toList();
+  }
+
+  private static List<Completion> completionsForCurrentToken(
+      MessageInputNickCompletionSupport support, JTextField input) throws Exception {
     Field field = MessageInputNickCompletionSupport.class.getDeclaredField("completionProvider");
     field.setAccessible(true);
     CompletionProvider provider = (CompletionProvider) field.get(support);
-    List<Completion> completions = provider.getCompletions(input);
-    return completions.stream().map(Completion::getReplacementText).toList();
+    return provider.getCompletions(input);
   }
 
   private static boolean shouldArmPendingSuffix(
@@ -275,6 +379,16 @@ class MessageInputNickCompletionSupportTest {
     Method method =
         MessageInputNickCompletionSupport.class.getDeclaredMethod(
             "shouldForcePopupInsteadOfImmediateCompletion", String.class, int.class);
+    method.setAccessible(true);
+    return (boolean) method.invoke(support, beforeText, beforeCaret);
+  }
+
+  private static boolean tryCycleNickCompletion(
+      MessageInputNickCompletionSupport support, String beforeText, int beforeCaret)
+      throws Exception {
+    Method method =
+        MessageInputNickCompletionSupport.class.getDeclaredMethod(
+            "tryCycleNickCompletion", String.class, int.class);
     method.setAccessible(true);
     return (boolean) method.invoke(support, beforeText, beforeCaret);
   }

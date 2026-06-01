@@ -6,7 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.app.api.UiSettingsPort;
-import cafe.woden.ircclient.app.api.UiSettingsSnapshot;
+import cafe.woden.ircclient.app.api.UiSettingsSnapshotTestFixtures;
 import cafe.woden.ircclient.model.TargetRef;
 import java.lang.reflect.Field;
 import java.time.Duration;
@@ -72,7 +72,8 @@ class NotificationStoreTest {
   void cooldownCanBeDisabledViaUiSettingsPort() {
     UiSettingsPort settings = mock(UiSettingsPort.class);
     when(settings.get())
-        .thenReturn(new UiSettingsSnapshot(List.of(), 0, 30, true, true, true, true, true));
+        .thenReturn(
+            UiSettingsSnapshotTestFixtures.builder().notificationRuleCooldownSeconds(0).build());
 
     NotificationStore store = new NotificationStore(settings, 2000);
     TargetRef chan = new TargetRef("libera", "#ircafe");

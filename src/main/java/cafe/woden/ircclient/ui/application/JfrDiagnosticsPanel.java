@@ -3,7 +3,10 @@ package cafe.woden.ircclient.ui.application;
 import cafe.woden.ircclient.diagnostics.JfrRuntimeEventsService;
 import cafe.woden.ircclient.diagnostics.RuntimeDiagnosticEvent;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.util.MigConstraints;
+import cafe.woden.ircclient.ui.util.MigLayouts;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
+import cafe.woden.ircclient.ui.util.UiFontKeys;
 import cafe.woden.ircclient.util.VirtualThreads;
 import java.awt.BasicStroke;
 import java.awt.BorderLayout;
@@ -46,7 +49,6 @@ import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.table.AbstractTableModel;
-import net.miginfocom.swing.MigLayout;
 
 /**
  * Dedicated diagnostics UI for the Application -> JFR node.
@@ -154,7 +156,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
     JPanel root = new JPanel(new BorderLayout(8, 8));
     root.setBorder(BorderFactory.createEmptyBorder(6, 8, 8, 8));
 
-    JPanel controls = new JPanel(new MigLayout("insets 0, fillx, wrap 2", "[]16[]push[]", "[]"));
+    JPanel controls = new JPanel(MigLayouts.fillXWrap(0, 2, "[]16[]push[]", "[]"));
     enabledCheck.setOpaque(false);
     pauseRowsCheck.setOpaque(false);
     controls.add(enabledCheck);
@@ -199,14 +201,13 @@ public final class JfrDiagnosticsPanel extends JPanel {
               if (!e.getValueIsAdjusting()) updateRowButtons();
             });
 
-    JPanel controls =
-        new JPanel(new MigLayout("insets 0, fillx, wrap 6", "[]4[]4[]4[]4[]push[]", "[]"));
+    JPanel controls = new JPanel(MigLayouts.fillXWrap(0, 6, "[]4[]4[]4[]4[]push[]", "[]"));
     controls.add(refreshButton);
     controls.add(detailsButton);
     controls.add(clearSelectedRowButton);
     controls.add(clearAllRowsButton);
     controls.add(exportMemoryBundleButton);
-    controls.add(rowsLabel, "alignx right");
+    controls.add(rowsLabel, MigConstraints.alignXRight());
 
     JScrollPane scroll = new JScrollPane(table);
     scroll.setBorder(null);
@@ -248,8 +249,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
   }
 
   private JPanel buildCpuSummaryPanel() {
-    JPanel panel =
-        new JPanel(new MigLayout("insets 6, fillx, wrap 2", "[right]8[grow,fill]", "[]4[]4[]4[]"));
+    JPanel panel = new JPanel(MigLayouts.twoColumnForm(6, 8, MigLayouts.rows(4, 4)));
     panel.setBorder(BorderFactory.createTitledBorder("CPU"));
     panel.setOpaque(false);
     addSummaryField(panel, "Machine", cpuMachineValue);
@@ -260,8 +260,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
   }
 
   private JPanel buildHeapSummaryPanel() {
-    JPanel panel =
-        new JPanel(new MigLayout("insets 6, fillx, wrap 2", "[right]8[grow,fill]", "[]4[]4[]4[]"));
+    JPanel panel = new JPanel(MigLayouts.twoColumnForm(6, 8, MigLayouts.rows(4, 4)));
     panel.setBorder(BorderFactory.createTitledBorder("Heap"));
     panel.setOpaque(false);
     addSummaryField(panel, "Used", heapUsedValue);
@@ -272,8 +271,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
   }
 
   private JPanel buildGcSummaryPanel() {
-    JPanel panel =
-        new JPanel(new MigLayout("insets 6, fillx, wrap 2", "[right]8[grow,fill]", "[]4[]4[]4[]"));
+    JPanel panel = new JPanel(MigLayouts.twoColumnForm(6, 8, MigLayouts.rows(4, 4)));
     panel.setBorder(BorderFactory.createTitledBorder("GC"));
     panel.setOpaque(false);
     addSummaryField(panel, "Events (2m)", gcCountValue);
@@ -294,7 +292,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
   private static void addSummaryField(JPanel panel, String label, JTextField field) {
     if (panel == null || field == null) return;
     panel.add(new JLabel(Objects.toString(label, "")));
-    panel.add(field, "growx, wmin 0");
+    panel.add(field, MigConstraints.growXMinWidth0());
   }
 
   private void installControlActions() {
@@ -648,8 +646,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
   private static JPanel buildDetailPanel(RuntimeDiagnosticEvent event) {
     JPanel root = new JPanel(new BorderLayout(0, 10));
 
-    JPanel fields =
-        new JPanel(new MigLayout("insets 0, fillx, wrap 2", "[right]10[grow,fill]", "[]4[]4[]4[]"));
+    JPanel fields = new JPanel(MigLayouts.twoColumnForm(10, MigLayouts.rows(4, 4)));
     addDetailRow(fields, "Time", event.at() == null ? "" : TIME_FMT.format(event.at()));
     addDetailRow(fields, "Level", Objects.toString(event.level(), ""));
     addDetailRow(fields, "Event type", Objects.toString(event.type(), ""));
@@ -687,7 +684,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
     v.setOpaque(false);
     v.setBorder(null);
     v.setFocusable(false);
-    panel.add(v, "growx, wmin 0");
+    panel.add(v, MigConstraints.growXMinWidth0());
   }
 
   private static void addDetailRowIfPresent(JPanel panel, String label, String value) {
@@ -859,7 +856,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
       }
 
       Font baseFont = getFont();
-      if (baseFont == null) baseFont = javax.swing.UIManager.getFont("Label.font");
+      if (baseFont == null) baseFont = javax.swing.UIManager.getFont(UiFontKeys.LABEL_FONT);
       if (baseFont == null) baseFont = new Font("Dialog", Font.PLAIN, 12);
 
       g2.setColor(text);

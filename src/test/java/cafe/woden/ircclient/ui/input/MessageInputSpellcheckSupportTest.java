@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettings;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import org.junit.jupiter.api.Test;
@@ -146,6 +147,28 @@ class MessageInputSpellcheckSupportTest {
     assertTrue(
         candidates.contains("nope"),
         "prefix lexicon should offer conversational completion candidates for nop");
+  }
+
+  @Test
+  void prefixLexiconOffersForensicStyleCompletions() throws Exception {
+    List<String> candidates = invokePrefixCandidatesFromLexicon("forensi", "en-US");
+    assertTrue(candidates.contains("forensic"), "prefix lexicon should offer forensic for forensi");
+    assertTrue(
+        candidates.contains("forensics"), "prefix lexicon should offer forensics for forensi");
+  }
+
+  @Test
+  void asyncTabSuggestionsIncludeForensicPrefixCompletions() throws Exception {
+    MessageInputSpellcheckSupport support =
+        new MessageInputSpellcheckSupport(new JTextField(), SpellcheckSettings.defaults());
+    try {
+      List<String> suggestions = support.suggestWordsAsync("forensi", 8).get(10, TimeUnit.SECONDS);
+
+      assertTrue(suggestions.contains("forensic"));
+      assertTrue(suggestions.contains("forensics"));
+    } finally {
+      support.shutdown();
+    }
   }
 
   @Test

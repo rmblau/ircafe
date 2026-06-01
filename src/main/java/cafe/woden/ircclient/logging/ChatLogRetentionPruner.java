@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.logging;
 
-import cafe.woden.ircclient.config.LogProperties;
+import cafe.woden.ircclient.config.properties.LogProperties;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;

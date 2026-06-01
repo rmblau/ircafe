@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.coordinator;
 
+import cafe.woden.ircclient.ui.util.UiFontKeys;
 import java.awt.Font;
 import java.util.Objects;
 import java.util.Set;
@@ -113,8 +114,8 @@ public final class ServerTreeUiRefreshCoordinator {
 
   public static void applyTreeFontFromUiDefaults(JTree tree) {
     if (tree == null) return;
-    Font next = UIManager.getFont("Tree.font");
-    if (next == null) next = UIManager.getFont("defaultFont");
+    Font next = UIManager.getFont(UiFontKeys.TREE_FONT);
+    if (next == null) next = UIManager.getFont(UiFontKeys.DEFAULT_FONT);
     if (next == null) return;
     Font cur = tree.getFont();
     if (!next.equals(cur)) {

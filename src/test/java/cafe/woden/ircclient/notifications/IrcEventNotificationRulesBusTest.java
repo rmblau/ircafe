@@ -8,8 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import cafe.woden.ircclient.config.IrcEventNotificationRuleProperties;
-import cafe.woden.ircclient.config.UiProperties;
+import cafe.woden.ircclient.config.properties.IrcEventNotificationRuleProperties;
+import cafe.woden.ircclient.config.properties.UiProperties;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;

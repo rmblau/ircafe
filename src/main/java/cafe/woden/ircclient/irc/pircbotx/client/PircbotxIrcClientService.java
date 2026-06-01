@@ -2,11 +2,11 @@ package cafe.woden.ircclient.irc.pircbotx.client;
 
 import cafe.woden.ircclient.bouncer.BouncerBackendRegistry;
 import cafe.woden.ircclient.bouncer.BouncerDiscoveryEventPort;
-import cafe.woden.ircclient.config.BackendDescriptorCatalog;
 import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.ServerCatalog;
+import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
+import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
 import cafe.woden.ircclient.irc.ircv3.*;

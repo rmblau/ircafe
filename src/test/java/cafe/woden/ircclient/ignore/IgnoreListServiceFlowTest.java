@@ -5,9 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import cafe.woden.ircclient.config.IgnoreProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
+import cafe.woden.ircclient.config.properties.IgnoreProperties;
 import cafe.woden.ircclient.ignore.api.IgnoreAddMaskResult;
 import cafe.woden.ircclient.ignore.api.IgnoreTextPatternMode;
 import java.io.Reader;
@@ -176,7 +176,7 @@ class IgnoreListServiceFlowTest {
   private static Map<String, List<String>> asMapOfStringList(Object raw) {
     Map<String, List<String>> out = new LinkedHashMap<>();
     for (Map.Entry<String, Object> entry : asMap(raw).entrySet()) {
-      String key = Objects.toString(entry.getKey(), "").trim();
+      String key = unbracketMaskKey(entry.getKey());
       List<String> value = asStringList(entry.getValue());
       if (!key.isEmpty() && !value.isEmpty()) {
         out.put(key, value);
@@ -188,7 +188,7 @@ class IgnoreListServiceFlowTest {
   private static Map<String, Long> asMapOfLong(Object raw) {
     Map<String, Long> out = new LinkedHashMap<>();
     for (Map.Entry<String, Object> entry : asMap(raw).entrySet()) {
-      String key = Objects.toString(entry.getKey(), "").trim();
+      String key = unbracketMaskKey(entry.getKey());
       if (key.isEmpty()) continue;
       Long value = asLong(entry.getValue());
       if (value != null && value > 0L) {
@@ -201,7 +201,7 @@ class IgnoreListServiceFlowTest {
   private static Map<String, String> asMapOfString(Object raw) {
     Map<String, String> out = new LinkedHashMap<>();
     for (Map.Entry<String, Object> entry : asMap(raw).entrySet()) {
-      String key = Objects.toString(entry.getKey(), "").trim();
+      String key = unbracketMaskKey(entry.getKey());
       String value = Objects.toString(entry.getValue(), "").trim();
       if (!key.isEmpty() && !value.isEmpty()) {
         out.put(key, value);
@@ -213,13 +213,21 @@ class IgnoreListServiceFlowTest {
   private static Map<String, Boolean> asMapOfBoolean(Object raw) {
     Map<String, Boolean> out = new LinkedHashMap<>();
     for (Map.Entry<String, Object> entry : asMap(raw).entrySet()) {
-      String key = Objects.toString(entry.getKey(), "").trim();
+      String key = unbracketMaskKey(entry.getKey());
       Optional<Boolean> value = asBoolean(entry.getValue());
       if (!key.isEmpty() && value.isPresent()) {
         out.put(key, value.get());
       }
     }
     return out.isEmpty() ? Map.of() : Map.copyOf(out);
+  }
+
+  private static String unbracketMaskKey(Object raw) {
+    String key = Objects.toString(raw, "").trim();
+    if (key.length() >= 2 && key.startsWith("[") && key.endsWith("]")) {
+      return key.substring(1, key.length() - 1).replace("\\]", "]");
+    }
+    return key;
   }
 
   private static Long asLong(Object raw) {

@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.irc.backend;
 
-import cafe.woden.ircclient.config.BackendDescriptorCatalog;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import cafe.woden.ircclient.irc.IrcClientService;
 import cafe.woden.ircclient.irc.playback.IrcBouncerPlaybackPort;
 import cafe.woden.ircclient.irc.quassel.control.QuasselCoreControlPort;

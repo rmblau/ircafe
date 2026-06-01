@@ -607,6 +607,7 @@ public class MessageInputPanel extends JPanel {
 
       // Mark completion popup UI dirty when appearance changes (e.g., accent sliders).
       // Refresh existing popup windows if present.
+      applyNickCompletionPreferences();
       nickCompletionSupport.markUiDirtyAndRefreshAsync();
     } catch (Exception ex) {
       log.warn("[MessageInputPanel] applySettings failed", ex);
@@ -614,6 +615,13 @@ public class MessageInputPanel extends JPanel {
 
     queueInputEmojiRestyle();
     typingSupport.onSettingsApplied(s);
+  }
+
+  private void applyNickCompletionPreferences() {
+    boolean cycleWithTab = settingsBus != null && settingsBus.nickCompletionCycleWithTabEnabled();
+    boolean appendAddressSuffix =
+        settingsBus == null || settingsBus.nickCompletionAppendAddressSuffixEnabled();
+    nickCompletionSupport.setCompletionPreferences(cycleWithTab, appendAddressSuffix);
   }
 
   public void setNickCompletions(List<String> nicks) {
@@ -646,7 +654,7 @@ public class MessageInputPanel extends JPanel {
     SwingUtilities.invokeLater(
         () -> {
           inputEmojiRestyleQueued = false;
-          applyInputEmojiStyles(doc);
+          runProgrammaticEdit(() -> applyInputEmojiStyles(doc));
         });
   }
 
@@ -808,6 +816,30 @@ public class MessageInputPanel extends JPanel {
         }
       }
       return support != null && fallback != null && fallback.importData(support);
+    }
+
+    @Override
+    public int getSourceActions(JComponent c) {
+      return fallback != null ? fallback.getSourceActions(c) : super.getSourceActions(c);
+    }
+
+    @Override
+    public void exportToClipboard(JComponent comp, Clipboard clip, int action)
+        throws IllegalStateException {
+      if (fallback != null) {
+        fallback.exportToClipboard(comp, clip, action);
+        return;
+      }
+      super.exportToClipboard(comp, clip, action);
+    }
+
+    @Override
+    public void exportAsDrag(JComponent comp, java.awt.event.InputEvent e, int action) {
+      if (fallback != null) {
+        fallback.exportAsDrag(comp, e, action);
+        return;
+      }
+      super.exportAsDrag(comp, e, action);
     }
   }
 

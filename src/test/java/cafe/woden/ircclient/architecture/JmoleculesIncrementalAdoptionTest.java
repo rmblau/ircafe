@@ -71,11 +71,7 @@ import cafe.woden.ircclient.bouncer.GenericBouncerAutoConnectStore;
 import cafe.woden.ircclient.bouncer.GenericBouncerEphemeralNetworkImporter;
 import cafe.woden.ircclient.bouncer.GenericBouncerNetworkMappingStrategy;
 import cafe.woden.ircclient.bouncer.ResolvedBouncerNetwork;
-import cafe.woden.ircclient.config.EphemeralServerRegistry;
-import cafe.woden.ircclient.config.NotificationRule;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
-import cafe.woden.ircclient.config.ServerCatalog;
-import cafe.woden.ircclient.config.ServerRegistry;
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
 import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ConnectionRuntimeConfigPort;
@@ -91,6 +87,7 @@ import cafe.woden.ircclient.config.api.IrcSessionRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.Ircv3StsPolicyConfigPort;
 import cafe.woden.ircclient.config.api.MonitorRosterConfigPort;
 import cafe.woden.ircclient.config.api.NickColorOverridesConfigPort;
+import cafe.woden.ircclient.config.api.NotificationRule;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.api.ServerAutoConnectRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ServerTreeBuiltInVisibilityConfigPort;
@@ -100,6 +97,9 @@ import cafe.woden.ircclient.config.api.ServerTreeRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UserCommandAliasesConfigPort;
+import cafe.woden.ircclient.config.servers.EphemeralServerRegistry;
+import cafe.woden.ircclient.config.servers.ServerCatalog;
+import cafe.woden.ircclient.config.servers.ServerRegistry;
 import cafe.woden.ircclient.dcc.DccTransferStore;
 import cafe.woden.ircclient.diagnostics.ApplicationDiagnosticsService;
 import cafe.woden.ircclient.diagnostics.AssertjSwingDiagnosticsService;
@@ -340,6 +340,8 @@ class JmoleculesIncrementalAdoptionTest {
     assertAnnotated(ServerRegistry.class, ApplicationLayer.class);
     assertAnnotated(ServerCatalog.class, ApplicationLayer.class);
     assertAnnotated(EphemeralServerRegistry.class, ApplicationLayer.class);
+    assertAnnotatedByName(
+        "cafe.woden.ircclient.config.plugins.InstalledPluginServices", ApplicationLayer.class);
     assertAnnotated(NetProxyBootstrap.class, ApplicationLayer.class);
     assertAnnotated(NetHeartbeatBootstrap.class, ApplicationLayer.class);
     assertAnnotated(NetTlsBootstrap.class, ApplicationLayer.class);
@@ -637,15 +639,28 @@ class JmoleculesIncrementalAdoptionTest {
         InfrastructureLayer.class);
     assertAnnotatedByName(
         "cafe.woden.ircclient.irc.playback.ZncPlaybackCaptureLifecycle", InfrastructureLayer.class);
-    assertAnnotatedByName("cafe.woden.ircclient.config.ExecutorConfig", InfrastructureLayer.class);
     assertAnnotatedByName(
-        "cafe.woden.ircclient.config.IgnoreProperties", InfrastructureLayer.class);
+        "cafe.woden.ircclient.config.execution.ExecutorConfig", InfrastructureLayer.class);
+    assertAnnotatedByName(
+        "cafe.woden.ircclient.config.properties.ConfigPropertyKeys", InfrastructureLayer.class);
+    assertAnnotatedByName(
+        "cafe.woden.ircclient.config.properties.FilterRuleProperties", InfrastructureLayer.class);
+    assertAnnotatedByName(
+        "cafe.woden.ircclient.config.properties.FilterScopeOverrideProperties",
+        InfrastructureLayer.class);
+    assertAnnotatedByName(
+        "cafe.woden.ircclient.config.properties.IgnoreProperties", InfrastructureLayer.class);
     assertAnnotatedByName("cafe.woden.ircclient.config.IrcProperties", InfrastructureLayer.class);
-    assertAnnotatedByName("cafe.woden.ircclient.config.LogProperties", InfrastructureLayer.class);
-    assertAnnotatedByName("cafe.woden.ircclient.config.PushyProperties", InfrastructureLayer.class);
-    assertAnnotatedByName("cafe.woden.ircclient.config.SojuProperties", InfrastructureLayer.class);
-    assertAnnotatedByName("cafe.woden.ircclient.config.UiProperties", InfrastructureLayer.class);
-    assertAnnotatedByName("cafe.woden.ircclient.config.ZncProperties", InfrastructureLayer.class);
+    assertAnnotatedByName(
+        "cafe.woden.ircclient.config.properties.LogProperties", InfrastructureLayer.class);
+    assertAnnotatedByName(
+        "cafe.woden.ircclient.config.properties.PushyProperties", InfrastructureLayer.class);
+    assertAnnotatedByName(
+        "cafe.woden.ircclient.config.properties.SojuProperties", InfrastructureLayer.class);
+    assertAnnotatedByName(
+        "cafe.woden.ircclient.config.properties.UiProperties", InfrastructureLayer.class);
+    assertAnnotatedByName(
+        "cafe.woden.ircclient.config.properties.ZncProperties", InfrastructureLayer.class);
     assertAnnotatedByName(
         "cafe.woden.ircclient.logging.ChatLogDatabaseConfig", InfrastructureLayer.class);
     assertAnnotatedByName(

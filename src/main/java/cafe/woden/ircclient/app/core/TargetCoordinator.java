@@ -6,11 +6,11 @@ import cafe.woden.ircclient.app.api.TargetChatHistoryPort;
 import cafe.woden.ircclient.app.api.TargetLogMaintenancePort;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.outbound.backend.OutboundBackendCapabilityPolicy;
-import cafe.woden.ircclient.config.ExecutorConfig;
 import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.ServerRegistry;
 import cafe.woden.ircclient.config.api.IrcSessionRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ServerTreeChannelStateConfigPort;
+import cafe.woden.ircclient.config.execution.ExecutorConfig;
+import cafe.woden.ircclient.config.servers.ServerRegistry;
 import cafe.woden.ircclient.ignore.api.IgnoreListQueryPort;
 import cafe.woden.ircclient.irc.IrcEvent;
 import cafe.woden.ircclient.irc.enrichment.UserInfoEnrichmentService;
@@ -964,9 +964,11 @@ public class TargetCoordinator implements ActiveTargetPort {
       ui.setStatusBarCounts(0, 0);
       ui.setUsersNicks(List.of());
     }
-    targetMembership
-        .currentNick(target.serverId())
-        .ifPresent(nick -> ui.setChatCurrentNick(target.serverId(), nick));
+    String currentNick = targetMembership.currentNick(target.serverId()).orElse("");
+    ui.setStatusBarIdentity(target.serverId(), currentNick, "");
+    if (!currentNick.isBlank()) {
+      ui.setChatCurrentNick(target.serverId(), currentNick);
+    }
 
     ui.clearUnread(target);
     refreshInputEnabledForActiveTarget();

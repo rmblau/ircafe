@@ -18,7 +18,7 @@ import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
-import cafe.woden.ircclient.config.ServerRegistry;
+import cafe.woden.ircclient.config.servers.ServerRegistry;
 import cafe.woden.ircclient.ignore.api.IgnoreListQueryPort;
 import cafe.woden.ircclient.irc.backend.IrcBackendClientService;
 import cafe.woden.ircclient.irc.enrichment.UserInfoEnrichmentService;

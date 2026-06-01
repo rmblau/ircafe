@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.settings.appearance;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.AppearanceRuntimeConfigPort;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
@@ -107,7 +107,7 @@ public final class AppearanceControlsSupport {
   }
 
   public static void rememberTweakSettings(
-      RuntimeConfigStore runtimeConfig, ThemeTweakSettings settings) {
+      AppearanceRuntimeConfigPort runtimeConfig, ThemeTweakSettings settings) {
     runtimeConfig.rememberUiDensity(settings.densityId());
     runtimeConfig.rememberCornerRadius(settings.cornerRadius());
     runtimeConfig.rememberUiFontOverrideEnabled(settings.uiFontOverrideEnabled());
@@ -116,13 +116,13 @@ public final class AppearanceControlsSupport {
   }
 
   public static void rememberAccentSettings(
-      RuntimeConfigStore runtimeConfig, ThemeAccentSettings settings) {
+      AppearanceRuntimeConfigPort runtimeConfig, ThemeAccentSettings settings) {
     runtimeConfig.rememberAccentColor(settings.accentColor());
     runtimeConfig.rememberAccentStrength(settings.strength());
   }
 
   public static void rememberChatThemeSettings(
-      RuntimeConfigStore runtimeConfig, ChatThemeSettings settings) {
+      AppearanceRuntimeConfigPort runtimeConfig, ChatThemeSettings settings) {
     runtimeConfig.rememberChatThemePreset(settings.preset().name());
     runtimeConfig.rememberChatTimestampColor(settings.timestampColor());
     runtimeConfig.rememberChatSystemColor(settings.systemColor());
@@ -136,7 +136,7 @@ public final class AppearanceControlsSupport {
   }
 
   public static void rememberServerTreeSettings(
-      RuntimeConfigStore runtimeConfig, ServerTreeAppearanceSettings settings) {
+      AppearanceRuntimeConfigPort runtimeConfig, ServerTreeAppearanceSettings settings) {
     AppearanceServerTreeControlsFactory.remember(runtimeConfig, settings);
   }
 

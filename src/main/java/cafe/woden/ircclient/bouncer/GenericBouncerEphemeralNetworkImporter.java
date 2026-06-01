@@ -1,8 +1,8 @@
 package cafe.woden.ircclient.bouncer;
 
-import cafe.woden.ircclient.config.EphemeralServerRegistry;
-import cafe.woden.ircclient.config.ServerRegistry;
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
+import cafe.woden.ircclient.config.servers.EphemeralServerRegistry;
+import cafe.woden.ircclient.config.servers.ServerRegistry;
 import java.util.Objects;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 import org.slf4j.Logger;

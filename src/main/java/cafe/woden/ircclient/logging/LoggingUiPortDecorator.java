@@ -3,7 +3,7 @@ package cafe.woden.ircclient.logging;
 import cafe.woden.ircclient.app.api.PresenceEvent;
 import cafe.woden.ircclient.app.api.UiTranscriptPort;
 import cafe.woden.ircclient.app.api.UiTranscriptPortDecorator;
-import cafe.woden.ircclient.config.LogProperties;
+import cafe.woden.ircclient.config.properties.LogProperties;
 import cafe.woden.ircclient.logging.viewer.ChatRedactionAuditRecord;
 import cafe.woden.ircclient.logging.viewer.ChatRedactionAuditService;
 import cafe.woden.ircclient.model.LogDirection;

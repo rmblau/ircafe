@@ -4,6 +4,7 @@ import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.servertree.view.ServerTreeCellPresentationPolicy.IconSpec;
 import cafe.woden.ircclient.ui.servertree.view.ServerTreeCellPresentationPolicy.Presentation;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
+import cafe.woden.ircclient.ui.util.UiFontKeys;
 import java.awt.AlphaComposite;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -94,7 +95,7 @@ public final class ServerTreeCellRenderer extends DefaultTreeCellRenderer {
 
     java.awt.Component c =
         super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-    Font base = UIManager.getFont("Tree.font");
+    Font base = UIManager.getFont(UiFontKeys.TREE_FONT);
     if (base == null) base = tree.getFont();
     if (base == null) base = getFont();
     typingIndicatorAlpha = 0f;
@@ -407,8 +408,8 @@ public final class ServerTreeCellRenderer extends DefaultTreeCellRenderer {
 
   private Font badgeFont() {
     Font base = getFont();
-    if (base == null) base = UIManager.getFont("Tree.font");
-    if (base == null) base = UIManager.getFont("defaultFont");
+    if (base == null) base = UIManager.getFont(UiFontKeys.TREE_FONT);
+    if (base == null) base = UIManager.getFont(UiFontKeys.DEFAULT_FONT);
     if (base == null) return new Font("SansSerif", Font.PLAIN, 12);
     int scalePercent = Math.max(50, Math.min(150, context.unreadBadgeScalePercent()));
     float scaledSize = Math.max(8f, base.getSize2D() * (scalePercent / 100f));

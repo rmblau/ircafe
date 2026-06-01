@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.app.commands;
 
-import cafe.woden.ircclient.config.InstalledPluginServices;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
+import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
 import cafe.woden.ircclient.util.PluginServiceLoaderSupport;
 import jakarta.annotation.PreDestroy;
 import java.net.URLClassLoader;

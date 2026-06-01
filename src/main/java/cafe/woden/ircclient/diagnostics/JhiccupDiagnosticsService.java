@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.diagnostics;
 
-import cafe.woden.ircclient.config.UiProperties;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
+import cafe.woden.ircclient.config.properties.UiProperties;
 import cafe.woden.ircclient.util.VirtualThreads;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;

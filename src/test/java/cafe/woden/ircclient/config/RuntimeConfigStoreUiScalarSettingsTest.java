@@ -29,6 +29,8 @@ class RuntimeConfigStoreUiScalarSettingsTest {
     store.rememberChatTranscriptMaxLinesPerTarget(500_000);
     store.rememberChatSmoothWheelScrollingEnabled(false);
     store.rememberChatHistoryLockViewportDuringLoadOlder(false);
+    store.rememberClientLineColorEnabled(true);
+    store.rememberClientLineColor(" #123456 ");
     store.rememberOutgoingDeliveryIndicatorsEnabled(false);
     store.rememberServerTreeNotificationBadgesEnabled(false);
 
@@ -46,6 +48,8 @@ class RuntimeConfigStoreUiScalarSettingsTest {
     assertTrue(yaml.contains("chatTranscriptMaxLinesPerTarget: 200000"));
     assertTrue(yaml.contains("chatSmoothWheelScrollingEnabled: false"));
     assertTrue(yaml.contains("chatHistoryLockViewportDuringLoadOlder: false"));
+    assertTrue(yaml.contains("clientLineColorEnabled: true"));
+    assertTrue(yaml.contains("clientLineColor: '#123456'"));
     assertTrue(yaml.contains("outgoingDeliveryIndicatorsEnabled: false"));
     assertTrue(yaml.contains("serverTreeNotificationBadgesEnabled: false"));
   }

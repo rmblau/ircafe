@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.app.api;
 
-import cafe.woden.ircclient.config.BackendDescriptorCatalog;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import java.util.List;
 
 /** Built-in server-editor metadata for the core IRC, Quassel, and Matrix backends. */

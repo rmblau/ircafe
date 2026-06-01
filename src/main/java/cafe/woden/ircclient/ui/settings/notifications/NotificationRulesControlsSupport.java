@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.ui.settings.notifications;
 
-import cafe.woden.ircclient.config.NotificationRule;
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.NotificationRule;
+import cafe.woden.ircclient.config.api.NotificationRuntimeConfigPort;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
@@ -112,7 +112,7 @@ public final class NotificationRulesControlsSupport {
   }
 
   public static void rememberSettings(
-      RuntimeConfigStore runtimeConfig, NotificationSettings settings) {
+      NotificationRuntimeConfigPort runtimeConfig, NotificationSettings settings) {
     runtimeConfig.rememberNotificationRuleCooldownSeconds(settings.cooldownSeconds());
     runtimeConfig.rememberNotificationRules(settings.rules());
   }

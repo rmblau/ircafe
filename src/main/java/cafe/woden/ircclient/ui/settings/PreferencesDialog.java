@@ -2,11 +2,11 @@ package cafe.woden.ircclient.ui.settings;
 
 import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
-import cafe.woden.ircclient.config.ExecutorConfig;
-import cafe.woden.ircclient.config.LogProperties;
-import cafe.woden.ircclient.config.NotificationRule;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
+import cafe.woden.ircclient.config.api.NotificationRule;
+import cafe.woden.ircclient.config.execution.ExecutorConfig;
+import cafe.woden.ircclient.config.properties.LogProperties;
 import cafe.woden.ircclient.irc.backend.IrcHeartbeatMaintenanceService;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionCatalog;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
@@ -329,6 +329,7 @@ public class PreferencesDialog {
                         chatThemeSettingsBus,
                         embedCardStyleBus,
                         settingsBus,
+                        runtimeConfig,
                         runtimeConfig));
           } catch (PreferencesApplySupport.ApplyException ex) {
             PreferencesUiSupport.showErrorMessage(dialog, ex.getMessage(), ex.title());

@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
-import cafe.woden.ircclient.config.ServerCatalog;
+import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.irc.ircv3.Ircv3StsPolicyService;
 import cafe.woden.ircclient.irc.pircbotx.listener.*;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
