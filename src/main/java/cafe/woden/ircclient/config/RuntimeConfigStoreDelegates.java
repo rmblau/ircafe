@@ -6,6 +6,8 @@ import cafe.woden.ircclient.config.runtime.server.RuntimeConfigPrivateMessageTar
 import cafe.woden.ircclient.config.runtime.server.RuntimeConfigServerAutoConnectStore;
 import cafe.woden.ircclient.config.runtime.server.RuntimeConfigServerIdentityStore;
 import cafe.woden.ircclient.config.runtime.server.RuntimeConfigServerListStore;
+import cafe.woden.ircclient.config.runtime.server.RuntimeConfigServerTreeChannelStateStore;
+import cafe.woden.ircclient.config.runtime.server.RuntimeConfigServerTreeLayoutStore;
 import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigAppDiagnosticsStore;
 import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigChatBehaviorStore;
 import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigChatHistoryStore;

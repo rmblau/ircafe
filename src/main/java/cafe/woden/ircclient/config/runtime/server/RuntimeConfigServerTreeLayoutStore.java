@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime.server;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.asBoolean;
 import cafe.woden.ircclient.config.api.ServerTreeBuiltInVisibilityConfigPort.ServerTreeBuiltInNodesVisibility;
@@ -19,15 +19,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Owns movable built-in server tree layout settings under {@code ircafe.ui.serverTree}. */
-class RuntimeConfigServerTreeLayoutStore {
+public class RuntimeConfigServerTreeLayoutStore {
 
   private static final Logger log =
       LoggerFactory.getLogger(RuntimeConfigServerTreeLayoutStore.class);
 
   private final RuntimeConfigYamlSection uiSection;
 
-  RuntimeConfigServerTreeLayoutStore(Path file, RuntimeConfigDocumentStore documentStore) {
-    this.uiSection = new RuntimeConfigYamlSection(file, documentStore, log, "ircafe", "ui");
+  public RuntimeConfigServerTreeLayoutStore(Path file, RuntimeConfigDocumentStore documentStore) {
+    this.uiSection = RuntimeConfigYamlSection.ircafeUi(file, documentStore, log);
   }
 
   /**
@@ -35,7 +35,7 @@ class RuntimeConfigServerTreeLayoutStore {
    *
    * <p>Stored under {@code ircafe.ui.serverTree.builtInNodesByServer.<serverId>}.
    */
-  synchronized Map<String, ServerTreeBuiltInNodesVisibility> readBuiltInNodesVisibility() {
+  public synchronized Map<String, ServerTreeBuiltInNodesVisibility> readBuiltInNodesVisibility() {
     Object byServerObj = readServerTreeSection("built-in node visibility", "builtInNodesByServer");
     if (!(byServerObj instanceof Map<?, ?> byServer)) return Map.of();
 
@@ -67,7 +67,7 @@ class RuntimeConfigServerTreeLayoutStore {
    *
    * <p>When all flags are {@code true}, the server entry is removed to keep config compact.
    */
-  synchronized void rememberBuiltInNodesVisibility(
+  public synchronized void rememberBuiltInNodesVisibility(
       String serverId, ServerTreeBuiltInNodesVisibility visibility) {
     String sid = Objects.toString(serverId, "").trim();
     if (sid.isEmpty()) return;
@@ -95,7 +95,7 @@ class RuntimeConfigServerTreeLayoutStore {
    *
    * <p>Stored under {@code ircafe.ui.serverTree.builtInLayoutByServer.<serverId>}.
    */
-  synchronized Map<String, ServerTreeBuiltInLayout> readBuiltInLayoutByServer() {
+  public synchronized Map<String, ServerTreeBuiltInLayout> readBuiltInLayoutByServer() {
     Object byServerObj = readServerTreeSection("built-in layout", "builtInLayoutByServer");
     if (!(byServerObj instanceof Map<?, ?> byServer)) return Map.of();
 
@@ -124,7 +124,7 @@ class RuntimeConfigServerTreeLayoutStore {
    *
    * <p>When layout matches defaults, the server entry is removed to keep config compact.
    */
-  synchronized void rememberBuiltInLayout(String serverId, ServerTreeBuiltInLayout layout) {
+  public synchronized void rememberBuiltInLayout(String serverId, ServerTreeBuiltInLayout layout) {
     String sid = Objects.toString(serverId, "").trim();
     if (sid.isEmpty()) return;
 
@@ -150,7 +150,7 @@ class RuntimeConfigServerTreeLayoutStore {
    *
    * <p>Stored under {@code ircafe.ui.serverTree.rootSiblingOrderByServer.<serverId>}.
    */
-  synchronized Map<String, ServerTreeRootSiblingOrder> readRootSiblingOrderByServer() {
+  public synchronized Map<String, ServerTreeRootSiblingOrder> readRootSiblingOrderByServer() {
     Object byServerObj = readServerTreeSection("root sibling order", "rootSiblingOrderByServer");
     if (!(byServerObj instanceof Map<?, ?> byServer)) return Map.of();
 
@@ -176,7 +176,7 @@ class RuntimeConfigServerTreeLayoutStore {
    *
    * <p>When order matches defaults, the server entry is removed to keep config compact.
    */
-  synchronized void rememberRootSiblingOrder(String serverId, ServerTreeRootSiblingOrder order) {
+  public synchronized void rememberRootSiblingOrder(String serverId, ServerTreeRootSiblingOrder order) {
     String sid = Objects.toString(serverId, "").trim();
     if (sid.isEmpty()) return;
 

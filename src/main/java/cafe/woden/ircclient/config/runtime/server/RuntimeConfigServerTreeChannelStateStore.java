@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.config;
+package cafe.woden.ircclient.config.runtime.server;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSupport.findServerById;
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSupport.readServerList;
@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Owns persisted server-tree per-channel state and legacy auto-join migration. */
-class RuntimeConfigServerTreeChannelStateStore {
+public class RuntimeConfigServerTreeChannelStateStore {
 
   private static final Logger log =
       LoggerFactory.getLogger(RuntimeConfigServerTreeChannelStateStore.class);
@@ -33,28 +33,29 @@ class RuntimeConfigServerTreeChannelStateStore {
   private final RuntimeConfigServerYamlSection servers;
   private final RuntimeConfigYamlSection channelsByServerSection;
 
-  RuntimeConfigServerTreeChannelStateStore(Path file, RuntimeConfigDocumentStore documentStore) {
+  public RuntimeConfigServerTreeChannelStateStore(
+      Path file, RuntimeConfigDocumentStore documentStore) {
     this.servers =
         new RuntimeConfigServerYamlSection(file, documentStore, log, "joined-channel list");
     this.channelsByServerSection =
-        new RuntimeConfigYamlSection(
-            file, documentStore, log, "ircafe", "ui", "serverTree", "channelsByServer");
+        RuntimeConfigYamlSection.ircafeUi(
+            file, documentStore, log, "serverTree", "channelsByServer");
   }
 
-  synchronized void rememberJoinedChannel(String serverId, String channel) {
+  public synchronized void rememberJoinedChannel(String serverId, String channel) {
     rememberServerTreeChannel(serverId, channel);
   }
 
-  synchronized void forgetJoinedChannel(String serverId, String channel) {
+  public synchronized void forgetJoinedChannel(String serverId, String channel) {
     forgetServerTreeChannel(serverId, channel);
   }
 
-  synchronized List<String> readJoinedChannels(String serverId) {
+  public synchronized List<String> readJoinedChannels(String serverId) {
     return readServerAutoJoinChannels(serverId);
   }
 
   /** Returns known channels for this server (attached + detached). */
-  synchronized List<String> readKnownChannels(String serverId) {
+  public synchronized List<String> readKnownChannels(String serverId) {
     ServerTreeChannelState state = readServerTreeChannelState(serverId);
     if (state == null || state.channels() == null || state.channels().isEmpty()) {
       return List.of();
@@ -70,7 +71,7 @@ class RuntimeConfigServerTreeChannelStateStore {
     return out.isEmpty() ? List.of() : List.copyOf(out);
   }
 
-  synchronized boolean readServerTreeChannelAutoReattach(
+  public synchronized boolean readServerTreeChannelAutoReattach(
       String serverId, String channel, boolean defaultValue) {
     String sid = Objects.toString(serverId, "").trim();
     String chan = normalizeChannelName(channel);
@@ -90,7 +91,7 @@ class RuntimeConfigServerTreeChannelStateStore {
     return defaultValue;
   }
 
-  synchronized void rememberServerTreeChannel(String serverId, String channel) {
+  public synchronized void rememberServerTreeChannel(String serverId, String channel) {
     String sid = Objects.toString(serverId, "").trim();
     String chan = normalizeChannelName(channel);
     if (sid.isEmpty() || chan.isEmpty()) return;
@@ -113,7 +114,7 @@ class RuntimeConfigServerTreeChannelStateStore {
             state.sortMode(), List.copyOf(customOrder), List.copyOf(byKey.values())));
   }
 
-  synchronized void forgetServerTreeChannel(String serverId, String channel) {
+  public synchronized void forgetServerTreeChannel(String serverId, String channel) {
     String sid = Objects.toString(serverId, "").trim();
     String chan = normalizeChannelName(channel);
     if (sid.isEmpty() || chan.isEmpty()) return;
@@ -133,7 +134,7 @@ class RuntimeConfigServerTreeChannelStateStore {
             state.sortMode(), List.copyOf(customOrder), List.copyOf(byKey.values())));
   }
 
-  synchronized void rememberServerTreeChannelAutoReattach(
+  public synchronized void rememberServerTreeChannelAutoReattach(
       String serverId, String channel, boolean autoReattach) {
     String sid = Objects.toString(serverId, "").trim();
     String chan = normalizeChannelName(channel);
@@ -162,7 +163,7 @@ class RuntimeConfigServerTreeChannelStateStore {
             state.sortMode(), List.copyOf(customOrder), List.copyOf(byKey.values())));
   }
 
-  synchronized boolean readServerTreeChannelPinned(
+  public synchronized boolean readServerTreeChannelPinned(
       String serverId, String channel, boolean defaultValue) {
     String sid = Objects.toString(serverId, "").trim();
     String chan = normalizeChannelName(channel);
@@ -182,7 +183,7 @@ class RuntimeConfigServerTreeChannelStateStore {
     return defaultValue;
   }
 
-  synchronized void rememberServerTreeChannelPinned(
+  public synchronized void rememberServerTreeChannelPinned(
       String serverId, String channel, boolean pinned) {
     String sid = Objects.toString(serverId, "").trim();
     String chan = normalizeChannelName(channel);
@@ -209,7 +210,7 @@ class RuntimeConfigServerTreeChannelStateStore {
             state.sortMode(), List.copyOf(customOrder), List.copyOf(byKey.values())));
   }
 
-  synchronized boolean readServerTreeChannelMuted(
+  public synchronized boolean readServerTreeChannelMuted(
       String serverId, String channel, boolean defaultValue) {
     String sid = Objects.toString(serverId, "").trim();
     String chan = normalizeChannelName(channel);
@@ -229,7 +230,7 @@ class RuntimeConfigServerTreeChannelStateStore {
     return defaultValue;
   }
 
-  synchronized void rememberServerTreeChannelMuted(String serverId, String channel, boolean muted) {
+  public synchronized void rememberServerTreeChannelMuted(String serverId, String channel, boolean muted) {
     String sid = Objects.toString(serverId, "").trim();
     String chan = normalizeChannelName(channel);
     if (sid.isEmpty() || chan.isEmpty()) return;
@@ -253,7 +254,7 @@ class RuntimeConfigServerTreeChannelStateStore {
             state.sortMode(), List.copyOf(customOrder), List.copyOf(byKey.values())));
   }
 
-  synchronized ServerTreeChannelSortMode readServerTreeChannelSortMode(
+  public synchronized ServerTreeChannelSortMode readServerTreeChannelSortMode(
       String serverId, ServerTreeChannelSortMode defaultValue) {
     String sid = Objects.toString(serverId, "").trim();
     if (sid.isEmpty()) return defaultValue;
@@ -262,7 +263,7 @@ class RuntimeConfigServerTreeChannelStateStore {
     return state.sortMode();
   }
 
-  synchronized void rememberServerTreeChannelSortMode(
+  public synchronized void rememberServerTreeChannelSortMode(
       String serverId, ServerTreeChannelSortMode mode) {
     String sid = Objects.toString(serverId, "").trim();
     if (sid.isEmpty()) return;
@@ -274,12 +275,12 @@ class RuntimeConfigServerTreeChannelStateStore {
         sid, new ServerTreeChannelState(nextMode, state.customOrder(), state.channels()));
   }
 
-  synchronized List<String> readServerTreeChannelCustomOrder(String serverId) {
+  public synchronized List<String> readServerTreeChannelCustomOrder(String serverId) {
     ServerTreeChannelState state = readServerTreeChannelState(serverId);
     return state.customOrder();
   }
 
-  synchronized void rememberServerTreeChannelCustomOrder(
+  public synchronized void rememberServerTreeChannelCustomOrder(
       String serverId, List<String> customOrder) {
     String sid = Objects.toString(serverId, "").trim();
     if (sid.isEmpty()) return;
@@ -294,7 +295,7 @@ class RuntimeConfigServerTreeChannelStateStore {
             state.sortMode(), List.copyOf(nextCustomOrder), state.channels()));
   }
 
-  synchronized ServerTreeChannelState readServerTreeChannelState(String serverId) {
+  public synchronized ServerTreeChannelState readServerTreeChannelState(String serverId) {
     String sid = Objects.toString(serverId, "").trim();
     if (sid.isEmpty()) return ServerTreeChannelState.defaults();
 
