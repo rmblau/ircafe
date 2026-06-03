@@ -74,6 +74,18 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesMonitorPanelMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Monitor - libera", messages.text("monitor.title.server", "libera"));
+    assertEquals(
+        "5 nick(s): 2 online, 1 offline, 2 unknown.",
+        messages.text("monitor.subtitle.summary", 5, 2, 1, 2));
+    assertEquals("Open Query", messages.text("monitor.menu.openQuery"));
+    assertEquals("Status", messages.text("monitor.column.status"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 
