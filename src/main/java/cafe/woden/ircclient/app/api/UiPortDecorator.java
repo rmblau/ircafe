@@ -534,6 +534,12 @@ public abstract class UiPortDecorator implements UiPort {
   }
 
   @Override
+  public boolean applyMessageTranslation(
+      TargetRef target, Instant at, MessageTranslation translation) {
+    return delegate.applyMessageTranslation(target, at, translation);
+  }
+
+  @Override
   public boolean isOwnMessage(TargetRef target, String targetMessageId) {
     return delegate.isOwnMessage(target, targetMessageId);
   }

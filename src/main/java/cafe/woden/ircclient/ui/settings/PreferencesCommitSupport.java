@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings;
 
 import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
+import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.irc.backend.IrcHeartbeatMaintenanceService;
@@ -40,6 +41,7 @@ import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ThemeManager;
 import cafe.woden.ircclient.ui.settings.theme.ThemeTweakSettingsBus;
 import cafe.woden.ircclient.ui.settings.timestamp.TimestampControlsSupport;
+import cafe.woden.ircclient.ui.settings.translation.TranslationControlsSupport;
 import cafe.woden.ircclient.ui.settings.tray.TrayControlsSupport;
 import cafe.woden.ircclient.ui.shell.LagIndicatorService;
 import cafe.woden.ircclient.ui.shell.UpdateNotifierService;
@@ -151,6 +153,8 @@ final class PreferencesCommitSupport {
         runtimeConfig, request.ircEventNotificationRulesBus(), snapshot.ircEventNotification());
     UserCommandAliasesControlsSupport.rememberSettings(
         runtimeConfig, request.userCommandAliasesBus(), snapshot.userCommand());
+    TranslationControlsSupport.rememberSettings(
+        runtimeConfig, request.translationSettingsBus(), snapshot.translation());
     DiagnosticsControlsSupport.rememberSettings(runtimeConfig, snapshot.diagnostics());
     if (snapshot.diagnosticsChanged()) {
       PreferencesUiSupport.showInfoMessage(
@@ -218,6 +222,7 @@ final class PreferencesCommitSupport {
       EmbedLoadPolicyBus embedLoadPolicyBus,
       IrcEventNotificationRulesPort ircEventNotificationRulesBus,
       UserCommandAliasesPort userCommandAliasesBus,
+      MessageTranslationSettingsBus translationSettingsBus,
       IrcHeartbeatMaintenanceService ircHeartbeatMaintenancePort,
       ThemeManager themeManager,
       ActiveTargetPort targetCoordinator,

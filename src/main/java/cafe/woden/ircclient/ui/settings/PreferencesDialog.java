@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings;
 
 import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
+import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.config.api.NotificationRule;
@@ -88,6 +89,7 @@ public class PreferencesDialog {
   private final UserCommandAliasesPort userCommandAliasesBus;
   private final NotificationSoundPort notificationSoundService;
   private final ServerDialogs serverDialogs;
+  private final MessageTranslationSettingsBus translationSettingsBus;
   private final ExecutorService pushyTestExecutor;
   private final ExecutorService notificationRuleTestExecutor;
   private final Ircv3ExtensionCatalog ircv3ExtensionCatalog;
@@ -125,6 +127,7 @@ public class PreferencesDialog {
       UserCommandAliasesPort userCommandAliasesBus,
       NotificationSoundPort notificationSoundService,
       ServerDialogs serverDialogs,
+      MessageTranslationSettingsBus translationSettingsBus,
       @Qualifier(ExecutorConfig.PREFERENCES_PUSHY_TEST_EXECUTOR) ExecutorService pushyTestExecutor,
       @Qualifier(ExecutorConfig.PREFERENCES_NOTIFICATION_RULE_TEST_EXECUTOR)
           ExecutorService notificationRuleTestExecutor) {
@@ -159,6 +162,7 @@ public class PreferencesDialog {
         userCommandAliasesBus,
         notificationSoundService,
         serverDialogs,
+        translationSettingsBus,
         pushyTestExecutor,
         notificationRuleTestExecutor,
         Ircv3ExtensionCatalog.builtInCatalog());
@@ -196,6 +200,7 @@ public class PreferencesDialog {
       UserCommandAliasesPort userCommandAliasesBus,
       NotificationSoundPort notificationSoundService,
       ServerDialogs serverDialogs,
+      MessageTranslationSettingsBus translationSettingsBus,
       @Qualifier(ExecutorConfig.PREFERENCES_PUSHY_TEST_EXECUTOR) ExecutorService pushyTestExecutor,
       @Qualifier(ExecutorConfig.PREFERENCES_NOTIFICATION_RULE_TEST_EXECUTOR)
           ExecutorService notificationRuleTestExecutor,
@@ -230,6 +235,7 @@ public class PreferencesDialog {
     this.userCommandAliasesBus = userCommandAliasesBus;
     this.notificationSoundService = notificationSoundService;
     this.serverDialogs = serverDialogs;
+    this.translationSettingsBus = translationSettingsBus;
     this.pushyTestExecutor = Objects.requireNonNull(pushyTestExecutor, "pushyTestExecutor");
     this.notificationRuleTestExecutor =
         Objects.requireNonNull(notificationRuleTestExecutor, "notificationRuleTestExecutor");
@@ -301,6 +307,7 @@ public class PreferencesDialog {
                 userCommandAliasesBus,
                 notificationSoundService,
                 serverDialogs,
+                translationSettingsBus,
                 pushyTestExecutor,
                 notificationRuleTestExecutor,
                 ircv3ExtensionCatalog,
@@ -353,6 +360,7 @@ public class PreferencesDialog {
                   embedLoadPolicyBus,
                   ircEventNotificationRulesBus,
                   userCommandAliasesBus,
+                  translationSettingsBus,
                   ircHeartbeatMaintenancePort,
                   themeManager,
                   targetCoordinator,

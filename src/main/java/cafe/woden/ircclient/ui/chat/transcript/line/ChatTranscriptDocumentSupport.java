@@ -32,9 +32,12 @@ public final class ChatTranscriptDocumentSupport {
         if (line == null) continue;
         int start = Math.max(0, line.getStartOffset());
         if (start >= len) continue;
-        AttributeSet attrs = doc.getCharacterElement(start).getAttributes();
-        String got = Objects.toString(attrs.getAttribute(ChatStyles.ATTR_META_MSGID), "").trim();
-        if (want.equals(got)) return start;
+        int end = Math.max(start, Math.min(line.getEndOffset(), len));
+        for (int p = start; p < end; p++) {
+          AttributeSet attrs = doc.getCharacterElement(p).getAttributes();
+          String got = Objects.toString(attrs.getAttribute(ChatStyles.ATTR_META_MSGID), "").trim();
+          if (want.equals(got)) return start;
+        }
       }
     } catch (Exception ignored) {
     }
@@ -66,6 +69,36 @@ public final class ChatTranscriptDocumentSupport {
 
     AttributeSet attrs = attributesAt(doc, lineStart);
     return attrs == null ? null : new MessageLine(targetMsgId, lineStart, attrs);
+  }
+
+  public static int findAuxiliaryLineStartByMessageId(
+      StyledDocument doc, String messageId, String auxiliaryRowKind) {
+    if (doc == null) return -1;
+    String wantMessageId = normalizeMessageId(messageId);
+    String wantAuxiliaryRowKind = Objects.toString(auxiliaryRowKind, "").trim();
+    if (wantMessageId.isEmpty() || wantAuxiliaryRowKind.isEmpty()) return -1;
+    try {
+      Element root = doc.getDefaultRootElement();
+      if (root == null) return -1;
+      int len = doc.getLength();
+      for (int i = 0; i < root.getElementCount(); i++) {
+        Element line = root.getElement(i);
+        if (line == null) continue;
+        int start = Math.max(0, line.getStartOffset());
+        if (start >= len) continue;
+        AttributeSet attrs = doc.getCharacterElement(start).getAttributes();
+        String gotMessageId =
+            Objects.toString(attrs.getAttribute(ChatStyles.ATTR_META_MSGID), "").trim();
+        String gotAuxiliaryRowKind =
+            Objects.toString(attrs.getAttribute(ChatStyles.ATTR_META_AUX_ROW_KIND), "").trim();
+        if (wantMessageId.equals(gotMessageId)
+            && wantAuxiliaryRowKind.equals(gotAuxiliaryRowKind)) {
+          return start;
+        }
+      }
+    } catch (Exception ignored) {
+    }
+    return -1;
   }
 
   public static int findLineStartByPendingId(StyledDocument doc, String pendingId) {

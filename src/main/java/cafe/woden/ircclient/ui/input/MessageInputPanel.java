@@ -5,6 +5,7 @@ import cafe.woden.ircclient.irc.ircv3.Ircv3DraftNormalizer;
 import cafe.woden.ircclient.ui.CommandHistoryStore;
 import cafe.woden.ircclient.ui.SingleLineEmojiTextPane;
 import cafe.woden.ircclient.ui.backend.BackendUiProfile;
+import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettings;
@@ -45,6 +46,7 @@ public class MessageInputPanel extends JPanel {
   private final SingleLineEmojiTextPane input = new SingleLineEmojiTextPane();
   private final JScrollPane inputScroll = new JScrollPane(input);
   private final JButton attach = new JButton();
+  private final JButton translate = new JButton();
   private final JButton send = new JButton();
 
   private final JPanel typingBanner = new JPanel(new BorderLayout());
@@ -66,6 +68,7 @@ public class MessageInputPanel extends JPanel {
   private final FlowableProcessor<String> outbound =
       PublishProcessor.<String>create().toSerialized();
   private volatile Runnable onActivated = () -> {};
+  private volatile Runnable onOutboundTranslationRequested = () -> {};
   private volatile Consumer<String> onDraftChanged = t -> {};
   private volatile BackendUiProfile backendUiProfile = BackendUiProfile.ircOnly("");
   private final MessageInputTypingSupport typingSupport;
@@ -76,6 +79,7 @@ public class MessageInputPanel extends JPanel {
   private final PropertyChangeListener spellcheckSettingsListener = this::onSpellcheckChanged;
   private boolean shutdown;
   private boolean inputEmojiRestyleQueued;
+  private boolean outboundTranslationActionVisible;
 
   public MessageInputPanel(UiSettingsBus settingsBus, CommandHistoryStore historyStore) {
     this(settingsBus, historyStore, null, null);
@@ -201,6 +205,7 @@ public class MessageInputPanel extends JPanel {
     actionRow.setOpaque(false);
     actionRow.setLayout(new BoxLayout(actionRow, BoxLayout.X_AXIS));
     actionRow.add(attach);
+    actionRow.add(translate);
     actionRow.add(sendOverlay);
 
     JPanel inputRow = new JPanel(new BorderLayout(0, 0));
@@ -269,6 +274,22 @@ public class MessageInputPanel extends JPanel {
     attach.setFocusPainted(false);
     attach.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
     attach.setPreferredSize(new Dimension(34, 30));
+
+    translate.setName("messageTranslateButton");
+    translate.setText("");
+    translate.setIcon(SvgIcons.action("translate", 16));
+    translate.setDisabledIcon(SvgIcons.actionDisabled("translate", 16));
+    translate.setToolTipText("Translate draft");
+    if (translate.getAccessibleContext() != null) {
+      translate.getAccessibleContext().setAccessibleName("Translate draft");
+      translate.getAccessibleContext().setAccessibleDescription("Translate current draft");
+    }
+    translate.setOpaque(false);
+    translate.setContentAreaFilled(false);
+    translate.setFocusPainted(false);
+    translate.setBorder(BorderFactory.createEmptyBorder(5, 10, 5, 10));
+    translate.setPreferredSize(new Dimension(34, 30));
+    translate.setVisible(false);
 
     send.setName("messageSendButton");
     send.setText("");
@@ -365,6 +386,7 @@ public class MessageInputPanel extends JPanel {
           }
         });
     im.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "ircafe.emit");
+    translate.addActionListener(e -> runOutboundTranslationRequested());
     send.addActionListener(e -> emit());
   }
 
@@ -373,6 +395,7 @@ public class MessageInputPanel extends JPanel {
     UploadTransferHandler sharedDropHandler = new UploadTransferHandler(null);
     setTransferHandler(sharedDropHandler);
     attach.setTransferHandler(sharedDropHandler);
+    translate.setTransferHandler(sharedDropHandler);
     send.setTransferHandler(sharedDropHandler);
     TransferHandler defaultInputTransferHandler = input.getTransferHandler();
     input.setTransferHandler(new UploadTransferHandler(defaultInputTransferHandler));
@@ -403,6 +426,7 @@ public class MessageInputPanel extends JPanel {
         };
     input.addFocusListener(focusAdapter);
     attach.addFocusListener(focusAdapter);
+    translate.addFocusListener(focusAdapter);
     send.addFocusListener(focusAdapter);
 
     MouseAdapter activationMouseAdapter =
@@ -415,6 +439,7 @@ public class MessageInputPanel extends JPanel {
         };
     input.addMouseListener(activationMouseAdapter);
     attach.addMouseListener(activationMouseAdapter);
+    translate.addMouseListener(activationMouseAdapter);
     send.addMouseListener(activationMouseAdapter);
     addMouseListener(activationMouseAdapter);
 
@@ -598,6 +623,7 @@ public class MessageInputPanel extends JPanel {
       Font inputFont = EmojiFontSupport.resolveMessageInputFont(preferred);
       input.setFont(inputFont);
       attach.setFont(preferred);
+      translate.setFont(preferred);
       send.setFont(preferred);
       typingBannerLabel.setFont(inputFont.deriveFont(Math.max(10f, inputFont.getSize2D() - 2f)));
       typingDotsIndicator.setFont(typingBannerLabel.getFont());
@@ -948,6 +974,14 @@ public class MessageInputPanel extends JPanel {
     }
   }
 
+  private void runOutboundTranslationRequested() {
+    try {
+      onOutboundTranslationRequested.run();
+    } catch (Exception ex) {
+      log.warn("[MessageInputPanel] outbound translation callback failed", ex);
+    }
+  }
+
   public boolean showRemoteTypingIndicator(String nick, String state) {
     int beforeHeight = inputAreaHeightPx();
     boolean wasVisible = typingBanner.isVisible();
@@ -1030,6 +1064,7 @@ public class MessageInputPanel extends JPanel {
     input.setEditable(enabled);
     input.setEnabled(enabled);
     attach.setEnabled(enabled);
+    refreshOutboundTranslationButtonState();
     send.setEnabled(enabled);
     applyInputSurfaceCursor();
     if (!enabled) {
@@ -1051,6 +1086,27 @@ public class MessageInputPanel extends JPanel {
     typingSupport.onDraftTextSetProgrammatically();
     composeSupport.onDraftTextSetProgrammatically();
     historySupport.setDraftText(text);
+  }
+
+  public void setOutboundTranslationActionVisible(boolean visible) {
+    if (!SwingUtilities.isEventDispatchThread()) {
+      SwingUtilities.invokeLater(() -> setOutboundTranslationActionVisible(visible));
+      return;
+    }
+    outboundTranslationActionVisible = visible;
+    refreshOutboundTranslationButtonState();
+  }
+
+  public void setOnOutboundTranslationRequested(Runnable onOutboundTranslationRequested) {
+    this.onOutboundTranslationRequested =
+        onOutboundTranslationRequested == null ? () -> {} : onOutboundTranslationRequested;
+  }
+
+  private void refreshOutboundTranslationButtonState() {
+    translate.setVisible(outboundTranslationActionVisible);
+    translate.setEnabled(outboundTranslationActionVisible && isInputEditable());
+    revalidate();
+    repaint();
   }
 
   public boolean isInputEditable() {

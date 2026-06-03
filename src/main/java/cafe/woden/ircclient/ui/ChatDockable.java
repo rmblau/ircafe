@@ -5,6 +5,12 @@ import cafe.woden.ircclient.app.api.Ircv3ReadMarkerFeatureSupport;
 import cafe.woden.ircclient.app.api.PrivateMessageRequest;
 import cafe.woden.ircclient.app.api.UserActionRequest;
 import cafe.woden.ircclient.app.commands.SlashCommandPresentationCatalog;
+import cafe.woden.ircclient.app.translation.MessageTranslationDispatcher;
+import cafe.woden.ircclient.app.translation.MessageTranslationLanguage;
+import cafe.woden.ircclient.app.translation.MessageTranslationLanguageCatalog;
+import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
+import cafe.woden.ircclient.app.translation.OutboundMessageTranslationService;
+import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.InstalledPluginProblem;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.execution.ExecutorConfig;
@@ -39,6 +45,7 @@ import cafe.woden.ircclient.ui.bus.TargetActivationBus;
 import cafe.woden.ircclient.ui.channellist.ChannelListPanel;
 import cafe.woden.ircclient.ui.chat.MessageReactionToggleSupport;
 import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
+import cafe.woden.ircclient.ui.chat.transcript.message.MessageTranslationSource;
 import cafe.woden.ircclient.ui.chat.view.ChatViewPanel;
 import cafe.woden.ircclient.ui.coordinator.ChatActiveTargetCoordinator;
 import cafe.woden.ircclient.ui.coordinator.ChatBanListCoordinator;
@@ -60,6 +67,7 @@ import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.ignore.IgnoreListDialog;
 import cafe.woden.ircclient.ui.ignore.IgnoresPanel;
 import cafe.woden.ircclient.ui.input.MessageInputPanel;
+import cafe.woden.ircclient.ui.input.OutboundMessageTranslationDialog;
 import cafe.woden.ircclient.ui.interceptors.InterceptorPanel;
 import cafe.woden.ircclient.ui.logviewer.LogViewerPanel;
 import cafe.woden.ircclient.ui.monitor.MonitorPanel;
@@ -69,6 +77,7 @@ import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettingsBus;
 import cafe.woden.ircclient.ui.terminal.TerminalDockable;
 import cafe.woden.ircclient.ui.util.ChatRedactedMessageRevealSupport;
+import cafe.woden.ircclient.ui.util.ChatTranscriptContextMenuDecorator;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import cafe.woden.ircclient.util.InstalledPluginDescriptor;
 import io.github.andrewauclair.moderndocking.Dockable;
@@ -79,6 +88,8 @@ import io.reactivex.rxjava3.processors.FlowableProcessor;
 import io.reactivex.rxjava3.processors.PublishProcessor;
 import jakarta.annotation.PreDestroy;
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -90,6 +101,8 @@ import java.util.function.Supplier;
 import javax.swing.*;
 import javax.swing.text.DefaultStyledDocument;
 import org.jmolecules.architecture.layered.InterfaceLayer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Lazy;
@@ -109,6 +122,8 @@ import org.springframework.stereotype.Component;
 @Lazy
 public class ChatDockable extends ChatViewPanel implements Dockable {
 
+  private static final Logger log = LoggerFactory.getLogger(ChatDockable.class);
+
   public static final String ID = "chat";
   private static final int MAX_DRAFT_TARGETS = 512;
   private static final int MAIN_DOCK_ACCENT_RAIL_PX = 4;
@@ -122,6 +137,11 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
 
   private final ChatTranscriptStore transcripts;
   private final ServerTreeDockable serverTree;
+  private final MessageTranslationDispatcher messageTranslationDispatcher;
+  private final MessageTranslationSettingsBus translationSettingsBus;
+  private final OutboundMessageTranslationService outboundMessageTranslationService;
+  private final PropertyChangeListener translationSettingsListener =
+      this::onTranslationSettingsChanged;
 
   private final ActiveInputRouter activeInputRouter;
 
@@ -228,6 +248,9 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
       NickContextMenuFactory nickContextMenuFactory,
       ServerProxyResolver proxyResolver,
       ChatHistoryService chatHistoryService,
+      MessageTranslationDispatcher messageTranslationDispatcher,
+      MessageTranslationSettingsBus translationSettingsBus,
+      OutboundMessageTranslationService outboundMessageTranslationService,
       ChannelMetadataPort channelMetadata,
       ChatLogViewerService chatLogViewerService,
       ChatRedactionAuditService redactionAuditService,
@@ -251,6 +274,9 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
     this.serverTree = serverTree;
     this.redactionAuditService =
         java.util.Objects.requireNonNull(redactionAuditService, "redactionAuditService");
+    this.messageTranslationDispatcher = messageTranslationDispatcher;
+    this.translationSettingsBus = translationSettingsBus;
+    this.outboundMessageTranslationService = outboundMessageTranslationService;
 
     this.activeInputRouter = activeInputRouter;
     this.proxyResolver = proxyResolver;
@@ -336,6 +362,8 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
         capabilityPolicy,
         sid -> irc.currentNick(sid).orElse(""));
     configureTranscriptContextMenuActions(transcripts, chatHistoryService);
+    configureTranscriptTranslationContextMenuActions();
+    configureOutboundInputTranslation();
     configureInputActivation(activationBus);
     InputCoordinatorBundle inputBundle =
         createInputCoordinatorBundle(
@@ -359,6 +387,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
 
     // Keep an initial view state so the first auto-scroll behaves.
     this.activeTarget = new TargetRef("default", "status");
+    refreshOutboundTranslationButtonVisibility();
     updateDockTitle();
     applyMainDockVisualIdentity();
 
@@ -969,7 +998,10 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
       BackendUiProfileProvider backendUiProfileProvider) {
     return new ChatActiveTargetCoordinator(
         () -> activeTarget,
-        target -> activeTarget = target,
+        target -> {
+          activeTarget = target;
+          refreshOutboundTranslationButtonVisibility();
+        },
         inputPanel,
         backendUiProfileProvider::profileForServer,
         draftByTarget,
@@ -1167,6 +1199,151 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
           } catch (Exception ignored) {
           }
         });
+  }
+
+  private void configureTranscriptTranslationContextMenuActions() {
+    setTranscriptTranslationContextMenuActions(
+        this::translateContextActionVisible,
+        this::translateContextActionEnabled,
+        this::translationLanguageChoices,
+        this::onTranslateMessageRequested);
+  }
+
+  private List<ChatTranscriptContextMenuDecorator.TranslationLanguageChoice>
+      translationLanguageChoices() {
+    return outboundTranslationTargetLanguages().stream()
+        .map(
+            language ->
+                new ChatTranscriptContextMenuDecorator.TranslationLanguageChoice(
+                    language.code(), language.label() + " (" + language.code() + ")"))
+        .toList();
+  }
+
+  private void configureOutboundInputTranslation() {
+    inputPanel.setOnOutboundTranslationRequested(this::onOutboundTranslationRequested);
+    if (translationSettingsBus != null) {
+      translationSettingsBus.addListener(translationSettingsListener);
+    }
+    refreshOutboundTranslationButtonVisibility();
+  }
+
+  private void onTranslationSettingsChanged(PropertyChangeEvent evt) {
+    if (!MessageTranslationSettingsBus.PROP_TRANSLATION_SETTINGS.equals(evt.getPropertyName())) {
+      return;
+    }
+    SwingUtilities.invokeLater(this::refreshOutboundTranslationButtonVisibility);
+  }
+
+  private void refreshOutboundTranslationButtonVisibility() {
+    if (inputPanel == null) {
+      return;
+    }
+    IrcProperties.Client.Translation settings =
+        translationSettingsBus != null ? translationSettingsBus.get() : null;
+    boolean visible =
+        settings != null && settings.enabled() && outboundMessageTranslationService != null;
+    inputPanel.setOutboundTranslationActionVisible(visible);
+  }
+
+  private void onOutboundTranslationRequested() {
+    IrcProperties.Client.Translation settings =
+        translationSettingsBus != null ? translationSettingsBus.get() : null;
+    if (settings == null || !settings.enabled() || outboundMessageTranslationService == null) {
+      refreshOutboundTranslationButtonVisibility();
+      return;
+    }
+    TargetRef target = activeTarget;
+    if (target == null || target.isUiOnly()) {
+      JOptionPane.showMessageDialog(
+          this,
+          "Select a chat target before translating a draft.",
+          "Translate Draft",
+          JOptionPane.WARNING_MESSAGE);
+      return;
+    }
+    String draft = inputPanel.getDraftText();
+    if (Objects.toString(draft, "").isBlank()) {
+      JOptionPane.showMessageDialog(
+          this,
+          "Enter a message before translating.",
+          "Translate Draft",
+          JOptionPane.INFORMATION_MESSAGE);
+      return;
+    }
+
+    OutboundMessageTranslationDialog.showDialog(
+        this,
+        draft,
+        outboundTranslationTargetLanguages(),
+        settings.targetLanguage(),
+        language -> outboundMessageTranslationService.translateDraft(target, draft, language),
+        translated -> {
+          inputPanel.setDraftText(translated);
+          inputPanel.focusInput();
+        });
+  }
+
+  private List<MessageTranslationLanguage> outboundTranslationTargetLanguages() {
+    IrcProperties.Client.Translation settings =
+        translationSettingsBus != null ? translationSettingsBus.get() : null;
+    return MessageTranslationLanguageCatalog.availableTargets(settings);
+  }
+
+  @Override
+  protected boolean translateContextActionVisible() {
+    return activeTarget != null && !activeTarget.isUiOnly();
+  }
+
+  protected boolean translateContextActionEnabled() {
+    IrcProperties.Client.Translation settings =
+        translationSettingsBus != null ? translationSettingsBus.get() : null;
+    return settings != null
+        && settings.enabled()
+        && messageTranslationDispatcher != null
+        && activeTarget != null
+        && !activeTarget.isUiOnly();
+  }
+
+  @Override
+  protected void onTranslateMessageRequested(String messageId, String targetLanguage) {
+    if (messageTranslationDispatcher == null) {
+      log.warn("[translation] manual request ignored because dispatcher is unavailable");
+      return;
+    }
+    TargetRef target = activeTarget;
+    if (target == null || target.isUiOnly()) {
+      log.warn("[translation] manual request ignored because active target is unavailable");
+      return;
+    }
+    String msgId = Objects.toString(messageId, "").trim();
+    String language = Objects.toString(targetLanguage, "").trim();
+    if (msgId.isBlank() || language.isBlank()) {
+      log.warn("[translation] manual request ignored because msgid or target language is blank");
+      return;
+    }
+
+    MessageTranslationSource source = transcripts.translationSourceById(target, msgId);
+    if (source == null || Objects.toString(source.text(), "").isBlank()) {
+      log.warn(
+          "[translation] manual request ignored because transcript source is missing target={} msgid={}",
+          target,
+          msgId);
+      return;
+    }
+    java.time.Instant at =
+        source.epochMs() == null || source.epochMs() <= 0
+            ? java.time.Instant.now()
+            : java.time.Instant.ofEpochMilli(source.epochMs());
+    boolean scheduled =
+        messageTranslationDispatcher.requestManualMessageTranslation(
+            target, at, source.fromNick(), msgId, source.text(), language);
+    if (!scheduled) {
+      log.warn(
+          "[translation] manual request was not scheduled target={} msgid={} targetLanguage={}",
+          target,
+          msgId,
+          language);
+    }
   }
 
   private void configureInputActivation(TargetActivationBus activationBus) {
@@ -1570,6 +1747,12 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
     }
     try {
       inputPanel.shutdownResources();
+    } catch (Exception ignored) {
+    }
+    try {
+      if (translationSettingsBus != null) {
+        translationSettingsBus.removeListener(translationSettingsListener);
+      }
     } catch (Exception ignored) {
     }
     try {

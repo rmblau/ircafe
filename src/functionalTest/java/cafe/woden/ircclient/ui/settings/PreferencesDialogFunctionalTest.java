@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesBus;
+import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.config.PushyPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.properties.LogProperties;
@@ -443,6 +444,7 @@ class PreferencesDialogFunctionalTest {
         mock(UserCommandAliasesBus.class),
         mock(NotificationSoundService.class),
         mock(ServerDialogs.class),
+        mock(MessageTranslationSettingsBus.class),
         pushyTestExecutor,
         notificationRuleTestExecutor);
   }

@@ -80,6 +80,7 @@ final class PreferencesDialogTabsSupport {
         new PreferencesDialogWindowSupport.Tab("Startup", startupPanel),
         new PreferencesDialogWindowSupport.Tab("Tray & Notifications", trayPanel),
         new PreferencesDialogWindowSupport.Tab("Chat", chatPanel),
+        new PreferencesDialogWindowSupport.Tab("Translation", controls.translation().panel()),
         new PreferencesDialogWindowSupport.Tab("CTCP Replies", ctcpRepliesPanel),
         new PreferencesDialogWindowSupport.Tab("IRCv3", ircv3Panel),
         new PreferencesDialogWindowSupport.Tab("Embeds & Previews", embedsPanel),

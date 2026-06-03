@@ -1487,6 +1487,10 @@ public class RuntimeConfigStore
     stores.connectionStores.clientSettingsStore.rememberProxy(proxy);
   }
 
+  public synchronized void rememberClientTranslation(IrcProperties.Client.Translation translation) {
+    stores.connectionStores.clientSettingsStore.rememberTranslation(translation);
+  }
+
   @Override
   public synchronized void rememberIgnoreMask(String serverId, String mask) {
     stores.ignoreRulesStore.rememberIgnoreMask(serverId, mask);

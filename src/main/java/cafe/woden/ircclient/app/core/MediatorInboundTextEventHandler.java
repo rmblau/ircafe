@@ -10,6 +10,7 @@ import cafe.woden.ircclient.app.api.TrayNotificationsPort;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.api.UiSettingsPort;
 import cafe.woden.ircclient.app.outbound.dcc.OutboundDccCommandService;
+import cafe.woden.ircclient.app.translation.MessageTranslationDispatcher;
 import cafe.woden.ircclient.ignore.api.InboundIgnorePolicyPort;
 import cafe.woden.ircclient.irc.IrcEvent;
 import cafe.woden.ircclient.irc.enrichment.UserInfoEnrichmentService;
@@ -32,6 +33,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.layered.ApplicationLayer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
@@ -40,6 +43,8 @@ import org.springframework.stereotype.Component;
 @ApplicationLayer
 @RequiredArgsConstructor
 public class MediatorInboundTextEventHandler {
+
+  private static final Logger log = LoggerFactory.getLogger(MediatorInboundTextEventHandler.class);
 
   interface Callbacks {
     void observeChannelActivity(String serverId, String channel);
@@ -105,6 +110,7 @@ public class MediatorInboundTextEventHandler {
   private final ApplicationEventPublisher applicationEventPublisher;
   private final CtcpRoutingPort ctcpRoutingState;
   private final MediatorInboundEventPreparationService eventPreparationService;
+  private final MessageTranslationDispatcher messageTranslationDispatcher;
 
   private final Cache<InboundMessageDedupKey, Boolean> inboundMessageIdDedup =
       Caffeine.newBuilder()
@@ -187,16 +193,26 @@ public class MediatorInboundTextEventHandler {
           channel,
           active,
           true,
-          dest ->
-              ui.appendChatAt(
+          dest -> {
+            ui.appendChatAt(
+                dest,
+                event.at(),
+                event.from(),
+                event.text(),
+                false,
+                event.messageId(),
+                event.ircv3Tags(),
+                ruleMatch != null ? ruleMatch.highlightColor() : null);
+            if (!callbacks.isFromSelf(sid, event.from())) {
+              requestVisibleIncomingMessageTranslation(
                   dest,
                   event.at(),
                   event.from(),
-                  event.text(),
-                  false,
                   event.messageId(),
                   event.ircv3Tags(),
-                  ruleMatch != null ? ruleMatch.highlightColor() : null));
+                  event.text());
+            }
+          });
     }
 
     String notificationMessageId = effectiveMessageIdForDedup(event.messageId(), event.ircv3Tags());
@@ -403,15 +419,25 @@ public class MediatorInboundTextEventHandler {
       callbacks.postTo(
           pm,
           true,
-          dest ->
-              ui.appendChatAt(
+          dest -> {
+            ui.appendChatAt(
+                dest,
+                event.at(),
+                event.from(),
+                event.text(),
+                fromSelf,
+                event.messageId(),
+                event.ircv3Tags());
+            if (!fromSelf) {
+              requestVisibleIncomingMessageTranslation(
                   dest,
                   event.at(),
                   event.from(),
-                  event.text(),
-                  fromSelf,
                   event.messageId(),
-                  event.ircv3Tags()));
+                  event.ircv3Tags(),
+                  event.text());
+            }
+          });
     } else {
       ui.appendChatAt(
           pm,
@@ -421,6 +447,10 @@ public class MediatorInboundTextEventHandler {
           fromSelf,
           event.messageId(),
           event.ircv3Tags());
+      if (!fromSelf) {
+        requestVisibleIncomingMessageTranslation(
+            pm, event.at(), event.from(), event.messageId(), event.ircv3Tags(), event.text());
+      }
     }
 
     String interceptorMessageId = effectiveMessageIdForDedup(event.messageId(), event.ircv3Tags());
@@ -1043,6 +1073,26 @@ public class MediatorInboundTextEventHandler {
         Objects.toString(text, ""),
         messageId,
         ircv3Tags);
+  }
+
+  private void requestVisibleIncomingMessageTranslation(
+      TargetRef target,
+      Instant at,
+      String fromNick,
+      String messageId,
+      Map<String, String> ircv3Tags,
+      String text) {
+    String effectiveMessageId = effectiveMessageIdForDedup(messageId, ircv3Tags);
+    try {
+      messageTranslationDispatcher.requestIncomingMessageTranslation(
+          target, at, fromNick, effectiveMessageId, text);
+    } catch (RuntimeException ex) {
+      log.warn(
+          "[translation] automatic request failed during scheduling target={} msgid={} error={}",
+          target,
+          effectiveMessageId,
+          ex.toString());
+    }
   }
 
   private boolean shouldSuppressInboundDuplicateByMsgId(

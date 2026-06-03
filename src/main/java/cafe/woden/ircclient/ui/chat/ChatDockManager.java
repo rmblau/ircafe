@@ -11,6 +11,9 @@ import static cafe.woden.ircclient.util.Ircv3CapabilityNames.TYPING;
 
 import cafe.woden.ircclient.app.api.Ircv3ReadMarkerFeatureSupport;
 import cafe.woden.ircclient.app.commands.SlashCommandPresentationCatalog;
+import cafe.woden.ircclient.app.translation.MessageTranslationDispatcher;
+import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
+import cafe.woden.ircclient.app.translation.OutboundMessageTranslationService;
 import cafe.woden.ircclient.irc.port.IrcCurrentNickPort;
 import cafe.woden.ircclient.irc.port.IrcTypingPort;
 import cafe.woden.ircclient.logging.history.ChatHistoryService;
@@ -71,6 +74,9 @@ public class ChatDockManager {
   private final Function<String, String> currentNickLookup;
   private final BackendUiProfileProvider backendUiProfileProvider;
   private final MessageActionCapabilityPolicy messageActionCapabilityPolicy;
+  private final MessageTranslationDispatcher messageTranslationDispatcher;
+  private final MessageTranslationSettingsBus translationSettingsBus;
+  private final OutboundMessageTranslationService outboundMessageTranslationService;
   private final ChatRedactionAuditService redactionAuditService;
   private final ActiveInputRouter activeInputRouter;
   private final CommandHistoryStore commandHistoryStore;
@@ -109,6 +115,9 @@ public class ChatDockManager {
       IrcCurrentNickPort currentNickPort,
       BackendUiProfileProvider backendUiProfileProvider,
       MessageActionCapabilityPolicy messageActionCapabilityPolicy,
+      MessageTranslationDispatcher messageTranslationDispatcher,
+      MessageTranslationSettingsBus translationSettingsBus,
+      OutboundMessageTranslationService outboundMessageTranslationService,
       ChatRedactionAuditService redactionAuditService,
       ActiveInputRouter activeInputRouter,
       SlashCommandPresentationCatalog slashCommandPresentationCatalog,
@@ -133,6 +142,9 @@ public class ChatDockManager {
     this.messageActionCapabilityPolicy =
         java.util.Objects.requireNonNull(
             messageActionCapabilityPolicy, "messageActionCapabilityPolicy");
+    this.messageTranslationDispatcher = messageTranslationDispatcher;
+    this.translationSettingsBus = translationSettingsBus;
+    this.outboundMessageTranslationService = outboundMessageTranslationService;
     this.redactionAuditService =
         java.util.Objects.requireNonNull(redactionAuditService, "redactionAuditService");
     this.activeInputRouter = activeInputRouter;
@@ -420,6 +432,9 @@ public class ChatDockManager {
             typingPort,
             readMarkerFeatureSupport,
             messageActionCapabilityPolicy,
+            messageTranslationDispatcher,
+            translationSettingsBus,
+            outboundMessageTranslationService,
             redactionAuditService,
             backendUiProfileProvider::profileForServer,
             currentNickLookup,

@@ -28,8 +28,10 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollBar;
@@ -204,6 +206,25 @@ public abstract class ChatViewPanel extends JPanel implements Scrollable {
     }
   }
 
+  protected void setTranscriptTranslationContextMenuActions(
+      java.util.function.Supplier<Boolean> translateActionVisibleSupplier,
+      java.util.function.Supplier<Boolean> translateActionEnabledSupplier,
+      java.util.function.Supplier<
+              List<ChatTranscriptContextMenuDecorator.TranslationLanguageChoice>>
+          translationLanguagesSupplier,
+      BiConsumer<String, String> onTranslateMessage) {
+    try {
+      if (transcriptMenu != null) {
+        transcriptMenu.setTranslationActions(
+            translateActionVisibleSupplier,
+            translateActionEnabledSupplier,
+            translationLanguagesSupplier,
+            onTranslateMessage);
+      }
+    } catch (Exception ignored) {
+    }
+  }
+
   private void onSettingsChanged(PropertyChangeEvent evt) {
     if (!UiSettingsBus.PROP_UI_SETTINGS.equals(evt.getPropertyName())) return;
     Object o = evt.getNewValue();
@@ -322,6 +343,11 @@ public abstract class ChatViewPanel extends JPanel implements Scrollable {
     return false;
   }
 
+  /** Whether the transcript context menu should show "Translate". */
+  protected boolean translateContextActionVisible() {
+    return false;
+  }
+
   /** Whether the transcript context menu should show "Load Newer History". */
   protected boolean loadNewerHistoryContextActionVisible() {
     return false;
@@ -369,6 +395,11 @@ public abstract class ChatViewPanel extends JPanel implements Scrollable {
 
   /** Called by transcript context menu action "Reveal Redacted Message…". */
   protected void onRevealRedactedMessageRequested(String messageId) {
+    // default: no-op
+  }
+
+  /** Called by transcript context menu action "Translate -> Language". */
+  protected void onTranslateMessageRequested(String messageId, String targetLanguage) {
     // default: no-op
   }
 

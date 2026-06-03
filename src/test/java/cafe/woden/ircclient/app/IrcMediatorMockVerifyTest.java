@@ -55,6 +55,7 @@ import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.app.outbound.OutboundCommandDispatcher;
 import cafe.woden.ircclient.app.outbound.backend.OutboundBackendCapabilityPolicy;
 import cafe.woden.ircclient.app.outbound.dcc.OutboundDccCommandService;
+import cafe.woden.ircclient.app.translation.MessageTranslationDispatcher;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
@@ -229,6 +230,8 @@ class IrcMediatorMockVerifyTest {
   private final InboundIgnorePolicyPort inboundIgnorePolicy = mock(InboundIgnorePolicyPort.class);
   private final ApplicationEventPublisher applicationEventPublisher =
       mock(ApplicationEventPublisher.class);
+  private final MessageTranslationDispatcher messageTranslationDispatcher =
+      mock(MessageTranslationDispatcher.class);
   private final MediatorInboundEventPreparationService eventPreparationService =
       new MediatorInboundEventPreparationService(
           irc, notificationRuleMatcherPort, inboundIgnorePolicy);
@@ -256,7 +259,8 @@ class IrcMediatorMockVerifyTest {
           ircEventNotifierPort,
           applicationEventPublisher,
           ctcpRoutingState,
-          eventPreparationService);
+          eventPreparationService,
+          messageTranslationDispatcher);
 
   private final IrcMediator mediator =
       new IrcMediator(
@@ -487,6 +491,40 @@ class IrcMediatorMockVerifyTest {
   }
 
   @Test
+  void visibleInboundChannelMessageRequestsTranslationByMsgid() throws Exception {
+    TargetRef chan = new TargetRef("libera", "#ircafe");
+    Instant at = Instant.parse("2026-06-01T12:00:00Z");
+    when(irc.currentNick("libera")).thenReturn(Optional.of("bob"));
+
+    invokeOnServerIrcEvent(
+        new ServerIrcEvent(
+            "libera",
+            new IrcEvent.ChannelMessage(at, "#ircafe", "alice", "hello", "msg-1", Map.of())));
+
+    verify(messageTranslationDispatcher)
+        .requestIncomingMessageTranslation(chan, at, "alice", "msg-1", "hello");
+  }
+
+  @Test
+  void inboundChannelMessageContinuesWhenTranslationSchedulingFails() throws Exception {
+    TargetRef chan = new TargetRef("libera", "#ircafe");
+    Instant at = Instant.parse("2026-06-01T12:00:00Z");
+    when(irc.currentNick("libera")).thenReturn(Optional.of("bob"));
+    when(messageTranslationDispatcher.requestIncomingMessageTranslation(
+            chan, at, "alice", "msg-1", "hello"))
+        .thenThrow(new IllegalStateException("translation unavailable"));
+
+    invokeOnServerIrcEvent(
+        new ServerIrcEvent(
+            "libera",
+            new IrcEvent.ChannelMessage(at, "#ircafe", "alice", "hello", "msg-1", Map.of())));
+
+    verify(ui).appendChatAt(chan, at, "alice", "hello", false, "msg-1", Map.of(), null);
+    verify(messageTranslationDispatcher)
+        .requestIncomingMessageTranslation(chan, at, "alice", "msg-1", "hello");
+  }
+
+  @Test
   void matrixSelfEchoChannelMessageResolvesPendingUsingNormalizedSelfCheck() throws Exception {
     TargetRef chan = new TargetRef("matrix", "#ircafe:matrix.example.org");
     TargetRef active = new TargetRef("matrix", "#other:matrix.example.org");
@@ -555,6 +593,23 @@ class IrcMediatorMockVerifyTest {
     verify(ui).showTypingIndicator(pm, "alice", "done");
     verify(ui, never()).showTypingActivity(any(), anyString());
     verify(ui, never()).showUsersTypingIndicator(any(), anyString(), anyString());
+  }
+
+  @Test
+  void visibleInboundPrivateMessageRequestsTranslationByTagMsgid() throws Exception {
+    TargetRef pm = new TargetRef("libera", "alice");
+    Instant at = Instant.parse("2026-06-01T12:01:00Z");
+    when(irc.currentNick("libera")).thenReturn(Optional.of("me"));
+    when(targetCoordinator.allowPrivateAutoOpenFromInbound(eq(pm), eq(false))).thenReturn(false);
+
+    invokeOnServerIrcEvent(
+        new ServerIrcEvent(
+            "libera",
+            new IrcEvent.PrivateMessage(
+                at, "alice", "hello privately", "", Map.of("msgid", "pm-msg-1"))));
+
+    verify(messageTranslationDispatcher)
+        .requestIncomingMessageTranslation(pm, at, "alice", "pm-msg-1", "hello privately");
   }
 
   @Test

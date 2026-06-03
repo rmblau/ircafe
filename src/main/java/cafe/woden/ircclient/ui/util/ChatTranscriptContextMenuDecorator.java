@@ -19,12 +19,15 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import javax.swing.JFileChooser;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
@@ -92,6 +95,7 @@ public final class ChatTranscriptContextMenuDecorator implements AutoCloseable {
   private final JMenuItem editMessageItem = new JMenuItem("Edit Message…");
   private final JMenuItem redactMessageItem = new JMenuItem("Redact Message…");
   private final JMenuItem revealRedactedMessageItem = new JMenuItem("Display Redacted Message…");
+  private final JMenu translateMessageMenu = new JMenu("Translate");
 
   private volatile Point lastPopupPoint;
 
@@ -107,6 +111,11 @@ public final class ChatTranscriptContextMenuDecorator implements AutoCloseable {
   private volatile String currentPopupIrcv3Tags;
   private volatile boolean currentPopupOwnMessage;
   private volatile boolean currentPopupRedactedMessage;
+  private volatile Supplier<Boolean> translateActionVisibleSupplier = () -> false;
+  private volatile Supplier<Boolean> translateActionEnabledSupplier = () -> false;
+  private volatile Supplier<List<TranslationLanguageChoice>> translationLanguagesSupplier =
+      List::of;
+  private volatile BiConsumer<String, String> onTranslateMessage = (messageId, languageCode) -> {};
 
   // Some sites reject programmatic downloads unless the request looks like a browser.
   private static final String DEFAULT_UA =
@@ -458,6 +467,32 @@ public final class ChatTranscriptContextMenuDecorator implements AutoCloseable {
     this.reloadRecentAction = reloadRecentAction;
   }
 
+  public void setTranslationActions(
+      Supplier<Boolean> translateActionVisibleSupplier,
+      Supplier<List<TranslationLanguageChoice>> translationLanguagesSupplier,
+      BiConsumer<String, String> onTranslateMessage) {
+    setTranslationActions(
+        translateActionVisibleSupplier,
+        translateActionVisibleSupplier,
+        translationLanguagesSupplier,
+        onTranslateMessage);
+  }
+
+  public void setTranslationActions(
+      Supplier<Boolean> translateActionVisibleSupplier,
+      Supplier<Boolean> translateActionEnabledSupplier,
+      Supplier<List<TranslationLanguageChoice>> translationLanguagesSupplier,
+      BiConsumer<String, String> onTranslateMessage) {
+    this.translateActionVisibleSupplier =
+        translateActionVisibleSupplier != null ? translateActionVisibleSupplier : () -> false;
+    this.translateActionEnabledSupplier =
+        translateActionEnabledSupplier != null ? translateActionEnabledSupplier : () -> false;
+    this.translationLanguagesSupplier =
+        translationLanguagesSupplier != null ? translationLanguagesSupplier : List::of;
+    this.onTranslateMessage =
+        onTranslateMessage != null ? onTranslateMessage : (messageId, languageCode) -> {};
+  }
+
   private void rebuildMenu(String url) {
     menu.removeAll();
 
@@ -472,6 +507,7 @@ public final class ChatTranscriptContextMenuDecorator implements AutoCloseable {
       menu.add(copyIrcv3TagsItem);
       maybeAddHistoryActionItems();
       maybeAddMessageActionItems();
+      maybeAddTranslationActionItems();
       menu.addSeparator();
       menu.add(findItem);
       menu.addSeparator();
@@ -485,6 +521,7 @@ public final class ChatTranscriptContextMenuDecorator implements AutoCloseable {
       menu.add(copyIrcv3TagsItem);
       maybeAddHistoryActionItems();
       maybeAddMessageActionItems();
+      maybeAddTranslationActionItems();
       menu.addSeparator();
       menu.add(findItem);
       menu.addSeparator();
@@ -513,6 +550,23 @@ public final class ChatTranscriptContextMenuDecorator implements AutoCloseable {
     }
   }
 
+  private void maybeAddTranslationActionItems() {
+    if (!isActionVisible(translateActionVisibleSupplier)) return;
+    translateMessageMenu.removeAll();
+    for (TranslationLanguageChoice language : safeTranslationLanguages()) {
+      if (language == null || language.languageCode().isBlank() || language.label().isBlank()) {
+        continue;
+      }
+      String languageCode = language.languageCode();
+      JMenuItem item = new JMenuItem(language.label());
+      item.addActionListener(event -> onTranslateMessage(languageCode));
+      translateMessageMenu.add(item);
+    }
+    if (translateMessageMenu.getItemCount() <= 0) return;
+    menu.addSeparator();
+    menu.add(translateMessageMenu);
+  }
+
   private void updateEnabledState(String url) {
     try {
       int start = transcript.getSelectionStart();
@@ -531,6 +585,7 @@ public final class ChatTranscriptContextMenuDecorator implements AutoCloseable {
     copyIrcv3TagsItem.setEnabled(currentPopupIrcv3Tags != null && !currentPopupIrcv3Tags.isBlank());
     updateHistoryActionState(hasMessageId);
     updateMessageActionState(hasMessageId);
+    updateTranslationActionState(hasMessageId);
 
     try {
       Document doc = transcript.getDocument();
@@ -542,6 +597,29 @@ public final class ChatTranscriptContextMenuDecorator implements AutoCloseable {
       clearItem.setEnabled(true);
       reloadRecentItem.setEnabled(reloadRecentAction != null);
     }
+  }
+
+  private void updateTranslationActionState(boolean hasMessageId) {
+    if (!isActionVisible(translateActionVisibleSupplier)) return;
+    boolean translationAvailable = isActionVisible(translateActionEnabledSupplier);
+    boolean enabled =
+        translationAvailable && hasMessageId && translateMessageMenu.getItemCount() > 0;
+    translateMessageMenu.setEnabled(enabled);
+    translateMessageMenu.setToolTipText(
+        enabled
+            ? "Translate this message into the selected language."
+            : translationUnavailableReason(hasMessageId, translationAvailable));
+  }
+
+  private static String translationUnavailableReason(
+      boolean hasMessageId, boolean translationAvailable) {
+    if (!translationAvailable) {
+      return "Unavailable: translation is disabled or manual mode is not selected.";
+    }
+    if (!hasMessageId) {
+      return "Unavailable: this line has no IRCv3 message ID.";
+    }
+    return "Unavailable: no translation languages are configured.";
   }
 
   private void updateHistoryActionState(boolean hasMessageId) {
@@ -774,6 +852,17 @@ public final class ChatTranscriptContextMenuDecorator implements AutoCloseable {
     }
   }
 
+  private void onTranslateMessage(String languageCode) {
+    if (!isActionVisible(translateActionVisibleSupplier)) return;
+    String msgId = currentPopupMessageId;
+    String targetLanguage = Objects.toString(languageCode, "").trim();
+    if (msgId == null || msgId.isBlank() || targetLanguage.isBlank()) return;
+    try {
+      onTranslateMessage.accept(msgId, targetLanguage);
+    } catch (Exception ignored) {
+    }
+  }
+
   private void onOpenLink(ActionEvent e) {
     String url = currentPopupUrl;
     if (url == null || url.isBlank()) return;
@@ -889,6 +978,22 @@ public final class ChatTranscriptContextMenuDecorator implements AutoCloseable {
       return Boolean.TRUE.equals(visibleSupplier.get());
     } catch (Exception ignored) {
       return false;
+    }
+  }
+
+  private List<TranslationLanguageChoice> safeTranslationLanguages() {
+    try {
+      List<TranslationLanguageChoice> choices = translationLanguagesSupplier.get();
+      return choices != null ? choices : List.of();
+    } catch (Exception ignored) {
+      return List.of();
+    }
+  }
+
+  public record TranslationLanguageChoice(String languageCode, String label) {
+    public TranslationLanguageChoice {
+      languageCode = Objects.toString(languageCode, "").trim();
+      label = Objects.toString(label, "").trim();
     }
   }
 

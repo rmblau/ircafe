@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -9,6 +10,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.app.api.ConnectionState;
+import cafe.woden.ircclient.app.api.MessageTranslation;
 import cafe.woden.ircclient.app.commands.BackendNamedCommandNames;
 import cafe.woden.ircclient.app.commands.ParsedInput;
 import cafe.woden.ircclient.model.TargetRef;
@@ -25,6 +27,7 @@ import cafe.woden.ircclient.ui.servertree.ServerTreeDockable;
 import cafe.woden.ircclient.ui.shell.StatusBar;
 import io.reactivex.rxjava3.processors.PublishProcessor;
 import java.lang.reflect.InvocationTargetException;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -123,6 +126,34 @@ class SwingUiPortCommandRoutingTest {
     assertEquals(List.of("transcripts.ensureTargetExists", "serverTree.ensureNode"), steps);
     assertEquals(Boolean.TRUE, onEdtByStep.get("transcripts.ensureTargetExists"));
     assertEquals(Boolean.TRUE, onEdtByStep.get("serverTree.ensureNode"));
+  }
+
+  @Test
+  void applyMessageTranslationDelegatesToTranscriptStore() {
+    ChatTranscriptStore transcripts = mock(ChatTranscriptStore.class);
+    SwingUiPort ui =
+        new SwingUiPort(
+            mock(ServerTreeDockable.class),
+            mock(ChatDockable.class),
+            transcripts,
+            mock(MentionPatternRegistry.class),
+            mock(NotificationStore.class),
+            mock(UserListDockable.class),
+            mock(StatusBar.class),
+            mock(ConnectButton.class),
+            mock(DisconnectButton.class),
+            new TargetActivationBus(),
+            new OutboundLineBus(),
+            mock(ChatDockManager.class),
+            new ActiveInputRouter());
+    TargetRef target = new TargetRef("libera", "#ircafe");
+    Instant at = Instant.ofEpochMilli(6_050L);
+    MessageTranslation translation = new MessageTranslation("m-1", "hola", "en", "es", "test");
+    when(transcripts.applyMessageTranslation(target, translation, 6_050L)).thenReturn(true);
+
+    assertTrue(ui.applyMessageTranslation(target, at, translation));
+
+    verify(transcripts).applyMessageTranslation(target, translation, 6_050L);
   }
 
   @Test

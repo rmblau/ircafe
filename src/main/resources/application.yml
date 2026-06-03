@@ -325,6 +325,34 @@ irc:
       # INSECURE: if true, IRCafe will accept any TLS certificate (expired/self-signed/etc).
       trustAllCertificates: false
 
+    translation:
+      # Disabled until a translation backend and target language are configured.
+      enabled: false
+      # auto translates incoming messages; manual only shows the message context-menu action.
+      mode: "auto"
+      # Supported built-in backends: "deepl", "libretranslate", "google-web".
+      backend: ""
+      # Service endpoint. Leave blank for built-in backend defaults.
+      endpoint: ""
+      # DeepL requires an API key; LibreTranslate only requires one on keyed instances.
+      # google-web uses an unofficial Google web endpoint and does not use this value.
+      apiKey: ""
+      # "auto" lets a backend detect the source language.
+      sourceLanguage: "auto"
+      # User's preferred reading language, for example "es".
+      targetLanguage: ""
+      # If local language detection is uncertain, still ask the backend to translate.
+      translateUnknownMessages: true
+      # If true, Lingua can use every language exposed by IRCafe's translation language catalog.
+      detectAllLanguages: true
+      # Used only when detectAllLanguages=false. Keep this list small to reduce Lingua memory usage.
+      detectionLanguages: []
+      # Current UI scaffold renders translations under the original message.
+      displayMode: "below-original"
+      requestTimeoutMs: 10000
+      maxRequestChars: 4000
+      maxConcurrentRequests: 2
+
   servers:
     - id: "libera"
       host: "irc.libera.chat"

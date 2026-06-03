@@ -276,6 +276,12 @@ public final class ChatTranscriptReactionSummarySupport {
     if (reactionState.control != null) return;
 
     int lineEnd = ChatTranscriptDocumentSupport.lineEndOffsetForLineStart(doc, messageLineStart);
+    int translationLineStart =
+        ChatTranscriptDocumentSupport.findAuxiliaryLineStartByMessageId(
+            doc, targetMsgId, ChatTranscriptMessageTranslationSupport.AUX_ROW_KIND_TRANSLATION);
+    if (translationLineStart >= lineEnd) {
+      lineEnd = ChatTranscriptDocumentSupport.lineEndOffsetForLineStart(doc, translationLineStart);
+    }
     int beforeLen = doc.getLength();
     int pos = normalizeInsertAtLineStart.apply(doc, lineEnd);
     pos = ensureAtLineStartForInsert.apply(doc, pos);

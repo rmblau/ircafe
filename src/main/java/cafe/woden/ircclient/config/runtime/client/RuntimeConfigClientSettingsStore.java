@@ -58,4 +58,56 @@ public class RuntimeConfigClientSettingsStore {
         },
         "proxy");
   }
+
+  public synchronized void rememberTranslation(IrcProperties.Client.Translation translation) {
+    IrcProperties.Client.Translation safe =
+        translation != null
+            ? translation
+            : new IrcProperties.Client.Translation(
+                false,
+                IrcProperties.Client.Translation.Mode.AUTO,
+                "",
+                "",
+                "",
+                "auto",
+                "",
+                null,
+                10_000,
+                4_000,
+                2);
+
+    clientSection.mutateMap(
+        "translation settings",
+        translationMap -> {
+          translationMap.put("enabled", safe.enabled());
+          translationMap.put("mode", safe.mode().name().toLowerCase());
+          rememberOptionalString(translationMap, "backend", safe.backendId(), "");
+          rememberOptionalString(translationMap, "endpoint", safe.endpoint(), "");
+          rememberOptionalString(translationMap, "apiKey", safe.apiKey(), "");
+          translationMap.put("sourceLanguage", safe.sourceLanguage());
+          rememberOptionalString(translationMap, "targetLanguage", safe.targetLanguage(), "");
+          translationMap.put("translateUnknownMessages", safe.translateUnknownMessages());
+          translationMap.put("detectAllLanguages", safe.detectAllLanguages());
+          if (safe.detectAllLanguages() || safe.detectionLanguages().isEmpty()) {
+            translationMap.remove("detectionLanguages");
+          } else {
+            translationMap.put("detectionLanguages", safe.detectionLanguages());
+          }
+          translationMap.put("displayMode", safe.displayMode().name().toLowerCase());
+          translationMap.put("requestTimeoutMs", Math.max(1L, safe.requestTimeoutMs()));
+          translationMap.put("maxRequestChars", Math.max(1, safe.maxRequestChars()));
+          translationMap.put("maxConcurrentRequests", Math.max(1, safe.maxConcurrentRequests()));
+        },
+        "translation");
+  }
+
+  private static void rememberOptionalString(
+      java.util.Map<String, Object> target, String key, String value, String defaultValue) {
+    String normalized = Objects.toString(value, "").trim();
+    if (normalized.isEmpty() || normalized.equals(defaultValue)) {
+      target.remove(key);
+    } else {
+      target.put(key, normalized);
+    }
+  }
 }

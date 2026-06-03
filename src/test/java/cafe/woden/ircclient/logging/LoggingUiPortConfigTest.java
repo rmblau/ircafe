@@ -4,14 +4,18 @@ import static cafe.woden.ircclient.config.properties.ConfigPropertyKeys.LOGGING_
 import static cafe.woden.ircclient.config.properties.ConfigPropertyKeys.LOGGING_ENABLED_TRUE;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
+import cafe.woden.ircclient.app.api.MessageTranslation;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.api.UiTranscriptPort;
 import cafe.woden.ircclient.config.properties.LogProperties;
 import cafe.woden.ircclient.logging.viewer.ChatRedactionAuditService;
+import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.SwingUiPort;
+import java.time.Instant;
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
@@ -95,5 +99,21 @@ class LoggingUiPortConfigTest {
               order.verify(swing).endChannelList("libera", "End of /LIST.");
               verifyNoMoreInteractions(swing);
             });
+  }
+
+  @Test
+  void transcriptDecoratingUiPortDelegatesMessageTranslationToTranscriptPort() {
+    UiPort base = Mockito.mock(UiPort.class);
+    UiTranscriptPort transcript = Mockito.mock(UiTranscriptPort.class);
+    TranscriptDecoratingUiPort ui = new TranscriptDecoratingUiPort(base, transcript);
+    TargetRef target = new TargetRef("libera", "#ircafe");
+    Instant at = Instant.ofEpochMilli(6_050L);
+    MessageTranslation translation = new MessageTranslation("m-1", "hola", "en", "es", "test");
+    Mockito.when(transcript.applyMessageTranslation(target, at, translation)).thenReturn(true);
+
+    assertTrue(ui.applyMessageTranslation(target, at, translation));
+
+    Mockito.verify(transcript).applyMessageTranslation(target, at, translation);
+    verifyNoMoreInteractions(base);
   }
 }

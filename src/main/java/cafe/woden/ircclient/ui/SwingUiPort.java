@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui;
 
 import cafe.woden.ircclient.app.api.ConnectionState;
+import cafe.woden.ircclient.app.api.MessageTranslation;
 import cafe.woden.ircclient.app.api.QuasselNetworkManagerAction;
 import cafe.woden.ircclient.app.api.UiChannelListPort;
 import cafe.woden.ircclient.app.api.UiPort;
@@ -587,6 +588,12 @@ public class SwingUiPort implements UiPort {
   public void removeMessageReaction(
       TargetRef target, Instant at, String fromNick, String targetMessageId, String reaction) {
     transcriptPort.removeMessageReaction(target, at, fromNick, targetMessageId, reaction);
+  }
+
+  @Override
+  public boolean applyMessageTranslation(
+      TargetRef target, Instant at, MessageTranslation translation) {
+    return transcriptPort.applyMessageTranslation(target, at, translation);
   }
 
   @Override
