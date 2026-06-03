@@ -4,6 +4,7 @@ import cafe.woden.ircclient.dcc.api.DccActionHint;
 import cafe.woden.ircclient.dcc.api.DccTransferEntry;
 import cafe.woden.ircclient.dcc.api.DccTransferQueryPort;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
@@ -38,17 +39,19 @@ public final class DccTransfersPanel extends JPanel implements AutoCloseable {
   private static final int COL_PROGRESS = 4;
   private static final int COL_DETAIL = 5;
 
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private final DccTransferQueryPort store;
   private final CompositeDisposable disposables = new CompositeDisposable();
   private final DccTransfersTableModel model = new DccTransfersTableModel();
 
-  private final JLabel title = new JLabel("DCC Transfers");
-  private final JLabel subtitle = new JLabel("No active DCC transfers.");
+  private final JLabel title = new JLabel(message("dcc.transfers.title"));
+  private final JLabel subtitle = new JLabel(message("dcc.transfers.subtitle.noneActive"));
   private final JTable table = new JTable(model);
-  private final JButton actionButton = new JButton("Run Action");
-  private final JButton openPmButton = new JButton("Open PM");
-  private final JButton copyPathButton = new JButton("Copy Save Path");
-  private final JButton refreshButton = new JButton("Refresh");
+  private final JButton actionButton = new JButton(message("dcc.transfers.button.runAction"));
+  private final JButton openPmButton = new JButton(message("dcc.transfers.button.openPm"));
+  private final JButton copyPathButton = new JButton(message("dcc.transfers.button.copySavePath"));
+  private final JButton refreshButton = new JButton(message("dcc.transfers.button.refresh"));
 
   private volatile String serverId;
   private volatile Consumer<String> onEmitCommand;
@@ -183,8 +186,8 @@ public final class DccTransfersPanel extends JPanel implements AutoCloseable {
   public void refresh() {
     String sid = Objects.toString(serverId, "").trim();
     if (sid.isEmpty()) {
-      title.setText("DCC Transfers");
-      subtitle.setText("No server selected.");
+      title.setText(message("dcc.transfers.title"));
+      subtitle.setText(message("dcc.transfers.subtitle.noServer"));
       model.setRows(List.of());
       updateActionButtonState();
       return;
@@ -196,13 +199,13 @@ public final class DccTransfersPanel extends JPanel implements AutoCloseable {
     int total = rows.size();
     long actionable =
         rows.stream().filter(r -> r != null && r.actionHint() != DccActionHint.NONE).count();
-    title.setText("DCC Transfers - " + sid);
+    title.setText(message("dcc.transfers.title.server", sid));
     if (total == 0) {
-      subtitle.setText("No DCC activity recorded for this server.");
+      subtitle.setText(message("dcc.transfers.subtitle.noneRecorded"));
     } else if (actionable > 0) {
-      subtitle.setText(total + " item(s), " + actionable + " action required.");
+      subtitle.setText(message("dcc.transfers.subtitle.itemsActionRequired", total, actionable));
     } else {
-      subtitle.setText(total + " item(s).");
+      subtitle.setText(message("dcc.transfers.subtitle.items", total));
     }
     updateActionButtonState();
   }
@@ -246,7 +249,7 @@ public final class DccTransfersPanel extends JPanel implements AutoCloseable {
     DccTransferEntry selected = selectedDccTransferEntry();
     if (selected == null) {
       actionButton.setEnabled(false);
-      actionButton.setText("Run Action");
+      actionButton.setText(message("dcc.transfers.button.runAction"));
       openPmButton.setEnabled(false);
       copyPathButton.setEnabled(false);
       return;
@@ -286,19 +289,28 @@ public final class DccTransfersPanel extends JPanel implements AutoCloseable {
   }
 
   private static String labelFor(DccActionHint hint) {
-    if (hint == null) return "Run Action";
+    if (hint == null) return message("dcc.transfers.button.runAction");
     return switch (hint) {
-      case ACCEPT_CHAT -> "Accept Chat";
-      case GET_FILE -> "Get File";
-      case CLOSE_CHAT -> "Close Chat";
-      case NONE -> "Run Action";
+      case ACCEPT_CHAT -> message("dcc.transfers.action.acceptChat");
+      case GET_FILE -> message("dcc.transfers.action.getFile");
+      case CLOSE_CHAT -> message("dcc.transfers.action.closeChat");
+      case NONE -> message("dcc.transfers.button.runAction");
     };
+  }
+
+  private static String message(String code, Object... args) {
+    return MESSAGES.text(code, args);
   }
 
   private static final class DccTransfersTableModel extends AbstractTableModel {
 
-    private static final String[] COLS = {
-      "Updated", "Nick", "Kind", "Status", "Progress", "Detail"
+    private static final String[] COL_KEYS = {
+      "dcc.transfers.column.updated",
+      "dcc.transfers.column.nick",
+      "dcc.transfers.column.kind",
+      "dcc.transfers.column.status",
+      "dcc.transfers.column.progress",
+      "dcc.transfers.column.detail"
     };
     private static final DateTimeFormatter TIME_FMT =
         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
@@ -322,12 +334,12 @@ public final class DccTransfersPanel extends JPanel implements AutoCloseable {
 
     @Override
     public int getColumnCount() {
-      return COLS.length;
+      return COL_KEYS.length;
     }
 
     @Override
     public String getColumnName(int column) {
-      return (column >= 0 && column < COLS.length) ? COLS[column] : "";
+      return (column >= 0 && column < COL_KEYS.length) ? message(COL_KEYS[column]) : "";
     }
 
     @Override

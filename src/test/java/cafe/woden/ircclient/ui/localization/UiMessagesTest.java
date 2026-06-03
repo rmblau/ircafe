@@ -41,6 +41,18 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesDccTransfersPanelMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("DCC Transfers - libera", messages.text("dcc.transfers.title.server", "libera"));
+    assertEquals(
+        "3 item(s), 1 action required.",
+        messages.text("dcc.transfers.subtitle.itemsActionRequired", 3, 1));
+    assertEquals("Accept Chat", messages.text("dcc.transfers.action.acceptChat"));
+    assertEquals("Progress", messages.text("dcc.transfers.column.progress"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 
