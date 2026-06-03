@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.nickcolors;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -27,11 +28,12 @@ final class NickColorOverrideEntryDialog {
 
   record Entry(String nickLower, String hex) {}
 
-  static Optional<Entry> open(Window owner, String title, Entry seed) {
+  static Optional<Entry> open(Window owner, UiMessages messages, String title, Entry seed) {
+    UiMessages uiMessages = messages == null ? UiMessages.bundledDefaults() : messages;
     if (!SwingUtilities.isEventDispatchThread()) {
       final Optional<Entry>[] box = new Optional[] {Optional.empty()};
       try {
-        SwingUtilities.invokeAndWait(() -> box[0] = open(owner, title, seed));
+        SwingUtilities.invokeAndWait(() -> box[0] = open(owner, uiMessages, title, seed));
       } catch (Exception ignored) {
       }
       return box[0];
@@ -45,8 +47,12 @@ final class NickColorOverrideEntryDialog {
     JTextField nick = new JTextField(22);
     JTextField hex = new JTextField(10);
 
-    nick.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "nick (case-insensitive)");
-    hex.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "#RRGGBB");
+    nick.putClientProperty(
+        FlatClientProperties.PLACEHOLDER_TEXT,
+        uiMessages.text("nickColors.overrides.entry.nick.placeholder"));
+    hex.putClientProperty(
+        FlatClientProperties.PLACEHOLDER_TEXT,
+        uiMessages.text("nickColors.overrides.entry.color.placeholder"));
 
     final Color seedColor;
     if (seed != null) {
@@ -62,12 +68,14 @@ final class NickColorOverrideEntryDialog {
     preview.setBorder(BorderFactory.createEmptyBorder(6, 10, 6, 10));
     preview.setPreferredSize(new Dimension(120, 28));
 
-    JButton pick = new JButton("Pick...");
+    JButton pick = new JButton(uiMessages.text("nickColors.overrides.entry.pick"));
     pick.addActionListener(
         e -> {
           Color current = parseHexColor(hex.getText());
           if (current == null) current = seedColor != null ? seedColor : Color.WHITE;
-          Color chosen = JColorChooser.showDialog(dlg, "Choose Color", current);
+          Color chosen =
+              JColorChooser.showDialog(
+                  dlg, uiMessages.text("nickColors.overrides.entry.chooseColor.title"), current);
           if (chosen != null) {
             hex.setText(toHex(chosen));
           }
@@ -83,13 +91,13 @@ final class NickColorOverrideEntryDialog {
 
     g.gridx = 0;
     g.gridy = 0;
-    form.add(new JLabel("Nick"), g);
+    form.add(new JLabel(uiMessages.text("nickColors.overrides.entry.nick.label")), g);
     g.gridx = 1;
     form.add(nick, g);
 
     g.gridx = 0;
     g.gridy++;
-    form.add(new JLabel("Color"), g);
+    form.add(new JLabel(uiMessages.text("nickColors.overrides.entry.color.label")), g);
 
     JPanel colorRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
     colorRow.add(hex);
@@ -101,8 +109,8 @@ final class NickColorOverrideEntryDialog {
 
     dlg.add(form, BorderLayout.CENTER);
 
-    JButton ok = new JButton("OK");
-    JButton cancel = new JButton("Cancel");
+    JButton ok = new JButton(uiMessages.text("common.button.ok"));
+    JButton cancel = new JButton(uiMessages.text("common.button.cancel"));
     ok.putClientProperty(FlatClientProperties.BUTTON_TYPE, "primary");
 
     JPanel buttons = new JPanel(new FlowLayout(FlowLayout.RIGHT));
@@ -125,7 +133,7 @@ final class NickColorOverrideEntryDialog {
             preview.setText(normalizeHex(hex.getText()));
           } else {
             preview.setBackground(new Color(0, 0, 0, 0));
-            preview.setText("Invalid color");
+            preview.setText(uiMessages.text("nickColors.overrides.entry.invalidColor"));
           }
         };
 

@@ -23,6 +23,15 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesNickColorOverrideDialogMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Nick Color Overrides", messages.text("nickColors.overrides.title"));
+    assertEquals("Nick", messages.text("nickColors.overrides.column.nick"));
+    assertEquals("Invalid color", messages.text("nickColors.overrides.entry.invalidColor"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 

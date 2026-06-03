@@ -4,6 +4,7 @@ import cafe.woden.ircclient.config.api.NickColorOverridesConfigPort;
 import cafe.woden.ircclient.ui.chat.NickColorService;
 import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.BorderLayout;
@@ -50,16 +51,19 @@ public class NickColorOverridesDialog {
   private final NickColorService nickColors;
   private final NickColorOverridesConfigPort runtimeConfig;
   private final ChatTranscriptStore transcripts;
+  private final UiMessages messages;
 
   private JDialog dialog;
 
   public NickColorOverridesDialog(
       NickColorService nickColors,
       NickColorOverridesConfigPort runtimeConfig,
-      ChatTranscriptStore transcripts) {
+      ChatTranscriptStore transcripts,
+      UiMessages messages) {
     this.nickColors = nickColors;
     this.runtimeConfig = runtimeConfig;
     this.transcripts = transcripts;
+    this.messages = messages == null ? UiMessages.bundledDefaults() : messages;
   }
 
   public void open(Window owner) {
@@ -74,7 +78,7 @@ public class NickColorOverridesDialog {
       return;
     }
 
-    OverridesTableModel model = new OverridesTableModel(seedFromService());
+    OverridesTableModel model = new OverridesTableModel(seedFromService(), messages);
     JTable table = new JTable(model);
     table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
     table.setAutoCreateRowSorter(true);
@@ -86,13 +90,13 @@ public class NickColorOverridesDialog {
     scroll.setPreferredSize(new Dimension(640, 340));
 
     JLabel help =
-        new JLabel("Overrides apply case-insensitively and take precedence over the palette.");
+        new JLabel(messages.text("nickColors.overrides.help"));
     help.putClientProperty(FlatClientProperties.STYLE, "font: -1");
 
-    JButton add = new JButton("Add...");
-    JButton edit = new JButton("Edit...");
-    JButton remove = new JButton("Remove");
-    JButton clear = new JButton("Clear");
+    JButton add = new JButton(messages.text("nickColors.overrides.add"));
+    JButton edit = new JButton(messages.text("nickColors.overrides.edit"));
+    JButton remove = new JButton(messages.text("nickColors.overrides.remove"));
+    JButton clear = new JButton(messages.text("nickColors.overrides.clear"));
 
     add.setIcon(SvgIcons.action("plus", 16));
     add.setDisabledIcon(SvgIcons.actionDisabled("plus", 16));
@@ -123,7 +127,8 @@ public class NickColorOverridesDialog {
     Runnable doAdd =
         () -> {
           NickColorOverrideEntryDialog.Entry seed = null;
-          NickColorOverrideEntryDialog.open(owner, "Add Nick Color", seed)
+          NickColorOverrideEntryDialog.open(
+                  owner, messages, messages.text("nickColors.overrides.entry.addTitle"), seed)
               .ifPresent(
                   entry -> {
                     model.upsert(entry.nickLower(), entry.hex());
@@ -137,7 +142,8 @@ public class NickColorOverridesDialog {
           if (viewRow < 0) return;
           int row = table.convertRowIndexToModel(viewRow);
           NickColorOverrideEntryDialog.Entry cur = model.getEntry(row);
-          NickColorOverrideEntryDialog.open(owner, "Edit Nick Color", cur)
+          NickColorOverrideEntryDialog.open(
+                  owner, messages, messages.text("nickColors.overrides.entry.editTitle"), cur)
               .ifPresent(
                   entry -> {
                     model.remove(row);
@@ -169,8 +175,8 @@ public class NickColorOverridesDialog {
         e -> {
           if (JOptionPane.showConfirmDialog(
                   dialog,
-                  "Clear all nick color overrides?",
-                  "Clear Overrides",
+                  messages.text("nickColors.overrides.clear.confirm.message"),
+                  messages.text("nickColors.overrides.clear.confirm.title"),
                   JOptionPane.OK_CANCEL_OPTION,
                   JOptionPane.WARNING_MESSAGE)
               == JOptionPane.OK_OPTION) {
@@ -195,9 +201,9 @@ public class NickColorOverridesDialog {
     leftButtons.add(remove);
     leftButtons.add(clear);
 
-    JButton apply = new JButton("Apply");
-    JButton ok = new JButton("OK");
-    JButton cancel = new JButton("Cancel");
+    JButton apply = new JButton(messages.text("common.button.apply"));
+    JButton ok = new JButton(messages.text("common.button.ok"));
+    JButton cancel = new JButton(messages.text("common.button.cancel"));
 
     apply.setIcon(SvgIcons.action("check", 16));
     apply.setDisabledIcon(SvgIcons.actionDisabled("check", 16));
@@ -254,7 +260,11 @@ public class NickColorOverridesDialog {
     root.add(scroll, BorderLayout.CENTER);
     root.add(footer, BorderLayout.SOUTH);
 
-    dialog = new JDialog(owner, "Nick Color Overrides", JDialog.ModalityType.APPLICATION_MODAL);
+    dialog =
+        new JDialog(
+            owner,
+            messages.text("nickColors.overrides.title"),
+            JDialog.ModalityType.APPLICATION_MODAL);
     dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
     dialog.setLayout(new BorderLayout());
     dialog.add(root, BorderLayout.CENTER);
@@ -278,11 +288,15 @@ public class NickColorOverridesDialog {
 
   private static class OverridesTableModel extends AbstractTableModel {
 
-    private static final String[] COLS = new String[] {"Nick", "Color"};
-
+    private final String[] columns;
     private final List<Row> rows = new ArrayList<>();
 
-    OverridesTableModel(Map<String, String> seed) {
+    OverridesTableModel(Map<String, String> seed, UiMessages messages) {
+      this.columns =
+          new String[] {
+            messages.text("nickColors.overrides.column.nick"),
+            messages.text("nickColors.overrides.column.color")
+          };
       if (seed != null) {
         for (Map.Entry<String, String> e : seed.entrySet()) {
           String nick = normalizeNickKey(e.getKey());
@@ -302,12 +316,12 @@ public class NickColorOverridesDialog {
 
     @Override
     public int getColumnCount() {
-      return COLS.length;
+      return columns.length;
     }
 
     @Override
     public String getColumnName(int column) {
-      return COLS[column];
+      return columns[column];
     }
 
     @Override
