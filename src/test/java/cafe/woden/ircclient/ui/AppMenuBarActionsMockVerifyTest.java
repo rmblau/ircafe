@@ -234,6 +234,7 @@ class AppMenuBarActionsMockVerifyTest {
         null,
         runtimeJfrService,
         serverDialogs,
+        cafe.woden.ircclient.ui.localization.UiMessages.bundledDefaults(),
         null,
         chat,
         serverTree,

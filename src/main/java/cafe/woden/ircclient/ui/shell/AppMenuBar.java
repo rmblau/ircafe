@@ -16,6 +16,7 @@ import cafe.woden.ircclient.ui.docking.DockingTuner;
 import cafe.woden.ircclient.ui.icons.AppIcons;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.ignore.IgnoreListDialog;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.input.MessageInputPanel;
 import cafe.woden.ircclient.ui.nickcolors.NickColorOverridesDialog;
 import cafe.woden.ircclient.ui.servers.ServerDialogs;
@@ -155,6 +156,7 @@ public class AppMenuBar extends JMenuBar {
   private final ChatDockable chat;
   private final ServerTreeDockable serverTree;
   private final UserListDockable users;
+  private final UiMessages messages;
   private final JButton memoryButton = new JButton();
   private final JButton memoryMoonButton = new JButton();
   private final JProgressBar memoryIndicator = new JProgressBar(0, 100);
@@ -195,6 +197,7 @@ public class AppMenuBar extends JMenuBar {
       NotificationSoundPort notificationSoundService,
       RuntimeJfrService runtimeJfrService,
       ServerDialogs serverDialogs,
+      UiMessages messages,
       UiProperties uiProps,
       ChatDockable chat,
       ServerTreeDockable serverTree,
@@ -214,10 +217,11 @@ public class AppMenuBar extends JMenuBar {
     this.chat = chat;
     this.serverTree = serverTree;
     this.users = users;
+    this.messages = messages == null ? UiMessages.bundledDefaults() : messages;
 
     memoryButton.setFocusable(false);
     memoryButton.setMargin(new Insets(1, 6, 1, 6));
-    memoryButton.setToolTipText("Show JVM memory usage details.");
+    memoryButton.setToolTipText(message("app.menu.memory.detailsTooltip"));
     memoryButton.addActionListener(e -> openMemoryDialog());
     installMemoryContextMenuTrigger(memoryButton);
     memoryButtonDefaultBorder = memoryButton.getBorder();
@@ -235,7 +239,7 @@ public class AppMenuBar extends JMenuBar {
     memoryMoonButton.setContentAreaFilled(false);
     memoryMoonButton.setOpaque(false);
     memoryMoonButton.setMargin(new Insets(0, 4, 0, 4));
-    memoryMoonButton.setToolTipText("Show JVM memory usage details.");
+    memoryMoonButton.setToolTipText(message("app.menu.memory.detailsTooltip"));
     memoryMoonButton.addActionListener(e -> openMemoryDialog());
     installMemoryContextMenuTrigger(memoryMoonButton);
 
@@ -243,7 +247,7 @@ public class AppMenuBar extends JMenuBar {
     memoryIndicator.setFocusable(false);
     memoryIndicator.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
     memoryIndicator.setPreferredSize(new Dimension(86, 18));
-    memoryIndicator.setToolTipText("Show JVM memory usage details.");
+    memoryIndicator.setToolTipText(message("app.menu.memory.detailsTooltip"));
     memoryIndicator.addMouseListener(
         new MouseAdapter() {
           @Override
@@ -284,8 +288,8 @@ public class AppMenuBar extends JMenuBar {
     refreshMemoryUsage();
 
     // File
-    JMenu file = new JMenu("File");
-    JMenuItem exit = new JMenuItem("Exit");
+    JMenu file = new JMenu(message("app.menu.file"));
+    JMenuItem exit = new JMenuItem(message("app.menu.file.exit"));
     exit.setIcon(SvgIcons.action("exit", 16));
     exit.setDisabledIcon(SvgIcons.actionDisabled("exit", 16));
     exit.addActionListener(
@@ -305,8 +309,8 @@ public class AppMenuBar extends JMenuBar {
     int menuMask = menuShortcutMask();
 
     // Edit
-    JMenu edit = new JMenu("Edit");
-    JMenuItem undo = new JMenuItem("Undo");
+    JMenu edit = new JMenu(message("app.menu.edit"));
+    JMenuItem undo = new JMenuItem(message("app.menu.edit.undo"));
     undo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, menuMask));
     undo.addActionListener(
         e -> {
@@ -315,7 +319,7 @@ public class AppMenuBar extends JMenuBar {
           }
         });
 
-    JMenuItem redo = new JMenuItem("Redo");
+    JMenuItem redo = new JMenuItem(message("app.menu.edit.redo"));
     redo.setAccelerator(
         KeyStroke.getKeyStroke(KeyEvent.VK_Z, menuMask | InputEvent.SHIFT_DOWN_MASK));
     redo.addActionListener(
@@ -325,7 +329,7 @@ public class AppMenuBar extends JMenuBar {
           }
         });
 
-    JMenuItem cut = new JMenuItem("Cut");
+    JMenuItem cut = new JMenuItem(message("app.menu.edit.cut"));
     cut.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, menuMask));
     cut.addActionListener(
         e -> {
@@ -334,7 +338,7 @@ public class AppMenuBar extends JMenuBar {
           }
         });
 
-    JMenuItem copy = new JMenuItem("Copy");
+    JMenuItem copy = new JMenuItem(message("app.menu.edit.copy"));
     copy.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, menuMask));
     copy.addActionListener(
         e -> {
@@ -343,7 +347,7 @@ public class AppMenuBar extends JMenuBar {
           }
         });
 
-    JMenuItem paste = new JMenuItem("Paste");
+    JMenuItem paste = new JMenuItem(message("app.menu.edit.paste"));
     paste.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, menuMask));
     paste.addActionListener(
         e -> {
@@ -352,7 +356,7 @@ public class AppMenuBar extends JMenuBar {
           }
         });
 
-    JMenuItem delete = new JMenuItem("Delete");
+    JMenuItem delete = new JMenuItem(message("app.menu.edit.delete"));
     delete.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0));
     delete.addActionListener(
         e -> {
@@ -361,7 +365,7 @@ public class AppMenuBar extends JMenuBar {
           }
         });
 
-    JMenuItem selectAll = new JMenuItem("Select All");
+    JMenuItem selectAll = new JMenuItem(message("app.menu.edit.selectAll"));
     selectAll.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_A, menuMask));
     selectAll.addActionListener(
         e -> {
@@ -370,7 +374,7 @@ public class AppMenuBar extends JMenuBar {
           }
         });
 
-    JMenuItem clearInput = new JMenuItem("Clear Input");
+    JMenuItem clearInput = new JMenuItem(message("app.menu.edit.clearInput"));
     clearInput.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L, KeyEvent.CTRL_DOWN_MASK));
     clearInput.addActionListener(
         e -> {
@@ -379,21 +383,21 @@ public class AppMenuBar extends JMenuBar {
           }
         });
 
-    JMenuItem findInCurrentBuffer = new JMenuItem("Find in Current Buffer");
+    JMenuItem findInCurrentBuffer = new JMenuItem(message("app.menu.edit.findInCurrentBuffer"));
     findInCurrentBuffer.setAccelerator(
         KeyStroke.getKeyStroke(KeyEvent.VK_F, KeyEvent.CTRL_DOWN_MASK));
     findInCurrentBuffer.addActionListener(e -> chat.openFindBar());
 
-    JMenuItem findNext = new JMenuItem("Find Next");
+    JMenuItem findNext = new JMenuItem(message("app.menu.edit.findNext"));
     findNext.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0));
     findNext.addActionListener(e -> chat.findNextInTranscript());
 
-    JMenuItem findPrevious = new JMenuItem("Find Previous");
+    JMenuItem findPrevious = new JMenuItem(message("app.menu.edit.findPrevious"));
     findPrevious.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F3, InputEvent.SHIFT_DOWN_MASK));
     findPrevious.addActionListener(e -> chat.findPreviousInTranscript());
 
-    JMenu commandHistory = new JMenu("Command History");
-    JMenuItem commandHistoryPrev = new JMenuItem("Previous");
+    JMenu commandHistory = new JMenu(message("app.menu.edit.commandHistory"));
+    JMenuItem commandHistoryPrev = new JMenuItem(message("app.menu.edit.commandHistory.previous"));
     commandHistoryPrev.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0));
     commandHistoryPrev.addActionListener(
         e -> {
@@ -402,7 +406,7 @@ public class AppMenuBar extends JMenuBar {
           }
         });
 
-    JMenuItem commandHistoryNext = new JMenuItem("Next");
+    JMenuItem commandHistoryNext = new JMenuItem(message("app.menu.edit.commandHistory.next"));
     commandHistoryNext.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0));
     commandHistoryNext.addActionListener(
         e -> {
@@ -411,7 +415,7 @@ public class AppMenuBar extends JMenuBar {
           }
         });
 
-    JMenuItem commandHistoryClear = new JMenuItem("Clear");
+    JMenuItem commandHistoryClear = new JMenuItem(message("app.menu.edit.commandHistory.clear"));
     commandHistoryClear.addActionListener(
         e -> {
           if (!insertIntoActiveInput(activeInputRouter, MessageInputPanel::clearCommandHistory)) {
@@ -474,11 +478,11 @@ public class AppMenuBar extends JMenuBar {
         });
 
     // Insert
-    JMenu insert = new JMenu("Insert");
-    JMenu formatting = new JMenu("Formatting");
-    JMenu nickTarget = new JMenu("Nick/Target");
+    JMenu insert = new JMenu(message("app.menu.insert"));
+    JMenu formatting = new JMenu(message("app.menu.insert.formatting"));
+    JMenu nickTarget = new JMenu(message("app.menu.insert.nickTarget"));
 
-    JMenuItem insertBold = new JMenuItem("Bold");
+    JMenuItem insertBold = new JMenuItem(message("app.menu.insert.bold"));
     insertBold.addActionListener(
         e -> {
           if (!insertIntoActiveInput(
@@ -486,7 +490,7 @@ public class AppMenuBar extends JMenuBar {
             beep();
           }
         });
-    JMenuItem insertItalic = new JMenuItem("Italic");
+    JMenuItem insertItalic = new JMenuItem(message("app.menu.insert.italic"));
     insertItalic.addActionListener(
         e -> {
           if (!insertIntoActiveInput(
@@ -495,7 +499,7 @@ public class AppMenuBar extends JMenuBar {
             beep();
           }
         });
-    JMenuItem insertUnderline = new JMenuItem("Underline");
+    JMenuItem insertUnderline = new JMenuItem(message("app.menu.insert.underline"));
     insertUnderline.addActionListener(
         e -> {
           if (!insertIntoActiveInput(
@@ -504,7 +508,7 @@ public class AppMenuBar extends JMenuBar {
             beep();
           }
         });
-    JMenuItem insertReverse = new JMenuItem("Reverse");
+    JMenuItem insertReverse = new JMenuItem(message("app.menu.insert.reverse"));
     insertReverse.addActionListener(
         e -> {
           if (!insertIntoActiveInput(
@@ -513,7 +517,7 @@ public class AppMenuBar extends JMenuBar {
             beep();
           }
         });
-    JMenuItem insertColor = new JMenuItem("Color...");
+    JMenuItem insertColor = new JMenuItem(message("app.menu.insert.color"));
     insertColor.addActionListener(
         e -> {
           MessageInputPanel panel = activeInputPanel(activeInputRouter);
@@ -532,7 +536,7 @@ public class AppMenuBar extends JMenuBar {
           }
           if (!ok) beep();
         });
-    JMenuItem insertResetFormatting = new JMenuItem("Reset Formatting");
+    JMenuItem insertResetFormatting = new JMenuItem(message("app.menu.insert.resetFormatting"));
     insertResetFormatting.addActionListener(
         e -> {
           if (!insertIntoActiveInput(
@@ -549,7 +553,7 @@ public class AppMenuBar extends JMenuBar {
     formatting.add(insertColor);
     formatting.add(insertResetFormatting);
 
-    JMenuItem insertSelectedNick = new JMenuItem("Insert Selected Nick");
+    JMenuItem insertSelectedNick = new JMenuItem(message("app.menu.insert.selectedNick"));
     insertSelectedNick.addActionListener(
         e -> {
           String nick = resolveSelectedNick(users, targetCoordinator);
@@ -559,7 +563,7 @@ public class AppMenuBar extends JMenuBar {
             beep();
           }
         });
-    JMenuItem insertCurrentChannel = new JMenuItem("Insert Current Channel");
+    JMenuItem insertCurrentChannel = new JMenuItem(message("app.menu.insert.currentChannel"));
     insertCurrentChannel.addActionListener(
         e -> {
           String channel = resolveCurrentChannel(targetCoordinator);
@@ -569,7 +573,7 @@ public class AppMenuBar extends JMenuBar {
             beep();
           }
         });
-    JMenuItem insertCurrentServer = new JMenuItem("Insert Current Server");
+    JMenuItem insertCurrentServer = new JMenuItem(message("app.menu.insert.currentServer"));
     insertCurrentServer.addActionListener(
         e -> {
           String sid = resolveCurrentServerId(targetCoordinator);
@@ -609,9 +613,9 @@ public class AppMenuBar extends JMenuBar {
         });
 
     // Settings
-    JMenu settings = new JMenu("Settings");
+    JMenu settings = new JMenu(message("app.menu.settings"));
 
-    JMenu themeMenu = new JMenu("Theme");
+    JMenu themeMenu = new JMenu(message("app.menu.settings.theme"));
     ButtonGroup themeGroup = new ButtonGroup();
     Map<String, JRadioButtonMenuItem> themeItems = new LinkedHashMap<>();
 
@@ -626,7 +630,7 @@ public class AppMenuBar extends JMenuBar {
     }
 
     themeMenu.addSeparator();
-    JMenuItem themeSelector = new JMenuItem("More Themes...");
+    JMenuItem themeSelector = new JMenuItem(message("app.menu.settings.moreThemes"));
     themeSelector.setIcon(SvgIcons.action("theme", 16));
     themeSelector.setDisabledIcon(SvgIcons.actionDisabled("theme", 16));
     themeSelector.addActionListener(
@@ -662,7 +666,7 @@ public class AppMenuBar extends JMenuBar {
 
     settings.add(themeMenu);
 
-    JMenuItem nickColors = new JMenuItem("Nick Colors...");
+    JMenuItem nickColors = new JMenuItem(message("app.menu.settings.nickColors"));
     nickColors.setIcon(SvgIcons.action("palette", 16));
     nickColors.setDisabledIcon(SvgIcons.actionDisabled("palette", 16));
     nickColors.addActionListener(
@@ -671,7 +675,7 @@ public class AppMenuBar extends JMenuBar {
           nickColorOverridesDialog.open(w);
         });
 
-    JMenuItem prefs = new JMenuItem("Preferences...");
+    JMenuItem prefs = new JMenuItem(message("app.menu.settings.preferences"));
     prefs.setIcon(SvgIcons.action("settings", 16));
     prefs.setDisabledIcon(SvgIcons.actionDisabled("settings", 16));
     prefs.addActionListener(
@@ -680,7 +684,7 @@ public class AppMenuBar extends JMenuBar {
           preferencesDialog.open(w);
         });
 
-    JMenuItem ignoreLists = new JMenuItem("Ignore Lists...");
+    JMenuItem ignoreLists = new JMenuItem(message("app.menu.settings.ignoreLists"));
     ignoreLists.setIcon(SvgIcons.action("ban", 16));
     ignoreLists.setDisabledIcon(SvgIcons.actionDisabled("ban", 16));
     ignoreLists.addActionListener(
@@ -702,9 +706,9 @@ public class AppMenuBar extends JMenuBar {
     settings.add(ignoreLists);
 
     // Window (placeholder for future docking helpers)
-    JMenu window = new JMenu("Window");
+    JMenu window = new JMenu(message("app.menu.window"));
 
-    JMenuItem reopenServersDock = new JMenuItem("Reopen Servers Dock");
+    JMenuItem reopenServersDock = new JMenuItem(message("app.menu.window.reopenServersDock"));
     reopenServersDock.setIcon(SvgIcons.action("dock-left", 16));
     reopenServersDock.setDisabledIcon(SvgIcons.actionDisabled("dock-left", 16));
     reopenServersDock.setAccelerator(
@@ -712,7 +716,7 @@ public class AppMenuBar extends JMenuBar {
             KeyEvent.VK_1, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
     reopenServersDock.addActionListener(e -> ensureSideDockVisible(serverTree, DockingRegion.WEST));
 
-    JMenuItem reopenUsersDock = new JMenuItem("Reopen Users Dock");
+    JMenuItem reopenUsersDock = new JMenuItem(message("app.menu.window.reopenUsersDock"));
     reopenUsersDock.setIcon(SvgIcons.action("dock-right", 16));
     reopenUsersDock.setDisabledIcon(SvgIcons.actionDisabled("dock-right", 16));
     reopenUsersDock.setAccelerator(
@@ -720,7 +724,7 @@ public class AppMenuBar extends JMenuBar {
             KeyEvent.VK_2, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
     reopenUsersDock.addActionListener(e -> ensureSideDockVisible(users, DockingRegion.EAST));
 
-    JMenuItem resetLayout = new JMenuItem("Reset Dock Layout");
+    JMenuItem resetLayout = new JMenuItem(message("app.menu.window.resetDockLayout"));
     resetLayout.setIcon(SvgIcons.action("refresh", 16));
     resetLayout.setDisabledIcon(SvgIcons.actionDisabled("refresh", 16));
     resetLayout.setAccelerator(
@@ -728,29 +732,36 @@ public class AppMenuBar extends JMenuBar {
             KeyEvent.VK_0, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
     resetLayout.addActionListener(e -> resetDockLayout());
 
-    JMenuItem resetMainViewDock = new JMenuItem("Reset Main View Dock");
+    JMenuItem resetMainViewDock = new JMenuItem(message("app.menu.window.resetMainViewDock"));
     resetMainViewDock.setIcon(SvgIcons.action("refresh", 16));
     resetMainViewDock.setDisabledIcon(SvgIcons.actionDisabled("refresh", 16));
     resetMainViewDock.addActionListener(e -> resetMainViewDock());
 
-    JCheckBoxMenuItem showChannelListNodes = new JCheckBoxMenuItem("Show Channel List Node");
+    JCheckBoxMenuItem showChannelListNodes =
+        new JCheckBoxMenuItem(message("app.menu.window.showChannelListNode"));
     showChannelListNodes.setSelected(true);
     showChannelListNodes.setEnabled(false);
-    showChannelListNodes.setToolTipText("Channel List nodes are always visible.");
+    showChannelListNodes.setToolTipText(message("app.menu.window.showChannelListNode.tooltip"));
 
-    JCheckBoxMenuItem showDccNodes = new JCheckBoxMenuItem("Show DCC Transfers Node");
+    JCheckBoxMenuItem showDccNodes =
+        new JCheckBoxMenuItem(message("app.menu.window.showDccTransfersNode"));
     showDccNodes.setSelected(serverTree.isDccTransfersNodesVisible());
     showDccNodes.addActionListener(
         e -> serverTree.setDccTransfersNodesVisible(showDccNodes.isSelected()));
     dccTransfersVisibilityListener =
         evt -> showDccNodes.setSelected(Boolean.TRUE.equals(evt.getNewValue()));
 
-    JMenu currentServerNodes = new JMenu("Current Server Nodes");
-    JCheckBoxMenuItem showServerNode = new JCheckBoxMenuItem("Show Server Node");
-    JCheckBoxMenuItem showNotificationsNodes = new JCheckBoxMenuItem("Show Notifications Node");
-    JCheckBoxMenuItem showLogViewerNodes = new JCheckBoxMenuItem("Show Log Viewer Node");
-    JCheckBoxMenuItem showMonitorNodes = new JCheckBoxMenuItem("Show Monitor Node");
-    JCheckBoxMenuItem showInterceptorsNodes = new JCheckBoxMenuItem("Show Interceptors Node");
+    JMenu currentServerNodes = new JMenu(message("app.menu.window.currentServerNodes"));
+    JCheckBoxMenuItem showServerNode =
+        new JCheckBoxMenuItem(message("app.menu.window.showServerNode"));
+    JCheckBoxMenuItem showNotificationsNodes =
+        new JCheckBoxMenuItem(message("app.menu.window.showNotificationsNode"));
+    JCheckBoxMenuItem showLogViewerNodes =
+        new JCheckBoxMenuItem(message("app.menu.window.showLogViewerNode"));
+    JCheckBoxMenuItem showMonitorNodes =
+        new JCheckBoxMenuItem(message("app.menu.window.showMonitorNode"));
+    JCheckBoxMenuItem showInterceptorsNodes =
+        new JCheckBoxMenuItem(message("app.menu.window.showInterceptorsNode"));
 
     Runnable refreshCurrentServerNodeItems =
         () -> {
@@ -823,14 +834,16 @@ public class AppMenuBar extends JMenuBar {
     currentServerNodes.add(showChannelListNodes);
     currentServerNodes.add(showDccNodes);
 
-    JCheckBoxMenuItem showApplicationRoot = new JCheckBoxMenuItem("Show Application Root");
+    JCheckBoxMenuItem showApplicationRoot =
+        new JCheckBoxMenuItem(message("app.menu.window.showApplicationRoot"));
     showApplicationRoot.setSelected(serverTree.isApplicationRootVisible());
     showApplicationRoot.addActionListener(
         e -> serverTree.setApplicationRootVisible(showApplicationRoot.isSelected()));
     applicationRootVisibilityListener =
         evt -> showApplicationRoot.setSelected(Boolean.TRUE.equals(evt.getNewValue()));
 
-    JMenuItem openSelectedNodeDock = new JMenuItem("Open Selected Node in Chat Dock");
+    JMenuItem openSelectedNodeDock =
+        new JMenuItem(message("app.menu.window.openSelectedNodeDock"));
     openSelectedNodeDock.setAccelerator(
         KeyStroke.getKeyStroke(
             KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
@@ -886,8 +899,8 @@ public class AppMenuBar extends JMenuBar {
         });
 
     // Servers
-    JMenu servers = new JMenu("Servers");
-    JMenuItem addServer = new JMenuItem("Add Server...");
+    JMenu servers = new JMenu(message("app.menu.servers"));
+    JMenuItem addServer = new JMenuItem(message("app.menu.servers.add"));
     addServer.setIcon(SvgIcons.action("plus", 16));
     addServer.setDisabledIcon(SvgIcons.actionDisabled("plus", 16));
     addServer.addActionListener(
@@ -895,7 +908,7 @@ public class AppMenuBar extends JMenuBar {
           Window w = SwingUtilities.getWindowAncestor(this);
           serverDialogs.openAddServer(w);
         });
-    JMenuItem editServers = new JMenuItem("Edit Servers...");
+    JMenuItem editServers = new JMenuItem(message("app.menu.servers.edit"));
     editServers.setIcon(SvgIcons.action("edit", 16));
     editServers.setDisabledIcon(SvgIcons.actionDisabled("edit", 16));
     editServers.addActionListener(
@@ -907,16 +920,16 @@ public class AppMenuBar extends JMenuBar {
     servers.add(editServers);
 
     // Help
-    JMenu help = new JMenu("Help");
-    JMenuItem about = new JMenuItem("About");
+    JMenu help = new JMenu(message("app.menu.help"));
+    JMenuItem about = new JMenuItem(message("app.menu.help.about"));
     about.setIcon(SvgIcons.action("info", 16));
     about.setDisabledIcon(SvgIcons.actionDisabled("info", 16));
     about.addActionListener(
         e ->
             javax.swing.JOptionPane.showMessageDialog(
                 SwingUtilities.getWindowAncestor(this),
-                "IRCafe\nA modern Java IRC client.",
-                "About IRCafe",
+                message("app.menu.help.about.message"),
+                message("app.menu.help.about.title"),
                 javax.swing.JOptionPane.INFORMATION_MESSAGE,
                 AppIcons.aboutIcon()));
     help.add(about);
@@ -1489,7 +1502,7 @@ public class AppMenuBar extends JMenuBar {
   private void buildMemoryModePopup() {
     memoryModePopup.removeAll();
 
-    JMenu modeMenu = new JMenu("Display Mode");
+    JMenu modeMenu = new JMenu(message("app.menu.memory.displayMode"));
     ButtonGroup modeGroup = new ButtonGroup();
     for (MemoryUsageDisplayMode mode : MemoryUsageDisplayMode.values()) {
       JRadioButtonMenuItem item = new JRadioButtonMenuItem(mode.toString());
@@ -1500,7 +1513,7 @@ public class AppMenuBar extends JMenuBar {
     }
     memoryModePopup.add(modeMenu);
 
-    JMenu refreshIntervalMenu = new JMenu("Refresh Interval");
+    JMenu refreshIntervalMenu = new JMenu(message("app.menu.memory.refreshInterval"));
     ButtonGroup refreshGroup = new ButtonGroup();
     for (int intervalMs : MEMORY_REFRESH_INTERVAL_PRESETS_MS) {
       JRadioButtonMenuItem item =
@@ -1511,7 +1524,7 @@ public class AppMenuBar extends JMenuBar {
       refreshIntervalMenu.add(item);
     }
     refreshIntervalMenu.addSeparator();
-    JMenuItem customRefresh = new JMenuItem("Custom");
+    JMenuItem customRefresh = new JMenuItem(message("app.menu.memory.customRefreshInterval"));
     customRefresh.addActionListener(e -> promptForCustomMemoryRefreshInterval());
     refreshIntervalMenu.add(customRefresh);
     memoryModePopup.add(refreshIntervalMenu);
@@ -2211,6 +2224,10 @@ public class AppMenuBar extends JMenuBar {
   private static String formatIrcColorOption(int idx) {
     if (idx < 0 || idx >= IRC_COLOR_NAMES.length) return "";
     return String.format(Locale.ROOT, "%02d %s", idx, IRC_COLOR_NAMES[idx]);
+  }
+
+  private String message(String code, Object... args) {
+    return messages.text(code, args);
   }
 
   private static int menuShortcutMask() {
