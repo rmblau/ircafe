@@ -53,6 +53,16 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesNotificationsPanelMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Notifications", messages.text("notifications.title"));
+    assertEquals("Jump to message", messages.text("notifications.menu.jumpToMessage"));
+    assertEquals("CSV Files (*.csv)", messages.text("notifications.export.fileFilter.csv"));
+    assertEquals("Snippet", messages.text("notifications.column.snippet"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 
