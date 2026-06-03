@@ -63,6 +63,17 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesLogViewerPanelMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Log Viewer - libera", messages.text("logViewer.title.server", "libera"));
+    assertEquals("Rows: 25 (max 500)", messages.text("logViewer.subtitle.rows", 25, 500));
+    assertEquals("Choose Channels", messages.text("logViewer.channelPicker.title"));
+    assertEquals("Glob (* ?)", messages.text("logViewer.matchMode.glob"));
+    assertEquals("Message Tags", messages.text("logViewer.column.messageTags"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 

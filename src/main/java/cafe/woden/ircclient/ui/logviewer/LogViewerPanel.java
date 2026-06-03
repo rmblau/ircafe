@@ -7,6 +7,7 @@ import cafe.woden.ircclient.logging.viewer.ChatLogViewerResult;
 import cafe.woden.ircclient.logging.viewer.ChatLogViewerRow;
 import cafe.woden.ircclient.logging.viewer.ChatLogViewerService;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.util.MigConstraints;
 import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import cafe.woden.ircclient.ui.util.MigLayouts;
@@ -121,6 +122,8 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
     COL_HOSTMASK, COL_KIND, COL_DIRECTION, COL_MESSAGE_ID, COL_TAGS, COL_META
   };
 
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private final ChatLogViewerService service;
   private final java.util.function.Function<String, List<String>> openChannelsProvider;
   private final ExecutorService exec;
@@ -129,8 +132,8 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
 
   private Future<?> runningTask;
 
-  private final JLabel title = new JLabel("Log Viewer");
-  private final JLabel subtitle = new JLabel("Select filters and click Search.");
+  private final JLabel title = new JLabel(message("logViewer.title"));
+  private final JLabel subtitle = new JLabel(message("logViewer.subtitle.initial"));
   private final JLabel status = new JLabel(" ");
   private final JPanel north = new JPanel(new BorderLayout());
   private final JPanel footer = new JPanel(new BorderLayout());
@@ -147,21 +150,21 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
   private final javax.swing.JTextField channelField = new javax.swing.JTextField();
   private final JComboBox<ChatLogViewerMatchMode> channelMode =
       new JComboBox<>(CHANNEL_MATCH_MODES.clone());
-  private final JButton channelListButton = new JButton("Pick...");
-  private final JCheckBox includeServerEvents = new JCheckBox("Server events");
-  private final JCheckBox includeProtocolDetails = new JCheckBox("Protocol/debug");
+  private final JButton channelListButton = new JButton(message("logViewer.button.pickChannels"));
+  private final JCheckBox includeServerEvents = new JCheckBox(message("logViewer.option.serverEvents"));
+  private final JCheckBox includeProtocolDetails = new JCheckBox(message("logViewer.option.protocolDebug"));
   private final JComboBox<DateRangePreset> datePreset = new JComboBox<>(DateRangePreset.values());
 
-  private final JLabel fromLabel = new JLabel("From:");
-  private final JLabel toLabel = new JLabel("To:");
+  private final JLabel fromLabel = new JLabel(message("logViewer.label.from"));
+  private final JLabel toLabel = new JLabel(message("logViewer.label.to"));
   private final JSpinner fromSpinner;
   private final JSpinner toSpinner;
   private final JSpinner limitSpinner = new JSpinner(new SpinnerNumberModel(500, 10, 10_000, 10));
 
-  private final JButton searchButton = new JButton("Search");
-  private final JButton resetButton = new JButton("Reset");
-  private final JButton exportButton = new JButton("Export...");
-  private final JButton columnsButton = new JButton("Columns");
+  private final JButton searchButton = new JButton(message("logViewer.button.search"));
+  private final JButton resetButton = new JButton(message("logViewer.button.reset"));
+  private final JButton exportButton = new JButton(message("logViewer.button.export"));
+  private final JButton columnsButton = new JButton(message("logViewer.button.columns"));
   private final JPanel advancedPanel =
       new JPanel(
           MigLayouts.fillXWithHideMode(
@@ -181,6 +184,10 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
   private List<ChannelOption> channelPickerAllOptions = List.of();
 
   private volatile String serverId = "";
+
+  private static String message(String code, Object... args) {
+    return MESSAGES.text(code, args);
+  }
 
   public LogViewerPanel(ChatLogViewerService service) {
     this(service, sid -> List.of());
@@ -283,7 +290,7 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
                 "[grow,fill][right][pref!][pref!][pref!][pref!][pref!]",
                 MigLayouts.rows(2, 2)));
     header.add(title, MigConstraints.growX());
-    header.add(new JLabel("Max rows:"), "");
+    header.add(new JLabel(message("logViewer.label.maxRows")), "");
     header.add(limitSpinner, MigConstraints.width(84));
     header.add(searchButton, MigConstraints.sizeGroup(VIEWER_BUTTON_SIZE_GROUP));
     header.add(resetButton, MigConstraints.sizeGroup(VIEWER_BUTTON_SIZE_GROUP));
@@ -309,29 +316,29 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
     hostmaskMode.setSelectedItem(ChatLogViewerMatchMode.CONTAINS);
     channelMode.setSelectedItem(ChatLogViewerMatchMode.CONTAINS);
 
-    nickField.setToolTipText("Filter by nick (quick filter).");
-    nickField.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nick filter");
-    messageField.setToolTipText("Filter by message text.");
-    messageField.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Message text");
-    hostmaskField.setToolTipText("Filter by full hostmask when available.");
-    hostmaskField.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Hostmask filter");
-    channelField.setToolTipText("Filter by channel/target. Use List mode for multiple channels.");
+    nickField.setToolTipText(message("logViewer.tooltip.nick"));
+    nickField.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, message("logViewer.placeholder.nick"));
+    messageField.setToolTipText(message("logViewer.tooltip.message"));
+    messageField.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, message("logViewer.placeholder.message"));
+    hostmaskField.setToolTipText(message("logViewer.tooltip.hostmask"));
+    hostmaskField.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, message("logViewer.placeholder.hostmask"));
+    channelField.setToolTipText(message("logViewer.tooltip.channel"));
     channelField.putClientProperty(
-        FlatClientProperties.PLACEHOLDER_TEXT, "Channel filter (e.g. #ircafe)");
-    channelListButton.setToolTipText("Choose channels for List mode");
-    configureInlineActionButton(channelListButton, "channel", "Choose channels for List mode");
-    datePreset.setToolTipText("Date window for search.");
-    includeServerEvents.setToolTipText("Include mode/join/part/server status lines.");
-    includeProtocolDetails.setToolTipText("Include CAP and other low-level protocol lines.");
+        FlatClientProperties.PLACEHOLDER_TEXT, message("logViewer.placeholder.channel"));
+    channelListButton.setToolTipText(message("logViewer.tooltip.chooseChannels"));
+    configureInlineActionButton(channelListButton, "channel", message("logViewer.tooltip.chooseChannels"));
+    datePreset.setToolTipText(message("logViewer.tooltip.dateWindow"));
+    includeServerEvents.setToolTipText(message("logViewer.tooltip.serverEvents"));
+    includeProtocolDetails.setToolTipText(message("logViewer.tooltip.protocolDebug"));
 
     JPanel quickRow =
         new JPanel(
             MigLayouts.fillXWithHideMode(
                 0, 3, "[right][grow,fill][pref!][right][grow,fill][pref!][pref!]", "[]"));
-    quickRow.add(new JLabel("Nick:"), "");
+    quickRow.add(new JLabel(message("logViewer.label.nick")), "");
     quickRow.add(nickField, MigConstraints.pushXGrowX());
     quickRow.add(nickMode, MigConstraints.width(88));
-    quickRow.add(new JLabel("Channel:"), "");
+    quickRow.add(new JLabel(message("logViewer.label.channel")), "");
     quickRow.add(channelField, MigConstraints.pushXGrowX());
     quickRow.add(channelMode, MigConstraints.width(88));
     quickRow.add(channelListButton, MigConstraints.width(34));
@@ -340,7 +347,7 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
     JPanel messageRow =
         new JPanel(
             MigLayouts.fillXWithHideMode(0, 3, "[right][grow,fill][pref!][grow,fill]", "[]"));
-    messageRow.add(new JLabel("Message:"), "");
+    messageRow.add(new JLabel(message("logViewer.label.message")), "");
     messageRow.add(messageField, MigConstraints.pushXGrowX());
     messageRow.add(messageMode, MigConstraints.width(88));
     messageRow.add(new JLabel(""), MigConstraints.pushXGrowX());
@@ -350,7 +357,7 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
         new JPanel(
             MigLayouts.fillXWithHideMode(
                 0, 3, "[right][pref!][right][pref!][right][pref!][grow,fill]", "[]"));
-    dateRow.add(new JLabel("Range:"), "");
+    dateRow.add(new JLabel(message("logViewer.label.range")), "");
     dateRow.add(datePreset, MigConstraints.width(100));
     dateRow.add(fromLabel, "");
     dateRow.add(fromSpinner, MigConstraints.width(145));
@@ -359,7 +366,7 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
     dateRow.add(new JLabel(""), MigConstraints.pushXGrowX());
     filters.add(dateRow, MigConstraints.growX());
 
-    advancedPanel.add(new JLabel("Hostmask:"), "");
+    advancedPanel.add(new JLabel(message("logViewer.label.hostmask")), "");
     advancedPanel.add(hostmaskField, MigConstraints.pushXGrowX());
     advancedPanel.add(hostmaskMode, MigConstraints.width(88));
     advancedPanel.add(new JLabel(""), MigConstraints.pushXGrowX());
@@ -367,7 +374,7 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
 
     JPanel visibilityRow =
         new JPanel(MigLayouts.fillXWithHideMode(0, 3, "[right][pref!][pref!][grow,fill]", "[]"));
-    visibilityRow.add(new JLabel("Show:"), "");
+    visibilityRow.add(new JLabel(message("logViewer.label.show")), "");
     visibilityRow.add(includeServerEvents, "");
     visibilityRow.add(includeProtocolDetails, "");
     visibilityRow.add(new JLabel(""), MigConstraints.pushXGrowX());
@@ -384,7 +391,7 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
     table.setShowHorizontalLines(false);
     table.setShowVerticalLines(false);
     table.getTableHeader().setReorderingAllowed(false);
-    table.getTableHeader().setToolTipText("Click a column header to sort.");
+    table.getTableHeader().setToolTipText(message("logViewer.tooltip.sortColumn"));
 
     table.setRowSorter(sorter);
     sorter.setSortsOnUpdates(true);
@@ -454,7 +461,10 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
 
     Window owner = SwingUtilities.getWindowAncestor(this);
     String sid = Objects.toString(row.serverId(), "").trim();
-    String title = sid.isEmpty() ? "Log Row Details" : ("Log Row Details - " + sid);
+    String title =
+        sid.isEmpty()
+            ? message("logViewer.details.title")
+            : message("logViewer.details.title.server", sid);
 
     JDialog dialog = new JDialog(owner, title, Dialog.ModalityType.APPLICATION_MODAL);
     dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -462,21 +472,24 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
     JPanel content = new JPanel(MigLayouts.singleColumnFill(12, "[][grow,fill][]"));
 
     JPanel form = new JPanel(MigLayouts.twoColumnForm(0));
-    addReadOnlyFormRow(form, "Row ID", row.id() > 0L ? String.valueOf(row.id()) : "");
-    addReadOnlyFormRow(form, "Time", formatEpochMs(row.tsEpochMs()));
-    addReadOnlyFormRow(form, "Server", row.serverId());
-    addReadOnlyFormRow(form, "Target", row.target());
-    addReadOnlyFormRow(form, "Nick", row.fromNick());
-    addReadOnlyFormRow(form, "Hostmask", row.hostmask());
-    addReadOnlyFormRow(form, "Direction", row.direction() == null ? "" : row.direction().name());
-    addReadOnlyFormRow(form, "Kind", row.kind() == null ? "" : row.kind().name());
-    addReadOnlyFormRow(form, "Message ID", row.messageId());
-    addReadOnlyFormRow(form, "Message Tags", formatTags(row.ircv3Tags()));
-    addReadOnlyFormRow(form, "Meta", row.metaJson());
+    addReadOnlyFormRow(form, message("logViewer.details.field.rowId"), row.id() > 0L ? String.valueOf(row.id()) : "");
+    addReadOnlyFormRow(form, message("logViewer.details.field.time"), formatEpochMs(row.tsEpochMs()));
+    addReadOnlyFormRow(form, message("logViewer.details.field.server"), row.serverId());
+    addReadOnlyFormRow(form, message("logViewer.details.field.target"), row.target());
+    addReadOnlyFormRow(form, message("logViewer.details.field.nick"), row.fromNick());
+    addReadOnlyFormRow(form, message("logViewer.details.field.hostmask"), row.hostmask());
+    addReadOnlyFormRow(
+        form,
+        message("logViewer.details.field.direction"),
+        row.direction() == null ? "" : row.direction().name());
+    addReadOnlyFormRow(form, message("logViewer.details.field.kind"), row.kind() == null ? "" : row.kind().name());
+    addReadOnlyFormRow(form, message("logViewer.details.field.messageId"), row.messageId());
+    addReadOnlyFormRow(form, message("logViewer.details.field.messageTags"), formatTags(row.ircv3Tags()));
+    addReadOnlyFormRow(form, message("logViewer.details.field.meta"), row.metaJson());
     content.add(form, MigConstraints.growX());
 
     JPanel messagePanel = new JPanel(MigLayouts.singleColumnFill(0, "[]4[grow,fill]"));
-    messagePanel.add(new JLabel("Message"), MigConstraints.growX());
+    messagePanel.add(new JLabel(message("logViewer.details.message")), MigConstraints.growX());
     JTextArea messageArea = new JTextArea(Objects.toString(row.text(), ""));
     messageArea.setEditable(false);
     messageArea.setLineWrap(true);
@@ -486,7 +499,7 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
     messagePanel.add(messageScroll, MigConstraints.growPushMinHeight(140));
     content.add(messagePanel, MigConstraints.growPush());
 
-    JButton close = new JButton("Close");
+    JButton close = new JButton(message("common.button.close"));
     close.addActionListener(ev -> dialog.dispose());
     JPanel actions = new JPanel(MigLayouts.fillXGrowTrailing());
     actions.add(new JLabel(""), MigConstraints.growX());
@@ -512,9 +525,9 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
 
   private void refreshAvailability() {
     if (!service.enabled()) {
-      title.setText("Log Viewer");
-      subtitle.setText("Chat logging is disabled.");
-      status.setText("Enable " + ConfigPropertyKeys.LOGGING_ENABLED_TRUE + " to use this view.");
+      title.setText(message("logViewer.title"));
+      subtitle.setText(message("logViewer.subtitle.disabled"));
+      status.setText(message("logViewer.status.enableLogging", ConfigPropertyKeys.LOGGING_ENABLED_TRUE));
       setControlsEnabled(false);
       model.setRows(List.of());
       return;
@@ -544,13 +557,13 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
   private void updateHeader() {
     String sid = serverId;
     if (sid.isEmpty()) {
-      title.setText("Log Viewer");
-      subtitle.setText("Select a server node first.");
+      title.setText(message("logViewer.title"));
+      subtitle.setText(message("logViewer.subtitle.selectServer"));
       status.setText(" ");
       return;
     }
-    title.setText("Log Viewer - " + sid);
-    subtitle.setText("Query persisted logs for " + sid + ".");
+    title.setText(message("logViewer.title.server", sid));
+    subtitle.setText(message("logViewer.subtitle.server", sid));
     status.setText(" ");
   }
 
@@ -578,7 +591,7 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
     if (!service.enabled()) return;
     String sid = serverId;
     if (sid.isEmpty()) {
-      status.setText("Select a server first.");
+      status.setText(message("logViewer.status.selectServer"));
       return;
     }
 
@@ -593,7 +606,7 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
       }
     }
 
-    setBusy(true, auto ? "Loading logs..." : "Searching logs...");
+    setBusy(true, auto ? message("logViewer.status.loadingLogs") : message("logViewer.status.searchingLogs"));
     runningTask =
         exec.submit(
             () -> {
@@ -607,7 +620,7 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
               } catch (Exception ex) {
                 log.warn("[ircafe] log viewer search failed", ex);
                 SwingUtilities.invokeLater(
-                    () -> applySearchError(req, "Search failed: " + ex.getMessage()));
+                    () -> applySearchError(req, message("logViewer.status.searchFailed.detail", ex.getMessage())));
               }
             });
   }
@@ -661,31 +674,28 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
 
     int shown = result.rows().size();
     int limit = query.limit();
-    StringBuilder sb = new StringBuilder(96);
-    sb.append("Showing ").append(shown).append(" row(s)");
-    if (result.scannedRows() > 0) {
-      sb.append(" (scanned ").append(result.scannedRows()).append(")");
-    }
+    String scannedSegment =
+        result.scannedRows() > 0
+            ? message("logViewer.status.searchResult.scanned", result.scannedRows())
+            : "";
+    String limitSegment = "";
     if (result.truncated()) {
-      sb.append(" - limited");
-      if (result.scanCapped()) {
-        sb.append(" by scan cap");
-      }
-      sb.append(".");
-    } else {
-      sb.append(".");
+      limitSegment =
+          result.scanCapped()
+              ? message("logViewer.status.searchResult.limitedByScanCap")
+              : message("logViewer.status.searchResult.limited");
     }
-    sb.append(" Search took ").append(elapsedMs).append(" ms.");
-    status.setText(sb.toString());
+    status.setText(
+        message("logViewer.status.searchResult", shown, scannedSegment, limitSegment, elapsedMs));
 
-    subtitle.setText("Rows: " + shown + " (max " + limit + ")");
+    subtitle.setText(message("logViewer.subtitle.rows", shown, limit));
     setBusy(false, "");
   }
 
   private void applySearchError(long req, String message) {
     if (req != requestSeq.get()) return;
     setBusy(false, "");
-    status.setText(Objects.toString(message, "Search failed."));
+    status.setText(Objects.toString(message, message("logViewer.status.searchFailed")));
   }
 
   private void setBusy(boolean busy, String statusText) {
@@ -709,11 +719,11 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
   }
 
   private void configureTopActionButtons() {
-    limitSpinner.setToolTipText("Maximum rows returned per search.");
-    configureTopButton(searchButton, "hourglass", "Search logs");
-    configureTopButton(resetButton, "reset", "Reset all filters");
-    configureTopButton(columnsButton, "settings", "Choose visible columns");
-    configureTopButton(exportButton, "copy", "Export visible rows to CSV");
+    limitSpinner.setToolTipText(message("logViewer.tooltip.maxRows"));
+    configureTopButton(searchButton, "hourglass", message("logViewer.tooltip.search"));
+    configureTopButton(resetButton, "reset", message("logViewer.tooltip.reset"));
+    configureTopButton(columnsButton, "settings", message("logViewer.tooltip.columns"));
+    configureTopButton(exportButton, "copy", message("logViewer.tooltip.export"));
   }
 
   private static void configureTopButton(JButton button, String iconName, String tooltip) {
@@ -738,12 +748,12 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
 
   private void exportVisibleRows() {
     if (model.getRowCount() <= 0) {
-      status.setText("No rows to export.");
+      status.setText(message("logViewer.export.noRows"));
       return;
     }
 
     JFileChooser chooser = new JFileChooser();
-    chooser.setDialogTitle("Export Logs");
+    chooser.setDialogTitle(message("logViewer.export.title"));
     chooser.setSelectedFile(new java.io.File(defaultExportFileName()));
     int result = chooser.showSaveDialog(this);
     if (result != JFileChooser.APPROVE_OPTION) return;
@@ -755,11 +765,11 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
 
     ExportSnapshot snapshot = captureExportSnapshot();
     if (snapshot.rows().isEmpty()) {
-      status.setText("No visible rows to export.");
+      status.setText(message("logViewer.export.noVisibleRows"));
       return;
     }
 
-    setBusy(true, "Exporting " + snapshot.rows().size() + " row(s)...");
+    setBusy(true, message("logViewer.export.inProgress", snapshot.rows().size()));
     final Path outPath = path;
     runningTask =
         exec.submit(
@@ -770,21 +780,21 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
                     () -> {
                       setBusy(false, "");
                       status.setText(
-                          "Exported "
-                              + snapshot.rows().size()
-                              + " row(s) to "
-                              + outPath.toAbsolutePath());
+                          message(
+                              "logViewer.export.complete",
+                              snapshot.rows().size(),
+                              outPath.toAbsolutePath()));
                     });
               } catch (Exception ex) {
                 log.warn("[ircafe] log viewer export failed", ex);
                 SwingUtilities.invokeLater(
                     () -> {
                       setBusy(false, "");
-                      status.setText("Export failed: " + ex.getMessage());
+                      status.setText(message("logViewer.export.failed.status", ex.getMessage()));
                       JOptionPane.showMessageDialog(
                           LogViewerPanel.this,
-                          "Export failed:\n" + ex.getMessage(),
-                          "Log Export Error",
+                          message("logViewer.export.failed.message", ex.getMessage()),
+                          message("logViewer.export.failed.title"),
                           JOptionPane.ERROR_MESSAGE);
                     });
               }
@@ -815,8 +825,8 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
   }
 
   private static void writeCsv(Path path, ExportSnapshot snapshot) throws Exception {
-    if (path == null) throw new IllegalArgumentException("Output path is required.");
-    if (snapshot == null) throw new IllegalArgumentException("Export snapshot is required.");
+    if (path == null) throw new IllegalArgumentException(message("logViewer.export.error.outputPathRequired"));
+    if (snapshot == null) throw new IllegalArgumentException(message("logViewer.export.error.snapshotRequired"));
     if (path.getParent() != null) {
       Files.createDirectories(path.getParent());
     }
@@ -973,20 +983,20 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
 
     if (list) {
       channelField.putClientProperty(
-          FlatClientProperties.PLACEHOLDER_TEXT, "Channel list: #a, #b or #a #b");
+          FlatClientProperties.PLACEHOLDER_TEXT, message("logViewer.placeholder.channelList"));
       channelField.setToolTipText(
-          "List mode: enter channels separated by commas, semicolons, or spaces.");
+          message("logViewer.tooltip.channelList"));
       channelListButton.setToolTipText(
-          "Choose channels from open buffers and known logged channels");
+          message("logViewer.tooltip.chooseChannelsFromOpenAndLogs"));
     } else if (any) {
-      channelField.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Any channel/target");
-      channelField.setToolTipText("Any mode ignores the channel field.");
-      channelListButton.setToolTipText("Choose channels to switch to List mode");
+      channelField.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, message("logViewer.placeholder.channelAny"));
+      channelField.setToolTipText(message("logViewer.tooltip.channelAny"));
+      channelListButton.setToolTipText(message("logViewer.tooltip.chooseChannelsSwitchList"));
     } else {
       channelField.putClientProperty(
-          FlatClientProperties.PLACEHOLDER_TEXT, "Channel filter (e.g. #ircafe)");
-      channelField.setToolTipText("Filter by channel/target. Use List mode for multiple channels.");
-      channelListButton.setToolTipText("Choose channels for List mode");
+          FlatClientProperties.PLACEHOLDER_TEXT, message("logViewer.placeholder.channel"));
+      channelField.setToolTipText(message("logViewer.tooltip.channel"));
+      channelListButton.setToolTipText(message("logViewer.tooltip.chooseChannels"));
     }
   }
 
@@ -994,12 +1004,12 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
     if (!service.enabled()) return;
     String sid = Objects.toString(serverId, "").trim();
     if (sid.isEmpty()) {
-      status.setText("Select a server first.");
+      status.setText(message("logViewer.status.selectServer"));
       return;
     }
 
     List<String> openChannels = safeOpenChannels(sid);
-    status.setText("Loading channel options...");
+    status.setText(message("logViewer.channelPicker.status.loading"));
     exec.submit(
         () -> {
           List<ChannelOption> options = collectChannelOptions(sid, openChannels);
@@ -1070,11 +1080,11 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
       String serverId, List<ChannelOption> options, List<String> openChannels) {
     if (!Objects.equals(this.serverId, serverId)) return;
     if (options == null || options.isEmpty()) {
-      status.setText("No channel names available yet for this server.");
+      status.setText(message("logViewer.channelPicker.status.noneAvailable"));
       JOptionPane.showMessageDialog(
           this,
-          "No channel names were found yet.\nOpen channels or run a broader log search first.",
-          "Choose Channels",
+          message("logViewer.channelPicker.noneAvailable.message"),
+          message("logViewer.channelPicker.title"),
           JOptionPane.INFORMATION_MESSAGE);
       return;
     }
@@ -1092,7 +1102,7 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
 
     ensureChannelPickerPopup();
     if (channelPickerPopup == null) {
-      status.setText("Unable to open channel picker.");
+      status.setText(message("logViewer.channelPicker.status.openFailed"));
       return;
     }
 
@@ -1115,7 +1125,7 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
       channelPickerFilterField.requestFocusInWindow();
       channelPickerFilterField.selectAll();
     }
-    status.setText("Loaded " + options.size() + " channel option(s).");
+    status.setText(message("logViewer.channelPicker.status.loaded", options.size()));
   }
 
   private static boolean isChannelName(String value) {
@@ -1153,8 +1163,8 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
 
     channelPickerFilterField = new JTextField();
     channelPickerFilterField.putClientProperty(
-        FlatClientProperties.PLACEHOLDER_TEXT, "Filter channels (type to narrow)");
-    channelPickerFilterField.setToolTipText("Type to filter the channel list. Shortcut: Ctrl+F.");
+        FlatClientProperties.PLACEHOLDER_TEXT, message("logViewer.channelPicker.placeholder.filter"));
+    channelPickerFilterField.setToolTipText(message("logViewer.channelPicker.tooltip.filter"));
     channelPickerFilterField
         .getDocument()
         .addDocumentListener(
@@ -1175,8 +1185,8 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
               }
             });
 
-    JButton clearFilterButton = new JButton("Clear");
-    clearFilterButton.setToolTipText("Clear channel search filter");
+    JButton clearFilterButton = new JButton(message("common.button.clear"));
+    clearFilterButton.setToolTipText(message("logViewer.channelPicker.tooltip.clearFilter"));
     clearFilterButton.addActionListener(e -> channelPickerFilterField.setText(""));
 
     channelPickerModel = new DefaultListModel<>();
@@ -1217,8 +1227,8 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
 
     channelPickerSummaryLabel = new JLabel(" ");
 
-    JButton clearSelectionButton = new JButton("Clear");
-    clearSelectionButton.setToolTipText("Clear selected channels (switches to Any).");
+    JButton clearSelectionButton = new JButton(message("common.button.clear"));
+    clearSelectionButton.setToolTipText(message("logViewer.channelPicker.tooltip.clearSelection"));
     clearSelectionButton.addActionListener(
         e -> {
           channelPickerSelectedKeys.clear();
@@ -1229,13 +1239,13 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
           updateChannelPickerSummary();
         });
 
-    JButton doneButton = new JButton("Done");
-    doneButton.setToolTipText("Close picker. Shortcut: Enter or Esc.");
+    JButton doneButton = new JButton(message("common.button.done"));
+    doneButton.setToolTipText(message("logViewer.channelPicker.tooltip.done"));
     doneButton.addActionListener(e -> hideChannelPickerPopup());
 
     JPanel searchRow =
         new JPanel(MigLayouts.fillXWithHideMode(0, 3, "[right][grow,fill][pref!]", "[]"));
-    searchRow.add(new JLabel("Filter:"), "");
+    searchRow.add(new JLabel(message("logViewer.channelPicker.label.filter")), "");
     searchRow.add(channelPickerFilterField, MigConstraints.pushXGrowX());
     searchRow.add(clearFilterButton, "");
 
@@ -1320,10 +1330,10 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
       ChannelOption option = (value instanceof ChannelOption co) ? co : null;
       String name = (option == null) ? "" : Objects.toString(option.name(), "").trim();
       StringBuilder suffix = new StringBuilder();
-      if (option != null && option.open()) suffix.append("open");
+      if (option != null && option.open()) suffix.append(message("logViewer.channelPicker.source.open"));
       if (option != null && option.fromLog()) {
         if (!suffix.isEmpty()) suffix.append(", ");
-        suffix.append("log");
+        suffix.append(message("logViewer.channelPicker.source.log"));
       }
       if (suffix.isEmpty()) box.setText(name);
       else box.setText(name + "  (" + suffix + ")");
@@ -1402,7 +1412,7 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
     int total = channelPickerAllOptions.size();
     int selected = channelPickerSelectedKeys.size();
     channelPickerSummaryLabel.setText(
-        "Showing " + visible + " of " + total + " channel(s). Selected: " + selected + ".");
+        message("logViewer.channelPicker.summary", visible, total, selected));
   }
 
   private void applyChannelPickerAnyMode(boolean updateStatus) {
@@ -1415,7 +1425,7 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
     updateChannelFilterUi();
     updateChannelPickerSummary();
     if (updateStatus) {
-      status.setText("Channel filter set to Any.");
+      status.setText(message("logViewer.channelPicker.status.any"));
     }
   }
 
@@ -1446,7 +1456,7 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
     channelField.setText(String.join(", ", channels));
     updateChannelFilterUi();
     if (updateStatus) {
-      status.setText("Selected " + channels.size() + " channel(s) for List mode.");
+      status.setText(message("logViewer.channelPicker.status.selected", channels.size()));
     }
   }
 
@@ -1469,13 +1479,13 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
   }
 
   private static String modeLabel(ChatLogViewerMatchMode mode) {
-    if (mode == null) return "Like";
+    if (mode == null) return message("logViewer.matchMode.contains");
     return switch (mode) {
-      case ANY -> "Any";
-      case CONTAINS -> "Like";
-      case GLOB -> "Glob (* ?)";
-      case REGEX -> "Regex";
-      case LIST -> "List";
+      case ANY -> message("logViewer.matchMode.any");
+      case CONTAINS -> message("logViewer.matchMode.contains");
+      case GLOB -> message("logViewer.matchMode.glob");
+      case REGEX -> message("logViewer.matchMode.regex");
+      case LIST -> message("logViewer.matchMode.list");
     };
   }
 
@@ -1496,7 +1506,7 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
           boolean cellHasFocus) {
         super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         if (value instanceof DateRangePreset preset) {
-          setText(preset.label);
+          setText(preset.label());
         }
         return this;
       }
@@ -1547,31 +1557,35 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
   }
 
   private enum DateRangePreset {
-    ALL_TIME("All time"),
-    LAST_1_HOUR("Last 1h"),
-    LAST_24_HOURS("Last 24h"),
-    LAST_7_DAYS("Last 7d"),
-    CUSTOM("Custom");
+    ALL_TIME("logViewer.datePreset.allTime"),
+    LAST_1_HOUR("logViewer.datePreset.last1h"),
+    LAST_24_HOURS("logViewer.datePreset.last24h"),
+    LAST_7_DAYS("logViewer.datePreset.last7d"),
+    CUSTOM("logViewer.datePreset.custom");
 
-    private final String label;
+    private final String code;
 
-    DateRangePreset(String label) {
-      this.label = label;
+    DateRangePreset(String code) {
+      this.code = code;
+    }
+
+    private String label() {
+      return message(code);
     }
   }
 
   private static final class LogViewerTableModel extends AbstractTableModel {
-    private static final String[] COLS = {
-      "Time",
-      "Nick",
-      "Message",
-      "Channel",
-      "Hostmask",
-      "Kind",
-      "Direction",
-      "Message ID",
-      "Message Tags",
-      "Meta"
+    private static final String[] COL_CODES = {
+      "logViewer.column.time",
+      "logViewer.column.nick",
+      "logViewer.column.message",
+      "logViewer.column.channel",
+      "logViewer.column.hostmask",
+      "logViewer.column.kind",
+      "logViewer.column.direction",
+      "logViewer.column.messageId",
+      "logViewer.column.messageTags",
+      "logViewer.column.meta"
     };
 
     private List<ChatLogViewerRow> rows = List.of();
@@ -1593,12 +1607,12 @@ public final class LogViewerPanel extends JPanel implements AutoCloseable {
 
     @Override
     public int getColumnCount() {
-      return COLS.length;
+      return COL_CODES.length;
     }
 
     @Override
     public String getColumnName(int column) {
-      return (column >= 0 && column < COLS.length) ? COLS[column] : "";
+      return (column >= 0 && column < COL_CODES.length) ? message(COL_CODES[column]) : "";
     }
 
     @Override
