@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.ignore;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.awt.BorderLayout;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -15,20 +16,25 @@ import javax.swing.JPanel;
 /** Lightweight center-card launcher for per-server ignore management. */
 public final class IgnoresPanel extends JPanel {
 
-  private final JLabel serverLabel = new JLabel("Server: (none)");
-  private final JButton openButton = new JButton("Open Ignore Lists...");
+  private final UiMessages messages;
+  private final JLabel serverLabel;
+  private final JButton openButton;
   private TargetRef targetRef;
   private Consumer<TargetRef> openIgnoreDialogHandler = ref -> {};
 
   public IgnoresPanel() {
+    this(UiMessages.bundledDefaults());
+  }
+
+  public IgnoresPanel(UiMessages messages) {
     super(new BorderLayout());
+    this.messages = messages == null ? UiMessages.bundledDefaults() : messages;
+    this.serverLabel = new JLabel(message("ignoreLists.panel.server.none"));
+    this.openButton = new JButton(message("ignoreLists.panel.open"));
     setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
 
-    JLabel heading = new JLabel("Ignores");
-    JLabel copy =
-        new JLabel(
-            "<html>Manage hard and soft ignore rules for the selected server.<br>"
-                + "Hard ignores drop matching events. Soft ignores collapse matching lines.</html>");
+    JLabel heading = new JLabel(message("ignoreLists.panel.heading"));
+    JLabel copy = new JLabel(message("ignoreLists.panel.copy"));
 
     openButton.setIcon(SvgIcons.action("ban", 16));
     openButton.setDisabledIcon(SvgIcons.actionDisabled("ban", 16));
@@ -63,27 +69,31 @@ public final class IgnoresPanel extends JPanel {
   public void setTarget(TargetRef targetRef) {
     this.targetRef = targetRef;
     if (targetRef == null) {
-      serverLabel.setText("Server: (none)");
+      serverLabel.setText(message("ignoreLists.panel.server.none"));
       openButton.setEnabled(false);
       return;
     }
     String sid = Objects.toString(targetRef.serverId(), "").trim();
     String token = Objects.toString(targetRef.networkQualifierToken(), "").trim();
     if (sid.isEmpty()) {
-      serverLabel.setText("Server: (none)");
+      serverLabel.setText(message("ignoreLists.panel.server.none"));
       openButton.setEnabled(false);
       return;
     }
     if (token.isEmpty()) {
-      serverLabel.setText("Server: " + sid);
+      serverLabel.setText(message("ignoreLists.panel.server", sid));
     } else {
-      serverLabel.setText("Server: " + sid + " (network: " + token + ")");
+      serverLabel.setText(message("ignoreLists.panel.server.network", sid, token));
     }
     openButton.setEnabled(isValidServerId(sid));
   }
 
   public void setOnOpenIgnoreDialog(Consumer<TargetRef> handler) {
     this.openIgnoreDialogHandler = handler == null ? ref -> {} : handler;
+  }
+
+  private String message(String code, Object... args) {
+    return messages.text(code, args);
   }
 
   private static boolean isValidServerId(String rawServerId) {

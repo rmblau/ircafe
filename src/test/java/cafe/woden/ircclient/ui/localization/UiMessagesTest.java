@@ -32,6 +32,15 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesIgnoreListMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Ignore Lists - libera", messages.text("ignoreLists.title", "libera"));
+    assertEquals("Add Ignore Rule", messages.text("ignoreLists.editor.addTitle"));
+    assertEquals("Server: quassel (network: libera)", messages.text("ignoreLists.panel.server.network", "quassel", "libera"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 

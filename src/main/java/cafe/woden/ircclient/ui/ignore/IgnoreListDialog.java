@@ -5,6 +5,7 @@ import cafe.woden.ircclient.ignore.api.IgnoreAddMaskResult;
 import cafe.woden.ircclient.ignore.api.IgnoreLevels;
 import cafe.woden.ircclient.ignore.api.IgnoreTextPatternMode;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -54,6 +55,7 @@ public class IgnoreListDialog {
   }
 
   private final IgnoreListService ignores;
+  private final UiMessages messages;
 
   private JDialog dialog;
   private String currentServerId;
@@ -63,8 +65,9 @@ public class IgnoreListDialog {
   private DefaultListModel<MaskRow> ignoreModel;
   private DefaultListModel<MaskRow> softModel;
 
-  public IgnoreListDialog(IgnoreListService ignores) {
+  public IgnoreListDialog(IgnoreListService ignores, UiMessages messages) {
     this.ignores = ignores;
+    this.messages = messages == null ? UiMessages.bundledDefaults() : messages;
   }
 
   public void open(Window owner, String serverId) {
@@ -106,34 +109,33 @@ public class IgnoreListDialog {
     refreshIgnore(ignoreModel, sid);
     refreshSoft(softModel, sid);
 
-    JLabel help = new JLabel("Manage ignore and soft-ignore masks for this server only.");
+    JLabel help = new JLabel(message("ignoreLists.help"));
     help.putClientProperty(FlatClientProperties.STYLE, "font: -1");
 
     tabs = new JTabbedPane();
-    tabs.addTab("Ignore", buildMaskPanel(sid, Kind.IGNORE, ignoreModel));
-    tabs.addTab("Soft ignore", buildMaskPanel(sid, Kind.SOFT_IGNORE, softModel));
+    tabs.addTab(
+        message("ignoreLists.tab.ignore"), buildMaskPanel(sid, Kind.IGNORE, ignoreModel));
+    tabs.addTab(
+        message("ignoreLists.tab.softIgnore"), buildMaskPanel(sid, Kind.SOFT_IGNORE, softModel));
     tabs.setSelectedIndex(initialTab == Tab.SOFT_IGNORE ? 1 : 0);
 
-    JButton close = new JButton("Close");
+    JButton close = new JButton(message("common.button.close"));
     close.setIcon(SvgIcons.action("close", 16));
     close.setDisabledIcon(SvgIcons.actionDisabled("close", 16));
     close.addActionListener(e -> dialog.dispose());
 
-    JCheckBox hardCtcpToggle = new JCheckBox("Hard ignore includes CTCP");
+    JCheckBox hardCtcpToggle = new JCheckBox(message("ignoreLists.ctcp.hard"));
     hardCtcpToggle.setSelected(ignores != null && ignores.hardIgnoreIncludesCtcp());
-    hardCtcpToggle.setToolTipText(
-        "When enabled, CTCP messages (e.g., VERSION/PING/ACTION) from hard-ignored users are also dropped.");
+    hardCtcpToggle.setToolTipText(message("ignoreLists.ctcp.hard.tooltip"));
     hardCtcpToggle.addActionListener(
         e -> {
           if (ignores == null) return;
           ignores.setHardIgnoreIncludesCtcp(hardCtcpToggle.isSelected());
         });
 
-    JCheckBox softCtcpToggle = new JCheckBox("Soft ignore includes CTCP");
+    JCheckBox softCtcpToggle = new JCheckBox(message("ignoreLists.ctcp.soft"));
     softCtcpToggle.setSelected(ignores != null && ignores.softIgnoreIncludesCtcp());
-    softCtcpToggle.setToolTipText(
-        "When enabled, CTCP messages from soft-ignored users are fully dropped (not shown as spoilers).\n"
-            + "This applies to CTCP requests/replies and /me actions.");
+    softCtcpToggle.setToolTipText(message("ignoreLists.ctcp.soft.tooltip"));
     softCtcpToggle.addActionListener(
         e -> {
           if (ignores == null) return;
@@ -155,7 +157,7 @@ public class IgnoreListDialog {
     root.add(tabs, BorderLayout.CENTER);
     root.add(footer, BorderLayout.SOUTH);
 
-    dialog = new JDialog(owner, "Ignore Lists - " + sid);
+    dialog = new JDialog(owner, message("ignoreLists.title", sid));
     dialog.setModal(false);
     dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
     dialog
@@ -187,10 +189,10 @@ public class IgnoreListDialog {
     JScrollPane scroll = new JScrollPane(list);
     scroll.setPreferredSize(new Dimension(540, 300));
 
-    JButton add = new JButton("Add...");
-    JButton edit = new JButton("Edit rule...");
-    JButton remove = new JButton("Remove");
-    JButton copy = new JButton("Copy");
+    JButton add = new JButton(message("ignoreLists.button.add"));
+    JButton edit = new JButton(message("ignoreLists.button.editRule"));
+    JButton remove = new JButton(message("common.button.remove"));
+    JButton copy = new JButton(message("common.button.copy"));
 
     add.setIcon(SvgIcons.action("plus", 16));
     add.setDisabledIcon(SvgIcons.actionDisabled("plus", 16));
@@ -205,10 +207,9 @@ public class IgnoreListDialog {
     JCheckBox advancedModeToggle = null;
     JLabel modeHint = null;
     if (allowEdit) {
-      advancedModeToggle = new JCheckBox("Advanced (irssi) mode");
+      advancedModeToggle = new JCheckBox(message("ignoreLists.advancedMode"));
       advancedModeToggle.setSelected(hardIgnoreAdvancedMode);
-      advancedModeToggle.setToolTipText(
-          "Simple mode: mask-only add.\nAdvanced mode: add/edit levels, channels, expiry, pattern, and replies.");
+      advancedModeToggle.setToolTipText(message("ignoreLists.advancedMode.tooltip"));
       modeHint = new JLabel();
       modeHint.putClientProperty(FlatClientProperties.STYLE, "font: -1");
       updateHardIgnoreModeHint(modeHint, hardIgnoreAdvancedMode);
@@ -237,11 +238,14 @@ public class IgnoreListDialog {
             }
             return;
           }
-          String title = kind == Kind.SOFT_IGNORE ? "Add Soft Ignore" : "Add Ignore";
+          String title =
+              kind == Kind.SOFT_IGNORE
+                  ? message("ignoreLists.add.soft.title")
+                  : message("ignoreLists.add.hard.title");
           String prompt =
               kind == Kind.SOFT_IGNORE
-                  ? "Enter a hostmask / pattern to soft-ignore (stored per-server):"
-                  : "Enter a hostmask / pattern to ignore (stored per-server):";
+                  ? message("ignoreLists.add.soft.prompt")
+                  : message("ignoreLists.add.hard.prompt");
 
           String input =
               (String)
@@ -261,7 +265,10 @@ public class IgnoreListDialog {
           String stored = IgnoreListService.normalizeMaskOrNickToHostmask(trimmed);
           if (!added) {
             JOptionPane.showMessageDialog(
-                dialog, "Already in list: " + stored, title, JOptionPane.INFORMATION_MESSAGE);
+                dialog,
+                message("ignoreLists.add.alreadyInList", stored),
+                title,
+                JOptionPane.INFORMATION_MESSAGE);
           }
 
           refresh(model, serverId, kind);
@@ -294,11 +301,14 @@ public class IgnoreListDialog {
           List<MaskRow> sel = list.getSelectedValuesList();
           if (sel == null || sel.isEmpty()) return;
 
-          String title = kind == Kind.SOFT_IGNORE ? "Remove Soft Ignores" : "Remove Ignores";
+          String title =
+              kind == Kind.SOFT_IGNORE
+                  ? message("ignoreLists.remove.soft.title")
+                  : message("ignoreLists.remove.hard.title");
           int ok =
               JOptionPane.showConfirmDialog(
                   dialog,
-                  "Remove selected mask(s)?",
+                  message("ignoreLists.remove.confirm.message"),
                   title,
                   JOptionPane.OK_CANCEL_OPTION,
                   JOptionPane.WARNING_MESSAGE);
@@ -404,34 +414,39 @@ public class IgnoreListDialog {
     JComboBox<IgnoreTextPatternMode> patternModeBox =
         new JComboBox<>(IgnoreTextPatternMode.values());
     patternModeBox.setSelectedItem(ignores.patternModeForHardMask(sid, m));
-    JCheckBox repliesBox = new JCheckBox("Ignore reply-targeted channel messages");
+    JCheckBox repliesBox = new JCheckBox(message("ignoreLists.editor.replies"));
     repliesBox.setSelected(ignores.repliesForHardMask(sid, m));
 
     JPanel form = new JPanel();
     form.setLayout(new BoxLayout(form, BoxLayout.Y_AXIS));
-    form.add(fieldRow("Mask", maskField));
-    form.add(fieldRow("Levels", levelsField));
-    form.add(fieldRow("Channels", channelsField));
-    form.add(fieldRow("Expires at", expiresField));
-    form.add(fieldRow("Pattern", patternField));
-    form.add(fieldRow("Pattern mode", patternModeBox));
+    form.add(fieldRow(message("ignoreLists.editor.mask"), maskField));
+    form.add(fieldRow(message("ignoreLists.editor.levels"), levelsField));
+    form.add(fieldRow(message("ignoreLists.editor.channels"), channelsField));
+    form.add(fieldRow(message("ignoreLists.editor.expiresAt"), expiresField));
+    form.add(fieldRow(message("ignoreLists.editor.pattern"), patternField));
+    form.add(fieldRow(message("ignoreLists.editor.patternMode"), patternModeBox));
     form.add(fieldRow("", repliesBox));
 
-    String message =
+    String instructions =
         "<html>"
             + (editorMode == HardIgnoreEditorMode.ADD
-                ? "Add a hard-ignore rule.<br>"
-                : "Edit hard-ignore metadata.<br>")
-            + "Levels: comma/space separated (blank means ALL).<br>"
-            + "Channels: comma/space separated #channel patterns.<br>"
-            + "Expires at: ISO-8601 instant (e.g. 2026-03-01T12:34:56Z) or epoch millis.</html>";
+                ? message("ignoreLists.editor.addIntro") + "<br>"
+                : message("ignoreLists.editor.editIntro") + "<br>")
+            + message("ignoreLists.editor.help.levels")
+            + "<br>"
+            + message("ignoreLists.editor.help.channels")
+            + "<br>"
+            + message("ignoreLists.editor.help.expires")
+            + "</html>";
 
     while (true) {
       int result =
           JOptionPane.showConfirmDialog(
               dialog,
-              new Object[] {message, form},
-              editorMode == HardIgnoreEditorMode.ADD ? "Add Ignore Rule" : "Edit Ignore Rule",
+              new Object[] {instructions, form},
+              editorMode == HardIgnoreEditorMode.ADD
+                ? message("ignoreLists.editor.addTitle")
+                : message("ignoreLists.editor.editTitle"),
               JOptionPane.OK_CANCEL_OPTION,
               JOptionPane.PLAIN_MESSAGE);
       if (result != JOptionPane.OK_OPTION) return false;
@@ -467,7 +482,7 @@ public class IgnoreListDialog {
                   patternModeBox.getSelectedItem(), IgnoreTextPatternMode.GLOB);
       if (!pattern.isEmpty() && patternMode == IgnoreTextPatternMode.REGEXP) {
         if (!isValidRegexPattern(pattern)) {
-          showValidationError("Pattern mode is regexp, but pattern is invalid.");
+          showValidationError(message("ignoreLists.validation.pattern.invalidRegex"));
           continue;
         }
       }
@@ -485,8 +500,10 @@ public class IgnoreListDialog {
       if (addResult == IgnoreAddMaskResult.UNCHANGED) {
         JOptionPane.showMessageDialog(
             dialog,
-            "No changes detected for this ignore rule.",
-            editorMode == HardIgnoreEditorMode.ADD ? "Add Ignore Rule" : "Edit Ignore Rule",
+            message("ignoreLists.editor.noChanges"),
+            editorMode == HardIgnoreEditorMode.ADD
+                ? message("ignoreLists.editor.addTitle")
+                : message("ignoreLists.editor.editTitle"),
             JOptionPane.INFORMATION_MESSAGE);
         return false;
       }
@@ -494,16 +511,20 @@ public class IgnoreListDialog {
     }
   }
 
-  private static void updateHardIgnoreModeHint(JLabel hint, boolean advancedMode) {
+  private void updateHardIgnoreModeHint(JLabel hint, boolean advancedMode) {
     if (hint == null) return;
-    hint.setText(hardIgnoreModeHintText(advancedMode));
+    hint.setText(hardIgnoreModeHintText(messages, advancedMode));
   }
 
   static String hardIgnoreModeHintText(boolean advancedMode) {
-    if (advancedMode) {
-      return "Advanced mode: Add/Edit uses irssi-style rule fields.";
-    }
-    return "Simple mode: Add is mask-only (legacy).";
+    return hardIgnoreModeHintText(UiMessages.bundledDefaults(), advancedMode);
+  }
+
+  static String hardIgnoreModeHintText(UiMessages messages, boolean advancedMode) {
+    UiMessages uiMessages = messages == null ? UiMessages.bundledDefaults() : messages;
+    return advancedMode
+        ? uiMessages.text("ignoreLists.advancedMode.hint.advanced")
+        : uiMessages.text("ignoreLists.advancedMode.hint.simple");
   }
 
   private static JPanel fieldRow(String label, java.awt.Component input) {
@@ -523,7 +544,12 @@ public class IgnoreListDialog {
   }
 
   private void showValidationError(String text) {
-    JOptionPane.showMessageDialog(dialog, text, "Invalid Ignore Rule", JOptionPane.WARNING_MESSAGE);
+    JOptionPane.showMessageDialog(
+        dialog, text, message("ignoreLists.validation.title"), JOptionPane.WARNING_MESSAGE);
+  }
+
+  private String message(String code, Object... args) {
+    return messages.text(code, args);
   }
 
   static ParseResult<List<String>> parseLevelsInput(String raw) {
