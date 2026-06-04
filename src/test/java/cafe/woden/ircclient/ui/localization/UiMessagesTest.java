@@ -149,6 +149,22 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesChatRedactedRevealMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Redacted Message", messages.text("chatTranscript.redactedReveal.title"));
+    assertEquals(
+        "Source: live transcript cache",
+        messages.text("chatTranscript.redactedReveal.source.live"));
+    assertEquals(
+        "Message ID: abc123",
+        messages.text("chatTranscript.redactedReveal.field.messageId", "abc123"));
+    assertEquals(
+        "Original redacted content is not available for this message.",
+        messages.text("chatTranscript.redactedReveal.unavailable"));
+  }
+
+  @Test
   void resolvesChatFindBarMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
 
