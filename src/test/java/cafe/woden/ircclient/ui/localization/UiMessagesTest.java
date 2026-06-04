@@ -86,6 +86,16 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesNickContextMenuMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Open Query", messages.text("nickContext.menu.openQuery"));
+    assertEquals("DCC", messages.text("nickContext.menu.dcc"));
+    assertEquals("Send File...", messages.text("nickContext.menu.dcc.sendFile"));
+    assertEquals("Soft Unignore...", messages.text("nickContext.menu.softUnignore"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 

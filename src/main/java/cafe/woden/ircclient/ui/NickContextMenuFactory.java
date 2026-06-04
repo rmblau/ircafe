@@ -2,18 +2,30 @@ package cafe.woden.ircclient.ui;
 
 import cafe.woden.ircclient.app.api.UserActionRequest;
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.util.PopupMenuThemeSupport;
 import java.util.Objects;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import org.jmolecules.architecture.layered.InterfaceLayer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /** Builds the standard context menu used when right-clicking a nickname. */
 @Component
 @InterfaceLayer
 public final class NickContextMenuFactory {
+  private final UiMessages messages;
+
+  public NickContextMenuFactory() {
+    this(UiMessages.bundledDefaults());
+  }
+
+  @Autowired
+  public NickContextMenuFactory(UiMessages messages) {
+    this.messages = Objects.requireNonNull(messages, "messages");
+  }
 
   public enum DccAction {
     CHAT,
@@ -44,36 +56,63 @@ public final class NickContextMenuFactory {
   public static final class NickContextMenu {
     private final Callbacks callbacks;
 
+    private final UiMessages messages;
     private final JPopupMenu menu = new JPopupMenu();
-    private final JMenuItem openQuery = new JMenuItem("Open Query");
-    private final JMenuItem whois = new JMenuItem("Whois");
-    private final JMenuItem version = new JMenuItem("Version");
-    private final JMenuItem ping = new JMenuItem("Ping");
-    private final JMenuItem time = new JMenuItem("Time");
-    private final JMenu dcc = new JMenu("DCC");
-    private final JMenuItem dccChat = new JMenuItem("Start Chat");
-    private final JMenuItem dccSend = new JMenuItem("Send File...");
-    private final JMenuItem dccAccept = new JMenuItem("Accept Chat Offer");
-    private final JMenuItem dccGet = new JMenuItem("Get Pending File");
-    private final JMenuItem dccClose = new JMenuItem("Close Chat");
-    private final JMenuItem op = new JMenuItem("Op");
-    private final JMenuItem deop = new JMenuItem("Deop");
-    private final JMenuItem voice = new JMenuItem("Voice");
-    private final JMenuItem devoice = new JMenuItem("Devoice");
-    private final JMenuItem kick = new JMenuItem("Kick");
-    private final JMenuItem ban = new JMenuItem("Ban");
-    private final JMenuItem ignore = new JMenuItem("Ignore...");
-    private final JMenuItem unignore = new JMenuItem("Unignore...");
-    private final JMenuItem softIgnore = new JMenuItem("Soft Ignore...");
-    private final JMenuItem softUnignore = new JMenuItem("Soft Unignore...");
+    private final JMenuItem openQuery = new JMenuItem();
+    private final JMenuItem whois = new JMenuItem();
+    private final JMenuItem version = new JMenuItem();
+    private final JMenuItem ping = new JMenuItem();
+    private final JMenuItem time = new JMenuItem();
+    private final JMenu dcc = new JMenu();
+    private final JMenuItem dccChat = new JMenuItem();
+    private final JMenuItem dccSend = new JMenuItem();
+    private final JMenuItem dccAccept = new JMenuItem();
+    private final JMenuItem dccGet = new JMenuItem();
+    private final JMenuItem dccClose = new JMenuItem();
+    private final JMenuItem op = new JMenuItem();
+    private final JMenuItem deop = new JMenuItem();
+    private final JMenuItem voice = new JMenuItem();
+    private final JMenuItem devoice = new JMenuItem();
+    private final JMenuItem kick = new JMenuItem();
+    private final JMenuItem ban = new JMenuItem();
+    private final JMenuItem ignore = new JMenuItem();
+    private final JMenuItem unignore = new JMenuItem();
+    private final JMenuItem softIgnore = new JMenuItem();
+    private final JMenuItem softUnignore = new JMenuItem();
 
     private volatile TargetRef popupCtx;
     private volatile String popupNick;
 
-    private NickContextMenu(Callbacks callbacks) {
+    private NickContextMenu(Callbacks callbacks, UiMessages messages) {
       this.callbacks = Objects.requireNonNull(callbacks, "callbacks");
+      this.messages = Objects.requireNonNull(messages, "messages");
+      localizeLabels();
       buildMenu();
       wireActions();
+    }
+
+    private void localizeLabels() {
+      openQuery.setText(messages.text("nickContext.menu.openQuery"));
+      whois.setText(messages.text("nickContext.menu.whois"));
+      version.setText(messages.text("nickContext.menu.version"));
+      ping.setText(messages.text("nickContext.menu.ping"));
+      time.setText(messages.text("nickContext.menu.time"));
+      dcc.setText(messages.text("nickContext.menu.dcc"));
+      dccChat.setText(messages.text("nickContext.menu.dcc.startChat"));
+      dccSend.setText(messages.text("nickContext.menu.dcc.sendFile"));
+      dccAccept.setText(messages.text("nickContext.menu.dcc.acceptChatOffer"));
+      dccGet.setText(messages.text("nickContext.menu.dcc.getPendingFile"));
+      dccClose.setText(messages.text("nickContext.menu.dcc.closeChat"));
+      op.setText(messages.text("nickContext.menu.op"));
+      deop.setText(messages.text("nickContext.menu.deop"));
+      voice.setText(messages.text("nickContext.menu.voice"));
+      devoice.setText(messages.text("nickContext.menu.devoice"));
+      kick.setText(messages.text("nickContext.menu.kick"));
+      ban.setText(messages.text("nickContext.menu.ban"));
+      ignore.setText(messages.text("nickContext.menu.ignore"));
+      unignore.setText(messages.text("nickContext.menu.unignore"));
+      softIgnore.setText(messages.text("nickContext.menu.softIgnore"));
+      softUnignore.setText(messages.text("nickContext.menu.softUnignore"));
     }
 
     private void buildMenu() {
@@ -240,6 +279,6 @@ public final class NickContextMenuFactory {
   }
 
   public NickContextMenu create(Callbacks callbacks) {
-    return new NickContextMenu(callbacks);
+    return new NickContextMenu(callbacks, messages);
   }
 }
