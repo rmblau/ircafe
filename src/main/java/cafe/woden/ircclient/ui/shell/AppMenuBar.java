@@ -125,24 +125,24 @@ public class AppMenuBar extends JMenuBar {
   private static final String IRC_REVERSE = String.valueOf((char) 0x16);
   private static final String IRC_ITALIC = String.valueOf((char) 0x1D);
   private static final String IRC_UNDERLINE = String.valueOf((char) 0x1F);
-  private static final String[] IRC_COLOR_NAMES =
+  private static final String[] IRC_COLOR_NAME_KEYS =
       new String[] {
-        "White",
-        "Black",
-        "Navy",
-        "Green",
-        "Red",
-        "Maroon",
-        "Purple",
-        "Orange",
-        "Yellow",
-        "Light Green",
-        "Teal",
-        "Light Cyan",
-        "Light Blue",
-        "Pink",
-        "Gray",
-        "Light Gray"
+        "app.menu.insert.color.name.white",
+        "app.menu.insert.color.name.black",
+        "app.menu.insert.color.name.navy",
+        "app.menu.insert.color.name.green",
+        "app.menu.insert.color.name.red",
+        "app.menu.insert.color.name.maroon",
+        "app.menu.insert.color.name.purple",
+        "app.menu.insert.color.name.orange",
+        "app.menu.insert.color.name.yellow",
+        "app.menu.insert.color.name.lightGreen",
+        "app.menu.insert.color.name.teal",
+        "app.menu.insert.color.name.lightCyan",
+        "app.menu.insert.color.name.lightBlue",
+        "app.menu.insert.color.name.pink",
+        "app.menu.insert.color.name.gray",
+        "app.menu.insert.color.name.lightGray"
       };
 
   private final UiProperties uiProps;
@@ -1116,15 +1116,20 @@ public class AppMenuBar extends JMenuBar {
 
     String longText =
         snapshot.maxBytes() > 0
-            ? "Mem: " + toGib(snapshot.usedBytes()) + " / " + toGib(snapshot.maxBytes())
-            : "Mem: " + toGib(snapshot.usedBytes());
-    String shortText = percentUsed == null ? "n/a" : percentUsed + "%";
+            ? message(
+                "app.menu.memory.summary.withMax",
+                toGib(snapshot.usedBytes()),
+                toGib(snapshot.maxBytes()))
+            : message("app.menu.memory.summary.usedOnly", toGib(snapshot.usedBytes()));
+    String shortText =
+        percentUsed == null ? message("app.menu.memory.short.unknown") : percentUsed + "%";
     String tooltip =
-        longText
-            + (snapshot.maxBytes() > 0
-                ? " (" + toPercent(snapshot.usedBytes(), snapshot.maxBytes()) + ")"
-                : "")
-            + ". Click for details.";
+        snapshot.maxBytes() > 0
+            ? message(
+                "app.menu.memory.tooltip.withPercent",
+                longText,
+                toPercent(snapshot.usedBytes(), snapshot.maxBytes()))
+            : message("app.menu.memory.tooltip", longText);
 
     if (memoryUsageDisplayMode == MemoryUsageDisplayMode.LONG) {
       memoryButton.setText(longText);
@@ -1174,29 +1179,29 @@ public class AppMenuBar extends JMenuBar {
     Window owner = SwingUtilities.getWindowAncestor(this);
     memoryDialog =
         owner instanceof Frame frame
-            ? new JDialog(frame, "JVM Memory", false)
-            : new JDialog((Frame) null, "JVM Memory", false);
+            ? new JDialog(frame, message("app.menu.memory.dialog.title"), false)
+            : new JDialog((Frame) null, message("app.menu.memory.dialog.title"), false);
     memoryDialog.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 
     memoryDialogGauge = new JProgressBar(0, 100);
     memoryDialogGauge.setStringPainted(true);
     memoryDialogGauge.setPreferredSize(new Dimension(240, 22));
-    memoryDialogDialGauge = new MemoryDialGauge();
+    memoryDialogDialGauge = new MemoryDialGauge(message("app.menu.memory.dialog.dial.tooltip"));
     memoryDialogDetails = new JLabel();
 
-    JButton gcButton = new JButton("Run GC");
+    JButton gcButton = new JButton(message("app.menu.memory.dialog.runGc"));
     gcButton.addActionListener(
         e -> {
           System.gc();
           refreshMemoryUsage();
         });
-    JButton closeButton = new JButton("Close");
+    JButton closeButton = new JButton(message("common.button.close"));
     closeButton.addActionListener(e -> memoryDialog.setVisible(false));
 
-    JButton jfrStatusButton = new JButton("JFR Status");
+    JButton jfrStatusButton = new JButton(message("app.menu.memory.dialog.jfrStatus"));
     jfrStatusButton.addActionListener(e -> showJfrStatusDialog());
 
-    JButton jfrSnapshotButton = new JButton("Capture JFR Snapshot");
+    JButton jfrSnapshotButton = new JButton(message("app.menu.memory.dialog.jfrSnapshot"));
     jfrSnapshotButton.addActionListener(e -> showJfrSnapshotDialog());
 
     JPanel controls = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
@@ -1228,29 +1233,31 @@ public class AppMenuBar extends JMenuBar {
       percent = Math.max(0, Math.min(100, percent));
       memoryDialogGauge.setIndeterminate(false);
       memoryDialogGauge.setValue(percent);
-      memoryDialogGauge.setString(percent + "% used");
+      memoryDialogGauge.setString(message("app.menu.memory.dialog.gauge.used", percent));
     } else {
       memoryDialogGauge.setIndeterminate(true);
-      memoryDialogGauge.setString("max heap unknown");
+      memoryDialogGauge.setString(message("app.menu.memory.dialog.gauge.maxUnknown"));
     }
     memoryDialogDialGauge.setSnapshot(snapshot);
 
     memoryDialogDetails.setText(
         "<html>"
-            + "Used heap: "
-            + toMib(snapshot.usedBytes())
+            + message("app.menu.memory.dialog.details.usedHeap", toMib(snapshot.usedBytes()))
             + "<br>"
-            + "Committed heap: "
-            + toMib(snapshot.committedBytes())
+            + message(
+                "app.menu.memory.dialog.details.committedHeap", toMib(snapshot.committedBytes()))
             + "<br>"
-            + "Free in committed heap: "
-            + toMib(snapshot.freeBytes())
+            + message("app.menu.memory.dialog.details.freeHeap", toMib(snapshot.freeBytes()))
             + "<br>"
-            + "Max heap: "
-            + (snapshot.maxBytes() > 0 ? toMib(snapshot.maxBytes()) : "unknown")
+            + message(
+                "app.menu.memory.dialog.details.maxHeap",
+                snapshot.maxBytes() > 0
+                    ? toMib(snapshot.maxBytes())
+                    : message("app.menu.memory.unknown"))
             + "<br>"
-            + "Usage: "
-            + toPercent(snapshot.usedBytes(), snapshot.maxBytes())
+            + message(
+                "app.menu.memory.dialog.details.usage",
+                toPercent(snapshot.usedBytes(), snapshot.maxBytes()))
             + "</html>");
   }
 
@@ -1318,13 +1325,11 @@ public class AppMenuBar extends JMenuBar {
     lastWarningAtMs = now;
 
     String message =
-        "Memory usage is close to JVM max: "
-            + toMib(snapshot.usedBytes())
-            + " / "
-            + toMib(snapshot.maxBytes())
-            + " ("
-            + toPercent(snapshot.usedBytes(), snapshot.maxBytes())
-            + ").";
+        message(
+            "app.menu.memory.warning.message",
+            toMib(snapshot.usedBytes()),
+            toMib(snapshot.maxBytes()),
+            toPercent(snapshot.usedBytes(), snapshot.maxBytes()));
 
     boolean tooltipEnabled =
         currentSettings == null || currentSettings.memoryUsageWarningTooltipEnabled();
@@ -1342,7 +1347,7 @@ public class AppMenuBar extends JMenuBar {
       trayNotificationService.notifyCustom(
           "local",
           "status",
-          "IRCafe Memory Warning",
+          message("app.menu.memory.warning.title"),
           message,
           true,
           false,
@@ -1359,7 +1364,7 @@ public class AppMenuBar extends JMenuBar {
           "status",
           "ircafe",
           false,
-          "IRCafe Memory Warning",
+          message("app.menu.memory.warning.title"),
           message);
     }
     if (soundEnabled && notificationSoundService != null) {
@@ -1567,7 +1572,10 @@ public class AppMenuBar extends JMenuBar {
     String input =
         JOptionPane.showInputDialog(
             SwingUtilities.getWindowAncestor(this),
-            "Memory widget refresh interval in milliseconds (250 - 60000):",
+            message(
+                "app.menu.memory.refreshInterval.prompt",
+                MIN_MEMORY_REFRESH_INTERVAL_MS,
+                MAX_MEMORY_REFRESH_INTERVAL_MS),
             initialValue);
     if (input == null) return;
 
@@ -1580,8 +1588,11 @@ public class AppMenuBar extends JMenuBar {
     } catch (NumberFormatException ex) {
       JOptionPane.showMessageDialog(
           SwingUtilities.getWindowAncestor(this),
-          "Enter a whole number between 250 and 60000 milliseconds.",
-          "Invalid refresh interval",
+          message(
+              "app.menu.memory.refreshInterval.invalid",
+              MIN_MEMORY_REFRESH_INTERVAL_MS,
+              MAX_MEMORY_REFRESH_INTERVAL_MS),
+          message("app.menu.memory.refreshInterval.invalid.title"),
           JOptionPane.ERROR_MESSAGE);
       return;
     }
@@ -1677,15 +1688,16 @@ public class AppMenuBar extends JMenuBar {
     String report =
         runtimeJfrService != null
             ? runtimeJfrService.statusReport()
-            : "JFR service is unavailable.";
-    showMultilineInfoDialog("JFR Status", report);
+            : message("app.menu.memory.jfr.unavailable");
+    showMultilineInfoDialog(message("app.menu.memory.dialog.jfrStatus"), report);
   }
 
   private void showJfrSnapshotDialog() {
     if (!jfrSnapshotInProgress.compareAndSet(false, true)) {
       Toolkit.getDefaultToolkit().beep();
       showMultilineInfoDialog(
-          "JFR Snapshot", "A JFR snapshot is already being captured. Please wait.");
+          message("app.menu.memory.dialog.jfrSnapshot"),
+          message("app.menu.memory.jfr.snapshot.busy"));
       return;
     }
     Window owner = memoryDialog != null ? memoryDialog : SwingUtilities.getWindowAncestor(this);
@@ -1695,7 +1707,7 @@ public class AppMenuBar extends JMenuBar {
             SwingUtilities.invokeLater(
                 () -> {
                   try {
-                    showMultilineInfoDialog("JFR Snapshot", report);
+                    showMultilineInfoDialog(message("app.menu.memory.dialog.jfrSnapshot"), report);
                   } finally {
                     setJfrSnapshotBusy(owner, false);
                     jfrSnapshotInProgress.set(false);
@@ -1740,11 +1752,14 @@ public class AppMenuBar extends JMenuBar {
     try {
       if (runtimeJfrService != null) {
         RuntimeJfrService.SnapshotReport snapshot = runtimeJfrService.captureSnapshot();
-        return snapshot != null ? snapshot.summary() : "No snapshot data.";
+        return snapshot != null
+            ? snapshot.summary()
+            : message("app.menu.memory.jfr.snapshot.noData");
       }
-      return "JFR service is unavailable.";
+      return message("app.menu.memory.jfr.unavailable");
     } catch (Throwable t) {
-      return "Failed to capture JFR snapshot.\n\n" + Objects.toString(t.getMessage(), "");
+      return message(
+          "app.menu.memory.jfr.snapshot.failed", Objects.toString(t.getMessage(), ""));
     }
   }
 
@@ -2162,15 +2177,15 @@ public class AppMenuBar extends JMenuBar {
   private IrcColorSelection promptIrcColorSelection() {
     Window owner = SwingUtilities.getWindowAncestor(this);
 
-    String[] fgOptions = new String[IRC_COLOR_NAMES.length + 1];
-    fgOptions[0] = "(Clear Colors)";
-    for (int i = 0; i < IRC_COLOR_NAMES.length; i++) {
+    String[] fgOptions = new String[IRC_COLOR_NAME_KEYS.length + 1];
+    fgOptions[0] = message("app.menu.insert.color.clearColors");
+    for (int i = 0; i < IRC_COLOR_NAME_KEYS.length; i++) {
       fgOptions[i + 1] = formatIrcColorOption(i);
     }
 
-    String[] bgOptions = new String[IRC_COLOR_NAMES.length + 1];
-    bgOptions[0] = "(No Background)";
-    for (int i = 0; i < IRC_COLOR_NAMES.length; i++) {
+    String[] bgOptions = new String[IRC_COLOR_NAME_KEYS.length + 1];
+    bgOptions[0] = message("app.menu.insert.color.noBackground");
+    for (int i = 0; i < IRC_COLOR_NAME_KEYS.length; i++) {
       bgOptions[i + 1] = formatIrcColorOption(i);
     }
 
@@ -2190,16 +2205,16 @@ public class AppMenuBar extends JMenuBar {
     fgCombo.addActionListener(e -> setBgEnabled.accept(fgCombo.getSelectedIndex() > 0));
 
     JPanel panel = new JPanel(new java.awt.GridLayout(0, 2, 8, 6));
-    panel.add(new JLabel("Foreground:"));
+    panel.add(new JLabel(message("app.menu.insert.color.foreground")));
     panel.add(fgCombo);
-    panel.add(new JLabel("Background:"));
+    panel.add(new JLabel(message("app.menu.insert.color.background")));
     panel.add(bgCombo);
 
     int result =
         JOptionPane.showConfirmDialog(
             owner != null ? owner : this,
             panel,
-            "Insert IRC Color",
+            message("app.menu.insert.color.title"),
             JOptionPane.OK_CANCEL_OPTION,
             JOptionPane.PLAIN_MESSAGE);
     if (result != JOptionPane.OK_OPTION) return null;
@@ -2221,9 +2236,9 @@ public class AppMenuBar extends JMenuBar {
     return sb.toString();
   }
 
-  private static String formatIrcColorOption(int idx) {
-    if (idx < 0 || idx >= IRC_COLOR_NAMES.length) return "";
-    return String.format(Locale.ROOT, "%02d %s", idx, IRC_COLOR_NAMES[idx]);
+  private String formatIrcColorOption(int idx) {
+    if (idx < 0 || idx >= IRC_COLOR_NAME_KEYS.length) return "";
+    return String.format(Locale.ROOT, "%02d %s", idx, message(IRC_COLOR_NAME_KEYS[idx]));
   }
 
   private String message(String code, Object... args) {
@@ -2344,11 +2359,11 @@ public class AppMenuBar extends JMenuBar {
     private long usedBytes;
     private long maxBytes;
 
-    private MemoryDialGauge() {
+    private MemoryDialGauge(String tooltipText) {
       setOpaque(false);
       setPreferredSize(new Dimension(176, 176));
       setMinimumSize(new Dimension(150, 150));
-      setToolTipText("Heap usage gauge");
+      setToolTipText(tooltipText);
     }
 
     private void setSnapshot(MemorySnapshot snapshot) {

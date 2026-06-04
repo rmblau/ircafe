@@ -23,6 +23,21 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesAppMenuMemoryAndIrcColorMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals(
+        "Mem: 512 MiB / 1024 MiB",
+        messages.text("app.menu.memory.summary.withMax", "512 MiB", "1024 MiB"));
+    assertEquals("JVM Memory", messages.text("app.menu.memory.dialog.title"));
+    assertEquals("Run GC", messages.text("app.menu.memory.dialog.runGc"));
+    assertEquals(
+        "Invalid refresh interval", messages.text("app.menu.memory.refreshInterval.invalid.title"));
+    assertEquals("Insert IRC Color", messages.text("app.menu.insert.color.title"));
+    assertEquals("Light Green", messages.text("app.menu.insert.color.name.lightGreen"));
+  }
+
+  @Test
   void resolvesNickColorOverrideDialogMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
 
