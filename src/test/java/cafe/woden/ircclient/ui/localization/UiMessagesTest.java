@@ -149,6 +149,18 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesChatFindBarMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Find:", messages.text("chatFind.label.find"));
+    assertEquals("Aa", messages.text("chatFind.matchCase.short"));
+    assertEquals("Prev", messages.text("chatFind.button.previous"));
+    assertEquals("Close find bar", messages.text("chatFind.button.close.tooltip"));
+    assertEquals("Type to search…", messages.text("chatFind.status.typeToSearch"));
+    assertEquals("No matches", messages.text("chatFind.status.noMatches"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 
