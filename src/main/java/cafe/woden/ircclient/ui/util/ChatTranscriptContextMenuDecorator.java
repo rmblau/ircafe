@@ -5,6 +5,7 @@ import cafe.woden.ircclient.net.HttpLite;
 import cafe.woden.ircclient.net.NetProxyContext;
 import cafe.woden.ircclient.net.ProxyPlan;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.util.VirtualThreads;
 import java.awt.Point;
 import java.awt.Toolkit;
@@ -49,6 +50,8 @@ import javax.swing.text.StyledDocument;
  */
 public final class ChatTranscriptContextMenuDecorator implements AutoCloseable {
 
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private final JTextComponent transcript;
   private final Runnable openFind;
 
@@ -78,33 +81,53 @@ public final class ChatTranscriptContextMenuDecorator implements AutoCloseable {
   private final boolean messageActionsConfigured;
 
   private final JPopupMenu menu = new JPopupMenu();
-  private final JMenuItem copyItem = new JMenuItem("Copy");
-  private final JMenuItem selectAllItem = new JMenuItem("Select All");
-  private final JMenuItem findItem = new JMenuItem("Find Text");
-  private final JMenuItem reloadRecentItem = new JMenuItem("Reload Recent History");
-  private final JMenuItem clearItem = new JMenuItem("Clear");
+  private final JMenuItem copyItem =
+      new JMenuItem(MESSAGES.text("chatTranscript.context.menu.copy"));
+  private final JMenuItem selectAllItem =
+      new JMenuItem(MESSAGES.text("chatTranscript.context.menu.selectAll"));
+  private final JMenuItem findItem =
+      new JMenuItem(MESSAGES.text("chatTranscript.context.menu.findText"));
+  private final JMenuItem reloadRecentItem =
+      new JMenuItem(MESSAGES.text("chatTranscript.context.menu.reloadRecentHistory"));
+  private final JMenuItem clearItem =
+      new JMenuItem(MESSAGES.text("chatTranscript.context.menu.clear"));
 
-  private final JMenuItem inspectLineItem = new JMenuItem("Inspect line…");
-  private final JMenuItem copyMessageIdItem = new JMenuItem("Copy Message ID");
-  private final JMenuItem copyIrcv3TagsItem = new JMenuItem("Copy IRCv3 Tags");
-  private final JMenuItem loadNewerHistoryItem = new JMenuItem("Load Newer History");
-  private final JMenuItem loadAroundMessageItem = new JMenuItem("Load Context Around Message…");
-  private final JMenuItem replyToMessageItem = new JMenuItem("Reply to Message…");
-  private final JMenuItem reactToMessageItem = new JMenuItem("React to Message…");
-  private final JMenuItem unreactToMessageItem = new JMenuItem("Remove Reaction…");
-  private final JMenuItem editMessageItem = new JMenuItem("Edit Message…");
-  private final JMenuItem redactMessageItem = new JMenuItem("Redact Message…");
-  private final JMenuItem revealRedactedMessageItem = new JMenuItem("Display Redacted Message…");
-  private final JMenu translateMessageMenu = new JMenu("Translate");
+  private final JMenuItem inspectLineItem =
+      new JMenuItem(MESSAGES.text("chatTranscript.context.menu.inspectLine"));
+  private final JMenuItem copyMessageIdItem =
+      new JMenuItem(MESSAGES.text("chatTranscript.context.menu.copyMessageId"));
+  private final JMenuItem copyIrcv3TagsItem =
+      new JMenuItem(MESSAGES.text("chatTranscript.context.menu.copyIrcv3Tags"));
+  private final JMenuItem loadNewerHistoryItem =
+      new JMenuItem(MESSAGES.text("chatTranscript.context.menu.loadNewerHistory"));
+  private final JMenuItem loadAroundMessageItem =
+      new JMenuItem(MESSAGES.text("chatTranscript.context.menu.loadContextAroundMessage"));
+  private final JMenuItem replyToMessageItem =
+      new JMenuItem(MESSAGES.text("chatTranscript.context.menu.replyToMessage"));
+  private final JMenuItem reactToMessageItem =
+      new JMenuItem(MESSAGES.text("chatTranscript.context.menu.reactToMessage"));
+  private final JMenuItem unreactToMessageItem =
+      new JMenuItem(MESSAGES.text("chatTranscript.context.menu.removeReaction"));
+  private final JMenuItem editMessageItem =
+      new JMenuItem(MESSAGES.text("chatTranscript.context.menu.editMessage"));
+  private final JMenuItem redactMessageItem =
+      new JMenuItem(MESSAGES.text("chatTranscript.context.menu.redactMessage"));
+  private final JMenuItem revealRedactedMessageItem =
+      new JMenuItem(MESSAGES.text("chatTranscript.context.menu.displayRedactedMessage"));
+  private final JMenu translateMessageMenu =
+      new JMenu(MESSAGES.text("chatTranscript.context.menu.translate"));
 
   private volatile Point lastPopupPoint;
 
   private volatile Runnable clearAction;
   private volatile Runnable reloadRecentAction;
 
-  private final JMenuItem openLinkItem = new JMenuItem("Open Link in Browser");
-  private final JMenuItem copyLinkItem = new JMenuItem("Copy Link Address");
-  private final JMenuItem saveLinkItem = new JMenuItem("Save Link As...");
+  private final JMenuItem openLinkItem =
+      new JMenuItem(MESSAGES.text("chatTranscript.context.menu.openLink"));
+  private final JMenuItem copyLinkItem =
+      new JMenuItem(MESSAGES.text("chatTranscript.context.menu.copyLink"));
+  private final JMenuItem saveLinkItem =
+      new JMenuItem(MESSAGES.text("chatTranscript.context.menu.saveLinkAs"));
 
   private volatile String currentPopupUrl;
   private volatile String currentPopupMessageId;
@@ -607,19 +630,19 @@ public final class ChatTranscriptContextMenuDecorator implements AutoCloseable {
     translateMessageMenu.setEnabled(enabled);
     translateMessageMenu.setToolTipText(
         enabled
-            ? "Translate this message into the selected language."
+            ? MESSAGES.text("chatTranscript.context.tooltip.translate.enabled")
             : translationUnavailableReason(hasMessageId, translationAvailable));
   }
 
   private static String translationUnavailableReason(
       boolean hasMessageId, boolean translationAvailable) {
     if (!translationAvailable) {
-      return "Unavailable: translation is disabled or manual mode is not selected.";
+      return MESSAGES.text("chatTranscript.context.unavailable.translationDisabled");
     }
     if (!hasMessageId) {
-      return "Unavailable: this line has no IRCv3 message ID.";
+      return MESSAGES.text("chatTranscript.context.unavailable.noMessageId");
     }
-    return "Unavailable: no translation languages are configured.";
+    return MESSAGES.text("chatTranscript.context.unavailable.noTranslationLanguages");
   }
 
   private void updateHistoryActionState(boolean hasMessageId) {
@@ -629,15 +652,15 @@ public final class ChatTranscriptContextMenuDecorator implements AutoCloseable {
     loadNewerHistoryItem.setEnabled(loadNewerAvailable);
     loadNewerHistoryItem.setToolTipText(
         loadNewerAvailable
-            ? "Load newer history from the connected server/bouncer."
-            : "Unavailable: server does not support IRCv3 CHATHISTORY or playback for this target.");
+            ? MESSAGES.text("chatTranscript.context.tooltip.loadNewerHistory.enabled")
+            : MESSAGES.text("chatTranscript.context.unavailable.historyPlayback"));
 
     boolean loadAroundAvailable = isActionVisible(loadAroundActionVisibleSupplier);
     boolean loadAroundEnabled = loadAroundAvailable && hasMessageId;
     loadAroundMessageItem.setEnabled(loadAroundEnabled);
     loadAroundMessageItem.setToolTipText(
         loadAroundEnabled
-            ? "Load surrounding history around this IRCv3 message ID."
+            ? MESSAGES.text("chatTranscript.context.tooltip.loadAroundMessage.enabled")
             : historyActionUnavailableReason(hasMessageId, loadAroundAvailable));
   }
 
@@ -649,7 +672,7 @@ public final class ChatTranscriptContextMenuDecorator implements AutoCloseable {
     replyToMessageItem.setEnabled(replyEnabled);
     replyToMessageItem.setToolTipText(
         replyEnabled
-            ? "Compose a reply linked to this IRCv3 message ID."
+            ? MESSAGES.text("chatTranscript.context.tooltip.reply.enabled")
             : messageActionUnavailableReason(hasMessageId, replyAvailable, false, "reply"));
 
     boolean reactAvailable = isActionVisible(reactActionVisibleSupplier);
@@ -657,7 +680,7 @@ public final class ChatTranscriptContextMenuDecorator implements AutoCloseable {
     reactToMessageItem.setEnabled(reactEnabled);
     reactToMessageItem.setToolTipText(
         reactEnabled
-            ? "Send an IRCv3 reaction linked to this message."
+            ? MESSAGES.text("chatTranscript.context.tooltip.react.enabled")
             : messageActionUnavailableReason(hasMessageId, reactAvailable, false, "reaction"));
 
     boolean unreactAvailable = isActionVisible(unreactActionVisibleSupplier);
@@ -665,7 +688,7 @@ public final class ChatTranscriptContextMenuDecorator implements AutoCloseable {
     unreactToMessageItem.setEnabled(unreactEnabled);
     unreactToMessageItem.setToolTipText(
         unreactEnabled
-            ? "Remove your reaction metadata for this IRCv3 message."
+            ? MESSAGES.text("chatTranscript.context.tooltip.removeReaction.enabled")
             : messageActionUnavailableReason(
                 hasMessageId, unreactAvailable, false, "reaction removal"));
 
@@ -674,7 +697,7 @@ public final class ChatTranscriptContextMenuDecorator implements AutoCloseable {
     editMessageItem.setEnabled(editEnabled);
     editMessageItem.setToolTipText(
         editEnabled
-            ? "Edit your message via experimental IRC draft/message-edit."
+            ? MESSAGES.text("chatTranscript.context.tooltip.edit.enabled")
             : messageActionUnavailableReason(
                 hasMessageId, editAvailable, currentPopupOwnMessage, "edit"));
 
@@ -683,7 +706,7 @@ public final class ChatTranscriptContextMenuDecorator implements AutoCloseable {
     redactMessageItem.setEnabled(redactEnabled);
     redactMessageItem.setToolTipText(
         redactEnabled
-            ? "Redact your message via IRCv3 message-redaction."
+            ? MESSAGES.text("chatTranscript.context.tooltip.redact.enabled")
             : messageActionUnavailableReason(
                 hasMessageId, redactAvailable, currentPopupOwnMessage, "redaction"));
 
@@ -692,43 +715,45 @@ public final class ChatTranscriptContextMenuDecorator implements AutoCloseable {
     revealRedactedMessageItem.setEnabled(revealEnabled);
     revealRedactedMessageItem.setToolTipText(
         revealEnabled
-            ? "View the stored original content for this redacted message."
+            ? MESSAGES.text("chatTranscript.context.tooltip.revealRedacted.enabled")
             : revealActionUnavailableReason(
                 hasMessageId, revealAvailable, currentPopupRedactedMessage));
   }
 
   private static String historyActionUnavailableReason(boolean hasMessageId, boolean available) {
-    if (!hasMessageId) return "Unavailable: this line has no IRCv3 message ID.";
+    if (!hasMessageId) return MESSAGES.text("chatTranscript.context.unavailable.noMessageId");
     if (!available) {
-      return "Unavailable: server does not support loading context around message IDs.";
+      return MESSAGES.text("chatTranscript.context.unavailable.messageContextLoading");
     }
     return null;
   }
 
   private static String messageActionUnavailableReason(
       boolean hasMessageId, boolean available, boolean ownMessage, String actionNoun) {
-    if (!hasMessageId) return "Unavailable: this line has no IRCv3 message ID.";
+    if (!hasMessageId) return MESSAGES.text("chatTranscript.context.unavailable.noMessageId");
     if (!ownMessage && ("edit".equals(actionNoun) || "redaction".equals(actionNoun))) {
       String verb = "edit".equals(actionNoun) ? "edited" : "redacted";
-      return "Unavailable: only your own messages can be " + verb + ".";
+      return MESSAGES.text("chatTranscript.context.unavailable.onlyOwnMessage", verb);
     }
     if (!available) {
       if ("reply".equals(actionNoun) || "reaction".equals(actionNoun)) {
-        return "Unavailable: server did not negotiate IRCv3 message-tags support.";
+        return MESSAGES.text("chatTranscript.context.unavailable.messageTagsSupport");
       }
       if ("edit".equals(actionNoun)) {
-        return "Unavailable: server did not negotiate experimental IRC draft/message-edit support.";
+        return MESSAGES.text("chatTranscript.context.unavailable.messageEditSupport");
       }
-      return "Unavailable: server did not negotiate IRCv3 " + actionNoun + " support.";
+      return MESSAGES.text("chatTranscript.context.unavailable.ircv3ActionSupport", actionNoun);
     }
     return null;
   }
 
   private static String revealActionUnavailableReason(
       boolean hasMessageId, boolean available, boolean redactedMessage) {
-    if (!hasMessageId) return "Unavailable: this line has no IRCv3 message ID.";
-    if (!redactedMessage) return "Unavailable: this line is not marked as redacted.";
-    if (!available) return "Unavailable: redacted-message reveal is not configured for this view.";
+    if (!hasMessageId) return MESSAGES.text("chatTranscript.context.unavailable.noMessageId");
+    if (!redactedMessage) return MESSAGES.text("chatTranscript.context.unavailable.notRedacted");
+    if (!available) {
+      return MESSAGES.text("chatTranscript.context.unavailable.redactedRevealNotConfigured");
+    }
     return null;
   }
 
@@ -889,7 +914,7 @@ public final class ChatTranscriptContextMenuDecorator implements AutoCloseable {
     try {
       String suggested = suggestFileName(url);
       JFileChooser chooser = new JFileChooser();
-      chooser.setDialogTitle("Save Link As...");
+      chooser.setDialogTitle(MESSAGES.text("chatTranscript.context.saveLink.title"));
       chooser.setSelectedFile(new java.io.File(suggested));
       int result = chooser.showSaveDialog(transcript);
       if (result != JFileChooser.APPROVE_OPTION) return;
@@ -899,8 +924,8 @@ public final class ChatTranscriptContextMenuDecorator implements AutoCloseable {
         int overwrite =
             JOptionPane.showConfirmDialog(
                 transcript,
-                "File already exists. Overwrite?\n\n" + out,
-                "Overwrite file?",
+                MESSAGES.text("chatTranscript.context.saveLink.overwrite.prompt", out),
+                MESSAGES.text("chatTranscript.context.saveLink.overwrite.title"),
                 JOptionPane.YES_NO_OPTION,
                 JOptionPane.WARNING_MESSAGE);
         if (overwrite != JOptionPane.YES_OPTION) return;
@@ -1154,14 +1179,8 @@ public final class ChatTranscriptContextMenuDecorator implements AutoCloseable {
             () ->
                 JOptionPane.showMessageDialog(
                     transcript,
-                    "Failed to download link (HTTP "
-                        + finalCode
-                        + "):\n\n"
-                        + url
-                        + "\n\nNote: Some sites block direct downloads from apps unless you\n"
-                        + "are signed in (cookies) or they require special headers.\n"
-                        + "If this keeps happening, use 'Open Link in Browser' then Save As there.",
-                    "Save Link As...",
+                    MESSAGES.text("chatTranscript.context.saveLink.error.http", finalCode, url),
+                    MESSAGES.text("chatTranscript.context.saveLink.title"),
                     JOptionPane.ERROR_MESSAGE));
         return;
       }
@@ -1177,16 +1196,17 @@ public final class ChatTranscriptContextMenuDecorator implements AutoCloseable {
           () ->
               JOptionPane.showMessageDialog(
                   transcript,
-                  "Saved to:\n\n" + out,
-                  "Save Link As...",
+                  MESSAGES.text("chatTranscript.context.saveLink.saved", out),
+                  MESSAGES.text("chatTranscript.context.saveLink.title"),
                   JOptionPane.INFORMATION_MESSAGE));
     } catch (Exception ex) {
       SwingUtilities.invokeLater(
           () ->
               JOptionPane.showMessageDialog(
                   transcript,
-                  "Failed to download link:\n\n" + url + "\n\n" + ex.getMessage(),
-                  "Save Link As...",
+                  MESSAGES.text(
+                      "chatTranscript.context.saveLink.error.generic", url, ex.getMessage()),
+                  MESSAGES.text("chatTranscript.context.saveLink.title"),
                   JOptionPane.ERROR_MESSAGE));
     }
   }

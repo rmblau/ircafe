@@ -127,6 +127,28 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesChatTranscriptContextMenuMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Copy", messages.text("chatTranscript.context.menu.copy"));
+    assertEquals(
+        "Load Context Around Message…",
+        messages.text("chatTranscript.context.menu.loadContextAroundMessage"));
+    assertEquals(
+        "Unavailable: this line has no IRCv3 message ID.",
+        messages.text("chatTranscript.context.unavailable.noMessageId"));
+    assertEquals(
+        "Unavailable: only your own messages can be edited.",
+        messages.text("chatTranscript.context.unavailable.onlyOwnMessage", "edited"));
+    assertEquals(
+        "File already exists. Overwrite?\n\n/tmp/example.txt",
+        messages.text("chatTranscript.context.saveLink.overwrite.prompt", "/tmp/example.txt"));
+    assertEquals(
+        "Saved to:\n\n/tmp/example.txt",
+        messages.text("chatTranscript.context.saveLink.saved", "/tmp/example.txt"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 
