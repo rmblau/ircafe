@@ -96,6 +96,22 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesUserListIgnorePromptMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Soft Ignore", messages.text("userList.ignore.soft.add.title"));
+    assertEquals(
+        "Add soft-ignore mask (per-server):",
+        messages.text("userList.ignore.soft.add.prompt"));
+    assertEquals(
+        "Already soft-ignored: bad!*@*",
+        messages.text("userList.ignore.result.soft.exists", "bad!*@*"));
+    assertEquals(
+        "Not in ignore list: bad!*@*",
+        messages.text("userList.ignore.result.hard.notFound", "bad!*@*"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 
