@@ -161,6 +161,21 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesTerminalDockMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Terminal", messages.text("terminal.tab"));
+    assertEquals("Follow", messages.text("terminal.toolbar.followTail"));
+    assertEquals("Save to file...", messages.text("terminal.context.saveToFile"));
+    assertEquals(
+        "Saved terminal output to:\n/tmp/ircafe-terminal.log",
+        messages.text("terminal.save.success.message", "/tmp/ircafe-terminal.log"));
+    assertEquals(
+        "Failed to save terminal output:\ndisk full",
+        messages.text("terminal.save.error.message", "disk full"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 
