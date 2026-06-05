@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.application;
 
 import cafe.woden.ircclient.diagnostics.RuntimeDiagnosticEvent;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.util.MigConstraints;
 import cafe.woden.ircclient.ui.util.MigLayouts;
 import io.reactivex.rxjava3.core.Flowable;
@@ -51,6 +52,8 @@ public final class RuntimeEventsPanel extends JPanel {
 
   private static final int ACTION_ICON_SIZE = 16;
   private static final Dimension ACTION_BUTTON_SIZE = new Dimension(28, 28);
+  private static final String ROW_COUNT_SUBTITLE_MARKER = "  |  ";
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private static final int COL_TIME = 0;
   private static final int COL_LEVEL = 1;
@@ -65,7 +68,7 @@ public final class RuntimeEventsPanel extends JPanel {
   private final JTable table = new JTable(model);
   private final JLabel title = new JLabel();
   private final JLabel subtitle = new JLabel();
-  private final JLabel rowsLabel = new JLabel("Rows: 0");
+  private final JLabel rowsLabel = new JLabel(message("runtimeEvents.rowsLabel", 0));
   private final JButton detailsButton = new JButton();
   private final JButton refreshButton = new JButton();
   private final JButton clearButton = new JButton();
@@ -102,7 +105,7 @@ public final class RuntimeEventsPanel extends JPanel {
     this.exportBaseName = normalizeExportBaseName(exportBaseName);
     this.refreshTrigger = refreshTrigger;
 
-    title.setText(Objects.toString(titleText, "Events"));
+    title.setText(Objects.toString(titleText, message("runtimeEvents.title.default")));
     title.setBorder(BorderFactory.createEmptyBorder(8, 10, 2, 10));
     title.setFont(title.getFont().deriveFont(Font.BOLD));
     subtitle.setText(Objects.toString(subtitleText, ""));
@@ -141,10 +144,26 @@ public final class RuntimeEventsPanel extends JPanel {
     scroll.setBorder(null);
     add(scroll, BorderLayout.CENTER);
 
-    configureActionButton(refreshButton, "refresh", "Refresh rows", "Refresh rows");
-    configureActionButton(detailsButton, "eye", "Show details for selected row", "Show details");
-    configureActionButton(clearButton, "trash", "Clear all rows", "Clear all rows");
-    configureActionButton(exportButton, "copy", "Export rows as CSV", "Export rows as CSV");
+    configureActionButton(
+        refreshButton,
+        "refresh",
+        message("runtimeEvents.button.refresh.tooltip"),
+        message("runtimeEvents.button.refresh.accessibleName"));
+    configureActionButton(
+        detailsButton,
+        "eye",
+        message("runtimeEvents.button.details.tooltip"),
+        message("runtimeEvents.button.details.accessibleName"));
+    configureActionButton(
+        clearButton,
+        "trash",
+        message("runtimeEvents.button.clear.tooltip"),
+        message("runtimeEvents.button.clear.accessibleName"));
+    configureActionButton(
+        exportButton,
+        "copy",
+        message("runtimeEvents.button.export.tooltip"),
+        message("runtimeEvents.button.export.accessibleName"));
 
     JPanel controls = new JPanel(MigLayouts.fillX("6 8 8 8", "[]4[]4[]4[]push[]", "[]"));
     controls.setOpaque(false);
@@ -185,19 +204,20 @@ public final class RuntimeEventsPanel extends JPanel {
                   java.time.Instant.now(),
                   "ERROR",
                   "RuntimeEventsPanel",
-                  "Failed to load events.",
+                  message("runtimeEvents.error.loadEvents"),
                   Objects.toString(e.getMessage(), "")));
     }
     model.setRows(rows);
     restoreSelection(selected);
 
     int count = model.getRowCount();
-    rowsLabel.setText("Rows: " + count);
+    rowsLabel.setText(message("runtimeEvents.rowsLabel", count));
     String base = subtitle.getText();
     String prefix = base == null ? "" : base;
-    int marker = prefix.indexOf("  |  rows:");
+    int marker = prefix.indexOf(ROW_COUNT_SUBTITLE_MARKER);
     if (marker >= 0) prefix = prefix.substring(0, marker);
-    subtitle.setText(prefix + "  |  rows: " + count);
+    subtitle.setText(
+        prefix + ROW_COUNT_SUBTITLE_MARKER + message("runtimeEvents.subtitle.rows", count));
     updateButtons();
   }
 
@@ -300,7 +320,7 @@ public final class RuntimeEventsPanel extends JPanel {
     JOptionPane.showMessageDialog(
         SwingUtilities.getWindowAncestor(this),
         content,
-        "Event Details",
+        message("runtimeEvents.details.title"),
         JOptionPane.INFORMATION_MESSAGE);
   }
 
@@ -308,7 +328,7 @@ public final class RuntimeEventsPanel extends JPanel {
     if (model.getRowCount() <= 0) return;
 
     JFileChooser chooser = new JFileChooser();
-    chooser.setDialogTitle("Export Runtime Events");
+    chooser.setDialogTitle(message("runtimeEvents.export.dialogTitle"));
     chooser.setSelectedFile(new File(defaultExportFileName()));
     int result = chooser.showSaveDialog(this);
     if (result != JFileChooser.APPROVE_OPTION) return;
@@ -323,14 +343,14 @@ public final class RuntimeEventsPanel extends JPanel {
       writeCsv(path, rows);
       JOptionPane.showMessageDialog(
           SwingUtilities.getWindowAncestor(this),
-          "Exported " + rows.size() + " row(s) to:\n" + path.toAbsolutePath(),
-          "Export Complete",
+          message("runtimeEvents.export.success.message", rows.size(), path.toAbsolutePath()),
+          message("runtimeEvents.export.success.title"),
           JOptionPane.INFORMATION_MESSAGE);
     } catch (Exception e) {
       JOptionPane.showMessageDialog(
           SwingUtilities.getWindowAncestor(this),
-          "Export failed:\n" + Objects.toString(e.getMessage(), ""),
-          "Export Error",
+          message("runtimeEvents.export.error.message", Objects.toString(e.getMessage(), "")),
+          message("runtimeEvents.export.error.title"),
           JOptionPane.ERROR_MESSAGE);
     }
   }
@@ -351,18 +371,38 @@ public final class RuntimeEventsPanel extends JPanel {
     JPanel root = new JPanel(new BorderLayout(0, 10));
 
     JPanel fields = new JPanel(MigLayouts.twoColumnForm(10, MigLayouts.rows(4, 4)));
-    addDetailRow(fields, "Time", event.at() == null ? "" : TIME_FMT.format(event.at()));
-    addDetailRow(fields, "Level", Objects.toString(event.level(), ""));
-    addDetailRow(fields, "Event type", Objects.toString(event.type(), ""));
-    addDetailRow(fields, "Summary", Objects.toString(event.summary(), ""));
+    addDetailRow(
+        fields,
+        message("runtimeEvents.details.field.time"),
+        event.at() == null ? "" : TIME_FMT.format(event.at()));
+    addDetailRow(
+        fields, message("runtimeEvents.details.field.level"), Objects.toString(event.level(), ""));
+    addDetailRow(
+        fields,
+        message("runtimeEvents.details.field.eventType"),
+        Objects.toString(event.type(), ""));
+    addDetailRow(
+        fields,
+        message("runtimeEvents.details.field.summary"),
+        Objects.toString(event.summary(), ""));
 
     Map<String, String> parsed = parseKeyValueLines(event.details());
-    addDetailRowIfPresent(fields, "Timestamp", parsed.get("timestamp"));
-    addDetailRowIfPresent(fields, "Source type", parsed.get("sourceType"));
-    addDetailRowIfPresent(fields, "Context ID", parsed.get("contextId"));
-    addDetailRowIfPresent(fields, "Context Name", parsed.get("contextDisplayName"));
-    addDetailRowIfPresent(fields, "Availability", parsed.get("availabilityState"));
-    addDetailRowIfPresent(fields, "Payload type", parsed.get("payloadType"));
+    addDetailRowIfPresent(
+        fields, message("runtimeEvents.details.field.timestamp"), parsed.get("timestamp"));
+    addDetailRowIfPresent(
+        fields, message("runtimeEvents.details.field.sourceType"), parsed.get("sourceType"));
+    addDetailRowIfPresent(
+        fields, message("runtimeEvents.details.field.contextId"), parsed.get("contextId"));
+    addDetailRowIfPresent(
+        fields,
+        message("runtimeEvents.details.field.contextName"),
+        parsed.get("contextDisplayName"));
+    addDetailRowIfPresent(
+        fields,
+        message("runtimeEvents.details.field.availability"),
+        parsed.get("availabilityState"));
+    addDetailRowIfPresent(
+        fields, message("runtimeEvents.details.field.payloadType"), parsed.get("payloadType"));
 
     JTextArea text = new JTextArea(Objects.toString(event.details(), ""));
     text.setEditable(false);
@@ -371,7 +411,8 @@ public final class RuntimeEventsPanel extends JPanel {
     text.setCaretPosition(0);
 
     JPanel detailsPanel = new JPanel(new BorderLayout(0, 6));
-    detailsPanel.add(new JLabel("Details"), BorderLayout.NORTH);
+    detailsPanel.add(
+        new JLabel(message("runtimeEvents.details.section.details")), BorderLayout.NORTH);
     detailsPanel.add(new JScrollPane(text), BorderLayout.CENTER);
 
     root.add(fields, BorderLayout.NORTH);
@@ -418,6 +459,10 @@ public final class RuntimeEventsPanel extends JPanel {
   private String defaultExportFileName() {
     String ts = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ROOT).format(new Date());
     return "ircafe-" + exportBaseName + "-" + ts + ".csv";
+  }
+
+  private static String message(String code, Object... args) {
+    return MESSAGES.text(code, args);
   }
 
   private static String normalizeExportBaseName(String raw) {
@@ -491,10 +536,10 @@ public final class RuntimeEventsPanel extends JPanel {
     @Override
     public String getColumnName(int column) {
       return switch (column) {
-        case COL_TIME -> "Time";
-        case COL_LEVEL -> "Level";
-        case COL_TYPE -> "Event";
-        case COL_SUMMARY -> "Summary";
+        case COL_TIME -> message("runtimeEvents.column.time");
+        case COL_LEVEL -> message("runtimeEvents.column.level");
+        case COL_TYPE -> message("runtimeEvents.column.event");
+        case COL_SUMMARY -> message("runtimeEvents.column.summary");
         default -> "";
       };
     }

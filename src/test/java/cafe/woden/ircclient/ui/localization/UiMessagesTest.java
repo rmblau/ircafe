@@ -192,6 +192,21 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesRuntimeEventsPanelMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Events", messages.text("runtimeEvents.title.default"));
+    assertEquals("Rows: 3", messages.text("runtimeEvents.rowsLabel", 3));
+    assertEquals("rows: 3", messages.text("runtimeEvents.subtitle.rows", 3));
+    assertEquals("Event Details", messages.text("runtimeEvents.details.title"));
+    assertEquals("Export Runtime Events", messages.text("runtimeEvents.export.dialogTitle"));
+    assertEquals(
+        "Exported 2 row(s) to:\n/tmp/runtime.csv",
+        messages.text("runtimeEvents.export.success.message", 2, "/tmp/runtime.csv"));
+    assertEquals("Summary", messages.text("runtimeEvents.column.summary"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 
