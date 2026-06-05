@@ -256,6 +256,27 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesInboundDedupDiagnosticsPanelMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Inbound Dedup", messages.text("inboundDedup.title"));
+    assertEquals(
+        "Export inbound dedup support bundle (CSV + aggregated summary)",
+        messages.text("inboundDedup.export.tooltip"));
+    assertEquals("Export Support Bundle", messages.text("inboundDedup.export.title"));
+    assertEquals(
+        "Failed to export inbound dedup support bundle:\n\nboom",
+        messages.text("inboundDedup.export.failed.message", "boom"));
+    assertEquals(
+        "Generated at: 2026-06-05 00:00:00.000",
+        messages.text("inboundDedup.support.summary.generatedAt", "2026-06-05 00:00:00.000"));
+    assertEquals(
+        "Bundle: /tmp/ircafe-inbound-dedup-support.zip",
+        messages.text(
+            "inboundDedup.support.summary.bundle", "/tmp/ircafe-inbound-dedup-support.zip"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 
