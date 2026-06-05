@@ -277,6 +277,23 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesFilterRuleEditorMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Add Filter Rule", messages.text("filter.rules.dialog.addTitle"));
+    assertEquals(
+        "Delete filter rule 'badwords'?",
+        messages.text("filter.rules.delete.confirm", "badwords"));
+    assertEquals("Filter Rule", messages.text("filter.ruleDialog.title.default"));
+    assertEquals("Unique rule name", messages.text("filter.ruleDialog.placeholder.name"));
+    assertEquals("Direction", messages.text("filter.ruleDialog.field.direction"));
+    assertEquals(
+        "Invalid regex: Unclosed group",
+        messages.text("filter.ruleDialog.validation.invalidRegex", "Unclosed group"));
+    assertEquals("Invalid tags.", messages.text("filter.ruleDialog.validation.invalidTags"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 
