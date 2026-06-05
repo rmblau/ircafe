@@ -306,6 +306,29 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesSettingsColorPickerMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("IRCafe preview", messages.text("settings.colorPicker.preview"));
+    assertEquals(
+        "IRCafe preview  #6AA2FF",
+        messages.text("settings.colorPicker.preview.withHex", "#6AA2FF"));
+    assertEquals(
+        "Contrast: 4.8 (OK)",
+        messages.text("settings.colorPicker.contrast", "4.8", "OK"));
+    assertEquals(
+        "Invalid hex (use #RRGGBB or #RGB)",
+        messages.text("settings.colorPicker.invalidHex"));
+    assertEquals("More Colors", messages.text("settings.colorPicker.moreColors.title"));
+    assertEquals(
+        "Use custom color for my outgoing messages",
+        messages.text("preferences.outgoingColor.enabled"));
+    assertEquals(
+        "Choose Outgoing Message Color",
+        messages.text("preferences.outgoingColor.dialog.title"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 
