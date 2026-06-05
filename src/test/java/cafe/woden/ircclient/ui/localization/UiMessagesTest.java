@@ -397,6 +397,27 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesSpellcheckPreferencesMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals(
+        "Enable spell checking in the input bar",
+        messages.text("preferences.spellcheck.enabled"));
+    assertEquals("English (US)", messages.text("preferences.spellcheck.language.enUs"));
+    assertEquals(
+        "Android-like (default)", messages.text("preferences.spellcheck.preset.androidLike"));
+    assertEquals(
+        "Presets tune TAB completion ranking. Select Custom to reveal manual tuning knobs.",
+        messages.text("preferences.spellcheck.presets.help"));
+    assertEquals(
+        "Lexicon candidate cap",
+        messages.text("preferences.spellcheck.field.lexiconCandidateCap"));
+    assertEquals(
+        "Penalty for later suggestions from upstream spelling results.",
+        messages.text("preferences.spellcheck.customSourceOrder.tooltip"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 
