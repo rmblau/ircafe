@@ -236,6 +236,26 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesStatusBarMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Channel: #ircafe", messages.text("statusBar.channel.label", "#ircafe"));
+    assertEquals(
+        "Nick: chris(+i)",
+        messages.text("statusBar.identity.labelWithModes", "chris", "+i"));
+    assertEquals("Users: 42", messages.text("statusBar.users.label", 42));
+    assertEquals("Lag: --", messages.text("statusBar.lag.unknown"));
+    assertEquals(
+        "Show recent status-bar notices (999+).",
+        messages.text("statusBar.history.tooltip.count", "999+"));
+    assertEquals("Status Notices", messages.text("statusBar.history.title"));
+    assertEquals("Open Selected", messages.text("statusBar.history.button.openSelected"));
+    assertEquals(
+        "Visit updates (new version available)",
+        messages.text("statusBar.updateNotifier.visitUpdates.available"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 
