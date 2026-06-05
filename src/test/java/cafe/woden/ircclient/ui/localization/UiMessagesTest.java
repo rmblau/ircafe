@@ -329,6 +329,28 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesEmbedsPreferencesMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Embeds & Previews", messages.text("preferences.embeds.title"));
+    assertEquals("Inline images", messages.text("preferences.embeds.section.inlineImages"));
+    assertEquals(
+        "Open advanced allow/deny controls for embed/link loading by user, channel, URL/domain, and network.",
+        messages.text("preferences.embeds.advancedPolicy.tooltip"));
+    assertEquals(
+        "Enable inline image embeds (direct links)",
+        messages.text("preferences.embeds.image.enabled"));
+    assertEquals(
+        "Maximum width for inline images (pixels).\n"
+            + "If 0, IRCafe will only scale images down to fit the chat viewport.",
+        messages.text("preferences.embeds.image.maxWidth.tooltip"));
+    assertEquals(
+        "Enable link previews (OpenGraph cards)",
+        messages.text("preferences.embeds.link.enabled"));
+    assertEquals("Card style", messages.text("preferences.embeds.link.cardStyle"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 
