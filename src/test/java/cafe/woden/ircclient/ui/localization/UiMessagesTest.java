@@ -435,6 +435,22 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesTrayNotificationsPreferencesMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Tray & Notifications", messages.text("preferences.tray.title"));
+    assertEquals("Desktop notifications", messages.text("preferences.tray.tab.desktopNotifications"));
+    assertEquals("Delivery backend", messages.text("preferences.tray.section.deliveryBackend"));
+    assertEquals("Mode:", messages.text("preferences.tray.field.mode"));
+    assertEquals(
+        "Custom sounds are copied to: /tmp/ircafe/sounds\n"
+            + "Tip: Use small files (short MP3/WAV) for snappy notifications.",
+        messages.text("preferences.tray.customSounds.copiedTo.help", "/tmp/ircafe/sounds"));
+    assertEquals("Validation & testing", messages.text("preferences.tray.section.validationTesting"));
+    assertEquals("Linux / Advanced", messages.text("preferences.tray.tab.linuxAdvanced"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 
