@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
+
 import java.awt.BorderLayout;
 import java.awt.Desktop;
 import java.awt.Dimension;
@@ -27,6 +29,8 @@ import javax.swing.SwingUtilities;
  */
 final class ImageViewerDialog {
 
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private ImageViewerDialog() {}
 
   static void show(Window parent, String url, byte[] bytes) {
@@ -39,7 +43,8 @@ final class ImageViewerDialog {
       return;
     }
 
-    JDialog dlg = new JDialog(parent, "Image", JDialog.ModalityType.APPLICATION_MODAL);
+    JDialog dlg =
+        new JDialog(parent, message("imageViewer.title"), JDialog.ModalityType.APPLICATION_MODAL);
     dlg.setLayout(new BorderLayout(8, 8));
 
     JLabel img = new JLabel();
@@ -66,10 +71,10 @@ final class ImageViewerDialog {
     dlg.add(scroller, BorderLayout.CENTER);
 
     JPanel buttons = new JPanel();
-    JButton openExternal = new JButton("Open externally");
-    JButton openBrowser = new JButton("Open in browser");
-    JButton copy = new JButton("Copy URL");
-    JButton close = new JButton("Close");
+    JButton openExternal = new JButton(message("imageViewer.button.openExternally"));
+    JButton openBrowser = new JButton(message("imageViewer.button.openInBrowser"));
+    JButton copy = new JButton(message("imageViewer.button.copyUrl"));
+    JButton close = new JButton(message("common.button.close"));
 
     openExternal.addActionListener(
         e -> {
@@ -110,6 +115,10 @@ final class ImageViewerDialog {
     dlg.pack();
     dlg.setLocationRelativeTo(parent);
     dlg.setVisible(true);
+  }
+
+  private static String message(String key, Object... args) {
+    return MESSAGES.text(key, args);
   }
 
   private static File writeTempFile(String url, byte[] bytes) throws IOException {

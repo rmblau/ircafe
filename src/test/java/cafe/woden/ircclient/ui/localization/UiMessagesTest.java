@@ -192,6 +192,17 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesImageEmbedMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Loading image…", messages.text("chatImage.status.loading"));
+    assertEquals("Expand image", messages.text("chatImage.button.expand.tooltip"));
+    assertEquals("View image", messages.text("chatImage.context.viewImage"));
+    assertEquals("Image", messages.text("imageViewer.title"));
+    assertEquals("Open externally", messages.text("imageViewer.button.openExternally"));
+  }
+
+  @Test
   void resolvesRuntimeEventsPanelMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
 
