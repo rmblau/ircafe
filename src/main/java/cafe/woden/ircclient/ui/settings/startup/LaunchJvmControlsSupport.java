@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.startup;
 
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
@@ -11,11 +12,13 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 public final class LaunchJvmControlsSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private LaunchJvmControlsSupport() {}
 
   public static LaunchJvmControls buildControls(RuntimeConfigStore runtimeConfig) {
     JTextField javaCommand = new JTextField(runtimeConfig.readLaunchJvmJavaCommand("java"));
-    javaCommand.setToolTipText("Java launcher command used for the next app start.");
+    javaCommand.setToolTipText(MESSAGES.text("preferences.startup.javaCommand.tooltip"));
 
     int xms = runtimeConfig.readLaunchJvmXmsMiB(0);
     int xmx = runtimeConfig.readLaunchJvmXmxMiB(0);
@@ -28,18 +31,18 @@ public final class LaunchJvmControlsSupport {
 
     JComboBox<LaunchGcOption> gc = new JComboBox<>(gcOptions());
     gc.setSelectedItem(gcOptionForId(runtimeConfig.readLaunchJvmGc("")));
-    gc.setToolTipText("Garbage collector preference for the next app start.");
+    gc.setToolTipText(MESSAGES.text("preferences.startup.gc.tooltip"));
 
     JTextArea extraArgs = PreferencesUiSupport.textArea(5, 40, false);
     extraArgs.setText(String.join("\n", runtimeConfig.readLaunchJvmArgs(List.of())));
-    extraArgs.setToolTipText("Additional JVM arguments. One argument per line.");
+    extraArgs.setToolTipText(MESSAGES.text("preferences.startup.extraArgs.tooltip"));
 
     return new LaunchJvmControls(javaCommand, xmsMiB, xmxMiB, gc, extraArgs);
   }
 
   static LaunchGcOption[] gcOptions() {
     return new LaunchGcOption[] {
-      new LaunchGcOption("", "Default (JVM chooses)"),
+      new LaunchGcOption("", MESSAGES.text("preferences.startup.gc.default")),
       new LaunchGcOption("g1", "G1GC"),
       new LaunchGcOption("zgc", "ZGC"),
       new LaunchGcOption("shenandoah", "Shenandoah"),

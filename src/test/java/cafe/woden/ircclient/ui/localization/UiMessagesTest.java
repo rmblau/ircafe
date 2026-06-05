@@ -418,6 +418,23 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesStartupPreferencesMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Startup", messages.text("preferences.startup.title"));
+    assertEquals(
+        "Auto-connect to servers on startup",
+        messages.text("preferences.startup.autoConnect.enabled"));
+    assertEquals("JVM on next launch", messages.text("preferences.startup.section.jvmNextLaunch"));
+    assertEquals("Initial heap (MiB)", messages.text("preferences.startup.field.initialHeapMiB"));
+    assertEquals(
+        "These settings are stored in runtime config and applied on a future restart by launcher scripts.\n"
+            + "Use 0 for heap values to leave them unset.",
+        messages.text("preferences.startup.jvm.help"));
+    assertEquals("Default (JVM chooses)", messages.text("preferences.startup.gc.default"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 
