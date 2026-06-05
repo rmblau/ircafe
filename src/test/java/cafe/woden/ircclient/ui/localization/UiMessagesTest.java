@@ -451,6 +451,31 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesTrayNotificationControlMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals(
+        "Enable system tray icon", messages.text("preferences.tray.controls.enabled"));
+    assertEquals(
+        "Don't notify for the active buffer",
+        messages.text("preferences.tray.controls.notifySuppressWhenTargetActive"));
+    assertEquals(
+        "Send a test desktop notification (click to open IRCafe).\n"
+            + "This does not require highlight/PM notifications to be enabled.",
+        messages.text("preferences.tray.controls.testNotification.tooltip"));
+    assertEquals(
+        "Play sound with desktop notifications",
+        messages.text("preferences.tray.controls.sound.enabled"));
+    assertEquals("Device token", messages.text("preferences.tray.controls.pushy.targetMode.deviceToken"));
+    assertEquals(
+        "Pushy endpoint must be a valid http(s) URL.",
+        messages.text("preferences.tray.controls.pushy.validation.endpointInvalid"));
+    assertEquals(
+        "Pushy service is unavailable.",
+        messages.text("preferences.tray.controls.pushy.status.serviceUnavailable"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 

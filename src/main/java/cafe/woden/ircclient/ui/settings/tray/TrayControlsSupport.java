@@ -8,6 +8,7 @@ import cafe.woden.ircclient.notify.api.PushyNotificationPort;
 import cafe.woden.ircclient.notify.pushy.PushySettingsBus;
 import cafe.woden.ircclient.notify.sound.NotificationSoundSettings;
 import cafe.woden.ircclient.notify.sound.NotificationSoundSettingsBus;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.NotificationBackendMode;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
@@ -34,6 +35,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 public final class TrayControlsSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private TrayControlsSupport() {}
 
   public static TrayControls buildControls(
@@ -56,45 +59,57 @@ public final class TrayControlsSupport {
             ? pushySettings
             : new PushyProperties(false, null, null, null, null, null, null, null);
 
-    JCheckBox enabled = new JCheckBox("Enable system tray icon", current.trayEnabled());
+    JCheckBox enabled =
+        new JCheckBox(MESSAGES.text("preferences.tray.controls.enabled"), current.trayEnabled());
     JCheckBox closeToTray =
-        new JCheckBox("Close button hides to tray instead of exiting", current.trayCloseToTray());
+        new JCheckBox(
+            MESSAGES.text("preferences.tray.controls.closeToTray"), current.trayCloseToTray());
     JCheckBox minimizeToTray =
-        new JCheckBox("Minimize button hides to tray", current.trayMinimizeToTray());
+        new JCheckBox(
+            MESSAGES.text("preferences.tray.controls.minimizeToTray"),
+            current.trayMinimizeToTray());
     JCheckBox startMinimized =
-        new JCheckBox("Start minimized to tray", current.trayStartMinimized());
+        new JCheckBox(
+            MESSAGES.text("preferences.tray.controls.startMinimized"),
+            current.trayStartMinimized());
 
     JCheckBox notifyHighlights =
-        new JCheckBox("Desktop notifications for highlights", current.trayNotifyHighlights());
+        new JCheckBox(
+            MESSAGES.text("preferences.tray.controls.notifyHighlights"),
+            current.trayNotifyHighlights());
     JCheckBox notifyPrivateMessages =
         new JCheckBox(
-            "Desktop notifications for private messages", current.trayNotifyPrivateMessages());
+            MESSAGES.text("preferences.tray.controls.notifyPrivateMessages"),
+            current.trayNotifyPrivateMessages());
     JCheckBox notifyConnectionState =
         new JCheckBox(
-            "Desktop notifications for connection state", current.trayNotifyConnectionState());
+            MESSAGES.text("preferences.tray.controls.notifyConnectionState"),
+            current.trayNotifyConnectionState());
 
     JCheckBox notifyOnlyWhenUnfocused =
         new JCheckBox(
-            "Only notify when IRCafe is not focused", current.trayNotifyOnlyWhenUnfocused());
+            MESSAGES.text("preferences.tray.controls.notifyOnlyWhenUnfocused"),
+            current.trayNotifyOnlyWhenUnfocused());
     JCheckBox notifyOnlyWhenMinimizedOrHidden =
         new JCheckBox(
-            "Only notify when minimized or hidden to tray",
+            MESSAGES.text("preferences.tray.controls.notifyOnlyWhenMinimizedOrHidden"),
             current.trayNotifyOnlyWhenMinimizedOrHidden());
     JCheckBox notifySuppressWhenTargetActive =
         new JCheckBox(
-            "Don't notify for the active buffer", current.trayNotifySuppressWhenTargetActive());
+            MESSAGES.text("preferences.tray.controls.notifySuppressWhenTargetActive"),
+            current.trayNotifySuppressWhenTargetActive());
     JCheckBox updateNotifierEnabled =
         new JCheckBox(
-            "Show update notifier in status bar",
+            MESSAGES.text("preferences.tray.controls.updateNotifier.enabled"),
             runtimeConfig == null || runtimeConfig.readUpdateNotifierEnabled(true));
     updateNotifierEnabled.setToolTipText(
-        "Checks GitHub releases in the background and alerts when a newer IRCafe version exists.");
+        MESSAGES.text("preferences.tray.controls.updateNotifier.tooltip"));
     JCheckBox lagIndicatorEnabled =
         new JCheckBox(
-            "Show lag indicator in status bar",
+            MESSAGES.text("preferences.tray.controls.lagIndicator.enabled"),
             runtimeConfig == null || runtimeConfig.readLagIndicatorEnabled(true));
     lagIndicatorEnabled.setToolTipText(
-        "Shows measured round-trip server lag for the active server in the status bar.");
+        MESSAGES.text("preferences.tray.controls.lagIndicator.tooltip"));
 
     boolean linuxTmp = false;
     boolean linuxActionsSupportedTmp = false;
@@ -115,25 +130,25 @@ public final class TrayControlsSupport {
 
     JCheckBox linuxDbusActions =
         new JCheckBox(
-            "Use Linux D-Bus notifications (click-to-open)",
+            MESSAGES.text("preferences.tray.controls.linuxDbusActions"),
             linux && linuxActionsSupported && current.trayLinuxDbusActionsEnabled());
     linuxDbusActions.setToolTipText(
         linux
             ? (linuxActionsSupported
-                ? "Uses org.freedesktop.Notifications over D-Bus so clicking a notification can open IRCafe."
-                : "Click actions aren't available in this session (no D-Bus notification actions support detected).")
-            : "Linux only.");
+                ? MESSAGES.text("preferences.tray.controls.linuxDbusActions.tooltip.supported")
+                : MESSAGES.text("preferences.tray.controls.linuxDbusActions.tooltip.unsupported"))
+            : MESSAGES.text("preferences.tray.controls.linuxOnly.tooltip"));
 
     JComboBox<NotificationBackendMode> notificationBackend =
         new JComboBox<>(NotificationBackendMode.values());
     notificationBackend.setSelectedItem(current.trayNotificationBackendMode());
     notificationBackend.setToolTipText(
-        "Select how desktop notifications are delivered: native backends, two-slices fallback, or two-slices only.");
+        MESSAGES.text("preferences.tray.controls.notificationBackend.tooltip"));
 
-    JButton testNotification = new JButton("Test notification");
+    JButton testNotification =
+        new JButton(MESSAGES.text("preferences.tray.controls.testNotification"));
     testNotification.setToolTipText(
-        "Send a test desktop notification (click to open IRCafe).\n"
-            + "This does not require highlight/PM notifications to be enabled.");
+        MESSAGES.text("preferences.tray.controls.testNotification.tooltip"));
     testNotification.addActionListener(
         e -> {
           try {
@@ -145,30 +160,30 @@ public final class TrayControlsSupport {
         });
 
     notifyHighlights.setToolTipText(
-        "Show a desktop notification when someone mentions your nick in a channel.");
+        MESSAGES.text("preferences.tray.controls.notifyHighlights.tooltip"));
     notifyPrivateMessages.setToolTipText(
-        "Show a desktop notification when you receive a private message.");
+        MESSAGES.text("preferences.tray.controls.notifyPrivateMessages.tooltip"));
     notifyConnectionState.setToolTipText(
-        "Show a desktop notification when connecting/disconnecting.");
+        MESSAGES.text("preferences.tray.controls.notifyConnectionState.tooltip"));
     notifyOnlyWhenUnfocused.setToolTipText(
-        "Common HexChat behavior: only notify when IRCafe isn't the active window.");
+        MESSAGES.text("preferences.tray.controls.notifyOnlyWhenUnfocused.tooltip"));
     notifyOnlyWhenMinimizedOrHidden.setToolTipText(
-        "Only notify when IRCafe is minimized or hidden to tray.");
+        MESSAGES.text("preferences.tray.controls.notifyOnlyWhenMinimizedOrHidden.tooltip"));
     notifySuppressWhenTargetActive.setToolTipText(
-        "If the message is in the currently selected buffer, suppress the notification.");
+        MESSAGES.text("preferences.tray.controls.notifySuppressWhenTargetActive.tooltip"));
 
     NotificationSoundControlsSupport.Controls soundControls =
         NotificationSoundControlsSupport.buildControls(
             NotificationSoundControlsSupport.Request.builder()
-                .enabledLabel("Play sound with desktop notifications")
+                .enabledLabel(MESSAGES.text("preferences.tray.controls.sound.enabled"))
                 .enabledSelected(effectiveSoundSettings.enabled())
-                .useCustomLabel("Use custom sound file")
+                .useCustomLabel(MESSAGES.text("preferences.tray.controls.sound.useCustom"))
                 .useCustomSelected(effectiveSoundSettings.useCustom())
                 .soundId(effectiveSoundSettings.soundId())
                 .customPath(effectiveSoundSettings.customPath())
-                .browseButtonText("Browse...")
-                .clearButtonText("Clear")
-                .testButtonText("Test sound")
+                .browseButtonText(MESSAGES.text("common.button.browse.ellipsis"))
+                .clearButtonText(MESSAGES.text("common.button.clear"))
+                .testButtonText(MESSAGES.text("preferences.tray.controls.sound.test"))
                 .buttonStyle(NotificationSoundControlsSupport.ButtonStyle.TEXT)
                 .notificationSoundService(notificationSoundService)
                 .soundFileImporter(notificationSoundImporter)
@@ -176,36 +191,36 @@ public final class TrayControlsSupport {
                 .build());
     JCheckBox notificationSoundsEnabled = soundControls.enabled();
     notificationSoundsEnabled.setToolTipText(
-        "Plays a short sound whenever IRCafe shows a desktop notification.");
+        MESSAGES.text("preferences.tray.controls.sound.enabled.tooltip"));
     JCheckBox notificationSoundUseCustom = soundControls.useCustom();
     notificationSoundUseCustom.setToolTipText(
-        "If enabled, IRCafe will play a custom file stored next to your runtime config.\n"
-            + "Supported formats: MP3, WAV.");
+        MESSAGES.text("preferences.tray.controls.sound.useCustom.tooltip"));
     JTextField notificationSoundCustomPath = soundControls.customPath();
     notificationSoundCustomPath.setToolTipText(
-        "Custom sound path (relative to the runtime config directory).\n"
-            + "Click Browse... to import a file.");
+        MESSAGES.text("preferences.tray.controls.sound.customPath.tooltip"));
     JComboBox<BuiltInSound> notificationSound = soundControls.builtInSound();
-    notificationSound.setToolTipText("Choose which bundled sound to use for notifications.");
+    notificationSound.setToolTipText(
+        MESSAGES.text("preferences.tray.controls.sound.builtIn.tooltip"));
     JButton browseCustomSound = soundControls.browseCustom();
     JButton clearCustomSound = soundControls.clearCustom();
     JButton testSound = soundControls.testSound();
 
     JCheckBox pushyEnabled =
         new JCheckBox(
-            "Forward matched IRC event notifications to Pushy",
+            MESSAGES.text("preferences.tray.controls.pushy.enabled"),
             Boolean.TRUE.equals(effectivePushySettings.enabled()));
     pushyEnabled.setToolTipText(
-        "Sends notifications for matching IRC event rules to Pushy (device token or topic).");
+        MESSAGES.text("preferences.tray.controls.pushy.enabled.tooltip"));
 
     JTextField pushyEndpoint =
         new JTextField(
             Objects.toString(effectivePushySettings.endpoint(), "https://api.pushy.me/push"));
-    pushyEndpoint.setToolTipText("Pushy API endpoint URL.");
+    pushyEndpoint.setToolTipText(
+        MESSAGES.text("preferences.tray.controls.pushy.endpoint.tooltip"));
 
     JPasswordField pushyApiKey =
         new JPasswordField(Objects.toString(effectivePushySettings.apiKey(), ""));
-    pushyApiKey.setToolTipText("Pushy Secret API key.");
+    pushyApiKey.setToolTipText(MESSAGES.text("preferences.tray.controls.pushy.apiKey.tooltip"));
 
     PushyTargetMode pushyInitialTargetMode =
         effectivePushySettings.deviceToken() != null
@@ -219,14 +234,17 @@ public final class TrayControlsSupport {
 
     JComboBox<PushyTargetMode> pushyTargetMode = new JComboBox<>(PushyTargetMode.values());
     pushyTargetMode.setSelectedItem(pushyInitialTargetMode);
-    pushyTargetMode.setToolTipText("Choose destination type for Pushy notifications.");
+    pushyTargetMode.setToolTipText(
+        MESSAGES.text("preferences.tray.controls.pushy.targetMode.tooltip"));
 
     JTextField pushyTargetValue = new JTextField(pushyInitialTargetValue);
-    pushyTargetValue.setToolTipText("Destination value for selected target mode.");
+    pushyTargetValue.setToolTipText(
+        MESSAGES.text("preferences.tray.controls.pushy.targetValue.tooltip"));
 
     JTextField pushyTitlePrefix =
         new JTextField(Objects.toString(effectivePushySettings.titlePrefix(), "IRCafe"));
-    pushyTitlePrefix.setToolTipText("Prefix prepended to Pushy notification titles.");
+    pushyTitlePrefix.setToolTipText(
+        MESSAGES.text("preferences.tray.controls.pushy.titlePrefix.tooltip"));
 
     JSpinner pushyConnectTimeoutSeconds =
         PreferencesUiSupport.numberSpinner(
@@ -234,8 +252,8 @@ public final class TrayControlsSupport {
     JSpinner pushyReadTimeoutSeconds =
         PreferencesUiSupport.numberSpinner(effectivePushySettings.readTimeoutSeconds(), 1, 60, 1);
 
-    JButton pushyTest = new JButton("Test Pushy");
-    pushyTest.setToolTipText("Send a real test notification to the configured Pushy destination.");
+    JButton pushyTest = new JButton(MESSAGES.text("preferences.tray.controls.pushy.test"));
+    pushyTest.setToolTipText(MESSAGES.text("preferences.tray.controls.pushy.test.tooltip"));
     JLabel pushyValidationLabel = new JLabel(" ");
     pushyValidationLabel.setForeground(PreferencesUiSupport.errorForeground());
     JLabel pushyTestStatus = new JLabel(" ");
@@ -295,7 +313,7 @@ public final class TrayControlsSupport {
                   readSeconds);
 
           pushyTest.setEnabled(false);
-          pushyTestStatus.setText("Sending test push…");
+          pushyTestStatus.setText(MESSAGES.text("preferences.tray.controls.pushy.status.sending"));
           pushyTestStatus.setForeground(UIManager.getColor(UiColorKeys.LABEL_FOREGROUND));
 
           pushyTestExecutor.submit(
@@ -303,13 +321,19 @@ public final class TrayControlsSupport {
                 PushyNotificationPort.PushResult result =
                     pushyNotificationService != null
                         ? pushyNotificationService.sendTestNotification(
-                            draft, "IRCafe Test", "This is a Pushy test notification from IRCafe.")
-                        : PushyNotificationPort.PushResult.failed("Pushy service is unavailable.");
+                            draft,
+                            MESSAGES.text("preferences.tray.controls.pushy.test.title"),
+                            MESSAGES.text("preferences.tray.controls.pushy.test.body"))
+                        : PushyNotificationPort.PushResult.failed(
+                            MESSAGES.text(
+                                "preferences.tray.controls.pushy.status.serviceUnavailable"));
                 SwingUtilities.invokeLater(
                     () -> {
                       pushyTestStatus.setText(
                           result.message() == null || result.message().isBlank()
-                              ? (result.success() ? "Push sent." : "Push failed.")
+                              ? (result.success()
+                                  ? MESSAGES.text("preferences.tray.controls.pushy.status.sent")
+                                  : MESSAGES.text("preferences.tray.controls.pushy.status.failed"))
                               : result.message());
                       pushyTestStatus.setForeground(
                           result.success()
@@ -326,9 +350,12 @@ public final class TrayControlsSupport {
               PreferencesUiSupport.selectedComboItem(
                   pushyTargetMode, PushyTargetMode.class, PushyTargetMode.DEVICE_TOKEN);
           if (mode == PushyTargetMode.DEVICE_TOKEN) {
-            pushyTargetValue.setToolTipText("Single-device destination token.");
+            pushyTargetValue.setToolTipText(
+                MESSAGES.text(
+                    "preferences.tray.controls.pushy.targetValue.deviceToken.tooltip"));
           } else {
-            pushyTargetValue.setToolTipText("Topic destination for fan-out delivery.");
+            pushyTargetValue.setToolTipText(
+                MESSAGES.text("preferences.tray.controls.pushy.targetValue.topic.tooltip"));
           }
         };
 
@@ -527,19 +554,22 @@ public final class TrayControlsSupport {
     if (!enabled) return null;
 
     String key = SettingsValueSupport.trimmedString(apiKey);
-    if (key.isEmpty()) return "Pushy API key is required.";
+    if (key.isEmpty()) {
+      return MESSAGES.text("preferences.tray.controls.pushy.validation.apiKeyRequired");
+    }
 
     String target = SettingsValueSupport.trimmedString(targetValue);
     if (target.isEmpty()) {
       return switch (targetMode) {
-        case TOPIC -> "Pushy topic is required.";
-        case DEVICE_TOKEN -> "Pushy device token is required.";
+        case TOPIC -> MESSAGES.text("preferences.tray.controls.pushy.validation.topicRequired");
+        case DEVICE_TOKEN ->
+            MESSAGES.text("preferences.tray.controls.pushy.validation.deviceTokenRequired");
       };
     }
 
     String trimmedEndpoint = SettingsValueSupport.trimmedString(endpoint);
     if (!trimmedEndpoint.isEmpty() && !isValidPushyEndpoint(trimmedEndpoint)) {
-      return "Pushy endpoint must be a valid http(s) URL.";
+      return MESSAGES.text("preferences.tray.controls.pushy.validation.endpointInvalid");
     }
 
     return null;
@@ -575,7 +605,8 @@ public final class TrayControlsSupport {
     String validationError =
         validatePushyInputs(enabled, endpoint, apiKey, targetMode, targetValue);
     if (validationError != null) {
-      throw new TraySettingsException("Invalid Pushy settings", validationError);
+      throw new TraySettingsException(
+          MESSAGES.text("preferences.tray.controls.pushy.validation.title"), validationError);
     }
 
     String deviceToken =
