@@ -376,6 +376,27 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesTimestampPreferencesMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Show timestamps", messages.text("preferences.timestamps.enabled"));
+    assertEquals("Format", messages.text("preferences.timestamps.field.format"));
+    assertEquals(
+        "java.time DateTimeFormatter pattern (e.g., HH:mm:ss or h:mm a).",
+        messages.text("preferences.timestamps.format.tooltip"));
+    assertEquals(
+        "Include presence / folded messages",
+        messages.text("preferences.timestamps.includePresenceMessages"));
+    assertEquals(
+        "Invalid timestamp format", messages.text("preferences.timestamps.invalidFormat.title"));
+    assertEquals(
+        "Invalid timestamp format: bad-pattern\n"
+            + "\n"
+            + "Use a java.time DateTimeFormatter pattern (e.g. HH:mm:ss)",
+        messages.text("preferences.timestamps.invalidFormat.message", "bad-pattern"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 
