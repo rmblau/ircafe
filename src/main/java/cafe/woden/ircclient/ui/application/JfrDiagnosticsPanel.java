@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.application;
 import cafe.woden.ircclient.diagnostics.JfrRuntimeEventsService;
 import cafe.woden.ircclient.diagnostics.RuntimeDiagnosticEvent;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.util.MigConstraints;
 import cafe.woden.ircclient.ui.util.MigLayouts;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
@@ -69,6 +70,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
   private static final String GC_EVENT_TYPE = "jdk.GarbageCollection";
   private static final ExecutorService MEMORY_EXPORT_EXECUTOR =
       VirtualThreads.newThreadPerTaskExecutor("ircafe-jfr-memory-export");
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private static final int COL_TIME = 0;
   private static final int COL_LEVEL = 1;
@@ -79,8 +81,10 @@ public final class JfrDiagnosticsPanel extends JPanel {
   private final PropertyChangeListener stateListener = __ -> refreshOnEdt();
   private final RuntimeEventsTableModel model = new RuntimeEventsTableModel();
   private final JTable table = new JTable(model);
-  private final JCheckBox enabledCheck = new JCheckBox("Enable JFR diagnostics");
-  private final JCheckBox pauseRowsCheck = new JCheckBox("Pause event table logging");
+  private final JCheckBox enabledCheck =
+      new JCheckBox(message("jfrDiagnostics.control.enable"));
+  private final JCheckBox pauseRowsCheck =
+      new JCheckBox(message("jfrDiagnostics.control.pauseRows"));
   private final JTextField streamValue = newSummaryField();
   private final JTextField cpuMachineValue = newSummaryField();
   private final JTextField cpuJvmUserValue = newSummaryField();
@@ -93,29 +97,32 @@ public final class JfrDiagnosticsPanel extends JPanel {
   private final JTextField gcCountValue = newSummaryField();
   private final JTextField gcRateValue = newSummaryField();
   private final JTextField gcLastValue = newSummaryField();
-  private final JLabel rowsLabel = new JLabel("Rows: 0");
+  private final JLabel rowsLabel = new JLabel(message("jfrDiagnostics.rowsLabel", 0));
   private final JButton clearAllRowsButton = new JButton();
   private final JButton clearSelectedRowButton = new JButton();
   private final JButton detailsButton = new JButton();
   private final JButton refreshButton = new JButton();
   private final JButton exportMemoryBundleButton = new JButton();
-  private final CircularGauge cpuGauge = new CircularGauge("CPU");
-  private final CircularGauge heapGauge = new CircularGauge("Heap");
-  private final CircularGauge gcGauge = new CircularGauge("GC Rate");
+  private final CircularGauge cpuGauge = new CircularGauge(message("jfrDiagnostics.gauge.cpu"));
+  private final CircularGauge heapGauge = new CircularGauge(message("jfrDiagnostics.gauge.heap"));
+  private final CircularGauge gcGauge = new CircularGauge(message("jfrDiagnostics.gauge.gcRate"));
 
   private boolean syncingControls;
   private boolean stateListenerRegistered;
   private volatile boolean exportInProgress;
 
+  private static String message(String code, Object... args) {
+    return MESSAGES.text(code, args);
+  }
+
   public JfrDiagnosticsPanel(JfrRuntimeEventsService service) {
     super(new BorderLayout(0, 8));
     this.service = service;
 
-    JLabel title = new JLabel("JFR Diagnostics");
+    JLabel title = new JLabel(message("jfrDiagnostics.title"));
     title.setBorder(BorderFactory.createEmptyBorder(8, 10, 2, 10));
     title.setFont(title.getFont().deriveFont(Font.BOLD));
-    JLabel subtitle =
-        new JLabel("Status gauges (CPU / heap / GC rate) + runtime JFR event table controls.");
+    JLabel subtitle = new JLabel(message("jfrDiagnostics.subtitle"));
     subtitle.setBorder(BorderFactory.createEmptyBorder(0, 10, 8, 10));
     JPanel header = new JPanel(new BorderLayout());
     header.add(title, BorderLayout.NORTH);
@@ -123,8 +130,8 @@ public final class JfrDiagnosticsPanel extends JPanel {
     add(header, BorderLayout.NORTH);
 
     JTabbedPane tabs = new JTabbedPane();
-    tabs.addTab("Status", buildStatusTab());
-    tabs.addTab("JFR Events", buildEventsTab());
+    tabs.addTab(message("jfrDiagnostics.tab.status"), buildStatusTab());
+    tabs.addTab(message("jfrDiagnostics.tab.events"), buildEventsTab());
     add(tabs, BorderLayout.CENTER);
 
     configureEventActionButtons();
@@ -221,19 +228,28 @@ public final class JfrDiagnosticsPanel extends JPanel {
     configureEventActionButton(
         refreshButton,
         "refresh",
-        "Request an immediate runtime sample and refresh rows",
-        "Refresh events");
+        message("jfrDiagnostics.button.refresh.tooltip"),
+        message("jfrDiagnostics.button.refresh.accessibleName"));
     configureEventActionButton(
-        detailsButton, "eye", "Show details for the selected row", "Row details");
+        detailsButton,
+        "eye",
+        message("jfrDiagnostics.button.details.tooltip"),
+        message("jfrDiagnostics.button.details.accessibleName"));
     configureEventActionButton(
-        clearSelectedRowButton, "close", "Remove the selected event row", "Remove selected row");
+        clearSelectedRowButton,
+        "close",
+        message("jfrDiagnostics.button.removeSelected.tooltip"),
+        message("jfrDiagnostics.button.removeSelected.accessibleName"));
     configureEventActionButton(
-        clearAllRowsButton, "trash", "Clear all event rows", "Clear all rows");
+        clearAllRowsButton,
+        "trash",
+        message("jfrDiagnostics.button.clearAll.tooltip"),
+        message("jfrDiagnostics.button.clearAll.accessibleName"));
     configureEventActionButton(
         exportMemoryBundleButton,
         "copy",
-        "Capture and export a memory diagnostics bundle (JFR, histogram, heap dump)",
-        "Export memory diagnostics bundle");
+        message("jfrDiagnostics.button.exportMemory.tooltip"),
+        message("jfrDiagnostics.button.exportMemory.accessibleName"));
   }
 
   private void configureEventActionButton(
@@ -250,39 +266,42 @@ public final class JfrDiagnosticsPanel extends JPanel {
 
   private JPanel buildCpuSummaryPanel() {
     JPanel panel = new JPanel(MigLayouts.twoColumnForm(6, 8, MigLayouts.rows(4, 4)));
-    panel.setBorder(BorderFactory.createTitledBorder("CPU"));
+    panel.setBorder(
+        BorderFactory.createTitledBorder(message("jfrDiagnostics.summary.cpu.title")));
     panel.setOpaque(false);
-    addSummaryField(panel, "Machine", cpuMachineValue);
-    addSummaryField(panel, "JVM User", cpuJvmUserValue);
-    addSummaryField(panel, "JVM System", cpuJvmSystemValue);
-    addSummaryField(panel, "Sample", cpuSampleValue);
+    addSummaryField(panel, message("jfrDiagnostics.summary.cpu.machine"), cpuMachineValue);
+    addSummaryField(panel, message("jfrDiagnostics.summary.cpu.jvmUser"), cpuJvmUserValue);
+    addSummaryField(panel, message("jfrDiagnostics.summary.cpu.jvmSystem"), cpuJvmSystemValue);
+    addSummaryField(panel, message("jfrDiagnostics.summary.cpu.sample"), cpuSampleValue);
     return panel;
   }
 
   private JPanel buildHeapSummaryPanel() {
     JPanel panel = new JPanel(MigLayouts.twoColumnForm(6, 8, MigLayouts.rows(4, 4)));
-    panel.setBorder(BorderFactory.createTitledBorder("Heap"));
+    panel.setBorder(
+        BorderFactory.createTitledBorder(message("jfrDiagnostics.summary.heap.title")));
     panel.setOpaque(false);
-    addSummaryField(panel, "Used", heapUsedValue);
-    addSummaryField(panel, "Committed", heapCommittedValue);
-    addSummaryField(panel, "Max", heapMaxValue);
-    addSummaryField(panel, "Sample", heapSampleValue);
+    addSummaryField(panel, message("jfrDiagnostics.summary.heap.used"), heapUsedValue);
+    addSummaryField(panel, message("jfrDiagnostics.summary.heap.committed"), heapCommittedValue);
+    addSummaryField(panel, message("jfrDiagnostics.summary.heap.max"), heapMaxValue);
+    addSummaryField(panel, message("jfrDiagnostics.summary.heap.sample"), heapSampleValue);
     return panel;
   }
 
   private JPanel buildGcSummaryPanel() {
     JPanel panel = new JPanel(MigLayouts.twoColumnForm(6, 8, MigLayouts.rows(4, 4)));
-    panel.setBorder(BorderFactory.createTitledBorder("GC"));
+    panel.setBorder(
+        BorderFactory.createTitledBorder(message("jfrDiagnostics.summary.gc.title")));
     panel.setOpaque(false);
-    addSummaryField(panel, "Events (2m)", gcCountValue);
-    addSummaryField(panel, "Rate", gcRateValue);
-    addSummaryField(panel, "Last Event", gcLastValue);
-    addSummaryField(panel, "Stream", streamValue);
+    addSummaryField(panel, message("jfrDiagnostics.summary.gc.eventsWindow"), gcCountValue);
+    addSummaryField(panel, message("jfrDiagnostics.summary.gc.rate"), gcRateValue);
+    addSummaryField(panel, message("jfrDiagnostics.summary.gc.lastEvent"), gcLastValue);
+    addSummaryField(panel, message("jfrDiagnostics.summary.gc.stream"), streamValue);
     return panel;
   }
 
   private static JTextField newSummaryField() {
-    JTextField field = new JTextField("n/a");
+    JTextField field = new JTextField(message("jfrDiagnostics.value.unavailable"));
     field.setEditable(false);
     field.setFocusable(false);
     field.setColumns(14);
@@ -327,13 +346,13 @@ public final class JfrDiagnosticsPanel extends JPanel {
   private void installTableInteractions() {
     JPopupMenu popup = new JPopupMenu();
     popup
-        .add(new javax.swing.JMenuItem("Details"))
+        .add(new javax.swing.JMenuItem(message("jfrDiagnostics.context.details")))
         .addActionListener(e -> showDetailsForSelectedRow());
     popup
-        .add(new javax.swing.JMenuItem("Remove Selected Row"))
+        .add(new javax.swing.JMenuItem(message("jfrDiagnostics.context.removeSelected")))
         .addActionListener(e -> removeSelectedRow());
     popup
-        .add(new javax.swing.JMenuItem("Clear All Rows"))
+        .add(new javax.swing.JMenuItem(message("jfrDiagnostics.context.clearAll")))
         .addActionListener(
             e -> {
               if (service == null) return;
@@ -341,7 +360,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
               refreshNow();
             });
     popup
-        .add(new javax.swing.JMenuItem("Export Memory Bundle"))
+        .add(new javax.swing.JMenuItem(message("jfrDiagnostics.context.exportMemory")))
         .addActionListener(e -> exportMemoryDiagnosticsBundle());
 
     table.addMouseListener(
@@ -393,10 +412,10 @@ public final class JfrDiagnosticsPanel extends JPanel {
       } finally {
         syncingControls = false;
       }
-      cpuGauge.setGauge("n/a", -1, false, false);
-      heapGauge.setGauge("n/a", -1, false, false);
-      gcGauge.setGauge("n/a", -1, false, false);
-      setSummaryUnavailable("JFR service unavailable");
+      cpuGauge.setGauge(message("jfrDiagnostics.value.unavailable"), -1, false, false);
+      heapGauge.setGauge(message("jfrDiagnostics.value.unavailable"), -1, false, false);
+      gcGauge.setGauge(message("jfrDiagnostics.value.unavailable"), -1, false, false);
+      setSummaryUnavailable(message("jfrDiagnostics.status.serviceUnavailable"));
       return;
     }
 
@@ -409,14 +428,20 @@ public final class JfrDiagnosticsPanel extends JPanel {
       syncingControls = false;
     }
 
-    streamValue.setText(s.streamActive() ? "Active" : "Inactive");
+    streamValue.setText(
+        s.streamActive()
+            ? message("jfrDiagnostics.status.streamActive")
+            : message("jfrDiagnostics.status.streamInactive"));
 
     int cpuPercent =
         s.cpuMachineTotalRatio() == null
             ? -1
             : Math.max(0, Math.min(100, (int) Math.round(s.cpuMachineTotalRatio() * 100.0d)));
     cpuGauge.setGauge(
-        cpuPercent < 0 ? "n/a" : cpuPercent + "%", cpuPercent, cpuPercent >= 90, false);
+        cpuPercent < 0 ? message("jfrDiagnostics.value.unavailable") : cpuPercent + "%",
+        cpuPercent,
+        cpuPercent >= 90,
+        false);
     cpuMachineValue.setText(JfrRuntimeEventsService.formatRatio(s.cpuMachineTotalRatio()));
     cpuJvmUserValue.setText(JfrRuntimeEventsService.formatRatio(s.cpuJvmUserRatio()));
     cpuJvmSystemValue.setText(JfrRuntimeEventsService.formatRatio(s.cpuJvmSystemRatio()));
@@ -424,10 +449,16 @@ public final class JfrDiagnosticsPanel extends JPanel {
 
     int heapPercent = s.runtimeHeapPercent();
     heapGauge.setGauge(
-        heapPercent < 0 ? "n/a" : heapPercent + "%", heapPercent, heapPercent >= 90, false);
+        heapPercent < 0 ? message("jfrDiagnostics.value.unavailable") : heapPercent + "%",
+        heapPercent,
+        heapPercent >= 90,
+        false);
     heapUsedValue.setText(toGb(s.runtimeUsedBytes()));
     heapCommittedValue.setText(toGb(s.runtimeCommittedBytes()));
-    heapMaxValue.setText(s.runtimeMaxBytes() > 0 ? toGb(s.runtimeMaxBytes()) : "n/a");
+    heapMaxValue.setText(
+        s.runtimeMaxBytes() > 0
+            ? toGb(s.runtimeMaxBytes())
+            : message("jfrDiagnostics.value.unavailable"));
     heapSampleValue.setText(formatInstant(s.lastRuntimeSampleAt()));
 
     int gcGaugePercent =
@@ -449,7 +480,10 @@ public final class JfrDiagnosticsPanel extends JPanel {
     gcCountValue.setText(Integer.toString(s.gcEventsInWindow()));
     gcRateValue.setText(
         String.format(
-            Locale.ROOT, "%.1f/min%s", s.gcEventsPerMinute(), s.gcAlert() ? " (alert)" : ""));
+            Locale.ROOT,
+            "%.1f/min%s",
+            s.gcEventsPerMinute(),
+            s.gcAlert() ? message("jfrDiagnostics.status.alertSuffix") : ""));
     gcLastValue.setText(formatInstant(s.lastGcEventAt()));
   }
 
@@ -464,7 +498,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
     }
     model.setRows(rows);
     restoreSelection(selected);
-    rowsLabel.setText("Rows: " + model.getRowCount());
+    rowsLabel.setText(message("jfrDiagnostics.rowsLabel", model.getRowCount()));
     updateRowButtons();
   }
 
@@ -478,18 +512,19 @@ public final class JfrDiagnosticsPanel extends JPanel {
   }
 
   private void setSummaryUnavailable(String streamStatusText) {
-    streamValue.setText(Objects.toString(streamStatusText, "n/a"));
-    cpuMachineValue.setText("n/a");
-    cpuJvmUserValue.setText("n/a");
-    cpuJvmSystemValue.setText("n/a");
-    cpuSampleValue.setText("n/a");
-    heapUsedValue.setText("n/a");
-    heapCommittedValue.setText("n/a");
-    heapMaxValue.setText("n/a");
-    heapSampleValue.setText("n/a");
-    gcCountValue.setText("n/a");
-    gcRateValue.setText("n/a");
-    gcLastValue.setText("n/a");
+    String unavailable = message("jfrDiagnostics.value.unavailable");
+    streamValue.setText(Objects.toString(streamStatusText, unavailable));
+    cpuMachineValue.setText(unavailable);
+    cpuJvmUserValue.setText(unavailable);
+    cpuJvmSystemValue.setText(unavailable);
+    cpuSampleValue.setText(unavailable);
+    heapUsedValue.setText(unavailable);
+    heapCommittedValue.setText(unavailable);
+    heapMaxValue.setText(unavailable);
+    heapSampleValue.setText(unavailable);
+    gcCountValue.setText(unavailable);
+    gcRateValue.setText(unavailable);
+    gcLastValue.setText(unavailable);
   }
 
   private void restoreSelection(RuntimeDiagnosticEvent selected) {
@@ -564,20 +599,22 @@ public final class JfrDiagnosticsPanel extends JPanel {
     JOptionPane.showMessageDialog(
         SwingUtilities.getWindowAncestor(this),
         content,
-        "Event Details",
+        message("jfrDiagnostics.details.title"),
         JOptionPane.INFORMATION_MESSAGE);
   }
 
   private void exportMemoryDiagnosticsBundle() {
     if (service == null || exportInProgress) return;
-    Object[] options = {"Light Bundle (Recommended)", "Full Bundle (With Heap Dump)", "Cancel"};
+    Object[] options = {
+      message("jfrDiagnostics.export.option.lightBundle"),
+      message("jfrDiagnostics.export.option.fullBundle"),
+      message("common.button.cancel")
+    };
     int choice =
         JOptionPane.showOptionDialog(
             SwingUtilities.getWindowAncestor(this),
-            "Export a memory diagnostics bundle now?\n\n"
-                + "Light bundle: runtime summary + class histogram + short JFR snapshot.\n"
-                + "Full bundle: includes a live heap dump (larger and slower).",
-            "Export Memory Bundle",
+            message("jfrDiagnostics.export.prompt"),
+            message("jfrDiagnostics.export.title"),
             JOptionPane.DEFAULT_OPTION,
             JOptionPane.WARNING_MESSAGE,
             null,
@@ -596,27 +633,32 @@ public final class JfrDiagnosticsPanel extends JPanel {
                       setExportInProgress(false);
                       if (error != null) {
                         showMultilineDialog(
-                            "Export Error",
-                            "Memory diagnostics export failed:\n\n"
-                                + Objects.toString(error.getMessage(), ""),
+                            message("jfrDiagnostics.export.error.title"),
+                            message(
+                                "jfrDiagnostics.export.error.message",
+                                Objects.toString(error.getMessage(), "")),
                             JOptionPane.ERROR_MESSAGE);
                         return;
                       }
 
                       if (report == null) {
                         showMultilineDialog(
-                            "Export Error",
-                            "Memory diagnostics export failed: no report was returned.",
+                            message("jfrDiagnostics.export.error.title"),
+                            message("jfrDiagnostics.export.error.noReport"),
                             JOptionPane.ERROR_MESSAGE);
                         return;
                       }
 
                       if (report.success()) {
                         showMultilineDialog(
-                            "Export Complete", report.summary(), JOptionPane.INFORMATION_MESSAGE);
+                            message("jfrDiagnostics.export.complete.title"),
+                            report.summary(),
+                            JOptionPane.INFORMATION_MESSAGE);
                       } else {
                         showMultilineDialog(
-                            "Export Error", report.summary(), JOptionPane.ERROR_MESSAGE);
+                            message("jfrDiagnostics.export.error.title"),
+                            report.summary(),
+                            JOptionPane.ERROR_MESSAGE);
                       }
                     }));
   }
@@ -626,8 +668,8 @@ public final class JfrDiagnosticsPanel extends JPanel {
     exportMemoryBundleButton.setEnabled(service != null && !exportInProgress);
     exportMemoryBundleButton.setToolTipText(
         inProgress
-            ? "Export in progress..."
-            : "Capture and export a memory diagnostics bundle (JFR, histogram, heap dump)");
+            ? message("jfrDiagnostics.button.exportMemory.inProgress.tooltip")
+            : message("jfrDiagnostics.button.exportMemory.tooltip"));
     exportMemoryBundleButton.repaint();
   }
 
@@ -647,18 +689,42 @@ public final class JfrDiagnosticsPanel extends JPanel {
     JPanel root = new JPanel(new BorderLayout(0, 10));
 
     JPanel fields = new JPanel(MigLayouts.twoColumnForm(10, MigLayouts.rows(4, 4)));
-    addDetailRow(fields, "Time", event.at() == null ? "" : TIME_FMT.format(event.at()));
-    addDetailRow(fields, "Level", Objects.toString(event.level(), ""));
-    addDetailRow(fields, "Event type", Objects.toString(event.type(), ""));
-    addDetailRow(fields, "Summary", Objects.toString(event.summary(), ""));
+    addDetailRow(
+        fields,
+        message("jfrDiagnostics.details.field.time"),
+        event.at() == null ? "" : TIME_FMT.format(event.at()));
+    addDetailRow(
+        fields,
+        message("jfrDiagnostics.details.field.level"),
+        Objects.toString(event.level(), ""));
+    addDetailRow(
+        fields,
+        message("jfrDiagnostics.details.field.eventType"),
+        Objects.toString(event.type(), ""));
+    addDetailRow(
+        fields,
+        message("jfrDiagnostics.details.field.summary"),
+        Objects.toString(event.summary(), ""));
 
     Map<String, String> parsed = parseKeyValueLines(event.details());
-    addDetailRowIfPresent(fields, "Timestamp", parsed.get("timestamp"));
-    addDetailRowIfPresent(fields, "Source type", parsed.get("sourceType"));
-    addDetailRowIfPresent(fields, "Context ID", parsed.get("contextId"));
-    addDetailRowIfPresent(fields, "Context Name", parsed.get("contextDisplayName"));
-    addDetailRowIfPresent(fields, "Availability", parsed.get("availabilityState"));
-    addDetailRowIfPresent(fields, "Payload type", parsed.get("payloadType"));
+    addDetailRowIfPresent(
+        fields, message("jfrDiagnostics.details.field.timestamp"), parsed.get("timestamp"));
+    addDetailRowIfPresent(
+        fields, message("jfrDiagnostics.details.field.sourceType"), parsed.get("sourceType"));
+    addDetailRowIfPresent(
+        fields, message("jfrDiagnostics.details.field.contextId"), parsed.get("contextId"));
+    addDetailRowIfPresent(
+        fields,
+        message("jfrDiagnostics.details.field.contextName"),
+        parsed.get("contextDisplayName"));
+    addDetailRowIfPresent(
+        fields,
+        message("jfrDiagnostics.details.field.availability"),
+        parsed.get("availabilityState"));
+    addDetailRowIfPresent(
+        fields,
+        message("jfrDiagnostics.details.field.payloadType"),
+        parsed.get("payloadType"));
 
     JTextArea text = new JTextArea(Objects.toString(event.details(), ""));
     text.setEditable(false);
@@ -667,7 +733,8 @@ public final class JfrDiagnosticsPanel extends JPanel {
     text.setCaretPosition(0);
 
     JPanel detailsPanel = new JPanel(new BorderLayout(0, 6));
-    detailsPanel.add(new JLabel("Details"), BorderLayout.NORTH);
+    detailsPanel.add(
+        new JLabel(message("jfrDiagnostics.details.section.details")), BorderLayout.NORTH);
     detailsPanel.add(new JScrollPane(text), BorderLayout.CENTER);
 
     root.add(fields, BorderLayout.NORTH);
@@ -712,7 +779,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
   }
 
   private static String formatInstant(Instant at) {
-    return at == null ? "n/a" : TIME_FMT.format(at);
+    return at == null ? message("jfrDiagnostics.value.unavailable") : TIME_FMT.format(at);
   }
 
   private static String toGb(long bytes) {
@@ -736,10 +803,10 @@ public final class JfrDiagnosticsPanel extends JPanel {
     @Override
     public String getColumnName(int column) {
       return switch (column) {
-        case COL_TIME -> "Time";
-        case COL_LEVEL -> "Level";
-        case COL_TYPE -> "Event";
-        case COL_SUMMARY -> "Summary";
+        case COL_TIME -> message("jfrDiagnostics.column.time");
+        case COL_LEVEL -> message("jfrDiagnostics.column.level");
+        case COL_TYPE -> message("jfrDiagnostics.column.event");
+        case COL_SUMMARY -> message("jfrDiagnostics.column.summary");
         default -> "";
       };
     }
@@ -786,7 +853,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
 
   private static final class CircularGauge extends JComponent {
     private final String title;
-    private String valueLabel = "n/a";
+    private String valueLabel = message("jfrDiagnostics.value.unavailable");
     private int valuePercent = -1;
     private boolean alert;
     private boolean pulse;
@@ -799,7 +866,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
     }
 
     private void setGauge(String valueLabel, int valuePercent, boolean alert, boolean pulse) {
-      this.valueLabel = Objects.toString(valueLabel, "n/a");
+      this.valueLabel = Objects.toString(valueLabel, message("jfrDiagnostics.value.unavailable"));
       this.valuePercent = valuePercent;
       this.alert = alert;
       this.pulse = pulse;

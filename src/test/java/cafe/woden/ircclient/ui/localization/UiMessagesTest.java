@@ -218,6 +218,24 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesJfrDiagnosticsPanelMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("JFR Diagnostics", messages.text("jfrDiagnostics.title"));
+    assertEquals("Rows: 4", messages.text("jfrDiagnostics.rowsLabel", 4));
+    assertEquals("Enable JFR diagnostics", messages.text("jfrDiagnostics.control.enable"));
+    assertEquals(
+        "Capture and export a memory diagnostics bundle (JFR, histogram, heap dump)",
+        messages.text("jfrDiagnostics.button.exportMemory.tooltip"));
+    assertEquals("Events (2m)", messages.text("jfrDiagnostics.summary.gc.eventsWindow"));
+    assertEquals("Export Memory Bundle", messages.text("jfrDiagnostics.export.title"));
+    assertEquals(
+        "Memory diagnostics export failed:\n\nboom",
+        messages.text("jfrDiagnostics.export.error.message", "boom"));
+    assertEquals("Summary", messages.text("jfrDiagnostics.column.summary"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 
