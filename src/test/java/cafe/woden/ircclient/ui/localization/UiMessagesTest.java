@@ -351,6 +351,31 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesHistoryStoragePreferencesMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("History & Storage", messages.text("preferences.history.title"));
+    assertEquals(
+        "Scrolling & Loading", messages.text("preferences.history.tab.scrollingLoading"));
+    assertEquals(
+        "Initial load (lines)", messages.text("preferences.history.field.initialLoadLines"));
+    assertEquals(
+        "Smooth mousewheel scrolling in chat transcripts",
+        messages.text("preferences.history.smoothWheelScrolling.enabled"));
+    assertEquals(
+        "Max live lines kept per target (channel/query/status) in memory.\n"
+            + "When exceeded, oldest lines are trimmed automatically.\n"
+            + "Set to 0 to disable trimming.",
+        messages.text("preferences.history.transcriptMaxLines.tooltip"));
+    assertEquals(
+        "Enable chat logging (store messages to local DB)",
+        messages.text("preferences.logging.enabled"));
+    assertEquals(
+        "Open Server Auto-Join Settings…",
+        messages.text("preferences.logging.managePmList.button"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 
