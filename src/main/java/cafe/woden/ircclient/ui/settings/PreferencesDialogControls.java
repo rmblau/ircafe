@@ -24,6 +24,7 @@ import cafe.woden.ircclient.ui.chat.NickColorService;
 import cafe.woden.ircclient.ui.chat.NickColorSettingsBus;
 import cafe.woden.ircclient.ui.chat.transcript.rebuild.TranscriptRebuildService;
 import cafe.woden.ircclient.ui.filter.FilterSettingsBus;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.nickcolors.NickColorOverridesDialog;
 import cafe.woden.ircclient.ui.servers.ServerDialogs;
 import cafe.woden.ircclient.ui.settings.appearance.AppearancePreferencesSection;
@@ -402,11 +403,12 @@ record PreferencesDialogControls(
 
   List<PreferencesDialogWindowSupport.Tab> tabs(
       Component owner,
+      UiMessages messages,
       IrcEventNotificationsTabSupport.RuleEditor ircEventRuleEditor,
       NotificationsPanelSupport.NotificationRuleEditor notificationRuleEditor) {
     return PreferencesDialogTabsSupport.buildTabs(
         new PreferencesDialogTabsSupport.TabRequest(
-            owner, this, ircEventRuleEditor, notificationRuleEditor));
+            owner, this, messages, ircEventRuleEditor, notificationRuleEditor));
   }
 
   PreferencesApplySupport.ApplyRequest applyRequest(

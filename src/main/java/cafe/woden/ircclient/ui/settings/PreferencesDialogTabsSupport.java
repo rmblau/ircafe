@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.chat.ChatPanelSupport;
 import cafe.woden.ircclient.ui.settings.commands.UserCommandsPanelSupport;
 import cafe.woden.ircclient.ui.settings.ctcp.CtcpAutoReplySupport;
@@ -23,6 +24,7 @@ final class PreferencesDialogTabsSupport {
 
   static List<PreferencesDialogWindowSupport.Tab> buildTabs(TabRequest request) {
     PreferencesDialogControls controls = request.controls();
+    UiMessages messages = request.messages();
     JPanel memoryPanel =
         MemoryPanelSupport.buildPanel(
             controls.memoryUsageDisplayMode(),
@@ -75,28 +77,39 @@ final class PreferencesDialogTabsSupport {
     JPanel filtersPanel = FiltersPanelSupport.buildPanel(controls.filters());
 
     return List.of(
-        new PreferencesDialogWindowSupport.Tab("Appearance", controls.appearance().panel()),
-        new PreferencesDialogWindowSupport.Tab("Memory", memoryPanel),
-        new PreferencesDialogWindowSupport.Tab("Startup", startupPanel),
-        new PreferencesDialogWindowSupport.Tab("Tray & Notifications", trayPanel),
-        new PreferencesDialogWindowSupport.Tab("Chat", chatPanel),
-        new PreferencesDialogWindowSupport.Tab("Translation", controls.translation().panel()),
-        new PreferencesDialogWindowSupport.Tab("CTCP Replies", ctcpRepliesPanel),
-        new PreferencesDialogWindowSupport.Tab("IRCv3", ircv3Panel),
-        new PreferencesDialogWindowSupport.Tab("Embeds & Previews", embedsPanel),
-        new PreferencesDialogWindowSupport.Tab("History & Storage", historyStoragePanel),
-        new PreferencesDialogWindowSupport.Tab("Notifications", notificationsPanel),
-        new PreferencesDialogWindowSupport.Tab("Commands", commandsPanel),
-        new PreferencesDialogWindowSupport.Tab("Diagnostics", diagnosticsPanel),
-        new PreferencesDialogWindowSupport.Tab("Filters", filtersPanel),
-        new PreferencesDialogWindowSupport.Tab("Network", controls.network().networkPanel()),
         new PreferencesDialogWindowSupport.Tab(
-            "User lookups", controls.network().userLookupsPanel()));
+            messages.text("preferences.tab.appearance"), controls.appearance().panel()),
+        new PreferencesDialogWindowSupport.Tab(messages.text("preferences.tab.memory"), memoryPanel),
+        new PreferencesDialogWindowSupport.Tab(messages.text("preferences.tab.startup"), startupPanel),
+        new PreferencesDialogWindowSupport.Tab(
+            messages.text("preferences.tab.trayNotifications"), trayPanel),
+        new PreferencesDialogWindowSupport.Tab(messages.text("preferences.tab.chat"), chatPanel),
+        new PreferencesDialogWindowSupport.Tab(
+            messages.text("preferences.tab.translation"), controls.translation().panel()),
+        new PreferencesDialogWindowSupport.Tab(
+            messages.text("preferences.tab.ctcpReplies"), ctcpRepliesPanel),
+        new PreferencesDialogWindowSupport.Tab(messages.text("preferences.tab.ircv3"), ircv3Panel),
+        new PreferencesDialogWindowSupport.Tab(
+            messages.text("preferences.tab.embedsPreviews"), embedsPanel),
+        new PreferencesDialogWindowSupport.Tab(
+            messages.text("preferences.tab.historyStorage"), historyStoragePanel),
+        new PreferencesDialogWindowSupport.Tab(
+            messages.text("preferences.tab.notifications"), notificationsPanel),
+        new PreferencesDialogWindowSupport.Tab(
+            messages.text("preferences.tab.commands"), commandsPanel),
+        new PreferencesDialogWindowSupport.Tab(
+            messages.text("preferences.tab.diagnostics"), diagnosticsPanel),
+        new PreferencesDialogWindowSupport.Tab(messages.text("preferences.tab.filters"), filtersPanel),
+        new PreferencesDialogWindowSupport.Tab(
+            messages.text("preferences.tab.network"), controls.network().networkPanel()),
+        new PreferencesDialogWindowSupport.Tab(
+            messages.text("preferences.tab.userLookups"), controls.network().userLookupsPanel()));
   }
 
   record TabRequest(
       Component owner,
       PreferencesDialogControls controls,
+      UiMessages messages,
       IrcEventNotificationsTabSupport.RuleEditor ircEventRuleEditor,
       NotificationsPanelSupport.NotificationRuleEditor notificationRuleEditor) {}
 }

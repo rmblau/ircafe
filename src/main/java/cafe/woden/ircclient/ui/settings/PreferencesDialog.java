@@ -21,6 +21,7 @@ import cafe.woden.ircclient.ui.chat.NickColorSettingsBus;
 import cafe.woden.ircclient.ui.chat.embed.EmbedLoadPolicyBus;
 import cafe.woden.ircclient.ui.chat.transcript.rebuild.TranscriptRebuildService;
 import cafe.woden.ircclient.ui.filter.FilterSettingsBus;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.nickcolors.NickColorOverridesDialog;
 import cafe.woden.ircclient.ui.servers.ServerDialogs;
 import cafe.woden.ircclient.ui.settings.appearance.AppearanceLivePreviewSession;
@@ -93,6 +94,7 @@ public class PreferencesDialog {
   private final ExecutorService pushyTestExecutor;
   private final ExecutorService notificationRuleTestExecutor;
   private final Ircv3ExtensionCatalog ircv3ExtensionCatalog;
+  private final UiMessages messages;
 
   private JDialog dialog;
 
@@ -165,7 +167,8 @@ public class PreferencesDialog {
         translationSettingsBus,
         pushyTestExecutor,
         notificationRuleTestExecutor,
-        Ircv3ExtensionCatalog.builtInCatalog());
+        Ircv3ExtensionCatalog.builtInCatalog(),
+        UiMessages.bundledDefaults());
   }
 
   @Autowired
@@ -204,7 +207,8 @@ public class PreferencesDialog {
       @Qualifier(ExecutorConfig.PREFERENCES_PUSHY_TEST_EXECUTOR) ExecutorService pushyTestExecutor,
       @Qualifier(ExecutorConfig.PREFERENCES_NOTIFICATION_RULE_TEST_EXECUTOR)
           ExecutorService notificationRuleTestExecutor,
-      Ircv3ExtensionCatalog ircv3ExtensionCatalog) {
+      Ircv3ExtensionCatalog ircv3ExtensionCatalog,
+      UiMessages messages) {
     this.settingsBus = settingsBus;
     this.embedCardStyleBus = embedCardStyleBus;
     this.themeManager = themeManager;
@@ -243,6 +247,7 @@ public class PreferencesDialog {
         ircv3ExtensionCatalog == null
             ? Ircv3ExtensionCatalog.builtInCatalog()
             : ircv3ExtensionCatalog;
+    this.messages = Objects.requireNonNull(messages, "messages");
     if (this.pushyTestExecutor.isShutdown()) {
       throw new IllegalArgumentException("pushyTestExecutor must be active");
     }
@@ -317,10 +322,13 @@ public class PreferencesDialog {
     AppearanceLivePreviewSession appearancePreview = controls.appearance().preview();
     List<PreferencesDialogWindowSupport.Tab> tabs =
         controls.tabs(
-            dialog, this::promptIrcEventNotificationRuleDialog, this::promptNotificationRuleDialog);
+            dialog,
+            messages,
+            this::promptIrcEventNotificationRuleDialog,
+            this::promptNotificationRuleDialog);
 
     PreferencesDialogActionButtonsSupport.Buttons buttons =
-        PreferencesDialogActionButtonsSupport.build();
+        PreferencesDialogActionButtonsSupport.build(messages);
     NotificationRulesControlsSupport.attachValidation(
         controls.notifications(), buttons.apply(), buttons.ok());
 
@@ -381,6 +389,7 @@ public class PreferencesDialog {
             doApply,
             buttons,
             tabs,
+            messages,
             dialog -> this.dialog = dialog,
             closedDialog -> {
               if (this.dialog == closedDialog) this.dialog = null;

@@ -294,6 +294,18 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesPreferencesDialogChromeMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Preferences", messages.text("preferences.title"));
+    assertEquals("Apply", messages.text("preferences.button.apply"));
+    assertEquals("OK", messages.text("preferences.button.ok"));
+    assertEquals("Tray & Notifications", messages.text("preferences.tab.trayNotifications"));
+    assertEquals("Embeds & Previews", messages.text("preferences.tab.embedsPreviews"));
+    assertEquals("User lookups", messages.text("preferences.tab.userLookups"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 
