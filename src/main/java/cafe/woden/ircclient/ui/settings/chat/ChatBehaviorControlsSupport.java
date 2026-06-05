@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.chat;
 
 import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
@@ -17,23 +18,24 @@ record TypingTreeIndicatorStyleOption(String id, String label) {}
 record MatrixUserListNameDisplayModeOption(String id, String label) {}
 
 public final class ChatBehaviorControlsSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private ChatBehaviorControlsSupport() {}
 
   public static JCheckBox buildPresenceFoldsCheckbox(UiSettings current) {
-    JCheckBox presenceFolds = new JCheckBox("Fold join/part/quit spam into a compact block");
+    JCheckBox presenceFolds =
+        new JCheckBox(MESSAGES.text("preferences.chat.behavior.presenceFolds"));
     presenceFolds.setSelected(current.presenceFoldsEnabled());
     presenceFolds.setToolTipText(
-        "When enabled, runs of join/part/quit/nick-change events are folded into a single expandable block.\n"
-            + "When disabled, each event is shown as its own status line.");
+        MESSAGES.text("preferences.chat.behavior.presenceFolds.tooltip"));
     return presenceFolds;
   }
 
   public static JCheckBox buildCtcpRequestsInActiveTargetCheckbox(UiSettings current) {
-    JCheckBox ctcp = new JCheckBox("Show inbound CTCP requests in the currently active chat tab");
+    JCheckBox ctcp = new JCheckBox(MESSAGES.text("preferences.chat.behavior.ctcpActiveTarget"));
     ctcp.setSelected(current.ctcpRequestsInActiveTargetEnabled());
     ctcp.setToolTipText(
-        "When enabled, inbound CTCP requests (e.g. VERSION, PING) are announced in the currently active chat tab.\n"
-            + "When disabled, CTCP requests are routed to the target they came from (channel or PM).");
+        MESSAGES.text("preferences.chat.behavior.ctcpActiveTarget.tooltip"));
     return ctcp;
   }
 
@@ -42,101 +44,102 @@ public final class ChatBehaviorControlsSupport {
     JTextField field =
         new JTextField(runtimeConfig != null ? runtimeConfig.readDefaultQuitMessage() : "");
     field.setToolTipText(
-        "Used when /quit has no explicit reason, and when IRCafe closes IRC connections during shutdown.");
+        MESSAGES.text("preferences.chat.behavior.defaultQuitMessage.tooltip"));
     return field;
   }
 
   public static JCheckBox buildNickCompletionCycleWithTabCheckbox(boolean cycleWithTabEnabled) {
-    JCheckBox checkbox = new JCheckBox("Cycle matching nicks with repeated Tab");
+    JCheckBox checkbox =
+        new JCheckBox(MESSAGES.text("preferences.chat.behavior.nickCompletion.cycleWithTab"));
     checkbox.setSelected(cycleWithTabEnabled);
     checkbox.setToolTipText(
-        "When enabled, Tab replaces the current token with the next matching nick instead of opening the completion popup.\n"
-            + "Press Tab again to cycle through the available matches.");
+        MESSAGES.text("preferences.chat.behavior.nickCompletion.cycleWithTab.tooltip"));
     return checkbox;
   }
 
   public static JCheckBox buildNickCompletionAppendAddressSuffixCheckbox(
       boolean appendAddressSuffixEnabled) {
     JCheckBox checkbox =
-        new JCheckBox("Append ': ' after completing a nick at the start of a line");
+        new JCheckBox(
+            MESSAGES.text("preferences.chat.behavior.nickCompletion.appendAddressSuffix"));
     checkbox.setSelected(appendAddressSuffixEnabled);
     checkbox.setToolTipText(
-        "When enabled, first-word nick completion addresses the user as \"nick: \".\n"
-            + "Nick completion elsewhere in the message is unchanged.");
+        MESSAGES.text("preferences.chat.behavior.nickCompletion.appendAddressSuffix.tooltip"));
     return checkbox;
   }
 
   public static JCheckBox buildOutgoingDeliveryIndicatorsCheckbox(UiSettings current) {
     JCheckBox checkbox =
-        new JCheckBox("Show send-status indicators for my outgoing messages (spinner + green dot)");
+        new JCheckBox(MESSAGES.text("preferences.chat.behavior.outgoingDeliveryIndicators"));
     checkbox.setSelected(current.outgoingDeliveryIndicatorsEnabled());
     checkbox.setToolTipText(
-        "When enabled, outgoing messages show a pending spinner and a brief green confirmation dot when server echo reconciliation completes.\n"
-            + "When disabled, these visual indicators are hidden; message send/reconcile behavior is unchanged.");
+        MESSAGES.text("preferences.chat.behavior.outgoingDeliveryIndicators.tooltip"));
     return checkbox;
   }
 
   public static JCheckBox buildTypingIndicatorsSendCheckbox(UiSettings current) {
-    JCheckBox checkbox = new JCheckBox("Send typing indicators (IRCv3)");
+    JCheckBox checkbox = new JCheckBox(MESSAGES.text("preferences.ircv3.typing.send"));
     checkbox.setSelected(current.typingIndicatorsEnabled());
     checkbox.setToolTipText(
-        "When enabled, IRCafe will send your IRCv3 typing state (active/paused/done) when the server supports it.");
+        MESSAGES.text("preferences.ircv3.typing.send.tooltip"));
     return checkbox;
   }
 
   public static JCheckBox buildTypingIndicatorsReceiveCheckbox(UiSettings current) {
-    JCheckBox checkbox = new JCheckBox("Display incoming typing indicators (IRCv3)");
+    JCheckBox checkbox = new JCheckBox(MESSAGES.text("preferences.ircv3.typing.receive"));
     checkbox.setSelected(current.typingIndicatorsReceiveEnabled());
     checkbox.setToolTipText(
-        "When enabled, IRCafe will display incoming IRCv3 typing indicators from other users.");
+        MESSAGES.text("preferences.ircv3.typing.receive.tooltip"));
     return checkbox;
   }
 
   public static JCheckBox buildTypingIndicatorsTreeDisplayCheckbox(UiSettings current) {
-    JCheckBox checkbox = new JCheckBox("Show typing marker next to channels");
+    JCheckBox checkbox = new JCheckBox(MESSAGES.text("preferences.ircv3.typing.treeDisplay"));
     checkbox.setSelected(current.typingIndicatorsTreeEnabled());
     checkbox.setToolTipText(
-        "Controls typing markers in the server tree channel list.\n"
-            + "Typing transport behavior is unchanged.");
+        MESSAGES.text("preferences.ircv3.typing.treeDisplay.tooltip"));
     return checkbox;
   }
 
   public static JCheckBox buildTypingIndicatorsUsersListDisplayCheckbox(UiSettings current) {
-    JCheckBox checkbox = new JCheckBox("Show typing marker next to users");
+    JCheckBox checkbox =
+        new JCheckBox(MESSAGES.text("preferences.ircv3.typing.usersListDisplay"));
     checkbox.setSelected(current.typingIndicatorsUsersListEnabled());
     checkbox.setToolTipText(
-        "Controls typing markers beside nicknames in the channel user list.\n"
-            + "Typing transport behavior is unchanged.");
+        MESSAGES.text("preferences.ircv3.typing.usersListDisplay.tooltip"));
     return checkbox;
   }
 
   public static JCheckBox buildTypingIndicatorsTranscriptDisplayCheckbox(UiSettings current) {
-    JCheckBox checkbox = new JCheckBox("Show typing status in the transcript input area");
+    JCheckBox checkbox =
+        new JCheckBox(MESSAGES.text("preferences.ircv3.typing.transcriptDisplay"));
     checkbox.setSelected(current.typingIndicatorsTranscriptEnabled());
     checkbox.setToolTipText(
-        "Controls the incoming typing banner above the input field (\"X is typing\").\n"
-            + "Typing transport behavior is unchanged.");
+        MESSAGES.text("preferences.ircv3.typing.transcriptDisplay.tooltip"));
     return checkbox;
   }
 
   public static JCheckBox buildTypingIndicatorsSendSignalDisplayCheckbox(UiSettings current) {
-    JCheckBox checkbox = new JCheckBox("Show local typing-send arrows near Send");
+    JCheckBox checkbox =
+        new JCheckBox(MESSAGES.text("preferences.ircv3.typing.sendSignalDisplay"));
     checkbox.setSelected(current.typingIndicatorsSendSignalEnabled());
     checkbox.setToolTipText(
-        "Controls the local send telemetry arrows near the Send button.\n"
-            + "Typing transport behavior is unchanged.");
+        MESSAGES.text("preferences.ircv3.typing.sendSignalDisplay.tooltip"));
     return checkbox;
   }
 
   public static JComboBox<?> buildTypingTreeIndicatorStyleCombo(UiSettings current) {
     TypingTreeIndicatorStyleOption[] options =
         new TypingTreeIndicatorStyleOption[] {
-          new TypingTreeIndicatorStyleOption("dots", "3 dots (ellipsis)"),
-          new TypingTreeIndicatorStyleOption("keyboard", "Keyboard glyph"),
-          new TypingTreeIndicatorStyleOption("glow-dot", "Glowing green dot")
+          new TypingTreeIndicatorStyleOption(
+              "dots", MESSAGES.text("preferences.ircv3.typing.treeStyle.dots")),
+          new TypingTreeIndicatorStyleOption(
+              "keyboard", MESSAGES.text("preferences.ircv3.typing.treeStyle.keyboard")),
+          new TypingTreeIndicatorStyleOption(
+              "glow-dot", MESSAGES.text("preferences.ircv3.typing.treeStyle.glowDot"))
         };
     JComboBox<TypingTreeIndicatorStyleOption> combo = new JComboBox<>(options);
-    combo.setToolTipText("Choose how typing activity appears in the server tree for channels.");
+    combo.setToolTipText(MESSAGES.text("preferences.ircv3.typing.treeStyle.tooltip"));
     combo.setRenderer(
         new DefaultListCellRenderer() {
           @Override
@@ -167,13 +170,14 @@ public final class ChatBehaviorControlsSupport {
   public static JComboBox<?> buildMatrixUserListNameDisplayModeCombo(UiSettings current) {
     MatrixUserListNameDisplayModeOption[] options =
         new MatrixUserListNameDisplayModeOption[] {
-          new MatrixUserListNameDisplayModeOption("compact", "Display name only (compact)"),
           new MatrixUserListNameDisplayModeOption(
-              "verbose", "Display name + Matrix user ID (verbose)")
+              "compact", MESSAGES.text("preferences.ircv3.matrixNames.compact")),
+          new MatrixUserListNameDisplayModeOption(
+              "verbose", MESSAGES.text("preferences.ircv3.matrixNames.verbose"))
         };
     JComboBox<MatrixUserListNameDisplayModeOption> combo = new JComboBox<>(options);
     combo.setToolTipText(
-        "Controls how Matrix users are shown in the channel user list (display name only or display name with Matrix user ID).");
+        MESSAGES.text("preferences.ircv3.matrixNames.tooltip"));
     combo.setRenderer(
         new DefaultListCellRenderer() {
           @Override
@@ -202,11 +206,11 @@ public final class ChatBehaviorControlsSupport {
   }
 
   public static JCheckBox buildServerTreeNotificationBadgesCheckbox(UiSettings current) {
-    JCheckBox checkbox = new JCheckBox("Show unread/highlight badges in the server tree");
+    JCheckBox checkbox =
+        new JCheckBox(MESSAGES.text("preferences.ircv3.serverTreeBadges.enabled"));
     checkbox.setSelected(current.serverTreeNotificationBadgesEnabled());
     checkbox.setToolTipText(
-        "When enabled, the server tree shows numeric unread/highlight badges next to targets.\n"
-            + "When disabled, badge counts are hidden but unread/highlight tracking still runs.");
+        MESSAGES.text("preferences.ircv3.serverTreeBadges.tooltip"));
     return checkbox;
   }
 
@@ -218,7 +222,7 @@ public final class ChatBehaviorControlsSupport {
         PreferencesUiSupport.numberSpinner(
             SettingsRangeSupport.normalizeServerTreeUnreadBadgeScalePercent(current), 50, 150, 5);
     spinner.setToolTipText(
-        "Scale for unread/highlight count badges in the server tree. Lower values make badges and numbers smaller.");
+        MESSAGES.text("preferences.ircv3.serverTreeBadgeScale.tooltip"));
     return spinner;
   }
 

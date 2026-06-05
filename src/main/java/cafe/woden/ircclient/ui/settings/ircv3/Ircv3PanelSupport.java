@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.settings.ircv3;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionCatalog;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionRegistry;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.util.MigConstraints;
 import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
@@ -26,6 +27,8 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 
 public final class Ircv3PanelSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private Ircv3PanelSupport() {}
 
   public static Ircv3CapabilitiesControls buildCapabilitiesControls(
@@ -89,7 +92,7 @@ public final class Ircv3PanelSupport {
 
         JButton help =
             PreferencesUiSupport.whyHelpButton(helpTitle(definition), helpMessage(definition));
-        help.setToolTipText("What does this capability do in IRCafe?");
+        help.setToolTipText(MESSAGES.text("preferences.ircv3.capabilityHelp.tooltip"));
 
         JPanel row = new JPanel(MigLayouts.fillX("[grow,fill]4[]", "[]"));
         row.setOpaque(false);
@@ -122,24 +125,19 @@ public final class Ircv3PanelSupport {
             MigLayouts.fillWrapWithHideMode(
                 12, 1, 3, MigLayoutConstraints.GROW_FILL, "[]8[]8[grow,fill]"));
 
-    form.add(PreferencesUiSupport.tabTitle("IRCv3"), MigConstraints.growXMinWidth0Wrap());
+    form.add(
+        PreferencesUiSupport.tabTitle(MESSAGES.text("preferences.ircv3.title")),
+        MigConstraints.growXMinWidth0Wrap());
     form.add(
         PreferencesUiSupport.subtleInfoTextWith(
-            "Typing and capability settings for modern IRCv3 features. Capability changes apply on reconnect."),
+            MESSAGES.text("preferences.ircv3.subtitle")),
         MigConstraints.growXMinWidth0Wrap());
 
     JButton typingHelp =
         PreferencesUiSupport.whyHelpButton(
-            "Typing indicators",
-            "What it is:\n"
-                + "Typing indicators show when someone is actively typing or has paused.\n\n"
-                + "Impact in IRCafe:\n"
-                + "- Send: broadcasts your typing state to peers when supported.\n"
-                + "- Display: shows incoming typing state in the active UI.\n\n"
-                + "If disabled:\n"
-                + "- Send disabled: IRCafe won't broadcast your typing state.\n"
-                + "- Display disabled: IRCafe won't render incoming typing indicators.");
-    typingHelp.setToolTipText("How typing indicators affect IRCafe");
+            MESSAGES.text("preferences.ircv3.typing.help.title"),
+            MESSAGES.text("preferences.ircv3.typing.help.message"));
+    typingHelp.setToolTipText(MESSAGES.text("preferences.ircv3.typing.help.tooltip"));
 
     JPanel typingRow =
         new JPanel(
@@ -147,7 +145,7 @@ public final class Ircv3PanelSupport {
                 8, 1, 3, MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING, MigLayouts.rows(5, 2)));
     typingRow.setBorder(
         BorderFactory.createCompoundBorder(
-            BorderFactory.createTitledBorder("Typing indicators"),
+            BorderFactory.createTitledBorder(MESSAGES.text("preferences.ircv3.typing.section")),
             BorderFactory.createEmptyBorder(4, 6, 4, 6)));
     typingRow.setOpaque(false);
     typingRow.add(typingIndicatorsSendEnabled, MigConstraints.growXMinWidthSplit(0, 2));
@@ -156,7 +154,7 @@ public final class Ircv3PanelSupport {
 
     JPanel treeStyleRow = new JPanel(MigLayouts.fillX(MigLayoutConstraints.ROW_8_GROW_FILL, "[]"));
     treeStyleRow.setOpaque(false);
-    treeStyleRow.add(new JLabel("Server tree marker style"));
+    treeStyleRow.add(new JLabel(MESSAGES.text("preferences.ircv3.field.serverTreeMarkerStyle")));
     treeStyleRow.add(typingTreeIndicatorStyle, MigConstraints.growXMinWidth(180));
     typingRow.add(treeStyleRow, MigConstraints.growXMinWidth0());
 
@@ -174,7 +172,7 @@ public final class Ircv3PanelSupport {
     JPanel matrixNamesRow =
         new JPanel(MigLayouts.fillX(MigLayoutConstraints.ROW_8_GROW_FILL, "[]"));
     matrixNamesRow.setOpaque(false);
-    matrixNamesRow.add(new JLabel("Matrix user list names"));
+    matrixNamesRow.add(new JLabel(MESSAGES.text("preferences.ircv3.field.matrixUserListNames")));
     matrixNamesRow.add(matrixUserListNameDisplayMode, MigConstraints.growXMinWidth(220));
     typingRow.add(matrixNamesRow, MigConstraints.growXMinWidth0());
 
@@ -182,19 +180,14 @@ public final class Ircv3PanelSupport {
 
     JPanel badgeScaleRow = new JPanel(MigLayouts.fillX("[]8[]6[]", "[]"));
     badgeScaleRow.setOpaque(false);
-    badgeScaleRow.add(new JLabel("Unread badge size"));
+    badgeScaleRow.add(new JLabel(MESSAGES.text("preferences.ircv3.field.unreadBadgeSize")));
     badgeScaleRow.add(serverTreeUnreadBadgeScalePercent, MigConstraints.width(90));
     badgeScaleRow.add(new JLabel("%"));
     typingRow.add(badgeScaleRow, MigConstraints.growXMinWidth0());
 
     JTextArea typingImpact = PreferencesUiSupport.subtleInfoText();
     typingImpact.setText(
-        "Send controls your outbound typing state; Display controls incoming typing state from others.\n"
-            + "Display toggles control where typing hints render: server tree, user list, transcript, and send telemetry arrows.\n"
-            + "Matrix user list names controls whether Matrix users render as display name only or as display name + Matrix user ID.\n"
-            + "Server tree marker style controls the channel typing activity indicator.\n"
-            + "Show unread/highlight badges toggles server tree notification count badges.\n"
-            + "Unread badge size scales channel unread/highlight count badges in the server tree.");
+        MESSAGES.text("preferences.ircv3.typing.impact"));
     typingImpact.setBorder(BorderFactory.createEmptyBorder(0, 18, 0, 0));
 
     JPanel typingTab =
@@ -211,13 +204,13 @@ public final class Ircv3PanelSupport {
                 8, 1, 3, MigLayoutConstraints.GROW_FILL, MigLayoutConstraints.ROW_6_GROW_FILL));
     capabilityBlock.setBorder(
         BorderFactory.createCompoundBorder(
-            BorderFactory.createTitledBorder("Requested capabilities"),
+            BorderFactory.createTitledBorder(
+                MESSAGES.text("preferences.ircv3.capabilities.section")),
             BorderFactory.createEmptyBorder(4, 6, 6, 6)));
     capabilityBlock.setOpaque(false);
     capabilityBlock.add(
         PreferencesUiSupport.subtleInfoTextWith(
-            "These capabilities are requested during CAP negotiation.\n"
-                + "Changes apply on new connections or reconnect."),
+            MESSAGES.text("preferences.ircv3.capabilities.help")),
         MigConstraints.growXMinWidth0Wrap());
 
     JScrollPane capabilityScroll =
@@ -242,22 +235,26 @@ public final class Ircv3PanelSupport {
     typingHeader.setHorizontalAlignment(SwingConstants.LEFT);
     typingHeader.setFocusable(false);
     typingHeader.setMargin(new Insets(6, 10, 6, 10));
-    typingHeader.setToolTipText("Show typing-indicator settings");
+    typingHeader.setToolTipText(MESSAGES.text("preferences.ircv3.accordion.typing.tooltip"));
 
     JButton capabilitiesHeader = new JButton();
     capabilitiesHeader.setHorizontalAlignment(SwingConstants.LEFT);
     capabilitiesHeader.setFocusable(false);
     capabilitiesHeader.setMargin(new Insets(6, 10, 6, 10));
-    capabilitiesHeader.setToolTipText("Show requested IRCv3 capabilities");
+    capabilitiesHeader.setToolTipText(
+        MESSAGES.text("preferences.ircv3.accordion.capabilities.tooltip"));
 
     final boolean[] typingExpanded = new boolean[] {true};
     final boolean[] capabilitiesExpanded = new boolean[] {false};
 
     Runnable refreshAccordion =
         () -> {
-          typingHeader.setText((typingExpanded[0] ? "▾ " : "▸ ") + "Typing indicators");
+          typingHeader.setText(
+              (typingExpanded[0] ? "▾ " : "▸ ")
+                  + MESSAGES.text("preferences.ircv3.typing.section"));
           capabilitiesHeader.setText(
-              (capabilitiesExpanded[0] ? "▾ " : "▸ ") + "Requested capabilities");
+              (capabilitiesExpanded[0] ? "▾ " : "▸ ")
+                  + MESSAGES.text("preferences.ircv3.capabilities.section"));
           typingTab.setVisible(typingExpanded[0]);
           capabilitiesTab.setVisible(capabilitiesExpanded[0]);
           form.revalidate();
@@ -301,18 +298,16 @@ public final class Ircv3PanelSupport {
   }
 
   private static String helpTitle(Ircv3ExtensionRegistry.ExtensionDefinition definition) {
-    return definition.uiMetadata().label() + " (" + definition.requestToken() + ")";
+    return MESSAGES.text(
+        "preferences.ircv3.capabilityHelp.title",
+        definition.uiMetadata().label(),
+        definition.requestToken());
   }
 
   private static String helpMessage(Ircv3ExtensionRegistry.ExtensionDefinition definition) {
-    return "What it is:\n"
-        + "Requests IRCv3 capability \""
-        + definition.requestToken()
-        + "\" during CAP negotiation.\n\n"
-        + "Impact in IRCafe:\n"
-        + definition.uiMetadata().impactSummary()
-        + "\n\n"
-        + "If disabled:\n"
-        + "IRCafe will not request this capability on new connections; related features may be unavailable.";
+    return MESSAGES.text(
+        "preferences.ircv3.capabilityHelp.message",
+        definition.requestToken(),
+        definition.uiMetadata().impactSummary());
   }
 }

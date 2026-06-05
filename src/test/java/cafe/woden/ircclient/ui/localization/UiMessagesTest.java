@@ -476,6 +476,39 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesChatAndIrcv3PreferenceMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Chat", messages.text("preferences.chat.title"));
+    assertEquals("Presence events", messages.text("preferences.chat.field.presenceEvents"));
+    assertEquals(
+        "Fold join/part/quit spam into a compact block",
+        messages.text("preferences.chat.behavior.presenceFolds"));
+    assertEquals(
+        "Spellcheck settings are scoped to the message input bar.",
+        messages.text("preferences.chat.spellcheck.help"));
+    assertEquals("IRCv3", messages.text("preferences.ircv3.title"));
+    assertEquals("Typing indicators", messages.text("preferences.ircv3.typing.section"));
+    assertEquals("Keyboard glyph", messages.text("preferences.ircv3.typing.treeStyle.keyboard"));
+    assertEquals(
+        "Display name + Matrix user ID (verbose)",
+        messages.text("preferences.ircv3.matrixNames.verbose"));
+    assertEquals(
+        "message-tags (message-tags)",
+        messages.text("preferences.ircv3.capabilityHelp.title", "message-tags", "message-tags"));
+    assertEquals(
+        "What it is:\n"
+            + "Requests IRCv3 capability \"message-tags\" during CAP negotiation.\n\n"
+            + "Impact in IRCafe:\nAdds message metadata\n\n"
+            + "If disabled:\n"
+            + "IRCafe will not request this capability on new connections; related features may be unavailable.",
+        messages.text(
+            "preferences.ircv3.capabilityHelp.message",
+            "message-tags",
+            "Adds message metadata"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 
