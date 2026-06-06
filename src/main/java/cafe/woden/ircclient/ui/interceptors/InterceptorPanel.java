@@ -10,6 +10,7 @@ import cafe.woden.ircclient.model.InterceptorRule;
 import cafe.woden.ircclient.model.InterceptorRuleMode;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.util.MigConstraints;
 import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import cafe.woden.ircclient.ui.util.MigLayouts;
@@ -75,8 +76,9 @@ import javax.swing.table.AbstractTableModel;
 public final class InterceptorPanel extends JPanel implements AutoCloseable {
   private static final DateTimeFormatter TIME_FMT =
       DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
-  private static final String RULE_ANY_EVENT_LABEL = "Any Message";
+  private static final String RULE_ANY_EVENT_KEY = "interceptors.rule.event.anyMessage";
   private static final InterceptorRuleMode[] CHANNEL_FILTER_MODES = {
     InterceptorRuleMode.ALL,
     InterceptorRuleMode.NONE,
@@ -99,12 +101,12 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
   private final AtomicLong refreshSeq = new AtomicLong(0L);
   private final AtomicLong pendingLocalDefinitionRefreshSkips = new AtomicLong(0L);
 
-  private final JLabel title = new JLabel("Interceptor");
-  private final JLabel subtitle = new JLabel("Select an interceptor node.");
+  private final JLabel title = new JLabel(message("interceptors.title.single"));
+  private final JLabel subtitle = new JLabel(message("interceptors.subtitle.selectNode"));
   private final JLabel status = new JLabel(" ");
 
   private final JTextField interceptorName = new JTextField();
-  private final JCheckBox enabled = new JCheckBox("Enabled");
+  private final JCheckBox enabled = new JCheckBox(message("interceptors.field.enabled"));
   private final JComboBox<ServerScopeOption> serverScope =
       new JComboBox<>(
           new ServerScopeOption[] {ServerScopeOption.THIS_SERVER, ServerScopeOption.ANY_SERVER});
@@ -116,38 +118,39 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
       new JComboBox<>(CHANNEL_FILTER_MODES.clone());
   private final JTextField excludes = new JTextField();
 
-  private final JCheckBox actionStatusBarEnabled = new JCheckBox("Status bar notice");
-  private final JCheckBox actionToastEnabled = new JCheckBox("Desktop toast");
-  private final JCheckBox actionSoundEnabled = new JCheckBox("Play sound");
+  private final JCheckBox actionStatusBarEnabled = new JCheckBox(message("interceptors.action.statusBar"));
+  private final JCheckBox actionToastEnabled = new JCheckBox(message("interceptors.action.desktopToast"));
+  private final JCheckBox actionSoundEnabled = new JCheckBox(message("interceptors.action.playSound"));
   private final JComboBox<BuiltInSound> actionSoundId = new JComboBox<>(BuiltInSound.valuesForUi());
-  private final JCheckBox actionSoundUseCustom = new JCheckBox("Custom file");
+  private final JCheckBox actionSoundUseCustom = new JCheckBox(message("interceptors.action.customFile"));
   private final JTextField actionSoundCustomPath = new JTextField();
-  private final JButton browseSoundCustomPath = new JButton("Browse...");
-  private final JButton testSound = new JButton("Test sound");
+  private final JButton browseSoundCustomPath = new JButton(message("common.button.browse.ellipsis"));
+  private final JButton testSound = new JButton(message("interceptors.button.testSound"));
 
-  private final JCheckBox actionScriptEnabled = new JCheckBox("Run script");
+  private final JCheckBox actionScriptEnabled = new JCheckBox(message("interceptors.action.runScript"));
   private final JTextField actionScriptPath = new JTextField();
   private final JTextField actionScriptArgs = new JTextField();
   private final JTextField actionScriptWorkingDirectory = new JTextField();
-  private final JButton browseScriptPath = new JButton("Browse...");
-  private final JButton browseScriptWorkingDirectory = new JButton("Browse...");
+  private final JButton browseScriptPath = new JButton(message("common.button.browse.ellipsis"));
+  private final JButton browseScriptWorkingDirectory = new JButton(message("common.button.browse.ellipsis"));
 
-  private final JButton addRule = new JButton("Add...");
-  private final JButton editRule = new JButton("Edit...");
-  private final JButton removeRule = new JButton("Remove");
+  private final JButton addRule = new JButton(message("common.button.add.ellipsis"));
+  private final JButton editRule = new JButton(message("common.button.edit.ellipsis"));
+  private final JButton removeRule = new JButton(message("common.button.remove"));
   private final JPopupMenu rulesPopupMenu = new JPopupMenu();
-  private final JMenuItem rulesPopupEdit = new JMenuItem("Edit...");
-  private final JMenuItem rulesPopupRemove = new JMenuItem("Delete...");
-  private final JButton clearSelectedHits = new JButton("Clear Selected");
-  private final JButton clearHits = new JButton("Clear");
-  private final JButton exportHitsCsv = new JButton("Export CSV");
+  private final JMenuItem rulesPopupEdit = new JMenuItem(message("common.button.edit.ellipsis"));
+  private final JMenuItem rulesPopupRemove = new JMenuItem(message("common.button.delete.ellipsis"));
+  private final JButton clearSelectedHits = new JButton(message("interceptors.button.clearSelected"));
+  private final JButton clearHits = new JButton(message("common.button.clear"));
+  private final JButton exportHitsCsv = new JButton(message("interceptors.button.exportCsv"));
   private final JPopupMenu hitsPopupMenu = new JPopupMenu();
-  private final JMenuItem hitsPopupJumpToMessage = new JMenuItem("Jump to message");
-  private final JMenuItem hitsPopupClearSelected = new JMenuItem("Clear selected row(s)");
-  private final JMenuItem hitsPopupClearAll = new JMenuItem("Clear all rows");
-  private final JMenuItem hitsPopupExportSelectedCsv = new JMenuItem("Export selected to CSV");
-  private final JMenuItem hitsPopupExportAllCsv = new JMenuItem("Export all to CSV");
-  private final JButton createInterceptorButton = new JButton("Create Interceptor");
+  private final JMenuItem hitsPopupJumpToMessage = new JMenuItem(message("interceptors.hits.action.jumpToMessage"));
+  private final JMenuItem hitsPopupClearSelected = new JMenuItem(message("interceptors.hits.action.clearSelected"));
+  private final JMenuItem hitsPopupClearAll = new JMenuItem(message("interceptors.hits.action.clearAll"));
+  private final JMenuItem hitsPopupExportSelectedCsv =
+      new JMenuItem(message("interceptors.hits.action.exportSelectedCsv"));
+  private final JMenuItem hitsPopupExportAllCsv = new JMenuItem(message("interceptors.hits.action.exportAllCsv"));
+  private final JButton createInterceptorButton = new JButton(message("interceptors.button.create"));
 
   private final RulesTableModel rulesModel = new RulesTableModel();
   private final JTable rulesTable = new JTable(rulesModel);
@@ -158,7 +161,7 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
   private final JPanel emptyStatePanel =
       new JPanel(
           MigLayouts.fillWrapWithHideMode(20, 1, 3, "[grow,center]", "[grow]8[]8[]12[][grow]"));
-  private final JLabel emptyStateTitle = new JLabel("Interceptors");
+  private final JLabel emptyStateTitle = new JLabel(message("interceptors.title.overview"));
   private final JLabel emptyStateBody = new JLabel();
   private static final String CENTER_CARD_EDITOR = "editor";
   private static final String CENTER_CARD_EMPTY = "empty";
@@ -171,6 +174,10 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
   private BiConsumer<TargetRef, String> onJumpToMessage = (ref, messageId) -> {};
   private Runnable onLocalDefinitionNameChanged = () -> {};
   private boolean hasExternalStoreChangeRefreshConsumer = false;
+
+  private static String message(String code, Object... args) {
+    return MESSAGES.text(code, args);
+  }
 
   public InterceptorPanel(InterceptorStore store) {
     this(store, VirtualThreads.newSingleThreadExecutor("ircafe-interceptor-panel-refresh"), true);
@@ -276,36 +283,34 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
   }
 
   private void buildBody() {
-    interceptorName.setToolTipText("Name shown in the server tree and interceptor tab.");
-    serverScope.setToolTipText("Match on this server only, or all servers.");
-    includes.setToolTipText(
-        "Include channel patterns (comma/newline separated). Use mode All to match all channels or None to match none.");
-    excludes.setToolTipText(
-        "Exclude channel patterns (comma/newline separated). Use mode All to exclude all channels or None to disable exclusion.");
+    interceptorName.setToolTipText(message("interceptors.name.tooltip"));
+    serverScope.setToolTipText(message("interceptors.serverScope.tooltip"));
+    includes.setToolTipText(message("interceptors.includeChannels.tooltip"));
+    excludes.setToolTipText(message("interceptors.excludeChannels.tooltip"));
     includes.putClientProperty(
-        FlatClientProperties.PLACEHOLDER_TEXT, "e.g. #general, #help, #staff-*");
-    excludes.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "e.g. #offtopic, #bots");
+        FlatClientProperties.PLACEHOLDER_TEXT, message("interceptors.includeChannels.placeholder"));
+    excludes.putClientProperty(
+        FlatClientProperties.PLACEHOLDER_TEXT, message("interceptors.excludeChannels.placeholder"));
 
     serverScope.setRenderer(plainComboRenderer(serverScope));
     includeMode.setRenderer(modeComboRenderer(includeMode));
     excludeMode.setRenderer(modeComboRenderer(excludeMode));
     actionSoundId.setRenderer(soundComboRenderer(actionSoundId));
 
-    actionSoundCustomPath.setToolTipText("Custom sound path relative to runtime config directory.");
+    actionSoundCustomPath.setToolTipText(message("interceptors.soundCustomPath.tooltip"));
     actionSoundCustomPath.setEditable(false);
-    actionScriptPath.setToolTipText("Executable script/program path.");
-    actionScriptArgs.setToolTipText(
-        "Optional script arguments (quote-aware). Environment variables are injected.");
-    actionScriptWorkingDirectory.setToolTipText("Optional working directory for script execution.");
+    actionScriptPath.setToolTipText(message("interceptors.scriptPath.tooltip"));
+    actionScriptArgs.setToolTipText(message("interceptors.scriptArgs.tooltip"));
+    actionScriptWorkingDirectory.setToolTipText(message("interceptors.scriptWorkingDirectory.tooltip"));
     configureActionButtons();
 
     configureRulesTable();
     configureHitsTable();
 
-    tabs.addTab("Definition", buildDefinitionTab());
-    tabs.addTab("Triggers", buildTriggersTab());
-    tabs.addTab("Actions", wrapVerticalScroll(buildActionsTab()));
-    tabs.addTab("Hits", buildHitsTab());
+    tabs.addTab(message("interceptors.tab.definition"), buildDefinitionTab());
+    tabs.addTab(message("interceptors.tab.triggers"), buildTriggersTab());
+    tabs.addTab(message("interceptors.tab.actions"), wrapVerticalScroll(buildActionsTab()));
+    tabs.addTab(message("interceptors.tab.hits"), buildHitsTab());
 
     buildEmptyStatePanel();
     centerPanel.add(tabs, CENTER_CARD_EDITOR);
@@ -345,35 +350,33 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
         new JPanel(
             MigLayouts.fillXWrapWithHideMode(
                 8, 4, 3, "[right][grow,fill]16[right][pref!]", MigLayouts.rows(2, 6)));
-    identity.setBorder(BorderFactory.createTitledBorder("Interceptor"));
-    identity.add(new JLabel("Name:"));
+    identity.setBorder(BorderFactory.createTitledBorder(message("interceptors.section.identity")));
+    identity.add(new JLabel(message("interceptors.field.name")));
     identity.add(interceptorName, MigConstraints.growX());
-    identity.add(new JLabel("Enabled:"));
+    identity.add(new JLabel(message("interceptors.field.enabled.label")));
     identity.add(enabled, MigConstraints.wrap());
-    identity.add(new JLabel("Server scope:"));
+    identity.add(new JLabel(message("interceptors.field.serverScope")));
     identity.add(serverScope, MigConstraints.spanXWidthWrap(3, 170));
 
     JPanel channels =
         new JPanel(
             MigLayouts.fillXWrapWithHideMode(
                 8, 3, 3, "[right][pref!][grow,fill]", MigLayouts.rows(3, 6)));
-    channels.setBorder(BorderFactory.createTitledBorder("Channel Filtering"));
-    channels.add(new JLabel("Include:"));
+    channels.setBorder(BorderFactory.createTitledBorder(message("interceptors.section.channelFiltering")));
+    channels.add(new JLabel(message("interceptors.field.include")));
     channels.add(includeMode, MigConstraints.width(78));
     channels.add(includes, MigConstraints.growXPushXMinWidth0Wrap());
-    channels.add(new JLabel("Exclude:"));
+    channels.add(new JLabel(message("interceptors.field.exclude")));
     channels.add(excludeMode, MigConstraints.width(78));
     channels.add(excludes, MigConstraints.growXPushXMinWidth0Wrap());
     channels.add(
-        wrappedHint(
-            "Use comma, semicolon, or newline-separated patterns. "
-                + "All/None modes override pattern text."),
+        wrappedHint(message("interceptors.channelFiltering.help")),
         MigConstraints.spanXGrowXPushXMinWidth(3, 0));
 
     tab.add(identity, MigConstraints.growXWrap());
     tab.add(channels, MigConstraints.growXWrap());
     tab.add(
-        wrappedHint("Rule editing lives in Triggers; notifications and scripts are under Actions."),
+        wrappedHint(message("interceptors.definition.help")),
         MigConstraints.growXPushXMinWidth0());
     return tab;
   }
@@ -401,7 +404,7 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
     JPanel notifications =
         new JPanel(
             MigLayouts.fillXWrapWithHideMode(8, 2, 3, MigLayoutConstraints.GROW_FILL_PAIR, "[]"));
-    notifications.setBorder(BorderFactory.createTitledBorder("Notifications"));
+    notifications.setBorder(BorderFactory.createTitledBorder(message("interceptors.section.notifications")));
     notifications.add(actionStatusBarEnabled, MigConstraints.growX());
     notifications.add(actionToastEnabled, MigConstraints.growX());
 
@@ -409,13 +412,13 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
         new JPanel(
             MigLayouts.fillXWrapWithHideMode(
                 8, 3, 3, "[pref!][grow,fill][pref!]", MigLayouts.rows(3, 6)));
-    sound.setBorder(BorderFactory.createTitledBorder("Sound"));
+    sound.setBorder(BorderFactory.createTitledBorder(message("interceptors.section.sound")));
     sound.add(actionSoundEnabled, MigConstraints.span2GrowX());
     sound.add(testSound, MigConstraints.widthHeightAlignRightWrap(36, 28));
-    sound.add(new JLabel("Built-in:"));
+    sound.add(new JLabel(message("interceptors.field.builtInSound")));
     sound.add(actionSoundId, MigConstraints.span2GrowXWrap());
     sound.add(actionSoundUseCustom, MigConstraints.spanXWrap(3));
-    sound.add(new JLabel("File:"));
+    sound.add(new JLabel(message("interceptors.field.file")));
     sound.add(actionSoundCustomPath, MigConstraints.growXPushXMinWidth0());
     sound.add(browseSoundCustomPath, MigConstraints.widthHeight(36, 28));
 
@@ -423,14 +426,14 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
         new JPanel(
             MigLayouts.fillXWrapWithHideMode(
                 8, 3, 3, "[pref!][grow,fill][pref!]", MigLayouts.rows(3, 6)));
-    script.setBorder(BorderFactory.createTitledBorder("Script"));
+    script.setBorder(BorderFactory.createTitledBorder(message("interceptors.section.script")));
     script.add(actionScriptEnabled, MigConstraints.spanXWrap(3));
-    script.add(new JLabel("Path:"));
+    script.add(new JLabel(message("interceptors.field.path")));
     script.add(actionScriptPath, MigConstraints.growX());
     script.add(browseScriptPath, MigConstraints.widthHeight(36, 28));
-    script.add(new JLabel("Args:"));
+    script.add(new JLabel(message("interceptors.field.args")));
     script.add(actionScriptArgs, MigConstraints.span2GrowXWrap());
-    script.add(new JLabel("CWD:"));
+    script.add(new JLabel(message("interceptors.field.cwd")));
     script.add(actionScriptWorkingDirectory, MigConstraints.growX());
     script.add(browseScriptWorkingDirectory, MigConstraints.widthHeight(36, 28));
 
@@ -566,7 +569,7 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
     addRule.addActionListener(
         e -> {
           InterceptorRule next =
-              promptRuleDialog("Add Trigger Rule", defaultRule(rulesModel.getRowCount() + 1));
+              promptRuleDialog(message("interceptors.rule.dialog.addTitle"), defaultRule(rulesModel.getRowCount() + 1));
           if (next == null) return;
           int row = rulesModel.addRule(next);
           if (row >= 0) {
@@ -647,7 +650,7 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
     InterceptorRule current = rulesModel.ruleAt(row);
     if (current == null) return;
 
-    InterceptorRule updated = promptRuleDialog("Edit Trigger Rule", current);
+    InterceptorRule updated = promptRuleDialog(message("interceptors.rule.dialog.editTitle"), current);
     if (updated == null) return;
 
     rulesModel.setRule(row, updated);
@@ -722,13 +725,13 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
   private boolean confirmRuleRemoval(int modelRow) {
     InterceptorRule rule = rulesModel.ruleAt(modelRow);
     String label = rule == null ? "" : Objects.toString(rule.label(), "").trim();
-    if (label.isEmpty()) label = "selected rule";
+    if (label.isEmpty()) label = message("interceptors.rule.selectedRuleFallback");
     Window owner = SwingUtilities.getWindowAncestor(this);
     int choice =
         JOptionPane.showConfirmDialog(
             owner,
-            "Delete trigger rule \"" + label + "\"?",
-            "Delete Trigger Rule",
+            message("interceptors.rule.delete.confirm", label),
+            message("interceptors.rule.delete.title"),
             JOptionPane.YES_NO_OPTION,
             JOptionPane.WARNING_MESSAGE);
     return choice == JOptionPane.YES_OPTION;
@@ -861,7 +864,7 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
           boolean cellHasFocus) {
         super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         if (value instanceof InterceptorRuleMode mode) {
-          setText(mode == InterceptorRuleMode.ALL ? "Any" : modeLabel(mode));
+          setText(mode == InterceptorRuleMode.ALL ? message("interceptors.rule.mode.any") : modeLabel(mode));
         }
         applyComboDisplayPalette(this, combo, index);
         return this;
@@ -1000,11 +1003,11 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
   private InterceptorRule promptRuleDialog(String dialogTitle, InterceptorRule seed) {
     InterceptorRule base = seed == null ? defaultRule(rulesModel.getRowCount() + 1) : seed;
 
-    JCheckBox ruleEnabled = new JCheckBox("Enabled", base.enabled());
+    JCheckBox ruleEnabled = new JCheckBox(message("interceptors.field.enabled"), base.enabled());
     JTextField ruleLabel = new JTextField(base.label());
     JCheckBox anyEventType =
         new JCheckBox(
-            RULE_ANY_EVENT_LABEL, Objects.toString(base.eventTypesCsv(), "").trim().isBlank());
+            message(RULE_ANY_EVENT_KEY), Objects.toString(base.eventTypesCsv(), "").trim().isBlank());
     LinkedHashMap<InterceptorEventType, JCheckBox> eventSelectors =
         buildRuleEventSelectors(base.eventTypesCsv());
 
@@ -1013,7 +1016,8 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
     messageMode.setRenderer(ruleDimensionModeComboRenderer(messageMode));
     messageMode.setSelectedItem(base.messageMode());
     JTextField messagePattern = new JTextField(base.messagePattern());
-    messagePattern.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Message pattern");
+    messagePattern.putClientProperty(
+        FlatClientProperties.PLACEHOLDER_TEXT, message("interceptors.rule.message.placeholder"));
 
     String seedMessagePattern = Objects.toString(base.messagePattern(), "").trim();
     String seedCtcpCommand = "";
@@ -1028,26 +1032,29 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
       }
     }
     JTextField ctcpCommand = new JTextField(seedCtcpCommand);
-    ctcpCommand.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "CTCP command");
+    ctcpCommand.putClientProperty(
+        FlatClientProperties.PLACEHOLDER_TEXT, message("interceptors.rule.ctcpCommand.placeholder"));
     JTextField ctcpValue = new JTextField(seedCtcpValue);
-    ctcpValue.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Optional CTCP value");
-    JButton applyCtcpHelper = new JButton("Apply");
+    ctcpValue.putClientProperty(
+        FlatClientProperties.PLACEHOLDER_TEXT, message("interceptors.rule.ctcpValue.placeholder"));
+    JButton applyCtcpHelper = new JButton(message("common.button.apply"));
     configureIconButton(
-        applyCtcpHelper, "check", "Apply CTCP command/value helper to the rule message matcher");
+        applyCtcpHelper, "check", message("interceptors.rule.ctcpHelper.apply.tooltip"));
 
     JComboBox<InterceptorRuleMode> nickMode =
         new JComboBox<>(RULE_DIMENSION_MODES_WITH_ANY.clone());
     nickMode.setRenderer(ruleDimensionModeComboRenderer(nickMode));
     nickMode.setSelectedItem(base.nickMode());
     JTextField nickPattern = new JTextField(base.nickPattern());
-    nickPattern.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Nick pattern");
+    nickPattern.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, message("interceptors.rule.nick.placeholder"));
 
     JComboBox<InterceptorRuleMode> hostmaskMode =
         new JComboBox<>(RULE_DIMENSION_MODES_WITH_ANY.clone());
     hostmaskMode.setRenderer(ruleDimensionModeComboRenderer(hostmaskMode));
     hostmaskMode.setSelectedItem(base.hostmaskMode());
     JTextField hostmaskPattern = new JTextField(base.hostmaskPattern());
-    hostmaskPattern.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Hostmask pattern");
+    hostmaskPattern.putClientProperty(
+        FlatClientProperties.PLACEHOLDER_TEXT, message("interceptors.rule.hostmask.placeholder"));
 
     JPanel panel =
         new JPanel(
@@ -1056,7 +1063,7 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
 
     panel.add(ruleEnabled, MigConstraints.spanXWrap(3));
 
-    panel.add(new JLabel("Label:"));
+    panel.add(new JLabel(message("interceptors.rule.field.label")));
     panel.add(ruleLabel, MigConstraints.span2GrowXPushXMinWidth0Wrap());
 
     JPanel eventsGrid =
@@ -1064,7 +1071,7 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
             MigLayouts.fillXWrapWithHideMode(
                 0, 2, 3, MigLayoutConstraints.GROW_FILL_PAIR, MigLayouts.rows(2, 2)));
     for (JCheckBox selector : eventSelectors.values()) {
-      selector.setToolTipText("Match " + selector.getText() + " events.");
+      selector.setToolTipText(message("interceptors.rule.event.tooltip", selector.getText()));
       eventsGrid.add(selector, MigConstraints.growX());
     }
 
@@ -1089,10 +1096,10 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
         };
     JCheckBox messageEventSelector = eventSelectors.get(InterceptorEventType.MESSAGE);
 
-    panel.add(new JLabel("Events:"));
+    panel.add(new JLabel(message("interceptors.rule.field.events")));
     panel.add(eventsPanel, MigConstraints.span2GrowXPushXMinWidth0Wrap());
 
-    panel.add(new JLabel("Message:"));
+    panel.add(new JLabel(message("interceptors.rule.field.message")));
     panel.add(messageMode, MigConstraints.width(110));
     panel.add(messagePattern, MigConstraints.growXPushXMinWidth0Wrap());
 
@@ -1100,14 +1107,14 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
     ctcpHelperRow.add(ctcpCommand, MigConstraints.growXPushXMinWidth0());
     ctcpHelperRow.add(ctcpValue, MigConstraints.growXPushXMinWidth0());
     ctcpHelperRow.add(applyCtcpHelper, MigConstraints.widthHeight(36, 28));
-    panel.add(new JLabel("CTCP helper:"));
+    panel.add(new JLabel(message("interceptors.rule.field.ctcpHelper")));
     panel.add(ctcpHelperRow, MigConstraints.span2GrowXPushXMinWidth0Wrap());
 
-    panel.add(new JLabel("Nick:"));
+    panel.add(new JLabel(message("interceptors.rule.field.nick")));
     panel.add(nickMode, MigConstraints.width(110));
     panel.add(nickPattern, MigConstraints.growXPushXMinWidth0Wrap());
 
-    panel.add(new JLabel("Hostmask:"));
+    panel.add(new JLabel(message("interceptors.rule.field.hostmask")));
     panel.add(hostmaskMode, MigConstraints.width(110));
     panel.add(hostmaskPattern, MigConstraints.growXPushXMinWidth0Wrap());
 
@@ -1153,8 +1160,8 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
           if (command.isEmpty()) {
             JOptionPane.showMessageDialog(
                 SwingUtilities.getWindowAncestor(this),
-                "CTCP command is required for the CTCP helper.",
-                "CTCP Helper",
+                message("interceptors.rule.ctcpHelper.commandRequired"),
+                message("interceptors.rule.ctcpHelper.title"),
                 JOptionPane.WARNING_MESSAGE);
             return;
           }
@@ -1189,8 +1196,8 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
     if (eventTypesCsv == null) {
       JOptionPane.showMessageDialog(
           owner,
-          "Select at least one event type, or enable \"" + RULE_ANY_EVENT_LABEL + "\".",
-          "Event Types Required",
+          message("interceptors.rule.eventTypesRequired", message(RULE_ANY_EVENT_KEY)),
+          message("interceptors.rule.eventTypesRequired.title"),
           JOptionPane.WARNING_MESSAGE);
       return null;
     }
@@ -1227,7 +1234,7 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
 
   private static String formatEventTypesForDisplay(String rawCsv) {
     String raw = Objects.toString(rawCsv, "").trim();
-    if (raw.isEmpty()) return RULE_ANY_EVENT_LABEL;
+    if (raw.isEmpty()) return message(RULE_ANY_EVENT_KEY);
 
     String[] parts = raw.split("[,\\n;]");
     ArrayList<String> labels = new ArrayList<>(parts.length);
@@ -1237,7 +1244,7 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
       InterceptorEventType type = resolveEventType(token);
       labels.add(type != null ? type.toString() : token);
     }
-    if (labels.isEmpty()) return RULE_ANY_EVENT_LABEL;
+    if (labels.isEmpty()) return message(RULE_ANY_EVENT_KEY);
     return String.join(", ", labels);
   }
 
@@ -1290,12 +1297,12 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
   }
 
   private void configureActionButtons() {
-    configureIconButton(addRule, "plus", "Add trigger rule");
-    configureIconButton(editRule, "edit", "Edit selected trigger rule");
-    configureIconButton(removeRule, "trash", "Remove selected trigger rule");
-    configureIconButton(clearSelectedHits, "trash", "Clear selected interceptor hits");
-    configureIconButton(clearHits, "close", "Clear all interceptor hits");
-    configureIconButton(exportHitsCsv, "copy", "Export all interceptor hits to CSV");
+    configureIconButton(addRule, "plus", message("interceptors.button.addRule.tooltip"));
+    configureIconButton(editRule, "edit", message("interceptors.button.editRule.tooltip"));
+    configureIconButton(removeRule, "trash", message("interceptors.button.removeRule.tooltip"));
+    configureIconButton(clearSelectedHits, "trash", message("interceptors.button.clearSelectedHits.tooltip"));
+    configureIconButton(clearHits, "close", message("interceptors.button.clearHits.tooltip"));
+    configureIconButton(exportHitsCsv, "copy", message("interceptors.button.exportHitsCsv.tooltip"));
     configureMenuItem(hitsPopupJumpToMessage, "channel");
     configureMenuItem(hitsPopupClearSelected, "trash");
     configureMenuItem(hitsPopupClearAll, "close");
@@ -1304,13 +1311,13 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
     createInterceptorButton.setIcon(SvgIcons.action("plus", 16));
     createInterceptorButton.setDisabledIcon(SvgIcons.actionDisabled("plus", 16));
     createInterceptorButton.setMargin(new Insets(2, 8, 2, 8));
-    createInterceptorButton.setToolTipText("Create a new interceptor for this server/network");
+    createInterceptorButton.setToolTipText(message("interceptors.button.create.tooltip"));
     createInterceptorButton.setFocusable(false);
-    configureIconButton(testSound, "play", "Test selected sound");
-    configureIconButton(browseSoundCustomPath, "folder-open", "Browse/import custom sound file");
-    configureIconButton(browseScriptPath, "terminal", "Browse for script/program");
+    configureIconButton(testSound, "play", message("interceptors.button.testSound.tooltip"));
+    configureIconButton(browseSoundCustomPath, "folder-open", message("interceptors.button.browseSound.tooltip"));
+    configureIconButton(browseScriptPath, "terminal", message("interceptors.button.browseScript.tooltip"));
     configureIconButton(
-        browseScriptWorkingDirectory, "settings", "Browse for script working directory");
+        browseScriptWorkingDirectory, "settings", message("interceptors.button.browseScriptCwd.tooltip"));
   }
 
   private static void configureIconButton(JButton button, String iconName, String tooltip) {
@@ -1339,21 +1346,21 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
   private void createInterceptorFromOverview() {
     String sid = Objects.toString(serverId, "").trim();
     if (sid.isBlank()) {
-      status.setText("Select a server first.");
+      status.setText(message("interceptors.status.selectServerFirst"));
       return;
     }
     if (!Objects.toString(interceptorId, "").trim().isBlank()) {
-      status.setText("Create new interceptors from the Interceptors overview node.");
+      status.setText(message("interceptors.status.createFromOverview"));
       return;
     }
 
     try {
-      InterceptorDefinition created = store.createInterceptor(sid, "Interceptor");
+      InterceptorDefinition created = store.createInterceptor(sid, message("interceptors.defaultName"));
       if (created == null || Objects.toString(created.id(), "").isBlank()) {
-        status.setText("Failed to create interceptor.");
+        status.setText(message("interceptors.status.createFailed"));
         return;
       }
-      status.setText("Created interceptor: " + created.name());
+      status.setText(message("interceptors.status.created", created.name()));
 
       Consumer<TargetRef> cb = onSelectTarget;
       TargetRef createdRef = InterceptorScope.interceptorRef(sid, created.id());
@@ -1366,35 +1373,35 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
       }
     } catch (Exception ex) {
       String msg = Objects.toString(ex.getMessage(), ex.getClass().getSimpleName());
-      status.setText("Create failed: " + msg);
+      status.setText(message("interceptors.status.createFailedWithMessage", msg));
       JOptionPane.showMessageDialog(
           SwingUtilities.getWindowAncestor(this),
-          "Failed to create interceptor:\n" + msg,
-          "Create Interceptor Error",
+          message("interceptors.create.error.message", msg),
+          message("interceptors.create.error.title"),
           JOptionPane.ERROR_MESSAGE);
     }
   }
 
   private void exportHitsTableAsCsv() {
-    exportHitsAsCsv(allHitViewRows(), "Export Interceptor Hits", false);
+    exportHitsAsCsv(allHitViewRows(), message("interceptors.export.dialogTitle.all"), false);
   }
 
   private void exportSelectedHitsTableAsCsv() {
-    exportHitsAsCsv(selectedHitViewRows(), "Export Selected Interceptor Hits", true);
+    exportHitsAsCsv(selectedHitViewRows(), message("interceptors.export.dialogTitle.selected"), true);
   }
 
   private void exportHitsAsCsv(List<Integer> viewRows, String dialogTitle, boolean selectedOnly) {
     if (viewRows == null || viewRows.isEmpty()) {
       status.setText(
           selectedOnly
-              ? "No selected interceptor hits to export."
-              : "No interceptor hits to export.");
+              ? message("interceptors.status.noSelectedHitsToExport")
+              : message("interceptors.status.noHitsToExport"));
       return;
     }
 
     JFileChooser chooser = new JFileChooser();
     chooser.setDialogTitle(dialogTitle);
-    chooser.setFileFilter(new FileNameExtensionFilter("CSV Files (*.csv)", "csv"));
+    chooser.setFileFilter(new FileNameExtensionFilter(message("interceptors.export.csvFilter"), "csv"));
     chooser.setAcceptAllFileFilterUsed(true);
     chooser.setSelectedFile(new File(defaultHitsExportFileName(selectedOnly)));
 
@@ -1412,14 +1419,14 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
 
     try {
       writeHitsCsv(path, viewRows);
-      status.setText("Exported " + viewRows.size() + " hit(s) to " + path.toAbsolutePath());
+      status.setText(message("interceptors.status.exportedHits", viewRows.size(), path.toAbsolutePath()));
     } catch (Exception ex) {
       String msg = Objects.toString(ex.getMessage(), ex.getClass().getSimpleName());
-      status.setText("Export failed: " + msg);
+      status.setText(message("interceptors.status.exportFailed", msg));
       JOptionPane.showMessageDialog(
           SwingUtilities.getWindowAncestor(this),
-          "Failed to export interceptor hits:\n" + msg,
-          "CSV Export Error",
+          message("interceptors.export.error.message", msg),
+          message("interceptors.export.error.title"),
           JOptionPane.ERROR_MESSAGE);
     }
   }
@@ -1506,7 +1513,7 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
     if (!controlsEnabled) return;
     File selected =
         SoundFileChooserSupport.chooseSoundFile(
-                SwingUtilities.getWindowAncestor(this), "Choose interceptor sound (MP3 or WAV)")
+                SwingUtilities.getWindowAncestor(this), message("interceptors.sound.chooseDialogTitle"))
             .orElse(null);
     if (selected == null) return;
 
@@ -1518,13 +1525,13 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
       actionSoundEnabled.setSelected(true);
       refreshActionControlEnabledState();
       saveCurrentDefinition();
-      status.setText("Imported custom sound: " + rel);
+      status.setText(message("interceptors.status.importedCustomSound", rel));
     } catch (Exception ex) {
       String msg = Objects.toString(ex.getMessage(), ex.getClass().getSimpleName());
       JOptionPane.showMessageDialog(
           SwingUtilities.getWindowAncestor(this),
-          "Could not import custom sound file.\n\n" + msg,
-          "Import failed",
+          message("interceptors.sound.importFailed.message", msg),
+          message("interceptors.sound.importFailed.title"),
           JOptionPane.ERROR_MESSAGE);
     }
   }
@@ -1532,7 +1539,7 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
   private void browseForScriptPath() {
     if (!controlsEnabled) return;
     JFileChooser chooser = new JFileChooser();
-    chooser.setDialogTitle("Choose external script");
+    chooser.setDialogTitle(message("interceptors.script.chooseDialogTitle"));
     chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
     chooser.setAcceptAllFileFilterUsed(true);
     seedChooserPath(chooser, actionScriptPath.getText(), false);
@@ -1551,7 +1558,7 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
   private void browseForScriptWorkingDirectory() {
     if (!controlsEnabled) return;
     JFileChooser chooser = new JFileChooser();
-    chooser.setDialogTitle("Choose script working directory");
+    chooser.setDialogTitle(message("interceptors.script.chooseWorkingDirectoryTitle"));
     chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
     chooser.setAcceptAllFileFilterUsed(false);
     seedChooserPath(chooser, actionScriptWorkingDirectory.getText(), true);
@@ -1663,12 +1670,12 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
 
   private void applyLoadingState() {
     loading = true;
-    title.setText("Interceptor");
-    subtitle.setText("Loading interceptor...");
-    status.setText("Loading...");
+    title.setText(message("interceptors.title.single"));
+    subtitle.setText(message("interceptors.subtitle.loading"));
+    status.setText(message("interceptors.status.loading"));
     setEmptyStateContent(
-        "Interceptors",
-        "<html><div style='text-align:center;'>Loading interceptor...</div></html>",
+        message("interceptors.title.overview"),
+        message("interceptors.empty.loading"),
         false);
     setEditorTabsVisible(!Objects.toString(interceptorId, "").trim().isBlank());
     setControlsEnabled(false);
@@ -1682,30 +1689,20 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
         !Objects.toString(serverId, "").trim().isBlank()
             && Objects.toString(interceptorId, "").trim().isBlank();
     if (interceptorsOverview) {
-      title.setText("Interceptors");
-      subtitle.setText("Automation rules for IRC events on this server/network.");
+      title.setText(message("interceptors.title.overview"));
+      subtitle.setText(message("interceptors.subtitle.overview"));
       setEmptyStateContent(
-          "Interceptors",
-          "<html><div style='text-align:center;'>"
-              + "Interceptors watch IRC events/messages and trigger actions when rules match."
-              + " Create one to automate the stuff you care about."
-              + "<br><br><b>What Interceptors can do:</b><br>"
-              + "&bull; Match by event type (messages, notices, joins/parts, and more)<br>"
-              + "&bull; Filter by channel include/exclude patterns<br>"
-              + "&bull; Trigger notifications (status bar + desktop toast)<br>"
-              + "&bull; Play built-in or custom sounds<br>"
-              + "&bull; Run scripts/programs with injected event context<br>"
-              + "&bull; Record hit history so you can review what matched"
-              + "</div></html>",
+          message("interceptors.title.overview"),
+          message("interceptors.empty.overview"),
           true);
-      status.setText("Tip: Add/select an interceptor to configure rules and review captured hits.");
+      status.setText(message("interceptors.status.overviewTip"));
       setEditorTabsVisible(false);
     } else {
-      title.setText("Interceptor");
-      subtitle.setText("Select an interceptor node.");
+      title.setText(message("interceptors.title.single"));
+      subtitle.setText(message("interceptors.subtitle.selectNode"));
       setEmptyStateContent(
-          "Interceptor",
-          "<html><div style='text-align:center;'>Select an interceptor from the server tree to edit its rules, actions, and hit history.</div></html>",
+          message("interceptors.title.single"),
+          message("interceptors.empty.selectNode"),
           false);
       status.setText(" ");
       setEditorTabsVisible(false);
@@ -1721,14 +1718,14 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
   private void applyMissingInterceptorState(long req) {
     if (req != refreshSeq.get()) return;
     loading = true;
-    title.setText("Interceptor");
-    subtitle.setText("Interceptor was removed.");
+    title.setText(message("interceptors.title.single"));
+    subtitle.setText(message("interceptors.subtitle.removed"));
     rulesModel.setRows(List.of());
     hitsModel.setRows(List.of());
     status.setText(" ");
     setEmptyStateContent(
-        "Interceptor",
-        "<html><div style='text-align:center;'>This interceptor was removed or is no longer available.</div></html>",
+        message("interceptors.title.single"),
+        message("interceptors.empty.removed"),
         false);
     setEditorTabsVisible(false);
     resetControls();
@@ -1783,8 +1780,11 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
     }
 
     loading = true;
-    title.setText("Interceptor - " + def.name());
-    subtitle.setText(def.scopeAnyServer() ? "Scope: any server" : "Scope: this server/network");
+    title.setText(message("interceptors.title.named", def.name()));
+    subtitle.setText(
+        def.scopeAnyServer()
+            ? message("interceptors.subtitle.scopeAnyServer")
+            : message("interceptors.subtitle.scopeThisServer"));
     setEmptyStateContent("", "", false);
     setEditorTabsVisible(true);
 
@@ -1814,7 +1814,7 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
     rulesModel.setRows(def.rules());
     List<InterceptorHit> hits = sortedHits == null ? List.of() : sortedHits;
     hitsModel.setRows(hits);
-    status.setText("Hits: " + hits.size() + "  Rules: " + def.rules().size());
+    status.setText(message("interceptors.status.hitsAndRules", hits.size(), def.rules().size()));
 
     loading = false;
     setControlsEnabled(true);
@@ -1958,13 +1958,14 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
 
   private void applySavedDefinitionPresentation(InterceptorDefinition definition, int ruleCount) {
     String name = definition == null ? "" : Objects.toString(definition.name(), "").trim();
-    if (name.isEmpty()) name = "Interceptor";
-    title.setText("Interceptor - " + name);
+    if (name.isEmpty()) name = message("interceptors.defaultName");
+    title.setText(message("interceptors.title.named", name));
     subtitle.setText(
         definition != null && definition.scopeAnyServer()
-            ? "Scope: any server"
-            : "Scope: this server/network");
-    status.setText("Hits: " + hitsModel.getRowCount() + "  Rules: " + Math.max(0, ruleCount));
+            ? message("interceptors.subtitle.scopeAnyServer")
+            : message("interceptors.subtitle.scopeThisServer"));
+    status.setText(
+        message("interceptors.status.hitsAndRules", hitsModel.getRowCount(), Math.max(0, ruleCount)));
   }
 
   private void saveCurrentDefinition() {
@@ -2029,7 +2030,7 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
     int n = Math.max(1, index);
     return new InterceptorRule(
         true,
-        "Rule " + n,
+        message("interceptors.rule.defaultLabel", n),
         "",
         InterceptorRuleMode.LIKE,
         "",
@@ -2129,19 +2130,19 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
   }
 
   private static String modeLabel(InterceptorRuleMode mode) {
-    if (mode == null) return "Like";
+    if (mode == null) return message("interceptors.mode.like");
     return switch (mode) {
-      case ALL -> "All";
-      case NONE -> "None";
-      case LIKE -> "Like";
-      case GLOB -> "Glob";
-      case REGEX -> "Regex";
+      case ALL -> message("interceptors.mode.all");
+      case NONE -> message("interceptors.mode.none");
+      case LIKE -> message("interceptors.mode.like");
+      case GLOB -> message("interceptors.mode.glob");
+      case REGEX -> message("interceptors.mode.regex");
     };
   }
 
   private enum ServerScopeOption {
-    THIS_SERVER("This server"),
-    ANY_SERVER("Any server");
+    THIS_SERVER("interceptors.scope.thisServer"),
+    ANY_SERVER("interceptors.scope.anyServer");
 
     private final String label;
 
@@ -2151,12 +2152,19 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
 
     @Override
     public String toString() {
-      return label;
+      return message(label);
     }
   }
 
   private static final class RulesTableModel extends AbstractTableModel {
-    private static final String[] COLS = {"On", "Why", "Events", "Message", "Nick", "Hostmask"};
+    private static final String[] COL_KEYS = {
+      "interceptors.rules.column.on",
+      "interceptors.rules.column.why",
+      "interceptors.rules.column.events",
+      "interceptors.rules.column.message",
+      "interceptors.rules.column.nick",
+      "interceptors.rules.column.hostmask"
+    };
     private final List<InterceptorRule> rows = new ArrayList<>();
 
     @Override
@@ -2166,12 +2174,12 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
 
     @Override
     public int getColumnCount() {
-      return COLS.length;
+      return COL_KEYS.length;
     }
 
     @Override
     public String getColumnName(int column) {
-      return column >= 0 && column < COLS.length ? COLS[column] : "";
+      return column >= 0 && column < COL_KEYS.length ? message(COL_KEYS[column]) : "";
     }
 
     @Override
@@ -2241,16 +2249,23 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
     }
 
     private static String summarizeDimension(InterceptorRuleMode mode, String pattern) {
-      if (mode == InterceptorRuleMode.ALL) return "(any)";
+      if (mode == InterceptorRuleMode.ALL) return message("interceptors.rules.summary.any");
       String p = Objects.toString(pattern, "").trim();
-      if (p.isEmpty()) return "(any)";
+      if (p.isEmpty()) return message("interceptors.rules.summary.any");
       return modeLabel(mode) + ": " + p;
     }
   }
 
   private static final class HitsTableModel extends AbstractTableModel {
-    private static final String[] COLS = {
-      "Time", "Server", "From", "Hostmask", "Channel", "Why", "Event", "Message"
+    private static final String[] COL_KEYS = {
+      "interceptors.hits.column.time",
+      "interceptors.hits.column.server",
+      "interceptors.hits.column.from",
+      "interceptors.hits.column.hostmask",
+      "interceptors.hits.column.channel",
+      "interceptors.hits.column.why",
+      "interceptors.hits.column.event",
+      "interceptors.hits.column.message"
     };
 
     private List<InterceptorHit> rows = List.of();
@@ -2262,12 +2277,12 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
 
     @Override
     public int getColumnCount() {
-      return COLS.length;
+      return COL_KEYS.length;
     }
 
     @Override
     public String getColumnName(int column) {
-      return column >= 0 && column < COLS.length ? COLS[column] : "";
+      return column >= 0 && column < COL_KEYS.length ? message(COL_KEYS[column]) : "";
     }
 
     @Override

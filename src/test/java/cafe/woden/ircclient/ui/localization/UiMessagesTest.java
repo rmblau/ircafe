@@ -922,6 +922,30 @@ class UiMessagesTest {
         "Roster enrichment", messages.text("preferences.network.userLookups.tab.enrichment"));
   }
 
+
+  @Test
+  void resolvesInterceptorPanelMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Interceptors", messages.text("interceptors.title.overview"));
+    assertEquals("Definition", messages.text("interceptors.tab.definition"));
+    assertEquals("Channel Filtering", messages.text("interceptors.section.channelFiltering"));
+    assertEquals("Status bar notice", messages.text("interceptors.action.statusBar"));
+    assertEquals("Export CSV", messages.text("interceptors.button.exportCsv"));
+    assertEquals("This server", messages.text("interceptors.scope.thisServer"));
+    assertEquals("Any Message", messages.text("interceptors.rule.event.anyMessage"));
+    assertEquals("Rule 2", messages.text("interceptors.rule.defaultLabel", 2));
+    assertEquals(
+        "Delete trigger rule \"mentions\"?",
+        messages.text("interceptors.rule.delete.confirm", "mentions"));
+    assertEquals(
+        "Hits: 3  Rules: 4", messages.text("interceptors.status.hitsAndRules", 3, 4));
+    assertEquals("CSV Files (*.csv)", messages.text("interceptors.export.csvFilter"));
+    assertEquals(
+        "Could not import custom sound file.\n\ntimeout",
+        messages.text("interceptors.sound.importFailed.message", "timeout"));
+  }
+
   @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
