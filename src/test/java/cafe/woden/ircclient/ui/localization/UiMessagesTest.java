@@ -637,6 +637,33 @@ class UiMessagesTest {
     assertEquals("revealing...", messages.text("chat.fold.spoiler.revealing"));
     assertEquals(
         "reveal failed - click to retry", messages.text("chat.fold.spoiler.revealFailed"));
+    assertEquals("Filtered lines: 3", messages.text("chat.fold.filtered.hint.lines", 3));
+    assertEquals("Filtered (7)", messages.text("chat.fold.filtered.summary", 7));
+    assertEquals(
+        "(no preview)  —  edit filters or disable them to see hidden lines",
+        messages.text("chat.fold.filtered.noPreview"));
+    assertEquals("…and 4 more", messages.text("chat.fold.filtered.preview.more", 4));
+    assertEquals(
+        "Filtered 1 more line…", messages.text("chat.fold.filtered.overflow.moreLine", 1));
+    assertEquals(
+        "Filtered 5 more lines…", messages.text("chat.fold.filtered.overflow.moreLines", 5));
+    assertEquals(
+        "Filtered by <b>joins</b>",
+        messages.text("chat.fold.filtered.tooltip.filteredBy", "joins"));
+    assertEquals(" <i>(+ others)</i>", messages.text("chat.fold.filtered.tooltip.others"));
+    assertEquals(
+        " <i>(multiple rules)</i>",
+        messages.text("chat.fold.filtered.tooltip.multipleRules"));
+    assertEquals("Tags: account", messages.text("chat.fold.filtered.tooltip.tags", "account"));
+    assertEquals(
+        "Hidden lines: 6", messages.text("chat.fold.filtered.tooltip.hiddenLines", 6));
+    assertEquals(
+        "Hidden lines (overflow): 8",
+        messages.text("chat.fold.filtered.tooltip.hiddenLinesOverflow", 8));
+    assertEquals(
+        "(Placeholder limit reached for this load)",
+        messages.text("chat.fold.filtered.tooltip.placeholderLimit"));
+    assertEquals("…+2 more", messages.text("chat.fold.filtered.tags.more", 2));
   }
 
 

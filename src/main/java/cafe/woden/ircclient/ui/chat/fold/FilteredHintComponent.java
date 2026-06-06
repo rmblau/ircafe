@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.chat.fold;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import cafe.woden.ircclient.ui.util.UiFontKeys;
 import java.awt.*;
@@ -15,6 +16,7 @@ import javax.swing.border.EmptyBorder;
  * <p>This exists to avoid the "unread but nothing visible" confusion.
  */
 public class FilteredHintComponent extends JPanel implements FilteredLineComponent {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private int count = 0;
 
@@ -95,7 +97,7 @@ public class FilteredHintComponent extends JPanel implements FilteredLineCompone
   }
 
   private void updateText() {
-    label.setText("Filtered lines: " + count);
+    label.setText(MESSAGES.text("chat.fold.filtered.hint.lines", count));
     applyDimItalic(label);
   }
 
@@ -112,20 +114,20 @@ public class FilteredHintComponent extends JPanel implements FilteredLineCompone
     sb.append("<html>");
 
     if (ruleLabel != null && !ruleLabel.isBlank()) {
-      sb.append("Filtered by <b>").append(escapeHtml(ruleLabel)).append("</b>");
-      if (multiple) sb.append(" <i>(+ others)</i>");
+      sb.append(MESSAGES.text("chat.fold.filtered.tooltip.filteredBy", escapeHtml(ruleLabel)));
+      if (multiple) sb.append(MESSAGES.text("chat.fold.filtered.tooltip.others"));
     } else {
-      sb.append("Filtered");
-      if (multiple) sb.append(" <i>(multiple rules)</i>");
+      sb.append(MESSAGES.text("chat.fold.filtered.tooltip.filtered"));
+      if (multiple) sb.append(MESSAGES.text("chat.fold.filtered.tooltip.multipleRules"));
     }
 
     if (tags != null && !tags.isEmpty() && maxTags > 0) {
       sb.append("<br/>");
-      sb.append("Tags: ").append(tagsSummaryHtml(tags, maxTags));
+      sb.append(MESSAGES.text("chat.fold.filtered.tooltip.tags", tagsSummaryHtml(tags, maxTags)));
     }
 
     sb.append("<br/><br/>");
-    sb.append("Hidden lines: ").append(count);
+    sb.append(MESSAGES.text("chat.fold.filtered.tooltip.hiddenLines", count));
 
     sb.append("</html>");
     return sb.toString();
@@ -141,7 +143,7 @@ public class FilteredHintComponent extends JPanel implements FilteredLineCompone
       if (t == null) continue;
       if (shown > 0) sb.append(", ");
       if (shown >= limit) {
-        sb.append("…+").append(tags.size() - shown).append(" more");
+        sb.append(MESSAGES.text("chat.fold.filtered.tags.more", tags.size() - shown));
         break;
       }
       sb.append(escapeHtml(t));
