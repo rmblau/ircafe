@@ -4,6 +4,7 @@ import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.ui.chat.NickColorSettings;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.appearance.AppearanceControlsSupport;
 import cafe.woden.ircclient.ui.settings.appearance.AppearancePreferencesSection;
 import cafe.woden.ircclient.ui.settings.appearance.AppearanceSettingsSelection;
@@ -61,6 +62,8 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 
 final class PreferencesApplySupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private PreferencesApplySupport() {}
 
   static Snapshot read(ApplyRequest request) throws ApplyException {
@@ -241,7 +244,9 @@ final class PreferencesApplySupport {
         UserCommandAliasesControlsSupport.readSettings(request.userCommands());
     UserCommandAliasValidationError error = settings.validationError();
     if (error != null) {
-      throw new ApplyException("Invalid command alias", error.formatForDialog());
+      throw new ApplyException(
+          MESSAGES.text("preferences.commands.aliases.validation.dialog.title"),
+          error.formatForDialog());
     }
     return settings;
   }

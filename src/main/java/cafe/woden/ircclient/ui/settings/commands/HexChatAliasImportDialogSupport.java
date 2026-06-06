@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings.commands;
 
 import cafe.woden.ircclient.app.commands.HexChatCommandAliasImporter;
 import cafe.woden.ircclient.model.UserCommandAlias;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
 import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
@@ -18,6 +19,8 @@ import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 
 final class HexChatAliasImportDialogSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private HexChatAliasImportDialogSupport() {}
 
   static void importAliases(Component parent, UserCommandAliasesTableModel model, JTable table) {
@@ -25,7 +28,7 @@ final class HexChatAliasImportDialogSupport {
 
     Component owner = SwingUtilities.getWindowAncestor(parent);
     JFileChooser chooser = new JFileChooser();
-    chooser.setDialogTitle("Import HexChat commands.conf");
+    chooser.setDialogTitle(MESSAGES.text("preferences.commands.aliases.import.dialogTitle"));
     chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
     chooser.setAcceptAllFileFilterUsed(true);
 
@@ -52,14 +55,17 @@ final class HexChatAliasImportDialogSupport {
     } catch (Exception ex) {
       PreferencesUiSupport.showErrorMessage(
           owner,
-          "Could not import HexChat aliases from:\n" + selected + "\n\n" + ex.getMessage(),
-          "Import failed");
+          MESSAGES.text(
+              "preferences.commands.aliases.import.error.message", selected, ex.getMessage()),
+          MESSAGES.text("preferences.commands.aliases.import.error.title"));
       return;
     }
 
     if (imported.aliases().isEmpty()) {
       PreferencesUiSupport.showInfoMessage(
-          owner, "No aliases were found in the selected file.", "HexChat import");
+          owner,
+          MESSAGES.text("preferences.commands.aliases.import.empty.message"),
+          MESSAGES.text("preferences.commands.aliases.import.title"));
       return;
     }
 
@@ -90,53 +96,57 @@ final class HexChatAliasImportDialogSupport {
     }
 
     PreferencesUiSupport.showInfoMessage(
-        owner, buildSummary(imported, added, skippedExisting), "HexChat import complete");
+        owner,
+        buildSummary(imported, added, skippedExisting),
+        MESSAGES.text("preferences.commands.aliases.import.complete.title"));
   }
 
   private static String buildSummary(
       HexChatCommandAliasImporter.ImportResult imported, int added, int skippedExisting) {
     StringBuilder summary = new StringBuilder();
     if (added > 0) {
-      summary.append("Imported ").append(added).append(" alias");
-      if (added != 1) summary.append('e').append('s');
-      summary.append('.');
+      summary.append(MESSAGES.text("preferences.commands.aliases.import.summary.imported", added));
     } else {
-      summary.append("No new aliases were imported.");
+      summary.append(MESSAGES.text("preferences.commands.aliases.import.summary.noNew"));
     }
 
     if (skippedExisting > 0) {
-      summary.append("\nSkipped ").append(skippedExisting).append(" alias");
-      if (skippedExisting != 1) summary.append('e').append('s');
-      summary.append(" because the command name already exists.");
+      appendLine(
+          summary,
+          MESSAGES.text(
+              "preferences.commands.aliases.import.summary.skippedExisting", skippedExisting));
     }
 
     if (imported.mergedDuplicateCommands() > 0) {
-      summary
-          .append("\nMerged ")
-          .append(imported.mergedDuplicateCommands())
-          .append(" duplicate command");
-      if (imported.mergedDuplicateCommands() != 1) summary.append('s');
-      summary.append(" from HexChat.");
+      appendLine(
+          summary,
+          MESSAGES.text(
+              "preferences.commands.aliases.import.summary.mergedDuplicates",
+              imported.mergedDuplicateCommands()));
     }
 
     if (imported.translatedPlaceholders() > 0) {
-      summary
-          .append("\nTranslated ")
-          .append(imported.translatedPlaceholders())
-          .append(" HexChat placeholder");
-      if (imported.translatedPlaceholders() != 1) summary.append('s');
-      summary.append(" (%t/%m/%v).");
+      appendLine(
+          summary,
+          MESSAGES.text(
+              "preferences.commands.aliases.import.summary.translatedPlaceholders",
+              imported.translatedPlaceholders()));
     }
 
     if (imported.skippedInvalidEntries() > 0) {
-      summary
-          .append("\nSkipped ")
-          .append(imported.skippedInvalidEntries())
-          .append(" invalid command name");
-      if (imported.skippedInvalidEntries() != 1) summary.append('s');
-      summary.append('.');
+      appendLine(
+          summary,
+          MESSAGES.text(
+              "preferences.commands.aliases.import.summary.skippedInvalid",
+              imported.skippedInvalidEntries()));
     }
     return summary.toString();
+  }
+
+  private static void appendLine(StringBuilder summary, String line) {
+    if (summary == null || line == null || line.isBlank()) return;
+    if (!summary.isEmpty()) summary.append('\n');
+    summary.append(line);
   }
 
   private static String normalizeAliasCommandKey(String raw) {

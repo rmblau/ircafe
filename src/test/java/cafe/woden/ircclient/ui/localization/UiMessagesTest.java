@@ -1182,6 +1182,39 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesUserCommandAliasPreferenceMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Commands", messages.text("preferences.commands.title"));
+    assertEquals(
+        "User command aliases", messages.text("preferences.commands.aliases.section"));
+    assertEquals(
+        "Fallback unknown /commands to raw IRC (HexChat-compatible)",
+        messages.text("preferences.commands.aliases.unknownAsRaw"));
+    assertEquals(
+        "Select an alias row to edit its expansion.",
+        messages.text("preferences.commands.aliases.hint.select"));
+    assertEquals("Import HexChat...", messages.text("preferences.commands.aliases.button.importHexChat"));
+    assertEquals("Enabled", messages.text("preferences.commands.aliases.column.enabled"));
+    assertEquals(
+        "Duplicate enabled alias: /joinme (also used on row 2).",
+        messages.text("preferences.commands.aliases.validation.duplicate", "joinme", 2));
+    assertEquals(
+        "Could not import HexChat aliases from:\n/tmp/commands.conf\n\ntimeout",
+        messages.text(
+            "preferences.commands.aliases.import.error.message", "/tmp/commands.conf", "timeout"));
+    assertEquals(
+        "Imported 1 alias.",
+        messages.text("preferences.commands.aliases.import.summary.imported", 1));
+    assertEquals(
+        "Imported 3 aliases.",
+        messages.text("preferences.commands.aliases.import.summary.imported", 3));
+    assertEquals(
+        "Translated 2 HexChat placeholders (%t/%m/%v).",
+        messages.text("preferences.commands.aliases.import.summary.translatedPlaceholders", 2));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 

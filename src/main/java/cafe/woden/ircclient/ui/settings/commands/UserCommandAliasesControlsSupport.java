@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.settings.commands;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
 import cafe.woden.ircclient.config.api.UserCommandAliasesConfigPort;
 import cafe.woden.ircclient.model.UserCommandAlias;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
 import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
@@ -17,6 +18,8 @@ import javax.swing.JTextArea;
 import javax.swing.table.TableColumn;
 
 public final class UserCommandAliasesControlsSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private UserCommandAliasesControlsSupport() {}
 
   public static UserCommandAliasesControls buildControls(
@@ -37,31 +40,48 @@ public final class UserCommandAliasesControlsSupport {
     commandCol.setPreferredWidth(220);
 
     JTextArea template = PreferencesUiSupport.textArea(7, 40, true);
-    template.setToolTipText(
-        "Use %1..%9, %1-, %*, %c, %t, %s, %e, %n, &1..&9. "
-            + "Separate commands with ';' or new lines.");
-    PreferencesUiSupport.placeholder(template, "/msg %1 Hello %2-");
+    template.setToolTipText(MESSAGES.text("preferences.commands.aliases.template.tooltip"));
+    PreferencesUiSupport.placeholder(
+        template, MESSAGES.text("preferences.commands.aliases.template.placeholder"));
 
-    JButton add = PreferencesUiSupport.iconOnlyButton("Add", "plus", "Add command alias");
+    JButton add =
+        PreferencesUiSupport.iconOnlyButton(
+            MESSAGES.text("preferences.commands.aliases.button.add"),
+            "plus",
+            MESSAGES.text("preferences.commands.aliases.button.add.tooltip"));
     JButton importHexChat =
         PreferencesUiSupport.iconOnlyButton(
-            "Import HexChat...", "copy", "Import aliases from HexChat commands.conf");
+            MESSAGES.text("preferences.commands.aliases.button.importHexChat"),
+            "copy",
+            MESSAGES.text("preferences.commands.aliases.button.importHexChat.tooltip"));
     JButton duplicate =
-        PreferencesUiSupport.iconOnlyButton("Duplicate", "copy", "Duplicate selected alias");
+        PreferencesUiSupport.iconOnlyButton(
+            MESSAGES.text("preferences.commands.aliases.button.duplicate"),
+            "copy",
+            MESSAGES.text("preferences.commands.aliases.button.duplicate.tooltip"));
     JButton remove =
-        PreferencesUiSupport.iconOnlyButton("Remove", "trash", "Remove selected alias");
-    JButton up = PreferencesUiSupport.iconOnlyButton("Up", "arrow-up", "Move selected alias up");
+        PreferencesUiSupport.iconOnlyButton(
+            MESSAGES.text("preferences.commands.aliases.button.remove"),
+            "trash",
+            MESSAGES.text("preferences.commands.aliases.button.remove.tooltip"));
+    JButton up =
+        PreferencesUiSupport.iconOnlyButton(
+            MESSAGES.text("preferences.commands.aliases.button.up"),
+            "arrow-up",
+            MESSAGES.text("preferences.commands.aliases.button.up.tooltip"));
     JButton down =
-        PreferencesUiSupport.iconOnlyButton("Down", "arrow-down", "Move selected alias down");
+        PreferencesUiSupport.iconOnlyButton(
+            MESSAGES.text("preferences.commands.aliases.button.down"),
+            "arrow-down",
+            MESSAGES.text("preferences.commands.aliases.button.down.tooltip"));
 
     JCheckBox unknownCommandAsRaw =
-        new JCheckBox("Fallback unknown /commands to raw IRC (HexChat-compatible)");
+        new JCheckBox(MESSAGES.text("preferences.commands.aliases.unknownAsRaw"));
     unknownCommandAsRaw.setSelected(unknownCommandAsRawEnabled);
     unknownCommandAsRaw.setToolTipText(
-        "When enabled, typing an unknown slash command sends it to the server "
-            + "as raw IRC (same as /quote), instead of showing a local Unknown command message.");
+        MESSAGES.text("preferences.commands.aliases.unknownAsRaw.tooltip"));
 
-    JLabel hint = new JLabel("Select an alias row to edit its expansion.");
+    JLabel hint = new JLabel(MESSAGES.text("preferences.commands.aliases.hint.select"));
     hint.putClientProperty(FlatClientProperties.STYLE, "foreground:$Label.disabledForeground");
 
     final boolean[] syncing = new boolean[] {false};
@@ -86,8 +106,8 @@ public final class UserCommandAliasesControlsSupport {
           template.setEnabled(selected);
           hint.setText(
               selected
-                  ? "Expansion supports multi-command ';' / newline and placeholders (%1, %2-, %*)."
-                  : "Select an alias row to edit its expansion.");
+                  ? MESSAGES.text("preferences.commands.aliases.hint.selected")
+                  : MESSAGES.text("preferences.commands.aliases.hint.select"));
         };
 
     Runnable persistSelectedTemplate =
@@ -135,7 +155,9 @@ public final class UserCommandAliasesControlsSupport {
           int modelRow = SettingsTableSupport.selectedModelRow(table);
           if (modelRow < 0) return;
           if (!PreferencesUiSupport.confirmOkCancel(
-              owner, "Remove selected alias?", "Remove alias")) {
+              owner,
+              MESSAGES.text("preferences.commands.aliases.confirm.remove.message"),
+              MESSAGES.text("preferences.commands.aliases.confirm.remove.title"))) {
             return;
           }
           model.removeRow(modelRow);
