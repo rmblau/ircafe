@@ -451,6 +451,29 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesChatInlineComponentMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals(
+        "Inline playback requires JavaFX (javafx-web).",
+        messages.text("chat.embed.youtube.javafxRequired"));
+    assertEquals(
+        "Inline playback failed to initialize.",
+        messages.text("chat.embed.youtube.initializationFailed"));
+    assertEquals("Load older messages…", messages.text("chat.fold.loadOlder.ready"));
+    assertEquals("Loading…", messages.text("chat.fold.loadOlder.loading"));
+    assertEquals("No older messages", messages.text("chat.fold.loadOlder.exhausted"));
+    assertEquals("History unavailable", messages.text("chat.fold.loadOlder.unavailable"));
+    assertEquals(
+        "Server does not support IRCv3 CHATHISTORY.",
+        messages.text("chat.fold.loadOlder.unavailable.tooltip"));
+    assertEquals("soft ignored - click to reveal", messages.text("chat.fold.spoiler.hidden"));
+    assertEquals("revealing...", messages.text("chat.fold.spoiler.revealing"));
+    assertEquals(
+        "reveal failed - click to retry", messages.text("chat.fold.spoiler.revealFailed"));
+  }
+
+  @Test
   void resolvesStatusBarMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
 

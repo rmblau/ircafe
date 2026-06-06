@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.chat.fold;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import cafe.woden.ircclient.ui.util.UiFontKeys;
 import java.awt.Color;
@@ -21,6 +22,7 @@ import javax.swing.UIManager;
  * <p>This is rendered as an embedded Swing component inside the chat transcript document.
  */
 public final class LoadOlderMessagesComponent extends JPanel {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   public enum State {
     READY,
@@ -88,25 +90,25 @@ public final class LoadOlderMessagesComponent extends JPanel {
     switch (s) {
       case READY -> {
         button.setToolTipText(null);
-        button.setText("Load older messages…");
+        button.setText(MESSAGES.text("chat.fold.loadOlder.ready"));
         button.setEnabled(true);
         button.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
       }
       case LOADING -> {
         button.setToolTipText(null);
-        button.setText("Loading…");
+        button.setText(MESSAGES.text("chat.fold.loadOlder.loading"));
         button.setEnabled(false);
         button.setCursor(Cursor.getDefaultCursor());
       }
       case EXHAUSTED -> {
         button.setToolTipText(null);
-        button.setText("No older messages");
+        button.setText(MESSAGES.text("chat.fold.loadOlder.exhausted"));
         button.setEnabled(false);
         button.setCursor(Cursor.getDefaultCursor());
       }
       case UNAVAILABLE -> {
-        button.setText("History unavailable");
-        button.setToolTipText("Server does not support IRCv3 CHATHISTORY.");
+        button.setText(MESSAGES.text("chat.fold.loadOlder.unavailable"));
+        button.setToolTipText(MESSAGES.text("chat.fold.loadOlder.unavailable.tooltip"));
         button.setEnabled(false);
         button.setCursor(Cursor.getDefaultCursor());
       }
