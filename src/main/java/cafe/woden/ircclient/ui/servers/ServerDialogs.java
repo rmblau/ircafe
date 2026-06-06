@@ -4,6 +4,7 @@ import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.ServerAutoConnectRuntimeConfigPort;
 import cafe.woden.ircclient.config.servers.EphemeralServerRegistry;
 import cafe.woden.ircclient.config.servers.ServerRegistry;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.awt.Window;
 import java.util.Objects;
 import java.util.Optional;
@@ -17,6 +18,8 @@ import org.springframework.stereotype.Component;
 @InterfaceLayer
 @Lazy
 public class ServerDialogs {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private final ServerRegistry serverRegistry;
   private final EphemeralServerRegistry ephemeralServers;
   private final ServerAutoConnectRuntimeConfigPort runtimeConfig;
@@ -38,7 +41,11 @@ public class ServerDialogs {
         () -> {
           ServerEditorDialog dlg =
               new ServerEditorDialog(
-                  parent, "Add Server", null, true, backendProfilesProvider.backendProfiles());
+                  parent,
+                  MESSAGES.text("servers.editor.title.add"),
+                  null,
+                  true,
+                  backendProfilesProvider.backendProfiles());
           Optional<IrcProperties.Server> result = dlg.open();
           result.ifPresent(
               next -> {
@@ -69,11 +76,8 @@ public class ServerDialogs {
           if (curOpt.isEmpty()) {
             JOptionPane.showMessageDialog(
                 parent,
-                "Server '"
-                    + id
-                    + "' is not a persisted server and can't be edited here.\n\n"
-                    + "Use Servers \u2192 Add Server\u2026 to create a persistent entry.",
-                "Edit Server",
+                MESSAGES.text("servers.dialog.edit.notPersisted.message", id),
+                MESSAGES.text("servers.editor.title.edit"),
                 JOptionPane.INFORMATION_MESSAGE);
             return;
           }
@@ -85,7 +89,7 @@ public class ServerDialogs {
           ServerEditorDialog dlg =
               new ServerEditorDialog(
                   parent,
-                  "Edit Server",
+                  MESSAGES.text("servers.editor.title.edit"),
                   cur,
                   autoConnectOnStart,
                   backendProfilesProvider.backendProfiles());
@@ -97,8 +101,8 @@ public class ServerDialogs {
           if (!Objects.equals(originalId, nextId) && serverRegistry.containsId(nextId)) {
             JOptionPane.showMessageDialog(
                 parent,
-                "A server with id '" + nextId + "' already exists.",
-                "Duplicate server id",
+                MESSAGES.text("servers.dialog.duplicateId.message", nextId),
+                MESSAGES.text("servers.dialog.duplicateId.title"),
                 JOptionPane.ERROR_MESSAGE);
             return;
           }
@@ -122,8 +126,8 @@ public class ServerDialogs {
           if (serverRegistry.containsId(id)) {
             JOptionPane.showMessageDialog(
                 parent,
-                "Server '" + id + "' is already saved.",
-                "Save Server",
+                MESSAGES.text("servers.dialog.save.alreadySaved.message", id),
+                MESSAGES.text("servers.editor.title.save"),
                 JOptionPane.INFORMATION_MESSAGE);
             return;
           }
@@ -133,8 +137,8 @@ public class ServerDialogs {
           if (ephOpt.isEmpty()) {
             JOptionPane.showMessageDialog(
                 parent,
-                "Server '" + id + "' is not an ephemeral server (or is no longer available).",
-                "Save Server",
+                MESSAGES.text("servers.dialog.save.notEphemeral.message", id),
+                MESSAGES.text("servers.editor.title.save"),
                 JOptionPane.INFORMATION_MESSAGE);
             return;
           }
@@ -145,7 +149,7 @@ public class ServerDialogs {
           ServerEditorDialog dlg =
               new ServerEditorDialog(
                   parent,
-                  "Save Server",
+                  MESSAGES.text("servers.editor.title.save"),
                   seed,
                   autoConnectOnStart,
                   backendProfilesProvider.backendProfiles());
@@ -159,8 +163,8 @@ public class ServerDialogs {
           if (serverRegistry.containsId(nextId)) {
             JOptionPane.showMessageDialog(
                 parent,
-                "A persisted server with id '" + nextId + "' already exists.",
-                "Duplicate server id",
+                MESSAGES.text("servers.dialog.save.persistedDuplicate.message", nextId),
+                MESSAGES.text("servers.dialog.duplicateId.title"),
                 JOptionPane.ERROR_MESSAGE);
             return;
           }
@@ -169,11 +173,8 @@ public class ServerDialogs {
               && !Objects.equals(id, nextId)) {
             JOptionPane.showMessageDialog(
                 parent,
-                "An ephemeral server with id '"
-                    + nextId
-                    + "' already exists.\n\n"
-                    + "Tip: keep the same id when saving bouncer networks so they don't show twice.",
-                "Duplicate server id",
+                MESSAGES.text("servers.dialog.save.ephemeralDuplicate.message", nextId),
+                MESSAGES.text("servers.dialog.duplicateId.title"),
                 JOptionPane.ERROR_MESSAGE);
             return;
           }

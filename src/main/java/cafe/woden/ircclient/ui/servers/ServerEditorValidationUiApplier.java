@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.servers;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.util.Objects;
 import javax.swing.JButton;
@@ -7,6 +8,8 @@ import javax.swing.JComponent;
 
 /** Applies server-editor validation state to Swing widgets. */
 final class ServerEditorValidationUiApplier {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private ServerEditorValidationUiApplier() {}
 
   static void apply(ServerEditorValidationPolicy.ValidationState state, ValidationWidgets widgets) {
@@ -68,7 +71,10 @@ final class ServerEditorValidationUiApplier {
     widgets.saveButton().setEnabled(state.saveEnabled());
     widgets
         .saveButton()
-        .setToolTipText(state.saveEnabled() ? null : "Fix highlighted fields to enable Save.");
+        .setToolTipText(
+            state.saveEnabled()
+                ? null
+                : MESSAGES.text("servers.editor.validation.saveDisabled.tooltip"));
   }
 
   static void clearOutline(JComponent component) {

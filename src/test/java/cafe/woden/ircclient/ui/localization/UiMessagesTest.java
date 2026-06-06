@@ -325,6 +325,7 @@ class UiMessagesTest {
     assertEquals("Servers", messages.text("servers.dialog.title"));
     assertEquals("Configured servers", messages.text("servers.dialog.heading"));
     assertEquals("Add Server", messages.text("servers.editor.title.add"));
+    assertEquals("Save Server", messages.text("servers.editor.title.save"));
     assertEquals("Connection", messages.text("servers.editor.tab.connection"));
     assertEquals("Server ID", messages.text("servers.editor.connection.serverId"));
     assertEquals("Use TLS (SSL)", messages.text("servers.editor.connection.useTls"));
@@ -340,6 +341,20 @@ class UiMessagesTest {
     assertEquals(
         "A server with id libera already exists.",
         messages.text("servers.dialog.duplicateId.message", "libera"));
+    assertEquals(
+        "Server tempnet is not a persisted server and cannot be edited here.\n\n"
+            + "Use Servers → Add Server... to create a persistent entry.",
+        messages.text("servers.dialog.edit.notPersisted.message", "tempnet"));
+    assertEquals(
+        "Server bouncer-net is already saved.",
+        messages.text("servers.dialog.save.alreadySaved.message", "bouncer-net"));
+    assertEquals(
+        "An ephemeral server with id relay already exists.\n\n"
+            + "Tip: keep the same id when saving bouncer networks so they do not show twice.",
+        messages.text("servers.dialog.save.ephemeralDuplicate.message", "relay"));
+    assertEquals(
+        "Fix highlighted fields to enable Save.",
+        messages.text("servers.editor.validation.saveDisabled.tooltip"));
   }
 
   @Test
