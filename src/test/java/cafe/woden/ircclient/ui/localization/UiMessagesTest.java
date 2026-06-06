@@ -491,6 +491,21 @@ class UiMessagesTest {
         "Use Next Page after results include next_batch.",
         messages.text("channelList.matrix.filters.tip.nextPage"));
     assertEquals("Run Matrix /LIST", messages.text("channelList.matrix.filters.title"));
+    assertEquals("Managed Channels", messages.text("channelList.tab.managedChannels"));
+    assertEquals("Filter:", messages.text("channelList.filter.label"));
+    assertEquals("Manual", messages.text("channelList.sort.manual"));
+    assertEquals(
+        "libera - 7 of 12 channels shown",
+        messages.text("channelList.summary.filtered", "libera", 7, 12));
+    assertEquals(
+        "libera - Managed: 4 channels (3 connected, 1 disconnected)",
+        messages.text("channelList.managed.summary", "libera", 4, 3, 1));
+    assertEquals(
+        "Close managed channel \"#ircafe\"?\n\nThis removes it from the managed list.",
+        messages.text("channelList.closeChannel.message", "#ircafe"));
+    assertEquals("Join Channel", messages.text("channelList.menu.joinChannel"));
+    assertEquals(
+        "Loaded 3 cached ban entries.", messages.text("channelList.banList.status.loadedMany", 3));
   }
 
   @Test

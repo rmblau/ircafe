@@ -5,6 +5,7 @@ import cafe.woden.ircclient.state.api.NegotiatedModeSemantics;
 import cafe.woden.ircclient.ui.backend.BackendUiContext;
 import cafe.woden.ircclient.ui.backend.BackendUiProfile;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.util.MigConstraints;
 import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import cafe.woden.ircclient.ui.util.MigLayouts;
@@ -208,13 +209,13 @@ public final class ChannelListPanel extends JPanel {
   private static final int MANAGED_COL_MODES = 4;
   private static final int MANAGED_COL_AUTO_REATTACH = 5;
 
-  private static final String MANAGED_HINT =
-      "Managed channels include connected and disconnected channels for this server.";
   private static final int MATRIX_LIST_DEFAULT_LIMIT = 100;
   private static final int MATRIX_LIST_MAX_LIMIT = 200;
 
   private static final int ACTION_ICON_SIZE = 16;
   private static final Dimension ACTION_BUTTON_SIZE = new Dimension(28, 28);
+
+  private final UiMessages messages = UiMessages.bundledDefaults();
 
   private final ChannelListUxMode ircListUxMode = new IrcChannelListUxMode();
   private final ChannelListUxMode matrixListUxMode = new MatrixChannelListUxMode();
@@ -231,7 +232,8 @@ public final class ChannelListPanel extends JPanel {
   private final JButton clearListButton = new JButton();
   private final JPopupMenu listContextMenu = new JPopupMenu();
   private final JMenuItem listJoinSelectMenuItem = new JMenuItem();
-  private final JMenuItem listShowDetailsMenuItem = new JMenuItem("Channel Details...");
+  private final JMenuItem listShowDetailsMenuItem =
+      new JMenuItem(message("channelList.menu.channelDetails"));
 
   private final ManagedChannelTableModel managedModel = new ManagedChannelTableModel();
   private final JTable managedTable = new JTable(managedModel);
@@ -243,7 +245,7 @@ public final class ChannelListPanel extends JPanel {
   private final JButton moveDownButton = new JButton();
   private final JComboBox<ManagedSortMode> sortModeCombo =
       new JComboBox<>(ManagedSortMode.values());
-  private final JLabel managedSubtitle = new JLabel(MANAGED_HINT);
+  private final JLabel managedSubtitle = new JLabel(message("channelList.managed.hint"));
 
   private final Map<String, ArrayList<Row>> rowsByServer = new HashMap<>();
   private final Map<String, String> statusByServer = new HashMap<>();
@@ -290,8 +292,8 @@ public final class ChannelListPanel extends JPanel {
     super(new BorderLayout());
 
     JTabbedPane tabs = new JTabbedPane();
-    tabs.addTab("Managed Channels", buildManagedChannelsTab());
-    tabs.addTab("Server /LIST", buildListTab());
+    tabs.addTab(message("channelList.tab.managedChannels"), buildManagedChannelsTab());
+    tabs.addTab(message("channelList.tab.serverList"), buildListTab());
     tabs.setSelectedIndex(0);
     add(tabs, BorderLayout.CENTER);
 
@@ -308,16 +310,16 @@ public final class ChannelListPanel extends JPanel {
     configureActionButton(
         runListButton,
         "refresh",
-        "Request full /list from server (heavy; confirmation required)",
-        "Run /list");
-    runListButton.setToolTipText("Request full /list from server (heavy; confirmation required)");
+        message("channelList.action.runList.tooltip"),
+        message("channelList.action.runList.accessible"));
+    runListButton.setToolTipText(message("channelList.action.runList.tooltip"));
     runListButton.addActionListener(e -> runListRequested());
 
     configureActionButton(
         runAlisButton,
         "help",
-        "Run filtered ALIS search (topic, min/max users, and display filters)",
-        "Run ALIS search");
+        message("channelList.action.runAlis.tooltip"),
+        message("channelList.action.runAlis.accessible"));
     runAlisButton.setIcon(runAlisDefaultIcon);
     runAlisButton.setDisabledIcon(runAlisDefaultDisabledIcon);
     runAlisButton.addActionListener(e -> runAlisRequested());
@@ -325,20 +327,23 @@ public final class ChannelListPanel extends JPanel {
     configureActionButton(
         runMatrixNextButton,
         "play",
-        "Run next Matrix /list page (uses next_batch from the last result)",
-        "Run next Matrix list page");
+        message("channelList.action.runMatrixNext.tooltip"),
+        message("channelList.action.runMatrixNext.accessible"));
     runMatrixNextButton.addActionListener(e -> runMatrixNextPageRequested());
     runMatrixNextButton.setVisible(false);
 
     configureActionButton(
         listDetailsButton,
         "eye",
-        "Open channel details for the selected channel, including topic, modes, and ban list",
-        "Channel details");
+        message("channelList.action.channelDetails.tooltip"),
+        message("channelList.action.channelDetails.accessible"));
     listDetailsButton.addActionListener(e -> showServerListDetailsForSelection());
 
     configureActionButton(
-        clearListButton, "trash", "Clear the current /LIST rows for this server", "Clear /list");
+        clearListButton,
+        "trash",
+        message("channelList.action.clearList.tooltip"),
+        message("channelList.action.clearList.accessible"));
     clearListButton.addActionListener(e -> clearCurrentServerListData());
 
     controls.add(runListButton);
@@ -346,7 +351,7 @@ public final class ChannelListPanel extends JPanel {
     controls.add(runMatrixNextButton);
     controls.add(listDetailsButton);
     controls.add(clearListButton);
-    controls.add(new JLabel("Filter:"), MigConstraints.gapLeft(12));
+    controls.add(new JLabel(message("channelList.filter.label")), MigConstraints.gapLeft(12));
     controls.add(filterField, MigConstraints.pushXGrowX());
 
     listSubtitle.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 0));
@@ -366,7 +371,7 @@ public final class ChannelListPanel extends JPanel {
     listTable.getColumnModel().getColumn(LIST_COL_CHANNEL).setPreferredWidth(220);
     listTable.getColumnModel().getColumn(LIST_COL_USERS).setPreferredWidth(90);
     listTable.getColumnModel().getColumn(LIST_COL_TOPIC).setPreferredWidth(880);
-    listTable.setToolTipText("Double-click a row to join that channel.");
+    listTable.setToolTipText(message("channelList.list.tooltip"));
 
     listTable
         .getSelectionModel()
@@ -375,7 +380,7 @@ public final class ChannelListPanel extends JPanel {
               if (!e.getValueIsAdjusting()) updateListButtons();
             });
 
-    filterField.setToolTipText("Type to filter by channel, topic, or user count.");
+    filterField.setToolTipText(message("channelList.filter.tooltip"));
     filterField
         .getDocument()
         .addDocumentListener(
@@ -450,23 +455,38 @@ public final class ChannelListPanel extends JPanel {
     managedSubtitle.setBorder(BorderFactory.createEmptyBorder(0, 2, 0, 0));
 
     JPanel toolbar = new JPanel(MigLayouts.fillX("[][][][][][]push[][pref!]", "[]"));
-    configureActionButton(addChannelButton, "plus", "Add a channel and attempt to join", "Add");
+    configureActionButton(
+        addChannelButton,
+        "plus",
+        message("channelList.action.addManaged.tooltip"),
+        message("channelList.action.addManaged.accessible"));
     configureActionButton(
         attachDetachButton,
         "play",
-        "Reconnect selected channel if disconnected, or disconnect if connected",
-        "Reconnect/Disconnect");
+        message("channelList.action.reconnectDisconnect.tooltip"),
+        message("channelList.action.reconnectDisconnect.accessible"));
     configureActionButton(
-        closeChannelButton, "close", "Close selected channel and remove it from the list", "Close");
+        closeChannelButton,
+        "close",
+        message("channelList.action.closeManaged.tooltip"),
+        message("channelList.action.closeManaged.accessible"));
     configureActionButton(
         managedDetailsButton,
         "eye",
-        "Open channel details for the selected managed channel, including topic, modes, and ban list",
-        "Channel details");
-    configureActionButton(moveUpButton, "arrow-up", "Move selected channel up", "Move up");
-    configureActionButton(moveDownButton, "arrow-down", "Move selected channel down", "Move down");
+        message("channelList.action.managedDetails.tooltip"),
+        message("channelList.action.channelDetails.accessible"));
+    configureActionButton(
+        moveUpButton,
+        "arrow-up",
+        message("channelList.action.moveUp.tooltip"),
+        message("channelList.action.moveUp.accessible"));
+    configureActionButton(
+        moveDownButton,
+        "arrow-down",
+        message("channelList.action.moveDown.tooltip"),
+        message("channelList.action.moveDown.accessible"));
 
-    sortModeCombo.setToolTipText("Sort mode for managed channels on this server.");
+    sortModeCombo.setToolTipText(message("channelList.sort.tooltip"));
     sortModeCombo.setRenderer(
         (list, value, index, isSelected, cellHasFocus) -> new JLabel(sortModeLabel(value)));
 
@@ -484,7 +504,7 @@ public final class ChannelListPanel extends JPanel {
     toolbar.add(managedDetailsButton);
     toolbar.add(moveUpButton);
     toolbar.add(moveDownButton);
-    toolbar.add(new JLabel("Order:"));
+    toolbar.add(new JLabel(message("channelList.sort.label")));
     toolbar.add(sortModeCombo, MigConstraints.width(200));
 
     managedTable.setFillsViewportHeight(true);
@@ -493,7 +513,7 @@ public final class ChannelListPanel extends JPanel {
     managedTable.setShowHorizontalLines(false);
     managedTable.setShowVerticalLines(false);
     managedTable.setAutoCreateRowSorter(false);
-    managedTable.setToolTipText("Manual order mode supports both drag/drop and move buttons.");
+    managedTable.setToolTipText(message("channelList.managed.table.tooltip"));
     managedTable.getTableHeader().setReorderingAllowed(false);
     managedTable.getColumnModel().getColumn(MANAGED_COL_CHANNEL).setPreferredWidth(180);
     managedTable.getColumnModel().getColumn(MANAGED_COL_STATE).setPreferredWidth(110);
@@ -804,7 +824,11 @@ public final class ChannelListPanel extends JPanel {
     Row list = findListRowByChannel(sid, ch);
 
     String state =
-        managed == null ? "Not managed" : (managed.detached() ? "Disconnected" : "Connected");
+        managed == null
+            ? message("channelList.state.notManaged")
+            : (managed.detached()
+                ? message("channelList.state.disconnected")
+                : message("channelList.state.connected"));
     String modes = modeRawSnapshotForChannel(sid, ch, managed == null ? "" : managed.modes());
     String modeSummary = modeSummarySnapshotForChannel(sid, ch, modes);
     String topic = topicSnapshotForChannel(sid, ch, list == null ? "" : list.topic());
@@ -875,7 +899,7 @@ public final class ChannelListPanel extends JPanel {
     if (sid.isEmpty()) return;
 
     String base = Objects.toString(summary, "").trim();
-    if (base.isEmpty()) base = "End of /LIST";
+    if (base.isEmpty()) base = message("channelList.status.endOfList");
     uxModeForServer(sid).onEndList(sid, base);
     statusByServer.put(sid, base);
     loadingByServer.put(sid, Boolean.FALSE);
@@ -1018,42 +1042,37 @@ public final class ChannelListPanel extends JPanel {
       if (totalCount == 0) {
         listSubtitle.setText(defaultListHintForServer(sid));
       } else if (filtered) {
-        listSubtitle.setText(sid + " - " + visibleCount + " of " + totalCount + " channels shown");
+        listSubtitle.setText(
+            message("channelList.summary.filtered", sid, visibleCount, totalCount));
       } else {
-        listSubtitle.setText(sid + " - " + totalCount + " channels");
+        listSubtitle.setText(message("channelList.summary.channels", sid, totalCount));
       }
       return;
     }
     if (totalCount > 0) {
       if (filtered) {
         listSubtitle.setText(
-            sid + " - " + status + " (" + visibleCount + " of " + totalCount + " shown)");
+            message("channelList.summary.status.filtered", sid, status, visibleCount, totalCount));
       } else {
-        listSubtitle.setText(sid + " - " + status + " (" + totalCount + " channels)");
+        listSubtitle.setText(
+            message("channelList.summary.status.channels", sid, status, totalCount));
       }
     } else {
-      listSubtitle.setText(sid + " - " + status);
+      listSubtitle.setText(message("channelList.summary.status", sid, status));
     }
   }
 
   private void updateManagedHeader() {
     String sid = this.serverId;
     if (sid.isEmpty()) {
-      managedSubtitle.setText(MANAGED_HINT);
+      managedSubtitle.setText(message("channelList.managed.hint"));
       return;
     }
     int total = managedModel.getRowCount();
     int detached = managedModel.detachedCount();
     int attached = Math.max(0, total - detached);
     managedSubtitle.setText(
-        sid
-            + " - Managed: "
-            + total
-            + " channels ("
-            + attached
-            + " connected, "
-            + detached
-            + " disconnected)");
+        message("channelList.managed.summary", sid, total, attached, detached));
   }
 
   private void applyListFilter() {
@@ -1098,9 +1117,8 @@ public final class ChannelListPanel extends JPanel {
     int choice =
         JOptionPane.showConfirmDialog(
             owner,
-            "Request the full /list for this server?\n\n"
-                + "This can be expensive on large networks and may take a while.",
-            "Run Full /LIST",
+            message("channelList.confirmFullList.message"),
+            message("channelList.confirmFullList.title"),
             JOptionPane.YES_NO_OPTION,
             JOptionPane.WARNING_MESSAGE);
     return choice == JOptionPane.YES_OPTION;
@@ -1167,8 +1185,8 @@ public final class ChannelListPanel extends JPanel {
         Objects.toString(
                 JOptionPane.showInputDialog(
                     SwingUtilities.getWindowAncestor(this),
-                    "Channel name:",
-                    "Add Channel",
+                    message("channelList.addChannel.prompt"),
+                    message("channelList.addChannel.title"),
                     JOptionPane.PLAIN_MESSAGE),
                 "")
             .trim();
@@ -1207,11 +1225,8 @@ public final class ChannelListPanel extends JPanel {
     int choice =
         JOptionPane.showConfirmDialog(
             SwingUtilities.getWindowAncestor(this),
-            "Close managed channel \""
-                + channel
-                + "\"?\n\n"
-                + "This removes it from the managed list.",
-            "Close Channel",
+            message("channelList.closeChannel.message", channel),
+            message("channelList.closeChannel.title"),
             JOptionPane.YES_NO_OPTION,
             JOptionPane.WARNING_MESSAGE);
     if (choice != JOptionPane.YES_OPTION) return;
@@ -1277,14 +1292,14 @@ public final class ChannelListPanel extends JPanel {
     return ManagedSortMode.CUSTOM;
   }
 
-  private static String sortModeLabel(ManagedSortMode mode) {
-    if (mode == null) return "Manual";
+  private String sortModeLabel(ManagedSortMode mode) {
+    if (mode == null) return message("channelList.sort.manual");
     return switch (mode) {
-      case ALPHABETICAL -> "Alphabetical";
-      case MOST_RECENT_ACTIVITY -> "Most Recent Activity";
-      case MOST_UNREAD_MESSAGES -> "Most Unread Messages";
-      case MOST_UNREAD_NOTIFICATIONS -> "Most Unread Notifications";
-      case CUSTOM -> "Manual";
+      case ALPHABETICAL -> message("channelList.sort.alphabetical");
+      case MOST_RECENT_ACTIVITY -> message("channelList.sort.mostRecentActivity");
+      case MOST_UNREAD_MESSAGES -> message("channelList.sort.mostUnreadMessages");
+      case MOST_UNREAD_NOTIFICATIONS -> message("channelList.sort.mostUnreadNotifications");
+      case CUSTOM -> message("channelList.sort.manual");
     };
   }
 
@@ -1398,13 +1413,17 @@ public final class ChannelListPanel extends JPanel {
     if (selected != null && selected.detached()) {
       attachDetachButton.setIcon(SvgIcons.action("play", ACTION_ICON_SIZE));
       attachDetachButton.setDisabledIcon(SvgIcons.actionDisabled("play", ACTION_ICON_SIZE));
-      attachDetachButton.setToolTipText("Reconnect selected channel");
-      attachDetachButton.getAccessibleContext().setAccessibleName("Reconnect");
+      attachDetachButton.setToolTipText(message("channelList.action.reconnect.tooltip"));
+      attachDetachButton
+          .getAccessibleContext()
+          .setAccessibleName(message("channelList.action.reconnect.accessible"));
     } else {
       attachDetachButton.setIcon(SvgIcons.action("pause", ACTION_ICON_SIZE));
       attachDetachButton.setDisabledIcon(SvgIcons.actionDisabled("pause", ACTION_ICON_SIZE));
-      attachDetachButton.setToolTipText("Disconnect selected channel");
-      attachDetachButton.getAccessibleContext().setAccessibleName("Disconnect");
+      attachDetachButton.setToolTipText(message("channelList.action.disconnect.tooltip"));
+      attachDetachButton
+          .getAccessibleContext()
+          .setAccessibleName(message("channelList.action.disconnect.accessible"));
     }
 
     boolean customMode = currentManagedSortMode() == ManagedSortMode.CUSTOM;
@@ -1510,7 +1529,9 @@ public final class ChannelListPanel extends JPanel {
     BiFunction<String, String, BanListSnapshot> cb = onChannelBanListSnapshotRequest;
     if (cb == null) {
       return new BanListViewState(
-          BanListSnapshot.empty(), "Ban-list integration is not available.", false);
+          BanListSnapshot.empty(),
+          message("channelList.banList.status.integrationUnavailable"),
+          false);
     }
     try {
       BanListSnapshot snapshot = cb.apply(sid, channel);
@@ -1518,18 +1539,21 @@ public final class ChannelListPanel extends JPanel {
       return new BanListViewState(
           snapshot, banListStatusText(snapshot), snapshot.hasEntries() || snapshot.hasSummary());
     } catch (Exception ignored) {
-      return new BanListViewState(BanListSnapshot.empty(), "Ban list unavailable.", false);
+      return new BanListViewState(
+          BanListSnapshot.empty(), message("channelList.banList.status.unavailable"), false);
     }
   }
 
-  private static String banListStatusText(BanListSnapshot snapshot) {
-    if (snapshot == null) return "Ban list unavailable.";
+  private String banListStatusText(BanListSnapshot snapshot) {
+    if (snapshot == null) return message("channelList.banList.status.unavailable");
     if (snapshot.hasSummary()) return snapshot.summary();
     if (snapshot.hasEntries()) {
       int count = snapshot.entries().size();
-      return count == 1 ? "Loaded 1 cached ban entry." : "Loaded " + count + " cached ban entries.";
+      return count == 1
+          ? message("channelList.banList.status.loadedOne")
+          : message("channelList.banList.status.loadedMany", count);
     }
-    return "No ban entries cached.\nUse Refresh Ban List to request MODE +b.";
+    return message("channelList.banList.status.empty");
   }
 
   private boolean hasCachedBanListRows(String sid, String channel) {
@@ -2024,6 +2048,10 @@ public final class ChannelListPanel extends JPanel {
     button.getAccessibleContext().setAccessibleName(accessibleName);
   }
 
+  private String message(String code, Object... args) {
+    return messages.text(code, args);
+  }
+
   private static void repaintIfSized(JComponent component) {
     if (component == null) return;
     if (component.getWidth() <= 0 || component.getHeight() <= 0) return;
@@ -2077,23 +2105,29 @@ public final class ChannelListPanel extends JPanel {
     String ch = normalizeChannel(channel);
     ManagedChannelRow managed = findManagedRowByChannel(this.serverId, ch);
     if (managed != null && !managed.detached()) {
-      listJoinSelectMenuItem.setText("Select Channel");
+      listJoinSelectMenuItem.setText(message("channelList.menu.selectChannel"));
       listJoinSelectMenuItem.setIcon(SvgIcons.action("channel", ACTION_ICON_SIZE));
-      listJoinSelectMenuItem.setToolTipText("Select this channel without sending JOIN again");
-      listJoinSelectMenuItem.getAccessibleContext().setAccessibleName("Select channel");
+      listJoinSelectMenuItem.setToolTipText(message("channelList.menu.selectChannel.tooltip"));
+      listJoinSelectMenuItem
+          .getAccessibleContext()
+          .setAccessibleName(message("channelList.menu.selectChannel.accessible"));
       return;
     }
     if (managed != null) {
-      listJoinSelectMenuItem.setText("Reconnect Channel");
+      listJoinSelectMenuItem.setText(message("channelList.menu.reconnectChannel"));
       listJoinSelectMenuItem.setIcon(SvgIcons.action("play", ACTION_ICON_SIZE));
-      listJoinSelectMenuItem.setToolTipText("Reconnect and select this channel");
-      listJoinSelectMenuItem.getAccessibleContext().setAccessibleName("Reconnect channel");
+      listJoinSelectMenuItem.setToolTipText(message("channelList.menu.reconnectChannel.tooltip"));
+      listJoinSelectMenuItem
+          .getAccessibleContext()
+          .setAccessibleName(message("channelList.menu.reconnectChannel.accessible"));
       return;
     }
-    listJoinSelectMenuItem.setText("Join Channel");
+    listJoinSelectMenuItem.setText(message("channelList.menu.joinChannel"));
     listJoinSelectMenuItem.setIcon(SvgIcons.action("play", ACTION_ICON_SIZE));
-    listJoinSelectMenuItem.setToolTipText("Join and select this channel");
-    listJoinSelectMenuItem.getAccessibleContext().setAccessibleName("Join channel");
+    listJoinSelectMenuItem.setToolTipText(message("channelList.menu.joinChannel.tooltip"));
+    listJoinSelectMenuItem
+        .getAccessibleContext()
+        .setAccessibleName(message("channelList.menu.joinChannel.accessible"));
   }
 
   private Row selectedServerListRow() {
@@ -2237,9 +2271,9 @@ public final class ChannelListPanel extends JPanel {
     return Objects.toString(value, "").trim();
   }
 
-  private static String normalizeBanner(String banner) {
+  private String normalizeBanner(String banner) {
     String b = Objects.toString(banner, "").trim();
-    return b.isEmpty() ? "Loading channel list..." : b;
+    return b.isEmpty() ? message("channelList.status.loading") : b;
   }
 
   private static String normalizeChannel(String channel) {
@@ -2259,11 +2293,11 @@ public final class ChannelListPanel extends JPanel {
     return String.valueOf(Math.max(0, row.notifications()));
   }
 
-  private static String displayManagedModes(ManagedChannelRow row) {
+  private String displayManagedModes(ManagedChannelRow row) {
     if (row == null) return "";
     String modes = Objects.toString(row.modes(), "").trim();
     if (!modes.isEmpty()) return modes;
-    return "(Unknown)";
+    return message("channelList.value.unknown");
   }
 
   private ModeVocabulary vocabularyForServer(String serverId) {
@@ -2676,7 +2710,10 @@ public final class ChannelListPanel extends JPanel {
       if (row == null) return "";
       return switch (columnIndex) {
         case MANAGED_COL_CHANNEL -> row.channel();
-        case MANAGED_COL_STATE -> row.detached() ? "Disconnected" : "Connected";
+        case MANAGED_COL_STATE ->
+            row.detached()
+                ? message("channelList.state.disconnected")
+                : message("channelList.state.connected");
         case MANAGED_COL_USERS -> displayManagedUsers(row);
         case MANAGED_COL_NOTIFICATIONS -> displayManagedNotifications(row);
         case MANAGED_COL_MODES -> displayManagedModes(row);
