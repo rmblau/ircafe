@@ -709,6 +709,21 @@ class UiMessagesTest {
         messages.text(
             "preferences.network.validation.proxy.message",
             messages.text("preferences.network.validation.proxyHostRequired")));
+    assertEquals("User lookups", messages.text("preferences.network.userLookups.title"));
+    assertEquals(
+        "Fill missing hostmasks using USERHOST (rate-limited)",
+        messages.text("preferences.network.userLookups.hostmask.enabled"));
+    assertEquals(
+        "Recommended default. Good fill-in speed with low risk.",
+        messages.text("preferences.network.userLookups.preset.balanced.hint"));
+    assertEquals(
+        "USERHOST ≤6/min • min 5s • cooldown 30m • up to 5 nicks/cmd",
+        messages.text("preferences.network.userLookups.summary.userhost", 6, 5, 30, 5));
+    assertEquals(
+        "WHOIS min 60s, cooldown 120m",
+        messages.text("preferences.network.userLookups.summary.whois", 60, 120));
+    assertEquals(
+        "Roster enrichment", messages.text("preferences.network.userLookups.tab.enrichment"));
   }
 
   @Test
