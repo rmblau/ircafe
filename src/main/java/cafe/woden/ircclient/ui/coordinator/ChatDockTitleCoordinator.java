@@ -4,6 +4,7 @@ import cafe.woden.ircclient.interceptors.InterceptorScope;
 import cafe.woden.ircclient.interceptors.InterceptorStore;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.ChatDockable;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.awt.Component;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -14,7 +15,8 @@ import javax.swing.SwingUtilities;
 /** Owns dock/tab title resolution and refresh behavior for {@link ChatDockable}. */
 public final class ChatDockTitleCoordinator {
 
-  private static final String DEFAULT_TITLE = "Chat";
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+  private static final String DEFAULT_TITLE_KEY = "chatDock.title.chat";
 
   private final Component dockComponent;
   private final Supplier<TargetRef> activeTargetSupplier;
@@ -62,31 +64,31 @@ public final class ChatDockTitleCoordinator {
 
   public String tabText() {
     TargetRef target = activeTargetSupplier.get();
-    if (target == null) return DEFAULT_TITLE;
-    if (target.isNotifications()) return "Notifications";
-    if (target.isChannelList()) return "Channel List";
-    if (target.isWeechatFilters()) return "Filters";
-    if (target.isIgnores()) return "Ignores";
-    if (target.isDccTransfers()) return "DCC Transfers";
-    if (target.isMonitorGroup()) return "Monitor";
-    if (target.isInterceptorsGroup()) return "Interceptors";
-    if (target.isApplicationUnhandledErrors()) return "Unhandled Errors";
-    if (target.isApplicationAssertjSwing()) return "AssertJ Swing";
-    if (target.isApplicationJhiccup()) return "jHiccup";
-    if (target.isApplicationInboundDedup()) return "Inbound Dedup";
-    if (target.isApplicationPlugins()) return "Plugins";
-    if (target.isApplicationJfr()) return "JFR";
-    if (target.isApplicationSpring()) return "Spring";
-    if (target.isApplicationTerminal()) return "Terminal";
-    if (target.isLogViewer()) return "Log Viewer";
+    if (target == null) return defaultTitle();
+    if (target.isNotifications()) return title("chatDock.title.notifications");
+    if (target.isChannelList()) return title("chatDock.title.channelList");
+    if (target.isWeechatFilters()) return title("chatDock.title.filters");
+    if (target.isIgnores()) return title("chatDock.title.ignores");
+    if (target.isDccTransfers()) return title("chatDock.title.dccTransfers");
+    if (target.isMonitorGroup()) return title("chatDock.title.monitor");
+    if (target.isInterceptorsGroup()) return title("chatDock.title.interceptors");
+    if (target.isApplicationUnhandledErrors()) return title("chatDock.title.unhandledErrors");
+    if (target.isApplicationAssertjSwing()) return title("chatDock.title.assertjSwing");
+    if (target.isApplicationJhiccup()) return title("chatDock.title.jhiccup");
+    if (target.isApplicationInboundDedup()) return title("chatDock.title.inboundDedup");
+    if (target.isApplicationPlugins()) return title("chatDock.title.plugins");
+    if (target.isApplicationJfr()) return title("chatDock.title.jfr");
+    if (target.isApplicationSpring()) return title("chatDock.title.spring");
+    if (target.isApplicationTerminal()) return title("chatDock.title.terminal");
+    if (target.isLogViewer()) return title("chatDock.title.logViewer");
     if (target.isInterceptor()) {
       String scopeServerId = InterceptorScope.scopedServerIdForTarget(target);
       String name = interceptorStore.interceptorName(scopeServerId, target.interceptorId());
-      return (name == null || name.isBlank()) ? "Interceptor" : name;
+      return (name == null || name.isBlank()) ? title("chatDock.title.interceptor") : name;
     }
-    if (target.isStatus()) return "Server";
+    if (target.isStatus()) return title("chatDock.title.server");
     String name = target.target();
-    if (name == null || name.isBlank()) return DEFAULT_TITLE;
+    if (name == null || name.isBlank()) return defaultTitle();
     return name;
   }
 
@@ -111,8 +113,16 @@ public final class ChatDockTitleCoordinator {
 
   private String normalizedTitle() {
     String title = tabText();
-    if (title == null || title.isBlank()) return DEFAULT_TITLE;
+    if (title == null || title.isBlank()) return defaultTitle();
     return title;
+  }
+
+  private static String defaultTitle() {
+    return title(DEFAULT_TITLE_KEY);
+  }
+
+  private static String title(String code) {
+    return MESSAGES.text(code);
   }
 
   private void updateTabTitleIfTabbed() {

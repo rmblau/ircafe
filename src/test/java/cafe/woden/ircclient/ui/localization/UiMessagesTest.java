@@ -372,6 +372,21 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesChatDockTitleMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Chat", messages.text("chatDock.title.chat"));
+    assertEquals("Channel List", messages.text("chatDock.title.channelList"));
+    assertEquals("DCC Transfers", messages.text("chatDock.title.dccTransfers"));
+    assertEquals("Unhandled Errors", messages.text("chatDock.title.unhandledErrors"));
+    assertEquals("AssertJ Swing", messages.text("chatDock.title.assertjSwing"));
+    assertEquals("Inbound Dedup", messages.text("chatDock.title.inboundDedup"));
+    assertEquals("Log Viewer", messages.text("chatDock.title.logViewer"));
+    assertEquals("Interceptor", messages.text("chatDock.title.interceptor"));
+    assertEquals("Server", messages.text("chatDock.title.server"));
+  }
+
+  @Test
   void resolvesStatusBarMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
 
