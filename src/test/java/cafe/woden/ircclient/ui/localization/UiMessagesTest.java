@@ -1039,6 +1039,35 @@ class UiMessagesTest {
         messages.text("interceptors.sound.importFailed.message", "timeout"));
   }
 
+
+  @Test
+  void resolvesIrcEventNotificationPreferenceMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals(
+        "Essential alerts (Recommended)",
+        messages.text("preferences.notifications.ircEvents.preset.essential"));
+    assertEquals(
+        "Apply defaults", messages.text("preferences.notifications.ircEvents.button.applyDefaults"));
+    assertEquals(
+        "Apply preset defaults to matching IRC event types",
+        messages.text("preferences.notifications.ircEvents.button.applyDefaults.tooltip"));
+    assertEquals(
+        "Remove IRC event rule \"kicks\"?",
+        messages.text("preferences.notifications.ircEvents.remove.confirm", "kicks"));
+    assertEquals("Enabled", messages.text("preferences.notifications.ircEvents.column.enabled"));
+    assertEquals(
+        "LIKE: VERSION",
+        messages.text("preferences.notifications.ircEvents.summary.value", "LIKE", "VERSION"));
+    assertEquals(
+        "cmd:LIKE=VERSION",
+        messages.text("preferences.notifications.ircEvents.summary.ctcp.command", "LIKE", "VERSION"));
+    assertEquals(
+        "Toast(Background Only)",
+        messages.text("preferences.notifications.ircEvents.summary.action.toast", "Background Only"));
+    assertEquals("(none)", messages.text("preferences.notifications.ircEvents.summary.none"));
+  }
+
   @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
