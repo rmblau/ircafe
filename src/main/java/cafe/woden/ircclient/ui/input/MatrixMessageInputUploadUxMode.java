@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.input;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -17,8 +18,12 @@ final class MatrixMessageInputUploadUxMode implements MessageInputUploadUxMode {
       Set.of("mp4", "m4v", "mov", "mkv", "webm", "avi", "wmv", "flv", "mpeg", "mpg", "3gp", "ogv");
   private static final Set<String> MATRIX_AUDIO_EXTENSIONS =
       Set.of("mp3", "m4a", "aac", "wav", "flac", "ogg", "oga", "opus", "weba", "amr");
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
   private static final ActionPresentation PRESENTATION =
-      new ActionPresentation(true, "Attach file (Matrix upload)", "Choose files for Matrix upload");
+      new ActionPresentation(
+          true,
+          MESSAGES.text("messageInput.upload.matrix.tooltip"),
+          MESSAGES.text("messageInput.upload.matrix.description"));
 
   @Override
   public ActionPresentation presentation() {
@@ -29,7 +34,7 @@ final class MatrixMessageInputUploadUxMode implements MessageInputUploadUxMode {
   public void runAttachAction(Context context) {
     if (context == null || !context.isInputEditable()) return;
     JFileChooser chooser = new JFileChooser();
-    chooser.setDialogTitle("Upload files to Matrix");
+    chooser.setDialogTitle(MESSAGES.text("messageInput.upload.matrix.dialogTitle"));
     chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
     chooser.setMultiSelectionEnabled(true);
     int result = chooser.showOpenDialog(context.ownerComponent());

@@ -6,6 +6,7 @@ import cafe.woden.ircclient.ui.CommandHistoryStore;
 import cafe.woden.ircclient.ui.SingleLineEmojiTextPane;
 import cafe.woden.ircclient.ui.backend.BackendUiProfile;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettings;
@@ -42,6 +43,7 @@ import org.slf4j.LoggerFactory;
 
 public class MessageInputPanel extends JPanel {
   private static final Logger log = LoggerFactory.getLogger(MessageInputPanel.class);
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
   public static final String ID = "input";
   private final SingleLineEmojiTextPane input = new SingleLineEmojiTextPane();
   private final JScrollPane inputScroll = new JScrollPane(input);
@@ -264,10 +266,12 @@ public class MessageInputPanel extends JPanel {
 
     attach.setName("messageAttachButton");
     attach.setText("+");
-    attach.setToolTipText("Attach file");
+    attach.setToolTipText(MESSAGES.text("messageInput.attach.tooltip"));
     if (attach.getAccessibleContext() != null) {
-      attach.getAccessibleContext().setAccessibleName("Attach file");
-      attach.getAccessibleContext().setAccessibleDescription("Attach files");
+      attach.getAccessibleContext().setAccessibleName(MESSAGES.text("messageInput.attach.name"));
+      attach
+          .getAccessibleContext()
+          .setAccessibleDescription(MESSAGES.text("messageInput.attach.description"));
     }
     attach.setOpaque(false);
     attach.setContentAreaFilled(false);
@@ -279,10 +283,14 @@ public class MessageInputPanel extends JPanel {
     translate.setText("");
     translate.setIcon(SvgIcons.action("translate", 16));
     translate.setDisabledIcon(SvgIcons.actionDisabled("translate", 16));
-    translate.setToolTipText("Translate draft");
+    translate.setToolTipText(MESSAGES.text("messageInput.translate.tooltip"));
     if (translate.getAccessibleContext() != null) {
-      translate.getAccessibleContext().setAccessibleName("Translate draft");
-      translate.getAccessibleContext().setAccessibleDescription("Translate current draft");
+      translate
+          .getAccessibleContext()
+          .setAccessibleName(MESSAGES.text("messageInput.translate.name"));
+      translate
+          .getAccessibleContext()
+          .setAccessibleDescription(MESSAGES.text("messageInput.translate.description"));
     }
     translate.setOpaque(false);
     translate.setContentAreaFilled(false);
@@ -296,10 +304,14 @@ public class MessageInputPanel extends JPanel {
     // Arrow visuals are painted by TypingSignalIndicator so all states share one icon design.
     send.setIcon(null);
     send.setDisabledIcon(null);
-    send.setToolTipText("Send message");
+    send.setToolTipText(MESSAGES.text("messageInput.send.tooltip.message"));
     if (send.getAccessibleContext() != null) {
-      send.getAccessibleContext().setAccessibleName("Send message");
-      send.getAccessibleContext().setAccessibleDescription("Send current message");
+      send
+          .getAccessibleContext()
+          .setAccessibleName(MESSAGES.text("messageInput.send.tooltip.message"));
+      send
+          .getAccessibleContext()
+          .setAccessibleDescription(MESSAGES.text("messageInput.send.description"));
     }
     send.setOpaque(false);
     send.setContentAreaFilled(false);

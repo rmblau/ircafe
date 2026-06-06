@@ -38,6 +38,23 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesMessageInputControlMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Attach file", messages.text("messageInput.attach.tooltip"));
+    assertEquals("Translate draft", messages.text("messageInput.translate.tooltip"));
+    assertEquals("Send reply", messages.text("messageInput.send.tooltip.reply"));
+    assertEquals(
+        "Replying to message msg-123 - alice: original",
+        messages.text("messageInput.reply.banner.withPreview", "msg-123", "alice: original"));
+    assertEquals("Custom...", messages.text("messageInput.reaction.custom"));
+    assertEquals(
+        "File upload is available on Matrix-backed servers",
+        messages.text("messageInput.upload.matrixOnly.tooltip"));
+    assertEquals("Upload files to Matrix", messages.text("messageInput.upload.matrix.dialogTitle"));
+  }
+
+  @Test
   void resolvesNickColorOverrideDialogMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
 

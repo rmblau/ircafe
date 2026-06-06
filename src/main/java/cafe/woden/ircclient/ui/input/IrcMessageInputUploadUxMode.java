@@ -1,14 +1,16 @@
 package cafe.woden.ircclient.ui.input;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.io.File;
 import java.util.List;
 
 final class IrcMessageInputUploadUxMode implements MessageInputUploadUxMode {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
   private static final ActionPresentation PRESENTATION =
       new ActionPresentation(
           false,
-          "File upload is available on Matrix-backed servers",
-          "File upload is available on Matrix-backed servers");
+          MESSAGES.text("messageInput.upload.matrixOnly.tooltip"),
+          MESSAGES.text("messageInput.upload.matrixOnly.description"));
 
   @Override
   public ActionPresentation presentation() {
