@@ -111,6 +111,31 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesDiagnosticsPreferenceMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Diagnostics", messages.text("preferences.diagnostics.title"));
+    assertEquals(
+        "AssertJ Swing / EDT watchdog",
+        messages.text("preferences.diagnostics.assertj.section"));
+    assertEquals(
+        "Enable AssertJ Swing diagnostics",
+        messages.text("preferences.diagnostics.assertj.enabled"));
+    assertEquals(
+        "Fallback violation report interval (ms)",
+        messages.text("preferences.diagnostics.assertj.fallbackViolationReportMs"));
+    assertEquals(
+        "jHiccup integration", messages.text("preferences.diagnostics.jhiccup.section"));
+    assertEquals(
+        "Java launcher command used to start jHiccup.",
+        messages.text("preferences.diagnostics.jhiccup.javaCommand.tooltip"));
+    assertEquals(
+        "One argument per line. Example flags: -i 1000, -l 2000000.\n"
+            + "Relative jar paths are resolved from the runtime-config directory.",
+        messages.text("preferences.diagnostics.jhiccup.help"));
+  }
+
+  @Test
   void resolvesNickColorPreferenceMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
 
