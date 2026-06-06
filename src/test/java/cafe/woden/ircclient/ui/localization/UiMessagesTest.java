@@ -372,6 +372,40 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesChannelListUxMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals(
+        "Use the refresh button to request /list (heavy) or the ALIS search button for filtered results.",
+        messages.text("channelList.irc.defaultHint"));
+    assertEquals(
+        "Request full /list from server (heavy; confirmation required)",
+        messages.text("channelList.irc.action.fullList.tooltip"));
+    assertEquals("Run ALIS search", messages.text("channelList.irc.action.alis.accessibleName"));
+    assertEquals(
+        "Include topic matching (-topic)", messages.text("channelList.irc.alis.includeTopic"));
+    assertEquals(
+        "Registered channels only (-show r)",
+        messages.text("channelList.irc.alis.registration.registeredOnly"));
+    assertEquals("Run ALIS Search", messages.text("channelList.irc.alis.title"));
+    assertEquals(
+        "Loading ALIS search results...", messages.text("channelList.irc.alis.loading"));
+    assertEquals(
+        "Use refresh for /list defaults, filters for Matrix search/since/limit, and next page when available.",
+        messages.text("channelList.matrix.defaultHint"));
+    assertEquals(
+        "Run Matrix /list with search/since/limit options.",
+        messages.text("channelList.matrix.action.filters.tooltip"));
+    assertEquals(
+        "Run next Matrix /list page (uses next_batch from last response).",
+        messages.text("channelList.matrix.action.nextPage.tooltip"));
+    assertEquals(
+        "Use Next Page after results include next_batch.",
+        messages.text("channelList.matrix.filters.tip.nextPage"));
+    assertEquals("Run Matrix /LIST", messages.text("channelList.matrix.filters.title"));
+  }
+
+  @Test
   void resolvesChatDockTitleMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
 
