@@ -1,18 +1,22 @@
 package cafe.woden.ircclient.ui.servers;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
+
 enum ServerEditorAuthMode {
-  DISABLED("Disabled"),
-  SASL("SASL"),
-  NICKSERV("NickServ");
+  DISABLED("servers.editor.auth.mode.disabled"),
+  SASL("servers.editor.auth.mode.sasl"),
+  NICKSERV("servers.editor.auth.mode.nickserv");
 
-  private final String label;
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
-  ServerEditorAuthMode(String label) {
-    this.label = label;
+  private final String labelKey;
+
+  ServerEditorAuthMode(String labelKey) {
+    this.labelKey = labelKey;
   }
 
   @Override
   public String toString() {
-    return label;
+    return MESSAGES.text(labelKey);
   }
 }

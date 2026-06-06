@@ -5,6 +5,7 @@ import cafe.woden.ircclient.config.api.ServerAutoConnectRuntimeConfigPort;
 import cafe.woden.ircclient.config.servers.ServerRegistry;
 import cafe.woden.ircclient.ui.SwingEdt;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import com.formdev.flatlaf.FlatClientProperties;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import java.awt.BorderLayout;
@@ -30,6 +31,7 @@ import org.slf4j.LoggerFactory;
 public class ServersDialog extends JDialog {
 
   private static final Logger log = LoggerFactory.getLogger(ServersDialog.class);
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private final ServerRegistry serverRegistry;
   private final ServerAutoConnectRuntimeConfigPort runtimeConfig;
@@ -39,10 +41,10 @@ public class ServersDialog extends JDialog {
   private final DefaultListModel<IrcProperties.Server> model = new DefaultListModel<>();
   private final JList<IrcProperties.Server> list = new JList<>(model);
 
-  private final JButton addBtn = new JButton("Add…");
-  private final JButton editBtn = new JButton("Edit…");
-  private final JButton removeBtn = new JButton("Remove");
-  private final JButton closeBtn = new JButton("Close");
+  private final JButton addBtn = new JButton(MESSAGES.text("common.button.add.ellipsis"));
+  private final JButton editBtn = new JButton(MESSAGES.text("common.button.edit.ellipsis"));
+  private final JButton removeBtn = new JButton(MESSAGES.text("common.button.remove"));
+  private final JButton closeBtn = new JButton(MESSAGES.text("common.button.close"));
 
   public ServersDialog(
       Window parent,
@@ -56,7 +58,7 @@ public class ServersDialog extends JDialog {
       ServerRegistry serverRegistry,
       ServerAutoConnectRuntimeConfigPort runtimeConfig,
       ServerEditorBackendProfiles backendProfiles) {
-    super(parent, "Servers", ModalityType.APPLICATION_MODAL);
+    super(parent, MESSAGES.text("servers.dialog.title"), ModalityType.APPLICATION_MODAL);
     this.serverRegistry = Objects.requireNonNull(serverRegistry, "serverRegistry");
     this.runtimeConfig = Objects.requireNonNull(runtimeConfig, "runtimeConfig");
     this.backendProfiles = Objects.requireNonNull(backendProfiles, "backendProfiles");
@@ -65,7 +67,7 @@ public class ServersDialog extends JDialog {
     setLayout(new BorderLayout(10, 10));
     ((JPanel) getContentPane()).setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 
-    JLabel title = new JLabel("Configured servers");
+    JLabel title = new JLabel(MESSAGES.text("servers.dialog.heading"));
     title.putClientProperty(FlatClientProperties.STYLE, "font:+2");
     add(title, BorderLayout.NORTH);
 
@@ -181,7 +183,7 @@ public class ServersDialog extends JDialog {
 
   private void onAdd() {
     ServerEditorDialog dlg =
-        new ServerEditorDialog(this, "Add Server", null, true, backendProfiles);
+        new ServerEditorDialog(this, MESSAGES.text("servers.editor.title.add"), null, true, backendProfiles);
     Optional<IrcProperties.Server> out = dlg.open();
     out.ifPresent(
         next -> {
@@ -198,7 +200,7 @@ public class ServersDialog extends JDialog {
     String originalId = cur.id();
     boolean autoConnectOnStart = runtimeConfig.readServerAutoConnectOnStart(originalId, true);
     ServerEditorDialog dlg =
-        new ServerEditorDialog(this, "Edit Server", cur, autoConnectOnStart, backendProfiles);
+        new ServerEditorDialog(this, MESSAGES.text("servers.editor.title.edit"), cur, autoConnectOnStart, backendProfiles);
     Optional<IrcProperties.Server> out = dlg.open();
     if (out.isEmpty()) return;
 
@@ -207,8 +209,8 @@ public class ServersDialog extends JDialog {
     if (!Objects.equals(originalId, nextId) && serverRegistry.containsId(nextId)) {
       JOptionPane.showMessageDialog(
           this,
-          "A server with id '" + nextId + "' already exists.",
-          "Duplicate server id",
+          MESSAGES.text("servers.dialog.duplicateId.message", nextId),
+          MESSAGES.text("servers.dialog.duplicateId.title"),
           JOptionPane.ERROR_MESSAGE);
       return;
     }
@@ -228,10 +230,8 @@ public class ServersDialog extends JDialog {
     int ok =
         JOptionPane.showConfirmDialog(
             this,
-            "Remove server '"
-                + cur.id()
-                + "'?\n\nThis updates your runtime config file immediately.",
-            "Remove server",
+            MESSAGES.text("servers.dialog.remove.message", cur.id()),
+            MESSAGES.text("servers.dialog.remove.title"),
             JOptionPane.OK_CANCEL_OPTION,
             JOptionPane.WARNING_MESSAGE);
 
@@ -245,7 +245,7 @@ public class ServersDialog extends JDialog {
     if (s == null) return "";
     String host = Objects.toString(s.host(), "");
     int port = s.port();
-    String tls = s.tls() ? "TLS" : "plain";
+    String tls = s.tls() ? MESSAGES.text("common.tls") : MESSAGES.text("common.plain");
     String backend =
         backendProfiles == null
             ? Objects.toString(s.backendId(), "")
@@ -260,9 +260,13 @@ public class ServersDialog extends JDialog {
         + " · "
         + tls
         + "</span><br/>"
-        + "<span style='opacity:0.75'>Backend:</span> "
+        + "<span style='opacity:0.75'>"
+        + MESSAGES.text("servers.dialog.list.backend")
+        + ":</span> "
         + escape(backend)
-        + "  <span style='opacity:0.75'>· Nick:</span> "
+        + "  <span style='opacity:0.75'>· "
+        + MESSAGES.text("servers.dialog.list.nick")
+        + ":</span> "
         + escape(nick)
         + "</html>";
   }

@@ -319,6 +319,30 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesServerManagementDialogMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Servers", messages.text("servers.dialog.title"));
+    assertEquals("Configured servers", messages.text("servers.dialog.heading"));
+    assertEquals("Add Server", messages.text("servers.editor.title.add"));
+    assertEquals("Connection", messages.text("servers.editor.tab.connection"));
+    assertEquals("Server ID", messages.text("servers.editor.connection.serverId"));
+    assertEquals("Use TLS (SSL)", messages.text("servers.editor.connection.useTls"));
+    assertEquals("Auto-connect this server on startup", messages.text("servers.editor.connection.autoConnectOnStartup"));
+    assertEquals("Username + password", messages.text("servers.editor.auth.matrixMode.usernamePassword"));
+    assertEquals("Stay connected if SASL authentication fails", messages.text("servers.editor.auth.sasl.continueOnFailure"));
+    assertEquals("Auto-join channels", messages.text("servers.editor.autoJoin.channels"));
+    assertEquals("Override proxy for this server", messages.text("servers.editor.proxy.override"));
+    assertEquals("OK (42 ms)", messages.text("servers.editor.proxy.status.ok", 42));
+    assertEquals(
+        "Connection test succeeded.\n\nTLS: yes\nProxy: disabled\nTime: 42 ms",
+        messages.text("servers.editor.proxy.test.success.message", "yes", "disabled", 42));
+    assertEquals(
+        "A server with id libera already exists.",
+        messages.text("servers.dialog.duplicateId.message", "libera"));
+  }
+
+  @Test
   void resolvesChatRedactedRevealMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
 

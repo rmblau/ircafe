@@ -1,9 +1,12 @@
 package cafe.woden.ircclient.ui.servers;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.util.Objects;
 
 /** Pure validation and parsing rules for the server editor's core connection fields. */
 final class ServerEditorConnectionPolicy {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private ServerEditorConnectionPolicy() {}
 
   static ConnectionValidation validation(
@@ -18,7 +21,7 @@ final class ServerEditorConnectionPolicy {
   static ServerConnection parseConnection(String id, String host, String portText) {
     String resolvedId = trim(id);
     if (resolvedId.isEmpty()) {
-      throw new IllegalArgumentException("Server ID is required");
+      throw new IllegalArgumentException(MESSAGES.text("servers.editor.validation.serverIdRequired"));
     }
 
     ServerEndpoint endpoint = parseEndpoint(host, portText);
@@ -28,17 +31,17 @@ final class ServerEditorConnectionPolicy {
   static ServerEndpoint parseEndpoint(String host, String portText) {
     String resolvedHost = trim(host);
     if (resolvedHost.isEmpty()) {
-      throw new IllegalArgumentException("Host is required");
+      throw new IllegalArgumentException(MESSAGES.text("servers.editor.validation.hostRequired"));
     }
 
     int resolvedPort;
     try {
       resolvedPort = Integer.parseInt(trim(portText));
     } catch (Exception e) {
-      throw new IllegalArgumentException("Port must be a number");
+      throw new IllegalArgumentException(MESSAGES.text("servers.editor.validation.portNumber"));
     }
     if (resolvedPort <= 0 || resolvedPort > 65_535) {
-      throw new IllegalArgumentException("Port must be 1-65535");
+      throw new IllegalArgumentException(MESSAGES.text("servers.editor.validation.portRange"));
     }
 
     return new ServerEndpoint(resolvedHost, resolvedPort);
@@ -47,7 +50,7 @@ final class ServerEditorConnectionPolicy {
   static String validateAndNormalizeNick(ServerEditorBackendProfile profile, String nick) {
     String resolvedNick = trim(nick);
     if (profile.requiresNick() && resolvedNick.isEmpty()) {
-      throw new IllegalArgumentException("Nick is required");
+      throw new IllegalArgumentException(MESSAGES.text("servers.editor.validation.nickRequired"));
     }
     return resolvedNick;
   }

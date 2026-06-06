@@ -1,7 +1,11 @@
 package cafe.woden.ircclient.ui.servers;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
+
 /** Pure UI-state rules for server-editor auth controls. */
 final class ServerEditorAuthUiPolicy {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private ServerEditorAuthUiPolicy() {}
 
   static MatrixUiState matrixUiState(
@@ -17,13 +21,13 @@ final class ServerEditorAuthUiPolicy {
     String passwordLabel;
     String passwordPlaceholder;
     if (usernamePassword) {
-      passwordLabel = "Password";
-      passwordPlaceholder = "matrix account password";
-      hint = "Username/password mode signs in via /login. Username and password are required.";
+      passwordLabel = MESSAGES.text("servers.editor.auth.password");
+      passwordPlaceholder = MESSAGES.text("servers.editor.placeholder.matrixPassword");
+      hint = MESSAGES.text("servers.editor.auth.matrixMode.usernamePassword.hint");
     } else {
-      passwordLabel = "Access token";
-      passwordPlaceholder = "matrix access token";
-      hint = "Access-token mode uses the token directly for Matrix API requests.";
+      passwordLabel = MESSAGES.text("servers.editor.auth.accessToken");
+      passwordPlaceholder = MESSAGES.text("servers.editor.placeholder.matrixAccessToken");
+      hint = MESSAGES.text("servers.editor.auth.matrixMode.accessToken.hint");
     }
 
     return new MatrixUiState(
@@ -53,9 +57,7 @@ final class ServerEditorAuthUiPolicy {
   }
 
   static NickservUiState nickservUiState(ServerEditorAuthMode authMode) {
-    String hint =
-        "NickServ identify runs after connect. Use this when the server doesn't offer SASL."
-            + " This is an alternative auth path; don't enable it together with SASL.";
+    String hint = MESSAGES.text("servers.editor.auth.nickserv.hint");
     return new NickservUiState(authMode == ServerEditorAuthMode.NICKSERV, hint);
   }
 

@@ -1,17 +1,21 @@
 package cafe.woden.ircclient.ui.servers;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
+
 enum ServerEditorMatrixAuthMode {
-  ACCESS_TOKEN("Access token"),
-  USERNAME_PASSWORD("Username + password");
+  ACCESS_TOKEN("servers.editor.auth.matrixMode.accessToken"),
+  USERNAME_PASSWORD("servers.editor.auth.matrixMode.usernamePassword");
 
-  private final String label;
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
-  ServerEditorMatrixAuthMode(String label) {
-    this.label = label;
+  private final String labelKey;
+
+  ServerEditorMatrixAuthMode(String labelKey) {
+    this.labelKey = labelKey;
   }
 
   @Override
   public String toString() {
-    return label;
+    return MESSAGES.text(labelKey);
   }
 }
