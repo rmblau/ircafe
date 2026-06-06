@@ -372,6 +372,36 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesServerTreeTargetMenuMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Open chat dock", messages.text("serverTree.targetMenu.openChatDock"));
+    assertEquals("Clear Log…", messages.text("serverTree.targetMenu.clearLog"));
+    assertEquals("Close \"#ircafe\"", messages.text("serverTree.targetMenu.close", "#ircafe"));
+    assertEquals(
+        "Reconnect \"#ircafe\"",
+        messages.text("serverTree.targetMenu.reconnect", "#ircafe"));
+    assertEquals(
+        "Detach (Bouncer) \"#ircafe\"",
+        messages.text("serverTree.targetMenu.detachBouncer", "#ircafe"));
+    assertEquals(
+        "Auto-reconnect on startup",
+        messages.text("serverTree.targetMenu.autoReconnectOnStartup"));
+    assertEquals("Unpin Channel", messages.text("serverTree.targetMenu.unpinChannel"));
+    assertEquals("Channel Modes", messages.text("serverTree.targetMenu.channelModes"));
+    assertEquals(
+        "Requires owner/admin/op privileges for this channel",
+        messages.text("serverTree.targetMenu.setModes.tooltip.disabled"));
+    assertEquals(
+        "Mute notifications in this channel",
+        messages.text("serverTree.targetMenu.muteNotifications"));
+    assertEquals(
+        "Disable Interceptor", messages.text("serverTree.targetMenu.disableInterceptor"));
+    assertEquals(
+        "Rename Interceptor...", messages.text("serverTree.targetMenu.renameInterceptor"));
+  }
+
+  @Test
   void resolvesChannelListUxMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
 
