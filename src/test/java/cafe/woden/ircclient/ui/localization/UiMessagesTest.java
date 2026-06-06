@@ -285,6 +285,40 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesChatLineInspectorMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Line Inspector", messages.text("chat.lineInspector.title"));
+    assertEquals("Information", messages.text("chat.dialog.information.title"));
+    assertEquals(
+        "Buffer: libera/#ircafe",
+        messages.text("chat.lineInspector.field.buffer", "libera/#ircafe"));
+    assertEquals(
+        "Message ID: abc123",
+        messages.text("chat.lineInspector.field.messageId", "abc123"));
+    assertEquals(
+        "IRCv3 tags: +typing",
+        messages.text("chat.lineInspector.field.ircv3Tags", "+typing"));
+    assertEquals("Redacted: true", messages.text("chat.lineInspector.field.redacted", "true"));
+    assertEquals(
+        "Matched filter: highlights",
+        messages.text("chat.lineInspector.field.matchedFilter", "highlights"));
+    assertEquals("(id=rule-1)", messages.text("chat.lineInspector.filter.id", "rule-1"));
+    assertEquals(
+        "Multiple matches: true",
+        messages.text("chat.lineInspector.field.multipleMatches", true));
+    assertEquals(
+        "Time: 2026-06-05 00:00:00.000 (epochMs=1780617600000)",
+        messages.text(
+            "chat.lineInspector.field.time.withEpochMs",
+            "2026-06-05 00:00:00.000",
+            1780617600000L));
+    assertEquals(
+        "(No metadata for this line.)", messages.text("chat.lineInspector.noMetadata"));
+    assertEquals("Text:", messages.text("chat.lineInspector.section.text"));
+  }
+
+  @Test
   void resolvesChatRedactedRevealMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
 

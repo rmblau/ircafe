@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.util;
 
 import cafe.woden.ircclient.ui.chat.ChatStyles;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -34,6 +35,7 @@ import javax.swing.text.StyledDocument;
  * <p>Relies on per-line metadata attributes stored on inserted document runs.
  */
 public final class ChatLineInspectorDialog {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private ChatLineInspectorDialog() {}
 
@@ -89,7 +91,7 @@ public final class ChatLineInspectorDialog {
     String info = format(attrs, text);
 
     Component anchor = owner != null ? owner : transcript;
-    showReadOnlyTextDialog(anchor, "Line Inspector", info);
+    showReadOnlyTextDialog(anchor, MESSAGES.text("chat.lineInspector.title"), info);
   }
 
   public static void showReadOnlyTextDialog(Component owner, String title, String text) {
@@ -113,7 +115,9 @@ public final class ChatLineInspectorDialog {
 
     JOptionPane pane =
         new JOptionPane(scroll, JOptionPane.INFORMATION_MESSAGE, JOptionPane.DEFAULT_OPTION);
-    JDialog dialog = pane.createDialog(dialogAnchor, Objects.toString(title, "Information"));
+    JDialog dialog =
+        pane.createDialog(
+            dialogAnchor, Objects.toString(title, MESSAGES.text("chat.dialog.information.title")));
     dialog.setResizable(true);
     dialog.setMinimumSize(
         new Dimension(Math.min(520, preferred.width), Math.min(300, preferred.height)));
@@ -205,27 +209,35 @@ public final class ChatLineInspectorDialog {
 
     StringBuilder sb = new StringBuilder();
 
-    if (!bufferKey.isBlank()) sb.append("Buffer: ").append(bufferKey).append('\n');
-    if (!kind.isBlank()) sb.append("Kind: ").append(kind).append('\n');
-    if (!dir.isBlank()) sb.append("Direction: ").append(dir).append('\n');
-    if (!from.isBlank()) sb.append("From: ").append(from).append('\n');
+    appendLine(sb, "chat.lineInspector.field.buffer", bufferKey);
+    appendLine(sb, "chat.lineInspector.field.kind", kind);
+    appendLine(sb, "chat.lineInspector.field.direction", dir);
+    appendLine(sb, "chat.lineInspector.field.from", from);
 
-    if (!tags.isBlank()) sb.append("Tags: ").append(tags).append('\n');
-    if (!msgId.isBlank()) sb.append("Message ID: ").append(msgId).append('\n');
-    if (!ircv3Tags.isBlank()) sb.append("IRCv3 tags: ").append(ircv3Tags).append('\n');
-    if (Boolean.TRUE.equals(redacted)) sb.append("Redacted: true\n");
+    appendLine(sb, "chat.lineInspector.field.tags", tags);
+    appendLine(sb, "chat.lineInspector.field.messageId", msgId);
+    appendLine(sb, "chat.lineInspector.field.ircv3Tags", ircv3Tags);
+    if (Boolean.TRUE.equals(redacted)) {
+      sb.append(MESSAGES.text("chat.lineInspector.field.redacted", Boolean.TRUE.toString()))
+          .append('\n');
+    }
 
     if (!filterName.isBlank()) {
-      sb.append("Matched filter: ").append(filterName);
-      if (!filterId.isBlank()) sb.append(" (id=").append(filterId).append(")");
-      if (!filterAction.isBlank()) sb.append(" action=").append(filterAction);
+      sb.append(MESSAGES.text("chat.lineInspector.field.matchedFilter", filterName));
+      if (!filterId.isBlank()) {
+        sb.append(' ').append(MESSAGES.text("chat.lineInspector.filter.id", filterId));
+      }
+      if (!filterAction.isBlank()) {
+        sb.append(' ').append(MESSAGES.text("chat.lineInspector.filter.action", filterAction));
+      }
       sb.append('\n');
     }
     if (Boolean.TRUE.equals(filterMultiple) && filterName.isBlank()) {
-      sb.append("Matched filter: (multiple)\n");
+      sb.append(MESSAGES.text("chat.lineInspector.field.matchedFilter.multiple")).append('\n');
     }
     if (filterMultiple != null) {
-      sb.append("Multiple matches: ").append(filterMultiple).append('\n');
+      sb.append(MESSAGES.text("chat.lineInspector.field.multipleMatches", filterMultiple))
+          .append('\n');
     }
 
     if (epochMs != null && epochMs > 0) {
@@ -234,26 +246,31 @@ public final class ChatLineInspectorDialog {
         var dt = Instant.ofEpochMilli(epochMs).atZone(z);
         String pretty =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS", Locale.ROOT).format(dt);
-        sb.append("Time: ")
-            .append(pretty)
-            .append(" (epochMs=")
-            .append(epochMs)
-            .append(')')
+        sb.append(MESSAGES.text("chat.lineInspector.field.time.withEpochMs", pretty, epochMs))
             .append('\n');
       } catch (Exception e) {
-        sb.append("Time: epochMs=").append(epochMs).append('\n');
+        sb.append(MESSAGES.text("chat.lineInspector.field.time.epochMs", epochMs)).append('\n');
       }
     }
 
     if (sb.length() == 0) {
-      sb.append("(No metadata for this line.)\n");
+      sb.append(MESSAGES.text("chat.lineInspector.noMetadata")).append('\n');
     }
 
     if (paragraphText != null && !paragraphText.isBlank()) {
-      sb.append('\n').append("Text:\n").append(paragraphText).append('\n');
+      sb.append('\n')
+          .append(MESSAGES.text("chat.lineInspector.section.text"))
+          .append('\n')
+          .append(paragraphText)
+          .append('\n');
     }
 
     return sb.toString();
+  }
+
+  private static void appendLine(StringBuilder sb, String key, String value) {
+    if (value == null || value.isBlank()) return;
+    sb.append(MESSAGES.text(key, value)).append('\n');
   }
 
   private static String getString(AttributeSet attrs, String key) {
