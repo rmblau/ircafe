@@ -63,6 +63,18 @@ class UiMessagesTest {
     assertEquals(
         "No suggestions available.",
         messages.text("messageInput.context.spelling.noSuggestions"));
+    assertEquals("Translate Draft", messages.text("messageInput.translation.title"));
+    assertEquals(
+        "No translation target languages are available.",
+        messages.text("messageInput.translation.noTargetLanguages"));
+    assertEquals(
+        "Choose a target language.",
+        messages.text("messageInput.translation.validation.chooseTargetLanguage"));
+    assertEquals(
+        "Translation failed: timeout",
+        messages.text("messageInput.translation.status.failed", "timeout"));
+    assertEquals(
+        "unknown error", messages.text("messageInput.translation.error.unknown"));
   }
 
   @Test

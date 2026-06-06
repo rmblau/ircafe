@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.input;
 
 import cafe.woden.ircclient.app.translation.MessageTranslationLanguage;
 import cafe.woden.ircclient.app.translation.MessageTranslationResult;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.translation.TranslationLanguageChoice;
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -36,6 +37,7 @@ import javax.swing.event.DocumentListener;
 
 /** Modal dialog for translating the current outbound draft before sending. */
 public final class OutboundMessageTranslationDialog {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private OutboundMessageTranslationDialog() {}
 
@@ -63,14 +65,18 @@ public final class OutboundMessageTranslationDialog {
     if (languages.isEmpty()) {
       JOptionPane.showMessageDialog(
           owner,
-          "No translation target languages are available.",
-          "Translate Draft",
+          MESSAGES.text("messageInput.translation.noTargetLanguages"),
+          MESSAGES.text("messageInput.translation.title"),
           JOptionPane.WARNING_MESSAGE);
       return;
     }
 
     Window window = owner == null ? null : SwingUtilities.getWindowAncestor(owner);
-    JDialog dialog = new JDialog(window, "Translate Draft", Dialog.ModalityType.APPLICATION_MODAL);
+    JDialog dialog =
+        new JDialog(
+            window,
+            MESSAGES.text("messageInput.translation.title"),
+            Dialog.ModalityType.APPLICATION_MODAL);
     dialog.setName("outboundMessageTranslationDialog");
 
     JTextArea original = textArea(Objects.toString(originalText, ""), false, 5);
@@ -85,12 +91,12 @@ public final class OutboundMessageTranslationDialog {
     JLabel status = new JLabel(" ");
     status.setName("outboundTranslationStatus");
 
-    JButton translate = new JButton("Translate");
+    JButton translate = new JButton(MESSAGES.text("messageInput.translation.translate"));
     translate.setName("outboundTranslateButton");
-    JButton ok = new JButton("OK");
+    JButton ok = new JButton(MESSAGES.text("common.button.ok"));
     ok.setName("outboundTranslationOkButton");
     ok.setEnabled(false);
-    JButton cancel = new JButton("Cancel");
+    JButton cancel = new JButton(MESSAGES.text("common.button.cancel"));
     cancel.setName("outboundTranslationCancelButton");
 
     translated
@@ -125,12 +131,13 @@ public final class OutboundMessageTranslationDialog {
                   : null;
           String language = selected == null ? "" : selected.code();
           if (language.isBlank()) {
-            status.setText("Choose a target language.");
+            status.setText(
+                MESSAGES.text("messageInput.translation.validation.chooseTargetLanguage"));
             return;
           }
 
           setBusy(true, targetLanguage, translate, ok, cancel);
-          status.setText("Translating...");
+          status.setText(MESSAGES.text("messageInput.translation.status.translating"));
           CompletionStage<MessageTranslationResult> stage;
           try {
             stage = translator == null ? null : translator.apply(language);
@@ -145,7 +152,8 @@ public final class OutboundMessageTranslationDialog {
                 translate,
                 ok,
                 cancel,
-                new IllegalStateException("Translation service returned no result."));
+                new IllegalStateException(
+                    MESSAGES.text("messageInput.translation.error.noResult")));
             return;
           }
 
@@ -176,7 +184,8 @@ public final class OutboundMessageTranslationDialog {
     cancel.addActionListener(e -> dialog.dispose());
 
     JPanel languageRow = new JPanel(new BorderLayout(8, 0));
-    languageRow.add(new JLabel("Target language"), BorderLayout.WEST);
+    languageRow.add(
+        new JLabel(MESSAGES.text("messageInput.translation.targetLanguage")), BorderLayout.WEST);
     languageRow.add(targetLanguage, BorderLayout.CENTER);
 
     JPanel form = new JPanel(new GridBagLayout());
@@ -190,7 +199,7 @@ public final class OutboundMessageTranslationDialog {
     form.add(languageRow, c);
 
     c.gridy++;
-    form.add(new JLabel("Original message"), c);
+    form.add(new JLabel(MESSAGES.text("messageInput.translation.originalMessage")), c);
     c.gridy++;
     c.fill = GridBagConstraints.BOTH;
     c.weighty = 0.4;
@@ -200,7 +209,7 @@ public final class OutboundMessageTranslationDialog {
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weighty = 0.0;
     c.insets = new Insets(10, 0, 8, 0);
-    form.add(new JLabel("Translated message"), c);
+    form.add(new JLabel(MESSAGES.text("messageInput.translation.translatedMessage")), c);
     c.gridy++;
     c.fill = GridBagConstraints.BOTH;
     c.weighty = 0.6;
@@ -289,7 +298,8 @@ public final class OutboundMessageTranslationDialog {
       JButton ok,
       JButton cancel,
       Throwable error) {
-    status.setText("Translation failed: " + describe(error));
+    status.setText(
+        MESSAGES.text("messageInput.translation.status.failed", describe(error)));
     setBusy(false, language, translate, ok, cancel);
   }
 
@@ -300,6 +310,6 @@ public final class OutboundMessageTranslationDialog {
       current = current.getCause();
     }
     String message = current == null ? "" : Objects.toString(current.getMessage(), "").trim();
-    return message.isBlank() ? "unknown error" : message;
+    return message.isBlank() ? MESSAGES.text("messageInput.translation.error.unknown") : message;
   }
 }
