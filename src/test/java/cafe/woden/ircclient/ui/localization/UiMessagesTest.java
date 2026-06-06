@@ -1066,6 +1066,31 @@ class UiMessagesTest {
         "Toast(Background Only)",
         messages.text("preferences.notifications.ircEvents.summary.action.toast", "Background Only"));
     assertEquals("(none)", messages.text("preferences.notifications.ircEvents.summary.none"));
+    assertEquals("IRC Event Rule", messages.text("preferences.notifications.ircEvents.dialog.title"));
+    assertEquals(
+        "For Specific nicks: comma-separated list.\n"
+            + "For Nick glob: wildcard patterns (* and ?).\n"
+            + "For Nick regex: Java regular expression.",
+        messages.text("preferences.notifications.ircEvents.dialog.sourceMatch.tooltip"));
+    assertEquals(
+        "Active channel only means the event target must match the currently selected channel on the same server.\n"
+            + "CTCP command/value filters only apply when Event is CTCP Request Received.",
+        messages.text("preferences.notifications.ircEvents.dialog.filters.help"));
+    assertEquals("CTCP template", messages.text("preferences.notifications.ircEvents.dialog.field.ctcpTemplate"));
+    assertEquals("Script", messages.text("preferences.notifications.ircEvents.dialog.tab.script"));
+    assertEquals(
+        "Source mode \"REGEX\" requires a source pattern.",
+        messages.text(
+            "preferences.notifications.ircEvents.dialog.validation.sourcePatternRequired",
+            "REGEX"));
+    assertEquals(
+        "Invalid CTCP command regex pattern:\ntimeout",
+        messages.text(
+            "preferences.notifications.ircEvents.dialog.validation.ctcpCommandRegexInvalid",
+            "timeout"));
+    assertEquals(
+        "CLIENTINFO request",
+        messages.text("preferences.notifications.ircEvents.dialog.ctcpTemplate.clientinfo"));
   }
 
   @Test
