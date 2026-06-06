@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.servertree.builder;
 
 import cafe.woden.ircclient.model.InterceptorDefinition;
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.servertree.model.ServerTreeNodeData;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -15,6 +16,8 @@ import org.springframework.stereotype.Component;
 @InterfaceLayer
 @Component
 public final class ServerTreeServerNodeBuilder {
+
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   public record BuildSpec(
       String serverId,
@@ -55,7 +58,8 @@ public final class ServerTreeServerNodeBuilder {
     String id = normalizeServerId(spec.serverId());
 
     DefaultMutableTreeNode serverNode = new DefaultMutableTreeNode(id);
-    DefaultMutableTreeNode pmNode = new DefaultMutableTreeNode("Private messages");
+    DefaultMutableTreeNode pmNode =
+        new DefaultMutableTreeNode(MESSAGES.text("serverTree.node.privateMessages.lowercase"));
     Map<TargetRef, DefaultMutableTreeNode> leaves = new LinkedHashMap<>();
 
     TargetRef statusRef = new TargetRef(id, "status");
@@ -68,7 +72,7 @@ public final class ServerTreeServerNodeBuilder {
 
     TargetRef notificationsRef = TargetRef.notifications(id);
     ServerTreeNodeData notificationsData =
-        new ServerTreeNodeData(notificationsRef, "Notifications");
+        new ServerTreeNodeData(notificationsRef, MESSAGES.text("serverTree.node.notifications"));
     notificationsData.highlightUnread = Math.max(0, spec.notificationsCount());
     if (spec.notificationsNodeVisible()) {
       leaves.put(notificationsRef, new DefaultMutableTreeNode(notificationsData));
@@ -80,14 +84,18 @@ public final class ServerTreeServerNodeBuilder {
           logViewerRef,
           new DefaultMutableTreeNode(
               new ServerTreeNodeData(
-                  logViewerRef, Objects.toString(spec.logViewerLabel(), "Log Viewer"))));
+                  logViewerRef,
+                  Objects.toString(
+                      spec.logViewerLabel(), MESSAGES.text("serverTree.node.logViewer")))));
     }
 
     TargetRef channelListRef = TargetRef.channelList(id);
     DefaultMutableTreeNode channelListLeaf =
         new DefaultMutableTreeNode(
             new ServerTreeNodeData(
-                channelListRef, Objects.toString(spec.channelListLabel(), "Channel List")));
+                channelListRef,
+                Objects.toString(
+                    spec.channelListLabel(), MESSAGES.text("serverTree.node.channelList"))));
     serverNode.add(channelListLeaf);
     leaves.put(channelListRef, channelListLeaf);
 
@@ -96,20 +104,27 @@ public final class ServerTreeServerNodeBuilder {
         weechatFiltersRef,
         new DefaultMutableTreeNode(
             new ServerTreeNodeData(
-                weechatFiltersRef, Objects.toString(spec.weechatFiltersLabel(), "Filters"))));
+                weechatFiltersRef,
+                Objects.toString(
+                    spec.weechatFiltersLabel(), MESSAGES.text("serverTree.node.filters")))));
 
     TargetRef ignoresRef = TargetRef.ignores(id);
     leaves.put(
         ignoresRef,
         new DefaultMutableTreeNode(
-            new ServerTreeNodeData(ignoresRef, Objects.toString(spec.ignoresLabel(), "Ignores"))));
+            new ServerTreeNodeData(
+                ignoresRef,
+                Objects.toString(
+                    spec.ignoresLabel(), MESSAGES.text("serverTree.node.ignores")))));
 
     TargetRef dccTransfersRef = TargetRef.dccTransfers(id);
     if (spec.dccTransfersNodeVisible()) {
       DefaultMutableTreeNode dccTransfersLeaf =
           new DefaultMutableTreeNode(
               new ServerTreeNodeData(
-                  dccTransfersRef, Objects.toString(spec.dccTransfersLabel(), "DCC Transfers")));
+                  dccTransfersRef,
+                  Objects.toString(
+                      spec.dccTransfersLabel(), MESSAGES.text("serverTree.node.dccTransfers"))));
       serverNode.add(dccTransfersLeaf);
       leaves.put(dccTransfersRef, dccTransfersLeaf);
     }
@@ -135,7 +150,7 @@ public final class ServerTreeServerNodeBuilder {
       if (definition == null) continue;
       TargetRef ref = TargetRef.interceptor(id, definition.id());
       String label = Objects.toString(definition.name(), "").trim();
-      if (label.isEmpty()) label = "Interceptor";
+      if (label.isEmpty()) label = MESSAGES.text("serverTree.node.interceptor");
       DefaultMutableTreeNode leaf = new DefaultMutableTreeNode(new ServerTreeNodeData(ref, label));
       interceptorsNode.add(leaf);
       leaves.put(ref, leaf);

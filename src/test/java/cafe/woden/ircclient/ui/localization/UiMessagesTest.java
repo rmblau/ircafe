@@ -554,6 +554,37 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesServerTreeNodeAndTooltipMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("IRC", messages.text("serverTree.root.irc"));
+    assertEquals("Private Messages", messages.text("serverTree.node.privateMessages"));
+    assertEquals("Bouncer Control", messages.text("serverTree.node.bouncerControl"));
+    assertEquals("Soju Networks", messages.text("serverTree.bouncer.soju.networksGroup"));
+    assertEquals(
+        "Discovered from ZNC; not saved.",
+        messages.text("serverTree.bouncer.znc.ephemeral.tooltip"));
+    assertEquals("Connected", messages.text("serverTree.connection.state.connected"));
+    assertEquals(" [wanted online]", messages.text("serverTree.connection.badge.wantedOnline"));
+    assertEquals(
+        "Click the row action to disconnect.",
+        messages.text("serverTree.connection.actionHint.disconnect"));
+    assertEquals(
+        "Quassel network \"libera\" (connected, token: abc).",
+        messages.text("serverTree.tooltip.quassel.network", "libera", "connected", "abc"));
+    assertEquals(
+        "State: Connected. Intent: Online.",
+        messages.text("serverTree.tooltip.connection.stateAndIntent", "Connected", "Online"));
+    assertEquals(
+        "Remove Quassel network \"libera\"?\n\n"
+            + "This removes it from Quassel Core configuration.",
+        messages.text("serverTree.quasselNetwork.confirmRemove.message", "libera"));
+    assertEquals(
+        "Enter channel mode changes for #ircafe (examples: +m, -m, +o nick):",
+        messages.text("serverTree.channelModes.prompt.message", "#ircafe"));
+  }
+
+  @Test
   void resolvesChatInlineComponentMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
 

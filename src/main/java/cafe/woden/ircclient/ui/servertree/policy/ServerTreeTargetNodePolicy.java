@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.servertree.policy;
 import cafe.woden.ircclient.interceptors.InterceptorScope;
 import cafe.woden.ircclient.interceptors.InterceptorStore;
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.util.Objects;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.layered.InterfaceLayer;
@@ -14,13 +15,15 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public final class ServerTreeTargetNodePolicy {
 
-  private static final String NOTIFICATIONS_LABEL = "Notifications";
-  private static final String INTERCEPTOR_LABEL = "Interceptor";
-  private static final String LOG_VIEWER_LABEL = "Log Viewer";
-  private static final String CHANNEL_LIST_LABEL = "Channel List";
-  private static final String WEECHAT_FILTERS_LABEL = "Filters";
-  private static final String IGNORES_LABEL = "Ignores";
-  private static final String DCC_TRANSFERS_LABEL = "DCC Transfers";
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
+  private static final String NOTIFICATIONS_LABEL = MESSAGES.text("serverTree.node.notifications");
+  private static final String INTERCEPTOR_LABEL = MESSAGES.text("serverTree.node.interceptor");
+  private static final String LOG_VIEWER_LABEL = MESSAGES.text("serverTree.node.logViewer");
+  private static final String CHANNEL_LIST_LABEL = MESSAGES.text("serverTree.node.channelList");
+  private static final String WEECHAT_FILTERS_LABEL = MESSAGES.text("serverTree.node.filters");
+  private static final String IGNORES_LABEL = MESSAGES.text("serverTree.node.ignores");
+  private static final String DCC_TRANSFERS_LABEL = MESSAGES.text("serverTree.node.dccTransfers");
 
   private final InterceptorStore interceptorStore;
 

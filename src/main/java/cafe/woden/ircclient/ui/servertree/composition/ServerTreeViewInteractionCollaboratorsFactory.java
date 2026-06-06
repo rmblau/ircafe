@@ -8,6 +8,7 @@ import cafe.woden.ircclient.interceptors.InterceptorScope;
 import cafe.woden.ircclient.interceptors.InterceptorStore;
 import cafe.woden.ircclient.model.InterceptorDefinition;
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.servers.ServerDialogs;
 import cafe.woden.ircclient.ui.servertree.ServerTreeBouncerBackends;
 import cafe.woden.ircclient.ui.servertree.ServerTreeUiHooks;
@@ -61,7 +62,10 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public final class ServerTreeViewInteractionCollaboratorsFactory {
 
-  private static final String BOUNCER_CONTROL_LABEL = "Bouncer Control";
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
+  private static final String BOUNCER_CONTROL_LABEL =
+      MESSAGES.text("serverTree.node.bouncerControl");
 
   @NonNull private final ServerTreeContextMenuBuilder contextMenuBuilder;
   @NonNull private final ServerTreeTooltipResolver tooltipResolver;
@@ -263,16 +267,13 @@ public final class ServerTreeViewInteractionCollaboratorsFactory {
     String token = Objects.toString(networkToken, "").trim();
     String label = Objects.toString(networkLabel, "").trim();
     String display = label.isEmpty() ? token : label;
-    if (display.isEmpty()) display = "this network";
+    if (display.isEmpty()) display = MESSAGES.text("serverTree.quasselNetwork.fallback.thisNetwork");
     java.awt.Component owner = in.ownerComponent();
     int choice =
         JOptionPane.showConfirmDialog(
             owner,
-            "Remove Quassel network \""
-                + display
-                + "\"?\n\n"
-                + "This removes it from Quassel Core configuration.",
-            "Remove Quassel Network",
+            MESSAGES.text("serverTree.quasselNetwork.confirmRemove.message", display),
+            MESSAGES.text("serverTree.quasselNetwork.confirmRemove.title"),
             JOptionPane.YES_NO_OPTION,
             JOptionPane.WARNING_MESSAGE);
     return choice == JOptionPane.YES_OPTION;
@@ -427,8 +428,9 @@ public final class ServerTreeViewInteractionCollaboratorsFactory {
         Objects.toString(
                 JOptionPane.showInputDialog(
                     owner,
-                    "Enter channel mode changes for " + pretty + " (examples: +m, -m, +o nick):",
-                    ""),
+                    MESSAGES.text("serverTree.channelModes.prompt.message", pretty),
+                    MESSAGES.text("serverTree.channelModes.prompt.title"),
+                    JOptionPane.QUESTION_MESSAGE),
                 "")
             .trim();
     if (modeSpec.isEmpty()) return;
