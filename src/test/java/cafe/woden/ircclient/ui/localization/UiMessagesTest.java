@@ -475,6 +475,38 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesServerTreeServerMenuMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Connect \"libera\"", messages.text("serverTree.serverMenu.connect", "libera"));
+    assertEquals(
+        "Disconnect \"libera\"", messages.text("serverTree.serverMenu.disconnect", "libera"));
+    assertEquals("View Network Info...", messages.text("serverTree.serverMenu.viewNetworkInfo"));
+    assertEquals(
+        "Complete Quassel Setup...",
+        messages.text("serverTree.serverMenu.completeQuasselSetup"));
+    assertEquals(
+        "Manage Quassel Networks...",
+        messages.text("serverTree.serverMenu.manageQuasselNetworks"));
+    assertEquals("Save \"libera\"…", messages.text("serverTree.serverMenu.save", "libera"));
+    assertEquals(
+        "Auto-connect \"libera\" on startup",
+        messages.text("serverTree.serverMenu.autoConnectOnStartup", "libera"));
+    assertEquals(
+        "Auto-connect \"libera\" next time",
+        messages.text("serverTree.serverMenu.autoConnectNextTime", "libera"));
+    assertEquals("Add Interceptor...", messages.text("serverTree.serverMenu.addInterceptor"));
+    assertEquals(
+        "Open \"libera\" Channel List",
+        messages.text("serverTree.quasselNetworkMenu.openChannelList", "libera"));
+    assertEquals(
+        "Remove \"libera\"",
+        messages.text("serverTree.quasselNetworkMenu.remove", "libera"));
+    assertEquals(
+        "Add Quassel Network...", messages.text("serverTree.quasselNetworkMenu.addNetwork"));
+  }
+
+  @Test
   void resolvesChannelListUxMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
 

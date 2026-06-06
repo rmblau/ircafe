@@ -5,6 +5,7 @@ import cafe.woden.ircclient.config.api.ServerEntry;
 import cafe.woden.ircclient.interceptors.InterceptorScope;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.servertree.model.ServerTreeNodeData;
 import cafe.woden.ircclient.ui.servertree.viewmodel.ServerTreeConnectionStateViewModel;
 import java.util.Locale;
@@ -30,6 +31,7 @@ import org.springframework.stereotype.Component;
 @InterfaceLayer
 @Component
 public final class ServerTreeServerNodeMenuBuilder {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private static final Logger log = LoggerFactory.getLogger(ServerTreeServerNodeMenuBuilder.class);
 
@@ -332,21 +334,22 @@ public final class ServerTreeServerNodeMenuBuilder {
       menu.addSeparator();
     }
 
-    JMenuItem connectOne = new JMenuItem("Connect \"" + pretty + "\"");
+    JMenuItem connectOne = new JMenuItem(MESSAGES.text("serverTree.serverMenu.connect", pretty));
     connectOne.setIcon(SvgIcons.action("plus", 16));
     connectOne.setDisabledIcon(SvgIcons.actionDisabled("plus", 16));
     connectOne.setEnabled(ServerTreeConnectionStateViewModel.canConnect(state));
     connectOne.addActionListener(ev -> context.requestConnectServer(serverId));
     menu.add(connectOne);
 
-    JMenuItem disconnectOne = new JMenuItem("Disconnect \"" + pretty + "\"");
+    JMenuItem disconnectOne = new JMenuItem(
+        MESSAGES.text("serverTree.serverMenu.disconnect", pretty));
     disconnectOne.setIcon(SvgIcons.action("exit", 16));
     disconnectOne.setDisabledIcon(SvgIcons.actionDisabled("exit", 16));
     disconnectOne.setEnabled(ServerTreeConnectionStateViewModel.canDisconnect(state));
     disconnectOne.addActionListener(ev -> context.requestDisconnectServer(serverId));
     menu.add(disconnectOne);
 
-    JMenuItem networkInfo = new JMenuItem("View Network Info...");
+    JMenuItem networkInfo = new JMenuItem(MESSAGES.text("serverTree.serverMenu.viewNetworkInfo"));
     networkInfo.setIcon(SvgIcons.action("info", 16));
     networkInfo.setDisabledIcon(SvgIcons.actionDisabled("info", 16));
     networkInfo.addActionListener(ev -> context.openServerInfoDialog(serverId));
@@ -355,14 +358,16 @@ public final class ServerTreeServerNodeMenuBuilder {
     boolean quasselCoreServer = context.supportsQuasselCoreCommands(serverId);
     if (quasselCoreServer) {
       if (context.isQuasselSetupPending(serverId)) {
-        JMenuItem completeQuasselSetup = new JMenuItem("Complete Quassel Setup...");
+        JMenuItem completeQuasselSetup = new JMenuItem(
+            MESSAGES.text("serverTree.serverMenu.completeQuasselSetup"));
         completeQuasselSetup.setIcon(SvgIcons.action("edit", 16));
         completeQuasselSetup.setDisabledIcon(SvgIcons.actionDisabled("edit", 16));
         completeQuasselSetup.addActionListener(ev -> context.openQuasselSetup(serverId));
         menu.add(completeQuasselSetup);
       }
 
-      JMenuItem manageQuasselNetworks = new JMenuItem("Manage Quassel Networks...");
+      JMenuItem manageQuasselNetworks = new JMenuItem(
+          MESSAGES.text("serverTree.serverMenu.manageQuasselNetworks"));
       manageQuasselNetworks.setIcon(SvgIcons.action("edit", 16));
       manageQuasselNetworks.setDisabledIcon(SvgIcons.actionDisabled("edit", 16));
       manageQuasselNetworks.addActionListener(
@@ -376,7 +381,7 @@ public final class ServerTreeServerNodeMenuBuilder {
     boolean ephemeral = serverEntry.map(ServerEntry::ephemeral).orElse(false);
     if (ephemeral) {
       menu.addSeparator();
-      JMenuItem save = new JMenuItem("Save \"" + pretty + "\"…");
+      JMenuItem save = new JMenuItem(MESSAGES.text("serverTree.serverMenu.save", pretty));
       save.setIcon(SvgIcons.action("plus", 16));
       save.setDisabledIcon(SvgIcons.actionDisabled("plus", 16));
       save.setEnabled(context.serverDialogsAvailable());
@@ -387,7 +392,7 @@ public final class ServerTreeServerNodeMenuBuilder {
     if (canReorder) {
       menu.addSeparator();
       boolean editable = context.serverDialogsAvailable() && persistedServerEntry;
-      JMenuItem edit = new JMenuItem("Edit \"" + pretty + "\"…");
+      JMenuItem edit = new JMenuItem(MESSAGES.text("serverTree.serverMenu.edit", pretty));
       edit.setIcon(SvgIcons.action("edit", 16));
       edit.setDisabledIcon(SvgIcons.actionDisabled("edit", 16));
       edit.setEnabled(editable);
@@ -398,7 +403,8 @@ public final class ServerTreeServerNodeMenuBuilder {
     if (canReorder && persistedServerEntry && context.runtimeConfigAvailable()) {
       menu.addSeparator();
       JCheckBoxMenuItem startupAutoConnect =
-          new JCheckBoxMenuItem("Auto-connect \"" + pretty + "\" on startup");
+          new JCheckBoxMenuItem(
+              MESSAGES.text("serverTree.serverMenu.autoConnectOnStartup", pretty));
       startupAutoConnect.setSelected(context.readServerAutoConnectOnStart(serverId, true));
       startupAutoConnect.addActionListener(
           ev ->
@@ -417,7 +423,8 @@ public final class ServerTreeServerNodeMenuBuilder {
     if (scopeServerId.isEmpty()) return null;
 
     JPopupMenu menu = new JPopupMenu();
-    JMenuItem addInterceptor = new JMenuItem("Add Interceptor...");
+    JMenuItem addInterceptor = new JMenuItem(
+        MESSAGES.text("serverTree.serverMenu.addInterceptor"));
     addInterceptor.setIcon(SvgIcons.action("plus", 16));
     addInterceptor.setDisabledIcon(SvgIcons.actionDisabled("plus", 16));
     addInterceptor.setEnabled(context.interceptorStoreAvailable());
@@ -452,7 +459,8 @@ public final class ServerTreeServerNodeMenuBuilder {
             && context.isAutoConnectEnabled(backendId, originId, networkKey);
 
     menu.addSeparator();
-    JCheckBoxMenuItem auto = new JCheckBoxMenuItem("Auto-connect \"" + networkKey + "\" next time");
+    JCheckBoxMenuItem auto = new JCheckBoxMenuItem(
+        MESSAGES.text("serverTree.serverMenu.autoConnectNextTime", networkKey));
     auto.setSelected(enabled);
     auto.setEnabled(originId != null && !originId.isBlank());
     auto.addActionListener(
