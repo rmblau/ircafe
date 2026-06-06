@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.filters;
 
 import cafe.woden.ircclient.ui.filter.FilterSettings;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
 import javax.swing.DefaultCellEditor;
@@ -15,8 +16,9 @@ import javax.swing.table.TableColumn;
 final class FilterOverrideControlsSupport {
   private FilterOverrideControlsSupport() {}
 
-  static FilterOverrideControls buildControls(FilterSettings current, java.awt.Window owner) {
-    FilterOverridesTableModel model = new FilterOverridesTableModel();
+  static FilterOverrideControls buildControls(
+      FilterSettings current, java.awt.Window owner, UiMessages messages) {
+    FilterOverridesTableModel model = new FilterOverridesTableModel(messages);
     model.setOverrides(current.overrides());
 
     JTable table = new JTable(model);
@@ -31,9 +33,15 @@ final class FilterOverrideControlsSupport {
     c3.setCellEditor(new DefaultCellEditor(new JComboBox<>(Tri.values())));
 
     JButton add =
-        PreferencesUiSupport.iconOnlyButton("Add override...", "plus", "Add scope override");
+        PreferencesUiSupport.iconOnlyButton(
+            messages.text("preferences.filters.overrides.button.add"),
+            "plus",
+            messages.text("preferences.filters.overrides.button.add.tooltip"));
     JButton remove =
-        PreferencesUiSupport.iconOnlyButton("Remove", "trash", "Remove selected scope override");
+        PreferencesUiSupport.iconOnlyButton(
+            messages.text("preferences.filters.overrides.button.remove"),
+            "trash",
+            messages.text("preferences.filters.overrides.button.remove.tooltip"));
     remove.setEnabled(false);
 
     Runnable refreshRemoveButton =
@@ -45,8 +53,8 @@ final class FilterOverrideControlsSupport {
           String scope =
               JOptionPane.showInputDialog(
                   owner,
-                  "Scope pattern (e.g. libera/#llamas, libera/*, */status)",
-                  "Add Override",
+                  messages.text("preferences.filters.overrides.prompt.scope"),
+                  messages.text("preferences.filters.overrides.prompt.title"),
                   JOptionPane.PLAIN_MESSAGE);
           if (scope == null) return;
           scope = scope.trim();
@@ -63,7 +71,9 @@ final class FilterOverrideControlsSupport {
           int row = SettingsTableSupport.selectedModelRow(table);
           if (row < 0) return;
           if (!PreferencesUiSupport.confirmOkCancel(
-              owner, "Remove selected override?", "Remove Override")) {
+              owner,
+              messages.text("preferences.filters.overrides.remove.confirm"),
+              messages.text("preferences.filters.overrides.remove.title"))) {
             return;
           }
           model.removeAt(row);

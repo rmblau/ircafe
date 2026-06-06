@@ -528,6 +528,26 @@ class UiMessagesTest {
         messages.text("preferences.translation.validation.detectionLanguageCount"));
   }
 
+
+  @Test
+  void resolvesFiltersPreferencesMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Filters", messages.text("preferences.filters.title"));
+    assertEquals(
+        "Filters only affect transcript rendering; messages are still logged.",
+        messages.text("preferences.filters.help.configuration"));
+    assertEquals(
+        "Enable \"Filtered (N)\" placeholders by default",
+        messages.text("preferences.filters.control.placeholdersByDefault"));
+    assertEquals(
+        "History placeholder run cap per batch:",
+        messages.text("preferences.filters.field.historyRunCap"));
+    assertEquals("Add Override", messages.text("preferences.filters.overrides.prompt.title"));
+    assertEquals("Default", messages.text("preferences.filters.tri.default"));
+    assertEquals("Summary", messages.text("preferences.filters.rules.column.summary"));
+  }
+
   @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();

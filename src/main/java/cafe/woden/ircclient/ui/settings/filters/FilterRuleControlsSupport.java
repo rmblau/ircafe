@@ -42,7 +42,7 @@ final class FilterRuleControlsSupport {
       TranscriptRebuildService transcriptRebuildService,
       List<AutoCloseable> closeables) {
     UiMessages messages = UiMessages.bundledDefaults();
-    FilterRulesTableModel rulesModel = new FilterRulesTableModel();
+    FilterRulesTableModel rulesModel = new FilterRulesTableModel(messages);
     rulesModel.setRules(current.rules());
 
     JTable rulesTable = new JTable(rulesModel);
