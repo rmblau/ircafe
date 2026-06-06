@@ -1724,7 +1724,7 @@ public final class ChannelListPanel extends JPanel {
     }
     String banListStatusText =
         state.pendingBanListRefresh().get() && !banListView.hasResolvedSnapshot()
-            ? "Requested MODE +b...\nWaiting for server response."
+            ? message("channelList.details.status.requestedBanListRefresh")
             : banListView.statusText();
     setAreaText(state.banListStatusArea(), banListStatusText);
 
@@ -1734,8 +1734,8 @@ public final class ChannelListPanel extends JPanel {
         .setModesButton()
         .setToolTipText(
             canEditModes
-                ? "Set channel modes (sends /mode command)"
-                : "Requires owner/admin/op privileges for this channel");
+                ? message("channelList.details.button.setModes.tooltip.enabled")
+                : message("channelList.details.editRequiresPrivileges"));
     updateBanManagementButtons(
         sid,
         channel,
@@ -1760,18 +1760,28 @@ public final class ChannelListPanel extends JPanel {
     JTextField usersField =
         readOnlyField(
             details.users() < 0
-                ? "Unavailable while disconnected"
+                ? message("channelList.details.value.unavailableWhileDisconnected")
                 : String.valueOf(details.users()));
     JTextField notificationsField =
         readOnlyField(String.valueOf(Math.max(0, details.notifications())));
-    JTextField modesField = readOnlyField(fallback(details.modes(), "(Unknown)"));
-    JTextField autoReattachField = readOnlyField(details.autoReattach() ? "Enabled" : "Disabled");
+    JTextField modesField =
+        readOnlyField(fallback(details.modes(), message("channelList.value.unknown")));
+    JTextField autoReattachField =
+        readOnlyField(
+            details.autoReattach()
+                ? message("channelList.details.value.enabled")
+                : message("channelList.details.value.disabled"));
     JTextArea modeSummaryArea =
         readOnlyArea(
             fallback(details.modeSummary(), friendlyModeSummaryFromRaw(sid, details.modes())), 4);
-    JTextArea topicArea = readOnlyArea(fallback(details.topic(), "(none)"), 4);
+    JTextArea topicArea =
+        readOnlyArea(fallback(details.topic(), message("channelList.details.value.none")), 4);
     BanListViewState initialBanListView = banListViewStateForChannel(sid, channel);
-    BanListTableModel banListTableModel = new BanListTableModel();
+    BanListTableModel banListTableModel =
+        new BanListTableModel(
+            message("channelList.details.banList.column.mask"),
+            message("channelList.details.banList.column.setBy"),
+            message("channelList.details.banList.column.setAt"));
     banListTableModel.setRows(initialBanListView.snapshot().entries());
     JTable banListTable = new JTable(banListTableModel);
     banListTable.setFillsViewportHeight(true);
@@ -1793,27 +1803,30 @@ public final class ChannelListPanel extends JPanel {
     topicScroll.setMinimumSize(new Dimension(180, 120));
     banListScroll.setMinimumSize(new Dimension(180, 180));
 
-    JButton refreshModesButton = new JButton("Refresh Modes");
+    JButton refreshModesButton = new JButton(message("channelList.details.button.refreshModes"));
     refreshModesButton.setFocusable(false);
     refreshModesButton.addActionListener(
         e -> {
           requestModeSnapshotRefresh(sid, channel);
           setAreaText(
-              modeSummaryArea, "Requested MODE " + channel + " ...\nWaiting for server response.");
+              modeSummaryArea, message("channelList.details.status.requestedMode", channel));
         });
 
-    JButton setModesButton = new JButton("Set Modes...");
+    JButton setModesButton = new JButton(message("channelList.details.button.setModes"));
     setModesButton.setFocusable(false);
     setModesButton.addActionListener(
         e -> {
           String existingModes = Objects.toString(modesField.getText(), "").trim();
-          String initial = "(Unknown)".equalsIgnoreCase(existingModes) ? "" : existingModes;
+          String initial =
+              message("channelList.value.unknown").equalsIgnoreCase(existingModes)
+                  ? ""
+                  : existingModes;
           Window owner = SwingUtilities.getWindowAncestor(this);
           String modeSpec =
               Objects.toString(
                       JOptionPane.showInputDialog(
                           owner,
-                          "Enter channel mode changes (examples: +m, -m, +o nick):",
+                          message("channelList.details.prompt.setModes"),
                           initial),
                       "")
                   .trim();
@@ -1821,36 +1834,48 @@ public final class ChannelListPanel extends JPanel {
           requestModeSet(sid, channel, modeSpec);
           setAreaText(
               modeSummaryArea,
-              "Sent MODE " + channel + " " + modeSpec + ".\nWaiting for server response.");
+              message("channelList.details.status.sentMode", channel, modeSpec));
         });
 
     boolean canEditModes = canEditChannelModes(sid, channel);
     setModesButton.setEnabled(canEditModes);
     setModesButton.setToolTipText(
         canEditModes
-            ? "Set channel modes (sends /mode command)"
-            : "Requires owner/admin/op privileges for this channel");
+            ? message("channelList.details.button.setModes.tooltip.enabled")
+            : message("channelList.details.editRequiresPrivileges"));
 
     JButton refreshBanListButton = new JButton();
     configureActionButton(
         refreshBanListButton,
         "refresh",
-        "Refresh the channel ban list (requests MODE +b)",
-        "Refresh ban list");
+        message("channelList.details.button.refreshBanList.tooltip"),
+        message("channelList.details.button.refreshBanList.accessible"));
     refreshBanListButton.addActionListener(
         e -> requestBanListRefreshWithStatus(sid, channel, banListStatusArea));
 
     JButton addBanButton = new JButton();
-    configureActionButton(addBanButton, "plus", "Add a ban mask", "Add ban");
+    configureActionButton(
+        addBanButton,
+        "plus",
+        message("channelList.details.button.addBan.tooltip"),
+        message("channelList.details.button.addBan.accessible"));
     addBanButton.addActionListener(e -> promptAndAddBan(sid, channel, banListStatusArea));
 
     JButton editBanButton = new JButton();
-    configureActionButton(editBanButton, "edit", "Edit the selected ban mask", "Edit ban");
+    configureActionButton(
+        editBanButton,
+        "edit",
+        message("channelList.details.button.editBan.tooltip"),
+        message("channelList.details.button.editBan.accessible"));
     editBanButton.addActionListener(
         e -> promptAndEditBan(sid, channel, banListTable, banListStatusArea));
 
     JButton deleteBanButton = new JButton();
-    configureActionButton(deleteBanButton, "trash", "Remove the selected ban mask", "Delete ban");
+    configureActionButton(
+        deleteBanButton,
+        "trash",
+        message("channelList.details.button.deleteBan.tooltip"),
+        message("channelList.details.button.deleteBan.accessible"));
     deleteBanButton.addActionListener(
         e -> confirmAndDeleteBan(sid, channel, banListTable, banListStatusArea));
 
@@ -1870,26 +1895,28 @@ public final class ChannelListPanel extends JPanel {
                 6,
                 "[right][grow,fill][right][grow,fill][right][grow,fill]",
                 "[]8[]8[]8[]8[grow,fill]"));
-    detailsTab.add(new JLabel("Server"));
+    detailsTab.add(new JLabel(message("channelList.details.field.server")));
     detailsTab.add(readOnlyField(details.serverId()), MigConstraints.growX());
-    detailsTab.add(new JLabel("Channel"));
+    detailsTab.add(new JLabel(message("channelList.details.field.channel")));
     detailsTab.add(readOnlyField(details.channel()), MigConstraints.spanXGrowX(3));
 
-    detailsTab.add(new JLabel("Source"));
+    detailsTab.add(new JLabel(message("channelList.details.field.source")));
     detailsTab.add(
         readOnlyField(
-            details.source() == ChannelDetailsSource.MANAGED ? "Managed" : "Server /LIST"),
+            details.source() == ChannelDetailsSource.MANAGED
+                ? message("channelList.details.source.managed")
+                : message("channelList.details.source.serverList")),
         MigConstraints.growX());
-    detailsTab.add(new JLabel("State"));
+    detailsTab.add(new JLabel(message("channelList.details.field.state")));
     detailsTab.add(stateField, MigConstraints.growX());
-    detailsTab.add(new JLabel("Auto-join"));
+    detailsTab.add(new JLabel(message("channelList.details.field.autoJoin")));
     detailsTab.add(autoReattachField, MigConstraints.growX());
 
-    detailsTab.add(new JLabel("Users"));
+    detailsTab.add(new JLabel(message("channelList.details.field.users")));
     detailsTab.add(usersField, MigConstraints.growX());
-    detailsTab.add(new JLabel("Notifications"));
+    detailsTab.add(new JLabel(message("channelList.details.field.notifications")));
     detailsTab.add(notificationsField, MigConstraints.growX());
-    detailsTab.add(new JLabel("Modes"));
+    detailsTab.add(new JLabel(message("channelList.details.field.modes")));
     detailsTab.add(modesField, MigConstraints.growX());
 
     JPanel modeSummaryPanel = new JPanel(new BorderLayout(0, 6));
@@ -1914,22 +1941,24 @@ public final class ChannelListPanel extends JPanel {
     banPanel.add(banActions, BorderLayout.NORTH);
     banPanel.add(banListScroll, BorderLayout.CENTER);
     JPanel banStatusPanel = new JPanel(new BorderLayout(0, 4));
-    banStatusPanel.add(new JLabel("Status"), BorderLayout.NORTH);
+    banStatusPanel.add(
+        new JLabel(message("channelList.details.field.status")), BorderLayout.NORTH);
     banStatusPanel.add(new JScrollPane(banListStatusArea), BorderLayout.CENTER);
     banPanel.add(banStatusPanel, BorderLayout.SOUTH);
 
-    detailsTab.add(new JLabel("Mode Summary"), MigConstraints.alignYTop());
+    detailsTab.add(
+        new JLabel(message("channelList.details.field.modeSummary")), MigConstraints.alignYTop());
     detailsTab.add(modeSummaryPanel, MigConstraints.spanXGrowXMinHeight(5, 140));
 
-    detailsTab.add(new JLabel("Topic"), MigConstraints.alignYTop());
+    detailsTab.add(new JLabel(message("channelList.details.field.topic")), MigConstraints.alignYTop());
     detailsTab.add(topicPanel, MigConstraints.spanXGrowPushYMinHeight(5, 160));
 
     JTabbedPane detailsTabs = new JTabbedPane();
-    detailsTabs.addTab("Details", detailsTab);
-    detailsTabs.addTab("Ban List", banPanel);
+    detailsTabs.addTab(message("channelList.details.tab.details"), detailsTab);
+    detailsTabs.addTab(message("channelList.details.tab.banList"), banPanel);
     detailsTabs.setSelectedIndex(0);
 
-    JButton closeButton = new JButton("Close");
+    JButton closeButton = new JButton(message("common.button.close"));
     JPanel south = new JPanel(MigLayouts.fillX("0 12 12 12", "[grow, right]", "[]"));
     south.add(closeButton);
 
@@ -1943,7 +1972,9 @@ public final class ChannelListPanel extends JPanel {
     Window owner = SwingUtilities.getWindowAncestor(this);
     JDialog dialog =
         new JDialog(
-            owner, "Channel Details - " + details.channel(), Dialog.ModalityType.APPLICATION_MODAL);
+            owner,
+            message("channelList.details.dialog.title", details.channel()),
+            Dialog.ModalityType.APPLICATION_MODAL);
     dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
     dialog.setContentPane(root);
     dialog.setSize(700, 520);
@@ -2003,8 +2034,8 @@ public final class ChannelListPanel extends JPanel {
     area.setCaretPosition(0);
   }
 
-  private static JTextField readOnlyField(String value) {
-    JTextField field = new JTextField(fallback(value, "(Unknown)"));
+  private JTextField readOnlyField(String value) {
+    JTextField field = new JTextField(fallback(value, message("channelList.value.unknown")));
     field.setEditable(false);
     field.setCaretPosition(0);
     return field;
@@ -2578,9 +2609,12 @@ public final class ChannelListPanel extends JPanel {
   }
 
   private static final class BanListTableModel extends AbstractTableModel {
-    private static final String[] COLS = {"Mask", "Set By", "Set At"};
-
+    private final String[] columns;
     private final ArrayList<BanListEntryRow> rows = new ArrayList<>();
+
+    BanListTableModel(String maskColumn, String setByColumn, String setAtColumn) {
+      this.columns = new String[] {maskColumn, setByColumn, setAtColumn};
+    }
 
     void setRows(List<BanListEntryRow> rows) {
       this.rows.clear();
@@ -2595,12 +2629,12 @@ public final class ChannelListPanel extends JPanel {
 
     @Override
     public int getColumnCount() {
-      return COLS.length;
+      return columns.length;
     }
 
     @Override
     public String getColumnName(int column) {
-      return (column >= 0 && column < COLS.length) ? COLS[column] : "";
+      return (column >= 0 && column < columns.length) ? columns[column] : "";
     }
 
     BanListEntryRow rowAt(int rowIndex) {
@@ -2791,25 +2825,30 @@ public final class ChannelListPanel extends JPanel {
     boolean canManageBans = canEditChannelModes(sid, channel);
     BanListEntryRow selected = selectedBanListEntry(banListTable);
     boolean hasSelection = selected != null;
-    String denied = "Requires owner/admin/op privileges for this channel";
+    String denied = message("channelList.details.editRequiresPrivileges");
 
     if (addBanButton != null) {
       addBanButton.setEnabled(canManageBans);
-      addBanButton.setToolTipText(canManageBans ? "Add a ban mask" : denied);
+      addBanButton.setToolTipText(
+          canManageBans ? message("channelList.details.button.addBan.tooltip") : denied);
     }
     if (editBanButton != null) {
       editBanButton.setEnabled(canManageBans && hasSelection);
       editBanButton.setToolTipText(
           !canManageBans
               ? denied
-              : (hasSelection ? "Edit the selected ban mask" : "Select a ban entry to edit"));
+              : (hasSelection
+                  ? message("channelList.details.button.editBan.tooltip")
+                  : message("channelList.details.button.editBan.tooltip.selectEntry")));
     }
     if (deleteBanButton != null) {
       deleteBanButton.setEnabled(canManageBans && hasSelection);
       deleteBanButton.setToolTipText(
           !canManageBans
               ? denied
-              : (hasSelection ? "Remove the selected ban mask" : "Select a ban entry to delete"));
+              : (hasSelection
+                  ? message("channelList.details.button.deleteBan.tooltip")
+                  : message("channelList.details.button.deleteBan.tooltip.selectEntry")));
     }
   }
 
@@ -2827,11 +2866,11 @@ public final class ChannelListPanel extends JPanel {
   private void requestBanListRefreshWithStatus(String sid, String channel, JTextArea statusArea) {
     setPendingBanListRefresh(sid, channel, true);
     if (requestBanListRefresh(sid, channel)) {
-      setAreaText(statusArea, "Requested MODE +b...\nWaiting for server response.");
+      setAreaText(statusArea, message("channelList.details.status.requestedBanListRefresh"));
       return;
     }
     setPendingBanListRefresh(sid, channel, false);
-    setAreaText(statusArea, "Ban-list refresh is not available.");
+    setAreaText(statusArea, message("channelList.details.status.banListRefreshUnavailable"));
   }
 
   private void promptAndAddBan(String sid, String channel, JTextArea statusArea) {
@@ -2839,7 +2878,9 @@ public final class ChannelListPanel extends JPanel {
     Window owner = SwingUtilities.getWindowAncestor(this);
     String mask =
         Objects.toString(
-                JOptionPane.showInputDialog(owner, "Enter ban mask for " + channel + ":", ""), "")
+                JOptionPane.showInputDialog(
+                    owner, message("channelList.details.prompt.addBan", channel), ""),
+                "")
             .trim();
     if (mask.isEmpty()) return;
     requestModeSet(sid, channel, "+b " + mask);
@@ -2855,7 +2896,9 @@ public final class ChannelListPanel extends JPanel {
     String nextMask =
         Objects.toString(
                 JOptionPane.showInputDialog(
-                    owner, "Edit ban mask for " + channel + ":", selected.mask()),
+                    owner,
+                    message("channelList.details.prompt.editBan", channel),
+                    selected.mask()),
                 "")
             .trim();
     if (nextMask.isEmpty() || nextMask.equals(selected.mask())) return;
@@ -2873,8 +2916,8 @@ public final class ChannelListPanel extends JPanel {
     int choice =
         JOptionPane.showConfirmDialog(
             owner,
-            "Remove ban \"" + selected.mask() + "\" from " + channel + "?",
-            "Delete Ban",
+            message("channelList.details.confirm.deleteBan.message", selected.mask(), channel),
+            message("channelList.details.confirm.deleteBan.title"),
             JOptionPane.OK_CANCEL_OPTION,
             JOptionPane.WARNING_MESSAGE);
     if (choice != JOptionPane.OK_OPTION) return;

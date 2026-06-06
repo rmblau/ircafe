@@ -521,6 +521,21 @@ class UiMessagesTest {
     assertEquals("Join Channel", messages.text("channelList.menu.joinChannel"));
     assertEquals(
         "Loaded 3 cached ban entries.", messages.text("channelList.banList.status.loadedMany", 3));
+    assertEquals(
+        "Channel Details - #ircafe",
+        messages.text("channelList.details.dialog.title", "#ircafe"));
+    assertEquals("Ban List", messages.text("channelList.details.tab.banList"));
+    assertEquals(
+        "Unavailable while disconnected",
+        messages.text("channelList.details.value.unavailableWhileDisconnected"));
+    assertEquals("Set Modes...", messages.text("channelList.details.button.setModes"));
+    assertEquals(
+        "Sent MODE #ircafe +m.\nWaiting for server response.",
+        messages.text("channelList.details.status.sentMode", "#ircafe", "+m"));
+    assertEquals(
+        "Remove ban \"*!*@bad.host\" from #ircafe?",
+        messages.text("channelList.details.confirm.deleteBan.message", "*!*@bad.host", "#ircafe"));
+    assertEquals("Set By", messages.text("channelList.details.banList.column.setBy"));
   }
 
   @Test
