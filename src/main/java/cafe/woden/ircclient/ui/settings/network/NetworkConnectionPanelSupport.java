@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.network;
 
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
 import cafe.woden.ircclient.ui.util.MigConstraints;
@@ -21,6 +22,8 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 final class NetworkConnectionPanelSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private NetworkConnectionPanelSupport() {}
 
   static NetworkConnectionPanelControls buildControls(
@@ -38,21 +41,20 @@ final class NetworkConnectionPanelSupport {
     JPanel proxyHeader = new JPanel(MigLayouts.fillXGrowTrailing(6));
     proxyHeader.setOpaque(false);
     proxyHeader.add(
-        PreferencesUiSupport.sectionTitle("SOCKS5 proxy"), MigConstraints.growXMinWidth0());
+        PreferencesUiSupport.sectionTitle(MESSAGES.text("preferences.network.proxy.section")),
+        MigConstraints.growXMinWidth0());
     proxyHeader.add(
         PreferencesUiSupport.whyHelpButton(
-            "SOCKS5 proxy",
-            "When enabled, IRCafe routes IRC connections, link previews, embedded images, and file downloads through a SOCKS5 proxy.\n\n"
-                + "Heads up: proxy credentials are stored in your runtime config file in plain text."),
+            MESSAGES.text("preferences.network.proxy.help.title"),
+            MESSAGES.text("preferences.network.proxy.help.message")),
         MigConstraints.alignXRight());
     proxyTab.add(proxyHeader, MigConstraints.span2GrowXMinWidth0Wrap());
 
     JTextArea proxyBlurb = PreferencesUiSupport.subtleInfoText();
-    proxyBlurb.setText(
-        "Routes IRC + embeds through SOCKS5. Use remote DNS if local DNS is blocked.");
+    proxyBlurb.setText(MESSAGES.text("preferences.network.proxy.blurb"));
     proxyTab.add(proxyBlurb, MigConstraints.span2GrowXMinWidth0Wrap());
 
-    JCheckBox proxyEnabled = new JCheckBox("Use SOCKS5 proxy");
+    JCheckBox proxyEnabled = new JCheckBox(MESSAGES.text("preferences.network.proxy.enabled"));
     proxyEnabled.setSelected(proxySettings.enabled());
 
     JTextField proxyHost = new JTextField(Objects.toString(proxySettings.host(), ""));
@@ -65,19 +67,23 @@ final class NetworkConnectionPanelSupport {
     JCheckBox proxyRemoteDns = new JCheckBox();
     proxyRemoteDns.setSelected(proxySettings.remoteDns());
     proxyRemoteDns.setToolTipText(
-        "When enabled, IRCafe asks the proxy to resolve hostnames. Useful if local DNS is blocked.");
+        MESSAGES.text("preferences.network.proxy.remoteDns.tooltip"));
     JComponent proxyRemoteDnsRow =
-        PreferencesUiSupport.wrapCheckBox(proxyRemoteDns, "Proxy resolves DNS (remote DNS)");
+        PreferencesUiSupport.wrapCheckBox(
+            proxyRemoteDns, MESSAGES.text("preferences.network.proxy.remoteDns"));
 
     JTextField proxyUsername = new JTextField(Objects.toString(proxySettings.username(), ""));
-    PreferencesUiSupport.placeholder(proxyUsername, "(optional)");
+    PreferencesUiSupport.placeholder(
+        proxyUsername, MESSAGES.text("preferences.network.placeholder.optional"));
 
     JPasswordField proxyPassword =
         new JPasswordField(Objects.toString(proxySettings.password(), ""));
-    PreferencesUiSupport.placeholder(proxyPassword, "(optional)");
+    PreferencesUiSupport.placeholder(
+        proxyPassword, MESSAGES.text("preferences.network.placeholder.optional"));
     proxyPassword.putClientProperty(SwingClientProperties.PASSWORD_FIELD_SHOW_REVEAL_BUTTON, true);
     proxyPassword.putClientProperty(FlatClientProperties.STYLE, "showRevealButton:true;");
-    javax.swing.JButton clearPassword = new javax.swing.JButton("Clear");
+    javax.swing.JButton clearPassword =
+        new javax.swing.JButton(MESSAGES.text("common.button.clear"));
     clearPassword.addActionListener(e -> proxyPassword.setText(""));
 
     int connectTimeoutSec = (int) Math.max(1, proxySettings.connectTimeoutMs() / 1000L);
@@ -148,45 +154,44 @@ final class NetworkConnectionPanelSupport {
     validateProxyInputs.run();
 
     proxyTab.add(proxyEnabled, MigConstraints.spanXWrap(2));
-    proxyTab.add(new JLabel("Host:"));
+    proxyTab.add(new JLabel(MESSAGES.text("preferences.network.field.host")));
     proxyTab.add(proxyHost, MigConstraints.growXMinWidth0());
-    proxyTab.add(new JLabel("Port:"));
+    proxyTab.add(new JLabel(MESSAGES.text("preferences.network.field.port")));
     proxyTab.add(proxyPort, MigConstraints.width(110));
     proxyTab.add(new JLabel(""));
     proxyTab.add(proxyRemoteDnsRow, MigConstraints.growXMinWidth0());
-    proxyTab.add(new JLabel("Username:"));
+    proxyTab.add(new JLabel(MESSAGES.text("preferences.network.field.username")));
     proxyTab.add(proxyUsername, MigConstraints.growXMinWidth0());
-    proxyTab.add(new JLabel("Password:"));
+    proxyTab.add(new JLabel(MESSAGES.text("preferences.network.field.password")));
     proxyTab.add(passwordRow, MigConstraints.growXMinWidth0());
-    proxyTab.add(new JLabel("Connect timeout (sec):"));
+    proxyTab.add(new JLabel(MESSAGES.text("preferences.network.field.connectTimeoutSec")));
     proxyTab.add(connectTimeoutSeconds, MigConstraints.width(110));
-    proxyTab.add(new JLabel("Read timeout (sec):"));
+    proxyTab.add(new JLabel(MESSAGES.text("preferences.network.field.readTimeoutSec")));
     proxyTab.add(readTimeoutSeconds, MigConstraints.width(110));
 
     JPanel tlsTab = new JPanel(MigLayouts.singleColumn(MigLayouts.rows(2, 6)));
     tlsTab.setOpaque(false);
     JPanel tlsHeader = new JPanel(MigLayouts.fillXGrowTrailing(6));
     tlsHeader.setOpaque(false);
-    tlsHeader.add(PreferencesUiSupport.sectionTitle("TLS / SSL"), MigConstraints.growXMinWidth0());
+    tlsHeader.add(
+        PreferencesUiSupport.sectionTitle(MESSAGES.text("preferences.network.tls.section")),
+        MigConstraints.growXMinWidth0());
     tlsHeader.add(
         PreferencesUiSupport.whyHelpButton(
-            "TLS / SSL (Trust all certificates)",
-            "This setting is intentionally dangerous. If enabled, IRCafe will accept any TLS certificate (expired, mismatched, self-signed, etc)\n"
-                + "for IRC-over-TLS connections and for HTTPS fetching (link previews, embedded images, etc).\n\n"
-                + "Only enable this if you understand the risk (MITM becomes trivial)."),
+            MESSAGES.text("preferences.network.tls.help.title"),
+            MESSAGES.text("preferences.network.tls.help.message")),
         MigConstraints.alignXRight());
     tlsTab.add(tlsHeader, MigConstraints.growXMinWidth0Wrap());
 
     JTextArea tlsBlurb = PreferencesUiSupport.subtleInfoText();
-    tlsBlurb.setText(
-        "If enabled, certificate validation is skipped (insecure). Only use for debugging.");
+    tlsBlurb.setText(MESSAGES.text("preferences.network.tls.blurb"));
     tlsTab.add(tlsBlurb, MigConstraints.growXMinWidth0Wrap());
 
     JCheckBox trustAllTlsCertificates = new JCheckBox();
     trustAllTlsCertificates.setSelected(trustAllTlsCertificatesSelected);
     JComponent trustAllTlsRow =
         PreferencesUiSupport.wrapCheckBox(
-            trustAllTlsCertificates, "Trust all TLS/SSL certificates (insecure)");
+            trustAllTlsCertificates, MESSAGES.text("preferences.network.tls.trustAll"));
     tlsTab.add(trustAllTlsRow, MigConstraints.growXMinWidth0Wrap());
 
     JPanel heartbeatTab = new JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rows(2, 6)));
@@ -194,27 +199,24 @@ final class NetworkConnectionPanelSupport {
     JPanel heartbeatHeader = new JPanel(MigLayouts.fillXGrowTrailing(6));
     heartbeatHeader.setOpaque(false);
     heartbeatHeader.add(
-        PreferencesUiSupport.sectionTitle("Connection heartbeat"), MigConstraints.growXMinWidth0());
+        PreferencesUiSupport.sectionTitle(MESSAGES.text("preferences.network.heartbeat.section")),
+        MigConstraints.growXMinWidth0());
     heartbeatHeader.add(
         PreferencesUiSupport.whyHelpButton(
-            "Connection heartbeat",
-            "IRCafe can detect 'silent' disconnects by monitoring inbound traffic.\n"
-                + "If no IRC messages are received for the configured timeout, IRCafe will close the socket\n"
-                + "and let the reconnect logic take over (if enabled).\n\n"
-                + "Tip: If your network is very quiet, increase the timeout."),
+            MESSAGES.text("preferences.network.heartbeat.help.title"),
+            MESSAGES.text("preferences.network.heartbeat.help.message")),
         MigConstraints.alignXRight());
     heartbeatTab.add(heartbeatHeader, MigConstraints.span2GrowXMinWidth0Wrap());
 
     JTextArea heartbeatBlurb = PreferencesUiSupport.subtleInfoText();
-    heartbeatBlurb.setText(
-        "Detects silent disconnects by closing idle sockets so reconnect can kick in.");
+    heartbeatBlurb.setText(MESSAGES.text("preferences.network.heartbeat.blurb"));
     heartbeatTab.add(heartbeatBlurb, MigConstraints.span2GrowXMinWidth0Wrap());
 
     JCheckBox heartbeatEnabled = new JCheckBox();
     heartbeatEnabled.setSelected(heartbeatSettings.enabled());
     JComponent heartbeatEnabledRow =
         PreferencesUiSupport.wrapCheckBox(
-            heartbeatEnabled, "Enable heartbeat / idle timeout detection");
+            heartbeatEnabled, MESSAGES.text("preferences.network.heartbeat.enabled"));
 
     int heartbeatCheckSec = (int) Math.max(1, heartbeatSettings.checkPeriodMs() / 1000L);
     int heartbeatTimeoutSec = (int) Math.max(1, heartbeatSettings.timeoutMs() / 1000L);
@@ -233,9 +235,9 @@ final class NetworkConnectionPanelSupport {
     updateHeartbeatEnabledState.run();
 
     heartbeatTab.add(heartbeatEnabledRow, MigConstraints.span2GrowXMinWidth0Wrap());
-    heartbeatTab.add(new JLabel("Check period (sec):"));
+    heartbeatTab.add(new JLabel(MESSAGES.text("preferences.network.field.checkPeriodSec")));
     heartbeatTab.add(heartbeatCheckPeriodSeconds, MigConstraints.width(110));
-    heartbeatTab.add(new JLabel("Timeout (sec):"));
+    heartbeatTab.add(new JLabel(MESSAGES.text("preferences.network.field.timeoutSec")));
     heartbeatTab.add(heartbeatTimeoutSeconds, MigConstraints.width(110));
 
     JPanel bouncerTab = new JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rows(2, 6)));
@@ -243,55 +245,60 @@ final class NetworkConnectionPanelSupport {
     JPanel bouncerHeader = new JPanel(MigLayouts.fillXGrowTrailing(6));
     bouncerHeader.setOpaque(false);
     bouncerHeader.add(
-        PreferencesUiSupport.sectionTitle("Bouncer discovery defaults"),
+        PreferencesUiSupport.sectionTitle(MESSAGES.text("preferences.network.bouncer.section")),
         MigConstraints.growXMinWidth0());
     bouncerHeader.add(
         PreferencesUiSupport.whyHelpButton(
-            "Bouncer discovery defaults",
-            "These defaults are used by the generic bouncer mapping strategy for discovered networks.\n\n"
-                + "Use a login template to shape derived usernames.\n"
-                + "Use hint preference to accept or ignore login user hints sent by the bouncer."),
+            MESSAGES.text("preferences.network.bouncer.help.title"),
+            MESSAGES.text("preferences.network.bouncer.help.message")),
         MigConstraints.alignXRight());
     bouncerTab.add(bouncerHeader, MigConstraints.span2GrowXMinWidth0Wrap());
 
     JTextArea bouncerBlurb = PreferencesUiSupport.subtleInfoText();
-    bouncerBlurb.setText(
-        "Controls how generic bouncer-discovered networks map to ephemeral server login users.");
+    bouncerBlurb.setText(MESSAGES.text("preferences.network.bouncer.blurb"));
     bouncerTab.add(bouncerBlurb, MigConstraints.span2GrowXMinWidth0Wrap());
 
     JCheckBox genericBouncerPreferLoginHint = new JCheckBox();
     genericBouncerPreferLoginHint.setSelected(preferLoginHintDefault);
     JComponent genericBouncerPreferLoginHintRow =
         PreferencesUiSupport.wrapCheckBox(
-            genericBouncerPreferLoginHint, "Prefer login user hint from discovery payloads");
+            genericBouncerPreferLoginHint,
+            MESSAGES.text("preferences.network.bouncer.preferLoginHint"));
     bouncerTab.add(genericBouncerPreferLoginHintRow, MigConstraints.span2GrowXMinWidth0Wrap());
 
     JTextField genericBouncerLoginTemplate = new JTextField(loginTemplateDefault);
     PreferencesUiSupport.placeholder(genericBouncerLoginTemplate, loginTemplateDefault);
     JTextArea genericBouncerTemplateHelp = PreferencesUiSupport.subtleInfoText();
     genericBouncerTemplateHelp.setText(
-        "Template tokens: {base} and {network}. Example: {base}/{network}");
-    bouncerTab.add(new JLabel("Login template:"));
+        MESSAGES.text("preferences.network.bouncer.templateHelp"));
+    bouncerTab.add(new JLabel(MESSAGES.text("preferences.network.field.loginTemplate")));
     bouncerTab.add(genericBouncerLoginTemplate, MigConstraints.growXMinWidth0());
     bouncerTab.add(genericBouncerTemplateHelp, MigConstraints.span2GrowXMinWidth0Wrap());
 
     JTabbedPane networkTabs = new JTabbedPane();
-    networkTabs.addTab("Proxy", PreferencesUiSupport.padSubTab(proxyTab));
-    networkTabs.addTab("TLS", PreferencesUiSupport.padSubTab(tlsTab));
-    networkTabs.addTab("Heartbeat", PreferencesUiSupport.padSubTab(heartbeatTab));
-    networkTabs.addTab("Bouncer", PreferencesUiSupport.padSubTab(bouncerTab));
+    networkTabs.addTab(
+        MESSAGES.text("preferences.network.tab.proxy"), PreferencesUiSupport.padSubTab(proxyTab));
+    networkTabs.addTab(
+        MESSAGES.text("preferences.network.tab.tls"), PreferencesUiSupport.padSubTab(tlsTab));
+    networkTabs.addTab(
+        MESSAGES.text("preferences.network.tab.heartbeat"),
+        PreferencesUiSupport.padSubTab(heartbeatTab));
+    networkTabs.addTab(
+        MESSAGES.text("preferences.network.tab.bouncer"),
+        PreferencesUiSupport.padSubTab(bouncerTab));
 
     JPanel networkIntro =
         new JPanel(
             MigLayouts.fillXWrap(
                 12, 2, MigLayoutConstraints.GROW_FILL_GAP_6_TRAILING, MigLayoutConstraints.ROW));
     networkIntro.setOpaque(false);
-    networkIntro.add(PreferencesUiSupport.tabTitle("Network"), MigConstraints.growXMinWidth0());
+    networkIntro.add(
+        PreferencesUiSupport.tabTitle(MESSAGES.text("preferences.network.title")),
+        MigConstraints.growXMinWidth0());
     networkIntro.add(
         PreferencesUiSupport.whyHelpButton(
-            "Network settings",
-            "These settings affect how IRCafe connects to networks and fetches external content (link previews, embedded images, etc).\n\n"
-                + "Tip: Most users only touch Proxy. Leave TLS trust-all off unless you're debugging."),
+            MESSAGES.text("preferences.network.help.title"),
+            MESSAGES.text("preferences.network.help.message")),
         MigConstraints.alignXRight());
 
     networkPanel.add(networkIntro, MigConstraints.growXMinWidth0Wrap());

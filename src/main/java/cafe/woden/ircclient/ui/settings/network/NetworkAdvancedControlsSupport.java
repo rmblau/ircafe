@@ -6,12 +6,15 @@ import cafe.woden.ircclient.irc.backend.IrcHeartbeatMaintenanceService;
 import cafe.woden.ircclient.net.NetHeartbeatContext;
 import cafe.woden.ircclient.net.NetProxyContext;
 import cafe.woden.ircclient.net.NetTlsContext;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import java.util.List;
 
 public final class NetworkAdvancedControlsSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private NetworkAdvancedControlsSupport() {}
 
   public static NetworkAdvancedControls buildControls(
@@ -75,10 +78,12 @@ public final class NetworkAdvancedControlsSupport {
 
     if (enabled) {
       if (host.isBlank()) {
-        throw new IllegalArgumentException("Proxy host is required when proxy is enabled.");
+        throw new IllegalArgumentException(
+            MESSAGES.text("preferences.network.validation.proxyHostRequired"));
       }
       if (port <= 0 || port > 65535) {
-        throw new IllegalArgumentException("Proxy port must be 1..65535.");
+        throw new IllegalArgumentException(
+            MESSAGES.text("preferences.network.validation.proxyPortRange"));
       }
     }
 
@@ -101,7 +106,8 @@ public final class NetworkAdvancedControlsSupport {
     checkSeconds = Math.max(1, checkSeconds);
     timeoutSeconds = Math.max(1, timeoutSeconds);
     if (enabled && timeoutSeconds <= checkSeconds) {
-      throw new IllegalArgumentException("Timeout must be greater than check period.");
+      throw new IllegalArgumentException(
+          MESSAGES.text("preferences.network.validation.heartbeatTimeoutGreater"));
     }
 
     return new IrcProperties.Heartbeat(enabled, checkSeconds * 1000L, timeoutSeconds * 1000L);
@@ -113,7 +119,9 @@ public final class NetworkAdvancedControlsSupport {
       proxy = readProxySettings(controls.proxy());
     } catch (Exception ex) {
       throw new NetworkSettingsException(
-          "Invalid proxy settings", "Invalid SOCKS proxy settings:\n\n" + ex.getMessage(), ex);
+          MESSAGES.text("preferences.network.validation.proxy.title"),
+          MESSAGES.text("preferences.network.validation.proxy.message", ex.getMessage()),
+          ex);
     }
 
     IrcProperties.Heartbeat heartbeat;
@@ -121,7 +129,9 @@ public final class NetworkAdvancedControlsSupport {
       heartbeat = readHeartbeatSettings(controls.heartbeat());
     } catch (Exception ex) {
       throw new NetworkSettingsException(
-          "Invalid heartbeat settings", "Invalid heartbeat settings:\n\n" + ex.getMessage(), ex);
+          MESSAGES.text("preferences.network.validation.heartbeat.title"),
+          MESSAGES.text("preferences.network.validation.heartbeat.message", ex.getMessage()),
+          ex);
     }
 
     BouncerSettings bouncer = readBouncerSettings(controls.bouncer());

@@ -574,6 +574,29 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesNetworkPreferencesMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Network", messages.text("preferences.network.title"));
+    assertEquals("SOCKS5 proxy", messages.text("preferences.network.proxy.section"));
+    assertEquals("Use SOCKS5 proxy", messages.text("preferences.network.proxy.enabled"));
+    assertEquals(
+        "Trust all TLS/SSL certificates (insecure)",
+        messages.text("preferences.network.tls.trustAll"));
+    assertEquals(
+        "Enable heartbeat / idle timeout detection",
+        messages.text("preferences.network.heartbeat.enabled"));
+    assertEquals(
+        "Prefer login user hint from discovery payloads",
+        messages.text("preferences.network.bouncer.preferLoginHint"));
+    assertEquals(
+        "Invalid SOCKS proxy settings:\n\nProxy host is required when proxy is enabled.",
+        messages.text(
+            "preferences.network.validation.proxy.message",
+            messages.text("preferences.network.validation.proxyHostRequired")));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 
