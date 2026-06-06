@@ -5,6 +5,7 @@ import cafe.woden.ircclient.app.translation.MessageTranslationLanguageCatalog;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
 import cafe.woden.ircclient.ui.util.MigConstraints;
@@ -42,6 +43,8 @@ import javax.swing.ListSelectionModel;
 import javax.swing.TransferHandler;
 
 public final class TranslationControlsSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private static final DataFlavor LANGUAGE_TRANSFER_FLAVOR =
       new DataFlavor(LanguageTransfer.class, "Translation language selection");
 
@@ -53,16 +56,18 @@ public final class TranslationControlsSupport {
     TranslationServiceChoice initialChoice =
         TranslationServiceChoice.fromBackendId(effective.backendId());
 
-    JCheckBox enabled = new JCheckBox("Enable translation");
+    JCheckBox enabled = new JCheckBox(MESSAGES.text("preferences.translation.enabled"));
     enabled.setSelected(effective.enabled());
 
     JComboBox<IrcProperties.Client.Translation.Mode> mode =
         new JComboBox<>(IrcProperties.Client.Translation.Mode.values());
+    mode.setRenderer(modeRenderer());
     mode.setSelectedItem(effective.mode());
     PreferencesUiSupport.decorateComboBoxSelection(mode, closeables);
 
     JComboBox<TranslationServiceChoice> backend =
         new JComboBox<>(TranslationServiceChoice.values());
+    backend.setRenderer(backendRenderer());
     backend.setSelectedItem(initialChoice);
     PreferencesUiSupport.decorateComboBoxSelection(backend, closeables);
 
@@ -70,17 +75,20 @@ public final class TranslationControlsSupport {
     PreferencesUiSupport.placeholder(endpoint, initialChoice.defaultEndpoint());
 
     JPasswordField apiKey = new JPasswordField(Objects.toString(effective.apiKey(), ""));
-    PreferencesUiSupport.placeholder(apiKey, "Required for DeepL; optional or unused otherwise");
+    PreferencesUiSupport.placeholder(
+        apiKey, MESSAGES.text("preferences.translation.apiKey.placeholder"));
     apiKey.putClientProperty(SwingClientProperties.PASSWORD_FIELD_SHOW_REVEAL_BUTTON, true);
     apiKey.putClientProperty(FlatClientProperties.STYLE, "showRevealButton:true;");
-    JButton clearApiKey = new JButton("Clear");
+    JButton clearApiKey =
+        new JButton(MESSAGES.text("preferences.translation.button.clearApiKey"));
     clearApiKey.addActionListener(event -> apiKey.setText(""));
 
     JCheckBox translateUnknownMessages =
-        new JCheckBox("Translate messages when language is unknown");
+        new JCheckBox(MESSAGES.text("preferences.translation.translateUnknown"));
     translateUnknownMessages.setSelected(effective.translateUnknownMessages());
 
-    JCheckBox detectAllLanguages = new JCheckBox("Detect all supported languages");
+    JCheckBox detectAllLanguages =
+        new JCheckBox(MESSAGES.text("preferences.translation.detectAllLanguages"));
     detectAllLanguages.setSelected(effective.detectAllLanguages());
     List<MessageTranslationLanguage> catalog = MessageTranslationLanguageCatalog.commonTargets();
     DefaultListModel<MessageTranslationLanguage> enabledDetectionLanguageModel =
@@ -106,10 +114,14 @@ public final class TranslationControlsSupport {
                     detectAllLanguages.isSelected(), enabledDetectionLanguageModel, catalog)));
     selectLanguage(targetLanguage, effective.targetLanguage());
     PreferencesUiSupport.decorateComboBoxSelection(targetLanguage, closeables);
-    JButton addDetectionLanguage = new JButton("Add >");
-    JButton removeDetectionLanguage = new JButton("< Remove");
-    JButton addAllDetectionLanguages = new JButton("Add all");
-    JButton removeAllDetectionLanguages = new JButton("Remove all");
+    JButton addDetectionLanguage =
+        new JButton(MESSAGES.text("preferences.translation.button.addDetectionLanguage"));
+    JButton removeDetectionLanguage =
+        new JButton(MESSAGES.text("preferences.translation.button.removeDetectionLanguage"));
+    JButton addAllDetectionLanguages =
+        new JButton(MESSAGES.text("preferences.translation.button.addAllDetectionLanguages"));
+    JButton removeAllDetectionLanguages =
+        new JButton(MESSAGES.text("preferences.translation.button.removeAllDetectionLanguages"));
 
     JSpinner requestTimeoutSeconds =
         PreferencesUiSupport.numberSpinner(
@@ -118,20 +130,26 @@ public final class TranslationControlsSupport {
         PreferencesUiSupport.numberSpinner(
             effective.maxRequestChars(), 1, 128 * 1024, 100, closeables);
     JSpinner maxConcurrentRequests =
-        PreferencesUiSupport.numberSpinner(effective.maxConcurrentRequests(), 1, 16, 1, closeables);
+        PreferencesUiSupport.numberSpinner(
+            effective.maxConcurrentRequests(), 1, 16, 1, closeables);
 
     JPanel panel = new JPanel(MigLayouts.singleColumnFill(12, "[]8[]"));
-    panel.add(PreferencesUiSupport.tabTitle("Translation"), MigConstraints.growXMinWidth0Wrap());
+    panel.add(
+        PreferencesUiSupport.tabTitle(MESSAGES.text("preferences.translation.title")),
+        MigConstraints.growXMinWidth0Wrap());
     panel.add(enabled, MigConstraints.growXMinWidth0Wrap());
 
-    JPanel service = PreferencesUiSupport.captionPanel("Service", MigLayouts.twoColumnForm(8));
-    service.add(new JLabel("Mode"));
+    JPanel service =
+        PreferencesUiSupport.captionPanel(
+            MESSAGES.text("preferences.translation.section.service"),
+            MigLayouts.twoColumnForm(8));
+    service.add(new JLabel(MESSAGES.text("preferences.translation.field.mode")));
     service.add(mode, MigConstraints.growXMinWidth0());
-    service.add(new JLabel("Backend"));
+    service.add(new JLabel(MESSAGES.text("preferences.translation.field.backend")));
     service.add(backend, MigConstraints.growXMinWidth0());
-    service.add(new JLabel("Endpoint"));
+    service.add(new JLabel(MESSAGES.text("preferences.translation.field.endpoint")));
     service.add(endpoint, MigConstraints.growXMinWidth0());
-    service.add(new JLabel("API key"));
+    service.add(new JLabel(MESSAGES.text("preferences.translation.field.apiKey")));
     JPanel apiKeyRow = new JPanel(MigLayouts.fillXGrowTrailing(6));
     apiKeyRow.setOpaque(false);
     apiKeyRow.add(apiKey, MigConstraints.growXPushXMinWidth0());
@@ -139,30 +157,35 @@ public final class TranslationControlsSupport {
     service.add(apiKeyRow, MigConstraints.growXMinWidth0());
     panel.add(service, MigConstraints.growXMinWidth0Wrap());
 
-    JPanel languages = PreferencesUiSupport.captionPanel("Languages", MigLayouts.twoColumnForm(8));
-    languages.add(new JLabel("Source"));
+    JPanel languages =
+        PreferencesUiSupport.captionPanel(
+            MESSAGES.text("preferences.translation.section.languages"),
+            MigLayouts.twoColumnForm(8));
+    languages.add(new JLabel(MESSAGES.text("preferences.translation.field.source")));
     languages.add(sourceLanguage, MigConstraints.widthWrap(120));
-    languages.add(new JLabel("Target"));
+    languages.add(new JLabel(MESSAGES.text("preferences.translation.field.target")));
     languages.add(targetLanguage, MigConstraints.widthWrap(120));
     languages.add(new JLabel(""));
     languages.add(translateUnknownMessages, MigConstraints.growXMinWidth0());
     panel.add(languages, MigConstraints.growXMinWidth0Wrap());
 
     JPanel detectionLanguages =
-        PreferencesUiSupport.captionPanel("Language detection", MigLayouts.singleColumnFill(0));
+        PreferencesUiSupport.captionPanel(
+            MESSAGES.text("preferences.translation.section.languageDetection"),
+            MigLayouts.singleColumnFill(0));
     detectionLanguages.add(detectAllLanguages, MigConstraints.growXMinWidth0Wrap());
     detectionLanguages.add(
         PreferencesUiSupport.subtleInfoTextWith(
-            "When this box is unchecked, Lingua only loads the enabled detection languages. "
-                + "Choose at least two languages and include your target language for "
-                + "same-language skipping."),
+            MESSAGES.text("preferences.translation.languageDetection.help")),
         MigConstraints.growXMinWidth0Wrap());
     JPanel languageLists =
         new JPanel(MigLayouts.fillX("[grow,fill]8[]8[grow,fill]", "[]4[grow,fill]"));
     languageLists.setOpaque(false);
-    languageLists.add(new JLabel("Disabled"));
+    languageLists.add(
+        new JLabel(MESSAGES.text("preferences.translation.languageDetection.disabled")));
     languageLists.add(new JLabel(""));
-    languageLists.add(new JLabel("Enabled"), "wrap");
+    languageLists.add(
+        new JLabel(MESSAGES.text("preferences.translation.languageDetection.enabled")), "wrap");
     languageLists.add(languageScroll(disabledDetectionLanguages), "grow, push, h 150!");
     JPanel languageButtons = new JPanel(MigLayouts.singleColumn(0));
     languageButtons.setOpaque(false);
@@ -175,12 +198,17 @@ public final class TranslationControlsSupport {
     detectionLanguages.add(languageLists, MigConstraints.growXMinWidth0Wrap());
     panel.add(detectionLanguages, MigConstraints.growXMinWidth0Wrap());
 
-    JPanel limits = PreferencesUiSupport.captionPanel("Limits", MigLayouts.twoColumnForm(8));
-    limits.add(new JLabel("Request timeout (sec)"));
+    JPanel limits =
+        PreferencesUiSupport.captionPanel(
+            MESSAGES.text("preferences.translation.section.limits"),
+            MigLayouts.twoColumnForm(8));
+    limits.add(
+        new JLabel(MESSAGES.text("preferences.translation.field.requestTimeoutSeconds")));
     limits.add(requestTimeoutSeconds, MigConstraints.widthWrap(110));
-    limits.add(new JLabel("Max request chars"));
+    limits.add(new JLabel(MESSAGES.text("preferences.translation.field.maxRequestChars")));
     limits.add(maxRequestChars, MigConstraints.widthWrap(130));
-    limits.add(new JLabel("Max concurrent requests"));
+    limits.add(
+        new JLabel(MESSAGES.text("preferences.translation.field.maxConcurrentRequests")));
     limits.add(maxConcurrentRequests, MigConstraints.width(110));
     panel.add(limits, MigConstraints.growXMinWidth0());
 
@@ -399,23 +427,26 @@ public final class TranslationControlsSupport {
       List<String> detectionLanguages) {
     if (!validEndpoint(endpoint)) {
       throw new TranslationSettingsException(
-          "Invalid translation settings", "Translation endpoint must be an HTTP or HTTPS URL.");
+          MESSAGES.text("preferences.translation.validation.title"),
+          MESSAGES.text("preferences.translation.validation.endpoint"));
     }
     if (backend.apiKeyRequired() && apiKey.isBlank()) {
       throw new TranslationSettingsException(
-          "Invalid translation settings", backend + " requires an API key.");
+          MESSAGES.text("preferences.translation.validation.title"),
+          MESSAGES.text(
+              "preferences.translation.validation.apiKeyRequired", backendLabel(backend)));
     }
     if (targetLanguage.isBlank()) {
       throw new TranslationSettingsException(
-          "Invalid translation settings",
-          "Target language is required when translation is enabled.");
+          MESSAGES.text("preferences.translation.validation.title"),
+          MESSAGES.text("preferences.translation.validation.targetRequired"));
     }
     if (mode == IrcProperties.Client.Translation.Mode.AUTO
         && !detectAllLanguages
         && detectionLanguages.size() < 2) {
       throw new TranslationSettingsException(
-          "Invalid translation settings",
-          "Choose at least two detection languages, or enable all detection languages.");
+          MESSAGES.text("preferences.translation.validation.title"),
+          MESSAGES.text("preferences.translation.validation.detectionLanguageCount"));
     }
   }
 
@@ -453,10 +484,69 @@ public final class TranslationControlsSupport {
     return model;
   }
 
+  private static DefaultListCellRenderer modeRenderer() {
+    return new DefaultListCellRenderer() {
+      @Override
+      public java.awt.Component getListCellRendererComponent(
+          JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        JLabel label =
+            (JLabel)
+                super.getListCellRendererComponent(
+                    list, value, index, isSelected, cellHasFocus);
+        if (value instanceof IrcProperties.Client.Translation.Mode mode) {
+          label.setText(modeLabel(mode));
+        }
+        return label;
+      }
+    };
+  }
+
+  private static DefaultListCellRenderer backendRenderer() {
+    return new DefaultListCellRenderer() {
+      @Override
+      public java.awt.Component getListCellRendererComponent(
+          JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        JLabel label =
+            (JLabel)
+                super.getListCellRendererComponent(
+                    list, value, index, isSelected, cellHasFocus);
+        if (value instanceof TranslationServiceChoice choice) {
+          label.setText(backendLabel(choice));
+        }
+        return label;
+      }
+    };
+  }
+
+  private static String modeLabel(IrcProperties.Client.Translation.Mode mode) {
+    return switch (mode) {
+      case AUTO -> MESSAGES.text("preferences.translation.mode.auto");
+      case MANUAL -> MESSAGES.text("preferences.translation.mode.manual");
+    };
+  }
+
+  private static String backendLabel(TranslationServiceChoice choice) {
+    return switch (choice) {
+      case DEEPL -> MESSAGES.text("preferences.translation.service.deepl");
+      case LIBRETRANSLATE -> MESSAGES.text("preferences.translation.service.libreTranslate");
+      case GOOGLE_WEB -> MESSAGES.text("preferences.translation.service.googleWeb");
+    };
+  }
+
+  private static TranslationLanguageChoice autoLanguageChoice() {
+    return new TranslationLanguageChoice(
+        "auto", MESSAGES.text("preferences.translation.language.autoDetect"));
+  }
+
+  private static TranslationLanguageChoice noneLanguageChoice() {
+    return new TranslationLanguageChoice(
+        "", MESSAGES.text("preferences.translation.language.select"));
+  }
+
   private static DefaultComboBoxModel<TranslationLanguageChoice> sourceLanguageModel(
       List<MessageTranslationLanguage> languages) {
     DefaultComboBoxModel<TranslationLanguageChoice> model = new DefaultComboBoxModel<>();
-    model.addElement(TranslationLanguageChoice.AUTO);
+    model.addElement(autoLanguageChoice());
     for (MessageTranslationLanguage language : sortedLanguages(languages)) {
       model.addElement(TranslationLanguageChoice.from(language));
     }
@@ -466,7 +556,7 @@ public final class TranslationControlsSupport {
   private static DefaultComboBoxModel<TranslationLanguageChoice> targetLanguageModel(
       List<MessageTranslationLanguage> languages) {
     DefaultComboBoxModel<TranslationLanguageChoice> model = new DefaultComboBoxModel<>();
-    model.addElement(TranslationLanguageChoice.NONE);
+    model.addElement(noneLanguageChoice());
     for (MessageTranslationLanguage language : sortedLanguages(languages)) {
       model.addElement(TranslationLanguageChoice.from(language));
     }

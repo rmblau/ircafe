@@ -509,6 +509,26 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesTranslationPreferencesMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Translation", messages.text("preferences.translation.title"));
+    assertEquals("Enable translation", messages.text("preferences.translation.enabled"));
+    assertEquals("Automatic", messages.text("preferences.translation.mode.auto"));
+    assertEquals("Google Web (unofficial)", messages.text("preferences.translation.service.googleWeb"));
+    assertEquals("Auto detect", messages.text("preferences.translation.language.autoDetect"));
+    assertEquals("Language detection", messages.text("preferences.translation.section.languageDetection"));
+    assertEquals("Add >", messages.text("preferences.translation.button.addDetectionLanguage"));
+    assertEquals("Max concurrent requests", messages.text("preferences.translation.field.maxConcurrentRequests"));
+    assertEquals(
+        "DeepL requires an API key.",
+        messages.text("preferences.translation.validation.apiKeyRequired", "DeepL"));
+    assertEquals(
+        "Choose at least two detection languages, or enable all detection languages.",
+        messages.text("preferences.translation.validation.detectionLanguageCount"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 
