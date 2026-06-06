@@ -548,10 +548,47 @@ class UiMessagesTest {
     assertEquals("Summary", messages.text("preferences.filters.rules.column.summary"));
   }
 
+
+  @Test
+  void resolvesAppearancePreferencesMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Appearance", messages.text("preferences.appearance.title"));
+    assertEquals("Look & feel", messages.text("preferences.appearance.section.lookAndFeel"));
+    assertEquals("Reset to defaults", messages.text("preferences.appearance.button.resetDefaults"));
+    assertEquals("Override theme accent", messages.text("preferences.appearance.accent.override"));
+    assertEquals("Custom…", messages.text("preferences.appearance.accent.preset.custom"));
+    assertEquals(
+        "Accent override: #6AA2FF • 75%",
+        messages.text("preferences.appearance.accent.tooltip.override", "#6AA2FF", 75));
+    assertEquals("Auto (theme default)", messages.text("preferences.appearance.density.auto"));
+    assertEquals(
+        "Default (follow theme)",
+        messages.text("preferences.appearance.chatTheme.preset.default"));
+    assertEquals(
+        "Preserve dock layout between restarts",
+        messages.text("preferences.appearance.serverTree.preserveDockLayout"));
+    assertEquals(
+        "Accent color must be a hex value like #RRGGBB.",
+        messages.text("preferences.appearance.validation.accentColor.message"));
+  }
+
   @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 
     assertEquals("not.migrated.yet", messages.text("not.migrated.yet"));
+  }
+
+  @Test
+  void resolvesMemoryPreferencesMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Memory", messages.text("preferences.memory.title"));
+    assertEquals("Widget", messages.text("preferences.memory.section.widget"));
+    assertEquals("Long (used / max GiB)", messages.text("preferences.memory.displayMode.long"));
+    assertEquals(
+        "Show desktop toast warning", messages.text("preferences.memory.warning.toast.enabled"));
+    assertEquals("Reset memory defaults", messages.text("preferences.memory.button.resetDefaults"));
   }
 }
