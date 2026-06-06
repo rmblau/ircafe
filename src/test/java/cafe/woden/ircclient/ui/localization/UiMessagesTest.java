@@ -136,6 +136,27 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesCtcpReplyPreferenceMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("CTCP Replies", messages.text("preferences.ctcpReplies.title"));
+    assertEquals(
+        "Enable automatic CTCP replies", messages.text("preferences.ctcpReplies.enabled"));
+    assertEquals("Reply to CTCP VERSION", messages.text("preferences.ctcpReplies.version"));
+    assertEquals("Reply to CTCP PING", messages.text("preferences.ctcpReplies.ping"));
+    assertEquals("Reply to CTCP TIME", messages.text("preferences.ctcpReplies.time"));
+    assertEquals(
+        "Per-command replies", messages.text("preferences.ctcpReplies.perCommand.section"));
+    assertEquals(
+        "Enable automatic replies and turn on VERSION, PING, and TIME.",
+        messages.text("preferences.ctcpReplies.enableDefaults.tooltip"));
+    assertEquals("Disable all", messages.text("preferences.ctcpReplies.disableAll"));
+    assertEquals(
+        "If the top toggle is off, IRCafe will not send any automatic CTCP replies.",
+        messages.text("preferences.ctcpReplies.disabled.help"));
+  }
+
+  @Test
   void resolvesNickColorPreferenceMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
 
