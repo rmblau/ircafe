@@ -68,6 +68,7 @@ import cafe.woden.ircclient.ui.ignore.IgnoreListDialog;
 import cafe.woden.ircclient.ui.ignore.IgnoresPanel;
 import cafe.woden.ircclient.ui.input.MessageInputPanel;
 import cafe.woden.ircclient.ui.input.OutboundMessageTranslationDialog;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.interceptors.InterceptorPanel;
 import cafe.woden.ircclient.ui.logviewer.LogViewerPanel;
 import cafe.woden.ircclient.ui.monitor.MonitorPanel;
@@ -123,17 +124,18 @@ import org.springframework.stereotype.Component;
 public class ChatDockable extends ChatViewPanel implements Dockable {
 
   private static final Logger log = LoggerFactory.getLogger(ChatDockable.class);
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   public static final String ID = "chat";
   private static final int MAX_DRAFT_TARGETS = 512;
   private static final int MAIN_DOCK_ACCENT_RAIL_PX = 4;
   private static final int MAIN_DOCK_FRAME_PX = 1;
   private static final int MAIN_DOCK_ICON_SIZE_PX = 12;
-  private static final String MAIN_DOCK_TAB_TOOLTIP =
-      "Main chat view (follows server-tree selection)";
-  private static final String MAIN_DOCK_CLOSE_CONFIRM_TITLE = "Close Main View Dock";
+  private static final String MAIN_DOCK_TAB_TOOLTIP = message("chatDock.main.tooltip");
+  private static final String MAIN_DOCK_CLOSE_CONFIRM_TITLE =
+      message("chatDock.main.closeConfirm.title");
   private static final String MAIN_DOCK_CLOSE_CONFIRM_MESSAGE =
-      "Close the main chat view dock?\n\nUse Window -> Reset Main View Dock to restore it.";
+      message("chatDock.main.closeConfirm.message");
 
   private final ChatTranscriptStore transcripts;
   private final ServerTreeDockable serverTree;
@@ -408,8 +410,8 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
   private RuntimeEventsPanel createAssertjEventsPanel(
       ApplicationDiagnosticsService applicationDiagnosticsService) {
     return new RuntimeEventsPanel(
-        "AssertJ Swing",
-        "EDT watchdog, violation checks, and UI freeze diagnostics.",
+        message("chatDock.runtime.assertj.title"),
+        message("chatDock.runtime.assertj.subtitle"),
         () ->
             applicationDiagnosticsService != null
                 ? applicationDiagnosticsService.recentAssertjSwingEvents(1200)
@@ -428,8 +430,8 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
   private RuntimeEventsPanel createUnhandledErrorsPanel(
       ApplicationDiagnosticsService applicationDiagnosticsService) {
     return new RuntimeEventsPanel(
-        "Unhandled Errors",
-        "Uncaught exceptions observed by the global thread exception handler.",
+        message("chatDock.runtime.unhandledErrors.title"),
+        message("chatDock.runtime.unhandledErrors.subtitle"),
         () ->
             applicationDiagnosticsService != null
                 ? applicationDiagnosticsService.recentUnhandledErrorEvents(1200)
@@ -448,8 +450,8 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
   private RuntimeEventsPanel createJhiccupEventsPanel(
       ApplicationDiagnosticsService applicationDiagnosticsService) {
     return new RuntimeEventsPanel(
-        "jHiccup",
-        "External jHiccup process lifecycle and latency diagnostics.",
+        message("chatDock.runtime.jhiccup.title"),
+        message("chatDock.runtime.jhiccup.subtitle"),
         () ->
             applicationDiagnosticsService != null
                 ? applicationDiagnosticsService.recentJhiccupEvents(1200)
@@ -468,8 +470,8 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
   private RuntimeEventsPanel createSpringEventsPanel(
       SpringRuntimeEventsService springRuntimeEventsService) {
     return new RuntimeEventsPanel(
-        "Spring Events",
-        "Application lifecycle, availability, and framework events.",
+        message("chatDock.runtime.springEvents.title"),
+        message("chatDock.runtime.springEvents.subtitle"),
         () ->
             springRuntimeEventsService != null
                 ? springRuntimeEventsService.recentEvents(600)
@@ -486,8 +488,8 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
   private RuntimeEventsPanel createPluginsPanel(InstalledPluginsPort installedPluginsPort) {
     List<RuntimeDiagnosticEvent> rows = buildInstalledPluginEvents(installedPluginsPort);
     return new RuntimeEventsPanel(
-        "Plugins",
-        "Declared external plugin jars discovered from the plugin directory.",
+        message("chatDock.runtime.plugins.title"),
+        message("chatDock.runtime.plugins.subtitle"),
         () -> rows,
         null,
         "plugins",
@@ -533,9 +535,11 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
           new RuntimeDiagnosticEvent(
               recordedAt,
               "INFO",
-              "Plugins",
-              "Plugin runtime is not available in this context.",
-              pluginDirectory.isBlank() ? "" : "Plugin directory: " + pluginDirectory));
+              message("chatDock.plugins.category"),
+              message("chatDock.plugins.unavailable.summary"),
+              pluginDirectory.isBlank()
+                  ? ""
+                  : message("chatDock.plugins.directory", pluginDirectory)));
     }
     List<InstalledPluginDescriptor> installedPlugins = installedPluginsPort.installedPlugins();
     List<InstalledPluginProblem> pluginProblems = installedPluginsPort.pluginProblems();
@@ -546,9 +550,11 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
           new RuntimeDiagnosticEvent(
               recordedAt,
               "INFO",
-              "Plugins",
-              "No declared plugins were found.",
-              pluginDirectory.isBlank() ? "" : "Plugin directory: " + pluginDirectory));
+              message("chatDock.plugins.category"),
+              message("chatDock.plugins.none.summary"),
+              pluginDirectory.isBlank()
+                  ? ""
+                  : message("chatDock.plugins.directory", pluginDirectory)));
     }
 
     ArrayList<RuntimeDiagnosticEvent> rows =
@@ -560,30 +566,38 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
         if (descriptor == null) continue;
         String pluginId = Objects.toString(descriptor.pluginId(), "").trim();
         String pluginVersion = Objects.toString(descriptor.pluginVersion(), "").trim();
-        String versionLabel = pluginVersion.isBlank() ? "unknown" : pluginVersion;
+        String versionLabel =
+            pluginVersion.isBlank() ? message("chatDock.plugins.unknown") : pluginVersion;
         String sourceJar = Objects.toString(descriptor.sourceJar(), "").trim();
         StringBuilder details = new StringBuilder();
         details
-            .append("Plugin ID: ")
-            .append(pluginId.isBlank() ? "(unknown)" : pluginId)
+            .append(
+                message(
+                    "chatDock.plugins.detail.pluginId",
+                    pluginId.isBlank()
+                        ? message("chatDock.plugins.unknown.parenthesized")
+                        : pluginId))
             .append('\n')
-            .append("Version: ")
-            .append(versionLabel)
+            .append(message("chatDock.plugins.detail.version", versionLabel))
             .append('\n')
-            .append("API Version: ")
-            .append(descriptor.pluginApiVersion());
+            .append(
+                message("chatDock.plugins.detail.apiVersion", descriptor.pluginApiVersion()));
         if (!sourceJar.isBlank()) {
-          details.append('\n').append("Source Jar: ").append(sourceJar);
+          details.append('\n').append(message("chatDock.plugins.detail.sourceJar", sourceJar));
         }
         if (!pluginDirectory.isBlank()) {
-          details.append('\n').append("Plugin Directory: ").append(pluginDirectory);
+          details
+              .append('\n')
+              .append(message("chatDock.plugins.detail.pluginDirectory", pluginDirectory));
         }
         rows.add(
             new RuntimeDiagnosticEvent(
                 recordedAt,
                 "INFO",
-                "Plugin",
-                (pluginId.isBlank() ? "(unknown)" : pluginId) + " " + versionLabel,
+                message("chatDock.plugins.plugin.category"),
+                (pluginId.isBlank() ? message("chatDock.plugins.unknown.parenthesized") : pluginId)
+                    + " "
+                    + versionLabel,
                 details.toString()));
       }
     }
@@ -592,23 +606,29 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
         if (problem == null) continue;
         StringBuilder details = new StringBuilder(Objects.toString(problem.details(), ""));
         if (!pluginDirectory.isBlank()
-            && !details.toString().contains("Plugin directory:")
-            && !details.toString().contains("Plugin Directory:")) {
+            && !details.toString().contains(message("chatDock.plugins.directory.prefix"))
+            && !details
+                .toString()
+                .contains(message("chatDock.plugins.detail.pluginDirectory.prefix"))) {
           if (!details.isEmpty()) {
             details.append('\n');
           }
-          details.append("Plugin directory: ").append(pluginDirectory);
+          details.append(message("chatDock.plugins.directory", pluginDirectory));
         }
         rows.add(
             new RuntimeDiagnosticEvent(
                 recordedAt,
                 problem.level(),
-                "Plugin Problem",
+                message("chatDock.plugins.problem.category"),
                 problem.summary(),
                 details.toString()));
       }
     }
     return List.copyOf(rows);
+  }
+
+  private static String message(String key, Object... args) {
+    return MESSAGES.text(key, args);
   }
 
   private TopicCoordinatorBundle createTopicCoordinatorBundle(
@@ -1256,8 +1276,8 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
     if (target == null || target.isUiOnly()) {
       JOptionPane.showMessageDialog(
           this,
-          "Select a chat target before translating a draft.",
-          "Translate Draft",
+          message("chatDock.outboundTranslation.noTarget.message"),
+          message("chatDock.outboundTranslation.title"),
           JOptionPane.WARNING_MESSAGE);
       return;
     }
@@ -1265,8 +1285,8 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
     if (Objects.toString(draft, "").isBlank()) {
       JOptionPane.showMessageDialog(
           this,
-          "Enter a message before translating.",
-          "Translate Draft",
+          message("chatDock.outboundTranslation.emptyDraft.message"),
+          message("chatDock.outboundTranslation.title"),
           JOptionPane.INFORMATION_MESSAGE);
       return;
     }

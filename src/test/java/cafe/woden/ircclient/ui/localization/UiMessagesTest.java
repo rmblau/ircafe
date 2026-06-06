@@ -639,6 +639,35 @@ class UiMessagesTest {
         "reveal failed - click to retry", messages.text("chat.fold.spoiler.revealFailed"));
   }
 
+
+  @Test
+  void resolvesChatDockableMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals(
+        "Main chat view (follows server-tree selection)",
+        messages.text("chatDock.main.tooltip"));
+    assertEquals("Close Main View Dock", messages.text("chatDock.main.closeConfirm.title"));
+    assertEquals(
+        "EDT watchdog, violation checks, and UI freeze diagnostics.",
+        messages.text("chatDock.runtime.assertj.subtitle"));
+    assertEquals("Plugins", messages.text("chatDock.runtime.plugins.title"));
+    assertEquals(
+        "Plugin runtime is not available in this context.",
+        messages.text("chatDock.plugins.unavailable.summary"));
+    assertEquals(
+        "Plugin directory: /tmp/plugins",
+        messages.text("chatDock.plugins.directory", "/tmp/plugins"));
+    assertEquals(
+        "Plugin ID: example-plugin",
+        messages.text("chatDock.plugins.detail.pluginId", "example-plugin"));
+    assertEquals(
+        "API Version: 1", messages.text("chatDock.plugins.detail.apiVersion", 1));
+    assertEquals(
+        "Select a chat target before translating a draft.",
+        messages.text("chatDock.outboundTranslation.noTarget.message"));
+  }
+
   @Test
   void resolvesStatusBarMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
