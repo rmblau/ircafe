@@ -1069,6 +1069,38 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesChatTopicNotificationMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Topic", messages.text("chatTopic.header.topic"));
+    assertEquals(
+        "Topic — #ircafe (+nt)",
+        messages.text("chatTopic.header.topic.channel", "#ircafe", " (+nt)"));
+    assertEquals(
+        "Channel — #ircafe",
+        messages.text("chatTopic.header.channel", "#ircafe", ""));
+    assertEquals(
+        "Recent notifications for #ircafe (3)",
+        messages.text("chatTopic.notifications.popup.header", "#ircafe", 3));
+    assertEquals(
+        "Recent channel notifications (2)",
+        messages.text("chatTopic.notifications.tooltip.header", 2));
+    assertEquals(
+        "(mention) alice",
+        messages.text("chatTopic.notifications.kind.mention.withNick", "alice"));
+    assertEquals(
+        "(rule) bob",
+        messages.text("chatTopic.notifications.kind.rule.withNick", "bob"));
+    assertEquals(
+        "moderation (carol)",
+        messages.text("chatTopic.notifications.label.withNick", "moderation", "carol"));
+    assertEquals(
+        "12:34:56  alice - hello",
+        messages.text(
+            "chatTopic.notifications.preview.titleAndDetail", "12:34:56", "alice", "hello"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 
