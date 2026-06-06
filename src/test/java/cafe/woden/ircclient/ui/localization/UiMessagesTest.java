@@ -52,6 +52,17 @@ class UiMessagesTest {
         "File upload is available on Matrix-backed servers",
         messages.text("messageInput.upload.matrixOnly.tooltip"));
     assertEquals("Upload files to Matrix", messages.text("messageInput.upload.matrix.dialogTitle"));
+    assertEquals("Undo", messages.text("messageInput.context.undo"));
+    assertEquals("Check spelling", messages.text("messageInput.context.checkSpelling"));
+    assertEquals(
+        "Clear Command History",
+        messages.text("messageInput.context.history.clearCommandHistory"));
+    assertEquals(
+        "Suggestions for \"wrod\"",
+        messages.text("messageInput.context.spelling.suggestionsFor", "wrod"));
+    assertEquals(
+        "No suggestions available.",
+        messages.text("messageInput.context.spelling.noSuggestions"));
   }
 
   @Test
