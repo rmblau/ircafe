@@ -4,6 +4,7 @@ import cafe.woden.ircclient.config.api.NickColorRuntimeConfigPort;
 import cafe.woden.ircclient.ui.chat.NickColorService;
 import cafe.woden.ircclient.ui.chat.NickColorSettings;
 import cafe.woden.ircclient.ui.chat.NickColorSettingsBus;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.nickcolors.NickColorOverridesDialog;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.util.MigConstraints;
@@ -17,6 +18,8 @@ import javax.swing.JPanel;
 import javax.swing.JSpinner;
 
 public final class NickColorControlsSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private NickColorControlsSupport() {}
 
   public static NickColorControls buildControls(
@@ -29,21 +32,19 @@ public final class NickColorControlsSupport {
     double minContrastSeed = current != null ? current.minContrast() : 3.0;
     if (minContrastSeed <= 0) minContrastSeed = 3.0;
 
-    JCheckBox enabled = new JCheckBox("Color nicknames (channels and PMs)");
+    JCheckBox enabled = new JCheckBox(MESSAGES.text("preferences.nickColors.enabled"));
     enabled.setSelected(enabledSeed);
     enabled.setToolTipText(
-        "When enabled, IRCafe renders nicknames in deterministic colors (per nick),\n"
-            + "adjusted to meet a minimum contrast ratio against the chat background.");
+        MESSAGES.text("preferences.nickColors.enabled.tooltip"));
 
     JSpinner minContrast =
         PreferencesUiSupport.numberSpinner(minContrastSeed, 1.0, 21.0, 0.5, closeables);
     minContrast.setToolTipText(
-        "Minimum contrast ratio against the chat background (WCAG-style).\n"
-            + "Higher values are safer for readability but may push colors toward lighter/darker extremes.");
+        MESSAGES.text("preferences.nickColors.minContrast.tooltip"));
 
-    JButton overrides = new JButton("Edit overrides...");
+    JButton overrides = new JButton(MESSAGES.text("preferences.nickColors.overrides.edit"));
     overrides.setToolTipText(
-        "Open the per-nick override editor. Overrides take precedence over the palette.");
+        MESSAGES.text("preferences.nickColors.overrides.tooltip"));
 
     NickColorPreviewPanel preview = new NickColorPreviewPanel(nickColorService);
 
@@ -71,15 +72,15 @@ public final class NickColorControlsSupport {
         new JPanel(MigLayouts.fillXWrap(0, 2, "[grow,fill]8[nogrid]", MigLayouts.rows(4, 6)));
     panel.setOpaque(false);
     panel.add(enabled, MigConstraints.spanXWrap(2));
-    panel.add(new JLabel("Minimum contrast ratio:"));
+    panel.add(new JLabel(MESSAGES.text("preferences.nickColors.field.minContrast")));
     panel.add(minContrast, MigConstraints.widthWrap(110));
     panel.add(overrides, MigConstraints.spanXAlignXLeftWrap(2));
     panel.add(
-        PreferencesUiSupport.helpText(
-            "Tip: If nick colors look too similar to the background, increase the contrast ratio.\n"
-                + "Overrides always win over the palette."),
+        PreferencesUiSupport.helpText(MESSAGES.text("preferences.nickColors.help")),
         MigConstraints.span2GrowXMinWidth0Wrap());
-    panel.add(new JLabel("Preview:"), MigConstraints.spanXWrap(2));
+    panel.add(
+        new JLabel(MESSAGES.text("preferences.nickColors.field.preview")),
+        MigConstraints.spanXWrap(2));
     panel.add(preview, MigConstraints.span2GrowX());
     updatePreview.run();
 

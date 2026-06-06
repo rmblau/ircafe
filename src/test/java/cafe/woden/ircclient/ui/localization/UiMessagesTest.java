@@ -111,6 +111,23 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesNickColorPreferenceMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals(
+        "Color nicknames (channels and PMs)", messages.text("preferences.nickColors.enabled"));
+    assertEquals(
+        "Minimum contrast ratio:", messages.text("preferences.nickColors.field.minContrast"));
+    assertEquals(
+        "Edit overrides...", messages.text("preferences.nickColors.overrides.edit"));
+    assertEquals("Preview:", messages.text("preferences.nickColors.field.preview"));
+    assertEquals(
+        "Tip: If nick colors look too similar to the background, increase the contrast ratio.\n"
+            + "Overrides always win over the palette.",
+        messages.text("preferences.nickColors.help"));
+  }
+
+  @Test
   void resolvesNickColorOverrideDialogMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
 
