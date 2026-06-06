@@ -55,6 +55,39 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesSwingUiInteractionPromptMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals(
+        "This message cannot be sent using IRCv3 multiline for #ircafe.",
+        messages.text("uiInteraction.multilineFallback.message.prefix", "#ircafe"));
+    assertEquals(
+        "Message size: 3 lines, 1024 UTF-8 bytes.",
+        messages.text("uiInteraction.multilineFallback.size", 3, 1024));
+    assertEquals("Send 3 Lines", messages.text("uiInteraction.multilineFallback.sendLines", 3));
+    assertEquals(
+        "Quassel Core Setup - quassel",
+        messages.text("uiInteraction.quasselSetup.title.server", "quassel"));
+    assertEquals(
+        "Admin password is required.",
+        messages.text("uiInteraction.quasselSetup.validation.adminPasswordRequired"));
+    assertEquals(
+        "Submitting Quassel setup: SQLite",
+        messages.text("uiInteraction.quasselSetup.status.submitting", "SQLite"));
+    assertEquals("Connect", messages.text("common.button.connect"));
+    assertEquals("Add...", messages.text("common.button.add.ellipsis"));
+    assertEquals(
+        "Quassel Network Manager - quassel",
+        messages.text("uiInteraction.quasselNetworkManager.title.server", "quassel"));
+    assertEquals(
+        "Select a network and choose an action.",
+        messages.text("uiInteraction.quasselNetworkManager.instructions"));
+    assertEquals(
+        "Server port must be 1-65535.",
+        messages.text("uiInteraction.quasselNetworkManager.validation.serverPortRange"));
+  }
+
+  @Test
   void resolvesNickColorOverrideDialogMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
 
