@@ -1215,6 +1215,34 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesLagIndicatorStatusMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Measuring server lag...", messages.text("lagIndicator.status.measuring"));
+    assertEquals(
+        "Lag unavailable: no active IRC server selected.",
+        messages.text("lagIndicator.status.noActiveServer"));
+    assertEquals(
+        "Lag unavailable: not connected to libera.",
+        messages.text("lagIndicator.status.notConnected", "libera"));
+    assertEquals(
+        "Round-trip lag to libera: 42 ms.",
+        messages.text("lagIndicator.status.roundTrip", "libera", 42));
+    assertEquals(
+        "Waiting for connection setup on libera...",
+        messages.text("lagIndicator.status.waitingForConnectionSetup", "libera"));
+    assertEquals(
+        "Refreshing lag for libera...",
+        messages.text("lagIndicator.status.refreshing", "libera"));
+    assertEquals(
+        "Waiting for ping/pong activity on libera...",
+        messages.text("lagIndicator.status.waitingForPingPong", "libera"));
+    assertEquals(
+        "Lag unavailable for libera.",
+        messages.text("lagIndicator.status.unavailable", "libera"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 
