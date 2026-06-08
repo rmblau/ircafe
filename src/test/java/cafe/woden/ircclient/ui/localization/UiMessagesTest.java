@@ -795,6 +795,18 @@ class UiMessagesTest {
     assertEquals(
         "Inline playback failed to initialize.",
         messages.text("chat.embed.youtube.initializationFailed"));
+    assertEquals("Loading preview…", messages.text("chat.linkPreview.loading"));
+    assertEquals("(link previews disabled)", messages.text("chat.linkPreview.disabled"));
+    assertEquals("(preview failed)", messages.text("chat.linkPreview.failed"));
+    assertEquals("Expand preview", messages.text("chat.linkPreview.tooltip.expand"));
+    assertEquals("Collapse preview", messages.text("chat.linkPreview.tooltip.collapse"));
+    assertEquals("+2 more", messages.text("chat.linkPreview.media.more", 2));
+    assertEquals("Submitter", messages.text("chat.linkPreview.meta.submitter"));
+    assertEquals("Date", messages.text("chat.linkPreview.meta.date"));
+    assertEquals("Author", messages.text("chat.linkPreview.meta.author"));
+    assertEquals("Publisher", messages.text("chat.linkPreview.meta.publisher"));
+    assertEquals("Open link", messages.text("chat.linkPreview.popup.openLink"));
+    assertEquals("Copy link", messages.text("chat.linkPreview.popup.copyLink"));
     assertEquals("1 user joined", messages.text("chat.fold.joinPart.summary.join.one", 1));
     assertEquals("3 users joined", messages.text("chat.fold.joinPart.summary.join.many", 3));
     assertEquals("1 user left", messages.text("chat.fold.joinPart.summary.part.one", 1));
