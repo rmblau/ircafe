@@ -21,6 +21,7 @@ public final class ServerTreeTargetNodePolicy {
   private static final String INTERCEPTOR_LABEL = MESSAGES.text("serverTree.node.interceptor");
   private static final String LOG_VIEWER_LABEL = MESSAGES.text("serverTree.node.logViewer");
   private static final String CHANNEL_LIST_LABEL = MESSAGES.text("serverTree.node.channelList");
+  private static final String MEMOSERV_LABEL = MESSAGES.text("serverTree.node.memoServ");
   private static final String WEECHAT_FILTERS_LABEL = MESSAGES.text("serverTree.node.filters");
   private static final String IGNORES_LABEL = MESSAGES.text("serverTree.node.ignores");
   private static final String DCC_TRANSFERS_LABEL = MESSAGES.text("serverTree.node.dccTransfers");
@@ -46,6 +47,7 @@ public final class ServerTreeTargetNodePolicy {
     }
     if (ref.isLogViewer()) return LOG_VIEWER_LABEL;
     if (ref.isChannelList()) return CHANNEL_LIST_LABEL;
+    if (ref.isMemoServ()) return MEMOSERV_LABEL;
     if (ref.isWeechatFilters()) return WEECHAT_FILTERS_LABEL;
     if (ref.isIgnores()) return IGNORES_LABEL;
     if (ref.isDccTransfers()) return DCC_TRANSFERS_LABEL;

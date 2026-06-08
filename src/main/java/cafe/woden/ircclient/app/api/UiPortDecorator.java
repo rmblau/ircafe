@@ -162,6 +162,16 @@ public abstract class UiPortDecorator implements UiPort {
   }
 
   @Override
+  public void ensureMemoServAvailable(String serverId) {
+    delegate.ensureMemoServAvailable(serverId);
+  }
+
+  @Override
+  public void observeMemoServNotice(String serverId, Instant at, String from, String text) {
+    delegate.observeMemoServNotice(serverId, at, from, text);
+  }
+
+  @Override
   public void beginChannelBanList(String serverId, String channel) {
     delegate.beginChannelBanList(serverId, channel);
   }

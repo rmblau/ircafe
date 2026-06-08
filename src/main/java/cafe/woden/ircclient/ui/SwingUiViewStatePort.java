@@ -364,6 +364,12 @@ final class SwingUiViewStatePort implements UiViewStatePort {
     edt.run(
         () -> {
           serverTree.setServerConnectionState(serverId, state);
+          if (state == ConnectionState.CONNECTED) {
+            String sid = normalizeServerId(serverId);
+            if (!sid.isEmpty()) {
+              serverTree.ensureNode(TargetRef.memoServ(sid));
+            }
+          }
           chat.refreshDisplayedTargetInputEnabled();
           if (chatDockManager != null) {
             chatDockManager.refreshPinnedInputEnabledForServer(serverId);

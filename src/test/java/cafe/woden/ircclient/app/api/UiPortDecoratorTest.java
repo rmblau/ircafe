@@ -1,8 +1,11 @@
 package cafe.woden.ircclient.app.api;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.lang.reflect.Method;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -19,6 +22,19 @@ class UiPortDecoratorTest {
     assertTrue(
         missing.isEmpty(),
         () -> "UiPortDecorator is missing explicit forwarders for: " + String.join(", ", missing));
+  }
+
+  @Test
+  void forwardsMemoServMethods() {
+    UiPort delegate = mock(UiPort.class);
+    UiPortDecorator decorator = new UiPortDecorator(delegate) {};
+    Instant at = Instant.parse("2026-06-07T19:58:54Z");
+
+    decorator.ensureMemoServAvailable("libera");
+    decorator.observeMemoServNotice("libera", at, "server", "- 1 From: alice Sent: now");
+
+    verify(delegate).ensureMemoServAvailable("libera");
+    verify(delegate).observeMemoServNotice("libera", at, "server", "- 1 From: alice Sent: now");
   }
 
   static List<String> missingOverrides(Class<?> portType, Class<?> decoratorType) {

@@ -596,6 +596,43 @@ class IrcMediatorMockVerifyTest {
   }
 
   @Test
+  void memoServPrivateMessagePopulatesPanelWithoutOpeningVisibleQuery() throws Exception {
+    TargetRef pm = new TargetRef("libera", "MemoServ");
+    Instant at = Instant.parse("2026-06-07T12:02:00Z");
+    when(targetCoordinator.allowPrivateAutoOpenFromInbound(eq(pm), eq(false))).thenReturn(true);
+
+    invokeOnServerIrcEvent(
+        new ServerIrcEvent(
+            "libera", new IrcEvent.PrivateMessage(at, "MemoServ", "1 from alice: hello")));
+
+    verify(ui).observeMemoServNotice("libera", at, "MemoServ", "1 from alice: hello");
+    verify(ui, never()).setPrivateMessageOnlineState("libera", "MemoServ", true);
+    verify(ui, never()).ensureTargetExists(pm);
+    verify(ui, never())
+        .appendChatAt(eq(pm), any(), anyString(), anyString(), anyBoolean(), anyString(), any());
+  }
+
+  @Test
+  void memoServSelfEchoDoesNotOpenVisibleQuery() throws Exception {
+    TargetRef pm = new TargetRef("libera", "MemoServ");
+    Instant at = Instant.parse("2026-06-07T12:03:00Z");
+    when(irc.currentNick("libera")).thenReturn(Optional.of("me"));
+    when(targetCoordinator.allowPrivateAutoOpenFromInbound(eq(pm), eq(true))).thenReturn(true);
+
+    invokeOnServerIrcEvent(
+        new ServerIrcEvent(
+            "libera",
+            new IrcEvent.PrivateMessage(
+                at, "me", "LIST", "", Map.of("ircafe/pm-target", "MemoServ"))));
+
+    verify(ui, never()).ensureTargetExists(pm);
+    verify(ui, never()).appendChatAt(eq(pm), any(), anyString(), anyString(), anyBoolean());
+    verify(ui, never())
+        .appendChatAt(eq(pm), any(), anyString(), anyString(), anyBoolean(), anyString(), any());
+    verify(ui, never()).observeMemoServNotice(anyString(), any(), anyString(), anyString());
+  }
+
+  @Test
   void visibleInboundPrivateMessageRequestsTranslationByTagMsgid() throws Exception {
     TargetRef pm = new TargetRef("libera", "alice");
     Instant at = Instant.parse("2026-06-01T12:01:00Z");

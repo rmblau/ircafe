@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui;
 
 import cafe.woden.ircclient.app.api.UiChannelListPort;
 import cafe.woden.ircclient.app.api.UiEventPort;
+import cafe.woden.ircclient.app.api.UiMemoServPort;
 import cafe.woden.ircclient.app.api.UiPromptPort;
 import cafe.woden.ircclient.app.api.UiTranscriptPort;
 import cafe.woden.ircclient.app.api.UiViewStatePort;
@@ -29,6 +30,7 @@ final class SwingUiPortDelegates {
   private final SwingUiInteractionPort interactionPort;
   private final UiViewStatePort viewStatePort;
   private final UiChannelListPort channelListPort;
+  private final UiMemoServPort memoServPort;
   private final UiTranscriptPort transcriptPort;
 
   SwingUiPortDelegates(
@@ -60,6 +62,7 @@ final class SwingUiPortDelegates {
             chatDockManager,
             activeInputRouter);
     this.channelListPort = new SwingUiChannelListPort(edt, serverTree, chat);
+    this.memoServPort = new SwingUiMemoServPort(edt, serverTree, chat);
     this.transcriptPort =
         new SwingUiTranscriptPort(edt, serverTree, chat, transcripts, users, chatDockManager);
     this.interactionPort =
@@ -90,6 +93,10 @@ final class SwingUiPortDelegates {
 
   UiChannelListPort channelListPort() {
     return channelListPort;
+  }
+
+  UiMemoServPort memoServPort() {
+    return memoServPort;
   }
 
   UiTranscriptPort transcriptPort() {

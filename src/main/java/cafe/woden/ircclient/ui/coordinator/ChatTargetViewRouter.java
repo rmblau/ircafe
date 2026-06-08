@@ -11,6 +11,7 @@ import cafe.woden.ircclient.ui.dcc.DccTransfersPanel;
 import cafe.woden.ircclient.ui.ignore.IgnoresPanel;
 import cafe.woden.ircclient.ui.interceptors.InterceptorPanel;
 import cafe.woden.ircclient.ui.logviewer.LogViewerPanel;
+import cafe.woden.ircclient.ui.memoserv.MemoServPanel;
 import cafe.woden.ircclient.ui.monitor.MonitorPanel;
 import cafe.woden.ircclient.ui.notifications.NotificationsPanel;
 import java.awt.CardLayout;
@@ -18,13 +19,18 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import javax.swing.JPanel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Routes active targets to the correct center card in {@link ChatDockable}. */
 public final class ChatTargetViewRouter {
 
+  private static final Logger log = LoggerFactory.getLogger(ChatTargetViewRouter.class);
+
   public static final String CARD_TRANSCRIPT = "transcript";
   public static final String CARD_NOTIFICATIONS = "notifications";
   public static final String CARD_CHANNEL_LIST = "channel-list";
+  public static final String CARD_MEMOSERV = "memoserv";
   public static final String CARD_IGNORES = "ignores";
   public static final String CARD_DCC_TRANSFERS = "dcc-transfers";
   public static final String CARD_MONITOR = "monitor";
@@ -47,6 +53,7 @@ public final class ChatTargetViewRouter {
   private final JPanel centerCards;
   private final NotificationsPanel notificationsPanel;
   private final ChannelListPanel channelListPanel;
+  private final MemoServPanel memoServPanel;
   private final IgnoresPanel ignoresPanel;
   private final DccTransfersPanel dccTransfersPanel;
   private final MonitorPanel monitorPanel;
@@ -67,6 +74,7 @@ public final class ChatTargetViewRouter {
       JPanel centerCards,
       NotificationsPanel notificationsPanel,
       ChannelListPanel channelListPanel,
+      MemoServPanel memoServPanel,
       IgnoresPanel ignoresPanel,
       DccTransfersPanel dccTransfersPanel,
       MonitorPanel monitorPanel,
@@ -85,6 +93,7 @@ public final class ChatTargetViewRouter {
         centerCards,
         notificationsPanel,
         channelListPanel,
+        memoServPanel,
         ignoresPanel,
         dccTransfersPanel,
         monitorPanel,
@@ -106,6 +115,7 @@ public final class ChatTargetViewRouter {
       JPanel centerCards,
       NotificationsPanel notificationsPanel,
       ChannelListPanel channelListPanel,
+      MemoServPanel memoServPanel,
       IgnoresPanel ignoresPanel,
       DccTransfersPanel dccTransfersPanel,
       MonitorPanel monitorPanel,
@@ -124,6 +134,7 @@ public final class ChatTargetViewRouter {
     this.centerCards = Objects.requireNonNull(centerCards, "centerCards");
     this.notificationsPanel = Objects.requireNonNull(notificationsPanel, "notificationsPanel");
     this.channelListPanel = Objects.requireNonNull(channelListPanel, "channelListPanel");
+    this.memoServPanel = Objects.requireNonNull(memoServPanel, "memoServPanel");
     this.ignoresPanel = Objects.requireNonNull(ignoresPanel, "ignoresPanel");
     this.dccTransfersPanel = Objects.requireNonNull(dccTransfersPanel, "dccTransfersPanel");
     this.monitorPanel = Objects.requireNonNull(monitorPanel, "monitorPanel");
@@ -158,6 +169,11 @@ public final class ChatTargetViewRouter {
     }
     if (target.isChannelList()) {
       showChannelListCard(target.serverId());
+      return TargetViewType.UI_ONLY;
+    }
+    if (target.isMemoServ()) {
+      log.info("[memoserv] routing active target to MemoServ card target={}", target);
+      showMemoServCard(target.serverId());
       return TargetViewType.UI_ONLY;
     }
     if (target.isIgnores()) {
@@ -243,6 +259,16 @@ public final class ChatTargetViewRouter {
       managedChannelRefresher.accept(serverId);
       showCard(CARD_CHANNEL_LIST);
     } catch (Exception ignored) {
+    }
+  }
+
+  private void showMemoServCard(String serverId) {
+    try {
+      log.info("[memoserv] showing MemoServ card serverId={}", serverId);
+      memoServPanel.setServerId(serverId);
+      showCard(CARD_MEMOSERV);
+    } catch (Exception ex) {
+      log.warn("[memoserv] failed to show MemoServ card serverId={}", serverId, ex);
     }
   }
 

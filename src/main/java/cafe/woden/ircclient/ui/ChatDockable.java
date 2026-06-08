@@ -68,9 +68,10 @@ import cafe.woden.ircclient.ui.ignore.IgnoreListDialog;
 import cafe.woden.ircclient.ui.ignore.IgnoresPanel;
 import cafe.woden.ircclient.ui.input.MessageInputPanel;
 import cafe.woden.ircclient.ui.input.OutboundMessageTranslationDialog;
-import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.interceptors.InterceptorPanel;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.logviewer.LogViewerPanel;
+import cafe.woden.ircclient.ui.memoserv.MemoServPanel;
 import cafe.woden.ircclient.ui.monitor.MonitorPanel;
 import cafe.woden.ircclient.ui.notifications.NotificationsPanel;
 import cafe.woden.ircclient.ui.servertree.ServerTreeDockable;
@@ -91,6 +92,7 @@ import jakarta.annotation.PreDestroy;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -172,6 +174,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
   private final JPanel centerCards = new JPanel(new CardLayout());
   private final NotificationsPanel notificationsPanel;
   private final ChannelListPanel channelListPanel = new ChannelListPanel();
+  private final MemoServPanel memoServPanel = new MemoServPanel();
   private final IgnoresPanel ignoresPanel;
   private final DccTransfersPanel dccTransfersPanel;
   private final MonitorPanel monitorPanel = new MonitorPanel();
@@ -580,8 +583,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
             .append('\n')
             .append(message("chatDock.plugins.detail.version", versionLabel))
             .append('\n')
-            .append(
-                message("chatDock.plugins.detail.apiVersion", descriptor.pluginApiVersion()));
+            .append(message("chatDock.plugins.detail.apiVersion", descriptor.pluginApiVersion()));
         if (!sourceJar.isBlank()) {
           details.append('\n').append(message("chatDock.plugins.detail.sourceJar", sourceJar));
         }
@@ -711,6 +713,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
     DccTransfersPanel dccTransfersPanel =
         createDccTransfersPanel(dccTransferStore, activationBus, outboundBus);
     configureMonitorPanelCommandEmission(activationBus, outboundBus);
+    configureMemoServPanelCommandEmission(activationBus, irc);
     LogViewerPanel logViewerPanel = createLogViewerPanel(chatLogViewerService, logViewerExecutor);
     IgnoresPanel ignoresPanel = createIgnoresPanel(ignoreListDialog);
     InterceptorPanel interceptorPanel =
@@ -722,6 +725,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
         createTargetViewRouter(
             notificationsPanel,
             ignoresPanel,
+            memoServPanel,
             channelListCoordinator,
             monitorCoordinator,
             dccTransfersPanel,
@@ -813,6 +817,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
   private ChatTargetViewRouter createTargetViewRouter(
       NotificationsPanel notificationsPanel,
       IgnoresPanel ignoresPanel,
+      MemoServPanel memoServPanel,
       ChatChannelListCoordinator channelListCoordinator,
       ChatMonitorCoordinator monitorCoordinator,
       DccTransfersPanel dccTransfersPanel,
@@ -823,6 +828,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
         centerCards,
         notificationsPanel,
         channelListPanel,
+        memoServPanel,
         ignoresPanel,
         dccTransfersPanel,
         monitorPanel,
@@ -1144,6 +1150,71 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
         });
   }
 
+  private void configureMemoServPanelCommandEmission(
+      TargetActivationBus activationBus, IrcClientService irc) {
+    memoServPanel.setOnEmitCommand(
+        line -> {
+          String cmd = Objects.toString(line, "").trim();
+          TargetRef t = activeTarget;
+          if (cmd.isEmpty()) {
+            log.info("[memoserv] chat dock dropped empty command activeTarget={}", t);
+            return;
+          }
+          if (t == null || !t.isMemoServ()) {
+            log.info(
+                "[memoserv] chat dock dropped command because active target is not MemoServ activeTarget={} verb={} preview={}",
+                t,
+                memoServCommandVerb(cmd),
+                memoServPreview(cmd));
+            return;
+          }
+          if (irc == null) {
+            log.info(
+                "[memoserv] chat dock dropped command because IRC service is unavailable serverId={} verb={} preview={}",
+                t.serverId(),
+                memoServCommandVerb(cmd),
+                memoServPreview(cmd));
+            return;
+          }
+          if (cmd.indexOf('\n') >= 0 || cmd.indexOf('\r') >= 0) {
+            log.info(
+                "[memoserv] chat dock dropped command containing newline serverId={} verb={}",
+                t.serverId(),
+                memoServCommandVerb(cmd));
+            return;
+          }
+          activationBus.activate(t);
+          String sid = Objects.toString(t.serverId(), "").trim();
+          if (sid.isEmpty()) {
+            log.info(
+                "[memoserv] chat dock dropped command because server id is blank target={} verb={}",
+                t,
+                memoServCommandVerb(cmd));
+            return;
+          }
+          log.info(
+              "[memoserv] chat dock sending raw command serverId={} verb={} commandLength={} preview={}",
+              sid,
+              memoServCommandVerb(cmd),
+              cmd.length(),
+              memoServPreview(cmd));
+          disposables.add(
+              irc.sendRaw(sid, "PRIVMSG MemoServ :" + cmd)
+                  .subscribe(
+                      () ->
+                          log.info(
+                              "[memoserv] chat dock raw command sent serverId={} verb={}",
+                              sid,
+                              memoServCommandVerb(cmd)),
+                      err ->
+                          log.warn(
+                              "[ircafe] MemoServ command send failed serverId={} command={}",
+                              sid,
+                              cmd,
+                              err)));
+        });
+  }
+
   private LogViewerPanel createLogViewerPanel(
       ChatLogViewerService chatLogViewerService, ExecutorService logViewerExecutor) {
     return new LogViewerPanel(
@@ -1180,6 +1251,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
     centerCards.add(topicCoordinator.topicSplit(), ChatTargetViewRouter.CARD_TRANSCRIPT);
     centerCards.add(notificationsPanel, ChatTargetViewRouter.CARD_NOTIFICATIONS);
     centerCards.add(channelListPanel, ChatTargetViewRouter.CARD_CHANNEL_LIST);
+    centerCards.add(memoServPanel, ChatTargetViewRouter.CARD_MEMOSERV);
     centerCards.add(ignoresPanel, ChatTargetViewRouter.CARD_IGNORES);
     centerCards.add(dccTransfersPanel, ChatTargetViewRouter.CARD_DCC_TRANSFERS);
     centerCards.add(monitorPanel, ChatTargetViewRouter.CARD_MONITOR);
@@ -1489,6 +1561,28 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
 
   public void endChannelList(String serverId, String summary) {
     channelListPanel.endList(serverId, summary);
+  }
+
+  public void observeMemoServNotice(String serverId, Instant at, String from, String text) {
+    log.info(
+        "[memoserv] chat dock forwarding notice to panel serverId={} from={} textLength={} preview={}",
+        serverId,
+        from,
+        Objects.toString(text, "").length(),
+        memoServPreview(text));
+    memoServPanel.observeMemoServNotice(serverId, at, from, text);
+  }
+
+  private static String memoServCommandVerb(String command) {
+    String cmd = Objects.toString(command, "").trim();
+    int space = cmd.indexOf(' ');
+    return space < 0 ? cmd : cmd.substring(0, space);
+  }
+
+  private static String memoServPreview(String value) {
+    String text = Objects.toString(value, "").replace('\n', ' ').replace('\r', ' ').trim();
+    if (text.length() <= 180) return text;
+    return text.substring(0, 177) + "...";
   }
 
   public void beginChannelBanList(String serverId, String channel) {

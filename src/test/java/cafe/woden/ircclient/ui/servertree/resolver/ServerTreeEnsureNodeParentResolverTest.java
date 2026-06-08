@@ -44,4 +44,25 @@ class ServerTreeEnsureNodeParentResolverTest {
 
     assertSame(channelListNode, resolved);
   }
+
+  @Test
+  void resolveParentPlacesMemoServUnderOtherNode() {
+    ServerTreeEnsureNodeParentResolver resolver = new ServerTreeEnsureNodeParentResolver();
+    DefaultMutableTreeNode serverNode = new DefaultMutableTreeNode("server");
+    DefaultMutableTreeNode privateMessagesNode = new DefaultMutableTreeNode("private-messages");
+    DefaultMutableTreeNode otherNode = new DefaultMutableTreeNode("other");
+
+    DefaultMutableTreeNode resolved =
+        resolver.resolveParent(
+            TargetRef.memoServ("libera"),
+            new ServerTreeEnsureNodeParentResolver.ParentNodes(
+                serverNode, privateMessagesNode, otherNode, null, null),
+            null,
+            ServerTreeBuiltInLayout.defaults(),
+            () -> {
+              throw new AssertionError("MemoServ must not create/use the channel-list node");
+            });
+
+    assertSame(otherNode, resolved);
+  }
 }
