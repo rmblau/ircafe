@@ -478,8 +478,8 @@ public class PinnedChatDockable extends ChatViewPanel implements Dockable, AutoC
     if (target == null || target.isUiOnly()) {
       JOptionPane.showMessageDialog(
           this,
-          "Select a chat target before translating a draft.",
-          "Translate Draft",
+          MESSAGES.text("chatDock.outboundTranslation.noTarget.message"),
+          MESSAGES.text("chatDock.outboundTranslation.title"),
           JOptionPane.WARNING_MESSAGE);
       return;
     }
@@ -487,8 +487,8 @@ public class PinnedChatDockable extends ChatViewPanel implements Dockable, AutoC
     if (Objects.toString(draft, "").isBlank()) {
       JOptionPane.showMessageDialog(
           this,
-          "Enter a message before translating.",
-          "Translate Draft",
+          MESSAGES.text("chatDock.outboundTranslation.emptyDraft.message"),
+          MESSAGES.text("chatDock.outboundTranslation.title"),
           JOptionPane.INFORMATION_MESSAGE);
       return;
     }
@@ -882,7 +882,10 @@ public class PinnedChatDockable extends ChatViewPanel implements Dockable, AutoC
 
     void setTopic(String channelName, String topic) {
       String ch = (channelName == null) ? "" : channelName.trim();
-      header.setText(ch.isEmpty() ? "Topic" : "Topic - " + ch);
+      header.setText(
+          ch.isEmpty()
+              ? MESSAGES.text("chatTopic.header.topic")
+              : MESSAGES.text("chatTopic.header.topic.channel", ch, ""));
       text.setText(topic == null ? "" : topic);
       text.setCaretPosition(0);
     }
