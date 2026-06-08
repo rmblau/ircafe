@@ -206,6 +206,49 @@ class UiMessagesTest {
     assertEquals("Jump to message", messages.text("notifications.menu.jumpToMessage"));
     assertEquals("CSV Files (*.csv)", messages.text("notifications.export.fileFilter.csv"));
     assertEquals("Snippet", messages.text("notifications.column.snippet"));
+    assertEquals("Rule matches", messages.text("preferences.notifications.rules.section.matches"));
+    assertEquals("Enabled", messages.text("preferences.notifications.rules.column.enabled"));
+    assertEquals(
+        "WORD: hello",
+        messages.text("preferences.notifications.rules.value.match", "WORD", "hello"));
+    assertEquals(
+        "Case, Whole word",
+        messages.text(
+            "preferences.notifications.rules.value.options.word", "Case", "Whole word"));
+    assertEquals(
+        "Add custom word/regex rules to create notifications when messages match.\n"
+            + "Rules only trigger for channels (not PMs), including the active channel.",
+        messages.text("preferences.notifications.rules.help"));
+    assertEquals(
+        "Add Notification Rule",
+        messages.text("preferences.notifications.rules.dialog.addTitle"));
+    assertEquals(
+        "Invalid REGEX pattern:\nmissing ]",
+        messages.text(
+            "preferences.notifications.rules.dialog.validation.invalidRegex.message",
+            "missing ]"));
+    assertEquals(
+        "Remove notification rule \"ops\"?",
+        messages.text("preferences.notifications.rules.remove.confirm", "ops"));
+    assertEquals(
+        "Invalid REGEX (row 4, ops): bad class",
+        messages.text(
+            "preferences.notifications.rules.validation.inline", 4, "ops", "bad class"));
+    assertEquals(
+        "Row 4 (ops):\nbad class\n\nPattern:\n[",
+        messages.text(
+            "preferences.notifications.rules.validation.dialog", 4, "ops", "bad class", "["));
+    assertEquals(
+        "  - row 2: alert",
+        messages.text("preferences.notifications.rules.test.invalidRegexRow", 2, "alert"));
+    assertEquals(
+        "Matches (3):", messages.text("preferences.notifications.rules.test.matchesHeader", 3));
+    assertEquals(
+        "- ops [WORD]: hello [world]",
+        messages.text(
+            "preferences.notifications.rules.test.matchLine", "ops", "WORD", "hello [world]"));
+    assertEquals("Test sound", messages.text("preferences.notifications.sound.test.default"));
+    assertEquals("IRC Events", messages.text("preferences.notifications.ircEvents.tab"));
   }
 
   @Test

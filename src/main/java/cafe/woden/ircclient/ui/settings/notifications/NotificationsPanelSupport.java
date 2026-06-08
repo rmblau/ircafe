@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings.notifications;
 
 import cafe.woden.ircclient.config.api.NotificationRule;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
 import cafe.woden.ircclient.ui.util.MigConstraints;
@@ -17,6 +18,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.ScrollPaneConstants;
 
 public final class NotificationsPanelSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private NotificationsPanelSupport() {}
 
   public static JPanel buildPanel(
@@ -28,28 +31,47 @@ public final class NotificationsPanelSupport {
     JPanel panel =
         new JPanel(MigLayouts.fillWrap(10, 1, MigLayoutConstraints.GROW_FILL, "[]8[]4[grow,fill]"));
 
-    panel.add(PreferencesUiSupport.tabTitle("Notifications"), MigConstraints.growXMinWidth0Wrap());
     panel.add(
-        PreferencesUiSupport.sectionTitle("Rule matches"), MigConstraints.growXMinWidth0Wrap());
+        PreferencesUiSupport.tabTitle(MESSAGES.text("notifications.title")),
+        MigConstraints.growXMinWidth0Wrap());
     panel.add(
-        PreferencesUiSupport.helpText(
-            "Add custom word/regex rules to create notifications when messages match.\n"
-                + "Rules only trigger for channels (not PMs), including the active channel."),
+        PreferencesUiSupport.sectionTitle(
+            MESSAGES.text("preferences.notifications.rules.section.matches")),
+        MigConstraints.growXMinWidth0Wrap());
+    panel.add(
+        PreferencesUiSupport.helpText(MESSAGES.text("preferences.notifications.rules.help")),
         MigConstraints.growXMinWidth0Wrap());
 
-    JButton add = PreferencesUiSupport.iconOnlyButton("Add", "plus", "Add notification rule");
+    JButton add =
+        PreferencesUiSupport.iconOnlyButton(
+            MESSAGES.text("common.button.add"),
+            "plus",
+            MESSAGES.text("preferences.notifications.rules.button.add.tooltip"));
     JButton edit =
-        PreferencesUiSupport.iconOnlyButton("Edit", "edit", "Edit selected notification rule");
+        PreferencesUiSupport.iconOnlyButton(
+            MESSAGES.text("preferences.notifications.rules.button.edit"),
+            "edit",
+            MESSAGES.text("preferences.notifications.rules.button.edit.tooltip"));
     JButton duplicate =
         PreferencesUiSupport.iconOnlyButton(
-            "Duplicate", "copy", "Duplicate selected notification rule");
+            MESSAGES.text("preferences.notifications.rules.button.duplicate"),
+            "copy",
+            MESSAGES.text("preferences.notifications.rules.button.duplicate.tooltip"));
     JButton remove =
-        PreferencesUiSupport.iconOnlyButton("Remove", "trash", "Remove selected notification rule");
+        PreferencesUiSupport.iconOnlyButton(
+            MESSAGES.text("common.button.remove"),
+            "trash",
+            MESSAGES.text("preferences.notifications.rules.button.remove.tooltip"));
     JButton up =
-        PreferencesUiSupport.iconOnlyButton("Up", "arrow-up", "Move selected notification rule up");
+        PreferencesUiSupport.iconOnlyButton(
+            MESSAGES.text("common.button.up"),
+            "arrow-up",
+            MESSAGES.text("preferences.notifications.rules.button.up.tooltip"));
     JButton down =
         PreferencesUiSupport.iconOnlyButton(
-            "Down", "arrow-down", "Move selected notification rule down");
+            MESSAGES.text("common.button.down"),
+            "arrow-down",
+            MESSAGES.text("preferences.notifications.rules.button.down.tooltip"));
 
     Runnable refreshRuleButtons =
         () ->
@@ -67,7 +89,9 @@ public final class NotificationsPanelSupport {
             NotificationRuleTableSupport.editSelectedRow(
                 notifications.table,
                 notifications.model::ruleAt,
-                seed -> notificationRuleEditor.prompt("Edit Notification Rule", seed),
+                seed ->
+                    notificationRuleEditor.prompt(
+                        MESSAGES.text("preferences.notifications.rules.dialog.editTitle"), seed),
                 notifications.model::setRule,
                 refreshRuleButtons);
 
@@ -75,7 +99,9 @@ public final class NotificationsPanelSupport {
         e ->
             NotificationRuleTableSupport.addRow(
                 notifications.table,
-                () -> notificationRuleEditor.prompt("Add Notification Rule", null),
+                () ->
+                    notificationRuleEditor.prompt(
+                        MESSAGES.text("preferences.notifications.rules.dialog.addTitle"), null),
                 notifications.model::addRule,
                 refreshRuleButtons));
 
@@ -95,8 +121,8 @@ public final class NotificationsPanelSupport {
                 label ->
                     PreferencesUiSupport.confirmOkCancel(
                         owner,
-                        "Remove notification rule \"" + label + "\"?",
-                        "Remove Notification Rule"),
+                        MESSAGES.text("preferences.notifications.rules.remove.confirm", label),
+                        MESSAGES.text("preferences.notifications.rules.remove.title")),
                 notifications.model::removeRow,
                 refreshRuleButtons));
 
@@ -128,9 +154,14 @@ public final class NotificationsPanelSupport {
 
     JButton runTest =
         PreferencesUiSupport.iconOnlyButton(
-            "Test", "check", "Test sample message against notification rules");
+            MESSAGES.text("preferences.notifications.rules.button.test"),
+            "check",
+            MESSAGES.text("preferences.notifications.rules.button.test.tooltip"));
     JButton clearTest =
-        PreferencesUiSupport.iconOnlyButton("Clear", "close", "Clear rule test input/output");
+        PreferencesUiSupport.iconOnlyButton(
+            MESSAGES.text("common.button.clear"),
+            "close",
+            MESSAGES.text("preferences.notifications.rules.button.clearTest.tooltip"));
 
     JPanel testButtons =
         PreferencesUiSupport.actionButtonRow(runTest, clearTest, notifications.testStatus);
@@ -152,14 +183,17 @@ public final class NotificationsPanelSupport {
     JPanel rulesTab = new JPanel(MigLayouts.singleColumnFill(0, MigLayouts.rows(2, 8)));
     rulesTab.setOpaque(false);
     JPanel rulesBehaviorPanel =
-        PreferencesUiSupport.captionPanel("Rule behavior", MigLayouts.twoColumnForm(10, "[]"));
-    rulesBehaviorPanel.add(new JLabel("Cooldown (sec)"));
+        PreferencesUiSupport.captionPanel(
+            MESSAGES.text("preferences.notifications.rules.section.behavior"),
+            MigLayouts.twoColumnForm(10, "[]"));
+    rulesBehaviorPanel.add(
+        new JLabel(MESSAGES.text("preferences.notifications.rules.field.cooldownSeconds")));
     rulesBehaviorPanel.add(notifications.cooldownSeconds, MigConstraints.widthWrap(110));
     rulesTab.add(rulesBehaviorPanel, MigConstraints.growXMinWidth0Wrap());
 
     JPanel rulesTablePanel =
         PreferencesUiSupport.captionPanel(
-            "Rule list",
+            MESSAGES.text("preferences.notifications.rules.section.ruleList"),
             MigLayoutConstraints.INSETS_0_FILL_WRAP_1,
             MigLayoutConstraints.GROW_FILL,
             "[]6[grow,fill]4[]4[]");
@@ -168,7 +202,8 @@ public final class NotificationsPanelSupport {
     rulesTablePanel.add(scroll, MigConstraints.growPushMinWidth0HeightWrap(260));
     rulesTablePanel.add(notifications.validationLabel, MigConstraints.growXMinWidth0Wrap());
     rulesTablePanel.add(
-        PreferencesUiSupport.helpText("Tip: Double-click a rule to edit it."),
+        PreferencesUiSupport.helpText(
+            MESSAGES.text("preferences.notifications.rules.ruleList.tip")),
         MigConstraints.growXMinWidth0Wrap());
     rulesTab.add(rulesTablePanel, MigConstraints.growPushMinWidth0());
 
@@ -176,14 +211,18 @@ public final class NotificationsPanelSupport {
     testTab.setOpaque(false);
     JPanel testRunnerPanel =
         PreferencesUiSupport.captionPanel(
-            "Message test", MigLayouts.twoColumnFillForm(0, 10, MigLayouts.rowGaps(6, 4, 4)));
+            MESSAGES.text("preferences.notifications.rules.section.messageTest"),
+            MigLayouts.twoColumnFillForm(0, 10, MigLayouts.rowGaps(6, 4, 4)));
     testRunnerPanel.add(
-        PreferencesUiSupport.helpText(
-            "Paste a sample message to see which rules match. This is just a preview; it won't create real notifications."),
+        PreferencesUiSupport.helpText(MESSAGES.text("preferences.notifications.rules.test.help")),
         MigConstraints.span2GrowXMinWidth0Wrap());
-    testRunnerPanel.add(new JLabel("Sample"), MigConstraints.alignYTop());
+    testRunnerPanel.add(
+        new JLabel(MESSAGES.text("preferences.notifications.rules.field.sample")),
+        MigConstraints.alignYTop());
     testRunnerPanel.add(testInScroll, MigConstraints.growXHeightWrap(100));
-    testRunnerPanel.add(new JLabel("Matches"), MigConstraints.alignYTop());
+    testRunnerPanel.add(
+        new JLabel(MESSAGES.text("preferences.notifications.rules.field.matches")),
+        MigConstraints.alignYTop());
     testRunnerPanel.add(testOutScroll, MigConstraints.growXHeightWrap(160));
     testRunnerPanel.add(new JLabel(""));
     testRunnerPanel.add(testButtons, MigConstraints.growXWrap());
@@ -193,20 +232,20 @@ public final class NotificationsPanelSupport {
     Icon rulesTabIcon = SvgIcons.action("edit", 14);
     Icon testTabIcon = SvgIcons.action("check", 14);
     subTabs.addTab(
-        "Rules",
+        MESSAGES.text("preferences.notifications.rules.tab.rules"),
         rulesTabIcon,
         PreferencesUiSupport.padSubTab(rulesTab),
-        "Manage notification matching rules");
+        MESSAGES.text("preferences.notifications.rules.tab.rules.tooltip"));
     subTabs.addTab(
-        "Test",
+        MESSAGES.text("preferences.notifications.rules.tab.test"),
         testTabIcon,
         PreferencesUiSupport.padSubTab(testTab),
-        "Try a sample message against your rules");
+        MESSAGES.text("preferences.notifications.rules.tab.test.tooltip"));
     subTabs.addTab(
-        "IRC Events",
+        MESSAGES.text("preferences.notifications.ircEvents.tab"),
         null,
         PreferencesUiSupport.padSubTab(ircEventTab),
-        "Configure notifications for IRC events like kick/ban/invite/mode updates");
+        MESSAGES.text("preferences.notifications.ircEvents.tab.tooltip"));
 
     panel.add(subTabs, MigConstraints.growPushMinWidth0());
 
