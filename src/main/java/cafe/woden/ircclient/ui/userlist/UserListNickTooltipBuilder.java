@@ -4,6 +4,7 @@ import cafe.woden.ircclient.ignore.IgnoreMaskMatcher;
 import cafe.woden.ircclient.irc.IrcEvent.AccountState;
 import cafe.woden.ircclient.irc.IrcEvent.AwayState;
 import cafe.woden.ircclient.irc.IrcEvent.NickInfo;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.util.Objects;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.stereotype.Component;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Component;
 @Component
 @InterfaceLayer
 public class UserListNickTooltipBuilder {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   public String build(NickInfo nickInfo, boolean ignored, boolean softIgnored) {
     if (nickInfo == null) return null;
@@ -31,7 +33,10 @@ public class UserListNickTooltipBuilder {
     sb.append("<b>").append(escapeHtml(nick)).append("</b>");
 
     if (!realName.isEmpty()) {
-      sb.append("<br>").append("<i>Name</i>: ").append(escapeHtml(realName));
+      sb.append("<br>")
+          .append(italic("userList.tooltip.name"))
+          .append(": ")
+          .append(escapeHtml(realName));
     }
 
     if (hasHostmask) {
@@ -40,41 +45,60 @@ public class UserListNickTooltipBuilder {
           .append(escapeHtml(hostmask))
           .append("</span>");
     } else {
-      sb.append("<br>").append("<i>Hostmask pending</i>");
+      sb.append("<br>").append(italic("userList.tooltip.hostmask.pending"));
     }
 
     if (away == AwayState.AWAY) {
       String reason = nickInfo.awayMessage();
       if (reason != null && !reason.isBlank()) {
-        sb.append("<br>").append("<i>Away</i>: ").append(escapeHtml(reason));
+        sb.append("<br>")
+            .append(italic("userList.tooltip.away"))
+            .append(": ")
+            .append(escapeHtml(reason));
       } else {
-        sb.append("<br>").append("<i>Away</i>");
+        sb.append("<br>").append(italic("userList.tooltip.away"));
       }
     }
 
     if (account == AccountState.LOGGED_IN) {
       String accountName = nickInfo.accountName();
       if (accountName != null && !accountName.isBlank()) {
-        sb.append("<br>").append("<i>Account</i>: ").append(escapeHtml(accountName.trim()));
+        sb.append("<br>")
+            .append(italic("userList.tooltip.account"))
+            .append(": ")
+            .append(escapeHtml(accountName.trim()));
       } else {
-        sb.append("<br>").append("<i>Account</i>: ").append("<i>logged in</i>");
+        sb.append("<br>")
+            .append(italic("userList.tooltip.account"))
+            .append(": ")
+            .append(italic("userList.tooltip.account.loggedIn"));
       }
     } else if (account == AccountState.LOGGED_OUT) {
-      sb.append("<br>").append("<i>Account</i>: ").append("<i>logged out</i>");
+      sb.append("<br>")
+          .append(italic("userList.tooltip.account"))
+          .append(": ")
+          .append(italic("userList.tooltip.account.loggedOut"));
     } else {
-      sb.append("<br>").append("<i>Account</i>: ").append("<i>unknown</i>");
+      sb.append("<br>")
+          .append(italic("userList.tooltip.account"))
+          .append(": ")
+          .append(italic("userList.tooltip.account.unknown"));
     }
 
     if (ignored && softIgnored) {
-      sb.append("<br>").append("Ignored + soft ignored");
+      sb.append("<br>").append(escapeHtml(MESSAGES.text("userList.tooltip.ignore.hardAndSoft")));
     } else if (ignored) {
-      sb.append("<br>").append("Ignored (messages hidden)");
+      sb.append("<br>").append(escapeHtml(MESSAGES.text("userList.tooltip.ignore.hard")));
     } else if (softIgnored) {
-      sb.append("<br>").append("Soft ignored (messages shown as spoilers)");
+      sb.append("<br>").append(escapeHtml(MESSAGES.text("userList.tooltip.ignore.soft")));
     }
 
     sb.append("</html>");
     return sb.toString();
+  }
+
+  private static String italic(String code) {
+    return "<i>" + escapeHtml(MESSAGES.text(code)) + "</i>";
   }
 
   private static String escapeHtml(String s) {

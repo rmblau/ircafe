@@ -12,6 +12,7 @@ import cafe.woden.ircclient.ui.chat.NickColorService;
 import cafe.woden.ircclient.ui.chat.NickColorSettingsBus;
 import cafe.woden.ircclient.ui.coordinator.DccActionCoordinator;
 import cafe.woden.ircclient.ui.ignore.IgnoreListDialog;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import cafe.woden.ircclient.ui.userlist.UserListIgnorePromptHandler;
 import cafe.woden.ircclient.ui.userlist.UserListNickCellRenderer;
@@ -50,6 +51,7 @@ public class UserListDockable extends JPanel implements Dockable, Scrollable {
   public static final String ID = "users";
 
   private static final int TYPING_TICK_MS = 100;
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private final DefaultListModel<NickInfo> model = new DefaultListModel<>();
   private final JList<NickInfo> list;
@@ -622,6 +624,6 @@ public class UserListDockable extends JPanel implements Dockable, Scrollable {
 
   @Override
   public String getTabText() {
-    return "Users";
+    return MESSAGES.text("dock.users.tab");
   }
 }

@@ -22,6 +22,7 @@ import cafe.woden.ircclient.ui.chat.transcript.message.MessageTranslationSource;
 import cafe.woden.ircclient.ui.coordinator.MessageActionCapabilityPolicy;
 import cafe.woden.ircclient.ui.input.MessageInputPanel;
 import cafe.woden.ircclient.ui.input.OutboundMessageTranslationDialog;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettingsBus;
 import cafe.woden.ircclient.ui.util.ChatRedactedMessageRevealSupport;
@@ -64,6 +65,7 @@ import org.slf4j.LoggerFactory;
 public class PinnedChatDockable extends ChatViewPanel implements Dockable, AutoCloseable {
 
   private static final Logger log = LoggerFactory.getLogger(PinnedChatDockable.class);
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private final java.util.concurrent.atomic.AtomicBoolean typingUnavailableWarned =
       new java.util.concurrent.atomic.AtomicBoolean(false);
@@ -752,7 +754,7 @@ public class PinnedChatDockable extends ChatViewPanel implements Dockable, AutoC
 
   @Override
   public String getTabText() {
-    if (target.isStatus()) return "Server";
+    if (target.isStatus()) return MESSAGES.text("dock.pinnedChat.statusTab");
     return target.target();
   }
 

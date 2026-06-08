@@ -38,6 +38,28 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesDockTabAndUserListTooltipMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Servers", messages.text("dock.servers.tab"));
+    assertEquals("Users", messages.text("dock.users.tab"));
+    assertEquals("Input", messages.text("dock.input.tab"));
+    assertEquals("Server", messages.text("dock.pinnedChat.statusTab"));
+    assertEquals("Name", messages.text("userList.tooltip.name"));
+    assertEquals("Hostmask pending", messages.text("userList.tooltip.hostmask.pending"));
+    assertEquals("Away", messages.text("userList.tooltip.away"));
+    assertEquals("Account", messages.text("userList.tooltip.account"));
+    assertEquals("logged in", messages.text("userList.tooltip.account.loggedIn"));
+    assertEquals("logged out", messages.text("userList.tooltip.account.loggedOut"));
+    assertEquals("unknown", messages.text("userList.tooltip.account.unknown"));
+    assertEquals("Ignored + soft ignored", messages.text("userList.tooltip.ignore.hardAndSoft"));
+    assertEquals("Ignored (messages hidden)", messages.text("userList.tooltip.ignore.hard"));
+    assertEquals(
+        "Soft ignored (messages shown as spoilers)",
+        messages.text("userList.tooltip.ignore.soft"));
+  }
+
+  @Test
   void resolvesMessageInputControlMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
 

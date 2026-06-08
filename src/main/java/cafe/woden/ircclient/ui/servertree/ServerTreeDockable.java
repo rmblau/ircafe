@@ -1384,7 +1384,7 @@ public class ServerTreeDockable extends JPanel implements Dockable, Scrollable {
 
   @Override
   public String getTabText() {
-    return "Servers";
+    return MESSAGES.text("dock.servers.tab");
   }
 
   // If the docking framework wraps this Dockable in an outer JScrollPane, keep that wrapper

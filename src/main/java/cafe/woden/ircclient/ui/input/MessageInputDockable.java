@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.input;
 
 import cafe.woden.ircclient.ui.CommandHistoryStore;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import io.github.andrewauclair.moderndocking.Dockable;
 
@@ -16,6 +17,7 @@ import io.github.andrewauclair.moderndocking.Dockable;
 public class MessageInputDockable extends MessageInputPanel implements Dockable {
 
   public static final String ID = "input";
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   /**
    * Creates a standalone input dock.
@@ -38,6 +40,6 @@ public class MessageInputDockable extends MessageInputPanel implements Dockable 
 
   @Override
   public String getTabText() {
-    return "Input";
+    return MESSAGES.text("dock.input.tab");
   }
 }
