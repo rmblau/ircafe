@@ -113,8 +113,7 @@ public class IgnoreListDialog {
     help.putClientProperty(FlatClientProperties.STYLE, "font: -1");
 
     tabs = new JTabbedPane();
-    tabs.addTab(
-        message("ignoreLists.tab.ignore"), buildMaskPanel(sid, Kind.IGNORE, ignoreModel));
+    tabs.addTab(message("ignoreLists.tab.ignore"), buildMaskPanel(sid, Kind.IGNORE, ignoreModel));
     tabs.addTab(
         message("ignoreLists.tab.softIgnore"), buildMaskPanel(sid, Kind.SOFT_IGNORE, softModel));
     tabs.setSelectedIndex(initialTab == Tab.SOFT_IGNORE ? 1 : 0);
@@ -445,8 +444,8 @@ public class IgnoreListDialog {
               dialog,
               new Object[] {instructions, form},
               editorMode == HardIgnoreEditorMode.ADD
-                ? message("ignoreLists.editor.addTitle")
-                : message("ignoreLists.editor.editTitle"),
+                  ? message("ignoreLists.editor.addTitle")
+                  : message("ignoreLists.editor.editTitle"),
               JOptionPane.OK_CANCEL_OPTION,
               JOptionPane.PLAIN_MESSAGE);
       if (result != JOptionPane.OK_OPTION) return false;

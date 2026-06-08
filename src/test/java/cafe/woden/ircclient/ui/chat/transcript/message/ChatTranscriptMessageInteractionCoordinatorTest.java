@@ -170,7 +170,6 @@ class ChatTranscriptMessageInteractionCoordinatorTest {
                   ChatTranscriptLineMetaSupport::bind,
                   ChatTranscriptLineMetaSupport::withAuxiliaryRowKind,
                   (doc, insertAt) -> Math.max(0, Math.min(insertAt, doc.getLength())),
-                  (doc, insertAt) -> Math.max(0, Math.min(insertAt, doc.getLength())),
                   (ref, insertAt, delta) -> {}));
     }
 

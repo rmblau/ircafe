@@ -66,8 +66,7 @@ final class NetworkConnectionPanelSupport {
 
     JCheckBox proxyRemoteDns = new JCheckBox();
     proxyRemoteDns.setSelected(proxySettings.remoteDns());
-    proxyRemoteDns.setToolTipText(
-        MESSAGES.text("preferences.network.proxy.remoteDns.tooltip"));
+    proxyRemoteDns.setToolTipText(MESSAGES.text("preferences.network.proxy.remoteDns.tooltip"));
     JComponent proxyRemoteDnsRow =
         PreferencesUiSupport.wrapCheckBox(
             proxyRemoteDns, MESSAGES.text("preferences.network.proxy.remoteDns"));
@@ -269,8 +268,7 @@ final class NetworkConnectionPanelSupport {
     JTextField genericBouncerLoginTemplate = new JTextField(loginTemplateDefault);
     PreferencesUiSupport.placeholder(genericBouncerLoginTemplate, loginTemplateDefault);
     JTextArea genericBouncerTemplateHelp = PreferencesUiSupport.subtleInfoText();
-    genericBouncerTemplateHelp.setText(
-        MESSAGES.text("preferences.network.bouncer.templateHelp"));
+    genericBouncerTemplateHelp.setText(MESSAGES.text("preferences.network.bouncer.templateHelp"));
     bouncerTab.add(new JLabel(MESSAGES.text("preferences.network.field.loginTemplate")));
     bouncerTab.add(genericBouncerLoginTemplate, MigConstraints.growXMinWidth0());
     bouncerTab.add(genericBouncerTemplateHelp, MigConstraints.span2GrowXMinWidth0Wrap());

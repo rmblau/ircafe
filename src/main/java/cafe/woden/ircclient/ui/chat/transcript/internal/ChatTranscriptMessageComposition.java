@@ -174,7 +174,6 @@ final class ChatTranscriptMessageComposition {
         renderer,
         ChatTranscriptLineMetaSupport::bind,
         ChatTranscriptLineMetaSupport::withAuxiliaryRowKind,
-        documentLineSupport::normalizeInsertAtLineStart,
         documentLineSupport::ensureAtLineStartForInsert,
         runtimeFlowCoordinator::shiftCurrentBlock);
   }

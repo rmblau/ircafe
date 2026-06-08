@@ -96,7 +96,8 @@ public final class ServerTreeTooltipTextPolicy {
                 : Boolean.FALSE.equals(networkNodeData.connected())
                     ? MESSAGES.text("serverTree.tooltip.quassel.state.disconnected")
                     : MESSAGES.text("serverTree.tooltip.quassel.state.unknown");
-    return MESSAGES.text("serverTree.tooltip.quassel.network", networkNodeData.label(), state, token);
+    return MESSAGES.text(
+        "serverTree.tooltip.quassel.network", networkNodeData.label(), state, token);
   }
 
   private String tooltipForNodeData(
@@ -151,7 +152,9 @@ public final class ServerTreeTooltipTextPolicy {
     ConnectionState state = context.connectionStateForServer(serverId);
     boolean desired = context.desiredOnlineForServer(serverId);
     String stateTip =
-        MESSAGES.text("serverTree.tooltip.connection.state", ServerTreeConnectionStateViewModel.stateLabel(state));
+        MESSAGES.text(
+            "serverTree.tooltip.connection.state",
+            ServerTreeConnectionStateViewModel.stateLabel(state));
     String intentTip =
         MESSAGES.text(
             "serverTree.tooltip.connection.intent",
@@ -168,7 +171,8 @@ public final class ServerTreeTooltipTextPolicy {
     if (!diagnostics.isBlank()) tip += diagnostics;
     tip += " " + ServerTreeBouncerBackends.ephemeralDiscoveryTooltip(backend);
     if (auto) tip += " " + MESSAGES.text("serverTree.tooltip.connection.autoConnectEnabled");
-    if (!origin.isEmpty()) tip += " " + MESSAGES.text("serverTree.tooltip.connection.origin", origin);
+    if (!origin.isEmpty())
+      tip += " " + MESSAGES.text("serverTree.tooltip.connection.origin", origin);
     if (display != null && !display.isBlank()) {
       tip += " " + MESSAGES.text("serverTree.tooltip.connection.network", display);
     }

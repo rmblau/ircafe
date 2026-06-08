@@ -352,8 +352,7 @@ public final class ServerTreeTargetNodeMenuBuilder {
     pinToggle.addActionListener(ev -> context.setChannelPinned(ref, !pinned));
     menu.add(pinToggle);
 
-    JMenuItem channelDetails =
-        new JMenuItem(MESSAGES.text("serverTree.targetMenu.channelDetails"));
+    JMenuItem channelDetails = new JMenuItem(MESSAGES.text("serverTree.targetMenu.channelDetails"));
     channelDetails.addActionListener(ev -> context.openChannelModeDetails(ref));
     menu.add(channelDetails);
 

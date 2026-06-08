@@ -63,9 +63,7 @@ public final class FilterRuleEntryDialog {
       final Optional<FilterRule>[] box = new Optional[] {Optional.empty()};
       try {
         SwingUtilities.invokeAndWait(
-            () ->
-                box[0] =
-                    open(owner, title, seed, reservedNameKeys, suggestedScope, uiMessages));
+            () -> box[0] = open(owner, title, seed, reservedNameKeys, suggestedScope, uiMessages));
       } catch (Exception ignored) {
       }
       return box[0];
@@ -300,8 +298,7 @@ public final class FilterRuleEntryDialog {
             } catch (PatternSyntaxException ex) {
               error.setText(
                   uiMessages.text(
-                      "filter.ruleDialog.validation.invalidRegex",
-                      sanitize(ex.getDescription())));
+                      "filter.ruleDialog.validation.invalidRegex", sanitize(ex.getDescription())));
               ok.setEnabled(false);
               return;
             } catch (Exception ex) {

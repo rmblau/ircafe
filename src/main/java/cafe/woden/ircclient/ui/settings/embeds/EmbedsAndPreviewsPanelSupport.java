@@ -22,8 +22,7 @@ public final class EmbedsAndPreviewsPanelSupport {
       EmbedLoadPolicyDialog embedLoadPolicyDialog,
       AtomicReference<EmbedLoadPolicySnapshot> pendingEmbedLoadPolicy) {
     JButton advanced = new JButton(MESSAGES.text("preferences.embeds.advancedPolicy.button"));
-    advanced.setToolTipText(
-        MESSAGES.text("preferences.embeds.advancedPolicy.tooltip"));
+    advanced.setToolTipText(MESSAGES.text("preferences.embeds.advancedPolicy.tooltip"));
     advanced.addActionListener(
         e -> {
           if (embedLoadPolicyDialog == null || pendingEmbedLoadPolicy == null) return;

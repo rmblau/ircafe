@@ -68,7 +68,9 @@ public final class IrcEventNotificationsTabSupport {
         new JComboBox<>(IrcEventNotificationPresetSupport.Preset.values());
     JButton applyDefaults =
         PreferencesUiSupport.iconOnlyButton(
-            MESSAGES.text("preferences.notifications.ircEvents.button.applyDefaults"), "check", MESSAGES.text("preferences.notifications.ircEvents.button.applyDefaults.tooltip"));
+            MESSAGES.text("preferences.notifications.ircEvents.button.applyDefaults"),
+            "check",
+            MESSAGES.text("preferences.notifications.ircEvents.button.applyDefaults.tooltip"));
     JButton resetToIrcafeDefaults =
         PreferencesUiSupport.iconOnlyButton(
             MESSAGES.text("preferences.notifications.ircEvents.button.resetDefaults"),
@@ -77,12 +79,14 @@ public final class IrcEventNotificationsTabSupport {
 
     JPanel defaultsRow = new JPanel(MigLayouts.fillX("[]8[grow,fill]8[]8[]", "[]"));
     defaultsRow.setOpaque(false);
-    defaultsRow.add(new JLabel(MESSAGES.text("preferences.notifications.ircEvents.field.defaults")));
+    defaultsRow.add(
+        new JLabel(MESSAGES.text("preferences.notifications.ircEvents.field.defaults")));
     defaultsRow.add(defaultsPreset, MigConstraints.width(240));
     defaultsRow.add(applyDefaults, MigConstraints.widthHeight(36, 28));
     defaultsRow.add(resetToIrcafeDefaults, MigConstraints.widthHeight(36, 28));
 
-    JButton add = PreferencesUiSupport.iconOnlyButton(
+    JButton add =
+        PreferencesUiSupport.iconOnlyButton(
             MESSAGES.text("preferences.notifications.ircEvents.button.add"),
             "plus",
             MESSAGES.text("preferences.notifications.ircEvents.button.add.tooltip"));
@@ -140,7 +144,10 @@ public final class IrcEventNotificationsTabSupport {
             NotificationRuleTableSupport.editSelectedRow(
                 controls.table(),
                 controls.model()::ruleAt,
-                seed -> ruleEditor.prompt(MESSAGES.text("preferences.notifications.ircEvents.dialog.editTitle"), seed),
+                seed ->
+                    ruleEditor.prompt(
+                        MESSAGES.text("preferences.notifications.ircEvents.dialog.editTitle"),
+                        seed),
                 controls.model()::setRule,
                 refreshRuleButtons);
 
@@ -148,7 +155,9 @@ public final class IrcEventNotificationsTabSupport {
         e ->
             NotificationRuleTableSupport.addRow(
                 controls.table(),
-                () -> ruleEditor.prompt(MESSAGES.text("preferences.notifications.ircEvents.dialog.addTitle"), null),
+                () ->
+                    ruleEditor.prompt(
+                        MESSAGES.text("preferences.notifications.ircEvents.dialog.addTitle"), null),
                 controls.model()::addRule,
                 refreshRuleButtons));
 
@@ -181,7 +190,8 @@ public final class IrcEventNotificationsTabSupport {
                     IrcEventNotificationTableModel.effectiveRuleLabel(controls.model().ruleAt(row)),
                 label ->
                     PreferencesUiSupport.confirmOkCancel(
-                        owner, MESSAGES.text("preferences.notifications.ircEvents.remove.confirm", label),
+                        owner,
+                        MESSAGES.text("preferences.notifications.ircEvents.remove.confirm", label),
                         MESSAGES.text("preferences.notifications.ircEvents.remove.title")),
                 controls.model()::removeRow,
                 refreshRuleButtons));
@@ -242,11 +252,15 @@ public final class IrcEventNotificationsTabSupport {
 
     JPanel presetsPanel =
         PreferencesUiSupport.captionPanelWithPadding(
-            MESSAGES.text("preferences.notifications.ircEvents.section.presets"), MigLayouts.singleColumn(MigLayouts.rows(2, 4)), 10, 10, 10, 10);
+            MESSAGES.text("preferences.notifications.ircEvents.section.presets"),
+            MigLayouts.singleColumn(MigLayouts.rows(2, 4)),
+            10,
+            10,
+            10,
+            10);
     presetsPanel.add(defaultsRow, MigConstraints.growXMinWidth0Wrap());
     presetsPanel.add(
-        PreferencesUiSupport.helpText(
-            MESSAGES.text("preferences.notifications.ircEvents.help")),
+        PreferencesUiSupport.helpText(MESSAGES.text("preferences.notifications.ircEvents.help")),
         MigConstraints.growXMinWidth0Wrap());
     tab.add(presetsPanel, MigConstraints.growXMinWidth0Wrap());
 
@@ -267,7 +281,8 @@ public final class IrcEventNotificationsTabSupport {
     scroll.setPreferredSize(new Dimension(400, 260));
     rulesPanel.add(scroll, MigConstraints.growPushMinWidth0Wrap());
     rulesPanel.add(
-        PreferencesUiSupport.helpText(MESSAGES.text("preferences.notifications.ircEvents.rules.tip")),
+        PreferencesUiSupport.helpText(
+            MESSAGES.text("preferences.notifications.ircEvents.rules.tip")),
         MigConstraints.growXMinWidth0Wrap());
     tab.add(rulesPanel, MigConstraints.growPushMinWidth0Wrap());
 

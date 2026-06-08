@@ -34,6 +34,49 @@ class ChatTranscriptStoreTranslationTest {
   }
 
   @Test
+  void applyMessageTranslationForEarlierMessageInsertsBeforeLaterMessages() throws Exception {
+    ChatTranscriptStore store = newStore();
+    TargetRef ref = channelRef();
+
+    store.appendChatAt(ref, "alice", "hello everyone", false, 6_000L, "m-1", Map.of());
+    store.appendChatAt(ref, "bob", "later message", false, 6_100L, "m-2", Map.of());
+
+    assertTrue(
+        store.applyMessageTranslation(
+            ref, new MessageTranslation("m-1", "hola a todos", "en", "es", "test"), 6_200L));
+
+    String text = transcriptText(store.document(ref));
+    int original = text.indexOf("alice: hello everyone");
+    int translated = text.indexOf("[en -> es via test] hola a todos");
+    int later = text.indexOf("bob: later message");
+    assertTrue(original >= 0, text);
+    assertTrue(translated > original, text);
+    assertTrue(later > translated, text);
+  }
+
+  @Test
+  void applyMessageTranslationForEarlierMessageStaysWithMessageWhenAuxRowsExist() throws Exception {
+    ChatTranscriptStore store = newStore();
+    TargetRef ref = channelRef();
+
+    store.appendChatAt(ref, "alice", "hello everyone", false, 6_000L, "m-1", Map.of());
+    store.applyMessageReaction(ref, "m-1", "+1", "bob", 6_050L);
+    store.appendChatAt(ref, "bob", "later message", false, 6_100L, "m-2", Map.of());
+
+    assertTrue(
+        store.applyMessageTranslation(
+            ref, new MessageTranslation("m-1", "hola a todos", "en", "es", "test"), 6_200L));
+
+    String text = transcriptText(store.document(ref));
+    int original = text.indexOf("alice: hello everyone");
+    int translated = text.indexOf("[en -> es via test] hola a todos");
+    int later = text.indexOf("bob: later message");
+    assertTrue(original >= 0, text);
+    assertTrue(translated > original, text);
+    assertTrue(later > translated, text);
+  }
+
+  @Test
   void applyMessageTranslationUpdatesExistingTranslationRow() throws Exception {
     ChatTranscriptStore store = newStore();
     TargetRef ref = channelRef();

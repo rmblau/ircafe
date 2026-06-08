@@ -479,8 +479,7 @@ public final class ChatTopicCoordinator {
     }
     StringBuilder html = new StringBuilder(512);
     html.append("<html><b>")
-        .append(
-            escapeHtml(message("chatTopic.notifications.tooltip.header", summary.totalCount())))
+        .append(escapeHtml(message("chatTopic.notifications.tooltip.header", summary.totalCount())))
         .append("</b>");
     for (NotificationEntry entry : summary.previews()) {
       String line = escapeHtml(formatPreviewLine(entry));

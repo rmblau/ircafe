@@ -37,8 +37,7 @@ public final class UserLookupsPanelSupport {
     JPanel userLookupsIntro = new JPanel(MigLayouts.fillXGrowTrailing(6));
     userLookupsIntro.setOpaque(false);
     JTextArea userLookupsBlurb =
-        PreferencesUiSupport.helpText(
-            MESSAGES.text("preferences.network.userLookups.help"));
+        PreferencesUiSupport.helpText(MESSAGES.text("preferences.network.userLookups.help"));
     JButton userLookupsHelp =
         PreferencesUiSupport.whyHelpButton(
             MESSAGES.text("preferences.network.userLookups.helpButton.title"),

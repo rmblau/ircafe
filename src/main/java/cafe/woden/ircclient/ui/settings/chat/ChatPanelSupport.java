@@ -110,7 +110,8 @@ public final class ChatPanelSupport {
         PreferencesUiSupport.sectionTitle(MESSAGES.text("preferences.chat.section.nickCompletion")),
         MigConstraints.span2GrowXMinWidth0Wrap());
     panel.add(
-        new JLabel(MESSAGES.text("preferences.chat.field.tabBehavior")), MigConstraints.alignYTop());
+        new JLabel(MESSAGES.text("preferences.chat.field.tabBehavior")),
+        MigConstraints.alignYTop());
     panel.add(nickCompletionCycleWithTab, MigConstraints.alignXLeft());
     panel.add(
         new JLabel(MESSAGES.text("preferences.chat.field.addressingSuffix")),

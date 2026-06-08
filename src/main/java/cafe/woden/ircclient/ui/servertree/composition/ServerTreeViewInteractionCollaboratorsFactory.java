@@ -267,7 +267,8 @@ public final class ServerTreeViewInteractionCollaboratorsFactory {
     String token = Objects.toString(networkToken, "").trim();
     String label = Objects.toString(networkLabel, "").trim();
     String display = label.isEmpty() ? token : label;
-    if (display.isEmpty()) display = MESSAGES.text("serverTree.quasselNetwork.fallback.thisNetwork");
+    if (display.isEmpty())
+      display = MESSAGES.text("serverTree.quasselNetwork.fallback.thisNetwork");
     java.awt.Component owner = in.ownerComponent();
     int choice =
         JOptionPane.showConfirmDialog(

@@ -111,20 +111,17 @@ public final class ChatRedactedMessageRevealSupport {
       String redactedBy,
       Long redactedAtEpochMs) {
     if (!Objects.toString(serverId, "").isBlank()) {
-      sb.append(MESSAGES.text("chatTranscript.redactedReveal.field.server", serverId))
-          .append('\n');
+      sb.append(MESSAGES.text("chatTranscript.redactedReveal.field.server", serverId)).append('\n');
     }
     if (!Objects.toString(target, "").isBlank()) {
-      sb.append(MESSAGES.text("chatTranscript.redactedReveal.field.target", target))
-          .append('\n');
+      sb.append(MESSAGES.text("chatTranscript.redactedReveal.field.target", target)).append('\n');
     }
     if (!Objects.toString(messageId, "").isBlank()) {
       sb.append(MESSAGES.text("chatTranscript.redactedReveal.field.messageId", messageId))
           .append('\n');
     }
     if (!Objects.toString(kind, "").isBlank()) {
-      sb.append(MESSAGES.text("chatTranscript.redactedReveal.field.kind", kind))
-          .append('\n');
+      sb.append(MESSAGES.text("chatTranscript.redactedReveal.field.kind", kind)).append('\n');
     }
     if (!Objects.toString(fromNick, "").isBlank()) {
       sb.append(MESSAGES.text("chatTranscript.redactedReveal.field.originalFrom", fromNick))

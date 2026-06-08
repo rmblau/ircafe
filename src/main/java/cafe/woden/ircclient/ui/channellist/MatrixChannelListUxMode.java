@@ -85,7 +85,9 @@ final class MatrixChannelListUxMode implements ChannelListUxMode {
     form.add(sinceEnabled);
     form.add(sinceField, MigConstraints.growX());
     form.add(new JLabel(MESSAGES.text("channelList.matrix.filters.field.tip")));
-    form.add(new JLabel(MESSAGES.text("channelList.matrix.filters.tip.nextPage")), MigConstraints.growX());
+    form.add(
+        new JLabel(MESSAGES.text("channelList.matrix.filters.tip.nextPage")),
+        MigConstraints.growX());
 
     int choice =
         JOptionPane.showConfirmDialog(

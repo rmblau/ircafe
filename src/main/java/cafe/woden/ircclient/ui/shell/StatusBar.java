@@ -151,8 +151,9 @@ public class StatusBar extends JPanel {
     updateNotifierButton.setFocusPainted(false);
     updateNotifierButton.setMargin(new Insets(1, 6, 1, 6));
     updateNotifierButton.setToolTipText(messages.text("statusBar.updateNotifier.disabled.tooltip"));
-    updateNotifierButton.getAccessibleContext().setAccessibleName(
-        messages.text("statusBar.updateNotifier.accessibleName"));
+    updateNotifierButton
+        .getAccessibleContext()
+        .setAccessibleName(messages.text("statusBar.updateNotifier.accessibleName"));
     updateNotifierButton.setVisible(false);
     updateNotifierButton.addActionListener(e -> runUpdateNotifierVisitAction());
     updateNotifierButton.addMouseListener(
@@ -569,7 +570,8 @@ public class StatusBar extends JPanel {
     historyOpenButton = new JButton(messages.text("statusBar.history.button.openSelected"));
     historyOpenButton.addActionListener(e -> runSelectedHistoryAction());
 
-    historyClearSelectedButton = new JButton(messages.text("statusBar.history.button.clearSelected"));
+    historyClearSelectedButton =
+        new JButton(messages.text("statusBar.history.button.clearSelected"));
     historyClearSelectedButton.addActionListener(e -> clearSelectedHistoryEntry());
 
     historyClearButton = new JButton(messages.text("statusBar.history.button.clearHistory"));
@@ -921,8 +923,7 @@ public class StatusBar extends JPanel {
   private void ensureUpdateNotifierPopupMenu() {
     if (updateNotifierPopupMenu != null) return;
     updateNotifierPopupMenu = new JPopupMenu();
-    updateNotifierCheckNowItem =
-        new JMenuItem(messages.text("statusBar.updateNotifier.checkNow"));
+    updateNotifierCheckNowItem = new JMenuItem(messages.text("statusBar.updateNotifier.checkNow"));
     updateNotifierCheckNowItem.addActionListener(e -> runUpdateNotifierCheckNowAction());
     updateNotifierVisitUpdatesItem =
         new JMenuItem(messages.text("statusBar.updateNotifier.visitUpdates"));

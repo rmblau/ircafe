@@ -56,12 +56,14 @@ final class IrcEventNotificationTableModel
   }
 
   static String effectiveRuleLabel(IrcEventNotificationRule rule) {
-    if (rule == null) return MESSAGES.text("preferences.notifications.ircEvents.summary.ruleFallback");
+    if (rule == null)
+      return MESSAGES.text("preferences.notifications.ircEvents.summary.ruleFallback");
     String event =
         rule.eventType() != null ? SettingsValueSupport.trimmedString(rule.eventType()) : "";
     String source =
         rule.sourceMode() != null ? SettingsValueSupport.trimmedString(rule.sourceMode()) : "";
-    if (event.isEmpty()) event = MESSAGES.text("preferences.notifications.ircEvents.summary.eventFallback");
+    if (event.isEmpty())
+      event = MESSAGES.text("preferences.notifications.ircEvents.summary.eventFallback");
     if (source.isEmpty()) return event;
     return event + " (" + source + ")";
   }
@@ -229,8 +231,10 @@ final class IrcEventNotificationTableModel
           r.focusScope != null ? r.focusScope : IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY;
       parts.add(MESSAGES.text("preferences.notifications.ircEvents.summary.action.toast", focus));
     }
-    if (r.statusBarEnabled) parts.add(MESSAGES.text("preferences.notifications.ircEvents.summary.action.statusBar"));
-    if (r.notificationsNodeEnabled) parts.add(MESSAGES.text("preferences.notifications.ircEvents.summary.action.node"));
+    if (r.statusBarEnabled)
+      parts.add(MESSAGES.text("preferences.notifications.ircEvents.summary.action.statusBar"));
+    if (r.notificationsNodeEnabled)
+      parts.add(MESSAGES.text("preferences.notifications.ircEvents.summary.action.node"));
     if (r.soundEnabled) {
       if (r.soundUseCustom && SettingsValueSupport.trimmedStringOrNull(r.soundCustomPath) != null) {
         parts.add(MESSAGES.text("preferences.notifications.ircEvents.summary.action.sound.custom"));
@@ -238,7 +242,8 @@ final class IrcEventNotificationTableModel
         BuiltInSound sound = BuiltInSound.fromId(r.soundId);
         parts.add(
             MESSAGES.text(
-                "preferences.notifications.ircEvents.summary.action.sound", sound.displayNameForUi()));
+                "preferences.notifications.ircEvents.summary.action.sound",
+                sound.displayNameForUi()));
       }
     }
     if (r.scriptEnabled) {

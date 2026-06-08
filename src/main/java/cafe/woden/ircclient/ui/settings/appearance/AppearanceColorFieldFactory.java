@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings.appearance;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.SettingsColorPickerDialogSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
@@ -14,16 +15,18 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 final class AppearanceColorFieldFactory {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private AppearanceColorFieldFactory() {}
 
   static ColorField build(String initialHex, String pickerTitle) {
     JTextField hex = new JTextField();
     hex.setColumns(10);
-    hex.setToolTipText("Leave blank to use the preset/theme default.");
+    hex.setToolTipText(MESSAGES.text("preferences.appearance.colorField.blank.tooltip"));
     hex.setText(initialHex != null ? initialHex.trim() : "");
 
-    JButton pick = new JButton("Pick");
-    JButton clear = new JButton("Clear");
+    JButton pick = new JButton(MESSAGES.text("common.button.pick"));
+    JButton clear = new JButton(MESSAGES.text("common.button.clear"));
 
     Runnable updateIcon = () -> updatePickIcon(hex, pick);
 
@@ -66,7 +69,7 @@ final class AppearanceColorFieldFactory {
     Color color = SettingsColorSupport.parseHexColorLenient(hex.getText());
     if (color == null) {
       pick.setIcon(null);
-      pick.setText("Pick");
+      pick.setText(MESSAGES.text("common.button.pick"));
     } else {
       pick.setText("");
       pick.setIcon(SettingsColorSupport.createColorSwatchIcon(color, 14, 14));

@@ -21,8 +21,7 @@ public final class DiagnosticsPanelSupport {
         PreferencesUiSupport.tabTitle(MESSAGES.text("preferences.diagnostics.title")),
         MigConstraints.growXMinWidth0Wrap());
     panel.add(
-        PreferencesUiSupport.helpText(
-            MESSAGES.text("preferences.diagnostics.help")),
+        PreferencesUiSupport.helpText(MESSAGES.text("preferences.diagnostics.help")),
         MigConstraints.growXMinWidth0Wrap());
 
     JPanel assertjPanel =
@@ -52,8 +51,7 @@ public final class DiagnosticsPanelSupport {
         controls.assertjSwingOnIssueShowNotification(),
         MigConstraints.spanXGrowXMinWidthGapLeftWrap(2, 0, 24));
     assertjPanel.add(
-        PreferencesUiSupport.helpText(
-            MESSAGES.text("preferences.diagnostics.assertj.help")),
+        PreferencesUiSupport.helpText(MESSAGES.text("preferences.diagnostics.assertj.help")),
         MigConstraints.spanXGrowXGapLeftWrap(2, 24));
     panel.add(assertjPanel, MigConstraints.growXMinWidth0Wrap());
 
@@ -79,8 +77,7 @@ public final class DiagnosticsPanelSupport {
         MigConstraints.alignYTop());
     jhiccupPanel.add(argsScroll, MigConstraints.growXMinWidthHeightWrap(0, 110));
     jhiccupPanel.add(
-        PreferencesUiSupport.helpText(
-            MESSAGES.text("preferences.diagnostics.jhiccup.help")),
+        PreferencesUiSupport.helpText(MESSAGES.text("preferences.diagnostics.jhiccup.help")),
         MigConstraints.span2GrowXMinWidth0Wrap());
     panel.add(jhiccupPanel, MigConstraints.growXMinWidth0Wrap());
 

@@ -81,8 +81,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
   private final PropertyChangeListener stateListener = __ -> refreshOnEdt();
   private final RuntimeEventsTableModel model = new RuntimeEventsTableModel();
   private final JTable table = new JTable(model);
-  private final JCheckBox enabledCheck =
-      new JCheckBox(message("jfrDiagnostics.control.enable"));
+  private final JCheckBox enabledCheck = new JCheckBox(message("jfrDiagnostics.control.enable"));
   private final JCheckBox pauseRowsCheck =
       new JCheckBox(message("jfrDiagnostics.control.pauseRows"));
   private final JTextField streamValue = newSummaryField();
@@ -266,8 +265,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
 
   private JPanel buildCpuSummaryPanel() {
     JPanel panel = new JPanel(MigLayouts.twoColumnForm(6, 8, MigLayouts.rows(4, 4)));
-    panel.setBorder(
-        BorderFactory.createTitledBorder(message("jfrDiagnostics.summary.cpu.title")));
+    panel.setBorder(BorderFactory.createTitledBorder(message("jfrDiagnostics.summary.cpu.title")));
     panel.setOpaque(false);
     addSummaryField(panel, message("jfrDiagnostics.summary.cpu.machine"), cpuMachineValue);
     addSummaryField(panel, message("jfrDiagnostics.summary.cpu.jvmUser"), cpuJvmUserValue);
@@ -278,8 +276,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
 
   private JPanel buildHeapSummaryPanel() {
     JPanel panel = new JPanel(MigLayouts.twoColumnForm(6, 8, MigLayouts.rows(4, 4)));
-    panel.setBorder(
-        BorderFactory.createTitledBorder(message("jfrDiagnostics.summary.heap.title")));
+    panel.setBorder(BorderFactory.createTitledBorder(message("jfrDiagnostics.summary.heap.title")));
     panel.setOpaque(false);
     addSummaryField(panel, message("jfrDiagnostics.summary.heap.used"), heapUsedValue);
     addSummaryField(panel, message("jfrDiagnostics.summary.heap.committed"), heapCommittedValue);
@@ -290,8 +287,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
 
   private JPanel buildGcSummaryPanel() {
     JPanel panel = new JPanel(MigLayouts.twoColumnForm(6, 8, MigLayouts.rows(4, 4)));
-    panel.setBorder(
-        BorderFactory.createTitledBorder(message("jfrDiagnostics.summary.gc.title")));
+    panel.setBorder(BorderFactory.createTitledBorder(message("jfrDiagnostics.summary.gc.title")));
     panel.setOpaque(false);
     addSummaryField(panel, message("jfrDiagnostics.summary.gc.eventsWindow"), gcCountValue);
     addSummaryField(panel, message("jfrDiagnostics.summary.gc.rate"), gcRateValue);
@@ -694,9 +690,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
         message("jfrDiagnostics.details.field.time"),
         event.at() == null ? "" : TIME_FMT.format(event.at()));
     addDetailRow(
-        fields,
-        message("jfrDiagnostics.details.field.level"),
-        Objects.toString(event.level(), ""));
+        fields, message("jfrDiagnostics.details.field.level"), Objects.toString(event.level(), ""));
     addDetailRow(
         fields,
         message("jfrDiagnostics.details.field.eventType"),
@@ -722,9 +716,7 @@ public final class JfrDiagnosticsPanel extends JPanel {
         message("jfrDiagnostics.details.field.availability"),
         parsed.get("availabilityState"));
     addDetailRowIfPresent(
-        fields,
-        message("jfrDiagnostics.details.field.payloadType"),
-        parsed.get("payloadType"));
+        fields, message("jfrDiagnostics.details.field.payloadType"), parsed.get("payloadType"));
 
     JTextArea text = new JTextArea(Objects.toString(event.details(), ""));
     text.setEditable(false);

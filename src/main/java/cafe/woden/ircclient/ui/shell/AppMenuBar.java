@@ -16,8 +16,8 @@ import cafe.woden.ircclient.ui.docking.DockingTuner;
 import cafe.woden.ircclient.ui.icons.AppIcons;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.ignore.IgnoreListDialog;
-import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.input.MessageInputPanel;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.nickcolors.NickColorOverridesDialog;
 import cafe.woden.ircclient.ui.servers.ServerDialogs;
 import cafe.woden.ircclient.ui.servertree.ServerTreeDockable;
@@ -842,8 +842,7 @@ public class AppMenuBar extends JMenuBar {
     applicationRootVisibilityListener =
         evt -> showApplicationRoot.setSelected(Boolean.TRUE.equals(evt.getNewValue()));
 
-    JMenuItem openSelectedNodeDock =
-        new JMenuItem(message("app.menu.window.openSelectedNodeDock"));
+    JMenuItem openSelectedNodeDock = new JMenuItem(message("app.menu.window.openSelectedNodeDock"));
     openSelectedNodeDock.setAccelerator(
         KeyStroke.getKeyStroke(
             KeyEvent.VK_O, InputEvent.CTRL_DOWN_MASK | InputEvent.SHIFT_DOWN_MASK));
@@ -1758,8 +1757,7 @@ public class AppMenuBar extends JMenuBar {
       }
       return message("app.menu.memory.jfr.unavailable");
     } catch (Throwable t) {
-      return message(
-          "app.menu.memory.jfr.snapshot.failed", Objects.toString(t.getMessage(), ""));
+      return message("app.menu.memory.jfr.snapshot.failed", Objects.toString(t.getMessage(), ""));
     }
   }
 

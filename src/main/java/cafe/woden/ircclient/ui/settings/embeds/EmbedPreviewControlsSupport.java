@@ -26,8 +26,7 @@ public final class EmbedPreviewControlsSupport {
       UiSettings current, List<AutoCloseable> closeables) {
     JCheckBox imageEmbeds = new JCheckBox(MESSAGES.text("preferences.embeds.image.enabled"));
     imageEmbeds.setSelected(current.imageEmbedsEnabled());
-    imageEmbeds.setToolTipText(
-        MESSAGES.text("preferences.embeds.image.enabled.tooltip"));
+    imageEmbeds.setToolTipText(MESSAGES.text("preferences.embeds.image.enabled.tooltip"));
 
     JCheckBox imageEmbedsCollapsed =
         new JCheckBox(MESSAGES.text("preferences.embeds.image.collapsed"));
@@ -38,14 +37,12 @@ public final class EmbedPreviewControlsSupport {
     JSpinner imageMaxWidth =
         PreferencesUiSupport.numberSpinner(
             current.imageEmbedsMaxWidthPx(), 0, 4096, 10, closeables);
-    imageMaxWidth.setToolTipText(
-        MESSAGES.text("preferences.embeds.image.maxWidth.tooltip"));
+    imageMaxWidth.setToolTipText(MESSAGES.text("preferences.embeds.image.maxWidth.tooltip"));
     imageMaxWidth.setEnabled(imageEmbeds.isSelected());
     JSpinner imageMaxHeight =
         PreferencesUiSupport.numberSpinner(
             current.imageEmbedsMaxHeightPx(), 0, 4096, 10, closeables);
-    imageMaxHeight.setToolTipText(
-        MESSAGES.text("preferences.embeds.image.maxHeight.tooltip"));
+    imageMaxHeight.setToolTipText(MESSAGES.text("preferences.embeds.image.maxHeight.tooltip"));
     imageMaxHeight.setEnabled(imageEmbeds.isSelected());
 
     JCheckBox animateGifs = new JCheckBox(MESSAGES.text("preferences.embeds.image.animateGifs"));
@@ -81,8 +78,7 @@ public final class EmbedPreviewControlsSupport {
       UiSettings current, EmbedCardStyle currentEmbedCardStyle) {
     JCheckBox linkPreviews = new JCheckBox(MESSAGES.text("preferences.embeds.link.enabled"));
     linkPreviews.setSelected(current.linkPreviewsEnabled());
-    linkPreviews.setToolTipText(
-        MESSAGES.text("preferences.embeds.link.enabled.tooltip"));
+    linkPreviews.setToolTipText(MESSAGES.text("preferences.embeds.link.enabled.tooltip"));
 
     JCheckBox linkPreviewsCollapsed =
         new JCheckBox(MESSAGES.text("preferences.embeds.link.collapsed"));
@@ -96,8 +92,7 @@ public final class EmbedPreviewControlsSupport {
     JComboBox<EmbedCardStyle> cardStyle = new JComboBox<>(EmbedCardStyle.values());
     cardStyle.setSelectedItem(
         currentEmbedCardStyle != null ? currentEmbedCardStyle : EmbedCardStyle.DEFAULT);
-    cardStyle.setToolTipText(
-        MESSAGES.text("preferences.embeds.link.cardStyle.tooltip"));
+    cardStyle.setToolTipText(MESSAGES.text("preferences.embeds.link.cardStyle.tooltip"));
 
     JPanel linkPanel = new JPanel(MigLayouts.singleColumn(MigLayouts.rowGaps(4, 8)));
     linkPanel.setOpaque(false);

@@ -60,20 +60,17 @@ public final class MemoryControlsSupport {
     JCheckBox toastEnabled =
         new JCheckBox(MESSAGES.text("preferences.memory.warning.toast.enabled"));
     toastEnabled.setSelected(current != null && current.memoryUsageWarningToastEnabled());
-    toastEnabled.setToolTipText(
-        MESSAGES.text("preferences.memory.warning.toast.enabled.tooltip"));
+    toastEnabled.setToolTipText(MESSAGES.text("preferences.memory.warning.toast.enabled.tooltip"));
 
     JCheckBox pushyEnabled =
         new JCheckBox(MESSAGES.text("preferences.memory.warning.pushy.enabled"));
     pushyEnabled.setSelected(current != null && current.memoryUsageWarningPushyEnabled());
-    pushyEnabled.setToolTipText(
-        MESSAGES.text("preferences.memory.warning.pushy.enabled.tooltip"));
+    pushyEnabled.setToolTipText(MESSAGES.text("preferences.memory.warning.pushy.enabled.tooltip"));
 
     JCheckBox soundEnabled =
         new JCheckBox(MESSAGES.text("preferences.memory.warning.sound.enabled"));
     soundEnabled.setSelected(current != null && current.memoryUsageWarningSoundEnabled());
-    soundEnabled.setToolTipText(
-        MESSAGES.text("preferences.memory.warning.sound.enabled.tooltip"));
+    soundEnabled.setToolTipText(MESSAGES.text("preferences.memory.warning.sound.enabled.tooltip"));
 
     return new MemoryWarningControls(
         nearMaxPercentSpinner, tooltipEnabled, toastEnabled, pushyEnabled, soundEnabled);

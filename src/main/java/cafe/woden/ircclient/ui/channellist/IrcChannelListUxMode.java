@@ -62,8 +62,7 @@ final class IrcChannelListUxMode implements ChannelListUxMode {
     JSpinner maxUsers = new JSpinner(new SpinnerNumberModel(500, 0, 1_000_000, 1));
     JCheckBox skipEnabled = new JCheckBox(MESSAGES.text("channelList.irc.alis.skip"));
     JSpinner skipCount = new JSpinner(new SpinnerNumberModel(0, 0, 1_000_000, 1));
-    JCheckBox showModes =
-        new JCheckBox(MESSAGES.text("channelList.irc.alis.showModes"), false);
+    JCheckBox showModes = new JCheckBox(MESSAGES.text("channelList.irc.alis.showModes"), false);
     JCheckBox showTopicSetter =
         new JCheckBox(MESSAGES.text("channelList.irc.alis.showTopicSetter"), false);
     JComboBox<String> registrationScope =

@@ -298,8 +298,7 @@ public final class OutboundMessageTranslationDialog {
       JButton ok,
       JButton cancel,
       Throwable error) {
-    status.setText(
-        MESSAGES.text("messageInput.translation.status.failed", describe(error)));
+    status.setText(MESSAGES.text("messageInput.translation.status.failed", describe(error)));
     setBusy(false, language, translate, ok, cancel);
   }
 

@@ -166,8 +166,7 @@ public final class ChatFindBarDecorator implements AutoCloseable {
   private final class FindBar extends JPanel {
 
     private final JTextField field = new JTextField(28);
-    private final JCheckBox matchCase =
-        new JCheckBox(MESSAGES.text("chatFind.matchCase.short"));
+    private final JCheckBox matchCase = new JCheckBox(MESSAGES.text("chatFind.matchCase.short"));
     private final JLabel status = new JLabel("");
 
     private final JButton prev = new JButton(MESSAGES.text("chatFind.button.previous"));

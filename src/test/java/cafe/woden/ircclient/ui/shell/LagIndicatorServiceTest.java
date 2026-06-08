@@ -39,7 +39,7 @@ class LagIndicatorServiceTest {
     }
 
     verify(lagProbePort, never()).requestLagProbe("libera");
-    verify(statusBar).setLagIndicatorReading(123L, "Round-trip lag to 'libera': 123 ms.");
+    verify(statusBar).setLagIndicatorReading(123L, "Round-trip lag to libera: 123 ms.");
   }
 
   @Test
@@ -65,7 +65,7 @@ class LagIndicatorServiceTest {
     }
 
     verify(lagProbePort).requestLagProbe("libera");
-    verify(statusBar).setLagIndicatorReading(88L, "Round-trip lag to 'libera': 88 ms.");
+    verify(statusBar).setLagIndicatorReading(88L, "Round-trip lag to libera: 88 ms.");
   }
 
   @Test
@@ -93,7 +93,7 @@ class LagIndicatorServiceTest {
     }
 
     verify(lagProbePort).requestLagProbe("libera");
-    verify(statusBar).setLagIndicatorReading(null, "Refreshing lag for 'libera'...");
+    verify(statusBar).setLagIndicatorReading(null, "Refreshing lag for libera...");
   }
 
   @Test
@@ -141,7 +141,7 @@ class LagIndicatorServiceTest {
     }
 
     verify(lagProbePort, never()).requestLagProbe("libera");
-    verify(statusBar).setLagIndicatorReading(null, "Waiting for connection setup on 'libera'...");
+    verify(statusBar).setLagIndicatorReading(null, "Waiting for connection setup on libera...");
   }
 
   @Test
@@ -192,7 +192,7 @@ class LagIndicatorServiceTest {
     }
 
     verify(lagProbePort).requestLagProbe("quassel");
-    verify(statusBar).setLagIndicatorReading(45L, "Round-trip lag to 'quassel': 45 ms.");
+    verify(statusBar).setLagIndicatorReading(45L, "Round-trip lag to quassel: 45 ms.");
   }
 
   private static void invokeCheckLagSafely(LagIndicatorService service) throws Exception {

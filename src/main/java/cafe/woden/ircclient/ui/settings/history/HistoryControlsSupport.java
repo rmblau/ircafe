@@ -28,8 +28,7 @@ public final class HistoryControlsSupport {
     JSpinner historyPageSize =
         PreferencesUiSupport.numberSpinner(
             current.chatHistoryPageSize(), 1, 10_000, 10, closeables);
-    historyPageSize.setToolTipText(
-        MESSAGES.text("preferences.history.pageSize.tooltip"));
+    historyPageSize.setToolTipText(MESSAGES.text("preferences.history.pageSize.tooltip"));
 
     JSpinner historyAutoLoadWheelDebounceMs =
         PreferencesUiSupport.numberSpinner(

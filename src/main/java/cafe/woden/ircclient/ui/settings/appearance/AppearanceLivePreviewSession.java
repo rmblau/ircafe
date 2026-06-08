@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings.appearance;
 
 import cafe.woden.ircclient.config.properties.UiProperties;
 import cafe.woden.ircclient.ui.SwingEdt;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
 import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
@@ -27,7 +28,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JTextField;
 
 public final class AppearanceLivePreviewSession implements AutoCloseable {
-  private static final String FLAT_ONLY_TOOLTIP = "Available for FlatLaf-based themes only.";
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+  private static final String FLAT_ONLY_TOOLTIP =
+      MESSAGES.text("preferences.appearance.tooltip.flatLafOnly");
   private static final ThemeAccentSettings DEFAULT_ACCENT_SETTINGS =
       new ThemeAccentSettings(
           UiProperties.DEFAULT_ACCENT_COLOR, UiProperties.DEFAULT_ACCENT_STRENGTH);

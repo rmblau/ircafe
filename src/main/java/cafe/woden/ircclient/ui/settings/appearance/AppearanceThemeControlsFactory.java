@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings.appearance;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.theme.ThemeIdUtils;
 import java.awt.Component;
@@ -11,6 +12,8 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 
 final class AppearanceThemeControlsFactory {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private AppearanceThemeControlsFactory() {}
 
   static ThemeControls build(UiSettings current, Map<String, String> themeLabelById) {
@@ -40,7 +43,7 @@ final class AppearanceThemeControlsFactory {
     }
 
     LinkedHashMap<String, String> expanded = new LinkedHashMap<>();
-    expanded.put(currentTheme, "Custom: " + currentTheme);
+    expanded.put(currentTheme, MESSAGES.text("preferences.appearance.theme.custom", currentTheme));
     expanded.putAll(themeLabelById);
     return expanded;
   }

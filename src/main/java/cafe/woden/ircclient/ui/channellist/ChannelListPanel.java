@@ -1071,8 +1071,7 @@ public final class ChannelListPanel extends JPanel {
     int total = managedModel.getRowCount();
     int detached = managedModel.detachedCount();
     int attached = Math.max(0, total - detached);
-    managedSubtitle.setText(
-        message("channelList.managed.summary", sid, total, attached, detached));
+    managedSubtitle.setText(message("channelList.managed.summary", sid, total, attached, detached));
   }
 
   private void applyListFilter() {
@@ -1825,16 +1824,13 @@ public final class ChannelListPanel extends JPanel {
           String modeSpec =
               Objects.toString(
                       JOptionPane.showInputDialog(
-                          owner,
-                          message("channelList.details.prompt.setModes"),
-                          initial),
+                          owner, message("channelList.details.prompt.setModes"), initial),
                       "")
                   .trim();
           if (modeSpec.isEmpty()) return;
           requestModeSet(sid, channel, modeSpec);
           setAreaText(
-              modeSummaryArea,
-              message("channelList.details.status.sentMode", channel, modeSpec));
+              modeSummaryArea, message("channelList.details.status.sentMode", channel, modeSpec));
         });
 
     boolean canEditModes = canEditChannelModes(sid, channel);
@@ -1941,8 +1937,7 @@ public final class ChannelListPanel extends JPanel {
     banPanel.add(banActions, BorderLayout.NORTH);
     banPanel.add(banListScroll, BorderLayout.CENTER);
     JPanel banStatusPanel = new JPanel(new BorderLayout(0, 4));
-    banStatusPanel.add(
-        new JLabel(message("channelList.details.field.status")), BorderLayout.NORTH);
+    banStatusPanel.add(new JLabel(message("channelList.details.field.status")), BorderLayout.NORTH);
     banStatusPanel.add(new JScrollPane(banListStatusArea), BorderLayout.CENTER);
     banPanel.add(banStatusPanel, BorderLayout.SOUTH);
 
@@ -1950,7 +1945,8 @@ public final class ChannelListPanel extends JPanel {
         new JLabel(message("channelList.details.field.modeSummary")), MigConstraints.alignYTop());
     detailsTab.add(modeSummaryPanel, MigConstraints.spanXGrowXMinHeight(5, 140));
 
-    detailsTab.add(new JLabel(message("channelList.details.field.topic")), MigConstraints.alignYTop());
+    detailsTab.add(
+        new JLabel(message("channelList.details.field.topic")), MigConstraints.alignYTop());
     detailsTab.add(topicPanel, MigConstraints.spanXGrowPushYMinHeight(5, 160));
 
     JTabbedPane detailsTabs = new JTabbedPane();
@@ -2896,9 +2892,7 @@ public final class ChannelListPanel extends JPanel {
     String nextMask =
         Objects.toString(
                 JOptionPane.showInputDialog(
-                    owner,
-                    message("channelList.details.prompt.editBan", channel),
-                    selected.mask()),
+                    owner, message("channelList.details.prompt.editBan", channel), selected.mask()),
                 "")
             .trim();
     if (nextMask.isEmpty() || nextMask.equals(selected.mask())) return;

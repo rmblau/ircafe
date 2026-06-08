@@ -30,20 +30,17 @@ public final class SpellcheckControlsSupport {
     javax.swing.JCheckBox enabled =
         new javax.swing.JCheckBox(MESSAGES.text("preferences.spellcheck.enabled"));
     enabled.setSelected(initial.enabled());
-    enabled.setToolTipText(
-        MESSAGES.text("preferences.spellcheck.enabled.tooltip"));
+    enabled.setToolTipText(MESSAGES.text("preferences.spellcheck.enabled.tooltip"));
 
     javax.swing.JCheckBox underline =
         new javax.swing.JCheckBox(MESSAGES.text("preferences.spellcheck.underline"));
     underline.setSelected(initial.underlineEnabled());
-    underline.setToolTipText(
-        MESSAGES.text("preferences.spellcheck.underline.tooltip"));
+    underline.setToolTipText(MESSAGES.text("preferences.spellcheck.underline.tooltip"));
 
     javax.swing.JCheckBox suggestOnTab =
         new javax.swing.JCheckBox(MESSAGES.text("preferences.spellcheck.suggestOnTab"));
     suggestOnTab.setSelected(initial.suggestOnTabEnabled());
-    suggestOnTab.setToolTipText(
-        MESSAGES.text("preferences.spellcheck.suggestOnTab.tooltip"));
+    suggestOnTab.setToolTipText(MESSAGES.text("preferences.spellcheck.suggestOnTab.tooltip"));
 
     javax.swing.JCheckBox hoverSuggestions =
         new javax.swing.JCheckBox(MESSAGES.text("preferences.spellcheck.hoverSuggestions"));
@@ -185,8 +182,7 @@ public final class SpellcheckControlsSupport {
     JPanel customKnobsPanel =
         new JPanel(MigLayouts.twoColumnFormWithHideMode(0, 8, 3, MigLayouts.rows(5, 2)));
     customKnobsPanel.setOpaque(false);
-    customKnobsPanel.add(
-        new JLabel(MESSAGES.text("preferences.spellcheck.field.minPrefixLength")));
+    customKnobsPanel.add(new JLabel(MESSAGES.text("preferences.spellcheck.field.minPrefixLength")));
     customKnobsPanel.add(customMinPrefixCompletionTokenLength, MigConstraints.width(120));
     customKnobsPanel.add(
         new JLabel(MESSAGES.text("preferences.spellcheck.field.maxCompletionTail")));
@@ -194,8 +190,7 @@ public final class SpellcheckControlsSupport {
     customKnobsPanel.add(
         new JLabel(MESSAGES.text("preferences.spellcheck.field.lexiconCandidateCap")));
     customKnobsPanel.add(customMaxPrefixLexiconCandidates, MigConstraints.width(120));
-    customKnobsPanel.add(
-        new JLabel(MESSAGES.text("preferences.spellcheck.field.prefixBonus")));
+    customKnobsPanel.add(new JLabel(MESSAGES.text("preferences.spellcheck.field.prefixBonus")));
     customKnobsPanel.add(customPrefixCompletionBonusScore, MigConstraints.width(120));
     customKnobsPanel.add(
         new JLabel(MESSAGES.text("preferences.spellcheck.field.sourceOrderWeight")));

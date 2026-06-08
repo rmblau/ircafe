@@ -183,7 +183,8 @@ public class ServersDialog extends JDialog {
 
   private void onAdd() {
     ServerEditorDialog dlg =
-        new ServerEditorDialog(this, MESSAGES.text("servers.editor.title.add"), null, true, backendProfiles);
+        new ServerEditorDialog(
+            this, MESSAGES.text("servers.editor.title.add"), null, true, backendProfiles);
     Optional<IrcProperties.Server> out = dlg.open();
     out.ifPresent(
         next -> {
@@ -200,7 +201,12 @@ public class ServersDialog extends JDialog {
     String originalId = cur.id();
     boolean autoConnectOnStart = runtimeConfig.readServerAutoConnectOnStart(originalId, true);
     ServerEditorDialog dlg =
-        new ServerEditorDialog(this, MESSAGES.text("servers.editor.title.edit"), cur, autoConnectOnStart, backendProfiles);
+        new ServerEditorDialog(
+            this,
+            MESSAGES.text("servers.editor.title.edit"),
+            cur,
+            autoConnectOnStart,
+            backendProfiles);
     Optional<IrcProperties.Server> out = dlg.open();
     if (out.isEmpty()) return;
 

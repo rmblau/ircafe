@@ -32,8 +32,7 @@ public final class MessageInputComposeSupport {
   private final JPanel composeBannerActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
   private final JButton composeBannerJump =
       new JButton(MESSAGES.text("messageInput.reply.button.jump"));
-  private final JButton composeBannerCancel =
-      new JButton(MESSAGES.text("common.button.cancel"));
+  private final JButton composeBannerCancel = new JButton(MESSAGES.text("common.button.cancel"));
 
   private String replyComposeTarget = "";
   private String replyComposeMessageId = "";

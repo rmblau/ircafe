@@ -154,7 +154,8 @@ public final class SettingsColorPickerDialogSupport {
         e -> {
           Color picked =
               JColorChooser.showDialog(
-                  d, MESSAGES.text("settings.colorPicker.moreColors.title"),
+                  d,
+                  MESSAGES.text("settings.colorPicker.moreColors.title"),
                   current[0] != null ? current[0] : init);
           if (picked != null) setColor.accept(picked);
         });
@@ -200,8 +201,7 @@ public final class SettingsColorPickerDialogSupport {
     content.add(palette, MigConstraints.growXWrap());
 
     content.add(
-        new JLabel(MESSAGES.text("settings.colorPicker.field.recent")),
-        MigConstraints.alignYTop());
+        new JLabel(MESSAGES.text("settings.colorPicker.field.recent")), MigConstraints.alignYTop());
     content.add(recent, MigConstraints.growXWrap());
 
     JPanel buttons = PreferencesUiSupport.rightComponentRow(8, 0, cancel, ok);

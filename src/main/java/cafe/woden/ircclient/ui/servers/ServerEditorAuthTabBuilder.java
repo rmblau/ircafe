@@ -15,6 +15,7 @@ import javax.swing.JTextField;
 /** Builds the server-editor auth tab and its auth-mode cards from existing widgets. */
 final class ServerEditorAuthTabBuilder {
   private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private ServerEditorAuthTabBuilder() {}
 
   static JPanel build(AuthTabWidgets widgets) {
@@ -66,7 +67,8 @@ final class ServerEditorAuthTabBuilder {
     panel.add(widgets.saslPasswordField(), MigConstraints.growXMinWidth0Wrap());
     panel.add(new JLabel(MESSAGES.text("servers.editor.auth.mechanism")));
     panel.add(widgets.saslMechanismCombo(), MigConstraints.growXMinWidth0Wrap());
-    panel.add(new JLabel(MESSAGES.text("servers.editor.auth.onFailure")), MigConstraints.alignYTop());
+    panel.add(
+        new JLabel(MESSAGES.text("servers.editor.auth.onFailure")), MigConstraints.alignYTop());
     panel.add(widgets.saslContinueOnFailureBox(), MigConstraints.growXMinWidth0Wrap());
 
     styleHint(widgets.saslHintLabel(), " ");
@@ -83,7 +85,8 @@ final class ServerEditorAuthTabBuilder {
     panel.add(widgets.nickservServiceField(), MigConstraints.growXMinWidth0Wrap());
     panel.add(new JLabel(MESSAGES.text("servers.editor.auth.password")));
     panel.add(widgets.nickservPasswordField(), MigConstraints.growXMinWidth0Wrap());
-    panel.add(new JLabel(MESSAGES.text("servers.editor.auth.delayAutoJoin")), MigConstraints.alignYTop());
+    panel.add(
+        new JLabel(MESSAGES.text("servers.editor.auth.delayAutoJoin")), MigConstraints.alignYTop());
     panel.add(widgets.nickservDelayJoinBox(), MigConstraints.growXMinWidth0Wrap());
 
     styleHint(widgets.nickservHintLabel(), " ");

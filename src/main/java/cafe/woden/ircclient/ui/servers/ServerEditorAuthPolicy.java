@@ -96,7 +96,8 @@ final class ServerEditorAuthPolicy {
               : MESSAGES.text("servers.editor.validation.matrixAccessTokenRequired"));
     }
     if (validation.usernameBad()) {
-      throw new IllegalArgumentException(MESSAGES.text("servers.editor.validation.matrixUsernameRequired"));
+      throw new IllegalArgumentException(
+          MESSAGES.text("servers.editor.validation.matrixUsernameRequired"));
     }
   }
 
@@ -200,7 +201,8 @@ final class ServerEditorAuthPolicy {
     }
     String resolvedPassword = Objects.toString(password, "");
     if (resolvedPassword.isBlank()) {
-      throw new IllegalArgumentException(MESSAGES.text("servers.editor.validation.nickservPasswordRequired"));
+      throw new IllegalArgumentException(
+          MESSAGES.text("servers.editor.validation.nickservPasswordRequired"));
     }
     return new IrcProperties.Server.Nickserv(
         true, resolvedPassword, resolvedService, delayJoinUntilIdentified);

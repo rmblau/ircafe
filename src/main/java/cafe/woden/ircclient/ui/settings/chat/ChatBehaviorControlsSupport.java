@@ -26,16 +26,14 @@ public final class ChatBehaviorControlsSupport {
     JCheckBox presenceFolds =
         new JCheckBox(MESSAGES.text("preferences.chat.behavior.presenceFolds"));
     presenceFolds.setSelected(current.presenceFoldsEnabled());
-    presenceFolds.setToolTipText(
-        MESSAGES.text("preferences.chat.behavior.presenceFolds.tooltip"));
+    presenceFolds.setToolTipText(MESSAGES.text("preferences.chat.behavior.presenceFolds.tooltip"));
     return presenceFolds;
   }
 
   public static JCheckBox buildCtcpRequestsInActiveTargetCheckbox(UiSettings current) {
     JCheckBox ctcp = new JCheckBox(MESSAGES.text("preferences.chat.behavior.ctcpActiveTarget"));
     ctcp.setSelected(current.ctcpRequestsInActiveTargetEnabled());
-    ctcp.setToolTipText(
-        MESSAGES.text("preferences.chat.behavior.ctcpActiveTarget.tooltip"));
+    ctcp.setToolTipText(MESSAGES.text("preferences.chat.behavior.ctcpActiveTarget.tooltip"));
     return ctcp;
   }
 
@@ -43,8 +41,7 @@ public final class ChatBehaviorControlsSupport {
       ChatBehaviorRuntimeConfigPort runtimeConfig) {
     JTextField field =
         new JTextField(runtimeConfig != null ? runtimeConfig.readDefaultQuitMessage() : "");
-    field.setToolTipText(
-        MESSAGES.text("preferences.chat.behavior.defaultQuitMessage.tooltip"));
+    field.setToolTipText(MESSAGES.text("preferences.chat.behavior.defaultQuitMessage.tooltip"));
     return field;
   }
 
@@ -80,51 +77,42 @@ public final class ChatBehaviorControlsSupport {
   public static JCheckBox buildTypingIndicatorsSendCheckbox(UiSettings current) {
     JCheckBox checkbox = new JCheckBox(MESSAGES.text("preferences.ircv3.typing.send"));
     checkbox.setSelected(current.typingIndicatorsEnabled());
-    checkbox.setToolTipText(
-        MESSAGES.text("preferences.ircv3.typing.send.tooltip"));
+    checkbox.setToolTipText(MESSAGES.text("preferences.ircv3.typing.send.tooltip"));
     return checkbox;
   }
 
   public static JCheckBox buildTypingIndicatorsReceiveCheckbox(UiSettings current) {
     JCheckBox checkbox = new JCheckBox(MESSAGES.text("preferences.ircv3.typing.receive"));
     checkbox.setSelected(current.typingIndicatorsReceiveEnabled());
-    checkbox.setToolTipText(
-        MESSAGES.text("preferences.ircv3.typing.receive.tooltip"));
+    checkbox.setToolTipText(MESSAGES.text("preferences.ircv3.typing.receive.tooltip"));
     return checkbox;
   }
 
   public static JCheckBox buildTypingIndicatorsTreeDisplayCheckbox(UiSettings current) {
     JCheckBox checkbox = new JCheckBox(MESSAGES.text("preferences.ircv3.typing.treeDisplay"));
     checkbox.setSelected(current.typingIndicatorsTreeEnabled());
-    checkbox.setToolTipText(
-        MESSAGES.text("preferences.ircv3.typing.treeDisplay.tooltip"));
+    checkbox.setToolTipText(MESSAGES.text("preferences.ircv3.typing.treeDisplay.tooltip"));
     return checkbox;
   }
 
   public static JCheckBox buildTypingIndicatorsUsersListDisplayCheckbox(UiSettings current) {
-    JCheckBox checkbox =
-        new JCheckBox(MESSAGES.text("preferences.ircv3.typing.usersListDisplay"));
+    JCheckBox checkbox = new JCheckBox(MESSAGES.text("preferences.ircv3.typing.usersListDisplay"));
     checkbox.setSelected(current.typingIndicatorsUsersListEnabled());
-    checkbox.setToolTipText(
-        MESSAGES.text("preferences.ircv3.typing.usersListDisplay.tooltip"));
+    checkbox.setToolTipText(MESSAGES.text("preferences.ircv3.typing.usersListDisplay.tooltip"));
     return checkbox;
   }
 
   public static JCheckBox buildTypingIndicatorsTranscriptDisplayCheckbox(UiSettings current) {
-    JCheckBox checkbox =
-        new JCheckBox(MESSAGES.text("preferences.ircv3.typing.transcriptDisplay"));
+    JCheckBox checkbox = new JCheckBox(MESSAGES.text("preferences.ircv3.typing.transcriptDisplay"));
     checkbox.setSelected(current.typingIndicatorsTranscriptEnabled());
-    checkbox.setToolTipText(
-        MESSAGES.text("preferences.ircv3.typing.transcriptDisplay.tooltip"));
+    checkbox.setToolTipText(MESSAGES.text("preferences.ircv3.typing.transcriptDisplay.tooltip"));
     return checkbox;
   }
 
   public static JCheckBox buildTypingIndicatorsSendSignalDisplayCheckbox(UiSettings current) {
-    JCheckBox checkbox =
-        new JCheckBox(MESSAGES.text("preferences.ircv3.typing.sendSignalDisplay"));
+    JCheckBox checkbox = new JCheckBox(MESSAGES.text("preferences.ircv3.typing.sendSignalDisplay"));
     checkbox.setSelected(current.typingIndicatorsSendSignalEnabled());
-    checkbox.setToolTipText(
-        MESSAGES.text("preferences.ircv3.typing.sendSignalDisplay.tooltip"));
+    checkbox.setToolTipText(MESSAGES.text("preferences.ircv3.typing.sendSignalDisplay.tooltip"));
     return checkbox;
   }
 
@@ -176,8 +164,7 @@ public final class ChatBehaviorControlsSupport {
               "verbose", MESSAGES.text("preferences.ircv3.matrixNames.verbose"))
         };
     JComboBox<MatrixUserListNameDisplayModeOption> combo = new JComboBox<>(options);
-    combo.setToolTipText(
-        MESSAGES.text("preferences.ircv3.matrixNames.tooltip"));
+    combo.setToolTipText(MESSAGES.text("preferences.ircv3.matrixNames.tooltip"));
     combo.setRenderer(
         new DefaultListCellRenderer() {
           @Override
@@ -206,11 +193,9 @@ public final class ChatBehaviorControlsSupport {
   }
 
   public static JCheckBox buildServerTreeNotificationBadgesCheckbox(UiSettings current) {
-    JCheckBox checkbox =
-        new JCheckBox(MESSAGES.text("preferences.ircv3.serverTreeBadges.enabled"));
+    JCheckBox checkbox = new JCheckBox(MESSAGES.text("preferences.ircv3.serverTreeBadges.enabled"));
     checkbox.setSelected(current.serverTreeNotificationBadgesEnabled());
-    checkbox.setToolTipText(
-        MESSAGES.text("preferences.ircv3.serverTreeBadges.tooltip"));
+    checkbox.setToolTipText(MESSAGES.text("preferences.ircv3.serverTreeBadges.tooltip"));
     return checkbox;
   }
 
@@ -221,8 +206,7 @@ public final class ChatBehaviorControlsSupport {
     JSpinner spinner =
         PreferencesUiSupport.numberSpinner(
             SettingsRangeSupport.normalizeServerTreeUnreadBadgeScalePercent(current), 50, 150, 5);
-    spinner.setToolTipText(
-        MESSAGES.text("preferences.ircv3.serverTreeBadgeScale.tooltip"));
+    spinner.setToolTipText(MESSAGES.text("preferences.ircv3.serverTreeBadgeScale.tooltip"));
     return spinner;
   }
 

@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.appearance;
 
 import cafe.woden.ircclient.config.api.AppearanceRuntimeConfigPort;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
@@ -12,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 
 public final class AppearanceControlsSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private AppearanceControlsSupport() {}
 
   static ThemeControls buildThemeControls(UiSettings current, Map<String, String> themeLabelById) {
@@ -64,7 +67,8 @@ public final class AppearanceControlsSupport {
       Color parsed = SettingsColorSupport.parseHexColorLenient(controls.hex.getText());
       if (parsed == null) {
         throw new AppearanceSettingsException(
-            "Invalid accent color", "Accent color must be a hex value like #RRGGBB.");
+            MESSAGES.text("preferences.appearance.validation.accentColor.title"),
+            MESSAGES.text("preferences.appearance.validation.accentColor.message"));
       }
       accentColor = SettingsColorSupport.toHex(parsed);
     }
@@ -80,24 +84,34 @@ public final class AppearanceControlsSupport {
       return new ChatThemeSettings(
           preset,
           SettingsColorSupport.normalizeOptionalHexForApply(
-              controls.timestamp.hex.getText(), "Chat timestamp color"),
+              controls.timestamp.hex.getText(),
+              MESSAGES.text("preferences.appearance.field.timestampColor")),
           SettingsColorSupport.normalizeOptionalHexForApply(
-              controls.system.hex.getText(), "Chat system color"),
+              controls.system.hex.getText(),
+              MESSAGES.text("preferences.appearance.field.serverSystem")),
           SettingsColorSupport.normalizeOptionalHexForApply(
-              controls.mention.hex.getText(), "Mention highlight color"),
+              controls.mention.hex.getText(),
+              MESSAGES.text("preferences.appearance.field.mentionHighlight")),
           controls.mentionStrength.getValue(),
           SettingsColorSupport.normalizeOptionalHexForApply(
-              controls.message.hex.getText(), "User message color"),
+              controls.message.hex.getText(),
+              MESSAGES.text("preferences.appearance.field.userMessages")),
           SettingsColorSupport.normalizeOptionalHexForApply(
-              controls.notice.hex.getText(), "Notice message color"),
+              controls.notice.hex.getText(),
+              MESSAGES.text("preferences.appearance.field.noticeMessages")),
           SettingsColorSupport.normalizeOptionalHexForApply(
-              controls.action.hex.getText(), "Action message color"),
+              controls.action.hex.getText(),
+              MESSAGES.text("preferences.appearance.field.actionMessages")),
           SettingsColorSupport.normalizeOptionalHexForApply(
-              controls.error.hex.getText(), "Error message color"),
+              controls.error.hex.getText(),
+              MESSAGES.text("preferences.appearance.field.errorMessages")),
           SettingsColorSupport.normalizeOptionalHexForApply(
-              controls.presence.hex.getText(), "Presence message color"));
+              controls.presence.hex.getText(),
+              MESSAGES.text("preferences.appearance.field.presenceMessages")));
     } catch (IllegalArgumentException ex) {
-      throw new AppearanceSettingsException("Invalid chat message color", ex.getMessage());
+      throw new AppearanceSettingsException(
+          MESSAGES.text("preferences.appearance.validation.chatMessageColor.title"),
+          ex.getMessage());
     }
   }
 

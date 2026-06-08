@@ -75,8 +75,7 @@ public final class LoggingControlsSupport {
             ? SettingsRangeSupport.normalizeLoggingRetentionDays(logProps.retentionDays())
             : 0;
 
-    JCheckBox keepForever =
-        new JCheckBox(MESSAGES.text("preferences.logging.keepForever.enabled"));
+    JCheckBox keepForever = new JCheckBox(MESSAGES.text("preferences.logging.keepForever.enabled"));
     keepForever.setSelected(keepForeverCurrent);
     keepForever.setToolTipText(MESSAGES.text("preferences.logging.keepForever.tooltip"));
 
@@ -118,7 +117,8 @@ public final class LoggingControlsSupport {
     dbNextToConfig.setSelected(dbNextToConfigCurrent);
     dbNextToConfig.setToolTipText(MESSAGES.text("preferences.logging.dbNextToConfig.tooltip"));
 
-    JTextArea loggingInfo = PreferencesUiSupport.helpText(MESSAGES.text("preferences.logging.info"));
+    JTextArea loggingInfo =
+        PreferencesUiSupport.helpText(MESSAGES.text("preferences.logging.info"));
     loggingInfo.setColumns(48);
 
     Runnable updateRetentionUi = () -> retentionDays.setEnabled(!keepForever.isSelected());

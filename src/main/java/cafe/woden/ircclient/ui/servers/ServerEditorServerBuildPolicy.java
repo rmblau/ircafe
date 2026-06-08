@@ -21,7 +21,8 @@ final class ServerEditorServerBuildPolicy {
     ServerEditorAuthPolicy.validateMatrixCredentials(
         request.profile(), request.matrixAuthMode(), serverPassword, matrixAuthUser);
     if (containsCrlf(serverPassword)) {
-      throw new IllegalArgumentException(MESSAGES.text("servers.editor.validation.serverPasswordNoNewlines"));
+      throw new IllegalArgumentException(
+          MESSAGES.text("servers.editor.validation.serverPasswordNoNewlines"));
     }
 
     String nick =

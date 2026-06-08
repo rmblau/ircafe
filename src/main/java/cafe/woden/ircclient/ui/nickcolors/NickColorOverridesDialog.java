@@ -89,8 +89,7 @@ public class NickColorOverridesDialog {
     JScrollPane scroll = new JScrollPane(table);
     scroll.setPreferredSize(new Dimension(640, 340));
 
-    JLabel help =
-        new JLabel(messages.text("nickColors.overrides.help"));
+    JLabel help = new JLabel(messages.text("nickColors.overrides.help"));
     help.putClientProperty(FlatClientProperties.STYLE, "font: -1");
 
     JButton add = new JButton(messages.text("nickColors.overrides.add"));

@@ -55,14 +55,12 @@ class UiMessagesTest {
     assertEquals("Undo", messages.text("messageInput.context.undo"));
     assertEquals("Check spelling", messages.text("messageInput.context.checkSpelling"));
     assertEquals(
-        "Clear Command History",
-        messages.text("messageInput.context.history.clearCommandHistory"));
+        "Clear Command History", messages.text("messageInput.context.history.clearCommandHistory"));
     assertEquals(
         "Suggestions for \"wrod\"",
         messages.text("messageInput.context.spelling.suggestionsFor", "wrod"));
     assertEquals(
-        "No suggestions available.",
-        messages.text("messageInput.context.spelling.noSuggestions"));
+        "No suggestions available.", messages.text("messageInput.context.spelling.noSuggestions"));
     assertEquals("Translate Draft", messages.text("messageInput.translation.title"));
     assertEquals(
         "No translation target languages are available.",
@@ -73,8 +71,7 @@ class UiMessagesTest {
     assertEquals(
         "Translation failed: timeout",
         messages.text("messageInput.translation.status.failed", "timeout"));
-    assertEquals(
-        "unknown error", messages.text("messageInput.translation.error.unknown"));
+    assertEquals("unknown error", messages.text("messageInput.translation.error.unknown"));
   }
 
   @Test
@@ -116,16 +113,14 @@ class UiMessagesTest {
 
     assertEquals("Diagnostics", messages.text("preferences.diagnostics.title"));
     assertEquals(
-        "AssertJ Swing / EDT watchdog",
-        messages.text("preferences.diagnostics.assertj.section"));
+        "AssertJ Swing / EDT watchdog", messages.text("preferences.diagnostics.assertj.section"));
     assertEquals(
         "Enable AssertJ Swing diagnostics",
         messages.text("preferences.diagnostics.assertj.enabled"));
     assertEquals(
         "Fallback violation report interval (ms)",
         messages.text("preferences.diagnostics.assertj.fallbackViolationReportMs"));
-    assertEquals(
-        "jHiccup integration", messages.text("preferences.diagnostics.jhiccup.section"));
+    assertEquals("jHiccup integration", messages.text("preferences.diagnostics.jhiccup.section"));
     assertEquals(
         "Java launcher command used to start jHiccup.",
         messages.text("preferences.diagnostics.jhiccup.javaCommand.tooltip"));
@@ -140,8 +135,7 @@ class UiMessagesTest {
     UiMessages messages = UiMessages.bundledDefaults();
 
     assertEquals("CTCP Replies", messages.text("preferences.ctcpReplies.title"));
-    assertEquals(
-        "Enable automatic CTCP replies", messages.text("preferences.ctcpReplies.enabled"));
+    assertEquals("Enable automatic CTCP replies", messages.text("preferences.ctcpReplies.enabled"));
     assertEquals("Reply to CTCP VERSION", messages.text("preferences.ctcpReplies.version"));
     assertEquals("Reply to CTCP PING", messages.text("preferences.ctcpReplies.ping"));
     assertEquals("Reply to CTCP TIME", messages.text("preferences.ctcpReplies.time"));
@@ -164,8 +158,7 @@ class UiMessagesTest {
         "Color nicknames (channels and PMs)", messages.text("preferences.nickColors.enabled"));
     assertEquals(
         "Minimum contrast ratio:", messages.text("preferences.nickColors.field.minContrast"));
-    assertEquals(
-        "Edit overrides...", messages.text("preferences.nickColors.overrides.edit"));
+    assertEquals("Edit overrides...", messages.text("preferences.nickColors.overrides.edit"));
     assertEquals("Preview:", messages.text("preferences.nickColors.field.preview"));
     assertEquals(
         "Tip: If nick colors look too similar to the background, increase the contrast ratio.\n"
@@ -188,7 +181,9 @@ class UiMessagesTest {
 
     assertEquals("Ignore Lists - libera", messages.text("ignoreLists.title", "libera"));
     assertEquals("Add Ignore Rule", messages.text("ignoreLists.editor.addTitle"));
-    assertEquals("Server: quassel (network: libera)", messages.text("ignoreLists.panel.server.network", "quassel", "libera"));
+    assertEquals(
+        "Server: quassel (network: libera)",
+        messages.text("ignoreLists.panel.server.network", "quassel", "libera"));
   }
 
   @Test
@@ -252,8 +247,7 @@ class UiMessagesTest {
 
     assertEquals("Soft Ignore", messages.text("userList.ignore.soft.add.title"));
     assertEquals(
-        "Add soft-ignore mask (per-server):",
-        messages.text("userList.ignore.soft.add.prompt"));
+        "Add soft-ignore mask (per-server):", messages.text("userList.ignore.soft.add.prompt"));
     assertEquals(
         "Already soft-ignored: bad!*@*",
         messages.text("userList.ignore.result.soft.exists", "bad!*@*"));
@@ -294,27 +288,23 @@ class UiMessagesTest {
         "Buffer: libera/#ircafe",
         messages.text("chat.lineInspector.field.buffer", "libera/#ircafe"));
     assertEquals(
-        "Message ID: abc123",
-        messages.text("chat.lineInspector.field.messageId", "abc123"));
+        "Message ID: abc123", messages.text("chat.lineInspector.field.messageId", "abc123"));
     assertEquals(
-        "IRCv3 tags: +typing",
-        messages.text("chat.lineInspector.field.ircv3Tags", "+typing"));
+        "IRCv3 tags: +typing", messages.text("chat.lineInspector.field.ircv3Tags", "+typing"));
     assertEquals("Redacted: true", messages.text("chat.lineInspector.field.redacted", "true"));
     assertEquals(
         "Matched filter: highlights",
         messages.text("chat.lineInspector.field.matchedFilter", "highlights"));
     assertEquals("(id=rule-1)", messages.text("chat.lineInspector.filter.id", "rule-1"));
     assertEquals(
-        "Multiple matches: true",
-        messages.text("chat.lineInspector.field.multipleMatches", true));
+        "Multiple matches: true", messages.text("chat.lineInspector.field.multipleMatches", true));
     assertEquals(
         "Time: 2026-06-05 00:00:00.000 (epochMs=1780617600000)",
         messages.text(
             "chat.lineInspector.field.time.withEpochMs",
             "2026-06-05 00:00:00.000",
             1780617600000L));
-    assertEquals(
-        "(No metadata for this line.)", messages.text("chat.lineInspector.noMetadata"));
+    assertEquals("(No metadata for this line.)", messages.text("chat.lineInspector.noMetadata"));
     assertEquals("Text:", messages.text("chat.lineInspector.section.text"));
   }
 
@@ -329,9 +319,14 @@ class UiMessagesTest {
     assertEquals("Connection", messages.text("servers.editor.tab.connection"));
     assertEquals("Server ID", messages.text("servers.editor.connection.serverId"));
     assertEquals("Use TLS (SSL)", messages.text("servers.editor.connection.useTls"));
-    assertEquals("Auto-connect this server on startup", messages.text("servers.editor.connection.autoConnectOnStartup"));
-    assertEquals("Username + password", messages.text("servers.editor.auth.matrixMode.usernamePassword"));
-    assertEquals("Stay connected if SASL authentication fails", messages.text("servers.editor.auth.sasl.continueOnFailure"));
+    assertEquals(
+        "Auto-connect this server on startup",
+        messages.text("servers.editor.connection.autoConnectOnStartup"));
+    assertEquals(
+        "Username + password", messages.text("servers.editor.auth.matrixMode.usernamePassword"));
+    assertEquals(
+        "Stay connected if SASL authentication fails",
+        messages.text("servers.editor.auth.sasl.continueOnFailure"));
     assertEquals("Auto-join channels", messages.text("servers.editor.autoJoin.channels"));
     assertEquals("Override proxy for this server", messages.text("servers.editor.proxy.override"));
     assertEquals("OK (42 ms)", messages.text("servers.editor.proxy.status.ok", 42));
@@ -452,14 +447,12 @@ class UiMessagesTest {
     assertEquals("Clear Log…", messages.text("serverTree.targetMenu.clearLog"));
     assertEquals("Close \"#ircafe\"", messages.text("serverTree.targetMenu.close", "#ircafe"));
     assertEquals(
-        "Reconnect \"#ircafe\"",
-        messages.text("serverTree.targetMenu.reconnect", "#ircafe"));
+        "Reconnect \"#ircafe\"", messages.text("serverTree.targetMenu.reconnect", "#ircafe"));
     assertEquals(
         "Detach (Bouncer) \"#ircafe\"",
         messages.text("serverTree.targetMenu.detachBouncer", "#ircafe"));
     assertEquals(
-        "Auto-reconnect on startup",
-        messages.text("serverTree.targetMenu.autoReconnectOnStartup"));
+        "Auto-reconnect on startup", messages.text("serverTree.targetMenu.autoReconnectOnStartup"));
     assertEquals("Unpin Channel", messages.text("serverTree.targetMenu.unpinChannel"));
     assertEquals("Channel Modes", messages.text("serverTree.targetMenu.channelModes"));
     assertEquals(
@@ -468,10 +461,8 @@ class UiMessagesTest {
     assertEquals(
         "Mute notifications in this channel",
         messages.text("serverTree.targetMenu.muteNotifications"));
-    assertEquals(
-        "Disable Interceptor", messages.text("serverTree.targetMenu.disableInterceptor"));
-    assertEquals(
-        "Rename Interceptor...", messages.text("serverTree.targetMenu.renameInterceptor"));
+    assertEquals("Disable Interceptor", messages.text("serverTree.targetMenu.disableInterceptor"));
+    assertEquals("Rename Interceptor...", messages.text("serverTree.targetMenu.renameInterceptor"));
   }
 
   @Test
@@ -483,11 +474,9 @@ class UiMessagesTest {
         "Disconnect \"libera\"", messages.text("serverTree.serverMenu.disconnect", "libera"));
     assertEquals("View Network Info...", messages.text("serverTree.serverMenu.viewNetworkInfo"));
     assertEquals(
-        "Complete Quassel Setup...",
-        messages.text("serverTree.serverMenu.completeQuasselSetup"));
+        "Complete Quassel Setup...", messages.text("serverTree.serverMenu.completeQuasselSetup"));
     assertEquals(
-        "Manage Quassel Networks...",
-        messages.text("serverTree.serverMenu.manageQuasselNetworks"));
+        "Manage Quassel Networks...", messages.text("serverTree.serverMenu.manageQuasselNetworks"));
     assertEquals("Save \"libera\"…", messages.text("serverTree.serverMenu.save", "libera"));
     assertEquals(
         "Auto-connect \"libera\" on startup",
@@ -500,8 +489,7 @@ class UiMessagesTest {
         "Open \"libera\" Channel List",
         messages.text("serverTree.quasselNetworkMenu.openChannelList", "libera"));
     assertEquals(
-        "Remove \"libera\"",
-        messages.text("serverTree.quasselNetworkMenu.remove", "libera"));
+        "Remove \"libera\"", messages.text("serverTree.quasselNetworkMenu.remove", "libera"));
     assertEquals(
         "Add Quassel Network...", messages.text("serverTree.quasselNetworkMenu.addNetwork"));
   }
@@ -523,8 +511,7 @@ class UiMessagesTest {
         "Registered channels only (-show r)",
         messages.text("channelList.irc.alis.registration.registeredOnly"));
     assertEquals("Run ALIS Search", messages.text("channelList.irc.alis.title"));
-    assertEquals(
-        "Loading ALIS search results...", messages.text("channelList.irc.alis.loading"));
+    assertEquals("Loading ALIS search results...", messages.text("channelList.irc.alis.loading"));
     assertEquals(
         "Use refresh for /list defaults, filters for Matrix search/since/limit, and next page when available.",
         messages.text("channelList.matrix.defaultHint"));
@@ -554,8 +541,7 @@ class UiMessagesTest {
     assertEquals(
         "Loaded 3 cached ban entries.", messages.text("channelList.banList.status.loadedMany", 3));
     assertEquals(
-        "Channel Details - #ircafe",
-        messages.text("channelList.details.dialog.title", "#ircafe"));
+        "Channel Details - #ircafe", messages.text("channelList.details.dialog.title", "#ircafe"));
     assertEquals("Ban List", messages.text("channelList.details.tab.banList"));
     assertEquals(
         "Unavailable while disconnected",
@@ -635,16 +621,14 @@ class UiMessagesTest {
         messages.text("chat.fold.loadOlder.unavailable.tooltip"));
     assertEquals("soft ignored - click to reveal", messages.text("chat.fold.spoiler.hidden"));
     assertEquals("revealing...", messages.text("chat.fold.spoiler.revealing"));
-    assertEquals(
-        "reveal failed - click to retry", messages.text("chat.fold.spoiler.revealFailed"));
+    assertEquals("reveal failed - click to retry", messages.text("chat.fold.spoiler.revealFailed"));
     assertEquals("Filtered lines: 3", messages.text("chat.fold.filtered.hint.lines", 3));
     assertEquals("Filtered (7)", messages.text("chat.fold.filtered.summary", 7));
     assertEquals(
         "(no preview)  —  edit filters or disable them to see hidden lines",
         messages.text("chat.fold.filtered.noPreview"));
     assertEquals("…and 4 more", messages.text("chat.fold.filtered.preview.more", 4));
-    assertEquals(
-        "Filtered 1 more line…", messages.text("chat.fold.filtered.overflow.moreLine", 1));
+    assertEquals("Filtered 1 more line…", messages.text("chat.fold.filtered.overflow.moreLine", 1));
     assertEquals(
         "Filtered 5 more lines…", messages.text("chat.fold.filtered.overflow.moreLines", 5));
     assertEquals(
@@ -652,11 +636,9 @@ class UiMessagesTest {
         messages.text("chat.fold.filtered.tooltip.filteredBy", "joins"));
     assertEquals(" <i>(+ others)</i>", messages.text("chat.fold.filtered.tooltip.others"));
     assertEquals(
-        " <i>(multiple rules)</i>",
-        messages.text("chat.fold.filtered.tooltip.multipleRules"));
+        " <i>(multiple rules)</i>", messages.text("chat.fold.filtered.tooltip.multipleRules"));
     assertEquals("Tags: account", messages.text("chat.fold.filtered.tooltip.tags", "account"));
-    assertEquals(
-        "Hidden lines: 6", messages.text("chat.fold.filtered.tooltip.hiddenLines", 6));
+    assertEquals("Hidden lines: 6", messages.text("chat.fold.filtered.tooltip.hiddenLines", 6));
     assertEquals(
         "Hidden lines (overflow): 8",
         messages.text("chat.fold.filtered.tooltip.hiddenLinesOverflow", 8));
@@ -666,14 +648,12 @@ class UiMessagesTest {
     assertEquals("…+2 more", messages.text("chat.fold.filtered.tags.more", 2));
   }
 
-
   @Test
   void resolvesChatDockableMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
 
     assertEquals(
-        "Main chat view (follows server-tree selection)",
-        messages.text("chatDock.main.tooltip"));
+        "Main chat view (follows server-tree selection)", messages.text("chatDock.main.tooltip"));
     assertEquals("Close Main View Dock", messages.text("chatDock.main.closeConfirm.title"));
     assertEquals(
         "EDT watchdog, violation checks, and UI freeze diagnostics.",
@@ -688,8 +668,7 @@ class UiMessagesTest {
     assertEquals(
         "Plugin ID: example-plugin",
         messages.text("chatDock.plugins.detail.pluginId", "example-plugin"));
-    assertEquals(
-        "API Version: 1", messages.text("chatDock.plugins.detail.apiVersion", 1));
+    assertEquals("API Version: 1", messages.text("chatDock.plugins.detail.apiVersion", 1));
     assertEquals(
         "Select a chat target before translating a draft.",
         messages.text("chatDock.outboundTranslation.noTarget.message"));
@@ -701,8 +680,7 @@ class UiMessagesTest {
 
     assertEquals("Channel: #ircafe", messages.text("statusBar.channel.label", "#ircafe"));
     assertEquals(
-        "Nick: chris(+i)",
-        messages.text("statusBar.identity.labelWithModes", "chris", "+i"));
+        "Nick: chris(+i)", messages.text("statusBar.identity.labelWithModes", "chris", "+i"));
     assertEquals("Users: 42", messages.text("statusBar.users.label", 42));
     assertEquals("Lag: --", messages.text("statusBar.lag.unknown"));
     assertEquals(
@@ -742,8 +720,7 @@ class UiMessagesTest {
 
     assertEquals("Add Filter Rule", messages.text("filter.rules.dialog.addTitle"));
     assertEquals(
-        "Delete filter rule 'badwords'?",
-        messages.text("filter.rules.delete.confirm", "badwords"));
+        "Delete filter rule 'badwords'?", messages.text("filter.rules.delete.confirm", "badwords"));
     assertEquals("Filter Rule", messages.text("filter.ruleDialog.title.default"));
     assertEquals("Unique rule name", messages.text("filter.ruleDialog.placeholder.name"));
     assertEquals("Direction", messages.text("filter.ruleDialog.field.direction"));
@@ -773,19 +750,15 @@ class UiMessagesTest {
     assertEquals(
         "IRCafe preview  #6AA2FF",
         messages.text("settings.colorPicker.preview.withHex", "#6AA2FF"));
+    assertEquals("Contrast: 4.8 (OK)", messages.text("settings.colorPicker.contrast", "4.8", "OK"));
     assertEquals(
-        "Contrast: 4.8 (OK)",
-        messages.text("settings.colorPicker.contrast", "4.8", "OK"));
-    assertEquals(
-        "Invalid hex (use #RRGGBB or #RGB)",
-        messages.text("settings.colorPicker.invalidHex"));
+        "Invalid hex (use #RRGGBB or #RGB)", messages.text("settings.colorPicker.invalidHex"));
     assertEquals("More Colors", messages.text("settings.colorPicker.moreColors.title"));
     assertEquals(
         "Use custom color for my outgoing messages",
         messages.text("preferences.outgoingColor.enabled"));
     assertEquals(
-        "Choose Outgoing Message Color",
-        messages.text("preferences.outgoingColor.dialog.title"));
+        "Choose Outgoing Message Color", messages.text("preferences.outgoingColor.dialog.title"));
   }
 
   @Test
@@ -805,8 +778,7 @@ class UiMessagesTest {
             + "If 0, IRCafe will only scale images down to fit the chat viewport.",
         messages.text("preferences.embeds.image.maxWidth.tooltip"));
     assertEquals(
-        "Enable link previews (OpenGraph cards)",
-        messages.text("preferences.embeds.link.enabled"));
+        "Enable link previews (OpenGraph cards)", messages.text("preferences.embeds.link.enabled"));
     assertEquals("Card style", messages.text("preferences.embeds.link.cardStyle"));
   }
 
@@ -815,8 +787,7 @@ class UiMessagesTest {
     UiMessages messages = UiMessages.bundledDefaults();
 
     assertEquals("History & Storage", messages.text("preferences.history.title"));
-    assertEquals(
-        "Scrolling & Loading", messages.text("preferences.history.tab.scrollingLoading"));
+    assertEquals("Scrolling & Loading", messages.text("preferences.history.tab.scrollingLoading"));
     assertEquals(
         "Initial load (lines)", messages.text("preferences.history.field.initialLoadLines"));
     assertEquals(
@@ -861,8 +832,7 @@ class UiMessagesTest {
     UiMessages messages = UiMessages.bundledDefaults();
 
     assertEquals(
-        "Enable spell checking in the input bar",
-        messages.text("preferences.spellcheck.enabled"));
+        "Enable spell checking in the input bar", messages.text("preferences.spellcheck.enabled"));
     assertEquals("English (US)", messages.text("preferences.spellcheck.language.enUs"));
     assertEquals(
         "Android-like (default)", messages.text("preferences.spellcheck.preset.androidLike"));
@@ -870,8 +840,7 @@ class UiMessagesTest {
         "Presets tune TAB completion ranking. Select Custom to reveal manual tuning knobs.",
         messages.text("preferences.spellcheck.presets.help"));
     assertEquals(
-        "Lexicon candidate cap",
-        messages.text("preferences.spellcheck.field.lexiconCandidateCap"));
+        "Lexicon candidate cap", messages.text("preferences.spellcheck.field.lexiconCandidateCap"));
     assertEquals(
         "Penalty for later suggestions from upstream spelling results.",
         messages.text("preferences.spellcheck.customSourceOrder.tooltip"));
@@ -899,14 +868,16 @@ class UiMessagesTest {
     UiMessages messages = UiMessages.bundledDefaults();
 
     assertEquals("Tray & Notifications", messages.text("preferences.tray.title"));
-    assertEquals("Desktop notifications", messages.text("preferences.tray.tab.desktopNotifications"));
+    assertEquals(
+        "Desktop notifications", messages.text("preferences.tray.tab.desktopNotifications"));
     assertEquals("Delivery backend", messages.text("preferences.tray.section.deliveryBackend"));
     assertEquals("Mode:", messages.text("preferences.tray.field.mode"));
     assertEquals(
         "Custom sounds are copied to: /tmp/ircafe/sounds\n"
             + "Tip: Use small files (short MP3/WAV) for snappy notifications.",
         messages.text("preferences.tray.customSounds.copiedTo.help", "/tmp/ircafe/sounds"));
-    assertEquals("Validation & testing", messages.text("preferences.tray.section.validationTesting"));
+    assertEquals(
+        "Validation & testing", messages.text("preferences.tray.section.validationTesting"));
     assertEquals("Linux / Advanced", messages.text("preferences.tray.tab.linuxAdvanced"));
   }
 
@@ -914,8 +885,7 @@ class UiMessagesTest {
   void resolvesTrayNotificationControlMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
 
-    assertEquals(
-        "Enable system tray icon", messages.text("preferences.tray.controls.enabled"));
+    assertEquals("Enable system tray icon", messages.text("preferences.tray.controls.enabled"));
     assertEquals(
         "Don't notify for the active buffer",
         messages.text("preferences.tray.controls.notifySuppressWhenTargetActive"));
@@ -926,7 +896,8 @@ class UiMessagesTest {
     assertEquals(
         "Play sound with desktop notifications",
         messages.text("preferences.tray.controls.sound.enabled"));
-    assertEquals("Device token", messages.text("preferences.tray.controls.pushy.targetMode.deviceToken"));
+    assertEquals(
+        "Device token", messages.text("preferences.tray.controls.pushy.targetMode.deviceToken"));
     assertEquals(
         "Pushy endpoint must be a valid http(s) URL.",
         messages.text("preferences.tray.controls.pushy.validation.endpointInvalid"));
@@ -963,9 +934,7 @@ class UiMessagesTest {
             + "If disabled:\n"
             + "IRCafe will not request this capability on new connections; related features may be unavailable.",
         messages.text(
-            "preferences.ircv3.capabilityHelp.message",
-            "message-tags",
-            "Adds message metadata"));
+            "preferences.ircv3.capabilityHelp.message", "message-tags", "Adds message metadata"));
   }
 
   @Test
@@ -975,11 +944,15 @@ class UiMessagesTest {
     assertEquals("Translation", messages.text("preferences.translation.title"));
     assertEquals("Enable translation", messages.text("preferences.translation.enabled"));
     assertEquals("Automatic", messages.text("preferences.translation.mode.auto"));
-    assertEquals("Google Web (unofficial)", messages.text("preferences.translation.service.googleWeb"));
+    assertEquals(
+        "Google Web (unofficial)", messages.text("preferences.translation.service.googleWeb"));
     assertEquals("Auto detect", messages.text("preferences.translation.language.autoDetect"));
-    assertEquals("Language detection", messages.text("preferences.translation.section.languageDetection"));
+    assertEquals(
+        "Language detection", messages.text("preferences.translation.section.languageDetection"));
     assertEquals("Add >", messages.text("preferences.translation.button.addDetectionLanguage"));
-    assertEquals("Max concurrent requests", messages.text("preferences.translation.field.maxConcurrentRequests"));
+    assertEquals(
+        "Max concurrent requests",
+        messages.text("preferences.translation.field.maxConcurrentRequests"));
     assertEquals(
         "DeepL requires an API key.",
         messages.text("preferences.translation.validation.apiKeyRequired", "DeepL"));
@@ -987,7 +960,6 @@ class UiMessagesTest {
         "Choose at least two detection languages, or enable all detection languages.",
         messages.text("preferences.translation.validation.detectionLanguageCount"));
   }
-
 
   @Test
   void resolvesFiltersPreferencesMessages() {
@@ -1008,7 +980,6 @@ class UiMessagesTest {
     assertEquals("Summary", messages.text("preferences.filters.rules.column.summary"));
   }
 
-
   @Test
   void resolvesAppearancePreferencesMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
@@ -1023,8 +994,7 @@ class UiMessagesTest {
         messages.text("preferences.appearance.accent.tooltip.override", "#6AA2FF", 75));
     assertEquals("Auto (theme default)", messages.text("preferences.appearance.density.auto"));
     assertEquals(
-        "Default (follow theme)",
-        messages.text("preferences.appearance.chatTheme.preset.default"));
+        "Default (follow theme)", messages.text("preferences.appearance.chatTheme.preset.default"));
     assertEquals(
         "Preserve dock layout between restarts",
         messages.text("preferences.appearance.serverTree.preserveDockLayout"));
@@ -1071,7 +1041,6 @@ class UiMessagesTest {
         "Roster enrichment", messages.text("preferences.network.userLookups.tab.enrichment"));
   }
 
-
   @Test
   void resolvesInterceptorPanelMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
@@ -1087,14 +1056,12 @@ class UiMessagesTest {
     assertEquals(
         "Delete trigger rule \"mentions\"?",
         messages.text("interceptors.rule.delete.confirm", "mentions"));
-    assertEquals(
-        "Hits: 3  Rules: 4", messages.text("interceptors.status.hitsAndRules", 3, 4));
+    assertEquals("Hits: 3  Rules: 4", messages.text("interceptors.status.hitsAndRules", 3, 4));
     assertEquals("CSV Files (*.csv)", messages.text("interceptors.export.csvFilter"));
     assertEquals(
         "Could not import custom sound file.\n\ntimeout",
         messages.text("interceptors.sound.importFailed.message", "timeout"));
   }
-
 
   @Test
   void resolvesIrcEventNotificationPreferenceMessages() {
@@ -1104,7 +1071,8 @@ class UiMessagesTest {
         "Essential alerts (Recommended)",
         messages.text("preferences.notifications.ircEvents.preset.essential"));
     assertEquals(
-        "Apply defaults", messages.text("preferences.notifications.ircEvents.button.applyDefaults"));
+        "Apply defaults",
+        messages.text("preferences.notifications.ircEvents.button.applyDefaults"));
     assertEquals(
         "Apply preset defaults to matching IRC event types",
         messages.text("preferences.notifications.ircEvents.button.applyDefaults.tooltip"));
@@ -1117,12 +1085,15 @@ class UiMessagesTest {
         messages.text("preferences.notifications.ircEvents.summary.value", "LIKE", "VERSION"));
     assertEquals(
         "cmd:LIKE=VERSION",
-        messages.text("preferences.notifications.ircEvents.summary.ctcp.command", "LIKE", "VERSION"));
+        messages.text(
+            "preferences.notifications.ircEvents.summary.ctcp.command", "LIKE", "VERSION"));
     assertEquals(
         "Toast(Background Only)",
-        messages.text("preferences.notifications.ircEvents.summary.action.toast", "Background Only"));
+        messages.text(
+            "preferences.notifications.ircEvents.summary.action.toast", "Background Only"));
     assertEquals("(none)", messages.text("preferences.notifications.ircEvents.summary.none"));
-    assertEquals("IRC Event Rule", messages.text("preferences.notifications.ircEvents.dialog.title"));
+    assertEquals(
+        "IRC Event Rule", messages.text("preferences.notifications.ircEvents.dialog.title"));
     assertEquals(
         "For Specific nicks: comma-separated list.\n"
             + "For Nick glob: wildcard patterns (* and ?).\n"
@@ -1132,7 +1103,9 @@ class UiMessagesTest {
         "Active channel only means the event target must match the currently selected channel on the same server.\n"
             + "CTCP command/value filters only apply when Event is CTCP Request Received.",
         messages.text("preferences.notifications.ircEvents.dialog.filters.help"));
-    assertEquals("CTCP template", messages.text("preferences.notifications.ircEvents.dialog.field.ctcpTemplate"));
+    assertEquals(
+        "CTCP template",
+        messages.text("preferences.notifications.ircEvents.dialog.field.ctcpTemplate"));
     assertEquals("Script", messages.text("preferences.notifications.ircEvents.dialog.tab.script"));
     assertEquals(
         "Source mode \"REGEX\" requires a source pattern.",
@@ -1157,9 +1130,7 @@ class UiMessagesTest {
     assertEquals(
         "Topic — #ircafe (+nt)",
         messages.text("chatTopic.header.topic.channel", "#ircafe", " (+nt)"));
-    assertEquals(
-        "Channel — #ircafe",
-        messages.text("chatTopic.header.channel", "#ircafe", ""));
+    assertEquals("Channel — #ircafe", messages.text("chatTopic.header.channel", "#ircafe", ""));
     assertEquals(
         "Recent notifications for #ircafe (3)",
         messages.text("chatTopic.notifications.popup.header", "#ircafe", 3));
@@ -1167,11 +1138,8 @@ class UiMessagesTest {
         "Recent channel notifications (2)",
         messages.text("chatTopic.notifications.tooltip.header", 2));
     assertEquals(
-        "(mention) alice",
-        messages.text("chatTopic.notifications.kind.mention.withNick", "alice"));
-    assertEquals(
-        "(rule) bob",
-        messages.text("chatTopic.notifications.kind.rule.withNick", "bob"));
+        "(mention) alice", messages.text("chatTopic.notifications.kind.mention.withNick", "alice"));
+    assertEquals("(rule) bob", messages.text("chatTopic.notifications.kind.rule.withNick", "bob"));
     assertEquals(
         "moderation (carol)",
         messages.text("chatTopic.notifications.label.withNick", "moderation", "carol"));
@@ -1186,15 +1154,15 @@ class UiMessagesTest {
     UiMessages messages = UiMessages.bundledDefaults();
 
     assertEquals("Commands", messages.text("preferences.commands.title"));
-    assertEquals(
-        "User command aliases", messages.text("preferences.commands.aliases.section"));
+    assertEquals("User command aliases", messages.text("preferences.commands.aliases.section"));
     assertEquals(
         "Fallback unknown /commands to raw IRC (HexChat-compatible)",
         messages.text("preferences.commands.aliases.unknownAsRaw"));
     assertEquals(
         "Select an alias row to edit its expansion.",
         messages.text("preferences.commands.aliases.hint.select"));
-    assertEquals("Import HexChat...", messages.text("preferences.commands.aliases.button.importHexChat"));
+    assertEquals(
+        "Import HexChat...", messages.text("preferences.commands.aliases.button.importHexChat"));
     assertEquals("Enabled", messages.text("preferences.commands.aliases.column.enabled"));
     assertEquals(
         "Duplicate enabled alias: /joinme (also used on row 2).",
@@ -1232,14 +1200,12 @@ class UiMessagesTest {
         "Waiting for connection setup on libera...",
         messages.text("lagIndicator.status.waitingForConnectionSetup", "libera"));
     assertEquals(
-        "Refreshing lag for libera...",
-        messages.text("lagIndicator.status.refreshing", "libera"));
+        "Refreshing lag for libera...", messages.text("lagIndicator.status.refreshing", "libera"));
     assertEquals(
         "Waiting for ping/pong activity on libera...",
         messages.text("lagIndicator.status.waitingForPingPong", "libera"));
     assertEquals(
-        "Lag unavailable for libera.",
-        messages.text("lagIndicator.status.unavailable", "libera"));
+        "Lag unavailable for libera.", messages.text("lagIndicator.status.unavailable", "libera"));
   }
 
   @Test

@@ -136,8 +136,7 @@ public class LagIndicatorService {
           "[lag] waiting: server '{}' has no current nick yet (activeTarget={})",
           serverId,
           context.activeTarget() != null ? context.activeTarget() : context.fallbackTarget());
-      statusBar.setLagIndicatorReading(
-          null, message("lagIndicator.status.notConnected", serverId));
+      statusBar.setLagIndicatorReading(null, message("lagIndicator.status.notConnected", serverId));
       return;
     }
 

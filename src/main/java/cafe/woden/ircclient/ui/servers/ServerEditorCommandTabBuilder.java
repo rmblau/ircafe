@@ -13,14 +13,14 @@ import javax.swing.JTextArea;
 /** Builds the auto-join and perform tabs from the dialog's existing text areas. */
 final class ServerEditorCommandTabBuilder {
   private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private ServerEditorCommandTabBuilder() {}
 
   static JPanel buildAutoJoinPanel(AutoJoinWidgets widgets) {
     JPanel panel = new JPanel(new BorderLayout(8, 8));
     panel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 
-    JLabel hint =
-        disabledHintLabel(MESSAGES.text("servers.editor.autoJoin.hint"));
+    JLabel hint = disabledHintLabel(MESSAGES.text("servers.editor.autoJoin.hint"));
     panel.add(hint, BorderLayout.NORTH);
 
     JPanel center = new JPanel(new GridLayout(2, 1, 0, 8));
@@ -32,7 +32,8 @@ final class ServerEditorCommandTabBuilder {
     center.add(channels);
 
     JPanel privateMessages = new JPanel(new BorderLayout(6, 6));
-    privateMessages.add(new JLabel(MESSAGES.text("servers.editor.autoJoin.privateMessages")), BorderLayout.NORTH);
+    privateMessages.add(
+        new JLabel(MESSAGES.text("servers.editor.autoJoin.privateMessages")), BorderLayout.NORTH);
     prepareTextArea(widgets.autoJoinPrivateMessagesArea());
     privateMessages.add(wrappedArea(widgets.autoJoinPrivateMessagesArea()), BorderLayout.CENTER);
     center.add(privateMessages);
@@ -45,15 +46,13 @@ final class ServerEditorCommandTabBuilder {
     JPanel panel = new JPanel(new BorderLayout(8, 8));
     panel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
 
-    JLabel hint =
-        disabledHintLabel(MESSAGES.text("servers.editor.perform.hint"));
+    JLabel hint = disabledHintLabel(MESSAGES.text("servers.editor.perform.hint"));
     panel.add(hint, BorderLayout.NORTH);
 
     prepareTextArea(widgets.performArea());
     panel.add(wrappedArea(widgets.performArea()), BorderLayout.CENTER);
 
-    JLabel footer =
-        disabledHintLabel(MESSAGES.text("servers.editor.perform.footer"));
+    JLabel footer = disabledHintLabel(MESSAGES.text("servers.editor.perform.footer"));
     panel.add(footer, BorderLayout.SOUTH);
     return panel;
   }

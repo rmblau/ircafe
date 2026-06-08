@@ -57,7 +57,9 @@ public final class IrcEventNotificationRuleDialogSupport {
                 null,
                 null);
 
-    JCheckBox enabled = new JCheckBox(MESSAGES.text("preferences.notifications.ircEvents.dialog.enabled"), base.enabled());
+    JCheckBox enabled =
+        new JCheckBox(
+            MESSAGES.text("preferences.notifications.ircEvents.dialog.enabled"), base.enabled());
 
     JComboBox<IrcEventNotificationRule.EventType> eventType =
         new JComboBox<>(IrcEventNotificationRule.EventType.values());
@@ -83,7 +85,8 @@ public final class IrcEventNotificationRuleDialogSupport {
             : IrcEventNotificationRule.ChannelScope.ALL);
 
     JTextField channelPatterns = new JTextField(Objects.toString(base.channelPatterns(), ""));
-    channelPatterns.setToolTipText(MESSAGES.text("preferences.notifications.ircEvents.dialog.channels.tooltip"));
+    channelPatterns.setToolTipText(
+        MESSAGES.text("preferences.notifications.ircEvents.dialog.channels.tooltip"));
 
     JComboBox<IrcEventNotificationRule.CtcpMatchMode> ctcpCommandMode =
         new JComboBox<>(IrcEventNotificationRule.CtcpMatchMode.values());
@@ -102,7 +105,8 @@ public final class IrcEventNotificationRuleDialogSupport {
             ? base.ctcpValueMode()
             : IrcEventNotificationRule.CtcpMatchMode.ANY);
     JTextField ctcpValuePattern = new JTextField(Objects.toString(base.ctcpValuePattern(), ""));
-    ctcpValuePattern.setToolTipText(MESSAGES.text("preferences.notifications.ircEvents.dialog.ctcpValue.tooltip"));
+    ctcpValuePattern.setToolTipText(
+        MESSAGES.text("preferences.notifications.ircEvents.dialog.ctcpValue.tooltip"));
 
     JComboBox<CtcpNotificationRuleTemplate> ctcpTemplate =
         new JComboBox<>(CtcpNotificationRuleTemplate.values());
@@ -112,7 +116,9 @@ public final class IrcEventNotificationRuleDialogSupport {
             "check",
             MESSAGES.text("preferences.notifications.ircEvents.dialog.ctcpTemplate.apply.tooltip"));
 
-    JCheckBox toastEnabled = new JCheckBox(MESSAGES.text("preferences.notifications.ircEvents.dialog.toast"), base.toastEnabled());
+    JCheckBox toastEnabled =
+        new JCheckBox(
+            MESSAGES.text("preferences.notifications.ircEvents.dialog.toast"), base.toastEnabled());
 
     JComboBox<IrcEventNotificationRule.FocusScope> focusScope =
         new JComboBox<>(IrcEventNotificationRule.FocusScope.values());
@@ -121,22 +127,30 @@ public final class IrcEventNotificationRuleDialogSupport {
             ? base.focusScope()
             : IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY);
 
-    JCheckBox statusBarEnabled = new JCheckBox(MESSAGES.text("preferences.notifications.ircEvents.dialog.statusBar"), base.statusBarEnabled());
+    JCheckBox statusBarEnabled =
+        new JCheckBox(
+            MESSAGES.text("preferences.notifications.ircEvents.dialog.statusBar"),
+            base.statusBarEnabled());
     JCheckBox notificationsNodeEnabled =
-        new JCheckBox(MESSAGES.text("preferences.notifications.ircEvents.dialog.notificationsNode"), base.notificationsNodeEnabled());
+        new JCheckBox(
+            MESSAGES.text("preferences.notifications.ircEvents.dialog.notificationsNode"),
+            base.notificationsNodeEnabled());
 
     NotificationSoundControlsSupport.Controls soundControls =
         NotificationSoundControlsSupport.buildControls(
             NotificationSoundControlsSupport.Request.builder()
-                .enabledLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.sound.enabled"))
+                .enabledLabel(
+                    MESSAGES.text("preferences.notifications.ircEvents.dialog.sound.enabled"))
                 .enabledSelected(base.soundEnabled())
-                .useCustomLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.sound.useCustom"))
+                .useCustomLabel(
+                    MESSAGES.text("preferences.notifications.ircEvents.dialog.sound.useCustom"))
                 .useCustomSelected(base.soundUseCustom())
                 .soundId(base.soundId())
                 .customPath(base.soundCustomPath())
                 .browseButtonText(MESSAGES.text("common.button.browse.ellipsis"))
                 .clearButtonText(MESSAGES.text("common.button.clear"))
-                .testButtonText(MESSAGES.text("preferences.notifications.ircEvents.dialog.sound.test"))
+                .testButtonText(
+                    MESSAGES.text("preferences.notifications.ircEvents.dialog.sound.test"))
                 .buttonStyle(NotificationSoundControlsSupport.ButtonStyle.ICON_ONLY)
                 .owner(owner)
                 .notificationSoundService(notificationSoundService)
@@ -152,7 +166,10 @@ public final class IrcEventNotificationRuleDialogSupport {
     JButton clearCustomSound = soundControls.clearCustom();
     JButton testSound = soundControls.testSound();
 
-    JCheckBox scriptEnabled = new JCheckBox(MESSAGES.text("preferences.notifications.ircEvents.dialog.script.enabled"), base.scriptEnabled());
+    JCheckBox scriptEnabled =
+        new JCheckBox(
+            MESSAGES.text("preferences.notifications.ircEvents.dialog.script.enabled"),
+            base.scriptEnabled());
     PathChooserControlsSupport.Controls scriptPathControls =
         PathChooserControlsSupport.buildControls(
             PathChooserControlsSupport.Request.builder()
@@ -160,10 +177,15 @@ public final class IrcEventNotificationRuleDialogSupport {
                 .browseButtonText(MESSAGES.text("common.button.browse.ellipsis"))
                 .clearButtonText(MESSAGES.text("common.button.clear"))
                 .browseIconName("terminal")
-                .browseTooltip(MESSAGES.text("preferences.notifications.ircEvents.dialog.script.path.browse.tooltip"))
+                .browseTooltip(
+                    MESSAGES.text(
+                        "preferences.notifications.ircEvents.dialog.script.path.browse.tooltip"))
                 .clearIconName("close")
-                .clearTooltip(MESSAGES.text("preferences.notifications.ircEvents.dialog.script.path.clear.tooltip"))
-                .chooserDialogTitle(MESSAGES.text("preferences.notifications.ircEvents.dialog.script.path.chooser"))
+                .clearTooltip(
+                    MESSAGES.text(
+                        "preferences.notifications.ircEvents.dialog.script.path.clear.tooltip"))
+                .chooserDialogTitle(
+                    MESSAGES.text("preferences.notifications.ircEvents.dialog.script.path.chooser"))
                 .selectionMode(PathChooserControlsSupport.SelectionMode.FILES)
                 .owner(owner)
                 .availableSupplier(scriptEnabled::isSelected)
@@ -181,10 +203,16 @@ public final class IrcEventNotificationRuleDialogSupport {
                 .browseButtonText(MESSAGES.text("common.button.browse.ellipsis"))
                 .clearButtonText(MESSAGES.text("common.button.clear"))
                 .browseIconName("settings")
-                .browseTooltip(MESSAGES.text("preferences.notifications.ircEvents.dialog.script.workingDirectory.browse.tooltip"))
+                .browseTooltip(
+                    MESSAGES.text(
+                        "preferences.notifications.ircEvents.dialog.script.workingDirectory.browse.tooltip"))
                 .clearIconName("close")
-                .clearTooltip(MESSAGES.text("preferences.notifications.ircEvents.dialog.script.workingDirectory.clear.tooltip"))
-                .chooserDialogTitle(MESSAGES.text("preferences.notifications.ircEvents.dialog.script.workingDirectory.chooser"))
+                .clearTooltip(
+                    MESSAGES.text(
+                        "preferences.notifications.ircEvents.dialog.script.workingDirectory.clear.tooltip"))
+                .chooserDialogTitle(
+                    MESSAGES.text(
+                        "preferences.notifications.ircEvents.dialog.script.workingDirectory.chooser"))
                 .selectionMode(PathChooserControlsSupport.SelectionMode.DIRECTORIES)
                 .owner(owner)
                 .availableSupplier(scriptEnabled::isSelected)
@@ -208,9 +236,15 @@ public final class IrcEventNotificationRuleDialogSupport {
           PreferencesUiSupport.setTextInputAvailable(sourcePattern, needsPattern);
           String placeholder =
               switch (mode) {
-                case NICK_LIST -> MESSAGES.text("preferences.notifications.ircEvents.dialog.placeholder.source.nickList");
-                case GLOB -> MESSAGES.text("preferences.notifications.ircEvents.dialog.placeholder.source.glob");
-                case REGEX -> MESSAGES.text("preferences.notifications.ircEvents.dialog.placeholder.source.regex");
+                case NICK_LIST ->
+                    MESSAGES.text(
+                        "preferences.notifications.ircEvents.dialog.placeholder.source.nickList");
+                case GLOB ->
+                    MESSAGES.text(
+                        "preferences.notifications.ircEvents.dialog.placeholder.source.glob");
+                case REGEX ->
+                    MESSAGES.text(
+                        "preferences.notifications.ircEvents.dialog.placeholder.source.regex");
                 default -> "";
               };
           PreferencesUiSupport.placeholder(sourcePattern, placeholder);
@@ -255,7 +289,8 @@ public final class IrcEventNotificationRuleDialogSupport {
           PreferencesUiSupport.placeholder(
               ctcpCommandPattern,
               commandNeedsPattern
-                  ? MESSAGES.text("preferences.notifications.ircEvents.dialog.placeholder.ctcpCommand")
+                  ? MESSAGES.text(
+                      "preferences.notifications.ircEvents.dialog.placeholder.ctcpCommand")
                   : "");
 
           IrcEventNotificationRule.CtcpMatchMode selectedValueMode =
@@ -270,7 +305,8 @@ public final class IrcEventNotificationRuleDialogSupport {
           PreferencesUiSupport.placeholder(
               ctcpValuePattern,
               valueNeedsPattern
-                  ? MESSAGES.text("preferences.notifications.ircEvents.dialog.placeholder.ctcpValue")
+                  ? MESSAGES.text(
+                      "preferences.notifications.ircEvents.dialog.placeholder.ctcpValue")
                   : "");
 
           ctcpTemplate.setEnabled(ctcp);
@@ -355,33 +391,41 @@ public final class IrcEventNotificationRuleDialogSupport {
     JPanel filtersPanel =
         new JPanel(MigLayouts.twoColumnFormWithHideMode(10, 8, 3, MigLayouts.rows(9, 6)));
     filtersPanel.add(enabled, MigConstraints.spanXWrap(2));
-    filtersPanel.add(new JLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.field.event")));
+    filtersPanel.add(
+        new JLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.field.event")));
     filtersPanel.add(eventType, MigConstraints.growXMinWidthWrap(220));
-    filtersPanel.add(new JLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.field.source")));
+    filtersPanel.add(
+        new JLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.field.source")));
     filtersPanel.add(sourceMode, MigConstraints.growXWrap());
-    filtersPanel.add(new JLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.field.sourceMatch")));
+    filtersPanel.add(
+        new JLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.field.sourceMatch")));
     filtersPanel.add(sourcePattern, MigConstraints.growXWrap());
-    filtersPanel.add(new JLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.field.channelScope")));
+    filtersPanel.add(
+        new JLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.field.channelScope")));
     filtersPanel.add(channelScope, MigConstraints.growXWrap());
-    filtersPanel.add(new JLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.field.channels")));
+    filtersPanel.add(
+        new JLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.field.channels")));
     filtersPanel.add(channelPatterns, MigConstraints.growXWrap());
 
     JPanel ctcpCommandRow = new JPanel(MigLayouts.fillX("[pref!]8[grow,fill]", "[]"));
     ctcpCommandRow.add(ctcpCommandMode, MigConstraints.width(110));
     ctcpCommandRow.add(ctcpCommandPattern, MigConstraints.growXPushXMinWidth0());
-    filtersPanel.add(new JLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.field.ctcpCommand")));
+    filtersPanel.add(
+        new JLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.field.ctcpCommand")));
     filtersPanel.add(ctcpCommandRow, MigConstraints.growXMinWidth0Wrap());
 
     JPanel ctcpValueRow = new JPanel(MigLayouts.fillX("[pref!]8[grow,fill]", "[]"));
     ctcpValueRow.add(ctcpValueMode, MigConstraints.width(110));
     ctcpValueRow.add(ctcpValuePattern, MigConstraints.growXPushXMinWidth0());
-    filtersPanel.add(new JLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.field.ctcpValue")));
+    filtersPanel.add(
+        new JLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.field.ctcpValue")));
     filtersPanel.add(ctcpValueRow, MigConstraints.growXMinWidth0Wrap());
 
     JPanel ctcpTemplateRow = new JPanel(MigLayouts.fillX("[grow,fill]8[]", "[]"));
     ctcpTemplateRow.add(ctcpTemplate, MigConstraints.growXPushXMinWidth0());
     ctcpTemplateRow.add(applyCtcpTemplate, MigConstraints.widthHeight(36, 28));
-    filtersPanel.add(new JLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.field.ctcpTemplate")));
+    filtersPanel.add(
+        new JLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.field.ctcpTemplate")));
     filtersPanel.add(ctcpTemplateRow, MigConstraints.growXMinWidth0Wrap());
     filtersPanel.add(new JLabel(""));
     filtersPanel.add(
@@ -392,7 +436,8 @@ public final class IrcEventNotificationRuleDialogSupport {
     JPanel actionsPanel =
         new JPanel(MigLayouts.twoColumnFormWithHideMode(10, 8, 3, MigLayouts.rows(3, 6)));
     actionsPanel.add(toastEnabled, MigConstraints.span2GrowXWrap());
-    actionsPanel.add(new JLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.field.toastFocus")));
+    actionsPanel.add(
+        new JLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.field.toastFocus")));
     actionsPanel.add(focusScope, MigConstraints.growXWrap());
     actionsPanel.add(statusBarEnabled, MigConstraints.span2GrowXWrap());
     actionsPanel.add(notificationsNodeEnabled, MigConstraints.span2GrowXWrap());
@@ -406,11 +451,14 @@ public final class IrcEventNotificationRuleDialogSupport {
         new JPanel(
             MigLayouts.labelFieldActionsFormWithHideMode(10, 8, 2, 3, MigLayouts.rowGaps(6, 4)));
     soundPanel.add(soundEnabled, MigConstraints.spanXGrowXWrap(4));
-    soundPanel.add(new JLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.field.soundBuiltIn")));
+    soundPanel.add(
+        new JLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.field.soundBuiltIn")));
     soundPanel.add(builtInSound, MigConstraints.growXMinWidth(180));
     soundPanel.add(testSound, MigConstraints.widthHeight(36, 28));
     soundPanel.add(soundUseCustom, MigConstraints.wrap());
-    soundPanel.add(new JLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.field.soundCustomFile")));
+    soundPanel.add(
+        new JLabel(
+            MESSAGES.text("preferences.notifications.ircEvents.dialog.field.soundCustomFile")));
     soundPanel.add(soundCustomPath, MigConstraints.growXPushXMinWidth0());
     soundPanel.add(browseCustomSound, MigConstraints.widthHeight(36, 28));
     soundPanel.add(clearCustomSound, MigConstraints.widthHeightWrap(36, 28));
@@ -424,13 +472,18 @@ public final class IrcEventNotificationRuleDialogSupport {
         new JPanel(
             MigLayouts.labelFieldActionsFormWithHideMode(10, 8, 2, 3, MigLayouts.rowGaps(6, 4)));
     scriptPanel.add(scriptEnabled, MigConstraints.spanXGrowXWrap(4));
-    scriptPanel.add(new JLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.field.scriptPath")));
+    scriptPanel.add(
+        new JLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.field.scriptPath")));
     scriptPanel.add(scriptPath, MigConstraints.growXPushXMinWidth0());
     scriptPanel.add(browseScript, MigConstraints.widthHeight(36, 28));
     scriptPanel.add(clearScript, MigConstraints.widthHeightWrap(36, 28));
-    scriptPanel.add(new JLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.field.scriptArgs")));
+    scriptPanel.add(
+        new JLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.field.scriptArgs")));
     scriptPanel.add(scriptArgs, MigConstraints.spanXGrowXMinWidthWrap(3, 0));
-    scriptPanel.add(new JLabel(MESSAGES.text("preferences.notifications.ircEvents.dialog.field.scriptWorkingDirectory")));
+    scriptPanel.add(
+        new JLabel(
+            MESSAGES.text(
+                "preferences.notifications.ircEvents.dialog.field.scriptWorkingDirectory")));
     scriptPanel.add(scriptWorkingDirectory, MigConstraints.growXPushXMinWidth0());
     scriptPanel.add(browseScriptWorkingDirectory, MigConstraints.widthHeight(36, 28));
     scriptPanel.add(clearScriptWorkingDirectory, MigConstraints.widthHeightWrap(36, 28));
@@ -442,10 +495,13 @@ public final class IrcEventNotificationRuleDialogSupport {
 
     JTabbedPane tabs = new JTabbedPane();
     tabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-    tabs.addTab(MESSAGES.text("preferences.notifications.ircEvents.dialog.tab.filters"), filtersPanel);
-    tabs.addTab(MESSAGES.text("preferences.notifications.ircEvents.dialog.tab.actions"), actionsPanel);
+    tabs.addTab(
+        MESSAGES.text("preferences.notifications.ircEvents.dialog.tab.filters"), filtersPanel);
+    tabs.addTab(
+        MESSAGES.text("preferences.notifications.ircEvents.dialog.tab.actions"), actionsPanel);
     tabs.addTab(MESSAGES.text("preferences.notifications.ircEvents.dialog.tab.sound"), soundPanel);
-    tabs.addTab(MESSAGES.text("preferences.notifications.ircEvents.dialog.tab.script"), scriptPanel);
+    tabs.addTab(
+        MESSAGES.text("preferences.notifications.ircEvents.dialog.tab.script"), scriptPanel);
     tabs.setPreferredSize(new Dimension(640, 420));
 
     JPanel form =
@@ -454,7 +510,8 @@ public final class IrcEventNotificationRuleDialogSupport {
                 0, 1, MigLayoutConstraints.GROW_FILL, MigLayoutConstraints.GROW_FILL));
     form.add(tabs, MigConstraints.growPushMinWidth0());
 
-    String dialogTitle = Objects.toString(title, MESSAGES.text("preferences.notifications.ircEvents.dialog.title"));
+    String dialogTitle =
+        Objects.toString(title, MESSAGES.text("preferences.notifications.ircEvents.dialog.title"));
     while (true) {
       if (!PreferencesUiSupport.confirmPlainOkCancel(owner, form, dialogTitle)) return null;
 
@@ -507,7 +564,8 @@ public final class IrcEventNotificationRuleDialogSupport {
                   "preferences.notifications.ircEvents.dialog.validation.sourceRegexInvalid",
                   Objects.toString(
                       ex.getMessage(),
-                      MESSAGES.text("preferences.notifications.ircEvents.dialog.validation.invalidRegex"))));
+                      MESSAGES.text(
+                          "preferences.notifications.ircEvents.dialog.validation.invalidRegex"))));
           continue;
         }
       }
@@ -566,7 +624,8 @@ public final class IrcEventNotificationRuleDialogSupport {
                     "preferences.notifications.ircEvents.dialog.validation.ctcpCommandRegexInvalid",
                     Objects.toString(
                         ex.getMessage(),
-                        MESSAGES.text("preferences.notifications.ircEvents.dialog.validation.invalidRegex"))));
+                        MESSAGES.text(
+                            "preferences.notifications.ircEvents.dialog.validation.invalidRegex"))));
             continue;
           }
         }
@@ -594,7 +653,8 @@ public final class IrcEventNotificationRuleDialogSupport {
                     "preferences.notifications.ircEvents.dialog.validation.ctcpValueRegexInvalid",
                     Objects.toString(
                         ex.getMessage(),
-                        MESSAGES.text("preferences.notifications.ircEvents.dialog.validation.invalidRegex"))));
+                        MESSAGES.text(
+                            "preferences.notifications.ircEvents.dialog.validation.invalidRegex"))));
             continue;
           }
         }
@@ -621,7 +681,11 @@ public final class IrcEventNotificationRuleDialogSupport {
       boolean runScript = scriptEnabled.isSelected();
       if (runScript && scriptPathValue == null) {
         showInvalidRuleMessage(
-            owner, tabs, 3, MESSAGES.text("preferences.notifications.ircEvents.dialog.validation.scriptPathRequired"));
+            owner,
+            tabs,
+            3,
+            MESSAGES.text(
+                "preferences.notifications.ircEvents.dialog.validation.scriptPathRequired"));
         continue;
       }
 

@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings.appearance;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettings;
 import java.awt.Component;
@@ -10,34 +11,44 @@ import javax.swing.JList;
 import javax.swing.JSlider;
 
 final class AppearanceChatThemeControlsFactory {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private AppearanceChatThemeControlsFactory() {}
 
   static ChatThemeControls build(ChatThemeSettings current) {
     JComboBox<ChatThemeSettings.Preset> preset = createPresetCombo(current);
     ColorField timestamp =
         AppearanceColorFieldFactory.build(
-            current != null ? current.timestampColor() : null, "Pick a timestamp color");
+            current != null ? current.timestampColor() : null,
+            MESSAGES.text("preferences.appearance.chatTheme.picker.timestamp"));
     ColorField system =
         AppearanceColorFieldFactory.build(
-            current != null ? current.systemColor() : null, "Pick a system/status color");
+            current != null ? current.systemColor() : null,
+            MESSAGES.text("preferences.appearance.chatTheme.picker.system"));
     ColorField mention =
         AppearanceColorFieldFactory.build(
-            current != null ? current.mentionBgColor() : null, "Pick a mention highlight color");
+            current != null ? current.mentionBgColor() : null,
+            MESSAGES.text("preferences.appearance.chatTheme.picker.mention"));
     ColorField message =
         AppearanceColorFieldFactory.build(
-            current != null ? current.messageColor() : null, "Pick a user message color");
+            current != null ? current.messageColor() : null,
+            MESSAGES.text("preferences.appearance.chatTheme.picker.message"));
     ColorField notice =
         AppearanceColorFieldFactory.build(
-            current != null ? current.noticeColor() : null, "Pick a notice message color");
+            current != null ? current.noticeColor() : null,
+            MESSAGES.text("preferences.appearance.chatTheme.picker.notice"));
     ColorField action =
         AppearanceColorFieldFactory.build(
-            current != null ? current.actionColor() : null, "Pick an action message color");
+            current != null ? current.actionColor() : null,
+            MESSAGES.text("preferences.appearance.chatTheme.picker.action"));
     ColorField error =
         AppearanceColorFieldFactory.build(
-            current != null ? current.errorColor() : null, "Pick an error message color");
+            current != null ? current.errorColor() : null,
+            MESSAGES.text("preferences.appearance.chatTheme.picker.error"));
     ColorField presence =
         AppearanceColorFieldFactory.build(
-            current != null ? current.presenceColor() : null, "Pick a presence message color");
+            current != null ? current.presenceColor() : null,
+            MESSAGES.text("preferences.appearance.chatTheme.picker.presence"));
 
     return new ChatThemeControls(
         preset,
@@ -68,16 +79,16 @@ final class AppearanceChatThemeControlsFactory {
     mentionStrength.setPaintTicks(false);
     mentionStrength.setPaintLabels(false);
     mentionStrength.setToolTipText(
-        "How strong the mention highlight is when using the preset highlight (0-100). Defaults to 35.");
+        MESSAGES.text("preferences.appearance.chatTheme.mentionStrength.tooltip"));
     return mentionStrength;
   }
 
   private static String labelFor(ChatThemeSettings.Preset presetValue) {
     return switch (presetValue) {
-      case DEFAULT -> "Default (follow theme)";
-      case SOFT -> "Soft";
-      case ACCENTED -> "Accented";
-      case HIGH_CONTRAST -> "High contrast";
+      case DEFAULT -> MESSAGES.text("preferences.appearance.chatTheme.preset.default");
+      case SOFT -> MESSAGES.text("preferences.appearance.chatTheme.preset.soft");
+      case ACCENTED -> MESSAGES.text("preferences.appearance.chatTheme.preset.accented");
+      case HIGH_CONTRAST -> MESSAGES.text("preferences.appearance.chatTheme.preset.highContrast");
     };
   }
 

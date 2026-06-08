@@ -129,8 +129,7 @@ public final class Ircv3PanelSupport {
         PreferencesUiSupport.tabTitle(MESSAGES.text("preferences.ircv3.title")),
         MigConstraints.growXMinWidth0Wrap());
     form.add(
-        PreferencesUiSupport.subtleInfoTextWith(
-            MESSAGES.text("preferences.ircv3.subtitle")),
+        PreferencesUiSupport.subtleInfoTextWith(MESSAGES.text("preferences.ircv3.subtitle")),
         MigConstraints.growXMinWidth0Wrap());
 
     JButton typingHelp =
@@ -186,8 +185,7 @@ public final class Ircv3PanelSupport {
     typingRow.add(badgeScaleRow, MigConstraints.growXMinWidth0());
 
     JTextArea typingImpact = PreferencesUiSupport.subtleInfoText();
-    typingImpact.setText(
-        MESSAGES.text("preferences.ircv3.typing.impact"));
+    typingImpact.setText(MESSAGES.text("preferences.ircv3.typing.impact"));
     typingImpact.setBorder(BorderFactory.createEmptyBorder(0, 18, 0, 0));
 
     JPanel typingTab =

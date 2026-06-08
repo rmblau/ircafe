@@ -61,12 +61,10 @@ public final class DiagnosticsControlsSupport {
     JCheckBox jhiccupEnabled =
         new JCheckBox(MESSAGES.text("preferences.diagnostics.jhiccup.enabled"));
     jhiccupEnabled.setSelected(runtimeConfig.readAppDiagnosticsJhiccupEnabled(false));
-    jhiccupEnabled.setToolTipText(
-        MESSAGES.text("preferences.diagnostics.jhiccup.enabled.tooltip"));
+    jhiccupEnabled.setToolTipText(MESSAGES.text("preferences.diagnostics.jhiccup.enabled.tooltip"));
 
     JTextField jhiccupJarPath = new JTextField(runtimeConfig.readAppDiagnosticsJhiccupJarPath(""));
-    jhiccupJarPath.setToolTipText(
-        MESSAGES.text("preferences.diagnostics.jhiccup.jarPath.tooltip"));
+    jhiccupJarPath.setToolTipText(MESSAGES.text("preferences.diagnostics.jhiccup.jarPath.tooltip"));
 
     JTextField jhiccupJavaCommand =
         new JTextField(runtimeConfig.readAppDiagnosticsJhiccupJavaCommand("java"));

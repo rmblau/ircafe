@@ -209,14 +209,12 @@ public final class TrayControlsSupport {
         new JCheckBox(
             MESSAGES.text("preferences.tray.controls.pushy.enabled"),
             Boolean.TRUE.equals(effectivePushySettings.enabled()));
-    pushyEnabled.setToolTipText(
-        MESSAGES.text("preferences.tray.controls.pushy.enabled.tooltip"));
+    pushyEnabled.setToolTipText(MESSAGES.text("preferences.tray.controls.pushy.enabled.tooltip"));
 
     JTextField pushyEndpoint =
         new JTextField(
             Objects.toString(effectivePushySettings.endpoint(), "https://api.pushy.me/push"));
-    pushyEndpoint.setToolTipText(
-        MESSAGES.text("preferences.tray.controls.pushy.endpoint.tooltip"));
+    pushyEndpoint.setToolTipText(MESSAGES.text("preferences.tray.controls.pushy.endpoint.tooltip"));
 
     JPasswordField pushyApiKey =
         new JPasswordField(Objects.toString(effectivePushySettings.apiKey(), ""));
@@ -351,8 +349,7 @@ public final class TrayControlsSupport {
                   pushyTargetMode, PushyTargetMode.class, PushyTargetMode.DEVICE_TOKEN);
           if (mode == PushyTargetMode.DEVICE_TOKEN) {
             pushyTargetValue.setToolTipText(
-                MESSAGES.text(
-                    "preferences.tray.controls.pushy.targetValue.deviceToken.tooltip"));
+                MESSAGES.text("preferences.tray.controls.pushy.targetValue.deviceToken.tooltip"));
           } else {
             pushyTargetValue.setToolTipText(
                 MESSAGES.text("preferences.tray.controls.pushy.targetValue.topic.tooltip"));

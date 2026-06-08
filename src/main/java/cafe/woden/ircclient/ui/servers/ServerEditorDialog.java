@@ -60,7 +60,8 @@ public class ServerEditorDialog extends JDialog {
   private final JCheckBox autoConnectOnStartBox =
       new JCheckBox(MESSAGES.text("servers.editor.connection.autoConnectOnStartup"));
   private final JLabel hostLabel = new JLabel(MESSAGES.text("servers.editor.connection.host"));
-  private final JLabel serverPasswordLabel = new JLabel(MESSAGES.text("servers.editor.connection.serverPassword"));
+  private final JLabel serverPasswordLabel =
+      new JLabel(MESSAGES.text("servers.editor.connection.serverPassword"));
   private final JLabel connectionBackendHintLabel = new JLabel(" ");
 
   private final JTextField nickField = new JTextField();
@@ -68,7 +69,8 @@ public class ServerEditorDialog extends JDialog {
   private final JTextField realNameField = new JTextField();
   private final JLabel nickLabel = new JLabel(MESSAGES.text("servers.editor.identity.nick"));
   private final JLabel loginLabel = new JLabel(MESSAGES.text("servers.editor.identity.login"));
-  private final JLabel realNameLabel = new JLabel(MESSAGES.text("servers.editor.identity.realName"));
+  private final JLabel realNameLabel =
+      new JLabel(MESSAGES.text("servers.editor.identity.realName"));
 
   private static final String AUTH_CARD_DISABLED = "auth-disabled";
   private static final String AUTH_CARD_SASL = "auth-sasl";
@@ -86,8 +88,10 @@ public class ServerEditorDialog extends JDialog {
   private final JLabel authModeLabel = new JLabel(MESSAGES.text("servers.editor.auth.method"));
   private final JPanel authModeCardPanel = new JPanel(new CardLayout());
   private final JLabel authDisabledHintLabel = new JLabel();
-  private final JLabel matrixAuthModeLabel = new JLabel(MESSAGES.text("servers.editor.auth.matrixAuth"));
-  private final JLabel matrixAuthUserLabel = new JLabel(MESSAGES.text("servers.editor.auth.username"));
+  private final JLabel matrixAuthModeLabel =
+      new JLabel(MESSAGES.text("servers.editor.auth.matrixAuth"));
+  private final JLabel matrixAuthUserLabel =
+      new JLabel(MESSAGES.text("servers.editor.auth.username"));
   private final JComboBox<ServerEditorMatrixAuthMode> matrixAuthModeCombo =
       new JComboBox<>(
           new ServerEditorMatrixAuthMode[] {
@@ -122,8 +126,10 @@ public class ServerEditorDialog extends JDialog {
   private final JTextArea performArea = new JTextArea(8, 30);
 
   // Per-server proxy override
-  private final JCheckBox proxyOverrideBox = new JCheckBox(MESSAGES.text("servers.editor.proxy.override"));
-  private final JCheckBox proxyEnabledBox = new JCheckBox(MESSAGES.text("servers.editor.proxy.useSocks5"));
+  private final JCheckBox proxyOverrideBox =
+      new JCheckBox(MESSAGES.text("servers.editor.proxy.override"));
+  private final JCheckBox proxyEnabledBox =
+      new JCheckBox(MESSAGES.text("servers.editor.proxy.useSocks5"));
   private final JTextField proxyHostField = new JTextField();
   private final JTextField proxyPortField = new JTextField();
   private final JCheckBox proxyRemoteDnsBox =
@@ -132,7 +138,8 @@ public class ServerEditorDialog extends JDialog {
   private final JPasswordField proxyPassField = new JPasswordField();
   private final JTextField proxyConnectTimeoutMsField = new JTextField();
   private final JTextField proxyReadTimeoutMsField = new JTextField();
-  private final JButton proxyTestBtn = new JButton(MESSAGES.text("servers.editor.proxy.test.ellipsis"));
+  private final JButton proxyTestBtn =
+      new JButton(MESSAGES.text("servers.editor.proxy.test.ellipsis"));
   private final JLabel proxyHintLabel = new JLabel();
   private final JLabel proxyStatusLabel = new JLabel(" ");
 
@@ -461,7 +468,12 @@ public class ServerEditorDialog extends JDialog {
     addRow(p, g, 5, MESSAGES.text("servers.editor.proxy.remoteDns.label"), proxyRemoteDnsBox);
     addRow(p, g, 6, MESSAGES.text("servers.editor.auth.username"), proxyUserField);
     addRow(p, g, 7, MESSAGES.text("servers.editor.auth.password"), proxyPassField);
-    addRow(p, g, 8, MESSAGES.text("servers.editor.proxy.connectTimeoutMs"), proxyConnectTimeoutMsField);
+    addRow(
+        p,
+        g,
+        8,
+        MESSAGES.text("servers.editor.proxy.connectTimeoutMs"),
+        proxyConnectTimeoutMsField);
     addRow(p, g, 9, MESSAGES.text("servers.editor.proxy.readTimeoutMs"), proxyReadTimeoutMsField);
 
     // Test row
@@ -546,7 +558,10 @@ public class ServerEditorDialog extends JDialog {
       proxyStatusLabel.setText(" ");
       proxyTestBtn.setEnabled(true);
       JOptionPane.showMessageDialog(
-          this, ex.getMessage(), MESSAGES.text("servers.editor.proxy.invalidSettings.title"), JOptionPane.ERROR_MESSAGE);
+          this,
+          ex.getMessage(),
+          MESSAGES.text("servers.editor.proxy.invalidSettings.title"),
+          JOptionPane.ERROR_MESSAGE);
       return;
     }
     final ServerEditorConnectionPolicy.ServerEndpoint endpoint;
@@ -557,7 +572,10 @@ public class ServerEditorDialog extends JDialog {
       proxyStatusLabel.setText(" ");
       proxyTestBtn.setEnabled(true);
       JOptionPane.showMessageDialog(
-          this, ex.getMessage(), MESSAGES.text("servers.editor.validation.invalidServer.title"), JOptionPane.ERROR_MESSAGE);
+          this,
+          ex.getMessage(),
+          MESSAGES.text("servers.editor.validation.invalidServer.title"),
+          JOptionPane.ERROR_MESSAGE);
       return;
     }
 
@@ -601,7 +619,10 @@ public class ServerEditorDialog extends JDialog {
     updateValidation();
 
     JOptionPane.showMessageDialog(
-        this, presentation.dialogMessage(), MESSAGES.text("servers.editor.proxy.test.title"), JOptionPane.INFORMATION_MESSAGE);
+        this,
+        presentation.dialogMessage(),
+        MESSAGES.text("servers.editor.proxy.test.title"),
+        JOptionPane.INFORMATION_MESSAGE);
   }
 
   private void handleFailedProxyTest(String shortMessage, String longMessage) {
@@ -611,7 +632,10 @@ public class ServerEditorDialog extends JDialog {
     lastProxyTestOk = null;
     updateValidation();
     JOptionPane.showMessageDialog(
-        this, presentation.dialogMessage(), MESSAGES.text("servers.editor.proxy.test.title"), JOptionPane.ERROR_MESSAGE);
+        this,
+        presentation.dialogMessage(),
+        MESSAGES.text("servers.editor.proxy.test.title"),
+        JOptionPane.ERROR_MESSAGE);
   }
 
   private void handleUnexpectedProxyTestFailure(Exception error) {
@@ -621,7 +645,10 @@ public class ServerEditorDialog extends JDialog {
     lastProxyTestOk = null;
     updateValidation();
     JOptionPane.showMessageDialog(
-        this, presentation.dialogMessage(), MESSAGES.text("servers.editor.proxy.test.title"), JOptionPane.ERROR_MESSAGE);
+        this,
+        presentation.dialogMessage(),
+        MESSAGES.text("servers.editor.proxy.test.title"),
+        JOptionPane.ERROR_MESSAGE);
   }
 
   private IrcProperties.Proxy resolveProxyForTest() {
@@ -743,7 +770,12 @@ public class ServerEditorDialog extends JDialog {
     addRow(p, g, 4, MESSAGES.text("servers.editor.connection.startup"), autoConnectOnStartBox);
     connectionBackendHintLabel.putClientProperty(
         FlatClientProperties.STYLE, "foreground:$Label.disabledForeground");
-    addRow(p, g, 5, MESSAGES.text("servers.editor.connection.backendHint"), connectionBackendHintLabel);
+    addRow(
+        p,
+        g,
+        5,
+        MESSAGES.text("servers.editor.connection.backendHint"),
+        connectionBackendHintLabel);
 
     g.gridy = 7;
     g.gridx = 0;
@@ -1030,7 +1062,10 @@ public class ServerEditorDialog extends JDialog {
       dispose();
     } catch (IllegalArgumentException ex) {
       JOptionPane.showMessageDialog(
-          this, ex.getMessage(), MESSAGES.text("servers.editor.validation.invalidServer.title"), JOptionPane.ERROR_MESSAGE);
+          this,
+          ex.getMessage(),
+          MESSAGES.text("servers.editor.validation.invalidServer.title"),
+          JOptionPane.ERROR_MESSAGE);
     }
   }
 

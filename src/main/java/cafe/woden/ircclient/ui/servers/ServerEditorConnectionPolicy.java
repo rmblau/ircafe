@@ -21,7 +21,8 @@ final class ServerEditorConnectionPolicy {
   static ServerConnection parseConnection(String id, String host, String portText) {
     String resolvedId = trim(id);
     if (resolvedId.isEmpty()) {
-      throw new IllegalArgumentException(MESSAGES.text("servers.editor.validation.serverIdRequired"));
+      throw new IllegalArgumentException(
+          MESSAGES.text("servers.editor.validation.serverIdRequired"));
     }
 
     ServerEndpoint endpoint = parseEndpoint(host, portText);

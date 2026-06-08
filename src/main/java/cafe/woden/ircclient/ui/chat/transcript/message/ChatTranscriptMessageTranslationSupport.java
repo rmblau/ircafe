@@ -30,7 +30,6 @@ public final class ChatTranscriptMessageTranslationSupport {
   private final ChatRichTextRenderer renderer;
   private final BiFunction<AttributeSet, LineMeta, SimpleAttributeSet> withLineMeta;
   private final BiFunction<AttributeSet, String, SimpleAttributeSet> withAuxiliaryRowKind;
-  private final BiFunction<StyledDocument, Integer, Integer> normalizeInsertAtLineStart;
   private final BiFunction<StyledDocument, Integer, Integer> ensureAtLineStartForInsert;
   private final PresenceBlockShiftHandler shiftPresenceBlock;
 
@@ -39,7 +38,6 @@ public final class ChatTranscriptMessageTranslationSupport {
       ChatRichTextRenderer renderer,
       BiFunction<AttributeSet, LineMeta, SimpleAttributeSet> withLineMeta,
       BiFunction<AttributeSet, String, SimpleAttributeSet> withAuxiliaryRowKind,
-      BiFunction<StyledDocument, Integer, Integer> normalizeInsertAtLineStart,
       BiFunction<StyledDocument, Integer, Integer> ensureAtLineStartForInsert,
       PresenceBlockShiftHandler shiftPresenceBlock) {
     this.styles = Objects.requireNonNull(styles, "styles");
@@ -47,8 +45,6 @@ public final class ChatTranscriptMessageTranslationSupport {
     this.withLineMeta = Objects.requireNonNull(withLineMeta, "withLineMeta");
     this.withAuxiliaryRowKind =
         Objects.requireNonNull(withAuxiliaryRowKind, "withAuxiliaryRowKind");
-    this.normalizeInsertAtLineStart =
-        Objects.requireNonNull(normalizeInsertAtLineStart, "normalizeInsertAtLineStart");
     this.ensureAtLineStartForInsert =
         Objects.requireNonNull(ensureAtLineStartForInsert, "ensureAtLineStartForInsert");
     this.shiftPresenceBlock = Objects.requireNonNull(shiftPresenceBlock, "shiftPresenceBlock");
@@ -69,10 +65,8 @@ public final class ChatTranscriptMessageTranslationSupport {
     messageLine = ChatTranscriptDocumentSupport.findMessageLine(doc, targetMsgId);
     if (messageLine == null) return false;
 
-    int messageLineEnd =
-        ChatTranscriptDocumentSupport.lineEndOffsetForLineStart(doc, messageLine.lineStart());
     int beforeLen = doc.getLength();
-    int pos = normalizeInsertAtLineStart.apply(doc, messageLineEnd);
+    int pos = ChatTranscriptDocumentSupport.nextLineStart(doc, messageLine.lineStart());
     pos = ensureAtLineStartForInsert.apply(doc, pos);
     int insertionStart = pos;
 

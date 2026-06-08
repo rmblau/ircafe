@@ -115,8 +115,7 @@ public final class TrayNotificationsPanelSupport {
     if (base != null) {
       soundsTab.add(
           PreferencesUiSupport.helpText(
-              MESSAGES.text(
-                  "preferences.tray.customSounds.copiedTo.help", base.resolve("sounds"))),
+              MESSAGES.text("preferences.tray.customSounds.copiedTo.help", base.resolve("sounds"))),
           MigConstraints.growX());
     }
 

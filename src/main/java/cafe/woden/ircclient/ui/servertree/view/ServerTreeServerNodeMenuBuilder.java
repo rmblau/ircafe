@@ -341,8 +341,8 @@ public final class ServerTreeServerNodeMenuBuilder {
     connectOne.addActionListener(ev -> context.requestConnectServer(serverId));
     menu.add(connectOne);
 
-    JMenuItem disconnectOne = new JMenuItem(
-        MESSAGES.text("serverTree.serverMenu.disconnect", pretty));
+    JMenuItem disconnectOne =
+        new JMenuItem(MESSAGES.text("serverTree.serverMenu.disconnect", pretty));
     disconnectOne.setIcon(SvgIcons.action("exit", 16));
     disconnectOne.setDisabledIcon(SvgIcons.actionDisabled("exit", 16));
     disconnectOne.setEnabled(ServerTreeConnectionStateViewModel.canDisconnect(state));
@@ -358,16 +358,16 @@ public final class ServerTreeServerNodeMenuBuilder {
     boolean quasselCoreServer = context.supportsQuasselCoreCommands(serverId);
     if (quasselCoreServer) {
       if (context.isQuasselSetupPending(serverId)) {
-        JMenuItem completeQuasselSetup = new JMenuItem(
-            MESSAGES.text("serverTree.serverMenu.completeQuasselSetup"));
+        JMenuItem completeQuasselSetup =
+            new JMenuItem(MESSAGES.text("serverTree.serverMenu.completeQuasselSetup"));
         completeQuasselSetup.setIcon(SvgIcons.action("edit", 16));
         completeQuasselSetup.setDisabledIcon(SvgIcons.actionDisabled("edit", 16));
         completeQuasselSetup.addActionListener(ev -> context.openQuasselSetup(serverId));
         menu.add(completeQuasselSetup);
       }
 
-      JMenuItem manageQuasselNetworks = new JMenuItem(
-          MESSAGES.text("serverTree.serverMenu.manageQuasselNetworks"));
+      JMenuItem manageQuasselNetworks =
+          new JMenuItem(MESSAGES.text("serverTree.serverMenu.manageQuasselNetworks"));
       manageQuasselNetworks.setIcon(SvgIcons.action("edit", 16));
       manageQuasselNetworks.setDisabledIcon(SvgIcons.actionDisabled("edit", 16));
       manageQuasselNetworks.addActionListener(
@@ -423,8 +423,7 @@ public final class ServerTreeServerNodeMenuBuilder {
     if (scopeServerId.isEmpty()) return null;
 
     JPopupMenu menu = new JPopupMenu();
-    JMenuItem addInterceptor = new JMenuItem(
-        MESSAGES.text("serverTree.serverMenu.addInterceptor"));
+    JMenuItem addInterceptor = new JMenuItem(MESSAGES.text("serverTree.serverMenu.addInterceptor"));
     addInterceptor.setIcon(SvgIcons.action("plus", 16));
     addInterceptor.setDisabledIcon(SvgIcons.actionDisabled("plus", 16));
     addInterceptor.setEnabled(context.interceptorStoreAvailable());
@@ -459,8 +458,9 @@ public final class ServerTreeServerNodeMenuBuilder {
             && context.isAutoConnectEnabled(backendId, originId, networkKey);
 
     menu.addSeparator();
-    JCheckBoxMenuItem auto = new JCheckBoxMenuItem(
-        MESSAGES.text("serverTree.serverMenu.autoConnectNextTime", networkKey));
+    JCheckBoxMenuItem auto =
+        new JCheckBoxMenuItem(
+            MESSAGES.text("serverTree.serverMenu.autoConnectNextTime", networkKey));
     auto.setSelected(enabled);
     auto.setEnabled(originId != null && !originId.isBlank());
     auto.addActionListener(

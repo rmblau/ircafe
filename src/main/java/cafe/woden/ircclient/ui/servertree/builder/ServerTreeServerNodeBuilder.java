@@ -114,8 +114,7 @@ public final class ServerTreeServerNodeBuilder {
         new DefaultMutableTreeNode(
             new ServerTreeNodeData(
                 ignoresRef,
-                Objects.toString(
-                    spec.ignoresLabel(), MESSAGES.text("serverTree.node.ignores")))));
+                Objects.toString(spec.ignoresLabel(), MESSAGES.text("serverTree.node.ignores")))));
 
     TargetRef dccTransfersRef = TargetRef.dccTransfers(id);
     if (spec.dccTransfersNodeVisible()) {

@@ -71,15 +71,11 @@ final class UserCommandAliasesTableModel
       String cmd = normalizeCommand(a.name);
       if (cmd.isEmpty()) {
         return new UserCommandAliasValidationError(
-            i,
-            a.name,
-            MESSAGES.text("preferences.commands.aliases.validation.commandRequired"));
+            i, a.name, MESSAGES.text("preferences.commands.aliases.validation.commandRequired"));
       }
       if (!COMMAND_NAME_PATTERN.matcher(cmd).matches()) {
         return new UserCommandAliasValidationError(
-            i,
-            a.name,
-            MESSAGES.text("preferences.commands.aliases.validation.commandPattern"));
+            i, a.name, MESSAGES.text("preferences.commands.aliases.validation.commandPattern"));
       }
       if (SettingsValueSupport.trimmedString(a.template).isEmpty()) {
         return new UserCommandAliasValidationError(

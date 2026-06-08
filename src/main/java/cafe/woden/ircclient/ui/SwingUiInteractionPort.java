@@ -110,10 +110,11 @@ final class SwingUiInteractionPort implements UiInteractionPort {
             body.append(MESSAGES.text("uiInteraction.multilineFallback.reason", why))
                 .append("\n\n");
           }
-          body.append(MESSAGES.text(
-                  "uiInteraction.multilineFallback.size",
-                  Math.max(0, lineCount),
-                  Math.max(0L, payloadUtf8Bytes)))
+          body.append(
+                  MESSAGES.text(
+                      "uiInteraction.multilineFallback.size",
+                      Math.max(0, lineCount),
+                      Math.max(0L, payloadUtf8Bytes)))
               .append("\n\n")
               .append(MESSAGES.text("uiInteraction.multilineFallback.prompt"));
 

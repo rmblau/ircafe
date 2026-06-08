@@ -79,8 +79,7 @@ public final class TranslationControlsSupport {
         apiKey, MESSAGES.text("preferences.translation.apiKey.placeholder"));
     apiKey.putClientProperty(SwingClientProperties.PASSWORD_FIELD_SHOW_REVEAL_BUTTON, true);
     apiKey.putClientProperty(FlatClientProperties.STYLE, "showRevealButton:true;");
-    JButton clearApiKey =
-        new JButton(MESSAGES.text("preferences.translation.button.clearApiKey"));
+    JButton clearApiKey = new JButton(MESSAGES.text("preferences.translation.button.clearApiKey"));
     clearApiKey.addActionListener(event -> apiKey.setText(""));
 
     JCheckBox translateUnknownMessages =
@@ -130,8 +129,7 @@ public final class TranslationControlsSupport {
         PreferencesUiSupport.numberSpinner(
             effective.maxRequestChars(), 1, 128 * 1024, 100, closeables);
     JSpinner maxConcurrentRequests =
-        PreferencesUiSupport.numberSpinner(
-            effective.maxConcurrentRequests(), 1, 16, 1, closeables);
+        PreferencesUiSupport.numberSpinner(effective.maxConcurrentRequests(), 1, 16, 1, closeables);
 
     JPanel panel = new JPanel(MigLayouts.singleColumnFill(12, "[]8[]"));
     panel.add(
@@ -141,8 +139,7 @@ public final class TranslationControlsSupport {
 
     JPanel service =
         PreferencesUiSupport.captionPanel(
-            MESSAGES.text("preferences.translation.section.service"),
-            MigLayouts.twoColumnForm(8));
+            MESSAGES.text("preferences.translation.section.service"), MigLayouts.twoColumnForm(8));
     service.add(new JLabel(MESSAGES.text("preferences.translation.field.mode")));
     service.add(mode, MigConstraints.growXMinWidth0());
     service.add(new JLabel(MESSAGES.text("preferences.translation.field.backend")));
@@ -200,15 +197,12 @@ public final class TranslationControlsSupport {
 
     JPanel limits =
         PreferencesUiSupport.captionPanel(
-            MESSAGES.text("preferences.translation.section.limits"),
-            MigLayouts.twoColumnForm(8));
-    limits.add(
-        new JLabel(MESSAGES.text("preferences.translation.field.requestTimeoutSeconds")));
+            MESSAGES.text("preferences.translation.section.limits"), MigLayouts.twoColumnForm(8));
+    limits.add(new JLabel(MESSAGES.text("preferences.translation.field.requestTimeoutSeconds")));
     limits.add(requestTimeoutSeconds, MigConstraints.widthWrap(110));
     limits.add(new JLabel(MESSAGES.text("preferences.translation.field.maxRequestChars")));
     limits.add(maxRequestChars, MigConstraints.widthWrap(130));
-    limits.add(
-        new JLabel(MESSAGES.text("preferences.translation.field.maxConcurrentRequests")));
+    limits.add(new JLabel(MESSAGES.text("preferences.translation.field.maxConcurrentRequests")));
     limits.add(maxConcurrentRequests, MigConstraints.width(110));
     panel.add(limits, MigConstraints.growXMinWidth0());
 
@@ -491,8 +485,7 @@ public final class TranslationControlsSupport {
           JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
         JLabel label =
             (JLabel)
-                super.getListCellRendererComponent(
-                    list, value, index, isSelected, cellHasFocus);
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         if (value instanceof IrcProperties.Client.Translation.Mode mode) {
           label.setText(modeLabel(mode));
         }
@@ -508,8 +501,7 @@ public final class TranslationControlsSupport {
           JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
         JLabel label =
             (JLabel)
-                super.getListCellRendererComponent(
-                    list, value, index, isSelected, cellHasFocus);
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         if (value instanceof TranslationServiceChoice choice) {
           label.setText(backendLabel(choice));
         }

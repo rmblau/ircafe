@@ -158,15 +158,18 @@ public class ServerTreeDockable extends JPanel implements Dockable, Scrollable {
 
   private static final String STATUS_LABEL = MESSAGES.text("serverTree.node.server");
   private static final String CHANNEL_LIST_LABEL = MESSAGES.text("serverTree.node.channelList");
-  private static final String PRIVATE_MESSAGES_LABEL = MESSAGES.text("serverTree.node.privateMessages");
+  private static final String PRIVATE_MESSAGES_LABEL =
+      MESSAGES.text("serverTree.node.privateMessages");
   private static final String WEECHAT_FILTERS_LABEL = MESSAGES.text("serverTree.node.filters");
   private static final String IGNORES_LABEL = MESSAGES.text("serverTree.node.ignores");
   private static final String DCC_TRANSFERS_LABEL = MESSAGES.text("serverTree.node.dccTransfers");
   private static final String LOG_VIEWER_LABEL = MESSAGES.text("serverTree.node.logViewer");
   private static final String MONITOR_GROUP_LABEL = MESSAGES.text("serverTree.node.monitor");
-  private static final String INTERCEPTORS_GROUP_LABEL = MESSAGES.text("serverTree.node.interceptors");
+  private static final String INTERCEPTORS_GROUP_LABEL =
+      MESSAGES.text("serverTree.node.interceptors");
   private static final String OTHER_GROUP_LABEL = MESSAGES.text("serverTree.node.other");
-  private static final String BOUNCER_CONTROL_LABEL = MESSAGES.text("serverTree.node.bouncerControl");
+  private static final String BOUNCER_CONTROL_LABEL =
+      MESSAGES.text("serverTree.node.bouncerControl");
   private static final String IRC_ROOT_LABEL = MESSAGES.text("serverTree.root.irc");
   private static final String APPLICATION_ROOT_LABEL = MESSAGES.text("serverTree.root.application");
   private static final int SERVER_ACTION_BUTTON_SIZE = 16;

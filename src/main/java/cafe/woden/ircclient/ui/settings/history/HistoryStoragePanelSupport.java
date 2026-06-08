@@ -137,7 +137,8 @@ public final class HistoryStoragePanelSupport {
 
     JPanel remote =
         PreferencesUiSupport.captionPanel(
-            MESSAGES.text("preferences.history.section.remoteHistory"), MigLayouts.twoColumnForm(8));
+            MESSAGES.text("preferences.history.section.remoteHistory"),
+            MigLayouts.twoColumnForm(8));
     remote.add(new JLabel(MESSAGES.text("preferences.history.field.requestTimeoutSec")));
     remote.add(history.remoteRequestTimeoutSeconds, MigConstraints.widthWrap(110));
     remote.add(new JLabel(MESSAGES.text("preferences.history.field.zncPlaybackTimeoutSec")));
@@ -151,7 +152,8 @@ public final class HistoryStoragePanelSupport {
             MESSAGES.text("preferences.history.section.localLimits"), MigLayouts.twoColumnForm(8));
     limits.add(new JLabel(MESSAGES.text("preferences.history.field.inputCommandHistoryMax")));
     limits.add(history.commandHistoryMaxSize, MigConstraints.widthWrap(110));
-    limits.add(new JLabel(MESSAGES.text("preferences.history.field.liveTranscriptMaxLinesPerTarget")));
+    limits.add(
+        new JLabel(MESSAGES.text("preferences.history.field.liveTranscriptMaxLinesPerTarget")));
     limits.add(history.chatTranscriptMaxLinesPerTarget, MigConstraints.width(110));
     tab.add(limits, MigConstraints.growXMinWidth0());
     return tab;

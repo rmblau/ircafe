@@ -34,17 +34,14 @@ public final class NickColorControlsSupport {
 
     JCheckBox enabled = new JCheckBox(MESSAGES.text("preferences.nickColors.enabled"));
     enabled.setSelected(enabledSeed);
-    enabled.setToolTipText(
-        MESSAGES.text("preferences.nickColors.enabled.tooltip"));
+    enabled.setToolTipText(MESSAGES.text("preferences.nickColors.enabled.tooltip"));
 
     JSpinner minContrast =
         PreferencesUiSupport.numberSpinner(minContrastSeed, 1.0, 21.0, 0.5, closeables);
-    minContrast.setToolTipText(
-        MESSAGES.text("preferences.nickColors.minContrast.tooltip"));
+    minContrast.setToolTipText(MESSAGES.text("preferences.nickColors.minContrast.tooltip"));
 
     JButton overrides = new JButton(MESSAGES.text("preferences.nickColors.overrides.edit"));
-    overrides.setToolTipText(
-        MESSAGES.text("preferences.nickColors.overrides.tooltip"));
+    overrides.setToolTipText(MESSAGES.text("preferences.nickColors.overrides.tooltip"));
 
     NickColorPreviewPanel preview = new NickColorPreviewPanel(nickColorService);
 

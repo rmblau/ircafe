@@ -113,7 +113,7 @@ class AppearanceControlsSupportTest {
             () -> AppearanceControlsSupport.readChatThemeSettings(controls));
 
     assertEquals("Invalid chat message color", ex.title());
-    assertTrue(ex.getMessage().contains("Chat timestamp color"));
+    assertTrue(ex.getMessage().contains("Timestamp color"));
   }
 
   @Test

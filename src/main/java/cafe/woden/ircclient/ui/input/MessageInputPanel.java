@@ -306,11 +306,9 @@ public class MessageInputPanel extends JPanel {
     send.setDisabledIcon(null);
     send.setToolTipText(MESSAGES.text("messageInput.send.tooltip.message"));
     if (send.getAccessibleContext() != null) {
-      send
-          .getAccessibleContext()
+      send.getAccessibleContext()
           .setAccessibleName(MESSAGES.text("messageInput.send.tooltip.message"));
-      send
-          .getAccessibleContext()
+      send.getAccessibleContext()
           .setAccessibleDescription(MESSAGES.text("messageInput.send.description"));
     }
     send.setOpaque(false);

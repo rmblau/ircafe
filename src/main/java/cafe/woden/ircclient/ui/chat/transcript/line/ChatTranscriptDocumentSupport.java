@@ -101,6 +101,24 @@ public final class ChatTranscriptDocumentSupport {
     return -1;
   }
 
+  public static int nextLineStart(StyledDocument doc, int lineStart) {
+    if (doc == null) return Math.max(0, lineStart);
+    try {
+      Element root = doc.getDefaultRootElement();
+      if (root == null) return lineEndOffsetForLineStart(doc, lineStart);
+      int len = doc.getLength();
+      int idx = root.getElementIndex(Math.max(0, Math.min(lineStart, len)));
+      if (idx + 1 >= root.getElementCount()) {
+        return len;
+      }
+      Element next = root.getElement(idx + 1);
+      if (next == null) return lineEndOffsetForLineStart(doc, lineStart);
+      return Math.max(0, Math.min(next.getStartOffset(), len));
+    } catch (Exception ignored) {
+      return lineEndOffsetForLineStart(doc, lineStart);
+    }
+  }
+
   public static int findLineStartByPendingId(StyledDocument doc, String pendingId) {
     if (doc == null) return -1;
     String want = normalizePendingId(pendingId);

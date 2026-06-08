@@ -134,8 +134,7 @@ public final class UserListIgnorePromptHandler {
             message("userList.ignore.hard.remove.title"),
             message("userList.ignore.hard.remove.prompt"))
         : new IgnoreDialogCopy(
-            message("userList.ignore.hard.add.title"),
-            message("userList.ignore.hard.add.prompt"));
+            message("userList.ignore.hard.add.title"), message("userList.ignore.hard.add.prompt"));
   }
 
   private String message(String code, Object... args) {

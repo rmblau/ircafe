@@ -79,8 +79,10 @@ final class PreferencesDialogTabsSupport {
     return List.of(
         new PreferencesDialogWindowSupport.Tab(
             messages.text("preferences.tab.appearance"), controls.appearance().panel()),
-        new PreferencesDialogWindowSupport.Tab(messages.text("preferences.tab.memory"), memoryPanel),
-        new PreferencesDialogWindowSupport.Tab(messages.text("preferences.tab.startup"), startupPanel),
+        new PreferencesDialogWindowSupport.Tab(
+            messages.text("preferences.tab.memory"), memoryPanel),
+        new PreferencesDialogWindowSupport.Tab(
+            messages.text("preferences.tab.startup"), startupPanel),
         new PreferencesDialogWindowSupport.Tab(
             messages.text("preferences.tab.trayNotifications"), trayPanel),
         new PreferencesDialogWindowSupport.Tab(messages.text("preferences.tab.chat"), chatPanel),
@@ -99,7 +101,8 @@ final class PreferencesDialogTabsSupport {
             messages.text("preferences.tab.commands"), commandsPanel),
         new PreferencesDialogWindowSupport.Tab(
             messages.text("preferences.tab.diagnostics"), diagnosticsPanel),
-        new PreferencesDialogWindowSupport.Tab(messages.text("preferences.tab.filters"), filtersPanel),
+        new PreferencesDialogWindowSupport.Tab(
+            messages.text("preferences.tab.filters"), filtersPanel),
         new PreferencesDialogWindowSupport.Tab(
             messages.text("preferences.tab.network"), controls.network().networkPanel()),
         new PreferencesDialogWindowSupport.Tab(
