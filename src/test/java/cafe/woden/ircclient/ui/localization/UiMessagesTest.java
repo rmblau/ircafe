@@ -1147,6 +1147,26 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesThemeSelectionDialogMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("More Themes", messages.text("themeSelection.title"));
+    assertEquals("All IntelliJ themes", messages.text("themeSelection.allIntelliJ"));
+    assertEquals("Tone", messages.text("themeSelection.filter.tone.label"));
+    assertEquals("All packs", messages.text("themeSelection.filter.pack.all"));
+    assertEquals("FlatLaf", messages.text("themeSelection.pack.flatLaf"));
+    assertEquals("Search themes", messages.text("themeSelection.search.placeholder"));
+    assertEquals("Showing 3 of 12", messages.text("themeSelection.count", 3, 12));
+    assertEquals(
+        "Dark theme · IntelliJ pack",
+        messages.text("themeSelection.theme.tooltip", "Dark", "IntelliJ"));
+    assertEquals("Transcript Preview", messages.text("themeSelection.preview.title"));
+    assertEquals(
+        "Invite: dave invited you to #retro (reason: old-school night)",
+        messages.text("themeSelection.preview.line.invite"));
+  }
+
+  @Test
   void resolvesNetworkPreferencesMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
 
