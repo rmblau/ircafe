@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.tray;
 
 import cafe.woden.ircclient.app.ApplicationShutdownCoordinator;
 import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import cafe.woden.ircclient.ui.shell.MainFrame;
 import dorkbox.systemTray.MenuItem;
@@ -24,6 +25,7 @@ public class TrayService {
 
   private static final Logger log = LoggerFactory.getLogger(TrayService.class);
   private static final int CLOSE_HINT_STATUS_DURATION_MS = 8_000;
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private final UiSettingsBus settingsBus;
   private final ObjectProvider<MainFrame> frameProvider;
@@ -144,8 +146,13 @@ public class TrayService {
           tray.getMenu()
               .add(
                   new MenuItem(
-                      "Show IRCafe", e -> SwingUtilities.invokeLater(this::toggleMainWindow)));
-      tray.getMenu().add(new MenuItem("Exit", e -> SwingUtilities.invokeLater(this::requestExit)));
+                      MESSAGES.text("tray.menu.show"),
+                      e -> SwingUtilities.invokeLater(this::toggleMainWindow)));
+      tray.getMenu()
+          .add(
+              new MenuItem(
+                  MESSAGES.text("tray.menu.exit"),
+                  e -> SwingUtilities.invokeLater(this::requestExit)));
       systemTray = tray;
       updateShowHideMenuItemLabel();
       log.info("[tray] installed");
@@ -202,7 +209,8 @@ public class TrayService {
     MainFrame frame = frameProvider.getIfAvailable();
     if (item == null || frame == null) return;
     try {
-      item.setText(frame.isVisible() ? "Hide IRCafe" : "Show IRCafe");
+      item.setText(
+          frame.isVisible() ? MESSAGES.text("tray.menu.hide") : MESSAGES.text("tray.menu.show"));
     } catch (Throwable ignored) {
     }
   }
@@ -236,7 +244,7 @@ public class TrayService {
     // SystemTray doesn't provide cross-platform "balloon" notifications.
     // Set a short-lived status hint instead (non-intrusive, works everywhere).
     try {
-      tray.setStatus("Still running in tray");
+      tray.setStatus(MESSAGES.text("tray.status.closeHint"));
       restartCloseHintStatusClearTimer();
     } catch (Throwable ignored) {
     }

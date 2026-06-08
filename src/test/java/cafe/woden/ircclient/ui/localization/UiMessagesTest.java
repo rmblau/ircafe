@@ -1296,6 +1296,38 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesTrayMenuAndNotificationMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("IRCafe", messages.text("tray.appName"));
+    assertEquals("Show IRCafe", messages.text("tray.menu.show"));
+    assertEquals("Hide IRCafe", messages.text("tray.menu.hide"));
+    assertEquals("Exit", messages.text("tray.menu.exit"));
+    assertEquals("Still running in tray", messages.text("tray.status.closeHint"));
+    assertEquals("Highlight", messages.text("tray.notification.highlight.title"));
+    assertEquals("Highlight in #ircafe", messages.text("tray.notification.highlight.title.channel", "#ircafe"));
+    assertEquals("PM", messages.text("tray.notification.pm.title"));
+    assertEquals("PM from alice", messages.text("tray.notification.pm.title.from", "alice"));
+    assertEquals("Invite", messages.text("tray.notification.invite.title"));
+    assertEquals("Invite to #ops", messages.text("tray.notification.invite.title.channel", "#ops"));
+    assertEquals("alice invited you", messages.text("tray.notification.invite.body.from", "alice"));
+    assertEquals("Channel invitation", messages.text("tray.notification.invite.body.generic"));
+    assertEquals(
+        "alice invited you on libera",
+        messages.text("tray.notification.invite.body.server", "alice invited you", "libera"));
+    assertEquals(
+        "alice invited you: hop in",
+        messages.text("tray.notification.invite.body.reason", "alice invited you", "hop in"));
+    assertEquals("Connection", messages.text("tray.notification.connection.title"));
+    assertEquals(
+        "Connection (libera)", messages.text("tray.notification.connection.title.server", "libera"));
+    assertEquals(
+        "Test notification (click to open IRCafe)", messages.text("tray.notification.test.body"));
+    assertEquals("IRCafe is still running", messages.text("tray.notification.closeHint.title"));
+    assertEquals("Open", messages.text("tray.dbus.action.open"));
+  }
+
+  @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
 
