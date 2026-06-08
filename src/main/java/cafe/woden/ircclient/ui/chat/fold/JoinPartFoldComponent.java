@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.chat.fold;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
@@ -17,6 +18,8 @@ import javax.swing.SwingUtilities;
 public final class JoinPartFoldComponent extends JPanel {
 
   public record Item(boolean isJoin, String nick, String reason) {}
+
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private static final int FALLBACK_MAX_W = 420;
   private static final int WIDTH_MARGIN_PX = 32;
@@ -129,25 +132,41 @@ public final class JoinPartFoldComponent extends JPanel {
     // Summary (collapsed line)
     StringBuilder s = new StringBuilder();
     if (joins > 0) {
-      s.append(joins).append(joins == 1 ? " user joined" : " users joined");
+      s.append(
+          MESSAGES.text(
+              joins == 1
+                  ? "chat.fold.joinPart.summary.join.one"
+                  : "chat.fold.joinPart.summary.join.many",
+              joins));
     }
     if (parts > 0) {
-      if (!s.isEmpty()) s.append(", ");
-      s.append(parts).append(parts == 1 ? " user left" : " users left");
+      if (!s.isEmpty()) s.append(MESSAGES.text("common.list.separator"));
+      s.append(
+          MESSAGES.text(
+              parts == 1
+                  ? "chat.fold.joinPart.summary.part.one"
+                  : "chat.fold.joinPart.summary.part.many",
+              parts));
     }
     if (s.isEmpty()) {
-      s.append("Join/part update");
+      s.append(MESSAGES.text("chat.fold.joinPart.summary.fallback"));
     }
     summary.setText(s.toString());
 
     // Details (expanded)
     StringBuilder d = new StringBuilder();
     if (!joinNicks.isEmpty()) {
-      d.append("Joined: ").append(String.join(", ", joinNicks));
+      d.append(
+          MESSAGES.text(
+              "chat.fold.joinPart.details.joined",
+              String.join(MESSAGES.text("common.list.separator"), joinNicks)));
     }
     if (!partBits.isEmpty()) {
       if (!d.isEmpty()) d.append("\n");
-      d.append("Left: ").append(String.join(", ", partBits));
+      d.append(
+          MESSAGES.text(
+              "chat.fold.joinPart.details.left",
+              String.join(MESSAGES.text("common.list.separator"), partBits)));
     }
     details.setText(d.toString());
   }

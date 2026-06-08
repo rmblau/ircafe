@@ -795,6 +795,15 @@ class UiMessagesTest {
     assertEquals(
         "Inline playback failed to initialize.",
         messages.text("chat.embed.youtube.initializationFailed"));
+    assertEquals("1 user joined", messages.text("chat.fold.joinPart.summary.join.one", 1));
+    assertEquals("3 users joined", messages.text("chat.fold.joinPart.summary.join.many", 3));
+    assertEquals("1 user left", messages.text("chat.fold.joinPart.summary.part.one", 1));
+    assertEquals("2 users left", messages.text("chat.fold.joinPart.summary.part.many", 2));
+    assertEquals("Join/part update", messages.text("chat.fold.joinPart.summary.fallback"));
+    assertEquals(
+        "Joined: alice, bob", messages.text("chat.fold.joinPart.details.joined", "alice, bob"));
+    assertEquals("Left: charlie", messages.text("chat.fold.joinPart.details.left", "charlie"));
+    assertEquals(", ", messages.text("common.list.separator"));
     assertEquals("Load older messages…", messages.text("chat.fold.loadOlder.ready"));
     assertEquals("Loading…", messages.text("chat.fold.loadOlder.loading"));
     assertEquals("No older messages", messages.text("chat.fold.loadOlder.exhausted"));
