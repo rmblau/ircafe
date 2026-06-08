@@ -255,6 +255,17 @@ class UiMessagesTest {
     assertEquals(
         "Server: quassel (network: libera)",
         messages.text("ignoreLists.panel.server.network", "quassel", "libera"));
+    assertEquals(
+        "Unknown ignore level: \"msggs\"",
+        messages.text("ignoreLists.validation.unknownLevel", "msggs"));
+    assertEquals(
+        "Channel patterns must start with # or &: \"ircafe\"",
+        messages.text("ignoreLists.validation.channelPrefix", "ircafe"));
+    assertEquals("Mask is required.", messages.text("ignoreLists.validation.maskRequired"));
+    assertEquals("levels=MSGS", messages.text("ignoreLists.metadata.levels", "MSGS"));
+    assertEquals(
+        "/afk|brb/ (regexp)",
+        messages.text("ignoreLists.metadata.pattern.regexp", "afk|brb"));
   }
 
   @Test

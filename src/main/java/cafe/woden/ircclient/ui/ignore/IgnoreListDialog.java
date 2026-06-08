@@ -375,6 +375,7 @@ public class IgnoreListDialog {
             MaskRow.forHardMask(
                 m,
                 formatHardMaskDisplay(
+                    messages,
                     m,
                     ignores.levelsForHardMask(serverId, m),
                     ignores.channelsForHardMask(serverId, m),
@@ -450,25 +451,25 @@ public class IgnoreListDialog {
               JOptionPane.PLAIN_MESSAGE);
       if (result != JOptionPane.OK_OPTION) return false;
 
-      ParseResult<String> normalizedMask = parseMaskInput(maskField.getText());
+      ParseResult<String> normalizedMask = parseMaskInput(messages, maskField.getText());
       if (normalizedMask.error() != null) {
         showValidationError(normalizedMask.error());
         continue;
       }
 
-      ParseResult<List<String>> levels = parseLevelsInput(levelsField.getText());
+      ParseResult<List<String>> levels = parseLevelsInput(messages, levelsField.getText());
       if (levels.error() != null) {
         showValidationError(levels.error());
         continue;
       }
 
-      ParseResult<List<String>> channels = parseChannelsInput(channelsField.getText());
+      ParseResult<List<String>> channels = parseChannelsInput(messages, channelsField.getText());
       if (channels.error() != null) {
         showValidationError(channels.error());
         continue;
       }
 
-      ParseResult<Long> expiry = parseExpiryInputEpochMs(expiresField.getText());
+      ParseResult<Long> expiry = parseExpiryInputEpochMs(messages, expiresField.getText());
       if (expiry.error() != null) {
         showValidationError(expiry.error());
         continue;
@@ -552,6 +553,10 @@ public class IgnoreListDialog {
   }
 
   static ParseResult<List<String>> parseLevelsInput(String raw) {
+    return parseLevelsInput(UiMessages.bundledDefaults(), raw);
+  }
+
+  static ParseResult<List<String>> parseLevelsInput(UiMessages messages, String raw) {
     String input = Objects.toString(raw, "").trim();
     if (input.isEmpty()) return ParseResult.ok(List.of("ALL"));
 
@@ -559,7 +564,8 @@ public class IgnoreListDialog {
     for (String token : input.split("[,\\s]+")) {
       String normalized = normalizeLevelToken(token);
       if (normalized.isEmpty()) {
-        return ParseResult.error("Unknown ignore level: \"" + token + "\"");
+        return ParseResult.error(
+            message(messages, "ignoreLists.validation.unknownLevel", token));
       }
       out.add(normalized);
     }
@@ -568,6 +574,10 @@ public class IgnoreListDialog {
   }
 
   static ParseResult<List<String>> parseChannelsInput(String raw) {
+    return parseChannelsInput(UiMessages.bundledDefaults(), raw);
+  }
+
+  static ParseResult<List<String>> parseChannelsInput(UiMessages messages, String raw) {
     String input = Objects.toString(raw, "").trim();
     if (input.isEmpty()) return ParseResult.ok(List.of());
 
@@ -576,7 +586,8 @@ public class IgnoreListDialog {
       String channel = Objects.toString(token, "").trim();
       if (channel.isEmpty()) continue;
       if (!(channel.startsWith("#") || channel.startsWith("&"))) {
-        return ParseResult.error("Channel patterns must start with # or &: \"" + channel + "\"");
+        return ParseResult.error(
+            message(messages, "ignoreLists.validation.channelPrefix", channel));
       }
       if (out.stream().noneMatch(existing -> existing.equalsIgnoreCase(channel))) {
         out.add(channel);
@@ -586,6 +597,10 @@ public class IgnoreListDialog {
   }
 
   static ParseResult<Long> parseExpiryInputEpochMs(String raw) {
+    return parseExpiryInputEpochMs(UiMessages.bundledDefaults(), raw);
+  }
+
+  static ParseResult<Long> parseExpiryInputEpochMs(UiMessages messages, String raw) {
     String input = Objects.toString(raw, "").trim();
     if (input.isEmpty()) return ParseResult.ok(null);
 
@@ -593,29 +608,37 @@ public class IgnoreListDialog {
       try {
         long epochMs = Long.parseLong(input);
         if (epochMs <= 0L) {
-          return ParseResult.error("Expiry must be a positive epoch-millis value.");
+          return ParseResult.error(
+              message(messages, "ignoreLists.validation.expiry.positive"));
         }
         return ParseResult.ok(epochMs);
       } catch (Exception ex) {
-        return ParseResult.error("Invalid epoch-millis expiry value.");
+        return ParseResult.error(
+            message(messages, "ignoreLists.validation.expiry.invalidEpoch"));
       }
     }
 
     try {
       long epochMs = Instant.parse(input).toEpochMilli();
       if (epochMs <= 0L) {
-        return ParseResult.error("Expiry must be after the Unix epoch.");
+        return ParseResult.error(
+            message(messages, "ignoreLists.validation.expiry.afterEpoch"));
       }
       return ParseResult.ok(epochMs);
     } catch (Exception ex) {
-      return ParseResult.error("Invalid expiry format. Use ISO-8601 instant or epoch millis.");
+      return ParseResult.error(
+          message(messages, "ignoreLists.validation.expiry.invalidFormat"));
     }
   }
 
   static ParseResult<String> parseMaskInput(String raw) {
+    return parseMaskInput(UiMessages.bundledDefaults(), raw);
+  }
+
+  static ParseResult<String> parseMaskInput(UiMessages messages, String raw) {
     String normalized = IgnoreListService.normalizeMaskOrNickToHostmask(raw);
     if (normalized.isBlank()) {
-      return ParseResult.error("Mask is required.");
+      return ParseResult.error(message(messages, "ignoreLists.validation.maskRequired"));
     }
     return ParseResult.ok(normalized);
   }
@@ -661,44 +684,80 @@ public class IgnoreListDialog {
       String pattern,
       IgnoreTextPatternMode patternMode,
       boolean replies) {
+    return formatHardMaskDisplay(
+        UiMessages.bundledDefaults(),
+        mask,
+        levels,
+        channels,
+        expiresAtEpochMs,
+        pattern,
+        patternMode,
+        replies);
+  }
+
+  static String formatHardMaskDisplay(
+      UiMessages messages,
+      String mask,
+      List<String> levels,
+      List<String> channels,
+      long expiresAtEpochMs,
+      String pattern,
+      IgnoreTextPatternMode patternMode,
+      boolean replies) {
     String m = Objects.toString(mask, "").trim();
     if (m.isEmpty()) return "";
 
     List<String> metadata = new ArrayList<>();
     List<String> normalizedLevels = IgnoreLevels.normalizeConfigured(levels);
-    if (!(normalizedLevels.size() == 1 && "ALL".equalsIgnoreCase(normalizedLevels.getFirst()))) {
-      metadata.add("levels=" + String.join(",", normalizedLevels));
+    if (!(normalizedLevels.size() == 1
+        && "ALL".equalsIgnoreCase(normalizedLevels.getFirst()))) {
+      metadata.add(
+          message(
+              messages, "ignoreLists.metadata.levels", String.join(",", normalizedLevels)));
     }
     if (channels != null && !channels.isEmpty()) {
-      metadata.add("channels=" + String.join(",", channels));
+      metadata.add(
+          message(messages, "ignoreLists.metadata.channels", String.join(",", channels)));
     }
     if (expiresAtEpochMs > 0L) {
       metadata.add(
-          "expires="
-              + DateTimeFormatter.ISO_INSTANT.format(Instant.ofEpochMilli(expiresAtEpochMs)));
+          message(
+              messages,
+              "ignoreLists.metadata.expires",
+              DateTimeFormatter.ISO_INSTANT.format(Instant.ofEpochMilli(expiresAtEpochMs))));
     }
 
     String normalizedPattern = Objects.toString(pattern, "").trim();
     if (!normalizedPattern.isEmpty()) {
-      metadata.add("pattern=" + renderPattern(normalizedPattern, patternMode));
+      metadata.add(
+          message(
+              messages,
+              "ignoreLists.metadata.pattern",
+              renderPattern(messages, normalizedPattern, patternMode)));
     }
     if (replies) {
-      metadata.add("replies");
+      metadata.add(message(messages, "ignoreLists.metadata.replies"));
     }
 
     if (metadata.isEmpty()) return m;
     return m + " [" + String.join("; ", metadata) + "]";
   }
 
-  private static String renderPattern(String pattern, IgnoreTextPatternMode mode) {
+  private static String renderPattern(
+      UiMessages messages, String pattern, IgnoreTextPatternMode mode) {
     String p = Objects.toString(pattern, "").trim();
     if (p.isEmpty()) return "";
     IgnoreTextPatternMode m = (mode == null) ? IgnoreTextPatternMode.GLOB : mode;
     return switch (m) {
-      case REGEXP -> "/" + p + "/ (regexp)";
-      case FULL -> p + " (full)";
+      case REGEXP -> message(messages, "ignoreLists.metadata.pattern.regexp", p);
+      case FULL -> message(messages, "ignoreLists.metadata.pattern.full", p);
       case GLOB -> p;
     };
+  }
+
+  private static String message(UiMessages messages, String code, Object... args) {
+    UiMessages uiMessages = messages == null ? UiMessages.bundledDefaults() : messages;
+    return uiMessages.text(code, args);
   }
 
   private record MaskRow(String mask, String display) {
@@ -726,7 +785,11 @@ public class IgnoreListDialog {
     }
 
     static <T> ParseResult<T> error(String error) {
-      return new ParseResult<>(null, Objects.toString(error, "Invalid value."));
+      return new ParseResult<>(
+          null,
+          Objects.toString(
+              error,
+              UiMessages.bundledDefaults().text("ignoreLists.validation.invalidValue")));
     }
   }
 }
