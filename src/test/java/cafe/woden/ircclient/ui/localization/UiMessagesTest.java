@@ -623,6 +623,13 @@ class UiMessagesTest {
     assertEquals("Managed Channels", messages.text("channelList.tab.managedChannels"));
     assertEquals("Filter:", messages.text("channelList.filter.label"));
     assertEquals("Manual", messages.text("channelList.sort.manual"));
+    assertEquals("Channel", messages.text("channelList.column.channel"));
+    assertEquals("State", messages.text("channelList.column.state"));
+    assertEquals("Users", messages.text("channelList.column.users"));
+    assertEquals("Notifications", messages.text("channelList.column.notifications"));
+    assertEquals("Modes", messages.text("channelList.column.modes"));
+    assertEquals("Auto-join", messages.text("channelList.column.autoJoin"));
+    assertEquals("Topic", messages.text("channelList.column.topic"));
     assertEquals(
         "libera - 7 of 12 channels shown",
         messages.text("channelList.summary.filtered", "libera", 7, 12));
@@ -641,6 +648,7 @@ class UiMessagesTest {
     assertEquals(
         "Unavailable while disconnected",
         messages.text("channelList.details.value.unavailableWhileDisconnected"));
+    assertEquals("Not available", messages.text("channelList.details.value.notAvailable"));
     assertEquals("Set Modes...", messages.text("channelList.details.button.setModes"));
     assertEquals(
         "Sent MODE #ircafe +m.\nWaiting for server response.",

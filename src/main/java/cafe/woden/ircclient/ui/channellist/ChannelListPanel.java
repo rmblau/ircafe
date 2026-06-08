@@ -220,7 +220,11 @@ public final class ChannelListPanel extends JPanel {
   private final ChannelListUxMode ircListUxMode = new IrcChannelListUxMode();
   private final ChannelListUxMode matrixListUxMode = new MatrixChannelListUxMode();
   private final ChannelListUxMode.Context listUxContext = new ChannelListUxModeContext();
-  private final ChannelListTableModel listModel = new ChannelListTableModel();
+  private final ChannelListTableModel listModel =
+      new ChannelListTableModel(
+          message("channelList.column.channel"),
+          message("channelList.column.users"),
+          message("channelList.column.topic"));
   private final JTable listTable = new JTable(listModel);
   private final JTextArea listSubtitle = createSubtitleArea(ircListUxMode.defaultHint());
   private final JTextField filterField = new JTextField();
@@ -1468,7 +1472,9 @@ public final class ChannelListPanel extends JPanel {
             sid,
             ChannelDetailsSource.MANAGED,
             selected.channel(),
-            selected.detached() ? "Disconnected" : "Connected",
+            selected.detached()
+                ? message("channelList.state.disconnected")
+                : message("channelList.state.connected"),
             topic,
             modes,
             modeSummary,
@@ -1487,7 +1493,11 @@ public final class ChannelListPanel extends JPanel {
 
     ManagedChannelRow managed = findManagedRowByChannel(sid, selected.channel());
     String state =
-        managed == null ? "Not managed" : (managed.detached() ? "Disconnected" : "Connected");
+        managed == null
+            ? message("channelList.state.notManaged")
+            : (managed.detached()
+                ? message("channelList.state.disconnected")
+                : message("channelList.state.connected"));
     String modes =
         modeRawSnapshotForChannel(sid, selected.channel(), managed == null ? "" : managed.modes());
     String modeSummary = modeSummarySnapshotForChannel(sid, selected.channel(), modes);
@@ -1681,7 +1691,11 @@ public final class ChannelListPanel extends JPanel {
     Row list = findListRowByChannel(sid, channel);
 
     String statusText =
-        managed == null ? "Not managed" : (managed.detached() ? "Disconnected" : "Connected");
+        managed == null
+            ? message("channelList.state.notManaged")
+            : (managed.detached()
+                ? message("channelList.state.disconnected")
+                : message("channelList.state.connected"));
     String modesText =
         modeRawSnapshotForChannel(
             sid, channel, managed == null ? "" : displayManagedModes(managed));
@@ -1689,21 +1703,27 @@ public final class ChannelListPanel extends JPanel {
     String notificationsText =
         managed == null ? "0" : String.valueOf(Math.max(0, managed.notifications()));
     String autoReattachText =
-        managed == null ? "Not managed" : (managed.autoReattach() ? "Enabled" : "Disabled");
+        managed == null
+            ? message("channelList.state.notManaged")
+            : (managed.autoReattach()
+                ? message("channelList.details.value.enabled")
+                : message("channelList.details.value.disabled"));
     String usersText;
     if (state.source() == ChannelDetailsSource.MANAGED) {
       if (managed == null) {
-        usersText = "Not available";
+        usersText = message("channelList.details.value.notAvailable");
       } else {
         usersText =
-            managed.detached() ? "Unavailable while disconnected" : String.valueOf(managed.users());
+            managed.detached()
+                ? message("channelList.details.value.unavailableWhileDisconnected")
+                : String.valueOf(managed.users());
       }
     } else if (list != null) {
       usersText = String.valueOf(Math.max(0, list.visibleUsers()));
     } else if (managed != null && !managed.detached()) {
       usersText = String.valueOf(managed.users());
     } else {
-      usersText = "Not available";
+      usersText = message("channelList.details.value.notAvailable");
     }
     String topicText = topicSnapshotForChannel(sid, channel, list == null ? "" : list.topic());
     BanListViewState banListView = banListViewStateForChannel(sid, channel);
@@ -1714,7 +1734,7 @@ public final class ChannelListPanel extends JPanel {
     setFieldText(state.modesField(), modesText);
     setAreaText(state.modeSummaryArea(), modeSummaryText);
     setFieldText(state.autoReattachField(), autoReattachText);
-    setAreaText(state.topicArea(), fallback(topicText, "(none)"));
+    setAreaText(state.topicArea(), fallback(topicText, message("channelList.details.value.none")));
     if (banListView.hasResolvedSnapshot()) {
       state.pendingBanListRefresh().set(false);
       setBanListRows(state.banListTable(), banListView.snapshot().entries());
@@ -2530,7 +2550,11 @@ public final class ChannelListPanel extends JPanel {
 
   private static final class ChannelListTableModel extends AbstractTableModel {
 
-    private static final String[] COLS = {"Channel", "Users", "Topic"};
+    private final String[] columns;
+
+    ChannelListTableModel(String channelColumn, String usersColumn, String topicColumn) {
+      this.columns = new String[] {channelColumn, usersColumn, topicColumn};
+    }
     private final ArrayList<Row> rows = new ArrayList<>();
 
     void setRows(List<Row> rows) {
@@ -2577,12 +2601,12 @@ public final class ChannelListPanel extends JPanel {
 
     @Override
     public int getColumnCount() {
-      return COLS.length;
+      return columns.length;
     }
 
     @Override
     public String getColumnName(int column) {
-      return (column >= 0 && column < COLS.length) ? COLS[column] : "";
+      return (column >= 0 && column < columns.length) ? columns[column] : "";
     }
 
     @Override
@@ -2653,8 +2677,13 @@ public final class ChannelListPanel extends JPanel {
   }
 
   private final class ManagedChannelTableModel extends AbstractTableModel {
-    private static final String[] COLS = {
-      "Channel", "State", "Users", "Notifications", "Modes", "Auto-join"
+    private final String[] columns = {
+      message("channelList.column.channel"),
+      message("channelList.column.state"),
+      message("channelList.column.users"),
+      message("channelList.column.notifications"),
+      message("channelList.column.modes"),
+      message("channelList.column.autoJoin")
     };
 
     private final ArrayList<ManagedChannelRow> rows = new ArrayList<>();
@@ -2715,12 +2744,12 @@ public final class ChannelListPanel extends JPanel {
 
     @Override
     public int getColumnCount() {
-      return COLS.length;
+      return columns.length;
     }
 
     @Override
     public String getColumnName(int column) {
-      return (column >= 0 && column < COLS.length) ? COLS[column] : "";
+      return (column >= 0 && column < columns.length) ? columns[column] : "";
     }
 
     @Override
