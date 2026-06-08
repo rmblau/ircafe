@@ -622,6 +622,54 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesServerTreeNetworkInfoDialogMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals(
+        "Network Info - libera",
+        messages.text("serverTree.networkInfo.dialog.title", "libera"));
+    assertEquals("Overview", messages.text("serverTree.networkInfo.tab.overview"));
+    assertEquals("Capabilities (3)", messages.text("serverTree.networkInfo.tab.capabilities", 3));
+    assertEquals("ISUPPORT (4)", messages.text("serverTree.networkInfo.tab.isupport", 4));
+    assertEquals("Summary", messages.text("serverTree.networkInfo.summary.title"));
+    assertEquals(
+        "Endpoint: irc.example.net:6697    Nick: alice    Intent: Online    Backend: Core",
+        messages.text(
+            "serverTree.networkInfo.summary.connection",
+            "irc.example.net:6697",
+            "alice",
+            "Online",
+            "Core"));
+    assertEquals(
+        "Connected endpoint", messages.text("serverTree.networkInfo.row.connectedEndpoint"));
+    assertEquals(
+        "No IRCv3 capabilities observed yet.",
+        messages.text("serverTree.networkInfo.capabilities.empty"));
+    assertEquals(
+        "Requested but not enabled: (none)",
+        messages.text("serverTree.networkInfo.capabilities.requestedButNotEnabled.none"));
+    assertEquals(
+        "cap-a, cap-b, +2 more",
+        messages.text("serverTree.networkInfo.capabilities.summary.more", "cap-a, cap-b", 2));
+    assertEquals(
+        "Feature readiness", messages.text("serverTree.networkInfo.featureReadiness.title"));
+    assertEquals(
+        "one of: chathistory, draft/chathistory",
+        messages.text(
+            "serverTree.networkInfo.featureReadiness.oneOf",
+            "chathistory, draft/chathistory"));
+    assertEquals(
+        "Missing: message-tags",
+        messages.text("serverTree.networkInfo.featureReadiness.detail.missing", "message-tags"));
+    assertEquals(
+        "Recent CAP transitions", messages.text("serverTree.networkInfo.capTransitions.title"));
+    assertEquals(
+        "No ISUPPORT tokens observed yet.",
+        messages.text("serverTree.networkInfo.isupport.empty"));
+    assertEquals("(unknown)", messages.text("common.value.unknown.parenthesized"));
+  }
+
+  @Test
   void resolvesChannelListUxMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
 
