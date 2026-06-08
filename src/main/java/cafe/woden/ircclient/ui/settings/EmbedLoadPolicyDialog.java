@@ -4,6 +4,7 @@ import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicyScope;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.ui.chat.embed.EmbedLoadPolicyMatcher;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.util.MigConstraints;
 import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import cafe.woden.ircclient.ui.util.MigLayouts;
@@ -43,9 +44,11 @@ import org.springframework.stereotype.Component;
 public class EmbedLoadPolicyDialog {
 
   private final EmbedLoadPolicyConfigPort runtimeConfig;
+  private final UiMessages messages;
 
-  public EmbedLoadPolicyDialog(EmbedLoadPolicyConfigPort runtimeConfig) {
+  public EmbedLoadPolicyDialog(EmbedLoadPolicyConfigPort runtimeConfig, UiMessages messages) {
     this.runtimeConfig = runtimeConfig;
+    this.messages = messages == null ? UiMessages.bundledDefaults() : messages;
   }
 
   public Optional<EmbedLoadPolicySnapshot> open(Window owner, EmbedLoadPolicySnapshot seed) {
@@ -74,46 +77,49 @@ public class EmbedLoadPolicyDialog {
     JComboBox<ScopeOption> scope = new JComboBox<>(options.toArray(new ScopeOption[0]));
     scope.setSelectedIndex(0);
 
-    JCheckBox inheritGlobal = new JCheckBox("Use global policy for this network");
+    JCheckBox inheritGlobal =
+        new JCheckBox(message("preferences.embeds.advancedPolicy.inheritGlobal"));
 
     PolicyControls controls = buildPolicyControls();
 
+    String whitelist = message("preferences.embeds.advancedPolicy.list.whitelist");
+    String blacklist = message("preferences.embeds.advancedPolicy.list.blacklist");
+
     JTabbedPane tabs = new JTabbedPane();
     tabs.addTab(
-        "Users",
+        message("preferences.embeds.advancedPolicy.tab.users"),
         buildDualTablePanel(
-            "Whitelist", "Blacklist", controls.userWhitelist(), controls.userBlacklist()));
+            whitelist, blacklist, controls.userWhitelist(), controls.userBlacklist()));
     tabs.addTab(
-        "Channels",
+        message("preferences.embeds.advancedPolicy.tab.channels"),
         buildDualTablePanel(
-            "Whitelist", "Blacklist", controls.channelWhitelist(), controls.channelBlacklist()));
+            whitelist, blacklist, controls.channelWhitelist(), controls.channelBlacklist()));
     tabs.addTab(
-        "Links",
+        message("preferences.embeds.advancedPolicy.tab.links"),
         buildDualTablePanel(
-            "Whitelist", "Blacklist", controls.linkWhitelist(), controls.linkBlacklist()));
+            whitelist, blacklist, controls.linkWhitelist(), controls.linkBlacklist()));
     tabs.addTab(
-        "Domains",
+        message("preferences.embeds.advancedPolicy.tab.domains"),
         buildDualTablePanel(
-            "Whitelist", "Blacklist", controls.domainWhitelist(), controls.domainBlacklist()));
-    tabs.addTab("Gates", buildGatePanel(controls));
+            whitelist, blacklist, controls.domainWhitelist(), controls.domainBlacklist()));
+    tabs.addTab(message("preferences.embeds.advancedPolicy.tab.gates"), buildGatePanel(controls));
 
     JPanel scopePanel =
         new JPanel(
             MigLayouts.fillXWrap(
                 10, 2, MigLayoutConstraints.LEADING_GROW_FILL, MigLayouts.rows(3, 4)));
-    scopePanel.add(new JLabel("Scope:"));
+    scopePanel.add(new JLabel(message("preferences.embeds.advancedPolicy.scope.label")));
     scopePanel.add(scope, MigConstraints.growXWrap());
     scopePanel.add(inheritGlobal, MigConstraints.spanXWrap(2));
     scopePanel.add(
-        new JLabel("Patterns are glob by default (`*`/`?`). Use `re:<regex>` for regex patterns."),
+        new JLabel(message("preferences.embeds.advancedPolicy.help.patterns")),
         MigConstraints.spanXWrap(2));
     scopePanel.add(
-        new JLabel(
-            "User rules support `nick:` and `host:` prefixes. Link/domain rules match URL/domain text."),
+        new JLabel(message("preferences.embeds.advancedPolicy.help.userRules")),
         MigConstraints.spanXWrap(2));
 
-    JButton save = new JButton("Save");
-    JButton cancel = new JButton("Cancel");
+    JButton save = new JButton(message("common.button.save"));
+    JButton cancel = new JButton(message("common.button.cancel"));
     JPanel buttons = new JPanel(MigLayouts.fillX("[grow,fill][pref!][pref!]", "[]"));
     buttons.add(new JPanel(), MigConstraints.pushXGrowX());
     buttons.add(save);
@@ -125,7 +131,8 @@ public class EmbedLoadPolicyDialog {
     root.add(buttons, MigConstraints.growX());
 
     final EmbedLoadPolicySnapshot[] result = {null};
-    Runnable refreshValidation = () -> save.setEnabled(validateAllPatternTables(controls));
+    Runnable refreshValidation =
+        () -> save.setEnabled(validateAllPatternTables(controls, messages));
     installValidationListeners(controls, refreshValidation);
 
     Runnable applySelection =
@@ -191,7 +198,9 @@ public class EmbedLoadPolicyDialog {
 
     JDialog dialog =
         new JDialog(
-            owner, "Advanced Embed/Link Loading Policy", Dialog.ModalityType.APPLICATION_MODAL);
+            owner,
+            message("preferences.embeds.advancedPolicy.dialog.title"),
+            Dialog.ModalityType.APPLICATION_MODAL);
     dialog.setContentPane(root);
     dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
     dialog.setMinimumSize(new Dimension(920, 680));
@@ -199,11 +208,11 @@ public class EmbedLoadPolicyDialog {
     save.addActionListener(
         e -> {
           stopTableEditing(controls);
-          if (!validateAllPatternTables(controls)) {
+          if (!validateAllPatternTables(controls, messages)) {
             PreferencesUiSupport.showWarningMessage(
                 dialog,
-                "One or more patterns are invalid.\nUse valid glob patterns or `re:<regex>` values.",
-                "Invalid Pattern");
+                message("preferences.embeds.advancedPolicy.validation.invalidPattern.message"),
+                message("preferences.embeds.advancedPolicy.validation.invalidPattern.title"));
             save.setEnabled(false);
             return;
           }
@@ -222,23 +231,36 @@ public class EmbedLoadPolicyDialog {
     return Optional.ofNullable(result[0]);
   }
 
+  private String message(String code, Object... args) {
+    return messages.text(code, args);
+  }
+
   private List<ScopeOption> buildScopeOptions(EmbedLoadPolicySnapshot initial) {
     LinkedHashMap<String, ScopeOption> out = new LinkedHashMap<>();
-    out.put("", new ScopeOption("", "Global (all networks)", true));
+    out.put(
+        "", new ScopeOption("", message("preferences.embeds.advancedPolicy.scope.global"), true));
 
     List<String> configured = runtimeConfig != null ? runtimeConfig.readServerIds() : List.of();
     for (String serverId : configured) {
       String sid = SettingsValueSupport.trimmedString(serverId);
       if (sid.isEmpty()) continue;
       out.putIfAbsent(
-          sid.toLowerCase(java.util.Locale.ROOT), new ScopeOption(sid, "Network: " + sid, false));
+          sid.toLowerCase(java.util.Locale.ROOT),
+          new ScopeOption(
+              sid,
+              message("preferences.embeds.advancedPolicy.scope.network", sid),
+              false));
     }
     if (initial != null && initial.byServer() != null) {
       for (String serverId : initial.byServer().keySet()) {
         String sid = SettingsValueSupport.trimmedString(serverId);
         if (sid.isEmpty()) continue;
         out.putIfAbsent(
-            sid.toLowerCase(java.util.Locale.ROOT), new ScopeOption(sid, "Network: " + sid, false));
+            sid.toLowerCase(java.util.Locale.ROOT),
+            new ScopeOption(
+                sid,
+                message("preferences.embeds.advancedPolicy.scope.network", sid),
+                false));
       }
     }
     return new ArrayList<>(out.values());
@@ -247,24 +269,41 @@ public class EmbedLoadPolicyDialog {
   private PolicyControls buildPolicyControls() {
     PatternTableControls userWhitelist =
         buildPatternTable(
-            "User whitelist",
-            "Allow only these users when list is non-empty. Use `nick:` or `host:` prefixes.");
+            message("preferences.embeds.advancedPolicy.userWhitelist.title"),
+            message("preferences.embeds.advancedPolicy.userWhitelist.hint"));
     PatternTableControls userBlacklist =
-        buildPatternTable("User blacklist", "Deny users matching these nick/host patterns.");
+        buildPatternTable(
+            message("preferences.embeds.advancedPolicy.userBlacklist.title"),
+            message("preferences.embeds.advancedPolicy.userBlacklist.hint"));
     PatternTableControls channelWhitelist =
-        buildPatternTable("Channel whitelist", "Allow only these channels when list is non-empty.");
+        buildPatternTable(
+            message("preferences.embeds.advancedPolicy.channelWhitelist.title"),
+            message("preferences.embeds.advancedPolicy.channelWhitelist.hint"));
     PatternTableControls channelBlacklist =
-        buildPatternTable("Channel blacklist", "Deny these channels.");
+        buildPatternTable(
+            message("preferences.embeds.advancedPolicy.channelBlacklist.title"),
+            message("preferences.embeds.advancedPolicy.channelBlacklist.hint"));
     PatternTableControls linkWhitelist =
-        buildPatternTable("Link whitelist", "Allow only these URLs when list is non-empty.");
-    PatternTableControls linkBlacklist = buildPatternTable("Link blacklist", "Deny these URLs.");
+        buildPatternTable(
+            message("preferences.embeds.advancedPolicy.linkWhitelist.title"),
+            message("preferences.embeds.advancedPolicy.linkWhitelist.hint"));
+    PatternTableControls linkBlacklist =
+        buildPatternTable(
+            message("preferences.embeds.advancedPolicy.linkBlacklist.title"),
+            message("preferences.embeds.advancedPolicy.linkBlacklist.hint"));
     PatternTableControls domainWhitelist =
-        buildPatternTable("Domain whitelist", "Allow only these domains when list is non-empty.");
+        buildPatternTable(
+            message("preferences.embeds.advancedPolicy.domainWhitelist.title"),
+            message("preferences.embeds.advancedPolicy.domainWhitelist.hint"));
     PatternTableControls domainBlacklist =
-        buildPatternTable("Domain blacklist", "Deny these domains.");
+        buildPatternTable(
+            message("preferences.embeds.advancedPolicy.domainBlacklist.title"),
+            message("preferences.embeds.advancedPolicy.domainBlacklist.hint"));
 
-    JCheckBox requireVoiceOrOp = new JCheckBox("Only users with voice/op status");
-    JCheckBox requireLoggedIn = new JCheckBox("Only users logged into an account");
+    JCheckBox requireVoiceOrOp =
+        new JCheckBox(message("preferences.embeds.advancedPolicy.gates.requireVoiceOrOp"));
+    JCheckBox requireLoggedIn =
+        new JCheckBox(message("preferences.embeds.advancedPolicy.gates.requireLoggedIn"));
     JSpinner minAccountAgeDays = PreferencesUiSupport.numberSpinner(0, 0, 36500, 1);
 
     return new PolicyControls(
@@ -302,24 +341,25 @@ public class EmbedLoadPolicyDialog {
     return panel;
   }
 
-  private static JPanel buildGatePanel(PolicyControls controls) {
+  private JPanel buildGatePanel(PolicyControls controls) {
     JPanel panel =
         new JPanel(
             MigLayouts.fillXWrap(
                 10, 2, MigLayoutConstraints.LEADING_GROW_FILL, MigLayouts.rows(4, 6)));
     panel.add(controls.requireVoiceOrOp(), MigConstraints.spanXWrap(2));
     panel.add(controls.requireLoggedIn(), MigConstraints.spanXWrap(2));
-    panel.add(new JLabel("Minimum account age (days, 0 = disabled):"));
+    panel.add(new JLabel(message("preferences.embeds.advancedPolicy.gates.minAccountAgeDays")));
     panel.add(controls.minAccountAgeDays(), MigConstraints.widthWrap(120));
     panel.add(
-        new JLabel("If account age metadata is unavailable for a sender, this check fails closed."),
+        new JLabel(message("preferences.embeds.advancedPolicy.gates.failClosed")),
         MigConstraints.spanXWrap(2));
     return panel;
   }
 
-  private static PatternTableControls buildPatternTable(String title, String hint) {
+  private PatternTableControls buildPatternTable(String title, String hint) {
     DefaultTableModel model =
-        new DefaultTableModel(new Object[] {"Pattern"}, 0) {
+        new DefaultTableModel(
+            new Object[] {message("preferences.embeds.advancedPolicy.column.pattern")}, 0) {
           @Override
           public boolean isCellEditable(int row, int column) {
             return true;
@@ -359,10 +399,10 @@ public class EmbedLoadPolicyDialog {
     table.setRowHeight(24);
     SettingsTableSupport.disableColumnReordering(table);
 
-    JButton add = new JButton("Add");
-    JButton remove = new JButton("Remove");
-    JButton up = new JButton("Up");
-    JButton down = new JButton("Down");
+    JButton add = new JButton(message("common.button.add"));
+    JButton remove = new JButton(message("common.button.remove"));
+    JButton up = new JButton(message("common.button.up"));
+    JButton down = new JButton(message("common.button.down"));
 
     add.addActionListener(
         e -> {
@@ -496,22 +536,22 @@ public class EmbedLoadPolicyDialog {
     controls.model().addTableModelListener(e -> onChanged.run());
   }
 
-  private static boolean validateAllPatternTables(PolicyControls controls) {
+  private static boolean validateAllPatternTables(PolicyControls controls, UiMessages messages) {
     boolean valid = true;
-    valid &= validatePatternTable(controls.userWhitelist());
-    valid &= validatePatternTable(controls.userBlacklist());
-    valid &= validatePatternTable(controls.channelWhitelist());
-    valid &= validatePatternTable(controls.channelBlacklist());
-    valid &= validatePatternTable(controls.linkWhitelist());
-    valid &= validatePatternTable(controls.linkBlacklist());
-    valid &= validatePatternTable(controls.domainWhitelist());
-    valid &= validatePatternTable(controls.domainBlacklist());
+    valid &= validatePatternTable(controls.userWhitelist(), messages);
+    valid &= validatePatternTable(controls.userBlacklist(), messages);
+    valid &= validatePatternTable(controls.channelWhitelist(), messages);
+    valid &= validatePatternTable(controls.channelBlacklist(), messages);
+    valid &= validatePatternTable(controls.linkWhitelist(), messages);
+    valid &= validatePatternTable(controls.linkBlacklist(), messages);
+    valid &= validatePatternTable(controls.domainWhitelist(), messages);
+    valid &= validatePatternTable(controls.domainBlacklist(), messages);
     return valid;
   }
 
-  private static boolean validatePatternTable(PatternTableControls controls) {
+  private static boolean validatePatternTable(PatternTableControls controls, UiMessages messages) {
     if (controls == null) return true;
-    PatternValidation validation = validatePatternRows(controls.model());
+    PatternValidation validation = validatePatternRows(controls.model(), messages);
     controls.invalidRows().clear();
     controls.invalidRows().addAll(validation.invalidRows());
     controls.table().repaint();
@@ -523,7 +563,8 @@ public class EmbedLoadPolicyDialog {
     return false;
   }
 
-  private static PatternValidation validatePatternRows(DefaultTableModel model) {
+  private static PatternValidation validatePatternRows(
+      DefaultTableModel model, UiMessages messages) {
     if (model == null || model.getRowCount() == 0) {
       return PatternValidation.clean();
     }
@@ -536,7 +577,9 @@ public class EmbedLoadPolicyDialog {
       if (error.isEmpty()) continue;
       invalidRows.add(row);
       if (message.isBlank()) {
-        message = "Row " + (row + 1) + ": " + error.get();
+        message =
+            messages.text(
+                "preferences.embeds.advancedPolicy.validation.row", row + 1, error.get());
       }
     }
     if (invalidRows.isEmpty()) {

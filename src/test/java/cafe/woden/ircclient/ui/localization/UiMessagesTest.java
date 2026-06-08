@@ -771,6 +771,28 @@ class UiMessagesTest {
         "Open advanced allow/deny controls for embed/link loading by user, channel, URL/domain, and network.",
         messages.text("preferences.embeds.advancedPolicy.tooltip"));
     assertEquals(
+        "Advanced Embed/Link Loading Policy",
+        messages.text("preferences.embeds.advancedPolicy.dialog.title"));
+    assertEquals(
+        "Network: libera",
+        messages.text("preferences.embeds.advancedPolicy.scope.network", "libera"));
+    assertEquals("Users", messages.text("preferences.embeds.advancedPolicy.tab.users"));
+    assertEquals("Whitelist", messages.text("preferences.embeds.advancedPolicy.list.whitelist"));
+    assertEquals(
+        "Allow only these users when list is non-empty. Use `nick:` or `host:` prefixes.",
+        messages.text("preferences.embeds.advancedPolicy.userWhitelist.hint"));
+    assertEquals(
+        "Only users with voice/op status",
+        messages.text("preferences.embeds.advancedPolicy.gates.requireVoiceOrOp"));
+    assertEquals("Pattern", messages.text("preferences.embeds.advancedPolicy.column.pattern"));
+    assertEquals(
+        "One or more patterns are invalid.\n"
+            + "Use valid glob patterns or `re:<regex>` values.",
+        messages.text("preferences.embeds.advancedPolicy.validation.invalidPattern.message"));
+    assertEquals(
+        "Row 3: empty regex",
+        messages.text("preferences.embeds.advancedPolicy.validation.row", 3, "empty regex"));
+    assertEquals(
         "Enable inline image embeds (direct links)",
         messages.text("preferences.embeds.image.enabled"));
     assertEquals(
