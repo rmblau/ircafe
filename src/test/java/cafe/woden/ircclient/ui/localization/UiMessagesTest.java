@@ -38,6 +38,25 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesServerTreeHeaderMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Add server", messages.text("serverTree.header.addServer.tooltip"));
+    assertEquals(
+        "Connect all disconnected servers",
+        messages.text("serverTree.header.connectAll.tooltip"));
+    assertEquals(
+        "Disconnect connected/connecting servers",
+        messages.text("serverTree.header.disconnectAll.tooltip"));
+    assertEquals(
+        "Connect all disconnected servers. Current: Connecting",
+        messages.text(
+            "serverTree.header.connectionTooltip.withStatus",
+            "Connect all disconnected servers",
+            "Connecting"));
+  }
+
+  @Test
   void resolvesDockTabAndUserListTooltipMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
 
