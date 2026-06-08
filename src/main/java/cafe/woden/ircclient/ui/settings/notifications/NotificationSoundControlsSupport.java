@@ -292,7 +292,8 @@ public final class NotificationSoundControlsSupport {
       try {
         File selectedFile =
             SoundFileChooserSupport.chooseSoundFile(
-                    dialogOwner(), "Choose notification sound (MP3 or WAV)")
+                    dialogOwner(),
+                    MESSAGES.text("preferences.notifications.sound.chooseDialogTitle"))
                 .orElse(null);
         if (selectedFile == null || soundFileImporter == null) return;
         String relativePath = soundFileImporter.importFile(selectedFile);
@@ -302,8 +303,11 @@ public final class NotificationSoundControlsSupport {
           refresh();
         }
       } catch (Exception ex) {
+        String message = Objects.toString(ex.getMessage(), ex.getClass().getSimpleName());
         PreferencesUiSupport.showErrorMessage(
-            dialogOwner(), "Could not import sound file.\n\n" + ex.getMessage(), "Import failed");
+            dialogOwner(),
+            MESSAGES.text("preferences.notifications.sound.importFailed.message", message),
+            MESSAGES.text("preferences.notifications.sound.importFailed.title"));
       }
     }
 

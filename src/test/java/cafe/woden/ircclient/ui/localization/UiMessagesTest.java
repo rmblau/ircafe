@@ -300,6 +300,19 @@ class UiMessagesTest {
         messages.text(
             "preferences.notifications.rules.test.matchLine", "ops", "WORD", "hello [world]"));
     assertEquals("Test sound", messages.text("preferences.notifications.sound.test.default"));
+    assertEquals(
+        "Choose notification sound (MP3 or WAV)",
+        messages.text("preferences.notifications.sound.chooseDialogTitle"));
+    assertEquals(
+        "Could not import sound file.\n\ntimeout",
+        messages.text("preferences.notifications.sound.importFailed.message", "timeout"));
+    assertEquals(
+        "Import failed", messages.text("preferences.notifications.sound.importFailed.title"));
+    assertEquals(
+        "Audio files (MP3, WAV)", messages.text("common.fileChooser.audioFiles.mp3Wav"));
+    assertEquals(
+        "Choose sound file (MP3 or WAV)",
+        messages.text("common.fileChooser.sound.defaultTitle"));
     assertEquals("IRC Events", messages.text("preferences.notifications.ircEvents.tab"));
   }
 
