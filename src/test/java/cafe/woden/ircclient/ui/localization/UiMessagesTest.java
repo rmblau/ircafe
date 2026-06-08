@@ -79,6 +79,17 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesDccNickActionMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Send File to alice", messages.text("dcc.action.sendFile.dialogTitle", "alice"));
+    assertEquals(
+        "Refusing file path containing newlines.",
+        messages.text("dcc.action.sendFile.invalidPath.message"));
+    assertEquals("DCC Send", messages.text("dcc.action.sendFile.invalidPath.title"));
+  }
+
+  @Test
   void resolvesMessageInputControlMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
 
