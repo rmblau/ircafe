@@ -60,6 +60,25 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesNickContextIgnorePromptMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Remove soft ignore", messages.text("nickContext.ignorePrompt.soft.remove.title"));
+    assertEquals("Soft ignore", messages.text("nickContext.ignorePrompt.soft.add.title"));
+    assertEquals("Remove ignore", messages.text("nickContext.ignorePrompt.hard.remove.title"));
+    assertEquals("Ignore", messages.text("nickContext.ignorePrompt.hard.add.title"));
+    assertEquals(
+        "Remove soft ignore for <b>alice</b>?<br><br><b>Mask</b>:<br>alice!*@host",
+        messages.text("nickContext.ignorePrompt.soft.remove.message", "alice", "alice!*@host"));
+    assertEquals(
+        "Ignore <b>alice</b>?<br><br><b>Mask</b>:<br>alice!*@host",
+        messages.text("nickContext.ignorePrompt.hard.add.message", "alice", "alice!*@host"));
+    assertEquals(
+        "Nothing changed — the ignore list already contained that mask.",
+        messages.text("nickContext.ignorePrompt.noChange"));
+  }
+
+  @Test
   void resolvesMessageInputControlMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
 

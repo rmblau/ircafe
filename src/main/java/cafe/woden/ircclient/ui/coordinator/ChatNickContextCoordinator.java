@@ -7,6 +7,7 @@ import cafe.woden.ircclient.irc.roster.UserListPort;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.ChatDockable;
 import cafe.woden.ircclient.ui.NickContextMenuFactory;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.awt.Component;
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -16,6 +17,8 @@ import javax.swing.SwingUtilities;
 
 /** Owns nick context-menu rendering and ignore prompt flows for {@link ChatDockable}. */
 public final class ChatNickContextCoordinator {
+
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private final IgnoreListService ignoreListService;
   private final IgnoreStatusService ignoreStatusService;
@@ -83,41 +86,8 @@ public final class ChatNickContextCoordinator {
             : ignoreStatusService.bestSeedForMask(sid, normalizedNick, hostmask);
     String seed = IgnoreListService.normalizeMaskOrNickToHostmask(seedBase);
 
-    String title;
-    String message;
-    if (soft) {
-      title = removing ? "Remove soft ignore" : "Soft ignore";
-      message =
-          removing
-              ? "Remove soft ignore for <b>"
-                  + escapeHtml(normalizedNick)
-                  + "</b>?"
-                  + "<br><br><b>Mask</b>:"
-                  + "<br>"
-                  + escapeHtml(seed)
-              : "Soft ignore <b>"
-                  + escapeHtml(normalizedNick)
-                  + "</b>?"
-                  + "<br><br><b>Mask</b>:"
-                  + "<br>"
-                  + escapeHtml(seed);
-    } else {
-      title = removing ? "Remove ignore" : "Ignore";
-      message =
-          removing
-              ? "Remove ignore for <b>"
-                  + escapeHtml(normalizedNick)
-                  + "</b>?"
-                  + "<br><br><b>Mask</b>:"
-                  + "<br>"
-                  + escapeHtml(seed)
-              : "Ignore <b>"
-                  + escapeHtml(normalizedNick)
-                  + "</b>?"
-                  + "<br><br><b>Mask</b>:"
-                  + "<br>"
-                  + escapeHtml(seed);
-    }
+    String title = ignorePromptTitle(removing, soft);
+    String message = ignorePromptMessage(removing, soft, normalizedNick, seed);
 
     int result =
         JOptionPane.showConfirmDialog(
@@ -143,10 +113,43 @@ public final class ChatNickContextCoordinator {
     if (!changed) {
       JOptionPane.showMessageDialog(
           SwingUtilities.getWindowAncestor(dialogParent),
-          "Nothing changed — the ignore list already contained that mask.",
+          message("nickContext.ignorePrompt.noChange"),
           title,
           JOptionPane.INFORMATION_MESSAGE);
     }
+  }
+
+  private static String ignorePromptTitle(boolean removing, boolean soft) {
+    if (soft) {
+      return message(
+          removing
+              ? "nickContext.ignorePrompt.soft.remove.title"
+              : "nickContext.ignorePrompt.soft.add.title");
+    }
+    return message(
+        removing
+            ? "nickContext.ignorePrompt.hard.remove.title"
+            : "nickContext.ignorePrompt.hard.add.title");
+  }
+
+  private static String ignorePromptMessage(
+      boolean removing, boolean soft, String normalizedNick, String seed) {
+    String nick = escapeHtml(normalizedNick);
+    String mask = escapeHtml(seed);
+    if (soft) {
+      return message(
+          removing
+              ? "nickContext.ignorePrompt.soft.remove.message"
+              : "nickContext.ignorePrompt.soft.add.message",
+          nick,
+          mask);
+    }
+    return message(
+        removing
+            ? "nickContext.ignorePrompt.hard.remove.message"
+            : "nickContext.ignorePrompt.hard.add.message",
+        nick,
+        mask);
   }
 
   private NickInfo findNickInfo(TargetRef target, String nick) {
@@ -181,5 +184,9 @@ public final class ChatNickContextCoordinator {
     if (sid.isEmpty()) return "";
     String token = Objects.toString(target.networkQualifierToken(), "").trim();
     return token.isEmpty() ? sid : TargetRef.withNetworkQualifier(sid, token);
+  }
+
+  private static String message(String code, Object... args) {
+    return MESSAGES.text(code, args);
   }
 }
