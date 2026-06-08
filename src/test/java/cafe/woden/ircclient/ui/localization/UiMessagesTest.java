@@ -786,6 +786,24 @@ class UiMessagesTest {
     assertEquals(
         "Visit updates (new version available)",
         messages.text("statusBar.updateNotifier.visitUpdates.available"));
+    assertEquals(
+        "Update notifier disabled. Re-enable it in Preferences.",
+        messages.text("statusBar.updateNotifier.status.disabled"));
+    assertEquals(
+        "Could not check for updates right now. Right-click to visit releases.",
+        messages.text("statusBar.updateNotifier.status.checkFailed"));
+    assertEquals(
+        "New IRCafe version available: v2.0.0 (you are on 1.9.0). Right-click for actions.",
+        messages.text("statusBar.updateNotifier.status.updateAvailable", "v2.0.0", "1.9.0"));
+    assertEquals(
+        "A newer IRCafe release is available: v2.0.0 (current: 1.9.0)",
+        messages.text("statusBar.updateNotifier.alert.updateAvailable", "v2.0.0", "1.9.0"));
+    assertEquals(
+        "IRCafe 1.9.0. Right-click to visit releases.",
+        messages.text("statusBar.updateNotifier.status.current", "1.9.0"));
+    assertEquals(
+        "Could not open browser for updates.",
+        messages.text("statusBar.updateNotifier.error.openBrowser"));
   }
 
   @Test
