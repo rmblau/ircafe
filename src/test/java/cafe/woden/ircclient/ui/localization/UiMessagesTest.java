@@ -1317,6 +1317,10 @@ class UiMessagesTest {
     assertEquals(
         "Google Web (unofficial)", messages.text("preferences.translation.service.googleWeb"));
     assertEquals("Auto detect", messages.text("preferences.translation.language.autoDetect"));
+    assertEquals("Select language", messages.text("preferences.translation.language.select"));
+    assertEquals(
+        "Spanish (es)",
+        messages.text("preferences.translation.language.withCode", "Spanish", "es"));
     assertEquals(
         "Language detection", messages.text("preferences.translation.section.languageDetection"));
     assertEquals("Add >", messages.text("preferences.translation.button.addDetectionLanguage"));

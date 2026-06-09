@@ -1,17 +1,20 @@
 package cafe.woden.ircclient.ui.settings.translation;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.util.Locale;
 
 public enum TranslationServiceChoice {
-  DEEPL("DeepL", "deepl"),
-  LIBRETRANSLATE("LibreTranslate", "libretranslate"),
-  GOOGLE_WEB("Google Web (unofficial)", "google-web");
+  DEEPL("preferences.translation.service.deepl", "deepl"),
+  LIBRETRANSLATE("preferences.translation.service.libreTranslate", "libretranslate"),
+  GOOGLE_WEB("preferences.translation.service.googleWeb", "google-web");
 
-  private final String label;
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
+  private final String labelKey;
   private final String backendId;
 
-  TranslationServiceChoice(String label, String backendId) {
-    this.label = label;
+  TranslationServiceChoice(String labelKey, String backendId) {
+    this.labelKey = labelKey;
     this.backendId = backendId;
   }
 
@@ -43,6 +46,6 @@ public enum TranslationServiceChoice {
 
   @Override
   public String toString() {
-    return label;
+    return MESSAGES.text(labelKey);
   }
 }
