@@ -38,6 +38,19 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesQuasselNetworkChoiceMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("(unknown network)", messages.text("quassel.networkChoice.unknown"));
+    assertEquals("network-42", messages.text("quassel.networkChoice.fallbackName", 42));
+    assertEquals("connected", messages.text("quassel.networkChoice.state.connected"));
+    assertEquals("disconnected", messages.text("quassel.networkChoice.state.disconnected"));
+    assertEquals("disabled", messages.text("quassel.networkChoice.state.disabled"));
+    assertEquals("tls", messages.text("quassel.networkChoice.transport.tls"));
+    assertEquals("plain", messages.text("quassel.networkChoice.transport.plain"));
+  }
+
+  @Test
   void resolvesServerTreeHeaderMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
 
