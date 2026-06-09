@@ -66,6 +66,19 @@ class UiMessagesTest {
         "Close and PART channel \"#ircafe\"?\n\n"
             + "This will send PART if connected, then remove the channel from the server tree.",
         messages.text("serverTree.closeChannel.confirm.message", "#ircafe"));
+    assertEquals("Connect server", messages.text("serverTree.overlay.tooltip.connectServer"));
+    assertEquals("Disconnect server", messages.text("serverTree.overlay.tooltip.disconnectServer"));
+    assertEquals(
+        "Connection state is changing", messages.text("serverTree.overlay.tooltip.changing"));
+    assertEquals(
+        "Reconnect \"#ircafe\"",
+        messages.text("serverTree.overlay.tooltip.reconnectChannel", "#ircafe"));
+    assertEquals(
+        "Disconnect \"#ircafe\"",
+        messages.text("serverTree.overlay.tooltip.disconnectChannel", "#ircafe"));
+    assertEquals(
+        "Close and PART \"#ircafe\"",
+        messages.text("serverTree.overlay.tooltip.closeAndPart", "#ircafe"));
   }
 
   @Test

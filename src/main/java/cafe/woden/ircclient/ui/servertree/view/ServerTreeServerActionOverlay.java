@@ -4,6 +4,7 @@ import cafe.woden.ircclient.app.api.ConnectionState;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.icons.SvgIcons.Palette;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.servertree.ServerTreeConventions;
 import cafe.woden.ircclient.ui.servertree.ServerTreeUiHooks;
 import cafe.woden.ircclient.ui.servertree.model.ServerTreeNodeData;
@@ -222,6 +223,8 @@ public final class ServerTreeServerActionOverlay {
     long startedAtMs = 0L;
   }
 
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private static final int CHANNEL_ACTION_BUTTON_GAP = 4;
   private static final int HOVER_FADE_DURATION_MS = 150;
   private static final int HOVER_FADE_TICK_MS = 16;
@@ -344,27 +347,31 @@ public final class ServerTreeServerActionOverlay {
     if (hit.kind() == ActionKind.SERVER_TOGGLE && hit.target().isServer()) {
       ConnectionState state = context.connectionStateForServer(hit.target().serverId());
       if (ServerTreeConnectionStateViewModel.canConnect(state)) {
-        return "Connect server";
+        return message("serverTree.overlay.tooltip.connectServer");
       }
       if (ServerTreeConnectionStateViewModel.canDisconnect(state)) {
-        return "Disconnect server";
+        return message("serverTree.overlay.tooltip.disconnectServer");
       }
-      return "Connection state is changing";
+      return message("serverTree.overlay.tooltip.changing");
     }
 
     if (hit.kind() == ActionKind.CHANNEL_TOGGLE && hit.target().isChannel()) {
       String label = buttonLabel(hit.target().channelRef(), hit.label());
       if (context.isChannelDisconnected(hit.target().channelRef())) {
-        return "Reconnect \"" + label + "\"";
+        return message("serverTree.overlay.tooltip.reconnectChannel", label);
       }
-      return "Disconnect \"" + label + "\"";
+      return message("serverTree.overlay.tooltip.disconnectChannel", label);
     }
 
     if (hit.kind() == ActionKind.CHANNEL_CLOSE && hit.target().isChannel()) {
       String label = buttonLabel(hit.target().channelRef(), hit.label());
-      return "Close and PART \"" + label + "\"";
+      return message("serverTree.overlay.tooltip.closeAndPart", label);
     }
     return null;
+  }
+
+  private static String message(String key, Object... args) {
+    return MESSAGES.text(key, args);
   }
 
   public boolean isHoveredServer(String serverId) {
