@@ -2362,15 +2362,15 @@ public final class ChannelListPanel extends JPanel {
     return friendlyModeSummaryFromRaw(vocabularyForServer(serverId), rawModes);
   }
 
-  private static String friendlyModeSummaryFromRaw(ModeVocabulary vocabulary, String rawModes) {
+  private String friendlyModeSummaryFromRaw(ModeVocabulary vocabulary, String rawModes) {
     String raw = Objects.toString(rawModes, "").trim();
     if (raw.isEmpty() || "(unknown)".equalsIgnoreCase(raw)) {
-      return "No channel mode snapshot available yet. Use Refresh Modes to request /mode.";
+      return message("channelList.modeSummary.empty");
     }
 
     String[] toks = raw.split("\\s+");
     if (toks.length == 0) {
-      return "No channel mode snapshot available yet. Use Refresh Modes to request /mode.";
+      return message("channelList.modeSummary.empty");
     }
     String modeSeq = toks[0];
     java.util.ArrayList<String> args = new java.util.ArrayList<>();
@@ -2398,7 +2398,7 @@ public final class ChannelListPanel extends JPanel {
       lines.add(describeOneMode(vocabulary, mode, adding, arg));
     }
     if (lines.isEmpty()) {
-      return "No channel mode snapshot available yet. Use Refresh Modes to request /mode.";
+      return message("channelList.modeSummary.empty");
     }
     return String.join("\n", lines);
   }
@@ -2407,103 +2407,179 @@ public final class ChannelListPanel extends JPanel {
     return NegotiatedModeSemantics.takesArgument(vocabulary, mode, adding);
   }
 
-  private static String describeOneMode(
-      ModeVocabulary vocabulary, char mode, boolean adding, String arg) {
+  private String describeOneMode(ModeVocabulary vocabulary, char mode, boolean adding, String arg) {
     String sign = adding ? "+" : "-";
+    String modeName = String.valueOf(mode);
     if (mode == 't') {
-      return adding ? "+t topic changes limited to operators" : "-t topic open to everyone";
+      return message(
+          adding ? "channelList.modeSummary.topic.locked" : "channelList.modeSummary.topic.open");
     }
     if (mode == 'n') {
-      return adding ? "+n blocks outside messages" : "-n allows outside messages";
+      return message(
+          adding
+              ? "channelList.modeSummary.noOutside.block"
+              : "channelList.modeSummary.noOutside.allow");
     }
     if (mode == 'm') {
-      return adding ? "+m channel is moderated" : "-m channel is unmoderated";
+      return message(
+          adding
+              ? "channelList.modeSummary.moderated.enabled"
+              : "channelList.modeSummary.moderated.disabled");
     }
     if (mode == 'i') {
-      return adding ? "+i invite-only channel" : "-i invite-only disabled";
+      return message(
+          adding
+              ? "channelList.modeSummary.inviteOnly.enabled"
+              : "channelList.modeSummary.inviteOnly.disabled");
     }
     if (mode == 's') {
-      return adding ? "+s secret channel" : "-s secret mode removed";
+      return message(
+          adding
+              ? "channelList.modeSummary.secret.enabled"
+              : "channelList.modeSummary.secret.disabled");
     }
     if (mode == 'p') {
-      return adding ? "+p private channel" : "-p private mode removed";
+      return message(
+          adding
+              ? "channelList.modeSummary.private.enabled"
+              : "channelList.modeSummary.private.disabled");
     }
     if (mode == 'r') {
-      return adding ? "+r registered-only channel" : "-r registered-only disabled";
+      return message(
+          adding
+              ? "channelList.modeSummary.registeredOnly.enabled"
+              : "channelList.modeSummary.registeredOnly.disabled");
     }
     if (mode == 'k') {
-      return adding ? "+k channel key set" : "-k channel key removed";
+      return message(
+          adding ? "channelList.modeSummary.key.set" : "channelList.modeSummary.key.removed");
     }
     if (mode == 'l') {
-      return adding ? ("+l user limit " + fallback(arg, "set")) : "-l user limit removed";
+      return adding
+          ? message(
+              "channelList.modeSummary.limit.set",
+              fallback(arg, message("channelList.modeSummary.fallback.set")))
+          : message("channelList.modeSummary.limit.removed");
     }
     if (mode == 'b') {
       return adding
-          ? ("+b ban list entry " + fallback(arg, "(mask)"))
-          : ("-b ban list entry removed " + fallback(arg, "(mask)"));
+          ? message(
+              "channelList.modeSummary.ban.add",
+              fallback(arg, message("channelList.modeSummary.fallback.mask")))
+          : message(
+              "channelList.modeSummary.ban.remove",
+              fallback(arg, message("channelList.modeSummary.fallback.mask")));
     }
     if (vocabulary.isExceptsMode(mode)) {
       return adding
-          ? (sign + mode + " ban exception " + fallback(arg, "(mask)"))
-          : (sign + mode + " ban exception removed " + fallback(arg, "(mask)"));
+          ? message(
+              "channelList.modeSummary.banException.add",
+              sign,
+              modeName,
+              fallback(arg, message("channelList.modeSummary.fallback.mask")))
+          : message(
+              "channelList.modeSummary.banException.remove",
+              sign,
+              modeName,
+              fallback(arg, message("channelList.modeSummary.fallback.mask")));
     }
     if (vocabulary.isInvexMode(mode)) {
       return adding
-          ? (sign + mode + " invite exception " + fallback(arg, "(mask)"))
-          : (sign + mode + " invite exception removed " + fallback(arg, "(mask)"));
+          ? message(
+              "channelList.modeSummary.inviteException.add",
+              sign,
+              modeName,
+              fallback(arg, message("channelList.modeSummary.fallback.mask")))
+          : message(
+              "channelList.modeSummary.inviteException.remove",
+              sign,
+              modeName,
+              fallback(arg, message("channelList.modeSummary.fallback.mask")));
     }
 
     boolean listMode = NegotiatedModeSemantics.isListMode(vocabulary, mode, arg);
     if (mode == 'q' && listMode) {
       return adding
-          ? ("+q quiet rule " + fallback(arg, "(mask)"))
-          : ("-q quiet rule removed " + fallback(arg, "(mask)"));
+          ? message(
+              "channelList.modeSummary.quiet.add",
+              fallback(arg, message("channelList.modeSummary.fallback.mask")))
+          : message(
+              "channelList.modeSummary.quiet.remove",
+              fallback(arg, message("channelList.modeSummary.fallback.mask")));
     }
 
     if (NegotiatedModeSemantics.isStatusMode(vocabulary, mode, arg)) {
+      String nick = fallback(arg, message("channelList.modeSummary.fallback.nick"));
       return switch (mode) {
         case 'q' ->
-            adding
-                ? "+q channel owner status for " + fallback(arg, "(nick)")
-                : "-q channel owner status removed for " + fallback(arg, "(nick)");
+            message(
+                adding
+                    ? "channelList.modeSummary.status.owner.add"
+                    : "channelList.modeSummary.status.owner.remove",
+                nick);
         case 'o' ->
-            adding
-                ? "+o channel operator status for " + fallback(arg, "(nick)")
-                : "-o channel operator status removed for " + fallback(arg, "(nick)");
+            message(
+                adding
+                    ? "channelList.modeSummary.status.operator.add"
+                    : "channelList.modeSummary.status.operator.remove",
+                nick);
         case 'h' ->
-            adding
-                ? "+h half-operator status for " + fallback(arg, "(nick)")
-                : "-h half-operator status removed for " + fallback(arg, "(nick)");
+            message(
+                adding
+                    ? "channelList.modeSummary.status.halfOperator.add"
+                    : "channelList.modeSummary.status.halfOperator.remove",
+                nick);
         case 'a' ->
-            adding
-                ? "+a admin status for " + fallback(arg, "(nick)")
-                : "-a admin status removed for " + fallback(arg, "(nick)");
+            message(
+                adding
+                    ? "channelList.modeSummary.status.admin.add"
+                    : "channelList.modeSummary.status.admin.remove",
+                nick);
         case 'v' ->
-            adding
-                ? "+v voice status for " + fallback(arg, "(nick)")
-                : "-v voice status removed for " + fallback(arg, "(nick)");
+            message(
+                adding
+                    ? "channelList.modeSummary.status.voice.add"
+                    : "channelList.modeSummary.status.voice.remove",
+                nick);
         default ->
-            adding
-                ? (sign + mode + " status for " + fallback(arg, "(nick)"))
-                : (sign + mode + " status removed for " + fallback(arg, "(nick)"));
+            message(
+                adding
+                    ? "channelList.modeSummary.status.generic.add"
+                    : "channelList.modeSummary.status.generic.remove",
+                sign,
+                modeName,
+                nick);
       };
     }
 
     if (listMode) {
       return adding
-          ? (sign + mode + " list entry " + fallback(arg, "(mask)"))
-          : (sign + mode + " list entry removed " + fallback(arg, "(mask)"));
+          ? message(
+              "channelList.modeSummary.list.add",
+              sign,
+              modeName,
+              fallback(arg, message("channelList.modeSummary.fallback.mask")))
+          : message(
+              "channelList.modeSummary.list.remove",
+              sign,
+              modeName,
+              fallback(arg, message("channelList.modeSummary.fallback.mask")));
     }
 
     if (NegotiatedModeSemantics.takesArgument(vocabulary, mode, adding)) {
       if (adding) {
-        return sign + mode + " network-specific mode " + fallback(arg, "set");
+        return message(
+            "channelList.modeSummary.networkSpecific.withArg",
+            sign,
+            modeName,
+            fallback(arg, message("channelList.modeSummary.fallback.set")));
       }
       return arg == null || arg.isBlank()
-          ? sign + mode + " network-specific mode removed"
-          : sign + mode + " network-specific mode removed " + arg;
+          ? message("channelList.modeSummary.networkSpecific.removed", sign, modeName)
+          : message(
+              "channelList.modeSummary.networkSpecific.removedWithArg", sign, modeName, arg);
     }
-    return sign + mode + " network-specific mode";
+    return message("channelList.modeSummary.networkSpecific.noArg", sign, modeName);
   }
 
   private final class AlisActivityIcon implements Icon {

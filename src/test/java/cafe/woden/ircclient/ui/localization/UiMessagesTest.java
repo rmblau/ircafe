@@ -803,6 +803,23 @@ class UiMessagesTest {
         "Remove ban \"*!*@bad.host\" from #ircafe?",
         messages.text("channelList.details.confirm.deleteBan.message", "*!*@bad.host", "#ircafe"));
     assertEquals("Set By", messages.text("channelList.details.banList.column.setBy"));
+    assertEquals(
+        "No channel mode snapshot available yet. Use Refresh Modes to request /mode.",
+        messages.text("channelList.modeSummary.empty"));
+    assertEquals(
+        "+l user limit 50", messages.text("channelList.modeSummary.limit.set", "50"));
+    assertEquals(
+        "+q quiet rule alice!*@host",
+        messages.text("channelList.modeSummary.quiet.add", "alice!*@host"));
+    assertEquals(
+        "+o channel operator status for alice",
+        messages.text("channelList.modeSummary.status.operator.add", "alice"));
+    assertEquals(
+        "-v voice status removed for bob",
+        messages.text("channelList.modeSummary.status.voice.remove", "bob"));
+    assertEquals(
+        "+z network-specific mode set",
+        messages.text("channelList.modeSummary.networkSpecific.withArg", "+", "z", "set"));
   }
 
   @Test
