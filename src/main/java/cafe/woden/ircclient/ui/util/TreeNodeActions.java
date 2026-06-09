@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.util;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -14,6 +15,8 @@ import javax.swing.tree.TreePath;
 
 /** Reusable "node move/close" controller for a {@link JTree}. */
 public final class TreeNodeActions<T> implements AutoCloseable {
+
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private final JTree tree;
   private final DefaultTreeModel model;
@@ -53,7 +56,7 @@ public final class TreeNodeActions<T> implements AutoCloseable {
     this.moveHandler = moveHandler;
 
     this.moveUpAction =
-        new AbstractAction("Move Node Up") {
+        new AbstractAction(MESSAGES.text("serverTree.nodeAction.moveUp")) {
           @Override
           public void actionPerformed(java.awt.event.ActionEvent e) {
             moveUp();
@@ -61,7 +64,7 @@ public final class TreeNodeActions<T> implements AutoCloseable {
         };
 
     this.moveDownAction =
-        new AbstractAction("Move Node Down") {
+        new AbstractAction(MESSAGES.text("serverTree.nodeAction.moveDown")) {
           @Override
           public void actionPerformed(java.awt.event.ActionEvent e) {
             moveDown();
@@ -69,7 +72,7 @@ public final class TreeNodeActions<T> implements AutoCloseable {
         };
 
     this.closeAction =
-        new AbstractAction("Close Node") {
+        new AbstractAction(MESSAGES.text("serverTree.nodeAction.close")) {
           @Override
           public void actionPerformed(java.awt.event.ActionEvent e) {
             closeSelected();

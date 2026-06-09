@@ -74,6 +74,9 @@ class UiMessagesTest {
     assertEquals("JFR", messages.text("serverTree.applicationNode.jfr"));
     assertEquals("Spring", messages.text("serverTree.applicationNode.spring"));
     assertEquals("Terminal", messages.text("serverTree.applicationNode.terminal"));
+    assertEquals("Move Node Up", messages.text("serverTree.nodeAction.moveUp"));
+    assertEquals("Move Node Down", messages.text("serverTree.nodeAction.moveDown"));
+    assertEquals("Close Node", messages.text("serverTree.nodeAction.close"));
     assertEquals("Connect server", messages.text("serverTree.overlay.tooltip.connectServer"));
     assertEquals("Disconnect server", messages.text("serverTree.overlay.tooltip.disconnectServer"));
     assertEquals(
