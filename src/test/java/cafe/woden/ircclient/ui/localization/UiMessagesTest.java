@@ -77,6 +77,15 @@ class UiMessagesTest {
     assertEquals("Move Node Up", messages.text("serverTree.nodeAction.moveUp"));
     assertEquals("Move Node Down", messages.text("serverTree.nodeAction.moveDown"));
     assertEquals("Close Node", messages.text("serverTree.nodeAction.close"));
+    assertEquals("Interceptor name:", messages.text("serverTree.interceptorAction.namePrompt"));
+    assertEquals("Interceptor", messages.text("serverTree.interceptorAction.defaultName"));
+    assertEquals("Add Interceptor", messages.text("serverTree.interceptorAction.add.title"));
+    assertEquals("Rename Interceptor", messages.text("serverTree.interceptorAction.rename.title"));
+    assertEquals(
+        "Delete interceptor \"Audit\"?",
+        messages.text("serverTree.interceptorAction.delete.confirm.message", "Audit"));
+    assertEquals(
+        "Delete Interceptor", messages.text("serverTree.interceptorAction.delete.confirm.title"));
     assertEquals("Connect server", messages.text("serverTree.overlay.tooltip.connectServer"));
     assertEquals("Disconnect server", messages.text("serverTree.overlay.tooltip.disconnectServer"));
     assertEquals(

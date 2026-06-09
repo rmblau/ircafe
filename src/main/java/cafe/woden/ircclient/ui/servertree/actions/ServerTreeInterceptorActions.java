@@ -4,6 +4,7 @@ import cafe.woden.ircclient.interceptors.InterceptorScope;
 import cafe.woden.ircclient.interceptors.InterceptorStore;
 import cafe.woden.ircclient.model.InterceptorDefinition;
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.servertree.model.ServerTreeNodeData;
 import java.awt.Component;
 import java.awt.Window;
@@ -19,6 +20,7 @@ import org.slf4j.LoggerFactory;
 /** Encapsulates interceptor CRUD actions and tree-label refresh behavior. */
 @org.springframework.stereotype.Component
 public final class ServerTreeInterceptorActions {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   public interface Context {
     Component ownerComponent();
@@ -69,7 +71,7 @@ public final class ServerTreeInterceptorActions {
 
       @Override
       public String interceptorsGroupLabel() {
-        return Objects.toString(interceptorsGroupLabel, "Interceptors");
+        return Objects.toString(interceptorsGroupLabel, message("serverTree.node.interceptors"));
       }
 
       @Override
@@ -118,12 +120,12 @@ public final class ServerTreeInterceptorActions {
     Object input =
         JOptionPane.showInputDialog(
             owner,
-            "Interceptor name:",
-            "Add Interceptor",
+            message("serverTree.interceptorAction.namePrompt"),
+            message("serverTree.interceptorAction.add.title"),
             JOptionPane.PLAIN_MESSAGE,
             null,
             null,
-            "Interceptor");
+            message("serverTree.interceptorAction.defaultName"));
     if (input == null) return;
 
     String requested = Objects.toString(input, "").trim();
@@ -155,13 +157,13 @@ public final class ServerTreeInterceptorActions {
     Window owner = SwingUtilities.getWindowAncestor(in.ownerComponent());
     String before = Objects.toString(currentLabel, "").trim();
     if (before.isEmpty()) before = interceptorStore.interceptorName(sid, iid);
-    if (before.isEmpty()) before = "Interceptor";
+    if (before.isEmpty()) before = message("serverTree.interceptorAction.defaultName");
 
     Object input =
         JOptionPane.showInputDialog(
             owner,
-            "Interceptor name:",
-            "Rename Interceptor",
+            message("serverTree.interceptorAction.namePrompt"),
+            message("serverTree.interceptorAction.rename.title"),
             JOptionPane.PLAIN_MESSAGE,
             null,
             null,
@@ -214,14 +216,14 @@ public final class ServerTreeInterceptorActions {
 
     String pretty = Objects.toString(label, "").trim();
     if (pretty.isEmpty()) pretty = interceptorStore.interceptorName(sid, iid);
-    if (pretty.isEmpty()) pretty = "Interceptor";
+    if (pretty.isEmpty()) pretty = message("serverTree.interceptorAction.defaultName");
 
     Window owner = SwingUtilities.getWindowAncestor(in.ownerComponent());
     int choice =
         JOptionPane.showConfirmDialog(
             owner,
-            "Delete interceptor \"" + pretty + "\"?",
-            "Delete Interceptor",
+            message("serverTree.interceptorAction.delete.confirm.message", pretty),
+            message("serverTree.interceptorAction.delete.confirm.title"),
             JOptionPane.YES_NO_OPTION,
             JOptionPane.WARNING_MESSAGE);
     if (choice != JOptionPane.YES_OPTION) return;
@@ -257,7 +259,7 @@ public final class ServerTreeInterceptorActions {
     }
 
     String nextLabel = Objects.toString(interceptorStore.interceptorName(sid, iid), "").trim();
-    if (nextLabel.isEmpty()) nextLabel = "Interceptor";
+    if (nextLabel.isEmpty()) nextLabel = message("serverTree.interceptorAction.defaultName");
     int hitCount = Math.max(0, interceptorStore.hitCount(sid, iid));
 
     ServerTreeNodeData next = new ServerTreeNodeData(previous.ref, nextLabel);
@@ -303,6 +305,10 @@ public final class ServerTreeInterceptorActions {
     data.unread = 0;
     data.highlightUnread = 0;
     in.nodeChanged(node);
+  }
+
+  private static String message(String code, Object... args) {
+    return MESSAGES.text(code, args);
   }
 
   private static String normalizeScopeServerId(String serverId) {

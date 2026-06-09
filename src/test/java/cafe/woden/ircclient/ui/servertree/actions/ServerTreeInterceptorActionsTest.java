@@ -93,4 +93,55 @@ class ServerTreeInterceptorActionsTest {
     assertEquals(0, nodeData.unread);
     assertEquals(0, nodeData.highlightUnread);
   }
+
+  @Test
+  void contextFallsBackToLocalizedInterceptorGroupLabel() {
+    InterceptorStore store = mock(InterceptorStore.class);
+
+    ServerTreeInterceptorActions.Context context =
+        ServerTreeInterceptorActions.context(
+            new JPanel(),
+            store,
+            null,
+            ref -> {},
+            ref -> {},
+            ref -> {},
+            ref -> null,
+            serverId -> null,
+            node -> {});
+
+    assertEquals("Interceptors", context.interceptorsGroupLabel());
+  }
+
+  @Test
+  void refreshInterceptorNodeLabelFallsBackToLocalizedDefaultName() {
+    InterceptorStore store = mock(InterceptorStore.class);
+    TargetRef ref = TargetRef.interceptor("libera", "audit");
+    DefaultMutableTreeNode interceptorNode =
+        new DefaultMutableTreeNode(new ServerTreeNodeData(ref, "Old label"));
+    AtomicReference<DefaultMutableTreeNode> changedNode = new AtomicReference<>();
+
+    when(store.interceptorName("libera", "audit")).thenReturn("   ");
+    when(store.hitCount("libera", "audit")).thenReturn(0);
+
+    ServerTreeInterceptorActions actions = new ServerTreeInterceptorActions();
+    ServerTreeInterceptorActions.Context context =
+        ServerTreeInterceptorActions.context(
+            new JPanel(),
+            store,
+            "Interceptors",
+            ref1 -> {},
+            ref1 -> {},
+            ref1 -> {},
+            ref1 -> Map.of(ref, interceptorNode).get(ref1),
+            serverId -> null,
+            changedNode::set);
+
+    actions.refreshInterceptorNodeLabel(context, "libera", "audit");
+
+    assertSame(interceptorNode, changedNode.get());
+    assertTrue(interceptorNode.getUserObject() instanceof ServerTreeNodeData);
+    ServerTreeNodeData updated = (ServerTreeNodeData) interceptorNode.getUserObject();
+    assertEquals("Interceptor", updated.label);
+  }
 }
