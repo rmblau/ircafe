@@ -446,9 +446,11 @@ public final class MemoServPanel extends JPanel {
     if (liberaListMatcher.matches()) {
       String sent = cleanText(liberaListMatcher.group(3), "");
       String to = cleanText(liberaListMatcher.group(4), "");
-      String details = sent.isEmpty() ? "" : "Sent: " + sent;
+      String details = sent.isEmpty() ? "" : message("memoserv.details.sent", sent);
       if (!to.isEmpty()) {
-        details = details.isEmpty() ? "To: " + to : details + " To: " + to;
+        String toDetail = message("memoserv.details.to", to);
+        details =
+            details.isEmpty() ? toDetail : message("memoserv.details.sentAndTo", details, toDetail);
       }
       return new Row(
           at,

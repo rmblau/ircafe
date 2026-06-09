@@ -109,6 +109,22 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesMemoServDetailMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals(
+        "Sent: Jun 07 16:01:25 2026 +0000",
+        messages.text("memoserv.details.sent", "Jun 07 16:01:25 2026 +0000"));
+    assertEquals("To: alice", messages.text("memoserv.details.to", "alice"));
+    assertEquals(
+        "Sent: Jun 07 16:01:25 2026 +0000 To: alice",
+        messages.text(
+            "memoserv.details.sentAndTo",
+            "Sent: Jun 07 16:01:25 2026 +0000",
+            "To: alice"));
+  }
+
+  @Test
   void resolvesMessageInputControlMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
 

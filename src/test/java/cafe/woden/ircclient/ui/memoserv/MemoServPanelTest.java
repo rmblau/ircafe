@@ -102,6 +102,26 @@ class MemoServPanelTest {
   }
 
   @Test
+  void observeMemoServNoticeParsesLocalizedLiberaSentAndToDetails() throws Exception {
+    MemoServPanel panel = onEdtCall(MemoServPanel::new);
+
+    onEdt(
+        () -> {
+          panel.setServerId("libera");
+          panel.observeMemoServNotice(
+              "libera",
+              Instant.parse("2026-06-07T19:58:54Z"),
+              "server",
+              "- 2 From: Gladwyn Sent: Jul 05 22:50:07 2021 +0000 To: wodencafe");
+        });
+
+    JTable table = findByName(panel, JTable.class, "memoserv.table");
+    assertNotNull(table);
+    assertEquals(1, table.getRowCount());
+    assertEquals("Sent: Jul 05 22:50:07 2021 +0000 To: wodencafe", table.getValueAt(0, 5));
+  }
+
+  @Test
   void rowsAreScopedByServer() throws Exception {
     MemoServPanel panel = onEdtCall(MemoServPanel::new);
 
