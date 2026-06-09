@@ -1,27 +1,35 @@
 package cafe.woden.ircclient.ui.settings;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
+
 /** Visual style preset used for inline embed cards (images + link previews). */
 public enum EmbedCardStyle {
-  DEFAULT("default", "Default (current)"),
-  MINIMAL("minimal", "Minimal"),
-  GLASSY("glassy", "Glassy"),
-  DENSER("denser", "Denser");
+  DEFAULT("default", "preferences.embeds.cardStyle.default"),
+  MINIMAL("minimal", "preferences.embeds.cardStyle.minimal"),
+  GLASSY("glassy", "preferences.embeds.cardStyle.glassy"),
+  DENSER("denser", "preferences.embeds.cardStyle.denser");
+
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private final String token;
-  private final String label;
+  private final String labelKey;
 
-  EmbedCardStyle(String token, String label) {
+  EmbedCardStyle(String token, String labelKey) {
     this.token = token;
-    this.label = label;
+    this.labelKey = labelKey;
   }
 
   public String token() {
     return token;
   }
 
+  public String label() {
+    return MESSAGES.text(labelKey);
+  }
+
   @Override
   public String toString() {
-    return label;
+    return label();
   }
 
   public static EmbedCardStyle fromToken(String raw) {

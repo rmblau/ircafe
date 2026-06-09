@@ -1630,6 +1630,21 @@ class UiMessagesTest {
     assertEquals("Open", messages.text("tray.dbus.action.open"));
   }
 
+
+  @Test
+  void resolvesSettingsComboOptionLabels() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Default (current)", messages.text("preferences.embeds.cardStyle.default"));
+    assertEquals("Minimal", messages.text("preferences.embeds.cardStyle.minimal"));
+    assertEquals("Glassy", messages.text("preferences.embeds.cardStyle.glassy"));
+    assertEquals("Denser", messages.text("preferences.embeds.cardStyle.denser"));
+    assertEquals("Auto (Recommended)", messages.text("preferences.tray.notificationBackend.auto"));
+    assertEquals("Native only", messages.text("preferences.tray.notificationBackend.nativeOnly"));
+    assertEquals(
+        "Two-slices only", messages.text("preferences.tray.notificationBackend.twoSlicesOnly"));
+  }
+
   @Test
   void missingMessageFallsBackToKeyForIncrementalMigration() {
     UiMessages messages = UiMessages.bundledDefaults();
