@@ -66,6 +66,14 @@ class UiMessagesTest {
         "Close and PART channel \"#ircafe\"?\n\n"
             + "This will send PART if connected, then remove the channel from the server tree.",
         messages.text("serverTree.closeChannel.confirm.message", "#ircafe"));
+    assertEquals("Unhandled Errors", messages.text("serverTree.applicationNode.unhandledErrors"));
+    assertEquals("AssertJ Swing", messages.text("serverTree.applicationNode.assertjSwing"));
+    assertEquals("jHiccup", messages.text("serverTree.applicationNode.jhiccup"));
+    assertEquals("Inbound Dedup", messages.text("serverTree.applicationNode.inboundDedup"));
+    assertEquals("Plugins", messages.text("serverTree.applicationNode.plugins"));
+    assertEquals("JFR", messages.text("serverTree.applicationNode.jfr"));
+    assertEquals("Spring", messages.text("serverTree.applicationNode.spring"));
+    assertEquals("Terminal", messages.text("serverTree.applicationNode.terminal"));
     assertEquals("Connect server", messages.text("serverTree.overlay.tooltip.connectServer"));
     assertEquals("Disconnect server", messages.text("serverTree.overlay.tooltip.disconnectServer"));
     assertEquals(

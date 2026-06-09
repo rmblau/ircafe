@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.servertree.state;
 
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.servertree.model.ServerTreeNodeData;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -10,14 +11,19 @@ import javax.swing.tree.DefaultMutableTreeNode;
 /** Owns static application subtree targets and label mapping. */
 public final class ServerTreeApplicationNodes {
 
-  private static final String UNHANDLED_ERRORS_LABEL = "Unhandled Errors";
-  private static final String ASSERTJ_SWING_LABEL = "AssertJ Swing";
-  private static final String JHICCUP_LABEL = "jHiccup";
-  private static final String INBOUND_DEDUP_LABEL = "Inbound Dedup";
-  private static final String PLUGINS_LABEL = "Plugins";
-  private static final String JFR_LABEL = "JFR";
-  private static final String SPRING_LABEL = "Spring";
-  private static final String TERMINAL_LABEL = "Terminal";
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
+  private static final String UNHANDLED_ERRORS_LABEL =
+      MESSAGES.text("serverTree.applicationNode.unhandledErrors");
+  private static final String ASSERTJ_SWING_LABEL =
+      MESSAGES.text("serverTree.applicationNode.assertjSwing");
+  private static final String JHICCUP_LABEL = MESSAGES.text("serverTree.applicationNode.jhiccup");
+  private static final String INBOUND_DEDUP_LABEL =
+      MESSAGES.text("serverTree.applicationNode.inboundDedup");
+  private static final String PLUGINS_LABEL = MESSAGES.text("serverTree.applicationNode.plugins");
+  private static final String JFR_LABEL = MESSAGES.text("serverTree.applicationNode.jfr");
+  private static final String SPRING_LABEL = MESSAGES.text("serverTree.applicationNode.spring");
+  private static final String TERMINAL_LABEL = MESSAGES.text("serverTree.applicationNode.terminal");
 
   private final DefaultMutableTreeNode applicationRoot;
   private final Map<TargetRef, DefaultMutableTreeNode> leaves;
