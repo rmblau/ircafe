@@ -394,6 +394,15 @@ class UiMessagesTest {
     assertEquals(
         "Import failed", messages.text("preferences.notifications.sound.importFailed.title"));
     assertEquals(
+        "Invalid file name",
+        messages.text("preferences.notifications.sound.import.invalidFileName"));
+    assertEquals(
+        "Only .mp3 and .wav are supported",
+        messages.text("preferences.notifications.sound.import.unsupportedType"));
+    assertEquals(
+        "Runtime config directory is unavailable",
+        messages.text("preferences.notifications.sound.import.runtimeConfigUnavailable"));
+    assertEquals(
         "Audio files (MP3, WAV)", messages.text("common.fileChooser.audioFiles.mp3Wav"));
     assertEquals(
         "Choose sound file (MP3 or WAV)",
