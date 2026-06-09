@@ -529,6 +529,20 @@ class UiMessagesTest {
     assertEquals(
         "Fix highlighted fields to enable Save.",
         messages.text("servers.editor.validation.saveDisabled.tooltip"));
+    assertEquals("libera", messages.text("servers.editor.placeholder.serverId"));
+    assertEquals("irc.example.net", messages.text("servers.editor.placeholder.host"));
+    assertEquals("(optional)", messages.text("servers.editor.placeholder.optional"));
+    assertEquals("IRCafeUser", messages.text("servers.editor.placeholder.nick"));
+    assertEquals("password / key", messages.text("servers.editor.placeholder.passwordOrKey"));
+    assertEquals("127.0.0.1", messages.text("servers.editor.placeholder.proxyHost"));
+    assertEquals(
+        "#channel\n#another", messages.text("servers.editor.placeholder.autoJoinChannels"));
+    assertEquals(
+        "/msg NickServ IDENTIFY password\n"
+            + "/join #project\n"
+            + "/quote MONITOR +friend\n"
+            + "/sleep 1000",
+        messages.text("servers.editor.placeholder.performCommands"));
   }
 
   @Test

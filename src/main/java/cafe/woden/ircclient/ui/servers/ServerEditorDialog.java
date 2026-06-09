@@ -325,39 +325,47 @@ public class ServerEditorDialog extends JDialog {
   }
 
   private void configureFieldStyles() {
-    applyFieldStyle(idField, "libera");
-    applyFieldStyle(hostField, "irc.example.net");
-    applyFieldStyle(portField, "6697");
-    applyFieldStyle(serverPassField, "(optional)");
-    applyFieldStyle(nickField, "IRCafeUser");
-    applyFieldStyle(loginField, "ircafe");
-    applyFieldStyle(realNameField, "IRCafe User");
-    applyFieldStyle(matrixAuthUserField, "alice");
-    applyFieldStyle(saslUserField, "account");
-    applyFieldStyle(saslPassField, "password / key");
-    applyFieldStyle(nickservServiceField, "NickServ");
-    applyFieldStyle(nickservPassField, "password");
+    String optional = MESSAGES.text("servers.editor.placeholder.optional");
+    String password = MESSAGES.text("servers.editor.placeholder.password");
+
+    applyFieldStyle(idField, MESSAGES.text("servers.editor.placeholder.serverId"));
+    applyFieldStyle(hostField, MESSAGES.text("servers.editor.placeholder.host"));
+    applyFieldStyle(portField, MESSAGES.text("servers.editor.placeholder.port"));
+    applyFieldStyle(serverPassField, optional);
+    applyFieldStyle(nickField, MESSAGES.text("servers.editor.placeholder.nick"));
+    applyFieldStyle(loginField, MESSAGES.text("servers.editor.placeholder.login"));
+    applyFieldStyle(realNameField, MESSAGES.text("servers.editor.placeholder.realName"));
+    applyFieldStyle(
+        matrixAuthUserField, MESSAGES.text("servers.editor.placeholder.matrixUsername"));
+    applyFieldStyle(saslUserField, MESSAGES.text("servers.editor.placeholder.saslUsername"));
+    applyFieldStyle(saslPassField, MESSAGES.text("servers.editor.placeholder.passwordOrKey"));
+    applyFieldStyle(
+        nickservServiceField, MESSAGES.text("servers.editor.placeholder.nickservService"));
+    applyFieldStyle(nickservPassField, password);
     enablePasswordReveal(serverPassField);
     enablePasswordReveal(saslPassField);
     enablePasswordReveal(nickservPassField);
-    applyFieldStyle(proxyHostField, "127.0.0.1");
-    applyFieldStyle(proxyPortField, "1080");
-    applyFieldStyle(proxyUserField, "(optional)");
-    applyFieldStyle(proxyPassField, "(optional)");
+    applyFieldStyle(proxyHostField, MESSAGES.text("servers.editor.placeholder.proxyHost"));
+    applyFieldStyle(proxyPortField, MESSAGES.text("servers.editor.placeholder.proxyPort"));
+    applyFieldStyle(proxyUserField, optional);
+    applyFieldStyle(proxyPassField, optional);
     enablePasswordReveal(proxyPassField);
-    applyFieldStyle(proxyConnectTimeoutMsField, "20000");
-    applyFieldStyle(proxyReadTimeoutMsField, "30000");
+    applyFieldStyle(
+        proxyConnectTimeoutMsField,
+        MESSAGES.text("servers.editor.placeholder.proxyConnectTimeoutMs"));
+    applyFieldStyle(
+        proxyReadTimeoutMsField, MESSAGES.text("servers.editor.placeholder.proxyReadTimeoutMs"));
     appendStyle(backendCombo, "arc:10");
     appendStyle(matrixAuthModeCombo, "arc:10");
-    autoJoinArea.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "#channel\n#another");
+    autoJoinArea.putClientProperty(
+        FlatClientProperties.PLACEHOLDER_TEXT,
+        MESSAGES.text("servers.editor.placeholder.autoJoinChannels"));
     autoJoinPmArea.putClientProperty(
-        FlatClientProperties.PLACEHOLDER_TEXT, "NickServ\nfriend_nick");
+        FlatClientProperties.PLACEHOLDER_TEXT,
+        MESSAGES.text("servers.editor.placeholder.autoJoinPrivateMessages"));
     performArea.putClientProperty(
         FlatClientProperties.PLACEHOLDER_TEXT,
-        "/msg NickServ IDENTIFY password\n"
-            + "/join #project\n"
-            + "/quote MONITOR +friend\n"
-            + "/sleep 1000");
+        MESSAGES.text("servers.editor.placeholder.performCommands"));
   }
 
   private void enablePasswordReveal(JPasswordField field) {
