@@ -123,6 +123,20 @@ class UiMessagesTest {
   }
 
   @Test
+  void resolvesMessageInputCompletionMessages() {
+    UiMessages messages = UiMessages.bundledDefaults();
+
+    assertEquals("Tab -> alice", messages.text("messageInput.hintPopup.completion", "alice"));
+    assertEquals(
+        "Press Tab for completion", messages.text("messageInput.hintPopup.completion.tooltip"));
+    assertEquals("IRC nick", messages.text("messageInput.completion.description.nick"));
+    assertEquals("Word completion", messages.text("messageInput.completion.description.word"));
+    assertEquals(
+        "Spelling correction",
+        messages.text("messageInput.completion.description.spellingCorrection"));
+  }
+
+  @Test
   void resolvesDccNickActionMessages() {
     UiMessages messages = UiMessages.bundledDefaults();
 

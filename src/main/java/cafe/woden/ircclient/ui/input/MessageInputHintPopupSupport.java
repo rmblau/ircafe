@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.input;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
@@ -23,6 +24,7 @@ import org.slf4j.LoggerFactory;
 final class MessageInputHintPopupSupport {
 
   private static final Logger log = LoggerFactory.getLogger(MessageInputHintPopupSupport.class);
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private static final boolean DEBUG_HINT_POPUP = Boolean.getBoolean("ircafe.debug.hintPopup");
   private static final int HINT_POPUP_GAP_PX = 6;
@@ -160,7 +162,7 @@ final class MessageInputHintPopupSupport {
     if (match == null) {
       clearHintPopup();
     } else {
-      showHintText("Tab -> " + match, true);
+      showHintText(MESSAGES.text("messageInput.hintPopup.completion", match), true);
     }
   }
 
@@ -175,7 +177,8 @@ final class MessageInputHintPopupSupport {
     if (DEBUG_HINT_POPUP && !Objects.equals(hintPopupShownText, text)) {
       log.info("[HintPopupDebug] hint=" + text);
     }
-    hintPopupLabel.setToolTipText(isCompletionHint ? "Press Tab for completion" : null);
+    hintPopupLabel.setToolTipText(
+        isCompletionHint ? MESSAGES.text("messageInput.hintPopup.completion.tooltip") : null);
     refreshHintPopup();
   }
 
