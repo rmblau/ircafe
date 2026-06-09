@@ -54,6 +54,18 @@ class UiMessagesTest {
             "serverTree.header.connectionTooltip.withStatus",
             "Connect all disconnected servers",
             "Connecting"));
+    assertEquals("status", messages.text("serverTree.clearLog.scope.status"));
+    assertEquals("channel", messages.text("serverTree.clearLog.scope.channel"));
+    assertEquals("Clear Log", messages.text("serverTree.clearLog.confirm.title"));
+    assertEquals(
+        "Clear log for channel \"#ircafe\"?\n\n"
+            + "This will permanently delete the persisted chat history for this target.",
+        messages.text("serverTree.clearLog.confirm.message", "channel", "#ircafe"));
+    assertEquals("Close Channel", messages.text("serverTree.closeChannel.confirm.title"));
+    assertEquals(
+        "Close and PART channel \"#ircafe\"?\n\n"
+            + "This will send PART if connected, then remove the channel from the server tree.",
+        messages.text("serverTree.closeChannel.confirm.message", "#ircafe"));
   }
 
   @Test
