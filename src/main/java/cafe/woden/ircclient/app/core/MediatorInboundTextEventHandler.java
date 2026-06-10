@@ -206,6 +206,7 @@ public class MediatorInboundTextEventHandler {
             if (!callbacks.isFromSelf(sid, event.from())) {
               requestVisibleIncomingMessageTranslation(
                   dest,
+                  active,
                   event.at(),
                   event.from(),
                   event.messageId(),
@@ -343,6 +344,7 @@ public class MediatorInboundTextEventHandler {
     boolean fromSelf = privateMessage.fromSelf();
     String peer = privateMessage.peer();
     TargetRef pm = new TargetRef(sid, peer);
+    TargetRef active = targetCoordinator.getActiveTarget();
     boolean allowAutoOpen = targetCoordinator.allowPrivateAutoOpenFromInbound(pm, fromSelf);
     boolean memoServPrivateMessage = !fromSelf && isMemoServEndpoint(event.from());
     boolean memoServSelfEcho = fromSelf && isMemoServEndpoint(peer);
@@ -465,6 +467,7 @@ public class MediatorInboundTextEventHandler {
       if (allowAutoOpen) {
         callbacks.postTo(
             pm,
+            active,
             true,
             dest ->
                 ui.appendSpoilerChatAt(
@@ -481,6 +484,7 @@ public class MediatorInboundTextEventHandler {
     } else if (allowAutoOpen) {
       callbacks.postTo(
           pm,
+          active,
           true,
           dest -> {
             ui.appendChatAt(
@@ -494,6 +498,7 @@ public class MediatorInboundTextEventHandler {
             if (!fromSelf) {
               requestVisibleIncomingMessageTranslation(
                   dest,
+                  active,
                   event.at(),
                   event.from(),
                   event.messageId(),
@@ -512,7 +517,13 @@ public class MediatorInboundTextEventHandler {
           event.ircv3Tags());
       if (!fromSelf) {
         requestVisibleIncomingMessageTranslation(
-            pm, event.at(), event.from(), event.messageId(), event.ircv3Tags(), event.text());
+            pm,
+            active,
+            event.at(),
+            event.from(),
+            event.messageId(),
+            event.ircv3Tags(),
+            event.text());
       }
     }
 
@@ -1155,11 +1166,19 @@ public class MediatorInboundTextEventHandler {
 
   private void requestVisibleIncomingMessageTranslation(
       TargetRef target,
+      TargetRef activeTarget,
       Instant at,
       String fromNick,
       String messageId,
       Map<String, String> ircv3Tags,
       String text) {
+    if (!Objects.equals(target, activeTarget)) {
+      log.debug(
+          "[translation] skipped automatic request for inactive target target={} active={}",
+          target,
+          activeTarget);
+      return;
+    }
     String effectiveMessageId = effectiveMessageIdForDedup(messageId, ircv3Tags);
     try {
       messageTranslationDispatcher.requestIncomingMessageTranslation(

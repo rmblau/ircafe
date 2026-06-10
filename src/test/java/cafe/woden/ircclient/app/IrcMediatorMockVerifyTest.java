@@ -494,6 +494,7 @@ class IrcMediatorMockVerifyTest {
   void visibleInboundChannelMessageRequestsTranslationByMsgid() throws Exception {
     TargetRef chan = new TargetRef("libera", "#ircafe");
     Instant at = Instant.parse("2026-06-01T12:00:00Z");
+    when(targetCoordinator.getActiveTarget()).thenReturn(chan);
     when(irc.currentNick("libera")).thenReturn(Optional.of("bob"));
 
     invokeOnServerIrcEvent(
@@ -506,9 +507,28 @@ class IrcMediatorMockVerifyTest {
   }
 
   @Test
+  void backgroundInboundChannelMessageDoesNotRequestTranslation() throws Exception {
+    TargetRef active = new TargetRef("libera", "#other");
+    TargetRef chan = new TargetRef("libera", "#ircafe");
+    Instant at = Instant.parse("2026-06-01T12:00:00Z");
+    when(targetCoordinator.getActiveTarget()).thenReturn(active);
+    when(irc.currentNick("libera")).thenReturn(Optional.of("bob"));
+
+    invokeOnServerIrcEvent(
+        new ServerIrcEvent(
+            "libera",
+            new IrcEvent.ChannelMessage(at, "#ircafe", "alice", "hello", "msg-1", Map.of())));
+
+    verify(ui).appendChatAt(chan, at, "alice", "hello", false, "msg-1", Map.of(), null);
+    verify(messageTranslationDispatcher, never())
+        .requestIncomingMessageTranslation(any(), any(), anyString(), anyString(), anyString());
+  }
+
+  @Test
   void inboundChannelMessageContinuesWhenTranslationSchedulingFails() throws Exception {
     TargetRef chan = new TargetRef("libera", "#ircafe");
     Instant at = Instant.parse("2026-06-01T12:00:00Z");
+    when(targetCoordinator.getActiveTarget()).thenReturn(chan);
     when(irc.currentNick("libera")).thenReturn(Optional.of("bob"));
     when(messageTranslationDispatcher.requestIncomingMessageTranslation(
             chan, at, "alice", "msg-1", "hello"))
@@ -636,6 +656,7 @@ class IrcMediatorMockVerifyTest {
   void visibleInboundPrivateMessageRequestsTranslationByTagMsgid() throws Exception {
     TargetRef pm = new TargetRef("libera", "alice");
     Instant at = Instant.parse("2026-06-01T12:01:00Z");
+    when(targetCoordinator.getActiveTarget()).thenReturn(pm);
     when(irc.currentNick("libera")).thenReturn(Optional.of("me"));
     when(targetCoordinator.allowPrivateAutoOpenFromInbound(eq(pm), eq(false))).thenReturn(false);
 
@@ -647,6 +668,28 @@ class IrcMediatorMockVerifyTest {
 
     verify(messageTranslationDispatcher)
         .requestIncomingMessageTranslation(pm, at, "alice", "pm-msg-1", "hello privately");
+  }
+
+  @Test
+  void backgroundInboundPrivateMessageDoesNotRequestTranslation() throws Exception {
+    TargetRef active = new TargetRef("libera", "#ircafe");
+    TargetRef pm = new TargetRef("libera", "alice");
+    Instant at = Instant.parse("2026-06-01T12:01:00Z");
+    when(targetCoordinator.getActiveTarget()).thenReturn(active);
+    when(irc.currentNick("libera")).thenReturn(Optional.of("me"));
+    when(targetCoordinator.allowPrivateAutoOpenFromInbound(eq(pm), eq(false))).thenReturn(false);
+
+    invokeOnServerIrcEvent(
+        new ServerIrcEvent(
+            "libera",
+            new IrcEvent.PrivateMessage(
+                at, "alice", "hello privately", "", Map.of("msgid", "pm-msg-1"))));
+
+    verify(ui)
+        .appendChatAt(
+            pm, at, "alice", "hello privately", false, "", Map.of("msgid", "pm-msg-1"));
+    verify(messageTranslationDispatcher, never())
+        .requestIncomingMessageTranslation(any(), any(), anyString(), anyString(), anyString());
   }
 
   @Test
