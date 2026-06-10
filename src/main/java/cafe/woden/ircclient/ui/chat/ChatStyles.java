@@ -41,6 +41,12 @@ public class ChatStyles {
 
   public static final String ATTR_OUTGOING = "chat.outgoing";
 
+  /**
+   * Transcript surface background used for contrast/reverse-color calculations without painting a
+   * character background behind ordinary text.
+   */
+  public static final String ATTR_TEXT_SURFACE_BG = "chat.textSurface.bg";
+
   // Line metadata (for filters / inspector UI)
   public static final String ATTR_META_BUFFER_KEY = "chat.meta.bufferKey";
   public static final String ATTR_META_KIND = "chat.meta.kind";
@@ -251,7 +257,10 @@ public class ChatStyles {
     linkStyle = attrs(STYLE_LINK, link, bg, false, false);
     StyleConstants.setUnderline(linkStyle, true);
 
-    mentionStyle = attrs(STYLE_MENTION, mentionFg, mentionBg, false, false);
+    mentionStyle = attrs(STYLE_MENTION, mentionFg, bg, false, false);
+    if (mentionBg != null) {
+      StyleConstants.setBackground(mentionStyle, mentionBg);
+    }
 
     // /me ACTION lines
     actionFromStyle = attrs(STYLE_ACTION_FROM, actionFg, bg, true, true);
@@ -334,12 +343,31 @@ public class ChatStyles {
       StyleConstants.setForeground(a, fg);
     }
     if (bg != null) {
-      StyleConstants.setBackground(a, bg);
+      a.addAttribute(ATTR_TEXT_SURFACE_BG, bg);
     }
 
     StyleConstants.setBold(a, bold);
     StyleConstants.setItalic(a, italic);
     return a;
+  }
+
+  public static Color definedBackground(AttributeSet attrs) {
+    if (attrs == null || !attrs.isDefined(StyleConstants.Background)) {
+      return null;
+    }
+    Object raw = attrs.getAttribute(StyleConstants.Background);
+    return raw instanceof Color c ? c : null;
+  }
+
+  public static Color textSurfaceBackground(AttributeSet attrs) {
+    if (attrs == null) {
+      return null;
+    }
+    Object raw = attrs.getAttribute(ATTR_TEXT_SURFACE_BG);
+    if (raw instanceof Color c) {
+      return c;
+    }
+    return definedBackground(attrs);
   }
 
   private static Color mix(Color a, Color b, double aWeight) {

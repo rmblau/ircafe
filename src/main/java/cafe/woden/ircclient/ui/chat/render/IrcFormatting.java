@@ -155,22 +155,27 @@ public final class IrcFormatting {
     if (bg != null) attrs.addAttribute(ChatStyles.ATTR_IRC_BG, bg);
 
     Color baseFg = StyleConstants.getForeground(attrs);
-    Color baseBg = StyleConstants.getBackground(attrs);
+    Color paintedBg = ChatStyles.definedBackground(attrs);
+    Color surfaceBg = ChatStyles.textSurfaceBackground(attrs);
 
     Color fgColor = (fg != null) ? colorForCode(fg) : null;
     Color bgColor = (bg != null) ? colorForCode(bg) : null;
 
     Color finalFg = fgColor != null ? fgColor : baseFg;
-    Color finalBg = bgColor != null ? bgColor : baseBg;
+    Color finalBg = bgColor != null ? bgColor : paintedBg;
 
     if (reverse) {
       Color tmp = finalFg;
-      finalFg = finalBg;
+      finalFg = finalBg != null ? finalBg : surfaceBg;
       finalBg = tmp;
     }
 
     if (finalFg != null) StyleConstants.setForeground(attrs, finalFg);
-    if (finalBg != null) StyleConstants.setBackground(attrs, finalBg);
+    if (finalBg != null) {
+      StyleConstants.setBackground(attrs, finalBg);
+    } else {
+      attrs.removeAttribute(StyleConstants.Background);
+    }
 
     out.add(new Span(buf.toString(), attrs));
     buf.setLength(0);

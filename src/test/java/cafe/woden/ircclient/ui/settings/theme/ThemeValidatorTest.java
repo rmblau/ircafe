@@ -9,18 +9,24 @@ import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.util.PopupMenuThemeSupport;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
+import cafe.woden.ircclient.ui.util.UiDefaultKeys;
 import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
+import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.Painter;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.junit.jupiter.api.AfterAll;
@@ -392,6 +398,121 @@ class ThemeValidatorTest {
         });
   }
 
+  @Test
+  void nimbusDarkOrangeTabbedPaneUsesDarkReadablePalette() throws Exception {
+    ThemeManager.ThemeOption nimbusDarkOrange = findThemeById("nimbus-dark-orange");
+    assertNotNull(nimbusDarkOrange, "nimbus-dark-orange theme must be present");
+
+    onEdt(() -> themeManager.installLookAndFeel(nimbusDarkOrange.id()));
+    onEdt(
+        () -> {
+          JTabbedPane tabs = new JTabbedPane();
+          tabs.addTab("Servers", new JTextPane());
+          tabs.addTab("Channels", new JTextPane());
+          tabs.setSelectedIndex(0);
+
+          Color tabPaneBg = UIManager.getColor(UiColorKeys.TABBED_PANE_BACKGROUND);
+          Color idleFg =
+              firstNonNullColor(
+                  UiColorKeys.TABBED_PANE_TAB_ENABLED_TEXT_FOREGROUND,
+                  UiColorKeys.TABBED_PANE_FOREGROUND,
+                  UiColorKeys.LABEL_FOREGROUND);
+          Color selectedFg =
+              firstNonNullColor(
+                  UiColorKeys.TABBED_PANE_TAB_SELECTED_TEXT_FOREGROUND,
+                  UiColorKeys.TABBED_PANE_FOREGROUND,
+                  UiColorKeys.LABEL_FOREGROUND);
+          Color idlePaint =
+              samplePainter(UiDefaultKeys.TABBED_PANE_TAB_ENABLED_BACKGROUND_PAINTER);
+          Color selectedPaint =
+              samplePainter(UiDefaultKeys.TABBED_PANE_TAB_SELECTED_BACKGROUND_PAINTER);
+
+          assertNotNull(tabPaneBg, "nimbus-dark-orange: TabbedPane.background should be set");
+          assertTrue(
+              relativeLuminance(tabPaneBg) < 0.35,
+              () -> "nimbus-dark-orange: tab pane background should stay dark, got " + tabPaneBg);
+          assertTrue(
+              relativeLuminance(idlePaint) < 0.45,
+              () -> "nimbus-dark-orange: idle tab painter should stay dark, got " + idlePaint);
+          assertTrue(
+              relativeLuminance(selectedPaint) < 0.45,
+              () ->
+                  "nimbus-dark-orange: selected tab painter should stay dark, got "
+                      + selectedPaint);
+          assertTrue(
+              selectedPaint.getRed() >= selectedPaint.getBlue(),
+              () ->
+                  "nimbus-dark-orange: selected tab painter should keep warm tint, got "
+                      + selectedPaint);
+
+          assertContrastAtLeast(
+              "nimbus-dark-orange",
+              "TabbedPane idle text vs idle tab painter",
+              idleFg,
+              idlePaint,
+              MIN_TEXT_CONTRAST);
+          assertContrastAtLeast(
+              "nimbus-dark-orange",
+              "TabbedPane selected text vs selected tab painter",
+              selectedFg,
+              selectedPaint,
+              MIN_TEXT_CONTRAST);
+        });
+  }
+
+  @Test
+  void nimbusDarkOrangeComboBoxUsesDarkReadablePainters() throws Exception {
+    ThemeManager.ThemeOption nimbusDarkOrange = findThemeById("nimbus-dark-orange");
+    assertNotNull(nimbusDarkOrange, "nimbus-dark-orange theme must be present");
+
+    onEdt(() -> themeManager.installLookAndFeel(nimbusDarkOrange.id()));
+    onEdt(
+        () -> {
+          JComboBox<String> combo = new JComboBox<>(new String[] {"All networks", "Current"});
+          combo.setSelectedIndex(0);
+
+          Color comboFg =
+              firstNonNullColor(
+                  UiColorKeys.COMBO_BOX_FOREGROUND,
+                  UiColorKeys.COMBO_BOX_RENDERER_TEXT_FOREGROUND,
+                  UiColorKeys.LABEL_FOREGROUND);
+          Color comboPaint = samplePainter(UiDefaultKeys.COMBO_BOX_ENABLED_BACKGROUND_PAINTER);
+          Color arrowPaint =
+              samplePainter(UiDefaultKeys.COMBO_BOX_ARROW_BUTTON_EDITABLE_ENABLED_BACKGROUND_PAINTER);
+          Color textFieldPaint =
+              samplePainter(UiDefaultKeys.COMBO_BOX_TEXT_FIELD_ENABLED_BACKGROUND_PAINTER);
+          Color arrowGlyph =
+              samplePainter(UiDefaultKeys.COMBO_BOX_ARROW_BUTTON_ENABLED_FOREGROUND_PAINTER);
+
+          assertTrue(
+              relativeLuminance(comboPaint) < 0.45,
+              () -> "nimbus-dark-orange: combo painter should stay dark, got " + comboPaint);
+          assertTrue(
+              relativeLuminance(arrowPaint) < 0.45,
+              () ->
+                  "nimbus-dark-orange: combo arrow-button painter should stay dark, got "
+                      + arrowPaint);
+          assertTrue(
+              relativeLuminance(textFieldPaint) < 0.45,
+              () ->
+                  "nimbus-dark-orange: combo text-field painter should stay dark, got "
+                      + textFieldPaint);
+
+          assertContrastAtLeast(
+              "nimbus-dark-orange",
+              "ComboBox text vs combo painter",
+              comboFg,
+              comboPaint,
+              MIN_TEXT_CONTRAST);
+          assertContrastAtLeast(
+              "nimbus-dark-orange",
+              "ComboBox arrow glyph vs arrow-button painter",
+              arrowGlyph,
+              arrowPaint,
+              MIN_TEXT_CONTRAST);
+        });
+  }
+
   @AfterAll
   void restoreLookAndFeel() throws Exception {
     if (initialLookAndFeelClassName == null || initialLookAndFeelClassName.isBlank()) return;
@@ -512,6 +633,22 @@ class ThemeValidatorTest {
 
   private static double srgbToLinear(double value) {
     return value <= 0.04045 ? (value / 12.92) : Math.pow((value + 0.055) / 1.055, 2.4);
+  }
+
+  @SuppressWarnings("unchecked")
+  private static Color samplePainter(String painterKey) {
+    Object value = UIManager.get(painterKey);
+    assertTrue(value instanceof Painter<?>, () -> painterKey + ": expected Painter, got " + value);
+
+    BufferedImage image = new BufferedImage(96, 28, BufferedImage.TYPE_INT_ARGB);
+    Graphics2D g = image.createGraphics();
+    try {
+      ((Painter<JComponent>) value)
+          .paint(g, new JTabbedPane(), image.getWidth(), image.getHeight());
+    } finally {
+      g.dispose();
+    }
+    return new Color(image.getRGB(image.getWidth() / 2, image.getHeight() / 2), true);
   }
 
   private static void onEdt(Runnable r) throws InvocationTargetException, InterruptedException {

@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.chat;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -119,6 +120,23 @@ class ChatStylesContrastTest {
     assertEquals(new Color(0x44, 0x55, 0x66), fg(styles.actionMessage()));
     assertEquals(new Color(0x55, 0x66, 0x77), fg(styles.error()));
     assertEquals(new Color(0x66, 0x77, 0x88), fg(styles.presence()));
+  }
+
+  @Test
+  void ordinaryTranscriptStylesKeepSurfaceBackgroundWithoutPaintingCharacterRuns() {
+    Color bg = new Color(0x17, 0x1B, 0x21);
+    UIManager.put(UiColorKeys.TEXT_PANE_BACKGROUND, bg);
+    UIManager.put(UiColorKeys.TEXT_PANE_FOREGROUND, new Color(0xE3, 0xE8, 0xEF));
+    UIManager.put(UiColorKeys.LABEL_FOREGROUND, new Color(0xE3, 0xE8, 0xEF));
+    UIManager.put(UiColorKeys.LABEL_DISABLED_FOREGROUND, new Color(0x97, 0xA1, 0xB3));
+
+    ChatStyles styles = new ChatStyles(null);
+
+    assertFalse(styles.message().isDefined(StyleConstants.Background));
+    assertFalse(styles.timestamp().isDefined(StyleConstants.Background));
+    assertEquals(bg, ChatStyles.textSurfaceBackground(styles.message()));
+    assertEquals(bg, ChatStyles.textSurfaceBackground(styles.timestamp()));
+    assertTrue(styles.mention().isDefined(StyleConstants.Background));
   }
 
   private static Color fg(AttributeSet attrs) {

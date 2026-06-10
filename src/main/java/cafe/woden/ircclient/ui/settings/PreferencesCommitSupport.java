@@ -187,8 +187,10 @@ final class PreferencesCommitSupport {
     ThemeManager themeManager = request.themeManager();
     if (themeManager == null) return;
 
-    if (snapshot.themeChanged() || appearance.accentChanged() || appearance.tweaksChanged()) {
+    if (snapshot.themeChanged()) {
       themeManager.applyTheme(next.theme());
+    } else if (appearance.accentChanged() || appearance.tweaksChanged()) {
+      themeManager.applyAppearance(true);
     } else if (appearance.chatThemeChanged()) {
       themeManager.refreshChatStyles();
     }

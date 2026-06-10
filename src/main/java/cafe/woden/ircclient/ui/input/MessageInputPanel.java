@@ -36,8 +36,10 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import javax.swing.*;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Element;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyledDocument;
+import javax.swing.text.StyleConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -231,7 +233,11 @@ public class MessageInputPanel extends JPanel {
     shell.setOpaque(true);
     Color textBg = UIManager.getColor(UiColorKeys.TEXT_FIELD_BACKGROUND);
     if (textBg == null) textBg = input.getBackground();
-    if (textBg != null) shell.setBackground(textBg);
+    if (textBg != null) {
+      shell.setBackground(textBg);
+      input.setBackground(textBg);
+    }
+    clearInputCharacterBackground();
     shell.setBorder(
         BorderFactory.createCompoundBorder(
             BorderFactory.createLineBorder(resolveInputShellBorderColor(), 1, true),
@@ -256,6 +262,7 @@ public class MessageInputPanel extends JPanel {
 
   private void configureInputShell() {
     input.setOpaque(false);
+    clearInputCharacterBackground();
     input.setBorder(BorderFactory.createEmptyBorder(5, 6, 5, 6));
     inputScroll.setBorder(null);
     inputScroll.setOpaque(false);
@@ -640,6 +647,7 @@ public class MessageInputPanel extends JPanel {
       typingSignalIndicator.setFont(typingBannerLabel.getFont());
       hintPopupSupport.onAppearanceChanged(inputFont);
       spellcheckHoverPopupSupport.onAppearanceChanged(inputFont);
+      runProgrammaticEdit(this::clearInputCharacterBackground);
 
       // Mark completion popup UI dirty when appearance changes (e.g., accent sliders).
       // Refresh existing popup windows if present.
@@ -702,6 +710,7 @@ public class MessageInputPanel extends JPanel {
       }
 
       String text = doc.getText(0, len);
+      clearInputDefaultCharacterBackground();
       doc.setCharacterAttributes(0, len, new SimpleAttributeSet(), true);
 
       int offset = 0;
@@ -720,6 +729,40 @@ public class MessageInputPanel extends JPanel {
 
   public Flowable<String> outboundMessages() {
     return outbound.onBackpressureBuffer();
+  }
+
+  private void clearInputCharacterBackground() {
+    clearInputDefaultCharacterBackground();
+    if (input.getDocument() instanceof StyledDocument doc) {
+      clearInputDocumentCharacterBackgrounds(doc);
+    }
+  }
+
+  private void clearInputDefaultCharacterBackground() {
+    input.getInputAttributes().removeAttribute(StyleConstants.Background);
+  }
+
+  private static void clearInputDocumentCharacterBackgrounds(StyledDocument doc) {
+    int len = doc.getLength();
+    int offset = 0;
+    while (offset < len) {
+      Element element = doc.getCharacterElement(offset);
+      if (element == null) {
+        break;
+      }
+
+      int start = Math.max(0, element.getStartOffset());
+      int end = Math.min(len, element.getEndOffset());
+      if (end <= start) {
+        offset++;
+        continue;
+      }
+
+      SimpleAttributeSet attrs = new SimpleAttributeSet(element.getAttributes());
+      attrs.removeAttribute(StyleConstants.Background);
+      doc.setCharacterAttributes(start, end - start, attrs, true);
+      offset = end;
+    }
   }
 
   private void emit() {

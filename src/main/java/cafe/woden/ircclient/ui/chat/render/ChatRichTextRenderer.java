@@ -134,7 +134,7 @@ public class ChatRichTextRenderer {
       // override).
       if (hasIrcColors(base)) {
         Color fg = StyleConstants.getForeground(base);
-        Color bg = StyleConstants.getBackground(base);
+        Color bg = ChatStyles.definedBackground(base);
         if (fg != null) StyleConstants.setForeground(linkAttr, fg);
         if (bg != null) StyleConstants.setBackground(linkAttr, bg);
       }
@@ -196,7 +196,7 @@ public class ChatRichTextRenderer {
 
           if (hasIrcColors(baseStyle)) {
             Color fg = StyleConstants.getForeground(baseStyle);
-            Color bg = StyleConstants.getBackground(baseStyle);
+            Color bg = ChatStyles.definedBackground(baseStyle);
             if (fg != null) StyleConstants.setForeground(chanAttr, fg);
             if (bg != null) StyleConstants.setBackground(chanAttr, bg);
           }

@@ -1,16 +1,21 @@
 package cafe.woden.ircclient.ui.input;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.ui.CommandHistoryStore;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import javax.swing.SwingUtilities;
+import javax.swing.JTextPane;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.StyledDocument;
+import javax.swing.text.StyleConstants;
 import org.junit.jupiter.api.Test;
 
 class MessageInputPanelUndoTest {
@@ -28,6 +33,24 @@ class MessageInputPanelUndoTest {
     SwingUtilities.invokeAndWait(panel::undo);
 
     assertEquals("", input.getText());
+  }
+
+  @Test
+  void queuedEmojiRestyleClearsLeakedCharacterBackgrounds() throws Exception {
+    MessageInputPanel panel = newPanel();
+    JTextPane input = findFirst(panel, JTextPane.class);
+    assertNotNull(input, "message input should be present");
+
+    SwingUtilities.invokeAndWait(
+        () -> {
+          StyleConstants.setBackground(input.getInputAttributes(), Color.RED);
+          input.replaceSelection("hello");
+        });
+    SwingUtilities.invokeAndWait(() -> {});
+
+    StyledDocument doc = input.getStyledDocument();
+    assertFalse(doc.getCharacterElement(0).getAttributes().isDefined(StyleConstants.Background));
+    assertFalse(input.getInputAttributes().isDefined(StyleConstants.Background));
   }
 
   private static void insertTextAndFlushRestyle(JTextComponent input, String text)

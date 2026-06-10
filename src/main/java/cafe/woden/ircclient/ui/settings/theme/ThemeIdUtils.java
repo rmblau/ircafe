@@ -85,4 +85,19 @@ public final class ThemeIdUtils {
 
     return !NON_FLAT_THEME_IDS.contains(raw.toLowerCase(Locale.ROOT));
   }
+
+  public static boolean isLikelyNimbusTarget(String themeId) {
+    String raw = themeId != null ? themeId.trim() : "";
+    if (raw.isEmpty()) return false;
+
+    if (looksLikeClassName(raw)) {
+      return raw.toLowerCase(Locale.ROOT).contains("nimbus");
+    }
+
+    return raw.toLowerCase(Locale.ROOT).startsWith("nimbus");
+  }
+
+  public static boolean isLikelyDensityTweakTarget(String themeId) {
+    return isLikelyFlatTarget(themeId) || isLikelyNimbusTarget(themeId);
+  }
 }

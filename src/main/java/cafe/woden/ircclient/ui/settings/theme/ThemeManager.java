@@ -192,6 +192,8 @@ public class ThemeManager {
     for (Window w : Window.getWindows()) {
       safeRun(
           () -> {
+            appearanceService.applyNimbusDensityToComponentTree(
+                w, tweakSettingsBus != null ? tweakSettingsBus.get() : null);
             SwingUtilities.updateComponentTreeUI(w);
           });
     }
