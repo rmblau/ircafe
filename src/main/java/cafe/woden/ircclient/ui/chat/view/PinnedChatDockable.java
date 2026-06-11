@@ -77,6 +77,7 @@ public class PinnedChatDockable extends ChatViewPanel implements Dockable, AutoC
   private final ChatTranscriptStore transcripts;
   private final ChatHistoryService chatHistoryService;
   private final ChatRedactionAuditService redactionAuditService;
+  private final InstalledPluginsPort installedPluginsPort;
   private final String persistentId;
 
   private boolean followTail = true;
@@ -140,6 +141,8 @@ public class PinnedChatDockable extends ChatViewPanel implements Dockable, AutoC
     this.chatHistoryService = chatHistoryService;
     this.redactionAuditService =
         Objects.requireNonNull(redactionAuditService, "redactionAuditService");
+    this.installedPluginsPort =
+        Objects.requireNonNull(installedPluginsPort, "installedPluginsPort");
     this.activate = activate;
     this.outboundBus = outboundBus;
     this.typingPort = Objects.requireNonNull(typingPort, "typingPort");
@@ -212,7 +215,7 @@ public class PinnedChatDockable extends ChatViewPanel implements Dockable, AutoC
             historyStore,
             spellcheckSettingsBus,
             slashCommandPresentationCatalog,
-            installedPluginsPort);
+            this.installedPluginsPort);
     BackendUiProfile initialProfile =
         backendUiProfileProvider == null
             ? BackendUiProfile.ircOnly(target.serverId())
@@ -520,7 +523,7 @@ public class PinnedChatDockable extends ChatViewPanel implements Dockable, AutoC
   private List<MessageTranslationLanguage> outboundTranslationTargetLanguages() {
     IrcProperties.Client.Translation settings =
         translationSettingsBus != null ? translationSettingsBus.get() : null;
-    return MessageTranslationLanguageCatalog.availableTargets(settings);
+    return MessageTranslationLanguageCatalog.availableTargets(settings, installedPluginsPort);
   }
 
   @Override
