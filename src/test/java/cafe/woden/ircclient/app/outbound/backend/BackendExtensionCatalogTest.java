@@ -126,6 +126,15 @@ class BackendExtensionCatalogTest {
         BackendExtensionCatalog.installed(
             pluginDir, BackendExtensionCatalogTest.class.getClassLoader());
     try {
+      assertInstanceOf(
+          IrcMessageMutationOutboundCommands.class,
+          catalog.messageMutationCommandsFor(IrcProperties.Server.Backend.IRC));
+      assertInstanceOf(
+          MatrixUploadCommandTranslationHandler.class,
+          catalog.uploadTranslationHandlerFor(IrcProperties.Server.Backend.MATRIX));
+      assertInstanceOf(
+          QuasselMessageMutationOutboundCommands.class,
+          catalog.messageMutationCommandsFor(IrcProperties.Server.Backend.QUASSEL_CORE));
       assertTrue(catalog.featureAdapterFor("plugin-backend").supportsSemanticUpload());
       assertTrue(catalog.availableBackendIds().contains("plugin-backend"));
       assertTrue("Plugin Backend".equals(catalog.backendDisplayName("plugin-backend")));
@@ -146,6 +155,15 @@ class BackendExtensionCatalogTest {
         BackendExtensionCatalog.installed(
             runtimeConfigPathPort, BackendExtensionCatalogTest.class.getClassLoader());
     try {
+      assertInstanceOf(
+          IrcMessageMutationOutboundCommands.class,
+          catalog.messageMutationCommandsFor(IrcProperties.Server.Backend.IRC));
+      assertInstanceOf(
+          MatrixUploadCommandTranslationHandler.class,
+          catalog.uploadTranslationHandlerFor(IrcProperties.Server.Backend.MATRIX));
+      assertInstanceOf(
+          QuasselMessageMutationOutboundCommands.class,
+          catalog.messageMutationCommandsFor(IrcProperties.Server.Backend.QUASSEL_CORE));
       assertTrue(catalog.featureAdapterFor("plugin-backend").supportsSemanticUpload());
       assertTrue(catalog.availableBackendIds().contains("plugin-backend"));
       assertTrue("Plugin Backend".equals(catalog.backendDisplayName("plugin-backend")));
