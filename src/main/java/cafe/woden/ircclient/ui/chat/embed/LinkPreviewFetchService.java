@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.net.ServerProxyResolver;
 import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
 import cafe.woden.ircclient.util.RxVirtualSchedulers;
@@ -14,6 +15,8 @@ import java.util.concurrent.ConcurrentMap;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -33,10 +36,40 @@ public class LinkPreviewFetchService {
       new ConcurrentHashMap<>();
   private final ConcurrentMap<String, Single<LinkPreview>> inflight = new ConcurrentHashMap<>();
 
+  @Autowired
+  public LinkPreviewFetchService(
+      ServerProxyResolver proxyResolver,
+      List<LinkPreviewResolver> resolvers,
+      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
+    this(proxyResolver, resolvers, resolveInstalledPlugins(installedPluginsProvider));
+  }
+
   public LinkPreviewFetchService(
       ServerProxyResolver proxyResolver, List<LinkPreviewResolver> resolvers) {
+    this(proxyResolver, resolvers, (InstalledPluginsPort) null);
+  }
+
+  LinkPreviewFetchService(
+      ServerProxyResolver proxyResolver,
+      List<LinkPreviewResolver> resolvers,
+      InstalledPluginsPort installedPlugins) {
     this.proxyResolver = proxyResolver;
-    this.resolvers = (resolvers == null) ? List.of() : List.copyOf(resolvers);
+    this.resolvers = loadInstalledResolvers(resolvers, installedPlugins);
+  }
+
+  private static InstalledPluginsPort resolveInstalledPlugins(
+      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
+    return installedPluginsProvider == null ? null : installedPluginsProvider.getIfAvailable();
+  }
+
+  private static List<LinkPreviewResolver> loadInstalledResolvers(
+      List<LinkPreviewResolver> resolvers, InstalledPluginsPort installedPlugins) {
+    List<LinkPreviewResolver> builtInResolvers =
+        List.copyOf(Objects.requireNonNullElse(resolvers, List.of()));
+    if (installedPlugins == null) {
+      return builtInResolvers;
+    }
+    return installedPlugins.loadInstalledServices(LinkPreviewResolver.class, builtInResolvers);
   }
 
   public Single<LinkPreview> fetch(String serverId, String url) {

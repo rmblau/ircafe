@@ -12,6 +12,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import org.jmolecules.architecture.layered.InterfaceLayer;
 
 /**
  * HTTP helper used by link preview resolvers.
@@ -19,21 +20,22 @@ import java.util.Optional;
  * <p>Uses {@link java.net.HttpURLConnection} via {@link HttpLite} so that SOCKS proxies can be
  * applied (the JDK {@code java.net.http.HttpClient} does not support SOCKS).
  */
-final class PreviewHttp {
+@InterfaceLayer
+public final class PreviewHttp {
 
   // Package-visible so other embed helpers (e.g., ImageFetchService) can share the same headers.
-  static final String USER_AGENT = "ircafe-link-preview/1.0";
+  public static final String USER_AGENT = "ircafe-link-preview/1.0";
   // Some sites (notably IMDb) increasingly block non-browser user agents.
   // Use this when we need a browser-ish UA to avoid being served interstitial pages.
-  static final String BROWSER_USER_AGENT =
+  public static final String BROWSER_USER_AGENT =
       "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36";
-  static final String ACCEPT_LANGUAGE = "en-US,en;q=0.9";
-  static final String HEADER_ACCEPT = HttpHeaderNames.ACCEPT;
-  static final String HEADER_ACCEPT_ENCODING = HttpHeaderNames.ACCEPT_ENCODING;
-  static final String HEADER_ACCEPT_LANGUAGE = HttpHeaderNames.ACCEPT_LANGUAGE;
-  static final String HEADER_REFERER = HttpHeaderNames.REFERER;
-  static final String HEADER_USER_AGENT = HttpHeaderNames.USER_AGENT;
-  static final String HEADER_X_GITHUB_API_VERSION = HttpHeaderNames.X_GITHUB_API_VERSION;
+  public static final String ACCEPT_LANGUAGE = "en-US,en;q=0.9";
+  public static final String HEADER_ACCEPT = HttpHeaderNames.ACCEPT;
+  public static final String HEADER_ACCEPT_ENCODING = HttpHeaderNames.ACCEPT_ENCODING;
+  public static final String HEADER_ACCEPT_LANGUAGE = HttpHeaderNames.ACCEPT_LANGUAGE;
+  public static final String HEADER_REFERER = HttpHeaderNames.REFERER;
+  public static final String HEADER_USER_AGENT = HttpHeaderNames.USER_AGENT;
+  public static final String HEADER_X_GITHUB_API_VERSION = HttpHeaderNames.X_GITHUB_API_VERSION;
   private static final Map<String, String> BASE_HEADERS =
       Map.of(
           HEADER_USER_AGENT, USER_AGENT,
@@ -44,7 +46,7 @@ final class PreviewHttp {
   private final int connectTimeoutMs;
   private final int readTimeoutMs;
 
-  PreviewHttp(ProxyPlan plan) {
+  public PreviewHttp(ProxyPlan plan) {
     ProxyPlan p = plan != null ? plan : ProxyPlan.direct();
     this.proxy = (p.proxy() != null) ? p.proxy() : Proxy.NO_PROXY;
     this.connectTimeoutMs = Math.max(1, p.connectTimeoutMs());
