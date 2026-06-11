@@ -14,6 +14,7 @@ import cafe.woden.ircclient.app.commands.SlashCommandPresentationCatalog;
 import cafe.woden.ircclient.app.translation.MessageTranslationDispatcher;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.app.translation.OutboundMessageTranslationService;
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.irc.port.IrcCurrentNickPort;
 import cafe.woden.ircclient.irc.port.IrcTypingPort;
 import cafe.woden.ircclient.logging.history.ChatHistoryService;
@@ -82,6 +83,7 @@ public class ChatDockManager {
   private final CommandHistoryStore commandHistoryStore;
   private final ChatHistoryService chatHistoryService;
   private final SlashCommandPresentationCatalog slashCommandPresentationCatalog;
+  private final InstalledPluginsPort installedPluginsPort;
   private final ExternalBrowserLauncher externalBrowserLauncher;
 
   /**
@@ -121,6 +123,7 @@ public class ChatDockManager {
       ChatRedactionAuditService redactionAuditService,
       ActiveInputRouter activeInputRouter,
       SlashCommandPresentationCatalog slashCommandPresentationCatalog,
+      InstalledPluginsPort installedPluginsPort,
       ChatHistoryService chatHistoryService,
       CommandHistoryStore commandHistoryStore,
       ExternalBrowserLauncher externalBrowserLauncher) {
@@ -151,6 +154,7 @@ public class ChatDockManager {
     this.slashCommandPresentationCatalog =
         java.util.Objects.requireNonNull(
             slashCommandPresentationCatalog, "slashCommandPresentationCatalog");
+    this.installedPluginsPort = installedPluginsPort;
     this.chatHistoryService = chatHistoryService;
     this.commandHistoryStore = commandHistoryStore;
     this.externalBrowserLauncher =
@@ -440,6 +444,7 @@ public class ChatDockManager {
             currentNickLookup,
             activeInputRouter,
             slashCommandPresentationCatalog,
+            installedPluginsPort,
             (t, draft) -> {
               if (t == null) return;
               pinnedDrafts.put(t, draft == null ? "" : draft);

@@ -8,6 +8,7 @@ import cafe.woden.ircclient.app.translation.MessageTranslationLanguageCatalog;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.app.translation.OutboundMessageTranslationService;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.irc.port.IrcTypingPort;
 import cafe.woden.ircclient.logging.history.ChatHistoryService;
 import cafe.woden.ircclient.logging.viewer.ChatRedactionAuditService;
@@ -130,6 +131,7 @@ public class PinnedChatDockable extends ChatViewPanel implements Dockable, AutoC
       Function<String, String> currentNickLookup,
       ActiveInputRouter activeInputRouter,
       SlashCommandPresentationCatalog slashCommandPresentationCatalog,
+      InstalledPluginsPort installedPluginsPort,
       BiConsumer<TargetRef, String> onDraftChanged,
       BiConsumer<TargetRef, String> onClosed) {
     super(settingsBus);
@@ -206,7 +208,11 @@ public class PinnedChatDockable extends ChatViewPanel implements Dockable, AutoC
     // Input panel embedded in the pinned view.
     this.inputPanel =
         new MessageInputPanel(
-            settingsBus, historyStore, spellcheckSettingsBus, slashCommandPresentationCatalog);
+            settingsBus,
+            historyStore,
+            spellcheckSettingsBus,
+            slashCommandPresentationCatalog,
+            installedPluginsPort);
     BackendUiProfile initialProfile =
         backendUiProfileProvider == null
             ? BackendUiProfile.ircOnly(target.serverId())
