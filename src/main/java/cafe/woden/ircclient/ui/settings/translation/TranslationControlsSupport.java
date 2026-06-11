@@ -182,16 +182,19 @@ public final class TranslationControlsSupport {
         new JLabel(MESSAGES.text("preferences.translation.languageDetection.disabled")));
     languageLists.add(new JLabel(""));
     languageLists.add(
-        new JLabel(MESSAGES.text("preferences.translation.languageDetection.enabled")), "wrap");
-    languageLists.add(languageScroll(disabledDetectionLanguages), "grow, push, h 150!");
+        new JLabel(MESSAGES.text("preferences.translation.languageDetection.enabled")),
+        MigConstraints.wrap());
+    languageLists.add(
+        languageScroll(disabledDetectionLanguages), MigConstraints.growPushHeight(150));
     JPanel languageButtons = new JPanel(MigLayouts.singleColumn(0));
     languageButtons.setOpaque(false);
     languageButtons.add(addDetectionLanguage, MigConstraints.growXMinWidth0Wrap());
     languageButtons.add(removeDetectionLanguage, MigConstraints.growXMinWidth0Wrap());
     languageButtons.add(addAllDetectionLanguages, MigConstraints.growXMinWidth0Wrap());
     languageButtons.add(removeAllDetectionLanguages, MigConstraints.growXMinWidth0());
-    languageLists.add(languageButtons, "top");
-    languageLists.add(languageScroll(enabledDetectionLanguages), "grow, push, h 150!, wrap");
+    languageLists.add(languageButtons, MigConstraints.alignYTop());
+    languageLists.add(
+        languageScroll(enabledDetectionLanguages), MigConstraints.growPushHeightWrap(150));
     detectionLanguages.add(languageLists, MigConstraints.growXMinWidth0Wrap());
     panel.add(detectionLanguages, MigConstraints.growXMinWidth0Wrap());
 
