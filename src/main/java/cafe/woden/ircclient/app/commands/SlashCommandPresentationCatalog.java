@@ -22,7 +22,6 @@ public class SlashCommandPresentationCatalog {
   private final List<SlashCommandPresentationContributor> contributors;
   private final BackendNamedCommandCatalog backendNamedCommandCatalog;
   private final List<SlashCommandDescriptor> autocompleteCommands;
-  private final Map<String, Consumer<TargetRef>> topicHelpHandlers;
 
   @Autowired
   public SlashCommandPresentationCatalog(
@@ -41,7 +40,6 @@ public class SlashCommandPresentationCatalog {
     this.backendNamedCommandCatalog =
         Objects.requireNonNull(backendNamedCommandCatalog, "backendNamedCommandCatalog");
     this.autocompleteCommands = buildAutocompleteCommands();
-    this.topicHelpHandlers = buildTopicHelpHandlers();
   }
 
   SlashCommandPresentationCatalog(
@@ -58,7 +56,7 @@ public class SlashCommandPresentationCatalog {
   public void appendGeneralHelp(TargetRef out, BiConsumer<TargetRef, String> lineAppender) {
     Objects.requireNonNull(lineAppender, "lineAppender");
     for (SlashCommandPresentationContributor contributor : contributors) {
-      contributor.appendGeneralHelp(out);
+      contributor.appendGeneralHelp(out, lineAppender);
     }
     backendNamedCommandCatalog
         .generalHelpLines()
@@ -68,7 +66,8 @@ public class SlashCommandPresentationCatalog {
   public Map<String, Consumer<TargetRef>> topicHelpHandlers(
       BiConsumer<TargetRef, String> lineAppender) {
     Objects.requireNonNull(lineAppender, "lineAppender");
-    LinkedHashMap<String, Consumer<TargetRef>> handlers = new LinkedHashMap<>(topicHelpHandlers);
+    LinkedHashMap<String, Consumer<TargetRef>> handlers =
+        new LinkedHashMap<>(buildTopicHelpHandlers(lineAppender));
     for (Map.Entry<String, List<String>> entry :
         backendNamedCommandCatalog.topicHelpLines().entrySet()) {
       String topic = normalizeHelpTopic(entry.getKey());
@@ -97,11 +96,12 @@ public class SlashCommandPresentationCatalog {
     return List.copyOf(merged.values());
   }
 
-  private Map<String, Consumer<TargetRef>> buildTopicHelpHandlers() {
+  private Map<String, Consumer<TargetRef>> buildTopicHelpHandlers(
+      BiConsumer<TargetRef, String> lineAppender) {
     LinkedHashMap<String, Consumer<TargetRef>> handlers = new LinkedHashMap<>();
     for (SlashCommandPresentationContributor contributor : contributors) {
       Map<String, Consumer<TargetRef>> topicHandlers =
-          Objects.requireNonNullElse(contributor.topicHelpHandlers(), Map.of());
+          Objects.requireNonNullElse(contributor.topicHelpHandlers(lineAppender), Map.of());
       for (Map.Entry<String, Consumer<TargetRef>> entry : topicHandlers.entrySet()) {
         String topic = normalizeHelpTopic(entry.getKey());
         Consumer<TargetRef> consumer = entry.getValue();

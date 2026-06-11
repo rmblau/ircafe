@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -83,6 +85,53 @@ class SlashCommandPresentationCatalogTest {
   }
 
   @Test
+  void presentationContributorsCanRenderGeneralHelpThroughLineAppender() {
+    SlashCommandPresentationContributor contributor =
+        new SlashCommandPresentationContributor() {
+          @Override
+          public void appendGeneralHelp(
+              TargetRef out, BiConsumer<TargetRef, String> lineAppender) {
+            lineAppender.accept(out, "/plugin-help - plugin-provided help");
+          }
+        };
+    SlashCommandPresentationCatalog catalog =
+        new SlashCommandPresentationCatalog(
+            List.of(contributor), BackendNamedCommandCatalog.empty());
+    ArrayList<String> rendered = new ArrayList<>();
+
+    catalog.appendGeneralHelp(
+        new TargetRef("libera", "status"),
+        (target, line) -> rendered.add(target.target() + ":" + line));
+
+    assertEquals(List.of("status:/plugin-help - plugin-provided help"), rendered);
+  }
+
+  @Test
+  void presentationContributorsCanRenderTopicHelpThroughLineAppender() {
+    SlashCommandPresentationContributor contributor =
+        new SlashCommandPresentationContributor() {
+          @Override
+          public Map<String, Consumer<TargetRef>> topicHelpHandlers(
+              BiConsumer<TargetRef, String> lineAppender) {
+            return Map.of(
+                "plugin-help",
+                out -> lineAppender.accept(out, "/plugin-help <arg>"));
+          }
+        };
+    SlashCommandPresentationCatalog catalog =
+        new SlashCommandPresentationCatalog(
+            List.of(contributor), BackendNamedCommandCatalog.empty());
+    AtomicReference<String> rendered = new AtomicReference<>();
+
+    catalog
+        .topicHelpHandlers((target, line) -> rendered.set(target.target() + ":" + line))
+        .get("plugin-help")
+        .accept(new TargetRef("libera", "status"));
+
+    assertEquals("status:/plugin-help <arg>", rendered.get());
+  }
+
+  @Test
   void loadsServiceLoaderPresentationContributorsFromInstalledPlugins() throws Exception {
     Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
     Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
@@ -105,6 +154,19 @@ class SlashCommandPresentationCatalogTest {
     List<String> commands =
         catalog.autocompleteCommands().stream().map(SlashCommandDescriptor::command).toList();
     assertEquals(List.of("/plugin-help"), commands);
+
+    ArrayList<String> generalHelp = new ArrayList<>();
+    catalog.appendGeneralHelp(
+        new TargetRef("libera", "status"),
+        (target, line) -> generalHelp.add(target.target() + ":" + line));
+    assertEquals(List.of("status:/plugin-help - plugin jar help"), generalHelp);
+
+    AtomicReference<String> topicHelp = new AtomicReference<>();
+    catalog
+        .topicHelpHandlers((target, line) -> topicHelp.set(target.target() + ":" + line))
+        .get("plugin-help")
+        .accept(new TargetRef("libera", "status"));
+    assertEquals("status:/plugin-help <arg>", topicHelp.get());
   }
 
   @Test
@@ -155,12 +217,27 @@ class SlashCommandPresentationCatalogTest {
 
         import cafe.woden.ircclient.app.commands.SlashCommandDescriptor;
         import cafe.woden.ircclient.app.commands.SlashCommandPresentationContributor;
+        import cafe.woden.ircclient.model.TargetRef;
         import java.util.List;
+        import java.util.Map;
+        import java.util.function.BiConsumer;
+        import java.util.function.Consumer;
 
         public final class PluginHelpContributor implements SlashCommandPresentationContributor {
           @Override
           public List<SlashCommandDescriptor> autocompleteCommands() {
             return List.of(new SlashCommandDescriptor("/plugin-help", "Plugin help command"));
+          }
+
+          @Override
+          public void appendGeneralHelp(TargetRef out, BiConsumer<TargetRef, String> lineAppender) {
+            lineAppender.accept(out, "/plugin-help - plugin jar help");
+          }
+
+          @Override
+          public Map<String, Consumer<TargetRef>> topicHelpHandlers(
+              BiConsumer<TargetRef, String> lineAppender) {
+            return Map.of("plugin-help", out -> lineAppender.accept(out, "/plugin-help <arg>"));
           }
         }
         """;
