@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.input;
 
 import cafe.woden.ircclient.app.commands.SlashCommandPresentationCatalog;
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.irc.ircv3.Ircv3DraftNormalizer;
 import cafe.woden.ircclient.ui.CommandHistoryStore;
 import cafe.woden.ircclient.ui.SingleLineEmojiTextPane;
@@ -101,6 +102,15 @@ public class MessageInputPanel extends JPanel {
       CommandHistoryStore historyStore,
       SpellcheckSettingsBus spellcheckSettingsBus,
       SlashCommandPresentationCatalog slashCommandPresentationCatalog) {
+    this(settingsBus, historyStore, spellcheckSettingsBus, slashCommandPresentationCatalog, null);
+  }
+
+  public MessageInputPanel(
+      UiSettingsBus settingsBus,
+      CommandHistoryStore historyStore,
+      SpellcheckSettingsBus spellcheckSettingsBus,
+      SlashCommandPresentationCatalog slashCommandPresentationCatalog,
+      InstalledPluginsPort installedPlugins) {
     super(new BorderLayout(0, 0));
     this.settingsBus = settingsBus;
     this.spellcheckSettingsBus = spellcheckSettingsBus;
@@ -111,12 +121,14 @@ public class MessageInputPanel extends JPanel {
     this.spellcheckSupport = new MessageInputSpellcheckSupport(input, spellcheck);
     this.spellcheckHoverPopupSupport =
         new MessageInputSpellcheckHoverPopupSupport(this, input, spellcheckSupport, spellcheck);
+    MessageInputWordSuggestionProvider wordSuggestionProvider =
+        CompositeMessageInputWordSuggestionProvider.from(spellcheckSupport, installedPlugins);
     this.nickCompletionSupport =
         new MessageInputNickCompletionSupport(
             this,
             input,
             this.undoSupport,
-            spellcheckSupport,
+            wordSuggestionProvider,
             slashCommandPresentationCatalog != null
                 ? slashCommandPresentationCatalog.autocompleteCommands()
                 : List.of());

@@ -355,7 +355,8 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
             settingsBus,
             commandHistoryStore,
             spellcheckSettingsBus,
-            slashCommandPresentationCatalog);
+            slashCommandPresentationCatalog,
+            installedPluginsPort);
     this.inputPanel.setBackendUiProfile(backendUiProfileProvider.profileForServer(""));
     add(inputPanel, BorderLayout.SOUTH);
     MessageActionCapabilityPolicy capabilityPolicy =

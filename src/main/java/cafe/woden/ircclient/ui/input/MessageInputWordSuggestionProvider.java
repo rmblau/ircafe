@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 /** Supplies word suggestions for the message input completion popup. */
-interface MessageInputWordSuggestionProvider {
+public interface MessageInputWordSuggestionProvider {
 
   /**
    * Suggest replacement/completion candidates for the provided token.
