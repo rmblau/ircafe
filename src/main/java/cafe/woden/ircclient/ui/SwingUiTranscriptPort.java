@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui;
 
+import cafe.woden.ircclient.app.api.MessageTranslation;
 import cafe.woden.ircclient.app.api.PresenceEvent;
 import cafe.woden.ircclient.app.api.UiTranscriptPort;
 import cafe.woden.ircclient.model.TargetRef;
@@ -316,6 +317,13 @@ final class SwingUiTranscriptPort implements UiTranscriptPort {
     long ts = (at != null) ? at.toEpochMilli() : System.currentTimeMillis();
     edt.run(
         () -> transcripts.removeMessageReaction(target, targetMessageId, reaction, fromNick, ts));
+  }
+
+  @Override
+  public boolean applyMessageTranslation(
+      TargetRef target, Instant at, MessageTranslation translation) {
+    long ts = (at != null) ? at.toEpochMilli() : System.currentTimeMillis();
+    return edt.call(() -> transcripts.applyMessageTranslation(target, translation, ts), false);
   }
 
   @Override

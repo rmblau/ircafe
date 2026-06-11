@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.chat.fold;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import cafe.woden.ircclient.ui.util.UiFontKeys;
 import java.awt.BorderLayout;
@@ -18,6 +19,7 @@ import javax.swing.UIManager;
 
 /** A single-line "spoiler" placeholder for soft-ignored messages. */
 public class SpoilerMessageComponent extends JPanel {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   // IMPORTANT: FlowLayout's hgap is also used as the *leading* left padding.
   // We keep it at 0 so the timestamp/nick column lines up with normal transcript text.
@@ -43,7 +45,7 @@ public class SpoilerMessageComponent extends JPanel {
     // No vertical padding: it causes the whole line height to grow and makes the prefix look
     // misaligned.
     pill.setBorder(BorderFactory.createEmptyBorder(0, 8, 0, 8));
-    pill.setText("soft ignored - click to reveal");
+    pill.setText(MESSAGES.text("chat.fold.spoiler.hidden"));
     applyPillColors();
 
     // Match transcript fonts as closely as we can (embedded Swing components do NOT automatically
@@ -135,19 +137,19 @@ public class SpoilerMessageComponent extends JPanel {
     if (revealing) return;
     revealing = true;
 
-    pill.setText("revealing...");
+    pill.setText(MESSAGES.text("chat.fold.spoiler.revealing"));
     try {
       boolean ok = onReveal != null && onReveal.getAsBoolean();
       if (!ok) {
         // Reveal failed (often because the embedded component shifted due to folding/edits).
         // Allow retry.
-        pill.setText("reveal failed - click to retry");
+        pill.setText(MESSAGES.text("chat.fold.spoiler.revealFailed"));
         revealing = false;
         repaint();
       }
       // If ok, the component will be removed from the transcript, so there's nothing else to do.
     } catch (Exception ex) {
-      pill.setText("reveal failed - click to retry");
+      pill.setText(MESSAGES.text("chat.fold.spoiler.revealFailed"));
       revealing = false;
       repaint();
     }

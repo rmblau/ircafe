@@ -5,6 +5,7 @@ import cafe.woden.ircclient.logging.viewer.ChatRedactionAuditService;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.chat.transcript.message.RedactedMessageContent;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.util.VirtualThreads;
 import java.awt.Component;
 import java.time.Instant;
@@ -19,6 +20,7 @@ public final class ChatRedactedMessageRevealSupport {
 
   private static final DateTimeFormatter TS_FMT =
       DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private ChatRedactedMessageRevealSupport() {}
 
@@ -35,7 +37,9 @@ public final class ChatRedactedMessageRevealSupport {
     RedactedMessageContent live = transcripts.redactedOriginalById(target, msgId);
     if (live != null) {
       ChatLineInspectorDialog.showReadOnlyTextDialog(
-          owner, "Redacted Message", formatLiveRevealText(target, live));
+          owner,
+          MESSAGES.text("chatTranscript.redactedReveal.title"),
+          formatLiveRevealText(target, live));
       return;
     }
 
@@ -52,7 +56,9 @@ public final class ChatRedactedMessageRevealSupport {
               () -> {
                 if (audit.isPresent()) {
                   ChatLineInspectorDialog.showReadOnlyTextDialog(
-                      owner, "Redacted Message", formatAuditRevealText(audit.get()));
+                      owner,
+                      MESSAGES.text("chatTranscript.redactedReveal.title"),
+                      formatAuditRevealText(audit.get()));
                 } else {
                   showUnavailable(owner);
                 }
@@ -62,7 +68,7 @@ public final class ChatRedactedMessageRevealSupport {
 
   private static String formatLiveRevealText(TargetRef target, RedactedMessageContent content) {
     StringBuilder sb = new StringBuilder();
-    sb.append("Source: live transcript cache\n");
+    sb.append(MESSAGES.text("chatTranscript.redactedReveal.source.live")).append('\n');
     appendCommonHeader(
         sb,
         target.serverId(),
@@ -79,7 +85,7 @@ public final class ChatRedactedMessageRevealSupport {
 
   private static String formatAuditRevealText(ChatRedactionAuditRecord record) {
     StringBuilder sb = new StringBuilder();
-    sb.append("Source: redaction audit log\n");
+    sb.append(MESSAGES.text("chatTranscript.redactedReveal.source.audit")).append('\n');
     appendCommonHeader(
         sb,
         record.serverId(),
@@ -105,31 +111,38 @@ public final class ChatRedactedMessageRevealSupport {
       String redactedBy,
       Long redactedAtEpochMs) {
     if (!Objects.toString(serverId, "").isBlank()) {
-      sb.append("Server: ").append(serverId).append('\n');
+      sb.append(MESSAGES.text("chatTranscript.redactedReveal.field.server", serverId)).append('\n');
     }
     if (!Objects.toString(target, "").isBlank()) {
-      sb.append("Target: ").append(target).append('\n');
+      sb.append(MESSAGES.text("chatTranscript.redactedReveal.field.target", target)).append('\n');
     }
     if (!Objects.toString(messageId, "").isBlank()) {
-      sb.append("Message ID: ").append(messageId).append('\n');
+      sb.append(MESSAGES.text("chatTranscript.redactedReveal.field.messageId", messageId))
+          .append('\n');
     }
     if (!Objects.toString(kind, "").isBlank()) {
-      sb.append("Kind: ").append(kind).append('\n');
+      sb.append(MESSAGES.text("chatTranscript.redactedReveal.field.kind", kind)).append('\n');
     }
     if (!Objects.toString(fromNick, "").isBlank()) {
-      sb.append("Original from: ").append(fromNick).append('\n');
+      sb.append(MESSAGES.text("chatTranscript.redactedReveal.field.originalFrom", fromNick))
+          .append('\n');
     }
     if (originalEpochMs != null && originalEpochMs > 0) {
-      sb.append("Original time: ")
-          .append(TS_FMT.format(Instant.ofEpochMilli(originalEpochMs)))
+      sb.append(
+              MESSAGES.text(
+                  "chatTranscript.redactedReveal.field.originalTime",
+                  TS_FMT.format(Instant.ofEpochMilli(originalEpochMs))))
           .append('\n');
     }
     if (!Objects.toString(redactedBy, "").isBlank()) {
-      sb.append("Redacted by: ").append(redactedBy).append('\n');
+      sb.append(MESSAGES.text("chatTranscript.redactedReveal.field.redactedBy", redactedBy))
+          .append('\n');
     }
     if (redactedAtEpochMs != null && redactedAtEpochMs > 0) {
-      sb.append("Redacted at: ")
-          .append(TS_FMT.format(Instant.ofEpochMilli(redactedAtEpochMs)))
+      sb.append(
+              MESSAGES.text(
+                  "chatTranscript.redactedReveal.field.redactedAt",
+                  TS_FMT.format(Instant.ofEpochMilli(redactedAtEpochMs))))
           .append('\n');
     }
   }
@@ -137,8 +150,8 @@ public final class ChatRedactedMessageRevealSupport {
   private static void showUnavailable(Component owner) {
     JOptionPane.showMessageDialog(
         owner,
-        "Original redacted content is not available for this message.",
-        "Redacted Message",
+        MESSAGES.text("chatTranscript.redactedReveal.unavailable"),
+        MESSAGES.text("chatTranscript.redactedReveal.title"),
         JOptionPane.INFORMATION_MESSAGE);
   }
 }

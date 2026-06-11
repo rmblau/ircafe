@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.notifications;
 
 import cafe.woden.ircclient.config.api.NotificationRule;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRowsTableModel;
 import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
@@ -17,9 +18,15 @@ final class NotificationRulesTableModel
   static final int COL_OPTIONS = 3;
   static final int COL_COLOR = 4;
 
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private static final String[] COLS =
       new String[] {
-        "Enabled", "Label", "Match", "Options", "Color",
+        MESSAGES.text("preferences.notifications.rules.column.enabled"),
+        MESSAGES.text("preferences.notifications.rules.column.label"),
+        MESSAGES.text("preferences.notifications.rules.column.match"),
+        MESSAGES.text("preferences.notifications.rules.column.options"),
+        MESSAGES.text("preferences.notifications.rules.column.color"),
       };
 
   NotificationRulesTableModel(List<NotificationRule> initial) {
@@ -41,11 +48,13 @@ final class NotificationRulesTableModel
   }
 
   static String effectiveRuleLabel(NotificationRule rule) {
-    if (rule == null) return "(unnamed)";
+    if (rule == null) return MESSAGES.text("preferences.notifications.rules.value.unnamed");
     String label = SettingsValueSupport.trimmedString(rule.label());
     if (!label.isEmpty()) return label;
     String pattern = SettingsValueSupport.trimmedString(rule.pattern());
-    return pattern.isEmpty() ? "(unnamed)" : pattern;
+    return pattern.isEmpty()
+        ? MESSAGES.text("preferences.notifications.rules.value.unnamed")
+        : pattern;
   }
 
   String highlightFgAt(int row) {
@@ -131,16 +140,29 @@ final class NotificationRulesTableModel
   private static String summarizeMatch(MutableRule r) {
     if (r == null) return "";
     String pattern = SettingsValueSupport.trimmedString(r.pattern);
-    if (pattern.isEmpty()) pattern = "(empty)";
-    String type = r.type == NotificationRule.Type.REGEX ? "REGEX" : "WORD";
-    return type + ": " + pattern;
+    if (pattern.isEmpty()) {
+      pattern = MESSAGES.text("preferences.notifications.rules.value.empty");
+    }
+    String type =
+        r.type == NotificationRule.Type.REGEX
+            ? MESSAGES.text("preferences.notifications.rules.type.regex")
+            : MESSAGES.text("preferences.notifications.rules.type.word");
+    return MESSAGES.text("preferences.notifications.rules.value.match", type, pattern);
   }
 
   private static String summarizeOptions(MutableRule r) {
     if (r == null) return "";
-    String caseLabel = r.caseSensitive ? "Case" : "No case";
+    String caseLabel =
+        r.caseSensitive
+            ? MESSAGES.text("preferences.notifications.rules.option.caseSensitive.short")
+            : MESSAGES.text("preferences.notifications.rules.option.caseInsensitive.short");
     if (r.type == NotificationRule.Type.WORD) {
-      return caseLabel + ", " + (r.wholeWord ? "Whole word" : "Substring");
+      String wordMode =
+          r.wholeWord
+              ? MESSAGES.text("preferences.notifications.rules.option.wholeWord")
+              : MESSAGES.text("preferences.notifications.rules.option.substring");
+      return MESSAGES.text(
+          "preferences.notifications.rules.value.options.word", caseLabel, wordMode);
     }
     return caseLabel;
   }

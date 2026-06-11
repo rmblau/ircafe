@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.servertree.view;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.servertree.model.ServerTreeQuasselNetworkNodeData;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Component;
 @InterfaceLayer
 @Component
 public final class ServerTreeQuasselNetworkNodeMenuBuilder {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private static final Logger log =
       LoggerFactory.getLogger(ServerTreeQuasselNetworkNodeMenuBuilder.class);
@@ -125,13 +127,15 @@ public final class ServerTreeQuasselNetworkNodeMenuBuilder {
       String label = Objects.toString(nodeData.label(), "Network").trim();
       String networkToken = Objects.toString(nodeData.networkToken(), "").trim();
       TargetRef channelListRef = TargetRef.channelList(serverId, nodeData.networkToken());
-      JMenuItem open = new JMenuItem("Open \"" + label + "\" Channel List");
+      JMenuItem open =
+          new JMenuItem(MESSAGES.text("serverTree.quasselNetworkMenu.openChannelList", label));
       open.setIcon(SvgIcons.action("add", 16));
       open.setDisabledIcon(SvgIcons.actionDisabled("add", 16));
       open.addActionListener(ev -> context.openPinnedChat(channelListRef));
       menu.add(open);
 
-      JMenuItem connect = new JMenuItem("Connect \"" + label + "\"");
+      JMenuItem connect =
+          new JMenuItem(MESSAGES.text("serverTree.quasselNetworkMenu.connect", label));
       connect.setIcon(SvgIcons.action("plus", 16));
       connect.setDisabledIcon(SvgIcons.actionDisabled("plus", 16));
       boolean networkTokenKnown = !networkToken.isEmpty();
@@ -142,14 +146,16 @@ public final class ServerTreeQuasselNetworkNodeMenuBuilder {
       connect.addActionListener(ev -> context.connectQuasselNetwork(serverId, networkToken));
       menu.add(connect);
 
-      JMenuItem disconnect = new JMenuItem("Disconnect \"" + label + "\"");
+      JMenuItem disconnect =
+          new JMenuItem(MESSAGES.text("serverTree.quasselNetworkMenu.disconnect", label));
       disconnect.setIcon(SvgIcons.action("exit", 16));
       disconnect.setDisabledIcon(SvgIcons.actionDisabled("exit", 16));
       disconnect.setEnabled(networkTokenKnown && networkEnabled && !disconnected);
       disconnect.addActionListener(ev -> context.disconnectQuasselNetwork(serverId, networkToken));
       menu.add(disconnect);
 
-      JMenuItem remove = new JMenuItem("Remove \"" + label + "\"");
+      JMenuItem remove =
+          new JMenuItem(MESSAGES.text("serverTree.quasselNetworkMenu.remove", label));
       remove.setIcon(SvgIcons.action("close", 16));
       remove.setDisabledIcon(SvgIcons.actionDisabled("close", 16));
       remove.setEnabled(networkTokenKnown);
@@ -163,7 +169,8 @@ public final class ServerTreeQuasselNetworkNodeMenuBuilder {
       menu.add(remove);
       menu.addSeparator();
     } else {
-      JMenuItem addNetwork = new JMenuItem("Add Quassel Network...");
+      JMenuItem addNetwork =
+          new JMenuItem(MESSAGES.text("serverTree.quasselNetworkMenu.addNetwork"));
       addNetwork.setIcon(SvgIcons.action("plus", 16));
       addNetwork.setDisabledIcon(SvgIcons.actionDisabled("plus", 16));
       addNetwork.addActionListener(ev -> context.addQuasselNetwork(serverId));
@@ -171,7 +178,8 @@ public final class ServerTreeQuasselNetworkNodeMenuBuilder {
       menu.addSeparator();
     }
 
-    JMenuItem manageNetworks = new JMenuItem("Manage Quassel Networks...");
+    JMenuItem manageNetworks =
+        new JMenuItem(MESSAGES.text("serverTree.quasselNetworkMenu.manageNetworks"));
     manageNetworks.setIcon(SvgIcons.action("edit", 16));
     manageNetworks.setDisabledIcon(SvgIcons.actionDisabled("edit", 16));
     manageNetworks.addActionListener(
@@ -184,7 +192,7 @@ public final class ServerTreeQuasselNetworkNodeMenuBuilder {
     menu.add(manageNetworks);
 
     if (context.isQuasselSetupPending(serverId)) {
-      JMenuItem setup = new JMenuItem("Complete Quassel Setup...");
+      JMenuItem setup = new JMenuItem(MESSAGES.text("serverTree.quasselNetworkMenu.completeSetup"));
       setup.setIcon(SvgIcons.action("edit", 16));
       setup.setDisabledIcon(SvgIcons.actionDisabled("edit", 16));
       setup.addActionListener(ev -> context.openQuasselSetup(serverId));

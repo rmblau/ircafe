@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.servertree.view;
 
 import cafe.woden.ircclient.app.api.ConnectionState;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.servertree.ServerTreeBouncerBackends;
 import cafe.woden.ircclient.ui.servertree.model.ServerTreeNodeData;
 import cafe.woden.ircclient.ui.servertree.model.ServerTreeQuasselNetworkNodeData;
@@ -15,17 +16,19 @@ import org.springframework.stereotype.Component;
 @Component
 public final class ServerTreeTooltipTextPolicy {
 
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   public String toolTipForNode(
       ServerTreeTooltipProvider.Context context, DefaultMutableTreeNode node) {
     Objects.requireNonNull(context, "context");
     if (node == null) return null;
 
     if (context.isIrcRootNode(node)) {
-      return "Configured IRC servers and discovered bouncer networks.";
+      return MESSAGES.text("serverTree.tooltip.root.irc");
     }
 
     if (context.isApplicationRootNode(node)) {
-      return "Application diagnostics buffers.";
+      return MESSAGES.text("serverTree.tooltip.root.application");
     }
 
     String networksGroupBackendId = normalizeBackendId(context.backendIdForNetworksGroupNode(node));
@@ -34,13 +37,13 @@ public final class ServerTreeTooltipTextPolicy {
     }
 
     if (context.isInterceptorsGroupNode(node)) {
-      return "Interceptors for this server. Individual interceptor nodes show their own captured hit counts.";
+      return MESSAGES.text("serverTree.tooltip.group.interceptors");
     }
     if (context.isMonitorGroupNode(node)) {
-      return "Monitored nick presence for this server (IRC MONITOR, with ISON fallback when unavailable).";
+      return MESSAGES.text("serverTree.tooltip.group.monitor");
     }
     if (context.isOtherGroupNode(node)) {
-      return "Built-in server utility nodes. Drag listed nodes in/out of this group to customize layout.";
+      return MESSAGES.text("serverTree.tooltip.group.other");
     }
 
     Object userObject = node.getUserObject();
@@ -74,7 +77,7 @@ public final class ServerTreeTooltipTextPolicy {
       DefaultMutableTreeNode node,
       ServerTreeQuasselNetworkNodeData networkNodeData) {
     if (context.isQuasselEmptyStateNode(node) || networkNodeData.emptyState()) {
-      return "No Quassel networks are configured yet. Right-click and choose Add Quassel Network…";
+      return MESSAGES.text("serverTree.tooltip.quassel.empty");
     }
     if (!context.isQuasselNetworkNode(node)) {
       return null;
@@ -87,63 +90,58 @@ public final class ServerTreeTooltipTextPolicy {
 
     String state =
         Boolean.FALSE.equals(networkNodeData.enabled())
-            ? "disabled"
+            ? MESSAGES.text("serverTree.tooltip.quassel.state.disabled")
             : Boolean.TRUE.equals(networkNodeData.connected())
-                ? "connected"
+                ? MESSAGES.text("serverTree.tooltip.quassel.state.connected")
                 : Boolean.FALSE.equals(networkNodeData.connected())
-                    ? "disconnected"
-                    : "status unknown";
-    return "Quassel network \""
-        + networkNodeData.label()
-        + "\" ("
-        + state
-        + ", token: "
-        + token
-        + ").";
+                    ? MESSAGES.text("serverTree.tooltip.quassel.state.disconnected")
+                    : MESSAGES.text("serverTree.tooltip.quassel.state.unknown");
+    return MESSAGES.text(
+        "serverTree.tooltip.quassel.network", networkNodeData.label(), state, token);
   }
 
   private String tooltipForNodeData(
       ServerTreeTooltipProvider.Context context, ServerTreeNodeData nodeData) {
     if (nodeData.ref.isChannel() && nodeData.hasDetachedWarning()) {
-      return "Disconnected: " + nodeData.detachedWarning + " (click warning icon to clear).";
+      return MESSAGES.text("serverTree.tooltip.channel.detached", nodeData.detachedWarning);
     }
     if (nodeData.ref.isApplicationUnhandledErrors()) {
-      return "Uncaught JVM exceptions captured by IRCafe.";
+      return MESSAGES.text("serverTree.tooltip.application.unhandledErrors");
     }
     if (nodeData.ref.isApplicationAssertjSwing()) {
-      return "Diagnostic buffer for AssertJ Swing/watchdog output.";
+      return MESSAGES.text("serverTree.tooltip.application.assertjSwing");
     }
     if (nodeData.ref.isApplicationJhiccup()) {
-      return "Diagnostic buffer for jHiccup latency output.";
+      return MESSAGES.text("serverTree.tooltip.application.jhiccup");
     }
     if (nodeData.ref.isApplicationInboundDedup()) {
-      return "Inbound duplicate message suppression diagnostics (msgid replay / resend telemetry).";
+      return MESSAGES.text("serverTree.tooltip.application.inboundDedup");
     }
     if (nodeData.ref.isApplicationPlugins()) {
-      return "Declared external plugin jars discovered from the plugin directory.";
+      return MESSAGES.text("serverTree.tooltip.application.plugins");
     }
     if (nodeData.ref.isApplicationJfr()) {
       return context.isApplicationJfrActive()
-          ? "Runtime JFR diagnostics are active (status gauges + JFR event stream)."
-          : "Runtime JFR diagnostics are disabled. Open the JFR view to enable.";
+          ? MESSAGES.text("serverTree.tooltip.application.jfr.active")
+          : MESSAGES.text("serverTree.tooltip.application.jfr.disabled");
     }
     if (nodeData.ref.isApplicationSpring()) {
-      return "Spring framework lifecycle and availability event feed.";
+      return MESSAGES.text("serverTree.tooltip.application.spring");
     }
     if (nodeData.ref.isApplicationTerminal()) {
-      return "In-app terminal output mirrored from System.out/System.err.";
+      return MESSAGES.text("serverTree.tooltip.application.terminal");
     }
     if (context.isBouncerControlStatusNode(nodeData)) {
-      return "Bouncer Control connection (used to discover bouncer networks).";
+      return MESSAGES.text("serverTree.tooltip.bouncerControl");
     }
     if (nodeData.ref.isInterceptor()) {
-      return "Custom interceptor rules, actions, and captured matches. Badge count shows stored hits for this interceptor.";
+      return MESSAGES.text("serverTree.tooltip.target.interceptor");
     }
     if (nodeData.ref.isWeechatFilters()) {
-      return "WeeChat-style local filters for this server (rules, placeholders, and scope overrides).";
+      return MESSAGES.text("serverTree.tooltip.target.filters");
     }
     if (nodeData.ref.isIgnores()) {
-      return "Manage hard and soft ignore rules for this server.";
+      return MESSAGES.text("serverTree.tooltip.target.ignores");
     }
     return null;
   }
@@ -153,9 +151,14 @@ public final class ServerTreeTooltipTextPolicy {
     String backend = normalizeBackendId(backendId);
     ConnectionState state = context.connectionStateForServer(serverId);
     boolean desired = context.desiredOnlineForServer(serverId);
-    String stateTip = "State: " + ServerTreeConnectionStateViewModel.stateLabel(state) + ".";
+    String stateTip =
+        MESSAGES.text(
+            "serverTree.tooltip.connection.state",
+            ServerTreeConnectionStateViewModel.stateLabel(state));
     String intentTip =
-        " Intent: " + ServerTreeConnectionStateViewModel.desiredIntentLabel(desired) + ".";
+        MESSAGES.text(
+            "serverTree.tooltip.connection.intent",
+            ServerTreeConnectionStateViewModel.desiredIntentLabel(desired));
     String queueTip = ServerTreeConnectionStateViewModel.intentQueueTip(state, desired);
     String diagnostics = context.connectionDiagnosticsTipForServer(serverId);
 
@@ -167,9 +170,12 @@ public final class ServerTreeTooltipTextPolicy {
     if (!queueTip.isBlank()) tip += " " + queueTip;
     if (!diagnostics.isBlank()) tip += diagnostics;
     tip += " " + ServerTreeBouncerBackends.ephemeralDiscoveryTooltip(backend);
-    if (auto) tip += " Auto-connect enabled.";
-    if (!origin.isEmpty()) tip += " Origin: " + origin + ".";
-    if (display != null && !display.isBlank()) tip += " Network: " + display + ".";
+    if (auto) tip += " " + MESSAGES.text("serverTree.tooltip.connection.autoConnectEnabled");
+    if (!origin.isEmpty())
+      tip += " " + MESSAGES.text("serverTree.tooltip.connection.origin", origin);
+    if (display != null && !display.isBlank()) {
+      tip += " " + MESSAGES.text("serverTree.tooltip.connection.network", display);
+    }
     return tip;
   }
 
@@ -182,13 +188,12 @@ public final class ServerTreeTooltipTextPolicy {
     String backendDisplayName =
         Objects.toString(context.backendDisplayNameForServer(serverId), "").trim();
     String base =
-        "State: "
-            + ServerTreeConnectionStateViewModel.stateLabel(state)
-            + ". Intent: "
-            + ServerTreeConnectionStateViewModel.desiredIntentLabel(desired)
-            + ".";
+        MESSAGES.text(
+            "serverTree.tooltip.connection.stateAndIntent",
+            ServerTreeConnectionStateViewModel.stateLabel(state),
+            ServerTreeConnectionStateViewModel.desiredIntentLabel(desired));
     if (!backendDisplayName.isEmpty()) {
-      base += " Backend: " + backendDisplayName + ".";
+      base += " " + MESSAGES.text("serverTree.tooltip.connection.backend", backendDisplayName);
     }
     if (!queueTip.isBlank() && !diagnostics.isBlank()) {
       return base + " " + queueTip + diagnostics + " " + action;

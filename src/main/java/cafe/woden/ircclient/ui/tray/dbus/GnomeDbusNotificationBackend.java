@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.tray.dbus;
 
 import cafe.woden.ircclient.config.execution.ExecutorConfig;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import jakarta.annotation.PreDestroy;
 import java.time.Duration;
 import java.time.Instant;
@@ -39,6 +40,7 @@ import org.springframework.stereotype.Component;
 @InterfaceLayer
 public class GnomeDbusNotificationBackend {
   private static final Logger log = LoggerFactory.getLogger(GnomeDbusNotificationBackend.class);
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   // We keep the probe cached; clicking support doesn't change often mid-session.
   private static final Duration PROBE_TTL = Duration.ofMinutes(5);
@@ -79,7 +81,7 @@ public class GnomeDbusNotificationBackend {
 
     // Minimal default-click action. Some servers won't show a button for "default", but still emit
     // ActionInvoked("default") when the notification body is clicked.
-    String[] actions = new String[] {"default", "Open"};
+    String[] actions = new String[] {"default", MESSAGES.text("tray.dbus.action.open")};
 
     Map<String, Variant<?>> hints = new HashMap<>();
     // 0=low, 1=normal, 2=critical
@@ -91,7 +93,7 @@ public class GnomeDbusNotificationBackend {
     try {
       UInt32 id =
           liveSvc.Notify(
-              "IRCafe",
+              MESSAGES.text("tray.appName"),
               new UInt32(0),
               "",
               Objects.toString(summary, ""),

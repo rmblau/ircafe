@@ -50,4 +50,14 @@ class TargetRefChannelSemanticsTest {
     assertEquals(TargetRef.IGNORES_TARGET, ref.baseTarget());
     assertEquals("libera", ref.networkQualifierToken());
   }
+
+  @Test
+  void qualifiedMemoServTargetIsUiOnlyAndKeepsBaseBuiltIn() {
+    TargetRef ref = TargetRef.memoServ("quassel", "libera");
+
+    assertTrue(ref.isMemoServ());
+    assertTrue(ref.isUiOnly());
+    assertEquals(TargetRef.MEMOSERV_TARGET, ref.baseTarget());
+    assertEquals("libera", ref.networkQualifierToken());
+  }
 }

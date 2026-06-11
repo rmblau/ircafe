@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.diagnostics;
 
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
@@ -12,19 +13,23 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 public final class DiagnosticsControlsSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private DiagnosticsControlsSupport() {}
 
   public static DiagnosticsControls buildControls(DiagnosticsRuntimeConfigPort runtimeConfig) {
-    JCheckBox assertjSwingEnabled = new JCheckBox("Enable AssertJ Swing diagnostics");
+    JCheckBox assertjSwingEnabled =
+        new JCheckBox(MESSAGES.text("preferences.diagnostics.assertj.enabled"));
     assertjSwingEnabled.setSelected(runtimeConfig.readAppDiagnosticsAssertjSwingEnabled(true));
     assertjSwingEnabled.setToolTipText(
-        "Installs AssertJ Swing (or a fallback detector) for EDT thread violation checks.");
+        MESSAGES.text("preferences.diagnostics.assertj.enabled.tooltip"));
 
-    JCheckBox assertjSwingFreezeWatchdogEnabled = new JCheckBox("Enable EDT freeze watchdog");
+    JCheckBox assertjSwingFreezeWatchdogEnabled =
+        new JCheckBox(MESSAGES.text("preferences.diagnostics.assertj.freezeWatchdog"));
     assertjSwingFreezeWatchdogEnabled.setSelected(
         runtimeConfig.readAppDiagnosticsAssertjSwingFreezeWatchdogEnabled(true));
     assertjSwingFreezeWatchdogEnabled.setToolTipText(
-        "Reports prolonged Event Dispatch Thread stalls into Application -> AssertJ Swing.");
+        MESSAGES.text("preferences.diagnostics.assertj.freezeWatchdog.tooltip"));
 
     int freezeThresholdMs = runtimeConfig.readAppDiagnosticsAssertjSwingFreezeThresholdMs(2500);
     JSpinner assertjSwingFreezeThresholdMs =
@@ -39,35 +44,36 @@ public final class DiagnosticsControlsSupport {
     JSpinner assertjSwingFallbackViolationReportMs =
         PreferencesUiSupport.numberSpinner(fallbackViolationReportMs, 250, 120_000, 250);
 
-    JCheckBox assertjSwingOnIssuePlaySound = new JCheckBox("Play sound when an issue is detected");
+    JCheckBox assertjSwingOnIssuePlaySound =
+        new JCheckBox(MESSAGES.text("preferences.diagnostics.assertj.issueSound"));
     assertjSwingOnIssuePlaySound.setSelected(
         runtimeConfig.readAppDiagnosticsAssertjSwingIssuePlaySound(false));
     assertjSwingOnIssuePlaySound.setToolTipText(
-        "Uses the configured tray notification sound when EDT freeze/violation issues are detected.");
+        MESSAGES.text("preferences.diagnostics.assertj.issueSound.tooltip"));
 
     JCheckBox assertjSwingOnIssueShowNotification =
-        new JCheckBox("Show desktop notification when an issue is detected");
+        new JCheckBox(MESSAGES.text("preferences.diagnostics.assertj.issueNotification"));
     assertjSwingOnIssueShowNotification.setSelected(
         runtimeConfig.readAppDiagnosticsAssertjSwingIssueShowNotification(false));
     assertjSwingOnIssueShowNotification.setToolTipText(
-        "Uses the tray notification pipeline; desktop-notification delivery still follows tray settings.");
+        MESSAGES.text("preferences.diagnostics.assertj.issueNotification.tooltip"));
 
-    JCheckBox jhiccupEnabled = new JCheckBox("Enable jHiccup process integration");
+    JCheckBox jhiccupEnabled =
+        new JCheckBox(MESSAGES.text("preferences.diagnostics.jhiccup.enabled"));
     jhiccupEnabled.setSelected(runtimeConfig.readAppDiagnosticsJhiccupEnabled(false));
-    jhiccupEnabled.setToolTipText(
-        "Runs an external jHiccup process and mirrors output into Application -> jHiccup.");
+    jhiccupEnabled.setToolTipText(MESSAGES.text("preferences.diagnostics.jhiccup.enabled.tooltip"));
 
     JTextField jhiccupJarPath = new JTextField(runtimeConfig.readAppDiagnosticsJhiccupJarPath(""));
-    jhiccupJarPath.setToolTipText(
-        "Path to jHiccup jar file. Relative paths are resolved from the runtime-config directory.");
+    jhiccupJarPath.setToolTipText(MESSAGES.text("preferences.diagnostics.jhiccup.jarPath.tooltip"));
 
     JTextField jhiccupJavaCommand =
         new JTextField(runtimeConfig.readAppDiagnosticsJhiccupJavaCommand("java"));
-    jhiccupJavaCommand.setToolTipText("Java launcher command used to start jHiccup.");
+    jhiccupJavaCommand.setToolTipText(
+        MESSAGES.text("preferences.diagnostics.jhiccup.javaCommand.tooltip"));
 
     JTextArea jhiccupArgs = PreferencesUiSupport.textArea(5, 40, false);
     jhiccupArgs.setText(String.join("\n", runtimeConfig.readAppDiagnosticsJhiccupArgs(List.of())));
-    jhiccupArgs.setToolTipText("One argument per line.");
+    jhiccupArgs.setToolTipText(MESSAGES.text("preferences.diagnostics.jhiccup.args.tooltip"));
 
     Runnable syncEnabledState =
         () -> {

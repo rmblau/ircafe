@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.embeds;
 
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.EmbedLoadPolicyDialog;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.util.MigConstraints;
@@ -12,15 +13,16 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 public final class EmbedsAndPreviewsPanelSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private EmbedsAndPreviewsPanelSupport() {}
 
   public static JButton buildAdvancedPolicyButton(
       Window owner,
       EmbedLoadPolicyDialog embedLoadPolicyDialog,
       AtomicReference<EmbedLoadPolicySnapshot> pendingEmbedLoadPolicy) {
-    JButton advanced = new JButton("Advanced Policy...");
-    advanced.setToolTipText(
-        "Open advanced allow/deny controls for embed/link loading by user, channel, URL/domain, and network.");
+    JButton advanced = new JButton(MESSAGES.text("preferences.embeds.advancedPolicy.button"));
+    advanced.setToolTipText(MESSAGES.text("preferences.embeds.advancedPolicy.tooltip"));
     advanced.addActionListener(
         e -> {
           if (embedLoadPolicyDialog == null || pendingEmbedLoadPolicy == null) return;
@@ -39,24 +41,30 @@ public final class EmbedsAndPreviewsPanelSupport {
         new JPanel(MigLayouts.twoColumnForm(12, 12, MigLayouts.rowGaps(10, 6, 10, 6, 10)));
 
     form.add(
-        PreferencesUiSupport.tabTitle("Embeds & Previews"),
+        PreferencesUiSupport.tabTitle(MESSAGES.text("preferences.embeds.title")),
         MigConstraints.span2GrowXMinWidth0Wrap());
     form.add(
-        PreferencesUiSupport.sectionTitle("Inline images"),
+        PreferencesUiSupport.sectionTitle(MESSAGES.text("preferences.embeds.section.inlineImages")),
         MigConstraints.span2GrowXMinWidth0Wrap());
-    form.add(new JLabel("Direct image links"), MigConstraints.alignYTop());
+    form.add(
+        new JLabel(MESSAGES.text("preferences.embeds.field.directImageLinks")),
+        MigConstraints.alignYTop());
     form.add(image.panel, MigConstraints.growX());
 
     form.add(
-        PreferencesUiSupport.sectionTitle("Link previews"),
+        PreferencesUiSupport.sectionTitle(MESSAGES.text("preferences.embeds.section.linkPreviews")),
         MigConstraints.span2GrowXMinWidth0Wrap());
-    form.add(new JLabel("OpenGraph cards"), MigConstraints.alignYTop());
+    form.add(
+        new JLabel(MESSAGES.text("preferences.embeds.field.openGraphCards")),
+        MigConstraints.alignYTop());
     form.add(links.panel, MigConstraints.growX());
 
     form.add(
-        PreferencesUiSupport.sectionTitle("Access policy"),
+        PreferencesUiSupport.sectionTitle(MESSAGES.text("preferences.embeds.section.accessPolicy")),
         MigConstraints.span2GrowXMinWidth0Wrap());
-    form.add(new JLabel("Advanced matching rules"), MigConstraints.alignYTop());
+    form.add(
+        new JLabel(MESSAGES.text("preferences.embeds.field.advancedMatchingRules")),
+        MigConstraints.alignYTop());
     JPanel buttonRow = new JPanel(MigLayouts.insets0("[]", "[]"));
     buttonRow.setOpaque(false);
     if (advancedPolicyButton != null) {

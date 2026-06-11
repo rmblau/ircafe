@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.monitor;
 
 import cafe.woden.ircclient.monitor.MonitorListService;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.util.PopupMenuThemeSupport;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.BorderLayout;
@@ -36,7 +37,8 @@ public final class MonitorPanel extends JPanel {
 
   private static final int COL_STATUS = 0;
   private static final int COL_NICK = 1;
-  private static final String DEFAULT_HINT = "Use add/remove controls or /monitor commands.";
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+  private static final String DEFAULT_HINT = message("monitor.hint.default");
   private static final int ACTION_ICON_SIZE = 16;
   private static final Dimension ACTION_BUTTON_SIZE = new Dimension(28, 28);
 
@@ -44,7 +46,7 @@ public final class MonitorPanel extends JPanel {
 
   private final MonitorTableModel model = new MonitorTableModel();
   private final JTable table = new JTable(model);
-  private final JLabel title = new JLabel("Monitor");
+  private final JLabel title = new JLabel(message("monitor.title"));
   private final JLabel subtitle = new JLabel(DEFAULT_HINT);
   private final JButton addButton = new JButton();
   private final JButton removeButton = new JButton();
@@ -52,9 +54,9 @@ public final class MonitorPanel extends JPanel {
   private final JButton refreshButton = new JButton();
   private final TableRowSorter<MonitorTableModel> sorter = new TableRowSorter<>(model);
   private final JPopupMenu rowMenu = new JPopupMenu();
-  private final JMenuItem openQueryMenuItem = new JMenuItem("Open Query");
-  private final JMenuItem copyNickMenuItem = new JMenuItem("Copy Nick");
-  private final JMenuItem removeMenuItem = new JMenuItem("Remove");
+  private final JMenuItem openQueryMenuItem = new JMenuItem(message("monitor.menu.openQuery"));
+  private final JMenuItem copyNickMenuItem = new JMenuItem(message("monitor.menu.copyNick"));
+  private final JMenuItem removeMenuItem = new JMenuItem(message("common.button.remove"));
 
   private volatile String serverId = "";
   private volatile Consumer<String> onEmitCommand;
@@ -142,11 +144,26 @@ public final class MonitorPanel extends JPanel {
   }
 
   private void configureActionButtons() {
-    configureActionButton(addButton, "plus", "Add user to monitor list", "Add...");
     configureActionButton(
-        removeButton, "trash", "Remove selected users from monitor list", "Remove selected");
-    configureActionButton(clearButton, "close", "Clear monitor list", "Clear");
-    configureActionButton(refreshButton, "refresh", "Refresh monitor list", "Refresh");
+        addButton,
+        "plus",
+        message("monitor.button.add.tooltip"),
+        message("monitor.button.add.accessibleName"));
+    configureActionButton(
+        removeButton,
+        "trash",
+        message("monitor.button.remove.tooltip"),
+        message("monitor.button.remove.accessibleName"));
+    configureActionButton(
+        clearButton,
+        "close",
+        message("monitor.button.clear.tooltip"),
+        message("common.button.clear"));
+    configureActionButton(
+        refreshButton,
+        "refresh",
+        message("monitor.button.refresh.tooltip"),
+        message("monitor.button.refresh.accessibleName"));
   }
 
   private void configureActionButton(
@@ -196,13 +213,14 @@ public final class MonitorPanel extends JPanel {
 
   private List<String> promptForNicks() {
     JTextField field = new JTextField();
-    field.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "alice");
-    Object[] message = {"Nick:", field};
+    field.putClientProperty(
+        FlatClientProperties.PLACEHOLDER_TEXT, message("monitor.prompt.nick.placeholder"));
+    Object[] message = {message("monitor.prompt.nick.label"), field};
     int option =
         JOptionPane.showConfirmDialog(
             SwingUtilities.getWindowAncestor(this),
             message,
-            "Add Monitor User",
+            message("monitor.prompt.add.title"),
             JOptionPane.OK_CANCEL_OPTION,
             JOptionPane.PLAIN_MESSAGE);
     if (option != JOptionPane.OK_OPTION) return List.of();
@@ -305,7 +323,7 @@ public final class MonitorPanel extends JPanel {
   private void updateHeader() {
     String sid = this.serverId;
     if (sid.isEmpty()) {
-      title.setText("Monitor");
+      title.setText(message("monitor.title"));
       subtitle.setText(DEFAULT_HINT);
       return;
     }
@@ -325,21 +343,13 @@ public final class MonitorPanel extends JPanel {
       }
     }
 
-    title.setText("Monitor - " + sid);
+    title.setText(message("monitor.title.server", sid));
     if (total <= 0) {
-      subtitle.setText("No monitored nicks.");
+      subtitle.setText(message("monitor.subtitle.noNicks"));
       return;
     }
 
-    subtitle.setText(
-        total
-            + " nick(s): "
-            + online
-            + " online, "
-            + offline
-            + " offline, "
-            + unknown
-            + " unknown.");
+    subtitle.setText(message("monitor.subtitle.summary", total, online, offline, unknown));
   }
 
   private static String normalizeServerId(String serverId) {
@@ -347,13 +357,17 @@ public final class MonitorPanel extends JPanel {
   }
 
   private static String statusText(Boolean online) {
-    if (online == null) return "Unknown";
-    return online ? "Online" : "Offline";
+    if (online == null) return message("monitor.status.unknown");
+    return online ? message("monitor.status.online") : message("monitor.status.offline");
+  }
+
+  private static String message(String key, Object... args) {
+    return MESSAGES.text(key, args);
   }
 
   private static final class MonitorTableModel extends AbstractTableModel {
 
-    private static final String[] COLS = {"Status", "Nick"};
+    private static final String[] COL_KEYS = {"monitor.column.status", "monitor.column.nick"};
     private final ArrayList<Row> rows = new ArrayList<>();
 
     void setRows(List<Row> rows) {
@@ -374,12 +388,12 @@ public final class MonitorPanel extends JPanel {
 
     @Override
     public int getColumnCount() {
-      return COLS.length;
+      return COL_KEYS.length;
     }
 
     @Override
     public String getColumnName(int column) {
-      return (column >= 0 && column < COLS.length) ? COLS[column] : "";
+      return (column >= 0 && column < COL_KEYS.length) ? message(COL_KEYS[column]) : "";
     }
 
     @Override

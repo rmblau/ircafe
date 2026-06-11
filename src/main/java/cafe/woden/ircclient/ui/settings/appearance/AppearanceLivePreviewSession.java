@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings.appearance;
 
 import cafe.woden.ircclient.config.properties.UiProperties;
 import cafe.woden.ircclient.ui.SwingEdt;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
 import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
@@ -27,7 +28,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JTextField;
 
 public final class AppearanceLivePreviewSession implements AutoCloseable {
-  private static final String FLAT_ONLY_TOOLTIP = "Available for FlatLaf-based themes only.";
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+  private static final String FLAT_ONLY_TOOLTIP =
+      MESSAGES.text("preferences.appearance.tooltip.flatLafOnly");
+  private static final String DENSITY_UNSUPPORTED_TOOLTIP =
+      MESSAGES.text("preferences.appearance.tooltip.densitySupportedThemesOnly");
   private static final ThemeAccentSettings DEFAULT_ACCENT_SETTINGS =
       new ThemeAccentSettings(
           UiProperties.DEFAULT_ACCENT_COLOR, UiProperties.DEFAULT_ACCENT_STRENGTH);
@@ -125,13 +130,13 @@ public final class AppearanceLivePreviewSession implements AutoCloseable {
   }
 
   void attachListeners() {
-    updateFlatTweakCapabilityUi();
+    updateTweakCapabilityUi();
 
     final boolean[] ignoreThemeComboEvents = new boolean[] {true};
     theme.combo.addActionListener(
         e -> {
           if (ignoreThemeComboEvents[0]) return;
-          updateFlatTweakCapabilityUi();
+          updateTweakCapabilityUi();
           scheduleLafPreview();
         });
     ignoreThemeComboEvents[0] = false;
@@ -391,16 +396,17 @@ public final class AppearanceLivePreviewSession implements AutoCloseable {
     fontPreviewDebounce.trigger();
   }
 
-  private void updateFlatTweakCapabilityUi() {
+  private void updateTweakCapabilityUi() {
     Object selectedTheme = theme.combo.getSelectedItem();
     String selectedThemeId = selectedTheme != null ? selectedTheme.toString() : "";
-    boolean flatTweakCapable = ThemeIdUtils.isLikelyFlatTarget(selectedThemeId);
-    tweaks.density.setEnabled(flatTweakCapable);
-    tweaks.cornerRadius.setEnabled(flatTweakCapable);
+    boolean densityTweakCapable = ThemeIdUtils.isLikelyDensityTweakTarget(selectedThemeId);
+    boolean cornerTweakCapable = ThemeIdUtils.isLikelyFlatTarget(selectedThemeId);
+    tweaks.density.setEnabled(densityTweakCapable);
+    tweaks.cornerRadius.setEnabled(cornerTweakCapable);
     tweaks.density.setToolTipText(
-        flatTweakCapable ? AppearanceTooltips.DENSITY : FLAT_ONLY_TOOLTIP);
+        densityTweakCapable ? AppearanceTooltips.DENSITY : DENSITY_UNSUPPORTED_TOOLTIP);
     tweaks.cornerRadius.setToolTipText(
-        flatTweakCapable ? AppearanceTooltips.CORNER_RADIUS : FLAT_ONLY_TOOLTIP);
+        cornerTweakCapable ? AppearanceTooltips.CORNER_RADIUS : FLAT_ONLY_TOOLTIP);
   }
 
   private ThemeTweakSettings readTweakSettings() {

@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.controls;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.processors.FlowableProcessor;
 import io.reactivex.rxjava3.processors.PublishProcessor;
@@ -15,7 +16,7 @@ public class DisconnectButton extends JButton {
   private final FlowableProcessor<Object> clicks = PublishProcessor.create().toSerialized();
 
   public DisconnectButton() {
-    super("Disconnect");
+    super(UiMessages.bundledDefaults().text("common.button.disconnect"));
     addActionListener(e -> clicks.onNext(new Object()));
   }
 

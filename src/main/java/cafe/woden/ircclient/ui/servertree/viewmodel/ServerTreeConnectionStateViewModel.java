@@ -2,9 +2,12 @@ package cafe.woden.ircclient.ui.servertree.viewmodel;
 
 import cafe.woden.ircclient.app.api.ConnectionState;
 import cafe.woden.ircclient.ui.icons.SvgIcons.Palette;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 
 /** UI presentation policy for server-node connection state controls and labels. */
 public final class ServerTreeConnectionStateViewModel {
+
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private ServerTreeConnectionStateViewModel() {}
 
@@ -23,27 +26,31 @@ public final class ServerTreeConnectionStateViewModel {
   public static String stateLabel(ConnectionState state) {
     ConnectionState st = state == null ? ConnectionState.DISCONNECTED : state;
     return switch (st) {
-      case CONNECTED -> "Connected";
-      case CONNECTING -> "Connecting";
-      case RECONNECTING -> "Reconnecting";
-      case DISCONNECTING -> "Disconnecting";
-      case DISCONNECTED -> "Disconnected";
+      case CONNECTED -> MESSAGES.text("serverTree.connection.state.connected");
+      case CONNECTING -> MESSAGES.text("serverTree.connection.state.connecting");
+      case RECONNECTING -> MESSAGES.text("serverTree.connection.state.reconnecting");
+      case DISCONNECTING -> MESSAGES.text("serverTree.connection.state.disconnecting");
+      case DISCONNECTED -> MESSAGES.text("serverTree.connection.state.disconnected");
     };
   }
 
   public static String desiredIntentLabel(boolean desiredOnline) {
-    return desiredOnline ? "Online" : "Offline";
+    return desiredOnline
+        ? MESSAGES.text("serverTree.connection.intent.online")
+        : MESSAGES.text("serverTree.connection.intent.offline");
   }
 
   public static String desiredBadge(ConnectionState state, boolean desiredOnline) {
     ConnectionState st = state == null ? ConnectionState.DISCONNECTED : state;
     boolean online = isOnlineState(st);
     if (desiredOnline && !online) {
-      if (st == ConnectionState.DISCONNECTING) return " [connect queued]";
-      return " [wanted online]";
+      if (st == ConnectionState.DISCONNECTING) {
+        return MESSAGES.text("serverTree.connection.badge.connectQueued");
+      }
+      return MESSAGES.text("serverTree.connection.badge.wantedOnline");
     }
     if (!desiredOnline && online) {
-      return " [disconnect queued]";
+      return MESSAGES.text("serverTree.connection.badge.disconnectQueued");
     }
     return "";
   }
@@ -52,13 +59,13 @@ public final class ServerTreeConnectionStateViewModel {
     ConnectionState st = state == null ? ConnectionState.DISCONNECTED : state;
     boolean online = isOnlineState(st);
     if (desiredOnline && st == ConnectionState.DISCONNECTING) {
-      return "Connect is queued until the current disconnect finishes.";
+      return MESSAGES.text("serverTree.connection.tip.connectQueued");
     }
     if (desiredOnline && st == ConnectionState.DISCONNECTED) {
-      return "Wanted online; waiting for a successful connect attempt.";
+      return MESSAGES.text("serverTree.connection.tip.wantedOnline");
     }
     if (!desiredOnline && online) {
-      return "Disconnect is queued.";
+      return MESSAGES.text("serverTree.connection.tip.disconnectQueued");
     }
     return "";
   }
@@ -66,10 +73,10 @@ public final class ServerTreeConnectionStateViewModel {
   public static String actionHint(ConnectionState state) {
     ConnectionState st = state == null ? ConnectionState.DISCONNECTED : state;
     return canConnect(st)
-        ? "Click the row action to connect."
+        ? MESSAGES.text("serverTree.connection.actionHint.connect")
         : canDisconnect(st)
-            ? "Click the row action to disconnect."
-            : "Connection state is changing.";
+            ? MESSAGES.text("serverTree.connection.actionHint.disconnect")
+            : MESSAGES.text("serverTree.connection.actionHint.changing");
   }
 
   public static String serverNodeIconName(ConnectionState state) {

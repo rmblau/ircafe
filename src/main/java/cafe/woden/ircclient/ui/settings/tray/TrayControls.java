@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.tray;
 
 import cafe.woden.ircclient.model.BuiltInSound;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.NotificationBackendMode;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -12,18 +13,20 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 
 enum PushyTargetMode {
-  DEVICE_TOKEN("Device token"),
-  TOPIC("Topic");
+  DEVICE_TOKEN("preferences.tray.controls.pushy.targetMode.deviceToken"),
+  TOPIC("preferences.tray.controls.pushy.targetMode.topic");
 
-  private final String label;
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
-  PushyTargetMode(String label) {
-    this.label = label;
+  private final String messageKey;
+
+  PushyTargetMode(String messageKey) {
+    this.messageKey = messageKey;
   }
 
   @Override
   public String toString() {
-    return label;
+    return MESSAGES.text(messageKey);
   }
 }
 

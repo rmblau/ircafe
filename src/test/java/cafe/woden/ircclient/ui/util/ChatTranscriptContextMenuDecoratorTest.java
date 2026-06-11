@@ -9,6 +9,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextPane;
@@ -208,6 +211,56 @@ class ChatTranscriptContextMenuDecoratorTest {
     assertTrue(menuContains(menuFor(decorator), revealRedactedMessageItem));
     assertTrue(revealRedactedMessageItem.isEnabled());
     assertEquals("Display Redacted Message…", revealRedactedMessageItem.getText());
+  }
+
+  @Test
+  void contextMenuTranslateSubmenuInvokesSelectedLanguage() throws Exception {
+    JTextPane transcript = new JTextPane();
+    ChatTranscriptContextMenuDecorator decorator = buildDecorator(transcript, false, false, false);
+    AtomicReference<String> selected = new AtomicReference<>("");
+    decorator.setTranslationActions(
+        () -> true,
+        () ->
+            List.of(
+                new ChatTranscriptContextMenuDecorator.TranslationLanguageChoice("es", "Spanish")),
+        (messageId, language) -> selected.set(messageId + ":" + language));
+
+    setPopupLineIdentity(decorator, "abc123", false, false);
+    invokePrivate(decorator, "rebuildMenu", new Class<?>[] {String.class}, "");
+    invokePrivate(decorator, "updateEnabledState", new Class<?>[] {String.class}, "");
+
+    JMenu translateMessageMenu = (JMenu) readField(decorator, "translateMessageMenu");
+
+    assertTrue(menuContains(menuFor(decorator), translateMessageMenu));
+    assertTrue(translateMessageMenu.isEnabled());
+    assertEquals(1, translateMessageMenu.getItemCount());
+    translateMessageMenu.getItem(0).doClick();
+    assertEquals("abc123:es", selected.get());
+  }
+
+  @Test
+  void contextMenuShowsDisabledTranslateSubmenuWhenTranslationUnavailable() throws Exception {
+    JTextPane transcript = new JTextPane();
+    ChatTranscriptContextMenuDecorator decorator = buildDecorator(transcript, false, false, false);
+    decorator.setTranslationActions(
+        () -> true,
+        () -> false,
+        () ->
+            List.of(
+                new ChatTranscriptContextMenuDecorator.TranslationLanguageChoice("es", "Spanish")),
+        (messageId, language) -> {});
+
+    setPopupLineIdentity(decorator, "abc123", false, false);
+    invokePrivate(decorator, "rebuildMenu", new Class<?>[] {String.class}, "");
+    invokePrivate(decorator, "updateEnabledState", new Class<?>[] {String.class}, "");
+
+    JMenu translateMessageMenu = (JMenu) readField(decorator, "translateMessageMenu");
+
+    assertTrue(menuContains(menuFor(decorator), translateMessageMenu));
+    assertFalse(translateMessageMenu.isEnabled());
+    assertEquals(
+        "Unavailable: translation is disabled or manual mode is not selected.",
+        translateMessageMenu.getToolTipText());
   }
 
   private static ChatTranscriptContextMenuDecorator buildDecorator(

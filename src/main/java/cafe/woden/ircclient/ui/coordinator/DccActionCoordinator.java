@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.coordinator;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.NickContextMenuFactory;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.awt.Component;
 import java.io.File;
 import java.util.Objects;
@@ -23,14 +24,21 @@ public final class DccActionCoordinator {
   private final BiConsumer<TargetRef, String> commandEmitter;
   private final Supplier<JFileChooser> chooserSupplier;
   private final InvalidPathWarning invalidPathWarning;
+  private final UiMessages messages;
 
   public DccActionCoordinator(
       Component ownerComponent, BiConsumer<TargetRef, String> commandEmitter) {
+    this(ownerComponent, commandEmitter, UiMessages.bundledDefaults());
+  }
+
+  public DccActionCoordinator(
+      Component ownerComponent, BiConsumer<TargetRef, String> commandEmitter, UiMessages messages) {
     this(
         ownerComponent,
         commandEmitter,
         JFileChooser::new,
-        DccActionCoordinator::showInvalidPathWarning);
+        owner -> showInvalidPathWarning(owner, messages),
+        messages);
   }
 
   public DccActionCoordinator(
@@ -38,10 +46,25 @@ public final class DccActionCoordinator {
       BiConsumer<TargetRef, String> commandEmitter,
       Supplier<JFileChooser> chooserSupplier,
       InvalidPathWarning invalidPathWarning) {
+    this(
+        ownerComponent,
+        commandEmitter,
+        chooserSupplier,
+        invalidPathWarning,
+        UiMessages.bundledDefaults());
+  }
+
+  public DccActionCoordinator(
+      Component ownerComponent,
+      BiConsumer<TargetRef, String> commandEmitter,
+      Supplier<JFileChooser> chooserSupplier,
+      InvalidPathWarning invalidPathWarning,
+      UiMessages messages) {
     this.ownerComponent = Objects.requireNonNull(ownerComponent, "ownerComponent");
     this.commandEmitter = Objects.requireNonNull(commandEmitter, "commandEmitter");
     this.chooserSupplier = Objects.requireNonNull(chooserSupplier, "chooserSupplier");
     this.invalidPathWarning = Objects.requireNonNull(invalidPathWarning, "invalidPathWarning");
+    this.messages = Objects.requireNonNull(messages, "messages");
   }
 
   public void requestAction(TargetRef ctx, String nick, NickContextMenuFactory.DccAction action) {
@@ -64,7 +87,7 @@ public final class DccActionCoordinator {
     JFileChooser chooser =
         Objects.requireNonNull(
             chooserSupplier.get(), "chooserSupplier must not return a null chooser");
-    chooser.setDialogTitle("Send File to " + nick);
+    chooser.setDialogTitle(messages.text("dcc.action.sendFile.dialogTitle", nick));
     chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
     Component owner = SwingUtilities.getWindowAncestor(ownerComponent);
@@ -91,8 +114,11 @@ public final class DccActionCoordinator {
     commandEmitter.accept(ctx, cmd);
   }
 
-  private static void showInvalidPathWarning(Component owner) {
+  private static void showInvalidPathWarning(Component owner, UiMessages messages) {
     JOptionPane.showMessageDialog(
-        owner, "Refusing file path containing newlines.", "DCC Send", JOptionPane.WARNING_MESSAGE);
+        owner,
+        messages.text("dcc.action.sendFile.invalidPath.message"),
+        messages.text("dcc.action.sendFile.invalidPath.title"),
+        JOptionPane.WARNING_MESSAGE);
   }
 }

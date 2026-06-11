@@ -8,6 +8,7 @@ import cafe.woden.ircclient.ui.chat.transcript.rebuild.TranscriptRebuildService;
 import cafe.woden.ircclient.ui.filter.FilterRuleEntryDialog;
 import cafe.woden.ircclient.ui.filter.FilterSettings;
 import cafe.woden.ircclient.ui.filter.FilterSettingsBus;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
 import java.awt.Window;
@@ -40,7 +41,8 @@ final class FilterRuleControlsSupport {
       ActiveTargetPort targetCoordinator,
       TranscriptRebuildService transcriptRebuildService,
       List<AutoCloseable> closeables) {
-    FilterRulesTableModel rulesModel = new FilterRulesTableModel();
+    UiMessages messages = UiMessages.bundledDefaults();
+    FilterRulesTableModel rulesModel = new FilterRulesTableModel(messages);
     rulesModel.setRules(current.rules());
 
     JTable rulesTable = new JTable(rulesModel);
@@ -142,16 +144,31 @@ final class FilterRuleControlsSupport {
           }
         });
 
-    JButton addRule = PreferencesUiSupport.iconOnlyButton("Add rule...", "plus", "Add filter rule");
+    JButton addRule =
+        PreferencesUiSupport.iconOnlyButton(
+            messages.text("filter.rules.button.add"),
+            "plus",
+            messages.text("filter.rules.button.add.tooltip"));
     JButton editRule =
-        PreferencesUiSupport.iconOnlyButton("Edit...", "edit", "Edit selected filter rule");
+        PreferencesUiSupport.iconOnlyButton(
+            messages.text("filter.rules.button.edit"),
+            "edit",
+            messages.text("filter.rules.button.edit.tooltip"));
     JButton deleteRule =
-        PreferencesUiSupport.iconOnlyButton("Delete", "trash", "Delete selected filter rule");
+        PreferencesUiSupport.iconOnlyButton(
+            messages.text("filter.rules.button.delete"),
+            "trash",
+            messages.text("filter.rules.button.delete.tooltip"));
     JButton moveRuleUp =
-        PreferencesUiSupport.iconOnlyButton("Move up", "arrow-up", "Move selected filter rule up");
+        PreferencesUiSupport.iconOnlyButton(
+            messages.text("filter.rules.button.moveUp"),
+            "arrow-up",
+            messages.text("filter.rules.button.moveUp.tooltip"));
     JButton moveRuleDown =
         PreferencesUiSupport.iconOnlyButton(
-            "Move down", "arrow-down", "Move selected filter rule down");
+            messages.text("filter.rules.button.moveDown"),
+            "arrow-down",
+            messages.text("filter.rules.button.moveDown.tooltip"));
     editRule.setEnabled(false);
     deleteRule.setEnabled(false);
     moveRuleUp.setEnabled(false);
@@ -365,7 +382,12 @@ final class FilterRuleControlsSupport {
 
           var edited =
               FilterRuleEntryDialog.open(
-                  owner, "Edit Filter Rule", seed, reserved, seed.scopePattern());
+                  owner,
+                  messages.text("filter.rules.dialog.editTitle"),
+                  seed,
+                  reserved,
+                  seed.scopePattern(),
+                  messages);
           if (edited.isEmpty()) return;
 
           List<FilterRule> nextRules = new ArrayList<>();
@@ -424,7 +446,9 @@ final class FilterRuleControlsSupport {
           if (seed == null) return;
 
           if (!PreferencesUiSupport.confirmOkCancel(
-              owner, "Delete filter rule '" + seed.name() + "'?", "Delete Filter Rule")) {
+              owner,
+              messages.text("filter.rules.delete.confirm", seed.name()),
+              messages.text("filter.rules.delete.title"))) {
             return;
           }
 
@@ -486,7 +510,13 @@ final class FilterRuleControlsSupport {
           }
 
           var created =
-              FilterRuleEntryDialog.open(owner, "Add Filter Rule", null, reserved, suggestedScope);
+              FilterRuleEntryDialog.open(
+                  owner,
+                  messages.text("filter.rules.dialog.addTitle"),
+                  null,
+                  reserved,
+                  suggestedScope,
+                  messages);
           if (created.isEmpty()) return;
 
           List<FilterRule> nextRules = new ArrayList<>();

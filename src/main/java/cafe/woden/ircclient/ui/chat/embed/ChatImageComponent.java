@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.chat.embed;
 
 import cafe.woden.ircclient.ui.SwingEdt;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.EmbedCardStyle;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
@@ -47,6 +48,7 @@ final class ChatImageComponent extends JPanel {
   private static final Insets CARD_PAD_EXPANDED_DEFAULT = new Insets(10, 12, 10, 12);
   private static final Insets CARD_PAD_COLLAPSED_DEFAULT = new Insets(6, 12, 6, 12);
   private static final int CARD_CORNER_ARC_DEFAULT = 18;
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private final String url;
   private final String serverId;
@@ -60,7 +62,7 @@ final class ChatImageComponent extends JPanel {
 
   private boolean collapsed;
 
-  private final JLabel imageLabel = new JLabel("Loading image…");
+  private final JLabel imageLabel = new JLabel(message("chatImage.status.loading"));
 
   private JPanel card;
   private JPanel header;
@@ -244,7 +246,10 @@ final class ChatImageComponent extends JPanel {
     if (collapseBtn != null) {
       collapseBtn.setText("");
       collapseBtn.setIcon(collapsed ? COLLAPSED_ICON : EXPANDED_ICON);
-      collapseBtn.setToolTipText(collapsed ? "Expand image" : "Collapse image");
+      collapseBtn.setToolTipText(
+          collapsed
+              ? message("chatImage.button.expand.tooltip")
+              : message("chatImage.button.collapse.tooltip"));
     }
 
     if (body != null) {
@@ -266,7 +271,7 @@ final class ChatImageComponent extends JPanel {
 
   private void beginLoad() {
     if (fetch == null) {
-      imageLabel.setText("(image embeds disabled)");
+      imageLabel.setText(message("chatImage.status.disabled"));
       return;
     }
 
@@ -302,7 +307,7 @@ final class ChatImageComponent extends JPanel {
                     if (gifCoordinator != null) {
                       gifCoordinator.rejectGifHint(embedSeq);
                     }
-                    imageLabel.setText("(image decode failed)");
+                    imageLabel.setText(message("chatImage.status.decodeFailed"));
                     imageLabel.setToolTipText(url + System.lineSeparator() + ex.getMessage());
                   }
                 },
@@ -311,7 +316,7 @@ final class ChatImageComponent extends JPanel {
                   if (gifCoordinator != null) {
                     gifCoordinator.rejectGifHint(embedSeq);
                   }
-                  imageLabel.setText("(image failed to load)");
+                  imageLabel.setText(message("chatImage.status.loadFailed"));
                   imageLabel.setToolTipText(url + System.lineSeparator() + err.getMessage());
                 });
   }
@@ -392,7 +397,7 @@ final class ChatImageComponent extends JPanel {
         d = ImageDecodeUtil.decode(url, raw);
         decoded = d;
       } catch (Exception ignored) {
-        imageLabel.setText("(image decode failed)");
+        imageLabel.setText(message("chatImage.status.decodeFailed"));
         return;
       }
     }
@@ -541,13 +546,13 @@ final class ChatImageComponent extends JPanel {
   private void installPopup(JPanel target) {
     JPopupMenu menu = new JPopupMenu();
 
-    JMenuItem view = new JMenuItem("View image");
+    JMenuItem view = new JMenuItem(message("chatImage.context.viewImage"));
     view.addActionListener(e -> openViewer());
 
-    JMenuItem openBrowser = new JMenuItem("Open image link");
+    JMenuItem openBrowser = new JMenuItem(message("chatImage.context.openImageLink"));
     openBrowser.addActionListener(e -> openInBrowser());
 
-    JMenuItem copyUrl = new JMenuItem("Copy URL");
+    JMenuItem copyUrl = new JMenuItem(message("chatImage.context.copyUrl"));
     copyUrl.addActionListener(
         e -> {
           Toolkit.getDefaultToolkit()
@@ -597,6 +602,10 @@ final class ChatImageComponent extends JPanel {
     if (w == null) return;
 
     ImageViewerDialog.show(w, url, b);
+  }
+
+  private static String message(String key, Object... args) {
+    return MESSAGES.text(key, args);
   }
 
   private JPanel createCardPanel() {

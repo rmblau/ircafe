@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.settings.notifications;
 import cafe.woden.ircclient.config.api.NotificationRuntimeConfigPort;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.notifications.api.IrcEventNotificationRulesPort;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
 import cafe.woden.ircclient.ui.util.MigConstraints;
@@ -21,6 +22,8 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.table.TableColumn;
 
 public final class IrcEventNotificationsTabSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private IrcEventNotificationsTabSupport() {}
 
   public static IrcEventNotificationControls buildControls(
@@ -65,37 +68,63 @@ public final class IrcEventNotificationsTabSupport {
         new JComboBox<>(IrcEventNotificationPresetSupport.Preset.values());
     JButton applyDefaults =
         PreferencesUiSupport.iconOnlyButton(
-            "Apply defaults", "check", "Apply preset defaults to matching IRC event types");
+            MESSAGES.text("preferences.notifications.ircEvents.button.applyDefaults"),
+            "check",
+            MESSAGES.text("preferences.notifications.ircEvents.button.applyDefaults.tooltip"));
     JButton resetToIrcafeDefaults =
         PreferencesUiSupport.iconOnlyButton(
-            "Reset to IRCafe defaults",
+            MESSAGES.text("preferences.notifications.ircEvents.button.resetDefaults"),
             "refresh",
-            "Replace all IRC event rules with IRCafe defaults");
+            MESSAGES.text("preferences.notifications.ircEvents.button.resetDefaults.tooltip"));
 
     JPanel defaultsRow = new JPanel(MigLayouts.fillX("[]8[grow,fill]8[]8[]", "[]"));
     defaultsRow.setOpaque(false);
-    defaultsRow.add(new JLabel("Defaults"));
+    defaultsRow.add(
+        new JLabel(MESSAGES.text("preferences.notifications.ircEvents.field.defaults")));
     defaultsRow.add(defaultsPreset, MigConstraints.width(240));
     defaultsRow.add(applyDefaults, MigConstraints.widthHeight(36, 28));
     defaultsRow.add(resetToIrcafeDefaults, MigConstraints.widthHeight(36, 28));
 
-    JButton add = PreferencesUiSupport.iconOnlyButton("Add", "plus", "Add IRC event rule");
+    JButton add =
+        PreferencesUiSupport.iconOnlyButton(
+            MESSAGES.text("preferences.notifications.ircEvents.button.add"),
+            "plus",
+            MESSAGES.text("preferences.notifications.ircEvents.button.add.tooltip"));
     JButton edit =
-        PreferencesUiSupport.iconOnlyButton("Edit", "edit", "Edit selected IRC event rule");
+        PreferencesUiSupport.iconOnlyButton(
+            MESSAGES.text("preferences.notifications.ircEvents.button.edit"),
+            "edit",
+            MESSAGES.text("preferences.notifications.ircEvents.button.edit.tooltip"));
     JButton enableRule =
-        PreferencesUiSupport.iconOnlyButton("Enable", "check", "Enable selected IRC event rule");
+        PreferencesUiSupport.iconOnlyButton(
+            MESSAGES.text("preferences.notifications.ircEvents.button.enable"),
+            "check",
+            MESSAGES.text("preferences.notifications.ircEvents.button.enable.tooltip"));
     JButton disableRule =
-        PreferencesUiSupport.iconOnlyButton("Disable", "pause", "Disable selected IRC event rule");
+        PreferencesUiSupport.iconOnlyButton(
+            MESSAGES.text("preferences.notifications.ircEvents.button.disable"),
+            "pause",
+            MESSAGES.text("preferences.notifications.ircEvents.button.disable.tooltip"));
     JButton duplicate =
         PreferencesUiSupport.iconOnlyButton(
-            "Duplicate", "copy", "Duplicate selected IRC event rule");
+            MESSAGES.text("preferences.notifications.ircEvents.button.duplicate"),
+            "copy",
+            MESSAGES.text("preferences.notifications.ircEvents.button.duplicate.tooltip"));
     JButton remove =
-        PreferencesUiSupport.iconOnlyButton("Remove", "trash", "Remove selected IRC event rule");
+        PreferencesUiSupport.iconOnlyButton(
+            MESSAGES.text("preferences.notifications.ircEvents.button.remove"),
+            "trash",
+            MESSAGES.text("preferences.notifications.ircEvents.button.remove.tooltip"));
     JButton up =
-        PreferencesUiSupport.iconOnlyButton("Up", "arrow-up", "Move selected IRC event rule up");
+        PreferencesUiSupport.iconOnlyButton(
+            MESSAGES.text("preferences.notifications.ircEvents.button.up"),
+            "arrow-up",
+            MESSAGES.text("preferences.notifications.ircEvents.button.up.tooltip"));
     JButton down =
         PreferencesUiSupport.iconOnlyButton(
-            "Down", "arrow-down", "Move selected IRC event rule down");
+            MESSAGES.text("preferences.notifications.ircEvents.button.down"),
+            "arrow-down",
+            MESSAGES.text("preferences.notifications.ircEvents.button.down.tooltip"));
 
     Runnable refreshRuleButtons =
         () -> {
@@ -115,7 +144,10 @@ public final class IrcEventNotificationsTabSupport {
             NotificationRuleTableSupport.editSelectedRow(
                 controls.table(),
                 controls.model()::ruleAt,
-                seed -> ruleEditor.prompt("Edit IRC Event Rule", seed),
+                seed ->
+                    ruleEditor.prompt(
+                        MESSAGES.text("preferences.notifications.ircEvents.dialog.editTitle"),
+                        seed),
                 controls.model()::setRule,
                 refreshRuleButtons);
 
@@ -123,7 +155,9 @@ public final class IrcEventNotificationsTabSupport {
         e ->
             NotificationRuleTableSupport.addRow(
                 controls.table(),
-                () -> ruleEditor.prompt("Add IRC Event Rule", null),
+                () ->
+                    ruleEditor.prompt(
+                        MESSAGES.text("preferences.notifications.ircEvents.dialog.addTitle"), null),
                 controls.model()::addRule,
                 refreshRuleButtons));
 
@@ -156,7 +190,9 @@ public final class IrcEventNotificationsTabSupport {
                     IrcEventNotificationTableModel.effectiveRuleLabel(controls.model().ruleAt(row)),
                 label ->
                     PreferencesUiSupport.confirmOkCancel(
-                        owner, "Remove IRC event rule \"" + label + "\"?", "Remove IRC Event Rule"),
+                        owner,
+                        MESSAGES.text("preferences.notifications.ircEvents.remove.confirm", label),
+                        MESSAGES.text("preferences.notifications.ircEvents.remove.title")),
                 controls.model()::removeRow,
                 refreshRuleButtons));
 
@@ -190,8 +226,8 @@ public final class IrcEventNotificationsTabSupport {
         e -> {
           if (!PreferencesUiSupport.confirmOkCancel(
               owner,
-              "Replace all IRC event rules with IRCafe defaults?",
-              "Reset IRC event rules")) {
+              MESSAGES.text("preferences.notifications.ircEvents.reset.confirm"),
+              MESSAGES.text("preferences.notifications.ircEvents.reset.title"))) {
             return;
           }
 
@@ -216,20 +252,21 @@ public final class IrcEventNotificationsTabSupport {
 
     JPanel presetsPanel =
         PreferencesUiSupport.captionPanelWithPadding(
-            "Presets", MigLayouts.singleColumn(MigLayouts.rows(2, 4)), 10, 10, 10, 10);
+            MESSAGES.text("preferences.notifications.ircEvents.section.presets"),
+            MigLayouts.singleColumn(MigLayouts.rows(2, 4)),
+            10,
+            10,
+            10,
+            10);
     presetsPanel.add(defaultsRow, MigConstraints.growXMinWidth0Wrap());
     presetsPanel.add(
-        PreferencesUiSupport.helpText(
-            "Configure event actions for kicks, bans, invites, joins, and mode changes.\n"
-                + "Source supports self/others/specific nicks/glob/regex. Channel scope supports Active channel only.\n"
-                + "CTCP rules can filter command/value and include quick templates in the Filters tab.\n"
-                + "Apply defaults merges by event type. Reset to IRCafe defaults replaces the full rule list."),
+        PreferencesUiSupport.helpText(MESSAGES.text("preferences.notifications.ircEvents.help")),
         MigConstraints.growXMinWidth0Wrap());
     tab.add(presetsPanel, MigConstraints.growXMinWidth0Wrap());
 
     JPanel rulesPanel =
         PreferencesUiSupport.captionPanelWithPadding(
-            "Rules",
+            MESSAGES.text("preferences.notifications.ircEvents.section.rules"),
             MigLayoutConstraints.INSETS_0_FILL_WRAP_1,
             MigLayoutConstraints.GROW_FILL,
             "[]6[grow,fill]4[]",
@@ -244,7 +281,8 @@ public final class IrcEventNotificationsTabSupport {
     scroll.setPreferredSize(new Dimension(400, 260));
     rulesPanel.add(scroll, MigConstraints.growPushMinWidth0Wrap());
     rulesPanel.add(
-        PreferencesUiSupport.helpText("Tip: Double-click a rule to edit it."),
+        PreferencesUiSupport.helpText(
+            MESSAGES.text("preferences.notifications.ircEvents.rules.tip")),
         MigConstraints.growXMinWidth0Wrap());
     tab.add(rulesPanel, MigConstraints.growPushMinWidth0Wrap());
 

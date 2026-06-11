@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.notifications;
 
 import cafe.woden.ircclient.config.api.NotificationRule;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -8,6 +9,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 final class NotificationRuleTestReportSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private NotificationRuleTestReportSupport() {}
 
   static String buildRuleTestReport(
@@ -15,25 +18,30 @@ final class NotificationRuleTestReportSupport {
     String msg = sample != null ? sample : "";
     msg = msg.trim();
     if (msg.isEmpty()) {
-      return "Type a sample message above, then click Test.";
+      return MESSAGES.text("preferences.notifications.rules.test.empty");
     }
 
     StringBuilder out = new StringBuilder();
 
     if (errors != null && !errors.isEmpty()) {
-      out.append("Invalid REGEX rules (ignored):\n");
+      out.append(MESSAGES.text("preferences.notifications.rules.test.invalidRegexHeader"))
+          .append("\n");
       int shown = 0;
       for (ValidationError e : errors) {
         if (e == null) continue;
-        out.append("  - row ")
-            .append(e.rowIndex() + 1)
-            .append(": ")
-            .append(e.effectiveLabel())
+        out.append(
+                MESSAGES.text(
+                    "preferences.notifications.rules.test.invalidRegexRow",
+                    e.rowIndex() + 1,
+                    e.effectiveLabel()))
             .append("\n");
         shown++;
         if (shown >= 5) {
           int remain = errors.size() - shown;
-          if (remain > 0) out.append("  (").append(remain).append(" more)\n");
+          if (remain > 0) {
+            out.append(MESSAGES.text("preferences.notifications.rules.test.more", remain))
+                .append("\n");
+          }
           break;
         }
       }
@@ -75,13 +83,16 @@ final class NotificationRuleTestReportSupport {
     }
 
     if (!invalidRegex.isEmpty() && (errors == null || errors.isEmpty())) {
-      out.append("Some REGEX rules are invalid and were ignored.\n\n");
+      out.append(MESSAGES.text("preferences.notifications.rules.test.invalidRegexWarning"))
+          .append("\n\n");
     }
 
     if (matches.isEmpty()) {
-      out.append("No matches.");
+      out.append(MESSAGES.text("preferences.notifications.rules.test.noMatches"));
     } else {
-      out.append("Matches (").append(matches.size()).append("):\n");
+      out.append(
+              MESSAGES.text("preferences.notifications.rules.test.matchesHeader", matches.size()))
+          .append("\n");
       for (String l : matches) {
         out.append("  ").append(l).append("\n");
       }
@@ -94,8 +105,11 @@ final class NotificationRuleTestReportSupport {
     String label =
         (rule.label() != null && !rule.label().trim().isEmpty())
             ? rule.label().trim()
-            : (rule.pattern() != null ? rule.pattern().trim() : "(unnamed)");
-    return "- " + label + " [" + rule.type() + "]: " + snippet;
+            : (rule.pattern() != null
+                ? rule.pattern().trim()
+                : MESSAGES.text("preferences.notifications.rules.test.unnamed"));
+    return MESSAGES.text(
+        "preferences.notifications.rules.test.matchLine", label, rule.type(), snippet);
   }
 
   private static String snippetAround(String msg, int start, int end) {

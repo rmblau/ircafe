@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.input;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.util.PopupMenuThemeSupport;
 import java.awt.*;
 import java.util.Objects;
@@ -11,6 +12,7 @@ import org.slf4j.LoggerFactory;
 /** Owns reply-compose state + banner UI, and quick-reaction emission. */
 public final class MessageInputComposeSupport {
   private static final Logger log = LoggerFactory.getLogger(MessageInputComposeSupport.class);
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private static final String[] QUICK_REACTION_TOKENS = {
     ":+1:", ":heart:", ":laughing:", ":thinking:", ":eyes:"
@@ -28,8 +30,9 @@ public final class MessageInputComposeSupport {
   private final JPanel composeBanner = new JPanel(new BorderLayout(6, 0));
   private final JLabel composeBannerLabel = new JLabel();
   private final JPanel composeBannerActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 4, 0));
-  private final JButton composeBannerJump = new JButton("Jump");
-  private final JButton composeBannerCancel = new JButton("Cancel");
+  private final JButton composeBannerJump =
+      new JButton(MESSAGES.text("messageInput.reply.button.jump"));
+  private final JButton composeBannerCancel = new JButton(MESSAGES.text("common.button.cancel"));
 
   private String replyComposeTarget = "";
   private String replyComposeMessageId = "";
@@ -150,14 +153,14 @@ public final class MessageInputComposeSupport {
       menu.add(item);
     }
     menu.addSeparator();
-    JMenuItem custom = new JMenuItem("Custom...");
+    JMenuItem custom = new JMenuItem(MESSAGES.text("messageInput.reaction.custom"));
     custom.addActionListener(
         e -> {
           String entered =
               JOptionPane.showInputDialog(
                   SwingUtilities.getWindowAncestor(dialogOwner),
-                  "Reaction token (for example :sparkles:)",
-                  "React to Message",
+                  MESSAGES.text("messageInput.reaction.dialog.prompt"),
+                  MESSAGES.text("messageInput.reaction.dialog.title"),
                   JOptionPane.PLAIN_MESSAGE);
           String token = normalizeReactionToken(entered);
           if (token.isEmpty()) return;
@@ -241,12 +244,12 @@ public final class MessageInputComposeSupport {
       composeBannerLabel.setText(replyComposeBannerText());
       composeBannerJump.setVisible(replyComposeJumpAction != null);
       composeBanner.setVisible(true);
-      updateSendButtonHint("Send reply");
+      updateSendButtonHint(MESSAGES.text("messageInput.send.tooltip.reply"));
     } else {
       composeBannerLabel.setText("");
       composeBannerJump.setVisible(false);
       composeBanner.setVisible(false);
-      updateSendButtonHint("Send message");
+      updateSendButtonHint(MESSAGES.text("messageInput.send.tooltip.message"));
     }
 
     try {
@@ -259,7 +262,7 @@ public final class MessageInputComposeSupport {
 
   private void updateSendButtonHint(String tooltip) {
     String text = Objects.toString(tooltip, "").trim();
-    if (text.isEmpty()) text = "Send message";
+    if (text.isEmpty()) text = MESSAGES.text("messageInput.send.tooltip.message");
     sendButton.setToolTipText(text);
     if (sendButton.getAccessibleContext() != null) {
       sendButton.getAccessibleContext().setAccessibleName(text);
@@ -274,9 +277,11 @@ public final class MessageInputComposeSupport {
   }
 
   private String replyComposeBannerText() {
-    String base = "Replying to message " + abbreviateMessageId(replyComposeMessageId);
-    if (replyComposePreview.isBlank()) return base;
-    return base + " - " + replyComposePreview;
+    String messageId = abbreviateMessageId(replyComposeMessageId);
+    if (replyComposePreview.isBlank()) {
+      return MESSAGES.text("messageInput.reply.banner", messageId);
+    }
+    return MESSAGES.text("messageInput.reply.banner.withPreview", messageId, replyComposePreview);
   }
 
   private static String normalizeReplyPreviewText(String rawText) {

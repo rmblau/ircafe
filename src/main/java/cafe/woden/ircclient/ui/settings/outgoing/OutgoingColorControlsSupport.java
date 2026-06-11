@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.outgoing;
 
 import cafe.woden.ircclient.config.api.OutgoingMessageRuntimeConfigPort;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorPickerDialogSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
@@ -21,13 +22,15 @@ import javax.swing.JTextField;
 import javax.swing.UIManager;
 
 public final class OutgoingColorControlsSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private OutgoingColorControlsSupport() {}
 
   public static OutgoingColorControls buildControls(Window owner, UiSettings current) {
-    JCheckBox outgoingColorEnabled = new JCheckBox("Use custom color for my outgoing messages");
+    JCheckBox outgoingColorEnabled =
+        new JCheckBox(MESSAGES.text("preferences.outgoingColor.enabled"));
     outgoingColorEnabled.setSelected(current.clientLineColorEnabled());
-    outgoingColorEnabled.setToolTipText(
-        "If enabled, IRCafe will render lines you send (locally echoed into chat) using a custom color.");
+    outgoingColorEnabled.setToolTipText(MESSAGES.text("preferences.outgoingColor.enabled.tooltip"));
 
     JTextField outgoingColorHex =
         new JTextField(UiSettings.normalizeHexOrDefault(current.clientLineColor(), "#6AA2FF"), 10);
@@ -38,7 +41,7 @@ public final class OutgoingColorControlsSupport {
     outgoingPreview.setBorder(BorderFactory.createEmptyBorder(4, 10, 4, 10));
     outgoingPreview.setPreferredSize(new Dimension(120, 24));
 
-    JButton outgoingPick = new JButton("Pick...");
+    JButton outgoingPick = new JButton(MESSAGES.text("preferences.outgoingColor.pick"));
     outgoingPick.addActionListener(
         e -> {
           Color currentColor = SettingsColorSupport.parseHexColor(outgoingColorHex.getText());
@@ -55,7 +58,7 @@ public final class OutgoingColorControlsSupport {
           Color chosen =
               SettingsColorPickerDialogSupport.showColorPickerDialog(
                   owner,
-                  "Choose Outgoing Message Color",
+                  MESSAGES.text("preferences.outgoingColor.dialog.title"),
                   currentColor,
                   SettingsColorSupport.preferredPreviewBackground());
           if (chosen != null) {
@@ -92,7 +95,7 @@ public final class OutgoingColorControlsSupport {
             outgoingPreview.setText(SettingsColorSupport.toHex(c));
           } else {
             outgoingPreview.setOpaque(false);
-            outgoingPreview.setText("Invalid");
+            outgoingPreview.setText(MESSAGES.text("preferences.outgoingColor.preview.invalid"));
           }
           outgoingPreview.repaint();
         };

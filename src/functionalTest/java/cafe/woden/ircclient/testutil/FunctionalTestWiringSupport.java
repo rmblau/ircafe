@@ -11,6 +11,8 @@ import cafe.woden.ircclient.app.api.UiPortDecorator;
 import cafe.woden.ircclient.app.api.UiTranscriptPort;
 import cafe.woden.ircclient.app.commands.SlashCommandPresentationCatalog;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
+import cafe.woden.ircclient.app.translation.MessageTranslationDispatcher;
+import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.ConnectionRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
@@ -485,6 +487,9 @@ public final class FunctionalTestWiringSupport {
         nickContextMenuFactory,
         proxyResolver,
         chatHistoryService,
+        Mockito.mock(MessageTranslationDispatcher.class),
+        Mockito.mock(MessageTranslationSettingsBus.class),
+        null,
         channelMetadata,
         chatLogViewerService,
         redactionAuditService,

@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.commands;
 
 import cafe.woden.ircclient.model.UserCommandAlias;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.SettingsRowsTableModel;
 import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import java.util.LinkedHashMap;
@@ -15,7 +16,12 @@ final class UserCommandAliasesTableModel
   static final int COL_ENABLED = 0;
   static final int COL_COMMAND = 1;
 
-  private static final String[] COLS = new String[] {"Enabled", "Command"};
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+  private static final String[] COLS =
+      new String[] {
+        MESSAGES.text("preferences.commands.aliases.column.enabled"),
+        MESSAGES.text("preferences.commands.aliases.column.command")
+      };
   private static final Pattern COMMAND_NAME_PATTERN = Pattern.compile("^[A-Za-z][A-Za-z0-9_-]*$");
 
   UserCommandAliasesTableModel(List<UserCommandAlias> initial) {
@@ -65,23 +71,24 @@ final class UserCommandAliasesTableModel
       String cmd = normalizeCommand(a.name);
       if (cmd.isEmpty()) {
         return new UserCommandAliasValidationError(
-            i, a.name, "Enabled aliases require a command name.");
+            i, a.name, MESSAGES.text("preferences.commands.aliases.validation.commandRequired"));
       }
       if (!COMMAND_NAME_PATTERN.matcher(cmd).matches()) {
         return new UserCommandAliasValidationError(
-            i,
-            a.name,
-            "Command names must start with a letter and contain only letters, numbers, '_' or '-'.");
+            i, a.name, MESSAGES.text("preferences.commands.aliases.validation.commandPattern"));
       }
       if (SettingsValueSupport.trimmedString(a.template).isEmpty()) {
-        return new UserCommandAliasValidationError(i, cmd, "Enabled aliases require an expansion.");
+        return new UserCommandAliasValidationError(
+            i, cmd, MESSAGES.text("preferences.commands.aliases.validation.expansionRequired"));
       }
 
       String key = cmd.toLowerCase(Locale.ROOT);
       Integer prev = seenEnabled.putIfAbsent(key, i);
       if (prev != null) {
         return new UserCommandAliasValidationError(
-            i, cmd, "Duplicate enabled alias: /" + cmd + " (also used on row " + (prev + 1) + ").");
+            i,
+            cmd,
+            MESSAGES.text("preferences.commands.aliases.validation.duplicate", cmd, prev + 1));
       }
     }
 

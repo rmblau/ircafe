@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.application;
 
 import cafe.woden.ircclient.diagnostics.RuntimeDiagnosticEvent;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.util.MigConstraints;
 import cafe.woden.ircclient.ui.util.MigLayouts;
 import cafe.woden.ircclient.util.VirtualThreads;
@@ -60,6 +61,7 @@ public final class InboundDedupDiagnosticsPanel extends JPanel {
   private static final ExecutorService SUPPORT_EXPORT_EXECUTOR =
       VirtualThreads.newThreadPerTaskExecutor("ircafe-inbound-dedup-export");
 
+  private final UiMessages uiMessages;
   private final RuntimeEventsPanel eventsPanel;
   private final java.util.function.Supplier<List<RuntimeDiagnosticEvent>> sourceEventsSupplier;
   private final JButton exportSupportButton = new JButton();
@@ -68,13 +70,21 @@ public final class InboundDedupDiagnosticsPanel extends JPanel {
   public InboundDedupDiagnosticsPanel(
       java.util.function.Supplier<List<RuntimeDiagnosticEvent>> sourceEventsSupplier,
       Flowable<?> refreshTrigger) {
+    this(sourceEventsSupplier, refreshTrigger, UiMessages.bundledDefaults());
+  }
+
+  public InboundDedupDiagnosticsPanel(
+      java.util.function.Supplier<List<RuntimeDiagnosticEvent>> sourceEventsSupplier,
+      Flowable<?> refreshTrigger,
+      UiMessages uiMessages) {
     super(new BorderLayout(0, 6));
+    this.uiMessages = Objects.requireNonNull(uiMessages, "uiMessages");
     this.sourceEventsSupplier =
         Objects.requireNonNull(sourceEventsSupplier, "sourceEventsSupplier");
     this.eventsPanel =
         new RuntimeEventsPanel(
-            "Inbound Dedup",
-            "Suppressed inbound duplicate msgid activity (per server/target/event type).",
+            this.uiMessages.text("inboundDedup.title"),
+            this.uiMessages.text("inboundDedup.subtitle"),
             this::filteredEvents,
             null,
             "inbound-dedup",
@@ -86,7 +96,7 @@ public final class InboundDedupDiagnosticsPanel extends JPanel {
     footer.setOpaque(false);
     footer.add(exportSupportButton);
     footer.add(
-        new JLabel("Export ZIP (CSV + summary) for support/debugging"),
+        new JLabel(uiMessages.text("inboundDedup.export.footer.label")),
         MigConstraints.alignXRight());
     add(footer, BorderLayout.SOUTH);
   }
@@ -99,13 +109,12 @@ public final class InboundDedupDiagnosticsPanel extends JPanel {
     exportSupportButton.setText("");
     exportSupportButton.setIcon(SvgIcons.action("copy", ACTION_ICON_SIZE));
     exportSupportButton.setDisabledIcon(SvgIcons.actionDisabled("copy", ACTION_ICON_SIZE));
-    exportSupportButton.setToolTipText(
-        "Export inbound dedup support bundle (CSV + aggregated summary)");
+    exportSupportButton.setToolTipText(uiMessages.text("inboundDedup.export.tooltip"));
     exportSupportButton.setFocusable(false);
     exportSupportButton.setPreferredSize(ACTION_BUTTON_SIZE);
     exportSupportButton
         .getAccessibleContext()
-        .setAccessibleName("Export inbound dedup support bundle");
+        .setAccessibleName(uiMessages.text("inboundDedup.export.accessibleName"));
     exportSupportButton.addActionListener(e -> exportSupportBundle());
     updateExportButtonState();
   }
@@ -116,8 +125,8 @@ public final class InboundDedupDiagnosticsPanel extends JPanel {
     if (rows.isEmpty()) {
       JOptionPane.showMessageDialog(
           SwingUtilities.getWindowAncestor(this),
-          "No inbound dedup rows are available to export yet.",
-          "Export Support Bundle",
+          uiMessages.text("inboundDedup.export.empty.message"),
+          uiMessages.text("inboundDedup.export.title"),
           JOptionPane.INFORMATION_MESSAGE);
       return;
     }
@@ -130,21 +139,24 @@ public final class InboundDedupDiagnosticsPanel extends JPanel {
                       setExportInProgress(false);
                       if (error != null) {
                         showMultilineDialog(
-                            "Export Error",
-                            "Failed to export inbound dedup support bundle:\n\n"
-                                + Objects.toString(error.getMessage(), ""),
+                            uiMessages.text("inboundDedup.export.error.title"),
+                            uiMessages.text(
+                                "inboundDedup.export.failed.message",
+                                Objects.toString(error.getMessage(), "")),
                             JOptionPane.ERROR_MESSAGE);
                         return;
                       }
                       if (report == null) {
                         showMultilineDialog(
-                            "Export Error",
-                            "Failed to export inbound dedup support bundle: no report returned.",
+                            uiMessages.text("inboundDedup.export.error.title"),
+                            uiMessages.text("inboundDedup.export.noReport.message"),
                             JOptionPane.ERROR_MESSAGE);
                         return;
                       }
                       showMultilineDialog(
-                          report.success() ? "Export Complete" : "Export Error",
+                          report.success()
+                              ? uiMessages.text("inboundDedup.export.complete.title")
+                              : uiMessages.text("inboundDedup.export.error.title"),
                           report.summary(),
                           report.success()
                               ? JOptionPane.INFORMATION_MESSAGE
@@ -161,8 +173,8 @@ public final class InboundDedupDiagnosticsPanel extends JPanel {
     exportSupportButton.setEnabled(!exportInProgress);
     exportSupportButton.setToolTipText(
         exportInProgress
-            ? "Export in progress..."
-            : "Export inbound dedup support bundle (CSV + aggregated summary)");
+            ? uiMessages.text("inboundDedup.export.inProgress.tooltip")
+            : uiMessages.text("inboundDedup.export.tooltip"));
   }
 
   private List<RuntimeDiagnosticEvent> filteredEvents() {
@@ -255,7 +267,7 @@ public final class InboundDedupDiagnosticsPanel extends JPanel {
     }
   }
 
-  private static SupportBundleReport createSupportBundle(List<RuntimeDiagnosticEvent> rows) {
+  private SupportBundleReport createSupportBundle(List<RuntimeDiagnosticEvent> rows) {
     List<RuntimeDiagnosticEvent> safeRows = rows == null ? List.of() : List.copyOf(rows);
     Instant startedAt = Instant.now();
     String baseName = "ircafe-inbound-dedup-support-" + EXPORT_TS_FMT.format(startedAt);
@@ -265,13 +277,13 @@ public final class InboundDedupDiagnosticsPanel extends JPanel {
 
     StringBuilder summary =
         new StringBuilder()
-            .append("Inbound dedup support bundle")
+            .append(uiMessages.text("inboundDedup.support.summary.title"))
             .append('\n')
-            .append("Generated at: ")
-            .append(ROW_TS_FMT.format(startedAt))
+            .append(
+                uiMessages.text(
+                    "inboundDedup.support.summary.generatedAt", ROW_TS_FMT.format(startedAt)))
             .append('\n')
-            .append("Rows: ")
-            .append(safeRows.size())
+            .append(uiMessages.text("inboundDedup.support.summary.rows", safeRows.size()))
             .append('\n');
     try {
       Files.createDirectories(exportDir);
@@ -284,12 +296,15 @@ public final class InboundDedupDiagnosticsPanel extends JPanel {
       zipDirectory(stagingDir, bundleZipPath);
       deleteRecursively(stagingDir);
 
-      summary.append("Bundle: ").append(bundleZipPath.toAbsolutePath());
+      summary.append(
+          uiMessages.text("inboundDedup.support.summary.bundle", bundleZipPath.toAbsolutePath()));
       return new SupportBundleReport(bundleZipPath, summary.toString(), true);
     } catch (Exception e) {
       deleteRecursivelyQuietly(stagingDir);
       String err =
-          "Failed to create support bundle: " + Objects.toString(e.getMessage(), e.toString());
+          uiMessages.text(
+              "inboundDedup.support.summary.createFailed",
+              Objects.toString(e.getMessage(), e.toString()));
       return new SupportBundleReport(null, summary.append(err).toString(), false);
     }
   }

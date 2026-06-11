@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.input;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.util.PopupMenuThemeSupport;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
@@ -27,6 +28,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class MessageInputContextMenuSupport {
   private static final Logger log = LoggerFactory.getLogger(MessageInputContextMenuSupport.class);
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private final JTextComponent input;
   private final MessageInputUndoSupport undoSupport;
@@ -65,16 +67,16 @@ public final class MessageInputContextMenuSupport {
       log.debug("[MessageInputContextMenuSupport] set undo/redo accelerators failed", ex);
     }
 
-    final JMenuItem cutItem = new JMenuItem("Cut");
+    final JMenuItem cutItem = new JMenuItem(MESSAGES.text("messageInput.context.cut"));
     cutItem.addActionListener(e -> input.cut());
 
-    final JMenuItem copyItem = new JMenuItem("Copy");
+    final JMenuItem copyItem = new JMenuItem(MESSAGES.text("messageInput.context.copy"));
     copyItem.addActionListener(e -> input.copy());
 
-    final JMenuItem pasteItem = new JMenuItem("Paste");
+    final JMenuItem pasteItem = new JMenuItem(MESSAGES.text("messageInput.context.paste"));
     pasteItem.addActionListener(e -> input.paste());
 
-    final JMenuItem deleteItem = new JMenuItem("Delete");
+    final JMenuItem deleteItem = new JMenuItem(MESSAGES.text("messageInput.context.delete"));
     deleteItem.addActionListener(
         e -> {
           if (!input.isEditable() || !input.isEnabled()) return;
@@ -98,28 +100,29 @@ public final class MessageInputContextMenuSupport {
           }
         });
 
-    final JMenuItem clearItem = new JMenuItem("Clear");
+    final JMenuItem clearItem = new JMenuItem(MESSAGES.text("messageInput.context.clear"));
     clearItem.addActionListener(
         e -> {
           if (!input.isEditable() || !input.isEnabled()) return;
           if (input.getDocument().getLength() == 0) return;
           input.setText("");
         });
-    clearItem.setToolTipText("Ctrl+L");
+    clearItem.setToolTipText(MESSAGES.text("messageInput.context.clear.tooltip"));
     try {
       clearItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_L, KeyEvent.CTRL_DOWN_MASK));
     } catch (Exception ex) {
       log.debug("[MessageInputContextMenuSupport] set clear accelerator failed", ex);
     }
 
-    final JMenuItem selectAllItem = new JMenuItem("Select All");
+    final JMenuItem selectAllItem = new JMenuItem(MESSAGES.text("messageInput.context.selectAll"));
     selectAllItem.addActionListener(
         e -> {
           if (!input.isEnabled()) return;
           input.selectAll();
         });
 
-    final JMenuItem checkSpellingItem = new JMenuItem("Check spelling");
+    final JMenuItem checkSpellingItem =
+        new JMenuItem(MESSAGES.text("messageInput.context.checkSpelling"));
     final JSeparator checkSpellingBeforeSeparator = new JPopupMenu.Separator();
     final JSeparator checkSpellingAfterSeparator = new JPopupMenu.Separator();
     checkSpellingItem.addActionListener(e -> showCheckSpellingDialogAtCaret());
@@ -128,21 +131,21 @@ public final class MessageInputContextMenuSupport {
     checkSpellingAfterSeparator.setVisible(false);
 
     final Action historyPrevAction =
-        new AbstractAction("Previous Command") {
+        new AbstractAction(MESSAGES.text("messageInput.context.history.previousCommand")) {
           @Override
           public void actionPerformed(ActionEvent e) {
             historySupport.browsePrev();
           }
         };
     final Action historyNextAction =
-        new AbstractAction("Next Command") {
+        new AbstractAction(MESSAGES.text("messageInput.context.history.nextCommand")) {
           @Override
           public void actionPerformed(ActionEvent e) {
             historySupport.browseNext();
           }
         };
     final Action historyClearAction =
-        new AbstractAction("Clear Command History") {
+        new AbstractAction(MESSAGES.text("messageInput.context.history.clearCommandHistory")) {
           @Override
           public void actionPerformed(ActionEvent e) {
             historySupport.clearHistory();
@@ -161,11 +164,11 @@ public final class MessageInputContextMenuSupport {
       log.debug("[MessageInputContextMenuSupport] set history accelerators failed", ex);
     }
 
-    historyPrevItem.setToolTipText("Up / Ctrl+P / Alt+Up");
-    historyNextItem.setToolTipText("Down / Ctrl+N / Alt+Down");
-    historyClearItem.setToolTipText("Clear stored commands (memory only)");
+    historyPrevItem.setToolTipText(MESSAGES.text("messageInput.context.history.previous.tooltip"));
+    historyNextItem.setToolTipText(MESSAGES.text("messageInput.context.history.next.tooltip"));
+    historyClearItem.setToolTipText(MESSAGES.text("messageInput.context.history.clear.tooltip"));
 
-    final JMenu historyMenu = new JMenu("History");
+    final JMenu historyMenu = new JMenu(MESSAGES.text("messageInput.context.history"));
     historyMenu.add(historyPrevItem);
     historyMenu.add(historyNextItem);
     historyMenu.addSeparator();
@@ -338,18 +341,24 @@ public final class MessageInputContextMenuSupport {
     scrollPane.setPreferredSize(new Dimension(280, Math.max(96, rowCount * 22)));
 
     JPanel content = new JPanel(new BorderLayout(0, 8));
-    content.add(new JLabel("Suggestions for \"" + token + "\""), BorderLayout.NORTH);
+    content.add(
+        new JLabel(MESSAGES.text("messageInput.context.spelling.suggestionsFor", token)),
+        BorderLayout.NORTH);
     content.add(scrollPane, BorderLayout.CENTER);
     if (model.isEmpty()) {
-      content.add(new JLabel("No suggestions available."), BorderLayout.SOUTH);
+      content.add(
+          new JLabel(MESSAGES.text("messageInput.context.spelling.noSuggestions")),
+          BorderLayout.SOUTH);
     }
 
-    Object[] options = {"Select", "Cancel"};
+    Object[] options = {
+      MESSAGES.text("messageInput.context.spelling.select"), MESSAGES.text("common.button.cancel")
+    };
     int option =
         JOptionPane.showOptionDialog(
             SwingUtilities.getWindowAncestor(input),
             content,
-            "Check spelling",
+            MESSAGES.text("messageInput.context.checkSpelling"),
             JOptionPane.OK_CANCEL_OPTION,
             JOptionPane.PLAIN_MESSAGE,
             null,

@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.ctcp;
 
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.util.MigConstraints;
 import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
@@ -11,6 +12,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 
 public final class CtcpAutoReplySupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private CtcpAutoReplySupport() {}
 
   public static CtcpAutoReplyControls buildControls(
@@ -18,22 +21,21 @@ public final class CtcpAutoReplySupport {
       boolean versionByDefault,
       boolean pingByDefault,
       boolean timeByDefault) {
-    JCheckBox enabled = new JCheckBox("Enable automatic CTCP replies");
+    JCheckBox enabled = new JCheckBox(MESSAGES.text("preferences.ctcpReplies.enabled"));
     enabled.setSelected(enabledByDefault);
-    enabled.setToolTipText(
-        "When enabled, IRCafe can auto-reply to private CTCP requests (VERSION, PING, TIME).");
+    enabled.setToolTipText(MESSAGES.text("preferences.ctcpReplies.enabled.tooltip"));
 
-    JCheckBox version = new JCheckBox("Reply to CTCP VERSION");
+    JCheckBox version = new JCheckBox(MESSAGES.text("preferences.ctcpReplies.version"));
     version.setSelected(versionByDefault);
-    version.setToolTipText("Respond with your client version.");
+    version.setToolTipText(MESSAGES.text("preferences.ctcpReplies.version.tooltip"));
 
-    JCheckBox ping = new JCheckBox("Reply to CTCP PING");
+    JCheckBox ping = new JCheckBox(MESSAGES.text("preferences.ctcpReplies.ping"));
     ping.setSelected(pingByDefault);
-    ping.setToolTipText("Echo back the request payload so the sender can measure latency.");
+    ping.setToolTipText(MESSAGES.text("preferences.ctcpReplies.ping.tooltip"));
 
-    JCheckBox time = new JCheckBox("Reply to CTCP TIME");
+    JCheckBox time = new JCheckBox(MESSAGES.text("preferences.ctcpReplies.time"));
     time.setSelected(timeByDefault);
-    time.setToolTipText("Respond with your current local timestamp.");
+    time.setToolTipText(MESSAGES.text("preferences.ctcpReplies.time.tooltip"));
 
     Runnable syncEnabled =
         () -> {
@@ -51,11 +53,11 @@ public final class CtcpAutoReplySupport {
   public static JPanel buildPanel(CtcpAutoReplyControls controls) {
     JPanel form = new JPanel(MigLayouts.singleColumn(12, MigLayouts.rows(3, 8)));
 
-    form.add(PreferencesUiSupport.tabTitle("CTCP Replies"), MigConstraints.growXMinWidth0Wrap());
     form.add(
-        PreferencesUiSupport.subtleInfoTextWith(
-            "Control automatic replies to inbound private CTCP requests. "
-                + "Outbound /ctcp commands are not affected."),
+        PreferencesUiSupport.tabTitle(MESSAGES.text("preferences.ctcpReplies.title")),
+        MigConstraints.growXMinWidth0Wrap());
+    form.add(
+        PreferencesUiSupport.subtleInfoTextWith(MESSAGES.text("preferences.ctcpReplies.help")),
         MigConstraints.growXMinWidth0Wrap());
     form.add(controls.enabled, MigConstraints.growXWrap());
 
@@ -66,15 +68,16 @@ public final class CtcpAutoReplySupport {
     perCommand.setOpaque(false);
     perCommand.setBorder(
         BorderFactory.createCompoundBorder(
-            BorderFactory.createTitledBorder("Per-command replies"),
+            BorderFactory.createTitledBorder(
+                MESSAGES.text("preferences.ctcpReplies.perCommand.section")),
             BorderFactory.createEmptyBorder(4, 8, 6, 8)));
     perCommand.add(controls.version, MigConstraints.growXMinWidthGapLeftWrap(0, 8));
     perCommand.add(controls.ping, MigConstraints.growXMinWidthGapLeftWrap(0, 8));
     perCommand.add(controls.time, MigConstraints.growXMinWidthGapLeftWrap(0, 8));
     form.add(perCommand, MigConstraints.growXMinWidth0Wrap());
 
-    JButton enableDefaults = new JButton("Enable defaults");
-    enableDefaults.setToolTipText("Enable automatic replies and turn on VERSION, PING, and TIME.");
+    JButton enableDefaults = new JButton(MESSAGES.text("preferences.ctcpReplies.enableDefaults"));
+    enableDefaults.setToolTipText(MESSAGES.text("preferences.ctcpReplies.enableDefaults.tooltip"));
     enableDefaults.addActionListener(
         e -> {
           controls.enabled.setSelected(true);
@@ -83,8 +86,8 @@ public final class CtcpAutoReplySupport {
           controls.time.setSelected(true);
         });
 
-    JButton disableAll = new JButton("Disable all");
-    disableAll.setToolTipText("Disable all automatic CTCP replies.");
+    JButton disableAll = new JButton(MESSAGES.text("preferences.ctcpReplies.disableAll"));
+    disableAll.setToolTipText(MESSAGES.text("preferences.ctcpReplies.disableAll.tooltip"));
     disableAll.addActionListener(
         e -> {
           controls.enabled.setSelected(false);
@@ -98,8 +101,7 @@ public final class CtcpAutoReplySupport {
     form.add(actions, MigConstraints.growXMinWidth0Wrap());
 
     form.add(
-        PreferencesUiSupport.helpText(
-            "If the top toggle is off, IRCafe will not send any automatic CTCP replies."),
+        PreferencesUiSupport.helpText(MESSAGES.text("preferences.ctcpReplies.disabled.help")),
         MigConstraints.growXMinWidth0Wrap());
     return form;
   }

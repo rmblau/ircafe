@@ -24,6 +24,7 @@ import cafe.woden.ircclient.notifications.api.NotificationStorePort;
 import cafe.woden.ircclient.ui.backend.BackendUiProfileProvider;
 import cafe.woden.ircclient.ui.controls.ConnectButton;
 import cafe.woden.ircclient.ui.controls.DisconnectButton;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.servers.ServerDialogs;
 import cafe.woden.ircclient.ui.servertree.actions.ServerTreeInterceptorActions;
 import cafe.woden.ircclient.ui.servertree.composition.ServerTreeChannelInteractionCollaborators;
@@ -153,19 +154,24 @@ import org.springframework.context.annotation.Lazy;
 public class ServerTreeDockable extends JPanel implements Dockable, Scrollable {
   // UI label for the per-server "status" transcript target.
   // The target id remains "status" internally; this is just what the user sees in the tree.
-  private static final String STATUS_LABEL = "Server";
-  private static final String CHANNEL_LIST_LABEL = "Channel List";
-  private static final String PRIVATE_MESSAGES_LABEL = "Private Messages";
-  private static final String WEECHAT_FILTERS_LABEL = "Filters";
-  private static final String IGNORES_LABEL = "Ignores";
-  private static final String DCC_TRANSFERS_LABEL = "DCC Transfers";
-  private static final String LOG_VIEWER_LABEL = "Log Viewer";
-  private static final String MONITOR_GROUP_LABEL = "Monitor";
-  private static final String INTERCEPTORS_GROUP_LABEL = "Interceptors";
-  private static final String OTHER_GROUP_LABEL = "Other";
-  private static final String BOUNCER_CONTROL_LABEL = "Bouncer Control";
-  private static final String IRC_ROOT_LABEL = "IRC";
-  private static final String APPLICATION_ROOT_LABEL = "Application";
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
+  private static final String STATUS_LABEL = MESSAGES.text("serverTree.node.server");
+  private static final String CHANNEL_LIST_LABEL = MESSAGES.text("serverTree.node.channelList");
+  private static final String PRIVATE_MESSAGES_LABEL =
+      MESSAGES.text("serverTree.node.privateMessages");
+  private static final String WEECHAT_FILTERS_LABEL = MESSAGES.text("serverTree.node.filters");
+  private static final String IGNORES_LABEL = MESSAGES.text("serverTree.node.ignores");
+  private static final String DCC_TRANSFERS_LABEL = MESSAGES.text("serverTree.node.dccTransfers");
+  private static final String LOG_VIEWER_LABEL = MESSAGES.text("serverTree.node.logViewer");
+  private static final String MONITOR_GROUP_LABEL = MESSAGES.text("serverTree.node.monitor");
+  private static final String INTERCEPTORS_GROUP_LABEL =
+      MESSAGES.text("serverTree.node.interceptors");
+  private static final String OTHER_GROUP_LABEL = MESSAGES.text("serverTree.node.other");
+  private static final String BOUNCER_CONTROL_LABEL =
+      MESSAGES.text("serverTree.node.bouncerControl");
+  private static final String IRC_ROOT_LABEL = MESSAGES.text("serverTree.root.irc");
+  private static final String APPLICATION_ROOT_LABEL = MESSAGES.text("serverTree.root.application");
   private static final int SERVER_ACTION_BUTTON_SIZE = 16;
   private static final int SERVER_ACTION_BUTTON_ICON_SIZE = 12;
   private static final int SERVER_ACTION_BUTTON_MARGIN = 6;
@@ -1378,7 +1384,7 @@ public class ServerTreeDockable extends JPanel implements Dockable, Scrollable {
 
   @Override
   public String getTabText() {
-    return "Servers";
+    return MESSAGES.text("dock.servers.tab");
   }
 
   // If the docking framework wraps this Dockable in an outer JScrollPane, keep that wrapper

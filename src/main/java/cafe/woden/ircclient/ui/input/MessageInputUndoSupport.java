@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.input;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
@@ -27,6 +28,7 @@ import org.slf4j.LoggerFactory;
 public final class MessageInputUndoSupport {
 
   private static final Logger log = LoggerFactory.getLogger(MessageInputUndoSupport.class);
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private static final int UNDO_GROUP_WINDOW_MS = 800;
 
@@ -40,7 +42,7 @@ public final class MessageInputUndoSupport {
   private long lastUndoEditAtMs;
 
   private final Action undoAction =
-      new AbstractAction("Undo") {
+      new AbstractAction(MESSAGES.text("messageInput.context.undo")) {
         @Override
         public void actionPerformed(ActionEvent e) {
           try {
@@ -53,7 +55,7 @@ public final class MessageInputUndoSupport {
       };
 
   private final Action redoAction =
-      new AbstractAction("Redo") {
+      new AbstractAction(MESSAGES.text("messageInput.context.redo")) {
         @Override
         public void actionPerformed(ActionEvent e) {
           try {

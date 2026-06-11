@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.channellist;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.util.MigConstraints;
 import cafe.woden.ircclient.ui.util.MigLayouts;
 import java.util.HashMap;
@@ -15,19 +16,19 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 
 final class MatrixChannelListUxMode implements ChannelListUxMode {
-  private static final String DEFAULT_HINT =
-      "Use refresh for /list defaults, filters for Matrix search/since/limit, and next page when available.";
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+  private static final String DEFAULT_HINT = MESSAGES.text("channelList.matrix.defaultHint");
   private static final int MATRIX_LIST_DEFAULT_LIMIT = 100;
   private static final int MATRIX_LIST_MAX_LIMIT = 200;
   private static final ActionPresentation PRESENTATION =
       new ActionPresentation(
-          "Run Matrix /list with default options.",
-          "Run Matrix /list",
-          "Run Matrix /list with search/since/limit options.",
-          "Run Matrix list filters",
+          MESSAGES.text("channelList.matrix.action.fullList.tooltip"),
+          MESSAGES.text("channelList.matrix.action.fullList.accessibleName"),
+          MESSAGES.text("channelList.matrix.action.filters.tooltip"),
+          MESSAGES.text("channelList.matrix.action.filters.accessibleName"),
           true,
-          "Run next Matrix /list page (uses next_batch from last response).",
-          "Run next Matrix list page");
+          MESSAGES.text("channelList.matrix.action.nextPage.tooltip"),
+          MESSAGES.text("channelList.matrix.action.nextPage.accessibleName"));
 
   private final Map<String, MatrixListState> stateByServer = new HashMap<>();
 
@@ -65,7 +66,8 @@ final class MatrixChannelListUxMode implements ChannelListUxMode {
         new JSpinner(
             new SpinnerNumberModel(
                 normalizeMatrixListLimit(current.limit()), 1, MATRIX_LIST_MAX_LIMIT, 1));
-    JCheckBox sinceEnabled = new JCheckBox("Use since token");
+    JCheckBox sinceEnabled =
+        new JCheckBox(MESSAGES.text("channelList.matrix.filters.useSinceToken"));
     JTextField sinceField = new JTextField(28);
     String defaultSince = current.nextSinceToken();
     if (!defaultSince.isEmpty()) {
@@ -76,20 +78,22 @@ final class MatrixChannelListUxMode implements ChannelListUxMode {
     sinceEnabled.addActionListener(e -> sinceField.setEnabled(sinceEnabled.isSelected()));
 
     JPanel form = new JPanel(MigLayouts.twoColumnForm(0, MigLayouts.rows(4, 6)));
-    form.add(new JLabel("Search:"));
+    form.add(new JLabel(MESSAGES.text("channelList.matrix.filters.field.search")));
     form.add(queryField, MigConstraints.growX());
-    form.add(new JLabel("Limit:"));
+    form.add(new JLabel(MESSAGES.text("channelList.matrix.filters.field.limit")));
     form.add(limitSpinner, MigConstraints.width(120));
     form.add(sinceEnabled);
     form.add(sinceField, MigConstraints.growX());
-    form.add(new JLabel("Tip:"));
-    form.add(new JLabel("Use Next Page after results include next_batch."), MigConstraints.growX());
+    form.add(new JLabel(MESSAGES.text("channelList.matrix.filters.field.tip")));
+    form.add(
+        new JLabel(MESSAGES.text("channelList.matrix.filters.tip.nextPage")),
+        MigConstraints.growX());
 
     int choice =
         JOptionPane.showConfirmDialog(
             context.ownerWindow(),
             form,
-            "Run Matrix /LIST",
+            MESSAGES.text("channelList.matrix.filters.title"),
             JOptionPane.OK_CANCEL_OPTION,
             JOptionPane.PLAIN_MESSAGE);
     if (choice != JOptionPane.OK_OPTION) return;

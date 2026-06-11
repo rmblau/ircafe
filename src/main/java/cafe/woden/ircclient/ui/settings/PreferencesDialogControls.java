@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings;
 
 import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
+import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
@@ -23,6 +24,7 @@ import cafe.woden.ircclient.ui.chat.NickColorService;
 import cafe.woden.ircclient.ui.chat.NickColorSettingsBus;
 import cafe.woden.ircclient.ui.chat.transcript.rebuild.TranscriptRebuildService;
 import cafe.woden.ircclient.ui.filter.FilterSettingsBus;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.nickcolors.NickColorOverridesDialog;
 import cafe.woden.ircclient.ui.servers.ServerDialogs;
 import cafe.woden.ircclient.ui.settings.appearance.AppearancePreferencesSection;
@@ -73,6 +75,8 @@ import cafe.woden.ircclient.ui.settings.theme.ThemeManager;
 import cafe.woden.ircclient.ui.settings.theme.ThemeTweakSettingsBus;
 import cafe.woden.ircclient.ui.settings.timestamp.TimestampControls;
 import cafe.woden.ircclient.ui.settings.timestamp.TimestampControlsSupport;
+import cafe.woden.ircclient.ui.settings.translation.TranslationControls;
+import cafe.woden.ircclient.ui.settings.translation.TranslationControlsSupport;
 import cafe.woden.ircclient.ui.settings.tray.TrayControls;
 import cafe.woden.ircclient.ui.settings.tray.TrayControlsSupport;
 import cafe.woden.ircclient.ui.tray.TrayNotificationService;
@@ -129,6 +133,7 @@ record PreferencesDialogControls(
     IrcEventNotificationControls ircEventNotifications,
     FilterControls filters,
     UserCommandAliasesControls userCommands,
+    TranslationControls translation,
     DiagnosticsControls diagnostics) {
 
   static PreferencesDialogControls build(BuildRequest request) {
@@ -279,6 +284,9 @@ record PreferencesDialogControls(
             initialUserCommandAliases(request),
             unknownCommandAsRawEnabled(request),
             request.dialog());
+    TranslationControls translation =
+        TranslationControlsSupport.buildControls(
+            initialTranslationSettings(request), request.closeables());
     DiagnosticsControls diagnostics =
         DiagnosticsControlsSupport.buildControls(request.runtimeConfig());
 
@@ -322,6 +330,7 @@ record PreferencesDialogControls(
         ircEventNotifications,
         filters,
         userCommands,
+        translation,
         diagnostics);
   }
 
@@ -387,13 +396,19 @@ record PreferencesDialogControls(
         : request.runtimeConfig().readUnknownCommandAsRawEnabled(false);
   }
 
+  private static cafe.woden.ircclient.config.IrcProperties.Client.Translation
+      initialTranslationSettings(BuildRequest request) {
+    return request.translationSettingsBus() != null ? request.translationSettingsBus().get() : null;
+  }
+
   List<PreferencesDialogWindowSupport.Tab> tabs(
       Component owner,
+      UiMessages messages,
       IrcEventNotificationsTabSupport.RuleEditor ircEventRuleEditor,
       NotificationsPanelSupport.NotificationRuleEditor notificationRuleEditor) {
     return PreferencesDialogTabsSupport.buildTabs(
         new PreferencesDialogTabsSupport.TabRequest(
-            owner, this, ircEventRuleEditor, notificationRuleEditor));
+            owner, this, messages, ircEventRuleEditor, notificationRuleEditor));
   }
 
   PreferencesApplySupport.ApplyRequest applyRequest(
@@ -450,6 +465,7 @@ record PreferencesDialogControls(
         notifications,
         ircEventNotifications,
         userCommands,
+        translation,
         diagnostics,
         chatBehaviorConfig,
         diagnosticsConfig);
@@ -486,6 +502,7 @@ record PreferencesDialogControls(
       UserCommandAliasesPort userCommandAliasesBus,
       NotificationSoundPort notificationSoundService,
       ServerDialogs serverDialogs,
+      MessageTranslationSettingsBus translationSettingsBus,
       ExecutorService pushyTestExecutor,
       ExecutorService notificationRuleTestExecutor,
       Ircv3ExtensionCatalog ircv3ExtensionCatalog,

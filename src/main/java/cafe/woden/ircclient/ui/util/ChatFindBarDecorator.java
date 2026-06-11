@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.util;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.KeyboardFocusManager;
@@ -39,6 +40,7 @@ public final class ChatFindBarDecorator implements AutoCloseable {
   private static final KeyStroke KS_CTRL_F =
       KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK);
   private static final KeyStroke KS_ESC = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private final JComponent host;
   private final JTextPane transcript;
@@ -164,12 +166,12 @@ public final class ChatFindBarDecorator implements AutoCloseable {
   private final class FindBar extends JPanel {
 
     private final JTextField field = new JTextField(28);
-    private final JCheckBox matchCase = new JCheckBox("Aa");
+    private final JCheckBox matchCase = new JCheckBox(MESSAGES.text("chatFind.matchCase.short"));
     private final JLabel status = new JLabel("");
 
-    private final JButton prev = new JButton("Prev");
-    private final JButton next = new JButton("Next");
-    private final JButton close = new JButton("×");
+    private final JButton prev = new JButton(MESSAGES.text("chatFind.button.previous"));
+    private final JButton next = new JButton(MESSAGES.text("chatFind.button.next"));
+    private final JButton close = new JButton(MESSAGES.text("chatFind.button.close.short"));
 
     private Component restoreFocusTo;
 
@@ -184,7 +186,7 @@ public final class ChatFindBarDecorator implements AutoCloseable {
       super(new BorderLayout(10, 0));
       setBorder(BorderFactory.createEmptyBorder(6, 8, 6, 8));
 
-      JLabel findLabel = new JLabel("Find:");
+      JLabel findLabel = new JLabel(MESSAGES.text("chatFind.label.find"));
 
       // Left side: label + field + options + status
       JPanel left = new JPanel();
@@ -194,7 +196,10 @@ public final class ChatFindBarDecorator implements AutoCloseable {
       left.add(Box.createHorizontalStrut(8));
       left.add(field);
       left.add(Box.createHorizontalStrut(8));
-      matchCase.setToolTipText("Match case");
+      matchCase.setToolTipText(MESSAGES.text("chatFind.matchCase.tooltip"));
+      matchCase
+          .getAccessibleContext()
+          .setAccessibleName(MESSAGES.text("chatFind.matchCase.accessibleName"));
       left.add(matchCase);
       left.add(Box.createHorizontalStrut(10));
       left.add(status);
@@ -207,6 +212,10 @@ public final class ChatFindBarDecorator implements AutoCloseable {
       right.add(Box.createHorizontalStrut(6));
       right.add(next);
       right.add(Box.createHorizontalStrut(8));
+      close.setToolTipText(MESSAGES.text("chatFind.button.close.tooltip"));
+      close
+          .getAccessibleContext()
+          .setAccessibleName(MESSAGES.text("chatFind.button.close.accessibleName"));
       close.setMargin(new java.awt.Insets(2, 10, 2, 10));
       right.add(close);
 
@@ -421,13 +430,13 @@ public final class ChatFindBarDecorator implements AutoCloseable {
       ensureCache();
       String needle = cachedNeedle;
       if (needle == null || needle.isBlank()) {
-        status.setText("Type to search…");
+        status.setText(MESSAGES.text("chatFind.status.typeToSearch"));
         return;
       }
 
       int[] starts = cachedMatchStarts;
       if (starts.length == 0) {
-        status.setText("No matches");
+        status.setText(MESSAGES.text("chatFind.status.noMatches"));
         Toolkit.getDefaultToolkit().beep();
         return;
       }

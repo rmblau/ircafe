@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.notifications;
 
 import cafe.woden.ircclient.config.api.NotificationRule;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
@@ -8,6 +9,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.swing.SwingUtilities;
 
 final class NotificationRuleTestRunner implements AutoCloseable {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
   private static final int MAX_TEST_CHARS = 800;
 
   private final ExecutorService exec;
@@ -30,7 +32,8 @@ final class NotificationRuleTestRunner implements AutoCloseable {
     List<ValidationError> errors = controls.model.validationErrors();
 
     long token = seq.incrementAndGet();
-    controls.testStatus.setText("Testing…");
+    controls.testStatus.setText(
+        MESSAGES.text("preferences.notifications.rules.test.status.testing"));
 
     final String sampleFinal = sample;
     exec.submit(

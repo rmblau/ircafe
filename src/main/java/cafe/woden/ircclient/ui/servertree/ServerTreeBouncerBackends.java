@@ -1,11 +1,14 @@
 package cafe.woden.ircclient.ui.servertree;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 /** Shared backend ids and conventions for bouncer-discovered server-tree state. */
 public final class ServerTreeBouncerBackends {
+
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   public static final String SOJU = "soju";
   public static final String ZNC = "znc";
@@ -14,23 +17,29 @@ public final class ServerTreeBouncerBackends {
   private static final Map<String, String> PREFIX_BY_BACKEND_ID =
       Map.of(SOJU, "soju:", ZNC, "znc:", GENERIC, "bouncer:");
   private static final Map<String, String> NETWORKS_GROUP_LABEL_BY_BACKEND_ID =
-      Map.of(SOJU, "Soju Networks", ZNC, "ZNC Networks", GENERIC, "Bouncer Networks");
+      Map.of(
+          SOJU,
+          MESSAGES.text("serverTree.bouncer.soju.networksGroup"),
+          ZNC,
+          MESSAGES.text("serverTree.bouncer.znc.networksGroup"),
+          GENERIC,
+          MESSAGES.text("serverTree.bouncer.generic.networksGroup"));
   private static final Map<String, String> NETWORKS_GROUP_TOOLTIP_BY_BACKEND_ID =
       Map.of(
           SOJU,
-          "Soju networks discovered from the bouncer (not saved).",
+          MESSAGES.text("serverTree.bouncer.soju.networksGroup.tooltip"),
           ZNC,
-          "ZNC networks discovered from the bouncer (not saved).",
+          MESSAGES.text("serverTree.bouncer.znc.networksGroup.tooltip"),
           GENERIC,
-          "Bouncer networks discovered from generic protocol lines (not saved).");
+          MESSAGES.text("serverTree.bouncer.generic.networksGroup.tooltip"));
   private static final Map<String, String> EPHEMERAL_DISCOVERY_TOOLTIP_BY_BACKEND_ID =
       Map.of(
           SOJU,
-          "Discovered from soju; not saved.",
+          MESSAGES.text("serverTree.bouncer.soju.ephemeral.tooltip"),
           ZNC,
-          "Discovered from ZNC; not saved.",
+          MESSAGES.text("serverTree.bouncer.znc.ephemeral.tooltip"),
           GENERIC,
-          "Discovered from generic bouncer protocol; not saved.");
+          MESSAGES.text("serverTree.bouncer.generic.ephemeral.tooltip"));
 
   private ServerTreeBouncerBackends() {}
 
@@ -44,19 +53,20 @@ public final class ServerTreeBouncerBackends {
 
   public static String defaultNetworksGroupLabel(String backendId) {
     String backend = normalize(backendId);
-    return NETWORKS_GROUP_LABEL_BY_BACKEND_ID.getOrDefault(backend, "Bouncer Networks");
+    return NETWORKS_GROUP_LABEL_BY_BACKEND_ID.getOrDefault(
+        backend, MESSAGES.text("serverTree.bouncer.generic.networksGroup"));
   }
 
   public static String networksGroupTooltip(String backendId) {
     String backend = normalize(backendId);
     return NETWORKS_GROUP_TOOLTIP_BY_BACKEND_ID.getOrDefault(
-        backend, "Bouncer networks discovered from the bouncer (not saved).");
+        backend, MESSAGES.text("serverTree.bouncer.default.networksGroup.tooltip"));
   }
 
   public static String ephemeralDiscoveryTooltip(String backendId) {
     String backend = normalize(backendId);
     return EPHEMERAL_DISCOVERY_TOOLTIP_BY_BACKEND_ID.getOrDefault(
-        backend, "Discovered from bouncer backend; not saved.");
+        backend, MESSAGES.text("serverTree.bouncer.default.ephemeral.tooltip"));
   }
 
   public static String backendIdForServerId(String serverId) {

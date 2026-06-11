@@ -152,17 +152,21 @@ public final class ChatTranscriptRestyleSupport {
       Color bgColor = (ircBg instanceof Integer i) ? IrcFormatting.colorForCode(i) : null;
 
       Color finalFg = fgColor != null ? fgColor : StyleConstants.getForeground(fresh);
-      Color finalBg = bgColor != null ? bgColor : StyleConstants.getBackground(fresh);
+      Color finalBg = bgColor != null ? bgColor : ChatStyles.definedBackground(fresh);
       if (reverse) {
         Color tmp = finalFg;
-        finalFg = finalBg;
+        finalFg = finalBg != null ? finalBg : ChatStyles.textSurfaceBackground(fresh);
         finalBg = tmp;
       }
       if (ruleBg != null) {
         finalBg = ruleBg;
       }
       if (finalFg != null) StyleConstants.setForeground(fresh, finalFg);
-      if (finalBg != null) StyleConstants.setBackground(fresh, finalBg);
+      if (finalBg != null) {
+        StyleConstants.setBackground(fresh, finalBg);
+      } else {
+        fresh.removeAttribute(StyleConstants.Background);
+      }
       if (filterAction != null
           && filterAction != FilterAction.HIDE
           && context.filterActionStyleApplier() != null) {

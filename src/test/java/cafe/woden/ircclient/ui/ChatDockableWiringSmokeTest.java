@@ -14,6 +14,8 @@ import cafe.woden.ircclient.app.api.Ircv3ReadMarkerFeatureSupport;
 import cafe.woden.ircclient.app.api.PrivateMessageRequest;
 import cafe.woden.ircclient.app.commands.BackendNamedCommandCatalog;
 import cafe.woden.ircclient.app.commands.SlashCommandPresentationCatalog;
+import cafe.woden.ircclient.app.translation.MessageTranslationDispatcher;
+import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.dcc.DccTransferStore;
 import cafe.woden.ircclient.ignore.IgnoreListService;
 import cafe.woden.ircclient.ignore.IgnoreStatusService;
@@ -277,6 +279,9 @@ class ChatDockableWiringSmokeTest {
                     nickContextMenuFactory,
                     proxyResolver,
                     chatHistoryService,
+                    mock(MessageTranslationDispatcher.class),
+                    mock(MessageTranslationSettingsBus.class),
+                    null,
                     channelMetadataStore,
                     chatLogViewerService,
                     new NoOpChatRedactionAuditService(),

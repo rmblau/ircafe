@@ -5,6 +5,12 @@ import cafe.woden.ircclient.app.api.Ircv3ReadMarkerFeatureSupport;
 import cafe.woden.ircclient.app.api.PrivateMessageRequest;
 import cafe.woden.ircclient.app.api.UserActionRequest;
 import cafe.woden.ircclient.app.commands.SlashCommandPresentationCatalog;
+import cafe.woden.ircclient.app.translation.MessageTranslationDispatcher;
+import cafe.woden.ircclient.app.translation.MessageTranslationLanguage;
+import cafe.woden.ircclient.app.translation.MessageTranslationLanguageCatalog;
+import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
+import cafe.woden.ircclient.app.translation.OutboundMessageTranslationService;
+import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.InstalledPluginProblem;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.execution.ExecutorConfig;
@@ -39,6 +45,7 @@ import cafe.woden.ircclient.ui.bus.TargetActivationBus;
 import cafe.woden.ircclient.ui.channellist.ChannelListPanel;
 import cafe.woden.ircclient.ui.chat.MessageReactionToggleSupport;
 import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
+import cafe.woden.ircclient.ui.chat.transcript.message.MessageTranslationSource;
 import cafe.woden.ircclient.ui.chat.view.ChatViewPanel;
 import cafe.woden.ircclient.ui.coordinator.ChatActiveTargetCoordinator;
 import cafe.woden.ircclient.ui.coordinator.ChatBanListCoordinator;
@@ -60,8 +67,11 @@ import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.ignore.IgnoreListDialog;
 import cafe.woden.ircclient.ui.ignore.IgnoresPanel;
 import cafe.woden.ircclient.ui.input.MessageInputPanel;
+import cafe.woden.ircclient.ui.input.OutboundMessageTranslationDialog;
 import cafe.woden.ircclient.ui.interceptors.InterceptorPanel;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.logviewer.LogViewerPanel;
+import cafe.woden.ircclient.ui.memoserv.MemoServPanel;
 import cafe.woden.ircclient.ui.monitor.MonitorPanel;
 import cafe.woden.ircclient.ui.notifications.NotificationsPanel;
 import cafe.woden.ircclient.ui.servertree.ServerTreeDockable;
@@ -69,6 +79,7 @@ import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettingsBus;
 import cafe.woden.ircclient.ui.terminal.TerminalDockable;
 import cafe.woden.ircclient.ui.util.ChatRedactedMessageRevealSupport;
+import cafe.woden.ircclient.ui.util.ChatTranscriptContextMenuDecorator;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import cafe.woden.ircclient.util.InstalledPluginDescriptor;
 import io.github.andrewauclair.moderndocking.Dockable;
@@ -79,6 +90,9 @@ import io.reactivex.rxjava3.processors.FlowableProcessor;
 import io.reactivex.rxjava3.processors.PublishProcessor;
 import jakarta.annotation.PreDestroy;
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -90,6 +104,8 @@ import java.util.function.Supplier;
 import javax.swing.*;
 import javax.swing.text.DefaultStyledDocument;
 import org.jmolecules.architecture.layered.InterfaceLayer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Lazy;
@@ -109,19 +125,27 @@ import org.springframework.stereotype.Component;
 @Lazy
 public class ChatDockable extends ChatViewPanel implements Dockable {
 
+  private static final Logger log = LoggerFactory.getLogger(ChatDockable.class);
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   public static final String ID = "chat";
   private static final int MAX_DRAFT_TARGETS = 512;
   private static final int MAIN_DOCK_ACCENT_RAIL_PX = 4;
   private static final int MAIN_DOCK_FRAME_PX = 1;
   private static final int MAIN_DOCK_ICON_SIZE_PX = 12;
-  private static final String MAIN_DOCK_TAB_TOOLTIP =
-      "Main chat view (follows server-tree selection)";
-  private static final String MAIN_DOCK_CLOSE_CONFIRM_TITLE = "Close Main View Dock";
+  private static final String MAIN_DOCK_TAB_TOOLTIP = message("chatDock.main.tooltip");
+  private static final String MAIN_DOCK_CLOSE_CONFIRM_TITLE =
+      message("chatDock.main.closeConfirm.title");
   private static final String MAIN_DOCK_CLOSE_CONFIRM_MESSAGE =
-      "Close the main chat view dock?\n\nUse Window -> Reset Main View Dock to restore it.";
+      message("chatDock.main.closeConfirm.message");
 
   private final ChatTranscriptStore transcripts;
   private final ServerTreeDockable serverTree;
+  private final MessageTranslationDispatcher messageTranslationDispatcher;
+  private final MessageTranslationSettingsBus translationSettingsBus;
+  private final OutboundMessageTranslationService outboundMessageTranslationService;
+  private final PropertyChangeListener translationSettingsListener =
+      this::onTranslationSettingsChanged;
 
   private final ActiveInputRouter activeInputRouter;
 
@@ -150,6 +174,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
   private final JPanel centerCards = new JPanel(new CardLayout());
   private final NotificationsPanel notificationsPanel;
   private final ChannelListPanel channelListPanel = new ChannelListPanel();
+  private final MemoServPanel memoServPanel = new MemoServPanel();
   private final IgnoresPanel ignoresPanel;
   private final DccTransfersPanel dccTransfersPanel;
   private final MonitorPanel monitorPanel = new MonitorPanel();
@@ -228,6 +253,9 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
       NickContextMenuFactory nickContextMenuFactory,
       ServerProxyResolver proxyResolver,
       ChatHistoryService chatHistoryService,
+      MessageTranslationDispatcher messageTranslationDispatcher,
+      MessageTranslationSettingsBus translationSettingsBus,
+      OutboundMessageTranslationService outboundMessageTranslationService,
       ChannelMetadataPort channelMetadata,
       ChatLogViewerService chatLogViewerService,
       ChatRedactionAuditService redactionAuditService,
@@ -251,6 +279,9 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
     this.serverTree = serverTree;
     this.redactionAuditService =
         java.util.Objects.requireNonNull(redactionAuditService, "redactionAuditService");
+    this.messageTranslationDispatcher = messageTranslationDispatcher;
+    this.translationSettingsBus = translationSettingsBus;
+    this.outboundMessageTranslationService = outboundMessageTranslationService;
 
     this.activeInputRouter = activeInputRouter;
     this.proxyResolver = proxyResolver;
@@ -336,6 +367,8 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
         capabilityPolicy,
         sid -> irc.currentNick(sid).orElse(""));
     configureTranscriptContextMenuActions(transcripts, chatHistoryService);
+    configureTranscriptTranslationContextMenuActions();
+    configureOutboundInputTranslation();
     configureInputActivation(activationBus);
     InputCoordinatorBundle inputBundle =
         createInputCoordinatorBundle(
@@ -359,6 +392,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
 
     // Keep an initial view state so the first auto-scroll behaves.
     this.activeTarget = new TargetRef("default", "status");
+    refreshOutboundTranslationButtonVisibility();
     updateDockTitle();
     applyMainDockVisualIdentity();
 
@@ -379,8 +413,8 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
   private RuntimeEventsPanel createAssertjEventsPanel(
       ApplicationDiagnosticsService applicationDiagnosticsService) {
     return new RuntimeEventsPanel(
-        "AssertJ Swing",
-        "EDT watchdog, violation checks, and UI freeze diagnostics.",
+        message("chatDock.runtime.assertj.title"),
+        message("chatDock.runtime.assertj.subtitle"),
         () ->
             applicationDiagnosticsService != null
                 ? applicationDiagnosticsService.recentAssertjSwingEvents(1200)
@@ -399,8 +433,8 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
   private RuntimeEventsPanel createUnhandledErrorsPanel(
       ApplicationDiagnosticsService applicationDiagnosticsService) {
     return new RuntimeEventsPanel(
-        "Unhandled Errors",
-        "Uncaught exceptions observed by the global thread exception handler.",
+        message("chatDock.runtime.unhandledErrors.title"),
+        message("chatDock.runtime.unhandledErrors.subtitle"),
         () ->
             applicationDiagnosticsService != null
                 ? applicationDiagnosticsService.recentUnhandledErrorEvents(1200)
@@ -419,8 +453,8 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
   private RuntimeEventsPanel createJhiccupEventsPanel(
       ApplicationDiagnosticsService applicationDiagnosticsService) {
     return new RuntimeEventsPanel(
-        "jHiccup",
-        "External jHiccup process lifecycle and latency diagnostics.",
+        message("chatDock.runtime.jhiccup.title"),
+        message("chatDock.runtime.jhiccup.subtitle"),
         () ->
             applicationDiagnosticsService != null
                 ? applicationDiagnosticsService.recentJhiccupEvents(1200)
@@ -439,8 +473,8 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
   private RuntimeEventsPanel createSpringEventsPanel(
       SpringRuntimeEventsService springRuntimeEventsService) {
     return new RuntimeEventsPanel(
-        "Spring Events",
-        "Application lifecycle, availability, and framework events.",
+        message("chatDock.runtime.springEvents.title"),
+        message("chatDock.runtime.springEvents.subtitle"),
         () ->
             springRuntimeEventsService != null
                 ? springRuntimeEventsService.recentEvents(600)
@@ -457,8 +491,8 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
   private RuntimeEventsPanel createPluginsPanel(InstalledPluginsPort installedPluginsPort) {
     List<RuntimeDiagnosticEvent> rows = buildInstalledPluginEvents(installedPluginsPort);
     return new RuntimeEventsPanel(
-        "Plugins",
-        "Declared external plugin jars discovered from the plugin directory.",
+        message("chatDock.runtime.plugins.title"),
+        message("chatDock.runtime.plugins.subtitle"),
         () -> rows,
         null,
         "plugins",
@@ -504,9 +538,11 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
           new RuntimeDiagnosticEvent(
               recordedAt,
               "INFO",
-              "Plugins",
-              "Plugin runtime is not available in this context.",
-              pluginDirectory.isBlank() ? "" : "Plugin directory: " + pluginDirectory));
+              message("chatDock.plugins.category"),
+              message("chatDock.plugins.unavailable.summary"),
+              pluginDirectory.isBlank()
+                  ? ""
+                  : message("chatDock.plugins.directory", pluginDirectory)));
     }
     List<InstalledPluginDescriptor> installedPlugins = installedPluginsPort.installedPlugins();
     List<InstalledPluginProblem> pluginProblems = installedPluginsPort.pluginProblems();
@@ -517,9 +553,11 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
           new RuntimeDiagnosticEvent(
               recordedAt,
               "INFO",
-              "Plugins",
-              "No declared plugins were found.",
-              pluginDirectory.isBlank() ? "" : "Plugin directory: " + pluginDirectory));
+              message("chatDock.plugins.category"),
+              message("chatDock.plugins.none.summary"),
+              pluginDirectory.isBlank()
+                  ? ""
+                  : message("chatDock.plugins.directory", pluginDirectory)));
     }
 
     ArrayList<RuntimeDiagnosticEvent> rows =
@@ -531,30 +569,37 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
         if (descriptor == null) continue;
         String pluginId = Objects.toString(descriptor.pluginId(), "").trim();
         String pluginVersion = Objects.toString(descriptor.pluginVersion(), "").trim();
-        String versionLabel = pluginVersion.isBlank() ? "unknown" : pluginVersion;
+        String versionLabel =
+            pluginVersion.isBlank() ? message("chatDock.plugins.unknown") : pluginVersion;
         String sourceJar = Objects.toString(descriptor.sourceJar(), "").trim();
         StringBuilder details = new StringBuilder();
         details
-            .append("Plugin ID: ")
-            .append(pluginId.isBlank() ? "(unknown)" : pluginId)
+            .append(
+                message(
+                    "chatDock.plugins.detail.pluginId",
+                    pluginId.isBlank()
+                        ? message("chatDock.plugins.unknown.parenthesized")
+                        : pluginId))
             .append('\n')
-            .append("Version: ")
-            .append(versionLabel)
+            .append(message("chatDock.plugins.detail.version", versionLabel))
             .append('\n')
-            .append("API Version: ")
-            .append(descriptor.pluginApiVersion());
+            .append(message("chatDock.plugins.detail.apiVersion", descriptor.pluginApiVersion()));
         if (!sourceJar.isBlank()) {
-          details.append('\n').append("Source Jar: ").append(sourceJar);
+          details.append('\n').append(message("chatDock.plugins.detail.sourceJar", sourceJar));
         }
         if (!pluginDirectory.isBlank()) {
-          details.append('\n').append("Plugin Directory: ").append(pluginDirectory);
+          details
+              .append('\n')
+              .append(message("chatDock.plugins.detail.pluginDirectory", pluginDirectory));
         }
         rows.add(
             new RuntimeDiagnosticEvent(
                 recordedAt,
                 "INFO",
-                "Plugin",
-                (pluginId.isBlank() ? "(unknown)" : pluginId) + " " + versionLabel,
+                message("chatDock.plugins.plugin.category"),
+                (pluginId.isBlank() ? message("chatDock.plugins.unknown.parenthesized") : pluginId)
+                    + " "
+                    + versionLabel,
                 details.toString()));
       }
     }
@@ -563,23 +608,29 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
         if (problem == null) continue;
         StringBuilder details = new StringBuilder(Objects.toString(problem.details(), ""));
         if (!pluginDirectory.isBlank()
-            && !details.toString().contains("Plugin directory:")
-            && !details.toString().contains("Plugin Directory:")) {
+            && !details.toString().contains(message("chatDock.plugins.directory.prefix"))
+            && !details
+                .toString()
+                .contains(message("chatDock.plugins.detail.pluginDirectory.prefix"))) {
           if (!details.isEmpty()) {
             details.append('\n');
           }
-          details.append("Plugin directory: ").append(pluginDirectory);
+          details.append(message("chatDock.plugins.directory", pluginDirectory));
         }
         rows.add(
             new RuntimeDiagnosticEvent(
                 recordedAt,
                 problem.level(),
-                "Plugin Problem",
+                message("chatDock.plugins.problem.category"),
                 problem.summary(),
                 details.toString()));
       }
     }
     return List.copyOf(rows);
+  }
+
+  private static String message(String key, Object... args) {
+    return MESSAGES.text(key, args);
   }
 
   private TopicCoordinatorBundle createTopicCoordinatorBundle(
@@ -662,6 +713,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
     DccTransfersPanel dccTransfersPanel =
         createDccTransfersPanel(dccTransferStore, activationBus, outboundBus);
     configureMonitorPanelCommandEmission(activationBus, outboundBus);
+    configureMemoServPanelCommandEmission(activationBus, irc);
     LogViewerPanel logViewerPanel = createLogViewerPanel(chatLogViewerService, logViewerExecutor);
     IgnoresPanel ignoresPanel = createIgnoresPanel(ignoreListDialog);
     InterceptorPanel interceptorPanel =
@@ -673,6 +725,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
         createTargetViewRouter(
             notificationsPanel,
             ignoresPanel,
+            memoServPanel,
             channelListCoordinator,
             monitorCoordinator,
             dccTransfersPanel,
@@ -764,6 +817,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
   private ChatTargetViewRouter createTargetViewRouter(
       NotificationsPanel notificationsPanel,
       IgnoresPanel ignoresPanel,
+      MemoServPanel memoServPanel,
       ChatChannelListCoordinator channelListCoordinator,
       ChatMonitorCoordinator monitorCoordinator,
       DccTransfersPanel dccTransfersPanel,
@@ -774,6 +828,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
         centerCards,
         notificationsPanel,
         channelListPanel,
+        memoServPanel,
         ignoresPanel,
         dccTransfersPanel,
         monitorPanel,
@@ -969,7 +1024,10 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
       BackendUiProfileProvider backendUiProfileProvider) {
     return new ChatActiveTargetCoordinator(
         () -> activeTarget,
-        target -> activeTarget = target,
+        target -> {
+          activeTarget = target;
+          refreshOutboundTranslationButtonVisibility();
+        },
         inputPanel,
         backendUiProfileProvider::profileForServer,
         draftByTarget,
@@ -1092,6 +1150,71 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
         });
   }
 
+  private void configureMemoServPanelCommandEmission(
+      TargetActivationBus activationBus, IrcClientService irc) {
+    memoServPanel.setOnEmitCommand(
+        line -> {
+          String cmd = Objects.toString(line, "").trim();
+          TargetRef t = activeTarget;
+          if (cmd.isEmpty()) {
+            log.info("[memoserv] chat dock dropped empty command activeTarget={}", t);
+            return;
+          }
+          if (t == null || !t.isMemoServ()) {
+            log.info(
+                "[memoserv] chat dock dropped command because active target is not MemoServ activeTarget={} verb={} preview={}",
+                t,
+                memoServCommandVerb(cmd),
+                memoServPreview(cmd));
+            return;
+          }
+          if (irc == null) {
+            log.info(
+                "[memoserv] chat dock dropped command because IRC service is unavailable serverId={} verb={} preview={}",
+                t.serverId(),
+                memoServCommandVerb(cmd),
+                memoServPreview(cmd));
+            return;
+          }
+          if (cmd.indexOf('\n') >= 0 || cmd.indexOf('\r') >= 0) {
+            log.info(
+                "[memoserv] chat dock dropped command containing newline serverId={} verb={}",
+                t.serverId(),
+                memoServCommandVerb(cmd));
+            return;
+          }
+          activationBus.activate(t);
+          String sid = Objects.toString(t.serverId(), "").trim();
+          if (sid.isEmpty()) {
+            log.info(
+                "[memoserv] chat dock dropped command because server id is blank target={} verb={}",
+                t,
+                memoServCommandVerb(cmd));
+            return;
+          }
+          log.info(
+              "[memoserv] chat dock sending raw command serverId={} verb={} commandLength={} preview={}",
+              sid,
+              memoServCommandVerb(cmd),
+              cmd.length(),
+              memoServPreview(cmd));
+          disposables.add(
+              irc.sendRaw(sid, "PRIVMSG MemoServ :" + cmd)
+                  .subscribe(
+                      () ->
+                          log.info(
+                              "[memoserv] chat dock raw command sent serverId={} verb={}",
+                              sid,
+                              memoServCommandVerb(cmd)),
+                      err ->
+                          log.warn(
+                              "[ircafe] MemoServ command send failed serverId={} command={}",
+                              sid,
+                              cmd,
+                              err)));
+        });
+  }
+
   private LogViewerPanel createLogViewerPanel(
       ChatLogViewerService chatLogViewerService, ExecutorService logViewerExecutor) {
     return new LogViewerPanel(
@@ -1128,6 +1251,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
     centerCards.add(topicCoordinator.topicSplit(), ChatTargetViewRouter.CARD_TRANSCRIPT);
     centerCards.add(notificationsPanel, ChatTargetViewRouter.CARD_NOTIFICATIONS);
     centerCards.add(channelListPanel, ChatTargetViewRouter.CARD_CHANNEL_LIST);
+    centerCards.add(memoServPanel, ChatTargetViewRouter.CARD_MEMOSERV);
     centerCards.add(ignoresPanel, ChatTargetViewRouter.CARD_IGNORES);
     centerCards.add(dccTransfersPanel, ChatTargetViewRouter.CARD_DCC_TRANSFERS);
     centerCards.add(monitorPanel, ChatTargetViewRouter.CARD_MONITOR);
@@ -1167,6 +1291,151 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
           } catch (Exception ignored) {
           }
         });
+  }
+
+  private void configureTranscriptTranslationContextMenuActions() {
+    setTranscriptTranslationContextMenuActions(
+        this::translateContextActionVisible,
+        this::translateContextActionEnabled,
+        this::translationLanguageChoices,
+        this::onTranslateMessageRequested);
+  }
+
+  private List<ChatTranscriptContextMenuDecorator.TranslationLanguageChoice>
+      translationLanguageChoices() {
+    return outboundTranslationTargetLanguages().stream()
+        .map(
+            language ->
+                new ChatTranscriptContextMenuDecorator.TranslationLanguageChoice(
+                    language.code(), language.label() + " (" + language.code() + ")"))
+        .toList();
+  }
+
+  private void configureOutboundInputTranslation() {
+    inputPanel.setOnOutboundTranslationRequested(this::onOutboundTranslationRequested);
+    if (translationSettingsBus != null) {
+      translationSettingsBus.addListener(translationSettingsListener);
+    }
+    refreshOutboundTranslationButtonVisibility();
+  }
+
+  private void onTranslationSettingsChanged(PropertyChangeEvent evt) {
+    if (!MessageTranslationSettingsBus.PROP_TRANSLATION_SETTINGS.equals(evt.getPropertyName())) {
+      return;
+    }
+    SwingUtilities.invokeLater(this::refreshOutboundTranslationButtonVisibility);
+  }
+
+  private void refreshOutboundTranslationButtonVisibility() {
+    if (inputPanel == null) {
+      return;
+    }
+    IrcProperties.Client.Translation settings =
+        translationSettingsBus != null ? translationSettingsBus.get() : null;
+    boolean visible =
+        settings != null && settings.enabled() && outboundMessageTranslationService != null;
+    inputPanel.setOutboundTranslationActionVisible(visible);
+  }
+
+  private void onOutboundTranslationRequested() {
+    IrcProperties.Client.Translation settings =
+        translationSettingsBus != null ? translationSettingsBus.get() : null;
+    if (settings == null || !settings.enabled() || outboundMessageTranslationService == null) {
+      refreshOutboundTranslationButtonVisibility();
+      return;
+    }
+    TargetRef target = activeTarget;
+    if (target == null || target.isUiOnly()) {
+      JOptionPane.showMessageDialog(
+          this,
+          message("chatDock.outboundTranslation.noTarget.message"),
+          message("chatDock.outboundTranslation.title"),
+          JOptionPane.WARNING_MESSAGE);
+      return;
+    }
+    String draft = inputPanel.getDraftText();
+    if (Objects.toString(draft, "").isBlank()) {
+      JOptionPane.showMessageDialog(
+          this,
+          message("chatDock.outboundTranslation.emptyDraft.message"),
+          message("chatDock.outboundTranslation.title"),
+          JOptionPane.INFORMATION_MESSAGE);
+      return;
+    }
+
+    OutboundMessageTranslationDialog.showDialog(
+        this,
+        draft,
+        outboundTranslationTargetLanguages(),
+        settings.targetLanguage(),
+        language -> outboundMessageTranslationService.translateDraft(target, draft, language),
+        translated -> {
+          inputPanel.setDraftText(translated);
+          inputPanel.focusInput();
+        });
+  }
+
+  private List<MessageTranslationLanguage> outboundTranslationTargetLanguages() {
+    IrcProperties.Client.Translation settings =
+        translationSettingsBus != null ? translationSettingsBus.get() : null;
+    return MessageTranslationLanguageCatalog.availableTargets(settings);
+  }
+
+  @Override
+  protected boolean translateContextActionVisible() {
+    return activeTarget != null && !activeTarget.isUiOnly();
+  }
+
+  protected boolean translateContextActionEnabled() {
+    IrcProperties.Client.Translation settings =
+        translationSettingsBus != null ? translationSettingsBus.get() : null;
+    return settings != null
+        && settings.enabled()
+        && messageTranslationDispatcher != null
+        && activeTarget != null
+        && !activeTarget.isUiOnly();
+  }
+
+  @Override
+  protected void onTranslateMessageRequested(String messageId, String targetLanguage) {
+    if (messageTranslationDispatcher == null) {
+      log.warn("[translation] manual request ignored because dispatcher is unavailable");
+      return;
+    }
+    TargetRef target = activeTarget;
+    if (target == null || target.isUiOnly()) {
+      log.warn("[translation] manual request ignored because active target is unavailable");
+      return;
+    }
+    String msgId = Objects.toString(messageId, "").trim();
+    String language = Objects.toString(targetLanguage, "").trim();
+    if (msgId.isBlank() || language.isBlank()) {
+      log.warn("[translation] manual request ignored because msgid or target language is blank");
+      return;
+    }
+
+    MessageTranslationSource source = transcripts.translationSourceById(target, msgId);
+    if (source == null || Objects.toString(source.text(), "").isBlank()) {
+      log.warn(
+          "[translation] manual request ignored because transcript source is missing target={} msgid={}",
+          target,
+          msgId);
+      return;
+    }
+    java.time.Instant at =
+        source.epochMs() == null || source.epochMs() <= 0
+            ? java.time.Instant.now()
+            : java.time.Instant.ofEpochMilli(source.epochMs());
+    boolean scheduled =
+        messageTranslationDispatcher.requestManualMessageTranslation(
+            target, at, source.fromNick(), msgId, source.text(), language);
+    if (!scheduled) {
+      log.warn(
+          "[translation] manual request was not scheduled target={} msgid={} targetLanguage={}",
+          target,
+          msgId,
+          language);
+    }
   }
 
   private void configureInputActivation(TargetActivationBus activationBus) {
@@ -1292,6 +1561,28 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
 
   public void endChannelList(String serverId, String summary) {
     channelListPanel.endList(serverId, summary);
+  }
+
+  public void observeMemoServNotice(String serverId, Instant at, String from, String text) {
+    log.info(
+        "[memoserv] chat dock forwarding notice to panel serverId={} from={} textLength={} preview={}",
+        serverId,
+        from,
+        Objects.toString(text, "").length(),
+        memoServPreview(text));
+    memoServPanel.observeMemoServNotice(serverId, at, from, text);
+  }
+
+  private static String memoServCommandVerb(String command) {
+    String cmd = Objects.toString(command, "").trim();
+    int space = cmd.indexOf(' ');
+    return space < 0 ? cmd : cmd.substring(0, space);
+  }
+
+  private static String memoServPreview(String value) {
+    String text = Objects.toString(value, "").replace('\n', ' ').replace('\r', ' ').trim();
+    if (text.length() <= 180) return text;
+    return text.substring(0, 177) + "...";
   }
 
   public void beginChannelBanList(String serverId, String channel) {
@@ -1570,6 +1861,12 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
     }
     try {
       inputPanel.shutdownResources();
+    } catch (Exception ignored) {
+    }
+    try {
+      if (translationSettingsBus != null) {
+        translationSettingsBus.removeListener(translationSettingsListener);
+      }
     } catch (Exception ignored) {
     }
     try {

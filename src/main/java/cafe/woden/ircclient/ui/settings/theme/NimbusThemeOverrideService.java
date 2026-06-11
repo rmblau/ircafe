@@ -3,12 +3,16 @@ package cafe.woden.ircclient.ui.settings.theme;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import cafe.woden.ircclient.ui.util.UiDefaultKeys;
 import java.awt.Color;
+import java.awt.GradientPaint;
+import java.awt.Graphics2D;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.JComponent;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.Painter;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.plaf.ColorUIResource;
@@ -26,6 +30,34 @@ class NimbusThemeOverrideService {
   private static final Logger log = LoggerFactory.getLogger(NimbusThemeOverrideService.class);
 
   private record NimbusVariantSpec(boolean darkVariant, Runnable applyOverrides) {}
+
+  private record NimbusSurfacePainter(Color top, Color bottom, Color border)
+      implements Painter<JComponent> {
+    @Override
+    public void paint(Graphics2D g, JComponent object, int width, int height) {
+      if (width <= 0 || height <= 0) return;
+      g.setPaint(new GradientPaint(0, 0, top, 0, Math.max(1, height), bottom));
+      g.fillRect(0, 0, width, height);
+      g.setColor(border);
+      g.drawLine(0, height - 1, width, height - 1);
+    }
+  }
+
+  private record NimbusComboArrowPainter(Color color) implements Painter<JComponent> {
+    @Override
+    public void paint(Graphics2D g, JComponent object, int width, int height) {
+      if (width <= 0 || height <= 0) return;
+      int cx = width / 2;
+      int cy = height / 2;
+      int halfWidth = Math.max(4, Math.min(6, width / 4));
+      int halfHeight = Math.max(3, Math.min(5, height / 5));
+      g.setColor(color);
+      g.fillPolygon(
+          new int[] {cx - halfWidth, cx + halfWidth, cx},
+          new int[] {cy - halfHeight / 2, cy - halfHeight / 2, cy + halfHeight},
+          3);
+    }
+  }
 
   private static final String[] NIMBUS_DARK_OVERRIDE_KEYS = {
     UiColorKeys.CONTROL,
@@ -97,6 +129,33 @@ class NimbusThemeOverrideService {
     UiColorKeys.COMBO_BOX_TEXT_FIELD_SELECTED_TEXT_FOREGROUND,
     UiColorKeys.COMBO_BOX_ARROW_BUTTON_BACKGROUND,
     UiColorKeys.COMBO_BOX_ARROW_BUTTON_FOREGROUND,
+    UiDefaultKeys.COMBO_BOX_DISABLED_EDITABLE_BACKGROUND_PAINTER,
+    UiDefaultKeys.COMBO_BOX_DISABLED_PRESSED_BACKGROUND_PAINTER,
+    UiDefaultKeys.COMBO_BOX_DISABLED_BACKGROUND_PAINTER,
+    UiDefaultKeys.COMBO_BOX_EDITABLE_ENABLED_BACKGROUND_PAINTER,
+    UiDefaultKeys.COMBO_BOX_EDITABLE_FOCUSED_BACKGROUND_PAINTER,
+    UiDefaultKeys.COMBO_BOX_EDITABLE_MOUSE_OVER_BACKGROUND_PAINTER,
+    UiDefaultKeys.COMBO_BOX_EDITABLE_PRESSED_BACKGROUND_PAINTER,
+    UiDefaultKeys.COMBO_BOX_ENABLED_SELECTED_BACKGROUND_PAINTER,
+    UiDefaultKeys.COMBO_BOX_ENABLED_BACKGROUND_PAINTER,
+    UiDefaultKeys.COMBO_BOX_FOCUSED_MOUSE_OVER_BACKGROUND_PAINTER,
+    UiDefaultKeys.COMBO_BOX_FOCUSED_PRESSED_BACKGROUND_PAINTER,
+    UiDefaultKeys.COMBO_BOX_FOCUSED_BACKGROUND_PAINTER,
+    UiDefaultKeys.COMBO_BOX_MOUSE_OVER_BACKGROUND_PAINTER,
+    UiDefaultKeys.COMBO_BOX_PRESSED_BACKGROUND_PAINTER,
+    UiDefaultKeys.COMBO_BOX_ARROW_BUTTON_DISABLED_EDITABLE_BACKGROUND_PAINTER,
+    UiDefaultKeys.COMBO_BOX_ARROW_BUTTON_EDITABLE_ENABLED_BACKGROUND_PAINTER,
+    UiDefaultKeys.COMBO_BOX_ARROW_BUTTON_EDITABLE_MOUSE_OVER_BACKGROUND_PAINTER,
+    UiDefaultKeys.COMBO_BOX_ARROW_BUTTON_EDITABLE_PRESSED_BACKGROUND_PAINTER,
+    UiDefaultKeys.COMBO_BOX_ARROW_BUTTON_EDITABLE_SELECTED_BACKGROUND_PAINTER,
+    UiDefaultKeys.COMBO_BOX_ARROW_BUTTON_DISABLED_FOREGROUND_PAINTER,
+    UiDefaultKeys.COMBO_BOX_ARROW_BUTTON_ENABLED_FOREGROUND_PAINTER,
+    UiDefaultKeys.COMBO_BOX_ARROW_BUTTON_MOUSE_OVER_FOREGROUND_PAINTER,
+    UiDefaultKeys.COMBO_BOX_ARROW_BUTTON_PRESSED_FOREGROUND_PAINTER,
+    UiDefaultKeys.COMBO_BOX_ARROW_BUTTON_SELECTED_FOREGROUND_PAINTER,
+    UiDefaultKeys.COMBO_BOX_TEXT_FIELD_DISABLED_BACKGROUND_PAINTER,
+    UiDefaultKeys.COMBO_BOX_TEXT_FIELD_ENABLED_BACKGROUND_PAINTER,
+    UiDefaultKeys.COMBO_BOX_TEXT_FIELD_SELECTED_BACKGROUND_PAINTER,
     UiColorKeys.BUTTON_BACKGROUND,
     UiColorKeys.BUTTON_FOREGROUND,
     UiColorKeys.BUTTON_DISABLED_TEXT,
@@ -214,7 +273,39 @@ class NimbusThemeOverrideService {
     UiColorKeys.SPINNER_FORMATTED_TEXT_FIELD_FOREGROUND,
     UiColorKeys.TOOL_TIP_BACKGROUND,
     UiColorKeys.TOOL_TIP_FOREGROUND,
-    UiColorKeys.TABBED_PANE_FOCUS
+    UiColorKeys.TABBED_PANE_BACKGROUND,
+    UiColorKeys.TABBED_PANE_FOREGROUND,
+    UiColorKeys.TABBED_PANE_DISABLED,
+    UiColorKeys.TABBED_PANE_DISABLED_TEXT,
+    UiColorKeys.TABBED_PANE_DARK_SHADOW,
+    UiColorKeys.TABBED_PANE_HIGHLIGHT,
+    UiColorKeys.TABBED_PANE_SHADOW,
+    UiColorKeys.TABBED_PANE_FOCUS,
+    UiColorKeys.TABBED_PANE_TAB_DISABLED_TEXT_FOREGROUND,
+    UiColorKeys.TABBED_PANE_TAB_ENABLED_TEXT_FOREGROUND,
+    UiColorKeys.TABBED_PANE_TAB_MOUSE_OVER_TEXT_FOREGROUND,
+    UiColorKeys.TABBED_PANE_TAB_PRESSED_TEXT_FOREGROUND,
+    UiColorKeys.TABBED_PANE_TAB_SELECTED_TEXT_FOREGROUND,
+    UiColorKeys.TABBED_PANE_TAB_MOUSE_OVER_SELECTED_TEXT_FOREGROUND,
+    UiColorKeys.TABBED_PANE_TAB_PRESSED_SELECTED_TEXT_FOREGROUND,
+    UiColorKeys.TABBED_PANE_TAB_FOCUSED_SELECTED_TEXT_FOREGROUND,
+    UiColorKeys.TABBED_PANE_TAB_FOCUSED_MOUSE_OVER_SELECTED_TEXT_FOREGROUND,
+    UiColorKeys.TABBED_PANE_TAB_FOCUSED_PRESSED_SELECTED_TEXT_FOREGROUND,
+    UiDefaultKeys.TABBED_PANE_TAB_AREA_DISABLED_BACKGROUND_PAINTER,
+    UiDefaultKeys.TABBED_PANE_TAB_AREA_ENABLED_BACKGROUND_PAINTER,
+    UiDefaultKeys.TABBED_PANE_TAB_AREA_MOUSE_OVER_BACKGROUND_PAINTER,
+    UiDefaultKeys.TABBED_PANE_TAB_AREA_PRESSED_BACKGROUND_PAINTER,
+    UiDefaultKeys.TABBED_PANE_TAB_DISABLED_BACKGROUND_PAINTER,
+    UiDefaultKeys.TABBED_PANE_TAB_DISABLED_SELECTED_BACKGROUND_PAINTER,
+    UiDefaultKeys.TABBED_PANE_TAB_ENABLED_BACKGROUND_PAINTER,
+    UiDefaultKeys.TABBED_PANE_TAB_MOUSE_OVER_BACKGROUND_PAINTER,
+    UiDefaultKeys.TABBED_PANE_TAB_PRESSED_BACKGROUND_PAINTER,
+    UiDefaultKeys.TABBED_PANE_TAB_SELECTED_BACKGROUND_PAINTER,
+    UiDefaultKeys.TABBED_PANE_TAB_MOUSE_OVER_SELECTED_BACKGROUND_PAINTER,
+    UiDefaultKeys.TABBED_PANE_TAB_PRESSED_SELECTED_BACKGROUND_PAINTER,
+    UiDefaultKeys.TABBED_PANE_TAB_FOCUSED_SELECTED_BACKGROUND_PAINTER,
+    UiDefaultKeys.TABBED_PANE_TAB_FOCUSED_MOUSE_OVER_SELECTED_BACKGROUND_PAINTER,
+    UiDefaultKeys.TABBED_PANE_TAB_FOCUSED_PRESSED_SELECTED_BACKGROUND_PAINTER
   };
 
   private static final String[] NIMBUS_TINT_OVERRIDE_KEYS = {
@@ -990,6 +1081,16 @@ class NimbusThemeOverrideService {
     UIManager.put(UiColorKeys.COMBO_BOX_TEXT_FIELD_SELECTED_TEXT_FOREGROUND, selectionFg);
     UIManager.put(UiColorKeys.COMBO_BOX_ARROW_BUTTON_BACKGROUND, comboArrowBg);
     UIManager.put(UiColorKeys.COMBO_BOX_ARROW_BUTTON_FOREGROUND, text);
+    applyNimbusDarkComboBox(
+        fieldBg,
+        comboArrowBg,
+        panelBg,
+        text,
+        disabledText,
+        selectionBg,
+        selectionFg,
+        focus,
+        border);
 
     UIManager.put(UiColorKeys.LIST_BACKGROUND, listBg);
     UIManager.put(UiColorKeys.LIST_FOREGROUND, text);
@@ -1102,6 +1203,217 @@ class NimbusThemeOverrideService {
     UIManager.put(UiColorKeys.TOOL_TIP_BACKGROUND, tooltipBg);
     UIManager.put(UiColorKeys.TOOL_TIP_FOREGROUND, text);
     UIManager.put(UiColorKeys.TABBED_PANE_FOCUS, focus);
+
+    applyNimbusDarkTabbedPane(panelBg, text, disabledText, selectionBg, selectionFg, focus, border);
+  }
+
+  private static void applyNimbusDarkComboBox(
+      Color fieldBg,
+      Color arrowBg,
+      Color panelBg,
+      Color text,
+      Color disabledText,
+      Color selectionBg,
+      Color selectionFg,
+      Color focus,
+      Color border) {
+    Color enabledTop = lighten(fieldBg, 0.05);
+    Color enabledBottom = darken(fieldBg, 0.04);
+    Color hoverTop = lighten(fieldBg, 0.11);
+    Color hoverBottom = lighten(fieldBg, 0.02);
+    Color pressedTop = darken(fieldBg, 0.03);
+    Color pressedBottom = darken(fieldBg, 0.10);
+    Color focusedTop = lighten(mix(fieldBg, focus, 0.16), 0.06);
+    Color focusedBottom = darken(mix(fieldBg, focus, 0.12), 0.04);
+    Color selectedTop = lighten(mix(selectionBg, focus, 0.16), 0.08);
+    Color selectedBottom = darken(selectionBg, 0.04);
+    Color disabledTop = mix(fieldBg, panelBg, 0.64);
+    Color disabledBottom = mix(fieldBg, panelBg, 0.78);
+
+    Color arrowTop = lighten(arrowBg, 0.06);
+    Color arrowBottom = darken(arrowBg, 0.06);
+    Color arrowHoverTop = lighten(arrowBg, 0.13);
+    Color arrowHoverBottom = lighten(arrowBg, 0.03);
+    Color arrowPressedTop = darken(arrowBg, 0.04);
+    Color arrowPressedBottom = darken(arrowBg, 0.12);
+    Color arrowSelectedTop = lighten(mix(selectionBg, focus, 0.12), 0.07);
+    Color arrowSelectedBottom = darken(selectionBg, 0.07);
+
+    ColorUIResource readableText =
+        toUiResource(ThemeColorUtils.ensureContrastAgainstBackground(text, fieldBg, 3.0));
+    ColorUIResource readableDisabledText =
+        toUiResource(
+            ThemeColorUtils.ensureContrastAgainstBackground(disabledText, disabledBottom, 2.0));
+    ColorUIResource readableSelectionText =
+        toUiResource(
+            ThemeColorUtils.ensureContrastAgainstBackground(selectionFg, selectionBg, 3.0));
+
+    Painter<JComponent> enabledPainter =
+        new NimbusSurfacePainter(enabledTop, enabledBottom, border);
+    Painter<JComponent> hoverPainter = new NimbusSurfacePainter(hoverTop, hoverBottom, focus);
+    Painter<JComponent> pressedPainter =
+        new NimbusSurfacePainter(pressedTop, pressedBottom, border);
+    Painter<JComponent> focusedPainter = new NimbusSurfacePainter(focusedTop, focusedBottom, focus);
+    Painter<JComponent> selectedPainter =
+        new NimbusSurfacePainter(selectedTop, selectedBottom, focus);
+    Painter<JComponent> disabledPainter =
+        new NimbusSurfacePainter(disabledTop, disabledBottom, darken(border, 0.10));
+
+    Painter<JComponent> arrowEnabledPainter =
+        new NimbusSurfacePainter(arrowTop, arrowBottom, border);
+    Painter<JComponent> arrowHoverPainter =
+        new NimbusSurfacePainter(arrowHoverTop, arrowHoverBottom, focus);
+    Painter<JComponent> arrowPressedPainter =
+        new NimbusSurfacePainter(arrowPressedTop, arrowPressedBottom, border);
+    Painter<JComponent> arrowSelectedPainter =
+        new NimbusSurfacePainter(arrowSelectedTop, arrowSelectedBottom, focus);
+    Painter<JComponent> arrowDisabledPainter =
+        new NimbusSurfacePainter(disabledTop, disabledBottom, darken(border, 0.10));
+
+    Painter<JComponent> arrowGlyph = new NimbusComboArrowPainter(readableText);
+    Painter<JComponent> arrowGlyphSelected = new NimbusComboArrowPainter(readableSelectionText);
+    Painter<JComponent> arrowGlyphDisabled = new NimbusComboArrowPainter(readableDisabledText);
+
+    UIManager.put(UiColorKeys.COMBO_BOX_FOREGROUND, readableText);
+    UIManager.put(UiColorKeys.COMBO_BOX_DISABLED_TEXT, readableDisabledText);
+    UIManager.put(UiColorKeys.COMBO_BOX_SELECTION_FOREGROUND, readableSelectionText);
+    UIManager.put(UiColorKeys.COMBO_BOX_TEXT_FIELD_TEXT_FOREGROUND, readableText);
+    UIManager.put(UiColorKeys.COMBO_BOX_TEXT_FIELD_SELECTED_TEXT_FOREGROUND, readableSelectionText);
+    UIManager.put(UiColorKeys.COMBO_BOX_ARROW_BUTTON_FOREGROUND, readableText);
+
+    UIManager.put(UiDefaultKeys.COMBO_BOX_DISABLED_EDITABLE_BACKGROUND_PAINTER, disabledPainter);
+    UIManager.put(UiDefaultKeys.COMBO_BOX_DISABLED_PRESSED_BACKGROUND_PAINTER, disabledPainter);
+    UIManager.put(UiDefaultKeys.COMBO_BOX_DISABLED_BACKGROUND_PAINTER, disabledPainter);
+    UIManager.put(UiDefaultKeys.COMBO_BOX_EDITABLE_ENABLED_BACKGROUND_PAINTER, enabledPainter);
+    UIManager.put(UiDefaultKeys.COMBO_BOX_EDITABLE_FOCUSED_BACKGROUND_PAINTER, focusedPainter);
+    UIManager.put(UiDefaultKeys.COMBO_BOX_EDITABLE_MOUSE_OVER_BACKGROUND_PAINTER, hoverPainter);
+    UIManager.put(UiDefaultKeys.COMBO_BOX_EDITABLE_PRESSED_BACKGROUND_PAINTER, pressedPainter);
+    UIManager.put(UiDefaultKeys.COMBO_BOX_ENABLED_SELECTED_BACKGROUND_PAINTER, selectedPainter);
+    UIManager.put(UiDefaultKeys.COMBO_BOX_ENABLED_BACKGROUND_PAINTER, enabledPainter);
+    UIManager.put(UiDefaultKeys.COMBO_BOX_FOCUSED_MOUSE_OVER_BACKGROUND_PAINTER, focusedPainter);
+    UIManager.put(UiDefaultKeys.COMBO_BOX_FOCUSED_PRESSED_BACKGROUND_PAINTER, pressedPainter);
+    UIManager.put(UiDefaultKeys.COMBO_BOX_FOCUSED_BACKGROUND_PAINTER, focusedPainter);
+    UIManager.put(UiDefaultKeys.COMBO_BOX_MOUSE_OVER_BACKGROUND_PAINTER, hoverPainter);
+    UIManager.put(UiDefaultKeys.COMBO_BOX_PRESSED_BACKGROUND_PAINTER, pressedPainter);
+
+    UIManager.put(
+        UiDefaultKeys.COMBO_BOX_ARROW_BUTTON_DISABLED_EDITABLE_BACKGROUND_PAINTER,
+        arrowDisabledPainter);
+    UIManager.put(
+        UiDefaultKeys.COMBO_BOX_ARROW_BUTTON_EDITABLE_ENABLED_BACKGROUND_PAINTER,
+        arrowEnabledPainter);
+    UIManager.put(
+        UiDefaultKeys.COMBO_BOX_ARROW_BUTTON_EDITABLE_MOUSE_OVER_BACKGROUND_PAINTER,
+        arrowHoverPainter);
+    UIManager.put(
+        UiDefaultKeys.COMBO_BOX_ARROW_BUTTON_EDITABLE_PRESSED_BACKGROUND_PAINTER,
+        arrowPressedPainter);
+    UIManager.put(
+        UiDefaultKeys.COMBO_BOX_ARROW_BUTTON_EDITABLE_SELECTED_BACKGROUND_PAINTER,
+        arrowSelectedPainter);
+    UIManager.put(
+        UiDefaultKeys.COMBO_BOX_ARROW_BUTTON_DISABLED_FOREGROUND_PAINTER, arrowGlyphDisabled);
+    UIManager.put(UiDefaultKeys.COMBO_BOX_ARROW_BUTTON_ENABLED_FOREGROUND_PAINTER, arrowGlyph);
+    UIManager.put(UiDefaultKeys.COMBO_BOX_ARROW_BUTTON_MOUSE_OVER_FOREGROUND_PAINTER, arrowGlyph);
+    UIManager.put(UiDefaultKeys.COMBO_BOX_ARROW_BUTTON_PRESSED_FOREGROUND_PAINTER, arrowGlyph);
+    UIManager.put(
+        UiDefaultKeys.COMBO_BOX_ARROW_BUTTON_SELECTED_FOREGROUND_PAINTER, arrowGlyphSelected);
+
+    UIManager.put(UiDefaultKeys.COMBO_BOX_TEXT_FIELD_DISABLED_BACKGROUND_PAINTER, disabledPainter);
+    UIManager.put(UiDefaultKeys.COMBO_BOX_TEXT_FIELD_ENABLED_BACKGROUND_PAINTER, enabledPainter);
+    UIManager.put(UiDefaultKeys.COMBO_BOX_TEXT_FIELD_SELECTED_BACKGROUND_PAINTER, selectedPainter);
+  }
+
+  private static void applyNimbusDarkTabbedPane(
+      Color panelBg,
+      Color text,
+      Color disabledText,
+      Color selectionBg,
+      Color selectionFg,
+      Color focus,
+      Color border) {
+    ColorUIResource tabArea = toUiResource(darken(panelBg, 0.06));
+    ColorUIResource inactiveFg =
+        toUiResource(ThemeColorUtils.ensureContrastAgainstBackground(text, tabArea, 3.0));
+    ColorUIResource disabledFg =
+        toUiResource(ThemeColorUtils.ensureContrastAgainstBackground(disabledText, tabArea, 2.0));
+    ColorUIResource selectedFg =
+        toUiResource(
+            ThemeColorUtils.ensureContrastAgainstBackground(selectionFg, selectionBg, 3.0));
+
+    Color inactiveTop = lighten(panelBg, 0.04);
+    Color inactiveBottom = darken(panelBg, 0.04);
+    Color hoverTop = lighten(panelBg, 0.10);
+    Color hoverBottom = lighten(panelBg, 0.02);
+    Color pressedTop = darken(panelBg, 0.03);
+    Color pressedBottom = darken(panelBg, 0.09);
+    Color selectedTop = lighten(mix(selectionBg, focus, 0.18), 0.08);
+    Color selectedBottom = darken(selectionBg, 0.04);
+    Color selectedPressedTop = darken(selectedTop, 0.05);
+    Color selectedPressedBottom = darken(selectedBottom, 0.08);
+    Color disabledTop = mix(inactiveTop, panelBg, 0.65);
+    Color disabledBottom = mix(inactiveBottom, panelBg, 0.70);
+
+    Painter<JComponent> areaPainter =
+        new NimbusSurfacePainter(darken(tabArea, 0.01), darken(tabArea, 0.06), border);
+    Painter<JComponent> disabledAreaPainter =
+        new NimbusSurfacePainter(darken(tabArea, 0.04), darken(tabArea, 0.08), border);
+    Painter<JComponent> inactivePainter =
+        new NimbusSurfacePainter(inactiveTop, inactiveBottom, border);
+    Painter<JComponent> hoverPainter = new NimbusSurfacePainter(hoverTop, hoverBottom, focus);
+    Painter<JComponent> pressedPainter =
+        new NimbusSurfacePainter(pressedTop, pressedBottom, border);
+    Painter<JComponent> selectedPainter =
+        new NimbusSurfacePainter(selectedTop, selectedBottom, focus);
+    Painter<JComponent> selectedPressedPainter =
+        new NimbusSurfacePainter(selectedPressedTop, selectedPressedBottom, focus);
+    Painter<JComponent> disabledPainter =
+        new NimbusSurfacePainter(disabledTop, disabledBottom, darken(border, 0.08));
+
+    UIManager.put(UiColorKeys.TABBED_PANE_BACKGROUND, tabArea);
+    UIManager.put(UiColorKeys.TABBED_PANE_FOREGROUND, inactiveFg);
+    UIManager.put(UiColorKeys.TABBED_PANE_DISABLED, toUiResource(darken(panelBg, 0.03)));
+    UIManager.put(UiColorKeys.TABBED_PANE_DISABLED_TEXT, disabledFg);
+    UIManager.put(UiColorKeys.TABBED_PANE_DARK_SHADOW, toUiResource(darken(border, 0.16)));
+    UIManager.put(UiColorKeys.TABBED_PANE_HIGHLIGHT, toUiResource(lighten(panelBg, 0.12)));
+    UIManager.put(UiColorKeys.TABBED_PANE_SHADOW, border);
+
+    UIManager.put(UiColorKeys.TABBED_PANE_TAB_DISABLED_TEXT_FOREGROUND, disabledFg);
+    UIManager.put(UiColorKeys.TABBED_PANE_TAB_ENABLED_TEXT_FOREGROUND, inactiveFg);
+    UIManager.put(UiColorKeys.TABBED_PANE_TAB_MOUSE_OVER_TEXT_FOREGROUND, inactiveFg);
+    UIManager.put(UiColorKeys.TABBED_PANE_TAB_PRESSED_TEXT_FOREGROUND, inactiveFg);
+    UIManager.put(UiColorKeys.TABBED_PANE_TAB_SELECTED_TEXT_FOREGROUND, selectedFg);
+    UIManager.put(UiColorKeys.TABBED_PANE_TAB_MOUSE_OVER_SELECTED_TEXT_FOREGROUND, selectedFg);
+    UIManager.put(UiColorKeys.TABBED_PANE_TAB_PRESSED_SELECTED_TEXT_FOREGROUND, selectedFg);
+    UIManager.put(UiColorKeys.TABBED_PANE_TAB_FOCUSED_SELECTED_TEXT_FOREGROUND, selectedFg);
+    UIManager.put(
+        UiColorKeys.TABBED_PANE_TAB_FOCUSED_MOUSE_OVER_SELECTED_TEXT_FOREGROUND, selectedFg);
+    UIManager.put(UiColorKeys.TABBED_PANE_TAB_FOCUSED_PRESSED_SELECTED_TEXT_FOREGROUND, selectedFg);
+
+    UIManager.put(
+        UiDefaultKeys.TABBED_PANE_TAB_AREA_DISABLED_BACKGROUND_PAINTER, disabledAreaPainter);
+    UIManager.put(UiDefaultKeys.TABBED_PANE_TAB_AREA_ENABLED_BACKGROUND_PAINTER, areaPainter);
+    UIManager.put(UiDefaultKeys.TABBED_PANE_TAB_AREA_MOUSE_OVER_BACKGROUND_PAINTER, areaPainter);
+    UIManager.put(UiDefaultKeys.TABBED_PANE_TAB_AREA_PRESSED_BACKGROUND_PAINTER, areaPainter);
+    UIManager.put(UiDefaultKeys.TABBED_PANE_TAB_DISABLED_BACKGROUND_PAINTER, disabledPainter);
+    UIManager.put(
+        UiDefaultKeys.TABBED_PANE_TAB_DISABLED_SELECTED_BACKGROUND_PAINTER, disabledPainter);
+    UIManager.put(UiDefaultKeys.TABBED_PANE_TAB_ENABLED_BACKGROUND_PAINTER, inactivePainter);
+    UIManager.put(UiDefaultKeys.TABBED_PANE_TAB_MOUSE_OVER_BACKGROUND_PAINTER, hoverPainter);
+    UIManager.put(UiDefaultKeys.TABBED_PANE_TAB_PRESSED_BACKGROUND_PAINTER, pressedPainter);
+    UIManager.put(UiDefaultKeys.TABBED_PANE_TAB_SELECTED_BACKGROUND_PAINTER, selectedPainter);
+    UIManager.put(
+        UiDefaultKeys.TABBED_PANE_TAB_MOUSE_OVER_SELECTED_BACKGROUND_PAINTER, selectedPainter);
+    UIManager.put(
+        UiDefaultKeys.TABBED_PANE_TAB_PRESSED_SELECTED_BACKGROUND_PAINTER, selectedPressedPainter);
+    UIManager.put(
+        UiDefaultKeys.TABBED_PANE_TAB_FOCUSED_SELECTED_BACKGROUND_PAINTER, selectedPainter);
+    UIManager.put(
+        UiDefaultKeys.TABBED_PANE_TAB_FOCUSED_MOUSE_OVER_SELECTED_BACKGROUND_PAINTER,
+        selectedPainter);
+    UIManager.put(
+        UiDefaultKeys.TABBED_PANE_TAB_FOCUSED_PRESSED_SELECTED_BACKGROUND_PAINTER,
+        selectedPressedPainter);
   }
 
   private static void applyNimbusOrangeOverrides() {

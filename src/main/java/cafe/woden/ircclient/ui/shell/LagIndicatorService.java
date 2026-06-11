@@ -6,6 +6,7 @@ import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
 import cafe.woden.ircclient.irc.port.IrcLagProbePort;
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.util.VirtualThreads;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -39,6 +40,7 @@ public class LagIndicatorService {
       TimeUnit.SECONDS.toMillis(PASSIVE_FALLBACK_PROBE_INTERVAL_SECONDS);
   private static final long PROBE_RESULT_WAIT_MS = 750L;
   private static final long PROBE_RESULT_POLL_MS = 50L;
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private final UiShellRuntimeConfigPort runtimeConfig;
   private final StatusBar statusBar;
@@ -96,7 +98,7 @@ public class LagIndicatorService {
 
     log.debug("[lag] enabled");
     statusBar.setLagIndicatorEnabled(true);
-    statusBar.setLagIndicatorReading(null, "Measuring server lag...");
+    statusBar.setLagIndicatorReading(null, message("lagIndicator.status.measuring"));
     scheduleChecksIfNeeded();
   }
 
@@ -124,7 +126,7 @@ public class LagIndicatorService {
           "[lag] waiting: no active IRC server selected (activeTarget={}, fallbackTarget={})",
           context.activeTarget(),
           context.fallbackTarget());
-      statusBar.setLagIndicatorReading(null, "Lag unavailable: no active IRC server selected.");
+      statusBar.setLagIndicatorReading(null, message("lagIndicator.status.noActiveServer"));
       return;
     }
 
@@ -134,8 +136,7 @@ public class LagIndicatorService {
           "[lag] waiting: server '{}' has no current nick yet (activeTarget={})",
           serverId,
           context.activeTarget() != null ? context.activeTarget() : context.fallbackTarget());
-      statusBar.setLagIndicatorReading(
-          null, "Lag unavailable: not connected to '" + serverId + "'.");
+      statusBar.setLagIndicatorReading(null, message("lagIndicator.status.notConnected", serverId));
       return;
     }
 
@@ -151,14 +152,14 @@ public class LagIndicatorService {
               serverId,
               lag);
           statusBar.setLagIndicatorReading(
-              lag, "Round-trip lag to '" + serverId + "': " + lag + " ms.");
+              lag, message("lagIndicator.status.roundTrip", serverId, lag));
         } else {
           logStateChange(
               "probe-not-ready:" + serverId,
               "[lag] waiting: server '{}' is not ready for lag probes yet",
               serverId);
           statusBar.setLagIndicatorReading(
-              null, "Waiting for connection setup on '" + serverId + "'...");
+              null, message("lagIndicator.status.waitingForConnectionSetup", serverId));
         }
         return;
       }
@@ -214,22 +215,22 @@ public class LagIndicatorService {
             serverId,
             lag);
         statusBar.setLagIndicatorReading(
-            lag, "Round-trip lag to '" + serverId + "': " + lag + " ms.");
+            lag, message("lagIndicator.status.roundTrip", serverId, lag));
       } else if (requestedFallbackProbe) {
         statusBar.setLagIndicatorReading(
             null,
             hadSeenLagSample
-                ? "Refreshing lag for '" + serverId + "'..."
-                : "Measuring server lag...");
+                ? message("lagIndicator.status.refreshing", serverId)
+                : message("lagIndicator.status.measuring"));
       } else if (activeProbeBackend) {
-        statusBar.setLagIndicatorReading(null, "Measuring server lag...");
+        statusBar.setLagIndicatorReading(null, message("lagIndicator.status.measuring"));
       } else {
         statusBar.setLagIndicatorReading(
-            null, "Waiting for ping/pong activity on '" + serverId + "'...");
+            null, message("lagIndicator.status.waitingForPingPong", serverId));
       }
     } catch (Exception e) {
       log.warn("[lag] unavailable for '{}'", serverId, e);
-      statusBar.setLagIndicatorReading(null, "Lag unavailable for '" + serverId + "'.");
+      statusBar.setLagIndicatorReading(null, message("lagIndicator.status.unavailable", serverId));
     }
   }
 
@@ -261,6 +262,10 @@ public class LagIndicatorService {
     if (task != null) {
       task.cancel(true);
     }
+  }
+
+  private static String message(String key, Object... args) {
+    return MESSAGES.text(key, args);
   }
 
   private boolean shouldRequestPassiveFallbackProbe(String serverId, long nowMs) {

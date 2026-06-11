@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.embeds;
 
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.EmbedCardStyle;
 import cafe.woden.ircclient.ui.settings.EmbedCardStyleBus;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
@@ -17,38 +18,36 @@ import javax.swing.JPanel;
 import javax.swing.JSpinner;
 
 public final class EmbedPreviewControlsSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private EmbedPreviewControlsSupport() {}
 
   public static ImageEmbedControls buildImageEmbedControls(
       UiSettings current, List<AutoCloseable> closeables) {
-    JCheckBox imageEmbeds = new JCheckBox("Enable inline image embeds (direct links)");
+    JCheckBox imageEmbeds = new JCheckBox(MESSAGES.text("preferences.embeds.image.enabled"));
     imageEmbeds.setSelected(current.imageEmbedsEnabled());
-    imageEmbeds.setToolTipText(
-        "If enabled, IRCafe will download and render images from direct image URLs in chat.");
+    imageEmbeds.setToolTipText(MESSAGES.text("preferences.embeds.image.enabled.tooltip"));
 
-    JCheckBox imageEmbedsCollapsed = new JCheckBox("Collapse inline images by default");
+    JCheckBox imageEmbedsCollapsed =
+        new JCheckBox(MESSAGES.text("preferences.embeds.image.collapsed"));
     imageEmbedsCollapsed.setSelected(current.imageEmbedsCollapsedByDefault());
     imageEmbedsCollapsed.setToolTipText(
-        "If enabled, newly inserted inline images start collapsed (header shown; click to expand).");
+        MESSAGES.text("preferences.embeds.image.collapsed.tooltip"));
     imageEmbedsCollapsed.setEnabled(imageEmbeds.isSelected());
     JSpinner imageMaxWidth =
         PreferencesUiSupport.numberSpinner(
             current.imageEmbedsMaxWidthPx(), 0, 4096, 10, closeables);
-    imageMaxWidth.setToolTipText(
-        "Maximum width for inline images (pixels).\n"
-            + "If 0, IRCafe will only scale images down to fit the chat viewport.");
+    imageMaxWidth.setToolTipText(MESSAGES.text("preferences.embeds.image.maxWidth.tooltip"));
     imageMaxWidth.setEnabled(imageEmbeds.isSelected());
     JSpinner imageMaxHeight =
         PreferencesUiSupport.numberSpinner(
             current.imageEmbedsMaxHeightPx(), 0, 4096, 10, closeables);
-    imageMaxHeight.setToolTipText(
-        "Maximum height for inline images (pixels).\n"
-            + "If 0, IRCafe will only scale images down based on viewport width (and max width cap, if set).");
+    imageMaxHeight.setToolTipText(MESSAGES.text("preferences.embeds.image.maxHeight.tooltip"));
     imageMaxHeight.setEnabled(imageEmbeds.isSelected());
 
-    JCheckBox animateGifs = new JCheckBox("Animate GIFs");
+    JCheckBox animateGifs = new JCheckBox(MESSAGES.text("preferences.embeds.image.animateGifs"));
     animateGifs.setSelected(current.imageEmbedsAnimateGifs());
-    animateGifs.setToolTipText("If disabled, animated GIFs render as a still image (first frame).");
+    animateGifs.setToolTipText(MESSAGES.text("preferences.embeds.image.animateGifs.tooltip"));
     animateGifs.setEnabled(imageEmbeds.isSelected());
 
     imageEmbeds.addActionListener(
@@ -65,9 +64,9 @@ public final class EmbedPreviewControlsSupport {
     imagePanel.setOpaque(false);
     imagePanel.add(imageEmbeds, MigConstraints.spanXWrap(2));
     imagePanel.add(imageEmbedsCollapsed, MigConstraints.spanXWrap(2));
-    imagePanel.add(new JLabel("Max image width (px, 0 = no limit):"));
+    imagePanel.add(new JLabel(MESSAGES.text("preferences.embeds.image.maxWidth")));
     imagePanel.add(imageMaxWidth, MigConstraints.width(110));
-    imagePanel.add(new JLabel("Max image height (px, 0 = no limit):"));
+    imagePanel.add(new JLabel(MESSAGES.text("preferences.embeds.image.maxHeight")));
     imagePanel.add(imageMaxHeight, MigConstraints.width(110));
     imagePanel.add(animateGifs, MigConstraints.spanXWrap(2));
 
@@ -77,16 +76,15 @@ public final class EmbedPreviewControlsSupport {
 
   public static LinkPreviewControls buildLinkPreviewControls(
       UiSettings current, EmbedCardStyle currentEmbedCardStyle) {
-    JCheckBox linkPreviews = new JCheckBox("Enable link previews (OpenGraph cards)");
+    JCheckBox linkPreviews = new JCheckBox(MESSAGES.text("preferences.embeds.link.enabled"));
     linkPreviews.setSelected(current.linkPreviewsEnabled());
-    linkPreviews.setToolTipText(
-        "If enabled, IRCafe will fetch page metadata (title/description/image) and show a preview card under messages.\n"
-            + "Note: this makes network requests to the linked sites.");
+    linkPreviews.setToolTipText(MESSAGES.text("preferences.embeds.link.enabled.tooltip"));
 
-    JCheckBox linkPreviewsCollapsed = new JCheckBox("Collapse link previews by default");
+    JCheckBox linkPreviewsCollapsed =
+        new JCheckBox(MESSAGES.text("preferences.embeds.link.collapsed"));
     linkPreviewsCollapsed.setSelected(current.linkPreviewsCollapsedByDefault());
     linkPreviewsCollapsed.setToolTipText(
-        "If enabled, newly inserted link previews start collapsed (header shown; click to expand).");
+        MESSAGES.text("preferences.embeds.link.collapsed.tooltip"));
     linkPreviewsCollapsed.setEnabled(linkPreviews.isSelected());
     linkPreviews.addActionListener(
         e -> linkPreviewsCollapsed.setEnabled(linkPreviews.isSelected()));
@@ -94,8 +92,7 @@ public final class EmbedPreviewControlsSupport {
     JComboBox<EmbedCardStyle> cardStyle = new JComboBox<>(EmbedCardStyle.values());
     cardStyle.setSelectedItem(
         currentEmbedCardStyle != null ? currentEmbedCardStyle : EmbedCardStyle.DEFAULT);
-    cardStyle.setToolTipText(
-        "Visual preset for inline cards used by link previews and image embeds.");
+    cardStyle.setToolTipText(MESSAGES.text("preferences.embeds.link.cardStyle.tooltip"));
 
     JPanel linkPanel = new JPanel(MigLayouts.singleColumn(MigLayouts.rowGaps(4, 8)));
     linkPanel.setOpaque(false);
@@ -103,7 +100,7 @@ public final class EmbedPreviewControlsSupport {
     linkPanel.add(linkPreviewsCollapsed);
     JPanel styleRow = new JPanel(MigLayouts.insets0(MigLayoutConstraints.LEADING_GROW_FILL, "[]"));
     styleRow.setOpaque(false);
-    styleRow.add(new JLabel("Card style"));
+    styleRow.add(new JLabel(MESSAGES.text("preferences.embeds.link.cardStyle")));
     styleRow.add(cardStyle, MigConstraints.width(180));
     linkPanel.add(styleRow, MigConstraints.growX());
 

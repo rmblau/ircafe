@@ -2,14 +2,27 @@ package cafe.woden.ircclient.ui.settings.theme;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.ui.util.UiColorKeys;
+import cafe.woden.ircclient.ui.util.UiDefaultKeys;
 import cafe.woden.ircclient.ui.util.UiFontKeys;
 import com.formdev.flatlaf.FlatDarkLaf;
 import com.formdev.flatlaf.FlatLightLaf;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Insets;
 import java.lang.reflect.InvocationTargetException;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.junit.jupiter.api.AfterAll;
@@ -182,6 +195,129 @@ class ThemeAppearanceServiceTest {
         });
   }
 
+  @Test
+  void nimbusAutoDensityAppliesCozySizingDefaults() throws Exception {
+    onEdt(
+        () -> {
+          installNimbus();
+
+          service.applyCommonTweaks(ThemeAppearanceSettingsTestFixtures.tweakDefaults());
+
+          assertEquals(26, UIManager.getInt(UiDefaultKeys.TREE_ROW_HEIGHT));
+          assertEquals(26, UIManager.getInt(UiDefaultKeys.TABLE_ROW_HEIGHT));
+          assertEquals(26, UIManager.getInt(UiDefaultKeys.LIST_CELL_HEIGHT));
+
+          Insets menuItem = uiInsets(UiDefaultKeys.MENU_ITEM_CONTENT_MARGINS);
+          assertTrue(menuItem.top >= 4);
+          assertTrue(menuItem.bottom >= 5);
+
+          Insets tab = uiInsets(UiDefaultKeys.TABBED_PANE_TAB_CONTENT_MARGINS);
+          assertTrue(tab.left >= 12);
+          assertTrue(tab.right >= 12);
+        });
+  }
+
+  @Test
+  void nimbusDensityChoicesChangeRowsAndMenus() throws Exception {
+    onEdt(
+        () -> {
+          installNimbus();
+
+          service.applyCommonTweaks(
+              ThemeAppearanceSettingsTestFixtures.tweak(
+                  ThemeTweakSettings.ThemeDensity.COMPACT, 10));
+          int compactRowHeight = UIManager.getInt(UiDefaultKeys.TREE_ROW_HEIGHT);
+          Insets compactMenuItem = uiInsets(UiDefaultKeys.MENU_ITEM_CONTENT_MARGINS);
+
+          service.applyCommonTweaks(
+              ThemeAppearanceSettingsTestFixtures.tweak(
+                  ThemeTweakSettings.ThemeDensity.SPACIOUS, 10));
+          int spaciousRowHeight = UIManager.getInt(UiDefaultKeys.TREE_ROW_HEIGHT);
+          Insets spaciousMenuItem = uiInsets(UiDefaultKeys.MENU_ITEM_CONTENT_MARGINS);
+
+          assertTrue(spaciousRowHeight > compactRowHeight);
+          assertTrue(spaciousMenuItem.top > compactMenuItem.top);
+          assertTrue(spaciousMenuItem.bottom > compactMenuItem.bottom);
+        });
+  }
+
+  @Test
+  void nimbusDensityRefreshResizesExistingComponents() throws Exception {
+    onEdt(
+        () -> {
+          installNimbus();
+
+          JPanel root = new JPanel();
+          JButton button = new JButton("Button");
+          JTextField textField = new JTextField("Text", 8);
+          JComboBox<String> comboBox = new JComboBox<>(new String[] {"One", "Two"});
+          JTabbedPane tabs = new JTabbedPane();
+          tabs.addTab("Tab", new JLabel("Content"));
+          JList<String> list = new JList<>(new String[] {"a", "b"});
+          JTable table = new JTable(2, 2);
+          JTree tree = new JTree();
+          root.add(button);
+          root.add(textField);
+          root.add(comboBox);
+          root.add(tabs);
+          root.add(list);
+          root.add(table);
+          root.add(tree);
+
+          ThemeTweakSettings compact =
+              ThemeAppearanceSettingsTestFixtures.tweak(
+                  ThemeTweakSettings.ThemeDensity.COMPACT, 10);
+          service.applyCommonTweaks(compact);
+          service.applyNimbusDensityToComponentTree(root, compact);
+          SwingUtilities.updateComponentTreeUI(root);
+
+          Dimension compactButton = button.getPreferredSize();
+          Dimension compactTextField = textField.getPreferredSize();
+          Dimension compactComboBox = comboBox.getPreferredSize();
+          Dimension compactTabs = tabs.getPreferredSize();
+          int compactListRow = list.getFixedCellHeight();
+          int compactTableRow = table.getRowHeight();
+          int compactTreeRow = tree.getRowHeight();
+
+          ThemeTweakSettings spacious =
+              ThemeAppearanceSettingsTestFixtures.tweak(
+                  ThemeTweakSettings.ThemeDensity.SPACIOUS, 10);
+          service.applyCommonTweaks(spacious);
+          service.applyNimbusDensityToComponentTree(root, spacious);
+          SwingUtilities.updateComponentTreeUI(root);
+
+          assertTrue(button.getPreferredSize().height > compactButton.height);
+          assertTrue(textField.getPreferredSize().height > compactTextField.height);
+          assertTrue(comboBox.getPreferredSize().height > compactComboBox.height);
+          assertTrue(tabs.getPreferredSize().height > compactTabs.height);
+          assertTrue(list.getFixedCellHeight() > compactListRow);
+          assertTrue(table.getRowHeight() > compactTableRow);
+          assertTrue(tree.getRowHeight() > compactTreeRow);
+        });
+  }
+
+  @Test
+  void nimbusDensityKeepsRowsLargeEnoughForUiFontOverride() throws Exception {
+    onEdt(
+        () -> {
+          installNimbus();
+
+          service.applyCommonTweaks(
+              ThemeAppearanceSettingsTestFixtures.tweakBuilder()
+                  .density(ThemeTweakSettings.ThemeDensity.COMPACT)
+                  .uiFontOverrideEnabled(true)
+                  .uiFontFamily("Dialog")
+                  .uiFontSize(24)
+                  .build());
+
+          assertTrue(UIManager.getInt(UiDefaultKeys.TREE_ROW_HEIGHT) >= 31);
+
+          service.applyCommonTweaks(
+              ThemeAppearanceSettingsTestFixtures.tweak(
+                  ThemeTweakSettings.ThemeDensity.COMPACT, 10));
+        });
+  }
+
   @AfterAll
   void restoreLookAndFeel() throws Exception {
     if (initialLookAndFeelClassName == null || initialLookAndFeelClassName.isBlank()) return;
@@ -208,5 +344,19 @@ class ThemeAppearanceServiceTest {
     Font fallback = UIManager.getFont(UiFontKeys.DEFAULT_FONT);
     if (fallback != null) return fallback;
     return new Font("Dialog", Font.PLAIN, 12);
+  }
+
+  private static void installNimbus() {
+    try {
+      UIManager.setLookAndFeel("javax.swing.plaf.nimbus.NimbusLookAndFeel");
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private static Insets uiInsets(String key) {
+    Object value = UIManager.get(key);
+    if (value instanceof Insets insets) return insets;
+    throw new AssertionError(key + " should be an Insets value but was " + value);
   }
 }

@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.util.MigConstraints;
 import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import cafe.woden.ircclient.ui.util.MigLayouts;
@@ -25,6 +26,7 @@ import javax.swing.UIManager;
 
 public final class SettingsColorPickerDialogSupport {
   private static final int MAX_RECENT_COLORS = 12;
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
   private static final Deque<String> RECENT_COLOR_HEX = new ArrayDeque<>();
 
   private SettingsColorPickerDialogSupport() {}
@@ -43,7 +45,7 @@ public final class SettingsColorPickerDialogSupport {
     final Color[] current = new Color[] {init};
     final Color[] result = new Color[1];
 
-    JLabel preview = new JLabel(" IRCafe preview ");
+    JLabel preview = new JLabel(" " + MESSAGES.text("settings.colorPicker.preview") + " ");
     preview.setOpaque(true);
     preview.setBorder(BorderFactory.createEmptyBorder(10, 12, 10, 12));
     preview.setBackground(bg);
@@ -57,9 +59,9 @@ public final class SettingsColorPickerDialogSupport {
     JLabel hexStatus = new JLabel(" ");
     hexStatus.setFont(UIManager.getFont(UiFontKeys.LABEL_SMALL_FONT));
 
-    JButton more = new JButton("More…");
-    JButton ok = new JButton("OK");
-    JButton cancel = new JButton("Cancel");
+    JButton more = new JButton(MESSAGES.text("settings.colorPicker.button.more"));
+    JButton ok = new JButton(MESSAGES.text("common.button.ok"));
+    JButton cancel = new JButton(MESSAGES.text("common.button.cancel"));
 
     final boolean[] internalUpdate = new boolean[] {false};
 
@@ -67,10 +69,21 @@ public final class SettingsColorPickerDialogSupport {
         () -> {
           Color fg = current[0];
           preview.setForeground(fg);
-          preview.setText(" IRCafe preview  " + SettingsColorSupport.toHex(fg));
+          preview.setText(
+              MESSAGES.text(
+                  "settings.colorPicker.preview.withHex", SettingsColorSupport.toHex(fg)));
           double cr = SettingsColorSupport.contrastRatio(fg, bg);
-          String verdict = cr >= 4.5 ? "OK" : (cr >= 3.0 ? "Low" : "Bad");
-          contrast.setText(String.format(Locale.ROOT, "Contrast: %.1f (%s)", cr, verdict));
+          String verdict =
+              cr >= 4.5
+                  ? MESSAGES.text("settings.colorPicker.contrast.ok")
+                  : (cr >= 3.0
+                      ? MESSAGES.text("settings.colorPicker.contrast.low")
+                      : MESSAGES.text("settings.colorPicker.contrast.bad"));
+          contrast.setText(
+              MESSAGES.text(
+                  "settings.colorPicker.contrast",
+                  String.format(Locale.ROOT, "%.1f", cr),
+                  verdict));
           ok.setEnabled(fg != null);
         };
 
@@ -93,7 +106,7 @@ public final class SettingsColorPickerDialogSupport {
 
                   Color parsed = SettingsColorSupport.parseHexColorLenient(hex.getText());
                   if (parsed == null) {
-                    hexStatus.setText("Invalid hex (use #RRGGBB or #RGB)");
+                    hexStatus.setText(MESSAGES.text("settings.colorPicker.invalidHex"));
                     ok.setEnabled(false);
                     return;
                   }
@@ -123,7 +136,8 @@ public final class SettingsColorPickerDialogSupport {
           List<String> rec = snapshotRecentColorHex();
           if (rec.isEmpty()) {
             recent.add(
-                PreferencesUiSupport.helpText("No recent colors yet."), MigConstraints.spanX(8));
+                PreferencesUiSupport.helpText(MESSAGES.text("settings.colorPicker.noRecent")),
+                MigConstraints.spanX(8));
           } else {
             for (String hx : rec) {
               Color c = SettingsColorSupport.parseHexColorLenient(hx);
@@ -139,7 +153,10 @@ public final class SettingsColorPickerDialogSupport {
     more.addActionListener(
         e -> {
           Color picked =
-              JColorChooser.showDialog(d, "More Colors", current[0] != null ? current[0] : init);
+              JColorChooser.showDialog(
+                  d,
+                  MESSAGES.text("settings.colorPicker.moreColors.title"),
+                  current[0] != null ? current[0] : init);
           if (picked != null) setColor.accept(picked);
         });
 
@@ -167,7 +184,7 @@ public final class SettingsColorPickerDialogSupport {
     content.add(preview, MigConstraints.span2GrowXWrap());
     content.add(contrast, MigConstraints.span2GrowXWrap());
 
-    content.add(new JLabel("Hex"));
+    content.add(new JLabel(MESSAGES.text("settings.colorPicker.field.hex")));
     JPanel hexRow =
         new JPanel(
             MigLayouts.fillXWrap(0, 3, "[grow,fill]6[nogrid]6[nogrid]", MigLayouts.rows(2, 2)));
@@ -178,10 +195,13 @@ public final class SettingsColorPickerDialogSupport {
     hexRow.add(hexStatus, MigConstraints.spanXGrowX(3));
     content.add(hexRow, MigConstraints.growXWrap());
 
-    content.add(new JLabel("Palette"), MigConstraints.alignYTop());
+    content.add(
+        new JLabel(MESSAGES.text("settings.colorPicker.field.palette")),
+        MigConstraints.alignYTop());
     content.add(palette, MigConstraints.growXWrap());
 
-    content.add(new JLabel("Recent"), MigConstraints.alignYTop());
+    content.add(
+        new JLabel(MESSAGES.text("settings.colorPicker.field.recent")), MigConstraints.alignYTop());
     content.add(recent, MigConstraints.growXWrap());
 
     JPanel buttons = PreferencesUiSupport.rightComponentRow(8, 0, cancel, ok);

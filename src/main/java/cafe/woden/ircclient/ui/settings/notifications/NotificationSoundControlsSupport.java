@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings.notifications;
 
 import cafe.woden.ircclient.model.BuiltInSound;
 import cafe.woden.ircclient.notify.api.NotificationSoundPort;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
 import cafe.woden.ircclient.ui.util.SoundFileChooserSupport;
@@ -16,6 +17,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 public final class NotificationSoundControlsSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private NotificationSoundControlsSupport() {}
 
   public static Controls buildControls(Request request) {
@@ -32,14 +35,22 @@ public final class NotificationSoundControlsSupport {
     JButton testSound = new JButton(request.testButtonText());
     if (request.buttonStyle() == ButtonStyle.ICON_ONLY) {
       PreferencesUiSupport.configureIconOnlyButton(
-          browseCustom, "folder-open", "Browse/import custom sound file");
-      PreferencesUiSupport.configureIconOnlyButton(clearCustom, "close", "Clear custom sound path");
-      PreferencesUiSupport.configureIconOnlyButton(testSound, "play", "Test selected sound");
+          browseCustom,
+          "folder-open",
+          MESSAGES.text("preferences.notifications.sound.button.browse.tooltip.icon"));
+      PreferencesUiSupport.configureIconOnlyButton(
+          clearCustom,
+          "close",
+          MESSAGES.text("preferences.notifications.sound.button.clear.tooltip.icon"));
+      PreferencesUiSupport.configureIconOnlyButton(
+          testSound, "play", MESSAGES.text("preferences.notifications.sound.button.test.tooltip"));
     } else {
       browseCustom.setToolTipText(
-          "Choose an MP3 or WAV file and copy it into IRCafe's runtime config directory.");
-      clearCustom.setToolTipText("Stop using a custom file and revert to bundled sounds.");
-      testSound.setToolTipText("Play the selected sound.");
+          MESSAGES.text("preferences.notifications.sound.button.browse.tooltip"));
+      clearCustom.setToolTipText(
+          MESSAGES.text("preferences.notifications.sound.button.clear.tooltip"));
+      testSound.setToolTipText(
+          MESSAGES.text("preferences.notifications.sound.button.test.tooltip"));
     }
 
     Controls controls =
@@ -92,11 +103,18 @@ public final class NotificationSoundControlsSupport {
       boolean customPathEditableWhenEnabled,
       boolean customFileControlsRequireUseCustom) {
     public Request {
-      enabledLabel = Objects.toString(enabledLabel, "Play sound");
-      useCustomLabel = Objects.toString(useCustomLabel, "Use custom file");
-      browseButtonText = Objects.toString(browseButtonText, "Browse...");
-      clearButtonText = Objects.toString(clearButtonText, "Clear");
-      testButtonText = Objects.toString(testButtonText, "Test sound");
+      enabledLabel =
+          Objects.toString(
+              enabledLabel, MESSAGES.text("preferences.notifications.sound.enabled.default"));
+      useCustomLabel =
+          Objects.toString(
+              useCustomLabel, MESSAGES.text("preferences.notifications.sound.useCustom.default"));
+      browseButtonText =
+          Objects.toString(browseButtonText, MESSAGES.text("common.button.browse.ellipsis"));
+      clearButtonText = Objects.toString(clearButtonText, MESSAGES.text("common.button.clear"));
+      testButtonText =
+          Objects.toString(
+              testButtonText, MESSAGES.text("preferences.notifications.sound.test.default"));
       if (buttonStyle == null) buttonStyle = ButtonStyle.TEXT;
       if (availableSupplier == null) availableSupplier = () -> true;
     }
@@ -274,7 +292,8 @@ public final class NotificationSoundControlsSupport {
       try {
         File selectedFile =
             SoundFileChooserSupport.chooseSoundFile(
-                    dialogOwner(), "Choose notification sound (MP3 or WAV)")
+                    dialogOwner(),
+                    MESSAGES.text("preferences.notifications.sound.chooseDialogTitle"))
                 .orElse(null);
         if (selectedFile == null || soundFileImporter == null) return;
         String relativePath = soundFileImporter.importFile(selectedFile);
@@ -284,8 +303,11 @@ public final class NotificationSoundControlsSupport {
           refresh();
         }
       } catch (Exception ex) {
+        String message = Objects.toString(ex.getMessage(), ex.getClass().getSimpleName());
         PreferencesUiSupport.showErrorMessage(
-            dialogOwner(), "Could not import sound file.\n\n" + ex.getMessage(), "Import failed");
+            dialogOwner(),
+            MESSAGES.text("preferences.notifications.sound.importFailed.message", message),
+            MESSAGES.text("preferences.notifications.sound.importFailed.title"));
       }
     }
 

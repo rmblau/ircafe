@@ -4,6 +4,7 @@ import cafe.woden.ircclient.model.FilterDirection;
 import cafe.woden.ircclient.model.FilterRule;
 import cafe.woden.ircclient.model.FilterScopeOverride;
 import cafe.woden.ircclient.model.RegexFlag;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRowsTableModel;
 import java.util.ArrayList;
@@ -81,14 +82,16 @@ public final class FilterControls {
 }
 
 enum Tri {
-  DEFAULT("Default"),
-  ON("On"),
-  OFF("Off");
+  DEFAULT("preferences.filters.tri.default"),
+  ON("preferences.filters.tri.on"),
+  OFF("preferences.filters.tri.off");
 
-  final String label;
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
-  Tri(String label) {
-    this.label = label;
+  final String messageKey;
+
+  Tri(String messageKey) {
+    this.messageKey = messageKey;
   }
 
   static Tri fromNullable(Boolean b) {
@@ -106,7 +109,7 @@ enum Tri {
 
   @Override
   public String toString() {
-    return label;
+    return MESSAGES.text(messageKey);
   }
 }
 
@@ -126,7 +129,17 @@ final class FilterOverridesRow {
 
 final class FilterOverridesTableModel extends SettingsRowsTableModel<FilterOverridesRow> {
   FilterOverridesTableModel() {
-    super(new String[] {"Scope", "Filters", "Placeholders", "Collapsed"});
+    this(UiMessages.bundledDefaults());
+  }
+
+  FilterOverridesTableModel(UiMessages messages) {
+    super(
+        new String[] {
+          messages.text("preferences.filters.overrides.column.scope"),
+          messages.text("preferences.filters.overrides.column.filters"),
+          messages.text("preferences.filters.overrides.column.placeholders"),
+          messages.text("preferences.filters.overrides.column.collapsed")
+        });
   }
 
   void setOverrides(List<FilterScopeOverride> overrides) {
@@ -227,7 +240,18 @@ final class CenteredBooleanRenderer extends JCheckBox implements TableCellRender
 
 final class FilterRulesTableModel extends SettingsRowsTableModel<FilterRule> {
   FilterRulesTableModel() {
-    super(new String[] {"On", "Name", "Scope", "Action", "Summary"});
+    this(UiMessages.bundledDefaults());
+  }
+
+  FilterRulesTableModel(UiMessages messages) {
+    super(
+        new String[] {
+          messages.text("preferences.filters.rules.column.on"),
+          messages.text("preferences.filters.rules.column.name"),
+          messages.text("preferences.filters.rules.column.scope"),
+          messages.text("preferences.filters.rules.column.action"),
+          messages.text("preferences.filters.rules.column.summary")
+        });
   }
 
   void setRules(List<FilterRule> next) {

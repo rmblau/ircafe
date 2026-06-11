@@ -174,6 +174,11 @@ public interface UiTranscriptPort {
   default void removeMessageReaction(
       TargetRef target, Instant at, String fromNick, String targetMessageId, String reaction) {}
 
+  default boolean applyMessageTranslation(
+      TargetRef target, Instant at, MessageTranslation translation) {
+    return false;
+  }
+
   default boolean isOwnMessage(TargetRef target, String targetMessageId) {
     return false;
   }

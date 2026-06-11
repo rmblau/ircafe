@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.timestamp;
 
 import cafe.woden.ircclient.config.api.TimestampRuntimeConfigPort;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.util.MigConstraints;
@@ -13,25 +14,29 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 public final class TimestampControlsSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private TimestampControlsSupport() {}
 
   public static TimestampControls buildControls(UiSettings current) {
-    JCheckBox enabled = new JCheckBox("Show timestamps");
+    JCheckBox enabled = new JCheckBox(MESSAGES.text("preferences.timestamps.enabled"));
     enabled.setSelected(current.timestampsEnabled());
-    enabled.setToolTipText("Prefix transcript lines with a time like [12:34:56].");
+    enabled.setToolTipText(MESSAGES.text("preferences.timestamps.enabled.tooltip"));
 
     JTextField format = new JTextField(current.timestampFormat(), 16);
-    format.setToolTipText("java.time DateTimeFormatter pattern (e.g., HH:mm:ss or h:mm a).");
+    format.setToolTipText(MESSAGES.text("preferences.timestamps.format.tooltip"));
 
-    JCheckBox includeChatMessages = new JCheckBox("Include regular chat messages");
+    JCheckBox includeChatMessages =
+        new JCheckBox(MESSAGES.text("preferences.timestamps.includeChatMessages"));
     includeChatMessages.setSelected(current.timestampsIncludeChatMessages());
     includeChatMessages.setToolTipText(
-        "When enabled, timestamps are also shown on normal chat messages (not just status lines).");
+        MESSAGES.text("preferences.timestamps.includeChatMessages.tooltip"));
 
-    JCheckBox includePresenceMessages = new JCheckBox("Include presence / folded messages");
+    JCheckBox includePresenceMessages =
+        new JCheckBox(MESSAGES.text("preferences.timestamps.includePresenceMessages"));
     includePresenceMessages.setSelected(current.timestampsIncludePresenceMessages());
     includePresenceMessages.setToolTipText(
-        "When enabled, timestamps are shown for join/part/quit/nick presence lines and expanded fold details.");
+        MESSAGES.text("preferences.timestamps.includePresenceMessages.tooltip"));
 
     Runnable syncEnabled =
         () -> {
@@ -49,7 +54,7 @@ public final class TimestampControlsSupport {
     JPanel formatRow =
         new JPanel(MigLayouts.fillXWrap(0, 2, MigLayoutConstraints.LEADING_GROW_FILL, "[]"));
     formatRow.setOpaque(false);
-    formatRow.add(new JLabel("Format"));
+    formatRow.add(new JLabel(MESSAGES.text("preferences.timestamps.field.format")));
     formatRow.add(format, MigConstraints.width(200));
     panel.add(formatRow);
     panel.add(includeChatMessages);
@@ -66,10 +71,8 @@ public final class TimestampControlsSupport {
       var unused = DateTimeFormatter.ofPattern(format);
     } catch (Exception ex) {
       throw new TimestampSettingsException(
-          "Invalid timestamp format",
-          "Invalid timestamp format: "
-              + format
-              + "\n\nUse a java.time DateTimeFormatter pattern (e.g. HH:mm:ss)",
+          MESSAGES.text("preferences.timestamps.invalidFormat.title"),
+          MESSAGES.text("preferences.timestamps.invalidFormat.message", format),
           ex);
     }
     controls.format.setText(format);

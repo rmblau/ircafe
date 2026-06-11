@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.shell;
 
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.util.PopupMenuThemeSupport;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import cafe.woden.ircclient.ui.util.UiFontKeys;
@@ -44,17 +45,16 @@ public class StatusBar extends JPanel {
   private static final double NOTICE_MIN_CONTRAST = 4.5;
   private static final DateTimeFormatter NOTICE_HISTORY_TIME_FMT =
       DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
-  private static final String SERVER_DISCONNECTED_TEXT = "(disconnected)";
-
   // TODO: Make these their own individual Spring components.
-  private final JLabel channelLabel = new JLabel("Channel: -");
-  private final JLabel identityLabel = new JLabel("Nick: -");
-  private final JLabel usersLabel = new JLabel("Users: 0");
-  private final JLabel opsLabel = new JLabel("Ops: 0");
-  private final JLabel serverLabel = new JLabel(SERVER_DISCONNECTED_TEXT);
-  private final JLabel lagLabel = new JLabel("Lag: --");
+  private final UiMessages messages;
+  private final JLabel channelLabel = new JLabel();
+  private final JLabel identityLabel = new JLabel();
+  private final JLabel usersLabel = new JLabel();
+  private final JLabel opsLabel = new JLabel();
+  private final JLabel serverLabel = new JLabel();
+  private final JLabel lagLabel = new JLabel();
   private final JLabel noticeLabel = new JLabel();
-  private final JButton historyButton = new JButton("Notices");
+  private final JButton historyButton = new JButton();
   private final JButton updateNotifierButton = new JButton();
   private final Icon historyIcon = SvgIcons.action("info", 14);
   private final Icon updateNotifierIdleIcon = SvgIcons.action("refresh", 14);
@@ -98,9 +98,17 @@ public class StatusBar extends JPanel {
 
   private record IdentityLabelDisplay(String label, String tooltip) {}
 
-  public StatusBar() {
+  public StatusBar(UiMessages messages) {
     super(new BorderLayout(12, 0));
+    this.messages = Objects.requireNonNull(messages, "messages");
     setBorder(BorderFactory.createBevelBorder(BevelBorder.LOWERED));
+
+    setChannel(null);
+    setIdentity(null, null);
+    setCounts(0, 0);
+    setServer(null);
+    lagLabel.setText(messages.text("statusBar.lag.unknown"));
+    historyButton.setText(messages.text("statusBar.history.button"));
 
     JPanel left = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 3));
     left.add(channelLabel);
@@ -128,7 +136,10 @@ public class StatusBar extends JPanel {
     historyButton.setFocusable(false);
     historyButton.setFocusPainted(false);
     historyButton.setMargin(new Insets(1, 8, 1, 8));
-    historyButton.setToolTipText("No recent status-bar notices.");
+    historyButton.setToolTipText(messages.text("statusBar.history.tooltip.empty"));
+    historyButton
+        .getAccessibleContext()
+        .setAccessibleName(messages.text("statusBar.history.button"));
     historyButton.setEnabled(false);
     historyButton.addActionListener(e -> openHistoryDialog());
     updateNotifierButton.setIcon(updateNotifierIdleIcon);
@@ -139,8 +150,10 @@ public class StatusBar extends JPanel {
     updateNotifierButton.setFocusable(false);
     updateNotifierButton.setFocusPainted(false);
     updateNotifierButton.setMargin(new Insets(1, 6, 1, 6));
-    updateNotifierButton.setToolTipText(
-        "IRCafe update notifier is disabled. Enable it from Preferences.");
+    updateNotifierButton.setToolTipText(messages.text("statusBar.updateNotifier.disabled.tooltip"));
+    updateNotifierButton
+        .getAccessibleContext()
+        .setAccessibleName(messages.text("statusBar.updateNotifier.accessibleName"));
     updateNotifierButton.setVisible(false);
     updateNotifierButton.addActionListener(e -> runUpdateNotifierVisitAction());
     updateNotifierButton.addMouseListener(
@@ -158,7 +171,7 @@ public class StatusBar extends JPanel {
     center.add(noticeLabel, BorderLayout.CENTER);
     center.add(historyButton, BorderLayout.EAST);
     noticeBaseForeground = resolveNoticeForeground();
-    lagLabel.setToolTipText("Current measured server lag for the active server.");
+    lagLabel.setToolTipText(messages.text("statusBar.lag.tooltip"));
     lagLabel.setVisible(false);
     lagBaseForeground = lagLabel.getForeground();
 
@@ -259,7 +272,7 @@ public class StatusBar extends JPanel {
   }
 
   public void setChannel(String channel) {
-    channelLabel.setText("Channel: " + (channel == null ? "-" : channel));
+    channelLabel.setText(messages.text("statusBar.channel.label", channel == null ? "-" : channel));
   }
 
   public void setIdentity(String nick, String userModes) {
@@ -269,8 +282,8 @@ public class StatusBar extends JPanel {
   }
 
   public void setCounts(int users, int ops) {
-    usersLabel.setText("Users: " + users);
-    opsLabel.setText("Ops: " + ops);
+    usersLabel.setText(messages.text("statusBar.users.label", users));
+    opsLabel.setText(messages.text("statusBar.ops.label", ops));
   }
 
   public void setServer(String serverText) {
@@ -380,9 +393,9 @@ public class StatusBar extends JPanel {
     noticeLabel.setText(base);
     String tooltip = activeNotice.fullText();
     if (activeNotice.onClick() != null) {
-      tooltip = tooltip + "  (left-click to open)";
+      tooltip = tooltip + "  (" + messages.text("statusBar.notice.tooltip.open") + ")";
     }
-    tooltip = tooltip + "  (right-click for history)";
+    tooltip = tooltip + "  (" + messages.text("statusBar.notice.tooltip.history") + ")";
     noticeLabel.setToolTipText(tooltip);
     noticeLabel.setVisible(true);
     applyNoticeForegroundWithAlpha(255);
@@ -485,12 +498,15 @@ public class StatusBar extends JPanel {
     int count = noticeHistory.size();
     if (count <= 0) {
       historyButton.setEnabled(false);
-      historyButton.setToolTipText("No recent status-bar notices.");
+      historyButton.setToolTipText(messages.text("statusBar.history.tooltip.empty"));
+      historyButton
+          .getAccessibleContext()
+          .setAccessibleName(messages.text("statusBar.history.button"));
       return;
     }
     historyButton.setEnabled(true);
     String badge = count > 999 ? "999+" : Integer.toString(count);
-    historyButton.setToolTipText("Show recent status-bar notices (" + badge + ").");
+    historyButton.setToolTipText(messages.text("statusBar.history.tooltip.count", badge));
   }
 
   private void openHistoryDialog() {
@@ -511,8 +527,8 @@ public class StatusBar extends JPanel {
     Window owner = SwingUtilities.getWindowAncestor(this);
     noticeHistoryDialog =
         owner instanceof Frame frame
-            ? new JDialog(frame, "Status Notices", false)
-            : new JDialog((Frame) null, "Status Notices", false);
+            ? new JDialog(frame, messages.text("statusBar.history.title"), false)
+            : new JDialog((Frame) null, messages.text("statusBar.history.title"), false);
     noticeHistoryDialog.setDefaultCloseOperation(WindowConstants.HIDE_ON_CLOSE);
 
     noticeHistoryTable = new JTable(noticeHistoryModel);
@@ -551,22 +567,23 @@ public class StatusBar extends JPanel {
           }
         });
 
-    historyOpenButton = new JButton("Open Selected");
+    historyOpenButton = new JButton(messages.text("statusBar.history.button.openSelected"));
     historyOpenButton.addActionListener(e -> runSelectedHistoryAction());
 
-    historyClearSelectedButton = new JButton("Clear Selected");
+    historyClearSelectedButton =
+        new JButton(messages.text("statusBar.history.button.clearSelected"));
     historyClearSelectedButton.addActionListener(e -> clearSelectedHistoryEntry());
 
-    historyClearButton = new JButton("Clear History");
+    historyClearButton = new JButton(messages.text("statusBar.history.button.clearHistory"));
     historyClearButton.addActionListener(e -> clearHistoryOnEdt());
 
-    JButton closeButton = new JButton("Close");
+    JButton closeButton = new JButton(messages.text("common.button.close"));
     closeButton.addActionListener(e -> noticeHistoryDialog.setVisible(false));
 
     historyPopupMenu = new JPopupMenu();
-    historyPopupOpenItem = new JMenuItem("Open Selected");
+    historyPopupOpenItem = new JMenuItem(messages.text("statusBar.history.button.openSelected"));
     historyPopupOpenItem.addActionListener(e -> runSelectedHistoryAction());
-    historyPopupClearItem = new JMenuItem("Clear Selected");
+    historyPopupClearItem = new JMenuItem(messages.text("statusBar.history.button.clearSelected"));
     historyPopupClearItem.addActionListener(e -> clearSelectedHistoryEntry());
     historyPopupMenu.add(historyPopupOpenItem);
     historyPopupMenu.add(historyPopupClearItem);
@@ -765,14 +782,14 @@ public class StatusBar extends JPanel {
     lagBaseForeground = statusTextForeground();
     if (!enabled) {
       lagLabel.setVisible(false);
-      lagLabel.setText("Lag: --");
+      lagLabel.setText(messages.text("statusBar.lag.unknown"));
       lagLabel.setToolTipText(null);
       lagLabel.setForeground(lagBaseForeground);
       return;
     }
     lagLabel.setVisible(true);
     if (lagLabel.getToolTipText() == null || lagLabel.getToolTipText().isBlank()) {
-      lagLabel.setToolTipText("Current measured server lag for the active server.");
+      lagLabel.setToolTipText(messages.text("statusBar.lag.tooltip"));
     }
   }
 
@@ -782,10 +799,10 @@ public class StatusBar extends JPanel {
     lagLabel.setForeground(lagBaseForeground);
 
     if (lagMs == null || lagMs < 0L) {
-      lagLabel.setText("Lag: --");
+      lagLabel.setText(messages.text("statusBar.lag.unknown"));
     } else {
       long value = Math.max(0L, lagMs);
-      lagLabel.setText("Lag: " + formatLag(value));
+      lagLabel.setText(messages.text("statusBar.lag.value", formatLag(value)));
     }
 
     String tip = Objects.toString(tooltip, "").trim();
@@ -812,7 +829,8 @@ public class StatusBar extends JPanel {
     updateNotifierButton.setVisible(true);
     if (updateNotifierButton.getToolTipText() == null
         || updateNotifierButton.getToolTipText().isBlank()) {
-      updateNotifierButton.setToolTipText("Checking for IRCafe updates…");
+      updateNotifierButton.setToolTipText(
+          messages.text("statusBar.updateNotifier.checking.tooltip"));
     }
   }
 
@@ -834,7 +852,9 @@ public class StatusBar extends JPanel {
     ensureUpdateNotifierPopupMenu();
     if (updateNotifierVisitUpdatesItem != null) {
       updateNotifierVisitUpdatesItem.setText(
-          updateAvailable ? "Visit updates (new version available)" : "Visit updates");
+          updateAvailable
+              ? messages.text("statusBar.updateNotifier.visitUpdates.available")
+              : messages.text("statusBar.updateNotifier.visitUpdates"));
     }
     if (updateNotifierCheckNowItem != null) {
       updateNotifierCheckNowItem.setEnabled(updateNotifierCheckNowAction != null);
@@ -843,7 +863,7 @@ public class StatusBar extends JPanel {
 
   private void setUpdateNotifierCheckingOnEdt() {
     setUpdateNotifierEnabledOnEdt(true);
-    updateNotifierButton.setToolTipText("Checking for IRCafe updates...");
+    updateNotifierButton.setToolTipText(messages.text("statusBar.updateNotifier.checking.tooltip"));
     if (updateNotifierCheckNowItem != null) {
       updateNotifierCheckNowItem.setEnabled(updateNotifierCheckNowAction != null);
     }
@@ -903,11 +923,12 @@ public class StatusBar extends JPanel {
   private void ensureUpdateNotifierPopupMenu() {
     if (updateNotifierPopupMenu != null) return;
     updateNotifierPopupMenu = new JPopupMenu();
-    updateNotifierCheckNowItem = new JMenuItem("Check now");
+    updateNotifierCheckNowItem = new JMenuItem(messages.text("statusBar.updateNotifier.checkNow"));
     updateNotifierCheckNowItem.addActionListener(e -> runUpdateNotifierCheckNowAction());
-    updateNotifierVisitUpdatesItem = new JMenuItem("Visit updates");
+    updateNotifierVisitUpdatesItem =
+        new JMenuItem(messages.text("statusBar.updateNotifier.visitUpdates"));
     updateNotifierVisitUpdatesItem.addActionListener(e -> runUpdateNotifierVisitAction());
-    updateNotifierDisableItem = new JMenuItem("Disable update notifier");
+    updateNotifierDisableItem = new JMenuItem(messages.text("statusBar.updateNotifier.disable"));
     updateNotifierDisableItem.addActionListener(e -> runUpdateNotifierDisableAction());
     updateNotifierPopupMenu.add(updateNotifierCheckNowItem);
     updateNotifierPopupMenu.addSeparator();
@@ -1061,13 +1082,13 @@ public class StatusBar extends JPanel {
     return Math.max(0, Math.min(255, alpha));
   }
 
-  private static ServerLabelDisplay serverLabelDisplay(String serverText) {
+  private ServerLabelDisplay serverLabelDisplay(String serverText) {
     String normalized = Objects.toString(serverText, "").trim();
     if (normalized.startsWith("Server:")) {
       normalized = normalized.substring("Server:".length()).trim();
     }
     if (normalized.isEmpty()) {
-      return new ServerLabelDisplay(SERVER_DISCONNECTED_TEXT, null);
+      return new ServerLabelDisplay(messages.text("statusBar.server.disconnected"), null);
     }
 
     if (normalized.endsWith(")")) {
@@ -1090,22 +1111,23 @@ public class StatusBar extends JPanel {
     return new ServerLabelDisplay(normalized, null);
   }
 
-  private static IdentityLabelDisplay identityLabelDisplay(String nick, String userModes) {
+  private IdentityLabelDisplay identityLabelDisplay(String nick, String userModes) {
     String normalizedNick = Objects.toString(nick, "").trim();
     if (normalizedNick.isEmpty()) {
       return new IdentityLabelDisplay(
-          "Nick: -", "Current nick is not known for the active server.");
+          messages.text("statusBar.identity.unknown"),
+          messages.text("statusBar.identity.unknown.tooltip"));
     }
 
     String normalizedModes = normalizeUserModes(userModes);
     String label =
         normalizedModes.isEmpty()
-            ? "Nick: " + normalizedNick
-            : "Nick: " + normalizedNick + "(" + normalizedModes + ")";
+            ? messages.text("statusBar.identity.label", normalizedNick)
+            : messages.text("statusBar.identity.labelWithModes", normalizedNick, normalizedModes);
     String tooltip =
         normalizedModes.isEmpty()
-            ? "Current nick: " + normalizedNick
-            : "Current nick: " + normalizedNick + " | User modes: " + normalizedModes;
+            ? messages.text("statusBar.identity.tooltip", normalizedNick)
+            : messages.text("statusBar.identity.tooltipWithModes", normalizedNick, normalizedModes);
     return new IdentityLabelDisplay(label, tooltip);
   }
 
@@ -1122,8 +1144,6 @@ public class StatusBar extends JPanel {
   }
 
   private final class NoticeHistoryTableModel extends AbstractTableModel {
-    private static final String[] COLUMNS = new String[] {"Time", "Notice", "Action"};
-
     @Override
     public int getRowCount() {
       return noticeHistory.size();
@@ -1131,13 +1151,17 @@ public class StatusBar extends JPanel {
 
     @Override
     public int getColumnCount() {
-      return COLUMNS.length;
+      return 3;
     }
 
     @Override
     public String getColumnName(int column) {
-      if (column < 0 || column >= COLUMNS.length) return "";
-      return COLUMNS[column];
+      return switch (column) {
+        case 0 -> messages.text("statusBar.history.column.time");
+        case 1 -> messages.text("statusBar.history.column.notice");
+        case 2 -> messages.text("statusBar.history.column.action");
+        default -> "";
+      };
     }
 
     @Override
@@ -1147,7 +1171,7 @@ public class StatusBar extends JPanel {
       return switch (columnIndex) {
         case 0 -> NOTICE_HISTORY_TIME_FMT.format(Instant.ofEpochMilli(n.atEpochMs()));
         case 1 -> n.fullText();
-        case 2 -> n.onClick() != null ? "Open" : "";
+        case 2 -> n.onClick() != null ? messages.text("statusBar.history.action.open") : "";
         default -> "";
       };
     }

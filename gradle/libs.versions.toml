@@ -29,13 +29,14 @@ soundlibsJlayer = "1.0.1.4"
 soundlibsTritonusShare = "0.3.7.4"
 twoSlices = "0.9.4"
 rxjava = "3.1.12"
-pircbotx = "b1b48bf"
+pircbotx = "2.3.1"
 fastutil = "8.5.18"
 modernDocking = "1.4.1"
 flatlaf = "3.7"
 darklaf = "3.1.1"
 autocomplete = "3.3.3"
 languageTool = "6.7"
+lingua = "1.2.2"
 webpImageio = "0.1.6"
 animatedGifLib = "1.4"
 miglayout = "11.4.2"
@@ -81,6 +82,7 @@ modernDockingSingleApp = { module = "io.github.andrewauclair:modern-docking-sing
 modernDockingUi = { module = "io.github.andrewauclair:modern-docking-ui", version.ref = "modernDocking" }
 autocomplete = { module = "com.fifesoft:autocomplete", version.ref = "autocomplete" }
 languageToolEn = { module = "org.languagetool:language-en", version.ref = "languageTool" }
+lingua = { module = "com.github.pemistahl:lingua", version.ref = "lingua" }
 webpImageio = { module = "org.sejda.imageio:webp-imageio", version.ref = "webpImageio" }
 animatedGifLib = { module = "com.madgag:animated-gif-lib", version.ref = "animatedGifLib" }
 miglayoutSwing = { module = "com.miglayout:miglayout-swing", version.ref = "miglayout" }

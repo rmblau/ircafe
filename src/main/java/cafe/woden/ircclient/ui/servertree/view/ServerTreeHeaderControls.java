@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.servertree.view;
 import cafe.woden.ircclient.ui.controls.ConnectButton;
 import cafe.woden.ircclient.ui.controls.DisconnectButton;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.servers.ServerDialogs;
 import java.awt.Dimension;
 import java.awt.Window;
@@ -18,8 +19,7 @@ import javax.swing.SwingUtilities;
 /** Owns header button wiring and connection-control tooltip state for the server tree. */
 public final class ServerTreeHeaderControls {
 
-  private static final String CONNECT_TOOLTIP_BASE = "Connect all disconnected servers";
-  private static final String DISCONNECT_TOOLTIP_BASE = "Disconnect connected/connecting servers";
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
   private static final int HEADER_BUTTON_SIZE = 26;
 
   private final JComponent owner;
@@ -48,9 +48,10 @@ public final class ServerTreeHeaderControls {
 
   public void setStatusText(String text) {
     String normalized = Objects.toString(text, "").trim();
-    String suffix = normalized.isEmpty() ? "" : (" Current: " + normalized);
-    connectBtn.setToolTipText(CONNECT_TOOLTIP_BASE + "." + suffix);
-    disconnectBtn.setToolTipText(DISCONNECT_TOOLTIP_BASE + "." + suffix);
+    connectBtn.setToolTipText(
+        connectionTooltip("serverTree.header.connectAll.tooltip", normalized));
+    disconnectBtn.setToolTipText(
+        connectionTooltip("serverTree.header.disconnectAll.tooltip", normalized));
   }
 
   public void setConnectionControlsEnabled(boolean connectEnabled, boolean disconnectEnabled) {
@@ -62,7 +63,7 @@ public final class ServerTreeHeaderControls {
     addServerBtn.setText("");
     addServerBtn.setIcon(SvgIcons.action("plus", 16));
     addServerBtn.setDisabledIcon(SvgIcons.actionDisabled("plus", 16));
-    addServerBtn.setToolTipText("Add server");
+    addServerBtn.setToolTipText(message("serverTree.header.addServer.tooltip"));
     addServerBtn.setFocusable(false);
     addServerBtn.setPreferredSize(new Dimension(HEADER_BUTTON_SIZE, HEADER_BUTTON_SIZE));
     addServerBtn.setEnabled(serverDialogs != null);
@@ -76,16 +77,28 @@ public final class ServerTreeHeaderControls {
     connectBtn.setText("");
     connectBtn.setIcon(SvgIcons.action("check", 16));
     connectBtn.setDisabledIcon(SvgIcons.actionDisabled("check", 16));
-    connectBtn.setToolTipText(CONNECT_TOOLTIP_BASE);
+    connectBtn.setToolTipText(message("serverTree.header.connectAll.tooltip"));
     connectBtn.setFocusable(false);
     connectBtn.setPreferredSize(new Dimension(HEADER_BUTTON_SIZE, HEADER_BUTTON_SIZE));
 
     disconnectBtn.setText("");
     disconnectBtn.setIcon(SvgIcons.action("exit", 16));
     disconnectBtn.setDisabledIcon(SvgIcons.actionDisabled("exit", 16));
-    disconnectBtn.setToolTipText(DISCONNECT_TOOLTIP_BASE);
+    disconnectBtn.setToolTipText(message("serverTree.header.disconnectAll.tooltip"));
     disconnectBtn.setFocusable(false);
     disconnectBtn.setPreferredSize(new Dimension(HEADER_BUTTON_SIZE, HEADER_BUTTON_SIZE));
+  }
+
+  private static String connectionTooltip(String baseKey, String statusText) {
+    String normalized = Objects.toString(statusText, "").trim();
+    if (normalized.isEmpty()) {
+      return message(baseKey);
+    }
+    return message("serverTree.header.connectionTooltip.withStatus", message(baseKey), normalized);
+  }
+
+  private static String message(String key, Object... args) {
+    return MESSAGES.text(key, args);
   }
 
   private JPanel buildPanel() {

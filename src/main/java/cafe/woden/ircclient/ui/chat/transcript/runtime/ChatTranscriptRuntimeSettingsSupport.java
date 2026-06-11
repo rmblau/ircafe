@@ -116,7 +116,7 @@ public final class ChatTranscriptRuntimeSettingsSupport {
   }
 
   private Color transcriptBaseBackground() {
-    Color background = StyleConstants.getBackground(styles.message());
+    Color background = ChatStyles.textSurfaceBackground(styles.message());
     if (background == null) {
       background = UIManager.getColor(UiColorKeys.TEXT_PANE_BACKGROUND);
     }

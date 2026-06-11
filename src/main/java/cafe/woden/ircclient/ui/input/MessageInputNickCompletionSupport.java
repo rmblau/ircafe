@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.input;
 
 import cafe.woden.ircclient.app.commands.SlashCommandDescriptor;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.HierarchyEvent;
@@ -44,6 +45,7 @@ final class MessageInputNickCompletionSupport {
 
   private static final Logger log =
       LoggerFactory.getLogger(MessageInputNickCompletionSupport.class);
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private static final int PENDING_NICK_SUFFIX_TIMEOUT_MS = 5000;
   private static final int RELEVANCE_NICK = 300;
@@ -218,7 +220,9 @@ final class MessageInputNickCompletionSupport {
         new ArrayList<>(slashCommandCompletions.size() + cleaned.size());
     completions.addAll(slashCommandCompletions);
     for (String nick : cleaned) {
-      BasicCompletion completion = new BasicCompletion(completionProvider, nick, "IRC nick");
+      BasicCompletion completion =
+          new BasicCompletion(
+              completionProvider, nick, MESSAGES.text("messageInput.completion.description.nick"));
       completion.setRelevance(RELEVANCE_NICK);
       completions.add(completion);
     }
@@ -296,7 +300,11 @@ final class MessageInputNickCompletionSupport {
       boolean prefix = word.toLowerCase(Locale.ROOT).startsWith(tokenLower);
       BasicCompletion completion =
           new BasicCompletion(
-              completionProvider, word, prefix ? "Word completion" : "Spelling correction");
+              completionProvider,
+              word,
+              prefix
+                  ? MESSAGES.text("messageInput.completion.description.word")
+                  : MESSAGES.text("messageInput.completion.description.spellingCorrection"));
       // Keep all words below nick relevance while preserving provider likelihood order.
       completion.setRelevance(Math.max(1, RELEVANCE_WORD_PREFIX - i));
       out.add(completion);
@@ -999,7 +1007,7 @@ final class MessageInputNickCompletionSupport {
 
     AddressedNickCompletion(
         CompletionProvider provider, String displayText, String replacementText) {
-      super(provider, replacementText, "IRC nick");
+      super(provider, replacementText, MESSAGES.text("messageInput.completion.description.nick"));
       this.displayText = displayText;
     }
 

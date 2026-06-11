@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.chat.fold;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import cafe.woden.ircclient.ui.util.UiFontKeys;
 import java.awt.*;
@@ -18,6 +19,7 @@ import javax.swing.border.EmptyBorder;
  * optional preview list of up to {@code maxPreviewLines} samples.
  */
 public class FilteredFoldComponent extends JPanel implements FilteredLineComponent {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private final int maxPreviewLines;
   private final List<String> previews = new ArrayList<>();
@@ -182,7 +184,7 @@ public class FilteredFoldComponent extends JPanel implements FilteredLineCompone
     details.removeAll();
 
     if (previews.isEmpty()) {
-      JLabel l = new JLabel("(no preview)  —  edit filters or disable them to see hidden lines");
+      JLabel l = new JLabel(MESSAGES.text("chat.fold.filtered.noPreview"));
       l.setOpaque(false);
       applyDimItalic(l);
       details.add(l);
@@ -199,7 +201,8 @@ public class FilteredFoldComponent extends JPanel implements FilteredLineCompone
     }
 
     if (count > previews.size()) {
-      JLabel more = new JLabel("…and " + (count - previews.size()) + " more");
+      JLabel more =
+          new JLabel(MESSAGES.text("chat.fold.filtered.preview.more", count - previews.size()));
       more.setOpaque(false);
       applyDimItalic(more);
       details.add(more);
@@ -208,7 +211,7 @@ public class FilteredFoldComponent extends JPanel implements FilteredLineCompone
 
   private void updateSummaryText() {
     String arrow = expanded ? "▼ " : "▶ ";
-    summary.setText(arrow + "Filtered (" + count + ")");
+    summary.setText(arrow + MESSAGES.text("chat.fold.filtered.summary", count));
     applyDimItalic(summary);
   }
 
@@ -245,20 +248,20 @@ public class FilteredFoldComponent extends JPanel implements FilteredLineCompone
     sb.append("<html>");
 
     if (ruleLabel != null && !ruleLabel.isBlank()) {
-      sb.append("Filtered by <b>").append(escapeHtml(ruleLabel)).append("</b>");
-      if (multiple) sb.append(" <i>(+ others)</i>");
+      sb.append(MESSAGES.text("chat.fold.filtered.tooltip.filteredBy", escapeHtml(ruleLabel)));
+      if (multiple) sb.append(MESSAGES.text("chat.fold.filtered.tooltip.others"));
     } else {
-      sb.append("Filtered");
-      if (multiple) sb.append(" <i>(multiple rules)</i>");
+      sb.append(MESSAGES.text("chat.fold.filtered.tooltip.filtered"));
+      if (multiple) sb.append(MESSAGES.text("chat.fold.filtered.tooltip.multipleRules"));
     }
 
     if (tags != null && !tags.isEmpty() && maxTags > 0) {
       sb.append("<br/>");
-      sb.append("Tags: ").append(tagsSummaryHtml(tags, maxTags));
+      sb.append(MESSAGES.text("chat.fold.filtered.tooltip.tags", tagsSummaryHtml(tags, maxTags)));
     }
 
     sb.append("<br/><br/>");
-    sb.append("Hidden lines: ").append(count);
+    sb.append(MESSAGES.text("chat.fold.filtered.tooltip.hiddenLines", count));
 
     if (previews != null && !previews.isEmpty()) {
       sb.append("<br/><br/>");
@@ -269,7 +272,7 @@ public class FilteredFoldComponent extends JPanel implements FilteredLineCompone
         shown++;
       }
       if (shown < count) {
-        sb.append("…and ").append(count - shown).append(" more");
+        sb.append(MESSAGES.text("chat.fold.filtered.preview.more", count - shown));
       }
     }
 
@@ -287,7 +290,7 @@ public class FilteredFoldComponent extends JPanel implements FilteredLineCompone
       if (t == null) continue;
       if (shown > 0) sb.append(", ");
       if (shown >= limit) {
-        sb.append("…+").append(tags.size() - shown).append(" more");
+        sb.append(MESSAGES.text("chat.fold.filtered.tags.more", tags.size() - shown));
         break;
       }
       sb.append(escapeHtml(t));

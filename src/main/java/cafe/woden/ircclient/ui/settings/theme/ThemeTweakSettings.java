@@ -5,9 +5,9 @@ import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import java.util.Locale;
 
 /**
- * Small global Look & Feel tweaks that can be applied on top of a FlatLaf theme.
+ * Small global Look & Feel tweaks that can be applied on top of supported themes.
  *
- * <p>These include FlatLaf spacing tweaks and an optional global Swing UI font override.
+ * <p>These include spacing tweaks for FlatLaf/Nimbus and an optional global Swing UI font override.
  */
 public record ThemeTweakSettings(
     ThemeDensity density,

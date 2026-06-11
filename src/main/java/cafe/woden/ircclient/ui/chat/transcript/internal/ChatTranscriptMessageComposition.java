@@ -20,6 +20,7 @@ import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMatrixDispl
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageCatalogSupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageInteractionCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageLineCoordinator;
+import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageTranslationSupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReactionSummarySupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReplyContextSupport;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptReplyFlowSupport;
@@ -74,6 +75,9 @@ final class ChatTranscriptMessageComposition {
     ChatTranscriptReactionSummarySupport reactionSummarySupport =
         createReactionSummarySupport(
             styles, styleRoutingSupport, documentLineSupport, runtimeFlowCoordinator);
+    ChatTranscriptMessageTranslationSupport messageTranslationSupport =
+        createMessageTranslationSupport(
+            styles, renderer, documentLineSupport, runtimeFlowCoordinator);
     ChatTranscriptActionFlowSupport.ReplyContextAppender appendReplyContextLine =
         createReplyContextAppender(
             targetRuntimeCoordinator,
@@ -109,7 +113,8 @@ final class ChatTranscriptMessageComposition {
             senderStyleSupportContext,
             matrixDisplayNameCoordinator,
             messageLineCoordinator,
-            runtimeFlowCoordinator);
+            runtimeFlowCoordinator,
+            messageTranslationSupport);
     return new Components(
         matrixDisplayNameCoordinator, messageLineCoordinator, messageInteractionCoordinator);
   }
@@ -155,6 +160,20 @@ final class ChatTranscriptMessageComposition {
         ChatTranscriptLineMetaSupport::bind,
         ChatTranscriptLineMetaSupport::withAuxiliaryRowKind,
         documentLineSupport::normalizeInsertAtLineStart,
+        documentLineSupport::ensureAtLineStartForInsert,
+        runtimeFlowCoordinator::shiftCurrentBlock);
+  }
+
+  private static ChatTranscriptMessageTranslationSupport createMessageTranslationSupport(
+      ChatStyles styles,
+      ChatRichTextRenderer renderer,
+      ChatTranscriptDocumentLineSupport documentLineSupport,
+      ChatTranscriptRuntimeFlowCoordinator runtimeFlowCoordinator) {
+    return new ChatTranscriptMessageTranslationSupport(
+        styles,
+        renderer,
+        ChatTranscriptLineMetaSupport::bind,
+        ChatTranscriptLineMetaSupport::withAuxiliaryRowKind,
         documentLineSupport::ensureAtLineStartForInsert,
         runtimeFlowCoordinator::shiftCurrentBlock);
   }
@@ -232,7 +251,8 @@ final class ChatTranscriptMessageComposition {
       ChatTranscriptSenderStyleSupport.Context senderStyleSupportContext,
       ChatTranscriptMatrixDisplayNameCoordinator matrixDisplayNameCoordinator,
       ChatTranscriptMessageLineCoordinator messageLineCoordinator,
-      ChatTranscriptRuntimeFlowCoordinator runtimeFlowCoordinator) {
+      ChatTranscriptRuntimeFlowCoordinator runtimeFlowCoordinator,
+      ChatTranscriptMessageTranslationSupport messageTranslationSupport) {
     return new ChatTranscriptMessageInteractionCoordinator(
         targetRuntimeCoordinator.docs(),
         targetRuntimeCoordinator.stateByTarget(),
@@ -246,6 +266,7 @@ final class ChatTranscriptMessageComposition {
         (ref, insertAt, from, text, fromStyle, messageStyle, meta) ->
             runtimeFlowCoordinator.insertLineAt(
                 ref, insertAt, from, text, fromStyle, messageStyle, meta),
-        REDACTED_MESSAGE_PLACEHOLDER);
+        REDACTED_MESSAGE_PLACEHOLDER,
+        messageTranslationSupport);
   }
 }

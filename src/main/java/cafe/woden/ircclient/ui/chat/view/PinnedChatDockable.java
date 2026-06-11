@@ -2,6 +2,12 @@ package cafe.woden.ircclient.ui.chat.view;
 
 import cafe.woden.ircclient.app.api.Ircv3ReadMarkerFeatureSupport;
 import cafe.woden.ircclient.app.commands.SlashCommandPresentationCatalog;
+import cafe.woden.ircclient.app.translation.MessageTranslationDispatcher;
+import cafe.woden.ircclient.app.translation.MessageTranslationLanguage;
+import cafe.woden.ircclient.app.translation.MessageTranslationLanguageCatalog;
+import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
+import cafe.woden.ircclient.app.translation.OutboundMessageTranslationService;
+import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.irc.port.IrcTypingPort;
 import cafe.woden.ircclient.logging.history.ChatHistoryService;
 import cafe.woden.ircclient.logging.viewer.ChatRedactionAuditService;
@@ -12,16 +18,22 @@ import cafe.woden.ircclient.ui.bus.ActiveInputRouter;
 import cafe.woden.ircclient.ui.bus.OutboundLineBus;
 import cafe.woden.ircclient.ui.chat.MessageReactionToggleSupport;
 import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
+import cafe.woden.ircclient.ui.chat.transcript.message.MessageTranslationSource;
 import cafe.woden.ircclient.ui.coordinator.MessageActionCapabilityPolicy;
 import cafe.woden.ircclient.ui.input.MessageInputPanel;
+import cafe.woden.ircclient.ui.input.OutboundMessageTranslationDialog;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettingsBus;
 import cafe.woden.ircclient.ui.util.ChatRedactedMessageRevealSupport;
+import cafe.woden.ircclient.ui.util.ChatTranscriptContextMenuDecorator;
 import io.github.andrewauclair.moderndocking.Dockable;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Base64;
@@ -34,6 +46,7 @@ import java.util.function.Function;
 import java.util.function.IntConsumer;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
@@ -52,6 +65,7 @@ import org.slf4j.LoggerFactory;
 public class PinnedChatDockable extends ChatViewPanel implements Dockable, AutoCloseable {
 
   private static final Logger log = LoggerFactory.getLogger(PinnedChatDockable.class);
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private final java.util.concurrent.atomic.AtomicBoolean typingUnavailableWarned =
       new java.util.concurrent.atomic.AtomicBoolean(false);
@@ -73,6 +87,11 @@ public class PinnedChatDockable extends ChatViewPanel implements Dockable, AutoC
   private final IrcTypingPort typingPort;
   private final Ircv3ReadMarkerFeatureSupport readMarkerFeatureSupport;
   private final MessageActionCapabilityPolicy messageActionCapabilityPolicy;
+  private final MessageTranslationDispatcher messageTranslationDispatcher;
+  private final MessageTranslationSettingsBus translationSettingsBus;
+  private final OutboundMessageTranslationService outboundMessageTranslationService;
+  private final PropertyChangeListener translationSettingsListener =
+      this::onTranslationSettingsChanged;
   private final Function<String, String> currentNickLookup;
   private final BiConsumer<TargetRef, String> onDraftChanged;
   private final BiConsumer<TargetRef, String> onClosed;
@@ -103,6 +122,9 @@ public class PinnedChatDockable extends ChatViewPanel implements Dockable, AutoC
       IrcTypingPort typingPort,
       Ircv3ReadMarkerFeatureSupport readMarkerFeatureSupport,
       MessageActionCapabilityPolicy messageActionCapabilityPolicy,
+      MessageTranslationDispatcher messageTranslationDispatcher,
+      MessageTranslationSettingsBus translationSettingsBus,
+      OutboundMessageTranslationService outboundMessageTranslationService,
       ChatRedactionAuditService redactionAuditService,
       Function<String, BackendUiProfile> backendUiProfileProvider,
       Function<String, String> currentNickLookup,
@@ -123,6 +145,9 @@ public class PinnedChatDockable extends ChatViewPanel implements Dockable, AutoC
         Objects.requireNonNull(readMarkerFeatureSupport, "readMarkerFeatureSupport");
     this.messageActionCapabilityPolicy =
         Objects.requireNonNull(messageActionCapabilityPolicy, "messageActionCapabilityPolicy");
+    this.messageTranslationDispatcher = messageTranslationDispatcher;
+    this.translationSettingsBus = translationSettingsBus;
+    this.outboundMessageTranslationService = outboundMessageTranslationService;
     this.currentNickLookup = Objects.requireNonNullElse(currentNickLookup, serverId -> "");
     this.activeInputRouter = activeInputRouter;
     this.onDraftChanged = onDraftChanged;
@@ -172,6 +197,11 @@ public class PinnedChatDockable extends ChatViewPanel implements Dockable, AutoC
           } catch (Exception ignored) {
           }
         });
+    setTranscriptTranslationContextMenuActions(
+        this::translateContextActionVisible,
+        this::translateContextActionEnabled,
+        this::translationLanguageChoices,
+        this::onTranslateMessageRequested);
 
     // Input panel embedded in the pinned view.
     this.inputPanel =
@@ -197,6 +227,7 @@ public class PinnedChatDockable extends ChatViewPanel implements Dockable, AutoC
               this.messageActionCapabilityPolicy,
               this.currentNickLookup);
         });
+    configureOutboundInputTranslation();
     add(inputPanel, BorderLayout.SOUTH);
 
     // Persist draft text continuously so closing/undocking doesn't lose the latest draft.
@@ -401,6 +432,148 @@ public class PinnedChatDockable extends ChatViewPanel implements Dockable, AutoC
     return isChatHistorySupportedForServer(target.serverId());
   }
 
+  private List<ChatTranscriptContextMenuDecorator.TranslationLanguageChoice>
+      translationLanguageChoices() {
+    return outboundTranslationTargetLanguages().stream()
+        .map(
+            language ->
+                new ChatTranscriptContextMenuDecorator.TranslationLanguageChoice(
+                    language.code(), language.label() + " (" + language.code() + ")"))
+        .toList();
+  }
+
+  private void configureOutboundInputTranslation() {
+    inputPanel.setOnOutboundTranslationRequested(this::onOutboundTranslationRequested);
+    if (translationSettingsBus != null) {
+      translationSettingsBus.addListener(translationSettingsListener);
+    }
+    refreshOutboundTranslationButtonVisibility();
+  }
+
+  private void onTranslationSettingsChanged(PropertyChangeEvent evt) {
+    if (!MessageTranslationSettingsBus.PROP_TRANSLATION_SETTINGS.equals(evt.getPropertyName())) {
+      return;
+    }
+    SwingUtilities.invokeLater(this::refreshOutboundTranslationButtonVisibility);
+  }
+
+  private void refreshOutboundTranslationButtonVisibility() {
+    if (inputPanel == null) {
+      return;
+    }
+    IrcProperties.Client.Translation settings =
+        translationSettingsBus != null ? translationSettingsBus.get() : null;
+    boolean visible =
+        settings != null && settings.enabled() && outboundMessageTranslationService != null;
+    inputPanel.setOutboundTranslationActionVisible(visible);
+  }
+
+  private void onOutboundTranslationRequested() {
+    IrcProperties.Client.Translation settings =
+        translationSettingsBus != null ? translationSettingsBus.get() : null;
+    if (settings == null || !settings.enabled() || outboundMessageTranslationService == null) {
+      refreshOutboundTranslationButtonVisibility();
+      return;
+    }
+    if (target == null || target.isUiOnly()) {
+      JOptionPane.showMessageDialog(
+          this,
+          MESSAGES.text("chatDock.outboundTranslation.noTarget.message"),
+          MESSAGES.text("chatDock.outboundTranslation.title"),
+          JOptionPane.WARNING_MESSAGE);
+      return;
+    }
+    String draft = inputPanel.getDraftText();
+    if (Objects.toString(draft, "").isBlank()) {
+      JOptionPane.showMessageDialog(
+          this,
+          MESSAGES.text("chatDock.outboundTranslation.emptyDraft.message"),
+          MESSAGES.text("chatDock.outboundTranslation.title"),
+          JOptionPane.INFORMATION_MESSAGE);
+      return;
+    }
+    if (activeInputRouter != null) {
+      activeInputRouter.activate(inputPanel);
+    }
+    if (activate != null) {
+      activate.accept(target);
+    }
+
+    OutboundMessageTranslationDialog.showDialog(
+        this,
+        draft,
+        outboundTranslationTargetLanguages(),
+        settings.targetLanguage(),
+        language -> outboundMessageTranslationService.translateDraft(target, draft, language),
+        translated -> {
+          inputPanel.setDraftText(translated);
+          inputPanel.focusInput();
+        });
+  }
+
+  private List<MessageTranslationLanguage> outboundTranslationTargetLanguages() {
+    IrcProperties.Client.Translation settings =
+        translationSettingsBus != null ? translationSettingsBus.get() : null;
+    return MessageTranslationLanguageCatalog.availableTargets(settings);
+  }
+
+  @Override
+  protected boolean translateContextActionVisible() {
+    return target != null && !target.isUiOnly();
+  }
+
+  protected boolean translateContextActionEnabled() {
+    IrcProperties.Client.Translation settings =
+        translationSettingsBus != null ? translationSettingsBus.get() : null;
+    return settings != null
+        && settings.enabled()
+        && messageTranslationDispatcher != null
+        && target != null
+        && !target.isUiOnly();
+  }
+
+  @Override
+  protected void onTranslateMessageRequested(String messageId, String targetLanguage) {
+    if (messageTranslationDispatcher == null) {
+      log.warn("[translation] pinned manual request ignored because dispatcher is unavailable");
+      return;
+    }
+    if (target == null || target.isUiOnly()) {
+      log.warn("[translation] pinned manual request ignored because target is unavailable");
+      return;
+    }
+    String msgId = Objects.toString(messageId, "").trim();
+    String language = Objects.toString(targetLanguage, "").trim();
+    if (msgId.isBlank() || language.isBlank()) {
+      log.warn(
+          "[translation] pinned manual request ignored because msgid or target language is blank");
+      return;
+    }
+
+    MessageTranslationSource source = transcripts.translationSourceById(target, msgId);
+    if (source == null || Objects.toString(source.text(), "").isBlank()) {
+      log.warn(
+          "[translation] pinned manual request ignored because transcript source is missing target={} msgid={}",
+          target,
+          msgId);
+      return;
+    }
+    Instant at =
+        source.epochMs() == null || source.epochMs() <= 0
+            ? Instant.now()
+            : Instant.ofEpochMilli(source.epochMs());
+    boolean scheduled =
+        messageTranslationDispatcher.requestManualMessageTranslation(
+            target, at, source.fromNick(), msgId, source.text(), language);
+    if (!scheduled) {
+      log.warn(
+          "[translation] pinned manual request was not scheduled target={} msgid={} targetLanguage={}",
+          target,
+          msgId,
+          language);
+    }
+  }
+
   @Override
   protected void onLoadNewerHistoryRequested() {
     if (!loadNewerHistoryContextActionVisible()) return;
@@ -581,7 +754,7 @@ public class PinnedChatDockable extends ChatViewPanel implements Dockable, AutoC
 
   @Override
   public String getTabText() {
-    if (target.isStatus()) return "Server";
+    if (target.isStatus()) return MESSAGES.text("dock.pinnedChat.statusTab");
     return target.target();
   }
 
@@ -625,6 +798,12 @@ public class PinnedChatDockable extends ChatViewPanel implements Dockable, AutoC
     }
     try {
       inputPanel.shutdownResources();
+    } catch (Exception ignored) {
+    }
+    try {
+      if (translationSettingsBus != null) {
+        translationSettingsBus.removeListener(translationSettingsListener);
+      }
     } catch (Exception ignored) {
     }
     try {
@@ -703,7 +882,10 @@ public class PinnedChatDockable extends ChatViewPanel implements Dockable, AutoC
 
     void setTopic(String channelName, String topic) {
       String ch = (channelName == null) ? "" : channelName.trim();
-      header.setText(ch.isEmpty() ? "Topic" : "Topic - " + ch);
+      header.setText(
+          ch.isEmpty()
+              ? MESSAGES.text("chatTopic.header.topic")
+              : MESSAGES.text("chatTopic.header.topic.channel", ch, ""));
       text.setText(topic == null ? "" : topic);
       text.setCaretPosition(0);
     }

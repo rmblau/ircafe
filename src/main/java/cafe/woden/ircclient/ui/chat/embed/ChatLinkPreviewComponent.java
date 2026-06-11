@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.chat.embed;
 
 import cafe.woden.ircclient.ui.SwingEdt;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.EmbedCardStyle;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import io.reactivex.rxjava3.disposables.Disposable;
@@ -37,6 +38,7 @@ import org.slf4j.LoggerFactory;
 final class ChatLinkPreviewComponent extends JPanel {
 
   private static final Logger log = LoggerFactory.getLogger(ChatLinkPreviewComponent.class);
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private static final int FALLBACK_MAX_W = 420;
   private static final int WIDTH_MARGIN_PX = 32;
@@ -86,7 +88,7 @@ final class ChatLinkPreviewComponent extends JPanel {
   private final int mediaMaxWidthPx;
   private final int mediaMaxHeightPx;
 
-  private final JLabel status = new JLabel("Loading preview…");
+  private final JLabel status = new JLabel(message("chat.linkPreview.loading"));
 
   private JPanel card;
   private JPanel header;
@@ -180,7 +182,7 @@ final class ChatLinkPreviewComponent extends JPanel {
 
   private void beginLoad() {
     if (fetch == null) {
-      status.setText("(link previews disabled)");
+      status.setText(message("chat.linkPreview.disabled"));
       return;
     }
 
@@ -192,7 +194,7 @@ final class ChatLinkPreviewComponent extends JPanel {
                 this::renderPreview,
                 err -> {
                   status.setText("");
-                  status.setText("(preview failed)");
+                  status.setText(message("chat.linkPreview.failed"));
                   status.setToolTipText(url + System.lineSeparator() + err.getMessage());
                 });
   }
@@ -244,7 +246,7 @@ final class ChatLinkPreviewComponent extends JPanel {
     collapseBtn.setContentAreaFilled(false);
     collapseBtn.setOpaque(false);
     collapseBtn.setMargin(new Insets(0, 0, 0, 0));
-    collapseBtn.setToolTipText(collapsed ? "Expand preview" : "Collapse preview");
+    collapseBtn.setToolTipText(collapseTooltip());
     collapseBtn.addActionListener(
         e -> {
           collapsed = !collapsed;
@@ -344,7 +346,7 @@ final class ChatLinkPreviewComponent extends JPanel {
       thumb.setAlignmentX(0.5f);
       thumb.setAlignmentY(0.5f);
 
-      JLabel badge = new JLabel("+" + extraMedia + " more");
+      JLabel badge = new JLabel(message("chat.linkPreview.media.more", extraMedia));
       badge.setOpaque(true);
       badge.setForeground(Color.WHITE);
       badge.setBackground(new Color(0, 0, 0, 170));
@@ -445,7 +447,8 @@ final class ChatLinkPreviewComponent extends JPanel {
       sdCenter.setAlignmentX(LEFT_ALIGNMENT);
 
       if (parts.submitter() != null && !parts.submitter().isBlank()) {
-        JLabel submitter = keyValueLabel("Submitter", parts.submitter());
+        JLabel submitter =
+            keyValueLabel(message("chat.linkPreview.meta.submitter"), parts.submitter());
         submitter.setAlignmentX(LEFT_ALIGNMENT);
         JPanel wrap = new JPanel(new BorderLayout());
         wrap.setOpaque(false);
@@ -455,7 +458,7 @@ final class ChatLinkPreviewComponent extends JPanel {
       }
 
       if (parts.date() != null && !parts.date().isBlank()) {
-        JLabel date = keyValueLabel("Date", parts.date());
+        JLabel date = keyValueLabel(message("chat.linkPreview.meta.date"), parts.date());
         date.setAlignmentX(LEFT_ALIGNMENT);
         JPanel wrap = new JPanel(new BorderLayout());
         wrap.setOpaque(false);
@@ -496,7 +499,7 @@ final class ChatLinkPreviewComponent extends JPanel {
       igCenter.setAlignmentX(LEFT_ALIGNMENT);
 
       if (parts.author() != null && !parts.author().isBlank()) {
-        JLabel author = keyValueLabel("Author", parts.author());
+        JLabel author = keyValueLabel(message("chat.linkPreview.meta.author"), parts.author());
         author.setAlignmentX(LEFT_ALIGNMENT);
         JPanel wrap = new JPanel(new BorderLayout());
         wrap.setOpaque(false);
@@ -506,7 +509,7 @@ final class ChatLinkPreviewComponent extends JPanel {
       }
 
       if (parts.date() != null && !parts.date().isBlank()) {
-        JLabel date = keyValueLabel("Date", parts.date());
+        JLabel date = keyValueLabel(message("chat.linkPreview.meta.date"), parts.date());
         date.setAlignmentX(LEFT_ALIGNMENT);
         JPanel wrap = new JPanel(new BorderLayout());
         wrap.setOpaque(false);
@@ -547,7 +550,8 @@ final class ChatLinkPreviewComponent extends JPanel {
       imgurCenter.setAlignmentX(LEFT_ALIGNMENT);
 
       if (parts.submitter() != null && !parts.submitter().isBlank()) {
-        JLabel submitter = keyValueLabel("Submitter", parts.submitter());
+        JLabel submitter =
+            keyValueLabel(message("chat.linkPreview.meta.submitter"), parts.submitter());
         submitter.setAlignmentX(LEFT_ALIGNMENT);
         JPanel wrap = new JPanel(new BorderLayout());
         wrap.setOpaque(false);
@@ -557,7 +561,7 @@ final class ChatLinkPreviewComponent extends JPanel {
       }
 
       if (parts.date() != null && !parts.date().isBlank()) {
-        JLabel date = keyValueLabel("Date", parts.date());
+        JLabel date = keyValueLabel(message("chat.linkPreview.meta.date"), parts.date());
         date.setAlignmentX(LEFT_ALIGNMENT);
         JPanel wrap = new JPanel(new BorderLayout());
         wrap.setOpaque(false);
@@ -598,7 +602,7 @@ final class ChatLinkPreviewComponent extends JPanel {
       newsCenter.setAlignmentX(LEFT_ALIGNMENT);
 
       if (parts.author() != null && !parts.author().isBlank()) {
-        JLabel author = keyValueLabel("Author", parts.author());
+        JLabel author = keyValueLabel(message("chat.linkPreview.meta.author"), parts.author());
         author.setAlignmentX(LEFT_ALIGNMENT);
         JPanel wrap = new JPanel(new BorderLayout());
         wrap.setOpaque(false);
@@ -608,7 +612,7 @@ final class ChatLinkPreviewComponent extends JPanel {
       }
 
       if (parts.date() != null && !parts.date().isBlank()) {
-        JLabel date = keyValueLabel("Date", parts.date());
+        JLabel date = keyValueLabel(message("chat.linkPreview.meta.date"), parts.date());
         date.setAlignmentX(LEFT_ALIGNMENT);
         JPanel wrap = new JPanel(new BorderLayout());
         wrap.setOpaque(false);
@@ -618,7 +622,8 @@ final class ChatLinkPreviewComponent extends JPanel {
       }
 
       if (parts.publisher() != null && !parts.publisher().isBlank()) {
-        JLabel publisher = keyValueLabel("Publisher", parts.publisher());
+        JLabel publisher =
+            keyValueLabel(message("chat.linkPreview.meta.publisher"), parts.publisher());
         publisher.setAlignmentX(LEFT_ALIGNMENT);
         JPanel wrap = new JPanel(new BorderLayout());
         wrap.setOpaque(false);
@@ -694,7 +699,7 @@ final class ChatLinkPreviewComponent extends JPanel {
     if (collapseBtn != null) {
       collapseBtn.setText("");
       collapseBtn.setIcon(collapsed ? COLLAPSED_ICON : EXPANDED_ICON);
-      collapseBtn.setToolTipText(collapsed ? "Expand preview" : "Collapse preview");
+      collapseBtn.setToolTipText(collapseTooltip());
     }
     if (body != null) {
       body.setVisible(!collapsed);
@@ -1271,6 +1276,15 @@ final class ChatLinkPreviewComponent extends JPanel {
 
   private record ImgurDescParts(String submitter, String date, String caption) {}
 
+  private String collapseTooltip() {
+    return message(
+        collapsed ? "chat.linkPreview.tooltip.expand" : "chat.linkPreview.tooltip.collapse");
+  }
+
+  private static String message(String key, Object... args) {
+    return MESSAGES.text(key, args);
+  }
+
   private JLabel keyValueLabel(String key, String value) {
     String k = sanitizeDisplayText(key == null ? "" : key);
     String v = sanitizeDisplayText(value == null ? "" : value);
@@ -1424,10 +1438,10 @@ final class ChatLinkPreviewComponent extends JPanel {
   private void installPopup(JPanel p, String targetUrl) {
     JPopupMenu menu = new JPopupMenu();
 
-    JMenuItem open = new JMenuItem("Open link");
+    JMenuItem open = new JMenuItem(message("chat.linkPreview.popup.openLink"));
     open.addActionListener(e -> openUrl(targetUrl));
 
-    JMenuItem copy = new JMenuItem("Copy link");
+    JMenuItem copy = new JMenuItem(message("chat.linkPreview.popup.copyLink"));
     copy.addActionListener(
         e -> {
           try {

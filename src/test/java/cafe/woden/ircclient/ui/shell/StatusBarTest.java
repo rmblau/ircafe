@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.awt.event.MouseEvent;
@@ -52,7 +53,7 @@ class StatusBarTest {
 
   @Test
   void serverLabelShowsServerIdAndMovesHostPortToTooltip() throws Exception {
-    StatusBar statusBar = onEdt(StatusBar::new);
+    StatusBar statusBar = onEdt(StatusBarTest::newStatusBar);
 
     onEdtVoid(() -> statusBar.setServer("libera  (irc.libera.chat:6697)"));
 
@@ -67,7 +68,7 @@ class StatusBarTest {
 
   @Test
   void identityLabelShowsNickAndCurrentUserModes() throws Exception {
-    StatusBar statusBar = onEdt(StatusBar::new);
+    StatusBar statusBar = onEdt(StatusBarTest::newStatusBar);
 
     onEdtVoid(() -> statusBar.setIdentity("agarose", "g"));
 
@@ -81,7 +82,7 @@ class StatusBarTest {
 
   @Test
   void lagIndicatorUsesSameForegroundAsStatusText() throws Exception {
-    StatusBar statusBar = onEdt(StatusBar::new);
+    StatusBar statusBar = onEdt(StatusBarTest::newStatusBar);
 
     JLabel serverLabel = readLabel(statusBar, "serverLabel");
     JLabel lagLabel = readLabel(statusBar, "lagLabel");
@@ -107,7 +108,7 @@ class StatusBarTest {
     UIManager.put(UiColorKeys.COMPONENT_LINK_COLOR, nearBg);
     UIManager.put(UiColorKeys.ACCENT_COLOR, nearBg);
 
-    StatusBar statusBar = onEdt(StatusBar::new);
+    StatusBar statusBar = onEdt(StatusBarTest::newStatusBar);
     JLabel noticeLabel = readLabel(statusBar, "noticeLabel");
 
     onEdtVoid(
@@ -133,7 +134,7 @@ class StatusBarTest {
     UIManager.put(UiColorKeys.COMPONENT_LINK_COLOR, lightAccent);
     UIManager.put(UiColorKeys.ACCENT_COLOR, lightAccent);
 
-    StatusBar statusBar = onEdt(StatusBar::new);
+    StatusBar statusBar = onEdt(StatusBarTest::newStatusBar);
     JLabel noticeLabel = readLabel(statusBar, "noticeLabel");
 
     onEdtVoid(
@@ -161,7 +162,7 @@ class StatusBarTest {
 
   @Test
   void updateNotifierTooltipAlertUsesExtendedAutoHideDelay() throws Exception {
-    StatusBar statusBar = onEdt(StatusBar::new);
+    StatusBar statusBar = onEdt(StatusBarTest::newStatusBar);
 
     onEdtVoid(() -> invokePrivate(statusBar, "ensureUpdateNotifierTooltipHideTimerOnEdt"));
     Timer timer = readField(statusBar, "updateNotifierTooltipHideTimer", Timer.class);
@@ -172,7 +173,7 @@ class StatusBarTest {
 
   @Test
   void updateNotifierTooltipAlertCanBeDismissedByClick() throws Exception {
-    StatusBar statusBar = onEdt(StatusBar::new);
+    StatusBar statusBar = onEdt(StatusBarTest::newStatusBar);
     TestPopup popup = new TestPopup();
 
     onEdtVoid(() -> writeField(statusBar, "updateNotifierTooltipPopup", popup));
@@ -195,6 +196,10 @@ class StatusBarTest {
 
   private static JLabel readLabel(StatusBar statusBar, String fieldName) throws Exception {
     return readField(statusBar, fieldName, JLabel.class);
+  }
+
+  private static StatusBar newStatusBar() {
+    return new StatusBar(UiMessages.bundledDefaults());
   }
 
   private static <T> T readField(StatusBar statusBar, String fieldName, Class<T> type)

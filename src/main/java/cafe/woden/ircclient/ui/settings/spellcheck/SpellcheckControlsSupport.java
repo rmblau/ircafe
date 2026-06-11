@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.spellcheck;
 
 import cafe.woden.ircclient.config.api.SpellcheckRuntimeConfigPort;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import cafe.woden.ircclient.ui.util.MigConstraints;
@@ -19,42 +20,43 @@ import javax.swing.JTextArea;
 import javax.swing.ScrollPaneConstants;
 
 public final class SpellcheckControlsSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private SpellcheckControlsSupport() {}
 
   public static SpellcheckControls buildControls(SpellcheckSettings settings) {
     SpellcheckSettings initial = settings != null ? settings : SpellcheckSettings.defaults();
 
     javax.swing.JCheckBox enabled =
-        new javax.swing.JCheckBox("Enable spell checking in the input bar");
+        new javax.swing.JCheckBox(MESSAGES.text("preferences.spellcheck.enabled"));
     enabled.setSelected(initial.enabled());
-    enabled.setToolTipText(
-        "When enabled, IRCafe checks words in your current draft and can provide corrections.");
+    enabled.setToolTipText(MESSAGES.text("preferences.spellcheck.enabled.tooltip"));
 
     javax.swing.JCheckBox underline =
-        new javax.swing.JCheckBox("Highlight misspelled words while typing");
+        new javax.swing.JCheckBox(MESSAGES.text("preferences.spellcheck.underline"));
     underline.setSelected(initial.underlineEnabled());
-    underline.setToolTipText(
-        "When enabled, misspelled words are highlighted directly in the input field.");
+    underline.setToolTipText(MESSAGES.text("preferences.spellcheck.underline.tooltip"));
 
     javax.swing.JCheckBox suggestOnTab =
-        new javax.swing.JCheckBox("Include dictionary suggestions in Tab completion");
+        new javax.swing.JCheckBox(MESSAGES.text("preferences.spellcheck.suggestOnTab"));
     suggestOnTab.setSelected(initial.suggestOnTabEnabled());
-    suggestOnTab.setToolTipText(
-        "When enabled, Tab completion can suggest dictionary words and spelling corrections.");
+    suggestOnTab.setToolTipText(MESSAGES.text("preferences.spellcheck.suggestOnTab.tooltip"));
 
     javax.swing.JCheckBox hoverSuggestions =
-        new javax.swing.JCheckBox("Show hover correction popup for misspelled words");
+        new javax.swing.JCheckBox(MESSAGES.text("preferences.spellcheck.hoverSuggestions"));
     hoverSuggestions.setSelected(initial.hoverSuggestionsEnabled());
     hoverSuggestions.setToolTipText(
-        "When enabled, hovering over a misspelled word shows quick correction suggestions.");
+        MESSAGES.text("preferences.spellcheck.hoverSuggestions.tooltip"));
 
     SpellcheckLanguageOption[] languages =
         new SpellcheckLanguageOption[] {
-          new SpellcheckLanguageOption("en-US", "English (US)"),
-          new SpellcheckLanguageOption("en-GB", "English (UK)")
+          new SpellcheckLanguageOption(
+              "en-US", MESSAGES.text("preferences.spellcheck.language.enUs")),
+          new SpellcheckLanguageOption(
+              "en-GB", MESSAGES.text("preferences.spellcheck.language.enGb"))
         };
     JComboBox<SpellcheckLanguageOption> languageTag = new JComboBox<>(languages);
-    languageTag.setToolTipText("Choose the dictionary language used for spell checking.");
+    languageTag.setToolTipText(MESSAGES.text("preferences.spellcheck.language.tooltip"));
     languageTag.setRenderer(
         new DefaultListCellRenderer() {
           @Override
@@ -81,7 +83,7 @@ public final class SpellcheckControlsSupport {
     JTextArea customDictionary = PreferencesUiSupport.textArea(4, 24, true);
     customDictionary.setText(String.join("\n", initial.customDictionary()));
     customDictionary.setToolTipText(
-        "One word per line. Words in this list are treated as correct and not highlighted.");
+        MESSAGES.text("preferences.spellcheck.customDictionary.tooltip"));
     JScrollPane customScroll =
         new JScrollPane(
             customDictionary,
@@ -91,16 +93,24 @@ public final class SpellcheckControlsSupport {
     SpellcheckPresetOption[] presets =
         new SpellcheckPresetOption[] {
           new SpellcheckPresetOption(
-              SpellcheckSettings.COMPLETION_PRESET_ANDROID_LIKE, "Android-like (default)"),
-          new SpellcheckPresetOption(SpellcheckSettings.COMPLETION_PRESET_STANDARD, "Standard"),
+              SpellcheckSettings.COMPLETION_PRESET_ANDROID_LIKE,
+              MESSAGES.text("preferences.spellcheck.preset.androidLike")),
           new SpellcheckPresetOption(
-              SpellcheckSettings.COMPLETION_PRESET_CONSERVATIVE, "Conservative"),
-          new SpellcheckPresetOption(SpellcheckSettings.COMPLETION_PRESET_AGGRESSIVE, "Aggressive"),
-          new SpellcheckPresetOption(SpellcheckSettings.COMPLETION_PRESET_CUSTOM, "Custom")
+              SpellcheckSettings.COMPLETION_PRESET_STANDARD,
+              MESSAGES.text("preferences.spellcheck.preset.standard")),
+          new SpellcheckPresetOption(
+              SpellcheckSettings.COMPLETION_PRESET_CONSERVATIVE,
+              MESSAGES.text("preferences.spellcheck.preset.conservative")),
+          new SpellcheckPresetOption(
+              SpellcheckSettings.COMPLETION_PRESET_AGGRESSIVE,
+              MESSAGES.text("preferences.spellcheck.preset.aggressive")),
+          new SpellcheckPresetOption(
+              SpellcheckSettings.COMPLETION_PRESET_CUSTOM,
+              MESSAGES.text("preferences.spellcheck.preset.custom"))
         };
     JComboBox<SpellcheckPresetOption> completionPreset = new JComboBox<>(presets);
     completionPreset.setToolTipText(
-        "Controls how strongly TAB completion prefers word completions.");
+        MESSAGES.text("preferences.spellcheck.completionPreset.tooltip"));
     completionPreset.setRenderer(
         new DefaultListCellRenderer() {
           @Override
@@ -131,7 +141,7 @@ public final class SpellcheckControlsSupport {
             SpellcheckSettings.MIN_PREFIX_COMPLETION_TOKEN_LENGTH_MAX,
             1);
     customMinPrefixCompletionTokenLength.setToolTipText(
-        "Minimum typed letters before prefix completions are considered.");
+        MESSAGES.text("preferences.spellcheck.customMinPrefix.tooltip"));
 
     JSpinner customMaxPrefixCompletionExtraChars =
         PreferencesUiSupport.numberSpinner(
@@ -140,7 +150,7 @@ public final class SpellcheckControlsSupport {
             SpellcheckSettings.MAX_PREFIX_COMPLETION_EXTRA_CHARS_MAX,
             1);
     customMaxPrefixCompletionExtraChars.setToolTipText(
-        "Maximum additional letters allowed for a completion candidate.");
+        MESSAGES.text("preferences.spellcheck.customMaxTail.tooltip"));
 
     JSpinner customMaxPrefixLexiconCandidates =
         PreferencesUiSupport.numberSpinner(
@@ -149,7 +159,7 @@ public final class SpellcheckControlsSupport {
             SpellcheckSettings.MAX_PREFIX_LEXICON_CANDIDATES_MAX,
             8);
     customMaxPrefixLexiconCandidates.setToolTipText(
-        "Upper bound for dictionary candidates considered for prefix completion.");
+        MESSAGES.text("preferences.spellcheck.customLexiconCap.tooltip"));
 
     JSpinner customPrefixCompletionBonusScore =
         PreferencesUiSupport.numberSpinner(
@@ -158,7 +168,7 @@ public final class SpellcheckControlsSupport {
             SpellcheckSettings.PREFIX_COMPLETION_BONUS_SCORE_MAX,
             10);
     customPrefixCompletionBonusScore.setToolTipText(
-        "Higher values make exact prefix completions rank more aggressively.");
+        MESSAGES.text("preferences.spellcheck.customPrefixBonus.tooltip"));
 
     JSpinner customSourceOrderWeight =
         PreferencesUiSupport.numberSpinner(
@@ -167,20 +177,23 @@ public final class SpellcheckControlsSupport {
             SpellcheckSettings.SOURCE_ORDER_WEIGHT_MAX,
             1);
     customSourceOrderWeight.setToolTipText(
-        "Penalty for later suggestions from upstream spelling results.");
+        MESSAGES.text("preferences.spellcheck.customSourceOrder.tooltip"));
 
     JPanel customKnobsPanel =
         new JPanel(MigLayouts.twoColumnFormWithHideMode(0, 8, 3, MigLayouts.rows(5, 2)));
     customKnobsPanel.setOpaque(false);
-    customKnobsPanel.add(new JLabel("Min prefix length"));
+    customKnobsPanel.add(new JLabel(MESSAGES.text("preferences.spellcheck.field.minPrefixLength")));
     customKnobsPanel.add(customMinPrefixCompletionTokenLength, MigConstraints.width(120));
-    customKnobsPanel.add(new JLabel("Max completion tail"));
+    customKnobsPanel.add(
+        new JLabel(MESSAGES.text("preferences.spellcheck.field.maxCompletionTail")));
     customKnobsPanel.add(customMaxPrefixCompletionExtraChars, MigConstraints.width(120));
-    customKnobsPanel.add(new JLabel("Lexicon candidate cap"));
+    customKnobsPanel.add(
+        new JLabel(MESSAGES.text("preferences.spellcheck.field.lexiconCandidateCap")));
     customKnobsPanel.add(customMaxPrefixLexiconCandidates, MigConstraints.width(120));
-    customKnobsPanel.add(new JLabel("Prefix bonus"));
+    customKnobsPanel.add(new JLabel(MESSAGES.text("preferences.spellcheck.field.prefixBonus")));
     customKnobsPanel.add(customPrefixCompletionBonusScore, MigConstraints.width(120));
-    customKnobsPanel.add(new JLabel("Source-order weight"));
+    customKnobsPanel.add(
+        new JLabel(MESSAGES.text("preferences.spellcheck.field.sourceOrderWeight")));
     customKnobsPanel.add(customSourceOrderWeight, MigConstraints.width(120));
 
     Runnable syncEnabled =
@@ -224,27 +237,28 @@ public final class SpellcheckControlsSupport {
 
     JPanel langRow = new JPanel(MigLayouts.fillX(MigLayoutConstraints.ROW_8_GROW_FILL, "[]"));
     langRow.setOpaque(false);
-    langRow.add(new JLabel("Dictionary language"));
+    langRow.add(new JLabel(MESSAGES.text("preferences.spellcheck.field.dictionaryLanguage")));
     langRow.add(languageTag, MigConstraints.growXMinWidth(160));
     panel.add(langRow, MigConstraints.growXMinWidthGapLeftWrap(0, 18));
 
     JPanel presetRow = new JPanel(MigLayouts.fillX(MigLayoutConstraints.ROW_8_GROW_FILL, "[]"));
     presetRow.setOpaque(false);
-    presetRow.add(new JLabel("Completion preset"));
+    presetRow.add(new JLabel(MESSAGES.text("preferences.spellcheck.field.completionPreset")));
     presetRow.add(completionPreset, MigConstraints.growXMinWidth(180));
     panel.add(presetRow, MigConstraints.growXMinWidthGapLeftWrap(0, 18));
     panel.add(
-        PreferencesUiSupport.helpText(
-            "Presets tune TAB completion ranking. Select Custom to reveal manual tuning knobs."),
+        PreferencesUiSupport.helpText(MESSAGES.text("preferences.spellcheck.presets.help")),
         MigConstraints.growXMinWidthGapLeftWrap(0, 18));
     panel.add(customKnobsPanel, MigConstraints.growXMinWidthGapLeftWrap(0, 36));
 
-    panel.add(new JLabel("Custom dictionary"), MigConstraints.growXMinWidthGapLeftWrap(0, 18));
+    panel.add(
+        new JLabel(MESSAGES.text("preferences.spellcheck.field.customDictionary")),
+        MigConstraints.growXMinWidthGapLeftWrap(0, 18));
     panel.add(
         customScroll, MigConstraints.growXMinWidthHeightBoundsGapLeftWrap(0, "80:110:180", 18));
     panel.add(
         PreferencesUiSupport.helpText(
-            "Add channel slang, nick-like words, or terms you use frequently so they are ignored."),
+            MESSAGES.text("preferences.spellcheck.customDictionary.help")),
         MigConstraints.growXMinWidthGapLeftWrap(0, 18));
 
     return new SpellcheckControls(

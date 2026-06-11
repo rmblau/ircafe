@@ -80,6 +80,14 @@ public final class MigConstraints {
     return new CC().grow().push();
   }
 
+  public static CC growPushHeight(int height) {
+    return growPush().height(exact(height));
+  }
+
+  public static CC growPushHeightWrap(int height) {
+    return growPushHeight(height).wrap();
+  }
+
   public static CC growPushMinHeight(int minHeight) {
     return growPush().minHeight(Integer.toString(minHeight));
   }

@@ -71,6 +71,16 @@ class ChatTranscriptDocumentSupportTest {
   }
 
   @Test
+  void nextLineStartReturnsFollowingLineStartWithoutBoundaryRenormalization() throws Exception {
+    DefaultStyledDocument doc = new DefaultStyledDocument();
+    doc.insertString(0, "one\nsecond\nthird\n", new SimpleAttributeSet());
+
+    assertEquals(4, ChatTranscriptDocumentSupport.nextLineStart(doc, 0));
+    assertEquals(11, ChatTranscriptDocumentSupport.nextLineStart(doc, 4));
+    assertEquals(doc.getLength(), ChatTranscriptDocumentSupport.nextLineStart(doc, 11));
+  }
+
+  @Test
   void findInlineComponentOffsetMatchesExpectedComponentWithinRange() throws Exception {
     DefaultStyledDocument doc = new DefaultStyledDocument();
     JLabel marker = new JLabel("marker");

@@ -14,6 +14,7 @@ import cafe.woden.ircclient.ui.bus.OutboundLineBus;
 import cafe.woden.ircclient.ui.bus.TargetActivationBus;
 import cafe.woden.ircclient.ui.controls.ConnectButton;
 import cafe.woden.ircclient.ui.controls.DisconnectButton;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.servertree.ServerTreeDockable;
 import cafe.woden.ircclient.ui.util.MigConstraints;
 import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
@@ -29,6 +30,7 @@ import javax.swing.JOptionPane;
 
 /** Swing adapter for user-initiated streams and UI prompts. */
 final class SwingUiInteractionPort implements UiInteractionPort {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private final SwingEdtExecutor edt;
   private final ServerTreeDockable serverTree;
@@ -96,28 +98,35 @@ final class SwingUiInteractionPort implements UiInteractionPort {
       TargetRef target, int lineCount, long payloadUtf8Bytes, String reason) {
     return edt.call(
         () -> {
-          String where = (target == null) ? "this target" : target.target();
+          String where =
+              target == null
+                  ? MESSAGES.text("uiInteraction.multilineFallback.target.this")
+                  : target.target();
           String why = Objects.toString(reason, "").trim();
           StringBuilder body = new StringBuilder();
-          body.append("This message cannot be sent using IRCv3 multiline for ")
-              .append(where)
-              .append(".\n\n");
+          body.append(MESSAGES.text("uiInteraction.multilineFallback.message.prefix", where))
+              .append("\n\n");
           if (!why.isEmpty()) {
-            body.append("Reason: ").append(why).append("\n\n");
+            body.append(MESSAGES.text("uiInteraction.multilineFallback.reason", why))
+                .append("\n\n");
           }
-          body.append("Message size: ")
-              .append(Math.max(0, lineCount))
-              .append(" lines, ")
-              .append(Math.max(0L, payloadUtf8Bytes))
-              .append(" UTF-8 bytes.\n\n")
-              .append("Send as separate lines instead?");
+          body.append(
+                  MESSAGES.text(
+                      "uiInteraction.multilineFallback.size",
+                      Math.max(0, lineCount),
+                      Math.max(0L, payloadUtf8Bytes)))
+              .append("\n\n")
+              .append(MESSAGES.text("uiInteraction.multilineFallback.prompt"));
 
-          Object[] options = {"Send " + Math.max(0, lineCount) + " Lines", "Cancel"};
+          Object[] options = {
+            MESSAGES.text("uiInteraction.multilineFallback.sendLines", Math.max(0, lineCount)),
+            MESSAGES.text("common.button.cancel")
+          };
           int choice =
               JOptionPane.showOptionDialog(
                   chat,
                   body.toString(),
-                  "Multiline Fallback",
+                  MESSAGES.text("uiInteraction.multilineFallback.title"),
                   JOptionPane.DEFAULT_OPTION,
                   JOptionPane.WARNING_MESSAGE,
                   null,
@@ -243,7 +252,8 @@ final class SwingUiInteractionPort implements UiInteractionPort {
               com.formdev.flatlaf.FlatClientProperties.PLACEHOLDER_TEXT, "admin");
           javax.swing.JPasswordField adminPasswordField = new javax.swing.JPasswordField(20);
           adminPasswordField.putClientProperty(
-              com.formdev.flatlaf.FlatClientProperties.PLACEHOLDER_TEXT, "admin password");
+              com.formdev.flatlaf.FlatClientProperties.PLACEHOLDER_TEXT,
+              MESSAGES.text("uiInteraction.quasselSetup.adminPassword.placeholder"));
           adminPasswordField.putClientProperty(
               SwingClientProperties.PASSWORD_FIELD_SHOW_REVEAL_BUTTON, true);
           adminPasswordField.putClientProperty(
@@ -258,16 +268,22 @@ final class SwingUiInteractionPort implements UiInteractionPort {
 
           javax.swing.JPanel panel =
               new javax.swing.JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rows(4, 6)));
-          panel.add(new javax.swing.JLabel("Admin user"));
+          panel.add(new javax.swing.JLabel(MESSAGES.text("uiInteraction.quasselSetup.adminUser")));
           panel.add(adminUserField, MigConstraints.growXWrap());
-          panel.add(new javax.swing.JLabel("Admin password"));
+          panel.add(
+              new javax.swing.JLabel(MESSAGES.text("uiInteraction.quasselSetup.adminPassword")));
           panel.add(adminPasswordField, MigConstraints.growXWrap());
-          panel.add(new javax.swing.JLabel("Storage backend"));
+          panel.add(
+              new javax.swing.JLabel(MESSAGES.text("uiInteraction.quasselSetup.storageBackend")));
           panel.add(storageCombo, MigConstraints.growXWrap());
-          panel.add(new javax.swing.JLabel("Authenticator"));
+          panel.add(
+              new javax.swing.JLabel(MESSAGES.text("uiInteraction.quasselSetup.authenticator")));
           panel.add(authCombo, MigConstraints.growXWrap());
 
-          String title = sid.isEmpty() ? "Quassel Core Setup" : ("Quassel Core Setup - " + sid);
+          String title =
+              sid.isEmpty()
+                  ? MESSAGES.text("uiInteraction.quasselSetup.title")
+                  : MESSAGES.text("uiInteraction.quasselSetup.title.server", sid);
           while (true) {
             int choice =
                 JOptionPane.showConfirmDialog(
@@ -289,27 +305,40 @@ final class SwingUiInteractionPort implements UiInteractionPort {
 
             if (adminUser.isEmpty()) {
               JOptionPane.showMessageDialog(
-                  chat, "Admin user is required.", "Quassel setup", JOptionPane.ERROR_MESSAGE);
+                  chat,
+                  MESSAGES.text("uiInteraction.quasselSetup.validation.adminUserRequired"),
+                  MESSAGES.text("uiInteraction.quasselSetup.validation.title"),
+                  JOptionPane.ERROR_MESSAGE);
               continue;
             }
             if (adminPassword.isBlank()) {
               JOptionPane.showMessageDialog(
-                  chat, "Admin password is required.", "Quassel setup", JOptionPane.ERROR_MESSAGE);
+                  chat,
+                  MESSAGES.text("uiInteraction.quasselSetup.validation.adminPasswordRequired"),
+                  MESSAGES.text("uiInteraction.quasselSetup.validation.title"),
+                  JOptionPane.ERROR_MESSAGE);
               continue;
             }
             if (storage.isEmpty()) {
               JOptionPane.showMessageDialog(
-                  chat, "Storage backend is required.", "Quassel setup", JOptionPane.ERROR_MESSAGE);
+                  chat,
+                  MESSAGES.text("uiInteraction.quasselSetup.validation.storageBackendRequired"),
+                  MESSAGES.text("uiInteraction.quasselSetup.validation.title"),
+                  JOptionPane.ERROR_MESSAGE);
               continue;
             }
             if (auth.isEmpty()) {
               JOptionPane.showMessageDialog(
-                  chat, "Authenticator is required.", "Quassel setup", JOptionPane.ERROR_MESSAGE);
+                  chat,
+                  MESSAGES.text("uiInteraction.quasselSetup.validation.authenticatorRequired"),
+                  MESSAGES.text("uiInteraction.quasselSetup.validation.title"),
+                  JOptionPane.ERROR_MESSAGE);
               continue;
             }
 
             if (!detail.isEmpty()) {
-              viewStatePort.enqueueStatusNotice("Submitting Quassel setup: " + detail, null);
+              viewStatePort.enqueueStatusNotice(
+                  MESSAGES.text("uiInteraction.quasselSetup.status.submitting", detail), null);
             }
             return Optional.of(
                 new QuasselCoreControlPort.QuasselCoreSetupRequest(
@@ -353,15 +382,24 @@ final class SwingUiInteractionPort implements UiInteractionPort {
                         MigLayoutConstraints.GROW_FILL,
                         MigLayoutConstraints.ROW_6_GROW_FILL));
             panel.add(
-                new javax.swing.JLabel("Select a network and choose an action."),
+                new javax.swing.JLabel(
+                    MESSAGES.text("uiInteraction.quasselNetworkManager.instructions")),
                 MigConstraints.growX());
             panel.add(scroll, MigConstraints.growPush());
 
             Object[] options = {
-              "Connect", "Disconnect", "Add...", "Edit...", "Remove", "Refresh", "Close"
+              MESSAGES.text("common.button.connect"),
+              MESSAGES.text("common.button.disconnect"),
+              MESSAGES.text("common.button.add.ellipsis"),
+              MESSAGES.text("common.button.edit.ellipsis"),
+              MESSAGES.text("common.button.remove"),
+              MESSAGES.text("common.button.refresh"),
+              MESSAGES.text("common.button.close")
             };
             String title =
-                sid.isEmpty() ? "Quassel Network Manager" : ("Quassel Network Manager - " + sid);
+                sid.isEmpty()
+                    ? MESSAGES.text("uiInteraction.quasselNetworkManager.title")
+                    : MESSAGES.text("uiInteraction.quasselNetworkManager.title.server", sid);
             int choice =
                 JOptionPane.showOptionDialog(
                     chat,
@@ -394,8 +432,8 @@ final class SwingUiInteractionPort implements UiInteractionPort {
             if (selected == null) {
               JOptionPane.showMessageDialog(
                   chat,
-                  "Select a network first.",
-                  "Quassel network manager",
+                  MESSAGES.text("uiInteraction.quasselNetworkManager.validation.selectNetwork"),
+                  MESSAGES.text("uiInteraction.quasselNetworkManager.validation.title"),
                   JOptionPane.WARNING_MESSAGE);
               continue;
             }
@@ -441,16 +479,23 @@ final class SwingUiInteractionPort implements UiInteractionPort {
     javax.swing.JTextField nameField = new javax.swing.JTextField(28);
     javax.swing.JTextField hostField = new javax.swing.JTextField(28);
     javax.swing.JTextField portField = new javax.swing.JTextField("6697", 8);
-    javax.swing.JCheckBox tlsCheck = new javax.swing.JCheckBox("Use TLS", true);
-    javax.swing.JCheckBox enabledCheck = new javax.swing.JCheckBox("Enabled", true);
+    javax.swing.JCheckBox tlsCheck =
+        new javax.swing.JCheckBox(
+            MESSAGES.text("uiInteraction.quasselNetworkManager.useTls"), true);
+    javax.swing.JCheckBox enabledCheck =
+        new javax.swing.JCheckBox(
+            MESSAGES.text("uiInteraction.quasselNetworkManager.enabled"), true);
 
     javax.swing.JPanel panel =
         new javax.swing.JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rows(4, 6)));
-    panel.add(new javax.swing.JLabel("Network name"));
+    panel.add(
+        new javax.swing.JLabel(MESSAGES.text("uiInteraction.quasselNetworkManager.networkName")));
     panel.add(nameField, MigConstraints.growXWrap());
-    panel.add(new javax.swing.JLabel("Server host"));
+    panel.add(
+        new javax.swing.JLabel(MESSAGES.text("uiInteraction.quasselNetworkManager.serverHost")));
     panel.add(hostField, MigConstraints.growXWrap());
-    panel.add(new javax.swing.JLabel("Server port"));
+    panel.add(
+        new javax.swing.JLabel(MESSAGES.text("uiInteraction.quasselNetworkManager.serverPort")));
     panel.add(portField, MigConstraints.growXWrap());
     panel.add(new javax.swing.JLabel(""));
     panel.add(tlsCheck, MigConstraints.growXWrap());
@@ -462,7 +507,7 @@ final class SwingUiInteractionPort implements UiInteractionPort {
           JOptionPane.showConfirmDialog(
               chat,
               panel,
-              "Add Quassel Network",
+              MESSAGES.text("uiInteraction.quasselNetworkManager.addTitle"),
               JOptionPane.OK_CANCEL_OPTION,
               JOptionPane.PLAIN_MESSAGE);
       if (result != JOptionPane.OK_OPTION) {
@@ -475,21 +520,24 @@ final class SwingUiInteractionPort implements UiInteractionPort {
       if (networkName.isEmpty()) {
         JOptionPane.showMessageDialog(
             chat,
-            "Network name is required.",
-            "Quassel network manager",
+            MESSAGES.text("uiInteraction.quasselNetworkManager.validation.networkNameRequired"),
+            MESSAGES.text("uiInteraction.quasselNetworkManager.validation.title"),
             JOptionPane.ERROR_MESSAGE);
         continue;
       }
       if (serverHost.isEmpty()) {
         JOptionPane.showMessageDialog(
-            chat, "Server host is required.", "Quassel network manager", JOptionPane.ERROR_MESSAGE);
+            chat,
+            MESSAGES.text("uiInteraction.quasselNetworkManager.validation.serverHostRequired"),
+            MESSAGES.text("uiInteraction.quasselNetworkManager.validation.title"),
+            JOptionPane.ERROR_MESSAGE);
         continue;
       }
       if (serverPort <= 0 || serverPort > 65535) {
         JOptionPane.showMessageDialog(
             chat,
-            "Server port must be 1-65535.",
-            "Quassel network manager",
+            MESSAGES.text("uiInteraction.quasselNetworkManager.validation.serverPortRange"),
+            MESSAGES.text("uiInteraction.quasselNetworkManager.validation.title"),
             JOptionPane.ERROR_MESSAGE);
         continue;
       }
@@ -516,21 +564,29 @@ final class SwingUiInteractionPort implements UiInteractionPort {
 
     javax.swing.JTextField nameField = new javax.swing.JTextField(defaultName, 28);
     nameField.putClientProperty(
-        com.formdev.flatlaf.FlatClientProperties.PLACEHOLDER_TEXT, "(blank keeps existing name)");
+        com.formdev.flatlaf.FlatClientProperties.PLACEHOLDER_TEXT,
+        MESSAGES.text("uiInteraction.quasselNetworkManager.networkName.placeholder"));
     javax.swing.JTextField hostField = new javax.swing.JTextField(defaultHost, 28);
     javax.swing.JTextField portField =
         new javax.swing.JTextField(
             defaultPort > 0 ? Integer.toString(defaultPort) : (defaultTls ? "6697" : "6667"), 8);
-    javax.swing.JCheckBox tlsCheck = new javax.swing.JCheckBox("Use TLS", defaultTls);
-    javax.swing.JCheckBox enabledCheck = new javax.swing.JCheckBox("Enabled", defaultEnabled);
+    javax.swing.JCheckBox tlsCheck =
+        new javax.swing.JCheckBox(
+            MESSAGES.text("uiInteraction.quasselNetworkManager.useTls"), defaultTls);
+    javax.swing.JCheckBox enabledCheck =
+        new javax.swing.JCheckBox(
+            MESSAGES.text("uiInteraction.quasselNetworkManager.enabled"), defaultEnabled);
 
     javax.swing.JPanel panel =
         new javax.swing.JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rows(4, 6)));
-    panel.add(new javax.swing.JLabel("Network name"));
+    panel.add(
+        new javax.swing.JLabel(MESSAGES.text("uiInteraction.quasselNetworkManager.networkName")));
     panel.add(nameField, MigConstraints.growXWrap());
-    panel.add(new javax.swing.JLabel("Server host"));
+    panel.add(
+        new javax.swing.JLabel(MESSAGES.text("uiInteraction.quasselNetworkManager.serverHost")));
     panel.add(hostField, MigConstraints.growXWrap());
-    panel.add(new javax.swing.JLabel("Server port"));
+    panel.add(
+        new javax.swing.JLabel(MESSAGES.text("uiInteraction.quasselNetworkManager.serverPort")));
     panel.add(portField, MigConstraints.growXWrap());
     panel.add(new javax.swing.JLabel(""));
     panel.add(tlsCheck, MigConstraints.growXWrap());
@@ -542,7 +598,7 @@ final class SwingUiInteractionPort implements UiInteractionPort {
           JOptionPane.showConfirmDialog(
               chat,
               panel,
-              "Edit Quassel Network",
+              MESSAGES.text("uiInteraction.quasselNetworkManager.editTitle"),
               JOptionPane.OK_CANCEL_OPTION,
               JOptionPane.PLAIN_MESSAGE);
       if (result != JOptionPane.OK_OPTION) {
@@ -554,14 +610,17 @@ final class SwingUiInteractionPort implements UiInteractionPort {
       int serverPort = parseQuasselPortOrDefault(portField.getText(), tlsCheck.isSelected());
       if (serverHost.isEmpty()) {
         JOptionPane.showMessageDialog(
-            chat, "Server host is required.", "Quassel network manager", JOptionPane.ERROR_MESSAGE);
+            chat,
+            MESSAGES.text("uiInteraction.quasselNetworkManager.validation.serverHostRequired"),
+            MESSAGES.text("uiInteraction.quasselNetworkManager.validation.title"),
+            JOptionPane.ERROR_MESSAGE);
         continue;
       }
       if (serverPort <= 0 || serverPort > 65535) {
         JOptionPane.showMessageDialog(
             chat,
-            "Server port must be 1-65535.",
-            "Quassel network manager",
+            MESSAGES.text("uiInteraction.quasselNetworkManager.validation.serverPortRange"),
+            MESSAGES.text("uiInteraction.quasselNetworkManager.validation.title"),
             JOptionPane.ERROR_MESSAGE);
         continue;
       }

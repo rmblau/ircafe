@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.docking;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import io.github.andrewauclair.moderndocking.Dockable;
 import io.github.andrewauclair.moderndocking.app.Docking;
 import io.github.andrewauclair.moderndocking.internal.CustomTabbedPane;
@@ -16,6 +17,8 @@ import javax.swing.SwingUtilities;
 
 /** Installs right-click context menus for docking tabs. */
 public final class DockingHeaderContextMenuInstaller {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private static volatile boolean installed;
 
   private DockingHeaderContextMenuInstaller() {}
@@ -85,7 +88,7 @@ public final class DockingHeaderContextMenuInstaller {
     Runnable safeCloseAction = Objects.requireNonNull(closeAction, "closeAction");
 
     JPopupMenu menu = new JPopupMenu();
-    JMenuItem close = new JMenuItem("Close");
+    JMenuItem close = new JMenuItem(MESSAGES.text("common.button.close"));
     close.setEnabled(safeDockable.isClosable());
     close.addActionListener(
         e -> {

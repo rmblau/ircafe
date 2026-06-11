@@ -163,7 +163,14 @@ class ChatTranscriptMessageInteractionCoordinatorTest {
                 throw new AssertionError("Unexpected action replacement");
               },
               this::insertStandardLine,
-              "[redacted]");
+              "[redacted]",
+              new ChatTranscriptMessageTranslationSupport(
+                  styles,
+                  null,
+                  ChatTranscriptLineMetaSupport::bind,
+                  ChatTranscriptLineMetaSupport::withAuxiliaryRowKind,
+                  (doc, insertAt) -> Math.max(0, Math.min(insertAt, doc.getLength())),
+                  (ref, insertAt, delta) -> {}));
     }
 
     private void ensureTargetAndMark(TargetRef ref) {

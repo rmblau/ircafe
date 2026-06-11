@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.theme;
 
 import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
 import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
@@ -40,6 +41,7 @@ import org.springframework.stereotype.Component;
 @InterfaceLayer
 @Lazy
 public class ThemeSelectionDialog {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private record ToneChoice(String label, ThemeManager.ThemeTone tone) {
     @Override
@@ -95,9 +97,8 @@ public class ThemeSelectionDialog {
 
     // Use curated themes by default, but allow the selector to expand to all IntelliJ themes.
     // This keeps menus/dropdowns compact while still letting power users browse everything.
-    JCheckBox allIntelliJ = new JCheckBox("All IntelliJ themes");
-    allIntelliJ.setToolTipText(
-        "Loads the full IntelliJ Themes Pack list (large). Use search to find themes quickly.");
+    JCheckBox allIntelliJ = new JCheckBox(MESSAGES.text("themeSelection.allIntelliJ"));
+    allIntelliJ.setToolTipText(MESSAGES.text("themeSelection.allIntelliJ.tooltip"));
 
     ThemeManager.ThemeOption[] allThemes = themeManager.themesForPicker(false);
 
@@ -106,27 +107,34 @@ public class ThemeSelectionDialog {
     JComboBox<ToneChoice> toneFilter =
         new JComboBox<>(
             new ToneChoice[] {
-              new ToneChoice("All", null),
-              new ToneChoice("Dark", ThemeManager.ThemeTone.DARK),
-              new ToneChoice("Light", ThemeManager.ThemeTone.LIGHT),
-              new ToneChoice("System", ThemeManager.ThemeTone.SYSTEM)
+              new ToneChoice(MESSAGES.text("themeSelection.filter.tone.all"), null),
+              new ToneChoice(toneLabel(ThemeManager.ThemeTone.DARK), ThemeManager.ThemeTone.DARK),
+              new ToneChoice(toneLabel(ThemeManager.ThemeTone.LIGHT), ThemeManager.ThemeTone.LIGHT),
+              new ToneChoice(
+                  toneLabel(ThemeManager.ThemeTone.SYSTEM), ThemeManager.ThemeTone.SYSTEM)
             });
 
     JComboBox<PackChoice> packFilter =
         new JComboBox<>(
             new PackChoice[] {
-              new PackChoice("All packs", null),
-              new PackChoice("System", ThemeManager.ThemePack.SYSTEM),
-              new PackChoice("FlatLaf", ThemeManager.ThemePack.FLATLAF),
-              new PackChoice("DarkLaf", ThemeManager.ThemePack.DARKLAF),
-              new PackChoice("Retro", ThemeManager.ThemePack.RETRO),
-              new PackChoice("Modern", ThemeManager.ThemePack.MODERN),
-              new PackChoice("IRCafe", ThemeManager.ThemePack.IRCAFE),
-              new PackChoice("IntelliJ", ThemeManager.ThemePack.INTELLIJ)
+              new PackChoice(MESSAGES.text("themeSelection.filter.pack.all"), null),
+              new PackChoice(
+                  packLabel(ThemeManager.ThemePack.SYSTEM), ThemeManager.ThemePack.SYSTEM),
+              new PackChoice(
+                  packLabel(ThemeManager.ThemePack.FLATLAF), ThemeManager.ThemePack.FLATLAF),
+              new PackChoice(
+                  packLabel(ThemeManager.ThemePack.DARKLAF), ThemeManager.ThemePack.DARKLAF),
+              new PackChoice(packLabel(ThemeManager.ThemePack.RETRO), ThemeManager.ThemePack.RETRO),
+              new PackChoice(
+                  packLabel(ThemeManager.ThemePack.MODERN), ThemeManager.ThemePack.MODERN),
+              new PackChoice(
+                  packLabel(ThemeManager.ThemePack.IRCAFE), ThemeManager.ThemePack.IRCAFE),
+              new PackChoice(
+                  packLabel(ThemeManager.ThemePack.INTELLIJ), ThemeManager.ThemePack.INTELLIJ)
             });
 
     JTextField search = new JTextField(14);
-    PreferencesUiSupport.placeholder(search, "Search themes");
+    PreferencesUiSupport.placeholder(search, MESSAGES.text("themeSelection.search.placeholder"));
 
     JLabel count = new JLabel();
     count.putClientProperty(
@@ -142,7 +150,7 @@ public class ThemeSelectionDialog {
               (ToneChoice) toneFilter.getSelectedItem(),
               (PackChoice) packFilter.getSelectedItem(),
               search.getText());
-          count.setText("Showing " + model.getSize() + " of " + pool.length);
+          count.setText(MESSAGES.text("themeSelection.count", model.getSize(), pool.length));
           selectThemeInList(keepId);
         };
 
@@ -159,7 +167,7 @@ public class ThemeSelectionDialog {
         (ToneChoice) toneFilter.getSelectedItem(),
         (PackChoice) packFilter.getSelectedItem(),
         search.getText());
-    count.setText("Showing " + model.getSize() + " of " + allThemes.length);
+    count.setText(MESSAGES.text("themeSelection.count", model.getSize(), allThemes.length));
 
     themeList = new JList<>(model);
     themeList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -170,29 +178,15 @@ public class ThemeSelectionDialog {
                   new DefaultListCellRenderer()
                       .getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
           if (value != null) {
-            String pack =
-                switch (value.pack()) {
-                  case SYSTEM -> "System";
-                  case FLATLAF -> "FlatLaf";
-                  case DARKLAF -> "DarkLaf";
-                  case RETRO -> "Retro";
-                  case MODERN -> "Modern";
-                  case IRCAFE -> "IRCafe";
-                  case INTELLIJ -> "IntelliJ";
-                };
-            String tone =
-                switch (value.tone()) {
-                  case SYSTEM -> "System";
-                  case DARK -> "Dark";
-                  case LIGHT -> "Light";
-                };
+            String pack = packLabel(value.pack());
+            String tone = toneLabel(value.tone());
             l.setText(
                 "<html>"
                     + esc(value.label())
                     + " <span style='color:gray'>&mdash; "
-                    + pack
+                    + esc(pack)
                     + "</span></html>");
-            l.setToolTipText(tone + " theme \u00B7 " + pack + " pack");
+            l.setToolTipText(MESSAGES.text("themeSelection.theme.tooltip", tone, pack));
           }
           return l;
         });
@@ -215,9 +209,9 @@ public class ThemeSelectionDialog {
         PreferencesUiSupport.leftComponentRow(
             6,
             0,
-            new JLabel("Tone"),
+            new JLabel(MESSAGES.text("themeSelection.filter.tone.label")),
             toneFilter,
-            new JLabel("Pack"),
+            new JLabel(MESSAGES.text("themeSelection.filter.pack.label")),
             packFilter,
             allIntelliJ,
             search,
@@ -227,7 +221,7 @@ public class ThemeSelectionDialog {
     listScroll.setPreferredSize(new Dimension(250, 280));
 
     JPanel listPanel = new JPanel(new BorderLayout(8, 8));
-    listPanel.add(new JLabel("Themes"), BorderLayout.NORTH);
+    listPanel.add(new JLabel(MESSAGES.text("themeSelection.list.title")), BorderLayout.NORTH);
     listPanel.add(listScroll, BorderLayout.CENTER);
 
     transcriptPreview = new JEditorPane("text/html", "");
@@ -241,16 +235,18 @@ public class ThemeSelectionDialog {
     JScrollPane previewScroll = new JScrollPane(transcriptPreview);
     previewScroll.setPreferredSize(new Dimension(420, 280));
 
-    JLabel previewTitle = new JLabel("Transcript Preview");
+    JLabel previewTitle = new JLabel(MESSAGES.text("themeSelection.preview.title"));
     previewTitle.putClientProperty(FlatClientProperties.STYLE, "font: -1");
 
     JPanel previewPanel = new JPanel(new BorderLayout(0, 6));
     previewPanel.add(previewTitle, BorderLayout.NORTH);
     previewPanel.add(previewScroll, BorderLayout.CENTER);
 
-    JButton apply = PreferencesUiSupport.buttonWithIcon("Apply", "check");
-    JButton ok = PreferencesUiSupport.buttonWithIcon("OK", "check");
-    JButton cancel = PreferencesUiSupport.buttonWithIcon("Cancel", "close");
+    JButton apply =
+        PreferencesUiSupport.buttonWithIcon(MESSAGES.text("common.button.apply"), "check");
+    JButton ok = PreferencesUiSupport.buttonWithIcon(MESSAGES.text("common.button.ok"), "check");
+    JButton cancel =
+        PreferencesUiSupport.buttonWithIcon(MESSAGES.text("common.button.cancel"), "close");
     apply.putClientProperty(FlatClientProperties.BUTTON_TYPE, "primary");
 
     apply.addActionListener(e -> commitSelectedTheme());
@@ -263,8 +259,7 @@ public class ThemeSelectionDialog {
 
     JPanel buttons = PreferencesUiSupport.rightComponentRow(5, 5, apply, ok, cancel);
 
-    JLabel help =
-        new JLabel("Select a theme to preview it live. Click Apply/OK to save your selection.");
+    JLabel help = new JLabel(MESSAGES.text("themeSelection.help"));
     help.putClientProperty(FlatClientProperties.STYLE, "font: -1");
 
     JSplitPane split = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, listPanel, previewPanel);
@@ -283,7 +278,9 @@ public class ThemeSelectionDialog {
     root.add(split, BorderLayout.CENTER);
     root.add(buttons, BorderLayout.SOUTH);
 
-    dialog = new JDialog(owner, "More Themes", JDialog.ModalityType.APPLICATION_MODAL);
+    dialog =
+        new JDialog(
+            owner, MESSAGES.text("themeSelection.title"), JDialog.ModalityType.APPLICATION_MODAL);
     dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
     dialog.addWindowListener(
         new java.awt.event.WindowAdapter() {
@@ -298,6 +295,26 @@ public class ThemeSelectionDialog {
     split.setDividerLocation(0.36);
     dialog.setLocationRelativeTo(owner);
     dialog.setVisible(true);
+  }
+
+  private static String toneLabel(ThemeManager.ThemeTone tone) {
+    return switch (tone) {
+      case SYSTEM -> MESSAGES.text("themeSelection.tone.system");
+      case DARK -> MESSAGES.text("themeSelection.tone.dark");
+      case LIGHT -> MESSAGES.text("themeSelection.tone.light");
+    };
+  }
+
+  private static String packLabel(ThemeManager.ThemePack pack) {
+    return switch (pack) {
+      case SYSTEM -> MESSAGES.text("themeSelection.pack.system");
+      case FLATLAF -> MESSAGES.text("themeSelection.pack.flatLaf");
+      case DARKLAF -> MESSAGES.text("themeSelection.pack.darkLaf");
+      case RETRO -> MESSAGES.text("themeSelection.pack.retro");
+      case MODERN -> MESSAGES.text("themeSelection.pack.modern");
+      case IRCAFE -> MESSAGES.text("themeSelection.pack.ircafe");
+      case INTELLIJ -> MESSAGES.text("themeSelection.pack.intellij");
+    };
   }
 
   private static void rebuildModel(
@@ -501,19 +518,25 @@ public class ThemeSelectionDialog {
             + ";'>"
             + "<div style='color:"
             + toHex(system)
-            + ";'>[12:41] *** Connected to Libera.Chat as bob</div>"
+            + ";'>[12:41] *** "
+            + esc(MESSAGES.text("themeSelection.preview.line.connected"))
+            + "</div>"
             + "<div><span style='color:"
             + toHex(muted)
             + ";'>[12:42]</span> "
             + "<span style='color:"
             + toHex(nick)
-            + ";'>&lt;alice&gt;</span> anyone up for #java?</div>"
+            + ";'>&lt;alice&gt;</span> "
+            + esc(MESSAGES.text("themeSelection.preview.line.alice"))
+            + "</div>"
             + "<div><span style='color:"
             + toHex(muted)
             + ";'>[12:42]</span> "
             + "<span style='color:"
             + toHex(self)
-            + ";'>&lt;bob&gt;</span> sure, joining now.</div>"
+            + ";'>&lt;bob&gt;</span> "
+            + esc(MESSAGES.text("themeSelection.preview.line.bob"))
+            + "</div>"
             + "<div style='margin-top:4px;padding:2px 4px;background:"
             + toHex(highlightBg)
             + ";color:"
@@ -524,15 +547,19 @@ public class ThemeSelectionDialog {
             + ";'>[12:43]</span> "
             + "<span style='color:"
             + toHex(nick)
-            + ";'>&lt;dave&gt;</span> this is a highlight message for bob."
+            + ";'>&lt;dave&gt;</span> "
+            + esc(MESSAGES.text("themeSelection.preview.line.highlight"))
             + "</div>"
             + "<div style='color:"
             + toHex(system)
-            + ";'>[12:44] * carol waves</div>"
+            + ";'>[12:44] * "
+            + esc(MESSAGES.text("themeSelection.preview.line.action"))
+            + "</div>"
             + "<div style='color:"
             + toHex(accent)
-            + ";'>[12:45] -- Invite: dave invited you to #retro "
-            + "(reason: old-school night)</div>"
+            + ";'>[12:45] -- "
+            + esc(MESSAGES.text("themeSelection.preview.line.invite"))
+            + "</div>"
             + "</body></html>";
 
     transcriptPreview.setBackground(panelBg);

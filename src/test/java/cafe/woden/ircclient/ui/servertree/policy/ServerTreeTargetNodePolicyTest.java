@@ -25,6 +25,13 @@ class ServerTreeTargetNodePolicyTest {
   }
 
   @Test
+  void leafLabelKeepsBuiltInLabelForQualifiedMemoServTargets() {
+    ServerTreeTargetNodePolicy policy = new ServerTreeTargetNodePolicy(null);
+
+    assertEquals("MemoServ", policy.leafLabel(TargetRef.memoServ("quassel", "libera")));
+  }
+
+  @Test
   void leafLabelUsesScopedStoreKeyForQualifiedInterceptorTargets() {
     InterceptorStore interceptorStore = mock(InterceptorStore.class);
     when(interceptorStore.interceptorName("quassel{net:libera}", "audit")).thenReturn("Audit Rule");

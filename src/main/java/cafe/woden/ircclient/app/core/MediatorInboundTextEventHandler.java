@@ -10,6 +10,7 @@ import cafe.woden.ircclient.app.api.TrayNotificationsPort;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.api.UiSettingsPort;
 import cafe.woden.ircclient.app.outbound.dcc.OutboundDccCommandService;
+import cafe.woden.ircclient.app.translation.MessageTranslationDispatcher;
 import cafe.woden.ircclient.ignore.api.InboundIgnorePolicyPort;
 import cafe.woden.ircclient.irc.IrcEvent;
 import cafe.woden.ircclient.irc.enrichment.UserInfoEnrichmentService;
@@ -32,6 +33,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.layered.ApplicationLayer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
@@ -40,6 +43,8 @@ import org.springframework.stereotype.Component;
 @ApplicationLayer
 @RequiredArgsConstructor
 public class MediatorInboundTextEventHandler {
+
+  private static final Logger log = LoggerFactory.getLogger(MediatorInboundTextEventHandler.class);
 
   interface Callbacks {
     void observeChannelActivity(String serverId, String channel);
@@ -105,6 +110,7 @@ public class MediatorInboundTextEventHandler {
   private final ApplicationEventPublisher applicationEventPublisher;
   private final CtcpRoutingPort ctcpRoutingState;
   private final MediatorInboundEventPreparationService eventPreparationService;
+  private final MessageTranslationDispatcher messageTranslationDispatcher;
 
   private final Cache<InboundMessageDedupKey, Boolean> inboundMessageIdDedup =
       Caffeine.newBuilder()
@@ -187,16 +193,27 @@ public class MediatorInboundTextEventHandler {
           channel,
           active,
           true,
-          dest ->
-              ui.appendChatAt(
+          dest -> {
+            ui.appendChatAt(
+                dest,
+                event.at(),
+                event.from(),
+                event.text(),
+                false,
+                event.messageId(),
+                event.ircv3Tags(),
+                ruleMatch != null ? ruleMatch.highlightColor() : null);
+            if (!callbacks.isFromSelf(sid, event.from())) {
+              requestVisibleIncomingMessageTranslation(
                   dest,
+                  active,
                   event.at(),
                   event.from(),
-                  event.text(),
-                  false,
                   event.messageId(),
                   event.ircv3Tags(),
-                  ruleMatch != null ? ruleMatch.highlightColor() : null));
+                  event.text());
+            }
+          });
     }
 
     String notificationMessageId = effectiveMessageIdForDedup(event.messageId(), event.ircv3Tags());
@@ -327,7 +344,30 @@ public class MediatorInboundTextEventHandler {
     boolean fromSelf = privateMessage.fromSelf();
     String peer = privateMessage.peer();
     TargetRef pm = new TargetRef(sid, peer);
+    TargetRef active = targetCoordinator.getActiveTarget();
     boolean allowAutoOpen = targetCoordinator.allowPrivateAutoOpenFromInbound(pm, fromSelf);
+    boolean memoServPrivateMessage = !fromSelf && isMemoServEndpoint(event.from());
+    boolean memoServSelfEcho = fromSelf && isMemoServEndpoint(peer);
+    if (memoServPrivateMessage) {
+      log.info(
+          "[memoserv] private message candidate serverId={} from={} peer={} allowAutoOpen={} textLength={} preview={}",
+          sid,
+          event.from(),
+          peer,
+          allowAutoOpen,
+          Objects.toString(event.text(), "").length(),
+          memoServPreview(event.text()));
+    }
+    if (memoServSelfEcho) {
+      log.info(
+          "[memoserv] suppressed self echo private message serverId={} from={} peer={} textLength={} preview={}",
+          sid,
+          event.from(),
+          peer,
+          Objects.toString(event.text(), "").length(),
+          memoServPreview(event.text()));
+      return;
+    }
 
     if (fromSelf
         && "*playback".equalsIgnoreCase(peer)
@@ -336,7 +376,7 @@ public class MediatorInboundTextEventHandler {
       return;
     }
 
-    if (!fromSelf) {
+    if (!fromSelf && !memoServPrivateMessage) {
       userInfoEnrichmentService.noteUserActivity(sid, event.from(), event.at());
       callbacks.markPrivateMessagePeerOnline(sid, event.from());
     }
@@ -362,19 +402,60 @@ public class MediatorInboundTextEventHandler {
 
     InboundIgnorePolicyPort.Decision decision = privateMessage.decision();
     if (decision == InboundIgnorePolicyPort.Decision.HARD_DROP) {
+      if (memoServPrivateMessage) {
+        log.info(
+            "[memoserv] private message dropped by hard ignore serverId={} from={} peer={}",
+            sid,
+            event.from(),
+            peer);
+      }
       return;
     }
 
     if (tryResolvePendingEchoPrivateMessage(callbacks, sid, pm, event, allowAutoOpen)) {
+      if (memoServPrivateMessage) {
+        log.info(
+            "[memoserv] private message consumed as pending echo serverId={} from={} peer={}",
+            sid,
+            event.from(),
+            peer);
+      }
       return;
     }
 
     if (maybeApplyMessageEditFromTaggedLine(
         sid, pm, event.at(), event.from(), event.text(), event.messageId(), event.ircv3Tags())) {
+      if (memoServPrivateMessage) {
+        log.info(
+            "[memoserv] private message consumed as message edit serverId={} from={} peer={}",
+            sid,
+            event.from(),
+            peer);
+      }
       return;
     }
     if (shouldSuppressInboundDuplicateByMsgId(
         sid, pm, "private-message", event.messageId(), event.ircv3Tags())) {
+      if (memoServPrivateMessage) {
+        log.info(
+            "[memoserv] private message suppressed as duplicate serverId={} from={} peer={} msgId={}",
+            sid,
+            event.from(),
+            peer,
+            event.messageId());
+      }
+      return;
+    }
+
+    if (memoServPrivateMessage) {
+      log.info(
+          "[memoserv] captured private message serverId={} from={} peer={} textLength={} preview={}",
+          sid,
+          event.from(),
+          peer,
+          Objects.toString(event.text(), "").length(),
+          memoServPreview(event.text()));
+      ui.observeMemoServNotice(sid, event.at(), event.from(), event.text());
       return;
     }
 
@@ -386,6 +467,7 @@ public class MediatorInboundTextEventHandler {
       if (allowAutoOpen) {
         callbacks.postTo(
             pm,
+            active,
             true,
             dest ->
                 ui.appendSpoilerChatAt(
@@ -402,16 +484,28 @@ public class MediatorInboundTextEventHandler {
     } else if (allowAutoOpen) {
       callbacks.postTo(
           pm,
+          active,
           true,
-          dest ->
-              ui.appendChatAt(
+          dest -> {
+            ui.appendChatAt(
+                dest,
+                event.at(),
+                event.from(),
+                event.text(),
+                fromSelf,
+                event.messageId(),
+                event.ircv3Tags());
+            if (!fromSelf) {
+              requestVisibleIncomingMessageTranslation(
                   dest,
+                  active,
                   event.at(),
                   event.from(),
-                  event.text(),
-                  fromSelf,
                   event.messageId(),
-                  event.ircv3Tags()));
+                  event.ircv3Tags(),
+                  event.text());
+            }
+          });
     } else {
       ui.appendChatAt(
           pm,
@@ -421,6 +515,16 @@ public class MediatorInboundTextEventHandler {
           fromSelf,
           event.messageId(),
           event.ircv3Tags());
+      if (!fromSelf) {
+        requestVisibleIncomingMessageTranslation(
+            pm,
+            active,
+            event.at(),
+            event.from(),
+            event.messageId(),
+            event.ircv3Tags(),
+            event.text());
+      }
     }
 
     String interceptorMessageId = effectiveMessageIdForDedup(event.messageId(), event.ircv3Tags());
@@ -551,14 +655,29 @@ public class MediatorInboundTextEventHandler {
     boolean spoiler = decision == InboundIgnorePolicyPort.Decision.SOFT_SPOILER;
     boolean suppress = decision == InboundIgnorePolicyPort.Decision.HARD_DROP;
     TargetRef dest = resolveNoticeDestination(callbacks, sid, status, event);
+    logMemoServNoticeCandidate(sid, event, fromSelf, suppress, dest, "received");
 
     if (maybeApplyMessageEditFromTaggedLine(
         sid, dest, event.at(), event.from(), event.text(), event.messageId(), event.ircv3Tags())) {
+      logMemoServNoticeCandidate(sid, event, fromSelf, suppress, dest, "consumed-as-edit");
       return;
     }
     if (shouldSuppressInboundDuplicateByMsgId(
         sid, dest, "notice", event.messageId(), event.ircv3Tags())) {
+      logMemoServNoticeCandidate(sid, event, fromSelf, suppress, dest, "suppressed-duplicate");
       return;
+    }
+
+    if (shouldObserveMemoServNotice(sid, event, fromSelf, suppress)) {
+      log.info(
+          "[memoserv] captured notice serverId={} from={} target={} dest={} textLength={} preview={}",
+          sid,
+          event.from(),
+          event.target(),
+          dest,
+          Objects.toString(event.text(), "").length(),
+          memoServPreview(event.text()));
+      ui.observeMemoServNotice(sid, event.at(), event.from(), event.text());
     }
 
     handleNoticeOrSpoiler(
@@ -1045,6 +1164,34 @@ public class MediatorInboundTextEventHandler {
         ircv3Tags);
   }
 
+  private void requestVisibleIncomingMessageTranslation(
+      TargetRef target,
+      TargetRef activeTarget,
+      Instant at,
+      String fromNick,
+      String messageId,
+      Map<String, String> ircv3Tags,
+      String text) {
+    if (!Objects.equals(target, activeTarget)) {
+      log.debug(
+          "[translation] skipped automatic request for inactive target target={} active={}",
+          target,
+          activeTarget);
+      return;
+    }
+    String effectiveMessageId = effectiveMessageIdForDedup(messageId, ircv3Tags);
+    try {
+      messageTranslationDispatcher.requestIncomingMessageTranslation(
+          target, at, fromNick, effectiveMessageId, text);
+    } catch (RuntimeException ex) {
+      log.warn(
+          "[translation] automatic request failed during scheduling target={} msgid={} error={}",
+          target,
+          effectiveMessageId,
+          ex.toString());
+    }
+  }
+
   private boolean shouldSuppressInboundDuplicateByMsgId(
       String sid, TargetRef target, String eventType, String messageId, Map<String, String> tags) {
     if (hasMessageMutationTag(tags)) {
@@ -1226,6 +1373,128 @@ public class MediatorInboundTextEventHandler {
       return "";
     }
     return nick;
+  }
+
+  private boolean shouldObserveMemoServNotice(
+      String sid, IrcEvent.Notice event, boolean fromSelf, boolean suppress) {
+    if (fromSelf || suppress || event == null) {
+      logMemoServNoticeCandidate(
+          sid,
+          event,
+          fromSelf,
+          suppress,
+          event != null ? new TargetRef(sid, event.target()) : null,
+          "decision-skip");
+      return false;
+    }
+    boolean endpoint = isMemoServEndpoint(event.from()) || isMemoServEndpoint(event.target());
+    TargetRef active = targetCoordinator != null ? targetCoordinator.getActiveTarget() : null;
+    boolean activeMatches =
+        active != null && active.isMemoServ() && Objects.equals(active.serverId(), sid);
+    boolean serviceLooks = looksMemoServServiceNotice(event.from(), event.text());
+    boolean capture = endpoint || (activeMatches && serviceLooks);
+    if (endpoint || serviceLooks || activeMatches) {
+      log.info(
+          "[memoserv] notice decision serverId={} from={} target={} activeTarget={} endpoint={} activeMatches={} serviceLooks={} capture={} textLength={} preview={}",
+          sid,
+          event.from(),
+          event.target(),
+          active,
+          endpoint,
+          activeMatches,
+          serviceLooks,
+          capture,
+          Objects.toString(event.text(), "").length(),
+          memoServPreview(event.text()));
+    }
+    if (endpoint) {
+      return true;
+    }
+    return activeMatches && serviceLooks;
+  }
+
+  private void logMemoServNoticeCandidate(
+      String sid,
+      IrcEvent.Notice event,
+      boolean fromSelf,
+      boolean suppress,
+      TargetRef dest,
+      String phase) {
+    if (event == null) {
+      return;
+    }
+    TargetRef active = targetCoordinator != null ? targetCoordinator.getActiveTarget() : null;
+    boolean endpoint = isMemoServEndpoint(event.from()) || isMemoServEndpoint(event.target());
+    boolean activeMatches =
+        active != null && active.isMemoServ() && Objects.equals(active.serverId(), sid);
+    boolean serviceLooks = looksMemoServServiceNotice(event.from(), event.text());
+    if (!endpoint && !serviceLooks && !activeMatches) {
+      return;
+    }
+    log.info(
+        "[memoserv] notice {} serverId={} from={} target={} dest={} fromSelf={} suppress={} activeTarget={} endpoint={} activeMatches={} serviceLooks={} textLength={} preview={}",
+        phase,
+        sid,
+        event.from(),
+        event.target(),
+        dest,
+        fromSelf,
+        suppress,
+        active,
+        endpoint,
+        activeMatches,
+        serviceLooks,
+        Objects.toString(event.text(), "").length(),
+        memoServPreview(event.text()));
+  }
+
+  private static boolean isMemoServEndpoint(String from) {
+    String source = normalizedServiceEndpoint(from);
+    return "memoserv".equals(source);
+  }
+
+  private static boolean looksMemoServServiceNotice(String from, String text) {
+    String source = normalizedServiceEndpoint(from);
+    return ("server".equals(source) || source.contains("service") || source.contains("."))
+        && looksMemoServOutputLine(text);
+  }
+
+  private static boolean looksMemoServOutputLine(String text) {
+    String body = Objects.toString(text, "").trim();
+    if (body.isEmpty()) {
+      return false;
+    }
+    String lower = body.toLowerCase(Locale.ROOT);
+    if (lower.contains("memo") || lower.contains("memoserv")) {
+      return true;
+    }
+    if (body.matches("^[-*]?\\s*\\d+\\b.*")) {
+      return true;
+    }
+    return lower.contains("sender") && lower.contains("date");
+  }
+
+  private static String normalizedServiceEndpoint(String from) {
+    String source = Objects.toString(from, "").trim();
+    if (source.isEmpty()) {
+      return "";
+    }
+    int bang = source.indexOf('!');
+    if (bang > 0) {
+      source = source.substring(0, bang);
+    }
+    int at = source.indexOf('@');
+    if (at > 0) {
+      source = source.substring(0, at);
+    }
+    source = MediatorInboundEventPreparationService.normalizeNickForCompare(source);
+    return Objects.toString(source, "").trim().toLowerCase(Locale.ROOT);
+  }
+
+  private static String memoServPreview(String value) {
+    String text = Objects.toString(value, "").replace('\n', ' ').replace('\r', ' ').trim();
+    if (text.length() <= 180) return text;
+    return text.substring(0, 177) + "...";
   }
 
   private static String snippetAround(String message, int start, int end) {

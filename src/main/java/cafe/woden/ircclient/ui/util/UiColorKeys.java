@@ -282,7 +282,34 @@ public final class UiColorKeys {
       "Spinner:\"Spinner.formattedTextField\".foreground";
   public static final String TOOL_TIP_BACKGROUND = "ToolTip.background";
   public static final String TOOL_TIP_FOREGROUND = "ToolTip.foreground";
+  public static final String TABBED_PANE_BACKGROUND = "TabbedPane.background";
+  public static final String TABBED_PANE_FOREGROUND = "TabbedPane.foreground";
+  public static final String TABBED_PANE_DISABLED = "TabbedPane.disabled";
+  public static final String TABBED_PANE_DISABLED_TEXT = "TabbedPane.disabledText";
+  public static final String TABBED_PANE_DARK_SHADOW = "TabbedPane.darkShadow";
+  public static final String TABBED_PANE_HIGHLIGHT = "TabbedPane.highlight";
+  public static final String TABBED_PANE_SHADOW = "TabbedPane.shadow";
   public static final String TABBED_PANE_FOCUS = "TabbedPane.focus";
+  public static final String TABBED_PANE_TAB_DISABLED_TEXT_FOREGROUND =
+      "TabbedPane:TabbedPaneTab[Disabled].textForeground";
+  public static final String TABBED_PANE_TAB_ENABLED_TEXT_FOREGROUND =
+      "TabbedPane:TabbedPaneTab[Enabled].textForeground";
+  public static final String TABBED_PANE_TAB_MOUSE_OVER_TEXT_FOREGROUND =
+      "TabbedPane:TabbedPaneTab[Enabled+MouseOver].textForeground";
+  public static final String TABBED_PANE_TAB_PRESSED_TEXT_FOREGROUND =
+      "TabbedPane:TabbedPaneTab[Enabled+Pressed].textForeground";
+  public static final String TABBED_PANE_TAB_SELECTED_TEXT_FOREGROUND =
+      "TabbedPane:TabbedPaneTab[Selected].textForeground";
+  public static final String TABBED_PANE_TAB_MOUSE_OVER_SELECTED_TEXT_FOREGROUND =
+      "TabbedPane:TabbedPaneTab[MouseOver+Selected].textForeground";
+  public static final String TABBED_PANE_TAB_PRESSED_SELECTED_TEXT_FOREGROUND =
+      "TabbedPane:TabbedPaneTab[Pressed+Selected].textForeground";
+  public static final String TABBED_PANE_TAB_FOCUSED_SELECTED_TEXT_FOREGROUND =
+      "TabbedPane:TabbedPaneTab[Focused+Selected].textForeground";
+  public static final String TABBED_PANE_TAB_FOCUSED_MOUSE_OVER_SELECTED_TEXT_FOREGROUND =
+      "TabbedPane:TabbedPaneTab[Focused+MouseOver+Selected].textForeground";
+  public static final String TABBED_PANE_TAB_FOCUSED_PRESSED_SELECTED_TEXT_FOREGROUND =
+      "TabbedPane:TabbedPaneTab[Focused+Pressed+Selected].textForeground";
   public static final String PROGRESS_BAR_BACKGROUND = "ProgressBar.background";
 
   private UiColorKeys() {}

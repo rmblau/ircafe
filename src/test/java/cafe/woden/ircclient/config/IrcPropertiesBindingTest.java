@@ -48,6 +48,24 @@ class IrcPropertiesBindingTest {
           assertEquals(30_000, proxy.readTimeoutMs());
 
           assertFalse(props.client().tls().trustAllCertificates());
+
+          IrcProperties.Client.Translation translation = props.client().translation();
+          assertFalse(translation.enabled());
+          assertEquals(IrcProperties.Client.Translation.Mode.AUTO, translation.mode());
+          assertEquals("", translation.backendId());
+          assertEquals("", translation.endpoint());
+          assertEquals("", translation.apiKey());
+          assertEquals("auto", translation.sourceLanguage());
+          assertEquals("", translation.targetLanguage());
+          assertTrue(translation.translateUnknownMessages());
+          assertTrue(translation.detectAllLanguages());
+          assertTrue(translation.detectionLanguages().isEmpty());
+          assertEquals(
+              IrcProperties.Client.Translation.DisplayMode.BELOW_ORIGINAL,
+              translation.displayMode());
+          assertEquals(10_000, translation.requestTimeoutMs());
+          assertEquals(4_000, translation.maxRequestChars());
+          assertEquals(2, translation.maxConcurrentRequests());
         });
   }
 
@@ -73,6 +91,21 @@ class IrcPropertiesBindingTest {
             "irc.client.proxy.connect-timeout-ms=1111",
             "irc.client.proxy.read-timeout-ms=2222",
             "irc.client.tls.trust-all-certificates=true",
+            "irc.client.translation.enabled=true",
+            "irc.client.translation.mode=manual",
+            "irc.client.translation.backend=DeepL",
+            "irc.client.translation.endpoint=https://api.deepl.com/v2/translate",
+            "irc.client.translation.api-key=secret-key",
+            "irc.client.translation.source-language=EN",
+            "irc.client.translation.target-language=ES",
+            "irc.client.translation.translate-unknown-messages=false",
+            "irc.client.translation.detect-all-languages=false",
+            "irc.client.translation.detection-languages[0]=EN",
+            "irc.client.translation.detection-languages[1]=es",
+            "irc.client.translation.display-mode=below-original",
+            "irc.client.translation.request-timeout-ms=12345",
+            "irc.client.translation.max-request-chars=777",
+            "irc.client.translation.max-concurrent-requests=3",
             "irc.servers[0].id=libera",
             "irc.servers[0].host=irc.libera.chat",
             "irc.servers[0].port=6697",
@@ -113,6 +146,24 @@ class IrcPropertiesBindingTest {
               assertEquals(2222, proxy.readTimeoutMs());
 
               assertTrue(props.client().tls().trustAllCertificates());
+
+              IrcProperties.Client.Translation translation = props.client().translation();
+              assertTrue(translation.enabled());
+              assertEquals(IrcProperties.Client.Translation.Mode.MANUAL, translation.mode());
+              assertEquals("deepl", translation.backendId());
+              assertEquals("https://api.deepl.com/v2/translate", translation.endpoint());
+              assertEquals("secret-key", translation.apiKey());
+              assertEquals("en", translation.sourceLanguage());
+              assertEquals("es", translation.targetLanguage());
+              assertFalse(translation.translateUnknownMessages());
+              assertFalse(translation.detectAllLanguages());
+              assertEquals(List.of("en", "es"), translation.detectionLanguages());
+              assertEquals(
+                  IrcProperties.Client.Translation.DisplayMode.BELOW_ORIGINAL,
+                  translation.displayMode());
+              assertEquals(12345, translation.requestTimeoutMs());
+              assertEquals(777, translation.maxRequestChars());
+              assertEquals(3, translation.maxConcurrentRequests());
 
               List<IrcProperties.Server> servers = props.servers();
               assertEquals(1, servers.size());
@@ -158,7 +209,10 @@ class IrcPropertiesBindingTest {
             "irc.client.heartbeat.check-period-ms=0",
             "irc.client.heartbeat.timeout-ms=1",
             "irc.client.proxy.connect-timeout-ms=0",
-            "irc.client.proxy.read-timeout-ms=-9")
+            "irc.client.proxy.read-timeout-ms=-9",
+            "irc.client.translation.request-timeout-ms=0",
+            "irc.client.translation.max-request-chars=-9",
+            "irc.client.translation.max-concurrent-requests=99")
         .run(
             ctx -> {
               IrcProperties props = ctx.getBean(IrcProperties.class);
@@ -177,6 +231,87 @@ class IrcPropertiesBindingTest {
               IrcProperties.Proxy proxy = props.client().proxy();
               assertEquals(20_000, proxy.connectTimeoutMs());
               assertEquals(30_000, proxy.readTimeoutMs());
+
+              IrcProperties.Client.Translation translation = props.client().translation();
+              assertEquals(10_000, translation.requestTimeoutMs());
+              assertEquals(4_000, translation.maxRequestChars());
+              assertEquals(16, translation.maxConcurrentRequests());
+            });
+  }
+
+  @Test
+  void enablingTranslationWithoutBackendFailsFast() {
+    runner
+        .withPropertyValues(
+            "irc.client.translation.enabled=true", "irc.client.translation.target-language=es")
+        .run(
+            ctx -> {
+              Throwable startupFailure = ctx.getStartupFailure();
+              assertNotNull(startupFailure);
+              Throwable root = rootCause(startupFailure);
+              assertNotNull(root.getMessage());
+              assertTrue(
+                  root.getMessage()
+                      .contains("irc.client.translation.enabled=true but backend is blank"));
+            });
+  }
+
+  @Test
+  void enablingTranslationWithoutTargetLanguageFailsFast() {
+    runner
+        .withPropertyValues(
+            "irc.client.translation.enabled=true", "irc.client.translation.backend=test")
+        .run(
+            ctx -> {
+              Throwable startupFailure = ctx.getStartupFailure();
+              assertNotNull(startupFailure);
+              Throwable root = rootCause(startupFailure);
+              assertNotNull(root.getMessage());
+              assertTrue(
+                  root.getMessage()
+                      .contains(
+                          "irc.client.translation.enabled=true but target-language is blank"));
+            });
+  }
+
+  @Test
+  void enablingDeepLTranslationWithoutApiKeyFailsFast() {
+    runner
+        .withPropertyValues(
+            "irc.client.translation.enabled=true",
+            "irc.client.translation.backend=deepl",
+            "irc.client.translation.target-language=es")
+        .run(
+            ctx -> {
+              Throwable startupFailure = ctx.getStartupFailure();
+              assertNotNull(startupFailure);
+              Throwable root = rootCause(startupFailure);
+              assertNotNull(root.getMessage());
+              assertTrue(
+                  root.getMessage()
+                      .contains(
+                          "irc.client.translation.enabled=true with backend=deepl but api-key is blank"));
+            });
+  }
+
+  @Test
+  void googleWebTranslationDoesNotRequireApiKeyAndUsesDefaultEndpoint() {
+    runner
+        .withPropertyValues(
+            "irc.client.translation.enabled=true",
+            "irc.client.translation.backend=google-web",
+            "irc.client.translation.target-language=es")
+        .run(
+            ctx -> {
+              assertNull(ctx.getStartupFailure());
+              IrcProperties.Client.Translation translation =
+                  ctx.getBean(IrcProperties.class).client().translation();
+              assertTrue(translation.enabled());
+              assertEquals("google-web", translation.backendId());
+              assertEquals(
+                  "https://translate.googleapis.com/translate_a/single", translation.endpoint());
+              assertEquals("", translation.apiKey());
+              assertEquals("es", translation.targetLanguage());
             });
   }
 

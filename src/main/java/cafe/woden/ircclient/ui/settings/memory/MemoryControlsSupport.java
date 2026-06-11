@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.memory;
 
 import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
@@ -10,6 +11,8 @@ import javax.swing.JComboBox;
 import javax.swing.JSpinner;
 
 public final class MemoryControlsSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private MemoryControlsSupport() {}
 
   public static JComboBox<MemoryUsageDisplayMode> buildMemoryUsageDisplayModeCombo(
@@ -20,7 +23,7 @@ public final class MemoryControlsSupport {
             ? current.memoryUsageDisplayMode()
             : MemoryUsageDisplayMode.LONG;
     combo.setSelectedItem(selected);
-    combo.setToolTipText("Controls the memory widget shown on the far right side of the menu bar.");
+    combo.setToolTipText(MESSAGES.text("preferences.memory.displayMode.tooltip"));
     return combo;
   }
 
@@ -32,8 +35,7 @@ public final class MemoryControlsSupport {
             : 1000;
     JSpinner spinner =
         PreferencesUiSupport.numberSpinner(refreshIntervalMs, 250, 60_000, 250, closeables);
-    spinner.setToolTipText(
-        "How often the memory widget refreshes (milliseconds). Lower values cost more CPU/wakeups.");
+    spinner.setToolTipText(MESSAGES.text("preferences.memory.refreshInterval.tooltip"));
     return spinner;
   }
 
@@ -47,26 +49,28 @@ public final class MemoryControlsSupport {
     JSpinner nearMaxPercentSpinner =
         PreferencesUiSupport.numberSpinner(nearMaxPercent, 1, 50, 1, closeables);
     nearMaxPercentSpinner.setToolTipText(
-        "Trigger warning actions when heap usage is within this percent of the JVM max.");
+        MESSAGES.text("preferences.memory.warning.nearMax.tooltip"));
 
-    JCheckBox tooltipEnabled = new JCheckBox("Show warning tooltip near memory widget");
+    JCheckBox tooltipEnabled =
+        new JCheckBox(MESSAGES.text("preferences.memory.warning.tooltip.enabled"));
     tooltipEnabled.setSelected(current == null || current.memoryUsageWarningTooltipEnabled());
     tooltipEnabled.setToolTipText(
-        "Shows a transient warning tooltip near the memory widget when threshold is crossed.");
+        MESSAGES.text("preferences.memory.warning.tooltip.enabled.tooltip"));
 
-    JCheckBox toastEnabled = new JCheckBox("Show desktop toast warning");
+    JCheckBox toastEnabled =
+        new JCheckBox(MESSAGES.text("preferences.memory.warning.toast.enabled"));
     toastEnabled.setSelected(current != null && current.memoryUsageWarningToastEnabled());
-    toastEnabled.setToolTipText(
-        "Uses the existing tray notification pipeline for memory threshold alerts.");
+    toastEnabled.setToolTipText(MESSAGES.text("preferences.memory.warning.toast.enabled.tooltip"));
 
-    JCheckBox pushyEnabled = new JCheckBox("Send Pushy warning");
+    JCheckBox pushyEnabled =
+        new JCheckBox(MESSAGES.text("preferences.memory.warning.pushy.enabled"));
     pushyEnabled.setSelected(current != null && current.memoryUsageWarningPushyEnabled());
-    pushyEnabled.setToolTipText(
-        "Sends a Pushy notification when configured and the warning threshold is crossed.");
+    pushyEnabled.setToolTipText(MESSAGES.text("preferences.memory.warning.pushy.enabled.tooltip"));
 
-    JCheckBox soundEnabled = new JCheckBox("Play warning sound");
+    JCheckBox soundEnabled =
+        new JCheckBox(MESSAGES.text("preferences.memory.warning.sound.enabled"));
     soundEnabled.setSelected(current != null && current.memoryUsageWarningSoundEnabled());
-    soundEnabled.setToolTipText("Plays the configured notification sound on memory warning.");
+    soundEnabled.setToolTipText(MESSAGES.text("preferences.memory.warning.sound.enabled.tooltip"));
 
     return new MemoryWarningControls(
         nearMaxPercentSpinner, tooltipEnabled, toastEnabled, pushyEnabled, soundEnabled);

@@ -4,12 +4,15 @@ import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import cafe.woden.ircclient.config.properties.ConfigPropertyKeys;
 import cafe.woden.ircclient.util.AppVersion;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.jmolecules.architecture.layered.InfrastructureLayer;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.bind.ConstructorBinding;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 import org.springframework.boot.context.properties.bind.Name;
 
 /**
@@ -33,7 +36,12 @@ public record IrcProperties(Client client, List<Server> servers) {
    * </pre>
    */
   public record Client(
-      String version, Reconnect reconnect, Heartbeat heartbeat, Proxy proxy, Tls tls) {
+      String version,
+      Reconnect reconnect,
+      Heartbeat heartbeat,
+      Proxy proxy,
+      Tls tls,
+      Translation translation) {
 
     /** TLS settings for outbound connections (IRC-over-TLS and HTTPS fetching). */
     public record Tls(boolean trustAllCertificates) {
@@ -42,6 +50,174 @@ public record IrcProperties(Client client, List<Server> servers) {
       }
     }
 
+    /**
+     * Client-side translation settings.
+     *
+     * <p>This is deliberately backend-agnostic: {@code backendId} is a normalized identifier that a
+     * later translation-service registry can resolve.
+     */
+    public record Translation(
+        boolean enabled,
+        Mode mode,
+        @Name("backend") String backendId,
+        String endpoint,
+        String apiKey,
+        String sourceLanguage,
+        String targetLanguage,
+        @DefaultValue("true") boolean translateUnknownMessages,
+        @DefaultValue("true") boolean detectAllLanguages,
+        List<String> detectionLanguages,
+        DisplayMode displayMode,
+        long requestTimeoutMs,
+        int maxRequestChars,
+        int maxConcurrentRequests) {
+
+      public enum DisplayMode {
+        BELOW_ORIGINAL
+      }
+
+      public enum Mode {
+        AUTO,
+        MANUAL
+      }
+
+      public Translation(
+          boolean enabled,
+          Mode mode,
+          String backendId,
+          String endpoint,
+          String apiKey,
+          String sourceLanguage,
+          String targetLanguage,
+          DisplayMode displayMode,
+          long requestTimeoutMs,
+          int maxRequestChars,
+          int maxConcurrentRequests) {
+        this(
+            enabled,
+            mode,
+            backendId,
+            endpoint,
+            apiKey,
+            sourceLanguage,
+            targetLanguage,
+            true,
+            true,
+            List.of(),
+            displayMode,
+            requestTimeoutMs,
+            maxRequestChars,
+            maxConcurrentRequests);
+      }
+
+      public Translation(
+          boolean enabled,
+          Mode mode,
+          String backendId,
+          String endpoint,
+          String apiKey,
+          String sourceLanguage,
+          String targetLanguage,
+          boolean translateUnknownMessages,
+          DisplayMode displayMode,
+          long requestTimeoutMs,
+          int maxRequestChars,
+          int maxConcurrentRequests) {
+        this(
+            enabled,
+            mode,
+            backendId,
+            endpoint,
+            apiKey,
+            sourceLanguage,
+            targetLanguage,
+            translateUnknownMessages,
+            true,
+            List.of(),
+            displayMode,
+            requestTimeoutMs,
+            maxRequestChars,
+            maxConcurrentRequests);
+      }
+
+      @ConstructorBinding
+      public Translation {
+        if (mode == null) {
+          mode = Mode.AUTO;
+        }
+        backendId = normalizeToken(backendId);
+        endpoint = normalizeEndpoint(endpoint, backendId);
+        apiKey = Objects.toString(apiKey, "").trim();
+        sourceLanguage = normalizeLanguage(sourceLanguage, "auto");
+        targetLanguage = normalizeLanguage(targetLanguage, "");
+        detectionLanguages = normalizeLanguages(detectionLanguages);
+        if (displayMode == null) {
+          displayMode = DisplayMode.BELOW_ORIGINAL;
+        }
+        if (requestTimeoutMs <= 0) {
+          requestTimeoutMs = 10_000;
+        }
+        if (maxRequestChars <= 0) {
+          maxRequestChars = 4_000;
+        }
+        if (maxConcurrentRequests <= 0) {
+          maxConcurrentRequests = 2;
+        }
+        if (maxConcurrentRequests > 16) {
+          maxConcurrentRequests = 16;
+        }
+
+        if (enabled) {
+          if (backendId.isBlank()) {
+            throw new IllegalArgumentException(
+                "irc.client.translation.enabled=true but backend is blank");
+          }
+          if (targetLanguage.isBlank()) {
+            throw new IllegalArgumentException(
+                "irc.client.translation.enabled=true but target-language is blank");
+          }
+          if ("deepl".equals(backendId) && apiKey.isBlank()) {
+            throw new IllegalArgumentException(
+                "irc.client.translation.enabled=true with backend=deepl but api-key is blank");
+          }
+        }
+      }
+
+      private static String normalizeToken(String raw) {
+        return raw == null ? "" : raw.trim().toLowerCase(Locale.ROOT);
+      }
+
+      private static String normalizeEndpoint(String raw, String backendId) {
+        String endpoint = Objects.toString(raw, "").trim();
+        if (!endpoint.isBlank()) {
+          return endpoint;
+        }
+        return switch (backendId) {
+          case "deepl" -> "https://api-free.deepl.com/v2/translate";
+          case "libretranslate" -> "https://libretranslate.com/translate";
+          case "google-web" -> "https://translate.googleapis.com/translate_a/single";
+          default -> "";
+        };
+      }
+
+      private static String normalizeLanguage(String raw, String defaultValue) {
+        String value = raw == null ? defaultValue : raw.trim();
+        return value.toLowerCase(Locale.ROOT);
+      }
+
+      private static List<String> normalizeLanguages(List<String> raw) {
+        if (raw == null || raw.isEmpty()) {
+          return List.of();
+        }
+        return raw.stream()
+            .map(value -> normalizeLanguage(value, ""))
+            .filter(value -> !value.isBlank())
+            .distinct()
+            .toList();
+      }
+    }
+
+    @ConstructorBinding
     public Client {
       version = AppVersion.decorateIfDefaultName(version);
       if (reconnect == null) {
@@ -56,6 +232,15 @@ public record IrcProperties(Client client, List<Server> servers) {
       if (tls == null) {
         tls = new Tls(false);
       }
+      if (translation == null) {
+        translation =
+            new Translation(
+                false, Translation.Mode.AUTO, "", "", "", "auto", "", null, 10_000, 4_000, 2);
+      }
+    }
+
+    public Client(String version, Reconnect reconnect, Heartbeat heartbeat, Proxy proxy, Tls tls) {
+      this(version, reconnect, heartbeat, proxy, tls, null);
     }
   }
 

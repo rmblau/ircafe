@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -11,6 +12,7 @@ import javax.swing.SwingConstants;
 
 /** Optional inline YouTube playback via JavaFX WebView. */
 final class YouTubeInlinePlayerPanel extends JPanel {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private final String videoId;
 
@@ -38,7 +40,7 @@ final class YouTubeInlinePlayerPanel extends JPanel {
   private void init() {
     if (!isSupported()) {
       add(
-          new JLabel("Inline playback requires JavaFX (javafx-web).", SwingConstants.CENTER),
+          new JLabel(MESSAGES.text("chat.embed.youtube.javafxRequired"), SwingConstants.CENTER),
           BorderLayout.CENTER);
       return;
     }
@@ -81,7 +83,8 @@ final class YouTubeInlinePlayerPanel extends JPanel {
     } catch (Throwable t) {
       removeAll();
       add(
-          new JLabel("Inline playback failed to initialize.", SwingConstants.CENTER),
+          new JLabel(
+              MESSAGES.text("chat.embed.youtube.initializationFailed"), SwingConstants.CENTER),
           BorderLayout.CENTER);
     }
   }

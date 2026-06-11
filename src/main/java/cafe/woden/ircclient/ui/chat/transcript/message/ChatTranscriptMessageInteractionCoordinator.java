@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.chat.transcript.message;
 
 import static cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageMetadataSupport.normalizeMessageId;
 
+import cafe.woden.ircclient.app.api.MessageTranslation;
 import cafe.woden.ircclient.model.LogDirection;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
@@ -26,6 +27,7 @@ public final class ChatTranscriptMessageInteractionCoordinator {
   private final ChatTranscriptMessageCatalogSupport messageCatalogSupport;
   private final ChatTranscriptReactionSummarySupport reactionSummarySupport;
   private final ChatTranscriptMessageMutationSupport messageMutationSupport;
+  private final ChatTranscriptMessageTranslationSupport messageTranslationSupport;
 
   public ChatTranscriptMessageInteractionCoordinator(
       Map<TargetRef, StyledDocument> docs,
@@ -38,7 +40,8 @@ public final class ChatTranscriptMessageInteractionCoordinator {
       ChatTranscriptMessageReplacementSupport.TranscriptFromRenderer transcriptFromRenderer,
       ChatTranscriptMessageReplacementSupport.ActionLineInserter actionLineInserter,
       ChatTranscriptMessageReplacementSupport.StandardLineInserter standardLineInserter,
-      String redactedMessagePlaceholder) {
+      String redactedMessagePlaceholder,
+      ChatTranscriptMessageTranslationSupport messageTranslationSupport) {
     this.docs = Objects.requireNonNull(docs, "docs");
     this.stateByTarget = Objects.requireNonNull(stateByTarget, "stateByTarget");
     this.ensureTargetExists = Objects.requireNonNull(ensureTargetExists, "ensureTargetExists");
@@ -47,6 +50,8 @@ public final class ChatTranscriptMessageInteractionCoordinator {
         Objects.requireNonNull(messageCatalogSupport, "messageCatalogSupport");
     this.reactionSummarySupport =
         Objects.requireNonNull(reactionSummarySupport, "reactionSummarySupport");
+    this.messageTranslationSupport =
+        Objects.requireNonNull(messageTranslationSupport, "messageTranslationSupport");
     Objects.requireNonNull(senderStyleSupportContext, "senderStyleSupportContext");
     Objects.requireNonNull(transcriptFromRenderer, "transcriptFromRenderer");
     Objects.requireNonNull(actionLineInserter, "actionLineInserter");
@@ -97,6 +102,15 @@ public final class ChatTranscriptMessageInteractionCoordinator {
     ChatTranscriptState state = stateByTarget.get(ref);
     if (state == null) return null;
     return messageCatalogSupport.redactedOriginalById(state.messageCatalog(), msgId);
+  }
+
+  public MessageTranslationSource translationSourceById(TargetRef ref, String messageId) {
+    if (ref == null) return null;
+    String msgId = normalizeMessageId(messageId);
+    if (msgId.isEmpty()) return null;
+    ChatTranscriptState state = stateByTarget.get(ref);
+    if (state == null) return null;
+    return messageCatalogSupport.translationSourceById(state.messageCatalog(), msgId);
   }
 
   public boolean isOwnMessage(TargetRef ref, String messageId) {
@@ -162,6 +176,16 @@ public final class ChatTranscriptMessageInteractionCoordinator {
         ref, doc, state.reactionSummary(), targetMessageId, reaction, fromNick, tsEpochMs);
   }
 
+  public boolean applyMessageTranslation(
+      TargetRef ref, MessageTranslation translation, long translatedAtEpochMs) {
+    if (ref == null) return false;
+    ensureTargetExists.accept(ref);
+    StyledDocument doc = docs.get(ref);
+    if (doc == null) return false;
+    return messageTranslationSupport.applyMessageTranslation(
+        ref, doc, translation, translatedAtEpochMs);
+  }
+
   public boolean applyMessageEdit(
       TargetRef ref,
       String targetMessageId,
@@ -196,15 +220,20 @@ public final class ChatTranscriptMessageInteractionCoordinator {
     ensureTargetExists.accept(ref);
     StyledDocument doc = docs.get(ref);
     ChatTranscriptState state = stateByTarget.get(ref);
-    return messageMutationSupport.applyMessageRedaction(
-        ref,
-        doc,
-        state == null ? null : state.messageCatalog(),
-        state == null ? null : state.reactionSummary(),
-        targetMessageId,
-        fromNick,
-        tsEpochMs,
-        replacementMessageId,
-        replacementIrcv3Tags);
+    boolean redacted =
+        messageMutationSupport.applyMessageRedaction(
+            ref,
+            doc,
+            state == null ? null : state.messageCatalog(),
+            state == null ? null : state.reactionSummary(),
+            targetMessageId,
+            fromNick,
+            tsEpochMs,
+            replacementMessageId,
+            replacementIrcv3Tags);
+    if (redacted) {
+      messageTranslationSupport.clearTranslationForMessage(ref, doc, targetMessageId);
+    }
+    return redacted;
   }
 }

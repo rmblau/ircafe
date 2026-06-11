@@ -5,6 +5,7 @@ import cafe.woden.ircclient.net.HttpHeaderNames;
 import cafe.woden.ircclient.net.HttpLite;
 import cafe.woden.ircclient.net.NetProxyContext;
 import cafe.woden.ircclient.ui.ExternalBrowserLauncher;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.util.AppVersion;
 import cafe.woden.ircclient.util.VirtualThreads;
 import jakarta.annotation.PostConstruct;
@@ -24,6 +25,7 @@ import java.util.regex.Pattern;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -50,6 +52,7 @@ public class UpdateNotifierService {
   private final StatusBar statusBar;
   private final ScheduledExecutorService scheduler;
   private final ExternalBrowserLauncher externalBrowserLauncher;
+  private final UiMessages messages;
 
   private final AtomicBoolean enabled = new AtomicBoolean(true);
   private final AtomicBoolean checkInProgress = new AtomicBoolean(false);
@@ -58,15 +61,25 @@ public class UpdateNotifierService {
 
   private volatile String lastAlertedTag;
 
+  @Autowired
   public UpdateNotifierService(
       UiShellRuntimeConfigPort runtimeConfig,
       StatusBar statusBar,
-      ExternalBrowserLauncher externalBrowserLauncher) {
+      ExternalBrowserLauncher externalBrowserLauncher,
+      UiMessages messages) {
     this.runtimeConfig = Objects.requireNonNull(runtimeConfig, "runtimeConfig");
     this.statusBar = Objects.requireNonNull(statusBar, "statusBar");
     this.externalBrowserLauncher =
         Objects.requireNonNull(externalBrowserLauncher, "externalBrowserLauncher");
+    this.messages = Objects.requireNonNull(messages, "messages");
     this.scheduler = VirtualThreads.newSingleThreadScheduledExecutor("ircafe-update-notifier");
+  }
+
+  UpdateNotifierService(
+      UiShellRuntimeConfigPort runtimeConfig,
+      StatusBar statusBar,
+      ExternalBrowserLauncher externalBrowserLauncher) {
+    this(runtimeConfig, statusBar, externalBrowserLauncher, UiMessages.bundledDefaults());
   }
 
   @PostConstruct
@@ -111,13 +124,14 @@ public class UpdateNotifierService {
 
     statusBar.setUpdateNotifierEnabled(true);
     statusBar.setUpdateNotifierStatus(
-        "Checking for IRCafe updates...", StatusBar.UpdateNotifierState.IDLE);
+        messages.text("statusBar.updateNotifier.checking.tooltip"),
+        StatusBar.UpdateNotifierState.IDLE);
     scheduleChecksIfNeeded();
   }
 
   private void disableFromContextMenu() {
     applyEnabled(false, true);
-    statusBar.enqueueNotification("Update notifier disabled. Re-enable it in Preferences.", null);
+    statusBar.enqueueNotification(messages.text("statusBar.updateNotifier.status.disabled"), null);
   }
 
   private void scheduleChecksIfNeeded() {
@@ -150,14 +164,17 @@ public class UpdateNotifierService {
       if (!enabled.get()) return;
       if (latestRelease == null) {
         statusBar.setUpdateNotifierStatus(
-            "Could not check for updates right now. Right-click to visit releases.",
+            messages.text("statusBar.updateNotifier.status.checkFailed"),
             StatusBar.UpdateNotifierState.ERROR);
         return;
       }
 
       String latestTag = Objects.toString(latestRelease.tag(), "").trim();
       String currentVersion = Objects.toString(AppVersion.version(), "").trim();
-      String currentDisplay = currentVersion.isBlank() ? "unknown" : currentVersion;
+      String currentDisplay =
+          currentVersion.isBlank()
+              ? messages.text("statusBar.updateNotifier.version.unknown")
+              : currentVersion;
 
       boolean newer =
           !currentVersion.isBlank() && compareVersionsForTest(latestTag, currentVersion) > 0;
@@ -165,30 +182,24 @@ public class UpdateNotifierService {
 
       if (newer) {
         statusBar.setUpdateNotifierStatus(
-            "New IRCafe version available: "
-                + latestTag
-                + " (you are on "
-                + currentDisplay
-                + "). Right-click for actions.",
+            messages.text(
+                "statusBar.updateNotifier.status.updateAvailable", latestTag, currentDisplay),
             StatusBar.UpdateNotifierState.UPDATE_AVAILABLE);
         if (!latestTag.equalsIgnoreCase(Objects.toString(lastAlertedTag, ""))) {
           statusBar.showUpdateNotifierTooltipAlert(
-              "A newer IRCafe release is available: "
-                  + latestTag
-                  + " (current: "
-                  + currentDisplay
-                  + ")");
+              messages.text(
+                  "statusBar.updateNotifier.alert.updateAvailable", latestTag, currentDisplay));
           lastAlertedTag = latestTag;
         }
       } else {
         statusBar.setUpdateNotifierStatus(
-            "IRCafe " + currentDisplay + ". Right-click to visit releases.",
+            messages.text("statusBar.updateNotifier.status.current", currentDisplay),
             StatusBar.UpdateNotifierState.IDLE);
       }
     } catch (Exception e) {
       log.debug("update notifier check failed", e);
       statusBar.setUpdateNotifierStatus(
-          "Could not check for updates right now. Right-click to visit releases.",
+          messages.text("statusBar.updateNotifier.status.checkFailed"),
           StatusBar.UpdateNotifierState.ERROR);
     } finally {
       checkInProgress.set(false);
@@ -293,10 +304,12 @@ public class UpdateNotifierService {
           "Could not schedule opening releases page in browser: {} (worker unavailable)",
           RELEASES_URL,
           ex);
-      statusBar.enqueueNotification("Could not open browser for updates.", null);
+      statusBar.enqueueNotification(
+          messages.text("statusBar.updateNotifier.error.openBrowser"), null);
     } catch (Exception ex) {
       log.warn("Could not schedule opening releases page in browser: {}", RELEASES_URL, ex);
-      statusBar.enqueueNotification("Could not open browser for updates.", null);
+      statusBar.enqueueNotification(
+          messages.text("statusBar.updateNotifier.error.openBrowser"), null);
     }
   }
 
@@ -312,7 +325,8 @@ public class UpdateNotifierService {
       throw new UnsupportedOperationException("No browser launch strategy succeeded");
     } catch (Exception e) {
       log.warn("Could not open releases page in browser: {}", url, e);
-      statusBar.enqueueNotification("Could not open browser for updates.", null);
+      statusBar.enqueueNotification(
+          messages.text("statusBar.updateNotifier.error.openBrowser"), null);
     }
   }
 

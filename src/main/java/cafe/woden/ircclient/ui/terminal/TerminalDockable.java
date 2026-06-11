@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.terminal;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.util.UiFontKeys;
 import io.github.andrewauclair.moderndocking.Dockable;
 import jakarta.annotation.PreDestroy;
@@ -32,6 +33,7 @@ import javax.swing.event.PopupMenuListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.jmolecules.architecture.layered.InterfaceLayer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -46,16 +48,24 @@ public class TerminalDockable extends JPanel implements Dockable {
   private static final int MAX_DOC_CHARS = 1_000_000; // Keep last ~1MB in the UI too.
 
   private final ConsoleTeeService console;
+  private final UiMessages messages;
   private final JTextArea area = new JTextArea();
-  private final JCheckBox followTail = new JCheckBox("Follow", true);
+  private final JCheckBox followTail;
 
   private JMenuItem copyItem;
 
   private volatile AutoCloseable subscription;
 
   public TerminalDockable(ConsoleTeeService console) {
+    this(console, UiMessages.bundledDefaults());
+  }
+
+  @Autowired
+  public TerminalDockable(ConsoleTeeService console, UiMessages messages) {
     super(new BorderLayout());
     this.console = console;
+    this.messages = messages == null ? UiMessages.bundledDefaults() : messages;
+    this.followTail = new JCheckBox(this.messages.text("terminal.toolbar.followTail"), true);
 
     area.setEditable(false);
     area.setLineWrap(false);
@@ -73,7 +83,7 @@ public class TerminalDockable extends JPanel implements Dockable {
 
     JButton clear =
         new JButton(
-            new AbstractAction("Clear") {
+            new AbstractAction(TerminalDockable.this.messages.text("common.button.clear")) {
               @Override
               public void actionPerformed(ActionEvent e) {
                 area.setText("");
@@ -98,17 +108,17 @@ public class TerminalDockable extends JPanel implements Dockable {
   private void installContextMenu() {
     JPopupMenu menu = new JPopupMenu();
 
-    copyItem = new JMenuItem("Copy");
+    copyItem = new JMenuItem(messages.text("common.button.copy"));
     copyItem.addActionListener(e -> area.copy());
     copyItem.setEnabled(false);
 
-    JMenuItem selectAll = new JMenuItem("Select All");
+    JMenuItem selectAll = new JMenuItem(messages.text("terminal.context.selectAll"));
     selectAll.addActionListener(e -> area.selectAll());
 
-    JMenuItem clear = new JMenuItem("Clear");
+    JMenuItem clear = new JMenuItem(messages.text("common.button.clear"));
     clear.addActionListener(e -> area.setText(""));
 
-    JMenuItem save = new JMenuItem("Save to file...");
+    JMenuItem save = new JMenuItem(messages.text("terminal.context.saveToFile"));
     save.addActionListener(e -> saveToFile());
 
     menu.add(copyItem);
@@ -138,7 +148,7 @@ public class TerminalDockable extends JPanel implements Dockable {
 
   private void saveToFile() {
     JFileChooser chooser = new JFileChooser();
-    chooser.setDialogTitle("Save terminal output");
+    chooser.setDialogTitle(messages.text("terminal.save.dialogTitle"));
     chooser.setSelectedFile(new File(System.getProperty("user.home"), defaultFileName()));
 
     int result = chooser.showSaveDialog(SwingUtilities.getWindowAncestor(this));
@@ -165,14 +175,14 @@ public class TerminalDockable extends JPanel implements Dockable {
 
       JOptionPane.showMessageDialog(
           SwingUtilities.getWindowAncestor(this),
-          "Saved terminal output to:\n" + file.getAbsolutePath(),
-          "Saved",
+          messages.text("terminal.save.success.message", file.getAbsolutePath()),
+          messages.text("terminal.save.success.title"),
           JOptionPane.INFORMATION_MESSAGE);
     } catch (IOException ex) {
       JOptionPane.showMessageDialog(
           SwingUtilities.getWindowAncestor(this),
-          "Failed to save terminal output:\n" + ex.getMessage(),
-          "Save failed",
+          messages.text("terminal.save.error.message", ex.getMessage()),
+          messages.text("terminal.save.error.title"),
           JOptionPane.ERROR_MESSAGE);
     }
   }
@@ -197,7 +207,7 @@ public class TerminalDockable extends JPanel implements Dockable {
 
   @Override
   public String getTabText() {
-    return "Terminal";
+    return messages.text("terminal.tab");
   }
 
   @Override

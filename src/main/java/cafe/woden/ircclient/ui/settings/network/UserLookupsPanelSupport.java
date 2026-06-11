@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.network;
 
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
@@ -21,25 +22,26 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 
 public final class UserLookupsPanelSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private UserLookupsPanelSupport() {}
 
   static UserLookupsPanelControls buildControls(
       UiSettings current, List<AutoCloseable> closeables) {
     JPanel userLookupsPanel =
         new JPanel(MigLayouts.fillXWrapWithHideMode(12, 1, 3, MigLayoutConstraints.GROW_FILL, ""));
-    userLookupsPanel.add(PreferencesUiSupport.tabTitle("User lookups"), MigConstraints.growXWrap());
+    userLookupsPanel.add(
+        PreferencesUiSupport.tabTitle(MESSAGES.text("preferences.network.userLookups.title")),
+        MigConstraints.growXWrap());
 
     JPanel userLookupsIntro = new JPanel(MigLayouts.fillXGrowTrailing(6));
     userLookupsIntro.setOpaque(false);
     JTextArea userLookupsBlurb =
-        PreferencesUiSupport.helpText(
-            "Optional fallbacks for account/away/host info (USERHOST / WHOIS), with conservative rate limits.");
+        PreferencesUiSupport.helpText(MESSAGES.text("preferences.network.userLookups.help"));
     JButton userLookupsHelp =
         PreferencesUiSupport.whyHelpButton(
-            "Why do I need user lookups?",
-            "Most modern IRC networks provide account and presence information via IRCv3 (e.g., account-tag, account-notify, away-notify, extended-join).\n\n"
-                + "However, some networks (or some pieces of data) still require fallback lookups. IRCafe can optionally use USERHOST and (as a last resort) WHOIS to fill missing metadata.\n\n"
-                + "If you're on an IRCv3-capable network and don't use hostmask-based ignore rules, you can usually leave these disabled.");
+            MESSAGES.text("preferences.network.userLookups.helpButton.title"),
+            MESSAGES.text("preferences.network.userLookups.helpButton.message"));
     userLookupsIntro.add(userLookupsBlurb, MigConstraints.growXMinWidth0());
     userLookupsIntro.add(userLookupsHelp, MigConstraints.alignXRight());
 
@@ -59,16 +61,19 @@ public final class UserLookupsPanelSupport {
 
           String message =
               switch (preset) {
-                case CONSERVATIVE -> "Lowest traffic. Best for huge channels or strict networks.";
-                case BALANCED -> "Recommended default. Good fill-in speed with low risk.";
-                case RAPID -> "Faster fill-in. More commands on the wire (use with caution).";
-                case CUSTOM -> "Custom shows the tuning controls below.";
+                case CONSERVATIVE ->
+                    MESSAGES.text("preferences.network.userLookups.preset.conservative.hint");
+                case BALANCED ->
+                    MESSAGES.text("preferences.network.userLookups.preset.balanced.hint");
+                case RAPID -> MESSAGES.text("preferences.network.userLookups.preset.rapid.hint");
+                case CUSTOM -> MESSAGES.text("preferences.network.userLookups.preset.custom.hint");
               };
           lookupPresetHint.setText(message);
         };
     updateLookupPresetHint.run();
 
-    lookupPresetPanel.add(new JLabel("Rate limit preset:"));
+    lookupPresetPanel.add(
+        new JLabel(MESSAGES.text("preferences.network.userLookups.field.ratePreset")));
     lookupPresetPanel.add(lookupPreset, MigConstraints.width(220));
     lookupPresetPanel.add(lookupPresetHint, MigConstraints.span2GrowXMinWidth0Wrap());
 
@@ -76,30 +81,29 @@ public final class UserLookupsPanelSupport {
         PreferencesUiSupport.numberSpinner(
             current.monitorIsonFallbackPollIntervalSeconds(), 5, 600, 5, closeables);
     monitorIsonPollIntervalSeconds.setToolTipText(
-        "Polling interval for ISON monitor fallback when IRC MONITOR is unavailable.");
-    lookupPresetPanel.add(new JLabel("MONITOR fallback poll (sec):"));
+        MESSAGES.text("preferences.network.userLookups.monitorIsonPoll.tooltip"));
+    lookupPresetPanel.add(
+        new JLabel(MESSAGES.text("preferences.network.userLookups.field.monitorIsonPoll")));
     lookupPresetPanel.add(monitorIsonPollIntervalSeconds, MigConstraints.widthWrap(110));
 
     JPanel hostmaskPanel = new JPanel(MigLayouts.twoColumnFormWithHideMode(8, 12, 3, ""));
     hostmaskPanel.setBorder(
         BorderFactory.createCompoundBorder(
-            BorderFactory.createTitledBorder("Hostmask discovery"),
+            BorderFactory.createTitledBorder(
+                MESSAGES.text("preferences.network.userLookups.hostmask.section")),
             BorderFactory.createEmptyBorder(6, 6, 6, 6)));
     hostmaskPanel.setOpaque(false);
 
     JCheckBox userhostEnabled =
-        new JCheckBox("Fill missing hostmasks using USERHOST (rate-limited)");
+        new JCheckBox(MESSAGES.text("preferences.network.userLookups.hostmask.enabled"));
     userhostEnabled.setSelected(current.userhostDiscoveryEnabled());
     userhostEnabled.setToolTipText(
-        "When enabled, IRCafe may send USERHOST only when hostmask-based ignore rules exist and some nicks are missing hostmasks.");
+        MESSAGES.text("preferences.network.userLookups.hostmask.enabled.tooltip"));
 
     JButton hostmaskHelp =
         PreferencesUiSupport.whyHelpButton(
-            "Why do I need hostmask discovery?",
-            "Some ignore rules rely on hostmasks (nick!user@host).\n\n"
-                + "On many networks, the full hostmask isn't included in NAMES and might not be available until additional lookups happen.\n\n"
-                + "If you use hostmask-based ignore rules and some users show up without hostmasks, IRCafe can send rate-limited USERHOST commands to fill them in.\n\n"
-                + "If you don't use hostmask-based ignores, you can usually leave this off.");
+            MESSAGES.text("preferences.network.userLookups.hostmask.help.title"),
+            MESSAGES.text("preferences.network.userLookups.hostmask.help.message"));
 
     JTextArea hostmaskSummary = PreferencesUiSupport.subtleInfoText();
     hostmaskSummary.setBorder(BorderFactory.createEmptyBorder(0, 18, 0, 0));
@@ -108,83 +112,82 @@ public final class UserLookupsPanelSupport {
         PreferencesUiSupport.numberSpinner(
             current.userhostMinIntervalSeconds(), 1, 60, 1, closeables);
     userhostMinIntervalSeconds.setToolTipText(
-        "Minimum seconds between USERHOST commands per server.");
+        MESSAGES.text("preferences.network.userLookups.userhost.minInterval.tooltip"));
 
     JSpinner userhostMaxPerMinute =
         PreferencesUiSupport.numberSpinner(
             current.userhostMaxCommandsPerMinute(), 1, 60, 1, closeables);
-    userhostMaxPerMinute.setToolTipText("Maximum USERHOST commands per minute per server.");
+    userhostMaxPerMinute.setToolTipText(
+        MESSAGES.text("preferences.network.userLookups.userhost.maxPerMinute.tooltip"));
 
     JSpinner userhostNickCooldownMinutes =
         PreferencesUiSupport.numberSpinner(
             current.userhostNickCooldownMinutes(), 1, 240, 1, closeables);
     userhostNickCooldownMinutes.setToolTipText(
-        "Cooldown in minutes before re-querying the same nick.");
+        MESSAGES.text("preferences.network.userLookups.userhost.nickCooldown.tooltip"));
 
     JSpinner userhostMaxNicksPerCommand =
         PreferencesUiSupport.numberSpinner(
             current.userhostMaxNicksPerCommand(), 1, 5, 1, closeables);
     userhostMaxNicksPerCommand.setToolTipText(
-        "How many nicks to include per USERHOST command (servers typically allow up to 5).");
+        MESSAGES.text("preferences.network.userLookups.userhost.maxNicks.tooltip"));
 
     JPanel hostmaskAdvanced = new JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rows(4, 6)));
     hostmaskAdvanced.setOpaque(false);
-    hostmaskAdvanced.add(new JLabel("Min interval (sec):"));
+    hostmaskAdvanced.add(
+        new JLabel(MESSAGES.text("preferences.network.userLookups.field.minInterval")));
     hostmaskAdvanced.add(userhostMinIntervalSeconds, MigConstraints.width(110));
-    hostmaskAdvanced.add(new JLabel("Max commands/min:"));
+    hostmaskAdvanced.add(
+        new JLabel(MESSAGES.text("preferences.network.userLookups.field.maxCommands")));
     hostmaskAdvanced.add(userhostMaxPerMinute, MigConstraints.width(110));
-    hostmaskAdvanced.add(new JLabel("Nick cooldown (min):"));
+    hostmaskAdvanced.add(
+        new JLabel(MESSAGES.text("preferences.network.userLookups.field.nickCooldown")));
     hostmaskAdvanced.add(userhostNickCooldownMinutes, MigConstraints.width(110));
-    hostmaskAdvanced.add(new JLabel("Max nicks/command:"));
+    hostmaskAdvanced.add(
+        new JLabel(MESSAGES.text("preferences.network.userLookups.field.maxNicks")));
     hostmaskAdvanced.add(userhostMaxNicksPerCommand, MigConstraints.width(110));
 
     JPanel enrichmentPanel = new JPanel(MigLayouts.twoColumnFormWithHideMode(8, 12, 3, ""));
     enrichmentPanel.setBorder(
         BorderFactory.createCompoundBorder(
-            BorderFactory.createTitledBorder("Roster enrichment (fallback)"),
+            BorderFactory.createTitledBorder(
+                MESSAGES.text("preferences.network.userLookups.enrichment.section")),
             BorderFactory.createEmptyBorder(6, 6, 6, 6)));
     enrichmentPanel.setOpaque(false);
 
     JCheckBox enrichmentEnabled =
-        new JCheckBox("Best-effort roster enrichment using USERHOST (rate-limited)");
+        new JCheckBox(MESSAGES.text("preferences.network.userLookups.enrichment.enabled"));
     enrichmentEnabled.setSelected(current.userInfoEnrichmentEnabled());
     enrichmentEnabled.setToolTipText(
-        "When enabled, IRCafe may send USERHOST occasionally to enrich user info even when you don't have hostmask-based ignore rules.\n"
-            + "This is a best-effort fallback for older networks.");
+        MESSAGES.text("preferences.network.userLookups.enrichment.enabled.tooltip"));
 
     JCheckBox enrichmentWhoisFallbackEnabled =
-        new JCheckBox("Also use WHOIS fallback for account info (very slow)");
+        new JCheckBox(MESSAGES.text("preferences.network.userLookups.enrichment.whoisFallback"));
     enrichmentWhoisFallbackEnabled.setSelected(current.userInfoEnrichmentWhoisFallbackEnabled());
     enrichmentWhoisFallbackEnabled.setToolTipText(
-        "When enabled, IRCafe may occasionally send WHOIS to learn account login state/name and away message.\n"
-            + "This is slower and more likely to hit server rate limits. Recommended OFF by default.");
+        MESSAGES.text("preferences.network.userLookups.enrichment.whoisFallback.tooltip"));
 
     JCheckBox enrichmentPeriodicRefreshEnabled =
-        new JCheckBox("Periodic background refresh (slow scan)");
+        new JCheckBox(MESSAGES.text("preferences.network.userLookups.enrichment.periodicRefresh"));
     enrichmentPeriodicRefreshEnabled.setSelected(
         current.userInfoEnrichmentPeriodicRefreshEnabled());
     enrichmentPeriodicRefreshEnabled.setToolTipText(
-        "When enabled, IRCafe will periodically re-check a small number of nicks to detect changes.\n"
-            + "Use conservative intervals to avoid extra network load.");
+        MESSAGES.text("preferences.network.userLookups.enrichment.periodicRefresh.tooltip"));
 
     JButton enrichmentHelp =
         PreferencesUiSupport.whyHelpButton(
-            "Why do I need roster enrichment?",
-            "This is a best-effort fallback for older networks or edge cases where IRCv3 metadata isn't available.\n\n"
-                + "IRCafe can use rate-limited USERHOST to fill missing user info. Optionally it can also use WHOIS (much slower) to learn account/away details.\n\n"
-                + "On modern IRCv3 networks, you typically don't need this. Leave it OFF unless you have a specific reason.");
+            MESSAGES.text("preferences.network.userLookups.enrichment.help.title"),
+            MESSAGES.text("preferences.network.userLookups.enrichment.help.message"));
 
     JButton whoisHelp =
         PreferencesUiSupport.whyHelpButton(
-            "WHOIS fallback",
-            "WHOIS is the slowest and noisiest fallback. It can provide account and away information when IRCv3 isn't available, but it is easy to hit server throttles.\n\n"
-                + "Keep this OFF unless you're on a network that doesn't provide account info via IRCv3.");
+            MESSAGES.text("preferences.network.userLookups.enrichment.whoisHelp.title"),
+            MESSAGES.text("preferences.network.userLookups.enrichment.whoisHelp.message"));
 
     JButton refreshHelp =
         PreferencesUiSupport.whyHelpButton(
-            "Periodic background refresh",
-            "This periodically re-probes a small number of users to detect changes (e.g., account/away state) on networks that don't push updates.\n\n"
-                + "It's a slow scan by design: use high intervals and small batch sizes to avoid extra network load.");
+            MESSAGES.text("preferences.network.userLookups.enrichment.refreshHelp.title"),
+            MESSAGES.text("preferences.network.userLookups.enrichment.refreshHelp.message"));
 
     JTextArea enrichmentSummary = PreferencesUiSupport.subtleInfoText();
     enrichmentSummary.setBorder(BorderFactory.createEmptyBorder(0, 18, 0, 0));
@@ -193,81 +196,88 @@ public final class UserLookupsPanelSupport {
         PreferencesUiSupport.numberSpinner(
             current.userInfoEnrichmentUserhostMinIntervalSeconds(), 1, 300, 1, closeables);
     enrichmentUserhostMinIntervalSeconds.setToolTipText(
-        "Minimum seconds between USERHOST commands per server for enrichment.");
+        MESSAGES.text("preferences.network.userLookups.enrichment.userhost.minInterval.tooltip"));
 
     JSpinner enrichmentUserhostMaxPerMinute =
         PreferencesUiSupport.numberSpinner(
             current.userInfoEnrichmentUserhostMaxCommandsPerMinute(), 1, 60, 1, closeables);
     enrichmentUserhostMaxPerMinute.setToolTipText(
-        "Maximum USERHOST commands per minute per server for enrichment.");
+        MESSAGES.text("preferences.network.userLookups.enrichment.userhost.maxPerMinute.tooltip"));
 
     JSpinner enrichmentUserhostNickCooldownMinutes =
         PreferencesUiSupport.numberSpinner(
             current.userInfoEnrichmentUserhostNickCooldownMinutes(), 1, 1440, 1, closeables);
     enrichmentUserhostNickCooldownMinutes.setToolTipText(
-        "Cooldown in minutes before re-querying the same nick via USERHOST (enrichment).\n"
-            + "Higher values reduce network load.");
+        MESSAGES.text("preferences.network.userLookups.enrichment.userhost.nickCooldown.tooltip"));
 
     JSpinner enrichmentUserhostMaxNicksPerCommand =
         PreferencesUiSupport.numberSpinner(
             current.userInfoEnrichmentUserhostMaxNicksPerCommand(), 1, 5, 1, closeables);
     enrichmentUserhostMaxNicksPerCommand.setToolTipText(
-        "How many nicks to include per USERHOST command (servers typically allow up to 5).\n"
-            + "This applies to enrichment mode, separate from hostmask discovery.");
+        MESSAGES.text("preferences.network.userLookups.enrichment.userhost.maxNicks.tooltip"));
 
     JSpinner enrichmentWhoisMinIntervalSeconds =
         PreferencesUiSupport.numberSpinner(
             current.userInfoEnrichmentWhoisMinIntervalSeconds(), 5, 600, 5, closeables);
     enrichmentWhoisMinIntervalSeconds.setToolTipText(
-        "Minimum seconds between WHOIS commands per server (enrichment).\n"
-            + "Keep this high to avoid throttling.");
+        MESSAGES.text("preferences.network.userLookups.enrichment.whois.minInterval.tooltip"));
 
     JSpinner enrichmentWhoisNickCooldownMinutes =
         PreferencesUiSupport.numberSpinner(
             current.userInfoEnrichmentWhoisNickCooldownMinutes(), 1, 1440, 1, closeables);
     enrichmentWhoisNickCooldownMinutes.setToolTipText(
-        "Cooldown in minutes before re-WHOIS'ing the same nick.");
+        MESSAGES.text("preferences.network.userLookups.enrichment.whois.nickCooldown.tooltip"));
 
     JSpinner enrichmentPeriodicRefreshIntervalSeconds =
         PreferencesUiSupport.numberSpinner(
             current.userInfoEnrichmentPeriodicRefreshIntervalSeconds(), 30, 3600, 30, closeables);
     enrichmentPeriodicRefreshIntervalSeconds.setToolTipText(
-        "How often to run a slow scan tick (seconds).\n"
-            + "Higher values are safer. Example: 300 seconds (5 minutes).");
+        MESSAGES.text("preferences.network.userLookups.enrichment.refresh.interval.tooltip"));
 
     JSpinner enrichmentPeriodicRefreshNicksPerTick =
         PreferencesUiSupport.numberSpinner(
             current.userInfoEnrichmentPeriodicRefreshNicksPerTick(), 1, 20, 1, closeables);
     enrichmentPeriodicRefreshNicksPerTick.setToolTipText(
-        "How many nicks to probe per periodic tick.\nKeep this small (e.g., 1-3).");
+        MESSAGES.text("preferences.network.userLookups.enrichment.refresh.nicksPerTick.tooltip"));
 
     JPanel enrichmentAdvanced =
         new JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rowGaps(6, 6, 6, 10, 6, 6, 10, 6, 6)));
     enrichmentAdvanced.setOpaque(false);
-    JLabel userhostHdr = new JLabel("USERHOST tuning");
+    JLabel userhostHdr =
+        new JLabel(MESSAGES.text("preferences.network.userLookups.enrichment.userhost.section"));
     userhostHdr.setFont(userhostHdr.getFont().deriveFont(Font.BOLD));
     enrichmentAdvanced.add(userhostHdr, MigConstraints.span2GrowXMinWidth0Wrap());
-    enrichmentAdvanced.add(new JLabel("Min interval (sec):"));
+    enrichmentAdvanced.add(
+        new JLabel(MESSAGES.text("preferences.network.userLookups.field.minInterval")));
     enrichmentAdvanced.add(enrichmentUserhostMinIntervalSeconds, MigConstraints.width(110));
-    enrichmentAdvanced.add(new JLabel("Max cmd/min:"));
+    enrichmentAdvanced.add(
+        new JLabel(MESSAGES.text("preferences.network.userLookups.field.maxCmd")));
     enrichmentAdvanced.add(enrichmentUserhostMaxPerMinute, MigConstraints.width(110));
-    enrichmentAdvanced.add(new JLabel("Nick cooldown (min):"));
+    enrichmentAdvanced.add(
+        new JLabel(MESSAGES.text("preferences.network.userLookups.field.nickCooldown")));
     enrichmentAdvanced.add(enrichmentUserhostNickCooldownMinutes, MigConstraints.width(110));
-    enrichmentAdvanced.add(new JLabel("Max nicks/cmd:"));
+    enrichmentAdvanced.add(
+        new JLabel(MESSAGES.text("preferences.network.userLookups.field.maxNicksShort")));
     enrichmentAdvanced.add(enrichmentUserhostMaxNicksPerCommand, MigConstraints.width(110));
-    JLabel whoisHdr = new JLabel("WHOIS tuning");
+    JLabel whoisHdr =
+        new JLabel(MESSAGES.text("preferences.network.userLookups.enrichment.whois.section"));
     whoisHdr.setFont(whoisHdr.getFont().deriveFont(Font.BOLD));
     enrichmentAdvanced.add(whoisHdr, MigConstraints.span2GrowXMinWidth0Wrap());
-    enrichmentAdvanced.add(new JLabel("Min interval (sec):"));
+    enrichmentAdvanced.add(
+        new JLabel(MESSAGES.text("preferences.network.userLookups.field.minInterval")));
     enrichmentAdvanced.add(enrichmentWhoisMinIntervalSeconds, MigConstraints.width(110));
-    enrichmentAdvanced.add(new JLabel("Nick cooldown (min):"));
+    enrichmentAdvanced.add(
+        new JLabel(MESSAGES.text("preferences.network.userLookups.field.nickCooldown")));
     enrichmentAdvanced.add(enrichmentWhoisNickCooldownMinutes, MigConstraints.width(110));
-    JLabel refreshHdr = new JLabel("Periodic refresh tuning");
+    JLabel refreshHdr =
+        new JLabel(MESSAGES.text("preferences.network.userLookups.enrichment.refresh.section"));
     refreshHdr.setFont(refreshHdr.getFont().deriveFont(Font.BOLD));
     enrichmentAdvanced.add(refreshHdr, MigConstraints.span2GrowXMinWidth0Wrap());
-    enrichmentAdvanced.add(new JLabel("Interval (sec):"));
+    enrichmentAdvanced.add(
+        new JLabel(MESSAGES.text("preferences.network.userLookups.field.interval")));
     enrichmentAdvanced.add(enrichmentPeriodicRefreshIntervalSeconds, MigConstraints.width(110));
-    enrichmentAdvanced.add(new JLabel("Nicks per tick:"));
+    enrichmentAdvanced.add(
+        new JLabel(MESSAGES.text("preferences.network.userLookups.field.nicksPerTick")));
     enrichmentAdvanced.add(enrichmentPeriodicRefreshNicksPerTick, MigConstraints.width(110));
 
     Consumer<LookupRatePreset> applyLookupPreset =
@@ -326,7 +336,8 @@ public final class UserLookupsPanelSupport {
     Runnable updateHostmaskSummary =
         () -> {
           if (!userhostEnabled.isSelected()) {
-            hostmaskSummary.setText("Disabled");
+            hostmaskSummary.setText(
+                MESSAGES.text("preferences.network.userLookups.summary.disabled"));
             return;
           }
           int minInterval = PreferencesUiSupport.spinnerInt(userhostMinIntervalSeconds);
@@ -334,15 +345,19 @@ public final class UserLookupsPanelSupport {
           int cooldownMinutes = PreferencesUiSupport.spinnerInt(userhostNickCooldownMinutes);
           int maxNicks = PreferencesUiSupport.spinnerInt(userhostMaxNicksPerCommand);
           hostmaskSummary.setText(
-              String.format(
-                  "USERHOST ≤%d/min • min %ds • cooldown %dm • up to %d nicks/cmd",
-                  maxPerMinute, minInterval, cooldownMinutes, maxNicks));
+              MESSAGES.text(
+                  "preferences.network.userLookups.summary.userhost",
+                  maxPerMinute,
+                  minInterval,
+                  cooldownMinutes,
+                  maxNicks));
         };
 
     Runnable updateEnrichmentSummary =
         () -> {
           if (!enrichmentEnabled.isSelected()) {
-            enrichmentSummary.setText("Disabled");
+            enrichmentSummary.setText(
+                MESSAGES.text("preferences.network.userLookups.summary.disabled"));
             return;
           }
 
@@ -358,9 +373,12 @@ public final class UserLookupsPanelSupport {
                 PreferencesUiSupport.spinnerInt(enrichmentWhoisMinIntervalSeconds);
             int whoisCooldown = PreferencesUiSupport.spinnerInt(enrichmentWhoisNickCooldownMinutes);
             whoisSummary =
-                String.format("WHOIS min %ds, cooldown %dm", whoisMinInterval, whoisCooldown);
+                MESSAGES.text(
+                    "preferences.network.userLookups.summary.whois",
+                    whoisMinInterval,
+                    whoisCooldown);
           } else {
-            whoisSummary = "WHOIS off";
+            whoisSummary = MESSAGES.text("preferences.network.userLookups.summary.whoisOff");
           }
 
           String refreshSummary;
@@ -369,14 +387,18 @@ public final class UserLookupsPanelSupport {
                 PreferencesUiSupport.spinnerInt(enrichmentPeriodicRefreshIntervalSeconds);
             int refreshNicks =
                 PreferencesUiSupport.spinnerInt(enrichmentPeriodicRefreshNicksPerTick);
-            refreshSummary = String.format("Refresh %ds ×%d", refreshInterval, refreshNicks);
+            refreshSummary =
+                MESSAGES.text(
+                    "preferences.network.userLookups.summary.refresh",
+                    refreshInterval,
+                    refreshNicks);
           } else {
-            refreshSummary = "Refresh off";
+            refreshSummary = MESSAGES.text("preferences.network.userLookups.summary.refreshOff");
           }
 
           enrichmentSummary.setText(
-              String.format(
-                  "USERHOST ≤%d/min • min %ds • cooldown %dm • up to %d nicks/cmd\n%s • %s",
+              MESSAGES.text(
+                  "preferences.network.userLookups.summary.enrichment",
                   maxPerMinute,
                   minInterval,
                   cooldownMinutes,
@@ -536,9 +558,15 @@ public final class UserLookupsPanelSupport {
     lookupsOverview.add(userLookupsIntro, MigConstraints.growXMinWidth0Wrap());
     lookupsOverview.add(lookupPresetPanel, MigConstraints.growXMinWidth0Wrap());
 
-    lookupsTabs.addTab("Overview", PreferencesUiSupport.padSubTab(lookupsOverview));
-    lookupsTabs.addTab("Hostmask discovery", PreferencesUiSupport.padSubTab(hostmaskPanel));
-    lookupsTabs.addTab("Roster enrichment", PreferencesUiSupport.padSubTab(enrichmentPanel));
+    lookupsTabs.addTab(
+        MESSAGES.text("preferences.network.userLookups.tab.overview"),
+        PreferencesUiSupport.padSubTab(lookupsOverview));
+    lookupsTabs.addTab(
+        MESSAGES.text("preferences.network.userLookups.tab.hostmask"),
+        PreferencesUiSupport.padSubTab(hostmaskPanel));
+    lookupsTabs.addTab(
+        MESSAGES.text("preferences.network.userLookups.tab.enrichment"),
+        PreferencesUiSupport.padSubTab(enrichmentPanel));
 
     userLookupsPanel.add(lookupsTabs, MigConstraints.growXMinWidth0Wrap());
 
@@ -623,20 +651,20 @@ public final class UserLookupsPanelSupport {
   }
 
   private enum LookupRatePreset {
-    CONSERVATIVE("Conservative"),
-    BALANCED("Balanced"),
-    RAPID("Rapid"),
-    CUSTOM("Custom");
+    CONSERVATIVE("preferences.network.userLookups.preset.conservative"),
+    BALANCED("preferences.network.userLookups.preset.balanced"),
+    RAPID("preferences.network.userLookups.preset.rapid"),
+    CUSTOM("preferences.network.userLookups.preset.custom");
 
-    private final String label;
+    private final String messageKey;
 
-    LookupRatePreset(String label) {
-      this.label = label;
+    LookupRatePreset(String messageKey) {
+      this.messageKey = messageKey;
     }
 
     @Override
     public String toString() {
-      return label;
+      return MESSAGES.text(messageKey);
     }
   }
 

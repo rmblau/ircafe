@@ -30,4 +30,12 @@ class NotificationBackendModeTest {
         NotificationBackendMode.TWO_SLICES_ONLY,
         NotificationBackendMode.fromToken("two-slices-only"));
   }
+
+  @Test
+  void labelsResolveFromBundledUiMessages() {
+    assertEquals("Auto (Recommended)", NotificationBackendMode.AUTO.label());
+    assertEquals("Native only", NotificationBackendMode.NATIVE_ONLY.label());
+    assertEquals("Two-slices only", NotificationBackendMode.TWO_SLICES_ONLY.label());
+    assertEquals("Native only", NotificationBackendMode.NATIVE_ONLY.toString());
+  }
 }

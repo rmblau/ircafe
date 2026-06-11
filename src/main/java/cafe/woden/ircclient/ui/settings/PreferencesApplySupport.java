@@ -1,8 +1,10 @@
 package cafe.woden.ircclient.ui.settings;
 
+import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.ui.chat.NickColorSettings;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.appearance.AppearanceControlsSupport;
 import cafe.woden.ircclient.ui.settings.appearance.AppearancePreferencesSection;
 import cafe.woden.ircclient.ui.settings.appearance.AppearanceSettingsSelection;
@@ -49,6 +51,8 @@ import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ThemeTweakSettingsBus;
 import cafe.woden.ircclient.ui.settings.timestamp.TimestampControls;
 import cafe.woden.ircclient.ui.settings.timestamp.TimestampControlsSupport;
+import cafe.woden.ircclient.ui.settings.translation.TranslationControls;
+import cafe.woden.ircclient.ui.settings.translation.TranslationControlsSupport;
 import cafe.woden.ircclient.ui.settings.tray.TrayControls;
 import cafe.woden.ircclient.ui.settings.tray.TrayControlsSupport;
 import java.util.Map;
@@ -58,6 +62,8 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 
 final class PreferencesApplySupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private PreferencesApplySupport() {}
 
   static Snapshot read(ApplyRequest request) throws ApplyException {
@@ -121,6 +127,7 @@ final class PreferencesApplySupport {
         IrcEventNotificationsTabSupport.readSettings(request.ircEventNotifications());
     UserCommandAliasesControlsSupport.UserCommandAliasSettings userCommand =
         readUserCommand(request);
+    IrcProperties.Client.Translation translation = readTranslation(request);
     DiagnosticsControlsSupport.DiagnosticsSettings diagnostics =
         DiagnosticsControlsSupport.readSettings(request.diagnostics());
     boolean diagnosticsChanged =
@@ -163,6 +170,7 @@ final class PreferencesApplySupport {
         notification,
         ircEventNotification,
         userCommand,
+        translation,
         diagnostics,
         diagnosticsChanged,
         next,
@@ -236,9 +244,20 @@ final class PreferencesApplySupport {
         UserCommandAliasesControlsSupport.readSettings(request.userCommands());
     UserCommandAliasValidationError error = settings.validationError();
     if (error != null) {
-      throw new ApplyException("Invalid command alias", error.formatForDialog());
+      throw new ApplyException(
+          MESSAGES.text("preferences.commands.aliases.validation.dialog.title"),
+          error.formatForDialog());
     }
     return settings;
+  }
+
+  private static IrcProperties.Client.Translation readTranslation(ApplyRequest request)
+      throws ApplyException {
+    try {
+      return TranslationControlsSupport.readSettings(request.translation());
+    } catch (TranslationControlsSupport.TranslationSettingsException ex) {
+      throw new ApplyException(ex.title(), ex.getMessage());
+    }
   }
 
   private static UiSettings buildUiSettings(
@@ -385,6 +404,7 @@ final class PreferencesApplySupport {
       NotificationRulesControls notifications,
       IrcEventNotificationControls ircEventNotifications,
       UserCommandAliasesControls userCommands,
+      TranslationControls translation,
       DiagnosticsControls diagnostics,
       ChatBehaviorRuntimeConfigPort chatBehaviorConfig,
       DiagnosticsRuntimeConfigPort diagnosticsConfig) {}
@@ -412,6 +432,7 @@ final class PreferencesApplySupport {
       NotificationRulesControlsSupport.NotificationSettings notification,
       IrcEventNotificationsTabSupport.IrcEventNotificationSettings ircEventNotification,
       UserCommandAliasesControlsSupport.UserCommandAliasSettings userCommand,
+      IrcProperties.Client.Translation translation,
       DiagnosticsControlsSupport.DiagnosticsSettings diagnostics,
       boolean diagnosticsChanged,
       UiSettings next,

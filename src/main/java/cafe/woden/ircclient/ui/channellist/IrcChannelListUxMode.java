@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.channellist;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.util.MigConstraints;
 import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
 import cafe.woden.ircclient.ui.util.MigLayouts;
@@ -15,17 +16,17 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 
 final class IrcChannelListUxMode implements ChannelListUxMode {
-  private static final String DEFAULT_HINT =
-      "Use the refresh button to request /list (heavy) or the ALIS search button for filtered results.";
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+  private static final String DEFAULT_HINT = MESSAGES.text("channelList.irc.defaultHint");
   private static final ActionPresentation PRESENTATION =
       new ActionPresentation(
-          "Request full /list from server (heavy; confirmation required)",
-          "Run /list",
-          "Run filtered ALIS search (topic, min/max users, and display filters)",
-          "Run ALIS search",
+          MESSAGES.text("channelList.irc.action.fullList.tooltip"),
+          MESSAGES.text("channelList.irc.action.fullList.accessibleName"),
+          MESSAGES.text("channelList.irc.action.alis.tooltip"),
+          MESSAGES.text("channelList.irc.action.alis.accessibleName"),
           false,
-          "Run next Matrix /list page (uses next_batch from last response)",
-          "Run next page");
+          MESSAGES.text("channelList.action.nextPage.tooltip"),
+          MESSAGES.text("channelList.action.nextPage.accessibleName"));
 
   @Override
   public String defaultHint() {
@@ -53,21 +54,23 @@ final class IrcChannelListUxMode implements ChannelListUxMode {
     if (sid.isEmpty()) return;
 
     JTextField queryField = new JTextField(28);
-    JCheckBox includeTopic = new JCheckBox("Include topic matching (-topic)", true);
-    JCheckBox minEnabled = new JCheckBox("Minimum users (-min)");
+    JCheckBox includeTopic =
+        new JCheckBox(MESSAGES.text("channelList.irc.alis.includeTopic"), true);
+    JCheckBox minEnabled = new JCheckBox(MESSAGES.text("channelList.irc.alis.minUsers"));
     JSpinner minUsers = new JSpinner(new SpinnerNumberModel(10, 0, 1_000_000, 1));
-    JCheckBox maxEnabled = new JCheckBox("Maximum users (-max)");
+    JCheckBox maxEnabled = new JCheckBox(MESSAGES.text("channelList.irc.alis.maxUsers"));
     JSpinner maxUsers = new JSpinner(new SpinnerNumberModel(500, 0, 1_000_000, 1));
-    JCheckBox skipEnabled = new JCheckBox("Skip first results (-skip)");
+    JCheckBox skipEnabled = new JCheckBox(MESSAGES.text("channelList.irc.alis.skip"));
     JSpinner skipCount = new JSpinner(new SpinnerNumberModel(0, 0, 1_000_000, 1));
-    JCheckBox showModes = new JCheckBox("Show channel modes (-show m)", false);
-    JCheckBox showTopicSetter = new JCheckBox("Show topic setter (-show t)", false);
+    JCheckBox showModes = new JCheckBox(MESSAGES.text("channelList.irc.alis.showModes"), false);
+    JCheckBox showTopicSetter =
+        new JCheckBox(MESSAGES.text("channelList.irc.alis.showTopicSetter"), false);
     JComboBox<String> registrationScope =
         new JComboBox<>(
             new String[] {
-              "Any channel registration",
-              "Registered channels only (-show r)",
-              "Unregistered channels only (-show u)"
+              MESSAGES.text("channelList.irc.alis.registration.any"),
+              MESSAGES.text("channelList.irc.alis.registration.registeredOnly"),
+              MESSAGES.text("channelList.irc.alis.registration.unregisteredOnly")
             });
     JPanel showFlagsPanel = new JPanel(MigLayouts.fillX(MigLayoutConstraints.LEADING_GROW, "[]"));
     showFlagsPanel.add(showModes);
@@ -81,9 +84,9 @@ final class IrcChannelListUxMode implements ChannelListUxMode {
     skipEnabled.addActionListener(e -> skipCount.setEnabled(skipEnabled.isSelected()));
 
     JPanel form = new JPanel(MigLayouts.twoColumnForm(0, MigLayouts.rows(8, 6)));
-    form.add(new JLabel("Query pattern:"));
+    form.add(new JLabel(MESSAGES.text("channelList.irc.alis.field.query")));
     form.add(queryField, MigConstraints.growX());
-    form.add(new JLabel("Topic filter:"));
+    form.add(new JLabel(MESSAGES.text("channelList.irc.alis.field.topicFilter")));
     form.add(includeTopic, MigConstraints.growX());
     form.add(minEnabled);
     form.add(minUsers, MigConstraints.width(120));
@@ -91,16 +94,16 @@ final class IrcChannelListUxMode implements ChannelListUxMode {
     form.add(maxUsers, MigConstraints.width(120));
     form.add(skipEnabled);
     form.add(skipCount, MigConstraints.width(120));
-    form.add(new JLabel("Display extras:"));
+    form.add(new JLabel(MESSAGES.text("channelList.irc.alis.field.displayExtras")));
     form.add(showFlagsPanel, MigConstraints.growX());
-    form.add(new JLabel("Registration:"));
+    form.add(new JLabel(MESSAGES.text("channelList.irc.alis.field.registration")));
     form.add(registrationScope, MigConstraints.growX());
 
     int choice =
         JOptionPane.showConfirmDialog(
             context.ownerWindow(),
             form,
-            "Run ALIS Search",
+            MESSAGES.text("channelList.irc.alis.title"),
             JOptionPane.OK_CANCEL_OPTION,
             JOptionPane.PLAIN_MESSAGE);
     if (choice != JOptionPane.OK_OPTION) return;
@@ -135,7 +138,7 @@ final class IrcChannelListUxMode implements ChannelListUxMode {
     String cmd = buildAlisCommand(query, options);
 
     context.rememberRequestType(sid, ChannelListRequestType.ALIS);
-    context.beginList(sid, "Loading ALIS search results...");
+    context.beginList(sid, MESSAGES.text("channelList.irc.alis.loading"));
     context.emitRunCommand(cmd);
   }
 

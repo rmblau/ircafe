@@ -7,6 +7,7 @@ import cafe.woden.ircclient.model.LogKind;
 import cafe.woden.ircclient.model.RegexFlag;
 import cafe.woden.ircclient.model.RegexSpec;
 import cafe.woden.ircclient.model.TagSpec;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
@@ -47,11 +48,22 @@ public final class FilterRuleEntryDialog {
       FilterRule seed,
       Set<String> reservedNameKeys,
       String suggestedScope) {
+    return open(owner, title, seed, reservedNameKeys, suggestedScope, UiMessages.bundledDefaults());
+  }
+
+  public static Optional<FilterRule> open(
+      Window owner,
+      String title,
+      FilterRule seed,
+      Set<String> reservedNameKeys,
+      String suggestedScope,
+      UiMessages messages) {
+    UiMessages uiMessages = messages == null ? UiMessages.bundledDefaults() : messages;
     if (!SwingUtilities.isEventDispatchThread()) {
       final Optional<FilterRule>[] box = new Optional[] {Optional.empty()};
       try {
         SwingUtilities.invokeAndWait(
-            () -> box[0] = open(owner, title, seed, reservedNameKeys, suggestedScope));
+            () -> box[0] = open(owner, title, seed, reservedNameKeys, suggestedScope, uiMessages));
       } catch (Exception ignored) {
       }
       return box[0];
@@ -59,7 +71,9 @@ public final class FilterRuleEntryDialog {
 
     JDialog dlg =
         new JDialog(
-            owner, Objects.toString(title, "Filter Rule"), JDialog.ModalityType.APPLICATION_MODAL);
+            owner,
+            Objects.toString(title, uiMessages.text("filter.ruleDialog.title.default")),
+            JDialog.ModalityType.APPLICATION_MODAL);
     dlg.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
     dlg.setLayout(new BorderLayout(10, 10));
     ((JPanel) dlg.getContentPane()).setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
@@ -68,35 +82,41 @@ public final class FilterRuleEntryDialog {
     JTextField scope = new JTextField(24);
     JComboBox<FilterAction> action = new JComboBox<>(FilterAction.values());
     JComboBox<FilterDirection> direction = new JComboBox<>(FilterDirection.values());
-    JCheckBox enabled = new JCheckBox("Enabled");
+    JCheckBox enabled = new JCheckBox(uiMessages.text("filter.ruleDialog.enabled"));
 
     // Kinds
-    JCheckBox kindChat = new JCheckBox("CHAT");
-    JCheckBox kindAction = new JCheckBox("ACTION");
-    JCheckBox kindNotice = new JCheckBox("NOTICE");
-    JCheckBox kindStatus = new JCheckBox("STATUS");
-    JCheckBox kindError = new JCheckBox("ERROR");
-    JCheckBox kindPresence = new JCheckBox("PRESENCE");
-    JCheckBox kindSpoiler = new JCheckBox("SPOILER");
+    JCheckBox kindChat = new JCheckBox(uiMessages.text("filter.ruleDialog.kind.chat"));
+    JCheckBox kindAction = new JCheckBox(uiMessages.text("filter.ruleDialog.kind.action"));
+    JCheckBox kindNotice = new JCheckBox(uiMessages.text("filter.ruleDialog.kind.notice"));
+    JCheckBox kindStatus = new JCheckBox(uiMessages.text("filter.ruleDialog.kind.status"));
+    JCheckBox kindError = new JCheckBox(uiMessages.text("filter.ruleDialog.kind.error"));
+    JCheckBox kindPresence = new JCheckBox(uiMessages.text("filter.ruleDialog.kind.presence"));
+    JCheckBox kindSpoiler = new JCheckBox(uiMessages.text("filter.ruleDialog.kind.spoiler"));
 
     JTextField fromGlobs = new JTextField(24);
     JTextField tags = new JTextField(24);
 
     JTextField regex = new JTextField(24);
-    JCheckBox reI = new JCheckBox("i (case-insensitive)");
-    JCheckBox reM = new JCheckBox("m (multiline)");
-    JCheckBox reS = new JCheckBox("s (dotall)");
+    JCheckBox reI = new JCheckBox(uiMessages.text("filter.ruleDialog.regexFlag.caseInsensitive"));
+    JCheckBox reM = new JCheckBox(uiMessages.text("filter.ruleDialog.regexFlag.multiline"));
+    JCheckBox reS = new JCheckBox(uiMessages.text("filter.ruleDialog.regexFlag.dotall"));
     reI.setSelected(true); // user preference: default case-insensitive
 
-    name.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Unique rule name");
+    name.putClientProperty(
+        FlatClientProperties.PLACEHOLDER_TEXT,
+        uiMessages.text("filter.ruleDialog.placeholder.name"));
     scope.putClientProperty(
-        FlatClientProperties.PLACEHOLDER_TEXT, "Scope pattern (e.g. libera/#llamas, */status, *)");
+        FlatClientProperties.PLACEHOLDER_TEXT,
+        uiMessages.text("filter.ruleDialog.placeholder.scope"));
     fromGlobs.putClientProperty(
-        FlatClientProperties.PLACEHOLDER_TEXT, "Optional from: globs (comma/space separated)");
+        FlatClientProperties.PLACEHOLDER_TEXT,
+        uiMessages.text("filter.ruleDialog.placeholder.from"));
     tags.putClientProperty(
         FlatClientProperties.PLACEHOLDER_TEXT,
-        "Optional tags (e.g. irc_in+irc_privmsg, !irc_notice, re:^irc_)");
-    regex.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Optional text regex");
+        uiMessages.text("filter.ruleDialog.placeholder.tags"));
+    regex.putClientProperty(
+        FlatClientProperties.PLACEHOLDER_TEXT,
+        uiMessages.text("filter.ruleDialog.placeholder.textRegex"));
 
     if (seed != null) {
       name.setText(Objects.toString(seed.name(), ""));
@@ -146,8 +166,8 @@ public final class FilterRuleEntryDialog {
     JLabel error = new JLabel(" ");
     error.putClientProperty(FlatClientProperties.STYLE, "foreground: #C62828");
 
-    JButton ok = new JButton("OK");
-    JButton cancel = new JButton("Cancel");
+    JButton ok = new JButton(uiMessages.text("common.button.ok"));
+    JButton cancel = new JButton(uiMessages.text("common.button.cancel"));
     ok.putClientProperty(FlatClientProperties.BUTTON_TYPE, "primary");
 
     JPanel form = new JPanel(new GridBagLayout());
@@ -160,28 +180,28 @@ public final class FilterRuleEntryDialog {
     int row = 0;
     g.gridx = 0;
     g.gridy = row;
-    form.add(new JLabel("Name"), g);
+    form.add(new JLabel(uiMessages.text("filter.ruleDialog.field.name")), g);
     g.gridx = 1;
     form.add(name, g);
 
     row++;
     g.gridx = 0;
     g.gridy = row;
-    form.add(new JLabel("Scope"), g);
+    form.add(new JLabel(uiMessages.text("filter.ruleDialog.field.scope")), g);
     g.gridx = 1;
     form.add(scope, g);
 
     row++;
     g.gridx = 0;
     g.gridy = row;
-    form.add(new JLabel("Action"), g);
+    form.add(new JLabel(uiMessages.text("filter.ruleDialog.field.action")), g);
     g.gridx = 1;
     form.add(action, g);
 
     row++;
     g.gridx = 0;
     g.gridy = row;
-    form.add(new JLabel("Direction"), g);
+    form.add(new JLabel(uiMessages.text("filter.ruleDialog.field.direction")), g);
     g.gridx = 1;
     JPanel dirRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
     dirRow.add(direction);
@@ -191,7 +211,7 @@ public final class FilterRuleEntryDialog {
     row++;
     g.gridx = 0;
     g.gridy = row;
-    form.add(new JLabel("Kinds"), g);
+    form.add(new JLabel(uiMessages.text("filter.ruleDialog.field.kinds")), g);
     g.gridx = 1;
     JPanel kinds = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
     kinds.add(kindChat);
@@ -206,21 +226,21 @@ public final class FilterRuleEntryDialog {
     row++;
     g.gridx = 0;
     g.gridy = row;
-    form.add(new JLabel("From"), g);
+    form.add(new JLabel(uiMessages.text("filter.ruleDialog.field.from")), g);
     g.gridx = 1;
     form.add(fromGlobs, g);
 
     row++;
     g.gridx = 0;
     g.gridy = row;
-    form.add(new JLabel("Tags"), g);
+    form.add(new JLabel(uiMessages.text("filter.ruleDialog.field.tags")), g);
     g.gridx = 1;
     form.add(tags, g);
 
     row++;
     g.gridx = 0;
     g.gridy = row;
-    form.add(new JLabel("Text"), g);
+    form.add(new JLabel(uiMessages.text("filter.ruleDialog.field.text")), g);
     g.gridx = 1;
     JPanel reRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
     reRow.add(regex);
@@ -257,17 +277,17 @@ public final class FilterRuleEntryDialog {
           String re = Objects.toString(regex.getText(), "").trim();
 
           if (n.isEmpty()) {
-            error.setText("Name is required.");
+            error.setText(uiMessages.text("filter.ruleDialog.validation.nameRequired"));
             ok.setEnabled(false);
             return;
           }
           if (reservedNameKeys != null && reservedNameKeys.contains(nKey)) {
-            error.setText("Name already exists.");
+            error.setText(uiMessages.text("filter.ruleDialog.validation.nameExists"));
             ok.setEnabled(false);
             return;
           }
           if (sc.isEmpty()) {
-            error.setText("Scope is required.");
+            error.setText(uiMessages.text("filter.ruleDialog.validation.scopeRequired"));
             ok.setEnabled(false);
             return;
           }
@@ -276,18 +296,20 @@ public final class FilterRuleEntryDialog {
               Pattern.compile(
                   re, toPatternFlags(reI.isSelected(), reM.isSelected(), reS.isSelected()));
             } catch (PatternSyntaxException ex) {
-              error.setText("Invalid regex: " + sanitize(ex.getDescription()));
+              error.setText(
+                  uiMessages.text(
+                      "filter.ruleDialog.validation.invalidRegex", sanitize(ex.getDescription())));
               ok.setEnabled(false);
               return;
             } catch (Exception ex) {
-              error.setText("Invalid regex.");
+              error.setText(uiMessages.text("filter.ruleDialog.validation.invalidRegex.generic"));
               ok.setEnabled(false);
               return;
             }
           }
 
           String tagExpr = Objects.toString(tags.getText(), "").trim();
-          String tagErr = validateTagsExpr(tagExpr);
+          String tagErr = validateTagsExpr(tagExpr, uiMessages);
           if (tagErr != null) {
             error.setText(tagErr);
             ok.setEnabled(false);
@@ -379,7 +401,7 @@ public final class FilterRuleEntryDialog {
     return result[0];
   }
 
-  private static String validateTagsExpr(String expr) {
+  private static String validateTagsExpr(String expr, UiMessages messages) {
     String s = Objects.toString(expr, "").trim();
     if (s.isEmpty()) return null;
 
@@ -410,9 +432,10 @@ public final class FilterRuleEntryDialog {
         }
       }
     } catch (java.util.regex.PatternSyntaxException ex) {
-      return "Invalid tag regex: " + sanitize(ex.getDescription());
+      return messages.text(
+          "filter.ruleDialog.validation.invalidTagRegex", sanitize(ex.getDescription()));
     } catch (Exception ex) {
-      return "Invalid tags.";
+      return messages.text("filter.ruleDialog.validation.invalidTags");
     }
     return null;
   }

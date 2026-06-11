@@ -90,7 +90,8 @@ public class NickColorService {
     String n = nickLower == null ? "" : nickLower.trim().toLowerCase(Locale.ROOT);
     if (n.isEmpty()) return;
 
-    Color bg = StyleConstants.getBackground(attrs);
+    Color bg = ChatStyles.definedBackground(attrs);
+    if (bg == null) bg = ChatStyles.textSurfaceBackground(attrs);
     if (bg == null) bg = UIManager.getColor(UiColorKeys.TEXT_PANE_BACKGROUND);
     if (bg == null) bg = Color.WHITE;
 

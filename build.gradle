@@ -107,6 +107,7 @@ dependencies {
     implementation "com.github.weisj:darklaf-core:${darklafVersion}"
 
     implementation lib('autocomplete')
+    implementation lib('lingua')
     implementation(lib('languageToolEn')) {
         exclude group: "com.sun.xml.bind", module: "jaxb-core"
         exclude group: "com.sun.xml.bind", module: "jaxb-impl"

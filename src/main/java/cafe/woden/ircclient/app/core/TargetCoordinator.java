@@ -908,6 +908,8 @@ public class TargetCoordinator implements ActiveTargetPort {
       statusBarChannel = "Notifications";
     } else if (target.isChannelList()) {
       statusBarChannel = "Channel List";
+    } else if (target.isMemoServ()) {
+      statusBarChannel = "MemoServ";
     } else if (target.isWeechatFilters()) {
       statusBarChannel = "Filters";
     } else if (target.isIgnores()) {

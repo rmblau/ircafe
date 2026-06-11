@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.appearance;
 
 import cafe.woden.ircclient.config.properties.UiProperties;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.ColorSwatch;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorPickerDialogSupport;
@@ -28,6 +29,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 final class AppearanceAccentControlsFactory {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private AppearanceAccentControlsFactory() {}
 
   static AccentControls build(ThemeAccentSettings current) {
@@ -44,7 +47,7 @@ final class AppearanceAccentControlsFactory {
   private static JComboBox<AccentPreset> createPresetCombo() {
     JComboBox<AccentPreset> preset = new JComboBox<>(AccentPreset.values());
     preset.setRenderer(new AccentPresetRenderer());
-    preset.setToolTipText("Quick accent presets. 'Custom…' opens a color picker.");
+    preset.setToolTipText(MESSAGES.text("preferences.appearance.accent.preset.tooltip"));
     return preset;
   }
 
@@ -61,7 +64,7 @@ final class AppearanceAccentControlsFactory {
     strength.setMajorTickSpacing(25);
     strength.setMinorTickSpacing(5);
     strength.setSnapToTicks(false);
-    strength.setToolTipText("0 = theme default, 100 = fully your chosen accent");
+    strength.setToolTipText(MESSAGES.text("preferences.appearance.accent.strength.tooltip"));
     return strength;
   }
 
@@ -113,28 +116,28 @@ final class AppearanceAccentControlsFactory {
 
   private static String chipText(AccentPreset selected) {
     return switch (selected) {
-      case IRCAFE_COBALT -> "Cobalt";
-      case INDIGO -> "Indigo";
-      case VIOLET -> "Violet";
-      case CUSTOM -> "Custom";
-      case THEME_DEFAULT -> "Theme";
+      case IRCAFE_COBALT -> MESSAGES.text("preferences.appearance.accent.chip.cobalt");
+      case INDIGO -> MESSAGES.text("preferences.appearance.accent.chip.indigo");
+      case VIOLET -> MESSAGES.text("preferences.appearance.accent.chip.violet");
+      case CUSTOM -> MESSAGES.text("preferences.appearance.accent.chip.custom");
+      case THEME_DEFAULT -> MESSAGES.text("preferences.appearance.accent.chip.theme");
     };
   }
 
   private static final class AccentControlBuilder {
-    private final JCheckBox enabled = new JCheckBox("Override theme accent");
+    private final JCheckBox enabled =
+        new JCheckBox(MESSAGES.text("preferences.appearance.accent.override"));
     private final JComboBox<AccentPreset> preset = createPresetCombo();
     private final JTextField hex;
-    private final JButton pick = new JButton("Pick…");
-    private final JButton clear = new JButton("Clear");
+    private final JButton pick = new JButton(MESSAGES.text("common.button.pick.ellipsis"));
+    private final JButton clear = new JButton(MESSAGES.text("common.button.clear"));
     private final JSlider strength;
     private final JLabel chip = createChipLabel();
     private final AtomicBoolean adjusting = new AtomicBoolean(false);
     private final AtomicReference<AccentPreset> lastPreset = new AtomicReference<>();
 
     private AccentControlBuilder(ThemeAccentSettings settings) {
-      enabled.setToolTipText(
-          "If enabled, your chosen accent is blended into the current theme. Changes preview live; Apply/OK saves.");
+      enabled.setToolTipText(MESSAGES.text("preferences.appearance.accent.override.tooltip"));
       enabled.setSelected(settings.enabled());
       hex = createHexField(settings);
       strength = createStrengthSlider(settings);
@@ -189,7 +192,8 @@ final class AppearanceAccentControlsFactory {
     }
 
     private void choosePickedAccent() {
-      Color chosen = chooseAccentColor(pick, "Choose Accent Color");
+      Color chosen =
+          chooseAccentColor(pick, MESSAGES.text("preferences.appearance.accent.chooseColor.title"));
       if (chosen != null) {
         hex.setText(SettingsColorSupport.toHex(chosen));
         updatePickIcon();
@@ -254,7 +258,9 @@ final class AppearanceAccentControlsFactory {
 
     private void chooseCustomPresetColor(
         AccentPreset previous, boolean previousEnabled, String previousHex) {
-      Color chosen = chooseAccentColor(preset, "Choose Accent Color");
+      Color chosen =
+          chooseAccentColor(
+              preset, MESSAGES.text("preferences.appearance.accent.chooseColor.title"));
       if (chosen == null) {
         restorePreviousPreset(previous, previousEnabled, previousHex);
         return;
@@ -298,8 +304,8 @@ final class AppearanceAccentControlsFactory {
         pick.setToolTipText(SettingsColorSupport.toHex(color));
       } else {
         pick.setIcon(null);
-        pick.setText("Pick…");
-        pick.setToolTipText("Pick an accent color");
+        pick.setText(MESSAGES.text("common.button.pick.ellipsis"));
+        pick.setToolTipText(MESSAGES.text("preferences.appearance.accent.pick.tooltip"));
       }
     }
 
@@ -313,7 +319,9 @@ final class AppearanceAccentControlsFactory {
 
     private AccentPreview themePreview() {
       return new AccentPreview(
-          fallbackAccentColor(), "Theme", "Theme accent • " + strength.getValue() + "%");
+          fallbackAccentColor(),
+          MESSAGES.text("preferences.appearance.accent.chip.theme"),
+          MESSAGES.text("preferences.appearance.accent.tooltip.theme", strength.getValue()));
     }
 
     private AccentPreview overridePreview() {
@@ -331,11 +339,12 @@ final class AppearanceAccentControlsFactory {
         selected = AccentPreset.fromHexOrCustom(ThemeAccentSettings.normalizeHexOrNull(raw));
       }
       String tooltip =
-          "Accent override: "
-              + (chosen != null ? SettingsColorSupport.toHex(chosen) : "(invalid)")
-              + " • "
-              + strength.getValue()
-              + "%";
+          MESSAGES.text(
+              "preferences.appearance.accent.tooltip.override",
+              chosen != null
+                  ? SettingsColorSupport.toHex(chosen)
+                  : MESSAGES.text("preferences.appearance.accent.invalid"),
+              strength.getValue());
       return new AccentPreview(background, chipText(selected), tooltip);
     }
 
@@ -370,12 +379,22 @@ final class AppearanceAccentControlsFactory {
       strength.setEnabled(active);
       if (!active) {
         pick.setIcon(null);
-        pick.setText("Pick…");
+        pick.setText(MESSAGES.text("common.button.pick.ellipsis"));
       } else {
         updatePickIcon();
       }
       updateChip();
     }
+  }
+
+  private static String labelFor(AccentPreset presetValue) {
+    return switch (presetValue) {
+      case THEME_DEFAULT -> MESSAGES.text("preferences.appearance.accent.preset.themeDefault");
+      case IRCAFE_COBALT -> MESSAGES.text("preferences.appearance.accent.preset.ircafeCobalt");
+      case INDIGO -> MESSAGES.text("preferences.appearance.accent.preset.indigo");
+      case VIOLET -> MESSAGES.text("preferences.appearance.accent.preset.violet");
+      case CUSTOM -> MESSAGES.text("preferences.appearance.accent.preset.custom");
+    };
   }
 
   private static final class AccentPresetRenderer extends DefaultListCellRenderer {
@@ -386,7 +405,7 @@ final class AppearanceAccentControlsFactory {
           (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
       AccentPreset presetValue =
           (value instanceof AccentPreset typed) ? typed : AccentPreset.THEME_DEFAULT;
-      label.setText(presetValue.label);
+      label.setText(labelFor(presetValue));
       Color color = presetValue.colorOrNull();
       label.setIcon(color != null ? new ColorSwatch(color, 12, 12) : null);
       return label;

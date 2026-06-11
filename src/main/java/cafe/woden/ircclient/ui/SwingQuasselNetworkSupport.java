@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui;
 
 import cafe.woden.ircclient.irc.quassel.control.QuasselCoreControlPort;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.servertree.resolver.ServerTreeQuasselNetworkParentResolver;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -10,22 +11,35 @@ import java.util.Objects;
 
 /** Shared Quassel network rendering and token helpers for Swing UI adapters. */
 final class SwingQuasselNetworkSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private SwingQuasselNetworkSupport() {}
 
   static String renderChoiceLabel(QuasselCoreControlPort.QuasselCoreNetworkSummary summary) {
-    if (summary == null) return "(unknown network)";
+    if (summary == null) return MESSAGES.text("quassel.networkChoice.unknown");
     String name = Objects.toString(summary.networkName(), "").trim();
-    if (name.isEmpty()) name = "network-" + summary.networkId();
+    if (name.isEmpty()) {
+      name = MESSAGES.text("quassel.networkChoice.fallbackName", summary.networkId());
+    }
     String host = Objects.toString(summary.serverHost(), "").trim();
     int port = summary.serverPort();
     StringBuilder line = new StringBuilder();
     line.append("[").append(summary.networkId()).append("] ").append(name);
-    line.append(" - ").append(summary.connected() ? "connected" : "disconnected");
-    if (!summary.enabled()) line.append(", disabled");
+    line.append(" - ")
+        .append(
+            summary.connected()
+                ? MESSAGES.text("quassel.networkChoice.state.connected")
+                : MESSAGES.text("quassel.networkChoice.state.disconnected"));
+    if (!summary.enabled()) {
+      line.append(", ").append(MESSAGES.text("quassel.networkChoice.state.disabled"));
+    }
     if (!host.isEmpty() && port > 0) {
       line.append(" @ ").append(host).append(":").append(port);
-      line.append(summary.useTls() ? " tls" : " plain");
+      line.append(' ')
+          .append(
+              summary.useTls()
+                  ? MESSAGES.text("quassel.networkChoice.transport.tls")
+                  : MESSAGES.text("quassel.networkChoice.transport.plain"));
     }
     return line.toString();
   }

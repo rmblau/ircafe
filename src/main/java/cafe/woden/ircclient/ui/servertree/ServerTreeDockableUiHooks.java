@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.servertree;
 
 import cafe.woden.ircclient.app.api.ConnectionState;
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.servertree.model.ServerNodes;
 import cafe.woden.ircclient.ui.servertree.model.ServerTreeNodeData;
 import cafe.woden.ircclient.ui.servertree.request.ServerTreeRequestEmitter;
@@ -19,6 +20,8 @@ import javax.swing.tree.TreePath;
 
 /** Default {@link ServerTreeUiHooks} implementation used by {@link ServerTreeDockable}. */
 public final class ServerTreeDockableUiHooks implements ServerTreeUiHooks {
+
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private final Component dialogOwner;
   private final Map<String, ServerNodes> servers;
@@ -134,23 +137,27 @@ public final class ServerTreeDockableUiHooks implements ServerTreeUiHooks {
 
     Window owner = SwingUtilities.getWindowAncestor(dialogOwner);
     String pretty = (label == null || label.isBlank()) ? targetRef.target() : label;
-    String scope = targetRef.isStatus() ? "status" : "channel";
-
-    String message =
-        "Clear log for "
-            + scope
-            + " \""
-            + pretty
-            + "\"?\n\n"
-            + "This will permanently delete the persisted chat history for this target.";
+    String scope =
+        targetRef.isStatus()
+            ? message("serverTree.clearLog.scope.status")
+            : message("serverTree.clearLog.scope.channel");
+    String prompt = message("serverTree.clearLog.confirm.message", scope, pretty);
 
     int choice =
         JOptionPane.showConfirmDialog(
-            owner, message, "Clear Log", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            owner,
+            prompt,
+            message("serverTree.clearLog.confirm.title"),
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE);
 
     if (choice == JOptionPane.YES_OPTION) {
       requestEmitter.emitClearLog(targetRef);
     }
+  }
+
+  private static String message(String key, Object... args) {
+    return MESSAGES.text(key, args);
   }
 
   @Override
@@ -171,17 +178,13 @@ public final class ServerTreeDockableUiHooks implements ServerTreeUiHooks {
     Window owner = SwingUtilities.getWindowAncestor(dialogOwner);
     String pretty =
         (channelLabel == null || channelLabel.isBlank()) ? channelRef.target() : channelLabel;
-    String message =
-        "Close and PART channel \""
-            + pretty
-            + "\"?\n\n"
-            + "This will send PART if connected, then remove the channel from the server tree.";
+    String prompt = message("serverTree.closeChannel.confirm.message", pretty);
 
     int choice =
         JOptionPane.showConfirmDialog(
             owner,
-            message,
-            "Close Channel",
+            prompt,
+            message("serverTree.closeChannel.confirm.title"),
             JOptionPane.YES_NO_OPTION,
             JOptionPane.WARNING_MESSAGE);
     return choice == JOptionPane.YES_OPTION;

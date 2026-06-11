@@ -1,10 +1,13 @@
 package cafe.woden.ircclient.ui.servers;
 
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.util.Objects;
 
 /** Pure assembly rules for building a server config from the server-editor form values. */
 final class ServerEditorServerBuildPolicy {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private ServerEditorServerBuildPolicy() {}
 
   static IrcProperties.Server build(ServerBuildRequest request) {
@@ -18,7 +21,8 @@ final class ServerEditorServerBuildPolicy {
     ServerEditorAuthPolicy.validateMatrixCredentials(
         request.profile(), request.matrixAuthMode(), serverPassword, matrixAuthUser);
     if (containsCrlf(serverPassword)) {
-      throw new IllegalArgumentException("Server/Core password must not contain newlines");
+      throw new IllegalArgumentException(
+          MESSAGES.text("servers.editor.validation.serverPasswordNoNewlines"));
     }
 
     String nick =

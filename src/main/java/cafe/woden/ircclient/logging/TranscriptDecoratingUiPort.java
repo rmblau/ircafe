@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.logging;
 
+import cafe.woden.ircclient.app.api.MessageTranslation;
 import cafe.woden.ircclient.app.api.PresenceEvent;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.api.UiPortDecorator;
@@ -261,6 +262,12 @@ final class TranscriptDecoratingUiPort extends UiPortDecorator {
   public void removeMessageReaction(
       TargetRef target, Instant at, String fromNick, String targetMessageId, String reaction) {
     transcriptPort.removeMessageReaction(target, at, fromNick, targetMessageId, reaction);
+  }
+
+  @Override
+  public boolean applyMessageTranslation(
+      TargetRef target, Instant at, MessageTranslation translation) {
+    return transcriptPort.applyMessageTranslation(target, at, translation);
   }
 
   @Override

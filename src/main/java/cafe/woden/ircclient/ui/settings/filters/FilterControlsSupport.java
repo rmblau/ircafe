@@ -6,6 +6,7 @@ import cafe.woden.ircclient.model.FilterPlaceholderRanges;
 import cafe.woden.ircclient.ui.chat.transcript.rebuild.TranscriptRebuildService;
 import cafe.woden.ircclient.ui.filter.FilterSettings;
 import cafe.woden.ircclient.ui.filter.FilterSettingsBus;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import java.awt.Window;
 import java.util.List;
@@ -14,6 +15,8 @@ import javax.swing.JCheckBox;
 import javax.swing.JSpinner;
 
 public final class FilterControlsSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private FilterControlsSupport() {}
 
   public static FilterControls buildControls(
@@ -26,14 +29,16 @@ public final class FilterControlsSupport {
       TranscriptRebuildService transcriptRebuildService) {
     Objects.requireNonNull(current);
 
-    JCheckBox enabledByDefault = new JCheckBox("Enable filters by default");
+    JCheckBox enabledByDefault =
+        new JCheckBox(MESSAGES.text("preferences.filters.control.enableByDefault"));
     enabledByDefault.setSelected(current.filtersEnabledByDefault());
 
     JCheckBox placeholdersEnabledByDefault =
-        new JCheckBox("Enable \"Filtered (N)\" placeholders by default");
+        new JCheckBox(MESSAGES.text("preferences.filters.control.placeholdersByDefault"));
     placeholdersEnabledByDefault.setSelected(current.placeholdersEnabledByDefault());
 
-    JCheckBox placeholdersCollapsedByDefault = new JCheckBox("Collapse placeholders by default");
+    JCheckBox placeholdersCollapsedByDefault =
+        new JCheckBox(MESSAGES.text("preferences.filters.control.collapsePlaceholdersByDefault"));
     placeholdersCollapsedByDefault.setSelected(current.placeholdersCollapsedByDefault());
 
     JSpinner previewLines =
@@ -52,7 +57,7 @@ public final class FilterControlsSupport {
             50,
             closeables);
     maxLinesPerRun.setToolTipText(
-        "Max hidden lines represented in a single placeholder run. 0 = unlimited.");
+        MESSAGES.text("preferences.filters.tooltip.maxHiddenLinesPerRun"));
 
     JSpinner tooltipMaxTags =
         PreferencesUiSupport.numberSpinner(
@@ -61,13 +66,13 @@ public final class FilterControlsSupport {
             500,
             1,
             closeables);
-    tooltipMaxTags.setToolTipText("Max tags shown in placeholder/hint tooltips. 0 = hide tags.");
+    tooltipMaxTags.setToolTipText(MESSAGES.text("preferences.filters.tooltip.tooltipTagLimit"));
 
     JCheckBox historyPlaceholdersEnabledByDefault =
-        new JCheckBox("Show placeholders for filtered history loads");
+        new JCheckBox(MESSAGES.text("preferences.filters.control.historyPlaceholders"));
     historyPlaceholdersEnabledByDefault.setSelected(current.historyPlaceholdersEnabledByDefault());
     historyPlaceholdersEnabledByDefault.setToolTipText(
-        "If off, filtered lines loaded from history are silently hidden (no placeholder/hint rows).");
+        MESSAGES.text("preferences.filters.tooltip.historyPlaceholders"));
 
     JSpinner historyMaxRuns =
         PreferencesUiSupport.numberSpinner(
@@ -77,7 +82,7 @@ public final class FilterControlsSupport {
             5_000,
             1,
             closeables);
-    historyMaxRuns.setToolTipText("Max placeholder runs per history load batch. 0 = unlimited.");
+    historyMaxRuns.setToolTipText(MESSAGES.text("preferences.filters.tooltip.historyRunCap"));
 
     try {
       historyMaxRuns.setEnabled(historyPlaceholdersEnabledByDefault.isSelected());
@@ -87,7 +92,7 @@ public final class FilterControlsSupport {
     }
 
     FilterOverrideControls overrideControls =
-        FilterOverrideControlsSupport.buildControls(current, owner);
+        FilterOverrideControlsSupport.buildControls(current, owner, MESSAGES);
     FilterRuleControls ruleControls =
         FilterRuleControlsSupport.buildControls(
             current,

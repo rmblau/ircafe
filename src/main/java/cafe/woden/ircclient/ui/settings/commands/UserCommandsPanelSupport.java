@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings.commands;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.util.MigConstraints;
 import cafe.woden.ircclient.ui.util.MigLayoutConstraints;
@@ -9,24 +10,25 @@ import javax.swing.JScrollPane;
 import javax.swing.ScrollPaneConstants;
 
 public final class UserCommandsPanelSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private UserCommandsPanelSupport() {}
 
   public static JPanel buildPanel(UserCommandAliasesControls controls) {
     JPanel panel = new JPanel(MigLayouts.singleColumnFill(12, "[]8[]6[]8[grow,fill]8[]"));
 
-    panel.add(PreferencesUiSupport.tabTitle("Commands"), MigConstraints.growXMinWidth0Wrap());
     panel.add(
-        PreferencesUiSupport.sectionTitle("User command aliases"),
+        PreferencesUiSupport.tabTitle(MESSAGES.text("preferences.commands.title")),
         MigConstraints.growXMinWidth0Wrap());
     panel.add(
-        PreferencesUiSupport.helpText(
-            "Define custom /commands that expand before built-in parsing.\n"
-                + "Placeholders: %1..%9 (positional), %1- (rest from arg), %* (all args), &1..&9 (from end), %c (channel), %t (target), %s/%e (server), %n (nick).\n"
-                + "HexChat import maps %t (time), %m and %v into IRCafe-compatible placeholders.\n"
-                + "Multi-command expansion: separate commands with ';' or new lines."),
+        PreferencesUiSupport.sectionTitle(MESSAGES.text("preferences.commands.aliases.section")),
+        MigConstraints.growXMinWidth0Wrap());
+    panel.add(
+        PreferencesUiSupport.helpText(MESSAGES.text("preferences.commands.aliases.help")),
         MigConstraints.growXMinWidth0Wrap());
 
-    JPanel behavior = PreferencesUiSupport.captionPanel("Behavior");
+    JPanel behavior =
+        PreferencesUiSupport.captionPanel(MESSAGES.text("preferences.commands.behavior.section"));
     behavior.add(controls.unknownCommandAsRaw(), MigConstraints.growXMinWidth0Wrap());
     panel.add(behavior, MigConstraints.growXMinWidth0Wrap());
 
@@ -49,7 +51,7 @@ public final class UserCommandsPanelSupport {
 
     JPanel aliasList =
         PreferencesUiSupport.captionPanel(
-            "Alias list",
+            MESSAGES.text("preferences.commands.aliases.list.section"),
             MigLayoutConstraints.INSETS_0_FILL_WRAP_1,
             MigLayoutConstraints.GROW_FILL,
             MigLayoutConstraints.ROW_6_GROW_FILL);
@@ -59,7 +61,8 @@ public final class UserCommandsPanelSupport {
 
     JPanel editor =
         PreferencesUiSupport.captionPanel(
-            "Expansion editor", MigLayouts.singleColumn(MigLayouts.rows(2, 6)));
+            MESSAGES.text("preferences.commands.aliases.editor.section"),
+            MigLayouts.singleColumn(MigLayouts.rows(2, 6)));
     editor.add(controls.hint(), MigConstraints.growXMinWidth0Wrap());
     editor.add(templateScroll, MigConstraints.growXMinWidthHeightWrap(0, 140));
     panel.add(editor, MigConstraints.growXMinWidth0Wrap());

@@ -44,6 +44,9 @@ public final class ServerTreeEnsureNodeParentResolver {
     if (ref.isInterceptor()) {
       return nodes.interceptorsNode() != null ? nodes.interceptorsNode() : serverNode;
     }
+    if (ref.isMemoServ()) {
+      return otherNode != null ? otherNode : serverNode;
+    }
     if (ref.isChannelList() || ref.isDccTransfers()) {
       return serverNode;
     }

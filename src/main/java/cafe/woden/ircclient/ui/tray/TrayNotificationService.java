@@ -5,6 +5,7 @@ import cafe.woden.ircclient.app.api.TrayNotificationsPort;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.notify.api.NotificationSoundPort;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.NotificationBackendMode;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
@@ -64,6 +65,7 @@ import org.springframework.stereotype.Component;
 @InterfaceLayer
 public class TrayNotificationService implements TrayNotificationsPort {
   private static final Logger log = LoggerFactory.getLogger(TrayNotificationService.class);
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private static final Duration CONTENT_DEDUPE_WINDOW = Duration.ofSeconds(2);
   private static final Duration RATE_WINDOW = Duration.ofSeconds(10);
@@ -162,7 +164,10 @@ public class TrayNotificationService implements TrayNotificationsPort {
   public void notifyHighlight(String serverId, String channel, String fromNick, String message) {
     UiSettings s = settingsBus.get();
     if (!s.trayEnabled() || !s.trayNotifyHighlights()) return;
-    String title = "Highlight" + (channel != null && !channel.isBlank() ? " in " + channel : "");
+    String title =
+        channel != null && !channel.isBlank()
+            ? MESSAGES.text("tray.notification.highlight.title.channel", channel)
+            : MESSAGES.text("tray.notification.highlight.title");
     String body =
         (fromNick != null && !fromNick.isBlank() ? fromNick + ": " : "") + safeBody(message);
     TargetRef target = safeTargetRef(serverId, channel, "status");
@@ -175,7 +180,10 @@ public class TrayNotificationService implements TrayNotificationsPort {
   public void notifyPrivateMessage(String serverId, String fromNick, String message) {
     UiSettings s = settingsBus.get();
     if (!s.trayEnabled() || !s.trayNotifyPrivateMessages()) return;
-    String title = "PM" + (fromNick != null && !fromNick.isBlank() ? " from " + fromNick : "");
+    String title =
+        fromNick != null && !fromNick.isBlank()
+            ? MESSAGES.text("tray.notification.pm.title.from", fromNick)
+            : MESSAGES.text("tray.notification.pm.title");
     String body = safeBody(message);
     TargetRef target = safeTargetRef(serverId, fromNick, "status");
     if (!passesNotifyConditions(target)) return;
@@ -193,15 +201,28 @@ public class TrayNotificationService implements TrayNotificationsPort {
     String from = Objects.toString(fromNick, "").trim();
     String rsn = Objects.toString(reason, "").trim();
 
-    String title = "Invite" + (!ch.isBlank() ? " to " + ch : "");
+    String title =
+        !ch.isBlank()
+            ? MESSAGES.text("tray.notification.invite.title.channel", ch)
+            : MESSAGES.text("tray.notification.invite.title");
     StringBuilder body = new StringBuilder();
     if (!from.isBlank()) {
-      body.append(from).append(" invited you");
+      body.append(MESSAGES.text("tray.notification.invite.body.from", from));
     } else {
-      body.append("Channel invitation");
+      body.append(MESSAGES.text("tray.notification.invite.body.generic"));
     }
-    if (!sid.isBlank()) body.append(" on ").append(sid);
-    if (!rsn.isBlank()) body.append(": ").append(safeBody(rsn));
+    if (!sid.isBlank()) {
+      body.replace(
+          0,
+          body.length(),
+          MESSAGES.text("tray.notification.invite.body.server", body.toString(), sid));
+    }
+    if (!rsn.isBlank()) {
+      body.replace(
+          0,
+          body.length(),
+          MESSAGES.text("tray.notification.invite.body.reason", body.toString(), safeBody(rsn)));
+    }
 
     TargetRef target = safeTargetRef(serverId, "status", "status");
     if (!passesNotifyConditions(target)) return;
@@ -218,7 +239,9 @@ public class TrayNotificationService implements TrayNotificationsPort {
     UiSettings s = settingsBus.get();
     if (!s.trayEnabled() || !s.trayNotifyConnectionState()) return;
     String title =
-        "Connection" + (serverId != null && !serverId.isBlank() ? " (" + serverId + ")" : "");
+        serverId != null && !serverId.isBlank()
+            ? MESSAGES.text("tray.notification.connection.title.server", serverId)
+            : MESSAGES.text("tray.notification.connection.title");
     String body =
         (state != null && !state.isBlank() ? state : "")
             + (detail != null && !detail.isBlank()
@@ -235,8 +258,8 @@ public class TrayNotificationService implements TrayNotificationsPort {
   public void notifyTest() {
     UiSettings s = settingsBus.get();
     if (s == null || !s.trayEnabled()) return;
-    String title = "IRCafe";
-    String body = "Test notification (click to open IRCafe)";
+    String title = MESSAGES.text("tray.appName");
+    String body = MESSAGES.text("tray.notification.test.body");
     String targetKey = targetKey("", "");
     notifyAsync(
         targetKey, contentKey(targetKey, title, body), title, body, this::showMainWindowOnly);
@@ -247,8 +270,8 @@ public class TrayNotificationService implements TrayNotificationsPort {
     UiSettings s = settingsBus.get();
     if (s == null || !s.trayEnabled()) return;
 
-    String title = "IRCafe is still running";
-    String body = "IRCafe was hidden to the system tray. Use the tray icon/menu to reopen it.";
+    String title = MESSAGES.text("tray.notification.closeHint.title");
+    String body = MESSAGES.text("tray.notification.closeHint.body");
     String targetKey = targetKey("ircafe", "tray");
     notifyAsync(
         targetKey,
@@ -287,7 +310,7 @@ public class TrayNotificationService implements TrayNotificationsPort {
 
     TargetRef openTarget = safeTargetRef(sid, tgt, "status");
     String finalTitle = Objects.toString(title, "").trim();
-    if (finalTitle.isEmpty()) finalTitle = "IRCafe";
+    if (finalTitle.isEmpty()) finalTitle = MESSAGES.text("tray.appName");
     String finalBody = safeBody(body);
 
     IrcEventNotificationRule.FocusScope effectiveFocusScope =
@@ -868,7 +891,7 @@ public class TrayNotificationService implements TrayNotificationsPort {
       if (twoSlicesInitialized) return;
 
       ToasterSettings settings = new ToasterSettings();
-      settings.setAppName("IRCafe");
+      settings.setAppName(MESSAGES.text("tray.appName"));
       settings.setTimeout(TOAST_TIMEOUT_SECONDS);
 
       URL iconUrl = TrayNotificationService.class.getResource("/icons/ircafe_512.png");

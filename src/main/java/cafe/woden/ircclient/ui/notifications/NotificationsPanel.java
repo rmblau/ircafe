@@ -7,6 +7,7 @@ import cafe.woden.ircclient.notifications.api.NotificationEvent;
 import cafe.woden.ircclient.notifications.api.NotificationStorePort;
 import cafe.woden.ircclient.notifications.api.RuleMatchEvent;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.util.PopupMenuThemeSupport;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import java.awt.BorderLayout;
@@ -54,18 +55,24 @@ public class NotificationsPanel extends JPanel implements AutoCloseable {
   private static final int COL_MATCH = 3;
   private static final int COL_SNIPPET = 4;
 
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private final NotificationStorePort store;
   private final CompositeDisposable disposables = new CompositeDisposable();
   private final NotificationsTableModel model = new NotificationsTableModel();
 
-  private final JLabel title = new JLabel("Notifications");
+  private final JLabel title = new JLabel(message("notifications.title"));
   private final JTable table = new JTable(model);
   private final JPopupMenu rowMenu = new JPopupMenu();
-  private final JMenuItem jumpToMessageMenuItem = new JMenuItem("Jump to message");
-  private final JMenuItem clearSelectedMenuItem = new JMenuItem("Clear selected row(s)");
-  private final JMenuItem clearAllMenuItem = new JMenuItem("Clear all rows");
-  private final JMenuItem exportSelectedMenuItem = new JMenuItem("Export selected to CSV");
-  private final JMenuItem exportAllMenuItem = new JMenuItem("Export all to CSV");
+  private final JMenuItem jumpToMessageMenuItem =
+      new JMenuItem(message("notifications.menu.jumpToMessage"));
+  private final JMenuItem clearSelectedMenuItem =
+      new JMenuItem(message("notifications.menu.clearSelected"));
+  private final JMenuItem clearAllMenuItem = new JMenuItem(message("notifications.menu.clearAll"));
+  private final JMenuItem exportSelectedMenuItem =
+      new JMenuItem(message("notifications.menu.exportSelectedCsv"));
+  private final JMenuItem exportAllMenuItem =
+      new JMenuItem(message("notifications.menu.exportAllCsv"));
 
   private volatile String serverId;
   private volatile Consumer<TargetRef> onSelectTarget;
@@ -217,7 +224,7 @@ public class NotificationsPanel extends JPanel implements AutoCloseable {
     List<HighlightEvent> highlights = store.listAll(sid);
     for (HighlightEvent event : highlights) {
       if (event != null) {
-        rows.add(new Row(event, "(mention)", event.snippet()));
+        rows.add(new Row(event, message("notifications.match.mention"), event.snippet()));
       }
     }
 
@@ -310,11 +317,11 @@ public class NotificationsPanel extends JPanel implements AutoCloseable {
   }
 
   private void exportSelectedToCsv() {
-    exportRowsToCsv(selectedViewRows(), "Export Selected Notifications", true);
+    exportRowsToCsv(selectedViewRows(), message("notifications.export.selected.title"), true);
   }
 
   private void exportAllToCsv() {
-    exportRowsToCsv(allViewRows(), "Export Notifications", false);
+    exportRowsToCsv(allViewRows(), message("notifications.export.all.title"), false);
   }
 
   private void exportRowsToCsv(List<Integer> viewRows, String dialogTitle, boolean selectedOnly) {
@@ -322,7 +329,8 @@ public class NotificationsPanel extends JPanel implements AutoCloseable {
 
     JFileChooser chooser = new JFileChooser();
     chooser.setDialogTitle(dialogTitle);
-    chooser.setFileFilter(new FileNameExtensionFilter("CSV Files (*.csv)", "csv"));
+    chooser.setFileFilter(
+        new FileNameExtensionFilter(message("notifications.export.fileFilter.csv"), "csv"));
     chooser.setAcceptAllFileFilterUsed(true);
     chooser.setSelectedFile(new File(defaultExportFileName(selectedOnly)));
 
@@ -344,16 +352,18 @@ public class NotificationsPanel extends JPanel implements AutoCloseable {
       String msg = Objects.toString(ex.getMessage(), ex.getClass().getSimpleName());
       JOptionPane.showMessageDialog(
           SwingUtilities.getWindowAncestor(this),
-          "Failed to export notifications:\n" + msg,
-          "CSV Export Error",
+          message("notifications.export.error.message", msg),
+          message("notifications.export.error.title"),
           JOptionPane.ERROR_MESSAGE);
     }
   }
 
   private void writeCsv(Path path, List<Integer> viewRows) throws Exception {
-    if (path == null) throw new IllegalArgumentException("Output path is required.");
+    if (path == null) {
+      throw new IllegalArgumentException(message("notifications.export.error.outputPathRequired"));
+    }
     if (viewRows == null || viewRows.isEmpty()) {
-      throw new IllegalArgumentException("At least one row is required.");
+      throw new IllegalArgumentException(message("notifications.export.error.rowRequired"));
     }
     if (path.getParent() != null) {
       Files.createDirectories(path.getParent());
@@ -465,6 +475,10 @@ public class NotificationsPanel extends JPanel implements AutoCloseable {
         + ".csv";
   }
 
+  private static String message(String code, Object... args) {
+    return MESSAGES.text(code, args);
+  }
+
   private static void configureMenuItem(JMenuItem item, String iconName) {
     if (item == null) return;
     item.setIcon(SvgIcons.action(iconName, 16));
@@ -491,7 +505,13 @@ public class NotificationsPanel extends JPanel implements AutoCloseable {
 
   private static final class NotificationsTableModel extends AbstractTableModel {
 
-    private static final String[] COLS = {"Time", "Channel", "From", "Match", "Snippet"};
+    private static final String[] COL_KEYS = {
+      "notifications.column.time",
+      "notifications.column.channel",
+      "notifications.column.from",
+      "notifications.column.match",
+      "notifications.column.snippet"
+    };
     private static final DateTimeFormatter TIME_FMT =
         DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
 
@@ -514,12 +534,12 @@ public class NotificationsPanel extends JPanel implements AutoCloseable {
 
     @Override
     public int getColumnCount() {
-      return COLS.length;
+      return COL_KEYS.length;
     }
 
     @Override
     public String getColumnName(int column) {
-      return column >= 0 && column < COLS.length ? COLS[column] : "";
+      return column >= 0 && column < COL_KEYS.length ? message(COL_KEYS[column]) : "";
     }
 
     @Override

@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.appearance;
 
 import cafe.woden.ircclient.config.properties.UiProperties;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettings;
 import cafe.woden.ircclient.ui.settings.theme.ThemeTweakSettings;
@@ -13,6 +14,8 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 
 final class AppearancePanelSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private AppearancePanelSupport() {}
 
   static JPanel buildPanel(
@@ -24,23 +27,31 @@ final class AppearancePanelSupport {
       AppearanceServerTreeControls serverTree) {
     JPanel form = new JPanel(MigLayouts.singleColumnFill(12, "[]8[grow,push]8[]"));
 
-    form.add(PreferencesUiSupport.tabTitle("Appearance"), MigConstraints.growXMinWidth0Wrap());
+    form.add(
+        PreferencesUiSupport.tabTitle(MESSAGES.text("preferences.appearance.title")),
+        MigConstraints.growXMinWidth0Wrap());
 
     JTabbedPane appearanceTabs = new JTabbedPane();
     appearanceTabs.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
     appearanceTabs.addTab(
-        "Theme", PreferencesUiSupport.padSubTab(buildThemeSubTab(theme, accent, tweaks)));
-    appearanceTabs.addTab("UI font", PreferencesUiSupport.padSubTab(buildUiFontSubTab(tweaks)));
+        MESSAGES.text("preferences.appearance.tab.theme"),
+        PreferencesUiSupport.padSubTab(buildThemeSubTab(theme, accent, tweaks)));
     appearanceTabs.addTab(
-        "Chat colors", PreferencesUiSupport.padSubTab(buildChatColorsSubTab(chatTheme)));
-    appearanceTabs.addTab("Chat text", PreferencesUiSupport.padSubTab(buildChatTextSubTab(fonts)));
+        MESSAGES.text("preferences.appearance.tab.uiFont"),
+        PreferencesUiSupport.padSubTab(buildUiFontSubTab(tweaks)));
     appearanceTabs.addTab(
-        "Server tree", PreferencesUiSupport.padSubTab(buildServerTreeSubTab(serverTree)));
+        MESSAGES.text("preferences.appearance.tab.chatColors"),
+        PreferencesUiSupport.padSubTab(buildChatColorsSubTab(chatTheme)));
+    appearanceTabs.addTab(
+        MESSAGES.text("preferences.appearance.tab.chatText"),
+        PreferencesUiSupport.padSubTab(buildChatTextSubTab(fonts)));
+    appearanceTabs.addTab(
+        MESSAGES.text("preferences.appearance.tab.serverTree"),
+        PreferencesUiSupport.padSubTab(buildServerTreeSubTab(serverTree)));
     form.add(appearanceTabs, MigConstraints.growPushMinWidth0());
 
-    JButton reset = new JButton("Reset to defaults");
-    reset.setToolTipText(
-        "Revert the appearance controls to default values. Changes preview live; Apply/OK saves.");
+    JButton reset = new JButton(MESSAGES.text("preferences.appearance.button.resetDefaults"));
+    reset.setToolTipText(MESSAGES.text("preferences.appearance.button.resetDefaults.tooltip"));
     reset.addActionListener(
         event -> {
           theme.combo.setSelectedItem("darcula");
@@ -84,7 +95,7 @@ final class AppearancePanelSupport {
         });
     form.add(reset, MigConstraints.splitAlignXLeft(2));
     form.add(
-        PreferencesUiSupport.helpText("Changes preview live. Use Apply or OK to save."),
+        PreferencesUiSupport.helpText(MESSAGES.text("preferences.appearance.help.livePreview")),
         MigConstraints.alignXLeftGrowXMinWidthGapLeft(0, 12));
 
     return form;
@@ -96,28 +107,30 @@ final class AppearancePanelSupport {
     panel.setOpaque(false);
 
     panel.add(
-        PreferencesUiSupport.sectionTitle("Look & feel"), MigConstraints.span2GrowXMinWidth0Wrap());
-    panel.add(new JLabel("Theme"));
+        PreferencesUiSupport.sectionTitle(
+            MESSAGES.text("preferences.appearance.section.lookAndFeel")),
+        MigConstraints.span2GrowXMinWidth0Wrap());
+    panel.add(new JLabel(MESSAGES.text("preferences.appearance.field.theme")));
     panel.add(theme.combo, MigConstraints.growX());
 
     JPanel accentLabel = new JPanel(MigLayouts.insets0("[]6[]", "[]"));
     accentLabel.setOpaque(false);
-    accentLabel.add(new JLabel("Accent"));
+    accentLabel.add(new JLabel(MESSAGES.text("preferences.appearance.field.accent")));
     accentLabel.add(accent.chip);
     panel.add(accentLabel);
     panel.add(accent.panel, MigConstraints.growX());
 
-    panel.add(new JLabel("Accent strength"));
+    panel.add(new JLabel(MESSAGES.text("preferences.appearance.field.accentStrength")));
     panel.add(accent.strength, MigConstraints.growX());
 
-    panel.add(new JLabel("Density"));
+    panel.add(new JLabel(MESSAGES.text("preferences.appearance.field.density")));
     panel.add(tweaks.density, MigConstraints.growX());
 
-    panel.add(new JLabel("Corner radius"));
+    panel.add(new JLabel(MESSAGES.text("preferences.appearance.field.cornerRadius")));
     panel.add(tweaks.cornerRadius, MigConstraints.growX());
 
     JTextArea tweakHint = PreferencesUiSupport.subtleInfoText();
-    tweakHint.setText("Density and corner radius are available for FlatLaf-based themes.");
+    tweakHint.setText(MESSAGES.text("preferences.appearance.help.flatlafTweaks"));
     panel.add(new JLabel(""));
     panel.add(tweakHint, MigConstraints.growXMinWidth0());
 
@@ -129,17 +142,17 @@ final class AppearancePanelSupport {
     panel.setOpaque(false);
 
     panel.add(
-        PreferencesUiSupport.sectionTitle("UI text"), MigConstraints.span2GrowXMinWidth0Wrap());
-    panel.add(new JLabel("Font override"));
+        PreferencesUiSupport.sectionTitle(MESSAGES.text("preferences.appearance.section.uiText")),
+        MigConstraints.span2GrowXMinWidth0Wrap());
+    panel.add(new JLabel(MESSAGES.text("preferences.appearance.field.fontOverride")));
     panel.add(tweaks.uiFontOverrideEnabled, MigConstraints.growX());
-    panel.add(new JLabel("Font family"));
+    panel.add(new JLabel(MESSAGES.text("preferences.appearance.field.fontFamily")));
     panel.add(tweaks.uiFontFamily, MigConstraints.growX());
-    panel.add(new JLabel("Font size"));
+    panel.add(new JLabel(MESSAGES.text("preferences.appearance.field.fontSize")));
     panel.add(tweaks.uiFontSize, MigConstraints.width(110));
 
     JTextArea uiFontHint = PreferencesUiSupport.subtleInfoText();
-    uiFontHint.setText(
-        "Applies globally to menus, dialogs, tabs, forms, and controls for all themes.");
+    uiFontHint.setText(MESSAGES.text("preferences.appearance.help.uiFont"));
     panel.add(new JLabel(""));
     panel.add(uiFontHint, MigConstraints.growXMinWidth0());
 
@@ -150,11 +163,15 @@ final class AppearancePanelSupport {
     JPanel panel = new JPanel(MigLayouts.singleColumn(MigLayouts.rowGaps(8, 12, 8)));
     panel.setOpaque(false);
 
-    panel.add(PreferencesUiSupport.sectionTitle("Palette"), MigConstraints.growXMinWidth0Wrap());
+    panel.add(
+        PreferencesUiSupport.sectionTitle(MESSAGES.text("preferences.appearance.section.palette")),
+        MigConstraints.growXMinWidth0Wrap());
     panel.add(buildChatThemePaletteSubTab(chatTheme), MigConstraints.growXMinWidth0Wrap());
 
     panel.add(
-        PreferencesUiSupport.sectionTitle("Message colors"), MigConstraints.growXMinWidth0Wrap());
+        PreferencesUiSupport.sectionTitle(
+            MESSAGES.text("preferences.appearance.section.messageColors")),
+        MigConstraints.growXMinWidth0Wrap());
     panel.add(buildChatMessageColorsSubTab(chatTheme), MigConstraints.growXMinWidth0());
 
     return panel;
@@ -165,10 +182,11 @@ final class AppearancePanelSupport {
     panel.setOpaque(false);
 
     panel.add(
-        PreferencesUiSupport.sectionTitle("Chat text"), MigConstraints.span2GrowXMinWidth0Wrap());
-    panel.add(new JLabel("Font family"));
+        PreferencesUiSupport.sectionTitle(MESSAGES.text("preferences.appearance.section.chatText")),
+        MigConstraints.span2GrowXMinWidth0Wrap());
+    panel.add(new JLabel(MESSAGES.text("preferences.appearance.field.fontFamily")));
     panel.add(fonts.fontFamily, MigConstraints.growX());
-    panel.add(new JLabel("Font size"));
+    panel.add(new JLabel(MESSAGES.text("preferences.appearance.field.fontSize")));
     panel.add(fonts.fontSize, MigConstraints.width(110));
 
     return panel;
@@ -179,17 +197,18 @@ final class AppearancePanelSupport {
     panel.setOpaque(false);
 
     panel.add(
-        PreferencesUiSupport.sectionTitle("Server tree"), MigConstraints.span2GrowXMinWidth0Wrap());
-    panel.add(new JLabel("Unread channel color"));
+        PreferencesUiSupport.sectionTitle(
+            MESSAGES.text("preferences.appearance.section.serverTree")),
+        MigConstraints.span2GrowXMinWidth0Wrap());
+    panel.add(new JLabel(MESSAGES.text("preferences.appearance.field.unreadChannelColor")));
     panel.add(serverTree.unreadChannelColor.panel, MigConstraints.growX());
-    panel.add(new JLabel("Highlight channel color"));
+    panel.add(new JLabel(MESSAGES.text("preferences.appearance.field.highlightChannelColor")));
     panel.add(serverTree.highlightChannelColor.panel, MigConstraints.growX());
-    panel.add(new JLabel("Dock layout"));
+    panel.add(new JLabel(MESSAGES.text("preferences.appearance.field.dockLayout")));
     panel.add(serverTree.preserveDockLayoutBetweenSessions, MigConstraints.growX());
 
     JTextArea hint = PreferencesUiSupport.subtleInfoText();
-    hint.setText(
-        "Leave colors blank to use theme defaults. Dock layout restore applies on next launch.");
+    hint.setText(MESSAGES.text("preferences.appearance.help.serverTree"));
     panel.add(new JLabel(""));
     panel.add(hint, MigConstraints.growXMinWidth0());
 
@@ -200,22 +219,21 @@ final class AppearancePanelSupport {
     JPanel panel = new JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rows(4, 6)));
     panel.setOpaque(false);
 
-    panel.add(new JLabel("Chat theme preset"));
+    panel.add(new JLabel(MESSAGES.text("preferences.appearance.field.chatThemePreset")));
     panel.add(chatTheme.preset, MigConstraints.growX());
 
-    panel.add(new JLabel("Timestamp color"));
+    panel.add(new JLabel(MESSAGES.text("preferences.appearance.field.timestampColor")));
     panel.add(chatTheme.timestamp.panel, MigConstraints.growX());
 
-    panel.add(new JLabel("Mention highlight"));
+    panel.add(new JLabel(MESSAGES.text("preferences.appearance.field.mentionHighlight")));
     panel.add(chatTheme.mention.panel, MigConstraints.growX());
 
-    panel.add(new JLabel("Mention strength"));
+    panel.add(new JLabel(MESSAGES.text("preferences.appearance.field.mentionStrength")));
     panel.add(chatTheme.mentionStrength, MigConstraints.growX());
 
     panel.add(new JLabel(""));
     panel.add(
-        PreferencesUiSupport.helpText(
-            "Use Message colors when you want to override specific line types."),
+        PreferencesUiSupport.helpText(MESSAGES.text("preferences.appearance.help.messageColors")),
         MigConstraints.growXMinWidth0());
     return panel;
   }
@@ -224,27 +242,28 @@ final class AppearancePanelSupport {
     JPanel panel = new JPanel(MigLayouts.twoColumnForm(12, MigLayouts.rows(7, 6)));
     panel.setOpaque(false);
 
-    panel.add(new JLabel("Server/system"));
+    panel.add(new JLabel(MESSAGES.text("preferences.appearance.field.serverSystem")));
     panel.add(chatTheme.system.panel, MigConstraints.growX());
 
-    panel.add(new JLabel("User messages"));
+    panel.add(new JLabel(MESSAGES.text("preferences.appearance.field.userMessages")));
     panel.add(chatTheme.message.panel, MigConstraints.growX());
 
-    panel.add(new JLabel("Notice messages"));
+    panel.add(new JLabel(MESSAGES.text("preferences.appearance.field.noticeMessages")));
     panel.add(chatTheme.notice.panel, MigConstraints.growX());
 
-    panel.add(new JLabel("Action messages"));
+    panel.add(new JLabel(MESSAGES.text("preferences.appearance.field.actionMessages")));
     panel.add(chatTheme.action.panel, MigConstraints.growX());
 
-    panel.add(new JLabel("Presence messages"));
+    panel.add(new JLabel(MESSAGES.text("preferences.appearance.field.presenceMessages")));
     panel.add(chatTheme.presence.panel, MigConstraints.growX());
 
-    panel.add(new JLabel("Error messages"));
+    panel.add(new JLabel(MESSAGES.text("preferences.appearance.field.errorMessages")));
     panel.add(chatTheme.error.panel, MigConstraints.growX());
 
     panel.add(new JLabel(""));
     panel.add(
-        PreferencesUiSupport.helpText("Leave any field blank to use the theme default."),
+        PreferencesUiSupport.helpText(
+            MESSAGES.text("preferences.appearance.help.blankUsesThemeDefault")),
         MigConstraints.growXMinWidth0());
 
     return panel;

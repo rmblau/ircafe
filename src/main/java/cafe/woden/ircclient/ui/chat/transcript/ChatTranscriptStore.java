@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.chat.transcript;
 
 import cafe.woden.ircclient.app.api.ChatTranscriptHistoryPort;
+import cafe.woden.ircclient.app.api.MessageTranslation;
 import cafe.woden.ircclient.app.api.PresenceEvent;
 import cafe.woden.ircclient.irc.roster.UserListPort;
 import cafe.woden.ircclient.model.TargetRef;
@@ -17,6 +18,7 @@ import cafe.woden.ircclient.ui.chat.transcript.internal.ChatTranscriptStoreCompo
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMatrixDisplayNameCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageInteractionCoordinator;
 import cafe.woden.ircclient.ui.chat.transcript.message.ChatTranscriptMessageLineCoordinator;
+import cafe.woden.ircclient.ui.chat.transcript.message.MessageTranslationSource;
 import cafe.woden.ircclient.ui.chat.transcript.message.ReactionChipActionHandler;
 import cafe.woden.ircclient.ui.chat.transcript.message.RedactedMessageContent;
 import cafe.woden.ircclient.ui.chat.transcript.runtime.ChatTimestampFormatter;
@@ -202,6 +204,11 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
     return messageInteractionCoordinator.redactedOriginalById(ref, messageId);
   }
 
+  public synchronized MessageTranslationSource translationSourceById(
+      TargetRef ref, String messageId) {
+    return messageInteractionCoordinator.translationSourceById(ref, messageId);
+  }
+
   public synchronized boolean hasReactionFromNick(
       TargetRef ref, String messageId, String reaction, String nick) {
     return messageInteractionCoordinator.hasReactionFromNick(ref, messageId, reaction, nick);
@@ -225,6 +232,12 @@ public class ChatTranscriptStore implements ChatTranscriptHistoryPort {
       TargetRef ref, String targetMessageId, String reaction, String fromNick, long tsEpochMs) {
     messageInteractionCoordinator.removeMessageReaction(
         ref, targetMessageId, reaction, fromNick, tsEpochMs);
+  }
+
+  public synchronized boolean applyMessageTranslation(
+      TargetRef ref, MessageTranslation translation, long translatedAtEpochMs) {
+    return messageInteractionCoordinator.applyMessageTranslation(
+        ref, translation, translatedAtEpochMs);
   }
 
   public synchronized boolean applyMessageEdit(

@@ -1,8 +1,10 @@
 package cafe.woden.ircclient.ui;
 
 import cafe.woden.ircclient.app.api.ConnectionState;
+import cafe.woden.ircclient.app.api.MessageTranslation;
 import cafe.woden.ircclient.app.api.QuasselNetworkManagerAction;
 import cafe.woden.ircclient.app.api.UiChannelListPort;
+import cafe.woden.ircclient.app.api.UiMemoServPort;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.api.UiPromptPort;
 import cafe.woden.ircclient.app.api.UiTranscriptPort;
@@ -41,6 +43,7 @@ public class SwingUiPort implements UiPort {
   private final UiPromptPort promptPort;
   private final UiViewStatePort viewStatePort;
   private final UiChannelListPort channelListPort;
+  private final UiMemoServPort memoServPort;
   private final UiTranscriptPort transcriptPort;
 
   @Autowired
@@ -48,6 +51,7 @@ public class SwingUiPort implements UiPort {
     this.promptPort = delegates.promptPort();
     this.viewStatePort = delegates.viewStatePort();
     this.channelListPort = delegates.channelListPort();
+    this.memoServPort = delegates.memoServPort();
     this.transcriptPort = delegates.transcriptPort();
   }
 
@@ -264,6 +268,16 @@ public class SwingUiPort implements UiPort {
   public void setChannelModeSnapshot(
       String serverId, String channel, String rawModes, String friendlySummary) {
     channelListPort.setChannelModeSnapshot(serverId, channel, rawModes, friendlySummary);
+  }
+
+  @Override
+  public void ensureMemoServAvailable(String serverId) {
+    memoServPort.ensureMemoServAvailable(serverId);
+  }
+
+  @Override
+  public void observeMemoServNotice(String serverId, Instant at, String from, String text) {
+    memoServPort.observeMemoServNotice(serverId, at, from, text);
   }
 
   @Override
@@ -587,6 +601,12 @@ public class SwingUiPort implements UiPort {
   public void removeMessageReaction(
       TargetRef target, Instant at, String fromNick, String targetMessageId, String reaction) {
     transcriptPort.removeMessageReaction(target, at, fromNick, targetMessageId, reaction);
+  }
+
+  @Override
+  public boolean applyMessageTranslation(
+      TargetRef target, Instant at, MessageTranslation translation) {
+    return transcriptPort.applyMessageTranslation(target, at, translation);
   }
 
   @Override

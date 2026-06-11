@@ -1,11 +1,14 @@
 package cafe.woden.ircclient.ui.servers;
 
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.util.Locale;
 import java.util.Objects;
 
 /** Backend-specific auth rules for the server editor dialog. */
 final class ServerEditorAuthPolicy {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   static final String MATRIX_PASSWORD_AUTH_MECHANISM = "MATRIX_PASSWORD";
   static final String DEFAULT_NICKSERV_SERVICE = "NickServ";
 
@@ -89,11 +92,12 @@ final class ServerEditorAuthPolicy {
     if (validation.credentialBad()) {
       throw new IllegalArgumentException(
           validation.usernameBad() || isMatrixPasswordMode(profile, matrixAuthMode)
-              ? "Matrix password is required"
-              : "Matrix access token is required");
+              ? MESSAGES.text("servers.editor.validation.matrixPasswordRequired")
+              : MESSAGES.text("servers.editor.validation.matrixAccessTokenRequired"));
     }
     if (validation.usernameBad()) {
-      throw new IllegalArgumentException("Matrix username is required");
+      throw new IllegalArgumentException(
+          MESSAGES.text("servers.editor.validation.matrixUsernameRequired"));
     }
   }
 
@@ -151,11 +155,13 @@ final class ServerEditorAuthPolicy {
 
     if (requirements.userRequired() && username.isEmpty()) {
       throw new IllegalArgumentException(
-          "SASL username is required for mechanism " + metadata.normalizedMechanism());
+          MESSAGES.text(
+              "servers.editor.validation.saslUsernameRequired", metadata.normalizedMechanism()));
     }
     if (requirements.secretRequired() && secret.isBlank()) {
       throw new IllegalArgumentException(
-          "SASL secret is required for mechanism " + metadata.normalizedMechanism());
+          MESSAGES.text(
+              "servers.editor.validation.saslSecretRequired", metadata.normalizedMechanism()));
     }
 
     return new SaslBuildResult(
@@ -195,7 +201,8 @@ final class ServerEditorAuthPolicy {
     }
     String resolvedPassword = Objects.toString(password, "");
     if (resolvedPassword.isBlank()) {
-      throw new IllegalArgumentException("NickServ password is required when NickServ is enabled");
+      throw new IllegalArgumentException(
+          MESSAGES.text("servers.editor.validation.nickservPasswordRequired"));
     }
     return new IrcProperties.Server.Nickserv(
         true, resolvedPassword, resolvedService, delayJoinUntilIdentified);
@@ -215,32 +222,38 @@ final class ServerEditorAuthPolicy {
           new SaslMechanismMetadata(
               normalizedMechanism,
               false,
-              "(ignored)",
-              "EXTERNAL uses your TLS client certificate. Secret is ignored; username is optional.");
+              MESSAGES.text("servers.editor.placeholder.ignored"),
+              MESSAGES.text("servers.editor.auth.sasl.mechanism.external.hint"));
       case "ECDSA-NIST256P-CHALLENGE" ->
           new SaslMechanismMetadata(
               normalizedMechanism,
               true,
-              "base64 PKCS#8 EC private key",
-              "ECDSA challenge-response. Secret should be a base64 PKCS#8 EC private key. Username is usually required.");
+              MESSAGES.text("servers.editor.placeholder.ecdsaPrivateKey"),
+              MESSAGES.text("servers.editor.auth.sasl.mechanism.ecdsa.hint"));
       case "SCRAM-SHA-256" ->
           new SaslMechanismMetadata(
               normalizedMechanism,
               true,
-              "password",
-              "SCRAM-SHA-256 (recommended). Secret = password.");
+              MESSAGES.text("servers.editor.placeholder.password"),
+              MESSAGES.text("servers.editor.auth.sasl.mechanism.scramSha256.hint"));
       case "SCRAM-SHA-1" ->
           new SaslMechanismMetadata(
-              normalizedMechanism, true, "password", "SCRAM-SHA-1. Secret = password.");
+              normalizedMechanism,
+              true,
+              MESSAGES.text("servers.editor.placeholder.password"),
+              MESSAGES.text("servers.editor.auth.sasl.mechanism.scramSha1.hint"));
       case "AUTO" ->
           new SaslMechanismMetadata(
               normalizedMechanism,
               true,
-              "password (leave blank for EXTERNAL)",
-              "AUTO prefers SCRAM (256/1) or PLAIN when a secret is provided, and falls back to EXTERNAL when secret is blank.");
+              MESSAGES.text("servers.editor.placeholder.passwordOrExternal"),
+              MESSAGES.text("servers.editor.auth.sasl.mechanism.auto.hint"));
       default ->
           new SaslMechanismMetadata(
-              normalizedMechanism, true, "password", "PLAIN. Secret = password.");
+              normalizedMechanism,
+              true,
+              MESSAGES.text("servers.editor.placeholder.password"),
+              MESSAGES.text("servers.editor.auth.sasl.mechanism.plain.hint"));
     };
   }
 

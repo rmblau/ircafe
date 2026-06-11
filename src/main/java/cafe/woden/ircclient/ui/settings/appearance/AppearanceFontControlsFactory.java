@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings.appearance;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
@@ -28,6 +29,7 @@ import javax.swing.UIManager;
 import javax.swing.plaf.ColorUIResource;
 
 final class AppearanceFontControlsFactory {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
   private static final String SAMPLE_FONT_TEXT = "AaBbYyZz 0123";
 
   private AppearanceFontControlsFactory() {}
@@ -50,7 +52,8 @@ final class AppearanceFontControlsFactory {
             SettingsRangeSupport.normalizeFontSize(effective.uiFontSize()), 8, 48, 1, closeables);
     uiFontSize.setToolTipText(AppearanceTooltips.UI_FONT_OVERRIDE);
 
-    JCheckBox uiFontOverrideEnabled = new JCheckBox("Override system UI font");
+    JCheckBox uiFontOverrideEnabled =
+        new JCheckBox(MESSAGES.text("preferences.appearance.uiFont.overrideSystem"));
     uiFontOverrideEnabled.setSelected(effective.uiFontOverrideEnabled());
     uiFontOverrideEnabled.setToolTipText(AppearanceTooltips.UI_FONT_OVERRIDE);
 
@@ -85,10 +88,10 @@ final class AppearanceFontControlsFactory {
   private static JComboBox<DensityOption> createDensityCombo(ThemeTweakSettings settings) {
     DensityOption[] options =
         new DensityOption[] {
-          new DensityOption("auto", "Auto (theme default)"),
-          new DensityOption("compact", "Compact"),
-          new DensityOption("cozy", "Cozy"),
-          new DensityOption("spacious", "Spacious")
+          new DensityOption("auto", MESSAGES.text("preferences.appearance.density.auto")),
+          new DensityOption("compact", MESSAGES.text("preferences.appearance.density.compact")),
+          new DensityOption("cozy", MESSAGES.text("preferences.appearance.density.cozy")),
+          new DensityOption("spacious", MESSAGES.text("preferences.appearance.density.spacious"))
         };
 
     JComboBox<DensityOption> density = new JComboBox<>(options);

@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
+import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.properties.LogProperties;
 import cafe.woden.ircclient.irc.backend.IrcHeartbeatMaintenanceService;
@@ -106,6 +107,7 @@ class PreferencesDialogConstructorTest {
         mock(UserCommandAliasesPort.class),
         mock(NotificationSoundPort.class),
         mock(ServerDialogs.class),
+        mock(MessageTranslationSettingsBus.class),
         pushyTestExecutor,
         notificationRuleTestExecutor);
   }

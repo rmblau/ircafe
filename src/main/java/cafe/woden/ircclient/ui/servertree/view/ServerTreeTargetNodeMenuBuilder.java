@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.servertree.view;
 import cafe.woden.ircclient.model.InterceptorDefinition;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.servertree.model.ServerTreeNodeData;
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Component;
 @InterfaceLayer
 @Component
 public final class ServerTreeTargetNodeMenuBuilder {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   public interface Context {
     void openPinnedChat(TargetRef ref);
@@ -270,7 +272,7 @@ public final class ServerTreeTargetNodeMenuBuilder {
 
     JPopupMenu menu = new JPopupMenu();
 
-    JMenuItem openDock = new JMenuItem("Open chat dock");
+    JMenuItem openDock = new JMenuItem(MESSAGES.text("serverTree.targetMenu.openChatDock"));
     openDock.addActionListener(ev -> context.openPinnedChat(ref));
     menu.add(openDock);
 
@@ -280,7 +282,7 @@ public final class ServerTreeTargetNodeMenuBuilder {
 
     if (ref.isChannel() || ref.isStatus()) {
       menu.addSeparator();
-      JMenuItem clearLog = new JMenuItem("Clear Log…");
+      JMenuItem clearLog = new JMenuItem(MESSAGES.text("serverTree.targetMenu.clearLog"));
       clearLog.addActionListener(ev -> context.confirmAndRequestClearLog(ref, nodeData.label));
       menu.add(clearLog);
     }
@@ -290,7 +292,8 @@ public final class ServerTreeTargetNodeMenuBuilder {
       if (ref.isChannel()) {
         addChannelNodeActions(context, menu, nodeData);
       } else {
-        JMenuItem close = new JMenuItem("Close \"" + nodeData.label + "\"");
+        JMenuItem close =
+            new JMenuItem(MESSAGES.text("serverTree.targetMenu.close", nodeData.label));
         close.addActionListener(ev -> context.requestCloseTarget(ref));
         menu.add(close);
       }
@@ -310,64 +313,75 @@ public final class ServerTreeTargetNodeMenuBuilder {
 
     boolean detached = context.isChannelDisconnected(ref);
     if (detached) {
-      JMenuItem join = new JMenuItem("Reconnect \"" + nodeData.label + "\"");
+      JMenuItem join =
+          new JMenuItem(MESSAGES.text("serverTree.targetMenu.reconnect", nodeData.label));
       join.addActionListener(ev -> context.requestJoinChannel(ref));
       menu.add(join);
     } else {
-      JMenuItem disconnect = new JMenuItem("Disconnect \"" + nodeData.label + "\"");
+      JMenuItem disconnect =
+          new JMenuItem(MESSAGES.text("serverTree.targetMenu.disconnect", nodeData.label));
       disconnect.addActionListener(ev -> context.requestDisconnectChannel(ref));
       menu.add(disconnect);
 
-      JMenuItem closeAndPart = new JMenuItem("Close and PART \"" + nodeData.label + "\"");
+      JMenuItem closeAndPart =
+          new JMenuItem(MESSAGES.text("serverTree.targetMenu.closeAndPart", nodeData.label));
       closeAndPart.addActionListener(ev -> context.requestCloseChannel(ref));
       menu.add(closeAndPart);
 
       if (context.supportsBouncerDetach(ref.serverId())) {
-        JMenuItem bouncerDetach = new JMenuItem("Detach (Bouncer) \"" + nodeData.label + "\"");
+        JMenuItem bouncerDetach =
+            new JMenuItem(MESSAGES.text("serverTree.targetMenu.detachBouncer", nodeData.label));
         bouncerDetach.addActionListener(ev -> context.requestBouncerDetachChannel(ref));
         menu.add(bouncerDetach);
       }
     }
 
-    JCheckBoxMenuItem autoReattach = new JCheckBoxMenuItem("Auto-reconnect on startup");
+    JCheckBoxMenuItem autoReattach =
+        new JCheckBoxMenuItem(MESSAGES.text("serverTree.targetMenu.autoReconnectOnStartup"));
     autoReattach.setSelected(context.isChannelAutoReattach(ref));
     autoReattach.addActionListener(
         ev -> context.setChannelAutoReattach(ref, autoReattach.isSelected()));
     menu.add(autoReattach);
 
     boolean pinned = context.isChannelPinned(ref);
-    JMenuItem pinToggle = new JMenuItem(pinned ? "Unpin Channel" : "Pin Channel");
+    JMenuItem pinToggle =
+        new JMenuItem(
+            pinned
+                ? MESSAGES.text("serverTree.targetMenu.unpinChannel")
+                : MESSAGES.text("serverTree.targetMenu.pinChannel"));
     pinToggle.addActionListener(ev -> context.setChannelPinned(ref, !pinned));
     menu.add(pinToggle);
 
-    JMenuItem channelDetails = new JMenuItem("Channel Details...");
+    JMenuItem channelDetails = new JMenuItem(MESSAGES.text("serverTree.targetMenu.channelDetails"));
     channelDetails.addActionListener(ev -> context.openChannelModeDetails(ref));
     menu.add(channelDetails);
 
-    JMenu channelModes = new JMenu("Channel Modes");
+    JMenu channelModes = new JMenu(MESSAGES.text("serverTree.targetMenu.channelModes"));
 
-    JMenuItem refreshModes = new JMenuItem("Refresh Modes");
+    JMenuItem refreshModes = new JMenuItem(MESSAGES.text("serverTree.targetMenu.refreshModes"));
     refreshModes.addActionListener(ev -> context.requestChannelModeRefresh(ref));
     channelModes.add(refreshModes);
 
-    JMenuItem setModes = new JMenuItem("Set Modes...");
+    JMenuItem setModes = new JMenuItem(MESSAGES.text("serverTree.targetMenu.setModes"));
     boolean canEditModes = context.canEditChannelModes(ref);
     setModes.setEnabled(canEditModes);
     setModes.setToolTipText(
         canEditModes
-            ? "Set channel modes (sends /mode command)"
-            : "Requires owner/admin/op privileges for this channel");
+            ? MESSAGES.text("serverTree.targetMenu.setModes.tooltip.enabled")
+            : MESSAGES.text("serverTree.targetMenu.setModes.tooltip.disabled"));
     setModes.addActionListener(ev -> context.promptAndRequestChannelModeSet(ref, nodeData.label));
     channelModes.add(setModes);
     menu.add(channelModes);
 
-    JCheckBoxMenuItem muted = new JCheckBoxMenuItem("Mute notifications in this channel");
+    JCheckBoxMenuItem muted =
+        new JCheckBoxMenuItem(MESSAGES.text("serverTree.targetMenu.muteNotifications"));
     muted.setSelected(context.isChannelMuted(ref));
     muted.addActionListener(ev -> context.setChannelMuted(ref, muted.isSelected()));
     menu.add(muted);
 
     if (detached) {
-      JMenuItem closeChannel = new JMenuItem("Close Channel \"" + nodeData.label + "\"");
+      JMenuItem closeChannel =
+          new JMenuItem(MESSAGES.text("serverTree.targetMenu.closeChannel", nodeData.label));
       closeChannel.addActionListener(ev -> context.requestCloseChannel(ref));
       menu.add(closeChannel);
     }
@@ -384,7 +398,10 @@ public final class ServerTreeTargetNodeMenuBuilder {
     boolean currentlyEnabled = definition == null || definition.enabled();
 
     JMenuItem toggleEnabled =
-        new JMenuItem(currentlyEnabled ? "Disable Interceptor" : "Enable Interceptor");
+        new JMenuItem(
+            currentlyEnabled
+                ? MESSAGES.text("serverTree.targetMenu.disableInterceptor")
+                : MESSAGES.text("serverTree.targetMenu.enableInterceptor"));
     toggleEnabled.setIcon(SvgIcons.action(currentlyEnabled ? "pause" : "check", 16));
     toggleEnabled.setDisabledIcon(
         SvgIcons.actionDisabled(currentlyEnabled ? "pause" : "check", 16));
@@ -392,14 +409,14 @@ public final class ServerTreeTargetNodeMenuBuilder {
     toggleEnabled.addActionListener(ev -> context.setInterceptorEnabled(ref, !currentlyEnabled));
     menu.add(toggleEnabled);
 
-    JMenuItem rename = new JMenuItem("Rename Interceptor...");
+    JMenuItem rename = new JMenuItem(MESSAGES.text("serverTree.targetMenu.renameInterceptor"));
     rename.setIcon(SvgIcons.action("edit", 16));
     rename.setDisabledIcon(SvgIcons.actionDisabled("edit", 16));
     rename.setEnabled(context.interceptorStoreAvailable());
     rename.addActionListener(ev -> context.promptRenameInterceptor(ref, nodeData.label));
     menu.add(rename);
 
-    JMenuItem delete = new JMenuItem("Delete Interceptor...");
+    JMenuItem delete = new JMenuItem(MESSAGES.text("serverTree.targetMenu.deleteInterceptor"));
     delete.setIcon(SvgIcons.action("exit", 16));
     delete.setDisabledIcon(SvgIcons.actionDisabled("exit", 16));
     delete.setEnabled(context.interceptorStoreAvailable());

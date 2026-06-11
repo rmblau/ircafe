@@ -49,6 +49,16 @@ public final class ChatTranscriptMessageCatalogSupport {
     return state.redactedOriginalByMsgId.get(msgId);
   }
 
+  public MessageTranslationSource translationSourceById(State state, String messageId) {
+    if (state == null) return null;
+    String msgId = normalizeMessageId(messageId);
+    if (msgId.isEmpty()) return null;
+    MessageContentSnapshot snapshot = state.currentMessageContentByMsgId.get(msgId);
+    if (snapshot == null) return null;
+    return new MessageTranslationSource(
+        msgId, snapshot.kind(), snapshot.fromNick(), snapshot.renderedText(), snapshot.epochMs());
+  }
+
   public void rememberMessagePreview(
       State state, LineMeta meta, String renderedFrom, String renderedText) {
     if (state == null) return;

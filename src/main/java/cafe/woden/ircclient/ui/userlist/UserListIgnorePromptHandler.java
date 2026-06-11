@@ -5,6 +5,7 @@ import cafe.woden.ircclient.ignore.IgnoreMaskMatcher;
 import cafe.woden.ircclient.ignore.IgnoreStatusService;
 import cafe.woden.ircclient.irc.IrcEvent.NickInfo;
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.awt.Window;
 import java.util.Objects;
 import javax.swing.JOptionPane;
@@ -19,20 +20,32 @@ public final class UserListIgnorePromptHandler {
   private final IgnoreListService ignoreListService;
   private final IgnoreStatusService ignoreStatusService;
   private final Dialogs dialogs;
+  private final UiMessages messages;
 
   @Autowired
   public UserListIgnorePromptHandler(
-      IgnoreListService ignoreListService, IgnoreStatusService ignoreStatusService) {
-    this(ignoreListService, ignoreStatusService, new JOptionPaneDialogs());
+      IgnoreListService ignoreListService,
+      IgnoreStatusService ignoreStatusService,
+      UiMessages messages) {
+    this(ignoreListService, ignoreStatusService, new JOptionPaneDialogs(), messages);
   }
 
   UserListIgnorePromptHandler(
       IgnoreListService ignoreListService,
       IgnoreStatusService ignoreStatusService,
       Dialogs dialogs) {
+    this(ignoreListService, ignoreStatusService, dialogs, UiMessages.bundledDefaults());
+  }
+
+  UserListIgnorePromptHandler(
+      IgnoreListService ignoreListService,
+      IgnoreStatusService ignoreStatusService,
+      Dialogs dialogs,
+      UiMessages messages) {
     this.ignoreListService = ignoreListService;
     this.ignoreStatusService = ignoreStatusService;
     this.dialogs = dialogs;
+    this.messages = Objects.requireNonNull(messages, "messages");
   }
 
   public boolean prompt(
@@ -83,31 +96,49 @@ public final class UserListIgnorePromptHandler {
     return ignoreListService != null && ignoreListService.addMask(serverId, arg);
   }
 
-  private static String resultMessage(
-      boolean changed, String stored, boolean removing, boolean soft) {
+  private String resultMessage(boolean changed, String stored, boolean removing, boolean soft) {
     if (soft) {
       if (removing) {
-        return changed
-            ? ("Removed soft ignore: " + stored)
-            : ("Not in soft-ignore list: " + stored);
+        return message(
+            changed
+                ? "userList.ignore.result.soft.removed"
+                : "userList.ignore.result.soft.notFound",
+            stored);
       }
-      return changed ? ("Soft ignoring: " + stored) : ("Already soft-ignored: " + stored);
+      return message(
+          changed ? "userList.ignore.result.soft.added" : "userList.ignore.result.soft.exists",
+          stored);
     }
     if (removing) {
-      return changed ? ("Removed ignore: " + stored) : ("Not in ignore list: " + stored);
+      return message(
+          changed ? "userList.ignore.result.hard.removed" : "userList.ignore.result.hard.notFound",
+          stored);
     }
-    return changed ? ("Ignoring: " + stored) : ("Already ignored: " + stored);
+    return message(
+        changed ? "userList.ignore.result.hard.added" : "userList.ignore.result.hard.exists",
+        stored);
   }
 
-  private static IgnoreDialogCopy dialogCopy(boolean removing, boolean soft) {
+  private IgnoreDialogCopy dialogCopy(boolean removing, boolean soft) {
     if (soft) {
       return removing
-          ? new IgnoreDialogCopy("Soft Unignore", "Remove soft-ignore mask (per-server):")
-          : new IgnoreDialogCopy("Soft Ignore", "Add soft-ignore mask (per-server):");
+          ? new IgnoreDialogCopy(
+              message("userList.ignore.soft.remove.title"),
+              message("userList.ignore.soft.remove.prompt"))
+          : new IgnoreDialogCopy(
+              message("userList.ignore.soft.add.title"),
+              message("userList.ignore.soft.add.prompt"));
     }
     return removing
-        ? new IgnoreDialogCopy("Unignore", "Remove ignore mask (per-server):")
-        : new IgnoreDialogCopy("Ignore", "Add ignore mask (per-server):");
+        ? new IgnoreDialogCopy(
+            message("userList.ignore.hard.remove.title"),
+            message("userList.ignore.hard.remove.prompt"))
+        : new IgnoreDialogCopy(
+            message("userList.ignore.hard.add.title"), message("userList.ignore.hard.add.prompt"));
+  }
+
+  private String message(String code, Object... args) {
+    return messages.text(code, args);
   }
 
   private static java.awt.Component dialogOwner(java.awt.Component parent) {

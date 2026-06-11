@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.settings.history;
 
 import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
 import cafe.woden.ircclient.config.properties.LogProperties;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.servers.ServerDialogs;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
@@ -14,6 +15,8 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 public final class LoggingControlsSupport {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private LoggingControlsSupport() {}
 
   public static LoggingControls buildControls(
@@ -36,41 +39,35 @@ public final class LoggingControlsSupport {
     boolean savePrivateMessageListCurrent =
         logProps == null || Boolean.TRUE.equals(logProps.savePrivateMessageList());
 
-    JCheckBox loggingEnabled = new JCheckBox("Enable chat logging (store messages to local DB)");
+    JCheckBox loggingEnabled = new JCheckBox(MESSAGES.text("preferences.logging.enabled"));
     loggingEnabled.setSelected(loggingEnabledCurrent);
-    loggingEnabled.setToolTipText(
-        "When enabled, IRCafe will persist chat messages to an embedded local database for history loading.\n"
-            + "Privacy-first: this is OFF by default.\n\n"
-            + "Note: enabling/disabling requires restarting IRCafe to take effect.");
+    loggingEnabled.setToolTipText(MESSAGES.text("preferences.logging.enabled.tooltip"));
 
-    JCheckBox loggingSoftIgnore = new JCheckBox("Log soft-ignored (spoiler) lines");
+    JCheckBox loggingSoftIgnore =
+        new JCheckBox(MESSAGES.text("preferences.logging.softIgnored.enabled"));
     loggingSoftIgnore.setSelected(logSoftIgnoredCurrent);
-    loggingSoftIgnore.setToolTipText(
-        "If enabled, messages that are soft-ignored (spoiler-covered) are still stored,\n"
-            + "and will re-load as spoiler-covered lines in history.");
+    loggingSoftIgnore.setToolTipText(MESSAGES.text("preferences.logging.softIgnored.tooltip"));
     loggingSoftIgnore.setEnabled(loggingEnabled.isSelected());
 
     JCheckBox redactionAuditEnabled =
-        new JCheckBox("Store original text for redacted messages in audit log");
+        new JCheckBox(MESSAGES.text("preferences.logging.redactionAudit.enabled"));
     redactionAuditEnabled.setSelected(redactionAuditEnabledCurrent);
     redactionAuditEnabled.setToolTipText(
-        "If enabled, IRCafe stores the original pre-redaction text in a separate audit table,\n"
-            + "while the normal chat log keeps only the [message redacted] placeholder.\n"
-            + "Use this only if you explicitly want local audit retention of redacted content.");
+        MESSAGES.text("preferences.logging.redactionAudit.tooltip"));
     redactionAuditEnabled.setEnabled(loggingEnabled.isSelected());
 
-    JCheckBox loggingPrivateMessages = new JCheckBox("Save private-message history");
+    JCheckBox loggingPrivateMessages =
+        new JCheckBox(MESSAGES.text("preferences.logging.privateMessages.enabled"));
     loggingPrivateMessages.setSelected(logPrivateMessagesCurrent);
     loggingPrivateMessages.setToolTipText(
-        "If enabled, PM/query messages are stored in the local history database.\n"
-            + "If disabled, only non-PM targets are persisted.");
+        MESSAGES.text("preferences.logging.privateMessages.tooltip"));
     loggingPrivateMessages.setEnabled(loggingEnabled.isSelected());
 
-    JCheckBox savePrivateMessageList = new JCheckBox("Save private-message chat list");
+    JCheckBox savePrivateMessageList =
+        new JCheckBox(MESSAGES.text("preferences.logging.privateMessageList.enabled"));
     savePrivateMessageList.setSelected(savePrivateMessageListCurrent);
     savePrivateMessageList.setToolTipText(
-        "If enabled, PM/query targets are remembered and re-opened after reconnect/restart.\n"
-            + "The per-server PM list is managed in Servers -> Edit -> Auto-Join.");
+        MESSAGES.text("preferences.logging.privateMessageList.tooltip"));
 
     boolean keepForeverCurrent = logProps == null || Boolean.TRUE.equals(logProps.keepForever());
     int retentionDaysCurrent =
@@ -78,19 +75,13 @@ public final class LoggingControlsSupport {
             ? SettingsRangeSupport.normalizeLoggingRetentionDays(logProps.retentionDays())
             : 0;
 
-    JCheckBox keepForever = new JCheckBox("Keep chat history forever (no retention pruning)");
+    JCheckBox keepForever = new JCheckBox(MESSAGES.text("preferences.logging.keepForever.enabled"));
     keepForever.setSelected(keepForeverCurrent);
-    keepForever.setToolTipText(
-        "If enabled, IRCafe will never automatically delete old chat history.\n"
-            + "If disabled, you can set a retention window in days to prune older rows.\n\n"
-            + "Note: retention pruning runs only when logging is enabled and takes effect after restart.");
+    keepForever.setToolTipText(MESSAGES.text("preferences.logging.keepForever.tooltip"));
 
     javax.swing.JSpinner retentionDays =
         PreferencesUiSupport.numberSpinner(retentionDaysCurrent, 0, 10_000, 1, closeables);
-    retentionDays.setToolTipText(
-        "Retention window in days (0 disables retention).\n"
-            + "Only used when Keep forever is unchecked.\n\n"
-            + "Note: applied on next restart.");
+    retentionDays.setToolTipText(MESSAGES.text("preferences.logging.retentionDays.tooltip"));
 
     int writerQueueMaxCurrent =
         (logProps != null && logProps.writerQueueMax() != null)
@@ -98,10 +89,7 @@ public final class LoggingControlsSupport {
             : 50_000;
     javax.swing.JSpinner writerQueueMax =
         PreferencesUiSupport.numberSpinner(writerQueueMaxCurrent, 100, 1_000_000, 500, closeables);
-    writerQueueMax.setToolTipText(
-        "Maximum buffered log lines before new lines are dropped.\n"
-            + "Higher values reduce drop risk during bursts but use more memory.\n\n"
-            + "Note: applied on next restart.");
+    writerQueueMax.setToolTipText(MESSAGES.text("preferences.logging.writerQueueMax.tooltip"));
 
     int writerBatchSizeCurrent =
         (logProps != null && logProps.writerBatchSize() != null)
@@ -109,10 +97,7 @@ public final class LoggingControlsSupport {
             : 250;
     javax.swing.JSpinner writerBatchSize =
         PreferencesUiSupport.numberSpinner(writerBatchSizeCurrent, 1, 10_000, 25, closeables);
-    writerBatchSize.setToolTipText(
-        "How many queued log lines are written per DB transaction.\n"
-            + "Larger batches improve write throughput, smaller batches reduce commit latency.\n\n"
-            + "Note: applied on next restart.");
+    writerBatchSize.setToolTipText(MESSAGES.text("preferences.logging.writerBatchSize.tooltip"));
 
     String dbBaseNameCurrent =
         (logProps != null && logProps.hsqldb() != null)
@@ -125,21 +110,15 @@ public final class LoggingControlsSupport {
 
     JTextField dbBaseName = new JTextField(dbBaseNameCurrent, 18);
     PreferencesUiSupport.placeholder(dbBaseName, "ircafe-chatlog");
-    dbBaseName.setToolTipText(
-        "Base filename for HSQLDB (no extension).\n"
-            + "HSQLDB will create multiple files like .data/.script/.properties.");
+    dbBaseName.setToolTipText(MESSAGES.text("preferences.logging.dbBaseName.tooltip"));
 
-    JCheckBox dbNextToConfig = new JCheckBox("Store DB next to runtime config file");
+    JCheckBox dbNextToConfig =
+        new JCheckBox(MESSAGES.text("preferences.logging.dbNextToConfig.enabled"));
     dbNextToConfig.setSelected(dbNextToConfigCurrent);
-    dbNextToConfig.setToolTipText(
-        "If enabled, the DB files are stored alongside your runtime YAML config (recommended).\n"
-            + "If disabled, IRCafe uses the default runtime-config directory\n"
-            + "(XDG_CONFIG_HOME/ircafe when set, otherwise ~/.config/ircafe).");
+    dbNextToConfig.setToolTipText(MESSAGES.text("preferences.logging.dbNextToConfig.tooltip"));
 
     JTextArea loggingInfo =
-        PreferencesUiSupport.helpText(
-            "Logging settings are applied on the next restart.\n"
-                + "Tip: You can enable logging first, restart, then history controls (Load older messages…) will appear when data exists.");
+        PreferencesUiSupport.helpText(MESSAGES.text("preferences.logging.info"));
     loggingInfo.setColumns(48);
 
     Runnable updateRetentionUi = () -> retentionDays.setEnabled(!keepForever.isSelected());
@@ -161,7 +140,8 @@ public final class LoggingControlsSupport {
     updateLoggingEnabledState.run();
 
     JButton managePmList =
-        PreferencesUiSupport.buttonWithIcon("Open Server Auto-Join Settings…", "settings");
+        PreferencesUiSupport.buttonWithIcon(
+            MESSAGES.text("preferences.logging.managePmList.button"), "settings");
     managePmList.setEnabled(serverDialogs != null);
     managePmList.addActionListener(
         e -> {

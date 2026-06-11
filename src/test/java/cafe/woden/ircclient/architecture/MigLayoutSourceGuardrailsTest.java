@@ -16,8 +16,7 @@ final class MigLayoutSourceGuardrailsTest {
 
   private static final Path UI_SOURCE_ROOT =
       Path.of(System.getProperty("user.dir"), "src/main/java/cafe/woden/ircclient/ui");
-  private static final Pattern RAW_STRING_ADD_CONSTRAINT =
-      Pattern.compile("\\.add\\s*\\([^;]*,\\s*\"([^\"]+)\"\\s*\\)", Pattern.DOTALL);
+  private static final Pattern ADD_INVOCATION = Pattern.compile("\\.add\\s*\\(");
 
   @Test
   void productionUiShouldUseMigConstraintsForComponentConstraints() throws IOException {
@@ -44,11 +43,115 @@ final class MigLayoutSourceGuardrailsTest {
     } catch (IOException ex) {
       throw new IllegalStateException("Failed to read " + path, ex);
     }
-    Matcher matcher = RAW_STRING_ADD_CONSTRAINT.matcher(source);
-    while (matcher.find()) {
-      violations.add(
-          relativePath(path) + ":" + lineNumber(source, matcher.start()) + ": " + matcher.group(1));
+    Matcher matcher = ADD_INVOCATION.matcher(source);
+    int searchFrom = 0;
+    while (matcher.find(searchFrom)) {
+      int openParen = source.indexOf('(', matcher.start());
+      int closeParen = findClosingParen(source, openParen);
+      if (closeParen < 0) {
+        searchFrom = matcher.end();
+        continue;
+      }
+      String secondArgument = topLevelSecondArgument(source.substring(openParen + 1, closeParen));
+      if (secondArgument == null || !secondArgument.stripLeading().startsWith("\"")) {
+        searchFrom = closeParen + 1;
+        continue;
+      }
+      String rawConstraint = firstStringLiteralValue(secondArgument);
+      if (!rawConstraint.isEmpty()) {
+        violations.add(
+            relativePath(path) + ":" + lineNumber(source, matcher.start()) + ": " + rawConstraint);
+      }
+      searchFrom = closeParen + 1;
     }
+  }
+
+  private static int findClosingParen(String source, int openParen) {
+    int depth = 0;
+    boolean inString = false;
+    boolean inChar = false;
+    boolean escaped = false;
+    for (int i = openParen; i < source.length(); i++) {
+      char ch = source.charAt(i);
+      if (inString || inChar) {
+        if (escaped) {
+          escaped = false;
+        } else if (ch == '\\') {
+          escaped = true;
+        } else if (inString && ch == '"') {
+          inString = false;
+        } else if (inChar && ch == '\'') {
+          inChar = false;
+        }
+        continue;
+      }
+      if (ch == '"') {
+        inString = true;
+      } else if (ch == '\'') {
+        inChar = true;
+      } else if (ch == '(') {
+        depth++;
+      } else if (ch == ')') {
+        depth--;
+        if (depth == 0) return i;
+      }
+    }
+    return -1;
+  }
+
+  private static String topLevelSecondArgument(String arguments) {
+    int depth = 0;
+    boolean inString = false;
+    boolean inChar = false;
+    boolean escaped = false;
+    for (int i = 0; i < arguments.length(); i++) {
+      char ch = arguments.charAt(i);
+      if (inString || inChar) {
+        if (escaped) {
+          escaped = false;
+        } else if (ch == '\\') {
+          escaped = true;
+        } else if (inString && ch == '"') {
+          inString = false;
+        } else if (inChar && ch == '\'') {
+          inChar = false;
+        }
+        continue;
+      }
+      if (ch == '"') {
+        inString = true;
+      } else if (ch == '\'') {
+        inChar = true;
+      } else if (ch == '(' || ch == '[' || ch == '{') {
+        depth++;
+      } else if (ch == ')' || ch == ']' || ch == '}') {
+        depth--;
+      } else if (ch == ',' && depth == 0) {
+        return arguments.substring(i + 1);
+      }
+    }
+    return null;
+  }
+
+  private static String firstStringLiteralValue(String source) {
+    int start = source.indexOf('"');
+    if (start < 0) return source.strip();
+    StringBuilder value = new StringBuilder();
+    boolean escaped = false;
+    for (int i = start + 1; i < source.length(); i++) {
+      char ch = source.charAt(i);
+      if (escaped) {
+        value.append(ch);
+        escaped = false;
+      } else if (ch == '\\') {
+        escaped = true;
+      } else if (ch == '"') {
+        return value.toString();
+      } else {
+        value.append(ch);
+      }
+    }
+    return source.strip();
   }
 
   private static String relativePath(Path path) {

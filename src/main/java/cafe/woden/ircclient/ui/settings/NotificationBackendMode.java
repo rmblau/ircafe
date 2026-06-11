@@ -1,16 +1,20 @@
 package cafe.woden.ircclient.ui.settings;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
+
 public enum NotificationBackendMode {
-  AUTO("auto", "Auto (Recommended)"),
-  NATIVE_ONLY("native-only", "Native only"),
-  TWO_SLICES_ONLY("two-slices-only", "Two-slices only");
+  AUTO("auto", "preferences.tray.notificationBackend.auto"),
+  NATIVE_ONLY("native-only", "preferences.tray.notificationBackend.nativeOnly"),
+  TWO_SLICES_ONLY("two-slices-only", "preferences.tray.notificationBackend.twoSlicesOnly");
+
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
   private final String token;
-  private final String label;
+  private final String labelKey;
 
-  NotificationBackendMode(String token, String label) {
+  NotificationBackendMode(String token, String labelKey) {
     this.token = token;
-    this.label = label;
+    this.labelKey = labelKey;
   }
 
   public String token() {
@@ -18,7 +22,7 @@ public enum NotificationBackendMode {
   }
 
   public String label() {
-    return label;
+    return MESSAGES.text(labelKey);
   }
 
   public static NotificationBackendMode fromToken(String raw) {
@@ -35,6 +39,6 @@ public enum NotificationBackendMode {
 
   @Override
   public String toString() {
-    return label;
+    return label();
   }
 }

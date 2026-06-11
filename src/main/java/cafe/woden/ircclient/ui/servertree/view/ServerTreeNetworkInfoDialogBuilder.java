@@ -4,6 +4,7 @@ import cafe.woden.ircclient.app.api.ConnectionState;
 import cafe.woden.ircclient.config.api.IrcSessionRuntimeConfigPort;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionCatalog;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionRegistry;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.servertree.ServerTreeConventions;
 import cafe.woden.ircclient.ui.servertree.state.ServerRuntimeMetadata;
 import cafe.woden.ircclient.ui.servertree.viewmodel.ServerTreeConnectionStateViewModel;
@@ -51,6 +52,12 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public final class ServerTreeNetworkInfoDialogBuilder {
+
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
+  private static String message(String code, Object... args) {
+    return MESSAGES.text(code, args);
+  }
 
   public interface Context {
     ConnectionState connectionStateForServer(String serverId);
@@ -144,7 +151,7 @@ public final class ServerTreeNetworkInfoDialogBuilder {
     if (sid.isEmpty() || metadata == null) return;
 
     Window owner = ownerComponent == null ? null : SwingUtilities.getWindowAncestor(ownerComponent);
-    String title = "Network Info - " + context.prettyServerLabel(sid);
+    String title = message("serverTree.networkInfo.dialog.title", context.prettyServerLabel(sid));
 
     JDialog dialog = new JDialog(owner, title, Dialog.ModalityType.APPLICATION_MODAL);
     dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
@@ -156,11 +163,14 @@ public final class ServerTreeNetworkInfoDialogBuilder {
     body.add(buildNetworkSummaryPanel(context, sid, metadata), MigConstraints.growX());
 
     JTabbedPane tabs = new JTabbedPane();
-    tabs.addTab("Overview", buildOverviewTab(context, sid, metadata));
     tabs.addTab(
-        "Capabilities (" + metadata.ircv3Caps.size() + ")",
+        message("serverTree.networkInfo.tab.overview"), buildOverviewTab(context, sid, metadata));
+    tabs.addTab(
+        message("serverTree.networkInfo.tab.capabilities", metadata.ircv3Caps.size()),
         buildCapabilitiesInfoPanel(context, sid, metadata));
-    tabs.addTab("ISUPPORT (" + metadata.isupport.size() + ")", buildIsupportInfoPanel(metadata));
+    tabs.addTab(
+        message("serverTree.networkInfo.tab.isupport", metadata.isupport.size()),
+        buildIsupportInfoPanel(metadata));
     body.add(tabs, MigConstraints.growPush());
 
     JScrollPane bodyScroll =
@@ -172,7 +182,7 @@ public final class ServerTreeNetworkInfoDialogBuilder {
     bodyScroll.getVerticalScrollBar().setUnitIncrement(16);
     bodyScroll.setPreferredSize(new Dimension(820, 470));
 
-    JButton close = new JButton("Close");
+    JButton close = new JButton(message("common.button.close"));
     close.addActionListener(ev -> dialog.dispose());
     JPanel actions = new JPanel(MigLayouts.fillXGrowTrailing());
     actions.add(new JLabel(""), MigConstraints.growX());
@@ -199,7 +209,8 @@ public final class ServerTreeNetworkInfoDialogBuilder {
       Context context, String serverId, ServerRuntimeMetadata metadata) {
     JPanel panel =
         new JPanel(MigLayouts.fillXWrap(8, 2, "[grow,fill][right]", MigLayouts.rows(2, 4)));
-    panel.setBorder(BorderFactory.createTitledBorder("Summary"));
+    panel.setBorder(
+        BorderFactory.createTitledBorder(message("serverTree.networkInfo.summary.title")));
 
     ConnectionState state = context.connectionStateForServer(serverId);
     boolean desired = context.desiredOnlineForServer(serverId);
@@ -210,23 +221,27 @@ public final class ServerTreeNetworkInfoDialogBuilder {
       title.setFont(base.deriveFont(Font.BOLD, base.getSize2D() + 1.5f));
     }
     panel.add(title, MigConstraints.growX());
-    panel.add(new JLabel("State: " + ServerTreeConnectionStateViewModel.stateLabel(state)));
+    panel.add(
+        new JLabel(
+            message(
+                "serverTree.networkInfo.summary.state",
+                ServerTreeConnectionStateViewModel.stateLabel(state))));
 
     String endpoint = formatConnectedEndpoint(metadata.connectedHost, metadata.connectedPort);
     String nick = fallbackInfoValue(metadata.nick);
-    panel.add(new JLabel("Network ID: " + serverId), MigConstraints.span2GrowX());
+    panel.add(
+        new JLabel(message("serverTree.networkInfo.summary.networkId", serverId)),
+        MigConstraints.span2GrowX());
     panel.add(
         new JLabel(
-            "Endpoint: "
-                + endpoint
-                + "    Nick: "
-                + nick
-                + "    Intent: "
-                + ServerTreeConnectionStateViewModel.desiredIntentLabel(desired)
-                + "    Backend: "
-                + renderBackendInfo(
+            message(
+                "serverTree.networkInfo.summary.connection",
+                endpoint,
+                nick,
+                ServerTreeConnectionStateViewModel.desiredIntentLabel(desired),
+                renderBackendInfo(
                     context.backendDisplayNameForServer(serverId),
-                    context.backendIdForServer(serverId))),
+                    context.backendIdForServer(serverId)))),
         MigConstraints.span2GrowX());
     return panel;
   }
@@ -244,7 +259,8 @@ public final class ServerTreeNetworkInfoDialogBuilder {
   private JPanel buildConnectionInfoPanel(
       Context context, String serverId, ServerRuntimeMetadata metadata) {
     JPanel panel = new JPanel(MigLayouts.fillXWrap(8, 2, MigLayoutConstraints.RIGHT_GROW_FILL, ""));
-    panel.setBorder(BorderFactory.createTitledBorder("Connection"));
+    panel.setBorder(
+        BorderFactory.createTitledBorder(message("serverTree.networkInfo.connection.title")));
     for (InfoRow row : connectionInfoRows(context, serverId, metadata)) {
       addInfoRow(panel, row.key(), row.value());
     }
@@ -259,41 +275,65 @@ public final class ServerTreeNetworkInfoDialogBuilder {
     ConnectionState state = context.connectionStateForServer(serverId);
     boolean desired = context.desiredOnlineForServer(serverId);
 
-    rows.add(new InfoRow("Network ID", serverId));
-    rows.add(new InfoRow("Display", context.prettyServerLabel(serverId)));
+    rows.add(new InfoRow(message("serverTree.networkInfo.row.networkId"), serverId));
     rows.add(
         new InfoRow(
-            "Backend",
+            message("serverTree.networkInfo.row.display"), context.prettyServerLabel(serverId)));
+    rows.add(
+        new InfoRow(
+            message("serverTree.networkInfo.row.backend"),
             renderBackendInfo(
                 context.backendDisplayNameForServer(serverId),
                 context.backendIdForServer(serverId))));
-    rows.add(new InfoRow("State", ServerTreeConnectionStateViewModel.stateLabel(state)));
-    rows.add(new InfoRow("Intent", ServerTreeConnectionStateViewModel.desiredIntentLabel(desired)));
     rows.add(
         new InfoRow(
-            "Connected endpoint", formatConnectedEndpoint(meta.connectedHost, meta.connectedPort)));
-    rows.add(new InfoRow("Current nick", fallbackInfoValue(meta.nick)));
+            message("serverTree.networkInfo.row.state"),
+            ServerTreeConnectionStateViewModel.stateLabel(state)));
     rows.add(
         new InfoRow(
-            "Connected at",
+            message("serverTree.networkInfo.row.intent"),
+            ServerTreeConnectionStateViewModel.desiredIntentLabel(desired)));
+    rows.add(
+        new InfoRow(
+            message("serverTree.networkInfo.row.connectedEndpoint"),
+            formatConnectedEndpoint(meta.connectedHost, meta.connectedPort)));
+    rows.add(
+        new InfoRow(
+            message("serverTree.networkInfo.row.currentNick"), fallbackInfoValue(meta.nick)));
+    rows.add(
+        new InfoRow(
+            message("serverTree.networkInfo.row.connectedAt"),
             meta.connectedAt == null
-                ? "(unknown)"
+                ? message("common.value.unknown.parenthesized")
                 : SERVER_META_TIME_FMT.format(meta.connectedAt)));
 
     String diagnostics = context.connectionDiagnosticsTipForServer(serverId).trim();
     if (!diagnostics.isEmpty()) {
-      rows.add(new InfoRow("Diagnostics", diagnostics));
+      rows.add(new InfoRow(message("serverTree.networkInfo.row.diagnostics"), diagnostics));
     }
     return List.copyOf(rows);
   }
 
   private JPanel buildServerInfoPanel(ServerRuntimeMetadata metadata) {
     JPanel panel = new JPanel(MigLayouts.fillXWrap(8, 2, MigLayoutConstraints.RIGHT_GROW_FILL, ""));
-    panel.setBorder(BorderFactory.createTitledBorder("Server"));
-    addInfoRow(panel, "Server name", fallbackInfoValue(metadata.serverName));
-    addInfoRow(panel, "Version", fallbackInfoValue(metadata.serverVersion));
-    addInfoRow(panel, "User modes", fallbackInfoValue(metadata.userModes));
-    addInfoRow(panel, "Channel modes", fallbackInfoValue(metadata.channelModes));
+    panel.setBorder(
+        BorderFactory.createTitledBorder(message("serverTree.networkInfo.server.title")));
+    addInfoRow(
+        panel,
+        message("serverTree.networkInfo.row.serverName"),
+        fallbackInfoValue(metadata.serverName));
+    addInfoRow(
+        panel,
+        message("serverTree.networkInfo.row.version"),
+        fallbackInfoValue(metadata.serverVersion));
+    addInfoRow(
+        panel,
+        message("serverTree.networkInfo.row.userModes"),
+        fallbackInfoValue(metadata.userModes));
+    addInfoRow(
+        panel,
+        message("serverTree.networkInfo.row.channelModes"),
+        fallbackInfoValue(metadata.channelModes));
     return panel;
   }
 
@@ -306,7 +346,7 @@ public final class ServerTreeNetworkInfoDialogBuilder {
     panel.add(buildCapabilityCountsRow(metadata), MigConstraints.growX());
     panel.add(new JLabel(capabilityStatusSummary(metadata)), MigConstraints.growX());
     panel.add(
-        new JLabel("Toggle Requested to send CAP REQ now and persist the startup preference."),
+        new JLabel(message("serverTree.networkInfo.capabilities.toggleHint")),
         MigConstraints.growX());
     panel.add(buildCapabilityFeatureSummaryPanel(metadata), MigConstraints.growX());
 
@@ -325,7 +365,8 @@ public final class ServerTreeNetworkInfoDialogBuilder {
     }
 
     if (allCapabilities.isEmpty()) {
-      panel.add(new JLabel("No IRCv3 capabilities observed yet."), MigConstraints.grow());
+      panel.add(
+          new JLabel(message("serverTree.networkInfo.capabilities.empty")), MigConstraints.grow());
       panel.add(buildCapabilityTransitionsPanel(metadata), MigConstraints.grow());
       return panel;
     }
@@ -335,14 +376,22 @@ public final class ServerTreeNetworkInfoDialogBuilder {
     for (String capName : allCapabilities) {
       ServerRuntimeMetadata.CapabilityState state = sortedObserved.get(capName);
       rows[idx][0] = capName;
-      rows[idx][1] = state == null ? "(not seen)" : state.label;
+      rows[idx][1] =
+          state == null ? message("serverTree.networkInfo.capabilities.notSeen") : state.label;
       rows[idx][2] = isCapabilityRequested(capName);
       rows[idx][3] = fallbackInfoValue(metadata.ircv3CapLastSubcommand.get(capName));
       idx++;
     }
 
     DefaultTableModel model =
-        new DefaultTableModel(rows, new String[] {"Capability", "State", "Requested", "Last CAP"}) {
+        new DefaultTableModel(
+            rows,
+            new String[] {
+              message("serverTree.networkInfo.capabilities.column.capability"),
+              message("serverTree.networkInfo.capabilities.column.state"),
+              message("serverTree.networkInfo.capabilities.column.requested"),
+              message("serverTree.networkInfo.capabilities.column.lastCap")
+            }) {
           @Override
           public boolean isCellEditable(int row, int column) {
             if (column != 2) {
@@ -401,12 +450,15 @@ public final class ServerTreeNetworkInfoDialogBuilder {
         new JPanel(
             MigLayouts.fillWrap(
                 0, 1, MigLayoutConstraints.GROW_FILL, MigLayoutConstraints.LEADING_GROW_FILL));
-    panel.setBorder(BorderFactory.createTitledBorder("Feature readiness"));
+    panel.setBorder(
+        BorderFactory.createTitledBorder(message("serverTree.networkInfo.featureReadiness.title")));
 
     List<CapabilityFeatureStatus> statuses =
         computeCapabilityFeatureStatuses(metadata, ircv3ExtensionCatalog.visibleFeatures());
     if (statuses.isEmpty()) {
-      panel.add(new JLabel("No mapped IRCv3 feature requirements."), MigConstraints.growX());
+      panel.add(
+          new JLabel(message("serverTree.networkInfo.featureReadiness.empty")),
+          MigConstraints.growX());
       return panel;
     }
 
@@ -418,7 +470,14 @@ public final class ServerTreeNetworkInfoDialogBuilder {
       rows[i][2] = status.detail();
     }
 
-    JTable table = buildReadOnlyTable(new String[] {"Feature", "Status", "Details"}, rows);
+    JTable table =
+        buildReadOnlyTable(
+            new String[] {
+              message("serverTree.networkInfo.featureReadiness.column.feature"),
+              message("serverTree.networkInfo.featureReadiness.column.status"),
+              message("serverTree.networkInfo.featureReadiness.column.details")
+            },
+            rows);
     JScrollPane scroll = new JScrollPane(table);
     scroll.setPreferredSize(new Dimension(1, 140));
     scroll.getVerticalScrollBar().setUnitIncrement(16);
@@ -479,22 +538,27 @@ public final class ServerTreeNetworkInfoDialogBuilder {
         }
       }
       if (!feature.requiredAny().isEmpty() && !anySatisfied) {
-        missing.add("one of: " + String.join(", ", feature.requiredAny()));
+        missing.add(
+            message(
+                "serverTree.networkInfo.featureReadiness.oneOf",
+                String.join(", ", feature.requiredAny())));
       }
 
       String status;
       if (missing.isEmpty()) {
-        status = "Ready";
+        status = message("serverTree.networkInfo.featureReadiness.status.ready");
       } else if (satisfiedRequired > 0 || (hasRequiredAny && anySatisfied)) {
-        status = "Partial";
+        status = message("serverTree.networkInfo.featureReadiness.status.partial");
       } else {
-        status = "Unavailable";
+        status = message("serverTree.networkInfo.featureReadiness.status.unavailable");
       }
 
       String detail =
           missing.isEmpty()
-              ? "All required capabilities are enabled."
-              : "Missing: " + String.join(", ", missing);
+              ? message("serverTree.networkInfo.featureReadiness.detail.ready")
+              : message(
+                  "serverTree.networkInfo.featureReadiness.detail.missing",
+                  String.join(", ", missing));
       out.add(new CapabilityFeatureStatus(feature.label(), status, detail));
     }
     return out;
@@ -513,9 +577,12 @@ public final class ServerTreeNetworkInfoDialogBuilder {
         new JPanel(
             MigLayouts.fillWrap(
                 0, 1, MigLayoutConstraints.GROW_FILL, MigLayoutConstraints.LEADING_GROW_FILL));
-    panel.setBorder(BorderFactory.createTitledBorder("Recent CAP transitions"));
+    panel.setBorder(
+        BorderFactory.createTitledBorder(message("serverTree.networkInfo.capTransitions.title")));
     if (metadata.ircv3CapTransitions.isEmpty()) {
-      panel.add(new JLabel("No CAP transitions observed yet."), MigConstraints.growX());
+      panel.add(
+          new JLabel(message("serverTree.networkInfo.capTransitions.empty")),
+          MigConstraints.growX());
       return panel;
     }
 
@@ -532,7 +599,15 @@ public final class ServerTreeNetworkInfoDialogBuilder {
       out++;
     }
 
-    JTable table = buildReadOnlyTable(new String[] {"Time", "CAP", "Capability", "State"}, rows);
+    JTable table =
+        buildReadOnlyTable(
+            new String[] {
+              message("serverTree.networkInfo.capTransitions.column.time"),
+              message("serverTree.networkInfo.capTransitions.column.cap"),
+              message("serverTree.networkInfo.capTransitions.column.capability"),
+              message("serverTree.networkInfo.capTransitions.column.state")
+            },
+            rows);
     JScrollPane scroll = new JScrollPane(table);
     scroll.getVerticalScrollBar().setUnitIncrement(16);
     panel.add(scroll, MigConstraints.grow());
@@ -545,7 +620,8 @@ public final class ServerTreeNetworkInfoDialogBuilder {
             MigLayouts.fillWrap(
                 8, 1, MigLayoutConstraints.GROW_FILL, MigLayoutConstraints.GROW_FILL));
     if (metadata.isupport.isEmpty()) {
-      panel.add(new JLabel("No ISUPPORT tokens observed yet."), MigConstraints.grow());
+      panel.add(
+          new JLabel(message("serverTree.networkInfo.isupport.empty")), MigConstraints.grow());
       return panel;
     }
 
@@ -556,11 +632,17 @@ public final class ServerTreeNetworkInfoDialogBuilder {
     for (Map.Entry<String, String> entry : sorted.entrySet()) {
       String val = Objects.toString(entry.getValue(), "");
       rows[idx][0] = entry.getKey();
-      rows[idx][1] = val.isBlank() ? "(present)" : val;
+      rows[idx][1] = val.isBlank() ? message("serverTree.networkInfo.isupport.present") : val;
       idx++;
     }
 
-    JTable table = buildReadOnlyTable(new String[] {"Token", "Value"}, rows);
+    JTable table =
+        buildReadOnlyTable(
+            new String[] {
+              message("serverTree.networkInfo.isupport.column.token"),
+              message("serverTree.networkInfo.isupport.column.value")
+            },
+            rows);
     JScrollPane scroll = new JScrollPane(table);
     scroll.getVerticalScrollBar().setUnitIncrement(16);
     panel.add(scroll, MigConstraints.grow());
@@ -586,19 +668,23 @@ public final class ServerTreeNetworkInfoDialogBuilder {
             MigLayouts.fillXWrap(0, 4, "[grow,fill]8[grow,fill]8[grow,fill]8[grow,fill]", "[]"));
     row.add(
         buildCountChip(
-            "Enabled", counts.getOrDefault(ServerRuntimeMetadata.CapabilityState.ENABLED, 0)),
+            message("serverTree.networkInfo.capabilityCount.enabled"),
+            counts.getOrDefault(ServerRuntimeMetadata.CapabilityState.ENABLED, 0)),
         MigConstraints.growX());
     row.add(
         buildCountChip(
-            "Available", counts.getOrDefault(ServerRuntimeMetadata.CapabilityState.AVAILABLE, 0)),
+            message("serverTree.networkInfo.capabilityCount.available"),
+            counts.getOrDefault(ServerRuntimeMetadata.CapabilityState.AVAILABLE, 0)),
         MigConstraints.growX());
     row.add(
         buildCountChip(
-            "Disabled", counts.getOrDefault(ServerRuntimeMetadata.CapabilityState.DISABLED, 0)),
+            message("serverTree.networkInfo.capabilityCount.disabled"),
+            counts.getOrDefault(ServerRuntimeMetadata.CapabilityState.DISABLED, 0)),
         MigConstraints.growX());
     row.add(
         buildCountChip(
-            "Removed", counts.getOrDefault(ServerRuntimeMetadata.CapabilityState.REMOVED, 0)),
+            message("serverTree.networkInfo.capabilityCount.removed"),
+            counts.getOrDefault(ServerRuntimeMetadata.CapabilityState.REMOVED, 0)),
         MigConstraints.growX());
     return row;
   }
@@ -629,7 +715,7 @@ public final class ServerTreeNetworkInfoDialogBuilder {
 
   private String capabilityStatusSummary(ServerRuntimeMetadata metadata) {
     if (metadata == null || metadata.ircv3Caps.isEmpty()) {
-      return "Requested but not enabled: (none)";
+      return message("serverTree.networkInfo.capabilities.requestedButNotEnabled.none");
     }
 
     List<String> pending = new ArrayList<>();
@@ -645,19 +731,21 @@ public final class ServerTreeNetworkInfoDialogBuilder {
       if (ServerRuntimeMetadata.CapabilityState.ENABLED.equals(state)) {
         continue;
       }
-      String label = state == null ? "unknown" : state.label;
+      String label = state == null ? message("common.value.unknown") : state.label;
       pending.add(cap + " [" + label + "]");
     }
 
     if (pending.isEmpty()) {
-      return "Requested but not enabled: (none)";
+      return message("serverTree.networkInfo.capabilities.requestedButNotEnabled.none");
     }
     int limit = Math.min(8, pending.size());
     String joined = String.join(", ", pending.subList(0, limit));
     if (pending.size() > limit) {
-      joined = joined + ", +" + (pending.size() - limit) + " more";
+      joined =
+          message(
+              "serverTree.networkInfo.capabilities.summary.more", joined, pending.size() - limit);
     }
-    return "Requested but not enabled: " + joined;
+    return message("serverTree.networkInfo.capabilities.requestedButNotEnabled", joined);
   }
 
   private static JPanel buildCountChip(String label, int count) {
@@ -722,18 +810,18 @@ public final class ServerTreeNetworkInfoDialogBuilder {
     if (id.isEmpty() || displayName.equalsIgnoreCase(id)) {
       return displayName;
     }
-    return displayName + " (" + id + ")";
+    return message("serverTree.networkInfo.backend.withId", displayName, id);
   }
 
   private static String fallbackInfoValue(String value) {
     String v = Objects.toString(value, "").trim();
-    return v.isEmpty() ? "(unknown)" : v;
+    return v.isEmpty() ? message("common.value.unknown.parenthesized") : v;
   }
 
   private static String formatConnectedEndpoint(String host, int port) {
     String h = Objects.toString(host, "").trim();
     if (h.isEmpty() && port <= 0) {
-      return "(unknown)";
+      return message("common.value.unknown.parenthesized");
     }
     if (h.isEmpty()) {
       return ":" + port;

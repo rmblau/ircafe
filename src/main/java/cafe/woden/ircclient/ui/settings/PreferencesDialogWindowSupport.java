@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.settings;
 
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.appearance.AppearanceLivePreviewSession;
 import cafe.woden.ircclient.ui.util.CloseableScope;
 import cafe.woden.ircclient.ui.util.DialogCloseableScopeDecorator;
@@ -19,7 +20,7 @@ final class PreferencesDialogWindowSupport {
   private PreferencesDialogWindowSupport() {}
 
   static JDialog show(ShowRequest request) {
-    JDialog dialog = createDialog(request.owner());
+    JDialog dialog = createDialog(request.owner(), request.messages());
     if (request.dialogOpened() != null) {
       request.dialogOpened().accept(dialog);
     }
@@ -80,8 +81,10 @@ final class PreferencesDialogWindowSupport {
     return dialog;
   }
 
-  private static JDialog createDialog(Window owner) {
-    JDialog dialog = new JDialog(owner, "Preferences", JDialog.ModalityType.APPLICATION_MODAL);
+  private static JDialog createDialog(Window owner, UiMessages messages) {
+    JDialog dialog =
+        new JDialog(
+            owner, messages.text("preferences.title"), JDialog.ModalityType.APPLICATION_MODAL);
     dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
     return dialog;
   }
@@ -109,6 +112,7 @@ final class PreferencesDialogWindowSupport {
       Runnable doApply,
       PreferencesDialogActionButtonsSupport.Buttons buttons,
       List<Tab> tabs,
+      UiMessages messages,
       Consumer<JDialog> dialogOpened,
       Consumer<JDialog> dialogClosed) {}
 

@@ -1,26 +1,29 @@
 package cafe.woden.ircclient.ui.settings.appearance;
 
 import cafe.woden.ircclient.config.api.AppearanceRuntimeConfigPort;
+import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import javax.swing.JCheckBox;
 
 final class AppearanceServerTreeControlsFactory {
+  private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+
   private AppearanceServerTreeControlsFactory() {}
 
   static AppearanceServerTreeControls build(UiSettings current) {
     ColorField unreadChannelColor =
         AppearanceColorFieldFactory.build(
             current != null ? current.serverTreeUnreadChannelColor() : null,
-            "Pick a channel color for unread messages");
+            MESSAGES.text("preferences.appearance.serverTree.picker.unread"));
     ColorField highlightChannelColor =
         AppearanceColorFieldFactory.build(
             current != null ? current.serverTreeHighlightChannelColor() : null,
-            "Pick a channel color for unread highlights/mentions");
+            MESSAGES.text("preferences.appearance.serverTree.picker.highlight"));
     JCheckBox preserveDockLayoutBetweenSessions =
-        new JCheckBox("Preserve dock layout between restarts");
+        new JCheckBox(MESSAGES.text("preferences.appearance.serverTree.preserveDockLayout"));
     preserveDockLayoutBetweenSessions.setToolTipText(
-        "When enabled, dock positions/splits are restored on next app launch.");
+        MESSAGES.text("preferences.appearance.serverTree.preserveDockLayout.tooltip"));
     preserveDockLayoutBetweenSessions.setSelected(
         current != null && current.preserveDockLayoutBetweenSessions());
     return new AppearanceServerTreeControls(
@@ -33,17 +36,20 @@ final class AppearanceServerTreeControlsFactory {
     try {
       String unreadChannelColor =
           SettingsColorSupport.normalizeOptionalHexForApply(
-              controls.unreadChannelColor.hex.getText(), "Unread channel color");
+              controls.unreadChannelColor.hex.getText(),
+              MESSAGES.text("preferences.appearance.field.unreadChannelColor"));
       String highlightChannelColor =
           SettingsColorSupport.normalizeOptionalHexForApply(
-              controls.highlightChannelColor.hex.getText(), "Highlight channel color");
+              controls.highlightChannelColor.hex.getText(),
+              MESSAGES.text("preferences.appearance.field.highlightChannelColor"));
       return new AppearanceControlsSupport.ServerTreeAppearanceSettings(
           unreadChannelColor,
           highlightChannelColor,
           controls.preserveDockLayoutBetweenSessions.isSelected());
     } catch (IllegalArgumentException ex) {
       throw new AppearanceControlsSupport.AppearanceSettingsException(
-          "Invalid server tree color", ex.getMessage());
+          MESSAGES.text("preferences.appearance.validation.serverTreeColor.title"),
+          ex.getMessage());
     }
   }
 

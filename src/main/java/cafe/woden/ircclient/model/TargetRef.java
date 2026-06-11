@@ -18,6 +18,7 @@ public final class TargetRef {
 
   public static final String NOTIFICATIONS_TARGET = "__notifications__";
   public static final String CHANNEL_LIST_TARGET = "__channel_list__";
+  public static final String MEMOSERV_TARGET = "__memoserv__";
   public static final String WEECHAT_FILTERS_TARGET = "__weechat_filters__";
   public static final String IGNORES_TARGET = "__ignores__";
   public static final String DCC_TRANSFERS_TARGET = "__dcc_transfers__";
@@ -63,6 +64,14 @@ public final class TargetRef {
 
   public static TargetRef channelList(String serverId, String networkToken) {
     return new TargetRef(serverId, withNetworkQualifier(CHANNEL_LIST_TARGET, networkToken));
+  }
+
+  public static TargetRef memoServ(String serverId) {
+    return new TargetRef(serverId, MEMOSERV_TARGET);
+  }
+
+  public static TargetRef memoServ(String serverId, String networkToken) {
+    return new TargetRef(serverId, withNetworkQualifier(MEMOSERV_TARGET, networkToken));
   }
 
   public static TargetRef weechatFilters(String serverId) {
@@ -184,6 +193,10 @@ public final class TargetRef {
     return matchesBuiltInKey(CHANNEL_LIST_TARGET);
   }
 
+  public boolean isMemoServ() {
+    return matchesBuiltInKey(MEMOSERV_TARGET);
+  }
+
   public boolean isWeechatFilters() {
     return matchesBuiltInKey(WEECHAT_FILTERS_TARGET);
   }
@@ -285,6 +298,7 @@ public final class TargetRef {
     // "status" is a real transcript buffer in ircafe (and can accept raw server input).
     return isNotifications()
         || isChannelList()
+        || isMemoServ()
         || isWeechatFilters()
         || isIgnores()
         || isDccTransfers()
@@ -335,6 +349,7 @@ public final class TargetRef {
     if (t.isEmpty()) return "";
     if (NOTIFICATIONS_TARGET.equals(t)) return NOTIFICATIONS_TARGET;
     if (CHANNEL_LIST_TARGET.equals(t)) return CHANNEL_LIST_TARGET;
+    if (MEMOSERV_TARGET.equals(t)) return MEMOSERV_TARGET;
     if (WEECHAT_FILTERS_TARGET.equals(t)) return WEECHAT_FILTERS_TARGET;
     if (IGNORES_TARGET.equals(t)) return IGNORES_TARGET;
     if (DCC_TRANSFERS_TARGET.equals(t)) return DCC_TRANSFERS_TARGET;
