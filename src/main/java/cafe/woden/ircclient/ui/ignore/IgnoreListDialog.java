@@ -564,8 +564,7 @@ public class IgnoreListDialog {
     for (String token : input.split("[,\\s]+")) {
       String normalized = normalizeLevelToken(token);
       if (normalized.isEmpty()) {
-        return ParseResult.error(
-            message(messages, "ignoreLists.validation.unknownLevel", token));
+        return ParseResult.error(message(messages, "ignoreLists.validation.unknownLevel", token));
       }
       out.add(normalized);
     }
@@ -608,26 +607,22 @@ public class IgnoreListDialog {
       try {
         long epochMs = Long.parseLong(input);
         if (epochMs <= 0L) {
-          return ParseResult.error(
-              message(messages, "ignoreLists.validation.expiry.positive"));
+          return ParseResult.error(message(messages, "ignoreLists.validation.expiry.positive"));
         }
         return ParseResult.ok(epochMs);
       } catch (Exception ex) {
-        return ParseResult.error(
-            message(messages, "ignoreLists.validation.expiry.invalidEpoch"));
+        return ParseResult.error(message(messages, "ignoreLists.validation.expiry.invalidEpoch"));
       }
     }
 
     try {
       long epochMs = Instant.parse(input).toEpochMilli();
       if (epochMs <= 0L) {
-        return ParseResult.error(
-            message(messages, "ignoreLists.validation.expiry.afterEpoch"));
+        return ParseResult.error(message(messages, "ignoreLists.validation.expiry.afterEpoch"));
       }
       return ParseResult.ok(epochMs);
     } catch (Exception ex) {
-      return ParseResult.error(
-          message(messages, "ignoreLists.validation.expiry.invalidFormat"));
+      return ParseResult.error(message(messages, "ignoreLists.validation.expiry.invalidFormat"));
     }
   }
 
@@ -709,15 +704,12 @@ public class IgnoreListDialog {
 
     List<String> metadata = new ArrayList<>();
     List<String> normalizedLevels = IgnoreLevels.normalizeConfigured(levels);
-    if (!(normalizedLevels.size() == 1
-        && "ALL".equalsIgnoreCase(normalizedLevels.getFirst()))) {
+    if (!(normalizedLevels.size() == 1 && "ALL".equalsIgnoreCase(normalizedLevels.getFirst()))) {
       metadata.add(
-          message(
-              messages, "ignoreLists.metadata.levels", String.join(",", normalizedLevels)));
+          message(messages, "ignoreLists.metadata.levels", String.join(",", normalizedLevels)));
     }
     if (channels != null && !channels.isEmpty()) {
-      metadata.add(
-          message(messages, "ignoreLists.metadata.channels", String.join(",", channels)));
+      metadata.add(message(messages, "ignoreLists.metadata.channels", String.join(",", channels)));
     }
     if (expiresAtEpochMs > 0L) {
       metadata.add(
@@ -788,8 +780,7 @@ public class IgnoreListDialog {
       return new ParseResult<>(
           null,
           Objects.toString(
-              error,
-              UiMessages.bundledDefaults().text("ignoreLists.validation.invalidValue")));
+              error, UiMessages.bundledDefaults().text("ignoreLists.validation.invalidValue")));
     }
   }
 }

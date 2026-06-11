@@ -19,10 +19,7 @@ public record ValidationError(int rowIndex, String label, String pattern, String
             : MESSAGES.text("preferences.notifications.rules.validation.invalidRegex.default");
     if (msg.length() > 180) msg = msg.substring(0, 180) + "…";
     return MESSAGES.text(
-        "preferences.notifications.rules.validation.inline",
-        rowIndex + 1,
-        effectiveLabel(),
-        msg);
+        "preferences.notifications.rules.validation.inline", rowIndex + 1, effectiveLabel(), msg);
   }
 
   public String formatForDialog() {

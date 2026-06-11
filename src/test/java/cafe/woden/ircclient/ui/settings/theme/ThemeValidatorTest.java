@@ -422,8 +422,7 @@ class ThemeValidatorTest {
                   UiColorKeys.TABBED_PANE_TAB_SELECTED_TEXT_FOREGROUND,
                   UiColorKeys.TABBED_PANE_FOREGROUND,
                   UiColorKeys.LABEL_FOREGROUND);
-          Color idlePaint =
-              samplePainter(UiDefaultKeys.TABBED_PANE_TAB_ENABLED_BACKGROUND_PAINTER);
+          Color idlePaint = samplePainter(UiDefaultKeys.TABBED_PANE_TAB_ENABLED_BACKGROUND_PAINTER);
           Color selectedPaint =
               samplePainter(UiDefaultKeys.TABBED_PANE_TAB_SELECTED_BACKGROUND_PAINTER);
 
@@ -478,7 +477,8 @@ class ThemeValidatorTest {
                   UiColorKeys.LABEL_FOREGROUND);
           Color comboPaint = samplePainter(UiDefaultKeys.COMBO_BOX_ENABLED_BACKGROUND_PAINTER);
           Color arrowPaint =
-              samplePainter(UiDefaultKeys.COMBO_BOX_ARROW_BUTTON_EDITABLE_ENABLED_BACKGROUND_PAINTER);
+              samplePainter(
+                  UiDefaultKeys.COMBO_BOX_ARROW_BUTTON_EDITABLE_ENABLED_BACKGROUND_PAINTER);
           Color textFieldPaint =
               samplePainter(UiDefaultKeys.COMBO_BOX_TEXT_FIELD_ENABLED_BACKGROUND_PAINTER);
           Color arrowGlyph =

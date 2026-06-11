@@ -56,8 +56,7 @@ class UiMessagesTest {
 
     assertEquals("Add server", messages.text("serverTree.header.addServer.tooltip"));
     assertEquals(
-        "Connect all disconnected servers",
-        messages.text("serverTree.header.connectAll.tooltip"));
+        "Connect all disconnected servers", messages.text("serverTree.header.connectAll.tooltip"));
     assertEquals(
         "Disconnect connected/connecting servers",
         messages.text("serverTree.header.disconnectAll.tooltip"));
@@ -132,8 +131,7 @@ class UiMessagesTest {
     assertEquals("Ignored + soft ignored", messages.text("userList.tooltip.ignore.hardAndSoft"));
     assertEquals("Ignored (messages hidden)", messages.text("userList.tooltip.ignore.hard"));
     assertEquals(
-        "Soft ignored (messages shown as spoilers)",
-        messages.text("userList.tooltip.ignore.soft"));
+        "Soft ignored (messages shown as spoilers)", messages.text("userList.tooltip.ignore.soft"));
   }
 
   @Test
@@ -191,9 +189,7 @@ class UiMessagesTest {
     assertEquals(
         "Sent: Jun 07 16:01:25 2026 +0000 To: alice",
         messages.text(
-            "memoserv.details.sentAndTo",
-            "Sent: Jun 07 16:01:25 2026 +0000",
-            "To: alice"));
+            "memoserv.details.sentAndTo", "Sent: Jun 07 16:01:25 2026 +0000", "To: alice"));
   }
 
   @Test
@@ -352,8 +348,7 @@ class UiMessagesTest {
     assertEquals("Mask is required.", messages.text("ignoreLists.validation.maskRequired"));
     assertEquals("levels=MSGS", messages.text("ignoreLists.metadata.levels", "MSGS"));
     assertEquals(
-        "/afk|brb/ (regexp)",
-        messages.text("ignoreLists.metadata.pattern.regexp", "afk|brb"));
+        "/afk|brb/ (regexp)", messages.text("ignoreLists.metadata.pattern.regexp", "afk|brb"));
   }
 
   @Test
@@ -383,27 +378,23 @@ class UiMessagesTest {
         messages.text("preferences.notifications.rules.value.match", "WORD", "hello"));
     assertEquals(
         "Case, Whole word",
-        messages.text(
-            "preferences.notifications.rules.value.options.word", "Case", "Whole word"));
+        messages.text("preferences.notifications.rules.value.options.word", "Case", "Whole word"));
     assertEquals(
         "Add custom word/regex rules to create notifications when messages match.\n"
             + "Rules only trigger for channels (not PMs), including the active channel.",
         messages.text("preferences.notifications.rules.help"));
     assertEquals(
-        "Add Notification Rule",
-        messages.text("preferences.notifications.rules.dialog.addTitle"));
+        "Add Notification Rule", messages.text("preferences.notifications.rules.dialog.addTitle"));
     assertEquals(
         "Invalid REGEX pattern:\nmissing ]",
         messages.text(
-            "preferences.notifications.rules.dialog.validation.invalidRegex.message",
-            "missing ]"));
+            "preferences.notifications.rules.dialog.validation.invalidRegex.message", "missing ]"));
     assertEquals(
         "Remove notification rule \"ops\"?",
         messages.text("preferences.notifications.rules.remove.confirm", "ops"));
     assertEquals(
         "Invalid REGEX (row 4, ops): bad class",
-        messages.text(
-            "preferences.notifications.rules.validation.inline", 4, "ops", "bad class"));
+        messages.text("preferences.notifications.rules.validation.inline", 4, "ops", "bad class"));
     assertEquals(
         "Row 4 (ops):\nbad class\n\nPattern:\n[",
         messages.text(
@@ -435,11 +426,9 @@ class UiMessagesTest {
     assertEquals(
         "Runtime config directory is unavailable",
         messages.text("preferences.notifications.sound.import.runtimeConfigUnavailable"));
+    assertEquals("Audio files (MP3, WAV)", messages.text("common.fileChooser.audioFiles.mp3Wav"));
     assertEquals(
-        "Audio files (MP3, WAV)", messages.text("common.fileChooser.audioFiles.mp3Wav"));
-    assertEquals(
-        "Choose sound file (MP3 or WAV)",
-        messages.text("common.fileChooser.sound.defaultTitle"));
+        "Choose sound file (MP3 or WAV)", messages.text("common.fileChooser.sound.defaultTitle"));
     assertEquals("IRC Events", messages.text("preferences.notifications.ircEvents.tab"));
   }
 
@@ -748,8 +737,7 @@ class UiMessagesTest {
     UiMessages messages = UiMessages.bundledDefaults();
 
     assertEquals(
-        "Network Info - libera",
-        messages.text("serverTree.networkInfo.dialog.title", "libera"));
+        "Network Info - libera", messages.text("serverTree.networkInfo.dialog.title", "libera"));
     assertEquals("Overview", messages.text("serverTree.networkInfo.tab.overview"));
     assertEquals("Capabilities (3)", messages.text("serverTree.networkInfo.tab.capabilities", 3));
     assertEquals("ISUPPORT (4)", messages.text("serverTree.networkInfo.tab.isupport", 4));
@@ -778,16 +766,14 @@ class UiMessagesTest {
     assertEquals(
         "one of: chathistory, draft/chathistory",
         messages.text(
-            "serverTree.networkInfo.featureReadiness.oneOf",
-            "chathistory, draft/chathistory"));
+            "serverTree.networkInfo.featureReadiness.oneOf", "chathistory, draft/chathistory"));
     assertEquals(
         "Missing: message-tags",
         messages.text("serverTree.networkInfo.featureReadiness.detail.missing", "message-tags"));
     assertEquals(
         "Recent CAP transitions", messages.text("serverTree.networkInfo.capTransitions.title"));
     assertEquals(
-        "No ISUPPORT tokens observed yet.",
-        messages.text("serverTree.networkInfo.isupport.empty"));
+        "No ISUPPORT tokens observed yet.", messages.text("serverTree.networkInfo.isupport.empty"));
     assertEquals("(unknown)", messages.text("common.value.unknown.parenthesized"));
   }
 
@@ -862,8 +848,7 @@ class UiMessagesTest {
     assertEquals(
         "No channel mode snapshot available yet. Use Refresh Modes to request /mode.",
         messages.text("channelList.modeSummary.empty"));
-    assertEquals(
-        "+l user limit 50", messages.text("channelList.modeSummary.limit.set", "50"));
+    assertEquals("+l user limit 50", messages.text("channelList.modeSummary.limit.set", "50"));
     assertEquals(
         "+q quiet rule alice!*@host",
         messages.text("channelList.modeSummary.quiet.add", "alice!*@host"));
@@ -1147,8 +1132,7 @@ class UiMessagesTest {
         messages.text("preferences.embeds.advancedPolicy.gates.requireVoiceOrOp"));
     assertEquals("Pattern", messages.text("preferences.embeds.advancedPolicy.column.pattern"));
     assertEquals(
-        "One or more patterns are invalid.\n"
-            + "Use valid glob patterns or `re:<regex>` values.",
+        "One or more patterns are invalid.\n" + "Use valid glob patterns or `re:<regex>` values.",
         messages.text("preferences.embeds.advancedPolicy.validation.invalidPattern.message"));
     assertEquals(
         "Row 3: empty regex",
@@ -1625,7 +1609,9 @@ class UiMessagesTest {
     assertEquals("Exit", messages.text("tray.menu.exit"));
     assertEquals("Still running in tray", messages.text("tray.status.closeHint"));
     assertEquals("Highlight", messages.text("tray.notification.highlight.title"));
-    assertEquals("Highlight in #ircafe", messages.text("tray.notification.highlight.title.channel", "#ircafe"));
+    assertEquals(
+        "Highlight in #ircafe",
+        messages.text("tray.notification.highlight.title.channel", "#ircafe"));
     assertEquals("PM", messages.text("tray.notification.pm.title"));
     assertEquals("PM from alice", messages.text("tray.notification.pm.title.from", "alice"));
     assertEquals("Invite", messages.text("tray.notification.invite.title"));
@@ -1640,13 +1626,13 @@ class UiMessagesTest {
         messages.text("tray.notification.invite.body.reason", "alice invited you", "hop in"));
     assertEquals("Connection", messages.text("tray.notification.connection.title"));
     assertEquals(
-        "Connection (libera)", messages.text("tray.notification.connection.title.server", "libera"));
+        "Connection (libera)",
+        messages.text("tray.notification.connection.title.server", "libera"));
     assertEquals(
         "Test notification (click to open IRCafe)", messages.text("tray.notification.test.body"));
     assertEquals("IRCafe is still running", messages.text("tray.notification.closeHint.title"));
     assertEquals("Open", messages.text("tray.dbus.action.open"));
   }
-
 
   @Test
   void resolvesSettingsComboOptionLabels() {

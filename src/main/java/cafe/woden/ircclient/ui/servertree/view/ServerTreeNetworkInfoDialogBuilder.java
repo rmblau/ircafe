@@ -366,8 +366,7 @@ public final class ServerTreeNetworkInfoDialogBuilder {
 
     if (allCapabilities.isEmpty()) {
       panel.add(
-          new JLabel(message("serverTree.networkInfo.capabilities.empty")),
-          MigConstraints.grow());
+          new JLabel(message("serverTree.networkInfo.capabilities.empty")), MigConstraints.grow());
       panel.add(buildCapabilityTransitionsPanel(metadata), MigConstraints.grow());
       return panel;
     }
@@ -385,7 +384,9 @@ public final class ServerTreeNetworkInfoDialogBuilder {
     }
 
     DefaultTableModel model =
-        new DefaultTableModel(rows, new String[] {
+        new DefaultTableModel(
+            rows,
+            new String[] {
               message("serverTree.networkInfo.capabilities.column.capability"),
               message("serverTree.networkInfo.capabilities.column.state"),
               message("serverTree.networkInfo.capabilities.column.requested"),
@@ -450,8 +451,7 @@ public final class ServerTreeNetworkInfoDialogBuilder {
             MigLayouts.fillWrap(
                 0, 1, MigLayoutConstraints.GROW_FILL, MigLayoutConstraints.LEADING_GROW_FILL));
     panel.setBorder(
-        BorderFactory.createTitledBorder(
-            message("serverTree.networkInfo.featureReadiness.title")));
+        BorderFactory.createTitledBorder(message("serverTree.networkInfo.featureReadiness.title")));
 
     List<CapabilityFeatureStatus> statuses =
         computeCapabilityFeatureStatuses(metadata, ircv3ExtensionCatalog.visibleFeatures());
@@ -470,11 +470,14 @@ public final class ServerTreeNetworkInfoDialogBuilder {
       rows[i][2] = status.detail();
     }
 
-    JTable table = buildReadOnlyTable(new String[] {
-            message("serverTree.networkInfo.featureReadiness.column.feature"),
-            message("serverTree.networkInfo.featureReadiness.column.status"),
-            message("serverTree.networkInfo.featureReadiness.column.details")
-          }, rows);
+    JTable table =
+        buildReadOnlyTable(
+            new String[] {
+              message("serverTree.networkInfo.featureReadiness.column.feature"),
+              message("serverTree.networkInfo.featureReadiness.column.status"),
+              message("serverTree.networkInfo.featureReadiness.column.details")
+            },
+            rows);
     JScrollPane scroll = new JScrollPane(table);
     scroll.setPreferredSize(new Dimension(1, 140));
     scroll.getVerticalScrollBar().setUnitIncrement(16);
@@ -596,12 +599,15 @@ public final class ServerTreeNetworkInfoDialogBuilder {
       out++;
     }
 
-    JTable table = buildReadOnlyTable(new String[] {
-            message("serverTree.networkInfo.capTransitions.column.time"),
-            message("serverTree.networkInfo.capTransitions.column.cap"),
-            message("serverTree.networkInfo.capTransitions.column.capability"),
-            message("serverTree.networkInfo.capTransitions.column.state")
-          }, rows);
+    JTable table =
+        buildReadOnlyTable(
+            new String[] {
+              message("serverTree.networkInfo.capTransitions.column.time"),
+              message("serverTree.networkInfo.capTransitions.column.cap"),
+              message("serverTree.networkInfo.capTransitions.column.capability"),
+              message("serverTree.networkInfo.capTransitions.column.state")
+            },
+            rows);
     JScrollPane scroll = new JScrollPane(table);
     scroll.getVerticalScrollBar().setUnitIncrement(16);
     panel.add(scroll, MigConstraints.grow());
@@ -630,10 +636,13 @@ public final class ServerTreeNetworkInfoDialogBuilder {
       idx++;
     }
 
-    JTable table = buildReadOnlyTable(new String[] {
-            message("serverTree.networkInfo.isupport.column.token"),
-            message("serverTree.networkInfo.isupport.column.value")
-          }, rows);
+    JTable table =
+        buildReadOnlyTable(
+            new String[] {
+              message("serverTree.networkInfo.isupport.column.token"),
+              message("serverTree.networkInfo.isupport.column.value")
+            },
+            rows);
     JScrollPane scroll = new JScrollPane(table);
     scroll.getVerticalScrollBar().setUnitIncrement(16);
     panel.add(scroll, MigConstraints.grow());
@@ -734,9 +743,7 @@ public final class ServerTreeNetworkInfoDialogBuilder {
     if (pending.size() > limit) {
       joined =
           message(
-              "serverTree.networkInfo.capabilities.summary.more",
-              joined,
-              pending.size() - limit);
+              "serverTree.networkInfo.capabilities.summary.more", joined, pending.size() - limit);
     }
     return message("serverTree.networkInfo.capabilities.requestedButNotEnabled", joined);
   }

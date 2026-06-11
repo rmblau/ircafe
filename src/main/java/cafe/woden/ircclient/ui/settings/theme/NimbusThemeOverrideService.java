@@ -1082,7 +1082,15 @@ class NimbusThemeOverrideService {
     UIManager.put(UiColorKeys.COMBO_BOX_ARROW_BUTTON_BACKGROUND, comboArrowBg);
     UIManager.put(UiColorKeys.COMBO_BOX_ARROW_BUTTON_FOREGROUND, text);
     applyNimbusDarkComboBox(
-        fieldBg, comboArrowBg, panelBg, text, disabledText, selectionBg, selectionFg, focus, border);
+        fieldBg,
+        comboArrowBg,
+        panelBg,
+        text,
+        disabledText,
+        selectionBg,
+        selectionFg,
+        focus,
+        border);
 
     UIManager.put(UiColorKeys.LIST_BACKGROUND, listBg);
     UIManager.put(UiColorKeys.LIST_FOREGROUND, text);
@@ -1328,8 +1336,7 @@ class NimbusThemeOverrideService {
     ColorUIResource inactiveFg =
         toUiResource(ThemeColorUtils.ensureContrastAgainstBackground(text, tabArea, 3.0));
     ColorUIResource disabledFg =
-        toUiResource(
-            ThemeColorUtils.ensureContrastAgainstBackground(disabledText, tabArea, 2.0));
+        toUiResource(ThemeColorUtils.ensureContrastAgainstBackground(disabledText, tabArea, 2.0));
     ColorUIResource selectedFg =
         toUiResource(
             ThemeColorUtils.ensureContrastAgainstBackground(selectionFg, selectionBg, 3.0));
@@ -1354,8 +1361,10 @@ class NimbusThemeOverrideService {
     Painter<JComponent> inactivePainter =
         new NimbusSurfacePainter(inactiveTop, inactiveBottom, border);
     Painter<JComponent> hoverPainter = new NimbusSurfacePainter(hoverTop, hoverBottom, focus);
-    Painter<JComponent> pressedPainter = new NimbusSurfacePainter(pressedTop, pressedBottom, border);
-    Painter<JComponent> selectedPainter = new NimbusSurfacePainter(selectedTop, selectedBottom, focus);
+    Painter<JComponent> pressedPainter =
+        new NimbusSurfacePainter(pressedTop, pressedBottom, border);
+    Painter<JComponent> selectedPainter =
+        new NimbusSurfacePainter(selectedTop, selectedBottom, focus);
     Painter<JComponent> selectedPressedPainter =
         new NimbusSurfacePainter(selectedPressedTop, selectedPressedBottom, focus);
     Painter<JComponent> disabledPainter =
@@ -1379,8 +1388,7 @@ class NimbusThemeOverrideService {
     UIManager.put(UiColorKeys.TABBED_PANE_TAB_FOCUSED_SELECTED_TEXT_FOREGROUND, selectedFg);
     UIManager.put(
         UiColorKeys.TABBED_PANE_TAB_FOCUSED_MOUSE_OVER_SELECTED_TEXT_FOREGROUND, selectedFg);
-    UIManager.put(
-        UiColorKeys.TABBED_PANE_TAB_FOCUSED_PRESSED_SELECTED_TEXT_FOREGROUND, selectedFg);
+    UIManager.put(UiColorKeys.TABBED_PANE_TAB_FOCUSED_PRESSED_SELECTED_TEXT_FOREGROUND, selectedFg);
 
     UIManager.put(
         UiDefaultKeys.TABBED_PANE_TAB_AREA_DISABLED_BACKGROUND_PAINTER, disabledAreaPainter);

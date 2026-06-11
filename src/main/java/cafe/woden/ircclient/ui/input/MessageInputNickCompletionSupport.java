@@ -222,9 +222,7 @@ final class MessageInputNickCompletionSupport {
     for (String nick : cleaned) {
       BasicCompletion completion =
           new BasicCompletion(
-              completionProvider,
-              nick,
-              MESSAGES.text("messageInput.completion.description.nick"));
+              completionProvider, nick, MESSAGES.text("messageInput.completion.description.nick"));
       completion.setRelevance(RELEVANCE_NICK);
       completions.add(completion);
     }

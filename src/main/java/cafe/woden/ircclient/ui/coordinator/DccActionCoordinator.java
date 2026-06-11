@@ -32,9 +32,7 @@ public final class DccActionCoordinator {
   }
 
   public DccActionCoordinator(
-      Component ownerComponent,
-      BiConsumer<TargetRef, String> commandEmitter,
-      UiMessages messages) {
+      Component ownerComponent, BiConsumer<TargetRef, String> commandEmitter, UiMessages messages) {
     this(
         ownerComponent,
         commandEmitter,

@@ -247,9 +247,7 @@ public class EmbedLoadPolicyDialog {
       out.putIfAbsent(
           sid.toLowerCase(java.util.Locale.ROOT),
           new ScopeOption(
-              sid,
-              message("preferences.embeds.advancedPolicy.scope.network", sid),
-              false));
+              sid, message("preferences.embeds.advancedPolicy.scope.network", sid), false));
     }
     if (initial != null && initial.byServer() != null) {
       for (String serverId : initial.byServer().keySet()) {
@@ -258,9 +256,7 @@ public class EmbedLoadPolicyDialog {
         out.putIfAbsent(
             sid.toLowerCase(java.util.Locale.ROOT),
             new ScopeOption(
-                sid,
-                message("preferences.embeds.advancedPolicy.scope.network", sid),
-                false));
+                sid, message("preferences.embeds.advancedPolicy.scope.network", sid), false));
       }
     }
     return new ArrayList<>(out.values());
@@ -578,8 +574,7 @@ public class EmbedLoadPolicyDialog {
       invalidRows.add(row);
       if (message.isBlank()) {
         message =
-            messages.text(
-                "preferences.embeds.advancedPolicy.validation.row", row + 1, error.get());
+            messages.text("preferences.embeds.advancedPolicy.validation.row", row + 1, error.get());
       }
     }
     if (invalidRows.isEmpty()) {

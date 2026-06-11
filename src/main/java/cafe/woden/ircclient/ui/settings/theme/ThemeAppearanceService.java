@@ -628,8 +628,7 @@ class ThemeAppearanceService {
       JComponent component, UIDefaults densityDefaults) {
     if (!Boolean.TRUE.equals(component.getClientProperty(DENSITY_NIMBUS_OVERRIDES_MARKER))) {
       component.putClientProperty(
-          PREVIOUS_NIMBUS_OVERRIDES,
-          nullSentinel(component.getClientProperty(NIMBUS_OVERRIDES)));
+          PREVIOUS_NIMBUS_OVERRIDES, nullSentinel(component.getClientProperty(NIMBUS_OVERRIDES)));
       component.putClientProperty(
           PREVIOUS_NIMBUS_INHERIT_DEFAULTS,
           nullSentinel(component.getClientProperty(NIMBUS_OVERRIDES_INHERIT_DEFAULTS)));

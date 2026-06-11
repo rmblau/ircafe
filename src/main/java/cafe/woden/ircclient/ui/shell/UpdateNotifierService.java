@@ -131,8 +131,7 @@ public class UpdateNotifierService {
 
   private void disableFromContextMenu() {
     applyEnabled(false, true);
-    statusBar.enqueueNotification(
-        messages.text("statusBar.updateNotifier.status.disabled"), null);
+    statusBar.enqueueNotification(messages.text("statusBar.updateNotifier.status.disabled"), null);
   }
 
   private void scheduleChecksIfNeeded() {

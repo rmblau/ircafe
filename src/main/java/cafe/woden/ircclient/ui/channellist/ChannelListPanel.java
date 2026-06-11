@@ -2576,8 +2576,7 @@ public final class ChannelListPanel extends JPanel {
       }
       return arg == null || arg.isBlank()
           ? message("channelList.modeSummary.networkSpecific.removed", sign, modeName)
-          : message(
-              "channelList.modeSummary.networkSpecific.removedWithArg", sign, modeName, arg);
+          : message("channelList.modeSummary.networkSpecific.removedWithArg", sign, modeName, arg);
     }
     return message("channelList.modeSummary.networkSpecific.noArg", sign, modeName);
   }
@@ -2631,6 +2630,7 @@ public final class ChannelListPanel extends JPanel {
     ChannelListTableModel(String channelColumn, String usersColumn, String topicColumn) {
       this.columns = new String[] {channelColumn, usersColumn, topicColumn};
     }
+
     private final ArrayList<Row> rows = new ArrayList<>();
 
     void setRows(List<Row> rows) {

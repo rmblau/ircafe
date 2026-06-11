@@ -38,8 +38,8 @@ import javax.swing.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Element;
 import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyledDocument;
 import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

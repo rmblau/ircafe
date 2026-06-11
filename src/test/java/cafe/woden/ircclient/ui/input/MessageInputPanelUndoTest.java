@@ -11,11 +11,11 @@ import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
-import javax.swing.SwingUtilities;
 import javax.swing.JTextPane;
+import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.StyledDocument;
 import javax.swing.text.StyleConstants;
+import javax.swing.text.StyledDocument;
 import org.junit.jupiter.api.Test;
 
 class MessageInputPanelUndoTest {

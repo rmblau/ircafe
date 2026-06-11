@@ -110,7 +110,8 @@ public class ThemeSelectionDialog {
               new ToneChoice(MESSAGES.text("themeSelection.filter.tone.all"), null),
               new ToneChoice(toneLabel(ThemeManager.ThemeTone.DARK), ThemeManager.ThemeTone.DARK),
               new ToneChoice(toneLabel(ThemeManager.ThemeTone.LIGHT), ThemeManager.ThemeTone.LIGHT),
-              new ToneChoice(toneLabel(ThemeManager.ThemeTone.SYSTEM), ThemeManager.ThemeTone.SYSTEM)
+              new ToneChoice(
+                  toneLabel(ThemeManager.ThemeTone.SYSTEM), ThemeManager.ThemeTone.SYSTEM)
             });
 
     JComboBox<PackChoice> packFilter =
@@ -124,8 +125,10 @@ public class ThemeSelectionDialog {
               new PackChoice(
                   packLabel(ThemeManager.ThemePack.DARKLAF), ThemeManager.ThemePack.DARKLAF),
               new PackChoice(packLabel(ThemeManager.ThemePack.RETRO), ThemeManager.ThemePack.RETRO),
-              new PackChoice(packLabel(ThemeManager.ThemePack.MODERN), ThemeManager.ThemePack.MODERN),
-              new PackChoice(packLabel(ThemeManager.ThemePack.IRCAFE), ThemeManager.ThemePack.IRCAFE),
+              new PackChoice(
+                  packLabel(ThemeManager.ThemePack.MODERN), ThemeManager.ThemePack.MODERN),
+              new PackChoice(
+                  packLabel(ThemeManager.ThemePack.IRCAFE), ThemeManager.ThemePack.IRCAFE),
               new PackChoice(
                   packLabel(ThemeManager.ThemePack.INTELLIJ), ThemeManager.ThemePack.INTELLIJ)
             });

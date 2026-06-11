@@ -686,8 +686,7 @@ class IrcMediatorMockVerifyTest {
                 at, "alice", "hello privately", "", Map.of("msgid", "pm-msg-1"))));
 
     verify(ui)
-        .appendChatAt(
-            pm, at, "alice", "hello privately", false, "", Map.of("msgid", "pm-msg-1"));
+        .appendChatAt(pm, at, "alice", "hello privately", false, "", Map.of("msgid", "pm-msg-1"));
     verify(messageTranslationDispatcher, never())
         .requestIncomingMessageTranslation(any(), any(), anyString(), anyString(), anyString());
   }
