@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.bouncer;
 
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -10,6 +11,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import org.jmolecules.architecture.layered.ApplicationLayer;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /** Registry of available bouncer backends and their metadata descriptors. */
@@ -20,8 +23,25 @@ public class BouncerBackendRegistry {
   private final List<BouncerBackendDescriptor> descriptors;
   private final Map<String, BouncerBackendDescriptor> byBackendId;
 
+  @Autowired
+  public BouncerBackendRegistry(
+      List<BouncerNetworkMappingStrategy> mappingStrategies,
+      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
+    this(loadInstalledStrategies(mappingStrategies, installedPluginsProvider));
+  }
+
   public BouncerBackendRegistry(List<BouncerNetworkMappingStrategy> mappingStrategies) {
-    Objects.requireNonNull(mappingStrategies, "mappingStrategies");
+    this(mappingStrategies, (InstalledPluginsPort) null);
+  }
+
+  BouncerBackendRegistry(
+      List<BouncerNetworkMappingStrategy> mappingStrategies,
+      InstalledPluginsPort installedPlugins) {
+    this(loadInstalledStrategies(mappingStrategies, installedPlugins));
+  }
+
+  private BouncerBackendRegistry(ResolvedStrategies resolvedStrategies) {
+    List<BouncerNetworkMappingStrategy> mappingStrategies = resolvedStrategies.strategies();
 
     ArrayList<BouncerBackendDescriptor> discovered = new ArrayList<>();
     for (BouncerNetworkMappingStrategy strategy : mappingStrategies) {
@@ -62,6 +82,46 @@ public class BouncerBackendRegistry {
 
   public Optional<BouncerBackendDescriptor> find(String backendId) {
     return Optional.ofNullable(byBackendId.get(normalize(backendId)));
+  }
+
+  private static ResolvedStrategies loadInstalledStrategies(
+      List<BouncerNetworkMappingStrategy> mappingStrategies,
+      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
+    InstalledPluginsPort installedPlugins =
+        installedPluginsProvider == null ? null : installedPluginsProvider.getIfAvailable();
+    return loadInstalledStrategies(mappingStrategies, installedPlugins);
+  }
+
+  private static ResolvedStrategies loadInstalledStrategies(
+      List<BouncerNetworkMappingStrategy> mappingStrategies,
+      InstalledPluginsPort installedPlugins) {
+    List<BouncerNetworkMappingStrategy> builtInStrategies = nonNullStrategies(mappingStrategies);
+    if (installedPlugins == null) {
+      return new ResolvedStrategies(builtInStrategies);
+    }
+    return new ResolvedStrategies(
+        installedPlugins.loadInstalledServices(
+            BouncerNetworkMappingStrategy.class, builtInStrategies));
+  }
+
+  private static List<BouncerNetworkMappingStrategy> nonNullStrategies(
+      List<BouncerNetworkMappingStrategy> mappingStrategies) {
+    if (mappingStrategies == null || mappingStrategies.isEmpty()) {
+      return List.of();
+    }
+    ArrayList<BouncerNetworkMappingStrategy> resolved = new ArrayList<>(mappingStrategies.size());
+    for (BouncerNetworkMappingStrategy strategy : mappingStrategies) {
+      if (strategy != null) {
+        resolved.add(strategy);
+      }
+    }
+    return List.copyOf(resolved);
+  }
+
+  private record ResolvedStrategies(List<BouncerNetworkMappingStrategy> strategies) {
+    private ResolvedStrategies {
+      strategies = List.copyOf(Objects.requireNonNullElse(strategies, List.of()));
+    }
   }
 
   private static String normalize(String value) {
