@@ -4,12 +4,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.jar.Attributes;
@@ -22,6 +24,20 @@ import org.junit.jupiter.api.io.TempDir;
 class BackendNamedCommandCatalogTest {
 
   @TempDir Path tempDir;
+
+  @Test
+  void loadsParserProvidersFromInstalledPluginsPort() {
+    BackendNamedCommandCatalog catalog =
+        new BackendNamedCommandCatalog(
+            new FakeInstalledPluginsPort(List.of(new PluginProvidedBackendNamedCommandHandler())),
+            List.of());
+
+    ParsedInput parsed = catalog.parse("/backendping hello");
+
+    assertTrue(parsed instanceof ParsedInput.BackendNamed);
+    assertEquals("backendping", ((ParsedInput.BackendNamed) parsed).command());
+    assertEquals("hello", ((ParsedInput.BackendNamed) parsed).args());
+  }
 
   @Test
   void loadsServiceProvidersFromPluginDirectoryJar() throws Exception {
@@ -109,6 +125,26 @@ class BackendNamedCommandCatalogTest {
           (PluginProvidedBackendNamedCommandHandler.class.getName() + System.lineSeparator())
               .getBytes(StandardCharsets.UTF_8));
       out.closeEntry();
+    }
+  }
+
+  private static final class FakeInstalledPluginsPort implements InstalledPluginsPort {
+    private final List<?> pluginServices;
+
+    private FakeInstalledPluginsPort(List<?> pluginServices) {
+      this.pluginServices = List.copyOf(pluginServices);
+    }
+
+    @Override
+    public <T> List<T> loadInstalledServices(Class<T> serviceType, List<T> builtInServices) {
+      ArrayList<T> services =
+          new ArrayList<>(java.util.Objects.requireNonNullElse(builtInServices, List.of()));
+      for (Object pluginService : pluginServices) {
+        if (serviceType.isInstance(pluginService)) {
+          services.add(serviceType.cast(pluginService));
+        }
+      }
+      return List.copyOf(services);
     }
   }
 

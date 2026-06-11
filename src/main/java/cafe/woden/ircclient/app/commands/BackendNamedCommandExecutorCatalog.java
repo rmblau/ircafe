@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.app.commands;
 
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
-import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
 import cafe.woden.ircclient.util.PluginServiceLoaderSupport;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import jakarta.annotation.PreDestroy;
@@ -31,12 +31,12 @@ public final class BackendNamedCommandExecutorCatalog {
 
   @Autowired
   public BackendNamedCommandExecutorCatalog(
-      InstalledPluginServices installedPluginServices,
+      InstalledPluginsPort installedPluginsPort,
       List<BackendNamedCommandExecutor> builtInExecutors) {
     this(
         loadInstalledCatalogState(
             List.copyOf(Objects.requireNonNullElse(builtInExecutors, List.of())),
-            installedPluginServices));
+            installedPluginsPort));
   }
 
   public BackendNamedCommandExecutorCatalog(
@@ -150,11 +150,11 @@ public final class BackendNamedCommandExecutorCatalog {
 
   private static LoadedCatalogState loadInstalledCatalogState(
       List<BackendNamedCommandExecutor> builtInExecutors,
-      InstalledPluginServices installedPluginServices) {
-    InstalledPluginServices pluginServices =
-        Objects.requireNonNull(installedPluginServices, "installedPluginServices");
+      InstalledPluginsPort installedPluginsPort) {
+    InstalledPluginsPort installedPlugins =
+        Objects.requireNonNull(installedPluginsPort, "installedPluginsPort");
     return new LoadedCatalogState(
-        pluginServices.loadInstalledServices(BackendNamedCommandExecutor.class, builtInExecutors),
+        installedPlugins.loadInstalledServices(BackendNamedCommandExecutor.class, builtInExecutors),
         List.of());
   }
 

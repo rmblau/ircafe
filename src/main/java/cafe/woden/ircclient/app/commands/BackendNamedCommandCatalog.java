@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.app.commands;
 
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
-import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
 import cafe.woden.ircclient.util.PluginServiceLoaderSupport;
 import jakarta.annotation.PreDestroy;
 import java.net.URLClassLoader;
@@ -34,12 +34,12 @@ public class BackendNamedCommandCatalog {
 
   @Autowired
   public BackendNamedCommandCatalog(
-      InstalledPluginServices installedPluginServices,
+      InstalledPluginsPort installedPluginsPort,
       List<BackendNamedCommandHandler> builtInHandlers) {
     this(
         loadInstalledCatalogState(
             List.copyOf(Objects.requireNonNullElse(builtInHandlers, List.of())),
-            installedPluginServices));
+            installedPluginsPort));
   }
 
   public BackendNamedCommandCatalog(
@@ -225,11 +225,11 @@ public class BackendNamedCommandCatalog {
 
   private static LoadedCatalogState loadInstalledCatalogState(
       List<BackendNamedCommandHandler> builtInHandlers,
-      InstalledPluginServices installedPluginServices) {
-    InstalledPluginServices pluginServices =
-        Objects.requireNonNull(installedPluginServices, "installedPluginServices");
+      InstalledPluginsPort installedPluginsPort) {
+    InstalledPluginsPort installedPlugins =
+        Objects.requireNonNull(installedPluginsPort, "installedPluginsPort");
     return new LoadedCatalogState(
-        pluginServices.loadInstalledServices(BackendNamedCommandHandler.class, builtInHandlers),
+        installedPlugins.loadInstalledServices(BackendNamedCommandHandler.class, builtInHandlers),
         List.of());
   }
 
