@@ -1,8 +1,11 @@
 package cafe.woden.ircclient.app.commands;
 
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import java.util.List;
 import java.util.Objects;
 import org.jmolecules.architecture.layered.ApplicationLayer;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -18,18 +21,32 @@ public class CommandParser {
   private final BackendNamedCommandParser backendNamedCommandParser;
   private final List<SlashCommandParseStrategy> strategies;
 
+  @Autowired
+  public CommandParser(
+      FilterCommandParser filterCommandParser,
+      BackendNamedCommandParser backendNamedCommandParser,
+      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
+    this(
+        filterCommandParser,
+        backendNamedCommandParser,
+        resolveInstalledPlugins(installedPluginsProvider));
+  }
+
   public CommandParser(
       FilterCommandParser filterCommandParser,
       BackendNamedCommandParser backendNamedCommandParser) {
+    this(filterCommandParser, backendNamedCommandParser, (InstalledPluginsPort) null);
+  }
+
+  public CommandParser(
+      FilterCommandParser filterCommandParser,
+      BackendNamedCommandParser backendNamedCommandParser,
+      InstalledPluginsPort installedPlugins) {
     this.filterCommandParser = Objects.requireNonNull(filterCommandParser, "filterCommandParser");
     this.backendNamedCommandParser =
         Objects.requireNonNull(backendNamedCommandParser, "backendNamedCommandParser");
     this.strategies =
-        List.of(
-            new ConnectionLifecycleSlashCommandParseStrategy(),
-            new IdentityMessagingSlashCommandParseStrategy(),
-            new ChannelInteractionSlashCommandParseStrategy(),
-            new AdvancedFeatureSlashCommandParseStrategy(this.filterCommandParser));
+        loadInstalledStrategies(builtInStrategies(this.filterCommandParser), installedPlugins);
   }
 
   public ParsedInput parse(String raw) {
@@ -56,5 +73,31 @@ public class CommandParser {
     }
 
     return new ParsedInput.Unknown(line);
+  }
+
+  private static InstalledPluginsPort resolveInstalledPlugins(
+      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
+    if (installedPluginsProvider == null) {
+      return null;
+    }
+    return installedPluginsProvider.getIfAvailable();
+  }
+
+  private static List<SlashCommandParseStrategy> builtInStrategies(
+      FilterCommandParser filterCommandParser) {
+    return List.of(
+        new ConnectionLifecycleSlashCommandParseStrategy(),
+        new IdentityMessagingSlashCommandParseStrategy(),
+        new ChannelInteractionSlashCommandParseStrategy(),
+        new AdvancedFeatureSlashCommandParseStrategy(filterCommandParser));
+  }
+
+  private static List<SlashCommandParseStrategy> loadInstalledStrategies(
+      List<SlashCommandParseStrategy> builtInStrategies, InstalledPluginsPort installedPlugins) {
+    List<SlashCommandParseStrategy> safeBuiltIns = List.copyOf(builtInStrategies);
+    if (installedPlugins == null) {
+      return safeBuiltIns;
+    }
+    return installedPlugins.loadInstalledServices(SlashCommandParseStrategy.class, safeBuiltIns);
   }
 }
