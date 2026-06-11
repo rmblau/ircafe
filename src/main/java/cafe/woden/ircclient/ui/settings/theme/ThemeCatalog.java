@@ -395,7 +395,8 @@ class ThemeCatalog {
     List<ThemeContributionProvider> providers =
         installedPlugins.loadInstalledServices(ThemeContributionProvider.class, List.of());
     ArrayList<ThemeManager.ThemeOption> out = new ArrayList<>();
-    for (ThemeContributionProvider provider : Objects.requireNonNullElse(providers, List.of())) {
+    for (ThemeContributionProvider provider :
+        Objects.requireNonNullElse(providers, List.<ThemeContributionProvider>of())) {
       if (provider == null) continue;
       for (ThemeManager.ThemeOption option :
           Objects.requireNonNullElse(provider.themeOptions(), List.<ThemeManager.ThemeOption>of())) {

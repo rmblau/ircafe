@@ -480,7 +480,8 @@ class ThemePresetRegistry {
 
     List<ThemeContributionProvider> providers =
         installedPlugins.loadInstalledServices(ThemeContributionProvider.class, List.of());
-    for (ThemeContributionProvider provider : Objects.requireNonNullElse(providers, List.of())) {
+    for (ThemeContributionProvider provider :
+        Objects.requireNonNullElse(providers, List.<ThemeContributionProvider>of())) {
       if (provider == null) continue;
       for (ThemePresetContribution preset :
           Objects.requireNonNullElse(
