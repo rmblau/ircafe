@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
-import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.irc.backend.BackendRoutingIrcClientService;
 import cafe.woden.ircclient.irc.backend.IrcBackendClientService;
@@ -214,8 +214,8 @@ class BackendRoutingIrcClientServiceSpringIntegrationTest {
     }
 
     @Bean
-    InstalledPluginServices installedPluginServices() {
-      InstalledPluginServices installedPlugins = mock(InstalledPluginServices.class);
+    InstalledPluginsPort installedPluginsPort() {
+      InstalledPluginsPort installedPlugins = mock(InstalledPluginsPort.class);
       when(installedPlugins.loadInstalledServices(
               eq(IrcBackendClientService.class),
               org.mockito.ArgumentMatchers.<List<IrcBackendClientService>>any()))
