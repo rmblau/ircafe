@@ -1,9 +1,14 @@
 package cafe.woden.ircclient.ui.settings.theme;
 
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.jmolecules.architecture.layered.InterfaceLayer;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -413,11 +418,26 @@ class ThemePresetRegistry {
           Map.entry(UiColorKeys.TABLE_SELECTION_BACKGROUND, "#4A3688"),
           Map.entry(UiColorKeys.TREE_SELECTION_BACKGROUND, "#4A3688"));
 
-  private static final Map<String, ThemePreset> PRESETS_BY_ID = buildPresetsById();
+  private static final Map<String, ThemePreset> BUILT_IN_PRESETS_BY_ID = buildPresetsById();
+
+  private final Map<String, ThemePreset> presetsById;
+
+  ThemePresetRegistry() {
+    this((InstalledPluginsPort) null);
+  }
+
+  @Autowired
+  ThemePresetRegistry(ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
+    this(resolveInstalledPlugins(installedPluginsProvider));
+  }
+
+  ThemePresetRegistry(InstalledPluginsPort installedPlugins) {
+    this.presetsById = buildPresetsById(installedPlugins);
+  }
 
   ThemePreset byId(String id) {
     if (id == null || id.isBlank()) return null;
-    return PRESETS_BY_ID.get(id.toLowerCase(java.util.Locale.ROOT));
+    return presetsById.get(id.toLowerCase(java.util.Locale.ROOT));
   }
 
   private static Map<String, ThemePreset> buildPresetsById() {
@@ -450,6 +470,32 @@ class ThemePresetRegistry {
     add(map, "solarized-light", false, SOLARIZED_LIGHT_DEFAULTS);
 
     return Map.copyOf(map);
+  }
+
+  private static Map<String, ThemePreset> buildPresetsById(InstalledPluginsPort installedPlugins) {
+    LinkedHashMap<String, ThemePreset> map = new LinkedHashMap<>(BUILT_IN_PRESETS_BY_ID);
+    if (installedPlugins == null) {
+      return Map.copyOf(map);
+    }
+
+    List<ThemeContributionProvider> providers =
+        installedPlugins.loadInstalledServices(ThemeContributionProvider.class, List.of());
+    for (ThemeContributionProvider provider : Objects.requireNonNullElse(providers, List.of())) {
+      if (provider == null) continue;
+      for (ThemePresetContribution preset :
+          Objects.requireNonNullElse(
+              provider.themePresets(), List.<ThemePresetContribution>of())) {
+        if (preset == null || preset.id().isBlank()) continue;
+        String id = preset.id().toLowerCase(java.util.Locale.ROOT);
+        map.putIfAbsent(id, new ThemePreset(id, preset.dark(), preset.extraDefaults()));
+      }
+    }
+    return Map.copyOf(map);
+  }
+
+  private static InstalledPluginsPort resolveInstalledPlugins(
+      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
+    return installedPluginsProvider != null ? installedPluginsProvider.getIfAvailable() : null;
   }
 
   private static void add(

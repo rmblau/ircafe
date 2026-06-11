@@ -1,13 +1,17 @@
 package cafe.woden.ircclient.ui.settings.theme;
 
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 import org.jmolecules.architecture.layered.InterfaceLayer;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -272,8 +276,22 @@ class ThemeCatalog {
             false)
       };
 
-  private static volatile ThemeManager.ThemeOption[] cachedThemes;
-  private static volatile ThemeManager.ThemeOption[] cachedThemesWithAllIntelliJ;
+  private final List<ThemeManager.ThemeOption> pluginThemeOptions;
+  private volatile ThemeManager.ThemeOption[] cachedThemes;
+  private volatile ThemeManager.ThemeOption[] cachedThemesWithAllIntelliJ;
+
+  ThemeCatalog() {
+    this((InstalledPluginsPort) null);
+  }
+
+  @Autowired
+  ThemeCatalog(ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
+    this(resolveInstalledPlugins(installedPluginsProvider));
+  }
+
+  ThemeCatalog(InstalledPluginsPort installedPlugins) {
+    this.pluginThemeOptions = loadInstalledThemeOptions(installedPlugins);
+  }
 
   ThemeManager.ThemeOption[] supportedThemes() {
     return allThemes().clone();
@@ -330,12 +348,14 @@ class ThemeCatalog {
       }
     }
 
+    addPluginThemeOptions(out);
+
     cached = out.toArray(ThemeManager.ThemeOption[]::new);
     cachedThemesWithAllIntelliJ = cached;
     return cached.clone();
   }
 
-  private static ThemeManager.ThemeOption[] allThemes() {
+  private ThemeManager.ThemeOption[] allThemes() {
     ThemeManager.ThemeOption[] cached = cachedThemes;
     if (cached != null) return cached;
 
@@ -344,10 +364,51 @@ class ThemeCatalog {
     out.addAll(darkLafThemes());
     out.addAll(legacySystemThemes());
     out.addAll(buildCuratedIntelliJThemes());
+    addPluginThemeOptions(out);
 
     cached = out.toArray(ThemeManager.ThemeOption[]::new);
     cachedThemes = cached;
     return cached;
+  }
+
+  private void addPluginThemeOptions(List<ThemeManager.ThemeOption> out) {
+    if (out == null || pluginThemeOptions.isEmpty()) return;
+
+    Set<String> seen = new HashSet<>();
+    for (ThemeManager.ThemeOption option : out) {
+      if (option != null && option.id() != null) {
+        seen.add(option.id().toLowerCase(Locale.ROOT));
+      }
+    }
+
+    for (ThemeManager.ThemeOption option : pluginThemeOptions) {
+      if (option == null || option.id() == null || option.id().isBlank()) continue;
+      if (!seen.add(option.id().toLowerCase(Locale.ROOT))) continue;
+      out.add(option);
+    }
+  }
+
+  private static List<ThemeManager.ThemeOption> loadInstalledThemeOptions(
+      InstalledPluginsPort installedPlugins) {
+    if (installedPlugins == null) return List.of();
+
+    List<ThemeContributionProvider> providers =
+        installedPlugins.loadInstalledServices(ThemeContributionProvider.class, List.of());
+    ArrayList<ThemeManager.ThemeOption> out = new ArrayList<>();
+    for (ThemeContributionProvider provider : Objects.requireNonNullElse(providers, List.of())) {
+      if (provider == null) continue;
+      for (ThemeManager.ThemeOption option :
+          Objects.requireNonNullElse(provider.themeOptions(), List.<ThemeManager.ThemeOption>of())) {
+        if (option == null || option.id() == null || option.id().isBlank()) continue;
+        out.add(option);
+      }
+    }
+    return List.copyOf(out);
+  }
+
+  private static InstalledPluginsPort resolveInstalledPlugins(
+      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
+    return installedPluginsProvider != null ? installedPluginsProvider.getIfAvailable() : null;
   }
 
   private static List<ThemeManager.ThemeOption> darkLafThemes() {
