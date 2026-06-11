@@ -193,29 +193,64 @@ public final class PluginServiceLoaderSupport {
 
   public static List<InstalledPluginDescriptor> discoverInstalledPlugins(
       Path pluginDirectory, Logger log) {
+    return discoverInstalledPluginDescriptors(pluginDirectory, log).installedPlugins();
+  }
+
+  public static PluginDiscovery discoverInstalledPluginDescriptors(
+      Path pluginDirectory, Logger log) {
     Path directory = pluginDirectory != null ? pluginDirectory.toAbsolutePath().normalize() : null;
     if (directory == null || !Files.exists(directory) || !Files.isDirectory(directory)) {
-      return List.of();
+      return new PluginDiscovery(List.of(), List.of());
     }
     LinkedHashMap<String, InstalledPluginDescriptor> pluginsById = new LinkedHashMap<>();
+    ArrayList<PluginDiscoveryProblem> problems = new ArrayList<>();
     for (Path jarPath : pluginJarPaths(directory, log)) {
-      Optional<InstalledPluginDescriptor> descriptor = declaredPluginDescriptor(jarPath);
-      if (descriptor.isEmpty()) {
-        continue;
-      }
-      InstalledPluginDescriptor plugin = descriptor.get();
-      InstalledPluginDescriptor previous = pluginsById.putIfAbsent(plugin.pluginId(), plugin);
-      if (previous != null && !previous.sourceJar().equals(plugin.sourceJar())) {
-        throw new IllegalStateException(
-            "[ircafe] duplicate plugin id '"
-                + plugin.pluginId()
-                + "' declared by "
-                + previous.sourceJar()
-                + " and "
-                + plugin.sourceJar());
+      try {
+        Optional<InstalledPluginDescriptor> descriptor = declaredPluginDescriptor(jarPath);
+        if (descriptor.isEmpty()) {
+          continue;
+        }
+        InstalledPluginDescriptor plugin = descriptor.get();
+        InstalledPluginDescriptor previous = pluginsById.putIfAbsent(plugin.pluginId(), plugin);
+        if (previous != null && !previous.sourceJar().equals(plugin.sourceJar())) {
+          IllegalStateException error =
+              new IllegalStateException(
+                  "[ircafe] duplicate plugin id '"
+                      + plugin.pluginId()
+                      + "' declared by "
+                      + previous.sourceJar()
+                      + " and "
+                      + plugin.sourceJar());
+          problems.add(pluginDiscoveryProblem(jarPath, error));
+          if (log != null) {
+            log.warn("[ircafe] skipping duplicate plugin jar {}", jarPath, error);
+          }
+        }
+      } catch (RuntimeException e) {
+        problems.add(pluginDiscoveryProblem(jarPath, e));
+        if (log != null) {
+          log.warn("[ircafe] skipping invalid plugin jar {}", jarPath, e);
+        }
       }
     }
-    return List.copyOf(pluginsById.values());
+    return new PluginDiscovery(List.copyOf(pluginsById.values()), problems);
+  }
+
+  private static PluginDiscoveryProblem pluginDiscoveryProblem(
+      Path jarPath, RuntimeException error) {
+    String summary = "Failed to discover plugin jar";
+    String message = Objects.toString(error == null ? null : error.getMessage(), "").trim();
+    StringBuilder details = new StringBuilder();
+    if (jarPath != null) {
+      details.append("Plugin jar: ").append(jarPath.toAbsolutePath().normalize());
+    }
+    if (!message.isEmpty()) {
+      if (!details.isEmpty()) {
+        details.append('\n');
+      }
+      details.append(message);
+    }
+    return new PluginDiscoveryProblem(jarPath, summary, details.toString());
   }
 
   public static void closePluginClassLoaders(
@@ -675,6 +710,21 @@ public final class PluginServiceLoaderSupport {
   }
 
   public record LoadedServices<T>(List<T> services, List<URLClassLoader> pluginClassLoaders) {}
+
+  public record PluginDiscovery(
+      List<InstalledPluginDescriptor> installedPlugins, List<PluginDiscoveryProblem> problems) {
+    public PluginDiscovery {
+      installedPlugins = List.copyOf(Objects.requireNonNullElse(installedPlugins, List.of()));
+      problems = List.copyOf(Objects.requireNonNullElse(problems, List.of()));
+    }
+  }
+
+  public record PluginDiscoveryProblem(Path sourceJar, String summary, String details) {
+    public PluginDiscoveryProblem {
+      summary = firstNonBlank(summary, "Failed to discover plugin jar");
+      details = firstNonBlank(details, "See application logs for details.");
+    }
+  }
 
   public record PluginClassLoaderHandle(
       InstalledPluginDescriptor descriptor, URLClassLoader classLoader) {}

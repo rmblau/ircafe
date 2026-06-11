@@ -98,6 +98,40 @@ class InstalledPluginServicesTest {
     }
   }
 
+  @Test
+  void keepsHealthyPluginWhenAnotherDeclaredPluginManifestIsInvalid() throws Exception {
+    Path runtimeConfigDirectory =
+        Files.createDirectories(tempDir.resolve("invalid-manifest/ircafe"));
+    Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
+    CompiledPluginJarSupport.writePluginJar(
+        pluginDir.resolve("healthy-provider.jar"),
+        REAL_PLUGIN_PROVIDER_CLASS,
+        pluginProviderSource(),
+        BackendNamedCommandHandler.class.getName(),
+        CompiledPluginJarSupport.compatibleManifest("healthy-plugin", "1.0.0"));
+    writeInvalidDeclaredPluginJar(pluginDir.resolve("invalid-plugin.jar"), "invalid-plugin");
+    RuntimeConfigPathPort runtimeConfigPathPort =
+        () -> runtimeConfigDirectory.resolve("ircafe.yml");
+
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+    try {
+      List<BackendNamedCommandHandler> services =
+          installedPlugins.loadInstalledServices(BackendNamedCommandHandler.class, List.of());
+
+      assertEquals(1, installedPlugins.installedPlugins().size());
+      assertEquals("healthy-plugin", installedPlugins.installedPlugins().getFirst().pluginId());
+      assertEquals(1, installedPlugins.pluginProblems().size());
+      assertTrue(
+          installedPlugins.pluginProblems().getFirst().details().contains("invalid-plugin.jar"));
+      assertTrue(
+          services.stream()
+              .anyMatch(
+                  service -> REAL_PLUGIN_PROVIDER_CLASS.equals(service.getClass().getName())));
+    } finally {
+      installedPlugins.shutdown();
+    }
+  }
+
   private static String pluginProviderSource() {
     return """
         package plugin.installed;
@@ -132,6 +166,22 @@ class InstalledPluginServicesTest {
           new JarEntry("META-INF/services/" + BackendNamedCommandHandler.class.getName()));
       out.write(
           "plugin.installed.MissingBackendNamedCommandHandler\n".getBytes(StandardCharsets.UTF_8));
+      out.closeEntry();
+    }
+  }
+
+  private static void writeInvalidDeclaredPluginJar(Path jarPath, String pluginId)
+      throws IOException {
+    var manifest = new java.util.jar.Manifest();
+    var attributes = manifest.getMainAttributes();
+    attributes.put(java.util.jar.Attributes.Name.MANIFEST_VERSION, "1.0");
+    attributes.putValue(
+        cafe.woden.ircclient.util.PluginServiceLoaderSupport.PLUGIN_ID_ATTRIBUTE, pluginId);
+    attributes.putValue(
+        cafe.woden.ircclient.util.PluginServiceLoaderSupport.PLUGIN_VERSION_ATTRIBUTE, "1.0.0");
+    try (JarOutputStream out = new JarOutputStream(Files.newOutputStream(jarPath), manifest)) {
+      out.putNextEntry(new JarEntry("plugin/metadata.txt"));
+      out.write("invalid".getBytes(StandardCharsets.UTF_8));
       out.closeEntry();
     }
   }
