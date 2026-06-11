@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.app.commands;
 
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.model.TargetRef;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -9,6 +10,8 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.jmolecules.architecture.layered.ApplicationLayer;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /** Shared autocomplete/help catalog for built-in and backend-named slash commands. */
@@ -21,14 +24,31 @@ public class SlashCommandPresentationCatalog {
   private final List<SlashCommandDescriptor> autocompleteCommands;
   private final Map<String, Consumer<TargetRef>> topicHelpHandlers;
 
+  @Autowired
+  public SlashCommandPresentationCatalog(
+      List<SlashCommandPresentationContributor> contributors,
+      BackendNamedCommandCatalog backendNamedCommandCatalog,
+      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
+    this(
+        loadInstalledContributors(contributors, installedPluginsProvider),
+        backendNamedCommandCatalog);
+  }
+
   public SlashCommandPresentationCatalog(
       List<SlashCommandPresentationContributor> contributors,
       BackendNamedCommandCatalog backendNamedCommandCatalog) {
-    this.contributors = List.copyOf(Objects.requireNonNull(contributors, "contributors"));
+    this.contributors = nonNullContributors(contributors);
     this.backendNamedCommandCatalog =
         Objects.requireNonNull(backendNamedCommandCatalog, "backendNamedCommandCatalog");
     this.autocompleteCommands = buildAutocompleteCommands();
     this.topicHelpHandlers = buildTopicHelpHandlers();
+  }
+
+  SlashCommandPresentationCatalog(
+      List<SlashCommandPresentationContributor> contributors,
+      BackendNamedCommandCatalog backendNamedCommandCatalog,
+      InstalledPluginsPort installedPlugins) {
+    this(loadInstalledContributors(contributors, installedPlugins), backendNamedCommandCatalog);
   }
 
   public List<SlashCommandDescriptor> autocompleteCommands() {
@@ -91,6 +111,34 @@ public class SlashCommandPresentationCatalog {
       }
     }
     return Map.copyOf(handlers);
+  }
+
+  private static List<SlashCommandPresentationContributor> loadInstalledContributors(
+      List<SlashCommandPresentationContributor> contributors,
+      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
+    InstalledPluginsPort installedPlugins =
+        installedPluginsProvider == null ? null : installedPluginsProvider.getIfAvailable();
+    return loadInstalledContributors(contributors, installedPlugins);
+  }
+
+  private static List<SlashCommandPresentationContributor> loadInstalledContributors(
+      List<SlashCommandPresentationContributor> contributors,
+      InstalledPluginsPort installedPlugins) {
+    List<SlashCommandPresentationContributor> builtInContributors =
+        nonNullContributors(contributors);
+    if (installedPlugins == null) {
+      return builtInContributors;
+    }
+    return installedPlugins.loadInstalledServices(
+        SlashCommandPresentationContributor.class, builtInContributors);
+  }
+
+  private static List<SlashCommandPresentationContributor> nonNullContributors(
+      List<SlashCommandPresentationContributor> contributors) {
+    if (contributors == null || contributors.isEmpty()) {
+      return List.of();
+    }
+    return contributors.stream().filter(Objects::nonNull).toList();
   }
 
   private static void appendStaticHelpLine(
