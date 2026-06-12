@@ -81,6 +81,7 @@ class ChatDockManagerTest {
             new NoOpChatRedactionAuditService(),
             activeInputRouter,
             slashCommandPresentationCatalog,
+            null,
             chatHistoryService,
             commandHistoryStore,
             mock(ExternalBrowserLauncher.class));
@@ -140,6 +141,7 @@ class ChatDockManagerTest {
             new NoOpChatRedactionAuditService(),
             mock(ActiveInputRouter.class),
             new SlashCommandPresentationCatalog(List.of(), BackendNamedCommandCatalog.empty()),
+            null,
             mock(ChatHistoryService.class),
             mock(CommandHistoryStore.class),
             mock(ExternalBrowserLauncher.class));
@@ -177,6 +179,7 @@ class ChatDockManagerTest {
             new NoOpChatRedactionAuditService(),
             mock(ActiveInputRouter.class),
             new SlashCommandPresentationCatalog(List.of(), BackendNamedCommandCatalog.empty()),
+            null,
             mock(ChatHistoryService.class),
             mock(CommandHistoryStore.class),
             mock(ExternalBrowserLauncher.class));
@@ -209,6 +212,7 @@ class ChatDockManagerTest {
             new NoOpChatRedactionAuditService(),
             mock(ActiveInputRouter.class),
             new SlashCommandPresentationCatalog(List.of(), BackendNamedCommandCatalog.empty()),
+            null,
             mock(ChatHistoryService.class),
             mock(CommandHistoryStore.class),
             mock(ExternalBrowserLauncher.class));
@@ -245,6 +249,7 @@ class ChatDockManagerTest {
             new NoOpChatRedactionAuditService(),
             mock(ActiveInputRouter.class),
             new SlashCommandPresentationCatalog(List.of(), BackendNamedCommandCatalog.empty()),
+            null,
             mock(ChatHistoryService.class),
             mock(CommandHistoryStore.class),
             mock(ExternalBrowserLauncher.class));
@@ -281,6 +286,7 @@ class ChatDockManagerTest {
             new NoOpChatRedactionAuditService(),
             mock(ActiveInputRouter.class),
             new SlashCommandPresentationCatalog(List.of(), BackendNamedCommandCatalog.empty()),
+            null,
             mock(ChatHistoryService.class),
             mock(CommandHistoryStore.class),
             mock(ExternalBrowserLauncher.class));

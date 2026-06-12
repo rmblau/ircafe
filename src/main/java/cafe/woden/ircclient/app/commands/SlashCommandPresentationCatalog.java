@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.app.commands;
 
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.model.TargetRef;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -9,6 +10,8 @@ import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.jmolecules.architecture.layered.ApplicationLayer;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /** Shared autocomplete/help catalog for built-in and backend-named slash commands. */
@@ -19,16 +22,31 @@ public class SlashCommandPresentationCatalog {
   private final List<SlashCommandPresentationContributor> contributors;
   private final BackendNamedCommandCatalog backendNamedCommandCatalog;
   private final List<SlashCommandDescriptor> autocompleteCommands;
-  private final Map<String, Consumer<TargetRef>> topicHelpHandlers;
+
+  @Autowired
+  public SlashCommandPresentationCatalog(
+      List<SlashCommandPresentationContributor> contributors,
+      BackendNamedCommandCatalog backendNamedCommandCatalog,
+      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
+    this(
+        loadInstalledContributors(contributors, installedPluginsProvider),
+        backendNamedCommandCatalog);
+  }
 
   public SlashCommandPresentationCatalog(
       List<SlashCommandPresentationContributor> contributors,
       BackendNamedCommandCatalog backendNamedCommandCatalog) {
-    this.contributors = List.copyOf(Objects.requireNonNull(contributors, "contributors"));
+    this.contributors = nonNullContributors(contributors);
     this.backendNamedCommandCatalog =
         Objects.requireNonNull(backendNamedCommandCatalog, "backendNamedCommandCatalog");
     this.autocompleteCommands = buildAutocompleteCommands();
-    this.topicHelpHandlers = buildTopicHelpHandlers();
+  }
+
+  SlashCommandPresentationCatalog(
+      List<SlashCommandPresentationContributor> contributors,
+      BackendNamedCommandCatalog backendNamedCommandCatalog,
+      InstalledPluginsPort installedPlugins) {
+    this(loadInstalledContributors(contributors, installedPlugins), backendNamedCommandCatalog);
   }
 
   public List<SlashCommandDescriptor> autocompleteCommands() {
@@ -38,7 +56,7 @@ public class SlashCommandPresentationCatalog {
   public void appendGeneralHelp(TargetRef out, BiConsumer<TargetRef, String> lineAppender) {
     Objects.requireNonNull(lineAppender, "lineAppender");
     for (SlashCommandPresentationContributor contributor : contributors) {
-      contributor.appendGeneralHelp(out);
+      contributor.appendGeneralHelp(out, lineAppender);
     }
     backendNamedCommandCatalog
         .generalHelpLines()
@@ -48,7 +66,8 @@ public class SlashCommandPresentationCatalog {
   public Map<String, Consumer<TargetRef>> topicHelpHandlers(
       BiConsumer<TargetRef, String> lineAppender) {
     Objects.requireNonNull(lineAppender, "lineAppender");
-    LinkedHashMap<String, Consumer<TargetRef>> handlers = new LinkedHashMap<>(topicHelpHandlers);
+    LinkedHashMap<String, Consumer<TargetRef>> handlers =
+        new LinkedHashMap<>(buildTopicHelpHandlers(lineAppender));
     for (Map.Entry<String, List<String>> entry :
         backendNamedCommandCatalog.topicHelpLines().entrySet()) {
       String topic = normalizeHelpTopic(entry.getKey());
@@ -77,11 +96,12 @@ public class SlashCommandPresentationCatalog {
     return List.copyOf(merged.values());
   }
 
-  private Map<String, Consumer<TargetRef>> buildTopicHelpHandlers() {
+  private Map<String, Consumer<TargetRef>> buildTopicHelpHandlers(
+      BiConsumer<TargetRef, String> lineAppender) {
     LinkedHashMap<String, Consumer<TargetRef>> handlers = new LinkedHashMap<>();
     for (SlashCommandPresentationContributor contributor : contributors) {
       Map<String, Consumer<TargetRef>> topicHandlers =
-          Objects.requireNonNullElse(contributor.topicHelpHandlers(), Map.of());
+          Objects.requireNonNullElse(contributor.topicHelpHandlers(lineAppender), Map.of());
       for (Map.Entry<String, Consumer<TargetRef>> entry : topicHandlers.entrySet()) {
         String topic = normalizeHelpTopic(entry.getKey());
         Consumer<TargetRef> consumer = entry.getValue();
@@ -91,6 +111,34 @@ public class SlashCommandPresentationCatalog {
       }
     }
     return Map.copyOf(handlers);
+  }
+
+  private static List<SlashCommandPresentationContributor> loadInstalledContributors(
+      List<SlashCommandPresentationContributor> contributors,
+      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
+    InstalledPluginsPort installedPlugins =
+        installedPluginsProvider == null ? null : installedPluginsProvider.getIfAvailable();
+    return loadInstalledContributors(contributors, installedPlugins);
+  }
+
+  private static List<SlashCommandPresentationContributor> loadInstalledContributors(
+      List<SlashCommandPresentationContributor> contributors,
+      InstalledPluginsPort installedPlugins) {
+    List<SlashCommandPresentationContributor> builtInContributors =
+        nonNullContributors(contributors);
+    if (installedPlugins == null) {
+      return builtInContributors;
+    }
+    return installedPlugins.loadInstalledServices(
+        SlashCommandPresentationContributor.class, builtInContributors);
+  }
+
+  private static List<SlashCommandPresentationContributor> nonNullContributors(
+      List<SlashCommandPresentationContributor> contributors) {
+    if (contributors == null || contributors.isEmpty()) {
+      return List.of();
+    }
+    return contributors.stream().filter(Objects::nonNull).toList();
   }
 
   private static void appendStaticHelpLine(

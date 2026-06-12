@@ -32,7 +32,8 @@ public class ThemeManager {
     RETRO,
     MODERN,
     IRCAFE,
-    INTELLIJ
+    INTELLIJ,
+    PLUGIN
   }
 
   public record ThemeOption(

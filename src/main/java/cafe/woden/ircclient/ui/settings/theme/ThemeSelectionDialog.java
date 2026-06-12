@@ -130,7 +130,9 @@ public class ThemeSelectionDialog {
               new PackChoice(
                   packLabel(ThemeManager.ThemePack.IRCAFE), ThemeManager.ThemePack.IRCAFE),
               new PackChoice(
-                  packLabel(ThemeManager.ThemePack.INTELLIJ), ThemeManager.ThemePack.INTELLIJ)
+                  packLabel(ThemeManager.ThemePack.INTELLIJ), ThemeManager.ThemePack.INTELLIJ),
+              new PackChoice(
+                  packLabel(ThemeManager.ThemePack.PLUGIN), ThemeManager.ThemePack.PLUGIN)
             });
 
     JTextField search = new JTextField(14);
@@ -314,6 +316,7 @@ public class ThemeSelectionDialog {
       case MODERN -> MESSAGES.text("themeSelection.pack.modern");
       case IRCAFE -> MESSAGES.text("themeSelection.pack.ircafe");
       case INTELLIJ -> MESSAGES.text("themeSelection.pack.intellij");
+      case PLUGIN -> MESSAGES.text("themeSelection.pack.plugin");
     };
   }
 

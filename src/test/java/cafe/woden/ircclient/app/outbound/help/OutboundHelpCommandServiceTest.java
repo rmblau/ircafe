@@ -19,18 +19,31 @@ import cafe.woden.ircclient.app.outbound.support.CommandTargetPolicy;
 import cafe.woden.ircclient.app.outbound.support.OutboundCommandAvailabilitySupport;
 import cafe.woden.ircclient.app.outbound.support.OutboundConnectionStatusSupport;
 import cafe.woden.ircclient.app.outbound.upload.OutboundUploadCommandService;
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.Ircv3CapabilityNameResolverPort;
+import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
+import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.irc.backend.IrcBackendClientService;
 import cafe.woden.ircclient.irc.port.IrcNegotiatedFeaturePort;
 import cafe.woden.ircclient.irc.port.IrcReadMarkerPort;
 import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.util.CompiledPluginJarSupport;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class OutboundHelpCommandServiceTest {
+
+  private static final String PLUGIN_HELP_CONTRIBUTOR_CLASS = "plugin.help.PluginHelpContributor";
+
+  @TempDir Path tempDir;
 
   private final IrcBackendClientService irc = mock(IrcBackendClientService.class);
   private final UiPort ui = mock(UiPort.class);
@@ -264,5 +277,112 @@ class OutboundHelpCommandServiceTest {
     service.handleHelp("upload");
 
     verify(outboundUploadCommandService).appendUploadHelp(chan);
+  }
+
+  @Test
+  void loadsHelpContributorsFromInstalledPluginsPort() {
+    TargetRef chan = new TargetRef("libera", "#ircafe");
+    when(targetCoordinator.getActiveTarget()).thenReturn(chan);
+
+    OutboundHelpCommandService serviceWithPlugin =
+        new OutboundHelpCommandService(
+            ui,
+            targetCoordinator,
+            List.of(),
+            slashCommandPresentationCatalog,
+            new FakeInstalledPluginsPort(List.of(new PluginHelpContributor())));
+
+    serviceWithPlugin.handleHelp("");
+    serviceWithPlugin.handleHelp("pluginhelp");
+
+    verify(ui).appendStatus(chan, "(help)", "/pluginhelp <arg> (provided by plugin)");
+    verify(ui).appendStatus(chan, "(help)", "Plugin help topic from installed plugin");
+  }
+
+  @Test
+  void loadsServiceLoaderHelpContributorsFromInstalledPlugins() throws Exception {
+    Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
+    Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
+    CompiledPluginJarSupport.writePluginJar(
+        pluginDir.resolve("example-help-contributor.jar"),
+        PLUGIN_HELP_CONTRIBUTOR_CLASS,
+        pluginHelpContributorSource(),
+        OutboundHelpContributor.class.getName(),
+        CompiledPluginJarSupport.compatibleManifest("example-help-contributor", "1.0.0"));
+    RuntimeConfigPathPort runtimeConfigPathPort =
+        () -> runtimeConfigDirectory.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+    TargetRef chan = new TargetRef("libera", "#ircafe");
+    when(targetCoordinator.getActiveTarget()).thenReturn(chan);
+
+    OutboundHelpCommandService serviceWithPlugin =
+        new OutboundHelpCommandService(
+            ui, targetCoordinator, List.of(), slashCommandPresentationCatalog, installedPlugins);
+
+    serviceWithPlugin.handleHelp("");
+    serviceWithPlugin.handleHelp("pluginjar");
+
+    verify(ui).appendStatus(chan, "(help)", "/pluginjar <arg> (provided by plugin jar)");
+    verify(ui).appendStatus(chan, "(help)", "Plugin jar help topic");
+  }
+
+  private static String pluginHelpContributorSource() {
+    return """
+        package plugin.help;
+
+        import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpContributor;
+        import cafe.woden.ircclient.model.TargetRef;
+        import java.util.Map;
+        import java.util.function.BiConsumer;
+        import java.util.function.Consumer;
+
+        public final class PluginHelpContributor implements OutboundHelpContributor {
+          @Override
+          public void appendGeneralHelp(
+              TargetRef out, BiConsumer<TargetRef, String> lineAppender) {
+            lineAppender.accept(out, "/pluginjar <arg> (provided by plugin jar)");
+          }
+
+          @Override
+          public Map<String, Consumer<TargetRef>> topicHelpHandlers(
+              BiConsumer<TargetRef, String> lineAppender) {
+            return Map.of(
+                "pluginjar", out -> lineAppender.accept(out, "Plugin jar help topic"));
+          }
+        }
+        """;
+  }
+
+  private static final class FakeInstalledPluginsPort implements InstalledPluginsPort {
+    private final List<?> pluginServices;
+
+    private FakeInstalledPluginsPort(List<?> pluginServices) {
+      this.pluginServices = List.copyOf(pluginServices);
+    }
+
+    @Override
+    public <T> List<T> loadInstalledServices(Class<T> serviceType, List<T> builtInServices) {
+      ArrayList<T> services = new ArrayList<>(builtInServices);
+      for (Object pluginService : pluginServices) {
+        if (serviceType.isInstance(pluginService)) {
+          services.add(serviceType.cast(pluginService));
+        }
+      }
+      return List.copyOf(services);
+    }
+  }
+
+  private static final class PluginHelpContributor implements OutboundHelpContributor {
+    @Override
+    public void appendGeneralHelp(TargetRef out, BiConsumer<TargetRef, String> lineAppender) {
+      lineAppender.accept(out, "/pluginhelp <arg> (provided by plugin)");
+    }
+
+    @Override
+    public Map<String, Consumer<TargetRef>> topicHelpHandlers(
+        BiConsumer<TargetRef, String> lineAppender) {
+      return Map.of(
+          "pluginhelp", out -> lineAppender.accept(out, "Plugin help topic from installed plugin"));
+    }
   }
 }

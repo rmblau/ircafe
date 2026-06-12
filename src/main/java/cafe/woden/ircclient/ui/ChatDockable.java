@@ -141,6 +141,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
 
   private final ChatTranscriptStore transcripts;
   private final ServerTreeDockable serverTree;
+  private final InstalledPluginsPort installedPluginsPort;
   private final MessageTranslationDispatcher messageTranslationDispatcher;
   private final MessageTranslationSettingsBus translationSettingsBus;
   private final OutboundMessageTranslationService outboundMessageTranslationService;
@@ -277,6 +278,8 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
 
     this.transcripts = transcripts;
     this.serverTree = serverTree;
+    this.installedPluginsPort =
+        java.util.Objects.requireNonNull(installedPluginsPort, "installedPluginsPort");
     this.redactionAuditService =
         java.util.Objects.requireNonNull(redactionAuditService, "redactionAuditService");
     this.messageTranslationDispatcher = messageTranslationDispatcher;
@@ -304,7 +307,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
     this.appAssertjPanel = createAssertjEventsPanel(applicationDiagnosticsService);
     this.appJhiccupPanel = createJhiccupEventsPanel(applicationDiagnosticsService);
     this.appInboundDedupPanel = createInboundDedupPanel(springRuntimeEventsService);
-    this.appPluginsPanel = createPluginsPanel(installedPluginsPort);
+    this.appPluginsPanel = createPluginsPanel(this.installedPluginsPort);
     this.appJfrPanel = new JfrDiagnosticsPanel(jfrRuntimeEventsService);
     this.appSpringPanel = createSpringEventsPanel(springRuntimeEventsService);
 
@@ -355,7 +358,8 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
             settingsBus,
             commandHistoryStore,
             spellcheckSettingsBus,
-            slashCommandPresentationCatalog);
+            slashCommandPresentationCatalog,
+            this.installedPluginsPort);
     this.inputPanel.setBackendUiProfile(backendUiProfileProvider.profileForServer(""));
     add(inputPanel, BorderLayout.SOUTH);
     MessageActionCapabilityPolicy capabilityPolicy =
@@ -1378,7 +1382,7 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
   private List<MessageTranslationLanguage> outboundTranslationTargetLanguages() {
     IrcProperties.Client.Translation settings =
         translationSettingsBus != null ? translationSettingsBus.get() : null;
-    return MessageTranslationLanguageCatalog.availableTargets(settings);
+    return MessageTranslationLanguageCatalog.availableTargets(settings, installedPluginsPort);
   }
 
   @Override

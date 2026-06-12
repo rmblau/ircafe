@@ -92,7 +92,7 @@ public final class Ircv3ExtensionCatalog {
     }
     List<Ircv3ExtensionDefinitionProvider> providers =
         installedPlugins.loadInstalledServices(
-            Ircv3ExtensionDefinitionProvider.class, Ircv3ExtensionRegistry.builtInProviders());
+            Ircv3ExtensionDefinitionProvider.class, Ircv3ExtensionRegistry.defaultProviders());
     try {
       return Ircv3ExtensionRegistry.snapshotForProviders(providers);
     } catch (RuntimeException error) {

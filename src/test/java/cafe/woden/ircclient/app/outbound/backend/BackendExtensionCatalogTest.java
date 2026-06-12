@@ -11,6 +11,7 @@ import cafe.woden.ircclient.app.outbound.backend.spi.OutboundBackendFeatureAdapt
 import cafe.woden.ircclient.app.outbound.mutation.MessageMutationOutboundCommands;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
@@ -101,6 +102,22 @@ class BackendExtensionCatalogTest {
   }
 
   @Test
+  void loadsBackendExtensionsFromInstalledPluginsPort() {
+    BackendExtensionCatalog catalog =
+        new BackendExtensionCatalog(
+            BackendExtensionCatalogState.fromInstalledServices(
+                java.util.List.of(new IrcBackendExtension()),
+                new FakeInstalledPluginsPort(java.util.List.of(new PluginBackendExtension()))));
+
+    assertInstanceOf(
+        IrcMessageMutationOutboundCommands.class,
+        catalog.messageMutationCommandsFor(IrcProperties.Server.Backend.IRC));
+    assertTrue(catalog.featureAdapterFor("plugin-backend").supportsSemanticUpload());
+    assertTrue(catalog.availableBackendIds().contains("plugin-backend"));
+    assertTrue("Plugin Backend".equals(catalog.backendDisplayName("plugin-backend")));
+  }
+
+  @Test
   void loadsBackendExtensionsFromPluginDirectoryJar() throws Exception {
     Path pluginDir = Files.createDirectories(tempDir.resolve("plugins"));
     writePluginJar(pluginDir.resolve("plugin-backend.jar"));
@@ -109,6 +126,15 @@ class BackendExtensionCatalogTest {
         BackendExtensionCatalog.installed(
             pluginDir, BackendExtensionCatalogTest.class.getClassLoader());
     try {
+      assertInstanceOf(
+          IrcMessageMutationOutboundCommands.class,
+          catalog.messageMutationCommandsFor(IrcProperties.Server.Backend.IRC));
+      assertInstanceOf(
+          MatrixUploadCommandTranslationHandler.class,
+          catalog.uploadTranslationHandlerFor(IrcProperties.Server.Backend.MATRIX));
+      assertInstanceOf(
+          QuasselMessageMutationOutboundCommands.class,
+          catalog.messageMutationCommandsFor(IrcProperties.Server.Backend.QUASSEL_CORE));
       assertTrue(catalog.featureAdapterFor("plugin-backend").supportsSemanticUpload());
       assertTrue(catalog.availableBackendIds().contains("plugin-backend"));
       assertTrue("Plugin Backend".equals(catalog.backendDisplayName("plugin-backend")));
@@ -129,11 +155,42 @@ class BackendExtensionCatalogTest {
         BackendExtensionCatalog.installed(
             runtimeConfigPathPort, BackendExtensionCatalogTest.class.getClassLoader());
     try {
+      assertInstanceOf(
+          IrcMessageMutationOutboundCommands.class,
+          catalog.messageMutationCommandsFor(IrcProperties.Server.Backend.IRC));
+      assertInstanceOf(
+          MatrixUploadCommandTranslationHandler.class,
+          catalog.uploadTranslationHandlerFor(IrcProperties.Server.Backend.MATRIX));
+      assertInstanceOf(
+          QuasselMessageMutationOutboundCommands.class,
+          catalog.messageMutationCommandsFor(IrcProperties.Server.Backend.QUASSEL_CORE));
       assertTrue(catalog.featureAdapterFor("plugin-backend").supportsSemanticUpload());
       assertTrue(catalog.availableBackendIds().contains("plugin-backend"));
       assertTrue("Plugin Backend".equals(catalog.backendDisplayName("plugin-backend")));
     } finally {
       catalog.shutdown();
+    }
+  }
+
+  private static final class FakeInstalledPluginsPort implements InstalledPluginsPort {
+    private final java.util.List<?> pluginServices;
+
+    private FakeInstalledPluginsPort(java.util.List<?> pluginServices) {
+      this.pluginServices = java.util.List.copyOf(pluginServices);
+    }
+
+    @Override
+    public <T> java.util.List<T> loadInstalledServices(
+        Class<T> serviceType, java.util.List<T> builtInServices) {
+      java.util.ArrayList<T> services =
+          new java.util.ArrayList<>(
+              java.util.Objects.requireNonNullElse(builtInServices, java.util.List.of()));
+      for (Object pluginService : pluginServices) {
+        if (serviceType.isInstance(pluginService)) {
+          services.add(serviceType.cast(pluginService));
+        }
+      }
+      return java.util.List.copyOf(services);
     }
   }
 

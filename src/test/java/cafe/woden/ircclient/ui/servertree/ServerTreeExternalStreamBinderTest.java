@@ -16,6 +16,7 @@ import cafe.woden.ircclient.notifications.api.NotificationQueryPort;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.processors.PublishProcessor;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import javax.swing.SwingUtilities;
@@ -92,7 +93,7 @@ class ServerTreeExternalStreamBinderTest {
             ServerTreeBouncerBackends.SOJU,
             ServerTreeBouncerBackends.ZNC,
             ServerTreeBouncerBackends.GENERIC),
-        autoConnectRefreshes);
+        orderedBackends(autoConnectRefreshes));
   }
 
   private static ServerEntry serverEntry(String id) {
@@ -104,5 +105,11 @@ class ServerTreeExternalStreamBinderTest {
       return;
     }
     SwingUtilities.invokeAndWait(() -> {});
+  }
+
+  private static List<String> orderedBackends(List<String> backendIds) {
+    return backendIds.stream()
+        .sorted(Comparator.comparingInt(ServerTreeBouncerBackends.orderedIds()::indexOf))
+        .toList();
   }
 }

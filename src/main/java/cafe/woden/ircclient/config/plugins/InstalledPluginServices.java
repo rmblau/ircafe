@@ -50,9 +50,10 @@ public final class InstalledPluginServices implements InstalledPluginsPort {
             () ->
                 PluginServiceLoaderSupport.defaultApplicationClassLoader(
                     InstalledPluginServices.class));
-    InstalledPluginDiscovery discovery = discoverInstalledPlugins(pluginDirectory);
+    PluginServiceLoaderSupport.PluginDiscovery discovery =
+        discoverInstalledPlugins(pluginDirectory);
     this.installedPlugins = discovery.installedPlugins();
-    this.pluginProblems = new CopyOnWriteArrayList<>(discovery.pluginProblems());
+    this.pluginProblems = new CopyOnWriteArrayList<>(pluginDiscoveryProblems(discovery));
     this.pluginClassLoaderHandles =
         PluginServiceLoaderSupport.openInstalledPluginClassLoaders(
             pluginDirectory, this.installedPlugins, this.applicationClassLoader, log);
@@ -113,10 +114,10 @@ public final class InstalledPluginServices implements InstalledPluginsPort {
         "[ircafe] failed to close shared plugin classloader");
   }
 
-  private InstalledPluginDiscovery discoverInstalledPlugins(Path pluginDirectory) {
+  private PluginServiceLoaderSupport.PluginDiscovery discoverInstalledPlugins(
+      Path pluginDirectory) {
     try {
-      return new InstalledPluginDiscovery(
-          PluginServiceLoaderSupport.discoverInstalledPlugins(pluginDirectory, log), List.of());
+      return PluginServiceLoaderSupport.discoverInstalledPluginDescriptors(pluginDirectory, log);
     } catch (RuntimeException e) {
       StringBuilder details = new StringBuilder();
       if (pluginDirectory != null) {
@@ -124,12 +125,23 @@ public final class InstalledPluginServices implements InstalledPluginsPort {
       }
       details.append(Objects.toString(e.getMessage(), e.getClass().getName()));
       log.warn("[ircafe] failed to discover declared plugins from {}", pluginDirectory, e);
-      return new InstalledPluginDiscovery(
+      return new PluginServiceLoaderSupport.PluginDiscovery(
           List.of(),
           List.of(
-              new InstalledPluginProblem(
-                  "ERROR", "Failed to discover declared plugin jars.", details.toString())));
+              new PluginServiceLoaderSupport.PluginDiscoveryProblem(
+                  pluginDirectory,
+                  "Failed to discover declared plugin jars.",
+                  details.toString())));
     }
+  }
+
+  private static List<InstalledPluginProblem> pluginDiscoveryProblems(
+      PluginServiceLoaderSupport.PluginDiscovery discovery) {
+    List<PluginServiceLoaderSupport.PluginDiscoveryProblem> problems =
+        discovery == null ? List.of() : discovery.problems();
+    return problems.stream()
+        .map(problem -> new InstalledPluginProblem("ERROR", problem.summary(), problem.details()))
+        .toList();
   }
 
   private void recordPluginProblem(
@@ -160,14 +172,5 @@ public final class InstalledPluginServices implements InstalledPluginsPort {
                 : details.toString().trim());
     recordPluginProblem(problem);
     log.warn("[ircafe] {}", summary, error);
-  }
-
-  private record InstalledPluginDiscovery(
-      List<InstalledPluginDescriptor> installedPlugins,
-      List<InstalledPluginProblem> pluginProblems) {
-    private InstalledPluginDiscovery {
-      installedPlugins = List.copyOf(Objects.requireNonNullElse(installedPlugins, List.of()));
-      pluginProblems = List.copyOf(Objects.requireNonNullElse(pluginProblems, List.of()));
-    }
   }
 }

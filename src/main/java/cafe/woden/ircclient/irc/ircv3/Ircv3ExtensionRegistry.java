@@ -156,6 +156,10 @@ public final class Ircv3ExtensionRegistry {
       return visibleFeatures;
     }
 
+    private List<Ircv3ExtensionDefinitionProvider> providers() {
+      return providers;
+    }
+
     public String requestTokenFor(String name) {
       return find(name)
           .filter(ExtensionDefinition::requestable)
@@ -232,6 +236,10 @@ public final class Ircv3ExtensionRegistry {
 
   static List<Ircv3ExtensionDefinitionProvider> builtInProviders() {
     return BUILT_IN_PROVIDERS;
+  }
+
+  static List<Ircv3ExtensionDefinitionProvider> defaultProviders() {
+    return DEFAULT_SNAPSHOT.providers();
   }
 
   static Snapshot snapshotForProviders(List<Ircv3ExtensionDefinitionProvider> providers) {

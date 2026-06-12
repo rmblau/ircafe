@@ -4,7 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
@@ -43,6 +46,28 @@ class BouncerBackendRegistryTest {
     assertTrue(registry.find("soju").isPresent());
   }
 
+  @Test
+  void loadsMappingStrategiesFromInstalledPluginsPort() {
+    BouncerBackendRegistry registry =
+        new BouncerBackendRegistry(
+            List.of(new FakeStrategy("generic", "bouncer:", "Bouncer Networks", Set.of(), "net-g")),
+            new FakeInstalledPluginsPort(
+                List.of(
+                    new FakeStrategy(
+                        "plugin-bouncer",
+                        "plugin:",
+                        "Plugin Bouncer Networks",
+                        Set.of("example.com/plugin-bouncer"),
+                        "net-p"))));
+
+    assertEquals(Set.of("generic", "plugin-bouncer"), registry.backendIds());
+
+    BouncerBackendDescriptor plugin = registry.find("PLUGIN-BOUNCER").orElseThrow();
+    assertEquals("plugin:", plugin.ephemeralIdPrefix());
+    assertEquals("Plugin Bouncer Networks", plugin.networksGroupLabel());
+    assertEquals(Set.of("example.com/plugin-bouncer"), plugin.capabilityHints());
+  }
+
   private record FakeStrategy(
       String backendId,
       String ephemeralIdPrefix,
@@ -64,6 +89,26 @@ class BouncerBackendRegistryTest {
         ResolvedBouncerNetwork resolved,
         List<String> autoJoinChannels) {
       return bouncer;
+    }
+  }
+
+  private static final class FakeInstalledPluginsPort implements InstalledPluginsPort {
+    private final List<?> pluginServices;
+
+    private FakeInstalledPluginsPort(List<?> pluginServices) {
+      this.pluginServices = List.copyOf(pluginServices);
+    }
+
+    @Override
+    public <T> List<T> loadInstalledServices(Class<T> serviceType, List<T> builtInServices) {
+      ArrayList<T> services =
+          new ArrayList<>(Objects.requireNonNullElse(builtInServices, List.of()));
+      for (Object service : pluginServices) {
+        if (serviceType.isInstance(service)) {
+          services.add(serviceType.cast(service));
+        }
+      }
+      return List.copyOf(services);
     }
   }
 }

@@ -8,6 +8,7 @@ import cafe.woden.ircclient.app.translation.MessageTranslationLanguageCatalog;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.app.translation.OutboundMessageTranslationService;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.irc.port.IrcTypingPort;
 import cafe.woden.ircclient.logging.history.ChatHistoryService;
 import cafe.woden.ircclient.logging.viewer.ChatRedactionAuditService;
@@ -76,6 +77,7 @@ public class PinnedChatDockable extends ChatViewPanel implements Dockable, AutoC
   private final ChatTranscriptStore transcripts;
   private final ChatHistoryService chatHistoryService;
   private final ChatRedactionAuditService redactionAuditService;
+  private final InstalledPluginsPort installedPluginsPort;
   private final String persistentId;
 
   private boolean followTail = true;
@@ -130,6 +132,7 @@ public class PinnedChatDockable extends ChatViewPanel implements Dockable, AutoC
       Function<String, String> currentNickLookup,
       ActiveInputRouter activeInputRouter,
       SlashCommandPresentationCatalog slashCommandPresentationCatalog,
+      InstalledPluginsPort installedPluginsPort,
       BiConsumer<TargetRef, String> onDraftChanged,
       BiConsumer<TargetRef, String> onClosed) {
     super(settingsBus);
@@ -138,6 +141,8 @@ public class PinnedChatDockable extends ChatViewPanel implements Dockable, AutoC
     this.chatHistoryService = chatHistoryService;
     this.redactionAuditService =
         Objects.requireNonNull(redactionAuditService, "redactionAuditService");
+    this.installedPluginsPort =
+        Objects.requireNonNull(installedPluginsPort, "installedPluginsPort");
     this.activate = activate;
     this.outboundBus = outboundBus;
     this.typingPort = Objects.requireNonNull(typingPort, "typingPort");
@@ -206,7 +211,11 @@ public class PinnedChatDockable extends ChatViewPanel implements Dockable, AutoC
     // Input panel embedded in the pinned view.
     this.inputPanel =
         new MessageInputPanel(
-            settingsBus, historyStore, spellcheckSettingsBus, slashCommandPresentationCatalog);
+            settingsBus,
+            historyStore,
+            spellcheckSettingsBus,
+            slashCommandPresentationCatalog,
+            this.installedPluginsPort);
     BackendUiProfile initialProfile =
         backendUiProfileProvider == null
             ? BackendUiProfile.ircOnly(target.serverId())
@@ -514,7 +523,7 @@ public class PinnedChatDockable extends ChatViewPanel implements Dockable, AutoC
   private List<MessageTranslationLanguage> outboundTranslationTargetLanguages() {
     IrcProperties.Client.Translation settings =
         translationSettingsBus != null ? translationSettingsBus.get() : null;
-    return MessageTranslationLanguageCatalog.availableTargets(settings);
+    return MessageTranslationLanguageCatalog.availableTargets(settings, installedPluginsPort);
   }
 
   @Override

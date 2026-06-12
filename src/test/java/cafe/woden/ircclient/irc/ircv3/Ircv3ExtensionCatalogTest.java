@@ -41,6 +41,20 @@ class Ircv3ExtensionCatalogTest {
   }
 
   @Test
+  void runtimeCatalogPreservesClasspathSpiExtensionProviders() {
+    Ircv3ExtensionCatalog catalog = new Ircv3ExtensionCatalog(new RecordingInstalledPluginsPort());
+
+    assertTrue(catalog.providerIds().contains("read-marker"));
+    assertTrue(catalog.providerIds().contains("multiline"));
+    assertTrue(catalog.providerIds().contains("message-redaction"));
+    assertTrue(catalog.providerIds().contains("chathistory"));
+    assertEquals("draft/read-marker", catalog.requestTokenFor("read-marker"));
+    assertEquals("draft/multiline", catalog.requestTokenFor("multiline"));
+    assertEquals("draft/message-redaction", catalog.requestTokenFor("message-redaction"));
+    assertEquals("draft/chathistory", catalog.requestTokenFor("chathistory"));
+  }
+
+  @Test
   void runtimeCatalogLoadsInstalledIrcv3ExtensionProviders() throws Exception {
     Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
     Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));

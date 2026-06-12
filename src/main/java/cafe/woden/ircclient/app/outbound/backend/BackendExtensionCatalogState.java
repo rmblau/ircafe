@@ -7,8 +7,8 @@ import cafe.woden.ircclient.app.outbound.mutation.MessageMutationOutboundCommand
 import cafe.woden.ircclient.app.outbound.upload.spi.UploadCommandTranslationHandler;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
-import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
 import cafe.woden.ircclient.util.PluginServiceLoaderSupport;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
@@ -48,9 +48,9 @@ final class BackendExtensionCatalogState {
   }
 
   static BackendExtensionCatalogState fromInstalledServices(
-      List<BackendExtension> builtInExtensions, InstalledPluginServices installedPluginServices) {
-    InstalledPluginServices pluginServices =
-        Objects.requireNonNull(installedPluginServices, "installedPluginServices");
+      List<BackendExtension> builtInExtensions, InstalledPluginsPort installedPluginsPort) {
+    InstalledPluginsPort pluginServices =
+        Objects.requireNonNull(installedPluginsPort, "installedPluginsPort");
     return new BackendExtensionCatalogState(
         pluginServices.loadInstalledServices(
             BackendExtension.class,
@@ -82,9 +82,18 @@ final class BackendExtensionCatalogState {
       Path pluginDirectory, ClassLoader applicationClassLoader) {
     PluginServiceLoaderSupport.LoadedServices<BackendExtension> loadedServices =
         PluginServiceLoaderSupport.loadInstalledServices(
-            BackendExtension.class, List.of(), pluginDirectory, applicationClassLoader, log);
+            BackendExtension.class,
+            builtInExtensions(),
+            pluginDirectory,
+            applicationClassLoader,
+            log);
     return new BackendExtensionCatalogState(
         loadedServices.services(), loadedServices.pluginClassLoaders());
+  }
+
+  private static List<BackendExtension> builtInExtensions() {
+    return List.of(
+        new IrcBackendExtension(), new MatrixBackendExtension(), new QuasselBackendExtension());
   }
 
   void shutdown() {

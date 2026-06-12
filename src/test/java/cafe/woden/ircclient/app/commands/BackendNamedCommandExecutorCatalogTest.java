@@ -3,6 +3,7 @@ package cafe.woden.ircclient.app.commands;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
@@ -12,6 +13,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
@@ -62,6 +65,23 @@ class BackendNamedCommandExecutorCatalogTest {
   @TempDir Path tempDir;
 
   @Test
+  void loadsExecutionProvidersFromInstalledPluginsPort() {
+    BackendNamedCommandExecutorCatalog catalog =
+        new BackendNamedCommandExecutorCatalog(
+            new FakeInstalledPluginsPort(List.of(new PluginProvidedBackendNamedCommandExecutor())),
+            List.of());
+    CompositeDisposable disposables = new CompositeDisposable();
+    try {
+      assertTrue(
+          catalog.handle(
+              TEST_CONTEXT, disposables, new ParsedInput.BackendNamed("backendexec", "hello")));
+    } finally {
+      disposables.dispose();
+      catalog.shutdown();
+    }
+  }
+
+  @Test
   void loadsExecutionProvidersFromPluginDirectoryJar() throws Exception {
     Path pluginDir = Files.createDirectories(tempDir.resolve("plugins"));
     writePluginJar(pluginDir.resolve("backendexec.jar"));
@@ -89,7 +109,7 @@ class BackendNamedCommandExecutorCatalogTest {
         () -> runtimeConfigDirectory.resolve("ircafe.yml");
 
     BackendNamedCommandExecutorCatalog catalog =
-        new BackendNamedCommandExecutorCatalog(runtimeConfigPathPort, java.util.List.of());
+        new BackendNamedCommandExecutorCatalog(runtimeConfigPathPort, List.of());
     CompositeDisposable disposables = new CompositeDisposable();
     try {
       assertTrue(
@@ -136,7 +156,7 @@ class BackendNamedCommandExecutorCatalogTest {
 
     assertThrows(
         IllegalStateException.class,
-        () -> BackendNamedCommandExecutorCatalog.fromExecutors(java.util.List.of(first, second)));
+        () -> BackendNamedCommandExecutorCatalog.fromExecutors(List.of(first, second)));
   }
 
   private static void writePluginJar(Path jarPath) throws IOException {
@@ -155,6 +175,26 @@ class BackendNamedCommandExecutorCatalogTest {
           (PluginProvidedBackendNamedCommandExecutor.class.getName() + System.lineSeparator())
               .getBytes(StandardCharsets.UTF_8));
       out.closeEntry();
+    }
+  }
+
+  private static final class FakeInstalledPluginsPort implements InstalledPluginsPort {
+    private final List<?> pluginServices;
+
+    private FakeInstalledPluginsPort(List<?> pluginServices) {
+      this.pluginServices = List.copyOf(pluginServices);
+    }
+
+    @Override
+    public <T> List<T> loadInstalledServices(Class<T> serviceType, List<T> builtInServices) {
+      ArrayList<T> services =
+          new ArrayList<>(java.util.Objects.requireNonNullElse(builtInServices, List.of()));
+      for (Object pluginService : pluginServices) {
+        if (serviceType.isInstance(pluginService)) {
+          services.add(serviceType.cast(pluginService));
+        }
+      }
+      return List.copyOf(services);
     }
   }
 

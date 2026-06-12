@@ -3,15 +3,28 @@ package cafe.woden.ircclient.app.translation;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
+import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
+import cafe.woden.ircclient.util.CompiledPluginJarSupport;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class MessageTranslationBackendRegistryTest {
+
+  private static final String PLUGIN_BACKEND_CLASS = "plugin.translation.PluginEchoBackend";
+
+  @TempDir Path tempDir;
 
   @Test
   void resolvesBackendsByNormalizedId() {
@@ -32,6 +45,43 @@ class MessageTranslationBackendRegistryTest {
   }
 
   @Test
+  void includesBackendsLoadedThroughInstalledPluginPort() {
+    MessageTranslationBackend builtIn = new StubBackend("built-in");
+    MessageTranslationBackend plugin = new StubBackend("plugin-extra");
+    MessageTranslationBackendRegistry registry =
+        new MessageTranslationBackendRegistry(
+            List.of(builtIn), new RecordingInstalledPluginsPort(List.of(plugin)));
+
+    assertSame(builtIn, registry.find("built-in").orElseThrow());
+    assertSame(plugin, registry.find(" PLUGIN-EXTRA ").orElseThrow());
+    assertEquals(Set.of("built-in", "plugin-extra"), registry.backendIds());
+  }
+
+  @Test
+  void loadsServiceLoaderTranslationBackendsFromInstalledPlugins() throws Exception {
+    Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
+    Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
+    CompiledPluginJarSupport.writePluginJar(
+        pluginDir.resolve("example-translation-backend.jar"),
+        PLUGIN_BACKEND_CLASS,
+        pluginBackendSource(),
+        MessageTranslationBackend.class.getName(),
+        CompiledPluginJarSupport.compatibleManifest("example-translation-backend", "1.0.0"));
+    RuntimeConfigPathPort runtimeConfigPathPort =
+        () -> runtimeConfigDirectory.resolve("ircafe.yml");
+
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+    MessageTranslationBackendRegistry registry =
+        new MessageTranslationBackendRegistry(List.of(), installedPlugins);
+
+    assertTrue(installedPlugins.pluginProblems().isEmpty());
+    MessageTranslationBackend backend = registry.find("PLUGIN-ECHO").orElseThrow();
+    MessageTranslationResult result = backend.translate(null).toCompletableFuture().get();
+    assertEquals("translated by plugin", result.translatedText());
+    assertEquals("plugin-echo", result.provider());
+  }
+
+  @Test
   void rejectsDuplicateNormalizedIds() {
     List<MessageTranslationBackend> backends =
         List.of(new StubBackend("DeepL"), new StubBackend(" deepl "));
@@ -45,6 +95,52 @@ class MessageTranslationBackendRegistryTest {
     assertThrows(
         IllegalArgumentException.class,
         () -> new MessageTranslationBackendRegistry(List.of(new StubBackend(" "))));
+  }
+
+  private static String pluginBackendSource() {
+    return """
+        package plugin.translation;
+
+        import cafe.woden.ircclient.app.translation.MessageTranslationBackend;
+        import cafe.woden.ircclient.app.translation.MessageTranslationRequest;
+        import cafe.woden.ircclient.app.translation.MessageTranslationResult;
+        import java.util.concurrent.CompletableFuture;
+        import java.util.concurrent.CompletionStage;
+
+        public final class PluginEchoBackend implements MessageTranslationBackend {
+          @Override
+          public String backendId() {
+            return "plugin-echo";
+          }
+
+          @Override
+          public CompletionStage<MessageTranslationResult> translate(
+              MessageTranslationRequest request) {
+            return CompletableFuture.completedFuture(
+                new MessageTranslationResult(
+                    "translated by plugin", "en", "fr", "plugin-echo"));
+          }
+        }
+        """;
+  }
+
+  private static final class RecordingInstalledPluginsPort implements InstalledPluginsPort {
+    private final List<MessageTranslationBackend> pluginBackends;
+
+    private RecordingInstalledPluginsPort(List<MessageTranslationBackend> pluginBackends) {
+      this.pluginBackends = List.copyOf(pluginBackends);
+    }
+
+    @Override
+    public <T> List<T> loadInstalledServices(Class<T> serviceType, List<T> builtInServices) {
+      ArrayList<T> services = new ArrayList<>(builtInServices);
+      if (serviceType == MessageTranslationBackend.class) {
+        for (MessageTranslationBackend backend : pluginBackends) {
+          services.add(serviceType.cast(backend));
+        }
+      }
+      return List.copyOf(services);
+    }
   }
 
   private record StubBackend(String backendId) implements MessageTranslationBackend {

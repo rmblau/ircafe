@@ -3,8 +3,8 @@ package cafe.woden.ircclient.irc.backend;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import cafe.woden.ircclient.config.api.BackendMetadataPort;
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
-import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.irc.DisconnectRequestSource;
 import cafe.woden.ircclient.irc.IrcClientService;
@@ -71,7 +71,7 @@ public class BackendRoutingIrcClientService
   @Autowired
   public BackendRoutingIrcClientService(
       ServerCatalog serverCatalog,
-      InstalledPluginServices installedPluginServices,
+      InstalledPluginsPort installedPluginsPort,
       ObjectProvider<BackendMetadataPort> backendMetadataProvider,
       List<IrcBackendClientService> backendServices) {
     this(
@@ -79,7 +79,7 @@ public class BackendRoutingIrcClientService
         backendMetadataProvider.getIfAvailable(),
         loadInstalledBackendServices(
             List.copyOf(Objects.requireNonNullElse(backendServices, List.of())),
-            installedPluginServices));
+            installedPluginsPort));
   }
 
   public BackendRoutingIrcClientService(
@@ -749,9 +749,9 @@ public class BackendRoutingIrcClientService
 
   private static LoadedBackendServices loadInstalledBackendServices(
       List<IrcBackendClientService> builtInBackendServices,
-      InstalledPluginServices installedPluginServices) {
-    InstalledPluginServices pluginServices =
-        Objects.requireNonNull(installedPluginServices, "installedPluginServices");
+      InstalledPluginsPort installedPluginsPort) {
+    InstalledPluginsPort pluginServices =
+        Objects.requireNonNull(installedPluginsPort, "installedPluginsPort");
     return new LoadedBackendServices(
         pluginServices.loadInstalledServices(IrcBackendClientService.class, builtInBackendServices),
         List.of());

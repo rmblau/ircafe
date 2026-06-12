@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.api.BackendMetadataPort;
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.irc.backend.BackendRoutingIrcClientService;
 import cafe.woden.ircclient.irc.backend.IrcBackendClientService;
@@ -20,11 +21,13 @@ import cafe.woden.ircclient.irc.quassel.control.QuasselCoreControlPort;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.processors.PublishProcessor;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalLong;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.ObjectProvider;
 
 class BackendRoutingIrcClientServiceTest {
 
@@ -100,6 +103,49 @@ class BackendRoutingIrcClientServiceTest {
 
     BackendRoutingIrcClientService service =
         new BackendRoutingIrcClientService(serverCatalog, List.of(ircBackend, pluginBackend));
+
+    assertEquals("plugin-backend", service.backendIdForServer("plugin"));
+
+    service.connect("plugin").blockingAwait();
+
+    verify(pluginBackend).connect("plugin");
+    verify(ircBackend, never()).connect("plugin");
+  }
+
+  @Test
+  void loadsBackendServicesFromInstalledPluginsPort() {
+    ServerCatalog serverCatalog = mock(ServerCatalog.class);
+    IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
+    IrcBackendClientService pluginBackend = mock(IrcBackendClientService.class);
+    ObjectProvider<BackendMetadataPort> backendMetadataProvider = mock(ObjectProvider.class);
+
+    when(backendMetadataProvider.getIfAvailable()).thenReturn(BackendMetadataPort.builtInsOnly());
+    when(ircBackend.backend()).thenReturn(IrcProperties.Server.Backend.IRC);
+    when(pluginBackend.backend()).thenReturn(null);
+    when(pluginBackend.backendId()).thenReturn("plugin-backend");
+    when(ircBackend.events())
+        .thenReturn(PublishProcessor.<ServerIrcEvent>create().onBackpressureBuffer());
+    when(pluginBackend.events())
+        .thenReturn(PublishProcessor.<ServerIrcEvent>create().onBackpressureBuffer());
+    when(serverCatalog.find("plugin")).thenReturn(Optional.of(server("plugin", "plugin-backend")));
+    when(pluginBackend.connect("plugin")).thenReturn(Completable.complete());
+
+    InstalledPluginsPort installedPlugins =
+        new InstalledPluginsPort() {
+          @Override
+          public <T> List<T> loadInstalledServices(Class<T> serviceType, List<T> builtInServices) {
+            if (!IrcBackendClientService.class.equals(serviceType)) {
+              return InstalledPluginsPort.super.loadInstalledServices(serviceType, builtInServices);
+            }
+            ArrayList<T> services = new ArrayList<>(builtInServices);
+            services.add(serviceType.cast(pluginBackend));
+            return services;
+          }
+        };
+
+    BackendRoutingIrcClientService service =
+        new BackendRoutingIrcClientService(
+            serverCatalog, installedPlugins, backendMetadataProvider, List.of(ircBackend));
 
     assertEquals("plugin-backend", service.backendIdForServer("plugin"));
 

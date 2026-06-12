@@ -1566,16 +1566,13 @@ class QuasselCoreIrcClientServiceTest {
                     "irc.example.net",
                     ":irc.example.net CAP quassel ACK :message-tags typing"))));
 
-    awaitEvent(events, ev -> ev instanceof IrcEvent.Ircv3CapabilityChanged);
-    assertTrue(
-        events.values().stream()
-            .map(ServerIrcEvent::event)
-            .anyMatch(
-                ev ->
-                    ev instanceof IrcEvent.Ircv3CapabilityChanged cap
-                        && "ACK".equals(cap.subcommand())
-                        && "typing".equals(cap.capability())
-                        && cap.enabled()));
+    awaitEvent(
+        events,
+        ev ->
+            ev instanceof IrcEvent.Ircv3CapabilityChanged cap
+                && "ACK".equals(cap.subcommand())
+                && "typing".equals(cap.capability())
+                && cap.enabled());
     assertTrue(service.isTypingAvailable("quassel"));
   }
 
