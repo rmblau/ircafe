@@ -16,6 +16,7 @@ import cafe.woden.ircclient.app.commands.BackendNamedCommandCatalog;
 import cafe.woden.ircclient.app.commands.SlashCommandPresentationCatalog;
 import cafe.woden.ircclient.app.translation.MessageTranslationDispatcher;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.dcc.DccTransferStore;
 import cafe.woden.ircclient.ignore.IgnoreListService;
 import cafe.woden.ircclient.ignore.IgnoreStatusService;
@@ -250,6 +251,7 @@ class ChatDockableWiringSmokeTest {
     when(settingsBus.get()).thenReturn(null);
     SpellcheckSettingsBus spellcheckSettingsBus = mock(SpellcheckSettingsBus.class);
     CommandHistoryStore commandHistoryStore = mock(CommandHistoryStore.class);
+    InstalledPluginsPort installedPluginsPort = new InstalledPluginsPort() {};
     SlashCommandPresentationCatalog slashCommandPresentationCatalog =
         new SlashCommandPresentationCatalog(List.of(), BackendNamedCommandCatalog.empty());
 
@@ -291,7 +293,7 @@ class ChatDockableWiringSmokeTest {
                     null,
                     null,
                     null,
-                    null,
+                    installedPluginsPort,
                     slashCommandPresentationCatalog,
                     settingsBus,
                     spellcheckSettingsBus,
