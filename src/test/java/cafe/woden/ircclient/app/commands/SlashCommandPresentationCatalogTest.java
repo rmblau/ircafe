@@ -89,8 +89,7 @@ class SlashCommandPresentationCatalogTest {
     SlashCommandPresentationContributor contributor =
         new SlashCommandPresentationContributor() {
           @Override
-          public void appendGeneralHelp(
-              TargetRef out, BiConsumer<TargetRef, String> lineAppender) {
+          public void appendGeneralHelp(TargetRef out, BiConsumer<TargetRef, String> lineAppender) {
             lineAppender.accept(out, "/plugin-help - plugin-provided help");
           }
         };
@@ -113,9 +112,7 @@ class SlashCommandPresentationCatalogTest {
           @Override
           public Map<String, Consumer<TargetRef>> topicHelpHandlers(
               BiConsumer<TargetRef, String> lineAppender) {
-            return Map.of(
-                "plugin-help",
-                out -> lineAppender.accept(out, "/plugin-help <arg>"));
+            return Map.of("plugin-help", out -> lineAppender.accept(out, "/plugin-help <arg>"));
           }
         };
     SlashCommandPresentationCatalog catalog =
@@ -140,8 +137,7 @@ class SlashCommandPresentationCatalogTest {
         PLUGIN_CONTRIBUTOR_CLASS,
         pluginContributorSource(),
         SlashCommandPresentationContributor.class.getName(),
-        CompiledPluginJarSupport.compatibleManifest(
-            "example-slash-command-presentation", "1.0.0"));
+        CompiledPluginJarSupport.compatibleManifest("example-slash-command-presentation", "1.0.0"));
     RuntimeConfigPathPort runtimeConfigPathPort =
         () -> runtimeConfigDirectory.resolve("ircafe.yml");
 

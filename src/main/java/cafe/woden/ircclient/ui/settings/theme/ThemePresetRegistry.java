@@ -484,8 +484,7 @@ class ThemePresetRegistry {
         Objects.requireNonNullElse(providers, List.<ThemeContributionProvider>of())) {
       if (provider == null) continue;
       for (ThemePresetContribution preset :
-          Objects.requireNonNullElse(
-              provider.themePresets(), List.<ThemePresetContribution>of())) {
+          Objects.requireNonNullElse(provider.themePresets(), List.<ThemePresetContribution>of())) {
         if (preset == null || preset.id().isBlank()) continue;
         String id = preset.id().toLowerCase(java.util.Locale.ROOT);
         map.putIfAbsent(id, new ThemePreset(id, preset.dark(), preset.extraDefaults()));

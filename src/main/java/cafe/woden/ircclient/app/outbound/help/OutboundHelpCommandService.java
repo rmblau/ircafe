@@ -137,7 +137,8 @@ public final class OutboundHelpCommandService {
     LinkedHashMap<String, HelpTopicHandler> handlers = new LinkedHashMap<>();
     registerHelpTopicHandler(handlers, this::appendDccHelp, "dcc");
     for (OutboundHelpContributor contributor : contributors) {
-      registerHelpTopicHandlers(handlers, contributor.topicHelpHandlers(this::appendStaticHelpLine));
+      registerHelpTopicHandlers(
+          handlers, contributor.topicHelpHandlers(this::appendStaticHelpLine));
     }
     registerHelpTopicHandlers(
         handlers, slashCommandPresentationCatalog.topicHelpHandlers(this::appendStaticHelpLine));

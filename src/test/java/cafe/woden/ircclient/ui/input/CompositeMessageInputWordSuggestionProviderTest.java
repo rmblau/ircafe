@@ -66,8 +66,7 @@ class CompositeMessageInputWordSuggestionProviderTest {
             new StaticSuggestions("built"), installedPlugins);
 
     assertTrue(installedPlugins.pluginProblems().isEmpty());
-    assertEquals(
-        List.of("built", "plugin-alpha", "plugin-beta"), composite.suggestWords("pl", 8));
+    assertEquals(List.of("built", "plugin-alpha", "plugin-beta"), composite.suggestWords("pl", 8));
   }
 
   @Test

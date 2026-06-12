@@ -150,8 +150,7 @@ class PluginServiceLoaderSupportTest {
 
   @Test
   void discoversHealthyPluginsWhenAnotherPluginManifestIsInvalid() throws Exception {
-    Path pluginDir =
-        Files.createDirectories(tempDir.resolve("invalid-discovery-manifest/plugins"));
+    Path pluginDir = Files.createDirectories(tempDir.resolve("invalid-discovery-manifest/plugins"));
     CompiledPluginJarSupport.writePluginJar(
         pluginDir.resolve("healthy-provider.jar"),
         REAL_PLUGIN_PROVIDER_CLASS,

@@ -22,8 +22,7 @@ class MessageTranslationLanguageCatalogTest {
     assertTrue(
         languages.stream()
             .anyMatch(
-                language ->
-                    language.code().equals("tlh") && language.label().equals("Klingon")));
+                language -> language.code().equals("tlh") && language.label().equals("Klingon")));
   }
 
   @Test

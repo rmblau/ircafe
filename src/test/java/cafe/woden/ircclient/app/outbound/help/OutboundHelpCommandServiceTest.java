@@ -41,8 +41,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 class OutboundHelpCommandServiceTest {
 
-  private static final String PLUGIN_HELP_CONTRIBUTOR_CLASS =
-      "plugin.help.PluginHelpContributor";
+  private static final String PLUGIN_HELP_CONTRIBUTOR_CLASS = "plugin.help.PluginHelpContributor";
 
   @TempDir Path tempDir;
 
@@ -386,5 +385,4 @@ class OutboundHelpCommandServiceTest {
           "pluginhelp", out -> lineAppender.accept(out, "Plugin help topic from installed plugin"));
     }
   }
-
 }

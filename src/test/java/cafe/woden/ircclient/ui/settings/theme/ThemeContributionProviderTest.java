@@ -30,8 +30,7 @@ class ThemeContributionProviderTest {
             new RecordingInstalledPluginsPort(
                 List.of(
                     new SingleThemeContributionProvider(
-                        List.of(pluginThemeOption("plugin-aurora", "Plugin Aurora")),
-                        List.of()))));
+                        List.of(pluginThemeOption("plugin-aurora", "Plugin Aurora")), List.of()))));
 
     assertTrue(
         List.of(catalog.supportedThemes()).stream()
@@ -91,9 +90,7 @@ class ThemeContributionProviderTest {
                         List.of(),
                         List.of(
                             new ThemePresetContribution(
-                                "orange",
-                                false,
-                                Map.of(UiColorKeys.ACCENT_COLOR, "#000000")))))));
+                                "orange", false, Map.of(UiColorKeys.ACCENT_COLOR, "#000000")))))));
 
     ThemePresetRegistry.ThemePreset orange = registry.byId("orange");
 
@@ -123,11 +120,9 @@ class ThemeContributionProviderTest {
         List.of(catalog.supportedThemes()).stream()
             .anyMatch(
                 option ->
-                    option.id().equals("plugin-nebula")
-                        && option.label().equals("Plugin Nebula")));
+                    option.id().equals("plugin-nebula") && option.label().equals("Plugin Nebula")));
     assertEquals(
-        "#7755CC",
-        registry.byId("plugin-nebula").extraDefaults().get(UiColorKeys.ACCENT_COLOR));
+        "#7755CC", registry.byId("plugin-nebula").extraDefaults().get(UiColorKeys.ACCENT_COLOR));
   }
 
   private static ThemeManager.ThemeOption pluginThemeOption(String id, String label) {

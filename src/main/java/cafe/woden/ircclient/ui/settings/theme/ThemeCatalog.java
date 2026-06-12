@@ -399,7 +399,8 @@ class ThemeCatalog {
         Objects.requireNonNullElse(providers, List.<ThemeContributionProvider>of())) {
       if (provider == null) continue;
       for (ThemeManager.ThemeOption option :
-          Objects.requireNonNullElse(provider.themeOptions(), List.<ThemeManager.ThemeOption>of())) {
+          Objects.requireNonNullElse(
+              provider.themeOptions(), List.<ThemeManager.ThemeOption>of())) {
         if (option == null || option.id() == null || option.id().isBlank()) continue;
         out.add(option);
       }

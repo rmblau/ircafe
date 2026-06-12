@@ -55,9 +55,7 @@ class CommandParserTest {
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
     CommandParser pluginParser =
         new CommandParser(
-            new FilterCommandParser(),
-            new BackendNamedCommandParser(List.of()),
-            installedPlugins);
+            new FilterCommandParser(), new BackendNamedCommandParser(List.of()), installedPlugins);
 
     ParsedInput in = pluginParser.parse("/pluginquote RAW TEST");
 

@@ -34,8 +34,7 @@ public class BackendNamedCommandCatalog {
 
   @Autowired
   public BackendNamedCommandCatalog(
-      InstalledPluginsPort installedPluginsPort,
-      List<BackendNamedCommandHandler> builtInHandlers) {
+      InstalledPluginsPort installedPluginsPort, List<BackendNamedCommandHandler> builtInHandlers) {
     this(
         loadInstalledCatalogState(
             List.copyOf(Objects.requireNonNullElse(builtInHandlers, List.of())),
@@ -224,8 +223,7 @@ public class BackendNamedCommandCatalog {
   }
 
   private static LoadedCatalogState loadInstalledCatalogState(
-      List<BackendNamedCommandHandler> builtInHandlers,
-      InstalledPluginsPort installedPluginsPort) {
+      List<BackendNamedCommandHandler> builtInHandlers, InstalledPluginsPort installedPluginsPort) {
     InstalledPluginsPort installedPlugins =
         Objects.requireNonNull(installedPluginsPort, "installedPluginsPort");
     return new LoadedCatalogState(

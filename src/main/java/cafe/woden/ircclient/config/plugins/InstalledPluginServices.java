@@ -50,7 +50,8 @@ public final class InstalledPluginServices implements InstalledPluginsPort {
             () ->
                 PluginServiceLoaderSupport.defaultApplicationClassLoader(
                     InstalledPluginServices.class));
-    PluginServiceLoaderSupport.PluginDiscovery discovery = discoverInstalledPlugins(pluginDirectory);
+    PluginServiceLoaderSupport.PluginDiscovery discovery =
+        discoverInstalledPlugins(pluginDirectory);
     this.installedPlugins = discovery.installedPlugins();
     this.pluginProblems = new CopyOnWriteArrayList<>(pluginDiscoveryProblems(discovery));
     this.pluginClassLoaderHandles =
@@ -113,7 +114,8 @@ public final class InstalledPluginServices implements InstalledPluginsPort {
         "[ircafe] failed to close shared plugin classloader");
   }
 
-  private PluginServiceLoaderSupport.PluginDiscovery discoverInstalledPlugins(Path pluginDirectory) {
+  private PluginServiceLoaderSupport.PluginDiscovery discoverInstalledPlugins(
+      Path pluginDirectory) {
     try {
       return PluginServiceLoaderSupport.discoverInstalledPluginDescriptors(pluginDirectory, log);
     } catch (RuntimeException e) {
@@ -171,5 +173,4 @@ public final class InstalledPluginServices implements InstalledPluginsPort {
     recordPluginProblem(problem);
     log.warn("[ircafe] {}", summary, error);
   }
-
 }
