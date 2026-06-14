@@ -4,9 +4,11 @@ import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.util.VirtualThreads;
 import java.awt.Desktop;
 import java.net.URI;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,7 +40,10 @@ public class ExternalBrowserLauncher {
           "opera",
           "vivaldi");
 
+  private static final Set<String> DEFAULT_ALLOWED_SCHEMES = Set.of("http", "https");
+
   private final List<ExternalBrowserCommandProvider> commandProviders;
+  private final Set<String> allowedSchemes;
 
   public ExternalBrowserLauncher() {
     this((InstalledPluginsPort) null);
@@ -55,10 +60,11 @@ public class ExternalBrowserLauncher {
             ? List.of()
             : installedPlugins.loadInstalledServices(
                 ExternalBrowserCommandProvider.class, List.of());
+    this.allowedSchemes = loadAllowedSchemes(installedPlugins);
   }
 
   public void openAsync(String rawUrl) {
-    String url = sanitizeUrl(rawUrl);
+    String url = sanitizeUrl(rawUrl, allowedSchemes);
     if (url == null) return;
 
     VirtualThreads.start(
@@ -71,7 +77,7 @@ public class ExternalBrowserLauncher {
   }
 
   public boolean open(String rawUrl) {
-    String url = sanitizeUrl(rawUrl);
+    String url = sanitizeUrl(rawUrl, allowedSchemes);
     return url != null && openNormalized(url);
   }
 
@@ -173,12 +179,37 @@ public class ExternalBrowserLauncher {
     return Objects.toString(System.getProperty("os.name", ""), "").toLowerCase(Locale.ROOT);
   }
 
+  private static Set<String> loadAllowedSchemes(InstalledPluginsPort installedPlugins) {
+    LinkedHashSet<String> schemes = new LinkedHashSet<>(DEFAULT_ALLOWED_SCHEMES);
+    if (installedPlugins != null) {
+      for (ExternalBrowserSchemeProvider provider :
+          installedPlugins.loadInstalledServices(ExternalBrowserSchemeProvider.class, List.of())) {
+        if (provider == null) continue;
+        try {
+          for (String scheme :
+              Objects.requireNonNullElse(provider.allowedSchemes(), Set.<String>of())) {
+            String normalized = normalizeScheme(scheme);
+            if (!normalized.isEmpty()) schemes.add(normalized);
+          }
+        } catch (RuntimeException e) {
+          log.warn("External browser scheme provider failed: {}", provider.getClass().getName(), e);
+        }
+      }
+    }
+    return Set.copyOf(schemes);
+  }
+
   private static InstalledPluginsPort resolveInstalledPlugins(
       ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
     return installedPluginsProvider == null ? null : installedPluginsProvider.getIfAvailable();
   }
 
   static String sanitizeUrl(String rawUrl) {
+    return sanitizeUrl(rawUrl, DEFAULT_ALLOWED_SCHEMES);
+  }
+
+  static String sanitizeUrl(String rawUrl, Set<String> allowedSchemes) {
+    Set<String> schemes = normalizeSchemes(allowedSchemes);
     String s = Objects.toString(rawUrl, "").trim();
     if (s.isEmpty()) return null;
 
@@ -215,22 +246,37 @@ public class ExternalBrowserLauncher {
     String lower = s.toLowerCase(Locale.ROOT);
     if (lower.startsWith("www.")) {
       s = "https://" + s;
-      lower = s.toLowerCase(Locale.ROOT);
-    }
-
-    if (!lower.startsWith("http://") && !lower.startsWith("https://")) {
-      return null;
     }
 
     try {
       URI uri = new URI(s);
-      String scheme = Objects.toString(uri.getScheme(), "").toLowerCase(Locale.ROOT);
-      if (!scheme.equals("http") && !scheme.equals("https")) return null;
-      if (Objects.toString(uri.getHost(), "").isBlank()) return null;
+      String scheme = normalizeScheme(uri.getScheme());
+      if (!schemes.contains(scheme)) return null;
+      if (Objects.toString(uri.getRawSchemeSpecificPart(), "").isBlank()) return null;
+      if ((scheme.equals("http") || scheme.equals("https"))
+          && Objects.toString(uri.getHost(), "").isBlank()) {
+        return null;
+      }
       return uri.toASCIIString();
     } catch (Exception ignored) {
       return null;
     }
+  }
+
+  private static Set<String> normalizeSchemes(Set<String> schemes) {
+    LinkedHashSet<String> normalized = new LinkedHashSet<>(DEFAULT_ALLOWED_SCHEMES);
+    for (String scheme : Objects.requireNonNullElse(schemes, Set.<String>of())) {
+      String value = normalizeScheme(scheme);
+      if (!value.isEmpty()) normalized.add(value);
+    }
+    return Set.copyOf(normalized);
+  }
+
+  private static String normalizeScheme(String scheme) {
+    String normalized = Objects.toString(scheme, "").trim().toLowerCase(Locale.ROOT);
+    if (normalized.isEmpty()) return "";
+    if (!normalized.matches("[a-z][a-z0-9+.-]*")) return "";
+    return normalized;
   }
 
   private static String trimEdgeNoise(String s) {
