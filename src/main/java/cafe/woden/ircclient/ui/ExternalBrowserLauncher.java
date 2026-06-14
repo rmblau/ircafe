@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui;
 
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.util.VirtualThreads;
 import java.awt.Desktop;
 import java.net.URI;
@@ -12,6 +13,8 @@ import java.util.regex.Pattern;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -35,6 +38,25 @@ public class ExternalBrowserLauncher {
           "opera",
           "vivaldi");
 
+  private final List<ExternalBrowserCommandProvider> commandProviders;
+
+  public ExternalBrowserLauncher() {
+    this((InstalledPluginsPort) null);
+  }
+
+  @Autowired
+  public ExternalBrowserLauncher(ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
+    this(resolveInstalledPlugins(installedPluginsProvider));
+  }
+
+  ExternalBrowserLauncher(InstalledPluginsPort installedPlugins) {
+    this.commandProviders =
+        installedPlugins == null
+            ? List.of()
+            : installedPlugins.loadInstalledServices(
+                ExternalBrowserCommandProvider.class, List.of());
+  }
+
   public void openAsync(String rawUrl) {
     String url = sanitizeUrl(rawUrl);
     if (url == null) return;
@@ -55,6 +77,7 @@ public class ExternalBrowserLauncher {
 
   private boolean openNormalized(String url) {
     String os = currentOsLowerCase();
+    if (tryPluginCommands(url, os)) return true;
     if (os.contains("linux")) {
       return tryLinuxOpen(url);
     }
@@ -105,6 +128,29 @@ public class ExternalBrowserLauncher {
     return false;
   }
 
+  protected boolean tryPluginCommands(String url, String os) {
+    for (ExternalBrowserCommandProvider provider : commandProviders) {
+      if (provider == null) continue;
+      try {
+        for (List<String> command :
+            Objects.requireNonNullElse(
+                provider.browserCommands(url, os), List.<List<String>>of())) {
+          if (tryCommand(command)) return true;
+        }
+      } catch (RuntimeException e) {
+        log.warn("External browser command provider failed: {}", provider.getClass().getName(), e);
+      }
+    }
+    return false;
+  }
+
+  private boolean tryCommand(List<String> command) {
+    if (command == null || command.isEmpty()) return false;
+    List<String> normalized = command.stream().filter(Objects::nonNull).map(String::trim).toList();
+    if (normalized.isEmpty() || normalized.stream().anyMatch(String::isEmpty)) return false;
+    return tryStart(normalized.toArray(String[]::new));
+  }
+
   protected boolean tryStart(String... cmd) {
     if (cmd == null || cmd.length == 0) return false;
     try {
@@ -125,6 +171,11 @@ public class ExternalBrowserLauncher {
 
   protected String currentOsLowerCase() {
     return Objects.toString(System.getProperty("os.name", ""), "").toLowerCase(Locale.ROOT);
+  }
+
+  private static InstalledPluginsPort resolveInstalledPlugins(
+      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
+    return installedPluginsProvider == null ? null : installedPluginsProvider.getIfAvailable();
   }
 
   static String sanitizeUrl(String rawUrl) {
