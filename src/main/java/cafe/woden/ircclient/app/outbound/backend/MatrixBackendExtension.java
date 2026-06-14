@@ -11,6 +11,7 @@ import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import com.google.auto.service.AutoService;
 import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
 import org.jmolecules.architecture.layered.ApplicationLayer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /** Built-in backend extension for the Matrix transport. */
@@ -28,8 +29,16 @@ public final class MatrixBackendExtension implements BackendExtension {
   private static final OutboundBackendFeatureAdapter FEATURE_ADAPTER =
       new MatrixOutboundBackendFeatureAdapter();
 
-  private static final UploadCommandTranslationHandler UPLOAD_TRANSLATION_HANDLER =
-      new MatrixUploadCommandTranslationHandler(new MatrixOutboundCommandSupport());
+  private final UploadCommandTranslationHandler uploadTranslationHandler;
+
+  public MatrixBackendExtension() {
+    this(new MatrixOutboundCommandSupport());
+  }
+
+  @Autowired
+  public MatrixBackendExtension(MatrixOutboundCommandSupport matrixCommandSupport) {
+    this.uploadTranslationHandler = new MatrixUploadCommandTranslationHandler(matrixCommandSupport);
+  }
 
   @Override
   public String backendId() {
@@ -48,7 +57,7 @@ public final class MatrixBackendExtension implements BackendExtension {
 
   @Override
   public UploadCommandTranslationHandler uploadCommandTranslationHandler() {
-    return UPLOAD_TRANSLATION_HANDLER;
+    return uploadTranslationHandler;
   }
 
   @Override
