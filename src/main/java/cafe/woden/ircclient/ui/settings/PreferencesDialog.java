@@ -5,6 +5,7 @@ import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.NotificationRule;
 import cafe.woden.ircclient.config.execution.ExecutorConfig;
 import cafe.woden.ircclient.config.properties.LogProperties;
@@ -95,6 +96,7 @@ public class PreferencesDialog {
   private final ExecutorService notificationRuleTestExecutor;
   private final Ircv3ExtensionCatalog ircv3ExtensionCatalog;
   private final UiMessages messages;
+  private InstalledPluginsPort installedPlugins;
 
   private JDialog dialog;
 
@@ -256,6 +258,11 @@ public class PreferencesDialog {
     }
   }
 
+  @Autowired(required = false)
+  void setInstalledPlugins(InstalledPluginsPort installedPlugins) {
+    this.installedPlugins = installedPlugins;
+  }
+
   public void open(Window owner) {
     if (!SwingUtilities.isEventDispatchThread()) {
       SwingUtilities.invokeLater(() -> open(owner));
@@ -398,7 +405,7 @@ public class PreferencesDialog {
 
   private String importNotificationSoundFileToRuntimeDir(File source) throws Exception {
     return NotificationSoundFileImportSupport.importToRuntimeDir(
-        runtimeConfig != null ? runtimeConfig.runtimeConfigPath() : null, source);
+        runtimeConfig != null ? runtimeConfig.runtimeConfigPath() : null, source, installedPlugins);
   }
 
   private IrcEventNotificationRule promptIrcEventNotificationRuleDialog(
