@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.settings.EmbedCardStyle;
@@ -13,6 +14,7 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import org.jmolecules.architecture.layered.InterfaceLayer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -27,6 +29,7 @@ public class ChatImageEmbedder {
   private final ImageFetchService fetch;
   private final EmbedLoadPolicyMatcher policyMatcher;
   private final EmbedCardStyleBus embedCardStyleBus;
+  private volatile List<ImageUrlExtensionProvider> imageUrlExtensionProviders = List.of();
 
   private final java.util.Map<StyledDocument, DocState> perDocState =
       java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());
@@ -42,6 +45,16 @@ public class ChatImageEmbedder {
     this.fetch = fetch;
     this.policyMatcher = policyMatcher;
     this.embedCardStyleBus = embedCardStyleBus;
+  }
+
+  @Autowired(required = false)
+  void setInstalledPluginsPort(InstalledPluginsPort installedPlugins) {
+    if (installedPlugins == null) {
+      imageUrlExtensionProviders = List.of();
+      return;
+    }
+    imageUrlExtensionProviders =
+        installedPlugins.loadInstalledServices(ImageUrlExtensionProvider.class, List.of());
   }
 
   private DocState stateFor(StyledDocument doc) {
@@ -79,7 +92,7 @@ public class ChatImageEmbedder {
     int insertAt = doc.getLength();
     int appendedCount = 0;
     LinkedHashSet<String> blocked = new LinkedHashSet<>();
-    for (String url : ImageUrlExtractor.extractImageUrls(messageText)) {
+    for (String url : ImageUrlExtractor.extractImageUrls(messageText, imageUrlExtensionProviders)) {
       try {
         InsertResult result =
             insertEmbed(
