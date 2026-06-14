@@ -66,7 +66,7 @@ public class MessageInputPanel extends JPanel {
   private final MessageInputContextMenuSupport contextMenuSupport;
   private final MessageInputComposeSupport composeSupport;
   private final MessageInputUploadUxMode ircUploadUxMode = new IrcMessageInputUploadUxMode();
-  private final MessageInputUploadUxMode matrixUploadUxMode = new MatrixMessageInputUploadUxMode();
+  private final MessageInputUploadUxMode matrixUploadUxMode;
   private final MessageInputUploadUxMode.Context uploadUxContext =
       new MessageInputUploadUxContext();
   private boolean programmaticEdit;
@@ -114,6 +114,11 @@ public class MessageInputPanel extends JPanel {
     super(new BorderLayout(0, 0));
     this.settingsBus = settingsBus;
     this.spellcheckSettingsBus = spellcheckSettingsBus;
+    List<MatrixUploadMsgTypeProvider> matrixUploadMsgTypeProviders =
+        installedPlugins == null
+            ? List.of()
+            : installedPlugins.loadInstalledServices(MatrixUploadMsgTypeProvider.class, List.of());
+    this.matrixUploadUxMode = new MatrixMessageInputUploadUxMode(matrixUploadMsgTypeProviders);
 
     this.undoSupport = new MessageInputUndoSupport(input, () -> programmaticEdit);
     SpellcheckSettings spellcheck =
