@@ -12,14 +12,11 @@ import java.io.InputStream;
 import java.lang.ref.SoftReference;
 import java.net.Proxy;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.jmolecules.architecture.layered.InterfaceLayer;
@@ -298,58 +295,15 @@ public class ImageFetchService {
       headers.put(PreviewHttp.HEADER_REFERER, "https://www.instagram.com/");
     }
 
-    List<? extends EmbedHttpHeaderProvider> safeHeaderProviders =
-        headerProviders == null ? List.of() : headerProviders;
-    for (EmbedHttpHeaderProvider provider : safeHeaderProviders) {
-      if (provider == null) continue;
-      try {
-        Map<String, String> extraHeaders = provider.embedHttpHeaders(uri);
-        if (extraHeaders == null || extraHeaders.isEmpty()) continue;
-        for (Map.Entry<String, String> entry : extraHeaders.entrySet()) {
-          String name = Objects.toString(entry.getKey(), "").trim();
-          String value = Objects.toString(entry.getValue(), "").trim();
-          if (!name.isEmpty() && !value.isEmpty()) headers.put(name, value);
-        }
-      } catch (RuntimeException ex) {
-        log.warn("Embed HTTP header provider failed: {}", provider.getClass().getName(), ex);
-      }
-    }
+    EmbedHttpHeaderProviders.applyProviderHeaders(
+        headers, uri, headerProviders, log, "Embed HTTP header provider");
     return Map.copyOf(headers);
   }
 
   private static List<EmbedHttpHeaderProvider> loadHeaderProviders(
       InstalledPluginsPort installedPlugins) {
-    if (installedPlugins == null) return List.of();
-    List<EmbedHttpHeaderProvider> sharedProviders =
-        installedPlugins.loadInstalledServices(EmbedHttpHeaderProvider.class, List.of());
-    List<ImageFetchHeaderProvider> imageProviders =
-        installedPlugins.loadInstalledServices(ImageFetchHeaderProvider.class, List.of());
-    return mergeHeaderProviders(sharedProviders, imageProviders);
-  }
-
-  private static List<EmbedHttpHeaderProvider> mergeHeaderProviders(
-      List<? extends EmbedHttpHeaderProvider> sharedProviders,
-      List<? extends EmbedHttpHeaderProvider> specificProviders) {
-    List<EmbedHttpHeaderProvider> merged = new ArrayList<>();
-    Set<String> seenProviderTypes = new LinkedHashSet<>();
-    addHeaderProviders(merged, seenProviderTypes, sharedProviders);
-    addHeaderProviders(merged, seenProviderTypes, specificProviders);
-    return List.copyOf(merged);
-  }
-
-  private static void addHeaderProviders(
-      List<EmbedHttpHeaderProvider> merged,
-      Set<String> seenProviderTypes,
-      List<? extends EmbedHttpHeaderProvider> providers) {
-    List<? extends EmbedHttpHeaderProvider> safeProviders =
-        providers == null ? List.of() : providers;
-    for (EmbedHttpHeaderProvider provider : safeProviders) {
-      if (provider == null) continue;
-      String providerType = provider.getClass().getName();
-      if (seenProviderTypes.add(providerType)) {
-        merged.add(provider);
-      }
-    }
+    return EmbedHttpHeaderProviders.loadInstalledProviders(
+        installedPlugins, ImageFetchHeaderProvider.class);
   }
 
   private static InstalledPluginsPort resolveInstalledPlugins(

@@ -6,13 +6,10 @@ import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
 import cafe.woden.ircclient.util.RxVirtualSchedulers;
 import io.reactivex.rxjava3.core.Single;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.jmolecules.architecture.layered.InterfaceLayer;
@@ -69,39 +66,8 @@ public class LinkPreviewFetchService {
 
   private static List<EmbedHttpHeaderProvider> loadInstalledHeaderProviders(
       InstalledPluginsPort installedPlugins) {
-    if (installedPlugins == null) {
-      return List.of();
-    }
-    List<EmbedHttpHeaderProvider> sharedProviders =
-        installedPlugins.loadInstalledServices(EmbedHttpHeaderProvider.class, List.of());
-    List<PreviewHttpHeaderProvider> previewProviders =
-        installedPlugins.loadInstalledServices(PreviewHttpHeaderProvider.class, List.of());
-    return mergeHeaderProviders(sharedProviders, previewProviders);
-  }
-
-  private static List<EmbedHttpHeaderProvider> mergeHeaderProviders(
-      List<? extends EmbedHttpHeaderProvider> sharedProviders,
-      List<? extends EmbedHttpHeaderProvider> specificProviders) {
-    List<EmbedHttpHeaderProvider> merged = new ArrayList<>();
-    Set<String> seenProviderTypes = new LinkedHashSet<>();
-    addHeaderProviders(merged, seenProviderTypes, sharedProviders);
-    addHeaderProviders(merged, seenProviderTypes, specificProviders);
-    return List.copyOf(merged);
-  }
-
-  private static void addHeaderProviders(
-      List<EmbedHttpHeaderProvider> merged,
-      Set<String> seenProviderTypes,
-      List<? extends EmbedHttpHeaderProvider> providers) {
-    List<? extends EmbedHttpHeaderProvider> safeProviders =
-        providers == null ? List.of() : providers;
-    for (EmbedHttpHeaderProvider provider : safeProviders) {
-      if (provider == null) continue;
-      String providerType = provider.getClass().getName();
-      if (seenProviderTypes.add(providerType)) {
-        merged.add(provider);
-      }
-    }
+    return EmbedHttpHeaderProviders.loadInstalledProviders(
+        installedPlugins, PreviewHttpHeaderProvider.class);
   }
 
   private static List<LinkPreviewResolver> loadInstalledResolvers(

@@ -12,7 +12,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.slf4j.Logger;
@@ -111,22 +110,8 @@ public final class PreviewHttp {
     } else {
       headers.put(HEADER_ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
     }
-    List<? extends EmbedHttpHeaderProvider> safeHeaderProviders =
-        headerProviders == null ? List.of() : headerProviders;
-    for (EmbedHttpHeaderProvider provider : safeHeaderProviders) {
-      if (provider == null) continue;
-      try {
-        Map<String, String> provided = provider.embedHttpHeaders(uri);
-        if (provided == null || provided.isEmpty()) continue;
-        for (Map.Entry<String, String> entry : provided.entrySet()) {
-          String name = Objects.toString(entry.getKey(), "").trim();
-          String value = Objects.toString(entry.getValue(), "").trim();
-          if (!name.isEmpty() && !value.isEmpty()) headers.put(name, value);
-        }
-      } catch (RuntimeException ex) {
-        log.warn("Preview HTTP header provider failed: {}", provider.getClass().getName(), ex);
-      }
-    }
+    EmbedHttpHeaderProviders.applyProviderHeaders(
+        headers, uri, headerProviders, log, "Preview HTTP header provider");
     if (extraHeaders != null) headers.putAll(extraHeaders);
     return Map.copyOf(headers);
   }
