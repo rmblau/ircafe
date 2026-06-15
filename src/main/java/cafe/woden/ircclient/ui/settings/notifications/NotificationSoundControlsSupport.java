@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.notifications;
 
 import cafe.woden.ircclient.model.BuiltInSound;
+import cafe.woden.ircclient.notify.api.CustomSoundFileExtensionProvider;
 import cafe.woden.ircclient.notify.api.NotificationSoundPort;
 import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
@@ -8,6 +9,7 @@ import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
 import cafe.woden.ircclient.ui.util.SoundFileChooserSupport;
 import java.awt.Component;
 import java.io.File;
+import java.util.List;
 import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import javax.swing.JButton;
@@ -65,6 +67,7 @@ public final class NotificationSoundControlsSupport {
             request.owner(),
             request.notificationSoundService(),
             request.soundFileImporter(),
+            request.soundFileExtensionProviders(),
             request.availableSupplier(),
             request.customPathEditableWhenEnabled(),
             request.customFileControlsRequireUseCustom());
@@ -99,6 +102,7 @@ public final class NotificationSoundControlsSupport {
       Component owner,
       NotificationSoundPort notificationSoundService,
       SoundFileImporter soundFileImporter,
+      List<CustomSoundFileExtensionProvider> soundFileExtensionProviders,
       BooleanSupplier availableSupplier,
       boolean customPathEditableWhenEnabled,
       boolean customFileControlsRequireUseCustom) {
@@ -116,6 +120,14 @@ public final class NotificationSoundControlsSupport {
           Objects.toString(
               testButtonText, MESSAGES.text("preferences.notifications.sound.test.default"));
       if (buttonStyle == null) buttonStyle = ButtonStyle.TEXT;
+      if ((soundFileExtensionProviders == null || soundFileExtensionProviders.isEmpty())
+          && soundFileImporter != null) {
+        soundFileExtensionProviders = soundFileImporter.soundFileExtensionProviders();
+      }
+      soundFileExtensionProviders =
+          List.copyOf(
+              Objects.requireNonNullElse(
+                  soundFileExtensionProviders, List.<CustomSoundFileExtensionProvider>of()));
       if (availableSupplier == null) availableSupplier = () -> true;
     }
 
@@ -137,6 +149,7 @@ public final class NotificationSoundControlsSupport {
       private Component owner;
       private NotificationSoundPort notificationSoundService;
       private SoundFileImporter soundFileImporter;
+      private List<CustomSoundFileExtensionProvider> soundFileExtensionProviders = List.of();
       private BooleanSupplier availableSupplier;
       private boolean customPathEditableWhenEnabled;
       private boolean customFileControlsRequireUseCustom;
@@ -208,6 +221,15 @@ public final class NotificationSoundControlsSupport {
         return this;
       }
 
+      public Builder soundFileExtensionProviders(
+          List<CustomSoundFileExtensionProvider> soundFileExtensionProviders) {
+        this.soundFileExtensionProviders =
+            List.copyOf(
+                Objects.requireNonNullElse(
+                    soundFileExtensionProviders, List.<CustomSoundFileExtensionProvider>of()));
+        return this;
+      }
+
       public Builder availableSupplier(BooleanSupplier availableSupplier) {
         this.availableSupplier = availableSupplier;
         return this;
@@ -239,6 +261,7 @@ public final class NotificationSoundControlsSupport {
             owner,
             notificationSoundService,
             soundFileImporter,
+            soundFileExtensionProviders,
             availableSupplier,
             customPathEditableWhenEnabled,
             customFileControlsRequireUseCustom);
@@ -257,6 +280,7 @@ public final class NotificationSoundControlsSupport {
       Component owner,
       NotificationSoundPort notificationSoundService,
       SoundFileImporter soundFileImporter,
+      List<CustomSoundFileExtensionProvider> soundFileExtensionProviders,
       BooleanSupplier availableSupplier,
       boolean customPathEditableWhenEnabled,
       boolean customFileControlsRequireUseCustom) {
@@ -293,7 +317,8 @@ public final class NotificationSoundControlsSupport {
         File selectedFile =
             SoundFileChooserSupport.chooseSoundFile(
                     dialogOwner(),
-                    MESSAGES.text("preferences.notifications.sound.chooseDialogTitle"))
+                    MESSAGES.text("preferences.notifications.sound.chooseDialogTitle"),
+                    soundFileExtensionProviders)
                 .orElse(null);
         if (selectedFile == null || soundFileImporter == null) return;
         String relativePath = soundFileImporter.importFile(selectedFile);
@@ -341,5 +366,9 @@ public final class NotificationSoundControlsSupport {
   @FunctionalInterface
   public interface SoundFileImporter {
     String importFile(File source) throws Exception;
+
+    default List<CustomSoundFileExtensionProvider> soundFileExtensionProviders() {
+      return List.of();
+    }
   }
 }

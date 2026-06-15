@@ -13,6 +13,8 @@ import cafe.woden.ircclient.irc.backend.IrcHeartbeatMaintenanceService;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionCatalog;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.notifications.api.IrcEventNotificationRulesPort;
+import cafe.woden.ircclient.notify.api.CustomSoundFileExtensionProvider;
+import cafe.woden.ircclient.notify.api.CustomSoundFileImportSupport;
 import cafe.woden.ircclient.notify.api.NotificationSoundPort;
 import cafe.woden.ircclient.notify.api.PushyNotificationPort;
 import cafe.woden.ircclient.notify.pushy.PushySettingsBus;
@@ -29,6 +31,7 @@ import cafe.woden.ircclient.ui.settings.appearance.AppearanceLivePreviewSession;
 import cafe.woden.ircclient.ui.settings.notifications.IrcEventNotificationRuleDialogSupport;
 import cafe.woden.ircclient.ui.settings.notifications.NotificationRuleDialogSupport;
 import cafe.woden.ircclient.ui.settings.notifications.NotificationRulesControlsSupport;
+import cafe.woden.ircclient.ui.settings.notifications.NotificationSoundControlsSupport;
 import cafe.woden.ircclient.ui.settings.notifications.NotificationSoundFileImportSupport;
 import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsBus;
@@ -323,7 +326,7 @@ public class PreferencesDialog {
                 pushyTestExecutor,
                 notificationRuleTestExecutor,
                 ircv3ExtensionCatalog,
-                this::importNotificationSoundFileToRuntimeDir,
+                notificationSoundFileImporter(),
                 DEFAULT_GENERIC_BOUNCER_PREFER_LOGIN_HINT,
                 DEFAULT_GENERIC_BOUNCER_LOGIN_TEMPLATE));
     AppearanceLivePreviewSession appearancePreview = controls.appearance().preview();
@@ -408,15 +411,25 @@ public class PreferencesDialog {
         runtimeConfig != null ? runtimeConfig.runtimeConfigPath() : null, source, installedPlugins);
   }
 
+  private NotificationSoundControlsSupport.SoundFileImporter notificationSoundFileImporter() {
+    return new NotificationSoundControlsSupport.SoundFileImporter() {
+      @Override
+      public String importFile(File source) throws Exception {
+        return importNotificationSoundFileToRuntimeDir(source);
+      }
+
+      @Override
+      public List<CustomSoundFileExtensionProvider> soundFileExtensionProviders() {
+        return CustomSoundFileImportSupport.loadExtensionProviders(installedPlugins);
+      }
+    };
+  }
+
   private IrcEventNotificationRule promptIrcEventNotificationRuleDialog(
       String title, IrcEventNotificationRule seed) {
     Window owner = dialog != null ? dialog : null;
     return IrcEventNotificationRuleDialogSupport.promptIrcEventNotificationRuleDialog(
-        owner,
-        title,
-        seed,
-        notificationSoundService,
-        this::importNotificationSoundFileToRuntimeDir);
+        owner, title, seed, notificationSoundService, notificationSoundFileImporter());
   }
 
   private NotificationRule promptNotificationRuleDialog(String title, NotificationRule seed) {

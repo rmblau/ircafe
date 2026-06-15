@@ -180,6 +180,10 @@ public class InterceptorStore implements InterceptorIngestPort {
     return changes.onBackpressureBuffer();
   }
 
+  public List<CustomSoundFileExtensionProvider> soundFileExtensionProviders() {
+    return soundFileExtensionProviders;
+  }
+
   /** Preview interceptor sound settings without waiting for a real interceptor hit. */
   public void previewSoundOverride(String soundId, boolean useCustom, String customPath) {
     if (notificationSoundService == null) return;
