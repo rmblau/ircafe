@@ -10,9 +10,13 @@ import java.net.Proxy;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import org.jmolecules.architecture.layered.InterfaceLayer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * HTTP helper used by link preview resolvers.
@@ -22,6 +26,8 @@ import org.jmolecules.architecture.layered.InterfaceLayer;
  */
 @InterfaceLayer
 public final class PreviewHttp {
+
+  private static final Logger log = LoggerFactory.getLogger(PreviewHttp.class);
 
   // Package-visible so other embed helpers (e.g., ImageFetchService) can share the same headers.
   public static final String USER_AGENT = "ircafe-link-preview/1.0";
@@ -45,12 +51,20 @@ public final class PreviewHttp {
   private final Proxy proxy;
   private final int connectTimeoutMs;
   private final int readTimeoutMs;
+  private final List<PreviewHttpHeaderProvider> headerProviders;
 
   public PreviewHttp(ProxyPlan plan) {
+    this(plan, List.of());
+  }
+
+  public PreviewHttp(ProxyPlan plan, List<PreviewHttpHeaderProvider> headerProviders) {
     ProxyPlan p = plan != null ? plan : ProxyPlan.direct();
     this.proxy = (p.proxy() != null) ? p.proxy() : Proxy.NO_PROXY;
     this.connectTimeoutMs = Math.max(1, p.connectTimeoutMs());
     this.readTimeoutMs = Math.max(1, p.readTimeoutMs());
+    this.headerProviders =
+        List.copyOf(
+            Objects.requireNonNullElse(headerProviders, List.<PreviewHttpHeaderProvider>of()));
   }
 
   public HttpLite.Response<InputStream> getStream(URI uri, String accept) throws IOException {
@@ -59,9 +73,7 @@ public final class PreviewHttp {
 
   public HttpLite.Response<InputStream> getStream(
       URI uri, String accept, Map<String, String> extraHeaders) throws IOException {
-    Map<String, String> headers = new HashMap<>(BASE_HEADERS);
-    headers.put(HEADER_ACCEPT, accept);
-    if (extraHeaders != null) headers.putAll(extraHeaders);
+    Map<String, String> headers = headersFor(uri, accept, extraHeaders, headerProviders);
 
     return HttpLite.getStream(uri, headers, proxy, connectTimeoutMs, readTimeoutMs);
   }
@@ -85,15 +97,39 @@ public final class PreviewHttp {
    */
   public HttpLite.Response<String> getString(
       URI uri, String accept, Map<String, String> extraHeaders) throws IOException {
+    Map<String, String> headers = headersFor(uri, accept, extraHeaders, headerProviders);
+
+    return HttpLite.getString(uri, headers, proxy, connectTimeoutMs, readTimeoutMs);
+  }
+
+  static Map<String, String> headersFor(
+      URI uri,
+      String accept,
+      Map<String, String> extraHeaders,
+      List<PreviewHttpHeaderProvider> headerProviders) {
     Map<String, String> headers = new HashMap<>(BASE_HEADERS);
     if (accept != null && !accept.isBlank()) {
       headers.put(HEADER_ACCEPT, accept);
     } else {
       headers.put(HEADER_ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
     }
+    for (PreviewHttpHeaderProvider provider :
+        Objects.requireNonNullElse(headerProviders, List.<PreviewHttpHeaderProvider>of())) {
+      if (provider == null) continue;
+      try {
+        Map<String, String> provided = provider.previewHttpHeaders(uri);
+        if (provided == null || provided.isEmpty()) continue;
+        for (Map.Entry<String, String> entry : provided.entrySet()) {
+          String name = Objects.toString(entry.getKey(), "").trim();
+          String value = Objects.toString(entry.getValue(), "").trim();
+          if (!name.isEmpty() && !value.isEmpty()) headers.put(name, value);
+        }
+      } catch (RuntimeException ex) {
+        log.warn("Preview HTTP header provider failed: {}", provider.getClass().getName(), ex);
+      }
+    }
     if (extraHeaders != null) headers.putAll(extraHeaders);
-
-    return HttpLite.getString(uri, headers, proxy, connectTimeoutMs, readTimeoutMs);
+    return Map.copyOf(headers);
   }
 
   public static Optional<String> header(HttpLite.Response<?> response, String name) {

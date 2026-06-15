@@ -31,6 +31,7 @@ public class LinkPreviewFetchService {
 
   private final ServerProxyResolver proxyResolver;
   private final List<LinkPreviewResolver> resolvers;
+  private final List<PreviewHttpHeaderProvider> httpHeaderProviders;
 
   private final ConcurrentMap<String, java.lang.ref.SoftReference<LinkPreview>> cache =
       new ConcurrentHashMap<>();
@@ -55,11 +56,20 @@ public class LinkPreviewFetchService {
       InstalledPluginsPort installedPlugins) {
     this.proxyResolver = proxyResolver;
     this.resolvers = loadInstalledResolvers(resolvers, installedPlugins);
+    this.httpHeaderProviders = loadInstalledHeaderProviders(installedPlugins);
   }
 
   private static InstalledPluginsPort resolveInstalledPlugins(
       ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
     return installedPluginsProvider == null ? null : installedPluginsProvider.getIfAvailable();
+  }
+
+  private static List<PreviewHttpHeaderProvider> loadInstalledHeaderProviders(
+      InstalledPluginsPort installedPlugins) {
+    if (installedPlugins == null) {
+      return List.of();
+    }
+    return installedPlugins.loadInstalledServices(PreviewHttpHeaderProvider.class, List.of());
   }
 
   private static List<LinkPreviewResolver> loadInstalledResolvers(
@@ -142,7 +152,9 @@ public class LinkPreviewFetchService {
     }
 
     PreviewHttp http =
-        new PreviewHttp(proxyResolver != null ? proxyResolver.planForServer(serverId) : null);
+        new PreviewHttp(
+            proxyResolver != null ? proxyResolver.planForServer(serverId) : null,
+            httpHeaderProviders);
 
     for (LinkPreviewResolver r : resolvers) {
       try {
