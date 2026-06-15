@@ -12,11 +12,14 @@ import java.io.InputStream;
 import java.lang.ref.SoftReference;
 import java.net.Proxy;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.jmolecules.architecture.layered.InterfaceLayer;
@@ -45,7 +48,7 @@ public class ImageFetchService {
   private final ConcurrentMap<String, Single<byte[]>> inflight = new ConcurrentHashMap<>();
 
   private final ServerProxyResolver proxyResolver;
-  private final List<ImageFetchHeaderProvider> headerProviders;
+  private final List<EmbedHttpHeaderProvider> headerProviders;
 
   public ImageFetchService(ServerProxyResolver proxyResolver) {
     this(proxyResolver, (InstalledPluginsPort) null);
@@ -149,7 +152,7 @@ public class ImageFetchService {
 
     // Use HttpURLConnection (via HttpLite) so SOCKS proxies work.
     // java.net.http.HttpClient does not support SOCKS proxies.
-    Map<String, String> headers = headersFor(uri, headerProviders);
+    Map<String, String> headers = headersForEmbedProviders(uri, headerProviders);
 
     ProxyPlan plan =
         (proxyResolver != null) ? proxyResolver.planForServer(serverId) : ProxyPlan.direct();
@@ -263,6 +266,11 @@ public class ImageFetchService {
   }
 
   static Map<String, String> headersFor(URI uri, List<ImageFetchHeaderProvider> headerProviders) {
+    return headersForEmbedProviders(uri, headerProviders);
+  }
+
+  static Map<String, String> headersForEmbedProviders(
+      URI uri, List<? extends EmbedHttpHeaderProvider> headerProviders) {
     Map<String, String> headers = new HashMap<>();
     headers.put(
         PreviewHttp.HEADER_USER_AGENT,
@@ -290,11 +298,12 @@ public class ImageFetchService {
       headers.put(PreviewHttp.HEADER_REFERER, "https://www.instagram.com/");
     }
 
-    for (ImageFetchHeaderProvider provider :
-        Objects.requireNonNullElse(headerProviders, List.<ImageFetchHeaderProvider>of())) {
+    List<? extends EmbedHttpHeaderProvider> safeHeaderProviders =
+        headerProviders == null ? List.of() : headerProviders;
+    for (EmbedHttpHeaderProvider provider : safeHeaderProviders) {
       if (provider == null) continue;
       try {
-        Map<String, String> extraHeaders = provider.imageFetchHeaders(uri);
+        Map<String, String> extraHeaders = provider.embedHttpHeaders(uri);
         if (extraHeaders == null || extraHeaders.isEmpty()) continue;
         for (Map.Entry<String, String> entry : extraHeaders.entrySet()) {
           String name = Objects.toString(entry.getKey(), "").trim();
@@ -302,16 +311,45 @@ public class ImageFetchService {
           if (!name.isEmpty() && !value.isEmpty()) headers.put(name, value);
         }
       } catch (RuntimeException ex) {
-        log.warn("Image fetch header provider failed: {}", provider.getClass().getName(), ex);
+        log.warn("Embed HTTP header provider failed: {}", provider.getClass().getName(), ex);
       }
     }
     return Map.copyOf(headers);
   }
 
-  private static List<ImageFetchHeaderProvider> loadHeaderProviders(
+  private static List<EmbedHttpHeaderProvider> loadHeaderProviders(
       InstalledPluginsPort installedPlugins) {
     if (installedPlugins == null) return List.of();
-    return installedPlugins.loadInstalledServices(ImageFetchHeaderProvider.class, List.of());
+    List<EmbedHttpHeaderProvider> sharedProviders =
+        installedPlugins.loadInstalledServices(EmbedHttpHeaderProvider.class, List.of());
+    List<ImageFetchHeaderProvider> imageProviders =
+        installedPlugins.loadInstalledServices(ImageFetchHeaderProvider.class, List.of());
+    return mergeHeaderProviders(sharedProviders, imageProviders);
+  }
+
+  private static List<EmbedHttpHeaderProvider> mergeHeaderProviders(
+      List<? extends EmbedHttpHeaderProvider> sharedProviders,
+      List<? extends EmbedHttpHeaderProvider> specificProviders) {
+    List<EmbedHttpHeaderProvider> merged = new ArrayList<>();
+    Set<String> seenProviderTypes = new LinkedHashSet<>();
+    addHeaderProviders(merged, seenProviderTypes, sharedProviders);
+    addHeaderProviders(merged, seenProviderTypes, specificProviders);
+    return List.copyOf(merged);
+  }
+
+  private static void addHeaderProviders(
+      List<EmbedHttpHeaderProvider> merged,
+      Set<String> seenProviderTypes,
+      List<? extends EmbedHttpHeaderProvider> providers) {
+    List<? extends EmbedHttpHeaderProvider> safeProviders =
+        providers == null ? List.of() : providers;
+    for (EmbedHttpHeaderProvider provider : safeProviders) {
+      if (provider == null) continue;
+      String providerType = provider.getClass().getName();
+      if (seenProviderTypes.add(providerType)) {
+        merged.add(provider);
+      }
+    }
   }
 
   private static InstalledPluginsPort resolveInstalledPlugins(

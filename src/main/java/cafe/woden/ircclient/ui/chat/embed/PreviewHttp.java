@@ -51,20 +51,18 @@ public final class PreviewHttp {
   private final Proxy proxy;
   private final int connectTimeoutMs;
   private final int readTimeoutMs;
-  private final List<PreviewHttpHeaderProvider> headerProviders;
+  private final List<EmbedHttpHeaderProvider> headerProviders;
 
   public PreviewHttp(ProxyPlan plan) {
     this(plan, List.of());
   }
 
-  public PreviewHttp(ProxyPlan plan, List<PreviewHttpHeaderProvider> headerProviders) {
+  public PreviewHttp(ProxyPlan plan, List<? extends EmbedHttpHeaderProvider> headerProviders) {
     ProxyPlan p = plan != null ? plan : ProxyPlan.direct();
     this.proxy = (p.proxy() != null) ? p.proxy() : Proxy.NO_PROXY;
     this.connectTimeoutMs = Math.max(1, p.connectTimeoutMs());
     this.readTimeoutMs = Math.max(1, p.readTimeoutMs());
-    this.headerProviders =
-        List.copyOf(
-            Objects.requireNonNullElse(headerProviders, List.<PreviewHttpHeaderProvider>of()));
+    this.headerProviders = List.copyOf(headerProviders == null ? List.of() : headerProviders);
   }
 
   public HttpLite.Response<InputStream> getStream(URI uri, String accept) throws IOException {
@@ -106,18 +104,19 @@ public final class PreviewHttp {
       URI uri,
       String accept,
       Map<String, String> extraHeaders,
-      List<PreviewHttpHeaderProvider> headerProviders) {
+      List<? extends EmbedHttpHeaderProvider> headerProviders) {
     Map<String, String> headers = new HashMap<>(BASE_HEADERS);
     if (accept != null && !accept.isBlank()) {
       headers.put(HEADER_ACCEPT, accept);
     } else {
       headers.put(HEADER_ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
     }
-    for (PreviewHttpHeaderProvider provider :
-        Objects.requireNonNullElse(headerProviders, List.<PreviewHttpHeaderProvider>of())) {
+    List<? extends EmbedHttpHeaderProvider> safeHeaderProviders =
+        headerProviders == null ? List.of() : headerProviders;
+    for (EmbedHttpHeaderProvider provider : safeHeaderProviders) {
       if (provider == null) continue;
       try {
-        Map<String, String> provided = provider.previewHttpHeaders(uri);
+        Map<String, String> provided = provider.embedHttpHeaders(uri);
         if (provided == null || provided.isEmpty()) continue;
         for (Map.Entry<String, String> entry : provided.entrySet()) {
           String name = Objects.toString(entry.getKey(), "").trim();
