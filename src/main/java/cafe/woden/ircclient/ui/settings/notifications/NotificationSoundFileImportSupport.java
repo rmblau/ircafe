@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.notifications;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.notify.api.CustomSoundFileExtensionProvider;
 import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import java.io.File;
@@ -31,7 +32,7 @@ public final class NotificationSoundFileImportSupport {
   static String importToRuntimeDir(
       Path runtimeConfigPath,
       File source,
-      List<NotificationSoundFileExtensionProvider> extensionProviders)
+      List<CustomSoundFileExtensionProvider> extensionProviders)
       throws Exception {
     if (source == null) return null;
 
@@ -78,17 +79,17 @@ public final class NotificationSoundFileImportSupport {
     return "sounds/" + dest.getFileName();
   }
 
-  private static List<NotificationSoundFileExtensionProvider> loadExtensionProviders(
+  private static List<CustomSoundFileExtensionProvider> loadExtensionProviders(
       InstalledPluginsPort installedPlugins) {
     if (installedPlugins == null) {
       return List.of();
     }
     return installedPlugins.loadInstalledServices(
-        NotificationSoundFileExtensionProvider.class, List.of());
+        CustomSoundFileExtensionProvider.class, List.of());
   }
 
   private static String extensionFor(
-      String fileName, List<NotificationSoundFileExtensionProvider> extensionProviders) {
+      String fileName, List<CustomSoundFileExtensionProvider> extensionProviders) {
     String lower = Objects.toString(fileName, "").trim().toLowerCase(Locale.ROOT);
     if (lower.isEmpty()) return null;
     for (String extension : supportedExtensions(extensionProviders)) {
@@ -98,11 +99,11 @@ public final class NotificationSoundFileImportSupport {
   }
 
   private static Set<String> supportedExtensions(
-      List<NotificationSoundFileExtensionProvider> extensionProviders) {
+      List<CustomSoundFileExtensionProvider> extensionProviders) {
     LinkedHashSet<String> out = new LinkedHashSet<>(BUILT_IN_EXTENSIONS);
-    for (NotificationSoundFileExtensionProvider provider :
+    for (CustomSoundFileExtensionProvider provider :
         Objects.requireNonNullElse(
-            extensionProviders, List.<NotificationSoundFileExtensionProvider>of())) {
+            extensionProviders, List.<CustomSoundFileExtensionProvider>of())) {
       if (provider == null) continue;
       for (String extension :
           Objects.requireNonNullElse(provider.soundFileExtensions(), List.<String>of())) {

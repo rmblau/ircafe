@@ -11,6 +11,7 @@ import cafe.woden.ircclient.model.InterceptorDefinition;
 import cafe.woden.ircclient.model.InterceptorRule;
 import cafe.woden.ircclient.model.InterceptorRuleMode;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
+import cafe.woden.ircclient.notify.api.CustomSoundFileExtensionProvider;
 import cafe.woden.ircclient.notify.api.NotificationSoundPort;
 import cafe.woden.ircclient.util.VirtualThreads;
 import io.reactivex.rxjava3.core.Flowable;
@@ -66,7 +67,7 @@ public class InterceptorStore implements InterceptorIngestPort {
   private final NotificationSoundPort notificationSoundService;
   private final TrayNotificationsPort trayNotificationService;
   private final ExecutorService actionScriptExecutor;
-  private final List<InterceptorSoundFileExtensionProvider> soundFileExtensionProviders;
+  private final List<CustomSoundFileExtensionProvider> soundFileExtensionProviders;
 
   private final int maxHitsPerInterceptor;
   private final ExecutorService ingestExecutor;
@@ -146,7 +147,7 @@ public class InterceptorStore implements InterceptorIngestPort {
       ExecutorService persistExecutor,
       int maxHitsPerInterceptor,
       boolean loadFromRuntimeConfig,
-      List<InterceptorSoundFileExtensionProvider> soundFileExtensionProviders) {
+      List<CustomSoundFileExtensionProvider> soundFileExtensionProviders) {
     this.runtimeConfig = runtimeConfig;
     this.notificationSoundService = notificationSoundService;
     this.trayNotificationService = trayNotificationService;
@@ -157,7 +158,7 @@ public class InterceptorStore implements InterceptorIngestPort {
     this.soundFileExtensionProviders =
         List.copyOf(
             Objects.requireNonNullElse(
-                soundFileExtensionProviders, List.<InterceptorSoundFileExtensionProvider>of()));
+                soundFileExtensionProviders, List.<CustomSoundFileExtensionProvider>of()));
 
     if (loadFromRuntimeConfig) {
       loadPersistedDefinitions();
@@ -169,11 +170,11 @@ public class InterceptorStore implements InterceptorIngestPort {
     return installedPluginsProvider == null ? null : installedPluginsProvider.getIfAvailable();
   }
 
-  private static List<InterceptorSoundFileExtensionProvider> loadSoundFileExtensionProviders(
+  private static List<CustomSoundFileExtensionProvider> loadSoundFileExtensionProviders(
       InstalledPluginsPort installedPlugins) {
     if (installedPlugins == null) return List.of();
     return installedPlugins.loadInstalledServices(
-        InterceptorSoundFileExtensionProvider.class, List.of());
+        CustomSoundFileExtensionProvider.class, List.of());
   }
 
   public Flowable<Change> changes() {

@@ -5,21 +5,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
+import cafe.woden.ircclient.notify.api.CustomSoundFileExtensionProvider;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-class NotificationSoundFileExtensionProviderPluginTest {
+class SharedCustomSoundFileExtensionProviderNotificationTest {
 
   @TempDir Path tempDir;
 
   @Test
-  void loadsNotificationSoundFileExtensionsFromPluginDirectoryJar() throws Exception {
+  void loadsSharedCustomSoundFileExtensionsForNotificationImport() throws Exception {
     Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
     Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
-    writePluginJar(pluginDir.resolve("plugin-notification-sound-extension.jar"));
+    writePluginJar(pluginDir.resolve("plugin-custom-sound-extension.jar"));
     RuntimeConfigPathPort runtimeConfigPathPort =
         () -> runtimeConfigDirectory.resolve("ircafe.yml");
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
@@ -41,10 +42,10 @@ class NotificationSoundFileExtensionProviderPluginTest {
         """
         package cafe.woden.ircclient.testplugins;
 
-        import cafe.woden.ircclient.ui.settings.notifications.NotificationSoundFileExtensionProvider;
+        import cafe.woden.ircclient.notify.api.CustomSoundFileExtensionProvider;
         import java.util.List;
 
-        public final class PluginSoundFileExtensions implements NotificationSoundFileExtensionProvider {
+        public final class PluginSoundFileExtensions implements CustomSoundFileExtensionProvider {
           @Override
           public List<String> soundFileExtensions() {
             return List.of("ogg", ".flac", "bad/value");
@@ -55,8 +56,7 @@ class NotificationSoundFileExtensionProviderPluginTest {
         jarPath,
         providerClassName,
         providerSource,
-        NotificationSoundFileExtensionProvider.class.getName(),
-        CompiledPluginJarSupport.compatibleManifest(
-            "plugin-notification-sound-extension", "1.0.0"));
+        CustomSoundFileExtensionProvider.class.getName(),
+        CompiledPluginJarSupport.compatibleManifest("plugin-custom-sound-extension", "1.0.0"));
   }
 }

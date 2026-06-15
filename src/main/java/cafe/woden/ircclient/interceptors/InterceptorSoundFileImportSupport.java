@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.interceptors;
 
+import cafe.woden.ircclient.notify.api.CustomSoundFileExtensionProvider;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -18,7 +19,7 @@ final class InterceptorSoundFileImportSupport {
   static String importToRuntimeDir(
       Path runtimeConfigPath,
       File source,
-      List<InterceptorSoundFileExtensionProvider> extensionProviders)
+      List<CustomSoundFileExtensionProvider> extensionProviders)
       throws Exception {
     if (source == null) throw new IllegalArgumentException("Source file is required");
 
@@ -61,7 +62,7 @@ final class InterceptorSoundFileImportSupport {
   }
 
   private static String extensionFor(
-      String fileName, List<InterceptorSoundFileExtensionProvider> extensionProviders) {
+      String fileName, List<CustomSoundFileExtensionProvider> extensionProviders) {
     String lower = Objects.toString(fileName, "").trim().toLowerCase(Locale.ROOT);
     if (lower.isEmpty()) return null;
     for (String extension : supportedExtensions(extensionProviders)) {
@@ -71,11 +72,11 @@ final class InterceptorSoundFileImportSupport {
   }
 
   private static Set<String> supportedExtensions(
-      List<InterceptorSoundFileExtensionProvider> extensionProviders) {
+      List<CustomSoundFileExtensionProvider> extensionProviders) {
     LinkedHashSet<String> out = new LinkedHashSet<>(BUILT_IN_EXTENSIONS);
-    for (InterceptorSoundFileExtensionProvider provider :
+    for (CustomSoundFileExtensionProvider provider :
         Objects.requireNonNullElse(
-            extensionProviders, List.<InterceptorSoundFileExtensionProvider>of())) {
+            extensionProviders, List.<CustomSoundFileExtensionProvider>of())) {
       if (provider == null) continue;
       for (String extension :
           Objects.requireNonNullElse(provider.soundFileExtensions(), List.<String>of())) {
@@ -101,7 +102,7 @@ final class InterceptorSoundFileImportSupport {
   }
 
   private static String unsupportedTypeMessage(
-      List<InterceptorSoundFileExtensionProvider> extensionProviders) {
+      List<CustomSoundFileExtensionProvider> extensionProviders) {
     if (supportedExtensions(extensionProviders).equals(Set.copyOf(BUILT_IN_EXTENSIONS))) {
       return "Only .mp3 and .wav are supported";
     }

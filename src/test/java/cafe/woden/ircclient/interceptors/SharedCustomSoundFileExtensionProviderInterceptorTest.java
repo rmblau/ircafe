@@ -7,6 +7,7 @@ import cafe.woden.ircclient.config.api.InterceptorConfigPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
 import cafe.woden.ircclient.model.InterceptorDefinition;
+import cafe.woden.ircclient.notify.api.CustomSoundFileExtensionProvider;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,15 +16,15 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-class InterceptorSoundFileExtensionProviderPluginTest {
+class SharedCustomSoundFileExtensionProviderInterceptorTest {
 
   @TempDir Path tempDir;
 
   @Test
-  void loadsInterceptorSoundFileExtensionsFromPluginDirectoryJar() throws Exception {
+  void loadsSharedCustomSoundFileExtensionsForInterceptorImport() throws Exception {
     Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
     Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
-    writePluginJar(pluginDir.resolve("plugin-interceptor-sound-extension.jar"));
+    writePluginJar(pluginDir.resolve("plugin-custom-sound-extension.jar"));
     RuntimeConfigPathPort runtimeConfigPathPort =
         () -> runtimeConfigDirectory.resolve("ircafe.yml");
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
@@ -46,11 +47,11 @@ class InterceptorSoundFileExtensionProviderPluginTest {
         """
         package cafe.woden.ircclient.testplugins;
 
-        import cafe.woden.ircclient.interceptors.InterceptorSoundFileExtensionProvider;
+        import cafe.woden.ircclient.notify.api.CustomSoundFileExtensionProvider;
         import java.util.List;
 
         public final class PluginInterceptorSoundExtensions
-            implements InterceptorSoundFileExtensionProvider {
+            implements CustomSoundFileExtensionProvider {
           @Override
           public List<String> soundFileExtensions() {
             return List.of("ogg", ".flac", "bad/value");
@@ -61,8 +62,8 @@ class InterceptorSoundFileExtensionProviderPluginTest {
         jarPath,
         providerClassName,
         providerSource,
-        InterceptorSoundFileExtensionProvider.class.getName(),
-        CompiledPluginJarSupport.compatibleManifest("plugin-interceptor-sound-extension", "1.0.0"));
+        CustomSoundFileExtensionProvider.class.getName(),
+        CompiledPluginJarSupport.compatibleManifest("plugin-custom-sound-extension", "1.0.0"));
   }
 
   private record TestInterceptorConfig(RuntimeConfigPathPort runtimeConfigPathPort)
