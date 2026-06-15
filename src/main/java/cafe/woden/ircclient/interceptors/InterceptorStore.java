@@ -12,6 +12,7 @@ import cafe.woden.ircclient.model.InterceptorRule;
 import cafe.woden.ircclient.model.InterceptorRuleMode;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.notify.api.CustomSoundFileExtensionProvider;
+import cafe.woden.ircclient.notify.api.CustomSoundFileImportSupport;
 import cafe.woden.ircclient.notify.api.NotificationSoundPort;
 import cafe.woden.ircclient.util.VirtualThreads;
 import io.reactivex.rxjava3.core.Flowable;
@@ -172,9 +173,7 @@ public class InterceptorStore implements InterceptorIngestPort {
 
   private static List<CustomSoundFileExtensionProvider> loadSoundFileExtensionProviders(
       InstalledPluginsPort installedPlugins) {
-    if (installedPlugins == null) return List.of();
-    return installedPlugins.loadInstalledServices(
-        CustomSoundFileExtensionProvider.class, List.of());
+    return CustomSoundFileImportSupport.loadExtensionProviders(installedPlugins);
   }
 
   public Flowable<Change> changes() {
