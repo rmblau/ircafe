@@ -93,6 +93,7 @@ final class MessageInputSpellcheckSupport implements MessageInputWordSuggestionP
       SpellcheckSettings.defaults().completionProfile();
 
   private final JTextComponent input;
+  private final List<MessageInputSpellcheckDictionaryProvider> dictionaryProviders;
   private final Subject<SpellcheckRequest> spellcheckRequests;
   private final Disposable spellcheckSubscription;
   private final AtomicLong spellcheckRequestSeq = new AtomicLong();
@@ -108,7 +109,18 @@ final class MessageInputSpellcheckSupport implements MessageInputWordSuggestionP
   private final ConcurrentHashMap<String, Integer> localWordFrequency = new ConcurrentHashMap<>();
 
   MessageInputSpellcheckSupport(JTextComponent input, SpellcheckSettings initialSettings) {
+    this(input, initialSettings, List.of());
+  }
+
+  MessageInputSpellcheckSupport(
+      JTextComponent input,
+      SpellcheckSettings initialSettings,
+      List<MessageInputSpellcheckDictionaryProvider> dictionaryProviders) {
     this.input = Objects.requireNonNull(input, "input");
+    this.dictionaryProviders =
+        List.copyOf(
+            Objects.requireNonNullElse(
+                dictionaryProviders, List.<MessageInputSpellcheckDictionaryProvider>of()));
     this.settings = initialSettings != null ? initialSettings : SpellcheckSettings.defaults();
     applyCustomDictionarySnapshot(this.settings.customDictionary());
     this.suggestionCache =
@@ -776,18 +788,30 @@ final class MessageInputSpellcheckSupport implements MessageInputWordSuggestionP
   }
 
   private void applyCustomDictionarySnapshot(List<String> words) {
-    if (words == null || words.isEmpty()) {
-      customDictionaryByLower = Set.of();
-      return;
-    }
     LinkedHashSet<String> out = new LinkedHashSet<>();
+    addDictionaryWords(out, words);
+    for (MessageInputSpellcheckDictionaryProvider provider : dictionaryProviders) {
+      if (provider == null) continue;
+      try {
+        addDictionaryWords(out, provider.dictionaryWords());
+      } catch (RuntimeException ex) {
+        log.debug(
+            "[MessageInputSpellcheckSupport] spellcheck dictionary provider failed: {}",
+            provider.getClass().getName(),
+            ex);
+      }
+    }
+    customDictionaryByLower = out.isEmpty() ? Set.of() : Set.copyOf(out);
+  }
+
+  private static void addDictionaryWords(LinkedHashSet<String> out, List<String> words) {
+    if (out == null || words == null || words.isEmpty()) return;
     for (String word : words) {
       if (word == null) continue;
       String cleaned = normalizeToken(word);
       if (cleaned.isBlank()) continue;
       out.add(cleaned.toLowerCase(Locale.ROOT));
     }
-    customDictionaryByLower = Set.copyOf(out);
   }
 
   private static String normalizeToken(String raw) {

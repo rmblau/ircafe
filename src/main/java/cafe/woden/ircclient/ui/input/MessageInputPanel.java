@@ -123,7 +123,13 @@ public class MessageInputPanel extends JPanel {
     this.undoSupport = new MessageInputUndoSupport(input, () -> programmaticEdit);
     SpellcheckSettings spellcheck =
         spellcheckSettingsBus != null ? spellcheckSettingsBus.get() : SpellcheckSettings.defaults();
-    this.spellcheckSupport = new MessageInputSpellcheckSupport(input, spellcheck);
+    List<MessageInputSpellcheckDictionaryProvider> spellcheckDictionaryProviders =
+        installedPlugins == null
+            ? List.of()
+            : installedPlugins.loadInstalledServices(
+                MessageInputSpellcheckDictionaryProvider.class, List.of());
+    this.spellcheckSupport =
+        new MessageInputSpellcheckSupport(input, spellcheck, spellcheckDictionaryProviders);
     this.spellcheckHoverPopupSupport =
         new MessageInputSpellcheckHoverPopupSupport(this, input, spellcheckSupport, spellcheck);
     MessageInputWordSuggestionProvider wordSuggestionProvider =
