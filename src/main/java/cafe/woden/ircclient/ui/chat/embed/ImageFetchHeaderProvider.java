@@ -5,9 +5,11 @@ import java.util.Map;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 
 /**
- * ServiceLoader-backed contribution point for image fetch HTTP headers.
+ * Compatibility adapter for plugins that contributed image-fetch HTTP headers before the shared
+ * embed header SPI existed.
  *
- * @deprecated implement {@link EmbedHttpHeaderProvider} instead.
+ * @deprecated implement and register {@link EmbedHttpHeaderProvider} instead. This adapter remains
+ *     loadable so older plugin jars continue to work during the migration window.
  */
 @InterfaceLayer
 @Deprecated(forRemoval = false)

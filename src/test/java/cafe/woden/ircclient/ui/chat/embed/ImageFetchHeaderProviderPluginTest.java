@@ -14,6 +14,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+/** Compatibility coverage for the deprecated image-specific header-provider SPI. */
 class ImageFetchHeaderProviderPluginTest {
 
   @TempDir Path tempDir;

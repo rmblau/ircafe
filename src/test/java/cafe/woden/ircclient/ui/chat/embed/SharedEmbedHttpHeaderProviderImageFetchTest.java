@@ -14,6 +14,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+/** Preferred SPI coverage for plugin-contributed image-fetch headers. */
 class SharedEmbedHttpHeaderProviderImageFetchTest {
 
   @TempDir Path tempDir;

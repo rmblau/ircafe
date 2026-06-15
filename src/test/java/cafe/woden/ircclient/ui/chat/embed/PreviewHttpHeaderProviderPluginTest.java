@@ -14,6 +14,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
+/** Compatibility coverage for the deprecated preview-specific header-provider SPI. */
 class PreviewHttpHeaderProviderPluginTest {
 
   @TempDir Path tempDir;
