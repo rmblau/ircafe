@@ -3,7 +3,14 @@ package cafe.woden.ircclient.ui.chat.embed;
 import java.util.List;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 
-/** ServiceLoader-backed provider for direct image URL extensions recognized by chat embeds. */
+/**
+ * ServiceLoader-backed provider for direct image URL extensions recognized by chat embeds.
+ *
+ * <p>Register implementations in {@code
+ * META-INF/services/cafe.woden.ircclient.ui.chat.embed.ImageUrlExtensionProvider}. The contributed
+ * extensions are used consistently by direct image embedding, link-preview exclusion, and
+ * image-viewer temp-file naming.
+ */
 @InterfaceLayer
 public interface ImageUrlExtensionProvider {
 

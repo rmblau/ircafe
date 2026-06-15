@@ -17,7 +17,7 @@ final class ImageFileExtensionSupport {
       String path = URI.create(url).getPath();
       if (path == null) return ".img";
       String lower = path.toLowerCase(Locale.ROOT);
-      for (String extension : ImageUrlExtractor.imageExtensions(extensionProviders)) {
+      for (String extension : ImageUrlExtensionProviders.imageExtensions(extensionProviders)) {
         if (lower.endsWith(extension)) return extension;
       }
     } catch (Exception ignored) {

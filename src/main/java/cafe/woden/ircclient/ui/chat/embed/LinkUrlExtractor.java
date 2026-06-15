@@ -31,7 +31,8 @@ final class LinkUrlExtractor {
       String text, List<ImageUrlExtensionProvider> imageExtensionProviders) {
     if (text == null || text.isBlank()) return List.of();
 
-    Set<String> imageExtensions = ImageUrlExtractor.imageExtensions(imageExtensionProviders);
+    Set<String> imageExtensions =
+        ImageUrlExtensionProviders.imageExtensions(imageExtensionProviders);
     Matcher m = URL_PATTERN.matcher(text);
     Set<String> out = new LinkedHashSet<>();
     while (m.find()) {

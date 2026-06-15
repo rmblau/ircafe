@@ -49,12 +49,8 @@ public class ChatImageEmbedder {
 
   @Autowired(required = false)
   void setInstalledPluginsPort(InstalledPluginsPort installedPlugins) {
-    if (installedPlugins == null) {
-      imageUrlExtensionProviders = List.of();
-      return;
-    }
     imageUrlExtensionProviders =
-        installedPlugins.loadInstalledServices(ImageUrlExtensionProvider.class, List.of());
+        ImageUrlExtensionProviders.loadInstalledProviders(installedPlugins);
   }
 
   private DocState stateFor(StyledDocument doc) {

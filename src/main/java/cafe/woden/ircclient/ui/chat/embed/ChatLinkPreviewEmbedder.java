@@ -59,12 +59,8 @@ public class ChatLinkPreviewEmbedder {
 
   @Autowired(required = false)
   void setInstalledPluginsPort(InstalledPluginsPort installedPlugins) {
-    if (installedPlugins == null) {
-      imageUrlExtensionProviders = List.of();
-      return;
-    }
     imageUrlExtensionProviders =
-        installedPlugins.loadInstalledServices(ImageUrlExtensionProvider.class, List.of());
+        ImageUrlExtensionProviders.loadInstalledProviders(installedPlugins);
   }
 
   public AppendResult appendPreviews(
