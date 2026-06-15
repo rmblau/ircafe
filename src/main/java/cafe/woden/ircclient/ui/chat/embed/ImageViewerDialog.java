@@ -11,7 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
-import java.util.Locale;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JDialog;
@@ -33,6 +33,11 @@ final class ImageViewerDialog {
   private ImageViewerDialog() {}
 
   static void show(Window parent, String url, byte[] bytes) {
+    show(parent, url, bytes, List.of());
+  }
+
+  static void show(
+      Window parent, String url, byte[] bytes, List<ImageUrlExtensionProvider> extensionProviders) {
     if (bytes == null || bytes.length == 0) {
       // If we don't have bytes, fall back to browser.
       try {
@@ -78,7 +83,7 @@ final class ImageViewerDialog {
     openExternal.addActionListener(
         e -> {
           try {
-            File f = writeTempFile(url, bytes);
+            File f = writeTempFile(url, bytes, extensionProviders);
             Desktop.getDesktop().open(f);
           } catch (Exception ignored) {
           }
@@ -120,27 +125,14 @@ final class ImageViewerDialog {
     return MESSAGES.text(key, args);
   }
 
-  private static File writeTempFile(String url, byte[] bytes) throws IOException {
-    String ext = extensionFromUrl(url);
+  private static File writeTempFile(
+      String url, byte[] bytes, List<ImageUrlExtensionProvider> extensionProviders)
+      throws IOException {
+    String ext = ImageFileExtensionSupport.extensionFromUrl(url, extensionProviders);
     File f = Files.createTempFile("ircafe-image-", ext).toFile();
     Files.write(f.toPath(), bytes);
     f.deleteOnExit();
     return f;
-  }
-
-  private static String extensionFromUrl(String url) {
-    try {
-      String p = URI.create(url).getPath();
-      if (p == null) return ".img";
-      p = p.toLowerCase(Locale.ROOT);
-      if (p.endsWith(".png")) return ".png";
-      if (p.endsWith(".jpg")) return ".jpg";
-      if (p.endsWith(".jpeg")) return ".jpeg";
-      if (p.endsWith(".gif")) return ".gif";
-      if (p.endsWith(".webp")) return ".webp";
-    } catch (Exception ignored) {
-    }
-    return ".img";
   }
 
   static Window windowOf(java.awt.Component c) {

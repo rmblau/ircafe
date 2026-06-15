@@ -164,7 +164,8 @@ public class ChatImageEmbedder {
             uiSettings,
             embedCardStyleBus != null ? embedCardStyleBus.get() : EmbedCardStyle.DEFAULT,
             st.gifCoordinator,
-            seq);
+            seq,
+            imageUrlExtensionProviders);
 
     SimpleAttributeSet a = new SimpleAttributeSet(styles.message());
     a.addAttribute(ChatStyles.ATTR_URL, url);

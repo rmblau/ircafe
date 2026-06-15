@@ -5,7 +5,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
-import java.util.Locale;
+import java.util.List;
 
 final class FileUtil {
 
@@ -26,25 +26,16 @@ final class FileUtil {
   }
 
   static File writeTempFile(String url, byte[] bytes) throws IOException {
-    String ext = extensionFromUrl(url);
+    return writeTempFile(url, bytes, List.of());
+  }
+
+  static File writeTempFile(
+      String url, byte[] bytes, List<ImageUrlExtensionProvider> extensionProviders)
+      throws IOException {
+    String ext = ImageFileExtensionSupport.extensionFromUrl(url, extensionProviders);
     File f = Files.createTempFile("ircafe-image-", ext).toFile();
     Files.write(f.toPath(), bytes);
     f.deleteOnExit();
     return f;
-  }
-
-  private static String extensionFromUrl(String url) {
-    try {
-      String p = URI.create(url).getPath();
-      if (p == null) return ".img";
-      p = p.toLowerCase(Locale.ROOT);
-      if (p.endsWith(".png")) return ".png";
-      if (p.endsWith(".jpg")) return ".jpg";
-      if (p.endsWith(".jpeg")) return ".jpeg";
-      if (p.endsWith(".gif")) return ".gif";
-      if (p.endsWith(".webp")) return ".webp";
-    } catch (Exception ignored) {
-    }
-    return ".img";
   }
 }
