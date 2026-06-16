@@ -46,6 +46,7 @@ import cafe.woden.ircclient.bouncer.BouncerDiscoveryEventPort;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigChatCommandAdapter;
+import cafe.woden.ircclient.config.RuntimeConfigDiagnosticsAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.properties.SojuProperties;
@@ -293,7 +294,8 @@ class MemoServPanelContainerFunctionalTest {
     ApplicationDiagnosticsService applicationDiagnosticsService =
         mock(ApplicationDiagnosticsService.class);
     RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
-    JfrRuntimeEventsService jfrRuntimeEventsService = new JfrRuntimeEventsService(runtimeConfig);
+    JfrRuntimeEventsService jfrRuntimeEventsService =
+        new JfrRuntimeEventsService(new RuntimeConfigDiagnosticsAdapter(runtimeConfig));
     SpringRuntimeEventsService springRuntimeEventsService = new SpringRuntimeEventsService();
     UiSettingsBus settingsBus = mock(UiSettingsBus.class);
     when(settingsBus.get()).thenReturn(null);

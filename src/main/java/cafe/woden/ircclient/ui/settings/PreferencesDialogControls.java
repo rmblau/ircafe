@@ -290,7 +290,7 @@ record PreferencesDialogControls(
         TranslationControlsSupport.buildControls(
             initialTranslationSettings(request), request.closeables(), request.installedPlugins());
     DiagnosticsControls diagnostics =
-        DiagnosticsControlsSupport.buildControls(request.runtimeConfig());
+        DiagnosticsControlsSupport.buildControls(request.diagnosticsRuntimeConfig());
 
     return new PreferencesDialogControls(
         appearance,
@@ -488,6 +488,7 @@ record PreferencesDialogControls(
       SpellcheckSettingsBus spellcheckSettingsBus,
       RuntimeConfigStore runtimeConfig,
       ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
+      DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,
       LogProperties logProps,
       NickColorSettingsBus nickColorSettingsBus,
       NickColorService nickColorService,

@@ -4,8 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.RuntimeConfigDiagnosticsAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
+import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import java.nio.file.Path;
 import java.util.List;
 import javax.swing.JCheckBox;
@@ -69,8 +70,9 @@ class DiagnosticsControlsSupportTest {
 
   @Test
   void rememberSettingsPersistsValuesThatNoLongerCompareAsChanged(@TempDir Path tempDir) {
-    RuntimeConfigStore runtimeConfig =
-        RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    DiagnosticsRuntimeConfigPort runtimeConfig =
+        new RuntimeConfigDiagnosticsAdapter(
+            RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml")));
     DiagnosticsControlsSupport.DiagnosticsSettings settings =
         DiagnosticsControlsSupport.readSettings(
             controls(

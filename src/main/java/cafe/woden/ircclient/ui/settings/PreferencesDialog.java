@@ -6,6 +6,7 @@ import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.NickColorRuntimeConfigPort;
@@ -81,6 +82,7 @@ public class PreferencesDialog {
   private final SpellcheckSettingsBus spellcheckSettingsBus;
   private final RuntimeConfigStore runtimeConfig;
   private final ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig;
+  private final DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig;
   private final CtcpReplyRuntimeConfigPort ctcpRuntimeConfig;
   private final OutgoingMessageRuntimeConfigPort outgoingRuntimeConfig;
   private final TimestampRuntimeConfigPort timestampRuntimeConfig;
@@ -129,6 +131,7 @@ public class PreferencesDialog {
       SpellcheckSettingsBus spellcheckSettingsBus,
       RuntimeConfigStore runtimeConfig,
       ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
+      DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,
       CtcpReplyRuntimeConfigPort ctcpRuntimeConfig,
       OutgoingMessageRuntimeConfigPort outgoingRuntimeConfig,
       TimestampRuntimeConfigPort timestampRuntimeConfig,
@@ -172,6 +175,7 @@ public class PreferencesDialog {
         spellcheckSettingsBus,
         runtimeConfig,
         chatLoggingRuntimeConfig,
+        diagnosticsRuntimeConfig,
         ctcpRuntimeConfig,
         outgoingRuntimeConfig,
         timestampRuntimeConfig,
@@ -219,6 +223,7 @@ public class PreferencesDialog {
       SpellcheckSettingsBus spellcheckSettingsBus,
       RuntimeConfigStore runtimeConfig,
       ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
+      DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,
       CtcpReplyRuntimeConfigPort ctcpRuntimeConfig,
       OutgoingMessageRuntimeConfigPort outgoingRuntimeConfig,
       TimestampRuntimeConfigPort timestampRuntimeConfig,
@@ -263,6 +268,7 @@ public class PreferencesDialog {
     this.spellcheckSettingsBus = spellcheckSettingsBus;
     this.runtimeConfig = runtimeConfig;
     this.chatLoggingRuntimeConfig = chatLoggingRuntimeConfig;
+    this.diagnosticsRuntimeConfig = diagnosticsRuntimeConfig;
     this.ctcpRuntimeConfig = ctcpRuntimeConfig;
     this.outgoingRuntimeConfig = outgoingRuntimeConfig;
     this.timestampRuntimeConfig = timestampRuntimeConfig;
@@ -354,6 +360,7 @@ public class PreferencesDialog {
                 spellcheckSettingsBus,
                 runtimeConfig,
                 chatLoggingRuntimeConfig,
+                diagnosticsRuntimeConfig,
                 logProps,
                 nickColorSettingsBus,
                 nickColorService,
@@ -405,7 +412,7 @@ public class PreferencesDialog {
                         embedCardStyleBus,
                         settingsBus,
                         runtimeConfig,
-                        runtimeConfig));
+                        diagnosticsRuntimeConfig));
           } catch (PreferencesApplySupport.ApplyException ex) {
             PreferencesUiSupport.showErrorMessage(dialog, ex.getMessage(), ex.title());
             return;
@@ -415,6 +422,7 @@ public class PreferencesDialog {
                   applySnapshot,
                   runtimeConfig,
                   chatLoggingRuntimeConfig,
+                  diagnosticsRuntimeConfig,
                   ctcpRuntimeConfig,
                   outgoingRuntimeConfig,
                   timestampRuntimeConfig,

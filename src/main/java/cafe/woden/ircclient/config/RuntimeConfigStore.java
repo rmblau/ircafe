@@ -4,7 +4,6 @@ import cafe.woden.ircclient.config.api.AppearanceRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatHistoryRuntimeConfigPort;
-import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
@@ -51,7 +50,6 @@ public class RuntimeConfigStore
     implements AppearanceRuntimeConfigPort,
         ChatBehaviorRuntimeConfigPort,
         ChatHistoryRuntimeConfigPort,
-        DiagnosticsRuntimeConfigPort,
         EmbedLoadPolicyConfigPort,
         FilterSettingsConfigPort,
         IrcSessionRuntimeConfigPort,
@@ -700,61 +698,50 @@ public class RuntimeConfigStore
         defaultValue);
   }
 
-  @Override
   public synchronized boolean readAppDiagnosticsAssertjSwingEnabled(boolean defaultValue) {
     return stores.uiStores.appDiagnosticsStore.readAssertjSwingEnabled(defaultValue);
   }
 
-  @Override
   public synchronized boolean readAppDiagnosticsAssertjSwingFreezeWatchdogEnabled(
       boolean defaultValue) {
     return stores.uiStores.appDiagnosticsStore.readAssertjSwingFreezeWatchdogEnabled(defaultValue);
   }
 
-  @Override
   public synchronized int readAppDiagnosticsAssertjSwingFreezeThresholdMs(int defaultValue) {
     return stores.uiStores.appDiagnosticsStore.readAssertjSwingFreezeThresholdMs(defaultValue);
   }
 
-  @Override
   public synchronized int readAppDiagnosticsAssertjSwingWatchdogPollMs(int defaultValue) {
     return stores.uiStores.appDiagnosticsStore.readAssertjSwingWatchdogPollMs(defaultValue);
   }
 
-  @Override
   public synchronized int readAppDiagnosticsAssertjSwingFallbackViolationReportMs(
       int defaultValue) {
     return stores.uiStores.appDiagnosticsStore.readAssertjSwingFallbackViolationReportMs(
         defaultValue);
   }
 
-  @Override
   public synchronized boolean readAppDiagnosticsAssertjSwingIssuePlaySound(boolean defaultValue) {
     return stores.uiStores.appDiagnosticsStore.readAssertjSwingIssuePlaySound(defaultValue);
   }
 
-  @Override
   public synchronized boolean readAppDiagnosticsAssertjSwingIssueShowNotification(
       boolean defaultValue) {
     return stores.uiStores.appDiagnosticsStore.readAssertjSwingIssueShowNotification(defaultValue);
   }
 
-  @Override
   public synchronized boolean readAppDiagnosticsJhiccupEnabled(boolean defaultValue) {
     return stores.uiStores.appDiagnosticsStore.readJhiccupEnabled(defaultValue);
   }
 
-  @Override
   public synchronized String readAppDiagnosticsJhiccupJarPath(String defaultValue) {
     return stores.uiStores.appDiagnosticsStore.readJhiccupJarPath(defaultValue);
   }
 
-  @Override
   public synchronized String readAppDiagnosticsJhiccupJavaCommand(String defaultValue) {
     return stores.uiStores.appDiagnosticsStore.readJhiccupJavaCommand(defaultValue);
   }
 
-  @Override
   public synchronized List<String> readAppDiagnosticsJhiccupArgs(List<String> defaultValue) {
     return stores.uiStores.appDiagnosticsStore.readJhiccupArgs(defaultValue);
   }
@@ -823,59 +810,48 @@ public class RuntimeConfigStore
     stores.userCommandStore.rememberUnknownCommandAsRawEnabled(enabled);
   }
 
-  @Override
   public synchronized void rememberAppDiagnosticsAssertjSwingEnabled(boolean enabled) {
     stores.uiStores.appDiagnosticsStore.rememberAssertjSwingEnabled(enabled);
   }
 
-  @Override
   public synchronized void rememberAppDiagnosticsAssertjSwingFreezeWatchdogEnabled(
       boolean enabled) {
     stores.uiStores.appDiagnosticsStore.rememberAssertjSwingFreezeWatchdogEnabled(enabled);
   }
 
-  @Override
   public synchronized void rememberAppDiagnosticsAssertjSwingFreezeThresholdMs(int ms) {
     stores.uiStores.appDiagnosticsStore.rememberAssertjSwingFreezeThresholdMs(ms);
   }
 
-  @Override
   public synchronized void rememberAppDiagnosticsAssertjSwingWatchdogPollMs(int ms) {
     stores.uiStores.appDiagnosticsStore.rememberAssertjSwingWatchdogPollMs(ms);
   }
 
-  @Override
   public synchronized void rememberAppDiagnosticsAssertjSwingFallbackViolationReportMs(int ms) {
     stores.uiStores.appDiagnosticsStore.rememberAssertjSwingFallbackViolationReportMs(ms);
   }
 
-  @Override
   public synchronized void rememberAppDiagnosticsAssertjSwingIssuePlaySound(boolean enabled) {
     stores.uiStores.appDiagnosticsStore.rememberAssertjSwingIssuePlaySound(enabled);
   }
 
-  @Override
   public synchronized void rememberAppDiagnosticsAssertjSwingIssueShowNotification(
       boolean enabled) {
     stores.uiStores.appDiagnosticsStore.rememberAssertjSwingIssueShowNotification(enabled);
   }
 
-  @Override
   public synchronized void rememberAppDiagnosticsJhiccupEnabled(boolean enabled) {
     stores.uiStores.appDiagnosticsStore.rememberJhiccupEnabled(enabled);
   }
 
-  @Override
   public synchronized void rememberAppDiagnosticsJhiccupJarPath(String jarPath) {
     stores.uiStores.appDiagnosticsStore.rememberJhiccupJarPath(jarPath);
   }
 
-  @Override
   public synchronized void rememberAppDiagnosticsJhiccupJavaCommand(String javaCommand) {
     stores.uiStores.appDiagnosticsStore.rememberJhiccupJavaCommand(javaCommand);
   }
 
-  @Override
   public synchronized void rememberAppDiagnosticsJhiccupArgs(List<String> args) {
     stores.uiStores.appDiagnosticsStore.rememberJhiccupArgs(args);
   }
