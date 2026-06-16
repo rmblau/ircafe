@@ -4,6 +4,7 @@ import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.config.api.NickColorRuntimeConfigPort;
@@ -155,7 +156,7 @@ final class PreferencesCommitSupport {
         runtimeConfig,
         request.targetCoordinator(),
         request.transcriptRebuildService());
-    LoggingControlsSupport.rememberSettings(runtimeConfig, snapshot.logging());
+    LoggingControlsSupport.rememberSettings(request.chatLoggingRuntimeConfig(), snapshot.logging());
     OutgoingColorControlsSupport.rememberSettings(
         request.outgoingRuntimeConfig(), snapshot.outgoingLine());
     NotificationRulesControlsSupport.rememberSettings(
@@ -225,6 +226,7 @@ final class PreferencesCommitSupport {
   record CommitRequest(
       PreferencesApplySupport.Snapshot snapshot,
       RuntimeConfigStore runtimeConfig,
+      ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
       CtcpReplyRuntimeConfigPort ctcpRuntimeConfig,
       OutgoingMessageRuntimeConfigPort outgoingRuntimeConfig,
       TimestampRuntimeConfigPort timestampRuntimeConfig,

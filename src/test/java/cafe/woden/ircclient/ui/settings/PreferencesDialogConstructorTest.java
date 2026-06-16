@@ -10,6 +10,7 @@ import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.NickColorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.NotificationRuntimeConfigPort;
@@ -92,6 +93,7 @@ class PreferencesDialogConstructorTest {
         mock(ChatThemeSettingsBus.class),
         mock(SpellcheckSettingsBus.class),
         mock(RuntimeConfigStore.class),
+        mock(ChatLoggingRuntimeConfigPort.class),
         mock(CtcpReplyRuntimeConfigPort.class),
         mock(OutgoingMessageRuntimeConfigPort.class),
         mock(TimestampRuntimeConfigPort.class),

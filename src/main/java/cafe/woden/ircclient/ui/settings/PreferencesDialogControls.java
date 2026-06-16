@@ -5,6 +5,7 @@ import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
@@ -246,7 +247,7 @@ record PreferencesDialogControls(
             historyLockViewportDuringLoadOlder(request));
     LoggingControls logging =
         LoggingControlsSupport.buildControls(
-            request.runtimeConfig(),
+            request.chatLoggingRuntimeConfig(),
             request.logProps(),
             request.closeables(),
             request.serverDialogs(),
@@ -486,6 +487,7 @@ record PreferencesDialogControls(
       ChatThemeSettingsBus chatThemeSettingsBus,
       SpellcheckSettingsBus spellcheckSettingsBus,
       RuntimeConfigStore runtimeConfig,
+      ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
       LogProperties logProps,
       NickColorSettingsBus nickColorSettingsBus,
       NickColorService nickColorService,

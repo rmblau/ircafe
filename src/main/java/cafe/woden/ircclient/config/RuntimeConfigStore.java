@@ -4,7 +4,6 @@ import cafe.woden.ircclient.config.api.AppearanceRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatHistoryRuntimeConfigPort;
-import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
@@ -52,7 +51,6 @@ public class RuntimeConfigStore
     implements AppearanceRuntimeConfigPort,
         ChatBehaviorRuntimeConfigPort,
         ChatHistoryRuntimeConfigPort,
-        ChatLoggingRuntimeConfigPort,
         DiagnosticsRuntimeConfigPort,
         EmbedLoadPolicyConfigPort,
         FilterSettingsConfigPort,
@@ -897,62 +895,50 @@ public class RuntimeConfigStore
 
   // --- Chat logging / history persistence (ircafe.logging.*) ---
 
-  @Override
   public synchronized boolean readChatLoggingEnabled(boolean defaultValue) {
     return stores.chatLoggingStore.readEnabled(defaultValue);
   }
 
-  @Override
   public synchronized void rememberChatLoggingEnabled(boolean enabled) {
     stores.chatLoggingStore.rememberEnabled(enabled);
   }
 
-  @Override
   public synchronized void rememberChatLoggingLogSoftIgnoredLines(boolean enabled) {
     stores.chatLoggingStore.rememberLogSoftIgnoredLines(enabled);
   }
 
-  @Override
   public synchronized void rememberChatLoggingRedactionAuditEnabled(boolean enabled) {
     stores.chatLoggingStore.rememberRedactionAuditEnabled(enabled);
   }
 
-  @Override
   public synchronized void rememberChatLoggingLogPrivateMessages(boolean enabled) {
     stores.chatLoggingStore.rememberLogPrivateMessages(enabled);
   }
 
-  @Override
   public synchronized void rememberChatLoggingSavePrivateMessageList(boolean enabled) {
     stores.chatLoggingStore.rememberSavePrivateMessageList(enabled);
   }
 
-  @Override
   public synchronized void rememberChatLoggingDbFileBaseName(String fileBaseName) {
     stores.chatLoggingStore.rememberDbFileBaseName(fileBaseName);
   }
 
-  @Override
   public synchronized void rememberChatLoggingDbNextToRuntimeConfig(boolean nextToRuntimeConfig) {
     stores.chatLoggingStore.rememberDbNextToRuntimeConfig(nextToRuntimeConfig);
   }
 
-  @Override
   public synchronized void rememberChatLoggingKeepForever(boolean keepForever) {
     stores.chatLoggingStore.rememberKeepForever(keepForever);
   }
 
-  @Override
   public synchronized void rememberChatLoggingRetentionDays(int retentionDays) {
     stores.chatLoggingStore.rememberRetentionDays(retentionDays);
   }
 
-  @Override
   public synchronized void rememberChatLoggingWriterQueueMax(int writerQueueMax) {
     stores.chatLoggingStore.rememberWriterQueueMax(writerQueueMax);
   }
 
-  @Override
   public synchronized void rememberChatLoggingWriterBatchSize(int writerBatchSize) {
     stores.chatLoggingStore.rememberWriterBatchSize(writerBatchSize);
   }

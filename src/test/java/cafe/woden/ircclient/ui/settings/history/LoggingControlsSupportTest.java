@@ -6,8 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import cafe.woden.ircclient.config.RuntimeConfigChatLoggingAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
+import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
 import cafe.woden.ircclient.config.properties.LogProperties;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,7 +27,7 @@ class LoggingControlsSupportTest {
 
   @Test
   void persistedLoggingEnabledOverridesStartupLogProperties() {
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    ChatLoggingRuntimeConfigPort runtimeConfig = mock(ChatLoggingRuntimeConfigPort.class);
     LogProperties logProps =
         new LogProperties(false, true, false, true, true, true, 0, 50_000, 250, null);
     when(runtimeConfig.readChatLoggingEnabled(false)).thenReturn(true);
@@ -74,11 +76,13 @@ class LoggingControlsSupportTest {
   void rememberSettingsPersistsLoggingValues(@TempDir Path tempDir) throws Exception {
     RuntimeConfigStore runtimeConfig =
         RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
+    ChatLoggingRuntimeConfigPort loggingRuntimeConfig =
+        new RuntimeConfigChatLoggingAdapter(runtimeConfig);
     LoggingControlsSupport.LoggingSettings settings =
         new LoggingControlsSupport.LoggingSettings(
             true, false, true, false, true, false, 30, 123_456, 777, "chat-db", false);
 
-    LoggingControlsSupport.rememberSettings(runtimeConfig, settings);
+    LoggingControlsSupport.rememberSettings(loggingRuntimeConfig, settings);
 
     String yaml = Files.readString(tempDir.resolve("ircafe.yml"));
     assertTrue(yaml.contains("logging:"));
