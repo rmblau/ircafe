@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.SpellcheckRuntimeConfigPort;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -148,7 +148,7 @@ class SpellcheckSettingsTest {
 
   @Test
   void rememberSettingsPersistsSpellcheckSettings() {
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    SpellcheckRuntimeConfigPort runtimeConfig = mock(SpellcheckRuntimeConfigPort.class);
     SpellcheckSettings settings =
         SpellcheckSettingsTestFixtures.builder()
             .enabled(false)

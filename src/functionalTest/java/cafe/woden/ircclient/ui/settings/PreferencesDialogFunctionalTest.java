@@ -18,6 +18,7 @@ import cafe.woden.ircclient.config.PushyPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.OutgoingMessageRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.SpellcheckRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.TimestampRuntimeConfigPort;
 import cafe.woden.ircclient.config.properties.LogProperties;
 import cafe.woden.ircclient.irc.backend.IrcHeartbeatMaintenanceService;
@@ -428,6 +429,7 @@ class PreferencesDialogFunctionalTest {
         mock(CtcpReplyRuntimeConfigPort.class),
         mock(OutgoingMessageRuntimeConfigPort.class),
         mock(TimestampRuntimeConfigPort.class),
+        mock(SpellcheckRuntimeConfigPort.class),
         mock(LogProperties.class),
         mock(NickColorSettingsBus.class),
         mock(NickColorService.class),
