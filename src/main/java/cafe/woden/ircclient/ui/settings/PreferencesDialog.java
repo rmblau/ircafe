@@ -4,6 +4,7 @@ import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.NotificationRule;
@@ -72,6 +73,7 @@ public class PreferencesDialog {
   private final ChatThemeSettingsBus chatThemeSettingsBus;
   private final SpellcheckSettingsBus spellcheckSettingsBus;
   private final RuntimeConfigStore runtimeConfig;
+  private final CtcpReplyRuntimeConfigPort ctcpRuntimeConfig;
   private final LogProperties logProps;
   private final NickColorSettingsBus nickColorSettingsBus;
   private final NickColorService nickColorService;
@@ -112,6 +114,7 @@ public class PreferencesDialog {
       ChatThemeSettingsBus chatThemeSettingsBus,
       SpellcheckSettingsBus spellcheckSettingsBus,
       RuntimeConfigStore runtimeConfig,
+      CtcpReplyRuntimeConfigPort ctcpRuntimeConfig,
       LogProperties logProps,
       NickColorSettingsBus nickColorSettingsBus,
       NickColorService nickColorService,
@@ -147,6 +150,7 @@ public class PreferencesDialog {
         chatThemeSettingsBus,
         spellcheckSettingsBus,
         runtimeConfig,
+        ctcpRuntimeConfig,
         logProps,
         nickColorSettingsBus,
         nickColorService,
@@ -186,6 +190,7 @@ public class PreferencesDialog {
       ChatThemeSettingsBus chatThemeSettingsBus,
       SpellcheckSettingsBus spellcheckSettingsBus,
       RuntimeConfigStore runtimeConfig,
+      CtcpReplyRuntimeConfigPort ctcpRuntimeConfig,
       LogProperties logProps,
       NickColorSettingsBus nickColorSettingsBus,
       NickColorService nickColorService,
@@ -222,6 +227,7 @@ public class PreferencesDialog {
     this.chatThemeSettingsBus = chatThemeSettingsBus;
     this.spellcheckSettingsBus = spellcheckSettingsBus;
     this.runtimeConfig = runtimeConfig;
+    this.ctcpRuntimeConfig = ctcpRuntimeConfig;
     this.logProps = logProps;
     this.nickColorSettingsBus = nickColorSettingsBus;
     this.nickColorService = nickColorService;
@@ -365,6 +371,7 @@ public class PreferencesDialog {
               new PreferencesCommitSupport.CommitRequest(
                   applySnapshot,
                   runtimeConfig,
+                  ctcpRuntimeConfig,
                   settingsBus,
                   spellcheckSettingsBus,
                   accentSettingsBus,

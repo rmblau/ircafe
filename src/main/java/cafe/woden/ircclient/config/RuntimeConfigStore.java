@@ -5,7 +5,6 @@ import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatHistoryRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
-import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
@@ -65,7 +64,6 @@ public class RuntimeConfigStore
         ChatCommandRuntimeConfigPort,
         ChatHistoryRuntimeConfigPort,
         ChatLoggingRuntimeConfigPort,
-        CtcpReplyRuntimeConfigPort,
         DiagnosticsRuntimeConfigPort,
         EmbedLoadPolicyConfigPort,
         FilterSettingsConfigPort,
@@ -833,22 +831,18 @@ public class RuntimeConfigStore
     stores.launchJvmStore.rememberArgs(args);
   }
 
-  @Override
   public synchronized boolean readCtcpAutoRepliesEnabled(boolean defaultValue) {
     return stores.uiStores.ctcpAutoReplyStore.readEnabled(defaultValue);
   }
 
-  @Override
   public synchronized boolean readCtcpAutoReplyVersionEnabled(boolean defaultValue) {
     return stores.uiStores.ctcpAutoReplyStore.readVersionEnabled(defaultValue);
   }
 
-  @Override
   public synchronized boolean readCtcpAutoReplyPingEnabled(boolean defaultValue) {
     return stores.uiStores.ctcpAutoReplyStore.readPingEnabled(defaultValue);
   }
 
-  @Override
   public synchronized boolean readCtcpAutoReplyTimeEnabled(boolean defaultValue) {
     return stores.uiStores.ctcpAutoReplyStore.readTimeEnabled(defaultValue);
   }
@@ -1060,22 +1054,18 @@ public class RuntimeConfigStore
     stores.uiStores.chatBehaviorStore.rememberNickCompletionAppendAddressSuffixEnabled(enabled);
   }
 
-  @Override
   public synchronized void rememberCtcpAutoRepliesEnabled(boolean enabled) {
     stores.uiStores.ctcpAutoReplyStore.rememberEnabled(enabled);
   }
 
-  @Override
   public synchronized void rememberCtcpAutoReplyVersionEnabled(boolean enabled) {
     stores.uiStores.ctcpAutoReplyStore.rememberVersionEnabled(enabled);
   }
 
-  @Override
   public synchronized void rememberCtcpAutoReplyPingEnabled(boolean enabled) {
     stores.uiStores.ctcpAutoReplyStore.rememberPingEnabled(enabled);
   }
 
-  @Override
   public synchronized void rememberCtcpAutoReplyTimeEnabled(boolean enabled) {
     stores.uiStores.ctcpAutoReplyStore.rememberTimeEnabled(enabled);
   }
