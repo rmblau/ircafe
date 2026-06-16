@@ -7,6 +7,7 @@ import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.config.api.NickColorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.NotificationRule;
 import cafe.woden.ircclient.config.api.OutgoingMessageRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.SpellcheckRuntimeConfigPort;
@@ -80,6 +81,7 @@ public class PreferencesDialog {
   private final OutgoingMessageRuntimeConfigPort outgoingRuntimeConfig;
   private final TimestampRuntimeConfigPort timestampRuntimeConfig;
   private final SpellcheckRuntimeConfigPort spellcheckRuntimeConfig;
+  private final NickColorRuntimeConfigPort nickColorRuntimeConfig;
   private final LogProperties logProps;
   private final NickColorSettingsBus nickColorSettingsBus;
   private final NickColorService nickColorService;
@@ -124,6 +126,7 @@ public class PreferencesDialog {
       OutgoingMessageRuntimeConfigPort outgoingRuntimeConfig,
       TimestampRuntimeConfigPort timestampRuntimeConfig,
       SpellcheckRuntimeConfigPort spellcheckRuntimeConfig,
+      NickColorRuntimeConfigPort nickColorRuntimeConfig,
       LogProperties logProps,
       NickColorSettingsBus nickColorSettingsBus,
       NickColorService nickColorService,
@@ -163,6 +166,7 @@ public class PreferencesDialog {
         outgoingRuntimeConfig,
         timestampRuntimeConfig,
         spellcheckRuntimeConfig,
+        nickColorRuntimeConfig,
         logProps,
         nickColorSettingsBus,
         nickColorService,
@@ -206,6 +210,7 @@ public class PreferencesDialog {
       OutgoingMessageRuntimeConfigPort outgoingRuntimeConfig,
       TimestampRuntimeConfigPort timestampRuntimeConfig,
       SpellcheckRuntimeConfigPort spellcheckRuntimeConfig,
+      NickColorRuntimeConfigPort nickColorRuntimeConfig,
       LogProperties logProps,
       NickColorSettingsBus nickColorSettingsBus,
       NickColorService nickColorService,
@@ -246,6 +251,7 @@ public class PreferencesDialog {
     this.outgoingRuntimeConfig = outgoingRuntimeConfig;
     this.timestampRuntimeConfig = timestampRuntimeConfig;
     this.spellcheckRuntimeConfig = spellcheckRuntimeConfig;
+    this.nickColorRuntimeConfig = nickColorRuntimeConfig;
     this.logProps = logProps;
     this.nickColorSettingsBus = nickColorSettingsBus;
     this.nickColorService = nickColorService;
@@ -393,6 +399,7 @@ public class PreferencesDialog {
                   outgoingRuntimeConfig,
                   timestampRuntimeConfig,
                   spellcheckRuntimeConfig,
+                  nickColorRuntimeConfig,
                   settingsBus,
                   spellcheckSettingsBus,
                   accentSettingsBus,

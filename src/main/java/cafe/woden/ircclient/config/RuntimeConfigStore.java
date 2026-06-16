@@ -12,7 +12,6 @@ import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
 import cafe.woden.ircclient.config.api.IrcSessionRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.Ircv3CapabilityNameResolverPort;
 import cafe.woden.ircclient.config.api.Ircv3StsPolicyConfigPort;
-import cafe.woden.ircclient.config.api.NickColorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.NotificationRule;
 import cafe.woden.ircclient.config.api.NotificationRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ServerAutoConnectRuntimeConfigPort;
@@ -61,7 +60,6 @@ public class RuntimeConfigStore
         EmbedLoadPolicyConfigPort,
         FilterSettingsConfigPort,
         IrcSessionRuntimeConfigPort,
-        NickColorRuntimeConfigPort,
         NotificationRuntimeConfigPort,
         ServerTreeBuiltInVisibilityConfigPort,
         ServerTreeChannelStateConfigPort,
@@ -1238,12 +1236,10 @@ public class RuntimeConfigStore
     stores.uiStores.filterStore.rememberOverrides(overrides);
   }
 
-  @Override
   public synchronized void rememberNickColoringEnabled(boolean enabled) {
     stores.uiStores.nickColorStore.rememberColoringEnabled(enabled);
   }
 
-  @Override
   public synchronized void rememberNickColorMinContrast(double minContrast) {
     stores.uiStores.nickColorStore.rememberMinContrast(minContrast);
   }
