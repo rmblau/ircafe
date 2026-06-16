@@ -34,7 +34,7 @@ public final class BackendNamedCommandExecutorCatalog {
       InstalledPluginsPort installedPluginsPort,
       List<BackendNamedCommandExecutor> builtInExecutors) {
     this(
-        loadInstalledCatalogState(
+        CommandPluginProviders.backendNamedCommandExecutors(
             List.copyOf(Objects.requireNonNullElse(builtInExecutors, List.of())),
             installedPluginsPort));
   }
@@ -43,13 +43,14 @@ public final class BackendNamedCommandExecutorCatalog {
       RuntimeConfigPathPort runtimeConfigPathPort,
       List<BackendNamedCommandExecutor> builtInExecutors) {
     this(
-        loadInstalledCatalogState(
+        CommandPluginProviders.backendNamedCommandExecutors(
             List.copyOf(Objects.requireNonNullElse(builtInExecutors, List.of())),
             PluginServiceLoaderSupport.resolvePluginDirectory(
                 runtimeConfigPathPort == null ? null : runtimeConfigPathPort::runtimeConfigPath,
                 log),
             PluginServiceLoaderSupport.defaultApplicationClassLoader(
-                BackendNamedCommandExecutorCatalog.class)));
+                BackendNamedCommandExecutorCatalog.class),
+            log));
   }
 
   public static BackendNamedCommandExecutorCatalog empty() {
@@ -72,10 +73,12 @@ public final class BackendNamedCommandExecutorCatalog {
   static BackendNamedCommandExecutorCatalog installed(
       Path pluginDirectory, ClassLoader applicationClassLoader) {
     return new BackendNamedCommandExecutorCatalog(
-        loadInstalledCatalogState(List.of(), pluginDirectory, applicationClassLoader));
+        CommandPluginProviders.backendNamedCommandExecutors(
+            List.of(), pluginDirectory, applicationClassLoader, log));
   }
 
-  private BackendNamedCommandExecutorCatalog(LoadedCatalogState state) {
+  private BackendNamedCommandExecutorCatalog(
+      CommandPluginProviders.BackendNamedCommandExecutors state) {
     this(Objects.requireNonNull(state, "state").executors(), state.pluginClassLoaders());
   }
 
@@ -133,31 +136,4 @@ public final class BackendNamedCommandExecutorCatalog {
     }
     return Map.copyOf(index);
   }
-
-  private static LoadedCatalogState loadInstalledCatalogState(
-      List<BackendNamedCommandExecutor> builtInExecutors,
-      Path pluginDirectory,
-      ClassLoader applicationClassLoader) {
-    PluginServiceLoaderSupport.LoadedServices<BackendNamedCommandExecutor> loadedServices =
-        PluginServiceLoaderSupport.loadInstalledServices(
-            BackendNamedCommandExecutor.class,
-            builtInExecutors,
-            pluginDirectory,
-            applicationClassLoader,
-            log);
-    return new LoadedCatalogState(loadedServices.services(), loadedServices.pluginClassLoaders());
-  }
-
-  private static LoadedCatalogState loadInstalledCatalogState(
-      List<BackendNamedCommandExecutor> builtInExecutors,
-      InstalledPluginsPort installedPluginsPort) {
-    InstalledPluginsPort installedPlugins =
-        Objects.requireNonNull(installedPluginsPort, "installedPluginsPort");
-    return new LoadedCatalogState(
-        installedPlugins.loadInstalledServices(BackendNamedCommandExecutor.class, builtInExecutors),
-        List.of());
-  }
-
-  private record LoadedCatalogState(
-      List<BackendNamedCommandExecutor> executors, List<URLClassLoader> pluginClassLoaders) {}
 }

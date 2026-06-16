@@ -6,7 +6,12 @@ import java.util.Set;
 import org.jmolecules.architecture.hexagonal.SecondaryPort;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 
-/** ServiceLoader-backed metadata and parser contribution for backend-scoped named commands. */
+/**
+ * ServiceLoader-backed metadata and parser contribution for backend-scoped named commands.
+ *
+ * <p>Plugins register implementations in {@code
+ * META-INF/services/cafe.woden.ircclient.app.commands.BackendNamedCommandHandler}.
+ */
 @SecondaryPort
 @ApplicationLayer
 public interface BackendNamedCommandHandler {
