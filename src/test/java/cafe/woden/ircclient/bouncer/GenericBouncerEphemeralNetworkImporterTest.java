@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.bouncer;
 
+import static cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures.bouncerDiscoveryPort;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -42,18 +43,19 @@ class GenericBouncerEphemeralNetworkImporterTest {
 
     ServerRegistry configured = new ServerRegistry(props, runtime);
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
-    GenericBouncerAutoConnectStore autoConnect = new GenericBouncerAutoConnectStore(runtime);
+    GenericBouncerAutoConnectStore autoConnect =
+        new GenericBouncerAutoConnectStore(bouncerDiscoveryPort(runtime));
 
     BouncerConnectionPort connectionPort = mock(BouncerConnectionPort.class);
     when(connectionPort.connect(anyString())).thenReturn(Completable.complete());
 
     GenericBouncerEphemeralNetworkImporter importer =
         new GenericBouncerEphemeralNetworkImporter(
-            new GenericBouncerNetworkMappingStrategy(runtime),
+            new GenericBouncerNetworkMappingStrategy(bouncerDiscoveryPort(runtime)),
             configured,
             ephemeral,
             autoConnect,
-            runtime,
+            bouncerDiscoveryPort(runtime),
             connectionPort);
 
     BouncerDiscoveredNetwork network =

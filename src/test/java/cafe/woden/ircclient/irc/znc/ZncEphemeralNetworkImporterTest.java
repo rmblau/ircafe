@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.irc.znc;
 
+import static cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures.bouncerDiscoveryPort;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -40,7 +41,8 @@ class ZncEphemeralNetworkImporterTest {
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
     ZncAutoConnectStore autoConnect =
         new ZncAutoConnectStore(
-            new ZncProperties(Map.of(), new ZncProperties.Discovery(true)), runtime);
+            new ZncProperties(Map.of(), new ZncProperties.Discovery(true)),
+            bouncerDiscoveryPort(runtime));
     BouncerConnectionPort connectionPort = mock(BouncerConnectionPort.class);
     when(connectionPort.connect(anyString())).thenReturn(Completable.complete());
 
@@ -50,7 +52,7 @@ class ZncEphemeralNetworkImporterTest {
             configured,
             ephemeral,
             autoConnect,
-            runtime,
+            bouncerDiscoveryPort(runtime),
             connectionPort);
 
     importer.onZncNetworkDiscovered(new ZncNetwork("znc", "Libera.Chat", true));
@@ -81,7 +83,8 @@ class ZncEphemeralNetworkImporterTest {
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
     ZncAutoConnectStore autoConnect =
         new ZncAutoConnectStore(
-            new ZncProperties(Map.of(), new ZncProperties.Discovery(true)), runtime);
+            new ZncProperties(Map.of(), new ZncProperties.Discovery(true)),
+            bouncerDiscoveryPort(runtime));
     BouncerConnectionPort connectionPort = mock(BouncerConnectionPort.class);
     when(connectionPort.connect(anyString())).thenReturn(Completable.complete());
 
@@ -91,7 +94,7 @@ class ZncEphemeralNetworkImporterTest {
             configured,
             ephemeral,
             autoConnect,
-            runtime,
+            bouncerDiscoveryPort(runtime),
             connectionPort);
     ZncNetwork net = new ZncNetwork("znc", "oftc", false);
 
@@ -121,7 +124,8 @@ class ZncEphemeralNetworkImporterTest {
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
     ZncAutoConnectStore autoConnect =
         new ZncAutoConnectStore(
-            new ZncProperties(Map.of(), new ZncProperties.Discovery(true)), runtime);
+            new ZncProperties(Map.of(), new ZncProperties.Discovery(true)),
+            bouncerDiscoveryPort(runtime));
     BouncerConnectionPort connectionPort = mock(BouncerConnectionPort.class);
     when(connectionPort.connect(anyString())).thenReturn(Completable.complete());
 
@@ -131,7 +135,7 @@ class ZncEphemeralNetworkImporterTest {
             configured,
             ephemeral,
             autoConnect,
-            runtime,
+            bouncerDiscoveryPort(runtime),
             connectionPort);
 
     importer.onZncNetworkDiscovered(new ZncNetwork("znc", "libera", true));
@@ -168,7 +172,8 @@ class ZncEphemeralNetworkImporterTest {
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
     ZncAutoConnectStore autoConnect =
         new ZncAutoConnectStore(
-            new ZncProperties(Map.of(), new ZncProperties.Discovery(true)), runtime);
+            new ZncProperties(Map.of(), new ZncProperties.Discovery(true)),
+            bouncerDiscoveryPort(runtime));
     BouncerConnectionPort connectionPort = mock(BouncerConnectionPort.class);
     when(connectionPort.connect(anyString())).thenReturn(Completable.complete());
 
@@ -178,7 +183,7 @@ class ZncEphemeralNetworkImporterTest {
             configured,
             ephemeral,
             autoConnect,
-            runtime,
+            bouncerDiscoveryPort(runtime),
             connectionPort);
     importer.onZncNetworkDiscovered(new ZncNetwork("znc", "Libera.Chat", true));
 

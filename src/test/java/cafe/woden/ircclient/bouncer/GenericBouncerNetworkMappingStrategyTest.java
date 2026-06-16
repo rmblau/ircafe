@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.bouncer;
 
+import static cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures.bouncerDiscoveryPort;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import cafe.woden.ircclient.config.IrcProperties;
@@ -116,7 +117,7 @@ class GenericBouncerNetworkMappingStrategyTest {
   }
 
   private static GenericBouncerNetworkMappingStrategy strategy(RuntimeConfigStore runtimeConfig) {
-    return new GenericBouncerNetworkMappingStrategy(runtimeConfig);
+    return new GenericBouncerNetworkMappingStrategy(bouncerDiscoveryPort(runtimeConfig));
   }
 
   private static IrcProperties.Server sampleBouncerServer(String loginUser) {

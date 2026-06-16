@@ -1,7 +1,6 @@
 package cafe.woden.ircclient.config;
 
 import cafe.woden.ircclient.config.api.AppearanceRuntimeConfigPort;
-import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
 import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatHistoryRuntimeConfigPort;
@@ -64,7 +63,6 @@ import org.springframework.stereotype.Component;
 @ApplicationLayer
 public class RuntimeConfigStore
     implements AppearanceRuntimeConfigPort,
-        BouncerDiscoveryConfigPort,
         ChatBehaviorRuntimeConfigPort,
         ChatCommandRuntimeConfigPort,
         ChatHistoryRuntimeConfigPort,
@@ -1555,39 +1553,33 @@ public class RuntimeConfigStore
     stores.uiStores.nickColorStore.rememberOverrides(overrides);
   }
 
-  @Override
   public synchronized void rememberSojuAutoConnectNetwork(
       String bouncerServerId, String networkName, boolean enabled) {
     stores.connectionStores.bouncerDiscoveryStore.rememberSojuAutoConnectNetwork(
         bouncerServerId, networkName, enabled);
   }
 
-  @Override
   public synchronized void rememberZncAutoConnectNetwork(
       String bouncerServerId, String networkName, boolean enabled) {
     stores.connectionStores.bouncerDiscoveryStore.rememberZncAutoConnectNetwork(
         bouncerServerId, networkName, enabled);
   }
 
-  @Override
   public synchronized Map<String, Map<String, Boolean>> readGenericBouncerAutoConnectRules() {
     return stores.connectionStores.bouncerDiscoveryStore.readGenericBouncerAutoConnectRules();
   }
 
-  @Override
   public synchronized void rememberGenericBouncerAutoConnectNetwork(
       String bouncerServerId, String networkName, boolean enabled) {
     stores.connectionStores.bouncerDiscoveryStore.rememberGenericBouncerAutoConnectNetwork(
         bouncerServerId, networkName, enabled);
   }
 
-  @Override
   public synchronized String readGenericBouncerLoginTemplate(String defaultValue) {
     return stores.connectionStores.bouncerDiscoveryStore.readGenericBouncerLoginTemplate(
         defaultValue);
   }
 
-  @Override
   public synchronized boolean readGenericBouncerPreferLoginHint(boolean defaultValue) {
     return stores.connectionStores.bouncerDiscoveryStore.readGenericBouncerPreferLoginHint(
         defaultValue);

@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.irc.znc;
 
+import static cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures.bouncerDiscoveryPort;
 import static org.junit.jupiter.api.Assertions.*;
 
 import cafe.woden.ircclient.config.RuntimeConfigStore;
@@ -19,7 +20,7 @@ class ZncAutoConnectStoreTest {
 
     RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore();
 
-    ZncAutoConnectStore store = new ZncAutoConnectStore(props, runtime);
+    ZncAutoConnectStore store = new ZncAutoConnectStore(props, bouncerDiscoveryPort(runtime));
 
     assertTrue(store.isEnabled("znc", "libera"));
     assertTrue(store.isEnabled("znc", "LIBERA"));
@@ -30,7 +31,7 @@ class ZncAutoConnectStoreTest {
   void setEnabledAddsAndRemovesRules() {
     ZncProperties props = new ZncProperties(Map.of(), new ZncProperties.Discovery(true));
     RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore();
-    ZncAutoConnectStore store = new ZncAutoConnectStore(props, runtime);
+    ZncAutoConnectStore store = new ZncAutoConnectStore(props, bouncerDiscoveryPort(runtime));
 
     assertFalse(store.isEnabled("znc", "libera"));
 
@@ -46,7 +47,7 @@ class ZncAutoConnectStoreTest {
   void sanitizesKeysToSafeChars() {
     ZncProperties props = new ZncProperties(Map.of(), new ZncProperties.Discovery(true));
     RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore();
-    ZncAutoConnectStore store = new ZncAutoConnectStore(props, runtime);
+    ZncAutoConnectStore store = new ZncAutoConnectStore(props, bouncerDiscoveryPort(runtime));
 
     store.setEnabled("znc", "Libera.Chat!!!", true);
 

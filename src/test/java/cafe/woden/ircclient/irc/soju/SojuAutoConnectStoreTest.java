@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.irc.soju;
 
+import static cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures.bouncerDiscoveryPort;
 import static org.junit.jupiter.api.Assertions.*;
 
 import cafe.woden.ircclient.config.RuntimeConfigStore;
@@ -19,7 +20,7 @@ class SojuAutoConnectStoreTest {
 
     RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore();
 
-    SojuAutoConnectStore store = new SojuAutoConnectStore(props, runtime);
+    SojuAutoConnectStore store = new SojuAutoConnectStore(props, bouncerDiscoveryPort(runtime));
 
     assertTrue(store.isEnabled("soju", "libera"));
     assertTrue(store.isEnabled("soju", "LIBERA"));
@@ -30,7 +31,7 @@ class SojuAutoConnectStoreTest {
   void setEnabledAddsAndRemovesRules() {
     SojuProperties props = new SojuProperties(Map.of(), new SojuProperties.Discovery(true));
     RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore();
-    SojuAutoConnectStore store = new SojuAutoConnectStore(props, runtime);
+    SojuAutoConnectStore store = new SojuAutoConnectStore(props, bouncerDiscoveryPort(runtime));
 
     assertFalse(store.isEnabled("soju", "libera"));
 
@@ -46,7 +47,7 @@ class SojuAutoConnectStoreTest {
   void sanitizesKeysToSafeChars() {
     SojuProperties props = new SojuProperties(Map.of(), new SojuProperties.Discovery(true));
     RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore();
-    SojuAutoConnectStore store = new SojuAutoConnectStore(props, runtime);
+    SojuAutoConnectStore store = new SojuAutoConnectStore(props, bouncerDiscoveryPort(runtime));
 
     store.setEnabled("soju", "Libera.Chat!!!", true);
 

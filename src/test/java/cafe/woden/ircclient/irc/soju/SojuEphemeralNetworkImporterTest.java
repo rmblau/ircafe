@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.irc.soju;
 
+import static cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures.bouncerDiscoveryPort;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -40,7 +41,8 @@ class SojuEphemeralNetworkImporterTest {
 
     SojuAutoConnectStore autoConnect =
         new SojuAutoConnectStore(
-            new SojuProperties(Map.of(), new SojuProperties.Discovery(true)), runtime);
+            new SojuProperties(Map.of(), new SojuProperties.Discovery(true)),
+            bouncerDiscoveryPort(runtime));
     BouncerConnectionPort connectionPort = mock(BouncerConnectionPort.class);
     when(connectionPort.connect(anyString())).thenReturn(Completable.complete());
 
@@ -50,7 +52,7 @@ class SojuEphemeralNetworkImporterTest {
             configured,
             ephemeral,
             autoConnect,
-            runtime,
+            bouncerDiscoveryPort(runtime),
             connectionPort);
 
     SojuNetwork net = new SojuNetwork("soju", "123", "libera", Map.of("name", "libera"));
@@ -83,7 +85,8 @@ class SojuEphemeralNetworkImporterTest {
 
     SojuAutoConnectStore autoConnect =
         new SojuAutoConnectStore(
-            new SojuProperties(Map.of(), new SojuProperties.Discovery(true)), runtime);
+            new SojuProperties(Map.of(), new SojuProperties.Discovery(true)),
+            bouncerDiscoveryPort(runtime));
     BouncerConnectionPort connectionPort = mock(BouncerConnectionPort.class);
     when(connectionPort.connect(anyString())).thenReturn(Completable.complete());
 
@@ -93,7 +96,7 @@ class SojuEphemeralNetworkImporterTest {
             configured,
             ephemeral,
             autoConnect,
-            runtime,
+            bouncerDiscoveryPort(runtime),
             connectionPort);
     SojuNetwork net = new SojuNetwork("soju", "9", "oftc", Map.of("name", "oftc"));
 
@@ -127,7 +130,7 @@ class SojuEphemeralNetworkImporterTest {
         new SojuAutoConnectStore(
             new SojuProperties(
                 Map.of("soju", Map.of("libera", true)), new SojuProperties.Discovery(true)),
-            runtime);
+            bouncerDiscoveryPort(runtime));
 
     BouncerConnectionPort connectionPort = mock(BouncerConnectionPort.class);
     when(connectionPort.connect(anyString())).thenReturn(Completable.complete());
@@ -138,7 +141,7 @@ class SojuEphemeralNetworkImporterTest {
             configured,
             ephemeral,
             autoConnect,
-            runtime,
+            bouncerDiscoveryPort(runtime),
             connectionPort);
     SojuNetwork net = new SojuNetwork("soju", "123", "libera", Map.of("name", "libera"));
 
@@ -172,7 +175,8 @@ class SojuEphemeralNetworkImporterTest {
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
     SojuAutoConnectStore autoConnect =
         new SojuAutoConnectStore(
-            new SojuProperties(Map.of(), new SojuProperties.Discovery(true)), runtime);
+            new SojuProperties(Map.of(), new SojuProperties.Discovery(true)),
+            bouncerDiscoveryPort(runtime));
     BouncerConnectionPort connectionPort = mock(BouncerConnectionPort.class);
     when(connectionPort.connect(anyString())).thenReturn(Completable.complete());
 
@@ -182,7 +186,7 @@ class SojuEphemeralNetworkImporterTest {
             configured,
             ephemeral,
             autoConnect,
-            runtime,
+            bouncerDiscoveryPort(runtime),
             connectionPort);
     importer.onSojuNetworkDiscovered(
         new SojuNetwork("soju", "123", "libera", Map.of("name", "libera")));
@@ -212,7 +216,8 @@ class SojuEphemeralNetworkImporterTest {
 
     SojuAutoConnectStore autoConnect =
         new SojuAutoConnectStore(
-            new SojuProperties(Map.of(), new SojuProperties.Discovery(true)), runtime);
+            new SojuProperties(Map.of(), new SojuProperties.Discovery(true)),
+            bouncerDiscoveryPort(runtime));
     BouncerConnectionPort connectionPort = mock(BouncerConnectionPort.class);
     when(connectionPort.connect(anyString())).thenReturn(Completable.complete());
 
@@ -222,7 +227,7 @@ class SojuEphemeralNetworkImporterTest {
             configured,
             ephemeral,
             autoConnect,
-            runtime,
+            bouncerDiscoveryPort(runtime),
             connectionPort);
 
     importer.onSojuNetworkDiscovered(
