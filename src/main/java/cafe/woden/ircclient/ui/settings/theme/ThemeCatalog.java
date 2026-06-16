@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Objects;
 import java.util.Set;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.beans.factory.ObjectProvider;
@@ -290,7 +289,7 @@ class ThemeCatalog {
   }
 
   ThemeCatalog(InstalledPluginsPort installedPlugins) {
-    this.pluginThemeOptions = loadInstalledThemeOptions(installedPlugins);
+    this.pluginThemeOptions = ThemeContributionProviders.themeOptions(installedPlugins);
   }
 
   ThemeManager.ThemeOption[] supportedThemes() {
@@ -386,26 +385,6 @@ class ThemeCatalog {
       if (!seen.add(option.id().toLowerCase(Locale.ROOT))) continue;
       out.add(option);
     }
-  }
-
-  private static List<ThemeManager.ThemeOption> loadInstalledThemeOptions(
-      InstalledPluginsPort installedPlugins) {
-    if (installedPlugins == null) return List.of();
-
-    List<ThemeContributionProvider> providers =
-        installedPlugins.loadInstalledServices(ThemeContributionProvider.class, List.of());
-    ArrayList<ThemeManager.ThemeOption> out = new ArrayList<>();
-    for (ThemeContributionProvider provider :
-        Objects.requireNonNullElse(providers, List.<ThemeContributionProvider>of())) {
-      if (provider == null) continue;
-      for (ThemeManager.ThemeOption option :
-          Objects.requireNonNullElse(
-              provider.themeOptions(), List.<ThemeManager.ThemeOption>of())) {
-        if (option == null || option.id() == null || option.id().isBlank()) continue;
-        out.add(option);
-      }
-    }
-    return List.copyOf(out);
   }
 
   private static InstalledPluginsPort resolveInstalledPlugins(
