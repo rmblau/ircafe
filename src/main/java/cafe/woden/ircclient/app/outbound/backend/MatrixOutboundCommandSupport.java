@@ -1,22 +1,15 @@
 package cafe.woden.ircclient.app.outbound.backend;
 
 import cafe.woden.ircclient.app.api.UiPort;
-import cafe.woden.ircclient.app.outbound.upload.spi.MatrixOutboundUploadMsgTypeProvider;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.model.TargetRef;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import org.jmolecules.architecture.layered.ApplicationLayer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -24,10 +17,6 @@ import org.springframework.stereotype.Component;
 @Component
 @ApplicationLayer
 public final class MatrixOutboundCommandSupport {
-  private static final Logger log = LoggerFactory.getLogger(MatrixOutboundCommandSupport.class);
-  private static final Map<String, String> BUILT_IN_UPLOAD_MSGTYPE_ALIASES =
-      builtInUploadMsgTypeAliases();
-
   private final Set<String> uploadMsgTypes;
   private final Map<String, String> uploadMsgTypeAliases;
 
@@ -38,12 +27,14 @@ public final class MatrixOutboundCommandSupport {
   @Autowired
   public MatrixOutboundCommandSupport(
       ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
-    this(resolveInstalledPlugins(installedPluginsProvider));
+    this(MatrixOutboundPluginProviders.resolveInstalledPlugins(installedPluginsProvider));
   }
 
   MatrixOutboundCommandSupport(InstalledPluginsPort installedPlugins) {
-    this.uploadMsgTypeAliases = loadUploadMsgTypeAliases(installedPlugins);
-    this.uploadMsgTypes = loadUploadMsgTypes(installedPlugins, uploadMsgTypeAliases);
+    this.uploadMsgTypeAliases =
+        MatrixOutboundPluginProviders.uploadMsgTypeAliases(installedPlugins);
+    this.uploadMsgTypes =
+        MatrixOutboundPluginProviders.uploadMsgTypes(installedPlugins, uploadMsgTypeAliases);
   }
 
   void appendUploadHelp(UiPort ui, TargetRef out) {
@@ -91,86 +82,6 @@ public final class MatrixOutboundCommandSupport {
 
   private String uploadMsgTypeShortcutSummary() {
     return String.join("|", uploadMsgTypeAliases.keySet());
-  }
-
-  private static Map<String, String> builtInUploadMsgTypeAliases() {
-    LinkedHashMap<String, String> aliases = new LinkedHashMap<>();
-    aliases.put("image", "m.image");
-    aliases.put("file", "m.file");
-    aliases.put("video", "m.video");
-    aliases.put("audio", "m.audio");
-    return Collections.unmodifiableMap(aliases);
-  }
-
-  private static Set<String> loadUploadMsgTypes(
-      InstalledPluginsPort installedPlugins, Map<String, String> aliases) {
-    LinkedHashSet<String> values = new LinkedHashSet<>(BUILT_IN_UPLOAD_MSGTYPE_ALIASES.values());
-    for (String value : aliases.values()) {
-      String normalized = normalizeMsgType(value);
-      if (!normalized.isEmpty()) values.add(normalized);
-    }
-    if (installedPlugins != null) {
-      for (MatrixOutboundUploadMsgTypeProvider provider :
-          installedPlugins.loadInstalledServices(
-              MatrixOutboundUploadMsgTypeProvider.class, List.of())) {
-        if (provider == null) continue;
-        try {
-          for (String value :
-              Objects.requireNonNullElse(provider.uploadMsgTypes(), Set.<String>of())) {
-            String normalized = normalizeMsgType(value);
-            if (!normalized.isEmpty()) values.add(normalized);
-          }
-        } catch (RuntimeException ex) {
-          log.warn("Matrix upload msgtype provider failed: {}", provider.getClass().getName(), ex);
-        }
-      }
-    }
-    return Collections.unmodifiableSet(new LinkedHashSet<>(values));
-  }
-
-  private static Map<String, String> loadUploadMsgTypeAliases(
-      InstalledPluginsPort installedPlugins) {
-    LinkedHashMap<String, String> aliases = new LinkedHashMap<>(BUILT_IN_UPLOAD_MSGTYPE_ALIASES);
-    if (installedPlugins != null) {
-      for (MatrixOutboundUploadMsgTypeProvider provider :
-          installedPlugins.loadInstalledServices(
-              MatrixOutboundUploadMsgTypeProvider.class, List.of())) {
-        if (provider == null) continue;
-        try {
-          for (Map.Entry<String, String> entry :
-              Objects.requireNonNullElse(provider.uploadMsgTypeAliases(), Map.<String, String>of())
-                  .entrySet()) {
-            String alias = normalizeAlias(entry.getKey());
-            String msgType = normalizeMsgType(entry.getValue());
-            if (!alias.isEmpty() && !msgType.isEmpty()) aliases.put(alias, msgType);
-          }
-        } catch (RuntimeException ex) {
-          log.warn(
-              "Matrix upload msgtype alias provider failed: {}", provider.getClass().getName(), ex);
-        }
-      }
-    }
-    return Collections.unmodifiableMap(new LinkedHashMap<>(aliases));
-  }
-
-  private static InstalledPluginsPort resolveInstalledPlugins(
-      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
-    return installedPluginsProvider == null ? null : installedPluginsProvider.getIfAvailable();
-  }
-
-  private static String normalizeAlias(String raw) {
-    String token = Objects.toString(raw, "").trim().toLowerCase(Locale.ROOT);
-    if (token.isEmpty()) return "";
-    if (token.chars().anyMatch(Character::isWhitespace)) return "";
-    return token;
-  }
-
-  private static String normalizeMsgType(String raw) {
-    String token = Objects.toString(raw, "").trim().toLowerCase(Locale.ROOT);
-    if (token.isEmpty()) return "";
-    if (!token.startsWith("m.")) return "";
-    if (token.chars().anyMatch(Character::isWhitespace)) return "";
-    return token;
   }
 
   String defaultUploadCaption(String path) {

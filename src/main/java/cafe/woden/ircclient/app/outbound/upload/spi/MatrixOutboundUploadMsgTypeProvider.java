@@ -5,7 +5,12 @@ import java.util.Set;
 import org.jmolecules.architecture.hexagonal.SecondaryPort;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 
-/** ServiceLoader-backed contribution point for Matrix /upload msgtype validation. */
+/**
+ * ServiceLoader-backed contribution point for Matrix /upload msgtype validation.
+ *
+ * <p>Plugins register implementations in {@code
+ * META-INF/services/cafe.woden.ircclient.app.outbound.upload.spi.MatrixOutboundUploadMsgTypeProvider}.
+ */
 @SecondaryPort
 @ApplicationLayer
 public interface MatrixOutboundUploadMsgTypeProvider {
