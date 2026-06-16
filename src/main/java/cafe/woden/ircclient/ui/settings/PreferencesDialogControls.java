@@ -5,6 +5,7 @@ import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ChatHistoryRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
@@ -376,8 +377,8 @@ record PreferencesDialogControls(
   }
 
   private static boolean historyLockViewportDuringLoadOlder(BuildRequest request) {
-    return request.runtimeConfig() == null
-        || request.runtimeConfig().readChatHistoryLockViewportDuringLoadOlder(true);
+    return request.chatHistoryRuntimeConfig() == null
+        || request.chatHistoryRuntimeConfig().readChatHistoryLockViewportDuringLoadOlder(true);
   }
 
   private static List<IrcEventNotificationRule> initialIrcEventNotificationRules(
@@ -489,6 +490,7 @@ record PreferencesDialogControls(
       SpellcheckSettingsBus spellcheckSettingsBus,
       RuntimeConfigStore runtimeConfig,
       ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
+      ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig,
       DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,
       FilterSettingsConfigPort filterRuntimeConfig,
       LogProperties logProps,

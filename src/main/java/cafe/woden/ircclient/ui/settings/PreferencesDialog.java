@@ -4,6 +4,7 @@ import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.ChatHistoryRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
@@ -84,6 +85,7 @@ public class PreferencesDialog {
   private final SpellcheckSettingsBus spellcheckSettingsBus;
   private final RuntimeConfigStore runtimeConfig;
   private final ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig;
+  private final ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig;
   private final DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig;
   private final FilterSettingsConfigPort filterRuntimeConfig;
   private final EmbedLoadPolicyConfigPort embedLoadPolicyRuntimeConfig;
@@ -135,6 +137,7 @@ public class PreferencesDialog {
       SpellcheckSettingsBus spellcheckSettingsBus,
       RuntimeConfigStore runtimeConfig,
       ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
+      ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig,
       DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,
       FilterSettingsConfigPort filterRuntimeConfig,
       EmbedLoadPolicyConfigPort embedLoadPolicyRuntimeConfig,
@@ -181,6 +184,7 @@ public class PreferencesDialog {
         spellcheckSettingsBus,
         runtimeConfig,
         chatLoggingRuntimeConfig,
+        chatHistoryRuntimeConfig,
         diagnosticsRuntimeConfig,
         filterRuntimeConfig,
         embedLoadPolicyRuntimeConfig,
@@ -231,6 +235,7 @@ public class PreferencesDialog {
       SpellcheckSettingsBus spellcheckSettingsBus,
       RuntimeConfigStore runtimeConfig,
       ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
+      ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig,
       DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,
       FilterSettingsConfigPort filterRuntimeConfig,
       EmbedLoadPolicyConfigPort embedLoadPolicyRuntimeConfig,
@@ -278,6 +283,7 @@ public class PreferencesDialog {
     this.spellcheckSettingsBus = spellcheckSettingsBus;
     this.runtimeConfig = runtimeConfig;
     this.chatLoggingRuntimeConfig = chatLoggingRuntimeConfig;
+    this.chatHistoryRuntimeConfig = chatHistoryRuntimeConfig;
     this.diagnosticsRuntimeConfig = diagnosticsRuntimeConfig;
     this.filterRuntimeConfig = filterRuntimeConfig;
     this.embedLoadPolicyRuntimeConfig = embedLoadPolicyRuntimeConfig;
@@ -372,6 +378,7 @@ public class PreferencesDialog {
                 spellcheckSettingsBus,
                 runtimeConfig,
                 chatLoggingRuntimeConfig,
+                chatHistoryRuntimeConfig,
                 diagnosticsRuntimeConfig,
                 filterRuntimeConfig,
                 logProps,
@@ -435,6 +442,7 @@ public class PreferencesDialog {
                   applySnapshot,
                   runtimeConfig,
                   chatLoggingRuntimeConfig,
+                  chatHistoryRuntimeConfig,
                   diagnosticsRuntimeConfig,
                   filterRuntimeConfig,
                   embedLoadPolicyRuntimeConfig,
