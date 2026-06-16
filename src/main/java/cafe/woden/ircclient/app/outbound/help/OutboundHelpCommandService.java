@@ -6,7 +6,6 @@ import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpContributor;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.model.TargetRef;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -39,7 +38,9 @@ public final class OutboundHelpCommandService {
     this(
         ui,
         targetCoordinator,
-        loadInstalledContributors(contributors, installedPluginsProvider),
+        OutboundHelpPluginProviders.outboundHelpContributors(
+            contributors,
+            OutboundHelpPluginProviders.resolveInstalledPlugins(installedPluginsProvider)),
         slashCommandPresentationCatalog);
   }
 
@@ -50,7 +51,7 @@ public final class OutboundHelpCommandService {
       SlashCommandPresentationCatalog slashCommandPresentationCatalog) {
     this.ui = Objects.requireNonNull(ui, "ui");
     this.targetCoordinator = Objects.requireNonNull(targetCoordinator, "targetCoordinator");
-    this.contributors = nonNullContributors(contributors);
+    this.contributors = OutboundHelpPluginProviders.outboundHelpContributors(contributors, null);
     this.slashCommandPresentationCatalog =
         Objects.requireNonNull(slashCommandPresentationCatalog, "slashCommandPresentationCatalog");
     this.helpTopicHandlers = buildHelpTopicHandlers();
@@ -65,7 +66,7 @@ public final class OutboundHelpCommandService {
     this(
         ui,
         targetCoordinator,
-        loadInstalledContributors(contributors, installedPlugins),
+        OutboundHelpPluginProviders.outboundHelpContributors(contributors, installedPlugins),
         slashCommandPresentationCatalog);
   }
 
@@ -99,38 +100,6 @@ public final class OutboundHelpCommandService {
         out,
         "(help)",
         "Tip: /help edit, /help redact, /help markread, or /help upload for focused details.");
-  }
-
-  private static List<OutboundHelpContributor> loadInstalledContributors(
-      List<OutboundHelpContributor> contributors,
-      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
-    InstalledPluginsPort installedPlugins =
-        installedPluginsProvider == null ? null : installedPluginsProvider.getIfAvailable();
-    return loadInstalledContributors(contributors, installedPlugins);
-  }
-
-  private static List<OutboundHelpContributor> loadInstalledContributors(
-      List<OutboundHelpContributor> contributors, InstalledPluginsPort installedPlugins) {
-    List<OutboundHelpContributor> builtInContributors = nonNullContributors(contributors);
-    if (installedPlugins == null) {
-      return builtInContributors;
-    }
-    return nonNullContributors(
-        installedPlugins.loadInstalledServices(OutboundHelpContributor.class, builtInContributors));
-  }
-
-  private static List<OutboundHelpContributor> nonNullContributors(
-      List<OutboundHelpContributor> contributors) {
-    if (contributors == null || contributors.isEmpty()) {
-      return List.of();
-    }
-    ArrayList<OutboundHelpContributor> resolved = new ArrayList<>(contributors.size());
-    for (OutboundHelpContributor contributor : contributors) {
-      if (contributor != null) {
-        resolved.add(contributor);
-      }
-    }
-    return List.copyOf(resolved);
   }
 
   private Map<String, HelpTopicHandler> buildHelpTopicHandlers() {
