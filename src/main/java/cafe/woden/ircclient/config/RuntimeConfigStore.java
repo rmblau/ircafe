@@ -14,7 +14,6 @@ import cafe.woden.ircclient.config.api.InterceptorConfigPort;
 import cafe.woden.ircclient.config.api.IrcSessionRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.Ircv3CapabilityNameResolverPort;
 import cafe.woden.ircclient.config.api.Ircv3StsPolicyConfigPort;
-import cafe.woden.ircclient.config.api.MonitorRosterConfigPort;
 import cafe.woden.ircclient.config.api.NickColorOverridesConfigPort;
 import cafe.woden.ircclient.config.api.NickColorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.NotificationRule;
@@ -71,7 +70,6 @@ public class RuntimeConfigStore
         InterceptorConfigPort,
         Ircv3StsPolicyConfigPort,
         IrcSessionRuntimeConfigPort,
-        MonitorRosterConfigPort,
         NickColorOverridesConfigPort,
         NickColorRuntimeConfigPort,
         NotificationRuntimeConfigPort,
@@ -331,12 +329,10 @@ public class RuntimeConfigStore
     stores.serverStores.monitorRosterStore.forgetMonitorNick(serverId, nick);
   }
 
-  @Override
   public synchronized void replaceMonitorNicks(String serverId, List<String> nicks) {
     stores.serverStores.monitorRosterStore.replaceMonitorNicks(serverId, nicks);
   }
 
-  @Override
   public synchronized List<String> readMonitorNicks(String serverId) {
     return stores.serverStores.monitorRosterStore.readMonitorNicks(serverId);
   }
