@@ -12,7 +12,6 @@ import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicy
 import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
 import cafe.woden.ircclient.config.api.IgnoreRulesConfigPort;
 import cafe.woden.ircclient.config.api.InterceptorConfigPort;
-import cafe.woden.ircclient.config.api.InviteAutoJoinConfigPort;
 import cafe.woden.ircclient.config.api.IrcSessionRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.Ircv3CapabilityNameResolverPort;
 import cafe.woden.ircclient.config.api.Ircv3StsPolicyConfigPort;
@@ -66,7 +65,6 @@ public class RuntimeConfigStore
         ChatCommandRuntimeConfigPort,
         ChatHistoryRuntimeConfigPort,
         ChatLoggingRuntimeConfigPort,
-        InviteAutoJoinConfigPort,
         CtcpReplyRuntimeConfigPort,
         DiagnosticsRuntimeConfigPort,
         EmbedLoadPolicyConfigPort,
@@ -147,7 +145,6 @@ public class RuntimeConfigStore
    *
    * <p>Returns {@code defaultValue} when the key is missing or invalid.
    */
-  @Override
   public synchronized boolean readInviteAutoJoinEnabled(boolean defaultValue) {
     return stores.uiStores.uiFeatureToggleStore.readInviteAutoJoinEnabled(defaultValue);
   }
