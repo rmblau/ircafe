@@ -5,7 +5,13 @@ import java.util.List;
 import java.util.Set;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 
-/** Backend-specific mapping logic from discovery events to ephemeral server config. */
+/**
+ * ServiceLoader-backed backend-specific mapping logic from discovery events to ephemeral server
+ * config.
+ *
+ * <p>Plugins register implementations in {@code
+ * META-INF/services/cafe.woden.ircclient.bouncer.BouncerNetworkMappingStrategy}.
+ */
 @ApplicationLayer
 public interface BouncerNetworkMappingStrategy {
 

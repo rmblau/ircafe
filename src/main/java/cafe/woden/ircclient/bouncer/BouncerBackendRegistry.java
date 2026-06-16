@@ -27,17 +27,25 @@ public class BouncerBackendRegistry {
   public BouncerBackendRegistry(
       List<BouncerNetworkMappingStrategy> mappingStrategies,
       ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
-    this(loadInstalledStrategies(mappingStrategies, installedPluginsProvider));
+    this(
+        new ResolvedStrategies(
+            BouncerPluginProviders.networkMappingStrategies(
+                mappingStrategies,
+                BouncerPluginProviders.resolveInstalledPlugins(installedPluginsProvider))));
   }
 
   public BouncerBackendRegistry(List<BouncerNetworkMappingStrategy> mappingStrategies) {
-    this(mappingStrategies, (InstalledPluginsPort) null);
+    this(
+        new ResolvedStrategies(
+            BouncerPluginProviders.networkMappingStrategies(mappingStrategies, null)));
   }
 
   BouncerBackendRegistry(
       List<BouncerNetworkMappingStrategy> mappingStrategies,
       InstalledPluginsPort installedPlugins) {
-    this(loadInstalledStrategies(mappingStrategies, installedPlugins));
+    this(
+        new ResolvedStrategies(
+            BouncerPluginProviders.networkMappingStrategies(mappingStrategies, installedPlugins)));
   }
 
   private BouncerBackendRegistry(ResolvedStrategies resolvedStrategies) {
@@ -82,40 +90,6 @@ public class BouncerBackendRegistry {
 
   public Optional<BouncerBackendDescriptor> find(String backendId) {
     return Optional.ofNullable(byBackendId.get(normalize(backendId)));
-  }
-
-  private static ResolvedStrategies loadInstalledStrategies(
-      List<BouncerNetworkMappingStrategy> mappingStrategies,
-      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
-    InstalledPluginsPort installedPlugins =
-        installedPluginsProvider == null ? null : installedPluginsProvider.getIfAvailable();
-    return loadInstalledStrategies(mappingStrategies, installedPlugins);
-  }
-
-  private static ResolvedStrategies loadInstalledStrategies(
-      List<BouncerNetworkMappingStrategy> mappingStrategies,
-      InstalledPluginsPort installedPlugins) {
-    List<BouncerNetworkMappingStrategy> builtInStrategies = nonNullStrategies(mappingStrategies);
-    if (installedPlugins == null) {
-      return new ResolvedStrategies(builtInStrategies);
-    }
-    return new ResolvedStrategies(
-        installedPlugins.loadInstalledServices(
-            BouncerNetworkMappingStrategy.class, builtInStrategies));
-  }
-
-  private static List<BouncerNetworkMappingStrategy> nonNullStrategies(
-      List<BouncerNetworkMappingStrategy> mappingStrategies) {
-    if (mappingStrategies == null || mappingStrategies.isEmpty()) {
-      return List.of();
-    }
-    ArrayList<BouncerNetworkMappingStrategy> resolved = new ArrayList<>(mappingStrategies.size());
-    for (BouncerNetworkMappingStrategy strategy : mappingStrategies) {
-      if (strategy != null) {
-        resolved.add(strategy);
-      }
-    }
-    return List.copyOf(resolved);
   }
 
   private record ResolvedStrategies(List<BouncerNetworkMappingStrategy> strategies) {

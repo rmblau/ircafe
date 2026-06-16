@@ -1,7 +1,6 @@
 package cafe.woden.ircclient.bouncer;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -23,16 +22,22 @@ public class BouncerDiscoveryEventDispatcher implements BouncerDiscoveryEventPor
   public BouncerDiscoveryEventDispatcher(
       List<BouncerBackendDiscoveryHandler> handlers,
       ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
-    this(loadInstalledHandlers(handlers, installedPluginsProvider));
+    this(
+        new ResolvedHandlers(
+            BouncerPluginProviders.backendDiscoveryHandlers(
+                handlers,
+                BouncerPluginProviders.resolveInstalledPlugins(installedPluginsProvider))));
   }
 
   public BouncerDiscoveryEventDispatcher(List<BouncerBackendDiscoveryHandler> handlers) {
-    this(handlers, (InstalledPluginsPort) null);
+    this(new ResolvedHandlers(BouncerPluginProviders.backendDiscoveryHandlers(handlers, null)));
   }
 
   BouncerDiscoveryEventDispatcher(
       List<BouncerBackendDiscoveryHandler> handlers, InstalledPluginsPort installedPlugins) {
-    this(loadInstalledHandlers(handlers, installedPlugins));
+    this(
+        new ResolvedHandlers(
+            BouncerPluginProviders.backendDiscoveryHandlers(handlers, installedPlugins)));
   }
 
   private BouncerDiscoveryEventDispatcher(ResolvedHandlers resolvedHandlers) {
@@ -60,39 +65,6 @@ public class BouncerDiscoveryEventDispatcher implements BouncerDiscoveryEventPor
     BouncerBackendDiscoveryHandler handler = handlersByBackend.get(normalize(backendId));
     if (handler == null) return;
     handler.onOriginDisconnected(originServerId);
-  }
-
-  private static ResolvedHandlers loadInstalledHandlers(
-      List<BouncerBackendDiscoveryHandler> handlers,
-      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
-    InstalledPluginsPort installedPlugins =
-        installedPluginsProvider == null ? null : installedPluginsProvider.getIfAvailable();
-    return loadInstalledHandlers(handlers, installedPlugins);
-  }
-
-  private static ResolvedHandlers loadInstalledHandlers(
-      List<BouncerBackendDiscoveryHandler> handlers, InstalledPluginsPort installedPlugins) {
-    List<BouncerBackendDiscoveryHandler> builtInHandlers = nonNullHandlers(handlers);
-    if (installedPlugins == null) {
-      return new ResolvedHandlers(builtInHandlers);
-    }
-    return new ResolvedHandlers(
-        installedPlugins.loadInstalledServices(
-            BouncerBackendDiscoveryHandler.class, builtInHandlers));
-  }
-
-  private static List<BouncerBackendDiscoveryHandler> nonNullHandlers(
-      List<BouncerBackendDiscoveryHandler> handlers) {
-    if (handlers == null || handlers.isEmpty()) {
-      return List.of();
-    }
-    ArrayList<BouncerBackendDiscoveryHandler> resolved = new ArrayList<>(handlers.size());
-    for (BouncerBackendDiscoveryHandler handler : handlers) {
-      if (handler != null) {
-        resolved.add(handler);
-      }
-    }
-    return List.copyOf(resolved);
   }
 
   private record ResolvedHandlers(List<BouncerBackendDiscoveryHandler> handlers) {
