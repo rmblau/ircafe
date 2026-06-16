@@ -7,6 +7,7 @@ import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
 import cafe.woden.ircclient.config.api.NickColorRuntimeConfigPort;
@@ -192,7 +193,7 @@ final class PreferencesCommitSupport {
         request.pendingEmbedLoadPolicy().get() != null
             ? request.pendingEmbedLoadPolicy().get()
             : EmbedLoadPolicySnapshot.defaults();
-    request.runtimeConfig().rememberEmbedLoadPolicy(embedPolicy);
+    request.embedLoadPolicyRuntimeConfig().rememberEmbedLoadPolicy(embedPolicy);
     if (request.embedLoadPolicyBus() != null) {
       request.embedLoadPolicyBus().set(embedPolicy);
     }
@@ -232,6 +233,7 @@ final class PreferencesCommitSupport {
       ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
       DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,
       FilterSettingsConfigPort filterRuntimeConfig,
+      EmbedLoadPolicyConfigPort embedLoadPolicyRuntimeConfig,
       CtcpReplyRuntimeConfigPort ctcpRuntimeConfig,
       OutgoingMessageRuntimeConfigPort outgoingRuntimeConfig,
       TimestampRuntimeConfigPort timestampRuntimeConfig,

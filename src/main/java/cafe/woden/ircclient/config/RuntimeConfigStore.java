@@ -4,7 +4,6 @@ import cafe.woden.ircclient.config.api.AppearanceRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatHistoryRuntimeConfigPort;
-import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.config.api.IrcSessionRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.Ircv3CapabilityNameResolverPort;
@@ -49,7 +48,6 @@ public class RuntimeConfigStore
     implements AppearanceRuntimeConfigPort,
         ChatBehaviorRuntimeConfigPort,
         ChatHistoryRuntimeConfigPort,
-        EmbedLoadPolicyConfigPort,
         IrcSessionRuntimeConfigPort,
         ServerTreeBuiltInVisibilityConfigPort,
         ServerTreeChannelStateConfigPort,

@@ -7,6 +7,7 @@ import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
@@ -85,6 +86,7 @@ public class PreferencesDialog {
   private final ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig;
   private final DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig;
   private final FilterSettingsConfigPort filterRuntimeConfig;
+  private final EmbedLoadPolicyConfigPort embedLoadPolicyRuntimeConfig;
   private final CtcpReplyRuntimeConfigPort ctcpRuntimeConfig;
   private final OutgoingMessageRuntimeConfigPort outgoingRuntimeConfig;
   private final TimestampRuntimeConfigPort timestampRuntimeConfig;
@@ -135,6 +137,7 @@ public class PreferencesDialog {
       ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
       DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,
       FilterSettingsConfigPort filterRuntimeConfig,
+      EmbedLoadPolicyConfigPort embedLoadPolicyRuntimeConfig,
       CtcpReplyRuntimeConfigPort ctcpRuntimeConfig,
       OutgoingMessageRuntimeConfigPort outgoingRuntimeConfig,
       TimestampRuntimeConfigPort timestampRuntimeConfig,
@@ -180,6 +183,7 @@ public class PreferencesDialog {
         chatLoggingRuntimeConfig,
         diagnosticsRuntimeConfig,
         filterRuntimeConfig,
+        embedLoadPolicyRuntimeConfig,
         ctcpRuntimeConfig,
         outgoingRuntimeConfig,
         timestampRuntimeConfig,
@@ -229,6 +233,7 @@ public class PreferencesDialog {
       ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
       DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,
       FilterSettingsConfigPort filterRuntimeConfig,
+      EmbedLoadPolicyConfigPort embedLoadPolicyRuntimeConfig,
       CtcpReplyRuntimeConfigPort ctcpRuntimeConfig,
       OutgoingMessageRuntimeConfigPort outgoingRuntimeConfig,
       TimestampRuntimeConfigPort timestampRuntimeConfig,
@@ -275,6 +280,7 @@ public class PreferencesDialog {
     this.chatLoggingRuntimeConfig = chatLoggingRuntimeConfig;
     this.diagnosticsRuntimeConfig = diagnosticsRuntimeConfig;
     this.filterRuntimeConfig = filterRuntimeConfig;
+    this.embedLoadPolicyRuntimeConfig = embedLoadPolicyRuntimeConfig;
     this.ctcpRuntimeConfig = ctcpRuntimeConfig;
     this.outgoingRuntimeConfig = outgoingRuntimeConfig;
     this.timestampRuntimeConfig = timestampRuntimeConfig;
@@ -347,7 +353,7 @@ public class PreferencesDialog {
             new java.util.concurrent.atomic.AtomicReference<>(
                 embedLoadPolicyBus != null
                     ? embedLoadPolicyBus.get()
-                    : runtimeConfig.readEmbedLoadPolicy());
+                    : embedLoadPolicyRuntimeConfig.readEmbedLoadPolicy());
 
     PreferencesDialogControls controls =
         PreferencesDialogControls.build(
@@ -431,6 +437,7 @@ public class PreferencesDialog {
                   chatLoggingRuntimeConfig,
                   diagnosticsRuntimeConfig,
                   filterRuntimeConfig,
+                  embedLoadPolicyRuntimeConfig,
                   ctcpRuntimeConfig,
                   outgoingRuntimeConfig,
                   timestampRuntimeConfig,
