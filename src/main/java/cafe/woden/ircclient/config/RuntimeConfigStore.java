@@ -26,7 +26,6 @@ import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuil
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeRootSiblingOrder;
 import cafe.woden.ircclient.config.api.ServerTreeRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.SpellcheckRuntimeConfigPort;
-import cafe.woden.ircclient.config.api.TimestampRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.TrayRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
@@ -71,7 +70,6 @@ public class RuntimeConfigStore
         ServerTreeRuntimeConfigPort,
         ServerAutoConnectRuntimeConfigPort,
         SpellcheckRuntimeConfigPort,
-        TimestampRuntimeConfigPort,
         TrayRuntimeConfigPort,
         UiShellRuntimeConfigPort,
         UiSettingsRuntimeConfigPort,
@@ -1252,22 +1250,18 @@ public class RuntimeConfigStore
     stores.uiStores.nickColorStore.rememberMinContrast(minContrast);
   }
 
-  @Override
   public synchronized void rememberTimestampsEnabled(boolean enabled) {
     stores.uiStores.timestampStore.rememberEnabled(enabled);
   }
 
-  @Override
   public synchronized void rememberTimestampFormat(String format) {
     stores.uiStores.timestampStore.rememberFormat(format);
   }
 
-  @Override
   public synchronized void rememberTimestampsIncludeChatMessages(boolean includeChatMessages) {
     stores.uiStores.timestampStore.rememberIncludeChatMessages(includeChatMessages);
   }
 
-  @Override
   public synchronized void rememberTimestampsIncludePresenceMessages(
       boolean includePresenceMessages) {
     stores.uiStores.timestampStore.rememberIncludePresenceMessages(includePresenceMessages);

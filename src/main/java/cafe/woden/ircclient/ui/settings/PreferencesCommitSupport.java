@@ -7,6 +7,7 @@ import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.config.api.OutgoingMessageRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.TimestampRuntimeConfigPort;
 import cafe.woden.ircclient.irc.backend.IrcHeartbeatMaintenanceService;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.notifications.api.IrcEventNotificationRulesPort;
@@ -140,7 +141,8 @@ final class PreferencesCommitSupport {
     Ircv3PanelSupport.persistCapabilities(runtimeConfig, snapshot.ircv3Capabilities());
     NickColorControlsSupport.rememberSettings(
         runtimeConfig, request.nickColorSettingsBus(), snapshot.nickColor());
-    TimestampControlsSupport.rememberSettings(runtimeConfig, snapshot.timestamp());
+    TimestampControlsSupport.rememberSettings(
+        request.timestampRuntimeConfig(), snapshot.timestamp());
     HistoryControlsSupport.rememberSettings(runtimeConfig, snapshot.history());
     FilterSettingsApplySupport.applyFromUi(
         request.filters(),
@@ -215,6 +217,7 @@ final class PreferencesCommitSupport {
       RuntimeConfigStore runtimeConfig,
       CtcpReplyRuntimeConfigPort ctcpRuntimeConfig,
       OutgoingMessageRuntimeConfigPort outgoingRuntimeConfig,
+      TimestampRuntimeConfigPort timestampRuntimeConfig,
       UiSettingsBus settingsBus,
       SpellcheckSettingsBus spellcheckSettingsBus,
       ThemeAccentSettingsBus accentSettingsBus,
