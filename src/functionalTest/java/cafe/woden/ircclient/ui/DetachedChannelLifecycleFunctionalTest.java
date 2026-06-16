@@ -19,6 +19,7 @@ import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
+import cafe.woden.ircclient.config.RuntimeConfigConnectionAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.config.properties.LogProperties;
@@ -335,7 +336,7 @@ class DetachedChannelLifecycleFunctionalTest {
             ui,
             serverRegistry,
             serverCatalog,
-            runtimeConfig,
+            new RuntimeConfigConnectionAdapter(runtimeConfig),
             logProps,
             tray);
 

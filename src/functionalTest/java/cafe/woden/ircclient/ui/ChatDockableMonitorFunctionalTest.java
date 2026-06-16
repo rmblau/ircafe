@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.app.api.ChannelMetadataPort;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
+import cafe.woden.ircclient.config.RuntimeConfigMonitorRosterAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.dcc.DccTransferStore;
@@ -109,7 +110,8 @@ class ChatDockableMonitorFunctionalTest {
     RuntimeConfigStore runtimeConfig =
         RuntimeConfigStoreTestFixtures.storeWithServers(
             tempDir.resolve("ircafe.yml"), server("libera"));
-    MonitorListService monitorListService = new MonitorListService(runtimeConfig);
+    MonitorListService monitorListService =
+        new MonitorListService(new RuntimeConfigMonitorRosterAdapter(runtimeConfig));
 
     ChatTranscriptStore transcripts = mock(ChatTranscriptStore.class);
     ServerTreeDockable serverTree = mock(ServerTreeDockable.class);

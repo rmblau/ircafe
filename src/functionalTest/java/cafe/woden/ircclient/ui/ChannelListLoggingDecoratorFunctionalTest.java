@@ -10,6 +10,7 @@ import cafe.woden.ircclient.app.api.ChannelMetadataPort;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
+import cafe.woden.ircclient.config.RuntimeConfigMonitorRosterAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.config.properties.LogProperties;
@@ -161,7 +162,8 @@ class ChannelListLoggingDecoratorFunctionalTest {
     IgnoreListService ignoreListService = mock(IgnoreListService.class);
     IgnoreStatusService ignoreStatusService = mock(IgnoreStatusService.class);
     IgnoreListDialog ignoreListDialog = mock(IgnoreListDialog.class);
-    MonitorListService monitorListService = new MonitorListService(runtimeConfig);
+    MonitorListService monitorListService =
+        new MonitorListService(new RuntimeConfigMonitorRosterAdapter(runtimeConfig));
     UserListStore userListStore = mock(UserListStore.class);
     when(userListStore.get(anyString(), anyString())).thenReturn(List.of());
     NickContextMenuFactory nickContextMenuFactory = new NickContextMenuFactory();

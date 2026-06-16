@@ -6,6 +6,7 @@ import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
+import cafe.woden.ircclient.config.api.OutgoingMessageRuntimeConfigPort;
 import cafe.woden.ircclient.irc.backend.IrcHeartbeatMaintenanceService;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.notifications.api.IrcEventNotificationRulesPort;
@@ -148,7 +149,8 @@ final class PreferencesCommitSupport {
         request.targetCoordinator(),
         request.transcriptRebuildService());
     LoggingControlsSupport.rememberSettings(runtimeConfig, snapshot.logging());
-    OutgoingColorControlsSupport.rememberSettings(runtimeConfig, snapshot.outgoingLine());
+    OutgoingColorControlsSupport.rememberSettings(
+        request.outgoingRuntimeConfig(), snapshot.outgoingLine());
     NotificationRulesControlsSupport.rememberSettings(runtimeConfig, snapshot.notification());
     IrcEventNotificationsTabSupport.rememberSettings(
         runtimeConfig, request.ircEventNotificationRulesBus(), snapshot.ircEventNotification());
@@ -212,6 +214,7 @@ final class PreferencesCommitSupport {
       PreferencesApplySupport.Snapshot snapshot,
       RuntimeConfigStore runtimeConfig,
       CtcpReplyRuntimeConfigPort ctcpRuntimeConfig,
+      OutgoingMessageRuntimeConfigPort outgoingRuntimeConfig,
       UiSettingsBus settingsBus,
       SpellcheckSettingsBus spellcheckSettingsBus,
       ThemeAccentSettingsBus accentSettingsBus,
