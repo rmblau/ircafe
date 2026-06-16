@@ -55,7 +55,7 @@ public class LinkPreviewFetchService {
       List<LinkPreviewResolver> resolvers,
       InstalledPluginsPort installedPlugins) {
     this.proxyResolver = proxyResolver;
-    this.resolvers = loadInstalledResolvers(resolvers, installedPlugins);
+    this.resolvers = LinkPreviewPluginProviders.linkPreviewResolvers(resolvers, installedPlugins);
     this.httpHeaderProviders = loadInstalledHeaderProviders(installedPlugins);
   }
 
@@ -68,16 +68,6 @@ public class LinkPreviewFetchService {
       InstalledPluginsPort installedPlugins) {
     return EmbedHttpHeaderProviders.loadInstalledProviders(
         installedPlugins, PreviewHttpHeaderProvider.class);
-  }
-
-  private static List<LinkPreviewResolver> loadInstalledResolvers(
-      List<LinkPreviewResolver> resolvers, InstalledPluginsPort installedPlugins) {
-    List<LinkPreviewResolver> builtInResolvers =
-        List.copyOf(Objects.requireNonNullElse(resolvers, List.of()));
-    if (installedPlugins == null) {
-      return builtInResolvers;
-    }
-    return installedPlugins.loadInstalledServices(LinkPreviewResolver.class, builtInResolvers);
   }
 
   public Single<LinkPreview> fetch(String serverId, String url) {

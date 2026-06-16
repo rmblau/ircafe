@@ -28,9 +28,8 @@ class NewsPublisherProfileProviderPluginTest {
         () -> runtimeConfigDirectory.resolve("ircafe.yml");
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
 
-    List<NewsPublisherProfileProvider> providers =
-        installedPlugins.loadInstalledServices(NewsPublisherProfileProvider.class, List.of());
-    List<NewsPublisherProfile> profiles = NewsPreviewUtil.publisherProfilesFromProviders(providers);
+    List<NewsPublisherProfile> profiles =
+        LinkPreviewPluginProviders.newsPublisherProfiles(installedPlugins);
 
     String url = "https://pluginpublisher.example/story/plugin-article-123456";
     assertTrue(NewsPreviewUtil.isLikelyNewsArticleUri(URI.create(url), profiles));
