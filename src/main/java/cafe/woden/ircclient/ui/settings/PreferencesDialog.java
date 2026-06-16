@@ -4,6 +4,7 @@ import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatHistoryRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
@@ -84,6 +85,7 @@ public class PreferencesDialog {
   private final ChatThemeSettingsBus chatThemeSettingsBus;
   private final SpellcheckSettingsBus spellcheckSettingsBus;
   private final RuntimeConfigStore runtimeConfig;
+  private final ChatBehaviorRuntimeConfigPort chatBehaviorRuntimeConfig;
   private final ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig;
   private final ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig;
   private final DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig;
@@ -136,6 +138,7 @@ public class PreferencesDialog {
       ChatThemeSettingsBus chatThemeSettingsBus,
       SpellcheckSettingsBus spellcheckSettingsBus,
       RuntimeConfigStore runtimeConfig,
+      ChatBehaviorRuntimeConfigPort chatBehaviorRuntimeConfig,
       ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
       ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig,
       DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,
@@ -183,6 +186,7 @@ public class PreferencesDialog {
         chatThemeSettingsBus,
         spellcheckSettingsBus,
         runtimeConfig,
+        chatBehaviorRuntimeConfig,
         chatLoggingRuntimeConfig,
         chatHistoryRuntimeConfig,
         diagnosticsRuntimeConfig,
@@ -234,6 +238,7 @@ public class PreferencesDialog {
       ChatThemeSettingsBus chatThemeSettingsBus,
       SpellcheckSettingsBus spellcheckSettingsBus,
       RuntimeConfigStore runtimeConfig,
+      ChatBehaviorRuntimeConfigPort chatBehaviorRuntimeConfig,
       ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
       ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig,
       DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,
@@ -282,6 +287,7 @@ public class PreferencesDialog {
     this.chatThemeSettingsBus = chatThemeSettingsBus;
     this.spellcheckSettingsBus = spellcheckSettingsBus;
     this.runtimeConfig = runtimeConfig;
+    this.chatBehaviorRuntimeConfig = chatBehaviorRuntimeConfig;
     this.chatLoggingRuntimeConfig = chatLoggingRuntimeConfig;
     this.chatHistoryRuntimeConfig = chatHistoryRuntimeConfig;
     this.diagnosticsRuntimeConfig = diagnosticsRuntimeConfig;
@@ -377,6 +383,7 @@ public class PreferencesDialog {
                 chatThemeSettingsBus,
                 spellcheckSettingsBus,
                 runtimeConfig,
+                chatBehaviorRuntimeConfig,
                 chatLoggingRuntimeConfig,
                 chatHistoryRuntimeConfig,
                 diagnosticsRuntimeConfig,
@@ -431,7 +438,7 @@ public class PreferencesDialog {
                         chatThemeSettingsBus,
                         embedCardStyleBus,
                         settingsBus,
-                        runtimeConfig,
+                        chatBehaviorRuntimeConfig,
                         diagnosticsRuntimeConfig));
           } catch (PreferencesApplySupport.ApplyException ex) {
             PreferencesUiSupport.showErrorMessage(dialog, ex.getMessage(), ex.title());
@@ -441,6 +448,7 @@ public class PreferencesDialog {
               new PreferencesCommitSupport.CommitRequest(
                   applySnapshot,
                   runtimeConfig,
+                  chatBehaviorRuntimeConfig,
                   chatLoggingRuntimeConfig,
                   chatHistoryRuntimeConfig,
                   diagnosticsRuntimeConfig,

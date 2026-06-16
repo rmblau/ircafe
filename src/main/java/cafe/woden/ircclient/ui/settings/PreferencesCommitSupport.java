@@ -4,6 +4,7 @@ import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatHistoryRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
@@ -70,7 +71,7 @@ final class PreferencesCommitSupport {
     UiSettings next = snapshot.next();
 
     ChatBehaviorControlsSupport.rememberServerTreeSettings(
-        request.runtimeConfig(), snapshot.chatBehavior());
+        request.chatBehaviorRuntimeConfig(), snapshot.chatBehavior());
     AppearanceControlsSupport.rememberServerTreeSettings(
         request.runtimeConfig(), snapshot.serverTreeAppearance());
     request
@@ -144,7 +145,8 @@ final class PreferencesCommitSupport {
     EmbedPreviewControlsSupport.rememberEmbedPreviewSettings(
         runtimeConfig, request.embedCardStyleBus(), snapshot.embedPreview());
     rememberEmbedLoadPolicy(request);
-    ChatBehaviorControlsSupport.rememberSettings(runtimeConfig, snapshot.chatBehavior());
+    ChatBehaviorControlsSupport.rememberSettings(
+        request.chatBehaviorRuntimeConfig(), snapshot.chatBehavior());
     CtcpAutoReplySupport.rememberSettings(request.ctcpRuntimeConfig(), snapshot.ctcpAutoReply());
     SpellcheckControlsSupport.rememberSettings(
         request.spellcheckRuntimeConfig(), snapshot.spellcheck());
@@ -231,6 +233,7 @@ final class PreferencesCommitSupport {
   record CommitRequest(
       PreferencesApplySupport.Snapshot snapshot,
       RuntimeConfigStore runtimeConfig,
+      ChatBehaviorRuntimeConfigPort chatBehaviorRuntimeConfig,
       ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
       ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig,
       DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,

@@ -1,7 +1,6 @@
 package cafe.woden.ircclient.config;
 
 import cafe.woden.ircclient.config.api.AppearanceRuntimeConfigPort;
-import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.config.api.IrcSessionRuntimeConfigPort;
@@ -45,7 +44,6 @@ import org.springframework.stereotype.Component;
 @ApplicationLayer
 public class RuntimeConfigStore
     implements AppearanceRuntimeConfigPort,
-        ChatBehaviorRuntimeConfigPort,
         IrcSessionRuntimeConfigPort,
         ServerTreeBuiltInVisibilityConfigPort,
         ServerTreeChannelStateConfigPort,
@@ -676,7 +674,6 @@ public class RuntimeConfigStore
     return stores.userCommandStore.readUnknownCommandAsRawEnabled(defaultValue);
   }
 
-  @Override
   public synchronized String readDefaultQuitMessage() {
     return stores.uiStores.chatBehaviorStore.readDefaultQuitMessage();
   }

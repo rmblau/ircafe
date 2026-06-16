@@ -189,7 +189,8 @@ record PreferencesDialogControls(
     JCheckBox ctcpRequestsInActiveTarget =
         ChatBehaviorControlsSupport.buildCtcpRequestsInActiveTargetCheckbox(request.current());
     JTextField defaultQuitMessage =
-        ChatBehaviorControlsSupport.buildDefaultQuitMessageField(request.runtimeConfig());
+        ChatBehaviorControlsSupport.buildDefaultQuitMessageField(
+            request.chatBehaviorRuntimeConfig());
     JCheckBox nickCompletionCycleWithTab =
         ChatBehaviorControlsSupport.buildNickCompletionCycleWithTabCheckbox(
             nickCompletionCycleWithTabEnabled(request));
@@ -227,7 +228,7 @@ record PreferencesDialogControls(
         ChatBehaviorControlsSupport.buildServerTreeNotificationBadgesCheckbox(request.current());
     JSpinner serverTreeUnreadBadgeScalePercent =
         ChatBehaviorControlsSupport.buildServerTreeUnreadBadgeScalePercentSpinner(
-            request.runtimeConfig());
+            request.chatBehaviorRuntimeConfig());
     Ircv3CapabilitiesControls ircv3Capabilities =
         Ircv3PanelSupport.buildCapabilitiesControls(
             request.runtimeConfig(), request.ircv3ExtensionCatalog());
@@ -489,6 +490,7 @@ record PreferencesDialogControls(
       ChatThemeSettingsBus chatThemeSettingsBus,
       SpellcheckSettingsBus spellcheckSettingsBus,
       RuntimeConfigStore runtimeConfig,
+      ChatBehaviorRuntimeConfigPort chatBehaviorRuntimeConfig,
       ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
       ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig,
       DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,

@@ -16,6 +16,7 @@ import cafe.woden.ircclient.app.commands.UserCommandAliasesBus;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.config.PushyPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatHistoryRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
@@ -325,8 +326,10 @@ class PreferencesDialogFunctionalTest {
   void ircv3PanelIncludesUnreadBadgeSizeControl() throws Exception {
     UiSettings current = testUiSettings();
     RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    ChatBehaviorRuntimeConfigPort chatBehaviorRuntimeConfig =
+        mock(ChatBehaviorRuntimeConfigPort.class);
     when(runtimeConfig.readIrcv3Capabilities()).thenReturn(Map.of());
-    when(runtimeConfig.readServerTreeUnreadBadgeScalePercent(100)).thenReturn(100);
+    when(chatBehaviorRuntimeConfig.readServerTreeUnreadBadgeScalePercent(100)).thenReturn(100);
 
     JCheckBox send = ChatBehaviorControlsSupport.buildTypingIndicatorsSendCheckbox(current);
     JCheckBox receive = ChatBehaviorControlsSupport.buildTypingIndicatorsReceiveCheckbox(current);
@@ -344,7 +347,8 @@ class PreferencesDialogFunctionalTest {
     JCheckBox badgesEnabled =
         ChatBehaviorControlsSupport.buildServerTreeNotificationBadgesCheckbox(current);
     JSpinner badgeScale =
-        ChatBehaviorControlsSupport.buildServerTreeUnreadBadgeScalePercentSpinner(runtimeConfig);
+        ChatBehaviorControlsSupport.buildServerTreeUnreadBadgeScalePercentSpinner(
+            chatBehaviorRuntimeConfig);
     Ircv3CapabilitiesControls capabilities =
         Ircv3PanelSupport.buildCapabilitiesControls(
             runtimeConfig, Ircv3ExtensionCatalog.builtInCatalog());
@@ -434,6 +438,7 @@ class PreferencesDialogFunctionalTest {
         mock(ChatThemeSettingsBus.class),
         mock(SpellcheckSettingsBus.class),
         mock(RuntimeConfigStore.class),
+        mock(ChatBehaviorRuntimeConfigPort.class),
         mock(ChatLoggingRuntimeConfigPort.class),
         mock(ChatHistoryRuntimeConfigPort.class),
         mock(DiagnosticsRuntimeConfigPort.class),

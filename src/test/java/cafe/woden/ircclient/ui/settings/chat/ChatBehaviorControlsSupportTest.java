@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JSpinner;
@@ -90,8 +90,8 @@ class ChatBehaviorControlsSupportTest {
             selected(false),
             spinner(25));
 
-    assertEquals(RuntimeConfigStore.DEFAULT_QUIT_MESSAGE, settings.defaultQuitMessage());
-    assertEquals(RuntimeConfigStore.DEFAULT_QUIT_MESSAGE, defaultQuitMessage.getText());
+    assertEquals(ChatBehaviorRuntimeConfigPort.DEFAULT_QUIT_MESSAGE, settings.defaultQuitMessage());
+    assertEquals(ChatBehaviorRuntimeConfigPort.DEFAULT_QUIT_MESSAGE, defaultQuitMessage.getText());
     assertEquals("dots", settings.typingIndicatorsTreeStyle());
     assertEquals("compact", settings.matrixUserListNameDisplayMode());
     assertEquals(50, settings.serverTreeUnreadBadgeScalePercent());
@@ -99,7 +99,7 @@ class ChatBehaviorControlsSupportTest {
 
   @Test
   void rememberSettingsPersistsChatBehaviorSettings() {
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    ChatBehaviorRuntimeConfigPort runtimeConfig = mock(ChatBehaviorRuntimeConfigPort.class);
     ChatBehaviorControlsSupport.ChatBehaviorSettings settings =
         new ChatBehaviorControlsSupport.ChatBehaviorSettings(
             true,
