@@ -115,25 +115,20 @@ public class MessageInputPanel extends JPanel {
     this.settingsBus = settingsBus;
     this.spellcheckSettingsBus = spellcheckSettingsBus;
     List<MatrixUploadMsgTypeProvider> matrixUploadMsgTypeProviders =
-        installedPlugins == null
-            ? List.of()
-            : installedPlugins.loadInstalledServices(MatrixUploadMsgTypeProvider.class, List.of());
+        MessageInputPluginProviders.matrixUploadMsgTypeProviders(installedPlugins);
     this.matrixUploadUxMode = new MatrixMessageInputUploadUxMode(matrixUploadMsgTypeProviders);
 
     this.undoSupport = new MessageInputUndoSupport(input, () -> programmaticEdit);
     SpellcheckSettings spellcheck =
         spellcheckSettingsBus != null ? spellcheckSettingsBus.get() : SpellcheckSettings.defaults();
     List<MessageInputSpellcheckDictionaryProvider> spellcheckDictionaryProviders =
-        installedPlugins == null
-            ? List.of()
-            : installedPlugins.loadInstalledServices(
-                MessageInputSpellcheckDictionaryProvider.class, List.of());
+        MessageInputPluginProviders.spellcheckDictionaryProviders(installedPlugins);
     this.spellcheckSupport =
         new MessageInputSpellcheckSupport(input, spellcheck, spellcheckDictionaryProviders);
     this.spellcheckHoverPopupSupport =
         new MessageInputSpellcheckHoverPopupSupport(this, input, spellcheckSupport, spellcheck);
     MessageInputWordSuggestionProvider wordSuggestionProvider =
-        CompositeMessageInputWordSuggestionProvider.from(spellcheckSupport, installedPlugins);
+        MessageInputPluginProviders.wordSuggestionProvider(spellcheckSupport, installedPlugins);
     this.nickCompletionSupport =
         new MessageInputNickCompletionSupport(
             this,

@@ -31,7 +31,7 @@ class MatrixUploadMsgTypeProviderPluginTest {
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
 
     List<MatrixUploadMsgTypeProvider> providers =
-        installedPlugins.loadInstalledServices(MatrixUploadMsgTypeProvider.class, List.of());
+        MessageInputPluginProviders.matrixUploadMsgTypeProviders(installedPlugins);
     MatrixMessageInputUploadUxMode mode = new MatrixMessageInputUploadUxMode(providers);
     UploadContext context = new UploadContext(tempDir.resolve("party.sticker").toFile());
 

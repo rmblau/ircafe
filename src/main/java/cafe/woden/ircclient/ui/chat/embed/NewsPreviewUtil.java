@@ -19,9 +19,13 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /** Heuristics for richer previews on article-like news pages. */
 final class NewsPreviewUtil {
+
+  private static final Logger log = LoggerFactory.getLogger(NewsPreviewUtil.class);
 
   private NewsPreviewUtil() {}
 
@@ -119,8 +123,8 @@ final class NewsPreviewUtil {
           "wall street journal",
           "washington post");
 
-  private static final PublisherProfile DEFAULT_PROFILE =
-      new PublisherProfile(
+  private static final NewsPublisherProfile DEFAULT_PROFILE =
+      new NewsPublisherProfile(
           "generic",
           "News",
           GENERIC_PARAGRAPH_SELECTORS,
@@ -129,9 +133,9 @@ final class NewsPreviewUtil {
           GENERIC_AUTHOR_META_KEYS,
           GENERIC_DATE_META_KEYS);
 
-  private static final List<PublisherProfile> PUBLISHER_PROFILES =
+  private static final List<NewsPublisherProfile> PUBLISHER_PROFILES =
       List.of(
-          new PublisherProfile(
+          new NewsPublisherProfile(
               "abc",
               "ABC News",
               new String[] {"article p", "main article p", "section article p"},
@@ -139,7 +143,7 @@ final class NewsPreviewUtil {
               GENERIC_IMAGE_SELECTORS,
               new String[] {"author", "article:author", "parsely-author"},
               new String[] {"article:published_time", "parsely-pub-date", "date"}),
-          new PublisherProfile(
+          new NewsPublisherProfile(
               "reuters",
               "Reuters",
               new String[] {
@@ -158,7 +162,7 @@ final class NewsPreviewUtil {
               GENERIC_IMAGE_SELECTORS,
               new String[] {"author", "article:author", "parsely-author"},
               new String[] {"article:published_time", "parsely-pub-date", "date"}),
-          new PublisherProfile(
+          new NewsPublisherProfile(
               "ap",
               "AP News",
               new String[] {
@@ -171,7 +175,7 @@ final class NewsPreviewUtil {
               GENERIC_IMAGE_SELECTORS,
               new String[] {"author", "article:author", "parsely-author"},
               new String[] {"article:published_time", "parsely-pub-date", "date"}),
-          new PublisherProfile(
+          new NewsPublisherProfile(
               "nyt",
               "New York Times",
               new String[] {"section[name='articleBody'] p", "article section p", "article p"},
@@ -179,7 +183,7 @@ final class NewsPreviewUtil {
               GENERIC_IMAGE_SELECTORS,
               new String[] {"byl", "author", "article:author", "parsely-author"},
               new String[] {"article:published_time", "ptime", "parsely-pub-date", "date"}),
-          new PublisherProfile(
+          new NewsPublisherProfile(
               "bbc",
               "BBC",
               new String[] {"article [data-component='text-block'] p", "article p", "main p"},
@@ -191,7 +195,7 @@ final class NewsPreviewUtil {
               GENERIC_IMAGE_SELECTORS,
               new String[] {"byl", "author", "article:author"},
               new String[] {"article:published_time", "article:modified_time", "date"}),
-          new PublisherProfile(
+          new NewsPublisherProfile(
               "cnn",
               "CNN",
               new String[] {
@@ -208,7 +212,7 @@ final class NewsPreviewUtil {
               new String[] {
                 "article:published_time", "og:updated_time", "parsely-pub-date", "date"
               }),
-          new PublisherProfile(
+          new NewsPublisherProfile(
               "wapo",
               "Washington Post",
               new String[] {
@@ -220,7 +224,7 @@ final class NewsPreviewUtil {
               GENERIC_IMAGE_SELECTORS,
               new String[] {"author", "article:author", "parsely-author"},
               new String[] {"article:published_time", "parsely-pub-date", "date"}),
-          new PublisherProfile(
+          new NewsPublisherProfile(
               "guardian",
               "The Guardian",
               new String[] {
@@ -233,7 +237,7 @@ final class NewsPreviewUtil {
               GENERIC_IMAGE_SELECTORS,
               new String[] {"author", "article:author", "parsely-author"},
               new String[] {"article:published_time", "parsely-pub-date", "date"}),
-          new PublisherProfile(
+          new NewsPublisherProfile(
               "npr",
               "NPR",
               new String[] {
@@ -247,7 +251,7 @@ final class NewsPreviewUtil {
               GENERIC_IMAGE_SELECTORS,
               new String[] {"author", "article:author", "dc.creator", "parsely-author"},
               new String[] {"article:published_time", "parsely-pub-date", "date", "dc.date"}),
-          new PublisherProfile(
+          new NewsPublisherProfile(
               "wsj",
               "Wall Street Journal",
               new String[] {
@@ -264,23 +268,57 @@ final class NewsPreviewUtil {
                 "article:published_time", "article:modified_time", "parsely-pub-date", "date"
               }));
 
+  static List<NewsPublisherProfile> defaultPublisherProfiles() {
+    return PUBLISHER_PROFILES;
+  }
+
+  static List<NewsPublisherProfile> publisherProfilesFromProviders(
+      List<NewsPublisherProfileProvider> providers) {
+    ArrayList<NewsPublisherProfile> profiles = new ArrayList<>(PUBLISHER_PROFILES);
+    for (NewsPublisherProfileProvider provider :
+        Objects.requireNonNullElse(providers, List.<NewsPublisherProfileProvider>of())) {
+      if (provider == null) continue;
+      try {
+        List<NewsPublisherProfile> contributed = provider.publisherProfiles();
+        if (contributed == null || contributed.isEmpty()) continue;
+        for (NewsPublisherProfile profile : contributed) {
+          if (profile != null) profiles.add(profile);
+        }
+      } catch (RuntimeException ex) {
+        log.warn(
+            "[ircafe] failed to load news publisher profiles from {}",
+            provider.getClass().getName(),
+            ex);
+      }
+    }
+    return List.copyOf(profiles);
+  }
+
   static boolean isLikelyNewsArticleUrl(String url) {
+    return isLikelyNewsArticleUrl(url, PUBLISHER_PROFILES);
+  }
+
+  static boolean isLikelyNewsArticleUrl(String url, List<NewsPublisherProfile> publisherProfiles) {
     if (url == null || url.isBlank()) return false;
     try {
-      return isLikelyNewsArticleUri(URI.create(url));
+      return isLikelyNewsArticleUri(URI.create(url), publisherProfiles);
     } catch (Exception ignored) {
       return false;
     }
   }
 
   static boolean isLikelyNewsArticleUri(URI uri) {
+    return isLikelyNewsArticleUri(uri, PUBLISHER_PROFILES);
+  }
+
+  static boolean isLikelyNewsArticleUri(URI uri, List<NewsPublisherProfile> publisherProfiles) {
     if (uri == null) return false;
     String host = normalizeHost(uri.getHost());
     if (host == null) return false;
 
     String path = safe(uri.getPath());
     String query = safe(uri.getQuery());
-    boolean knownHost = publisherKeyForHost(host) != null;
+    boolean knownHost = publisherKeyForHost(host, publisherProfiles) != null;
     boolean genericNewsHost = host.contains("news");
 
     if (!knownHost && !genericNewsHost) {
@@ -309,6 +347,11 @@ final class NewsPreviewUtil {
   }
 
   static LinkPreview parseArticleDocument(Document doc, String originalUrl) {
+    return parseArticleDocument(doc, originalUrl, PUBLISHER_PROFILES);
+  }
+
+  static LinkPreview parseArticleDocument(
+      Document doc, String originalUrl, List<NewsPublisherProfile> publisherProfiles) {
     if (doc == null) return null;
 
     LinkPreview base = LinkPreviewParser.parse(doc, originalUrl);
@@ -316,21 +359,24 @@ final class NewsPreviewUtil {
     URI canonicalUri = safeUri(canonical);
     String host =
         canonicalUri != null ? normalizeHost(canonicalUri.getHost()) : hostOf(originalUrl);
-    PublisherProfile profile = profileForHost(host);
+    NewsPublisherProfile profile = profileForHost(host, publisherProfiles);
 
     boolean likelyByUrl =
-        isLikelyNewsArticleUri(canonicalUri) || isLikelyNewsArticleUrl(originalUrl);
+        isLikelyNewsArticleUri(canonicalUri, publisherProfiles)
+            || isLikelyNewsArticleUrl(originalUrl, publisherProfiles);
     boolean likelyBySite = isLikelyNewsSiteName(base.siteName());
     boolean likelyByDoc = isLikelyNewsDocument(doc, profile);
     if (!likelyByUrl && !likelyBySite && !likelyByDoc) return null;
 
     List<String> ldJsonBlocks = extractLdJsonBlocks(doc);
 
+    String normalizedSiteName = normalizePublisherName(base.siteName());
+    if (normalizedSiteName != null && host != null && normalizedSiteName.equalsIgnoreCase(host)) {
+      normalizedSiteName = null;
+    }
     String publisher =
         firstNonBlank(
-            normalizePublisherName(base.siteName()),
-            profile.displayName(),
-            publisherFromHost(host));
+            normalizedSiteName, profile.displayName(), publisherFromHost(host, publisherProfiles));
 
     String title = cleanTitle(firstNonBlank(base.title(), doc.title()), publisher);
     if (title == null) {
@@ -388,7 +434,7 @@ final class NewsPreviewUtil {
     return count;
   }
 
-  private static boolean isLikelyNewsDocument(Document doc, PublisherProfile profile) {
+  private static boolean isLikelyNewsDocument(Document doc, NewsPublisherProfile profile) {
     String ogType = safe(meta(doc, "og:type"));
     if (ogType != null && ogType.toLowerCase(Locale.ROOT).contains("article")) return true;
 
@@ -432,13 +478,13 @@ final class NewsPreviewUtil {
     return out;
   }
 
-  private static String authorFromMeta(Document doc, PublisherProfile profile) {
+  private static String authorFromMeta(Document doc, NewsPublisherProfile profile) {
     String v = firstMetaValue(doc, profile.authorMetaKeys());
     if (v != null) return v;
     return firstMetaValue(doc, GENERIC_AUTHOR_META_KEYS);
   }
 
-  private static String authorFromBylineSelectors(Document doc, PublisherProfile profile) {
+  private static String authorFromBylineSelectors(Document doc, NewsPublisherProfile profile) {
     String fromProfile = firstTextBySelectors(doc, profile.bylineSelectors(), 140);
     if (fromProfile != null) return fromProfile;
     return firstTextBySelectors(doc, GENERIC_BYLINE_SELECTORS, 140);
@@ -463,7 +509,7 @@ final class NewsPreviewUtil {
     return null;
   }
 
-  private static LocalDate dateFromMeta(Document doc, PublisherProfile profile) {
+  private static LocalDate dateFromMeta(Document doc, NewsPublisherProfile profile) {
     String v = firstMetaValue(doc, profile.dateMetaKeys());
     LocalDate d = parseLocalDate(v);
     if (d != null) return d;
@@ -518,14 +564,14 @@ final class NewsPreviewUtil {
     return null;
   }
 
-  private static String imageFromSelectors(Document doc, PublisherProfile profile) {
+  private static String imageFromSelectors(Document doc, NewsPublisherProfile profile) {
     String fromProfile = firstImageBySelectors(doc, profile.imageSelectors());
     if (fromProfile != null) return fromProfile;
     return firstImageBySelectors(doc, GENERIC_IMAGE_SELECTORS);
   }
 
   private static String summaryFromDocument(
-      Document doc, PublisherProfile profile, String title, String fallbackDescription) {
+      Document doc, NewsPublisherProfile profile, String title, String fallbackDescription) {
     LinkedHashSet<String> paragraphs = new LinkedHashSet<>();
     collectParagraphs(doc, paragraphs, profile.paragraphSelectors(), title, 8, 3600);
     if (paragraphs.size() < 2) {
@@ -727,27 +773,53 @@ final class NewsPreviewUtil {
   }
 
   private static String publisherFromHost(String host) {
-    PublisherProfile profile = profileForHost(host);
+    return publisherFromHost(host, PUBLISHER_PROFILES);
+  }
+
+  private static String publisherFromHost(
+      String host, List<NewsPublisherProfile> publisherProfiles) {
+    NewsPublisherProfile profile = profileForHost(host, publisherProfiles);
     if (profile == null) return null;
     return profile.displayName();
   }
 
-  private static PublisherProfile profileForHost(String host) {
-    String key = publisherKeyForHost(host);
+  private static NewsPublisherProfile profileForHost(String host) {
+    return profileForHost(host, PUBLISHER_PROFILES);
+  }
+
+  private static NewsPublisherProfile profileForHost(
+      String host, List<NewsPublisherProfile> publisherProfiles) {
+    String key = publisherKeyForHost(host, publisherProfiles);
     if (key == null) return DEFAULT_PROFILE;
-    for (PublisherProfile profile : PUBLISHER_PROFILES) {
-      if (Objects.equals(profile.key(), key)) return profile;
+    for (NewsPublisherProfile profile :
+        Objects.requireNonNullElse(publisherProfiles, PUBLISHER_PROFILES)) {
+      if (profile != null && Objects.equals(profile.key(), key)) return profile;
     }
     return DEFAULT_PROFILE;
   }
 
   private static String publisherKeyForHost(String host) {
+    return publisherKeyForHost(host, PUBLISHER_PROFILES);
+  }
+
+  private static String publisherKeyForHost(
+      String host, List<NewsPublisherProfile> publisherProfiles) {
     String h = normalizeHost(host);
     if (h == null) return null;
     for (HostProfile hp : HOST_PROFILES) {
       String suffix = hp.hostSuffix();
       if (h.equals(suffix) || h.endsWith("." + suffix)) {
         return hp.publisherKey();
+      }
+    }
+    for (NewsPublisherProfile profile :
+        Objects.requireNonNullElse(publisherProfiles, List.<NewsPublisherProfile>of())) {
+      if (profile == null) continue;
+      for (String suffix : profile.hostSuffixes()) {
+        if (suffix == null || suffix.isBlank()) continue;
+        if (h.equals(suffix) || h.endsWith("." + suffix)) {
+          return profile.key();
+        }
       }
     }
     return null;
@@ -996,13 +1068,4 @@ final class NewsPreviewUtil {
   }
 
   private record HostProfile(String hostSuffix, String publisherKey) {}
-
-  private record PublisherProfile(
-      String key,
-      String displayName,
-      String[] paragraphSelectors,
-      String[] bylineSelectors,
-      String[] imageSelectors,
-      String[] authorMetaKeys,
-      String[] dateMetaKeys) {}
 }

@@ -55,12 +55,9 @@ public class ExternalBrowserLauncher {
   }
 
   ExternalBrowserLauncher(InstalledPluginsPort installedPlugins) {
-    this.commandProviders =
-        installedPlugins == null
-            ? List.of()
-            : installedPlugins.loadInstalledServices(
-                ExternalBrowserCommandProvider.class, List.of());
-    this.allowedSchemes = loadAllowedSchemes(installedPlugins);
+    this.commandProviders = ExternalBrowserPluginProviders.commandProviders(installedPlugins);
+    this.allowedSchemes =
+        ExternalBrowserPluginProviders.allowedSchemes(installedPlugins, DEFAULT_ALLOWED_SCHEMES);
   }
 
   public void openAsync(String rawUrl) {
@@ -179,26 +176,6 @@ public class ExternalBrowserLauncher {
     return Objects.toString(System.getProperty("os.name", ""), "").toLowerCase(Locale.ROOT);
   }
 
-  private static Set<String> loadAllowedSchemes(InstalledPluginsPort installedPlugins) {
-    LinkedHashSet<String> schemes = new LinkedHashSet<>(DEFAULT_ALLOWED_SCHEMES);
-    if (installedPlugins != null) {
-      for (ExternalBrowserSchemeProvider provider :
-          installedPlugins.loadInstalledServices(ExternalBrowserSchemeProvider.class, List.of())) {
-        if (provider == null) continue;
-        try {
-          for (String scheme :
-              Objects.requireNonNullElse(provider.allowedSchemes(), Set.<String>of())) {
-            String normalized = normalizeScheme(scheme);
-            if (!normalized.isEmpty()) schemes.add(normalized);
-          }
-        } catch (RuntimeException e) {
-          log.warn("External browser scheme provider failed: {}", provider.getClass().getName(), e);
-        }
-      }
-    }
-    return Set.copyOf(schemes);
-  }
-
   private static InstalledPluginsPort resolveInstalledPlugins(
       ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
     return installedPluginsProvider == null ? null : installedPluginsProvider.getIfAvailable();
@@ -272,7 +249,7 @@ public class ExternalBrowserLauncher {
     return Set.copyOf(normalized);
   }
 
-  private static String normalizeScheme(String scheme) {
+  static String normalizeScheme(String scheme) {
     String normalized = Objects.toString(scheme, "").trim().toLowerCase(Locale.ROOT);
     if (normalized.isEmpty()) return "";
     if (!normalized.matches("[a-z][a-z0-9+.-]*")) return "";

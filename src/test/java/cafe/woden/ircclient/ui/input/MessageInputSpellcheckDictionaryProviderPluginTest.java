@@ -28,8 +28,7 @@ class MessageInputSpellcheckDictionaryProviderPluginTest {
         () -> runtimeConfigDirectory.resolve("ircafe.yml");
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
     List<MessageInputSpellcheckDictionaryProvider> providers =
-        installedPlugins.loadInstalledServices(
-            MessageInputSpellcheckDictionaryProvider.class, List.of());
+        MessageInputPluginProviders.spellcheckDictionaryProviders(installedPlugins);
     MessageInputSpellcheckSupport support =
         new MessageInputSpellcheckSupport(
             new JTextPane(), SpellcheckSettings.defaults(), providers);

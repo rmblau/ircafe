@@ -3,7 +3,12 @@ package cafe.woden.ircclient.ui.input;
 import java.util.List;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 
-/** ServiceLoader-backed contribution point for Matrix upload msgtype inference. */
+/**
+ * ServiceLoader-backed contribution point for Matrix upload msgtype inference.
+ *
+ * <p>Plugins register implementations in {@code
+ * META-INF/services/cafe.woden.ircclient.ui.input.MatrixUploadMsgTypeProvider}.
+ */
 @InterfaceLayer
 public interface MatrixUploadMsgTypeProvider {
 

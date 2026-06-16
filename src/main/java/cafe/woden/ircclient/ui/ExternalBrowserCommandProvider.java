@@ -3,7 +3,12 @@ package cafe.woden.ircclient.ui;
 import java.util.List;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 
-/** ServiceLoader-backed contribution point for custom external-browser launch commands. */
+/**
+ * ServiceLoader-backed contribution point for custom external-browser launch commands.
+ *
+ * <p>Plugins register implementations in {@code
+ * META-INF/services/cafe.woden.ircclient.ui.ExternalBrowserCommandProvider}.
+ */
 @InterfaceLayer
 public interface ExternalBrowserCommandProvider {
 

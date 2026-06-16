@@ -2,19 +2,30 @@ package cafe.woden.ircclient.ui.chat.embed;
 
 import java.io.ByteArrayInputStream;
 import java.net.URI;
+import java.util.List;
+import java.util.Objects;
 
 /** Generic resolver for article-style news pages with richer metadata and summary extraction. */
 final class NewsLinkPreviewResolver implements LinkPreviewResolver {
 
   private final int maxHtmlBytes;
+  private final List<NewsPublisherProfile> publisherProfiles;
 
   NewsLinkPreviewResolver(int maxHtmlBytes) {
+    this(maxHtmlBytes, NewsPreviewUtil.defaultPublisherProfiles());
+  }
+
+  NewsLinkPreviewResolver(int maxHtmlBytes, List<NewsPublisherProfile> publisherProfiles) {
     this.maxHtmlBytes = maxHtmlBytes;
+    this.publisherProfiles =
+        List.copyOf(
+            Objects.requireNonNullElse(
+                publisherProfiles, NewsPreviewUtil.defaultPublisherProfiles()));
   }
 
   @Override
   public LinkPreview tryResolve(URI uri, String originalUrl, PreviewHttp http) throws Exception {
-    if (!NewsPreviewUtil.isLikelyNewsArticleUri(uri)) {
+    if (!NewsPreviewUtil.isLikelyNewsArticleUri(uri, publisherProfiles)) {
       return null;
     }
 
@@ -40,6 +51,6 @@ final class NewsLinkPreviewResolver implements LinkPreviewResolver {
     if (bytes.length == 0) return null;
 
     var doc = org.jsoup.Jsoup.parse(new ByteArrayInputStream(bytes), null, originalUrl);
-    return NewsPreviewUtil.parseArticleDocument(doc, originalUrl);
+    return NewsPreviewUtil.parseArticleDocument(doc, originalUrl, publisherProfiles);
   }
 }

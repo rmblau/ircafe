@@ -1,6 +1,9 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import java.util.List;
 import org.jmolecules.architecture.layered.InterfaceLayer;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -85,14 +88,40 @@ public class LinkPreviewResolverConfig {
 
   @Bean
   @Order(12)
-  LinkPreviewResolver oEmbedLinkPreviewResolver() {
-    return new OEmbedLinkPreviewResolver(OEmbedLinkPreviewResolver.defaultProviders());
+  LinkPreviewResolver oEmbedLinkPreviewResolver(
+      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
+    return oEmbedLinkPreviewResolver(resolveInstalledPlugins(installedPluginsProvider));
+  }
+
+  static LinkPreviewResolver oEmbedLinkPreviewResolver(InstalledPluginsPort installedPlugins) {
+    List<OEmbedLinkPreviewProvider> providers = OEmbedLinkPreviewResolver.defaultProviders();
+    if (installedPlugins != null) {
+      providers =
+          installedPlugins.loadInstalledServices(OEmbedLinkPreviewProvider.class, providers);
+    }
+    return new OEmbedLinkPreviewResolver(providers);
+  }
+
+  private static InstalledPluginsPort resolveInstalledPlugins(
+      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
+    return installedPluginsProvider == null ? null : installedPluginsProvider.getIfAvailable();
   }
 
   @Bean
   @Order(13)
-  LinkPreviewResolver newsLinkPreviewResolver() {
-    return new NewsLinkPreviewResolver(DEFAULT_MAX_HTML_BYTES);
+  LinkPreviewResolver newsLinkPreviewResolver(
+      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
+    return newsLinkPreviewResolver(resolveInstalledPlugins(installedPluginsProvider));
+  }
+
+  static LinkPreviewResolver newsLinkPreviewResolver(InstalledPluginsPort installedPlugins) {
+    List<NewsPublisherProfileProvider> profileProviders = List.of();
+    if (installedPlugins != null) {
+      profileProviders =
+          installedPlugins.loadInstalledServices(NewsPublisherProfileProvider.class, List.of());
+    }
+    return new NewsLinkPreviewResolver(
+        DEFAULT_MAX_HTML_BYTES, NewsPreviewUtil.publisherProfilesFromProviders(profileProviders));
   }
 
   @Bean

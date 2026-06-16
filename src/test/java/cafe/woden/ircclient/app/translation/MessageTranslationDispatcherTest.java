@@ -14,8 +14,10 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import cafe.woden.ircclient.app.api.MessageTranslation;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.model.TargetRef;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -382,6 +384,31 @@ class MessageTranslationDispatcherTest {
   }
 
   @Test
+  void autoModeIncludesPluginLanguagesForDetection() {
+    UiPort ui = mock(UiPort.class);
+    CapturingDetector detector = new CapturingDetector(Optional.of("en"));
+    CapturingBackend backend =
+        new CapturingBackend(
+            "deepl",
+            request ->
+                CompletableFuture.completedFuture(
+                    new MessageTranslationResult("hola", "en", "es", "deepl")));
+    MessageTranslationDispatcher dispatcher =
+        dispatcherWithDetector(
+            props(true, "deepl", "auto", "es", 4_000, 2, 10_000), ui, detector, backend);
+    dispatcher.setInstalledPlugins(
+        new RecordingInstalledPluginsPort(
+            List.of(() -> List.of(new MessageTranslationLanguage("tlh", "Klingon")))));
+
+    assertTrue(
+        dispatcher.requestIncomingMessageTranslation(
+            TARGET, AT, "alice", "msg-1", "hello everyone"));
+
+    verify(ui, timeout(1_000)).applyMessageTranslation(eq(TARGET), eq(AT), any());
+    assertTrue(detector.lastLanguageCodes.contains("tlh"), detector.lastLanguageCodes.toString());
+  }
+
+  @Test
   void rejectsRequestsOverConfiguredConcurrencyLimit() {
     UiPort ui = mock(UiPort.class);
     CompletableFuture<MessageTranslationResult> pending = new CompletableFuture<>();
@@ -611,6 +638,21 @@ class MessageTranslationDispatcherTest {
     public Optional<String> detectLanguageCode(String text, Collection<String> languageCodes) {
       lastLanguageCodes = List.copyOf(languageCodes);
       return result;
+    }
+  }
+
+  private record RecordingInstalledPluginsPort(List<MessageTranslationLanguageProvider> providers)
+      implements InstalledPluginsPort {
+
+    @Override
+    public <T> List<T> loadInstalledServices(Class<T> serviceType, List<T> builtInServices) {
+      ArrayList<T> services = new ArrayList<>(builtInServices);
+      if (serviceType == MessageTranslationLanguageProvider.class) {
+        for (MessageTranslationLanguageProvider provider : providers) {
+          services.add(serviceType.cast(provider));
+        }
+      }
+      return List.copyOf(services);
     }
   }
 }

@@ -7,6 +7,7 @@ import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.properties.LogProperties;
 import cafe.woden.ircclient.config.properties.PushyProperties;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionCatalog;
@@ -286,7 +287,7 @@ record PreferencesDialogControls(
             request.dialog());
     TranslationControls translation =
         TranslationControlsSupport.buildControls(
-            initialTranslationSettings(request), request.closeables());
+            initialTranslationSettings(request), request.closeables(), request.installedPlugins());
     DiagnosticsControls diagnostics =
         DiagnosticsControlsSupport.buildControls(request.runtimeConfig());
 
@@ -503,6 +504,7 @@ record PreferencesDialogControls(
       NotificationSoundPort notificationSoundService,
       ServerDialogs serverDialogs,
       MessageTranslationSettingsBus translationSettingsBus,
+      InstalledPluginsPort installedPlugins,
       ExecutorService pushyTestExecutor,
       ExecutorService notificationRuleTestExecutor,
       Ircv3ExtensionCatalog ircv3ExtensionCatalog,

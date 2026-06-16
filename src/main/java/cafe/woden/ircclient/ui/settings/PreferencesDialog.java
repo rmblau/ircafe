@@ -323,6 +323,7 @@ public class PreferencesDialog {
                 notificationSoundService,
                 serverDialogs,
                 translationSettingsBus,
+                installedPlugins,
                 pushyTestExecutor,
                 notificationRuleTestExecutor,
                 ircv3ExtensionCatalog,

@@ -3,6 +3,7 @@ package cafe.woden.ircclient.app.translation;
 import cafe.woden.ircclient.app.api.MessageTranslation;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.execution.ExecutorConfig;
 import cafe.woden.ircclient.model.TargetRef;
 import java.time.Instant;
@@ -18,6 +19,7 @@ import org.jmolecules.architecture.layered.ApplicationLayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
@@ -38,7 +40,14 @@ public final class MessageTranslationDispatcher {
   @Qualifier(ExecutorConfig.TRANSLATION_EXECUTOR)
   private final ExecutorService translationExecutor;
 
+  private volatile InstalledPluginsPort installedPlugins;
+
   private final AtomicInteger inFlight = new AtomicInteger();
+
+  @Autowired(required = false)
+  void setInstalledPlugins(InstalledPluginsPort installedPlugins) {
+    this.installedPlugins = installedPlugins;
+  }
 
   public boolean requestIncomingMessageTranslation(
       TargetRef target, Instant at, String fromNick, String messageId, String text) {
@@ -350,8 +359,9 @@ public final class MessageTranslationDispatcher {
     }
   }
 
-  private static List<String> detectionLanguageCodes(IrcProperties.Client.Translation translation) {
-    return MessageTranslationLanguageCatalog.availableTargets(translation).stream()
+  private List<String> detectionLanguageCodes(IrcProperties.Client.Translation translation) {
+    return MessageTranslationLanguageCatalog.availableTargets(translation, installedPlugins)
+        .stream()
         .map(MessageTranslationLanguage::code)
         .toList();
   }
