@@ -45,8 +45,8 @@ import cafe.woden.ircclient.bouncer.BouncerBackendRegistry;
 import cafe.woden.ircclient.bouncer.BouncerDiscoveryEventPort;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
+import cafe.woden.ircclient.config.RuntimeConfigChatCommandAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
-import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.properties.SojuProperties;
 import cafe.woden.ircclient.config.properties.ZncProperties;
@@ -572,7 +572,7 @@ class MemoServPanelContainerFunctionalTest {
             botFactory,
             bridgeListenerFactory,
             (CtcpReplyRuntimeConfigPort) runtimeConfig,
-            (ChatCommandRuntimeConfigPort) runtimeConfig,
+            new RuntimeConfigChatCommandAdapter(runtimeConfig),
             stsPolicies,
             bouncerBackends,
             bouncerDiscoveryEvents,

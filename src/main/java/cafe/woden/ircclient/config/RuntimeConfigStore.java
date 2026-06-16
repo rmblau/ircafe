@@ -52,7 +52,6 @@ import org.springframework.stereotype.Component;
 public class RuntimeConfigStore
     implements AppearanceRuntimeConfigPort,
         ChatBehaviorRuntimeConfigPort,
-        ChatCommandRuntimeConfigPort,
         ChatHistoryRuntimeConfigPort,
         ChatLoggingRuntimeConfigPort,
         DiagnosticsRuntimeConfigPort,
@@ -320,7 +319,6 @@ public class RuntimeConfigStore
     return stores.serverStores.monitorRosterStore.readMonitorNicks(serverId);
   }
 
-  @Override
   public synchronized void rememberNick(String serverId, String nick) {
     stores.serverStores.serverIdentityStore.rememberNick(serverId, nick);
   }
@@ -590,7 +588,6 @@ public class RuntimeConfigStore
     stores.serverStores.serverAutoConnectStore.rememberServerAutoConnectOnStart(serverId, enabled);
   }
 
-  @Override
   public synchronized void rememberInviteAutoJoinEnabled(boolean enabled) {
     stores.uiStores.uiFeatureToggleStore.rememberInviteAutoJoinEnabled(enabled);
   }
