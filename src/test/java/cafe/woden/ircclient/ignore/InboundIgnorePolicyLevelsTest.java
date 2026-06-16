@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.IgnoreRulesConfigPort;
 import cafe.woden.ircclient.config.properties.IgnoreProperties;
 import cafe.woden.ircclient.ignore.api.InboundIgnorePolicyPort;
 import cafe.woden.ircclient.irc.roster.UserListStore;
@@ -17,7 +17,7 @@ class InboundIgnorePolicyLevelsTest {
 
   @Test
   void hardIgnoreLevelsRestrictMatchesByInboundKind() {
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    IgnoreRulesConfigPort runtimeConfig = mock(IgnoreRulesConfigPort.class);
     IgnoreProperties props =
         new IgnoreProperties(
             true,
@@ -48,7 +48,7 @@ class InboundIgnorePolicyLevelsTest {
 
   @Test
   void msgsLevelAppliesToPublicMessagesButNotNotices() {
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    IgnoreRulesConfigPort runtimeConfig = mock(IgnoreRulesConfigPort.class);
     IgnoreProperties props =
         new IgnoreProperties(
             true,
@@ -80,7 +80,7 @@ class InboundIgnorePolicyLevelsTest {
 
   @Test
   void channelScopedHardIgnoreOnlyAppliesInsideConfiguredChannels() {
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    IgnoreRulesConfigPort runtimeConfig = mock(IgnoreRulesConfigPort.class);
     IgnoreProperties props =
         new IgnoreProperties(
             true,
@@ -117,7 +117,7 @@ class InboundIgnorePolicyLevelsTest {
 
   @Test
   void expiredHardIgnoreDoesNotMatchAndIsPruned() {
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    IgnoreRulesConfigPort runtimeConfig = mock(IgnoreRulesConfigPort.class);
     long expiredAt = System.currentTimeMillis() - 1_000L;
     IgnoreProperties props =
         new IgnoreProperties(
@@ -148,7 +148,7 @@ class InboundIgnorePolicyLevelsTest {
 
   @Test
   void regexpPatternMustMatchInboundTextToApplyHardIgnore() {
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    IgnoreRulesConfigPort runtimeConfig = mock(IgnoreRulesConfigPort.class);
     IgnoreProperties props =
         new IgnoreProperties(
             true,
@@ -194,7 +194,7 @@ class InboundIgnorePolicyLevelsTest {
 
   @Test
   void repliesFlagIgnoresChannelRepliesToMaskedNick() {
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    IgnoreRulesConfigPort runtimeConfig = mock(IgnoreRulesConfigPort.class);
     IgnoreProperties props =
         new IgnoreProperties(
             true,

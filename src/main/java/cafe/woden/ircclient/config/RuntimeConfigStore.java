@@ -9,7 +9,6 @@ import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
-import cafe.woden.ircclient.config.api.IgnoreRulesConfigPort;
 import cafe.woden.ircclient.config.api.IrcSessionRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.Ircv3CapabilityNameResolverPort;
 import cafe.woden.ircclient.config.api.Ircv3StsPolicyConfigPort;
@@ -64,7 +63,6 @@ public class RuntimeConfigStore
         DiagnosticsRuntimeConfigPort,
         EmbedLoadPolicyConfigPort,
         FilterSettingsConfigPort,
-        IgnoreRulesConfigPort,
         IrcSessionRuntimeConfigPort,
         NickColorRuntimeConfigPort,
         NotificationRuntimeConfigPort,
@@ -1459,62 +1457,51 @@ public class RuntimeConfigStore
     stores.connectionStores.clientSettingsStore.rememberTranslation(translation);
   }
 
-  @Override
   public synchronized void rememberIgnoreMask(String serverId, String mask) {
     stores.ignoreRulesStore.rememberIgnoreMask(serverId, mask);
   }
 
-  @Override
   public synchronized void rememberIgnoreMaskLevels(
       String serverId, String mask, List<String> levels) {
     stores.ignoreRulesStore.rememberIgnoreMaskLevels(serverId, mask, levels);
   }
 
-  @Override
   public synchronized void rememberIgnoreMaskChannels(
       String serverId, String mask, List<String> channels) {
     stores.ignoreRulesStore.rememberIgnoreMaskChannels(serverId, mask, channels);
   }
 
-  @Override
   public synchronized void rememberIgnoreMaskExpiresAt(
       String serverId, String mask, Long expiresAtEpochMs) {
     stores.ignoreRulesStore.rememberIgnoreMaskExpiresAt(serverId, mask, expiresAtEpochMs);
   }
 
-  @Override
   public synchronized void rememberIgnoreMaskPattern(
       String serverId, String mask, String pattern, String modeToken) {
     stores.ignoreRulesStore.rememberIgnoreMaskPattern(serverId, mask, pattern, modeToken);
   }
 
-  @Override
   public synchronized void rememberIgnoreMaskReplies(
       String serverId, String mask, boolean repliesEnabled) {
     stores.ignoreRulesStore.rememberIgnoreMaskReplies(serverId, mask, repliesEnabled);
   }
 
-  @Override
   public synchronized void forgetIgnoreMask(String serverId, String mask) {
     stores.ignoreRulesStore.forgetIgnoreMask(serverId, mask);
   }
 
-  @Override
   public synchronized void rememberSoftIgnoreMask(String serverId, String mask) {
     stores.ignoreRulesStore.rememberSoftIgnoreMask(serverId, mask);
   }
 
-  @Override
   public synchronized void forgetSoftIgnoreMask(String serverId, String mask) {
     stores.ignoreRulesStore.forgetSoftIgnoreMask(serverId, mask);
   }
 
-  @Override
   public synchronized void rememberHardIgnoreIncludesCtcp(boolean enabled) {
     stores.ignoreRulesStore.rememberHardIgnoreIncludesCtcp(enabled);
   }
 
-  @Override
   public synchronized void rememberSoftIgnoreIncludesCtcp(boolean enabled) {
     stores.ignoreRulesStore.rememberSoftIgnoreIncludesCtcp(enabled);
   }

@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ignore;
 
 import static cafe.woden.ircclient.config.IrcPropertiesTestFixtures.server;
+import static cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures.ignoreRulesPort;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -32,7 +33,8 @@ class IgnoreListServiceFlowTest {
   void hardAndSoftIgnoreFlowPreservesMetadataAndPrunesExpiredRules() {
     RuntimeConfigStore runtimeConfig = newRuntimeConfig();
     IgnoreListService service =
-        new IgnoreListService(new IgnoreProperties(true, false, Map.of()), runtimeConfig);
+        new IgnoreListService(
+            new IgnoreProperties(true, false, Map.of()), ignoreRulesPort(runtimeConfig));
 
     long now = System.currentTimeMillis();
     IgnoreAddMaskResult first =
@@ -81,7 +83,8 @@ class IgnoreListServiceFlowTest {
     Path configPath = tempDir.resolve("ircafe.yml");
     RuntimeConfigStore runtimeConfig = newRuntimeConfig(configPath);
     IgnoreListService firstBoot =
-        new IgnoreListService(new IgnoreProperties(true, false, Map.of()), runtimeConfig);
+        new IgnoreListService(
+            new IgnoreProperties(true, false, Map.of()), ignoreRulesPort(runtimeConfig));
 
     long expiresAt = Instant.parse("2026-04-01T12:34:56Z").toEpochMilli();
     firstBoot.setHardIgnoreIncludesCtcp(false);
@@ -98,7 +101,9 @@ class IgnoreListServiceFlowTest {
     firstBoot.addSoftMask("libera", "quietnick");
 
     IgnoreProperties rebound = loadIgnoreProperties(configPath);
-    IgnoreListService restarted = new IgnoreListService(rebound, newRuntimeConfig(configPath));
+    RuntimeConfigStore reloadedRuntimeConfig = newRuntimeConfig(configPath);
+    IgnoreListService restarted =
+        new IgnoreListService(rebound, ignoreRulesPort(reloadedRuntimeConfig));
 
     assertFalse(restarted.hardIgnoreIncludesCtcp());
     assertTrue(restarted.softIgnoreIncludesCtcp());

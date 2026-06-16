@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.config;
 
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
+import cafe.woden.ircclient.config.api.IgnoreRulesConfigPort;
 import cafe.woden.ircclient.config.api.Ircv3StsPolicyConfigPort;
 import cafe.woden.ircclient.config.api.MonitorRosterConfigPort;
 import java.nio.file.Path;
@@ -45,5 +46,9 @@ public final class RuntimeConfigStoreTestFixtures {
 
   public static Ircv3StsPolicyConfigPort ircv3StsPolicyPort(RuntimeConfigStore store) {
     return new RuntimeConfigIrcv3StsPolicyAdapter(store);
+  }
+
+  public static IgnoreRulesConfigPort ignoreRulesPort(RuntimeConfigStore store) {
+    return new RuntimeConfigIgnoreRulesAdapter(store);
   }
 }

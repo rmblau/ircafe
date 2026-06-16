@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.app.outbound.ignore;
 
+import static cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures.ignoreRulesPort;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
@@ -94,6 +95,7 @@ class IgnoreCommandFlowIntegrationTest {
     RuntimeConfigStore runtimeConfig =
         RuntimeConfigStoreTestFixtures.storeWithServers(
             path, IrcPropertiesTestFixtures.server("libera"));
-    return new IgnoreListService(new IgnoreProperties(true, false, Map.of()), runtimeConfig);
+    return new IgnoreListService(
+        new IgnoreProperties(true, false, Map.of()), ignoreRulesPort(runtimeConfig));
   }
 }
