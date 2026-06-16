@@ -5,7 +5,6 @@ import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatHistoryRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
-import cafe.woden.ircclient.config.api.ConnectionRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
@@ -68,7 +67,6 @@ public class RuntimeConfigStore
         ChatHistoryRuntimeConfigPort,
         ChatLoggingRuntimeConfigPort,
         InviteAutoJoinConfigPort,
-        ConnectionRuntimeConfigPort,
         CtcpReplyRuntimeConfigPort,
         DiagnosticsRuntimeConfigPort,
         EmbedLoadPolicyConfigPort,
@@ -233,7 +231,6 @@ public class RuntimeConfigStore
   }
 
   /** Returns known channels for this server (attached + detached). */
-  @Override
   public synchronized List<String> readKnownChannels(String serverId) {
     return stores.serverStores.serverTreeChannelStateStore.readKnownChannels(serverId);
   }
@@ -327,7 +324,6 @@ public class RuntimeConfigStore
     stores.serverStores.privateMessageTargetStore.forgetPrivateMessageTarget(serverId, nick);
   }
 
-  @Override
   public synchronized List<String> readPrivateMessageTargets(String serverId) {
     return stores.serverStores.privateMessageTargetStore.readPrivateMessageTargets(serverId);
   }
@@ -597,7 +593,6 @@ public class RuntimeConfigStore
    * <p>Stored under {@code ircafe.ui.serverAutoConnectOnStartByServer.<serverId>}. Default behavior
    * is enabled, so this map usually contains only {@code false} entries.
    */
-  @Override
   public synchronized Map<String, Boolean> readServerAutoConnectOnStartByServer() {
     return stores.serverStores.serverAutoConnectStore.readServerAutoConnectOnStartByServer();
   }
