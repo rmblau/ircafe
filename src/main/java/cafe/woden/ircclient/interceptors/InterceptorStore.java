@@ -12,7 +12,7 @@ import cafe.woden.ircclient.model.InterceptorRule;
 import cafe.woden.ircclient.model.InterceptorRuleMode;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.notify.api.CustomSoundFileExtensionProvider;
-import cafe.woden.ircclient.notify.api.CustomSoundFileImportSupport;
+import cafe.woden.ircclient.notify.api.CustomSoundPluginProviders;
 import cafe.woden.ircclient.notify.api.NotificationSoundPort;
 import cafe.woden.ircclient.util.VirtualThreads;
 import io.reactivex.rxjava3.core.Flowable;
@@ -107,7 +107,8 @@ public class InterceptorStore implements InterceptorIngestPort {
         persistExecutor,
         DEFAULT_MAX_HITS_PER_INTERCEPTOR,
         true,
-        loadSoundFileExtensionProviders(resolveInstalledPlugins(installedPluginsProvider)));
+        CustomSoundPluginProviders.extensionProviders(
+            resolveInstalledPlugins(installedPluginsProvider)));
   }
 
   InterceptorStore(int maxHitsPerInterceptor) {
@@ -136,7 +137,7 @@ public class InterceptorStore implements InterceptorIngestPort {
         VirtualThreads.newSingleThreadExecutor("ircafe-interceptor-persist"),
         maxHitsPerInterceptor,
         false,
-        loadSoundFileExtensionProviders(installedPlugins));
+        CustomSoundPluginProviders.extensionProviders(installedPlugins));
   }
 
   private InterceptorStore(
@@ -169,11 +170,6 @@ public class InterceptorStore implements InterceptorIngestPort {
   private static InstalledPluginsPort resolveInstalledPlugins(
       ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
     return installedPluginsProvider == null ? null : installedPluginsProvider.getIfAvailable();
-  }
-
-  private static List<CustomSoundFileExtensionProvider> loadSoundFileExtensionProviders(
-      InstalledPluginsPort installedPlugins) {
-    return CustomSoundFileImportSupport.loadExtensionProviders(installedPlugins);
   }
 
   public Flowable<Change> changes() {

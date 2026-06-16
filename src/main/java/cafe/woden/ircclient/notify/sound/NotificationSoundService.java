@@ -5,6 +5,7 @@ import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.execution.ExecutorConfig;
 import cafe.woden.ircclient.model.BuiltInSound;
 import cafe.woden.ircclient.notify.api.CustomSoundPlaybackProvider;
+import cafe.woden.ircclient.notify.api.CustomSoundPluginProviders;
 import cafe.woden.ircclient.notify.api.NotificationSoundPort;
 import jakarta.annotation.PreDestroy;
 import java.beans.PropertyChangeListener;
@@ -15,7 +16,6 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -87,7 +87,7 @@ public class NotificationSoundService implements NotificationSoundPort {
     this.settingsBus = settingsBus;
     this.runtimeConfig = runtimeConfig;
     this.executor = executor;
-    this.customPlaybackProviders = loadCustomPlaybackProviders(installedPlugins);
+    this.customPlaybackProviders = CustomSoundPluginProviders.playbackProviders(installedPlugins);
 
     NotificationSoundSettings seed = settingsBus != null ? settingsBus.get() : null;
     applySettings(seed);
@@ -280,15 +280,6 @@ public class NotificationSoundService implements NotificationSoundPort {
       }
     }
     return false;
-  }
-
-  private static List<CustomSoundPlaybackProvider> loadCustomPlaybackProviders(
-      InstalledPluginsPort installedPlugins) {
-    if (installedPlugins == null) return List.of();
-    return List.copyOf(
-        Objects.requireNonNullElse(
-            installedPlugins.loadInstalledServices(CustomSoundPlaybackProvider.class, List.of()),
-            List.<CustomSoundPlaybackProvider>of()));
   }
 
   private static InstalledPluginsPort resolveInstalledPlugins(

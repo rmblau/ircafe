@@ -19,9 +19,7 @@ public final class CustomSoundFileImportSupport {
 
   public static List<CustomSoundFileExtensionProvider> loadExtensionProviders(
       InstalledPluginsPort installedPlugins) {
-    if (installedPlugins == null) return List.of();
-    return installedPlugins.loadInstalledServices(
-        CustomSoundFileExtensionProvider.class, List.of());
+    return CustomSoundPluginProviders.extensionProviders(installedPlugins);
   }
 
   public static String importToRuntimeDir(

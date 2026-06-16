@@ -14,7 +14,7 @@ import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionCatalog;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.notifications.api.IrcEventNotificationRulesPort;
 import cafe.woden.ircclient.notify.api.CustomSoundFileExtensionProvider;
-import cafe.woden.ircclient.notify.api.CustomSoundFileImportSupport;
+import cafe.woden.ircclient.notify.api.CustomSoundPluginProviders;
 import cafe.woden.ircclient.notify.api.NotificationSoundPort;
 import cafe.woden.ircclient.notify.api.PushyNotificationPort;
 import cafe.woden.ircclient.notify.pushy.PushySettingsBus;
@@ -421,7 +421,7 @@ public class PreferencesDialog {
 
       @Override
       public List<CustomSoundFileExtensionProvider> soundFileExtensionProviders() {
-        return CustomSoundFileImportSupport.loadExtensionProviders(installedPlugins);
+        return CustomSoundPluginProviders.extensionProviders(installedPlugins);
       }
     };
   }
