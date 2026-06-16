@@ -13,7 +13,6 @@ import cafe.woden.ircclient.config.api.IgnoreRulesConfigPort;
 import cafe.woden.ircclient.config.api.IrcSessionRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.Ircv3CapabilityNameResolverPort;
 import cafe.woden.ircclient.config.api.Ircv3StsPolicyConfigPort;
-import cafe.woden.ircclient.config.api.NickColorOverridesConfigPort;
 import cafe.woden.ircclient.config.api.NickColorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.NotificationRule;
 import cafe.woden.ircclient.config.api.NotificationRuntimeConfigPort;
@@ -68,7 +67,6 @@ public class RuntimeConfigStore
         IgnoreRulesConfigPort,
         Ircv3StsPolicyConfigPort,
         IrcSessionRuntimeConfigPort,
-        NickColorOverridesConfigPort,
         NickColorRuntimeConfigPort,
         NotificationRuntimeConfigPort,
         OutgoingMessageRuntimeConfigPort,
