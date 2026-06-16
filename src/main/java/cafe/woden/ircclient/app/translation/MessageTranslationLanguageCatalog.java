@@ -63,8 +63,7 @@ public final class MessageTranslationLanguageCatalog {
       return COMMON_TARGETS;
     }
     return mergeLanguages(
-        installedPlugins.loadInstalledServices(
-            MessageTranslationLanguageProvider.class, BUILT_IN_PROVIDERS));
+        MessageTranslationPluginProviders.languageProviders(BUILT_IN_PROVIDERS, installedPlugins));
   }
 
   public static List<MessageTranslationLanguage> availableTargets(

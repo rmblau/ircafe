@@ -1,7 +1,6 @@
 package cafe.woden.ircclient.app.translation;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,12 +27,16 @@ public final class MessageTranslationBackendRegistry {
   public MessageTranslationBackendRegistry(
       List<MessageTranslationBackend> backends,
       ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
-    this(loadInstalledBackends(backends, installedPluginsProvider));
+    this(
+        MessageTranslationPluginProviders.translationBackends(
+            backends,
+            MessageTranslationPluginProviders.resolveInstalledPlugins(installedPluginsProvider)));
   }
 
   public MessageTranslationBackendRegistry(List<MessageTranslationBackend> backends) {
     Map<String, MessageTranslationBackend> resolved = new LinkedHashMap<>();
-    for (MessageTranslationBackend backend : nonNullBackends(backends)) {
+    for (MessageTranslationBackend backend :
+        MessageTranslationPluginProviders.translationBackends(backends, null)) {
       String backendId = normalizeBackendId(backend.backendId());
       if (backendId.isBlank()) {
         throw new IllegalArgumentException(
@@ -49,7 +52,7 @@ public final class MessageTranslationBackendRegistry {
 
   MessageTranslationBackendRegistry(
       List<MessageTranslationBackend> backends, InstalledPluginsPort installedPlugins) {
-    this(loadInstalledBackends(backends, installedPlugins));
+    this(MessageTranslationPluginProviders.translationBackends(backends, installedPlugins));
   }
 
   public Optional<MessageTranslationBackend> find(String backendId) {
@@ -58,37 +61,6 @@ public final class MessageTranslationBackendRegistry {
 
   public Set<String> backendIds() {
     return backendsById.keySet();
-  }
-
-  private static List<MessageTranslationBackend> loadInstalledBackends(
-      List<MessageTranslationBackend> backends,
-      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
-    InstalledPluginsPort installedPlugins =
-        installedPluginsProvider == null ? null : installedPluginsProvider.getIfAvailable();
-    return loadInstalledBackends(backends, installedPlugins);
-  }
-
-  private static List<MessageTranslationBackend> loadInstalledBackends(
-      List<MessageTranslationBackend> backends, InstalledPluginsPort installedPlugins) {
-    List<MessageTranslationBackend> builtInBackends = nonNullBackends(backends);
-    if (installedPlugins == null) {
-      return builtInBackends;
-    }
-    return installedPlugins.loadInstalledServices(MessageTranslationBackend.class, builtInBackends);
-  }
-
-  private static List<MessageTranslationBackend> nonNullBackends(
-      List<MessageTranslationBackend> backends) {
-    if (backends == null || backends.isEmpty()) {
-      return List.of();
-    }
-    ArrayList<MessageTranslationBackend> resolved = new ArrayList<>(backends.size());
-    for (MessageTranslationBackend backend : backends) {
-      if (backend != null) {
-        resolved.add(backend);
-      }
-    }
-    return List.copyOf(resolved);
   }
 
   public static String normalizeBackendId(String backendId) {
