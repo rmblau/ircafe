@@ -10,7 +10,6 @@ import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
 import cafe.woden.ircclient.config.api.IgnoreRulesConfigPort;
-import cafe.woden.ircclient.config.api.InterceptorConfigPort;
 import cafe.woden.ircclient.config.api.IrcSessionRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.Ircv3CapabilityNameResolverPort;
 import cafe.woden.ircclient.config.api.Ircv3StsPolicyConfigPort;
@@ -67,7 +66,6 @@ public class RuntimeConfigStore
         EmbedLoadPolicyConfigPort,
         FilterSettingsConfigPort,
         IgnoreRulesConfigPort,
-        InterceptorConfigPort,
         Ircv3StsPolicyConfigPort,
         IrcSessionRuntimeConfigPort,
         NickColorOverridesConfigPort,
