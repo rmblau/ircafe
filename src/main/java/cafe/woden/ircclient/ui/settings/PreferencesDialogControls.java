@@ -8,6 +8,7 @@ import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
+import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.properties.LogProperties;
 import cafe.woden.ircclient.config.properties.PushyProperties;
@@ -278,7 +279,7 @@ record PreferencesDialogControls(
             request.dialog(),
             request.closeables(),
             request.filterSettingsBus(),
-            request.runtimeConfig(),
+            request.filterRuntimeConfig(),
             request.targetCoordinator(),
             request.transcriptRebuildService());
     UserCommandAliasesControls userCommands =
@@ -489,6 +490,7 @@ record PreferencesDialogControls(
       RuntimeConfigStore runtimeConfig,
       ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
       DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,
+      FilterSettingsConfigPort filterRuntimeConfig,
       LogProperties logProps,
       NickColorSettingsBus nickColorSettingsBus,
       NickColorService nickColorService,

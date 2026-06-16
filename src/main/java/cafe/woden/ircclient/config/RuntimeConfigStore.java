@@ -6,7 +6,6 @@ import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatHistoryRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
-import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
 import cafe.woden.ircclient.config.api.IrcSessionRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.Ircv3CapabilityNameResolverPort;
 import cafe.woden.ircclient.config.api.Ircv3StsPolicyConfigPort;
@@ -51,7 +50,6 @@ public class RuntimeConfigStore
         ChatBehaviorRuntimeConfigPort,
         ChatHistoryRuntimeConfigPort,
         EmbedLoadPolicyConfigPort,
-        FilterSettingsConfigPort,
         IrcSessionRuntimeConfigPort,
         ServerTreeBuiltInVisibilityConfigPort,
         ServerTreeChannelStateConfigPort,

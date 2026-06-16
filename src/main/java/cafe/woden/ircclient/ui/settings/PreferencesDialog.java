@@ -8,6 +8,7 @@ import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
+import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.NickColorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.NotificationRule;
@@ -83,6 +84,7 @@ public class PreferencesDialog {
   private final RuntimeConfigStore runtimeConfig;
   private final ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig;
   private final DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig;
+  private final FilterSettingsConfigPort filterRuntimeConfig;
   private final CtcpReplyRuntimeConfigPort ctcpRuntimeConfig;
   private final OutgoingMessageRuntimeConfigPort outgoingRuntimeConfig;
   private final TimestampRuntimeConfigPort timestampRuntimeConfig;
@@ -132,6 +134,7 @@ public class PreferencesDialog {
       RuntimeConfigStore runtimeConfig,
       ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
       DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,
+      FilterSettingsConfigPort filterRuntimeConfig,
       CtcpReplyRuntimeConfigPort ctcpRuntimeConfig,
       OutgoingMessageRuntimeConfigPort outgoingRuntimeConfig,
       TimestampRuntimeConfigPort timestampRuntimeConfig,
@@ -176,6 +179,7 @@ public class PreferencesDialog {
         runtimeConfig,
         chatLoggingRuntimeConfig,
         diagnosticsRuntimeConfig,
+        filterRuntimeConfig,
         ctcpRuntimeConfig,
         outgoingRuntimeConfig,
         timestampRuntimeConfig,
@@ -224,6 +228,7 @@ public class PreferencesDialog {
       RuntimeConfigStore runtimeConfig,
       ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
       DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,
+      FilterSettingsConfigPort filterRuntimeConfig,
       CtcpReplyRuntimeConfigPort ctcpRuntimeConfig,
       OutgoingMessageRuntimeConfigPort outgoingRuntimeConfig,
       TimestampRuntimeConfigPort timestampRuntimeConfig,
@@ -269,6 +274,7 @@ public class PreferencesDialog {
     this.runtimeConfig = runtimeConfig;
     this.chatLoggingRuntimeConfig = chatLoggingRuntimeConfig;
     this.diagnosticsRuntimeConfig = diagnosticsRuntimeConfig;
+    this.filterRuntimeConfig = filterRuntimeConfig;
     this.ctcpRuntimeConfig = ctcpRuntimeConfig;
     this.outgoingRuntimeConfig = outgoingRuntimeConfig;
     this.timestampRuntimeConfig = timestampRuntimeConfig;
@@ -361,6 +367,7 @@ public class PreferencesDialog {
                 runtimeConfig,
                 chatLoggingRuntimeConfig,
                 diagnosticsRuntimeConfig,
+                filterRuntimeConfig,
                 logProps,
                 nickColorSettingsBus,
                 nickColorService,
@@ -423,6 +430,7 @@ public class PreferencesDialog {
                   runtimeConfig,
                   chatLoggingRuntimeConfig,
                   diagnosticsRuntimeConfig,
+                  filterRuntimeConfig,
                   ctcpRuntimeConfig,
                   outgoingRuntimeConfig,
                   timestampRuntimeConfig,
