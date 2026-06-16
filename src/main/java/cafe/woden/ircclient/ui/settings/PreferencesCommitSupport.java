@@ -7,6 +7,7 @@ import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.config.api.NickColorRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.NotificationRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.OutgoingMessageRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.SpellcheckRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.TimestampRuntimeConfigPort;
@@ -157,9 +158,12 @@ final class PreferencesCommitSupport {
     LoggingControlsSupport.rememberSettings(runtimeConfig, snapshot.logging());
     OutgoingColorControlsSupport.rememberSettings(
         request.outgoingRuntimeConfig(), snapshot.outgoingLine());
-    NotificationRulesControlsSupport.rememberSettings(runtimeConfig, snapshot.notification());
+    NotificationRulesControlsSupport.rememberSettings(
+        request.notificationRuntimeConfig(), snapshot.notification());
     IrcEventNotificationsTabSupport.rememberSettings(
-        runtimeConfig, request.ircEventNotificationRulesBus(), snapshot.ircEventNotification());
+        request.notificationRuntimeConfig(),
+        request.ircEventNotificationRulesBus(),
+        snapshot.ircEventNotification());
     UserCommandAliasesControlsSupport.rememberSettings(
         request.userCommandAliasesRuntimeConfig(),
         request.userCommandAliasesBus(),
@@ -227,6 +231,7 @@ final class PreferencesCommitSupport {
       SpellcheckRuntimeConfigPort spellcheckRuntimeConfig,
       NickColorRuntimeConfigPort nickColorRuntimeConfig,
       UserCommandAliasesConfigPort userCommandAliasesRuntimeConfig,
+      NotificationRuntimeConfigPort notificationRuntimeConfig,
       UiSettingsBus settingsBus,
       SpellcheckSettingsBus spellcheckSettingsBus,
       ThemeAccentSettingsBus accentSettingsBus,

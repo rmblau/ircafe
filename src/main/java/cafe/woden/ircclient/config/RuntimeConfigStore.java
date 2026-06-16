@@ -13,7 +13,6 @@ import cafe.woden.ircclient.config.api.IrcSessionRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.Ircv3CapabilityNameResolverPort;
 import cafe.woden.ircclient.config.api.Ircv3StsPolicyConfigPort;
 import cafe.woden.ircclient.config.api.NotificationRule;
-import cafe.woden.ircclient.config.api.NotificationRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ServerAutoConnectRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ServerTreeBuiltInVisibilityConfigPort;
 import cafe.woden.ircclient.config.api.ServerTreeBuiltInVisibilityConfigPort.ServerTreeBuiltInNodesVisibility;
@@ -58,7 +57,6 @@ public class RuntimeConfigStore
         EmbedLoadPolicyConfigPort,
         FilterSettingsConfigPort,
         IrcSessionRuntimeConfigPort,
-        NotificationRuntimeConfigPort,
         ServerTreeBuiltInVisibilityConfigPort,
         ServerTreeChannelStateConfigPort,
         ServerTreeLayoutConfigPort,
@@ -672,12 +670,10 @@ public class RuntimeConfigStore
     stores.pushyStore.rememberSettings(settings);
   }
 
-  @Override
   public synchronized void rememberNotificationRuleCooldownSeconds(int seconds) {
     stores.uiStores.notificationStore.rememberRuleCooldownSeconds(seconds);
   }
 
-  @Override
   public synchronized void rememberNotificationRules(List<NotificationRule> rules) {
     stores.uiStores.notificationStore.rememberRules(rules);
   }
@@ -886,7 +882,6 @@ public class RuntimeConfigStore
     stores.uiStores.appDiagnosticsStore.rememberJhiccupArgs(args);
   }
 
-  @Override
   public synchronized void rememberIrcEventNotificationRules(List<IrcEventNotificationRule> rules) {
     stores.uiStores.notificationStore.rememberIrcEventRules(rules);
   }

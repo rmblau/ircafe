@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.NotificationRuntimeConfigPort;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.notifications.api.IrcEventNotificationRulesPort;
 import java.util.List;
@@ -28,7 +28,7 @@ class IrcEventNotificationsTabSupportTest {
 
   @Test
   void rememberSettingsPersistsRulesAndUpdatesBus() {
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    NotificationRuntimeConfigPort runtimeConfig = mock(NotificationRuntimeConfigPort.class);
     IrcEventNotificationRulesPort rulesBus = mock(IrcEventNotificationRulesPort.class);
     List<IrcEventNotificationRule> rules = List.of(IrcEventNotificationRule.defaults().getFirst());
     IrcEventNotificationsTabSupport.IrcEventNotificationSettings settings =
