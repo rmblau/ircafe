@@ -7,7 +7,13 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 
-/** Contributes slash-command autocomplete and help presentation metadata. */
+/**
+ * ServiceLoader-backed contribution point for slash-command autocomplete and help presentation
+ * metadata.
+ *
+ * <p>Plugins register implementations in {@code
+ * META-INF/services/cafe.woden.ircclient.app.commands.SlashCommandPresentationContributor}.
+ */
 @ApplicationLayer
 public interface SlashCommandPresentationContributor {
 

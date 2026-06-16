@@ -29,7 +29,7 @@ public class CommandParser {
     this(
         filterCommandParser,
         backendNamedCommandParser,
-        resolveInstalledPlugins(installedPluginsProvider));
+        CommandPluginProviders.resolveInstalledPlugins(installedPluginsProvider));
   }
 
   public CommandParser(
@@ -46,7 +46,8 @@ public class CommandParser {
     this.backendNamedCommandParser =
         Objects.requireNonNull(backendNamedCommandParser, "backendNamedCommandParser");
     this.strategies =
-        loadInstalledStrategies(builtInStrategies(this.filterCommandParser), installedPlugins);
+        CommandPluginProviders.slashCommandParseStrategies(
+            builtInStrategies(this.filterCommandParser), installedPlugins);
   }
 
   public ParsedInput parse(String raw) {
@@ -75,14 +76,6 @@ public class CommandParser {
     return new ParsedInput.Unknown(line);
   }
 
-  private static InstalledPluginsPort resolveInstalledPlugins(
-      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
-    if (installedPluginsProvider == null) {
-      return null;
-    }
-    return installedPluginsProvider.getIfAvailable();
-  }
-
   private static List<SlashCommandParseStrategy> builtInStrategies(
       FilterCommandParser filterCommandParser) {
     return List.of(
@@ -90,14 +83,5 @@ public class CommandParser {
         new IdentityMessagingSlashCommandParseStrategy(),
         new ChannelInteractionSlashCommandParseStrategy(),
         new AdvancedFeatureSlashCommandParseStrategy(filterCommandParser));
-  }
-
-  private static List<SlashCommandParseStrategy> loadInstalledStrategies(
-      List<SlashCommandParseStrategy> builtInStrategies, InstalledPluginsPort installedPlugins) {
-    List<SlashCommandParseStrategy> safeBuiltIns = List.copyOf(builtInStrategies);
-    if (installedPlugins == null) {
-      return safeBuiltIns;
-    }
-    return installedPlugins.loadInstalledServices(SlashCommandParseStrategy.class, safeBuiltIns);
   }
 }
