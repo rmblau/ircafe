@@ -65,7 +65,6 @@ public class RuntimeConfigStore
         EmbedLoadPolicyConfigPort,
         FilterSettingsConfigPort,
         IgnoreRulesConfigPort,
-        Ircv3StsPolicyConfigPort,
         IrcSessionRuntimeConfigPort,
         NickColorRuntimeConfigPort,
         NotificationRuntimeConfigPort,
@@ -1155,14 +1154,12 @@ public class RuntimeConfigStore
    *
    * <p>Entries with invalid hosts or missing/invalid expiry are ignored.
    */
-  @Override
   public synchronized Map<String, Ircv3StsPolicyConfigPort.StsPolicySnapshot>
       readIrcv3StsPolicies() {
     return stores.ircv3Stores.stsPolicyStore.readPolicies();
   }
 
   /** Persists one IRCv3 STS policy snapshot under {@code ircafe.ircv3.stsPolicies.<host>}. */
-  @Override
   public synchronized void rememberIrcv3StsPolicy(
       String host,
       long expiresAtEpochMs,
@@ -1175,7 +1172,6 @@ public class RuntimeConfigStore
   }
 
   /** Removes a persisted IRCv3 STS policy snapshot from {@code ircafe.ircv3.stsPolicies}. */
-  @Override
   public synchronized void forgetIrcv3StsPolicy(String host) {
     stores.ircv3Stores.stsPolicyStore.forgetPolicy(host);
   }

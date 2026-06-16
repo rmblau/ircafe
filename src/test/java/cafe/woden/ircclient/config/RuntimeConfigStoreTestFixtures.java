@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.config;
 
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
+import cafe.woden.ircclient.config.api.Ircv3StsPolicyConfigPort;
 import cafe.woden.ircclient.config.api.MonitorRosterConfigPort;
 import java.nio.file.Path;
 import java.util.List;
@@ -40,5 +41,9 @@ public final class RuntimeConfigStoreTestFixtures {
 
   public static MonitorRosterConfigPort monitorRosterPort(RuntimeConfigStore store) {
     return new RuntimeConfigMonitorRosterAdapter(store);
+  }
+
+  public static Ircv3StsPolicyConfigPort ircv3StsPolicyPort(RuntimeConfigStore store) {
+    return new RuntimeConfigIrcv3StsPolicyAdapter(store);
   }
 }
