@@ -27,7 +27,6 @@ import cafe.woden.ircclient.config.api.ServerTreeRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.TrayRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
-import cafe.woden.ircclient.config.api.UserCommandAliasesConfigPort;
 import cafe.woden.ircclient.config.properties.PushyProperties;
 import cafe.woden.ircclient.config.runtime.RuntimeConfigStoreDelegates;
 import cafe.woden.ircclient.model.FilterRule;
@@ -68,8 +67,7 @@ public class RuntimeConfigStore
         ServerAutoConnectRuntimeConfigPort,
         TrayRuntimeConfigPort,
         UiShellRuntimeConfigPort,
-        UiSettingsRuntimeConfigPort,
-        UserCommandAliasesConfigPort {
+        UiSettingsRuntimeConfigPort {
 
   public static final String DEFAULT_QUIT_MESSAGE =
       ChatCommandRuntimeConfigPort.DEFAULT_QUIT_MESSAGE;
@@ -687,12 +685,10 @@ public class RuntimeConfigStore
     stores.uiStores.notificationStore.rememberRules(rules);
   }
 
-  @Override
   public synchronized List<UserCommandAlias> readUserCommandAliases() {
     return stores.userCommandStore.readAliases();
   }
 
-  @Override
   public synchronized boolean readUnknownCommandAsRawEnabled(boolean defaultValue) {
     return stores.userCommandStore.readUnknownCommandAsRawEnabled(defaultValue);
   }
@@ -828,12 +824,10 @@ public class RuntimeConfigStore
     return stores.uiStores.ctcpAutoReplyStore.readTimeEnabled(defaultValue);
   }
 
-  @Override
   public synchronized void rememberUserCommandAliases(List<UserCommandAlias> aliases) {
     stores.userCommandStore.rememberAliases(aliases);
   }
 
-  @Override
   public synchronized void rememberUnknownCommandAsRawEnabled(boolean enabled) {
     stores.userCommandStore.rememberUnknownCommandAsRawEnabled(enabled);
   }

@@ -10,6 +10,7 @@ import cafe.woden.ircclient.config.api.NickColorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.OutgoingMessageRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.SpellcheckRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.TimestampRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.UserCommandAliasesConfigPort;
 import cafe.woden.ircclient.irc.backend.IrcHeartbeatMaintenanceService;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.notifications.api.IrcEventNotificationRulesPort;
@@ -160,7 +161,9 @@ final class PreferencesCommitSupport {
     IrcEventNotificationsTabSupport.rememberSettings(
         runtimeConfig, request.ircEventNotificationRulesBus(), snapshot.ircEventNotification());
     UserCommandAliasesControlsSupport.rememberSettings(
-        runtimeConfig, request.userCommandAliasesBus(), snapshot.userCommand());
+        request.userCommandAliasesRuntimeConfig(),
+        request.userCommandAliasesBus(),
+        snapshot.userCommand());
     TranslationControlsSupport.rememberSettings(
         runtimeConfig, request.translationSettingsBus(), snapshot.translation());
     DiagnosticsControlsSupport.rememberSettings(runtimeConfig, snapshot.diagnostics());
@@ -223,6 +226,7 @@ final class PreferencesCommitSupport {
       TimestampRuntimeConfigPort timestampRuntimeConfig,
       SpellcheckRuntimeConfigPort spellcheckRuntimeConfig,
       NickColorRuntimeConfigPort nickColorRuntimeConfig,
+      UserCommandAliasesConfigPort userCommandAliasesRuntimeConfig,
       UiSettingsBus settingsBus,
       SpellcheckSettingsBus spellcheckSettingsBus,
       ThemeAccentSettingsBus accentSettingsBus,

@@ -21,6 +21,7 @@ import cafe.woden.ircclient.config.api.NickColorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.OutgoingMessageRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.SpellcheckRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.TimestampRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.UserCommandAliasesConfigPort;
 import cafe.woden.ircclient.config.properties.LogProperties;
 import cafe.woden.ircclient.irc.backend.IrcHeartbeatMaintenanceService;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionCatalog;
@@ -432,6 +433,7 @@ class PreferencesDialogFunctionalTest {
         mock(TimestampRuntimeConfigPort.class),
         mock(SpellcheckRuntimeConfigPort.class),
         mock(NickColorRuntimeConfigPort.class),
+        mock(UserCommandAliasesConfigPort.class),
         mock(LogProperties.class),
         mock(NickColorSettingsBus.class),
         mock(NickColorService.class),
