@@ -232,6 +232,8 @@ import cafe.woden.ircclient.ui.input.spi.MatrixUploadMsgTypeProvider;
 import cafe.woden.ircclient.ui.input.spi.MatrixUploadMsgTypeRule;
 import cafe.woden.ircclient.ui.input.spi.MessageInputSpellcheckDictionaryProvider;
 import cafe.woden.ircclient.ui.input.spi.MessageInputWordSuggestionProvider;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemeContributionProvider;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemePresetContribution;
 import java.lang.annotation.Annotation;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 import org.jmolecules.architecture.layered.DomainLayer;
@@ -633,6 +635,8 @@ class JmoleculesIncrementalAdoptionTest {
     assertAnnotated(MatrixUploadMsgTypeRule.class, InterfaceLayer.class);
     assertAnnotated(MessageInputSpellcheckDictionaryProvider.class, InterfaceLayer.class);
     assertAnnotated(MessageInputWordSuggestionProvider.class, InterfaceLayer.class);
+    assertAnnotated(ThemeContributionProvider.class, InterfaceLayer.class);
+    assertAnnotated(ThemePresetContribution.class, InterfaceLayer.class);
     assertAnnotatedByName("cafe.woden.ircclient.ui.ChatDockable", InterfaceLayer.class);
     assertAnnotatedByName("cafe.woden.ircclient.ui.CommandHistoryStore", InterfaceLayer.class);
     assertAnnotatedByName("cafe.woden.ircclient.ui.NickContextMenuFactory", InterfaceLayer.class);

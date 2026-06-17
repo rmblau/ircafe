@@ -1,6 +1,8 @@
 package cafe.woden.ircclient.ui.settings.theme;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemeContributionProvider;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemePresetContribution;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;

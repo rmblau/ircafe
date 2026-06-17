@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemeContributionProvider;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemePresetContribution;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.nio.file.Files;
@@ -134,9 +136,9 @@ class ThemeContributionProviderTest {
     return """
         package plugin.theme;
 
-        import cafe.woden.ircclient.ui.settings.theme.ThemeContributionProvider;
         import cafe.woden.ircclient.ui.settings.theme.ThemeManager;
-        import cafe.woden.ircclient.ui.settings.theme.ThemePresetContribution;
+        import cafe.woden.ircclient.ui.settings.theme.spi.ThemeContributionProvider;
+        import cafe.woden.ircclient.ui.settings.theme.spi.ThemePresetContribution;
         import cafe.woden.ircclient.ui.util.UiColorKeys;
         import java.util.List;
         import java.util.Map;

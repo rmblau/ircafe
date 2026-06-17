@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.theme;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemePresetContribution;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.util.LinkedHashMap;
 import java.util.Map;

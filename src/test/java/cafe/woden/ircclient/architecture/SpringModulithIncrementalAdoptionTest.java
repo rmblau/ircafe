@@ -190,6 +190,8 @@ import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import cafe.woden.ircclient.ui.settings.UiSettingsPortAdapter;
 import cafe.woden.ircclient.ui.settings.theme.ThemeIdUtils;
 import cafe.woden.ircclient.ui.settings.theme.ThemeManager;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemeContributionProvider;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemePresetContribution;
 import cafe.woden.ircclient.ui.shell.MainFrame;
 import cafe.woden.ircclient.ui.spi.ExternalBrowserCommandProvider;
 import cafe.woden.ircclient.ui.spi.ExternalBrowserSchemeProvider;
@@ -428,6 +430,11 @@ class SpringModulithIncrementalAdoptionTest {
     assertNamedInterfaceContains(uiModule, "settings", UiSettingsBus.class);
     assertNamedInterfaceContains(
         uiModule, "settings-theme", ThemeManager.class, ThemeIdUtils.class);
+    assertNamedInterfaceContains(
+        uiModule,
+        "settings-theme-spi",
+        ThemeContributionProvider.class,
+        ThemePresetContribution.class);
     assertNamedInterfaceContains(
         uiModule, "spi", ExternalBrowserCommandProvider.class, ExternalBrowserSchemeProvider.class);
     assertNamedInterfaceContains(
