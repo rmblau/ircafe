@@ -10,7 +10,9 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.app.api.ConnectionState;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
+import cafe.woden.ircclient.config.RuntimeConfigServerTreeAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.config.api.ServerEntry;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.ui.controls.ConnectButton;
@@ -298,9 +300,11 @@ class ServerTreeDockableServerAutoConnectMenuTest {
 
   private static ServerTreeDockable newDockable(
       ServerCatalog serverCatalog, RuntimeConfigStore runtimeConfig) {
+    RuntimeConfigStore effectiveRuntimeConfig =
+        runtimeConfig != null ? runtimeConfig : RuntimeConfigStoreTestFixtures.inMemoryStore();
     return ServerTreeDockableTestSupport.newDockable(
         serverCatalog,
-        runtimeConfig,
+        new RuntimeConfigServerTreeAdapter(effectiveRuntimeConfig),
         null,
         null,
         null,

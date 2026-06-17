@@ -13,6 +13,7 @@ import cafe.woden.ircclient.app.api.TargetLogMaintenancePort;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
+import cafe.woden.ircclient.config.RuntimeConfigServerTreeAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.servers.ServerRegistry;
 import cafe.woden.ircclient.ignore.api.IgnoreListQueryPort;
@@ -115,7 +116,7 @@ class TargetCoordinatorPrivateClosePolicyTest {
         IrcTargetMembershipPort.from(irc),
         irc,
         mock(ServerRegistry.class),
-        mock(RuntimeConfigStore.class),
+        new RuntimeConfigServerTreeAdapter(mock(RuntimeConfigStore.class)),
         mock(ConnectionCoordinator.class),
         mock(IgnoreListQueryPort.class),
         mock(UserhostQueryService.class),

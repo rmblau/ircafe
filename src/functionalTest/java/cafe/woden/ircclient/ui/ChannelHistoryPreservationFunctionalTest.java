@@ -15,6 +15,7 @@ import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.app.outbound.backend.OutboundBackendCapabilityPolicy;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
+import cafe.woden.ircclient.config.RuntimeConfigServerTreeAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.config.properties.LogProperties;
@@ -170,7 +171,7 @@ class ChannelHistoryPreservationFunctionalTest {
             () ->
                 FunctionalTestWiringSupport.newServerTreeDockable(
                     serverCatalog,
-                    runtimeConfig,
+                    new RuntimeConfigServerTreeAdapter(runtimeConfig),
                     new LogProperties(true, true, false, true, true, true, 0, null, null, null),
                     null,
                     null,
@@ -264,7 +265,7 @@ class ChannelHistoryPreservationFunctionalTest {
             IrcTargetMembershipPort.from(irc),
             bouncerPlayback,
             serverRegistry,
-            runtimeConfig,
+            new RuntimeConfigServerTreeAdapter(runtimeConfig),
             connectionCoordinator,
             mock(IgnoreListQueryPort.class),
             mock(UserhostQueryService.class),

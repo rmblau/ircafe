@@ -19,6 +19,7 @@ import cafe.woden.ircclient.config.api.OutgoingMessageRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.SpellcheckRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.TimestampRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.TrayRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UserCommandAliasesConfigPort;
 import cafe.woden.ircclient.irc.backend.IrcHeartbeatMaintenanceService;
 import cafe.woden.ircclient.model.TargetRef;
@@ -130,7 +131,7 @@ final class PreferencesCommitSupport {
         request.appearanceRuntimeConfig(), appearance.tweaks());
 
     runtimeConfig.rememberUiSettings(next.theme(), next.chatFontFamily(), next.chatFontSize());
-    MemoryControlsSupport.rememberSettings(runtimeConfig, snapshot.memory());
+    MemoryControlsSupport.rememberSettings(request.uiShellRuntimeConfig(), snapshot.memory());
     AppearanceControlsSupport.rememberChatThemeSettings(
         request.appearanceRuntimeConfig(), appearance.chatTheme());
     runtimeConfig.rememberAutoConnectOnStart(next.autoConnectOnStart());
@@ -241,6 +242,7 @@ final class PreferencesCommitSupport {
       AppearanceRuntimeConfigPort appearanceRuntimeConfig,
       ChatBehaviorRuntimeConfigPort chatBehaviorRuntimeConfig,
       TrayRuntimeConfigPort trayRuntimeConfig,
+      UiShellRuntimeConfigPort uiShellRuntimeConfig,
       ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
       ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig,
       DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,

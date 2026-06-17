@@ -21,6 +21,7 @@ import cafe.woden.ircclient.config.api.OutgoingMessageRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.SpellcheckRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.TimestampRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.TrayRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UserCommandAliasesConfigPort;
 import cafe.woden.ircclient.config.execution.ExecutorConfig;
 import cafe.woden.ircclient.config.properties.LogProperties;
@@ -90,6 +91,7 @@ public class PreferencesDialog {
   private final AppearanceRuntimeConfigPort appearanceRuntimeConfig;
   private final ChatBehaviorRuntimeConfigPort chatBehaviorRuntimeConfig;
   private final TrayRuntimeConfigPort trayRuntimeConfig;
+  private final UiShellRuntimeConfigPort uiShellRuntimeConfig;
   private final ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig;
   private final ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig;
   private final DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig;
@@ -145,6 +147,7 @@ public class PreferencesDialog {
       AppearanceRuntimeConfigPort appearanceRuntimeConfig,
       ChatBehaviorRuntimeConfigPort chatBehaviorRuntimeConfig,
       TrayRuntimeConfigPort trayRuntimeConfig,
+      UiShellRuntimeConfigPort uiShellRuntimeConfig,
       ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
       ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig,
       DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,
@@ -195,6 +198,7 @@ public class PreferencesDialog {
         appearanceRuntimeConfig,
         chatBehaviorRuntimeConfig,
         trayRuntimeConfig,
+        uiShellRuntimeConfig,
         chatLoggingRuntimeConfig,
         chatHistoryRuntimeConfig,
         diagnosticsRuntimeConfig,
@@ -249,6 +253,7 @@ public class PreferencesDialog {
       AppearanceRuntimeConfigPort appearanceRuntimeConfig,
       ChatBehaviorRuntimeConfigPort chatBehaviorRuntimeConfig,
       TrayRuntimeConfigPort trayRuntimeConfig,
+      UiShellRuntimeConfigPort uiShellRuntimeConfig,
       ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
       ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig,
       DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,
@@ -300,6 +305,7 @@ public class PreferencesDialog {
     this.appearanceRuntimeConfig = appearanceRuntimeConfig;
     this.chatBehaviorRuntimeConfig = chatBehaviorRuntimeConfig;
     this.trayRuntimeConfig = trayRuntimeConfig;
+    this.uiShellRuntimeConfig = uiShellRuntimeConfig;
     this.chatLoggingRuntimeConfig = chatLoggingRuntimeConfig;
     this.chatHistoryRuntimeConfig = chatHistoryRuntimeConfig;
     this.diagnosticsRuntimeConfig = diagnosticsRuntimeConfig;
@@ -464,6 +470,7 @@ public class PreferencesDialog {
                   appearanceRuntimeConfig,
                   chatBehaviorRuntimeConfig,
                   trayRuntimeConfig,
+                  uiShellRuntimeConfig,
                   chatLoggingRuntimeConfig,
                   chatHistoryRuntimeConfig,
                   diagnosticsRuntimeConfig,

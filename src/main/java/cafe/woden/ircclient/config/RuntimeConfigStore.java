@@ -2,22 +2,15 @@ package cafe.woden.ircclient.config;
 
 import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
-import cafe.woden.ircclient.config.api.IrcSessionRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.Ircv3CapabilityNameResolverPort;
 import cafe.woden.ircclient.config.api.Ircv3StsPolicyConfigPort;
 import cafe.woden.ircclient.config.api.NotificationRule;
-import cafe.woden.ircclient.config.api.ServerAutoConnectRuntimeConfigPort;
-import cafe.woden.ircclient.config.api.ServerTreeBuiltInVisibilityConfigPort;
 import cafe.woden.ircclient.config.api.ServerTreeBuiltInVisibilityConfigPort.ServerTreeBuiltInNodesVisibility;
-import cafe.woden.ircclient.config.api.ServerTreeChannelStateConfigPort;
 import cafe.woden.ircclient.config.api.ServerTreeChannelStateConfigPort.ServerTreeChannelSortMode;
 import cafe.woden.ircclient.config.api.ServerTreeChannelStateConfigPort.ServerTreeChannelState;
-import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayout;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeRootSiblingOrder;
-import cafe.woden.ircclient.config.api.ServerTreeRuntimeConfigPort;
-import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
-import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort.LastSelectedTarget;
 import cafe.woden.ircclient.config.properties.PushyProperties;
 import cafe.woden.ircclient.config.runtime.RuntimeConfigStoreDelegates;
 import cafe.woden.ircclient.model.FilterRule;
@@ -40,15 +33,7 @@ import org.springframework.stereotype.Component;
 @Component
 @SecondaryAdapter
 @ApplicationLayer
-public class RuntimeConfigStore
-    implements IrcSessionRuntimeConfigPort,
-        ServerTreeBuiltInVisibilityConfigPort,
-        ServerTreeChannelStateConfigPort,
-        ServerTreeLayoutConfigPort,
-        ServerTreeRuntimeConfigPort,
-        ServerAutoConnectRuntimeConfigPort,
-        UiShellRuntimeConfigPort,
-        UiSettingsRuntimeConfigPort {
+public class RuntimeConfigStore {
 
   public static final String DEFAULT_QUIT_MESSAGE =
       ChatCommandRuntimeConfigPort.DEFAULT_QUIT_MESSAGE;
@@ -172,17 +157,14 @@ public class RuntimeConfigStore
     return stores.serverStores.serverListStore.readExplicitServerAutoJoinById();
   }
 
-  @Override
   public synchronized void rememberJoinedChannel(String serverId, String channel) {
     rememberServerTreeChannel(serverId, channel);
   }
 
-  @Override
   public synchronized void forgetJoinedChannel(String serverId, String channel) {
     forgetServerTreeChannel(serverId, channel);
   }
 
-  @Override
   public synchronized List<String> readJoinedChannels(String serverId) {
     return stores.serverStores.serverTreeChannelStateStore.readJoinedChannels(serverId);
   }
@@ -192,14 +174,12 @@ public class RuntimeConfigStore
     return stores.serverStores.serverTreeChannelStateStore.readKnownChannels(serverId);
   }
 
-  @Override
   public synchronized boolean readServerTreeChannelAutoReattach(
       String serverId, String channel, boolean defaultValue) {
     return stores.serverStores.serverTreeChannelStateStore.readServerTreeChannelAutoReattach(
         serverId, channel, defaultValue);
   }
 
-  @Override
   public synchronized void rememberServerTreeChannel(String serverId, String channel) {
     stores.serverStores.serverTreeChannelStateStore.rememberServerTreeChannel(serverId, channel);
   }
@@ -208,35 +188,30 @@ public class RuntimeConfigStore
     stores.serverStores.serverTreeChannelStateStore.forgetServerTreeChannel(serverId, channel);
   }
 
-  @Override
   public synchronized void rememberServerTreeChannelAutoReattach(
       String serverId, String channel, boolean autoReattach) {
     stores.serverStores.serverTreeChannelStateStore.rememberServerTreeChannelAutoReattach(
         serverId, channel, autoReattach);
   }
 
-  @Override
   public synchronized boolean readServerTreeChannelPinned(
       String serverId, String channel, boolean defaultValue) {
     return stores.serverStores.serverTreeChannelStateStore.readServerTreeChannelPinned(
         serverId, channel, defaultValue);
   }
 
-  @Override
   public synchronized void rememberServerTreeChannelPinned(
       String serverId, String channel, boolean pinned) {
     stores.serverStores.serverTreeChannelStateStore.rememberServerTreeChannelPinned(
         serverId, channel, pinned);
   }
 
-  @Override
   public synchronized boolean readServerTreeChannelMuted(
       String serverId, String channel, boolean defaultValue) {
     return stores.serverStores.serverTreeChannelStateStore.readServerTreeChannelMuted(
         serverId, channel, defaultValue);
   }
 
-  @Override
   public synchronized void rememberServerTreeChannelMuted(
       String serverId, String channel, boolean muted) {
     stores.serverStores.serverTreeChannelStateStore.rememberServerTreeChannelMuted(
@@ -249,7 +224,6 @@ public class RuntimeConfigStore
         serverId, defaultValue);
   }
 
-  @Override
   public synchronized void rememberServerTreeChannelSortMode(
       String serverId, ServerTreeChannelSortMode mode) {
     stores.serverStores.serverTreeChannelStateStore.rememberServerTreeChannelSortMode(
@@ -261,14 +235,12 @@ public class RuntimeConfigStore
         serverId);
   }
 
-  @Override
   public synchronized void rememberServerTreeChannelCustomOrder(
       String serverId, List<String> customOrder) {
     stores.serverStores.serverTreeChannelStateStore.rememberServerTreeChannelCustomOrder(
         serverId, customOrder);
   }
 
-  @Override
   public synchronized ServerTreeChannelState readServerTreeChannelState(String serverId) {
     return stores.serverStores.serverTreeChannelStateStore.readServerTreeChannelState(serverId);
   }
@@ -330,42 +302,34 @@ public class RuntimeConfigStore
     stores.uiStores.uiSettingsStore.clearStartupThemePending();
   }
 
-  @Override
   public synchronized void rememberMemoryUsageDisplayMode(String mode) {
     stores.uiStores.memoryUsageStore.rememberDisplayMode(mode);
   }
 
-  @Override
   public synchronized int readMemoryUsageRefreshIntervalMs(int defaultValue) {
     return stores.uiStores.memoryUsageStore.readRefreshIntervalMs(defaultValue);
   }
 
-  @Override
   public synchronized void rememberMemoryUsageRefreshIntervalMs(int intervalMs) {
     stores.uiStores.memoryUsageStore.rememberRefreshIntervalMs(intervalMs);
   }
 
-  @Override
   public synchronized void rememberMemoryUsageWarningNearMaxPercent(int percent) {
     stores.uiStores.memoryUsageStore.rememberWarningNearMaxPercent(percent);
   }
 
-  @Override
   public synchronized void rememberMemoryUsageWarningTooltipEnabled(boolean enabled) {
     stores.uiStores.memoryUsageStore.rememberWarningTooltipEnabled(enabled);
   }
 
-  @Override
   public synchronized void rememberMemoryUsageWarningToastEnabled(boolean enabled) {
     stores.uiStores.memoryUsageStore.rememberWarningToastEnabled(enabled);
   }
 
-  @Override
   public synchronized void rememberMemoryUsageWarningPushyEnabled(boolean enabled) {
     stores.uiStores.memoryUsageStore.rememberWarningPushyEnabled(enabled);
   }
 
-  @Override
   public synchronized void rememberMemoryUsageWarningSoundEnabled(boolean enabled) {
     stores.uiStores.memoryUsageStore.rememberWarningSoundEnabled(enabled);
   }
@@ -674,12 +638,10 @@ public class RuntimeConfigStore
     return stores.uiStores.chatBehaviorStore.readDefaultQuitMessage();
   }
 
-  @Override
   public synchronized boolean readNickCompletionCycleWithTabEnabled(boolean defaultValue) {
     return stores.uiStores.chatBehaviorStore.readNickCompletionCycleWithTabEnabled(defaultValue);
   }
 
-  @Override
   public synchronized boolean readNickCompletionAppendAddressSuffixEnabled(boolean defaultValue) {
     return stores.uiStores.chatBehaviorStore.readNickCompletionAppendAddressSuffixEnabled(
         defaultValue);
@@ -1114,7 +1076,6 @@ public class RuntimeConfigStore
    * Returns whether a given IRCv3 capability should be requested, falling back to {@code
    * defaultEnabled} when no explicit override is present.
    */
-  @Override
   public synchronized boolean isIrcv3CapabilityEnabled(String capability, boolean defaultEnabled) {
     return stores.ircv3Stores.capabilityStore.isCapabilityEnabled(capability, defaultEnabled);
   }
@@ -1124,7 +1085,6 @@ public class RuntimeConfigStore
    *
    * <p>Default behavior is "enabled", so enabled values are removed to keep YAML concise.
    */
-  @Override
   public synchronized void rememberIrcv3CapabilityEnabled(String capability, boolean enabled) {
     stores.ircv3Stores.capabilityStore.rememberCapabilityEnabled(capability, enabled);
   }

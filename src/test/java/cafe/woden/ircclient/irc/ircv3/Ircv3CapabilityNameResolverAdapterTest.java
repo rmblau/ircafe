@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
+import cafe.woden.ircclient.config.RuntimeConfigPathAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ class Ircv3CapabilityNameResolverAdapterTest {
           .withPropertyValues("ircafe.runtime-config=")
           .withUserConfiguration(
               RuntimeConfigStore.class,
+              RuntimeConfigPathAdapter.class,
               InstalledPluginServices.class,
               Ircv3ExtensionCatalog.class,
               Ircv3CapabilityNameResolverAdapter.class)

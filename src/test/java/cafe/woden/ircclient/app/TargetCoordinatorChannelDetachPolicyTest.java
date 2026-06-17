@@ -17,6 +17,7 @@ import cafe.woden.ircclient.app.api.TargetLogMaintenancePort;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
+import cafe.woden.ircclient.config.RuntimeConfigServerTreeAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.servers.ServerRegistry;
 import cafe.woden.ircclient.ignore.api.IgnoreListQueryPort;
@@ -418,7 +419,7 @@ class TargetCoordinatorChannelDetachPolicyTest {
         IrcTargetMembershipPort.from(irc),
         irc,
         serverRegistry,
-        runtimeConfig,
+        new RuntimeConfigServerTreeAdapter(runtimeConfig),
         connectionCoordinator,
         mock(IgnoreListQueryPort.class),
         mock(UserhostQueryService.class),

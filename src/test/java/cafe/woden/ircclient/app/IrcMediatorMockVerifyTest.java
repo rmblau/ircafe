@@ -58,6 +58,7 @@ import cafe.woden.ircclient.app.outbound.dcc.OutboundDccCommandService;
 import cafe.woden.ircclient.app.translation.MessageTranslationDispatcher;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
+import cafe.woden.ircclient.config.RuntimeConfigServerTreeAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.servers.ServerRegistry;
 import cafe.woden.ircclient.ignore.api.InboundIgnorePolicyPort;
@@ -191,7 +192,7 @@ class IrcMediatorMockVerifyTest {
           inboundModeEventHandler,
           userInfoEnrichmentService,
           joinRoutingState,
-          runtimeConfig,
+          new RuntimeConfigServerTreeAdapter(runtimeConfig),
           serverRegistry);
   private final MediatorRosterStatusEventHandler mediatorRosterStatusEventHandler =
       new MediatorRosterStatusEventHandler(ui, targetCoordinator);
@@ -218,7 +219,7 @@ class IrcMediatorMockVerifyTest {
           ui,
           commandParser,
           userCommandAliasEngine,
-          runtimeConfig,
+          new RuntimeConfigServerTreeAdapter(runtimeConfig),
           connectionCoordinator,
           outboundCommandDispatcher,
           targetCoordinator,

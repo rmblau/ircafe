@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
+import cafe.woden.ircclient.config.RuntimeConfigServerTreeAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.ServerEntry;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
@@ -321,7 +322,7 @@ class ServerTreeDockableFunctionalTest {
       ServerCatalog serverCatalog, RuntimeConfigStore runtimeConfig) {
     return FunctionalTestWiringSupport.newServerTreeDockable(
         serverCatalog,
-        runtimeConfig,
+        new RuntimeConfigServerTreeAdapter(runtimeConfig),
         null,
         null,
         null,

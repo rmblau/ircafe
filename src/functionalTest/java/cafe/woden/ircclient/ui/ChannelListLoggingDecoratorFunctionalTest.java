@@ -12,6 +12,7 @@ import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigDiagnosticsAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigMonitorRosterAdapter;
+import cafe.woden.ircclient.config.RuntimeConfigServerTreeAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.config.properties.LogProperties;
@@ -134,7 +135,7 @@ class ChannelListLoggingDecoratorFunctionalTest {
             () ->
                 FunctionalTestWiringSupport.newServerTreeDockable(
                     serverCatalog,
-                    runtimeConfig,
+                    new RuntimeConfigServerTreeAdapter(runtimeConfig),
                     logProps,
                     null,
                     null,

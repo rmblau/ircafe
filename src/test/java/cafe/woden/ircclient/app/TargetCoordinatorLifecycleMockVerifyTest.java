@@ -15,6 +15,7 @@ import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
+import cafe.woden.ircclient.config.RuntimeConfigServerTreeAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.servers.ServerRegistry;
 import cafe.woden.ircclient.ignore.api.IgnoreListQueryPort;
@@ -278,7 +279,7 @@ class TargetCoordinatorLifecycleMockVerifyTest {
         IrcTargetMembershipPort.from(irc),
         irc,
         serverRegistry,
-        runtimeConfig,
+        new RuntimeConfigServerTreeAdapter(runtimeConfig),
         connectionCoordinator,
         mock(IgnoreListQueryPort.class),
         mock(UserhostQueryService.class),
