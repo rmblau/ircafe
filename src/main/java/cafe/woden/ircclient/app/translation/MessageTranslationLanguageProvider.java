@@ -1,17 +1,13 @@
 package cafe.woden.ircclient.app.translation;
 
-import java.util.List;
-import org.jmolecules.architecture.hexagonal.SecondaryPort;
-import org.jmolecules.architecture.layered.ApplicationLayer;
-
 /**
- * ServiceLoader-backed provider for manual translation target-language metadata.
+ * Legacy translation language service name.
  *
- * <p>Plugins register implementations in {@code
- * META-INF/services/cafe.woden.ircclient.app.translation.MessageTranslationLanguageProvider}.
+ * @deprecated register {@link
+ *     cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider} implementations
+ *     under {@code
+ *     META-INF/services/cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider}.
  */
-@SecondaryPort
-@ApplicationLayer
-public interface MessageTranslationLanguageProvider {
-  List<MessageTranslationLanguage> languages();
-}
+@Deprecated(since = "0.1", forRemoval = false)
+public interface MessageTranslationLanguageProvider
+    extends cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider {}

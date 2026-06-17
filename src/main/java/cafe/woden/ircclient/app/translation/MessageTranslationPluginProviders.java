@@ -33,16 +33,28 @@ final class MessageTranslationPluginProviders {
     return dedupeProviders(nonNullServices(providers));
   }
 
-  static List<MessageTranslationLanguageProvider> languageProviders(
-      List<MessageTranslationLanguageProvider> builtInProviders,
-      InstalledPluginsPort installedPlugins) {
-    List<MessageTranslationLanguageProvider> providers = nonNullServices(builtInProviders);
+  static List<cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider>
+      languageProviders(
+          List<
+                  ? extends
+                      cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider>
+              builtInProviders,
+          InstalledPluginsPort installedPlugins) {
+    List<cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider> providers =
+        nonNullServices(builtInProviders);
     if (installedPlugins == null) {
       return providers;
     }
-    return nonNullServices(
+    ArrayList<cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider>
+        loadedProviders = new ArrayList<>();
+    loadedProviders.addAll(
         installedPlugins.loadInstalledServices(
-            MessageTranslationLanguageProvider.class, providers));
+            cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider.class,
+            providers));
+    loadedProviders.addAll(
+        installedPlugins.loadInstalledServices(
+            MessageTranslationLanguageProvider.class, List.of()));
+    return nonNullServices(loadedProviders);
   }
 
   private static List<MessageTranslationBackendProvider> dedupeProviders(

@@ -50,8 +50,9 @@ public final class MessageTranslationLanguageCatalog {
           new MessageTranslationLanguage("vi", "Vietnamese"),
           new MessageTranslationLanguage("zh", "Chinese"));
 
-  private static final List<MessageTranslationLanguageProvider> BUILT_IN_PROVIDERS =
-      List.of(() -> COMMON_TARGETS);
+  private static final List<
+          cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider>
+      BUILT_IN_PROVIDERS = List.of(() -> COMMON_TARGETS);
 
   public static List<MessageTranslationLanguage> commonTargets() {
     return COMMON_TARGETS;
@@ -93,11 +94,13 @@ public final class MessageTranslationLanguageCatalog {
   }
 
   private static List<MessageTranslationLanguage> mergeLanguages(
-      List<MessageTranslationLanguageProvider> providers) {
+      List<? extends cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider>
+          providers) {
     Map<String, MessageTranslationLanguage> byCode = new LinkedHashMap<>();
-    List<MessageTranslationLanguageProvider> safeProviders =
-        providers == null ? List.of() : providers;
-    for (MessageTranslationLanguageProvider provider : safeProviders) {
+    List<? extends cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider>
+        safeProviders = providers == null ? List.of() : providers;
+    for (cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider provider :
+        safeProviders) {
       if (provider == null) {
         continue;
       }
