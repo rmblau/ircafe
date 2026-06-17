@@ -23,6 +23,8 @@ import org.junit.jupiter.api.io.TempDir;
 class SlashCommandPresentationCatalogTest {
 
   private static final String PLUGIN_CONTRIBUTOR_CLASS = "plugin.commands.PluginHelpContributor";
+  private static final String SPI_PLUGIN_CONTRIBUTOR_CLASS =
+      "plugin.commands.PluginSpiHelpContributor";
 
   @TempDir Path tempDir;
 
@@ -166,6 +168,44 @@ class SlashCommandPresentationCatalogTest {
   }
 
   @Test
+  void loadsServiceLoaderPresentationContributorProvidersFromInstalledPlugins() throws Exception {
+    Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
+    Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
+    CompiledPluginJarSupport.writePluginJar(
+        pluginDir.resolve("example-slash-command-presentation-spi.jar"),
+        SPI_PLUGIN_CONTRIBUTOR_CLASS,
+        pluginSpiContributorSource(),
+        cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor.class.getName(),
+        CompiledPluginJarSupport.compatibleManifest(
+            "example-slash-command-presentation-spi", "1.0.0"));
+    RuntimeConfigPathPort runtimeConfigPathPort =
+        () -> runtimeConfigDirectory.resolve("ircafe.yml");
+
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+    SlashCommandPresentationCatalog catalog =
+        new SlashCommandPresentationCatalog(
+            List.of(), BackendNamedCommandCatalog.empty(), installedPlugins);
+
+    assertTrue(installedPlugins.pluginProblems().isEmpty());
+    List<String> commands =
+        catalog.autocompleteCommands().stream().map(SlashCommandDescriptor::command).toList();
+    assertEquals(List.of("/plugin-help"), commands);
+
+    ArrayList<String> generalHelp = new ArrayList<>();
+    catalog.appendGeneralHelp(
+        new TargetRef("libera", "status"),
+        (target, line) -> generalHelp.add(target.target() + ":" + line));
+    assertEquals(List.of("status:/plugin-help - plugin jar help"), generalHelp);
+
+    AtomicReference<String> topicHelp = new AtomicReference<>();
+    catalog
+        .topicHelpHandlers((target, line) -> topicHelp.set(target.target() + ":" + line))
+        .get("plugin-help")
+        .accept(new TargetRef("libera", "status"));
+    assertEquals("status:/plugin-help <arg>", topicHelp.get());
+  }
+
+  @Test
   void backendTopicHelpLinesAreExposedThroughCatalogHandlers() {
     BackendNamedCommandHandler backendHandler =
         new BackendNamedCommandHandler() {
@@ -220,6 +260,39 @@ class SlashCommandPresentationCatalogTest {
         import java.util.function.Consumer;
 
         public final class PluginHelpContributor implements SlashCommandPresentationContributor {
+          @Override
+          public List<SlashCommandDescriptor> autocompleteCommands() {
+            return List.of(new SlashCommandDescriptor("/plugin-help", "Plugin help command"));
+          }
+
+          @Override
+          public void appendGeneralHelp(TargetRef out, BiConsumer<TargetRef, String> lineAppender) {
+            lineAppender.accept(out, "/plugin-help - plugin jar help");
+          }
+
+          @Override
+          public Map<String, Consumer<TargetRef>> topicHelpHandlers(
+              BiConsumer<TargetRef, String> lineAppender) {
+            return Map.of("plugin-help", out -> lineAppender.accept(out, "/plugin-help <arg>"));
+          }
+        }
+        """;
+  }
+
+  private static String pluginSpiContributorSource() {
+    return """
+        package plugin.commands;
+
+        import cafe.woden.ircclient.app.commands.SlashCommandDescriptor;
+        import cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor;
+        import cafe.woden.ircclient.model.TargetRef;
+        import java.util.List;
+        import java.util.Map;
+        import java.util.function.BiConsumer;
+        import java.util.function.Consumer;
+
+        public final class PluginSpiHelpContributor
+            implements SlashCommandPresentationContributor {
           @Override
           public List<SlashCommandDescriptor> autocompleteCommands() {
             return List.of(new SlashCommandDescriptor("/plugin-help", "Plugin help command"));

@@ -41,15 +41,26 @@ final class CommandPluginProviders {
     return nonNullServices(loadedStrategies);
   }
 
-  static List<SlashCommandPresentationContributor> slashCommandPresentationContributors(
-      List<SlashCommandPresentationContributor> builtInContributors,
-      InstalledPluginsPort installedPlugins) {
-    List<SlashCommandPresentationContributor> contributors = nonNullServices(builtInContributors);
+  static List<cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor>
+      slashCommandPresentationContributors(
+          List<? extends cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor>
+              builtInContributors,
+          InstalledPluginsPort installedPlugins) {
+    List<cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor> contributors =
+        nonNullServices(builtInContributors);
     if (installedPlugins == null) {
       return contributors;
     }
-    return installedPlugins.loadInstalledServices(
-        SlashCommandPresentationContributor.class, contributors);
+    ArrayList<cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor>
+        loadedContributors = new ArrayList<>();
+    loadedContributors.addAll(
+        installedPlugins.loadInstalledServices(
+            cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor.class,
+            contributors));
+    loadedContributors.addAll(
+        installedPlugins.loadInstalledServices(
+            SlashCommandPresentationContributor.class, List.of()));
+    return nonNullServices(loadedContributors);
   }
 
   static BackendNamedCommandHandlers backendNamedCommandHandlers(

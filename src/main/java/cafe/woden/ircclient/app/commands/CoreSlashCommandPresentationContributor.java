@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 @ApplicationLayer
 public final class CoreSlashCommandPresentationContributor
-    implements SlashCommandPresentationContributor {
+    implements cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor {
 
   private static final List<SlashCommandDescriptor> COMMANDS =
       List.of(

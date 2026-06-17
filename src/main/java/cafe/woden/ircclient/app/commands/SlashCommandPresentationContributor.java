@@ -1,38 +1,13 @@
 package cafe.woden.ircclient.app.commands;
 
-import cafe.woden.ircclient.model.TargetRef;
-import java.util.List;
-import java.util.Map;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import org.jmolecules.architecture.layered.ApplicationLayer;
-
 /**
- * ServiceLoader-backed contribution point for slash-command autocomplete and help presentation
- * metadata.
+ * Legacy slash-command presentation service name.
  *
- * <p>Plugins register implementations in {@code
- * META-INF/services/cafe.woden.ircclient.app.commands.SlashCommandPresentationContributor}.
+ * @deprecated register {@link
+ *     cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor} implementations
+ *     under {@code
+ *     META-INF/services/cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor}.
  */
-@ApplicationLayer
-public interface SlashCommandPresentationContributor {
-
-  default List<SlashCommandDescriptor> autocompleteCommands() {
-    return List.of();
-  }
-
-  default void appendGeneralHelp(TargetRef out) {}
-
-  default void appendGeneralHelp(TargetRef out, BiConsumer<TargetRef, String> lineAppender) {
-    appendGeneralHelp(out);
-  }
-
-  default Map<String, Consumer<TargetRef>> topicHelpHandlers() {
-    return Map.of();
-  }
-
-  default Map<String, Consumer<TargetRef>> topicHelpHandlers(
-      BiConsumer<TargetRef, String> lineAppender) {
-    return topicHelpHandlers();
-  }
-}
+@Deprecated(since = "0.1", forRemoval = false)
+public interface SlashCommandPresentationContributor
+    extends cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor {}

@@ -19,13 +19,14 @@ import org.springframework.stereotype.Component;
 @ApplicationLayer
 public class SlashCommandPresentationCatalog {
 
-  private final List<SlashCommandPresentationContributor> contributors;
+  private final List<cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor>
+      contributors;
   private final BackendNamedCommandCatalog backendNamedCommandCatalog;
   private final List<SlashCommandDescriptor> autocompleteCommands;
 
   @Autowired
   public SlashCommandPresentationCatalog(
-      List<SlashCommandPresentationContributor> contributors,
+      List<cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor> contributors,
       BackendNamedCommandCatalog backendNamedCommandCatalog,
       ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
     this(
@@ -35,7 +36,8 @@ public class SlashCommandPresentationCatalog {
   }
 
   public SlashCommandPresentationCatalog(
-      List<SlashCommandPresentationContributor> contributors,
+      List<? extends cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor>
+          contributors,
       BackendNamedCommandCatalog backendNamedCommandCatalog) {
     this.contributors = nonNullContributors(contributors);
     this.backendNamedCommandCatalog =
@@ -44,7 +46,8 @@ public class SlashCommandPresentationCatalog {
   }
 
   SlashCommandPresentationCatalog(
-      List<SlashCommandPresentationContributor> contributors,
+      List<? extends cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor>
+          contributors,
       BackendNamedCommandCatalog backendNamedCommandCatalog,
       InstalledPluginsPort installedPlugins) {
     this(
@@ -58,7 +61,8 @@ public class SlashCommandPresentationCatalog {
 
   public void appendGeneralHelp(TargetRef out, BiConsumer<TargetRef, String> lineAppender) {
     Objects.requireNonNull(lineAppender, "lineAppender");
-    for (SlashCommandPresentationContributor contributor : contributors) {
+    for (cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor contributor :
+        contributors) {
       contributor.appendGeneralHelp(out, lineAppender);
     }
     backendNamedCommandCatalog
@@ -84,7 +88,8 @@ public class SlashCommandPresentationCatalog {
 
   private List<SlashCommandDescriptor> buildAutocompleteCommands() {
     LinkedHashMap<String, SlashCommandDescriptor> merged = new LinkedHashMap<>();
-    for (SlashCommandPresentationContributor contributor : contributors) {
+    for (cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor contributor :
+        contributors) {
       for (SlashCommandDescriptor command :
           Objects.requireNonNullElse(
               contributor.autocompleteCommands(), List.<SlashCommandDescriptor>of())) {
@@ -102,7 +107,8 @@ public class SlashCommandPresentationCatalog {
   private Map<String, Consumer<TargetRef>> buildTopicHelpHandlers(
       BiConsumer<TargetRef, String> lineAppender) {
     LinkedHashMap<String, Consumer<TargetRef>> handlers = new LinkedHashMap<>();
-    for (SlashCommandPresentationContributor contributor : contributors) {
+    for (cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor contributor :
+        contributors) {
       Map<String, Consumer<TargetRef>> topicHandlers =
           Objects.requireNonNullElse(contributor.topicHelpHandlers(lineAppender), Map.of());
       for (Map.Entry<String, Consumer<TargetRef>> entry : topicHandlers.entrySet()) {
@@ -116,12 +122,22 @@ public class SlashCommandPresentationCatalog {
     return Map.copyOf(handlers);
   }
 
-  private static List<SlashCommandPresentationContributor> nonNullContributors(
-      List<SlashCommandPresentationContributor> contributors) {
+  private static List<cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor>
+      nonNullContributors(
+          List<? extends cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor>
+              contributors) {
     if (contributors == null || contributors.isEmpty()) {
       return List.of();
     }
-    return contributors.stream().filter(Objects::nonNull).toList();
+    java.util.ArrayList<cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor>
+        nonNull = new java.util.ArrayList<>();
+    for (cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor contributor :
+        contributors) {
+      if (contributor != null) {
+        nonNull.add(contributor);
+      }
+    }
+    return List.copyOf(nonNull);
   }
 
   private static void appendStaticHelpLine(
