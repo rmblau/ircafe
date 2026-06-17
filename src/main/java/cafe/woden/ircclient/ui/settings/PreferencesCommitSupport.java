@@ -12,6 +12,7 @@ import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
+import cafe.woden.ircclient.config.api.EmbedPreviewRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
 import cafe.woden.ircclient.config.api.Ircv3CapabilityConfigPort;
 import cafe.woden.ircclient.config.api.LaunchJvmRuntimeConfigPort;
@@ -149,7 +150,7 @@ final class PreferencesCommitSupport {
         request.trayService(),
         snapshot.tray());
     EmbedPreviewControlsSupport.rememberEmbedPreviewSettings(
-        runtimeConfig, request.embedCardStyleBus(), snapshot.embedPreview());
+        request.embedPreviewRuntimeConfig(), request.embedCardStyleBus(), snapshot.embedPreview());
     rememberEmbedLoadPolicy(request);
     ChatBehaviorControlsSupport.rememberSettings(
         request.chatBehaviorRuntimeConfig(), snapshot.chatBehavior());
@@ -249,6 +250,7 @@ final class PreferencesCommitSupport {
       ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig,
       DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,
       FilterSettingsConfigPort filterRuntimeConfig,
+      EmbedPreviewRuntimeConfigPort embedPreviewRuntimeConfig,
       Ircv3CapabilityConfigPort ircv3CapabilityRuntimeConfig,
       EmbedLoadPolicyConfigPort embedLoadPolicyRuntimeConfig,
       CtcpReplyRuntimeConfigPort ctcpRuntimeConfig,

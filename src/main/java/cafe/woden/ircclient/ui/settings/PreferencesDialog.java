@@ -12,6 +12,7 @@ import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
+import cafe.woden.ircclient.config.api.EmbedPreviewRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.Ircv3CapabilityConfigPort;
@@ -99,6 +100,7 @@ public class PreferencesDialog {
   private final ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig;
   private final DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig;
   private final FilterSettingsConfigPort filterRuntimeConfig;
+  private final EmbedPreviewRuntimeConfigPort embedPreviewRuntimeConfig;
   private final Ircv3CapabilityConfigPort ircv3CapabilityRuntimeConfig;
   private final EmbedLoadPolicyConfigPort embedLoadPolicyRuntimeConfig;
   private final CtcpReplyRuntimeConfigPort ctcpRuntimeConfig;
@@ -157,6 +159,7 @@ public class PreferencesDialog {
       ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig,
       DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,
       FilterSettingsConfigPort filterRuntimeConfig,
+      EmbedPreviewRuntimeConfigPort embedPreviewRuntimeConfig,
       Ircv3CapabilityConfigPort ircv3CapabilityRuntimeConfig,
       EmbedLoadPolicyConfigPort embedLoadPolicyRuntimeConfig,
       CtcpReplyRuntimeConfigPort ctcpRuntimeConfig,
@@ -210,6 +213,7 @@ public class PreferencesDialog {
         chatHistoryRuntimeConfig,
         diagnosticsRuntimeConfig,
         filterRuntimeConfig,
+        embedPreviewRuntimeConfig,
         ircv3CapabilityRuntimeConfig,
         embedLoadPolicyRuntimeConfig,
         ctcpRuntimeConfig,
@@ -267,6 +271,7 @@ public class PreferencesDialog {
       ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig,
       DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,
       FilterSettingsConfigPort filterRuntimeConfig,
+      EmbedPreviewRuntimeConfigPort embedPreviewRuntimeConfig,
       Ircv3CapabilityConfigPort ircv3CapabilityRuntimeConfig,
       EmbedLoadPolicyConfigPort embedLoadPolicyRuntimeConfig,
       CtcpReplyRuntimeConfigPort ctcpRuntimeConfig,
@@ -321,6 +326,7 @@ public class PreferencesDialog {
     this.chatHistoryRuntimeConfig = chatHistoryRuntimeConfig;
     this.diagnosticsRuntimeConfig = diagnosticsRuntimeConfig;
     this.filterRuntimeConfig = filterRuntimeConfig;
+    this.embedPreviewRuntimeConfig = embedPreviewRuntimeConfig;
     this.ircv3CapabilityRuntimeConfig = ircv3CapabilityRuntimeConfig;
     this.embedLoadPolicyRuntimeConfig = embedLoadPolicyRuntimeConfig;
     this.ctcpRuntimeConfig = ctcpRuntimeConfig;
@@ -490,6 +496,7 @@ public class PreferencesDialog {
                   chatHistoryRuntimeConfig,
                   diagnosticsRuntimeConfig,
                   filterRuntimeConfig,
+                  embedPreviewRuntimeConfig,
                   ircv3CapabilityRuntimeConfig,
                   embedLoadPolicyRuntimeConfig,
                   ctcpRuntimeConfig,

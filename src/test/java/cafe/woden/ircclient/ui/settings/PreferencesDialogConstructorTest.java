@@ -17,6 +17,7 @@ import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
+import cafe.woden.ircclient.config.api.EmbedPreviewRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
 import cafe.woden.ircclient.config.api.Ircv3CapabilityConfigPort;
 import cafe.woden.ircclient.config.api.LaunchJvmRuntimeConfigPort;
@@ -112,6 +113,7 @@ class PreferencesDialogConstructorTest {
         mock(ChatHistoryRuntimeConfigPort.class),
         mock(DiagnosticsRuntimeConfigPort.class),
         mock(FilterSettingsConfigPort.class),
+        mock(EmbedPreviewRuntimeConfigPort.class),
         mock(Ircv3CapabilityConfigPort.class),
         mock(EmbedLoadPolicyConfigPort.class),
         mock(CtcpReplyRuntimeConfigPort.class),
