@@ -17,6 +17,8 @@ class CommandParserTest {
 
   private static final String PLUGIN_PARSE_STRATEGY_CLASS =
       "plugin.commands.PluginQuoteSlashCommandParseStrategy";
+  private static final String SPI_PLUGIN_PARSE_STRATEGY_CLASS =
+      "plugin.commands.PluginSpiQuoteSlashCommandParseStrategy";
 
   @TempDir Path tempDir;
 
@@ -49,6 +51,31 @@ class CommandParserTest {
         pluginParseStrategySource(),
         SlashCommandParseStrategy.class.getName(),
         CompiledPluginJarSupport.compatibleManifest("example-slash-parser", "1.0.0"));
+    RuntimeConfigPathPort runtimeConfigPathPort =
+        () -> runtimeConfigDirectory.resolve("ircafe.yml");
+
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+    CommandParser pluginParser =
+        new CommandParser(
+            new FilterCommandParser(), new BackendNamedCommandParser(List.of()), installedPlugins);
+
+    ParsedInput in = pluginParser.parse("/pluginquote RAW TEST");
+
+    assertTrue(installedPlugins.pluginProblems().isEmpty());
+    assertTrue(in instanceof ParsedInput.Quote);
+    assertEquals("RAW TEST", ((ParsedInput.Quote) in).rawLine());
+  }
+
+  @Test
+  void loadsServiceLoaderSlashParseStrategyProvidersFromInstalledPlugins() throws Exception {
+    Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
+    Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
+    CompiledPluginJarSupport.writePluginJar(
+        pluginDir.resolve("example-slash-parser-spi.jar"),
+        SPI_PLUGIN_PARSE_STRATEGY_CLASS,
+        pluginSpiParseStrategySource(),
+        cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy.class.getName(),
+        CompiledPluginJarSupport.compatibleManifest("example-slash-parser-spi", "1.0.0"));
     RuntimeConfigPathPort runtimeConfigPathPort =
         () -> runtimeConfigDirectory.resolve("ircafe.yml");
 
@@ -501,6 +528,29 @@ class CommandParserTest {
         import cafe.woden.ircclient.app.commands.SlashCommandParseStrategy;
 
         public final class PluginQuoteSlashCommandParseStrategy
+            implements SlashCommandParseStrategy {
+          @Override
+          public ParsedInput tryParse(String line) {
+            if (line == null || !line.startsWith("/pluginquote")) {
+              return null;
+            }
+            String rest = line.length() > "/pluginquote".length()
+                ? line.substring("/pluginquote".length()).trim()
+                : "";
+            return new ParsedInput.Quote(rest);
+          }
+        }
+        """;
+  }
+
+  private static String pluginSpiParseStrategySource() {
+    return """
+        package plugin.commands;
+
+        import cafe.woden.ircclient.app.commands.ParsedInput;
+        import cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy;
+
+        public final class PluginSpiQuoteSlashCommandParseStrategy
             implements SlashCommandParseStrategy {
           @Override
           public ParsedInput tryParse(String line) {

@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.app.commands;
 
-final class ConnectionLifecycleSlashCommandParseStrategy implements SlashCommandParseStrategy {
+final class ConnectionLifecycleSlashCommandParseStrategy
+    implements cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy {
 
   @Override
   public ParsedInput tryParse(String line) {

@@ -4,6 +4,7 @@ import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.util.PluginServiceLoaderSupport;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import org.jmolecules.architecture.layered.ApplicationLayer;
@@ -20,13 +21,24 @@ final class CommandPluginProviders {
     return installedPluginsProvider == null ? null : installedPluginsProvider.getIfAvailable();
   }
 
-  static List<SlashCommandParseStrategy> slashCommandParseStrategies(
-      List<SlashCommandParseStrategy> builtInStrategies, InstalledPluginsPort installedPlugins) {
-    List<SlashCommandParseStrategy> strategies = nonNullServices(builtInStrategies);
+  static List<cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy>
+      slashCommandParseStrategies(
+          List<? extends cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy>
+              builtInStrategies,
+          InstalledPluginsPort installedPlugins) {
+    List<cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy> strategies =
+        nonNullServices(builtInStrategies);
     if (installedPlugins == null) {
       return strategies;
     }
-    return installedPlugins.loadInstalledServices(SlashCommandParseStrategy.class, strategies);
+    ArrayList<cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy> loadedStrategies =
+        new ArrayList<>();
+    loadedStrategies.addAll(
+        installedPlugins.loadInstalledServices(
+            cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy.class, strategies));
+    loadedStrategies.addAll(
+        installedPlugins.loadInstalledServices(SlashCommandParseStrategy.class, List.of()));
+    return nonNullServices(loadedStrategies);
   }
 
   static List<SlashCommandPresentationContributor> slashCommandPresentationContributors(
@@ -95,11 +107,17 @@ final class CommandPluginProviders {
         List.of());
   }
 
-  private static <T> List<T> nonNullServices(List<T> services) {
+  private static <T> List<T> nonNullServices(List<? extends T> services) {
     if (services == null || services.isEmpty()) {
       return List.of();
     }
-    return services.stream().filter(Objects::nonNull).toList();
+    ArrayList<T> nonNull = new ArrayList<>();
+    for (T service : services) {
+      if (service != null) {
+        nonNull.add(service);
+      }
+    }
+    return List.copyOf(nonNull);
   }
 
   record BackendNamedCommandHandlers(

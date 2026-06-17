@@ -2,7 +2,8 @@ package cafe.woden.ircclient.app.commands;
 
 import java.util.Objects;
 
-final class AdvancedFeatureSlashCommandParseStrategy implements SlashCommandParseStrategy {
+final class AdvancedFeatureSlashCommandParseStrategy
+    implements cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy {
 
   private final FilterCommandParser filterCommandParser;
 

@@ -1,15 +1,12 @@
 package cafe.woden.ircclient.app.commands;
 
-import org.jmolecules.architecture.layered.ApplicationLayer;
-
 /**
- * ServiceLoader-backed strategy for parsing a subset of slash commands.
+ * Legacy slash-command parser service name.
  *
- * <p>Plugins register implementations in {@code
- * META-INF/services/cafe.woden.ircclient.app.commands.SlashCommandParseStrategy}.
+ * @deprecated register {@link cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy}
+ *     implementations under {@code
+ *     META-INF/services/cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy}.
  */
-@ApplicationLayer
-public interface SlashCommandParseStrategy {
-
-  ParsedInput tryParse(String line);
-}
+@Deprecated(since = "0.1", forRemoval = false)
+public interface SlashCommandParseStrategy
+    extends cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy {}

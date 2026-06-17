@@ -19,7 +19,7 @@ public class CommandParser {
 
   private final FilterCommandParser filterCommandParser;
   private final BackendNamedCommandParser backendNamedCommandParser;
-  private final List<SlashCommandParseStrategy> strategies;
+  private final List<cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy> strategies;
 
   @Autowired
   public CommandParser(
@@ -66,7 +66,7 @@ public class CommandParser {
     ParsedInput backendNamed = backendNamedCommandParser.parse(line);
     if (backendNamed != null) return backendNamed;
 
-    for (SlashCommandParseStrategy strategy : strategies) {
+    for (cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy strategy : strategies) {
       ParsedInput parsed = strategy.tryParse(line);
       if (parsed != null) {
         return parsed;
@@ -76,8 +76,8 @@ public class CommandParser {
     return new ParsedInput.Unknown(line);
   }
 
-  private static List<SlashCommandParseStrategy> builtInStrategies(
-      FilterCommandParser filterCommandParser) {
+  private static List<cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy>
+      builtInStrategies(FilterCommandParser filterCommandParser) {
     return List.of(
         new ConnectionLifecycleSlashCommandParseStrategy(),
         new IdentityMessagingSlashCommandParseStrategy(),
