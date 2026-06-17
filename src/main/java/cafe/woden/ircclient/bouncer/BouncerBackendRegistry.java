@@ -25,7 +25,7 @@ public class BouncerBackendRegistry {
 
   @Autowired
   public BouncerBackendRegistry(
-      List<BouncerNetworkMappingStrategy> mappingStrategies,
+      List<cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy> mappingStrategies,
       ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
     this(
         new ResolvedStrategies(
@@ -34,14 +34,17 @@ public class BouncerBackendRegistry {
                 BouncerPluginProviders.resolveInstalledPlugins(installedPluginsProvider))));
   }
 
-  public BouncerBackendRegistry(List<BouncerNetworkMappingStrategy> mappingStrategies) {
+  public BouncerBackendRegistry(
+      List<? extends cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy>
+          mappingStrategies) {
     this(
         new ResolvedStrategies(
             BouncerPluginProviders.networkMappingStrategies(mappingStrategies, null)));
   }
 
   BouncerBackendRegistry(
-      List<BouncerNetworkMappingStrategy> mappingStrategies,
+      List<? extends cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy>
+          mappingStrategies,
       InstalledPluginsPort installedPlugins) {
     this(
         new ResolvedStrategies(
@@ -49,10 +52,12 @@ public class BouncerBackendRegistry {
   }
 
   private BouncerBackendRegistry(ResolvedStrategies resolvedStrategies) {
-    List<BouncerNetworkMappingStrategy> mappingStrategies = resolvedStrategies.strategies();
+    List<cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy> mappingStrategies =
+        resolvedStrategies.strategies();
 
     ArrayList<BouncerBackendDescriptor> discovered = new ArrayList<>();
-    for (BouncerNetworkMappingStrategy strategy : mappingStrategies) {
+    for (cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy strategy :
+        mappingStrategies) {
       if (strategy == null) continue;
       String backend = normalize(strategy.backendId());
       if (backend == null) continue;
@@ -92,7 +97,8 @@ public class BouncerBackendRegistry {
     return Optional.ofNullable(byBackendId.get(normalize(backendId)));
   }
 
-  private record ResolvedStrategies(List<BouncerNetworkMappingStrategy> strategies) {
+  private record ResolvedStrategies(
+      List<cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy> strategies) {
     private ResolvedStrategies {
       strategies = List.copyOf(Objects.requireNonNullElse(strategies, List.of()));
     }

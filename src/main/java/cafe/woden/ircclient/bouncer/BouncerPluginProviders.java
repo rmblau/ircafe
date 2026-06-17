@@ -16,26 +16,47 @@ final class BouncerPluginProviders {
     return installedPluginsProvider == null ? null : installedPluginsProvider.getIfAvailable();
   }
 
-  static List<BouncerNetworkMappingStrategy> networkMappingStrategies(
-      List<BouncerNetworkMappingStrategy> builtInStrategies,
-      InstalledPluginsPort installedPlugins) {
-    List<BouncerNetworkMappingStrategy> strategies = nonNullServices(builtInStrategies);
+  static List<cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy>
+      networkMappingStrategies(
+          List<? extends cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy>
+              builtInStrategies,
+          InstalledPluginsPort installedPlugins) {
+    List<cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy> strategies =
+        nonNullServices(builtInStrategies);
     if (installedPlugins == null) {
       return strategies;
     }
-    return installedPlugins.loadInstalledServices(BouncerNetworkMappingStrategy.class, strategies);
+    ArrayList<cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy> loadedStrategies =
+        new ArrayList<>();
+    loadedStrategies.addAll(
+        installedPlugins.loadInstalledServices(
+            cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy.class, strategies));
+    loadedStrategies.addAll(
+        installedPlugins.loadInstalledServices(BouncerNetworkMappingStrategy.class, List.of()));
+    return dedupeByProviderClass(loadedStrategies);
   }
 
-  static List<BouncerBackendDiscoveryHandler> backendDiscoveryHandlers(
-      List<BouncerBackendDiscoveryHandler> builtInHandlers, InstalledPluginsPort installedPlugins) {
-    List<BouncerBackendDiscoveryHandler> handlers = nonNullServices(builtInHandlers);
+  static List<cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler>
+      backendDiscoveryHandlers(
+          List<? extends cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler>
+              builtInHandlers,
+          InstalledPluginsPort installedPlugins) {
+    List<cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler> handlers =
+        nonNullServices(builtInHandlers);
     if (installedPlugins == null) {
       return handlers;
     }
-    return installedPlugins.loadInstalledServices(BouncerBackendDiscoveryHandler.class, handlers);
+    ArrayList<cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler> loadedHandlers =
+        new ArrayList<>();
+    loadedHandlers.addAll(
+        installedPlugins.loadInstalledServices(
+            cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler.class, handlers));
+    loadedHandlers.addAll(
+        installedPlugins.loadInstalledServices(BouncerBackendDiscoveryHandler.class, List.of()));
+    return dedupeByProviderClass(loadedHandlers);
   }
 
-  private static <T> List<T> nonNullServices(List<T> services) {
+  private static <T> List<T> nonNullServices(List<? extends T> services) {
     if (services == null || services.isEmpty()) {
       return List.of();
     }
@@ -46,5 +67,17 @@ final class BouncerPluginProviders {
       }
     }
     return List.copyOf(resolved);
+  }
+
+  private static <T> List<T> dedupeByProviderClass(List<? extends T> services) {
+    java.util.LinkedHashSet<String> providerClassNames = new java.util.LinkedHashSet<>();
+    ArrayList<T> deduped = new ArrayList<>();
+    for (T service : nonNullServices(services)) {
+      if (!providerClassNames.add(service.getClass().getName())) {
+        continue;
+      }
+      deduped.add(service);
+    }
+    return List.copyOf(deduped);
   }
 }

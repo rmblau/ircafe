@@ -72,6 +72,8 @@ import cafe.woden.ircclient.bouncer.GenericBouncerAutoConnectStore;
 import cafe.woden.ircclient.bouncer.GenericBouncerEphemeralNetworkImporter;
 import cafe.woden.ircclient.bouncer.GenericBouncerNetworkMappingStrategy;
 import cafe.woden.ircclient.bouncer.ResolvedBouncerNetwork;
+import cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler;
+import cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
 import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
@@ -354,6 +356,8 @@ class JmoleculesIncrementalAdoptionTest {
     assertAnnotated(BouncerBackendRegistry.class, ApplicationLayer.class);
     assertAnnotated(BouncerDiscoveryEventDispatcher.class, ApplicationLayer.class);
     assertAnnotated(BouncerNetworkDiscoveryOrchestrator.class, ApplicationLayer.class);
+    assertAnnotated(BouncerBackendDiscoveryHandler.class, ApplicationLayer.class);
+    assertAnnotated(BouncerNetworkMappingStrategy.class, ApplicationLayer.class);
     assertAnnotated(GenericBouncerAutoConnectStore.class, ApplicationLayer.class);
     assertAnnotated(GenericBouncerNetworkMappingStrategy.class, ApplicationLayer.class);
     assertAnnotated(GenericBouncerEphemeralNetworkImporter.class, ApplicationLayer.class);

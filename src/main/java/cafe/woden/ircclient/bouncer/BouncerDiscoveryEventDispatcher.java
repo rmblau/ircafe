@@ -16,11 +16,12 @@ import org.springframework.stereotype.Component;
 @ApplicationLayer
 public class BouncerDiscoveryEventDispatcher implements BouncerDiscoveryEventPort {
 
-  private final Map<String, BouncerBackendDiscoveryHandler> handlersByBackend;
+  private final Map<String, cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler>
+      handlersByBackend;
 
   @Autowired
   public BouncerDiscoveryEventDispatcher(
-      List<BouncerBackendDiscoveryHandler> handlers,
+      List<cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler> handlers,
       ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
     this(
         new ResolvedHandlers(
@@ -29,21 +30,25 @@ public class BouncerDiscoveryEventDispatcher implements BouncerDiscoveryEventPor
                 BouncerPluginProviders.resolveInstalledPlugins(installedPluginsProvider))));
   }
 
-  public BouncerDiscoveryEventDispatcher(List<BouncerBackendDiscoveryHandler> handlers) {
+  public BouncerDiscoveryEventDispatcher(
+      List<? extends cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler> handlers) {
     this(new ResolvedHandlers(BouncerPluginProviders.backendDiscoveryHandlers(handlers, null)));
   }
 
   BouncerDiscoveryEventDispatcher(
-      List<BouncerBackendDiscoveryHandler> handlers, InstalledPluginsPort installedPlugins) {
+      List<? extends cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler> handlers,
+      InstalledPluginsPort installedPlugins) {
     this(
         new ResolvedHandlers(
             BouncerPluginProviders.backendDiscoveryHandlers(handlers, installedPlugins)));
   }
 
   private BouncerDiscoveryEventDispatcher(ResolvedHandlers resolvedHandlers) {
-    List<BouncerBackendDiscoveryHandler> handlers = resolvedHandlers.handlers();
-    HashMap<String, BouncerBackendDiscoveryHandler> map = new HashMap<>();
-    for (BouncerBackendDiscoveryHandler handler : handlers) {
+    List<cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler> handlers =
+        resolvedHandlers.handlers();
+    HashMap<String, cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler> map =
+        new HashMap<>();
+    for (cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler handler : handlers) {
       if (handler == null) continue;
       String backend = normalize(handler.backendId());
       if (backend == null) continue;
@@ -55,19 +60,22 @@ public class BouncerDiscoveryEventDispatcher implements BouncerDiscoveryEventPor
   @Override
   public void onNetworkDiscovered(BouncerDiscoveredNetwork network) {
     if (network == null) return;
-    BouncerBackendDiscoveryHandler handler = handlersByBackend.get(normalize(network.backendId()));
+    cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler handler =
+        handlersByBackend.get(normalize(network.backendId()));
     if (handler == null) return;
     handler.onNetworkDiscovered(network);
   }
 
   @Override
   public void onOriginDisconnected(String backendId, String originServerId) {
-    BouncerBackendDiscoveryHandler handler = handlersByBackend.get(normalize(backendId));
+    cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler handler =
+        handlersByBackend.get(normalize(backendId));
     if (handler == null) return;
     handler.onOriginDisconnected(originServerId);
   }
 
-  private record ResolvedHandlers(List<BouncerBackendDiscoveryHandler> handlers) {
+  private record ResolvedHandlers(
+      List<cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler> handlers) {
     private ResolvedHandlers {
       handlers = List.copyOf(Objects.requireNonNullElse(handlers, List.of()));
     }
