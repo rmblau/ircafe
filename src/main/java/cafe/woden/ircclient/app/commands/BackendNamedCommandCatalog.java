@@ -26,7 +26,8 @@ public class BackendNamedCommandCatalog {
 
   private static final Logger log = LoggerFactory.getLogger(BackendNamedCommandCatalog.class);
 
-  private final Map<String, BackendNamedCommandHandler> parseHandlersByCommandName;
+  private final Map<String, cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler>
+      parseHandlersByCommandName;
   private final List<SlashCommandDescriptor> autocompleteCommands;
   private final List<String> generalHelpLines;
   private final Map<String, List<String>> topicHelpLines;
@@ -34,7 +35,8 @@ public class BackendNamedCommandCatalog {
 
   @Autowired
   public BackendNamedCommandCatalog(
-      InstalledPluginsPort installedPluginsPort, List<BackendNamedCommandHandler> builtInHandlers) {
+      InstalledPluginsPort installedPluginsPort,
+      List<cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler> builtInHandlers) {
     this(
         CommandPluginProviders.backendNamedCommandHandlers(
             List.copyOf(Objects.requireNonNullElse(builtInHandlers, List.of())),
@@ -43,7 +45,8 @@ public class BackendNamedCommandCatalog {
 
   public BackendNamedCommandCatalog(
       RuntimeConfigPathPort runtimeConfigPathPort,
-      List<BackendNamedCommandHandler> builtInHandlers) {
+      List<? extends cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler>
+          builtInHandlers) {
     this(
         CommandPluginProviders.backendNamedCommandHandlers(
             List.copyOf(Objects.requireNonNullElse(builtInHandlers, List.of())),
@@ -65,7 +68,8 @@ public class BackendNamedCommandCatalog {
         PluginServiceLoaderSupport.defaultApplicationClassLoader(BackendNamedCommandCatalog.class));
   }
 
-  public static BackendNamedCommandCatalog fromHandlers(List<BackendNamedCommandHandler> handlers) {
+  public static BackendNamedCommandCatalog fromHandlers(
+      List<? extends cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler> handlers) {
     return new BackendNamedCommandCatalog(
         List.copyOf(Objects.requireNonNull(handlers, "handlers")), List.of());
   }
@@ -90,8 +94,9 @@ public class BackendNamedCommandCatalog {
   }
 
   private BackendNamedCommandCatalog(
-      List<BackendNamedCommandHandler> handlers, List<URLClassLoader> pluginClassLoaders) {
-    List<BackendNamedCommandHandler> safeHandlers =
+      List<cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler> handlers,
+      List<URLClassLoader> pluginClassLoaders) {
+    List<cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler> safeHandlers =
         List.copyOf(Objects.requireNonNull(handlers, "handlers"));
     this.parseHandlersByCommandName = indexParseHandlersByCommandName(safeHandlers);
     this.autocompleteCommands = buildAutocompleteCommands(safeHandlers);
@@ -114,7 +119,8 @@ public class BackendNamedCommandCatalog {
 
     String commandName = extractCommandName(raw);
     if (commandName.isEmpty()) return null;
-    BackendNamedCommandHandler handler = parseHandlersByCommandName.get(commandName);
+    cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler handler =
+        parseHandlersByCommandName.get(commandName);
     if (handler == null) return null;
     return handler.parse(raw, commandName);
   }
@@ -131,10 +137,12 @@ public class BackendNamedCommandCatalog {
     return topicHelpLines;
   }
 
-  private static Map<String, BackendNamedCommandHandler> indexParseHandlersByCommandName(
-      List<BackendNamedCommandHandler> handlers) {
-    LinkedHashMap<String, BackendNamedCommandHandler> index = new LinkedHashMap<>();
-    for (BackendNamedCommandHandler handler : handlers) {
+  private static Map<String, cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler>
+      indexParseHandlersByCommandName(
+          List<cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler> handlers) {
+    LinkedHashMap<String, cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler> index =
+        new LinkedHashMap<>();
+    for (cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler handler : handlers) {
       Set<String> commandNames =
           Objects.requireNonNullElse(handler.supportedCommandNames(), Set.<String>of());
       for (String commandName : commandNames) {
@@ -147,7 +155,8 @@ public class BackendNamedCommandCatalog {
                   + normalized
                   + "' collides with a reserved built-in command");
         }
-        BackendNamedCommandHandler previous = index.putIfAbsent(normalized, handler);
+        cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler previous =
+            index.putIfAbsent(normalized, handler);
         if (previous != null && previous != handler) {
           throw new IllegalStateException(
               "Duplicate backend named parser handler registered for command '" + normalized + "'");
@@ -158,9 +167,9 @@ public class BackendNamedCommandCatalog {
   }
 
   private static List<SlashCommandDescriptor> buildAutocompleteCommands(
-      List<BackendNamedCommandHandler> handlers) {
+      List<cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler> handlers) {
     LinkedHashMap<String, SlashCommandDescriptor> byCommand = new LinkedHashMap<>();
-    for (BackendNamedCommandHandler handler : handlers) {
+    for (cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler handler : handlers) {
       List<SlashCommandDescriptor> commands =
           Objects.requireNonNullElse(handler.autocompleteCommands(), List.of());
       for (SlashCommandDescriptor command : commands) {
@@ -171,9 +180,10 @@ public class BackendNamedCommandCatalog {
     return List.copyOf(byCommand.values());
   }
 
-  private static List<String> buildGeneralHelpLines(List<BackendNamedCommandHandler> handlers) {
+  private static List<String> buildGeneralHelpLines(
+      List<cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler> handlers) {
     ArrayList<String> lines = new ArrayList<>();
-    for (BackendNamedCommandHandler handler : handlers) {
+    for (cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler handler : handlers) {
       List<String> handlerLines = Objects.requireNonNullElse(handler.generalHelpLines(), List.of());
       appendLines(lines, handlerLines);
     }
@@ -181,9 +191,9 @@ public class BackendNamedCommandCatalog {
   }
 
   private static Map<String, List<String>> buildTopicHelpLines(
-      List<BackendNamedCommandHandler> handlers) {
+      List<cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler> handlers) {
     LinkedHashMap<String, ArrayList<String>> linesByTopic = new LinkedHashMap<>();
-    for (BackendNamedCommandHandler handler : handlers) {
+    for (cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler handler : handlers) {
       Map<String, List<String>> handlerLines =
           Objects.requireNonNullElse(handler.topicHelpLines(), Map.of());
       for (Map.Entry<String, List<String>> entry : handlerLines.entrySet()) {

@@ -11,8 +11,9 @@ import org.springframework.stereotype.Component;
 @Component
 @SecondaryAdapter
 @ApplicationLayer
-@AutoService(BackendNamedCommandHandler.class)
-public final class QuasselBackendNamedCommandHandler implements BackendNamedCommandHandler {
+@AutoService(cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler.class)
+public final class QuasselBackendNamedCommandHandler
+    implements cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler {
 
   @Override
   public Set<String> supportedCommandNames() {

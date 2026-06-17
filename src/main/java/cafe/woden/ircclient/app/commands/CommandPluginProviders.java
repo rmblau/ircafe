@@ -64,30 +64,49 @@ final class CommandPluginProviders {
   }
 
   static BackendNamedCommandHandlers backendNamedCommandHandlers(
-      List<BackendNamedCommandHandler> builtInHandlers,
+      List<? extends cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler>
+          builtInHandlers,
       Path pluginDirectory,
       ClassLoader applicationClassLoader,
       Logger log) {
-    PluginServiceLoaderSupport.LoadedServices<BackendNamedCommandHandler> loadedServices =
+    PluginServiceLoaderSupport.LoadedServices<
+            cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler>
+        loadedServices =
+            PluginServiceLoaderSupport.loadInstalledServices(
+                cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler.class,
+                nonNullServices(builtInHandlers),
+                pluginDirectory,
+                applicationClassLoader,
+                log);
+    PluginServiceLoaderSupport.LoadedServices<BackendNamedCommandHandler> legacyLoadedServices =
         PluginServiceLoaderSupport.loadInstalledServices(
             BackendNamedCommandHandler.class,
-            List.copyOf(Objects.requireNonNullElse(builtInHandlers, List.of())),
+            List.of(),
             pluginDirectory,
             applicationClassLoader,
             log);
     return new BackendNamedCommandHandlers(
-        loadedServices.services(), loadedServices.pluginClassLoaders());
+        dedupeBackendNamedHandlers(loadedServices.services(), legacyLoadedServices.services()),
+        combinedClassLoaders(
+            loadedServices.pluginClassLoaders(), legacyLoadedServices.pluginClassLoaders()));
   }
 
   static BackendNamedCommandHandlers backendNamedCommandHandlers(
-      List<BackendNamedCommandHandler> builtInHandlers, InstalledPluginsPort installedPluginsPort) {
+      List<? extends cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler>
+          builtInHandlers,
+      InstalledPluginsPort installedPluginsPort) {
     InstalledPluginsPort installedPlugins =
         Objects.requireNonNull(installedPluginsPort, "installedPluginsPort");
-    List<BackendNamedCommandHandler> handlers =
-        List.copyOf(Objects.requireNonNullElse(builtInHandlers, List.of()));
-    return new BackendNamedCommandHandlers(
-        installedPlugins.loadInstalledServices(BackendNamedCommandHandler.class, handlers),
-        List.of());
+    List<cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler> handlers =
+        nonNullServices(builtInHandlers);
+    ArrayList<cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler> loadedHandlers =
+        new ArrayList<>();
+    loadedHandlers.addAll(
+        installedPlugins.loadInstalledServices(
+            cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler.class, handlers));
+    loadedHandlers.addAll(
+        installedPlugins.loadInstalledServices(BackendNamedCommandHandler.class, List.of()));
+    return new BackendNamedCommandHandlers(dedupeBackendNamedHandlers(loadedHandlers), List.of());
   }
 
   static BackendNamedCommandExecutors backendNamedCommandExecutors(
@@ -131,8 +150,40 @@ final class CommandPluginProviders {
     return List.copyOf(nonNull);
   }
 
+  @SafeVarargs
+  private static List<cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler>
+      dedupeBackendNamedHandlers(
+          List<? extends cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler>...
+              handlerGroups) {
+    java.util.LinkedHashSet<String> providerClassNames = new java.util.LinkedHashSet<>();
+    ArrayList<cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler> deduped =
+        new ArrayList<>();
+    for (List<? extends cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler> handlers :
+        handlerGroups) {
+      if (handlers == null) {
+        continue;
+      }
+      for (cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler handler : handlers) {
+        if (handler == null || !providerClassNames.add(handler.getClass().getName())) {
+          continue;
+        }
+        deduped.add(handler);
+      }
+    }
+    return List.copyOf(deduped);
+  }
+
+  private static List<URLClassLoader> combinedClassLoaders(
+      List<URLClassLoader> first, List<URLClassLoader> second) {
+    ArrayList<URLClassLoader> classLoaders = new ArrayList<>();
+    classLoaders.addAll(Objects.requireNonNullElse(first, List.of()));
+    classLoaders.addAll(Objects.requireNonNullElse(second, List.of()));
+    return List.copyOf(classLoaders);
+  }
+
   record BackendNamedCommandHandlers(
-      List<BackendNamedCommandHandler> handlers, List<URLClassLoader> pluginClassLoaders) {}
+      List<cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler> handlers,
+      List<URLClassLoader> pluginClassLoaders) {}
 
   record BackendNamedCommandExecutors(
       List<BackendNamedCommandExecutor> executors, List<URLClassLoader> pluginClassLoaders) {}
