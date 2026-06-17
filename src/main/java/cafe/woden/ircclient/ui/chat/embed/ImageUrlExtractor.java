@@ -22,7 +22,9 @@ final class ImageUrlExtractor {
   }
 
   static List<String> extractImageUrls(
-      String text, List<ImageUrlExtensionProvider> extensionProviders) {
+      String text,
+      List<? extends cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>
+          extensionProviders) {
     if (text == null || text.isBlank()) return List.of();
 
     Set<String> imageExtensions = imageExtensions(extensionProviders);
@@ -40,7 +42,9 @@ final class ImageUrlExtractor {
     return new ArrayList<>(out);
   }
 
-  static Set<String> imageExtensions(List<ImageUrlExtensionProvider> extensionProviders) {
+  static Set<String> imageExtensions(
+      List<? extends cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>
+          extensionProviders) {
     return ImageUrlExtensionProviders.imageExtensions(extensionProviders);
   }
 

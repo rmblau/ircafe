@@ -12,7 +12,8 @@ class ImageUrlExtensionProvidersTest {
 
   @Test
   void normalizesPluginExtensionsAndKeepsBuiltInExtensions() {
-    ImageUrlExtensionProvider provider = () -> Arrays.asList("jxl", ".AVIF", "../bad", "", null);
+    cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider provider =
+        () -> Arrays.asList("jxl", ".AVIF", "../bad", "", null);
 
     Set<String> extensions = ImageUrlExtensionProviders.imageExtensions(List.of(provider));
 
@@ -25,7 +26,7 @@ class ImageUrlExtensionProvidersTest {
 
   @Test
   void ignoresProviderFailures() {
-    ImageUrlExtensionProvider provider =
+    cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider provider =
         () -> {
           throw new IllegalStateException("boom");
         };

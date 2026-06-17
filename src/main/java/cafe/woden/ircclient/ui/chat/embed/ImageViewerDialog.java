@@ -37,7 +37,11 @@ final class ImageViewerDialog {
   }
 
   static void show(
-      Window parent, String url, byte[] bytes, List<ImageUrlExtensionProvider> extensionProviders) {
+      Window parent,
+      String url,
+      byte[] bytes,
+      List<? extends cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>
+          extensionProviders) {
     if (bytes == null || bytes.length == 0) {
       // If we don't have bytes, fall back to browser.
       try {
@@ -126,7 +130,10 @@ final class ImageViewerDialog {
   }
 
   private static File writeTempFile(
-      String url, byte[] bytes, List<ImageUrlExtensionProvider> extensionProviders)
+      String url,
+      byte[] bytes,
+      List<? extends cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>
+          extensionProviders)
       throws IOException {
     String ext = ImageFileExtensionSupport.extensionFromUrl(url, extensionProviders);
     File f = Files.createTempFile("ircafe-image-", ext).toFile();

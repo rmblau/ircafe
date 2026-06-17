@@ -12,7 +12,10 @@ final class ImageFileExtensionSupport {
     return extensionFromUrl(url, List.of());
   }
 
-  static String extensionFromUrl(String url, List<ImageUrlExtensionProvider> extensionProviders) {
+  static String extensionFromUrl(
+      String url,
+      List<? extends cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>
+          extensionProviders) {
     try {
       String path = URI.create(url).getPath();
       if (path == null) return ".img";

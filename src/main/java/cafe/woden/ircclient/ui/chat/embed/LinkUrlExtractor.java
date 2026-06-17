@@ -28,7 +28,9 @@ final class LinkUrlExtractor {
   }
 
   static List<String> extractUrls(
-      String text, List<ImageUrlExtensionProvider> imageExtensionProviders) {
+      String text,
+      List<? extends cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>
+          imageExtensionProviders) {
     if (text == null || text.isBlank()) return List.of();
 
     Set<String> imageExtensions =

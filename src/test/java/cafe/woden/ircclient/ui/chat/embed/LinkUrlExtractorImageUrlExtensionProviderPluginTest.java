@@ -19,15 +19,28 @@ class LinkUrlExtractorImageUrlExtensionProviderPluginTest {
 
   @Test
   void excludesPluginImageExtensionsFromLinkPreviewExtraction() throws Exception {
+    assertPluginImageExtensionsExcludedFromLinkPreviewExtraction(false);
+  }
+
+  @Test
+  void excludesPluginImageExtensionSpiFromLinkPreviewExtraction() throws Exception {
+    assertPluginImageExtensionsExcludedFromLinkPreviewExtraction(true);
+  }
+
+  private void assertPluginImageExtensionsExcludedFromLinkPreviewExtraction(boolean spi)
+      throws Exception {
     Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
     Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
-    writePluginJar(pluginDir.resolve("plugin-image-url-extension.jar"));
+    writePluginJar(
+        pluginDir.resolve(
+            spi ? "plugin-image-url-extension-spi.jar" : "plugin-image-url-extension.jar"),
+        spi);
     RuntimeConfigPathPort runtimeConfigPathPort =
         () -> runtimeConfigDirectory.resolve("ircafe.yml");
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
 
-    List<ImageUrlExtensionProvider> providers =
-        installedPlugins.loadInstalledServices(ImageUrlExtensionProvider.class, List.of());
+    List<cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider> providers =
+        ImageUrlExtensionProviders.loadInstalledProviders(installedPlugins);
     List<String> urls =
         LinkUrlExtractor.extractUrls(
             "image https://cdn.example/artwork.jxl page https://example.com/post", providers);
@@ -37,13 +50,29 @@ class LinkUrlExtractorImageUrlExtensionProviderPluginTest {
     assertTrue(installedPlugins.pluginProblems().isEmpty());
   }
 
-  private void writePluginJar(Path jarPath) throws Exception {
+  private void writePluginJar(Path jarPath, boolean spi) throws Exception {
     String providerClassName = "cafe.woden.ircclient.testplugins.PluginImageUrlExtension";
     String providerSource =
-        """
+        pluginProviderSource(
+            spi
+                ? "cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider"
+                : "cafe.woden.ircclient.ui.chat.embed.ImageUrlExtensionProvider");
+    CompiledPluginJarSupport.writePluginJar(
+        jarPath,
+        providerClassName,
+        providerSource,
+        spi
+            ? cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider.class.getName()
+            : ImageUrlExtensionProvider.class.getName(),
+        CompiledPluginJarSupport.compatibleManifest(
+            spi ? "plugin-image-url-extension-spi" : "plugin-image-url-extension", "1.0.0"));
+  }
+
+  private static String pluginProviderSource(String providerImport) {
+    return """
         package cafe.woden.ircclient.testplugins;
 
-        import cafe.woden.ircclient.ui.chat.embed.ImageUrlExtensionProvider;
+        import %s;
         import java.util.List;
 
         public final class PluginImageUrlExtension implements ImageUrlExtensionProvider {
@@ -52,12 +81,7 @@ class LinkUrlExtractorImageUrlExtensionProviderPluginTest {
             return List.of("jxl");
           }
         }
-        """;
-    CompiledPluginJarSupport.writePluginJar(
-        jarPath,
-        providerClassName,
-        providerSource,
-        ImageUrlExtensionProvider.class.getName(),
-        CompiledPluginJarSupport.compatibleManifest("plugin-image-url-extension", "1.0.0"));
+        """
+        .formatted(providerImport);
   }
 }

@@ -29,7 +29,8 @@ public class ChatImageEmbedder {
   private final ImageFetchService fetch;
   private final EmbedLoadPolicyMatcher policyMatcher;
   private final EmbedCardStyleBus embedCardStyleBus;
-  private volatile List<ImageUrlExtensionProvider> imageUrlExtensionProviders = List.of();
+  private volatile List<cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>
+      imageUrlExtensionProviders = List.of();
 
   private final java.util.Map<StyledDocument, DocState> perDocState =
       java.util.Collections.synchronizedMap(new java.util.WeakHashMap<>());

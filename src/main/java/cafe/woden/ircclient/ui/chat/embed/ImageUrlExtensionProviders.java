@@ -22,20 +22,33 @@ final class ImageUrlExtensionProviders {
 
   private ImageUrlExtensionProviders() {}
 
-  static List<ImageUrlExtensionProvider> loadInstalledProviders(
-      InstalledPluginsPort installedPlugins) {
+  @SuppressWarnings("deprecation")
+  static List<cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>
+      loadInstalledProviders(InstalledPluginsPort installedPlugins) {
     if (installedPlugins == null) return List.of();
-    return List.copyOf(
+    List<cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider> providers =
+        new java.util.ArrayList<>();
+    providers.addAll(
+        Objects.requireNonNullElse(
+            installedPlugins.loadInstalledServices(
+                cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider.class, List.of()),
+            List.<cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>of()));
+    providers.addAll(
         Objects.requireNonNullElse(
             installedPlugins.loadInstalledServices(ImageUrlExtensionProvider.class, List.of()),
             List.<ImageUrlExtensionProvider>of()));
+    return dedupeByProviderClass(providers);
   }
 
-  static Set<String> imageExtensions(List<ImageUrlExtensionProvider> extensionProviders) {
+  static Set<String> imageExtensions(
+      List<? extends cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>
+          extensionProviders) {
     LinkedHashSet<String> extensions = new LinkedHashSet<>(DEFAULT_IMAGE_EXTENSIONS);
-    for (ImageUrlExtensionProvider provider :
+    for (cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider provider :
         Objects.requireNonNullElse(
-            extensionProviders, Collections.<ImageUrlExtensionProvider>emptyList())) {
+            extensionProviders,
+            Collections
+                .<cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>emptyList())) {
       if (provider == null) continue;
       try {
         List<String> contributed = provider.imageFileExtensions();
@@ -52,6 +65,25 @@ final class ImageUrlExtensionProviders {
       }
     }
     return Collections.unmodifiableSet(extensions);
+  }
+
+  private static List<cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>
+      dedupeByProviderClass(
+          List<? extends cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>
+              providers) {
+    java.util.LinkedHashSet<String> providerClassNames = new java.util.LinkedHashSet<>();
+    java.util.ArrayList<cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider> deduped =
+        new java.util.ArrayList<>();
+    for (cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider provider :
+        Objects.requireNonNullElse(
+            providers,
+            List.<cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>of())) {
+      if (provider == null || !providerClassNames.add(provider.getClass().getName())) {
+        continue;
+      }
+      deduped.add(provider);
+    }
+    return List.copyOf(deduped);
   }
 
   private static String normalizeImageExtension(String value) {

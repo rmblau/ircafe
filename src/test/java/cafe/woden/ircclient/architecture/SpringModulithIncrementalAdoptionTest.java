@@ -176,6 +176,7 @@ import cafe.woden.ircclient.ui.SwingUiPort;
 import cafe.woden.ircclient.ui.application.RuntimeEventsPanel;
 import cafe.woden.ircclient.ui.chat.ChatDockManager;
 import cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider;
+import cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider;
 import cafe.woden.ircclient.ui.chat.fold.LoadOlderMessagesComponent;
 import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.chat.transcript.history.ChatHistoryTranscriptPortAdapter;
@@ -425,7 +426,8 @@ class SpringModulithIncrementalAdoptionTest {
         uiModule, "settings-theme", ThemeManager.class, ThemeIdUtils.class);
     assertNamedInterfaceContains(
         uiModule, "spi", ExternalBrowserCommandProvider.class, ExternalBrowserSchemeProvider.class);
-    assertNamedInterfaceContains(uiModule, "chat-embed-spi", EmbedHttpHeaderProvider.class);
+    assertNamedInterfaceContains(
+        uiModule, "chat-embed-spi", EmbedHttpHeaderProvider.class, ImageUrlExtensionProvider.class);
     assertNamedInterfaceContains(uiModule, "shell", MainFrame.class);
     assertNamedInterfaceContains(uiModule, "terminal", TerminalDockable.class);
     assertNamedInterfaceContains(uiModule, "tray", TrayService.class);

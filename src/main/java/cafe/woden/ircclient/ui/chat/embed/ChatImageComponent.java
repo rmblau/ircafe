@@ -56,7 +56,8 @@ final class ChatImageComponent extends JPanel {
   private final ImageFetchService fetch;
   private final UiSettingsBus uiSettingsBus;
   private final EmbedCardStyle cardStyle;
-  private final List<ImageUrlExtensionProvider> imageUrlExtensionProviders;
+  private final List<cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>
+      imageUrlExtensionProviders;
 
   // Coordinates "only newest GIF animates" within a transcript.
   private final GifAnimationCoordinator gifCoordinator;
@@ -124,7 +125,8 @@ final class ChatImageComponent extends JPanel {
       EmbedCardStyle cardStyle,
       GifAnimationCoordinator gifCoordinator,
       long embedSeq,
-      List<ImageUrlExtensionProvider> imageUrlExtensionProviders) {
+      List<? extends cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>
+          imageUrlExtensionProviders) {
     super(new FlowLayout(FlowLayout.LEFT, 0, 0));
     this.serverId = serverId;
     this.url = url;

@@ -30,7 +30,10 @@ final class FileUtil {
   }
 
   static File writeTempFile(
-      String url, byte[] bytes, List<ImageUrlExtensionProvider> extensionProviders)
+      String url,
+      byte[] bytes,
+      List<? extends cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>
+          extensionProviders)
       throws IOException {
     String ext = ImageFileExtensionSupport.extensionFromUrl(url, extensionProviders);
     File f = Files.createTempFile("ircafe-image-", ext).toFile();

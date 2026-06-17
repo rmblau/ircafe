@@ -32,7 +32,8 @@ public class ChatLinkPreviewEmbedder {
   private final ImageFetchService imageFetch;
   private final EmbedLoadPolicyMatcher policyMatcher;
   private final EmbedCardStyleBus embedCardStyleBus;
-  private volatile List<ImageUrlExtensionProvider> imageUrlExtensionProviders = List.of();
+  private volatile List<cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>
+      imageUrlExtensionProviders = List.of();
 
   public record AppendResult(int appendedCount, List<String> blockedUrls) {
     static AppendResult empty() {
