@@ -13,6 +13,7 @@ import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
+import cafe.woden.ircclient.config.api.Ircv3CapabilityConfigPort;
 import cafe.woden.ircclient.config.api.NickColorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.NotificationRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.OutgoingMessageRuntimeConfigPort;
@@ -156,7 +157,8 @@ final class PreferencesCommitSupport {
     CtcpAutoReplySupport.rememberSettings(request.ctcpRuntimeConfig(), snapshot.ctcpAutoReply());
     SpellcheckControlsSupport.rememberSettings(
         request.spellcheckRuntimeConfig(), snapshot.spellcheck());
-    Ircv3PanelSupport.persistCapabilities(runtimeConfig, snapshot.ircv3Capabilities());
+    Ircv3PanelSupport.persistCapabilities(
+        request.ircv3CapabilityRuntimeConfig(), snapshot.ircv3Capabilities());
     NickColorControlsSupport.rememberSettings(
         request.nickColorRuntimeConfig(), request.nickColorSettingsBus(), snapshot.nickColor());
     TimestampControlsSupport.rememberSettings(
@@ -247,6 +249,7 @@ final class PreferencesCommitSupport {
       ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig,
       DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,
       FilterSettingsConfigPort filterRuntimeConfig,
+      Ircv3CapabilityConfigPort ircv3CapabilityRuntimeConfig,
       EmbedLoadPolicyConfigPort embedLoadPolicyRuntimeConfig,
       CtcpReplyRuntimeConfigPort ctcpRuntimeConfig,
       OutgoingMessageRuntimeConfigPort outgoingRuntimeConfig,

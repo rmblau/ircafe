@@ -24,6 +24,7 @@ import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
 import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
+import cafe.woden.ircclient.config.api.Ircv3CapabilityConfigPort;
 import cafe.woden.ircclient.config.api.NickColorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.NotificationRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.OutgoingMessageRuntimeConfigPort;
@@ -328,10 +329,10 @@ class PreferencesDialogFunctionalTest {
   @Test
   void ircv3PanelIncludesUnreadBadgeSizeControl() throws Exception {
     UiSettings current = testUiSettings();
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    Ircv3CapabilityConfigPort ircv3CapabilityRuntimeConfig = mock(Ircv3CapabilityConfigPort.class);
     ChatBehaviorRuntimeConfigPort chatBehaviorRuntimeConfig =
         mock(ChatBehaviorRuntimeConfigPort.class);
-    when(runtimeConfig.readIrcv3Capabilities()).thenReturn(Map.of());
+    when(ircv3CapabilityRuntimeConfig.readIrcv3Capabilities()).thenReturn(Map.of());
     when(chatBehaviorRuntimeConfig.readServerTreeUnreadBadgeScalePercent(100)).thenReturn(100);
 
     JCheckBox send = ChatBehaviorControlsSupport.buildTypingIndicatorsSendCheckbox(current);
@@ -354,7 +355,7 @@ class PreferencesDialogFunctionalTest {
             chatBehaviorRuntimeConfig);
     Ircv3CapabilitiesControls capabilities =
         Ircv3PanelSupport.buildCapabilitiesControls(
-            runtimeConfig, Ircv3ExtensionCatalog.builtInCatalog());
+            ircv3CapabilityRuntimeConfig, Ircv3ExtensionCatalog.builtInCatalog());
 
     JPanel panel =
         Ircv3PanelSupport.buildPanel(
@@ -449,6 +450,7 @@ class PreferencesDialogFunctionalTest {
         mock(ChatHistoryRuntimeConfigPort.class),
         mock(DiagnosticsRuntimeConfigPort.class),
         mock(FilterSettingsConfigPort.class),
+        mock(Ircv3CapabilityConfigPort.class),
         mock(EmbedLoadPolicyConfigPort.class),
         mock(CtcpReplyRuntimeConfigPort.class),
         mock(OutgoingMessageRuntimeConfigPort.class),

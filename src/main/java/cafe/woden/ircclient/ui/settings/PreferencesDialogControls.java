@@ -11,6 +11,7 @@ import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.config.api.Ircv3CapabilityConfigPort;
 import cafe.woden.ircclient.config.api.TrayRuntimeConfigPort;
 import cafe.woden.ircclient.config.properties.LogProperties;
 import cafe.woden.ircclient.config.properties.PushyProperties;
@@ -232,7 +233,7 @@ record PreferencesDialogControls(
             request.chatBehaviorRuntimeConfig());
     Ircv3CapabilitiesControls ircv3Capabilities =
         Ircv3PanelSupport.buildCapabilitiesControls(
-            request.runtimeConfig(), request.ircv3ExtensionCatalog());
+            request.ircv3CapabilityRuntimeConfig(), request.ircv3ExtensionCatalog());
     NickColorControls nickColors =
         NickColorControlsSupport.buildControls(
             request.owner(),
@@ -497,6 +498,7 @@ record PreferencesDialogControls(
       ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig,
       DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,
       FilterSettingsConfigPort filterRuntimeConfig,
+      Ircv3CapabilityConfigPort ircv3CapabilityRuntimeConfig,
       LogProperties logProps,
       NickColorSettingsBus nickColorSettingsBus,
       NickColorService nickColorService,
