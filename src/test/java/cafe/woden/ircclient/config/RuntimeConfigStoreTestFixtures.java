@@ -4,6 +4,7 @@ import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
 import cafe.woden.ircclient.config.api.IgnoreRulesConfigPort;
 import cafe.woden.ircclient.config.api.Ircv3StsPolicyConfigPort;
 import cafe.woden.ircclient.config.api.MonitorRosterConfigPort;
+import cafe.woden.ircclient.config.api.ServerRegistryConfigPort;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -50,5 +51,9 @@ public final class RuntimeConfigStoreTestFixtures {
 
   public static IgnoreRulesConfigPort ignoreRulesPort(RuntimeConfigStore store) {
     return new RuntimeConfigIgnoreRulesAdapter(store);
+  }
+
+  public static ServerRegistryConfigPort serverRegistryPort(RuntimeConfigStore store) {
+    return new RuntimeConfigServerRegistryAdapter(store);
   }
 }

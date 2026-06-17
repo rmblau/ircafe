@@ -36,7 +36,8 @@ class SojuEphemeralNetworkImporterTest {
 
     IrcProperties props = IrcPropertiesTestFixtures.properties(bouncer);
     RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore(props);
-    ServerRegistry configured = new ServerRegistry(props, runtime);
+    ServerRegistry configured =
+        new ServerRegistry(props, RuntimeConfigStoreTestFixtures.serverRegistryPort(runtime));
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
 
     SojuAutoConnectStore autoConnect =
@@ -80,7 +81,8 @@ class SojuEphemeralNetworkImporterTest {
 
     IrcProperties props = IrcPropertiesTestFixtures.properties(bouncer);
     RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore(props);
-    ServerRegistry configured = new ServerRegistry(props, runtime);
+    ServerRegistry configured =
+        new ServerRegistry(props, RuntimeConfigStoreTestFixtures.serverRegistryPort(runtime));
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
 
     SojuAutoConnectStore autoConnect =
@@ -122,7 +124,8 @@ class SojuEphemeralNetworkImporterTest {
 
     IrcProperties props = IrcPropertiesTestFixtures.properties(bouncer);
     RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore(props);
-    ServerRegistry configured = new ServerRegistry(props, runtime);
+    ServerRegistry configured =
+        new ServerRegistry(props, RuntimeConfigStoreTestFixtures.serverRegistryPort(runtime));
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
 
     // Persisted rule: auto-connect the 'libera' network on bouncer server id 'soju'.
@@ -171,7 +174,8 @@ class SojuEphemeralNetworkImporterTest {
     runtime.rememberJoinedChannel("soju:soju:123", "#off");
     runtime.rememberServerTreeChannelAutoReattach("soju:soju:123", "#off", false);
 
-    ServerRegistry configured = new ServerRegistry(props, runtime);
+    ServerRegistry configured =
+        new ServerRegistry(props, RuntimeConfigStoreTestFixtures.serverRegistryPort(runtime));
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
     SojuAutoConnectStore autoConnect =
         new SojuAutoConnectStore(
@@ -211,7 +215,8 @@ class SojuEphemeralNetworkImporterTest {
 
     IrcProperties props = IrcPropertiesTestFixtures.properties(bouncer);
     RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore(props);
-    ServerRegistry configured = new ServerRegistry(props, runtime);
+    ServerRegistry configured =
+        new ServerRegistry(props, RuntimeConfigStoreTestFixtures.serverRegistryPort(runtime));
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
 
     SojuAutoConnectStore autoConnect =

@@ -45,7 +45,9 @@ class ServersDialogFunctionalTest {
     IrcProperties initial = IrcPropertiesTestFixtures.properties(initialServer);
     RuntimeConfigStore runtimeConfig =
         RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"), initial);
-    ServerRegistry registry = new ServerRegistry(initial, runtimeConfig);
+    ServerRegistry registry =
+        new ServerRegistry(
+            initial, RuntimeConfigStoreTestFixtures.serverRegistryPort(runtimeConfig));
 
     ServersDialog dialog =
         onEdtCall(
@@ -101,7 +103,9 @@ class ServersDialogFunctionalTest {
     IrcProperties initial = IrcPropertiesTestFixtures.properties();
     RuntimeConfigStore runtimeConfig =
         RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"), initial);
-    ServerRegistry registry = new ServerRegistry(initial, runtimeConfig);
+    ServerRegistry registry =
+        new ServerRegistry(
+            initial, RuntimeConfigStoreTestFixtures.serverRegistryPort(runtimeConfig));
 
     ServersDialog dialog =
         onEdtCall(

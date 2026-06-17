@@ -246,7 +246,8 @@ class DetachedChannelLifecycleFunctionalTest {
       runtimeConfig.rememberJoinedChannel("libera", channel);
     }
 
-    ServerRegistry serverRegistry = new ServerRegistry(props, runtimeConfig);
+    ServerRegistry serverRegistry =
+        new ServerRegistry(props, RuntimeConfigStoreTestFixtures.serverRegistryPort(runtimeConfig));
     ServerCatalog serverCatalog = new ServerCatalog(serverRegistry, new EphemeralServerRegistry());
     LogProperties logProps =
         new LogProperties(null, null, null, null, null, null, null, null, null, null);

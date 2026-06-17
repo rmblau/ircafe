@@ -41,7 +41,8 @@ class GenericBouncerEphemeralNetworkImporterTest {
         RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"), props);
     runtime.rememberGenericBouncerAutoConnectNetwork("bouncer-1", "Libera", true);
 
-    ServerRegistry configured = new ServerRegistry(props, runtime);
+    ServerRegistry configured =
+        new ServerRegistry(props, RuntimeConfigStoreTestFixtures.serverRegistryPort(runtime));
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
     GenericBouncerAutoConnectStore autoConnect =
         new GenericBouncerAutoConnectStore(bouncerDiscoveryPort(runtime));

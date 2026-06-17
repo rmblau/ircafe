@@ -121,7 +121,8 @@ class ChannelListLoggingDecoratorFunctionalTest {
     IrcProperties props = IrcPropertiesTestFixtures.properties(server("libera"));
     RuntimeConfigStore runtimeConfig =
         RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"), props);
-    ServerRegistry serverRegistry = new ServerRegistry(props, runtimeConfig);
+    ServerRegistry serverRegistry =
+        new ServerRegistry(props, RuntimeConfigStoreTestFixtures.serverRegistryPort(runtimeConfig));
     ServerCatalog serverCatalog = new ServerCatalog(serverRegistry, new EphemeralServerRegistry());
     LogProperties logProps =
         new LogProperties(true, true, false, true, true, true, 0, null, null, null);

@@ -40,7 +40,8 @@ class RuntimeConfigStoreServerTreeChannelStateTest {
 
     ServerRegistry registry =
         new ServerRegistry(
-            IrcPropertiesTestFixtures.properties(server("libera", List.of("#alpha"))), store);
+            IrcPropertiesTestFixtures.properties(server("libera", List.of("#alpha"))),
+            RuntimeConfigStoreTestFixtures.serverRegistryPort(store));
 
     assertEquals(List.of(), registry.require("libera").autoJoin());
   }

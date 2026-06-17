@@ -37,7 +37,8 @@ class ZncEphemeralNetworkImporterTest {
 
     IrcProperties props = IrcPropertiesTestFixtures.properties(bouncer);
     RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore(props);
-    ServerRegistry configured = new ServerRegistry(props, runtime);
+    ServerRegistry configured =
+        new ServerRegistry(props, RuntimeConfigStoreTestFixtures.serverRegistryPort(runtime));
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
     ZncAutoConnectStore autoConnect =
         new ZncAutoConnectStore(
@@ -79,7 +80,8 @@ class ZncEphemeralNetworkImporterTest {
 
     IrcProperties props = IrcPropertiesTestFixtures.properties(bouncer);
     RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore(props);
-    ServerRegistry configured = new ServerRegistry(props, runtime);
+    ServerRegistry configured =
+        new ServerRegistry(props, RuntimeConfigStoreTestFixtures.serverRegistryPort(runtime));
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
     ZncAutoConnectStore autoConnect =
         new ZncAutoConnectStore(
@@ -120,7 +122,8 @@ class ZncEphemeralNetworkImporterTest {
 
     IrcProperties props = IrcPropertiesTestFixtures.properties(bouncer);
     RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore(props);
-    ServerRegistry configured = new ServerRegistry(props, runtime);
+    ServerRegistry configured =
+        new ServerRegistry(props, RuntimeConfigStoreTestFixtures.serverRegistryPort(runtime));
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
     ZncAutoConnectStore autoConnect =
         new ZncAutoConnectStore(
@@ -168,7 +171,8 @@ class ZncEphemeralNetworkImporterTest {
     runtime.rememberJoinedChannel("znc:znc:libera.chat", "#off");
     runtime.rememberServerTreeChannelAutoReattach("znc:znc:libera.chat", "#off", false);
 
-    ServerRegistry configured = new ServerRegistry(props, runtime);
+    ServerRegistry configured =
+        new ServerRegistry(props, RuntimeConfigStoreTestFixtures.serverRegistryPort(runtime));
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
     ZncAutoConnectStore autoConnect =
         new ZncAutoConnectStore(

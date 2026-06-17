@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.config.servers;
 
 import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.ServerRegistryConfigPort;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.processors.BehaviorProcessor;
 import java.util.LinkedHashMap;
@@ -24,11 +24,11 @@ import org.springframework.stereotype.Component;
 @ApplicationLayer
 public class ServerRegistry {
 
-  private final RuntimeConfigStore runtimeConfig;
+  private final ServerRegistryConfigPort runtimeConfig;
   private final LinkedHashMap<String, IrcProperties.Server> byId = new LinkedHashMap<>();
   private final BehaviorProcessor<List<IrcProperties.Server>> updates = BehaviorProcessor.create();
 
-  public ServerRegistry(IrcProperties props, RuntimeConfigStore runtimeConfig) {
+  public ServerRegistry(IrcProperties props, ServerRegistryConfigPort runtimeConfig) {
     this.runtimeConfig = runtimeConfig;
     Map<String, List<String>> runtimeAutoJoinByServer =
         (runtimeConfig == null)

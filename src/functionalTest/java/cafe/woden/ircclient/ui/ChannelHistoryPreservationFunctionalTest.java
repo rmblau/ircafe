@@ -163,7 +163,8 @@ class ChannelHistoryPreservationFunctionalTest {
     IrcProperties props = IrcPropertiesTestFixtures.properties(server("libera"));
     RuntimeConfigStore runtimeConfig =
         RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe-runtime.yml"), props);
-    ServerRegistry serverRegistry = new ServerRegistry(props, runtimeConfig);
+    ServerRegistry serverRegistry =
+        new ServerRegistry(props, RuntimeConfigStoreTestFixtures.serverRegistryPort(runtimeConfig));
     ServerCatalog serverCatalog = new ServerCatalog(serverRegistry, new EphemeralServerRegistry());
 
     ServerTreeDockable serverTree =
