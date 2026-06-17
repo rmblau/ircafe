@@ -1,8 +1,8 @@
 package cafe.woden.ircclient.ui.settings.notifications;
 
 import cafe.woden.ircclient.model.BuiltInSound;
-import cafe.woden.ircclient.notify.api.CustomSoundFileExtensionProvider;
 import cafe.woden.ircclient.notify.api.NotificationSoundPort;
+import cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider;
 import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
@@ -102,7 +102,7 @@ public final class NotificationSoundControlsSupport {
       Component owner,
       NotificationSoundPort notificationSoundService,
       SoundFileImporter soundFileImporter,
-      List<CustomSoundFileExtensionProvider> soundFileExtensionProviders,
+      List<? extends CustomSoundFileExtensionProvider> soundFileExtensionProviders,
       BooleanSupplier availableSupplier,
       boolean customPathEditableWhenEnabled,
       boolean customFileControlsRequireUseCustom) {
@@ -222,7 +222,7 @@ public final class NotificationSoundControlsSupport {
       }
 
       public Builder soundFileExtensionProviders(
-          List<CustomSoundFileExtensionProvider> soundFileExtensionProviders) {
+          List<? extends CustomSoundFileExtensionProvider> soundFileExtensionProviders) {
         this.soundFileExtensionProviders =
             List.copyOf(
                 Objects.requireNonNullElse(
@@ -280,7 +280,7 @@ public final class NotificationSoundControlsSupport {
       Component owner,
       NotificationSoundPort notificationSoundService,
       SoundFileImporter soundFileImporter,
-      List<CustomSoundFileExtensionProvider> soundFileExtensionProviders,
+      List<? extends CustomSoundFileExtensionProvider> soundFileExtensionProviders,
       BooleanSupplier availableSupplier,
       boolean customPathEditableWhenEnabled,
       boolean customFileControlsRequireUseCustom) {

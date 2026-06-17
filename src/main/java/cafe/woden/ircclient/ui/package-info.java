@@ -33,6 +33,7 @@
       "notify::api",
       "notify::pushy",
       "notify::sound",
+      "notify::spi",
       "state::api",
       "util"
     })

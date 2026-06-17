@@ -17,15 +17,16 @@ public final class CustomSoundFileImportSupport {
 
   private CustomSoundFileImportSupport() {}
 
-  public static List<CustomSoundFileExtensionProvider> loadExtensionProviders(
-      InstalledPluginsPort installedPlugins) {
+  public static List<cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider>
+      loadExtensionProviders(InstalledPluginsPort installedPlugins) {
     return CustomSoundPluginProviders.extensionProviders(installedPlugins);
   }
 
   public static String importToRuntimeDir(
       Path runtimeConfigPath,
       File source,
-      List<CustomSoundFileExtensionProvider> extensionProviders,
+      List<? extends cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider>
+          extensionProviders,
       String defaultBaseName,
       String invalidFileNameMessage,
       String unsupportedBuiltInTypeMessage,
@@ -77,7 +78,9 @@ public final class CustomSoundFileImportSupport {
   }
 
   public static String extensionFor(
-      String fileName, List<CustomSoundFileExtensionProvider> extensionProviders) {
+      String fileName,
+      List<? extends cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider>
+          extensionProviders) {
     String lower = Objects.toString(fileName, "").trim().toLowerCase(Locale.ROOT);
     if (lower.isEmpty()) return null;
     for (String extension : supportedExtensions(extensionProviders)) {
@@ -87,11 +90,13 @@ public final class CustomSoundFileImportSupport {
   }
 
   public static Set<String> supportedExtensions(
-      List<CustomSoundFileExtensionProvider> extensionProviders) {
+      List<? extends cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider>
+          extensionProviders) {
     LinkedHashSet<String> out = new LinkedHashSet<>(BUILT_IN_EXTENSIONS);
-    for (CustomSoundFileExtensionProvider provider :
+    for (cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider provider :
         Objects.requireNonNullElse(
-            extensionProviders, List.<CustomSoundFileExtensionProvider>of())) {
+            extensionProviders,
+            List.<cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider>of())) {
       if (provider == null) continue;
       for (String extension :
           Objects.requireNonNullElse(provider.soundFileExtensions(), List.<String>of())) {
@@ -103,12 +108,14 @@ public final class CustomSoundFileImportSupport {
   }
 
   public static boolean hasOnlyBuiltInExtensions(
-      List<CustomSoundFileExtensionProvider> extensionProviders) {
+      List<? extends cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider>
+          extensionProviders) {
     return supportedExtensions(extensionProviders).equals(Set.copyOf(BUILT_IN_EXTENSIONS));
   }
 
   private static String unsupportedTypeMessage(
-      List<CustomSoundFileExtensionProvider> extensionProviders,
+      List<? extends cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider>
+          extensionProviders,
       String unsupportedBuiltInTypeMessage,
       String unsupportedExtendedTypeMessage) {
     if (hasOnlyBuiltInExtensions(extensionProviders)) {

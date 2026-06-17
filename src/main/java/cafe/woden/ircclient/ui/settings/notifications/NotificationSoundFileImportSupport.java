@@ -1,9 +1,9 @@
 package cafe.woden.ircclient.ui.settings.notifications;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
-import cafe.woden.ircclient.notify.api.CustomSoundFileExtensionProvider;
 import cafe.woden.ircclient.notify.api.CustomSoundFileImportSupport;
 import cafe.woden.ircclient.notify.api.CustomSoundPluginProviders;
+import cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider;
 import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.io.File;
 import java.nio.file.Path;
@@ -27,7 +27,7 @@ public final class NotificationSoundFileImportSupport {
   static String importToRuntimeDir(
       Path runtimeConfigPath,
       File source,
-      List<CustomSoundFileExtensionProvider> extensionProviders)
+      List<? extends CustomSoundFileExtensionProvider> extensionProviders)
       throws Exception {
     return CustomSoundFileImportSupport.importToRuntimeDir(
         runtimeConfigPath,

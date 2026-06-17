@@ -18,9 +18,22 @@ class SharedCustomSoundFileExtensionProviderNotificationTest {
 
   @Test
   void loadsSharedCustomSoundFileExtensionsForNotificationImport() throws Exception {
+    assertSharedCustomSoundFileExtensionsLoadForNotificationImport(false);
+  }
+
+  @Test
+  void loadsSharedCustomSoundFileExtensionSpiForNotificationImport() throws Exception {
+    assertSharedCustomSoundFileExtensionsLoadForNotificationImport(true);
+  }
+
+  private void assertSharedCustomSoundFileExtensionsLoadForNotificationImport(boolean spi)
+      throws Exception {
     Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
     Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
-    writePluginJar(pluginDir.resolve("plugin-custom-sound-extension.jar"));
+    writePluginJar(
+        pluginDir.resolve(
+            spi ? "plugin-custom-sound-extension-spi.jar" : "plugin-custom-sound-extension.jar"),
+        spi);
     RuntimeConfigPathPort runtimeConfigPathPort =
         () -> runtimeConfigDirectory.resolve("ircafe.yml");
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
@@ -36,13 +49,29 @@ class SharedCustomSoundFileExtensionProviderNotificationTest {
     assertTrue(installedPlugins.pluginProblems().isEmpty());
   }
 
-  private void writePluginJar(Path jarPath) throws Exception {
+  private void writePluginJar(Path jarPath, boolean spi) throws Exception {
     String providerClassName = "cafe.woden.ircclient.testplugins.PluginSoundFileExtensions";
     String providerSource =
-        """
+        pluginProviderSource(
+            spi
+                ? "cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider"
+                : "cafe.woden.ircclient.notify.api.CustomSoundFileExtensionProvider");
+    CompiledPluginJarSupport.writePluginJar(
+        jarPath,
+        providerClassName,
+        providerSource,
+        spi
+            ? cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider.class.getName()
+            : CustomSoundFileExtensionProvider.class.getName(),
+        CompiledPluginJarSupport.compatibleManifest(
+            spi ? "plugin-custom-sound-extension-spi" : "plugin-custom-sound-extension", "1.0.0"));
+  }
+
+  private static String pluginProviderSource(String providerImport) {
+    return """
         package cafe.woden.ircclient.testplugins;
 
-        import cafe.woden.ircclient.notify.api.CustomSoundFileExtensionProvider;
+        import %s;
         import java.util.List;
 
         public final class PluginSoundFileExtensions implements CustomSoundFileExtensionProvider {
@@ -51,12 +80,7 @@ class SharedCustomSoundFileExtensionProviderNotificationTest {
             return List.of("ogg", ".flac", "bad/value");
           }
         }
-        """;
-    CompiledPluginJarSupport.writePluginJar(
-        jarPath,
-        providerClassName,
-        providerSource,
-        CustomSoundFileExtensionProvider.class.getName(),
-        CompiledPluginJarSupport.compatibleManifest("plugin-custom-sound-extension", "1.0.0"));
+        """
+        .formatted(providerImport);
   }
 }

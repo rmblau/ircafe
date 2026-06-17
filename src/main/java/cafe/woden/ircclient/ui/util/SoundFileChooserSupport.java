@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.ui.util;
 
-import cafe.woden.ircclient.notify.api.CustomSoundFileExtensionProvider;
 import cafe.woden.ircclient.notify.api.CustomSoundFileImportSupport;
+import cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider;
 import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.awt.Component;
 import java.io.File;
@@ -25,7 +25,7 @@ public final class SoundFileChooserSupport {
   public static Optional<File> chooseSoundFile(
       Component owner,
       String dialogTitle,
-      List<CustomSoundFileExtensionProvider> extensionProviders) {
+      List<? extends CustomSoundFileExtensionProvider> extensionProviders) {
     JFileChooser chooser = new JFileChooser();
     chooser.setDialogTitle(
         Objects.toString(dialogTitle, MESSAGES.text("common.fileChooser.sound.defaultTitle")));
@@ -38,14 +38,14 @@ public final class SoundFileChooserSupport {
   }
 
   static FileNameExtensionFilter audioFileFilter(
-      List<CustomSoundFileExtensionProvider> extensionProviders) {
+      List<? extends CustomSoundFileExtensionProvider> extensionProviders) {
     Set<String> extensions = CustomSoundFileImportSupport.supportedExtensions(extensionProviders);
     return new FileNameExtensionFilter(
         audioFilterLabel(extensions, extensionProviders), extensions.toArray(String[]::new));
   }
 
   private static String audioFilterLabel(
-      Set<String> extensions, List<CustomSoundFileExtensionProvider> extensionProviders) {
+      Set<String> extensions, List<? extends CustomSoundFileExtensionProvider> extensionProviders) {
     if (CustomSoundFileImportSupport.hasOnlyBuiltInExtensions(extensionProviders)) {
       return MESSAGES.text("common.fileChooser.audioFiles.mp3Wav");
     }

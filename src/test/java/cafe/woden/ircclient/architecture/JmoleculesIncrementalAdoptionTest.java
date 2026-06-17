@@ -197,6 +197,8 @@ import cafe.woden.ircclient.notify.pushy.PushyNotificationService;
 import cafe.woden.ircclient.notify.pushy.PushySettingsBus;
 import cafe.woden.ircclient.notify.sound.NotificationSoundService;
 import cafe.woden.ircclient.notify.sound.NotificationSoundSettingsBus;
+import cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider;
+import cafe.woden.ircclient.notify.spi.CustomSoundPlaybackProvider;
 import cafe.woden.ircclient.perform.PerformOnConnectService;
 import cafe.woden.ircclient.state.AwayRoutingState;
 import cafe.woden.ircclient.state.AwayStatusStore;
@@ -600,6 +602,8 @@ class JmoleculesIncrementalAdoptionTest {
     assertAnnotated(MonitorIsonFallbackService.class, ApplicationLayer.class);
     assertAnnotated(MonitorSyncService.class, ApplicationLayer.class);
     assertAnnotated(NotificationSoundPort.class, ApplicationLayer.class);
+    assertAnnotated(CustomSoundFileExtensionProvider.class, ApplicationLayer.class);
+    assertAnnotated(CustomSoundPlaybackProvider.class, ApplicationLayer.class);
     assertAnnotated(NotificationSoundService.class, ApplicationLayer.class);
     assertAnnotated(NotificationSoundSettingsBus.class, ApplicationLayer.class);
     assertAnnotated(PushyNotificationPort.class, ApplicationLayer.class);

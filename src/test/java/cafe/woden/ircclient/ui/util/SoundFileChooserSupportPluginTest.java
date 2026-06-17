@@ -6,11 +6,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
 import cafe.woden.ircclient.notify.api.CustomSoundFileExtensionProvider;
+import cafe.woden.ircclient.notify.api.CustomSoundPluginProviders;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -21,16 +21,29 @@ class SoundFileChooserSupportPluginTest {
 
   @Test
   void audioFileFilterIncludesSharedCustomSoundExtensionsFromPlugins() throws Exception {
+    assertAudioFileFilterIncludesSharedCustomSoundExtensionsFromPlugins(false);
+  }
+
+  @Test
+  void audioFileFilterIncludesSharedCustomSoundExtensionSpiFromPlugins() throws Exception {
+    assertAudioFileFilterIncludesSharedCustomSoundExtensionsFromPlugins(true);
+  }
+
+  private void assertAudioFileFilterIncludesSharedCustomSoundExtensionsFromPlugins(boolean spi)
+      throws Exception {
     Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
     Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
-    writePluginJar(pluginDir.resolve("plugin-custom-sound-extension.jar"));
+    writePluginJar(
+        pluginDir.resolve(
+            spi ? "plugin-custom-sound-extension-spi.jar" : "plugin-custom-sound-extension.jar"),
+        spi);
     RuntimeConfigPathPort runtimeConfigPathPort =
         () -> runtimeConfigDirectory.resolve("ircafe.yml");
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
-    List<CustomSoundFileExtensionProvider> providers =
-        installedPlugins.loadInstalledServices(CustomSoundFileExtensionProvider.class, List.of());
 
-    FileNameExtensionFilter filter = SoundFileChooserSupport.audioFileFilter(providers);
+    FileNameExtensionFilter filter =
+        SoundFileChooserSupport.audioFileFilter(
+            CustomSoundPluginProviders.extensionProviders(installedPlugins));
 
     assertTrue(filter.accept(new File("alert.mp3")));
     assertTrue(filter.accept(new File("alert.wav")));
@@ -39,13 +52,29 @@ class SoundFileChooserSupportPluginTest {
     assertTrue(installedPlugins.pluginProblems().isEmpty());
   }
 
-  private void writePluginJar(Path jarPath) throws Exception {
+  private void writePluginJar(Path jarPath, boolean spi) throws Exception {
     String providerClassName = "cafe.woden.ircclient.testplugins.PluginSoundFileExtensions";
     String providerSource =
-        """
+        pluginProviderSource(
+            spi
+                ? "cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider"
+                : "cafe.woden.ircclient.notify.api.CustomSoundFileExtensionProvider");
+    CompiledPluginJarSupport.writePluginJar(
+        jarPath,
+        providerClassName,
+        providerSource,
+        spi
+            ? cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider.class.getName()
+            : CustomSoundFileExtensionProvider.class.getName(),
+        CompiledPluginJarSupport.compatibleManifest(
+            spi ? "plugin-custom-sound-extension-spi" : "plugin-custom-sound-extension", "1.0.0"));
+  }
+
+  private static String pluginProviderSource(String providerImport) {
+    return """
         package cafe.woden.ircclient.testplugins;
 
-        import cafe.woden.ircclient.notify.api.CustomSoundFileExtensionProvider;
+        import %s;
         import java.util.List;
 
         public final class PluginSoundFileExtensions implements CustomSoundFileExtensionProvider {
@@ -54,12 +83,7 @@ class SoundFileChooserSupportPluginTest {
             return List.of("ogg");
           }
         }
-        """;
-    CompiledPluginJarSupport.writePluginJar(
-        jarPath,
-        providerClassName,
-        providerSource,
-        CustomSoundFileExtensionProvider.class.getName(),
-        CompiledPluginJarSupport.compatibleManifest("plugin-custom-sound-extension", "1.0.0"));
+        """
+        .formatted(providerImport);
   }
 }
