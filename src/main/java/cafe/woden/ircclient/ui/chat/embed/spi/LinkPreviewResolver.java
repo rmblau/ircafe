@@ -1,6 +1,5 @@
 package cafe.woden.ircclient.ui.chat.embed.spi;
 
-import cafe.woden.ircclient.ui.chat.embed.LinkPreview;
 import java.net.URI;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 

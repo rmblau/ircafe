@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreview;
 import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
 import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
@@ -59,7 +60,7 @@ class LinkPreviewFetchServiceTest {
         """
         package cafe.woden.ircclient.testplugins;
 
-        import cafe.woden.ircclient.ui.chat.embed.LinkPreview;
+        import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreview;
         import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
         import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
         import java.net.URI;

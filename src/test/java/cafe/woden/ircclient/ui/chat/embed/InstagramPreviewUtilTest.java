@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.chat.embed;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreview;
 import java.net.URI;
 import org.jsoup.Jsoup;
 import org.junit.jupiter.api.Test;
