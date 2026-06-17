@@ -6,7 +6,8 @@ import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MULTILINE;
 import java.util.List;
 
 /** SPI provider for the IRCv3 multiline draft extension. */
-public final class Ircv3MultilineExtensionProvider implements Ircv3ExtensionDefinitionProvider {
+public final class Ircv3MultilineExtensionProvider
+    implements cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider {
 
   @Override
   public String providerId() {

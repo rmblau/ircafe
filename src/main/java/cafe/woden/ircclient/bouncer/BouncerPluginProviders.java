@@ -26,14 +26,9 @@ final class BouncerPluginProviders {
     if (installedPlugins == null) {
       return strategies;
     }
-    ArrayList<cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy> loadedStrategies =
-        new ArrayList<>();
-    loadedStrategies.addAll(
+    return dedupeByProviderClass(
         installedPlugins.loadInstalledServices(
             cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy.class, strategies));
-    loadedStrategies.addAll(
-        installedPlugins.loadInstalledServices(BouncerNetworkMappingStrategy.class, List.of()));
-    return dedupeByProviderClass(loadedStrategies);
   }
 
   static List<cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler>
@@ -46,14 +41,9 @@ final class BouncerPluginProviders {
     if (installedPlugins == null) {
       return handlers;
     }
-    ArrayList<cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler> loadedHandlers =
-        new ArrayList<>();
-    loadedHandlers.addAll(
+    return dedupeByProviderClass(
         installedPlugins.loadInstalledServices(
             cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler.class, handlers));
-    loadedHandlers.addAll(
-        installedPlugins.loadInstalledServices(BouncerBackendDiscoveryHandler.class, List.of()));
-    return dedupeByProviderClass(loadedHandlers);
   }
 
   private static <T> List<T> nonNullServices(List<? extends T> services) {

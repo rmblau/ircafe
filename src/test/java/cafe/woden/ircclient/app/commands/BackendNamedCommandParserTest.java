@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;

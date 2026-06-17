@@ -6,9 +6,9 @@ import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.commands.BackendNamedCommandExecutionContext;
-import cafe.woden.ircclient.app.commands.BackendNamedCommandExecutor;
 import cafe.woden.ircclient.app.commands.BackendNamedCommandExecutorCatalog;
 import cafe.woden.ircclient.app.commands.ParsedInput;
+import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.irc.port.IrcMediatorInteractionPort;

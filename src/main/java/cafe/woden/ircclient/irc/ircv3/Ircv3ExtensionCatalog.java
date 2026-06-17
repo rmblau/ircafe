@@ -113,8 +113,6 @@ public final class Ircv3ExtensionCatalog {
     providers.addAll(
         installedPlugins.loadInstalledServices(
             Ircv3ExtensionProvider.class, Ircv3ExtensionRegistry.defaultProviders()));
-    providers.addAll(
-        installedPlugins.loadInstalledServices(Ircv3ExtensionDefinitionProvider.class, List.of()));
 
     LinkedHashSet<String> providerClassNames = new LinkedHashSet<>();
     ArrayList<Ircv3ExtensionProvider> deduped = new ArrayList<>();

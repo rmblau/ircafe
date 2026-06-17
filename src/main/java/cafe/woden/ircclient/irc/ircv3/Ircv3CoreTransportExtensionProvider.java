@@ -19,7 +19,8 @@ import static cafe.woden.ircclient.util.Ircv3CapabilityNames.STANDARD_REPLIES;
 import java.util.List;
 
 /** Built-in provider for the core IRCv3 transport and metadata capabilities. */
-public final class Ircv3CoreTransportExtensionProvider implements Ircv3ExtensionDefinitionProvider {
+public final class Ircv3CoreTransportExtensionProvider
+    implements cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider {
 
   @Override
   public String providerId() {

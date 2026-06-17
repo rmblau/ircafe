@@ -234,11 +234,8 @@ public final class Ircv3ExtensionRegistry {
     return DEFAULT_SNAPSHOT.normalizePreferenceKey(name);
   }
 
-  static List<Ircv3ExtensionDefinitionProvider> builtInProviders() {
-    return BUILT_IN_PROVIDERS.stream()
-        .filter(Ircv3ExtensionDefinitionProvider.class::isInstance)
-        .map(Ircv3ExtensionDefinitionProvider.class::cast)
-        .toList();
+  static List<Ircv3ExtensionProvider> builtInProviders() {
+    return BUILT_IN_PROVIDERS;
   }
 
   static List<Ircv3ExtensionProvider> defaultProviders() {
@@ -253,7 +250,6 @@ public final class Ircv3ExtensionRegistry {
     ArrayList<Ircv3ExtensionProvider> providers = new ArrayList<>(BUILT_IN_PROVIDERS);
     ClassLoader classLoader = Ircv3ExtensionProvider.class.getClassLoader();
     loadProviders(Ircv3ExtensionProvider.class, classLoader, providers);
-    loadProviders(Ircv3ExtensionDefinitionProvider.class, classLoader, providers);
     return normalizeProviders(providers);
   }
 

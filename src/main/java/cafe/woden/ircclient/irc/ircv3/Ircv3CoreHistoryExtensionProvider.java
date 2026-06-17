@@ -5,7 +5,8 @@ import static cafe.woden.ircclient.util.Ircv3CapabilityNames.BATCH;
 import java.util.List;
 
 /** Built-in provider for core history-related IRCv3 transport capabilities. */
-public final class Ircv3CoreHistoryExtensionProvider implements Ircv3ExtensionDefinitionProvider {
+public final class Ircv3CoreHistoryExtensionProvider
+    implements cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider {
 
   @Override
   public String providerId() {

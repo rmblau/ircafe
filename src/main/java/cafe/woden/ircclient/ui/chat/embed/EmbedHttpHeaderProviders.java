@@ -2,12 +2,9 @@ package cafe.woden.ircclient.ui.chat.embed;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.slf4j.Logger;
 
@@ -17,20 +14,11 @@ final class EmbedHttpHeaderProviders {
 
   private EmbedHttpHeaderProviders() {}
 
-  static <T extends cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider>
-      List<cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider> loadInstalledProviders(
-          InstalledPluginsPort installedPlugins, Class<T> specificProviderType) {
+  static List<cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider>
+      loadInstalledProviders(InstalledPluginsPort installedPlugins) {
     if (installedPlugins == null) return List.of();
-    List<cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider> spiProviders =
-        installedPlugins.loadInstalledServices(
-            cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider.class, List.of());
-    List<EmbedHttpHeaderProvider> legacySharedProviders =
-        installedPlugins.loadInstalledServices(EmbedHttpHeaderProvider.class, List.of());
-    List<T> legacySpecificProviders =
-        specificProviderType == null
-            ? List.of()
-            : installedPlugins.loadInstalledServices(specificProviderType, List.of());
-    return merge(spiProviders, legacySharedProviders, legacySpecificProviders);
+    return installedPlugins.loadInstalledServices(
+        cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider.class, List.of());
   }
 
   static void applyProviderHeaders(
@@ -53,34 +41,6 @@ final class EmbedHttpHeaderProviders {
         }
       } catch (RuntimeException ex) {
         log.warn("{} failed: {}", providerDescription, provider.getClass().getName(), ex);
-      }
-    }
-  }
-
-  @SafeVarargs
-  private static List<cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider> merge(
-      List<? extends cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider>...
-          providerGroups) {
-    List<cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider> merged = new ArrayList<>();
-    Set<String> seenProviderTypes = new LinkedHashSet<>();
-    for (List<? extends cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider> providers :
-        providerGroups) {
-      addHeaderProviders(merged, seenProviderTypes, providers);
-    }
-    return List.copyOf(merged);
-  }
-
-  private static void addHeaderProviders(
-      List<cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider> merged,
-      Set<String> seenProviderTypes,
-      List<? extends cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider> providers) {
-    List<? extends cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider> safeProviders =
-        providers == null ? List.of() : providers;
-    for (cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider provider : safeProviders) {
-      if (provider == null) continue;
-      String providerType = provider.getClass().getName();
-      if (seenProviderTypes.add(providerType)) {
-        merged.add(provider);
       }
     }
   }

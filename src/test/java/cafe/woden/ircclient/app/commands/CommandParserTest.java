@@ -2,6 +2,7 @@ package cafe.woden.ircclient.app.commands;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
@@ -525,7 +526,7 @@ class CommandParserTest {
         package plugin.commands;
 
         import cafe.woden.ircclient.app.commands.ParsedInput;
-        import cafe.woden.ircclient.app.commands.SlashCommandParseStrategy;
+        import cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy;
 
         public final class PluginQuoteSlashCommandParseStrategy
             implements SlashCommandParseStrategy {

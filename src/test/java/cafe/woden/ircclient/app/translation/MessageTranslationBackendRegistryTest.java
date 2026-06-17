@@ -30,7 +30,7 @@ class MessageTranslationBackendRegistryTest {
 
   @Test
   void resolvesBackendsByNormalizedId() {
-    MessageTranslationBackend backend = new StubBackend(" DeepL ");
+    MessageTranslationBackendProvider backend = new StubBackend(" DeepL ");
     MessageTranslationBackendRegistry registry =
         new MessageTranslationBackendRegistry(List.of(backend));
 
@@ -48,8 +48,8 @@ class MessageTranslationBackendRegistryTest {
 
   @Test
   void includesBackendsLoadedThroughInstalledPluginPort() {
-    MessageTranslationBackend builtIn = new StubBackend("built-in");
-    MessageTranslationBackend plugin = new StubBackend("plugin-extra");
+    MessageTranslationBackendProvider builtIn = new StubBackend("built-in");
+    MessageTranslationBackendProvider plugin = new StubBackend("plugin-extra");
     MessageTranslationBackendRegistry registry =
         new MessageTranslationBackendRegistry(
             List.of(builtIn), new RecordingInstalledPluginsPort(List.of(plugin)));
@@ -67,7 +67,7 @@ class MessageTranslationBackendRegistryTest {
         pluginDir.resolve("example-translation-backend.jar"),
         PLUGIN_BACKEND_CLASS,
         pluginBackendSource(),
-        MessageTranslationBackend.class.getName(),
+        MessageTranslationBackendProvider.class.getName(),
         CompiledPluginJarSupport.compatibleManifest("example-translation-backend", "1.0.0"));
     RuntimeConfigPathPort runtimeConfigPathPort =
         () -> runtimeConfigDirectory.resolve("ircafe.yml");
@@ -110,7 +110,7 @@ class MessageTranslationBackendRegistryTest {
 
   @Test
   void rejectsDuplicateNormalizedIds() {
-    List<MessageTranslationBackend> backends =
+    List<MessageTranslationBackendProvider> backends =
         List.of(new StubBackend("DeepL"), new StubBackend(" deepl "));
 
     assertThrows(
@@ -128,13 +128,13 @@ class MessageTranslationBackendRegistryTest {
     return """
         package plugin.translation;
 
-        import cafe.woden.ircclient.app.translation.MessageTranslationBackend;
+        import cafe.woden.ircclient.app.translation.spi.MessageTranslationBackendProvider;
         import cafe.woden.ircclient.app.translation.MessageTranslationRequest;
         import cafe.woden.ircclient.app.translation.MessageTranslationResult;
         import java.util.concurrent.CompletableFuture;
         import java.util.concurrent.CompletionStage;
 
-        public final class PluginEchoBackend implements MessageTranslationBackend {
+        public final class PluginEchoBackend implements MessageTranslationBackendProvider {
           @Override
           public String backendId() {
             return "plugin-echo";
@@ -179,18 +179,17 @@ class MessageTranslationBackendRegistryTest {
   }
 
   private static final class RecordingInstalledPluginsPort implements InstalledPluginsPort {
-    private final List<MessageTranslationBackend> pluginBackends;
+    private final List<MessageTranslationBackendProvider> pluginBackends;
 
-    private RecordingInstalledPluginsPort(List<MessageTranslationBackend> pluginBackends) {
+    private RecordingInstalledPluginsPort(List<MessageTranslationBackendProvider> pluginBackends) {
       this.pluginBackends = List.copyOf(pluginBackends);
     }
 
     @Override
     public <T> List<T> loadInstalledServices(Class<T> serviceType, List<T> builtInServices) {
       ArrayList<T> services = new ArrayList<>(builtInServices);
-      if (serviceType == MessageTranslationBackendProvider.class
-          || serviceType == MessageTranslationBackend.class) {
-        for (MessageTranslationBackend backend : pluginBackends) {
+      if (serviceType == MessageTranslationBackendProvider.class) {
+        for (MessageTranslationBackendProvider backend : pluginBackends) {
           services.add(serviceType.cast(backend));
         }
       }
@@ -198,7 +197,7 @@ class MessageTranslationBackendRegistryTest {
     }
   }
 
-  private record StubBackend(String backendId) implements MessageTranslationBackend {
+  private record StubBackend(String backendId) implements MessageTranslationBackendProvider {
     @Override
     public CompletionStage<MessageTranslationResult> translate(MessageTranslationRequest request) {
       return CompletableFuture.completedFuture(new MessageTranslationResult("", "", "", ""));

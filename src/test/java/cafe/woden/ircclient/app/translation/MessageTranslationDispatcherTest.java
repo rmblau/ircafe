@@ -13,6 +13,8 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import cafe.woden.ircclient.app.api.MessageTranslation;
 import cafe.woden.ircclient.app.api.UiPort;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationBackendProvider;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.model.TargetRef;
@@ -421,7 +423,7 @@ class MessageTranslationDispatcherTest {
   }
 
   private MessageTranslationDispatcher dispatcher(
-      IrcProperties props, UiPort ui, MessageTranslationBackend... backends) {
+      IrcProperties props, UiPort ui, MessageTranslationBackendProvider... backends) {
     return dispatcherWithDetector(props, ui, text -> Optional.empty(), backends);
   }
 
@@ -429,7 +431,7 @@ class MessageTranslationDispatcherTest {
       IrcProperties props,
       UiPort ui,
       MessageLanguageDetector languageDetector,
-      MessageTranslationBackend... backends) {
+      MessageTranslationBackendProvider... backends) {
     return new MessageTranslationDispatcher(
         props,
         new MessageTranslationSettingsBus(props),
@@ -596,7 +598,7 @@ class MessageTranslationDispatcherTest {
         List.of());
   }
 
-  private static final class CapturingBackend implements MessageTranslationBackend {
+  private static final class CapturingBackend implements MessageTranslationBackendProvider {
     private final String backendId;
     private final Function<MessageTranslationRequest, CompletionStage<MessageTranslationResult>>
         handler;

@@ -2,6 +2,7 @@ package cafe.woden.ircclient.bouncer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import java.util.ArrayList;
 import java.util.List;

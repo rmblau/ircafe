@@ -7,7 +7,6 @@ import cafe.woden.ircclient.config.api.InterceptorConfigPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
 import cafe.woden.ircclient.model.InterceptorDefinition;
-import cafe.woden.ircclient.notify.api.CustomSoundFileExtensionProvider;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -22,22 +21,9 @@ class SharedCustomSoundFileExtensionProviderInterceptorTest {
 
   @Test
   void loadsSharedCustomSoundFileExtensionsForInterceptorImport() throws Exception {
-    assertSharedCustomSoundFileExtensionsLoadForInterceptorImport(false);
-  }
-
-  @Test
-  void loadsSharedCustomSoundFileExtensionSpiForInterceptorImport() throws Exception {
-    assertSharedCustomSoundFileExtensionsLoadForInterceptorImport(true);
-  }
-
-  private void assertSharedCustomSoundFileExtensionsLoadForInterceptorImport(boolean spi)
-      throws Exception {
     Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
     Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
-    writePluginJar(
-        pluginDir.resolve(
-            spi ? "plugin-custom-sound-extension-spi.jar" : "plugin-custom-sound-extension.jar"),
-        spi);
+    writePluginJar(pluginDir.resolve("plugin-custom-sound-extension.jar"));
     RuntimeConfigPathPort runtimeConfigPathPort =
         () -> runtimeConfigDirectory.resolve("ircafe.yml");
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
@@ -54,22 +40,16 @@ class SharedCustomSoundFileExtensionProviderInterceptorTest {
     assertTrue(installedPlugins.pluginProblems().isEmpty());
   }
 
-  private void writePluginJar(Path jarPath, boolean spi) throws Exception {
+  private void writePluginJar(Path jarPath) throws Exception {
     String providerClassName = "cafe.woden.ircclient.testplugins.PluginInterceptorSoundExtensions";
     String providerSource =
-        pluginProviderSource(
-            spi
-                ? "cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider"
-                : "cafe.woden.ircclient.notify.api.CustomSoundFileExtensionProvider");
+        pluginProviderSource("cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider");
     CompiledPluginJarSupport.writePluginJar(
         jarPath,
         providerClassName,
         providerSource,
-        spi
-            ? cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider.class.getName()
-            : CustomSoundFileExtensionProvider.class.getName(),
-        CompiledPluginJarSupport.compatibleManifest(
-            spi ? "plugin-custom-sound-extension-spi" : "plugin-custom-sound-extension", "1.0.0"));
+        cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider.class.getName(),
+        CompiledPluginJarSupport.compatibleManifest("plugin-custom-sound-extension", "1.0.0"));
   }
 
   private static String pluginProviderSource(String providerImport) {

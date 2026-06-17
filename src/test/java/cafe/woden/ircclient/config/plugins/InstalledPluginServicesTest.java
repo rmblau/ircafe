@@ -3,7 +3,7 @@ package cafe.woden.ircclient.config.plugins;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import cafe.woden.ircclient.app.commands.BackendNamedCommandHandler;
+import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.io.IOException;
@@ -136,7 +136,7 @@ class InstalledPluginServicesTest {
     return """
         package plugin.installed;
 
-        import cafe.woden.ircclient.app.commands.BackendNamedCommandHandler;
+        import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
         import cafe.woden.ircclient.app.commands.ParsedInput;
         import java.util.Set;
 

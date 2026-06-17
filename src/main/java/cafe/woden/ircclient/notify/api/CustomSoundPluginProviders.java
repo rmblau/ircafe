@@ -1,7 +1,6 @@
 package cafe.woden.ircclient.notify.api;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
-import java.util.ArrayList;
 import java.util.List;
 
 /** Centralizes ServiceLoader-backed custom sound plugin provider handling. */
@@ -13,14 +12,9 @@ public final class CustomSoundPluginProviders {
     if (installedPlugins == null) {
       return List.of();
     }
-    ArrayList<cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider> providers =
-        new ArrayList<>();
-    providers.addAll(
+    return dedupeByProviderClass(
         installedPlugins.loadInstalledServices(
             cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider.class, List.of()));
-    providers.addAll(
-        installedPlugins.loadInstalledServices(CustomSoundFileExtensionProvider.class, List.of()));
-    return dedupeByProviderClass(providers);
   }
 
   public static List<cafe.woden.ircclient.notify.spi.CustomSoundPlaybackProvider> playbackProviders(
@@ -28,21 +22,16 @@ public final class CustomSoundPluginProviders {
     if (installedPlugins == null) {
       return List.of();
     }
-    ArrayList<cafe.woden.ircclient.notify.spi.CustomSoundPlaybackProvider> providers =
-        new ArrayList<>();
-    providers.addAll(
+    return dedupeByProviderClass(
         installedPlugins.loadInstalledServices(
             cafe.woden.ircclient.notify.spi.CustomSoundPlaybackProvider.class, List.of()));
-    providers.addAll(
-        installedPlugins.loadInstalledServices(CustomSoundPlaybackProvider.class, List.of()));
-    return dedupeByProviderClass(providers);
   }
 
   private static <T> List<T> nonNullServices(List<? extends T> services) {
     if (services == null || services.isEmpty()) {
       return List.of();
     }
-    ArrayList<T> nonNull = new ArrayList<>();
+    java.util.ArrayList<T> nonNull = new java.util.ArrayList<>();
     for (T service : services) {
       if (service != null) {
         nonNull.add(service);
@@ -53,7 +42,7 @@ public final class CustomSoundPluginProviders {
 
   private static <T> List<T> dedupeByProviderClass(List<? extends T> services) {
     java.util.LinkedHashSet<String> providerClassNames = new java.util.LinkedHashSet<>();
-    ArrayList<T> deduped = new ArrayList<>();
+    java.util.ArrayList<T> deduped = new java.util.ArrayList<>();
     for (T service : nonNullServices(services)) {
       if (!providerClassNames.add(service.getClass().getName())) {
         continue;

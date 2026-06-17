@@ -263,10 +263,6 @@ public class ImageFetchService {
     }
   }
 
-  static Map<String, String> headersFor(URI uri, List<ImageFetchHeaderProvider> headerProviders) {
-    return headersForEmbedProviders(uri, headerProviders);
-  }
-
   static Map<String, String> headersForEmbedProviders(
       URI uri,
       List<? extends cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider>
@@ -305,8 +301,7 @@ public class ImageFetchService {
 
   private static List<cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider>
       loadHeaderProviders(InstalledPluginsPort installedPlugins) {
-    return EmbedHttpHeaderProviders.loadInstalledProviders(
-        installedPlugins, ImageFetchHeaderProvider.class);
+    return EmbedHttpHeaderProviders.loadInstalledProviders(installedPlugins);
   }
 
   private static InstalledPluginsPort resolveInstalledPlugins(

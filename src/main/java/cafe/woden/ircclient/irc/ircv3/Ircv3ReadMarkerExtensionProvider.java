@@ -6,7 +6,8 @@ import static cafe.woden.ircclient.util.Ircv3CapabilityNames.READ_MARKER;
 import java.util.List;
 
 /** SPI provider for the IRCv3 read-marker draft extension. */
-public final class Ircv3ReadMarkerExtensionProvider implements Ircv3ExtensionDefinitionProvider {
+public final class Ircv3ReadMarkerExtensionProvider
+    implements cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider {
 
   @Override
   public String providerId() {

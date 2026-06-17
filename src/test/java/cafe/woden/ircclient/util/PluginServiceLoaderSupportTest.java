@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import cafe.woden.ircclient.app.commands.BackendNamedCommandHandler;
 import cafe.woden.ircclient.app.commands.ParsedInput;
+import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
 import java.io.IOException;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
@@ -268,7 +268,7 @@ class PluginServiceLoaderSupportTest {
     return """
         package %s;
 
-        import cafe.woden.ircclient.app.commands.BackendNamedCommandHandler;
+        import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
         import cafe.woden.ircclient.app.commands.ParsedInput;
         import java.util.Set;
 

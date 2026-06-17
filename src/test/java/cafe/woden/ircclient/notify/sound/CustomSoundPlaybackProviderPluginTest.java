@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
-import cafe.woden.ircclient.notify.api.CustomSoundPlaybackProvider;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,23 +20,10 @@ class CustomSoundPlaybackProviderPluginTest {
 
   @Test
   void loadsCustomSoundPlaybackProviderFromPluginDirectoryJar() throws Exception {
-    assertCustomSoundPlaybackProviderLoads(false);
-  }
-
-  @Test
-  void loadsCustomSoundPlaybackProviderSpiFromPluginDirectoryJar() throws Exception {
-    assertCustomSoundPlaybackProviderLoads(true);
-  }
-
-  private void assertCustomSoundPlaybackProviderLoads(boolean spi) throws Exception {
     Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
     Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
-    Path marker =
-        tempDir.resolve(spi ? "playback-provider-spi-marker.txt" : "playback-provider-marker.txt");
-    writePluginJar(
-        pluginDir.resolve(
-            spi ? "plugin-custom-sound-playback-spi.jar" : "plugin-custom-sound-playback.jar"),
-        spi);
+    Path marker = tempDir.resolve("playback-provider-marker.txt");
+    writePluginJar(pluginDir.resolve("plugin-custom-sound-playback.jar"));
     RuntimeConfigPathPort runtimeConfigPathPort =
         () -> runtimeConfigDirectory.resolve("ircafe.yml");
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
@@ -59,22 +45,16 @@ class CustomSoundPlaybackProviderPluginTest {
     }
   }
 
-  private void writePluginJar(Path jarPath, boolean spi) throws Exception {
+  private void writePluginJar(Path jarPath) throws Exception {
     String providerClassName = "cafe.woden.ircclient.testplugins.PluginCustomSoundPlayback";
     String providerSource =
-        pluginProviderSource(
-            spi
-                ? "cafe.woden.ircclient.notify.spi.CustomSoundPlaybackProvider"
-                : "cafe.woden.ircclient.notify.api.CustomSoundPlaybackProvider");
+        pluginProviderSource("cafe.woden.ircclient.notify.spi.CustomSoundPlaybackProvider");
     CompiledPluginJarSupport.writePluginJar(
         jarPath,
         providerClassName,
         providerSource,
-        spi
-            ? cafe.woden.ircclient.notify.spi.CustomSoundPlaybackProvider.class.getName()
-            : CustomSoundPlaybackProvider.class.getName(),
-        CompiledPluginJarSupport.compatibleManifest(
-            spi ? "plugin-custom-sound-playback-spi" : "plugin-custom-sound-playback", "1.0.0"));
+        cafe.woden.ircclient.notify.spi.CustomSoundPlaybackProvider.class.getName(),
+        CompiledPluginJarSupport.compatibleManifest("plugin-custom-sound-playback", "1.0.0"));
   }
 
   private static String pluginProviderSource(String providerImport) {

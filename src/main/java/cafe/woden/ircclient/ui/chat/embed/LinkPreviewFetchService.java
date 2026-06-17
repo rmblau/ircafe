@@ -67,8 +67,7 @@ public class LinkPreviewFetchService {
 
   private static List<cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider>
       loadInstalledHeaderProviders(InstalledPluginsPort installedPlugins) {
-    return EmbedHttpHeaderProviders.loadInstalledProviders(
-        installedPlugins, PreviewHttpHeaderProvider.class);
+    return EmbedHttpHeaderProviders.loadInstalledProviders(installedPlugins);
   }
 
   public Single<LinkPreview> fetch(String serverId, String url) {

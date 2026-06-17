@@ -8,6 +8,7 @@ import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigPathAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -41,7 +42,7 @@ class Ircv3CapabilityNameResolverAdapterTest {
 
   @Test
   void catalogResolverNormalizesPluginProvidedAliases() {
-    ArrayList<Ircv3ExtensionDefinitionProvider> providers =
+    ArrayList<Ircv3ExtensionProvider> providers =
         new ArrayList<>(Ircv3ExtensionRegistry.builtInProviders());
     providers.add(new ExampleCapabilityProvider());
 
@@ -58,7 +59,7 @@ class Ircv3CapabilityNameResolverAdapterTest {
     assertEquals("", resolver.normalizeRequestToken("typing"));
   }
 
-  private static final class ExampleCapabilityProvider implements Ircv3ExtensionDefinitionProvider {
+  private static final class ExampleCapabilityProvider implements Ircv3ExtensionProvider {
 
     @Override
     public String providerId() {

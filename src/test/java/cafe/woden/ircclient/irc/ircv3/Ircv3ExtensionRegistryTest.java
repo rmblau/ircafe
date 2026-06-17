@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -78,10 +79,10 @@ class Ircv3ExtensionRegistryTest {
 
   @Test
   void duplicateCapabilityTokensAreRejected() {
-    ArrayList<Ircv3ExtensionDefinitionProvider> providers =
+    ArrayList<Ircv3ExtensionProvider> providers =
         new ArrayList<>(Ircv3ExtensionRegistry.builtInProviders());
     providers.add(
-        new Ircv3ExtensionDefinitionProvider() {
+        new Ircv3ExtensionProvider() {
           @Override
           public String providerId() {
             return "duplicate-echo-message";
@@ -118,10 +119,10 @@ class Ircv3ExtensionRegistryTest {
 
   @Test
   void duplicateProviderIdsAreRejected() {
-    ArrayList<Ircv3ExtensionDefinitionProvider> providers =
+    ArrayList<Ircv3ExtensionProvider> providers =
         new ArrayList<>(Ircv3ExtensionRegistry.builtInProviders());
     providers.add(
-        new Ircv3ExtensionDefinitionProvider() {
+        new Ircv3ExtensionProvider() {
           @Override
           public String providerId() {
             return "core-transport";
@@ -143,10 +144,10 @@ class Ircv3ExtensionRegistryTest {
 
   @Test
   void duplicateRequestTokensAreRejected() {
-    ArrayList<Ircv3ExtensionDefinitionProvider> providers =
+    ArrayList<Ircv3ExtensionProvider> providers =
         new ArrayList<>(Ircv3ExtensionRegistry.builtInProviders());
     providers.add(
-        new Ircv3ExtensionDefinitionProvider() {
+        new Ircv3ExtensionProvider() {
           @Override
           public String providerId() {
             return "duplicate-request-token";
@@ -184,10 +185,10 @@ class Ircv3ExtensionRegistryTest {
 
   @Test
   void duplicateVisibleFeatureLabelsAreRejected() {
-    ArrayList<Ircv3ExtensionDefinitionProvider> providers =
+    ArrayList<Ircv3ExtensionProvider> providers =
         new ArrayList<>(Ircv3ExtensionRegistry.builtInProviders());
     providers.add(
-        new Ircv3ExtensionDefinitionProvider() {
+        new Ircv3ExtensionProvider() {
           @Override
           public String providerId() {
             return "duplicate-visible-feature";

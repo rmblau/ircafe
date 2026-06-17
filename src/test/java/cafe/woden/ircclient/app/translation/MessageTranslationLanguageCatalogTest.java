@@ -3,6 +3,7 @@ package cafe.woden.ircclient.app.translation;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
@@ -127,9 +128,7 @@ class MessageTranslationLanguageCatalogTest {
     @Override
     public <T> List<T> loadInstalledServices(Class<T> serviceType, List<T> builtInServices) {
       ArrayList<T> services = new ArrayList<>(builtInServices);
-      if (serviceType
-              == cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider.class
-          || serviceType == MessageTranslationLanguageProvider.class) {
+      if (serviceType == MessageTranslationLanguageProvider.class) {
         services.add(serviceType.cast((MessageTranslationLanguageProvider) () -> pluginLanguages));
       }
       return List.copyOf(services);

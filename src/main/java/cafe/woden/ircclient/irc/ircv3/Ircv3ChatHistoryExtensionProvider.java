@@ -7,7 +7,8 @@ import static cafe.woden.ircclient.util.Ircv3CapabilityNames.ZNC_PLAYBACK;
 import java.util.List;
 
 /** SPI provider for the IRCv3 chathistory draft extension. */
-public final class Ircv3ChatHistoryExtensionProvider implements Ircv3ExtensionDefinitionProvider {
+public final class Ircv3ChatHistoryExtensionProvider
+    implements cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider {
 
   @Override
   public String providerId() {

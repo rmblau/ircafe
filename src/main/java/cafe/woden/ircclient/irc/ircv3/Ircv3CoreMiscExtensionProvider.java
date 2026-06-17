@@ -21,7 +21,8 @@ import static cafe.woden.ircclient.util.Ircv3CapabilityNames.ZNC_PLAYBACK;
 import java.util.List;
 
 /** Built-in provider for remaining non-transport IRCv3 metadata and tag features. */
-public final class Ircv3CoreMiscExtensionProvider implements Ircv3ExtensionDefinitionProvider {
+public final class Ircv3CoreMiscExtensionProvider
+    implements cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider {
 
   @Override
   public String providerId() {

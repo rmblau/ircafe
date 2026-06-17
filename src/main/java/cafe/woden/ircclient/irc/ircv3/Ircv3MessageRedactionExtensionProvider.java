@@ -7,7 +7,7 @@ import java.util.List;
 
 /** SPI provider for the IRCv3 message-redaction draft extension. */
 public final class Ircv3MessageRedactionExtensionProvider
-    implements Ircv3ExtensionDefinitionProvider {
+    implements cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider {
 
   @Override
   public String providerId() {

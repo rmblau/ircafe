@@ -19,22 +19,9 @@ class LinkUrlExtractorImageUrlExtensionProviderPluginTest {
 
   @Test
   void excludesPluginImageExtensionsFromLinkPreviewExtraction() throws Exception {
-    assertPluginImageExtensionsExcludedFromLinkPreviewExtraction(false);
-  }
-
-  @Test
-  void excludesPluginImageExtensionSpiFromLinkPreviewExtraction() throws Exception {
-    assertPluginImageExtensionsExcludedFromLinkPreviewExtraction(true);
-  }
-
-  private void assertPluginImageExtensionsExcludedFromLinkPreviewExtraction(boolean spi)
-      throws Exception {
     Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
     Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
-    writePluginJar(
-        pluginDir.resolve(
-            spi ? "plugin-image-url-extension-spi.jar" : "plugin-image-url-extension.jar"),
-        spi);
+    writePluginJar(pluginDir.resolve("plugin-image-url-extension.jar"));
     RuntimeConfigPathPort runtimeConfigPathPort =
         () -> runtimeConfigDirectory.resolve("ircafe.yml");
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
@@ -50,22 +37,16 @@ class LinkUrlExtractorImageUrlExtensionProviderPluginTest {
     assertTrue(installedPlugins.pluginProblems().isEmpty());
   }
 
-  private void writePluginJar(Path jarPath, boolean spi) throws Exception {
+  private void writePluginJar(Path jarPath) throws Exception {
     String providerClassName = "cafe.woden.ircclient.testplugins.PluginImageUrlExtension";
     String providerSource =
-        pluginProviderSource(
-            spi
-                ? "cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider"
-                : "cafe.woden.ircclient.ui.chat.embed.ImageUrlExtensionProvider");
+        pluginProviderSource("cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider");
     CompiledPluginJarSupport.writePluginJar(
         jarPath,
         providerClassName,
         providerSource,
-        spi
-            ? cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider.class.getName()
-            : ImageUrlExtensionProvider.class.getName(),
-        CompiledPluginJarSupport.compatibleManifest(
-            spi ? "plugin-image-url-extension-spi" : "plugin-image-url-extension", "1.0.0"));
+        cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider.class.getName(),
+        CompiledPluginJarSupport.compatibleManifest("plugin-image-url-extension", "1.0.0"));
   }
 
   private static String pluginProviderSource(String providerImport) {

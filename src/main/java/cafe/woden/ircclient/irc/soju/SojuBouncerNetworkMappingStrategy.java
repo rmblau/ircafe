@@ -3,8 +3,8 @@ package cafe.woden.ircclient.irc.soju;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.SOJU_BOUNCER_NETWORKS;
 
 import cafe.woden.ircclient.bouncer.BouncerDiscoveredNetwork;
-import cafe.woden.ircclient.bouncer.BouncerNetworkMappingStrategy;
 import cafe.woden.ircclient.bouncer.ResolvedBouncerNetwork;
+import cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy;
 import cafe.woden.ircclient.config.IrcProperties;
 import java.util.List;
 import java.util.Set;
