@@ -37,8 +37,8 @@ class BackendRoutingIrcClientServiceTest {
     IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
     IrcBackendClientService quasselBackend = mock(IrcBackendClientService.class);
 
-    when(ircBackend.backend()).thenReturn(IrcProperties.Server.Backend.IRC);
-    when(quasselBackend.backend()).thenReturn(IrcProperties.Server.Backend.QUASSEL_CORE);
+    when(ircBackend.backendId()).thenReturn("irc");
+    when(quasselBackend.backendId()).thenReturn("quassel-core");
     when(ircBackend.events())
         .thenReturn(PublishProcessor.<ServerIrcEvent>create().onBackpressureBuffer());
     when(quasselBackend.events())
@@ -51,7 +51,8 @@ class BackendRoutingIrcClientServiceTest {
     when(quasselBackend.connect("quassel")).thenReturn(Completable.complete());
 
     BackendRoutingIrcClientService service =
-        new BackendRoutingIrcClientService(serverCatalog, List.of(ircBackend, quasselBackend));
+        new BackendRoutingIrcClientService(
+            serverCatalog, BackendMetadataPort.builtInsOnly(), List.of(ircBackend, quasselBackend));
 
     service.connect("irc").blockingAwait();
     service.connect("quassel").blockingAwait();
@@ -66,8 +67,8 @@ class BackendRoutingIrcClientServiceTest {
     IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
     IrcBackendClientService matrixBackend = mock(IrcBackendClientService.class);
 
-    when(ircBackend.backend()).thenReturn(IrcProperties.Server.Backend.IRC);
-    when(matrixBackend.backend()).thenReturn(IrcProperties.Server.Backend.MATRIX);
+    when(ircBackend.backendId()).thenReturn("irc");
+    when(matrixBackend.backendId()).thenReturn("matrix");
     when(ircBackend.events())
         .thenReturn(PublishProcessor.<ServerIrcEvent>create().onBackpressureBuffer());
     when(matrixBackend.events())
@@ -77,7 +78,8 @@ class BackendRoutingIrcClientServiceTest {
     when(matrixBackend.connect("matrix")).thenReturn(Completable.complete());
 
     BackendRoutingIrcClientService service =
-        new BackendRoutingIrcClientService(serverCatalog, List.of(ircBackend, matrixBackend));
+        new BackendRoutingIrcClientService(
+            serverCatalog, BackendMetadataPort.builtInsOnly(), List.of(ircBackend, matrixBackend));
 
     service.connect("matrix").blockingAwait();
 
@@ -91,8 +93,7 @@ class BackendRoutingIrcClientServiceTest {
     IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
     IrcBackendClientService pluginBackend = mock(IrcBackendClientService.class);
 
-    when(ircBackend.backend()).thenReturn(IrcProperties.Server.Backend.IRC);
-    when(pluginBackend.backend()).thenReturn(null);
+    when(ircBackend.backendId()).thenReturn("irc");
     when(pluginBackend.backendId()).thenReturn("plugin-backend");
     when(ircBackend.events())
         .thenReturn(PublishProcessor.<ServerIrcEvent>create().onBackpressureBuffer());
@@ -102,7 +103,8 @@ class BackendRoutingIrcClientServiceTest {
     when(pluginBackend.connect("plugin")).thenReturn(Completable.complete());
 
     BackendRoutingIrcClientService service =
-        new BackendRoutingIrcClientService(serverCatalog, List.of(ircBackend, pluginBackend));
+        new BackendRoutingIrcClientService(
+            serverCatalog, BackendMetadataPort.builtInsOnly(), List.of(ircBackend, pluginBackend));
 
     assertEquals("plugin-backend", service.backendIdForServer("plugin"));
 
@@ -120,8 +122,7 @@ class BackendRoutingIrcClientServiceTest {
     ObjectProvider<BackendMetadataPort> backendMetadataProvider = mock(ObjectProvider.class);
 
     when(backendMetadataProvider.getIfAvailable()).thenReturn(BackendMetadataPort.builtInsOnly());
-    when(ircBackend.backend()).thenReturn(IrcProperties.Server.Backend.IRC);
-    when(pluginBackend.backend()).thenReturn(null);
+    when(ircBackend.backendId()).thenReturn("irc");
     when(pluginBackend.backendId()).thenReturn("plugin-backend");
     when(ircBackend.events())
         .thenReturn(PublishProcessor.<ServerIrcEvent>create().onBackpressureBuffer());
@@ -161,8 +162,8 @@ class BackendRoutingIrcClientServiceTest {
     IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
     IrcBackendClientService matrixBackend = mock(IrcBackendClientService.class);
 
-    when(ircBackend.backend()).thenReturn(IrcProperties.Server.Backend.IRC);
-    when(matrixBackend.backend()).thenReturn(IrcProperties.Server.Backend.MATRIX);
+    when(ircBackend.backendId()).thenReturn("irc");
+    when(matrixBackend.backendId()).thenReturn("matrix");
     when(ircBackend.events())
         .thenReturn(PublishProcessor.<ServerIrcEvent>create().onBackpressureBuffer());
     when(matrixBackend.events())
@@ -173,7 +174,8 @@ class BackendRoutingIrcClientServiceTest {
         .thenReturn(Optional.of(server("irc", IrcProperties.Server.Backend.IRC)));
 
     BackendRoutingIrcClientService service =
-        new BackendRoutingIrcClientService(serverCatalog, List.of(ircBackend, matrixBackend));
+        new BackendRoutingIrcClientService(
+            serverCatalog, BackendMetadataPort.builtInsOnly(), List.of(ircBackend, matrixBackend));
 
     assertEquals("matrix", service.backendIdForServer("matrix"));
     assertEquals("irc", service.backendIdForServer("irc"));
@@ -185,8 +187,8 @@ class BackendRoutingIrcClientServiceTest {
     IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
     IrcBackendClientService matrixBackend = mock(IrcBackendClientService.class);
 
-    when(ircBackend.backend()).thenReturn(IrcProperties.Server.Backend.IRC);
-    when(matrixBackend.backend()).thenReturn(IrcProperties.Server.Backend.MATRIX);
+    when(ircBackend.backendId()).thenReturn("irc");
+    when(matrixBackend.backendId()).thenReturn("matrix");
     when(ircBackend.events())
         .thenReturn(PublishProcessor.<ServerIrcEvent>create().onBackpressureBuffer());
     when(matrixBackend.events())
@@ -197,7 +199,8 @@ class BackendRoutingIrcClientServiceTest {
         .thenReturn(Completable.complete());
 
     BackendRoutingIrcClientService service =
-        new BackendRoutingIrcClientService(serverCatalog, List.of(ircBackend, matrixBackend));
+        new BackendRoutingIrcClientService(
+            serverCatalog, BackendMetadataPort.builtInsOnly(), List.of(ircBackend, matrixBackend));
 
     service.sendMessage("matrix", "!room:matrix.example.org", "hello").blockingAwait();
 
@@ -212,8 +215,8 @@ class BackendRoutingIrcClientServiceTest {
     IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
     IrcBackendClientService quasselBackend = mock(IrcBackendClientService.class);
 
-    when(ircBackend.backend()).thenReturn(IrcProperties.Server.Backend.IRC);
-    when(quasselBackend.backend()).thenReturn(IrcProperties.Server.Backend.QUASSEL_CORE);
+    when(ircBackend.backendId()).thenReturn("irc");
+    when(quasselBackend.backendId()).thenReturn("quassel-core");
     when(ircBackend.events())
         .thenReturn(PublishProcessor.<ServerIrcEvent>create().onBackpressureBuffer());
     when(quasselBackend.events())
@@ -225,7 +228,8 @@ class BackendRoutingIrcClientServiceTest {
         .thenReturn(Completable.complete());
 
     BackendRoutingIrcClientService service =
-        new BackendRoutingIrcClientService(serverCatalog, List.of(ircBackend, quasselBackend));
+        new BackendRoutingIrcClientService(
+            serverCatalog, BackendMetadataPort.builtInsOnly(), List.of(ircBackend, quasselBackend));
 
     service.joinChannel("quassel", "#ircafe").blockingAwait();
     service.sendMessage("quassel", "#ircafe", "hello").blockingAwait();
@@ -242,8 +246,8 @@ class BackendRoutingIrcClientServiceTest {
     IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
     IrcBackendClientService quasselBackend = mock(IrcBackendClientService.class);
 
-    when(ircBackend.backend()).thenReturn(IrcProperties.Server.Backend.IRC);
-    when(quasselBackend.backend()).thenReturn(IrcProperties.Server.Backend.QUASSEL_CORE);
+    when(ircBackend.backendId()).thenReturn("irc");
+    when(quasselBackend.backendId()).thenReturn("quassel-core");
     when(ircBackend.events())
         .thenReturn(PublishProcessor.<ServerIrcEvent>create().onBackpressureBuffer());
     when(quasselBackend.events())
@@ -252,7 +256,8 @@ class BackendRoutingIrcClientServiceTest {
     when(ircBackend.sendRaw("missing", "PING")).thenReturn(Completable.complete());
 
     BackendRoutingIrcClientService service =
-        new BackendRoutingIrcClientService(serverCatalog, List.of(ircBackend, quasselBackend));
+        new BackendRoutingIrcClientService(
+            serverCatalog, BackendMetadataPort.builtInsOnly(), List.of(ircBackend, quasselBackend));
 
     service.sendRaw("missing", "PING").blockingAwait();
 
@@ -265,8 +270,8 @@ class BackendRoutingIrcClientServiceTest {
     IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
     IrcBackendClientService quasselBackend = mock(IrcBackendClientService.class);
 
-    when(ircBackend.backend()).thenReturn(IrcProperties.Server.Backend.IRC);
-    when(quasselBackend.backend()).thenReturn(IrcProperties.Server.Backend.QUASSEL_CORE);
+    when(ircBackend.backendId()).thenReturn("irc");
+    when(quasselBackend.backendId()).thenReturn("quassel-core");
     when(ircBackend.events())
         .thenReturn(PublishProcessor.<ServerIrcEvent>create().onBackpressureBuffer());
     when(quasselBackend.events())
@@ -283,7 +288,8 @@ class BackendRoutingIrcClientServiceTest {
     when(quasselBackend.lastMeasuredLagMs("quassel")).thenReturn(OptionalLong.of(222L));
 
     BackendRoutingIrcClientService service =
-        new BackendRoutingIrcClientService(serverCatalog, List.of(ircBackend, quasselBackend));
+        new BackendRoutingIrcClientService(
+            serverCatalog, BackendMetadataPort.builtInsOnly(), List.of(ircBackend, quasselBackend));
 
     assertFalse(service.shouldRequestLagProbe("irc"));
     assertTrue(service.shouldRequestLagProbe("quassel"));
@@ -298,14 +304,15 @@ class BackendRoutingIrcClientServiceTest {
     ServerCatalog serverCatalog = mock(ServerCatalog.class);
     IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
 
-    when(ircBackend.backend()).thenReturn(IrcProperties.Server.Backend.IRC);
+    when(ircBackend.backendId()).thenReturn("irc");
     when(ircBackend.events())
         .thenReturn(PublishProcessor.<ServerIrcEvent>create().onBackpressureBuffer());
     when(serverCatalog.find("quassel"))
         .thenReturn(Optional.of(server("quassel", IrcProperties.Server.Backend.QUASSEL_CORE)));
 
     BackendRoutingIrcClientService service =
-        new BackendRoutingIrcClientService(serverCatalog, List.of(ircBackend));
+        new BackendRoutingIrcClientService(
+            serverCatalog, BackendMetadataPort.builtInsOnly(), List.of(ircBackend));
 
     IllegalStateException err =
         assertThrows(IllegalStateException.class, () -> service.connect("quassel"));
@@ -320,7 +327,7 @@ class BackendRoutingIrcClientServiceTest {
     BackendMetadataPort backendMetadata = mock(BackendMetadataPort.class);
     IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
 
-    when(ircBackend.backend()).thenReturn(IrcProperties.Server.Backend.IRC);
+    when(ircBackend.backendId()).thenReturn("irc");
     when(ircBackend.events())
         .thenReturn(PublishProcessor.<ServerIrcEvent>create().onBackpressureBuffer());
     when(serverCatalog.find("plugin")).thenReturn(Optional.of(server("plugin", "plugin-backend")));
@@ -342,8 +349,8 @@ class BackendRoutingIrcClientServiceTest {
     IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
     IrcBackendClientService quasselBackend = mock(IrcBackendClientService.class);
 
-    when(ircBackend.backend()).thenReturn(IrcProperties.Server.Backend.IRC);
-    when(quasselBackend.backend()).thenReturn(IrcProperties.Server.Backend.QUASSEL_CORE);
+    when(ircBackend.backendId()).thenReturn("irc");
+    when(quasselBackend.backendId()).thenReturn("quassel-core");
     when(ircBackend.events())
         .thenReturn(PublishProcessor.<ServerIrcEvent>create().onBackpressureBuffer());
     when(quasselBackend.events())
@@ -354,7 +361,8 @@ class BackendRoutingIrcClientServiceTest {
         .thenReturn("Quassel Core backend is not implemented yet");
 
     BackendRoutingIrcClientService service =
-        new BackendRoutingIrcClientService(serverCatalog, List.of(ircBackend, quasselBackend));
+        new BackendRoutingIrcClientService(
+            serverCatalog, BackendMetadataPort.builtInsOnly(), List.of(ircBackend, quasselBackend));
 
     assertEquals(
         "Quassel Core backend is not implemented yet",
@@ -382,8 +390,8 @@ class BackendRoutingIrcClientServiceTest {
         new QuasselCoreControlPort.QuasselCoreNetworkUpdateRequest(
             "", "irc2.libera.chat", 6667, false, "", true, null, null);
 
-    when(ircBackend.backend()).thenReturn(IrcProperties.Server.Backend.IRC);
-    when(quasselBackend.backend()).thenReturn(IrcProperties.Server.Backend.QUASSEL_CORE);
+    when(ircBackend.backendId()).thenReturn("irc");
+    when(quasselBackend.backendId()).thenReturn("quassel-core");
     when(ircBackend.events())
         .thenReturn(PublishProcessor.<ServerIrcEvent>create().onBackpressureBuffer());
     when(quasselBackend.events())
@@ -407,7 +415,8 @@ class BackendRoutingIrcClientServiceTest {
         .thenReturn(Completable.complete());
 
     BackendRoutingIrcClientService service =
-        new BackendRoutingIrcClientService(serverCatalog, List.of(ircBackend, quasselBackend));
+        new BackendRoutingIrcClientService(
+            serverCatalog, BackendMetadataPort.builtInsOnly(), List.of(ircBackend, quasselBackend));
 
     assertEquals(true, service.isQuasselCoreSetupPending("quassel"));
     assertEquals(Optional.of(prompt), service.quasselCoreSetupPrompt("quassel"));
@@ -437,13 +446,14 @@ class BackendRoutingIrcClientServiceTest {
     PublishProcessor<ServerIrcEvent> ircEvents = PublishProcessor.create();
     PublishProcessor<ServerIrcEvent> quasselEvents = PublishProcessor.create();
 
-    when(ircBackend.backend()).thenReturn(IrcProperties.Server.Backend.IRC);
-    when(quasselBackend.backend()).thenReturn(IrcProperties.Server.Backend.QUASSEL_CORE);
+    when(ircBackend.backendId()).thenReturn("irc");
+    when(quasselBackend.backendId()).thenReturn("quassel-core");
     when(ircBackend.events()).thenReturn(ircEvents.onBackpressureBuffer());
     when(quasselBackend.events()).thenReturn(quasselEvents.onBackpressureBuffer());
 
     BackendRoutingIrcClientService service =
-        new BackendRoutingIrcClientService(serverCatalog, List.of(ircBackend, quasselBackend));
+        new BackendRoutingIrcClientService(
+            serverCatalog, BackendMetadataPort.builtInsOnly(), List.of(ircBackend, quasselBackend));
 
     var subscriber = service.events().test();
     ircEvents.onNext(new ServerIrcEvent("irc", new IrcEvent.ConnectionReady(Instant.now())));
@@ -459,15 +469,16 @@ class BackendRoutingIrcClientServiceTest {
     IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
     IrcBackendClientService quasselBackend = mock(IrcBackendClientService.class);
 
-    when(ircBackend.backend()).thenReturn(IrcProperties.Server.Backend.IRC);
-    when(quasselBackend.backend()).thenReturn(IrcProperties.Server.Backend.QUASSEL_CORE);
+    when(ircBackend.backendId()).thenReturn("irc");
+    when(quasselBackend.backendId()).thenReturn("quassel-core");
     when(ircBackend.events())
         .thenReturn(PublishProcessor.<ServerIrcEvent>create().onBackpressureBuffer());
     when(quasselBackend.events())
         .thenReturn(PublishProcessor.<ServerIrcEvent>create().onBackpressureBuffer());
 
     BackendRoutingIrcClientService service =
-        new BackendRoutingIrcClientService(serverCatalog, List.of(ircBackend, quasselBackend));
+        new BackendRoutingIrcClientService(
+            serverCatalog, BackendMetadataPort.builtInsOnly(), List.of(ircBackend, quasselBackend));
 
     service.rescheduleActiveHeartbeats();
 
@@ -481,14 +492,16 @@ class BackendRoutingIrcClientServiceTest {
     IrcBackendClientService one = mock(IrcBackendClientService.class);
     IrcBackendClientService two = mock(IrcBackendClientService.class);
 
-    when(one.backend()).thenReturn(IrcProperties.Server.Backend.IRC);
-    when(two.backend()).thenReturn(IrcProperties.Server.Backend.IRC);
+    when(one.backendId()).thenReturn("irc");
+    when(two.backendId()).thenReturn("irc");
     when(one.events()).thenReturn(PublishProcessor.<ServerIrcEvent>create().onBackpressureBuffer());
     when(two.events()).thenReturn(PublishProcessor.<ServerIrcEvent>create().onBackpressureBuffer());
 
     assertThrows(
         IllegalStateException.class,
-        () -> new BackendRoutingIrcClientService(serverCatalog, List.of(one, two)));
+        () ->
+            new BackendRoutingIrcClientService(
+                serverCatalog, BackendMetadataPort.builtInsOnly(), List.of(one, two)));
   }
 
   @Test
@@ -499,8 +512,8 @@ class BackendRoutingIrcClientServiceTest {
     PublishProcessor<ServerIrcEvent> ircEvents = PublishProcessor.create();
     PublishProcessor<ServerIrcEvent> quasselEvents = PublishProcessor.create();
 
-    when(ircBackend.backend()).thenReturn(IrcProperties.Server.Backend.IRC);
-    when(quasselBackend.backend()).thenReturn(IrcProperties.Server.Backend.QUASSEL_CORE);
+    when(ircBackend.backendId()).thenReturn("irc");
+    when(quasselBackend.backendId()).thenReturn("quassel-core");
     when(ircBackend.events()).thenReturn(ircEvents.onBackpressureBuffer());
     when(quasselBackend.events()).thenReturn(quasselEvents.onBackpressureBuffer());
     when(serverCatalog.find("hybrid"))
@@ -509,7 +522,8 @@ class BackendRoutingIrcClientServiceTest {
     when(quasselBackend.disconnect("hybrid")).thenReturn(Completable.complete());
 
     BackendRoutingIrcClientService service =
-        new BackendRoutingIrcClientService(serverCatalog, List.of(ircBackend, quasselBackend));
+        new BackendRoutingIrcClientService(
+            serverCatalog, BackendMetadataPort.builtInsOnly(), List.of(ircBackend, quasselBackend));
 
     var sub = service.events().test();
     ircEvents.onNext(

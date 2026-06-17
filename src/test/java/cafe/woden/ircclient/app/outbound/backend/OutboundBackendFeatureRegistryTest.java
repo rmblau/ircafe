@@ -20,8 +20,7 @@ class OutboundBackendFeatureRegistryTest {
         cafe.woden.ircclient.app.outbound.TestBackendSupport.outboundBackendFeatureRegistry(
             List.of(new MatrixOutboundBackendFeatureAdapter()));
 
-    OutboundBackendFeatureAdapter ircAdapter =
-        registry.adapterFor(IrcProperties.Server.Backend.IRC);
+    OutboundBackendFeatureAdapter ircAdapter = registry.adapterFor("irc");
     assertFalse(ircAdapter.supportsSemanticUpload());
     assertFalse(ircAdapter.supportsQuasselCoreCommands());
   }
@@ -34,16 +33,11 @@ class OutboundBackendFeatureRegistryTest {
                 new MatrixOutboundBackendFeatureAdapter(),
                 new QuasselOutboundBackendFeatureAdapter()));
 
-    assertTrue(registry.adapterFor(IrcProperties.Server.Backend.MATRIX).supportsSemanticUpload());
-    assertFalse(
-        registry.adapterFor(IrcProperties.Server.Backend.MATRIX).supportsQuasselCoreCommands());
+    assertTrue(registry.adapterFor("matrix").supportsSemanticUpload());
+    assertFalse(registry.adapterFor("matrix").supportsQuasselCoreCommands());
 
-    assertFalse(
-        registry.adapterFor(IrcProperties.Server.Backend.QUASSEL_CORE).supportsSemanticUpload());
-    assertTrue(
-        registry
-            .adapterFor(IrcProperties.Server.Backend.QUASSEL_CORE)
-            .supportsQuasselCoreCommands());
+    assertFalse(registry.adapterFor("quassel-core").supportsSemanticUpload());
+    assertTrue(registry.adapterFor("quassel-core").supportsQuasselCoreCommands());
   }
 
   @Test

@@ -13,12 +13,6 @@ import org.springframework.stereotype.Component;
 public final class OutboundBackendFeatureRegistry {
   @NonNull private final BackendExtensionCatalog backendExtensionCatalog;
 
-  @Deprecated(forRemoval = false)
-  public OutboundBackendFeatureAdapter adapterFor(
-      cafe.woden.ircclient.config.IrcProperties.Server.Backend backend) {
-    return backendExtensionCatalog.featureAdapterFor(backend);
-  }
-
   public OutboundBackendFeatureAdapter adapterFor(String backendId) {
     return backendExtensionCatalog.featureAdapterFor(backendId);
   }

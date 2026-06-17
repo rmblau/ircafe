@@ -13,12 +13,6 @@ import org.springframework.stereotype.Component;
 public final class BackendUploadCommandRegistry {
   @NonNull private final BackendExtensionCatalog backendExtensionCatalog;
 
-  @Deprecated(forRemoval = false)
-  public UploadCommandTranslationHandler find(
-      cafe.woden.ircclient.config.IrcProperties.Server.Backend backend) {
-    return backendExtensionCatalog.uploadTranslationHandlerFor(backend);
-  }
-
   public UploadCommandTranslationHandler find(String backendId) {
     return backendExtensionCatalog.uploadTranslationHandlerFor(backendId);
   }

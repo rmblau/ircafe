@@ -259,7 +259,7 @@ class BackendRoutingIrcClientServiceSpringIntegrationTest {
     private static IrcBackendClientService createBackend(
         IrcProperties.Server.Backend backendType, BackendStreamHandle stream) {
       IrcBackendClientService backend = mock(IrcBackendClientService.class);
-      when(backend.backend()).thenReturn(backendType);
+      when(backend.backendId()).thenReturn(backendIdFor(backendType));
       when(backend.events()).thenReturn(stream.processor().onBackpressureBuffer());
 
       when(backend.connect(anyString())).thenReturn(Completable.complete());
@@ -268,6 +268,14 @@ class BackendRoutingIrcClientServiceSpringIntegrationTest {
       when(backend.sendRaw(anyString(), anyString())).thenReturn(Completable.complete());
 
       return backend;
+    }
+
+    private static String backendIdFor(IrcProperties.Server.Backend backendType) {
+      return switch (backendType) {
+        case IRC -> "irc";
+        case MATRIX -> "matrix";
+        case QUASSEL_CORE -> "quassel-core";
+      };
     }
 
     private static String normalizeServerId(String serverId) {

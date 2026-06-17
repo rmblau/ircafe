@@ -1,7 +1,5 @@
 package cafe.woden.ircclient.irc.backend;
 
-import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import cafe.woden.ircclient.irc.IrcClientService;
 import cafe.woden.ircclient.irc.playback.IrcBouncerPlaybackPort;
 import cafe.woden.ircclient.irc.quassel.control.QuasselCoreControlPort;
@@ -12,12 +10,6 @@ public interface IrcBackendClientService
         IrcBackendAvailabilityPort,
         QuasselCoreControlPort,
         IrcBouncerPlaybackPort {
-
-  /** Backend kind implemented by this service. */
-  @Deprecated(forRemoval = false)
-  default IrcProperties.Server.Backend backend() {
-    return BackendDescriptorCatalog.builtIns().backendForId(backendId()).orElse(null);
-  }
 
   default String backendId() {
     return "";

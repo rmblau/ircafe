@@ -48,7 +48,7 @@ class BackendRoutingIrcClientServicePluginLoadingTest {
     writePluginJar(pluginDir.resolve("plugin-backend.jar"));
     ServerCatalog serverCatalog = mock(ServerCatalog.class);
     IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
-    when(ircBackend.backend()).thenReturn(IrcProperties.Server.Backend.IRC);
+    when(ircBackend.backendId()).thenReturn("irc");
     when(ircBackend.events())
         .thenReturn(PublishProcessor.<ServerIrcEvent>create().onBackpressureBuffer());
     when(serverCatalog.find("plugin")).thenReturn(Optional.of(server("plugin", "plugin-backend")));
@@ -81,7 +81,7 @@ class BackendRoutingIrcClientServicePluginLoadingTest {
         () -> runtimeConfigDirectory.resolve("ircafe.yml");
     ServerCatalog serverCatalog = mock(ServerCatalog.class);
     IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
-    when(ircBackend.backend()).thenReturn(IrcProperties.Server.Backend.IRC);
+    when(ircBackend.backendId()).thenReturn("irc");
     when(ircBackend.events())
         .thenReturn(PublishProcessor.<ServerIrcEvent>create().onBackpressureBuffer());
     when(serverCatalog.find("plugin")).thenReturn(Optional.of(server("plugin", "plugin-backend")));

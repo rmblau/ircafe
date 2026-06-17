@@ -8,12 +8,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import cafe.woden.ircclient.app.api.BackendEditorProfileSpec;
 import cafe.woden.ircclient.app.outbound.backend.spi.BackendExtension;
 import cafe.woden.ircclient.app.outbound.backend.spi.OutboundBackendFeatureAdapter;
-import cafe.woden.ircclient.app.outbound.mutation.MessageMutationOutboundCommands;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
-import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -42,21 +40,15 @@ class BackendExtensionCatalogTest {
                 new QuasselBackendExtension()));
 
     assertInstanceOf(
-        IrcMessageMutationOutboundCommands.class,
-        catalog.messageMutationCommandsFor(IrcProperties.Server.Backend.IRC));
+        IrcMessageMutationOutboundCommands.class, catalog.messageMutationCommandsFor("irc"));
     assertInstanceOf(
-        MatrixUploadCommandTranslationHandler.class,
-        catalog.uploadTranslationHandlerFor(IrcProperties.Server.Backend.MATRIX));
+        MatrixUploadCommandTranslationHandler.class, catalog.uploadTranslationHandlerFor("matrix"));
     assertInstanceOf(
         QuasselMessageMutationOutboundCommands.class,
-        catalog.messageMutationCommandsFor(IrcProperties.Server.Backend.QUASSEL_CORE));
-    assertTrue(
-        catalog.featureAdapterFor(IrcProperties.Server.Backend.MATRIX).supportsSemanticUpload());
-    assertTrue(
-        catalog
-            .featureAdapterFor(IrcProperties.Server.Backend.QUASSEL_CORE)
-            .supportsQuasselCoreCommands());
-    assertNull(catalog.uploadTranslationHandlerFor(IrcProperties.Server.Backend.QUASSEL_CORE));
+        catalog.messageMutationCommandsFor("quassel-core"));
+    assertTrue(catalog.featureAdapterFor("matrix").supportsSemanticUpload());
+    assertTrue(catalog.featureAdapterFor("quassel-core").supportsQuasselCoreCommands());
+    assertNull(catalog.uploadTranslationHandlerFor("quassel-core"));
   }
 
   @Test
@@ -90,18 +82,6 @@ class BackendExtensionCatalogTest {
   }
 
   @Test
-  void acceptsLegacyEnumOnlyExtensions() {
-    BackendExtensionCatalog catalog =
-        BackendExtensionCatalog.fromExtensions(
-            java.util.List.of(new LegacyMatrixBackendExtension()));
-
-    assertTrue(catalog.featureAdapterFor("matrix").supportsSemanticUpload());
-    assertInstanceOf(
-        LegacyMatrixMessageMutationOutboundCommands.class,
-        catalog.messageMutationCommandsFor("matrix"));
-  }
-
-  @Test
   void loadsBackendExtensionsFromInstalledPluginsPort() {
     BackendExtensionCatalog catalog =
         new BackendExtensionCatalog(
@@ -110,8 +90,7 @@ class BackendExtensionCatalogTest {
                 new FakeInstalledPluginsPort(java.util.List.of(new PluginBackendExtension()))));
 
     assertInstanceOf(
-        IrcMessageMutationOutboundCommands.class,
-        catalog.messageMutationCommandsFor(IrcProperties.Server.Backend.IRC));
+        IrcMessageMutationOutboundCommands.class, catalog.messageMutationCommandsFor("irc"));
     assertTrue(catalog.featureAdapterFor("plugin-backend").supportsSemanticUpload());
     assertTrue(catalog.availableBackendIds().contains("plugin-backend"));
     assertTrue("Plugin Backend".equals(catalog.backendDisplayName("plugin-backend")));
@@ -127,14 +106,13 @@ class BackendExtensionCatalogTest {
             pluginDir, BackendExtensionCatalogTest.class.getClassLoader());
     try {
       assertInstanceOf(
-          IrcMessageMutationOutboundCommands.class,
-          catalog.messageMutationCommandsFor(IrcProperties.Server.Backend.IRC));
+          IrcMessageMutationOutboundCommands.class, catalog.messageMutationCommandsFor("irc"));
       assertInstanceOf(
           MatrixUploadCommandTranslationHandler.class,
-          catalog.uploadTranslationHandlerFor(IrcProperties.Server.Backend.MATRIX));
+          catalog.uploadTranslationHandlerFor("matrix"));
       assertInstanceOf(
           QuasselMessageMutationOutboundCommands.class,
-          catalog.messageMutationCommandsFor(IrcProperties.Server.Backend.QUASSEL_CORE));
+          catalog.messageMutationCommandsFor("quassel-core"));
       assertTrue(catalog.featureAdapterFor("plugin-backend").supportsSemanticUpload());
       assertTrue(catalog.availableBackendIds().contains("plugin-backend"));
       assertTrue("Plugin Backend".equals(catalog.backendDisplayName("plugin-backend")));
@@ -156,14 +134,13 @@ class BackendExtensionCatalogTest {
             runtimeConfigPathPort, BackendExtensionCatalogTest.class.getClassLoader());
     try {
       assertInstanceOf(
-          IrcMessageMutationOutboundCommands.class,
-          catalog.messageMutationCommandsFor(IrcProperties.Server.Backend.IRC));
+          IrcMessageMutationOutboundCommands.class, catalog.messageMutationCommandsFor("irc"));
       assertInstanceOf(
           MatrixUploadCommandTranslationHandler.class,
-          catalog.uploadTranslationHandlerFor(IrcProperties.Server.Backend.MATRIX));
+          catalog.uploadTranslationHandlerFor("matrix"));
       assertInstanceOf(
           QuasselMessageMutationOutboundCommands.class,
-          catalog.messageMutationCommandsFor(IrcProperties.Server.Backend.QUASSEL_CORE));
+          catalog.messageMutationCommandsFor("quassel-core"));
       assertTrue(catalog.featureAdapterFor("plugin-backend").supportsSemanticUpload());
       assertTrue(catalog.availableBackendIds().contains("plugin-backend"));
       assertTrue("Plugin Backend".equals(catalog.backendDisplayName("plugin-backend")));
@@ -277,68 +254,6 @@ class BackendExtensionCatalogTest {
           "plugin-user",
           "PluginUser",
           "Plugin User");
-    }
-  }
-
-  private static final class LegacyMatrixBackendExtension implements BackendExtension {
-    @Override
-    public IrcProperties.Server.Backend backend() {
-      return IrcProperties.Server.Backend.MATRIX;
-    }
-
-    @Override
-    public OutboundBackendFeatureAdapter featureAdapter() {
-      return new LegacyMatrixFeatureAdapter();
-    }
-
-    @Override
-    public MessageMutationOutboundCommands messageMutationOutboundCommands() {
-      return new LegacyMatrixMessageMutationOutboundCommands();
-    }
-  }
-
-  private static final class LegacyMatrixFeatureAdapter implements OutboundBackendFeatureAdapter {
-    @Override
-    public IrcProperties.Server.Backend backend() {
-      return IrcProperties.Server.Backend.MATRIX;
-    }
-
-    @Override
-    public boolean supportsSemanticUpload() {
-      return true;
-    }
-  }
-
-  private static final class LegacyMatrixMessageMutationOutboundCommands
-      implements MessageMutationOutboundCommands {
-    @Override
-    public IrcProperties.Server.Backend backend() {
-      return IrcProperties.Server.Backend.MATRIX;
-    }
-
-    @Override
-    public String buildReplyRawLine(TargetRef target, String replyToMessageId, String message) {
-      return "";
-    }
-
-    @Override
-    public String buildReactRawLine(TargetRef target, String replyToMessageId, String reaction) {
-      return "";
-    }
-
-    @Override
-    public String buildUnreactRawLine(TargetRef target, String replyToMessageId, String reaction) {
-      return "";
-    }
-
-    @Override
-    public String buildEditRawLine(TargetRef target, String targetMessageId, String editedText) {
-      return "";
-    }
-
-    @Override
-    public String buildRedactRawLine(TargetRef target, String targetMessageId, String reason) {
-      return "";
     }
   }
 }

@@ -161,7 +161,7 @@ class IrcModuleIntegrationTest {
   private static IrcBackendClientService backendStub(IrcProperties.Server.Backend backendType) {
     IrcBackendClientService backend =
         mock(IrcBackendClientService.class, backendType.name().toLowerCase() + "-backend-stub");
-    when(backend.backend()).thenReturn(backendType);
+    when(backend.backendId()).thenReturn(backendIdFor(backendType));
     when(backend.events()).thenReturn(Flowable.empty());
     when(backend.quasselCoreNetworkEvents()).thenReturn(Flowable.empty());
     when(backend.connect(anyString())).thenReturn(Completable.complete());
@@ -169,6 +169,14 @@ class IrcModuleIntegrationTest {
     when(backend.disconnect(anyString(), anyString())).thenReturn(Completable.complete());
     when(backend.currentNick(anyString())).thenReturn(Optional.empty());
     return backend;
+  }
+
+  private static String backendIdFor(IrcProperties.Server.Backend backendType) {
+    return switch (backendType) {
+      case IRC -> "irc";
+      case MATRIX -> "matrix";
+      case QUASSEL_CORE -> "quassel-core";
+    };
   }
 
   @Test

@@ -169,12 +169,6 @@ public class BackendRoutingIrcClientService
     this.mergedQuasselNetworkEvents = Flowable.merge(quasselNetworkStreams).onBackpressureBuffer();
   }
 
-  @Deprecated(forRemoval = false)
-  public BackendRoutingIrcClientService(
-      ServerCatalog serverCatalog, List<IrcBackendClientService> backendServices) {
-    this(serverCatalog, BackendMetadataPort.builtInsOnly(), backendServices);
-  }
-
   static BackendRoutingIrcClientService installed(
       ServerCatalog serverCatalog,
       BackendMetadataPort backendMetadata,
@@ -726,10 +720,7 @@ public class BackendRoutingIrcClientService
 
   private static String backendIdOf(IrcBackendClientService backendService) {
     if (backendService == null) return "";
-    String backendId = normalizeBackendId(backendService.backendId());
-    if (!backendId.isEmpty()) return backendId;
-    IrcProperties.Server.Backend backend = backendService.backend();
-    return backend == null ? "" : BACKEND_DESCRIPTORS.idFor(backend);
+    return normalizeBackendId(backendService.backendId());
   }
 
   private static LoadedBackendServices loadInstalledBackendServices(

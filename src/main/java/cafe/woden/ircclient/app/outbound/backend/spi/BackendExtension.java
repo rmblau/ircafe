@@ -3,8 +3,6 @@ package cafe.woden.ircclient.app.outbound.backend.spi;
 import cafe.woden.ircclient.app.api.BackendEditorProfileSpec;
 import cafe.woden.ircclient.app.outbound.mutation.MessageMutationOutboundCommands;
 import cafe.woden.ircclient.app.outbound.upload.spi.UploadCommandTranslationHandler;
-import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import org.jmolecules.architecture.hexagonal.SecondaryPort;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 
@@ -12,11 +10,6 @@ import org.jmolecules.architecture.layered.ApplicationLayer;
 @SecondaryPort
 @ApplicationLayer
 public interface BackendExtension {
-
-  @Deprecated(forRemoval = false)
-  default IrcProperties.Server.Backend backend() {
-    return BackendDescriptorCatalog.builtIns().backendForId(backendId()).orElse(null);
-  }
 
   default String backendId() {
     return "";

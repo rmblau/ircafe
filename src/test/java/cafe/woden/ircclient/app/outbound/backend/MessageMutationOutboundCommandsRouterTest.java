@@ -23,15 +23,10 @@ class MessageMutationOutboundCommandsRouterTest {
                 new MatrixMessageMutationOutboundCommands(),
                 new QuasselMessageMutationOutboundCommands()));
 
+    assertInstanceOf(IrcMessageMutationOutboundCommands.class, router.commandsFor("irc"));
+    assertInstanceOf(MatrixMessageMutationOutboundCommands.class, router.commandsFor("matrix"));
     assertInstanceOf(
-        IrcMessageMutationOutboundCommands.class,
-        router.commandsFor(IrcProperties.Server.Backend.IRC));
-    assertInstanceOf(
-        MatrixMessageMutationOutboundCommands.class,
-        router.commandsFor(IrcProperties.Server.Backend.MATRIX));
-    assertInstanceOf(
-        QuasselMessageMutationOutboundCommands.class,
-        router.commandsFor(IrcProperties.Server.Backend.QUASSEL_CORE));
+        QuasselMessageMutationOutboundCommands.class, router.commandsFor("quassel-core"));
   }
 
   @Test
@@ -42,12 +37,8 @@ class MessageMutationOutboundCommandsRouterTest {
                 new IrcMessageMutationOutboundCommands(),
                 new MatrixMessageMutationOutboundCommands()));
 
-    assertInstanceOf(
-        IrcMessageMutationOutboundCommands.class,
-        router.commandsFor((IrcProperties.Server.Backend) null));
-    assertInstanceOf(
-        IrcMessageMutationOutboundCommands.class,
-        router.commandsFor(IrcProperties.Server.Backend.QUASSEL_CORE));
+    assertInstanceOf(IrcMessageMutationOutboundCommands.class, router.commandsFor(""));
+    assertInstanceOf(IrcMessageMutationOutboundCommands.class, router.commandsFor("quassel-core"));
   }
 
   @Test
@@ -68,9 +59,7 @@ class MessageMutationOutboundCommandsRouterTest {
         cafe.woden.ircclient.app.outbound.TestBackendSupport.messageMutationOutboundCommandsRouter(
             List.of(new MatrixMessageMutationOutboundCommands()));
 
-    assertInstanceOf(
-        IrcMessageMutationOutboundCommands.class,
-        router.commandsFor(IrcProperties.Server.Backend.IRC));
+    assertInstanceOf(IrcMessageMutationOutboundCommands.class, router.commandsFor("irc"));
   }
 
   @Test

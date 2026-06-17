@@ -13,17 +13,11 @@ import cafe.woden.ircclient.app.outbound.backend.spi.OutboundBackendFeatureAdapt
 import cafe.woden.ircclient.app.outbound.mutation.MessageMutationOutboundCommands;
 import cafe.woden.ircclient.app.outbound.support.CommandTargetPolicy;
 import cafe.woden.ircclient.app.outbound.upload.spi.UploadCommandTranslationHandler;
-import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 
 public final class TestBackendSupport {
-  private static final BackendDescriptorCatalog BACKEND_DESCRIPTORS =
-      BackendDescriptorCatalog.builtIns();
-
   private TestBackendSupport() {}
 
   public static BackendExtensionCatalog builtInBackendExtensionCatalog() {
@@ -132,29 +126,14 @@ public final class TestBackendSupport {
   }
 
   private static String backendIdOf(OutboundBackendFeatureAdapter adapter) {
-    String backendId = Objects.toString(adapter == null ? "" : adapter.backendId(), "").trim();
-    if (!backendId.isEmpty()) {
-      return backendId.toLowerCase(Locale.ROOT);
-    }
-    IrcProperties.Server.Backend backend = adapter == null ? null : adapter.backend();
-    return backend == null ? "" : BACKEND_DESCRIPTORS.idFor(backend);
+    return Objects.toString(adapter == null ? "" : adapter.backendId(), "").trim();
   }
 
   private static String backendIdOf(MessageMutationOutboundCommands handler) {
-    String backendId = Objects.toString(handler == null ? "" : handler.backendId(), "").trim();
-    if (!backendId.isEmpty()) {
-      return backendId.toLowerCase(Locale.ROOT);
-    }
-    IrcProperties.Server.Backend backend = handler == null ? null : handler.backend();
-    return backend == null ? "" : BACKEND_DESCRIPTORS.idFor(backend);
+    return Objects.toString(handler == null ? "" : handler.backendId(), "").trim();
   }
 
   private static String backendIdOf(UploadCommandTranslationHandler handler) {
-    String backendId = Objects.toString(handler == null ? "" : handler.backendId(), "").trim();
-    if (!backendId.isEmpty()) {
-      return backendId.toLowerCase(Locale.ROOT);
-    }
-    IrcProperties.Server.Backend backend = handler == null ? null : handler.backend();
-    return backend == null ? "" : BACKEND_DESCRIPTORS.idFor(backend);
+    return Objects.toString(handler == null ? "" : handler.backendId(), "").trim();
   }
 }

@@ -293,38 +293,18 @@ final class BackendExtensionCatalogState {
   }
 
   private static String backendIdOf(BackendExtension extension) {
-    String backendId = normalizeBackendId(extension.backendId());
-    if (!backendId.isEmpty()) {
-      return backendId;
-    }
-    IrcProperties.Server.Backend backend = extension.backend();
-    return backend == null ? "" : BACKEND_DESCRIPTORS.idFor(backend);
+    return normalizeBackendId(extension.backendId());
   }
 
   private static String backendIdOf(OutboundBackendFeatureAdapter featureAdapter) {
-    String backendId = normalizeBackendId(featureAdapter.backendId());
-    if (!backendId.isEmpty()) {
-      return backendId;
-    }
-    IrcProperties.Server.Backend backend = featureAdapter.backend();
-    return backend == null ? "" : BACKEND_DESCRIPTORS.idFor(backend);
+    return normalizeBackendId(featureAdapter.backendId());
   }
 
   private static String backendIdOf(MessageMutationOutboundCommands commands) {
-    String backendId = normalizeBackendId(commands.backendId());
-    if (!backendId.isEmpty()) {
-      return backendId;
-    }
-    IrcProperties.Server.Backend backend = commands.backend();
-    return backend == null ? "" : BACKEND_DESCRIPTORS.idFor(backend);
+    return normalizeBackendId(commands.backendId());
   }
 
   private static String backendIdOf(UploadCommandTranslationHandler translationHandler) {
-    String backendId = normalizeBackendId(translationHandler.backendId());
-    if (!backendId.isEmpty()) {
-      return backendId;
-    }
-    IrcProperties.Server.Backend backend = translationHandler.backend();
-    return backend == null ? "" : BACKEND_DESCRIPTORS.idFor(backend);
+    return normalizeBackendId(translationHandler.backendId());
   }
 }

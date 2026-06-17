@@ -13,12 +13,6 @@ import org.springframework.stereotype.Component;
 public final class MessageMutationOutboundCommandsRouter {
   @NonNull private final BackendExtensionCatalog backendExtensionCatalog;
 
-  @Deprecated(forRemoval = false)
-  public MessageMutationOutboundCommands commandsFor(
-      cafe.woden.ircclient.config.IrcProperties.Server.Backend backend) {
-    return backendExtensionCatalog.messageMutationCommandsFor(backend);
-  }
-
   public MessageMutationOutboundCommands commandsFor(String backendId) {
     return backendExtensionCatalog.messageMutationCommandsFor(backendId);
   }

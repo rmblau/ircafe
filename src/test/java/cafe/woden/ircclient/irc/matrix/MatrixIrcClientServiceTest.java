@@ -78,7 +78,7 @@ class MatrixIrcClientServiceTest {
 
   @Test
   void backendIsMatrix() {
-    assertEquals(IrcProperties.Server.Backend.MATRIX, service.backend());
+    assertEquals("matrix", service.backendId());
     assertEquals("not connected", service.backendAvailabilityReason("matrix"));
     assertEquals(Optional.empty(), service.currentNick("matrix"));
     assertFalse(service.isChatHistoryAvailable("matrix"));
@@ -161,7 +161,7 @@ class MatrixIrcClientServiceTest {
         assertThrows(
             BackendNotAvailableException.class, () -> service.connect("matrix").blockingAwait());
 
-    assertEquals(IrcProperties.Server.Backend.MATRIX, err.backend());
+    assertEquals("matrix", err.backendId());
     assertEquals("connect", err.operation());
     assertEquals("matrix", err.serverId());
     assertTrue(service.backendAvailabilityReason("matrix").startsWith("invalid Matrix homeserver"));
@@ -345,7 +345,7 @@ class MatrixIrcClientServiceTest {
             BackendNotAvailableException.class,
             () -> service.changeNick("matrix", "Alice").blockingAwait());
 
-    assertEquals(IrcProperties.Server.Backend.MATRIX, err.backend());
+    assertEquals("matrix", err.backendId());
     assertEquals("change-nick", err.operation());
     assertEquals("matrix", err.serverId());
     assertTrue(err.getMessage().contains("not connected"));
@@ -497,7 +497,7 @@ class MatrixIrcClientServiceTest {
             BackendNotAvailableException.class,
             () -> service.requestNames("matrix", "!room:matrix.example.org").blockingAwait());
 
-    assertEquals(IrcProperties.Server.Backend.MATRIX, err.backend());
+    assertEquals("matrix", err.backendId());
     assertEquals("names", err.operation());
     assertEquals("matrix", err.serverId());
     assertTrue(err.getMessage().contains("not connected"));
@@ -611,7 +611,7 @@ class MatrixIrcClientServiceTest {
             BackendNotAvailableException.class,
             () -> service.whois("matrix", "@bob:matrix.example.org").blockingAwait());
 
-    assertEquals(IrcProperties.Server.Backend.MATRIX, err.backend());
+    assertEquals("matrix", err.backendId());
     assertEquals("whois", err.operation());
     assertEquals("matrix", err.serverId());
     assertTrue(err.getMessage().contains("not connected"));
@@ -728,7 +728,7 @@ class MatrixIrcClientServiceTest {
             BackendNotAvailableException.class,
             () -> service.setAway("matrix", "Stepped out").blockingAwait());
 
-    assertEquals(IrcProperties.Server.Backend.MATRIX, err.backend());
+    assertEquals("matrix", err.backendId());
     assertEquals("set-away", err.operation());
     assertEquals("matrix", err.serverId());
     assertTrue(err.getMessage().contains("not connected"));
@@ -3843,7 +3843,7 @@ class MatrixIrcClientServiceTest {
             BackendNotAvailableException.class,
             () -> service.sendRaw("matrix", "PING").blockingAwait());
 
-    assertEquals(IrcProperties.Server.Backend.MATRIX, err.backend());
+    assertEquals("matrix", err.backendId());
     assertEquals("raw", err.operation());
     assertEquals("matrix", err.serverId());
     assertTrue(err.getMessage().contains("not connected"));

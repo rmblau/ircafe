@@ -30,11 +30,6 @@ public final class BackendNotAvailableException extends UnsupportedOperationExce
     return backendId;
   }
 
-  @Deprecated(forRemoval = false)
-  public IrcProperties.Server.Backend backend() {
-    return BackendDescriptorCatalog.builtIns().backendForId(backendId).orElse(null);
-  }
-
   public String operation() {
     return operation;
   }

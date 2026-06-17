@@ -1,7 +1,6 @@
 package cafe.woden.ircclient.irc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 import cafe.woden.ircclient.irc.backend.BackendNotAvailableException;
 import org.junit.jupiter.api.Test;
@@ -14,7 +13,6 @@ class BackendNotAvailableExceptionTest {
         new BackendNotAvailableException("plugin-backend", "connect", "plugin", "not installed");
 
     assertEquals("plugin-backend", exception.backendId());
-    assertNull(exception.backend());
     assertEquals("connect", exception.operation());
     assertEquals("plugin", exception.serverId());
     assertEquals(
@@ -23,13 +21,12 @@ class BackendNotAvailableExceptionTest {
   }
 
   @Test
-  void builtInBackendsStillExposeEnumCompatibility() {
+  void builtInBackendsExposeBackendIds() {
     BackendNotAvailableException exception =
         new BackendNotAvailableException("matrix", "connect", "matrix", "not configured");
 
     assertEquals("matrix", exception.backendId());
-    assertEquals(
-        cafe.woden.ircclient.config.IrcProperties.Server.Backend.MATRIX, exception.backend());
+    assertEquals("matrix", exception.backendId());
     assertEquals(
         "Matrix backend is not configured (connect) for server 'matrix'", exception.getMessage());
   }

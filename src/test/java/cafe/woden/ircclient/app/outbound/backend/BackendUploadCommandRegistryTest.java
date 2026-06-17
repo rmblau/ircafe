@@ -21,8 +21,8 @@ class BackendUploadCommandRegistryTest {
         cafe.woden.ircclient.app.outbound.TestBackendSupport.backendUploadCommandRegistry(
             List.of(matrix));
 
-    assertSame(matrix, registry.find(IrcProperties.Server.Backend.MATRIX));
-    assertNull(registry.find(IrcProperties.Server.Backend.IRC));
+    assertSame(matrix, registry.find("matrix"));
+    assertNull(registry.find("irc"));
   }
 
   @Test
