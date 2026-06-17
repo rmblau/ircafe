@@ -25,6 +25,9 @@ import org.junit.jupiter.api.io.TempDir;
 
 class BackendNamedCommandExecutorCatalogTest {
 
+  private static final String SPI_PLUGIN_EXECUTOR_CLASS =
+      "plugin.commands.PluginSpiBackendNamedCommandExecutor";
+
   private static final BackendNamedCommandExecutionContext TEST_CONTEXT =
       new BackendNamedCommandExecutionContext() {
         private final TargetRef statusTarget = new TargetRef("test", "status");
@@ -85,6 +88,30 @@ class BackendNamedCommandExecutorCatalogTest {
   void loadsExecutionProvidersFromPluginDirectoryJar() throws Exception {
     Path pluginDir = Files.createDirectories(tempDir.resolve("plugins"));
     writePluginJar(pluginDir.resolve("backendexec.jar"));
+
+    BackendNamedCommandExecutorCatalog catalog =
+        BackendNamedCommandExecutorCatalog.installed(
+            pluginDir, BackendNamedCommandExecutorCatalogTest.class.getClassLoader());
+    CompositeDisposable disposables = new CompositeDisposable();
+    try {
+      assertTrue(
+          catalog.handle(
+              TEST_CONTEXT, disposables, new ParsedInput.BackendNamed("backendexec", "hello")));
+    } finally {
+      disposables.dispose();
+      catalog.shutdown();
+    }
+  }
+
+  @Test
+  void loadsExecutionProviderSpiFromPluginDirectoryJar() throws Exception {
+    Path pluginDir = Files.createDirectories(tempDir.resolve("plugins"));
+    CompiledPluginJarSupport.writePluginJar(
+        pluginDir.resolve("backendexec-spi.jar"),
+        SPI_PLUGIN_EXECUTOR_CLASS,
+        pluginSpiExecutorSource(),
+        cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor.class.getName(),
+        CompiledPluginJarSupport.compatibleManifest("backend-named-executor-spi-test", "1.0.0"));
 
     BackendNamedCommandExecutorCatalog catalog =
         BackendNamedCommandExecutorCatalog.installed(
@@ -176,6 +203,34 @@ class BackendNamedCommandExecutorCatalogTest {
               .getBytes(StandardCharsets.UTF_8));
       out.closeEntry();
     }
+  }
+
+  private static String pluginSpiExecutorSource() {
+    return """
+        package plugin.commands;
+
+        import cafe.woden.ircclient.app.commands.BackendNamedCommandExecutionContext;
+        import cafe.woden.ircclient.app.commands.ParsedInput;
+        import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor;
+        import io.reactivex.rxjava3.disposables.CompositeDisposable;
+        import java.util.Set;
+
+        public final class PluginSpiBackendNamedCommandExecutor
+            implements BackendNamedCommandExecutor {
+          @Override
+          public Set<String> handledCommandNames() {
+            return Set.of("backendexec");
+          }
+
+          @Override
+          public boolean handle(
+              BackendNamedCommandExecutionContext context,
+              CompositeDisposable disposables,
+              ParsedInput.BackendNamed command) {
+            return command != null && "backendexec".equals(command.command());
+          }
+        }
+        """;
   }
 
   private static final class FakeInstalledPluginsPort implements InstalledPluginsPort {

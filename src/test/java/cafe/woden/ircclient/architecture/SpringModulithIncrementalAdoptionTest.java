@@ -30,6 +30,7 @@ import cafe.woden.ircclient.app.api.ZncPlaybackEventsPort;
 import cafe.woden.ircclient.app.commands.FilterCommand;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesBus;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
+import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor;
 import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
 import cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy;
 import cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor;
@@ -500,6 +501,7 @@ class SpringModulithIncrementalAdoptionTest {
     assertThat(ChatHistoryTranscriptPort.class.isAnnotationPresent(SecondaryPort.class)).isTrue();
     assertThat(LocalFilterCommandHandler.class.isAnnotationPresent(SecondaryPort.class)).isTrue();
     assertThat(BackendNamedCommandHandler.class.isAnnotationPresent(SecondaryPort.class)).isTrue();
+    assertThat(BackendNamedCommandExecutor.class.isAnnotationPresent(SecondaryPort.class)).isTrue();
     assertThat(BackendExtension.class.isAnnotationPresent(SecondaryPort.class)).isTrue();
     assertThat(MessageMutationOutboundCommands.class.isAnnotationPresent(SecondaryPort.class))
         .isTrue();
@@ -656,6 +658,7 @@ class SpringModulithIncrementalAdoptionTest {
     assertNamedInterfaceContains(
         appModule,
         "commands-spi",
+        BackendNamedCommandExecutor.class,
         BackendNamedCommandHandler.class,
         SlashCommandParseStrategy.class,
         SlashCommandPresentationContributor.class);

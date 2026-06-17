@@ -43,6 +43,7 @@ import cafe.woden.ircclient.app.commands.FilterCommandParser;
 import cafe.woden.ircclient.app.commands.UserCommandAliasEngine;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesBus;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
+import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor;
 import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
 import cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
@@ -366,6 +367,9 @@ class JmoleculesIncrementalAdoptionTest {
         "cafe.woden.ircclient.app.commands.QuasselBackendNamedCommandHandler",
         ApplicationLayer.class);
     assertAnnotatedByName(
+        "cafe.woden.ircclient.app.commands.QuasselBackendNamedCommandExecutor",
+        ApplicationLayer.class);
+    assertAnnotatedByName(
         "cafe.woden.ircclient.app.outbound.backend.BackendNamedOutboundCommandRouter",
         ApplicationLayer.class);
     assertAnnotatedByName(
@@ -564,6 +568,7 @@ class JmoleculesIncrementalAdoptionTest {
         "cafe.woden.ircclient.app.outbound.backend.QuasselOutboundCommandSupport",
         ApplicationLayer.class);
     assertAnnotated(BackendNamedCommandHandler.class, ApplicationLayer.class);
+    assertAnnotated(BackendNamedCommandExecutor.class, ApplicationLayer.class);
     assertAnnotated(BackendExtension.class, ApplicationLayer.class);
     assertAnnotated(OutboundCommandDispatcher.class, ApplicationLayer.class);
     assertAnnotated(MessageMutationOutboundCommands.class, ApplicationLayer.class);

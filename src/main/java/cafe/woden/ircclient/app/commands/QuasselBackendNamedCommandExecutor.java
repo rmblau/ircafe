@@ -12,7 +12,8 @@ import org.springframework.stereotype.Component;
 @Component
 @SecondaryAdapter
 @ApplicationLayer
-public final class QuasselBackendNamedCommandExecutor implements BackendNamedCommandExecutor {
+public final class QuasselBackendNamedCommandExecutor
+    implements cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor {
 
   private final QuasselOutboundCommandService quasselOutboundCommandService;
 

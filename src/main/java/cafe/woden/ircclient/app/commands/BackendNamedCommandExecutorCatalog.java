@@ -26,13 +26,14 @@ public final class BackendNamedCommandExecutorCatalog {
   private static final Logger log =
       LoggerFactory.getLogger(BackendNamedCommandExecutorCatalog.class);
 
-  private final Map<String, BackendNamedCommandExecutor> executionHandlersByCommandName;
+  private final Map<String, cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor>
+      executionHandlersByCommandName;
   private final List<URLClassLoader> pluginClassLoaders;
 
   @Autowired
   public BackendNamedCommandExecutorCatalog(
       InstalledPluginsPort installedPluginsPort,
-      List<BackendNamedCommandExecutor> builtInExecutors) {
+      List<cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor> builtInExecutors) {
     this(
         CommandPluginProviders.backendNamedCommandExecutors(
             List.copyOf(Objects.requireNonNullElse(builtInExecutors, List.of())),
@@ -41,7 +42,8 @@ public final class BackendNamedCommandExecutorCatalog {
 
   public BackendNamedCommandExecutorCatalog(
       RuntimeConfigPathPort runtimeConfigPathPort,
-      List<BackendNamedCommandExecutor> builtInExecutors) {
+      List<? extends cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor>
+          builtInExecutors) {
     this(
         CommandPluginProviders.backendNamedCommandExecutors(
             List.copyOf(Objects.requireNonNullElse(builtInExecutors, List.of())),
@@ -65,7 +67,7 @@ public final class BackendNamedCommandExecutorCatalog {
   }
 
   public static BackendNamedCommandExecutorCatalog fromExecutors(
-      List<BackendNamedCommandExecutor> executors) {
+      List<? extends cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor> executors) {
     return new BackendNamedCommandExecutorCatalog(
         List.copyOf(Objects.requireNonNull(executors, "executors")), List.of());
   }
@@ -83,7 +85,8 @@ public final class BackendNamedCommandExecutorCatalog {
   }
 
   private BackendNamedCommandExecutorCatalog(
-      List<BackendNamedCommandExecutor> executors, List<URLClassLoader> pluginClassLoaders) {
+      List<cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor> executors,
+      List<URLClassLoader> pluginClassLoaders) {
     this.executionHandlersByCommandName = indexExecutionHandlersByCommandName(executors);
     this.pluginClassLoaders =
         List.copyOf(Objects.requireNonNull(pluginClassLoaders, "pluginClassLoaders"));
@@ -100,18 +103,22 @@ public final class BackendNamedCommandExecutorCatalog {
       CompositeDisposable disposables,
       ParsedInput.BackendNamed command) {
     if (context == null || disposables == null || command == null) return false;
-    BackendNamedCommandExecutor executor =
+    cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor executor =
         executionHandlersByCommandName.get(
             BackendNamedCommandRegistrationSupport.normalizeCommandName(command.command()));
     if (executor == null) return false;
     return executor.handle(context, disposables, command);
   }
 
-  private static Map<String, BackendNamedCommandExecutor> indexExecutionHandlersByCommandName(
-      List<BackendNamedCommandExecutor> executors) {
-    LinkedHashMap<String, BackendNamedCommandExecutor> index = new LinkedHashMap<>();
-    for (BackendNamedCommandExecutor executor :
-        Objects.requireNonNullElse(executors, List.<BackendNamedCommandExecutor>of())) {
+  private static Map<String, cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor>
+      indexExecutionHandlersByCommandName(
+          List<cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor> executors) {
+    LinkedHashMap<String, cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor> index =
+        new LinkedHashMap<>();
+    for (cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor executor :
+        Objects.requireNonNullElse(
+            executors,
+            List.<cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor>of())) {
       if (executor == null) continue;
       Set<String> commandNames =
           Objects.requireNonNullElse(executor.handledCommandNames(), Set.<String>of());
@@ -125,7 +132,8 @@ public final class BackendNamedCommandExecutorCatalog {
                   + normalized
                   + "' collides with a reserved built-in command");
         }
-        BackendNamedCommandExecutor previous = index.putIfAbsent(normalized, executor);
+        cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor previous =
+            index.putIfAbsent(normalized, executor);
         if (previous != null && previous != executor) {
           throw new IllegalStateException(
               "Duplicate backend named execution handler registered for command '"
