@@ -12,6 +12,7 @@ import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicy
 import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.Ircv3CapabilityConfigPort;
+import cafe.woden.ircclient.config.api.LaunchJvmRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.TrayRuntimeConfigPort;
 import cafe.woden.ircclient.config.properties.LogProperties;
 import cafe.woden.ircclient.config.properties.PushyProperties;
@@ -154,7 +155,8 @@ record PreferencesDialogControls(
             request.chatThemeSettingsBus());
 
     JCheckBox autoConnectOnStart = StartupPanelSupport.buildAutoConnectCheckbox(request.current());
-    LaunchJvmControls launchJvm = LaunchJvmControlsSupport.buildControls(request.runtimeConfig());
+    LaunchJvmControls launchJvm =
+        LaunchJvmControlsSupport.buildControls(request.launchJvmRuntimeConfig());
     TrayControls trayControls =
         TrayControlsSupport.buildControls(
             request.current(),
@@ -492,6 +494,7 @@ record PreferencesDialogControls(
       ChatThemeSettingsBus chatThemeSettingsBus,
       SpellcheckSettingsBus spellcheckSettingsBus,
       RuntimeConfigStore runtimeConfig,
+      LaunchJvmRuntimeConfigPort launchJvmRuntimeConfig,
       TrayRuntimeConfigPort trayRuntimeConfig,
       ChatBehaviorRuntimeConfigPort chatBehaviorRuntimeConfig,
       ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,

@@ -1,7 +1,12 @@
 package cafe.woden.ircclient.ui.settings.startup;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
+import cafe.woden.ircclient.config.api.LaunchJvmRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.LaunchJvmRuntimeConfigPort.LaunchJvmSnapshot;
 import java.util.List;
 import javax.swing.JComboBox;
 import javax.swing.JSpinner;
@@ -11,6 +16,37 @@ import javax.swing.SpinnerNumberModel;
 import org.junit.jupiter.api.Test;
 
 class LaunchJvmControlsSupportTest {
+
+  @Test
+  void buildControlsReadsLaunchJvmSnapshot() {
+    LaunchJvmRuntimeConfigPort runtimeConfig = mock(LaunchJvmRuntimeConfigPort.class);
+    when(runtimeConfig.readLaunchJvmSettings())
+        .thenReturn(new LaunchJvmSnapshot("java25", 512, 2048, "zgc", List.of("-Dfoo=bar")));
+
+    LaunchJvmControls controls = LaunchJvmControlsSupport.buildControls(runtimeConfig);
+
+    assertEquals("java25", controls.javaCommand().getText());
+    assertEquals(512, controls.xmsMiB().getValue());
+    assertEquals(2048, controls.xmxMiB().getValue());
+    assertEquals(
+        "zgc",
+        LaunchJvmControlsSupport.gcIdValue((LaunchGcOption) controls.gc().getSelectedItem()));
+    assertEquals("-Dfoo=bar", controls.extraArgs().getText());
+  }
+
+  @Test
+  void rememberSettingsWritesLaunchJvmSnapshot() {
+    LaunchJvmRuntimeConfigPort runtimeConfig = mock(LaunchJvmRuntimeConfigPort.class);
+    LaunchJvmControlsSupport.LaunchJvmSettings settings =
+        new LaunchJvmControlsSupport.LaunchJvmSettings(
+            "java25", 512, 2048, "zgc", List.of("-Dfoo=bar"));
+
+    LaunchJvmControlsSupport.rememberSettings(runtimeConfig, settings);
+
+    verify(runtimeConfig)
+        .rememberLaunchJvmSettings(
+            new LaunchJvmSnapshot("java25", 512, 2048, "zgc", List.of("-Dfoo=bar")));
+  }
 
   @Test
   void readSettingsDefaultsBlankJavaCommandAndTrimsArgs() {

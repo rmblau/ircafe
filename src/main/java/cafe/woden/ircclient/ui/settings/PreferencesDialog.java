@@ -15,6 +15,7 @@ import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicy
 import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.Ircv3CapabilityConfigPort;
+import cafe.woden.ircclient.config.api.LaunchJvmRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.NickColorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.NotificationRule;
 import cafe.woden.ircclient.config.api.NotificationRuntimeConfigPort;
@@ -89,6 +90,7 @@ public class PreferencesDialog {
   private final ChatThemeSettingsBus chatThemeSettingsBus;
   private final SpellcheckSettingsBus spellcheckSettingsBus;
   private final RuntimeConfigStore runtimeConfig;
+  private final LaunchJvmRuntimeConfigPort launchJvmRuntimeConfig;
   private final AppearanceRuntimeConfigPort appearanceRuntimeConfig;
   private final ChatBehaviorRuntimeConfigPort chatBehaviorRuntimeConfig;
   private final TrayRuntimeConfigPort trayRuntimeConfig;
@@ -146,6 +148,7 @@ public class PreferencesDialog {
       ChatThemeSettingsBus chatThemeSettingsBus,
       SpellcheckSettingsBus spellcheckSettingsBus,
       RuntimeConfigStore runtimeConfig,
+      LaunchJvmRuntimeConfigPort launchJvmRuntimeConfig,
       AppearanceRuntimeConfigPort appearanceRuntimeConfig,
       ChatBehaviorRuntimeConfigPort chatBehaviorRuntimeConfig,
       TrayRuntimeConfigPort trayRuntimeConfig,
@@ -198,6 +201,7 @@ public class PreferencesDialog {
         chatThemeSettingsBus,
         spellcheckSettingsBus,
         runtimeConfig,
+        launchJvmRuntimeConfig,
         appearanceRuntimeConfig,
         chatBehaviorRuntimeConfig,
         trayRuntimeConfig,
@@ -254,6 +258,7 @@ public class PreferencesDialog {
       ChatThemeSettingsBus chatThemeSettingsBus,
       SpellcheckSettingsBus spellcheckSettingsBus,
       RuntimeConfigStore runtimeConfig,
+      LaunchJvmRuntimeConfigPort launchJvmRuntimeConfig,
       AppearanceRuntimeConfigPort appearanceRuntimeConfig,
       ChatBehaviorRuntimeConfigPort chatBehaviorRuntimeConfig,
       TrayRuntimeConfigPort trayRuntimeConfig,
@@ -307,6 +312,7 @@ public class PreferencesDialog {
     this.chatThemeSettingsBus = chatThemeSettingsBus;
     this.spellcheckSettingsBus = spellcheckSettingsBus;
     this.runtimeConfig = runtimeConfig;
+    this.launchJvmRuntimeConfig = launchJvmRuntimeConfig;
     this.appearanceRuntimeConfig = appearanceRuntimeConfig;
     this.chatBehaviorRuntimeConfig = chatBehaviorRuntimeConfig;
     this.trayRuntimeConfig = trayRuntimeConfig;
@@ -407,6 +413,7 @@ public class PreferencesDialog {
                 chatThemeSettingsBus,
                 spellcheckSettingsBus,
                 runtimeConfig,
+                launchJvmRuntimeConfig,
                 trayRuntimeConfig,
                 chatBehaviorRuntimeConfig,
                 chatLoggingRuntimeConfig,
@@ -474,6 +481,7 @@ public class PreferencesDialog {
               new PreferencesCommitSupport.CommitRequest(
                   applySnapshot,
                   runtimeConfig,
+                  launchJvmRuntimeConfig,
                   appearanceRuntimeConfig,
                   chatBehaviorRuntimeConfig,
                   trayRuntimeConfig,

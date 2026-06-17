@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.startup;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.LaunchJvmRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.LaunchJvmRuntimeConfigPort.LaunchJvmSnapshot;
 import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
@@ -16,25 +17,28 @@ public final class LaunchJvmControlsSupport {
 
   private LaunchJvmControlsSupport() {}
 
-  public static LaunchJvmControls buildControls(RuntimeConfigStore runtimeConfig) {
-    JTextField javaCommand = new JTextField(runtimeConfig.readLaunchJvmJavaCommand("java"));
+  public static LaunchJvmControls buildControls(LaunchJvmRuntimeConfigPort runtimeConfig) {
+    LaunchJvmSnapshot snapshot =
+        runtimeConfig != null ? runtimeConfig.readLaunchJvmSettings() : null;
+    if (snapshot == null) {
+      snapshot = new LaunchJvmSnapshot("java", 0, 0, "", List.of());
+    }
+    JTextField javaCommand = new JTextField(snapshot.javaCommand());
     javaCommand.setToolTipText(MESSAGES.text("preferences.startup.javaCommand.tooltip"));
 
-    int xms = runtimeConfig.readLaunchJvmXmsMiB(0);
-    int xmx = runtimeConfig.readLaunchJvmXmxMiB(0);
     JSpinner xmsMiB =
         PreferencesUiSupport.numberSpinner(
-            SettingsRangeSupport.normalizeLaunchJvmMemoryMiB(xms), 0, 262_144, 128);
+            SettingsRangeSupport.normalizeLaunchJvmMemoryMiB(snapshot.xmsMiB()), 0, 262_144, 128);
     JSpinner xmxMiB =
         PreferencesUiSupport.numberSpinner(
-            SettingsRangeSupport.normalizeLaunchJvmMemoryMiB(xmx), 0, 262_144, 128);
+            SettingsRangeSupport.normalizeLaunchJvmMemoryMiB(snapshot.xmxMiB()), 0, 262_144, 128);
 
     JComboBox<LaunchGcOption> gc = new JComboBox<>(gcOptions());
-    gc.setSelectedItem(gcOptionForId(runtimeConfig.readLaunchJvmGc("")));
+    gc.setSelectedItem(gcOptionForId(snapshot.gc()));
     gc.setToolTipText(MESSAGES.text("preferences.startup.gc.tooltip"));
 
     JTextArea extraArgs = PreferencesUiSupport.textArea(5, 40, false);
-    extraArgs.setText(String.join("\n", runtimeConfig.readLaunchJvmArgs(List.of())));
+    extraArgs.setText(String.join("\n", snapshot.args()));
     extraArgs.setToolTipText(MESSAGES.text("preferences.startup.extraArgs.tooltip"));
 
     return new LaunchJvmControls(javaCommand, xmsMiB, xmxMiB, gc, extraArgs);
@@ -85,6 +89,20 @@ public final class LaunchJvmControlsSupport {
         gcIdValue(
             PreferencesUiSupport.selectedComboItem(controls.gc(), LaunchGcOption.class, null)),
         SettingsValueSupport.trimmedLines(controls.extraArgs().getText()));
+  }
+
+  public static void rememberSettings(
+      LaunchJvmRuntimeConfigPort runtimeConfig, LaunchJvmSettings settings) {
+    if (settings == null) {
+      return;
+    }
+    runtimeConfig.rememberLaunchJvmSettings(
+        new LaunchJvmSnapshot(
+            settings.javaCommand(),
+            settings.xmsMiB(),
+            settings.xmxMiB(),
+            settings.gc(),
+            settings.args()));
   }
 
   public record LaunchJvmSettings(

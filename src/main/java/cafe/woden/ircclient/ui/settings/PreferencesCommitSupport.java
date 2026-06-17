@@ -14,6 +14,7 @@ import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
 import cafe.woden.ircclient.config.api.Ircv3CapabilityConfigPort;
+import cafe.woden.ircclient.config.api.LaunchJvmRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.NickColorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.NotificationRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.OutgoingMessageRuntimeConfigPort;
@@ -53,6 +54,7 @@ import cafe.woden.ircclient.ui.settings.notifications.NotificationRulesControlsS
 import cafe.woden.ircclient.ui.settings.outgoing.OutgoingColorControlsSupport;
 import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckControlsSupport;
 import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettingsBus;
+import cafe.woden.ircclient.ui.settings.startup.LaunchJvmControlsSupport;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ThemeManager;
@@ -136,11 +138,8 @@ final class PreferencesCommitSupport {
     AppearanceControlsSupport.rememberChatThemeSettings(
         request.appearanceRuntimeConfig(), appearance.chatTheme());
     runtimeConfig.rememberAutoConnectOnStart(next.autoConnectOnStart());
-    runtimeConfig.rememberLaunchJvmJavaCommand(snapshot.launchJvm().javaCommand());
-    runtimeConfig.rememberLaunchJvmXmsMiB(snapshot.launchJvm().xmsMiB());
-    runtimeConfig.rememberLaunchJvmXmxMiB(snapshot.launchJvm().xmxMiB());
-    runtimeConfig.rememberLaunchJvmGc(snapshot.launchJvm().gc());
-    runtimeConfig.rememberLaunchJvmArgs(snapshot.launchJvm().args());
+    LaunchJvmControlsSupport.rememberSettings(
+        request.launchJvmRuntimeConfig(), snapshot.launchJvm());
     TrayControlsSupport.rememberSettings(
         request.trayRuntimeConfig(),
         request.notificationSoundSettingsBus(),
@@ -241,6 +240,7 @@ final class PreferencesCommitSupport {
   record CommitRequest(
       PreferencesApplySupport.Snapshot snapshot,
       RuntimeConfigStore runtimeConfig,
+      LaunchJvmRuntimeConfigPort launchJvmRuntimeConfig,
       AppearanceRuntimeConfigPort appearanceRuntimeConfig,
       ChatBehaviorRuntimeConfigPort chatBehaviorRuntimeConfig,
       TrayRuntimeConfigPort trayRuntimeConfig,
