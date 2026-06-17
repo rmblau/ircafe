@@ -22,7 +22,7 @@ class ExternalBrowserSchemeProviderPluginTest {
   void loadsExternalBrowserSchemesFromPluginDirectoryJar() throws Exception {
     Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
     Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
-    writePluginJar(pluginDir.resolve("plugin-browser-scheme.jar"));
+    writePluginJar(pluginDir.resolve("plugin-browser-scheme.jar"), false);
     RuntimeConfigPathPort runtimeConfigPathPort =
         () -> runtimeConfigDirectory.resolve("ircafe.yml");
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
@@ -34,13 +34,45 @@ class ExternalBrowserSchemeProviderPluginTest {
     assertTrue(installedPlugins.pluginProblems().isEmpty());
   }
 
-  private void writePluginJar(Path jarPath) throws Exception {
+  @Test
+  void loadsExternalBrowserSchemeSpiFromPluginDirectoryJar() throws Exception {
+    Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
+    Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
+    writePluginJar(pluginDir.resolve("plugin-browser-scheme-spi.jar"), true);
+    RuntimeConfigPathPort runtimeConfigPathPort =
+        () -> runtimeConfigDirectory.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+    TestableLauncher launcher = new TestableLauncher("linux", installedPlugins);
+    launcher.succeedCommandPrefix = "xdg-open";
+
+    assertTrue(launcher.open("gemini://gemini.example/docs"));
+    assertEquals("xdg-open gemini://gemini.example/docs", launcher.attemptedCommands.get(0));
+    assertTrue(installedPlugins.pluginProblems().isEmpty());
+  }
+
+  private void writePluginJar(Path jarPath, boolean spi) throws Exception {
     String providerClassName = "cafe.woden.ircclient.testplugins.PluginBrowserSchemeProvider";
     String providerSource =
-        """
+        pluginProviderSource(
+            spi
+                ? "cafe.woden.ircclient.ui.spi.ExternalBrowserSchemeProvider"
+                : "cafe.woden.ircclient.ui.ExternalBrowserSchemeProvider");
+    CompiledPluginJarSupport.writePluginJar(
+        jarPath,
+        providerClassName,
+        providerSource,
+        spi
+            ? cafe.woden.ircclient.ui.spi.ExternalBrowserSchemeProvider.class.getName()
+            : ExternalBrowserSchemeProvider.class.getName(),
+        CompiledPluginJarSupport.compatibleManifest(
+            spi ? "plugin-browser-scheme-spi" : "plugin-browser-scheme", "1.0.0"));
+  }
+
+  private static String pluginProviderSource(String providerImport) {
+    return """
         package cafe.woden.ircclient.testplugins;
 
-        import cafe.woden.ircclient.ui.ExternalBrowserSchemeProvider;
+        import %s;
         import java.util.Set;
 
         public final class PluginBrowserSchemeProvider implements ExternalBrowserSchemeProvider {
@@ -49,13 +81,8 @@ class ExternalBrowserSchemeProviderPluginTest {
             return Set.of("gemini");
           }
         }
-        """;
-    CompiledPluginJarSupport.writePluginJar(
-        jarPath,
-        providerClassName,
-        providerSource,
-        ExternalBrowserSchemeProvider.class.getName(),
-        CompiledPluginJarSupport.compatibleManifest("plugin-browser-scheme", "1.0.0"));
+        """
+        .formatted(providerImport);
   }
 
   private static final class TestableLauncher extends ExternalBrowserLauncher {

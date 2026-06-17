@@ -1,19 +1,12 @@
 package cafe.woden.ircclient.ui;
 
-import java.util.Set;
-import org.jmolecules.architecture.layered.InterfaceLayer;
-
 /**
- * ServiceLoader-backed contribution point for URL schemes the external browser launcher may open.
+ * Legacy external browser scheme provider service name.
  *
- * <p>Plugins register implementations in {@code
- * META-INF/services/cafe.woden.ircclient.ui.ExternalBrowserSchemeProvider}.
+ * @deprecated register {@link cafe.woden.ircclient.ui.spi.ExternalBrowserSchemeProvider}
+ *     implementations under {@code
+ *     META-INF/services/cafe.woden.ircclient.ui.spi.ExternalBrowserSchemeProvider}.
  */
-@InterfaceLayer
-public interface ExternalBrowserSchemeProvider {
-
-  /**
-   * Returns additional lowercase URL schemes that may be opened by the external browser launcher.
-   */
-  Set<String> allowedSchemes();
-}
+@Deprecated(since = "0.1", forRemoval = false)
+public interface ExternalBrowserSchemeProvider
+    extends cafe.woden.ircclient.ui.spi.ExternalBrowserSchemeProvider {}

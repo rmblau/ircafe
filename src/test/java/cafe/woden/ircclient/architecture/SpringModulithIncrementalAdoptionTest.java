@@ -183,6 +183,8 @@ import cafe.woden.ircclient.ui.settings.UiSettingsPortAdapter;
 import cafe.woden.ircclient.ui.settings.theme.ThemeIdUtils;
 import cafe.woden.ircclient.ui.settings.theme.ThemeManager;
 import cafe.woden.ircclient.ui.shell.MainFrame;
+import cafe.woden.ircclient.ui.spi.ExternalBrowserCommandProvider;
+import cafe.woden.ircclient.ui.spi.ExternalBrowserSchemeProvider;
 import cafe.woden.ircclient.ui.terminal.TerminalDockable;
 import cafe.woden.ircclient.ui.tray.TrayNotificationService;
 import cafe.woden.ircclient.ui.tray.TrayService;
@@ -413,6 +415,8 @@ class SpringModulithIncrementalAdoptionTest {
     assertNamedInterfaceContains(uiModule, "settings", UiSettingsBus.class);
     assertNamedInterfaceContains(
         uiModule, "settings-theme", ThemeManager.class, ThemeIdUtils.class);
+    assertNamedInterfaceContains(
+        uiModule, "spi", ExternalBrowserCommandProvider.class, ExternalBrowserSchemeProvider.class);
     assertNamedInterfaceContains(uiModule, "shell", MainFrame.class);
     assertNamedInterfaceContains(uiModule, "terminal", TerminalDockable.class);
     assertNamedInterfaceContains(uiModule, "tray", TrayService.class);

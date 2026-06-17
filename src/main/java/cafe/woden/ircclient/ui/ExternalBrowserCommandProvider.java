@@ -1,22 +1,12 @@
 package cafe.woden.ircclient.ui;
 
-import java.util.List;
-import org.jmolecules.architecture.layered.InterfaceLayer;
-
 /**
- * ServiceLoader-backed contribution point for custom external-browser launch commands.
+ * Legacy external browser command provider service name.
  *
- * <p>Plugins register implementations in {@code
- * META-INF/services/cafe.woden.ircclient.ui.ExternalBrowserCommandProvider}.
+ * @deprecated register {@link cafe.woden.ircclient.ui.spi.ExternalBrowserCommandProvider}
+ *     implementations under {@code
+ *     META-INF/services/cafe.woden.ircclient.ui.spi.ExternalBrowserCommandProvider}.
  */
-@InterfaceLayer
-public interface ExternalBrowserCommandProvider {
-
-  /**
-   * Returns process command candidates for the normalized URL and lowercase OS name.
-   *
-   * <p>Each inner list is passed to {@link ProcessBuilder} as one command line. Providers should
-   * return an empty list when they do not support the current platform.
-   */
-  List<List<String>> browserCommands(String normalizedUrl, String osName);
-}
+@Deprecated(since = "0.1", forRemoval = false)
+public interface ExternalBrowserCommandProvider
+    extends cafe.woden.ircclient.ui.spi.ExternalBrowserCommandProvider {}

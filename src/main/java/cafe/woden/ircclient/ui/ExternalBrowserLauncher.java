@@ -42,7 +42,7 @@ public class ExternalBrowserLauncher {
 
   private static final Set<String> DEFAULT_ALLOWED_SCHEMES = Set.of("http", "https");
 
-  private final List<ExternalBrowserCommandProvider> commandProviders;
+  private final List<cafe.woden.ircclient.ui.spi.ExternalBrowserCommandProvider> commandProviders;
   private final Set<String> allowedSchemes;
 
   public ExternalBrowserLauncher() {
@@ -132,7 +132,7 @@ public class ExternalBrowserLauncher {
   }
 
   protected boolean tryPluginCommands(String url, String os) {
-    for (ExternalBrowserCommandProvider provider : commandProviders) {
+    for (cafe.woden.ircclient.ui.spi.ExternalBrowserCommandProvider provider : commandProviders) {
       if (provider == null) continue;
       try {
         for (List<String> command :

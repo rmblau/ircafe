@@ -22,7 +22,7 @@ class ExternalBrowserCommandProviderPluginTest {
   void loadsExternalBrowserCommandsFromPluginDirectoryJar() throws Exception {
     Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
     Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
-    writePluginJar(pluginDir.resolve("plugin-browser-command.jar"));
+    writePluginJar(pluginDir.resolve("plugin-browser-command.jar"), false);
     RuntimeConfigPathPort runtimeConfigPathPort =
         () -> runtimeConfigDirectory.resolve("ircafe.yml");
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
@@ -35,13 +35,46 @@ class ExternalBrowserCommandProviderPluginTest {
     assertTrue(installedPlugins.pluginProblems().isEmpty());
   }
 
-  private void writePluginJar(Path jarPath) throws Exception {
+  @Test
+  void loadsExternalBrowserCommandSpiFromPluginDirectoryJar() throws Exception {
+    Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
+    Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
+    writePluginJar(pluginDir.resolve("plugin-browser-command-spi.jar"), true);
+    RuntimeConfigPathPort runtimeConfigPathPort =
+        () -> runtimeConfigDirectory.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+    TestableLauncher launcher = new TestableLauncher("linux", installedPlugins);
+    launcher.succeedCommandPrefix = "plugin-browser";
+
+    assertTrue(launcher.open("https://example.com/releases"));
+    assertEquals(
+        "plugin-browser https://example.com/releases linux", launcher.attemptedCommands.get(0));
+    assertTrue(installedPlugins.pluginProblems().isEmpty());
+  }
+
+  private void writePluginJar(Path jarPath, boolean spi) throws Exception {
     String providerClassName = "cafe.woden.ircclient.testplugins.PluginBrowserCommandProvider";
     String providerSource =
-        """
+        pluginProviderSource(
+            spi
+                ? "cafe.woden.ircclient.ui.spi.ExternalBrowserCommandProvider"
+                : "cafe.woden.ircclient.ui.ExternalBrowserCommandProvider");
+    CompiledPluginJarSupport.writePluginJar(
+        jarPath,
+        providerClassName,
+        providerSource,
+        spi
+            ? cafe.woden.ircclient.ui.spi.ExternalBrowserCommandProvider.class.getName()
+            : ExternalBrowserCommandProvider.class.getName(),
+        CompiledPluginJarSupport.compatibleManifest(
+            spi ? "plugin-browser-command-spi" : "plugin-browser-command", "1.0.0"));
+  }
+
+  private static String pluginProviderSource(String providerImport) {
+    return """
         package cafe.woden.ircclient.testplugins;
 
-        import cafe.woden.ircclient.ui.ExternalBrowserCommandProvider;
+        import %s;
         import java.util.List;
 
         public final class PluginBrowserCommandProvider implements ExternalBrowserCommandProvider {
@@ -50,13 +83,8 @@ class ExternalBrowserCommandProviderPluginTest {
             return List.of(List.of("plugin-browser", normalizedUrl, osName));
           }
         }
-        """;
-    CompiledPluginJarSupport.writePluginJar(
-        jarPath,
-        providerClassName,
-        providerSource,
-        ExternalBrowserCommandProvider.class.getName(),
-        CompiledPluginJarSupport.compatibleManifest("plugin-browser-command", "1.0.0"));
+        """
+        .formatted(providerImport);
   }
 
   private static final class TestableLauncher extends ExternalBrowserLauncher {
