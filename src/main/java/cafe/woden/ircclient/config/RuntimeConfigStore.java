@@ -1,6 +1,5 @@
 package cafe.woden.ircclient.config;
 
-import cafe.woden.ircclient.config.api.AppearanceRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.config.api.IrcSessionRuntimeConfigPort;
@@ -43,8 +42,7 @@ import org.springframework.stereotype.Component;
 @SecondaryAdapter
 @ApplicationLayer
 public class RuntimeConfigStore
-    implements AppearanceRuntimeConfigPort,
-        IrcSessionRuntimeConfigPort,
+    implements IrcSessionRuntimeConfigPort,
         ServerTreeBuiltInVisibilityConfigPort,
         ServerTreeChannelStateConfigPort,
         ServerTreeLayoutConfigPort,

@@ -4,6 +4,7 @@ import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.AppearanceRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatHistoryRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
@@ -73,7 +74,7 @@ final class PreferencesCommitSupport {
     ChatBehaviorControlsSupport.rememberServerTreeSettings(
         request.chatBehaviorRuntimeConfig(), snapshot.chatBehavior());
     AppearanceControlsSupport.rememberServerTreeSettings(
-        request.runtimeConfig(), snapshot.serverTreeAppearance());
+        request.appearanceRuntimeConfig(), snapshot.serverTreeAppearance());
     request
         .settingsBus()
         .setNickCompletionCycleWithTabEnabled(
@@ -114,7 +115,8 @@ final class PreferencesCommitSupport {
       UiSettings next) {
     RuntimeConfigStore runtimeConfig = request.runtimeConfig();
 
-    AppearanceControlsSupport.rememberAccentSettings(runtimeConfig, appearance.accent());
+    AppearanceControlsSupport.rememberAccentSettings(
+        request.appearanceRuntimeConfig(), appearance.accent());
 
     if (request.tweakSettingsBus() != null) {
       request.tweakSettingsBus().set(appearance.tweaks());
@@ -123,11 +125,13 @@ final class PreferencesCommitSupport {
     if (request.chatThemeSettingsBus() != null && appearance.chatThemeChanged()) {
       request.chatThemeSettingsBus().set(appearance.chatTheme());
     }
-    AppearanceControlsSupport.rememberTweakSettings(runtimeConfig, appearance.tweaks());
+    AppearanceControlsSupport.rememberTweakSettings(
+        request.appearanceRuntimeConfig(), appearance.tweaks());
 
     runtimeConfig.rememberUiSettings(next.theme(), next.chatFontFamily(), next.chatFontSize());
     MemoryControlsSupport.rememberSettings(runtimeConfig, snapshot.memory());
-    AppearanceControlsSupport.rememberChatThemeSettings(runtimeConfig, appearance.chatTheme());
+    AppearanceControlsSupport.rememberChatThemeSettings(
+        request.appearanceRuntimeConfig(), appearance.chatTheme());
     runtimeConfig.rememberAutoConnectOnStart(next.autoConnectOnStart());
     runtimeConfig.rememberLaunchJvmJavaCommand(snapshot.launchJvm().javaCommand());
     runtimeConfig.rememberLaunchJvmXmsMiB(snapshot.launchJvm().xmsMiB());
@@ -233,6 +237,7 @@ final class PreferencesCommitSupport {
   record CommitRequest(
       PreferencesApplySupport.Snapshot snapshot,
       RuntimeConfigStore runtimeConfig,
+      AppearanceRuntimeConfigPort appearanceRuntimeConfig,
       ChatBehaviorRuntimeConfigPort chatBehaviorRuntimeConfig,
       ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
       ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig,
