@@ -16,7 +16,6 @@ import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayout;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeRootSiblingOrder;
 import cafe.woden.ircclient.config.api.ServerTreeRuntimeConfigPort;
-import cafe.woden.ircclient.config.api.TrayRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
 import cafe.woden.ircclient.config.properties.PushyProperties;
@@ -48,7 +47,6 @@ public class RuntimeConfigStore
         ServerTreeLayoutConfigPort,
         ServerTreeRuntimeConfigPort,
         ServerAutoConnectRuntimeConfigPort,
-        TrayRuntimeConfigPort,
         UiShellRuntimeConfigPort,
         UiSettingsRuntimeConfigPort {
 

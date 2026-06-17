@@ -18,6 +18,7 @@ import cafe.woden.ircclient.config.api.NotificationRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.OutgoingMessageRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.SpellcheckRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.TimestampRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.TrayRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UserCommandAliasesConfigPort;
 import cafe.woden.ircclient.irc.backend.IrcHeartbeatMaintenanceService;
 import cafe.woden.ircclient.model.TargetRef;
@@ -139,7 +140,7 @@ final class PreferencesCommitSupport {
     runtimeConfig.rememberLaunchJvmGc(snapshot.launchJvm().gc());
     runtimeConfig.rememberLaunchJvmArgs(snapshot.launchJvm().args());
     TrayControlsSupport.rememberSettings(
-        runtimeConfig,
+        request.trayRuntimeConfig(),
         request.notificationSoundSettingsBus(),
         request.pushySettingsBus(),
         request.updateNotifierService(),
@@ -239,6 +240,7 @@ final class PreferencesCommitSupport {
       RuntimeConfigStore runtimeConfig,
       AppearanceRuntimeConfigPort appearanceRuntimeConfig,
       ChatBehaviorRuntimeConfigPort chatBehaviorRuntimeConfig,
+      TrayRuntimeConfigPort trayRuntimeConfig,
       ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
       ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig,
       DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,

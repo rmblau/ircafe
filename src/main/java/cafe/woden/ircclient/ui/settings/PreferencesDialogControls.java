@@ -11,6 +11,7 @@ import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.config.api.TrayRuntimeConfigPort;
 import cafe.woden.ircclient.config.properties.LogProperties;
 import cafe.woden.ircclient.config.properties.PushyProperties;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionCatalog;
@@ -158,7 +159,7 @@ record PreferencesDialogControls(
             request.current(),
             initialNotificationSoundSettings(request),
             initialPushySettings(request),
-            request.runtimeConfig(),
+            request.trayRuntimeConfig(),
             request.gnomeDbusBackend(),
             request.trayNotificationService(),
             request.notificationSoundService(),
@@ -490,6 +491,7 @@ record PreferencesDialogControls(
       ChatThemeSettingsBus chatThemeSettingsBus,
       SpellcheckSettingsBus spellcheckSettingsBus,
       RuntimeConfigStore runtimeConfig,
+      TrayRuntimeConfigPort trayRuntimeConfig,
       ChatBehaviorRuntimeConfigPort chatBehaviorRuntimeConfig,
       ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
       ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig,
