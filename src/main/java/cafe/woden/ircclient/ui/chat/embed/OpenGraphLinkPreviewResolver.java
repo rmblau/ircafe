@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
 import java.io.ByteArrayInputStream;
 import java.net.URI;
 
@@ -12,7 +14,8 @@ final class OpenGraphLinkPreviewResolver implements LinkPreviewResolver {
   }
 
   @Override
-  public LinkPreview tryResolve(URI uri, String originalUrl, PreviewHttp http) throws Exception {
+  public LinkPreview tryResolve(URI uri, String originalUrl, LinkPreviewHttp http)
+      throws Exception {
     var resp = http.getStream(uri, "text/html,application/xhtml+xml;q=0.9,*/*;q=0.8", null);
 
     int status = resp.statusCode();

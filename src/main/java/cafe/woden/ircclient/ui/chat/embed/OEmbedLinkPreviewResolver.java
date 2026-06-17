@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
 import cafe.woden.ircclient.ui.chat.embed.spi.OEmbedLinkPreviewProvider;
 import cafe.woden.ircclient.ui.chat.embed.spi.OEmbedResponseFields;
 import java.net.URI;
@@ -28,7 +30,7 @@ final class OEmbedLinkPreviewResolver implements LinkPreviewResolver {
   }
 
   @Override
-  public LinkPreview tryResolve(URI uri, String originalUrl, PreviewHttp http) {
+  public LinkPreview tryResolve(URI uri, String originalUrl, LinkPreviewHttp http) {
     try {
       if (uri == null || originalUrl == null || http == null) return null;
 

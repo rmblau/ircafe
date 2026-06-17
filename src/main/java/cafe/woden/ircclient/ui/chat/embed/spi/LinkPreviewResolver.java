@@ -1,5 +1,6 @@
-package cafe.woden.ircclient.ui.chat.embed;
+package cafe.woden.ircclient.ui.chat.embed.spi;
 
+import cafe.woden.ircclient.ui.chat.embed.LinkPreview;
 import java.net.URI;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 
@@ -10,10 +11,10 @@ import org.jmolecules.architecture.layered.InterfaceLayer;
  * they apply but fail in a meaningful way.
  *
  * <p>Plugins register implementations in {@code
- * META-INF/services/cafe.woden.ircclient.ui.chat.embed.LinkPreviewResolver}.
+ * META-INF/services/cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver}.
  */
 @InterfaceLayer
 public interface LinkPreviewResolver {
 
-  LinkPreview tryResolve(URI uri, String originalUrl, PreviewHttp http) throws Exception;
+  LinkPreview tryResolve(URI uri, String originalUrl, LinkPreviewHttp http) throws Exception;
 }

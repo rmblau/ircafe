@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.chat.embed;
 import cafe.woden.ircclient.net.HttpHeaderNames;
 import cafe.woden.ircclient.net.HttpLite;
 import cafe.woden.ircclient.net.ProxyPlan;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,7 +25,7 @@ import org.slf4j.LoggerFactory;
  * applied (the JDK {@code java.net.http.HttpClient} does not support SOCKS).
  */
 @InterfaceLayer
-public final class PreviewHttp {
+public final class PreviewHttp implements LinkPreviewHttp {
 
   private static final Logger log = LoggerFactory.getLogger(PreviewHttp.class);
 

@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;

@@ -228,6 +228,8 @@ import cafe.woden.ircclient.ui.SwingUiEventAdapter;
 import cafe.woden.ircclient.ui.SwingUiPort;
 import cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider;
 import cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
 import cafe.woden.ircclient.ui.chat.embed.spi.NewsPublisherProfile;
 import cafe.woden.ircclient.ui.chat.embed.spi.NewsPublisherProfileProvider;
 import cafe.woden.ircclient.ui.chat.embed.spi.OEmbedLinkPreviewProvider;
@@ -635,6 +637,8 @@ class JmoleculesIncrementalAdoptionTest {
     assertAnnotated(SwingUiPort.class, InterfaceLayer.class);
     assertAnnotated(EmbedHttpHeaderProvider.class, InterfaceLayer.class);
     assertAnnotated(ImageUrlExtensionProvider.class, InterfaceLayer.class);
+    assertAnnotated(LinkPreviewHttp.class, InterfaceLayer.class);
+    assertAnnotated(LinkPreviewResolver.class, InterfaceLayer.class);
     assertAnnotated(NewsPublisherProfile.class, InterfaceLayer.class);
     assertAnnotated(NewsPublisherProfileProvider.class, InterfaceLayer.class);
     assertAnnotated(OEmbedLinkPreviewProvider.class, InterfaceLayer.class);

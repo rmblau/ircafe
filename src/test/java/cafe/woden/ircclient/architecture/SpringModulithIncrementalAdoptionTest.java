@@ -177,6 +177,8 @@ import cafe.woden.ircclient.ui.application.RuntimeEventsPanel;
 import cafe.woden.ircclient.ui.chat.ChatDockManager;
 import cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider;
 import cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
 import cafe.woden.ircclient.ui.chat.embed.spi.NewsPublisherProfile;
 import cafe.woden.ircclient.ui.chat.embed.spi.NewsPublisherProfileProvider;
 import cafe.woden.ircclient.ui.chat.embed.spi.OEmbedLinkPreviewProvider;
@@ -453,6 +455,8 @@ class SpringModulithIncrementalAdoptionTest {
         "chat-embed-spi",
         EmbedHttpHeaderProvider.class,
         ImageUrlExtensionProvider.class,
+        LinkPreviewHttp.class,
+        LinkPreviewResolver.class,
         NewsPublisherProfile.class,
         NewsPublisherProfileProvider.class,
         OEmbedLinkPreviewProvider.class,

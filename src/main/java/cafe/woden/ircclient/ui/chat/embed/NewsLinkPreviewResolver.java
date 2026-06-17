@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
 import cafe.woden.ircclient.ui.chat.embed.spi.NewsPublisherProfile;
 import java.io.ByteArrayInputStream;
 import java.net.URI;
@@ -25,7 +27,8 @@ final class NewsLinkPreviewResolver implements LinkPreviewResolver {
   }
 
   @Override
-  public LinkPreview tryResolve(URI uri, String originalUrl, PreviewHttp http) throws Exception {
+  public LinkPreview tryResolve(URI uri, String originalUrl, LinkPreviewHttp http)
+      throws Exception {
     if (!NewsPreviewUtil.isLikelyNewsArticleUri(uri, publisherProfiles)) {
       return null;
     }

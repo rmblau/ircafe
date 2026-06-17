@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
 import java.net.URI;
 import java.util.Locale;
 
@@ -7,7 +9,7 @@ import java.util.Locale;
 final class RedditLinkPreviewResolver implements LinkPreviewResolver {
 
   @Override
-  public LinkPreview tryResolve(URI uri, String originalUrl, PreviewHttp http) {
+  public LinkPreview tryResolve(URI uri, String originalUrl, LinkPreviewHttp http) {
     try {
       if (uri == null || originalUrl == null) return null;
       String host = uri.getHost();

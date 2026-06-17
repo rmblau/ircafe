@@ -1,11 +1,13 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
 import java.net.URI;
 
 final class GitHubLinkPreviewResolver implements LinkPreviewResolver {
 
   @Override
-  public LinkPreview tryResolve(URI uri, String originalUrl, PreviewHttp http) {
+  public LinkPreview tryResolve(URI uri, String originalUrl, LinkPreviewHttp http) {
     try {
       GitHubPreviewUtil.GitHubLink link = GitHubPreviewUtil.parse(uri);
       if (link == null) return null;

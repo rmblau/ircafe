@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.net.URI;
 import java.nio.file.Files;
@@ -58,12 +60,12 @@ class LinkPreviewFetchServiceTest {
         package cafe.woden.ircclient.testplugins;
 
         import cafe.woden.ircclient.ui.chat.embed.LinkPreview;
-        import cafe.woden.ircclient.ui.chat.embed.LinkPreviewResolver;
-        import cafe.woden.ircclient.ui.chat.embed.PreviewHttp;
+        import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
+        import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
         import java.net.URI;
 
         public final class PluginLinkPreviewResolver implements LinkPreviewResolver {
-          public LinkPreview tryResolve(URI uri, String originalUrl, PreviewHttp http) {
+          public LinkPreview tryResolve(URI uri, String originalUrl, LinkPreviewHttp http) {
             if (!"plugin.example".equals(uri.getHost())) return null;
             return new LinkPreview(
                 originalUrl, "Plugin preview", "from plugin jar", "Plugin", null, 0);
@@ -101,7 +103,7 @@ class LinkPreviewFetchServiceTest {
 
   private static final class PluginLinkPreviewResolver implements LinkPreviewResolver {
     @Override
-    public LinkPreview tryResolve(URI uri, String originalUrl, PreviewHttp http) {
+    public LinkPreview tryResolve(URI uri, String originalUrl, LinkPreviewHttp http) {
       if (!"plugin.example".equals(uri.getHost())) {
         return null;
       }

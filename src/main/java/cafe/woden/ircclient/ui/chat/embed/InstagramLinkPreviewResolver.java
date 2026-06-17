@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
 import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.util.ArrayList;
@@ -25,7 +27,8 @@ final class InstagramLinkPreviewResolver implements LinkPreviewResolver {
   }
 
   @Override
-  public LinkPreview tryResolve(URI uri, String originalUrl, PreviewHttp http) throws Exception {
+  public LinkPreview tryResolve(URI uri, String originalUrl, LinkPreviewHttp http)
+      throws Exception {
     if (!InstagramPreviewUtil.isInstagramPostUri(uri)) {
       return null;
     }
@@ -73,7 +76,7 @@ final class InstagramLinkPreviewResolver implements LinkPreviewResolver {
     return primary;
   }
 
-  private LinkPreview tryFetchAndParse(URI fetchUri, String originalUrl, PreviewHttp http)
+  private LinkPreview tryFetchAndParse(URI fetchUri, String originalUrl, LinkPreviewHttp http)
       throws Exception {
     if (fetchUri == null) return null;
 
@@ -107,7 +110,7 @@ final class InstagramLinkPreviewResolver implements LinkPreviewResolver {
     return p;
   }
 
-  private String tryLegacyMediaEndpoint(URI originalUri, PreviewHttp http) {
+  private String tryLegacyMediaEndpoint(URI originalUri, LinkPreviewHttp http) {
     try {
       URI mediaUri = legacyMediaUri(originalUri);
       if (mediaUri == null) return null;

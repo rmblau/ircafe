@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
@@ -45,7 +47,7 @@ final class RottenTomatoesLinkPreviewResolver implements LinkPreviewResolver {
       Pattern.compile("\\b(\\d{1,3})m\\b", Pattern.CASE_INSENSITIVE);
 
   @Override
-  public LinkPreview tryResolve(URI uri, String originalUrl, PreviewHttp http) {
+  public LinkPreview tryResolve(URI uri, String originalUrl, LinkPreviewHttp http) {
     try {
       if (!RottenTomatoesPreviewUtil.isRottenTomatoesTitleUri(uri)) return null;
 

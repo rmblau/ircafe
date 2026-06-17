@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
@@ -24,7 +26,7 @@ final class ImdbLinkPreviewResolver implements LinkPreviewResolver {
       List.of("Movie", "TVSeries", "TVEpisode", "VideoGame");
 
   @Override
-  public LinkPreview tryResolve(URI uri, String originalUrl, PreviewHttp http) {
+  public LinkPreview tryResolve(URI uri, String originalUrl, LinkPreviewHttp http) {
     try {
       if (!ImdbPreviewUtil.isImdbTitleUri(uri)) return null;
 

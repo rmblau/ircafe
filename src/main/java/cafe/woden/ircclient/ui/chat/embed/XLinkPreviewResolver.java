@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
 import java.io.ByteArrayInputStream;
 import java.net.URI;
 
@@ -13,7 +15,7 @@ final class XLinkPreviewResolver implements LinkPreviewResolver {
   }
 
   @Override
-  public LinkPreview tryResolve(URI uri, String originalUrl, PreviewHttp http) {
+  public LinkPreview tryResolve(URI uri, String originalUrl, LinkPreviewHttp http) {
     try {
       if (uri == null) return null;
       String id = XPreviewUtil.extractStatusId(uri);
@@ -48,7 +50,7 @@ final class XLinkPreviewResolver implements LinkPreviewResolver {
     }
   }
 
-  private LinkPreview tryOEmbed(URI statusUri, String statusId, PreviewHttp http) {
+  private LinkPreview tryOEmbed(URI statusUri, String statusId, LinkPreviewHttp http) {
     try {
       URI api = XPreviewUtil.oEmbedApiUri(statusId);
       if (api == null) return null;
@@ -66,7 +68,7 @@ final class XLinkPreviewResolver implements LinkPreviewResolver {
     }
   }
 
-  private LinkPreview tryProxy(URI statusUri, PreviewHttp http) {
+  private LinkPreview tryProxy(URI statusUri, LinkPreviewHttp http) {
     try {
       for (URI proxy : XPreviewUtil.proxyUnfurlCandidates(statusUri)) {
         if (proxy == null) continue;
