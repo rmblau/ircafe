@@ -2,6 +2,8 @@ package cafe.woden.ircclient.irc.ircv3;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -59,6 +61,17 @@ class Ircv3ExtensionRegistryTest {
             "chathistory",
             "core-misc"),
         Ircv3ExtensionRegistry.providerIds());
+  }
+
+  @Test
+  void serviceDescriptorUsesCanonicalSpiProviderName() {
+    ClassLoader classLoader = Ircv3ExtensionProvider.class.getClassLoader();
+
+    assertNotNull(
+        classLoader.getResource("META-INF/services/" + Ircv3ExtensionProvider.class.getName()));
+    assertNull(
+        classLoader.getResource(
+            "META-INF/services/cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionDefinitionProvider"));
   }
 
   @Test
