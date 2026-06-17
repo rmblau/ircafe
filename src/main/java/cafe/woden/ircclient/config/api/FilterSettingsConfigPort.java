@@ -11,6 +11,8 @@ import org.jmolecules.architecture.layered.ApplicationLayer;
 @ApplicationLayer
 public interface FilterSettingsConfigPort {
 
+  FilterSettingsSnapshot readFilterSettings();
+
   void rememberFiltersEnabledByDefault(boolean enabled);
 
   void rememberFilterPlaceholdersEnabledByDefault(boolean enabled);
@@ -30,4 +32,21 @@ public interface FilterSettingsConfigPort {
   void rememberFilterRules(List<FilterRule> rules);
 
   void rememberFilterOverrides(List<FilterScopeOverride> overrides);
+
+  record FilterSettingsSnapshot(
+      boolean filtersEnabledByDefault,
+      boolean placeholdersEnabledByDefault,
+      boolean placeholdersCollapsedByDefault,
+      int placeholderMaxPreviewLines,
+      int placeholderMaxLinesPerRun,
+      int placeholderTooltipMaxTags,
+      int historyPlaceholderMaxRunsPerBatch,
+      boolean historyPlaceholdersEnabledByDefault,
+      List<FilterRule> rules,
+      List<FilterScopeOverride> overrides) {
+    public FilterSettingsSnapshot {
+      rules = rules == null ? List.of() : List.copyOf(rules);
+      overrides = overrides == null ? List.of() : List.copyOf(overrides);
+    }
+  }
 }
