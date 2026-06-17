@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,7 +26,7 @@ class Ircv3ExtensionProviderGuideFixtureTest {
         pluginDir.resolve("ircv3-guide-example.jar"),
         GUIDE_PROVIDER_CLASS,
         guideProviderSource(),
-        Ircv3ExtensionDefinitionProvider.class.getName(),
+        Ircv3ExtensionProvider.class.getName(),
         CompiledPluginJarSupport.compatibleManifest("ircv3-guide-example", "1.0.0"));
     RuntimeConfigPathPort runtimeConfigPathPort =
         () -> runtimeConfigDirectory.resolve("ircafe.yml");
@@ -47,11 +48,11 @@ class Ircv3ExtensionProviderGuideFixtureTest {
     return """
         package example.ircv3;
 
-        import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionDefinitionProvider;
         import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionRegistry;
+        import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider;
         import java.util.List;
 
-        public final class ExampleIrcv3Provider implements Ircv3ExtensionDefinitionProvider {
+        public final class ExampleIrcv3Provider implements Ircv3ExtensionProvider {
 
           @Override
           public String providerId() {

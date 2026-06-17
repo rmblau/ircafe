@@ -2,7 +2,9 @@ package cafe.woden.ircclient.irc.ircv3;
 
 import cafe.woden.ircclient.config.api.InstalledPluginProblem;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -37,7 +39,7 @@ public final class Ircv3ExtensionCatalog {
   }
 
   public static Ircv3ExtensionCatalog forProviders(
-      List<Ircv3ExtensionDefinitionProvider> providers) {
+      List<? extends Ircv3ExtensionProvider> providers) {
     return new Ircv3ExtensionCatalog(Ircv3ExtensionRegistry.snapshotForProviders(providers));
   }
 
@@ -90,9 +92,7 @@ public final class Ircv3ExtensionCatalog {
     if (installedPlugins == null) {
       return Ircv3ExtensionRegistry.snapshot();
     }
-    List<Ircv3ExtensionDefinitionProvider> providers =
-        installedPlugins.loadInstalledServices(
-            Ircv3ExtensionDefinitionProvider.class, Ircv3ExtensionRegistry.defaultProviders());
+    List<Ircv3ExtensionProvider> providers = loadInstalledProviders(installedPlugins);
     try {
       return Ircv3ExtensionRegistry.snapshotForProviders(providers);
     } catch (RuntimeException error) {
@@ -107,12 +107,32 @@ public final class Ircv3ExtensionCatalog {
     }
   }
 
+  private static List<Ircv3ExtensionProvider> loadInstalledProviders(
+      InstalledPluginsPort installedPlugins) {
+    ArrayList<Ircv3ExtensionProvider> providers = new ArrayList<>();
+    providers.addAll(
+        installedPlugins.loadInstalledServices(
+            Ircv3ExtensionProvider.class, Ircv3ExtensionRegistry.defaultProviders()));
+    providers.addAll(
+        installedPlugins.loadInstalledServices(Ircv3ExtensionDefinitionProvider.class, List.of()));
+
+    LinkedHashSet<String> providerClassNames = new LinkedHashSet<>();
+    ArrayList<Ircv3ExtensionProvider> deduped = new ArrayList<>();
+    for (Ircv3ExtensionProvider provider : providers) {
+      if (provider == null || !providerClassNames.add(provider.getClass().getName())) {
+        continue;
+      }
+      deduped.add(provider);
+    }
+    return List.copyOf(deduped);
+  }
+
   private static String buildConflictDetails(
-      List<Ircv3ExtensionDefinitionProvider> providers, RuntimeException error) {
+      List<? extends Ircv3ExtensionProvider> providers, RuntimeException error) {
     ArrayList<String> pluginProviderIds = new ArrayList<>();
-    List<Ircv3ExtensionDefinitionProvider> safeProviders =
+    List<? extends Ircv3ExtensionProvider> safeProviders =
         providers != null ? providers : List.of();
-    for (Ircv3ExtensionDefinitionProvider provider : safeProviders) {
+    for (Ircv3ExtensionProvider provider : safeProviders) {
       if (provider == null) {
         continue;
       }

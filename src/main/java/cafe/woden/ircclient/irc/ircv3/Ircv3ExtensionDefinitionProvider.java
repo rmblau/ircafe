@@ -1,19 +1,12 @@
 package cafe.woden.ircclient.irc.ircv3;
 
-import java.util.List;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider;
 
-/** Internal SPI for contributing IRCv3 extension metadata to the registry. */
-public interface Ircv3ExtensionDefinitionProvider {
-
-  String providerId();
-
-  int sortOrder();
-
-  default List<Ircv3ExtensionRegistry.ExtensionDefinition> extensions() {
-    return List.of();
-  }
-
-  default List<Ircv3ExtensionRegistry.FeatureDefinition> visibleFeatures() {
-    return List.of();
-  }
-}
+/**
+ * Legacy IRCv3 extension provider service name.
+ *
+ * @deprecated register {@link Ircv3ExtensionProvider} implementations under {@code
+ *     META-INF/services/cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider}.
+ */
+@Deprecated(since = "0.1", forRemoval = false)
+public interface Ircv3ExtensionDefinitionProvider extends Ircv3ExtensionProvider {}

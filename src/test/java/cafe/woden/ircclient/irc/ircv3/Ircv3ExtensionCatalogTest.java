@@ -9,6 +9,7 @@ import cafe.woden.ircclient.config.api.InstalledPluginProblem;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -21,6 +22,7 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 class Ircv3ExtensionCatalogTest {
 
   private static final String PLUGIN_PROVIDER_CLASS = "plugin.ircv3.RuntimeIrcv3ExtensionProvider";
+  private static final String SPI_PROVIDER_CLASS = "plugin.ircv3.RuntimeIrcv3SpiProvider";
 
   private final ApplicationContextRunner runner =
       new ApplicationContextRunner()
@@ -80,6 +82,28 @@ class Ircv3ExtensionCatalogTest {
     assertTrue(
         catalog.visibleFeatures().stream()
             .anyMatch(feature -> "Example feature".equals(feature.label())));
+  }
+
+  @Test
+  void runtimeCatalogLoadsInstalledIrcv3ExtensionSpiProviders() throws Exception {
+    Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
+    Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
+    CompiledPluginJarSupport.writePluginJar(
+        pluginDir.resolve("example-ircv3-spi-provider.jar"),
+        SPI_PROVIDER_CLASS,
+        spiProviderSource(),
+        Ircv3ExtensionProvider.class.getName(),
+        CompiledPluginJarSupport.compatibleManifest("example-ircv3-spi-provider", "1.0.0"));
+    RuntimeConfigPathPort runtimeConfigPathPort =
+        () -> runtimeConfigDirectory.resolve("ircafe.yml");
+
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+    Ircv3ExtensionCatalog catalog = new Ircv3ExtensionCatalog(installedPlugins);
+
+    assertTrue(installedPlugins.pluginProblems().isEmpty());
+    assertTrue(catalog.providerIds().contains("plugin-spi-example"));
+    assertEquals("draft/spi-example-cap", catalog.requestTokenFor("spi-example-cap"));
+    assertEquals("spi-example-cap", catalog.preferenceKeyFor("draft/spi-example-cap"));
   }
 
   @Test
@@ -175,6 +199,45 @@ class Ircv3ExtensionCatalogTest {
                     "Example feature",
                     List.of("message-tags"),
                     List.of("example-cap", "draft/example-cap")));
+          }
+        }
+        """;
+  }
+
+  private static String spiProviderSource() {
+    return """
+        package plugin.ircv3;
+
+        import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionRegistry;
+        import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider;
+        import java.util.List;
+
+        public final class RuntimeIrcv3SpiProvider implements Ircv3ExtensionProvider {
+          @Override
+          public String providerId() {
+            return "plugin-spi-example";
+          }
+
+          @Override
+          public int sortOrder() {
+            return 960;
+          }
+
+          @Override
+          public List<Ircv3ExtensionRegistry.ExtensionDefinition> extensions() {
+            return List.of(
+                new Ircv3ExtensionRegistry.ExtensionDefinition(
+                    "spi-example-cap",
+                    Ircv3ExtensionRegistry.ExtensionKind.CAPABILITY,
+                    Ircv3ExtensionRegistry.SpecStatus.DRAFT,
+                    List.of("draft/spi-example-cap"),
+                    "draft/spi-example-cap",
+                    "spi-example-cap",
+                    new Ircv3ExtensionRegistry.UiMetadata(
+                        "SPI example capability (draft)",
+                        Ircv3ExtensionRegistry.UiGroup.OTHER,
+                        920,
+                        "Adds an example SPI plugin-provided capability.")));
           }
         }
         """;
