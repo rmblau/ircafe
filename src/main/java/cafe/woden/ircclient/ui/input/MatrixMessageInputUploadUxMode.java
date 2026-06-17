@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.ui.input;
 
+import cafe.woden.ircclient.ui.input.spi.MatrixUploadMsgTypeProvider;
+import cafe.woden.ircclient.ui.input.spi.MatrixUploadMsgTypeRule;
 import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.io.File;
 import java.nio.file.Path;

@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
+import cafe.woden.ircclient.ui.input.spi.MessageInputWordSuggestionProvider;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -86,7 +87,7 @@ class CompositeMessageInputWordSuggestionProviderTest {
     return """
         package plugin.input;
 
-        import cafe.woden.ircclient.ui.input.MessageInputWordSuggestionProvider;
+        import cafe.woden.ircclient.ui.input.spi.MessageInputWordSuggestionProvider;
         import java.util.List;
 
         public final class PluginWordSuggestionProvider

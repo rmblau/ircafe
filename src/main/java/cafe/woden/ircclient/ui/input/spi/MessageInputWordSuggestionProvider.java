@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.input;
+package cafe.woden.ircclient.ui.input.spi;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -8,7 +8,7 @@ import org.jmolecules.architecture.layered.InterfaceLayer;
  * ServiceLoader-backed contribution point for message input completion popup suggestions.
  *
  * <p>Plugins register implementations in {@code
- * META-INF/services/cafe.woden.ircclient.ui.input.MessageInputWordSuggestionProvider}.
+ * META-INF/services/cafe.woden.ircclient.ui.input.spi.MessageInputWordSuggestionProvider}.
  */
 @InterfaceLayer
 public interface MessageInputWordSuggestionProvider {

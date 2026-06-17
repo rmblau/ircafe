@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import cafe.woden.ircclient.app.commands.BackendNamedCommandCatalog;
 import cafe.woden.ircclient.app.commands.QuasselBackendNamedCommandHandler;
 import cafe.woden.ircclient.app.commands.SlashCommandPresentationCatalog;
+import cafe.woden.ircclient.ui.input.spi.MessageInputWordSuggestionProvider;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;

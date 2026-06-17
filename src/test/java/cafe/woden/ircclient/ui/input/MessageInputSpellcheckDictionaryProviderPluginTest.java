@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
+import cafe.woden.ircclient.ui.input.spi.MessageInputSpellcheckDictionaryProvider;
 import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettings;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.lang.reflect.Method;
@@ -50,7 +51,7 @@ class MessageInputSpellcheckDictionaryProviderPluginTest {
         """
         package cafe.woden.ircclient.testplugins;
 
-        import cafe.woden.ircclient.ui.input.MessageInputSpellcheckDictionaryProvider;
+        import cafe.woden.ircclient.ui.input.spi.MessageInputSpellcheckDictionaryProvider;
         import java.util.List;
 
         public final class PluginSpellcheckDictionary

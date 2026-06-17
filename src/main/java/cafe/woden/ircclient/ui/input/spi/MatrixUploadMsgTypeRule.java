@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.input;
+package cafe.woden.ircclient.ui.input.spi;
 
 import java.util.Arrays;
 import java.util.Locale;

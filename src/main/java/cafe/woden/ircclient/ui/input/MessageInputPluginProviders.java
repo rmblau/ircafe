@@ -1,6 +1,9 @@
 package cafe.woden.ircclient.ui.input;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.ui.input.spi.MatrixUploadMsgTypeProvider;
+import cafe.woden.ircclient.ui.input.spi.MessageInputSpellcheckDictionaryProvider;
+import cafe.woden.ircclient.ui.input.spi.MessageInputWordSuggestionProvider;
 import java.util.List;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 

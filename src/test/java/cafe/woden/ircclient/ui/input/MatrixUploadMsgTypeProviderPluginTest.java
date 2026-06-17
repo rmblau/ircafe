@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
+import cafe.woden.ircclient.ui.input.spi.MatrixUploadMsgTypeProvider;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.io.File;
 import java.nio.file.Files;
@@ -48,8 +49,8 @@ class MatrixUploadMsgTypeProviderPluginTest {
         """
         package cafe.woden.ircclient.testplugins;
 
-        import cafe.woden.ircclient.ui.input.MatrixUploadMsgTypeProvider;
-        import cafe.woden.ircclient.ui.input.MatrixUploadMsgTypeRule;
+        import cafe.woden.ircclient.ui.input.spi.MatrixUploadMsgTypeProvider;
+        import cafe.woden.ircclient.ui.input.spi.MatrixUploadMsgTypeRule;
         import java.util.List;
 
         public final class PluginMatrixUploadMsgTypes implements MatrixUploadMsgTypeProvider {
