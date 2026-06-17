@@ -1,9 +1,9 @@
 package cafe.woden.ircclient.translation;
 
-import cafe.woden.ircclient.app.translation.MessageTranslationBackend;
 import cafe.woden.ircclient.app.translation.MessageTranslationRequest;
 import cafe.woden.ircclient.app.translation.MessageTranslationResult;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationBackendProvider;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.net.HttpLite;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
 @SecondaryAdapter
 @InfrastructureLayer
 public final class LibreTranslateMessageTranslationBackend
-    extends AbstractHttpMessageTranslationBackend implements MessageTranslationBackend {
+    extends AbstractHttpMessageTranslationBackend implements MessageTranslationBackendProvider {
 
   public static final String BACKEND_ID = "libretranslate";
 

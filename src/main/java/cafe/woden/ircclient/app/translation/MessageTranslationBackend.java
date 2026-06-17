@@ -1,24 +1,12 @@
 package cafe.woden.ircclient.app.translation;
 
-import java.util.concurrent.CompletionStage;
-import org.jmolecules.architecture.hexagonal.SecondaryPort;
-import org.jmolecules.architecture.layered.ApplicationLayer;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationBackendProvider;
 
 /**
- * ServiceLoader-backed secondary port implemented by translation service backends.
+ * Legacy translation backend service name.
  *
- * <p>Plugins register implementations in {@code
- * META-INF/services/cafe.woden.ircclient.app.translation.MessageTranslationBackend}.
+ * @deprecated register {@link MessageTranslationBackendProvider} implementations under {@code
+ *     META-INF/services/cafe.woden.ircclient.app.translation.spi.MessageTranslationBackendProvider}.
  */
-@SecondaryPort
-@ApplicationLayer
-public interface MessageTranslationBackend {
-
-  /**
-   * Stable configuration identifier, for example {@code deepl}, {@code libretranslate}, or {@code
-   * google-web}.
-   */
-  String backendId();
-
-  CompletionStage<MessageTranslationResult> translate(MessageTranslationRequest request);
-}
+@Deprecated(since = "0.1", forRemoval = false)
+public interface MessageTranslationBackend extends MessageTranslationBackendProvider {}

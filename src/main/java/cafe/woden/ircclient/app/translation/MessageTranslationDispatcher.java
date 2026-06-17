@@ -2,6 +2,7 @@ package cafe.woden.ircclient.app.translation;
 
 import cafe.woden.ircclient.app.api.MessageTranslation;
 import cafe.woden.ircclient.app.api.UiPort;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationBackendProvider;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.execution.ExecutorConfig;
@@ -113,7 +114,8 @@ public final class MessageTranslationDispatcher {
       return false;
     }
 
-    Optional<MessageTranslationBackend> backend = backendRegistry.find(translation.backendId());
+    Optional<MessageTranslationBackendProvider> backend =
+        backendRegistry.find(translation.backendId());
     if (backend.isEmpty()) {
       logManualSkip(
           automatic, "configured backend is not registered (backend={})", translation.backendId());
@@ -167,7 +169,7 @@ public final class MessageTranslationDispatcher {
   }
 
   private void runTranslationWithPreflight(
-      MessageTranslationBackend backend,
+      MessageTranslationBackendProvider backend,
       MessageTranslationRequest request,
       long timeoutMs,
       boolean suppressSameLanguageResult,
@@ -224,7 +226,7 @@ public final class MessageTranslationDispatcher {
   }
 
   private void runTranslation(
-      MessageTranslationBackend backend,
+      MessageTranslationBackendProvider backend,
       MessageTranslationRequest request,
       long timeoutMs,
       boolean suppressSameLanguageResult) {
@@ -311,7 +313,7 @@ public final class MessageTranslationDispatcher {
   }
 
   private static MessageTranslation toMessageTranslation(
-      MessageTranslationBackend backend,
+      MessageTranslationBackendProvider backend,
       MessageTranslationRequest request,
       MessageTranslationResult result) {
     String sourceLanguage = firstNonBlank(result.sourceLanguage(), request.sourceLanguage());

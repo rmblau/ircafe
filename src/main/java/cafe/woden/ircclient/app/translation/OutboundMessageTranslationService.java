@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.app.translation;
 
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationBackendProvider;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.execution.ExecutorConfig;
 import cafe.woden.ircclient.model.TargetRef;
@@ -59,7 +60,8 @@ public class OutboundMessageTranslationService {
       return failedFuture(new IllegalArgumentException("Choose a target language."));
     }
 
-    MessageTranslationBackend backend = backendRegistry.find(settings.backendId()).orElse(null);
+    MessageTranslationBackendProvider backend =
+        backendRegistry.find(settings.backendId()).orElse(null);
     if (backend == null) {
       return failedFuture(
           new IllegalStateException("Translation backend is unavailable: " + settings.backendId()));
