@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.embed;
+package cafe.woden.ircclient.ui.chat.embed.spi;
 
 import java.net.URI;
 import org.jmolecules.architecture.layered.InterfaceLayer;
@@ -8,7 +8,7 @@ import org.jmolecules.architecture.layered.InterfaceLayer;
  * resolver.
  *
  * <p>Register implementations with {@code
- * META-INF/services/cafe.woden.ircclient.ui.chat.embed.OEmbedLinkPreviewProvider}.
+ * META-INF/services/cafe.woden.ircclient.ui.chat.embed.spi.OEmbedLinkPreviewProvider}.
  */
 @InterfaceLayer
 public interface OEmbedLinkPreviewProvider {

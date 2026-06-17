@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
+import cafe.woden.ircclient.ui.chat.embed.spi.NewsPublisherProfile;
+import cafe.woden.ircclient.ui.chat.embed.spi.NewsPublisherProfileProvider;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.net.URI;
 import java.nio.file.Files;
@@ -73,8 +75,8 @@ class NewsPublisherProfileProviderPluginTest {
         """
         package cafe.woden.ircclient.testplugins;
 
-        import cafe.woden.ircclient.ui.chat.embed.NewsPublisherProfile;
-        import cafe.woden.ircclient.ui.chat.embed.NewsPublisherProfileProvider;
+        import cafe.woden.ircclient.ui.chat.embed.spi.NewsPublisherProfile;
+        import cafe.woden.ircclient.ui.chat.embed.spi.NewsPublisherProfileProvider;
         import java.util.List;
 
         public final class PluginNewsPublisherProvider implements NewsPublisherProfileProvider {

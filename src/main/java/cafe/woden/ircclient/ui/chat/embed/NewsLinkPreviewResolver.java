@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.ui.chat.embed.spi.NewsPublisherProfile;
 import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.util.List;

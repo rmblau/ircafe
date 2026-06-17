@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.embed;
+package cafe.woden.ircclient.ui.chat.embed.spi;
 
 import org.jmolecules.architecture.layered.InterfaceLayer;
 

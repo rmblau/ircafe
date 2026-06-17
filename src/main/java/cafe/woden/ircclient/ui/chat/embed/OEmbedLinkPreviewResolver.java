@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.ui.chat.embed.spi.OEmbedLinkPreviewProvider;
+import cafe.woden.ircclient.ui.chat.embed.spi.OEmbedResponseFields;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;

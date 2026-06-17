@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.ui.chat.embed;
+package cafe.woden.ircclient.ui.chat.embed.spi;
 
 import java.util.Arrays;
 import java.util.Locale;

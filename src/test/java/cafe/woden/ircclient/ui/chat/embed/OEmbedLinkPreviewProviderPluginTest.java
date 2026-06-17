@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
+import cafe.woden.ircclient.ui.chat.embed.spi.OEmbedLinkPreviewProvider;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -58,8 +59,8 @@ class OEmbedLinkPreviewProviderPluginTest {
         """
         package cafe.woden.ircclient.testplugins;
 
-        import cafe.woden.ircclient.ui.chat.embed.OEmbedLinkPreviewProvider;
-        import cafe.woden.ircclient.ui.chat.embed.OEmbedResponseFields;
+        import cafe.woden.ircclient.ui.chat.embed.spi.OEmbedLinkPreviewProvider;
+        import cafe.woden.ircclient.ui.chat.embed.spi.OEmbedResponseFields;
         import java.net.URI;
         import java.net.URLEncoder;
         import java.nio.charset.StandardCharsets;

@@ -1,6 +1,9 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.ui.chat.embed.spi.NewsPublisherProfile;
+import cafe.woden.ircclient.ui.chat.embed.spi.NewsPublisherProfileProvider;
+import cafe.woden.ircclient.ui.chat.embed.spi.OEmbedLinkPreviewProvider;
 import java.util.List;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 

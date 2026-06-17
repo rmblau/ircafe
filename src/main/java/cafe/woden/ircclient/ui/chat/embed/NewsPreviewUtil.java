@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.ui.chat.embed.spi.NewsPublisherProfile;
+import cafe.woden.ircclient.ui.chat.embed.spi.NewsPublisherProfileProvider;
 import java.net.URI;
 import java.text.BreakIterator;
 import java.time.Instant;
