@@ -45,7 +45,8 @@ public class ImageFetchService {
   private final ConcurrentMap<String, Single<byte[]>> inflight = new ConcurrentHashMap<>();
 
   private final ServerProxyResolver proxyResolver;
-  private final List<EmbedHttpHeaderProvider> headerProviders;
+  private final List<cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider>
+      headerProviders;
 
   public ImageFetchService(ServerProxyResolver proxyResolver) {
     this(proxyResolver, (InstalledPluginsPort) null);
@@ -267,7 +268,9 @@ public class ImageFetchService {
   }
 
   static Map<String, String> headersForEmbedProviders(
-      URI uri, List<? extends EmbedHttpHeaderProvider> headerProviders) {
+      URI uri,
+      List<? extends cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider>
+          headerProviders) {
     Map<String, String> headers = new HashMap<>();
     headers.put(
         PreviewHttp.HEADER_USER_AGENT,
@@ -300,8 +303,8 @@ public class ImageFetchService {
     return Map.copyOf(headers);
   }
 
-  private static List<EmbedHttpHeaderProvider> loadHeaderProviders(
-      InstalledPluginsPort installedPlugins) {
+  private static List<cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider>
+      loadHeaderProviders(InstalledPluginsPort installedPlugins) {
     return EmbedHttpHeaderProviders.loadInstalledProviders(
         installedPlugins, ImageFetchHeaderProvider.class);
   }

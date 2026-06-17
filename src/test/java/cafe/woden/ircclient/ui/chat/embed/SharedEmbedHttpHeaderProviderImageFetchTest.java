@@ -21,15 +21,31 @@ class SharedEmbedHttpHeaderProviderImageFetchTest {
 
   @Test
   void loadsImageFetchHeadersFromSharedEmbedHeaderPluginJar() throws Exception {
+    assertImageFetchHeadersLoadFromSharedEmbedHeaderPluginJar(false);
+  }
+
+  @Test
+  void loadsImageFetchHeadersFromSharedEmbedHeaderSpiPluginJar() throws Exception {
+    assertImageFetchHeadersLoadFromSharedEmbedHeaderPluginJar(true);
+  }
+
+  private void assertImageFetchHeadersLoadFromSharedEmbedHeaderPluginJar(boolean spi)
+      throws Exception {
     Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
     Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
-    writePluginJar(pluginDir.resolve("plugin-shared-embed-image-header.jar"));
+    writePluginJar(
+        pluginDir.resolve(
+            spi
+                ? "plugin-shared-embed-image-header-spi.jar"
+                : "plugin-shared-embed-image-header.jar"),
+        spi);
     RuntimeConfigPathPort runtimeConfigPathPort =
         () -> runtimeConfigDirectory.resolve("ircafe.yml");
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
 
-    List<EmbedHttpHeaderProvider> providers =
-        installedPlugins.loadInstalledServices(EmbedHttpHeaderProvider.class, List.of());
+    List<cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider> providers =
+        EmbedHttpHeaderProviders.loadInstalledProviders(
+            installedPlugins, ImageFetchHeaderProvider.class);
     Map<String, String> headers =
         ImageFetchService.headersForEmbedProviders(
             URI.create("https://cdn.example.test/poster.png"), providers);
@@ -39,13 +55,30 @@ class SharedEmbedHttpHeaderProviderImageFetchTest {
     assertTrue(installedPlugins.pluginProblems().isEmpty());
   }
 
-  private void writePluginJar(Path jarPath) throws Exception {
+  private void writePluginJar(Path jarPath, boolean spi) throws Exception {
     String providerClassName = "cafe.woden.ircclient.testplugins.PluginSharedEmbedHeaders";
     String providerSource =
-        """
+        pluginProviderSource(
+            spi
+                ? "cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider"
+                : "cafe.woden.ircclient.ui.chat.embed.EmbedHttpHeaderProvider");
+    CompiledPluginJarSupport.writePluginJar(
+        jarPath,
+        providerClassName,
+        providerSource,
+        spi
+            ? cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider.class.getName()
+            : EmbedHttpHeaderProvider.class.getName(),
+        CompiledPluginJarSupport.compatibleManifest(
+            spi ? "plugin-shared-embed-image-header-spi" : "plugin-shared-embed-image-header",
+            "1.0.0"));
+  }
+
+  private static String pluginProviderSource(String providerImport) {
+    return """
         package cafe.woden.ircclient.testplugins;
 
-        import cafe.woden.ircclient.ui.chat.embed.EmbedHttpHeaderProvider;
+        import %s;
         import java.net.URI;
         import java.util.Map;
 
@@ -60,12 +93,7 @@ class SharedEmbedHttpHeaderProviderImageFetchTest {
                 \"X-Embed-Plugin\", \"IRCafe Shared Embed Plugin\");
           }
         }
-        """;
-    CompiledPluginJarSupport.writePluginJar(
-        jarPath,
-        providerClassName,
-        providerSource,
-        EmbedHttpHeaderProvider.class.getName(),
-        CompiledPluginJarSupport.compatibleManifest("plugin-shared-embed-image-header", "1.0.0"));
+        """
+        .formatted(providerImport);
   }
 }

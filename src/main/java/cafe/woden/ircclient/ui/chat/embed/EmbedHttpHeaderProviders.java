@@ -17,25 +17,31 @@ final class EmbedHttpHeaderProviders {
 
   private EmbedHttpHeaderProviders() {}
 
-  static <T extends EmbedHttpHeaderProvider> List<EmbedHttpHeaderProvider> loadInstalledProviders(
-      InstalledPluginsPort installedPlugins, Class<T> specificProviderType) {
+  static <T extends cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider>
+      List<cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider> loadInstalledProviders(
+          InstalledPluginsPort installedPlugins, Class<T> specificProviderType) {
     if (installedPlugins == null) return List.of();
-    List<EmbedHttpHeaderProvider> sharedProviders =
+    List<cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider> spiProviders =
+        installedPlugins.loadInstalledServices(
+            cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider.class, List.of());
+    List<EmbedHttpHeaderProvider> legacySharedProviders =
         installedPlugins.loadInstalledServices(EmbedHttpHeaderProvider.class, List.of());
-    List<T> specificProviders =
-        installedPlugins.loadInstalledServices(specificProviderType, List.of());
-    return merge(sharedProviders, specificProviders);
+    List<T> legacySpecificProviders =
+        specificProviderType == null
+            ? List.of()
+            : installedPlugins.loadInstalledServices(specificProviderType, List.of());
+    return merge(spiProviders, legacySharedProviders, legacySpecificProviders);
   }
 
   static void applyProviderHeaders(
       Map<String, String> headers,
       URI uri,
-      List<? extends EmbedHttpHeaderProvider> providers,
+      List<? extends cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider> providers,
       Logger log,
       String providerDescription) {
-    List<? extends EmbedHttpHeaderProvider> safeProviders =
+    List<? extends cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider> safeProviders =
         providers == null ? List.of() : providers;
-    for (EmbedHttpHeaderProvider provider : safeProviders) {
+    for (cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider provider : safeProviders) {
       if (provider == null) continue;
       try {
         Map<String, String> provided = provider.embedHttpHeaders(uri);
@@ -51,23 +57,26 @@ final class EmbedHttpHeaderProviders {
     }
   }
 
-  private static List<EmbedHttpHeaderProvider> merge(
-      List<? extends EmbedHttpHeaderProvider> sharedProviders,
-      List<? extends EmbedHttpHeaderProvider> specificProviders) {
-    List<EmbedHttpHeaderProvider> merged = new ArrayList<>();
+  @SafeVarargs
+  private static List<cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider> merge(
+      List<? extends cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider>...
+          providerGroups) {
+    List<cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider> merged = new ArrayList<>();
     Set<String> seenProviderTypes = new LinkedHashSet<>();
-    addHeaderProviders(merged, seenProviderTypes, sharedProviders);
-    addHeaderProviders(merged, seenProviderTypes, specificProviders);
+    for (List<? extends cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider> providers :
+        providerGroups) {
+      addHeaderProviders(merged, seenProviderTypes, providers);
+    }
     return List.copyOf(merged);
   }
 
   private static void addHeaderProviders(
-      List<EmbedHttpHeaderProvider> merged,
+      List<cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider> merged,
       Set<String> seenProviderTypes,
-      List<? extends EmbedHttpHeaderProvider> providers) {
-    List<? extends EmbedHttpHeaderProvider> safeProviders =
+      List<? extends cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider> providers) {
+    List<? extends cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider> safeProviders =
         providers == null ? List.of() : providers;
-    for (EmbedHttpHeaderProvider provider : safeProviders) {
+    for (cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider provider : safeProviders) {
       if (provider == null) continue;
       String providerType = provider.getClass().getName();
       if (seenProviderTypes.add(providerType)) {

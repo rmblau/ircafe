@@ -50,13 +50,17 @@ public final class PreviewHttp {
   private final Proxy proxy;
   private final int connectTimeoutMs;
   private final int readTimeoutMs;
-  private final List<EmbedHttpHeaderProvider> headerProviders;
+  private final List<cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider>
+      headerProviders;
 
   public PreviewHttp(ProxyPlan plan) {
     this(plan, List.of());
   }
 
-  public PreviewHttp(ProxyPlan plan, List<? extends EmbedHttpHeaderProvider> headerProviders) {
+  public PreviewHttp(
+      ProxyPlan plan,
+      List<? extends cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider>
+          headerProviders) {
     ProxyPlan p = plan != null ? plan : ProxyPlan.direct();
     this.proxy = (p.proxy() != null) ? p.proxy() : Proxy.NO_PROXY;
     this.connectTimeoutMs = Math.max(1, p.connectTimeoutMs());
@@ -103,7 +107,8 @@ public final class PreviewHttp {
       URI uri,
       String accept,
       Map<String, String> extraHeaders,
-      List<? extends EmbedHttpHeaderProvider> headerProviders) {
+      List<? extends cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider>
+          headerProviders) {
     Map<String, String> headers = new HashMap<>(BASE_HEADERS);
     if (accept != null && !accept.isBlank()) {
       headers.put(HEADER_ACCEPT, accept);

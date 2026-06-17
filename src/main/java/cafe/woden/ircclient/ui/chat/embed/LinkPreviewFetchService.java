@@ -31,7 +31,8 @@ public class LinkPreviewFetchService {
 
   private final ServerProxyResolver proxyResolver;
   private final List<LinkPreviewResolver> resolvers;
-  private final List<EmbedHttpHeaderProvider> httpHeaderProviders;
+  private final List<cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider>
+      httpHeaderProviders;
 
   private final ConcurrentMap<String, java.lang.ref.SoftReference<LinkPreview>> cache =
       new ConcurrentHashMap<>();
@@ -64,8 +65,8 @@ public class LinkPreviewFetchService {
     return installedPluginsProvider == null ? null : installedPluginsProvider.getIfAvailable();
   }
 
-  private static List<EmbedHttpHeaderProvider> loadInstalledHeaderProviders(
-      InstalledPluginsPort installedPlugins) {
+  private static List<cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider>
+      loadInstalledHeaderProviders(InstalledPluginsPort installedPlugins) {
     return EmbedHttpHeaderProviders.loadInstalledProviders(
         installedPlugins, PreviewHttpHeaderProvider.class);
   }

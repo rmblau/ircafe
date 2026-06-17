@@ -226,6 +226,7 @@ import cafe.woden.ircclient.state.api.RecentStatusModePort;
 import cafe.woden.ircclient.state.api.WhoisRoutingPort;
 import cafe.woden.ircclient.ui.SwingUiEventAdapter;
 import cafe.woden.ircclient.ui.SwingUiPort;
+import cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider;
 import java.lang.annotation.Annotation;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 import org.jmolecules.architecture.layered.DomainLayer;
@@ -621,6 +622,7 @@ class JmoleculesIncrementalAdoptionTest {
 
     assertAnnotated(SwingUiEventAdapter.class, InterfaceLayer.class);
     assertAnnotated(SwingUiPort.class, InterfaceLayer.class);
+    assertAnnotated(EmbedHttpHeaderProvider.class, InterfaceLayer.class);
     assertAnnotatedByName("cafe.woden.ircclient.ui.ChatDockable", InterfaceLayer.class);
     assertAnnotatedByName("cafe.woden.ircclient.ui.CommandHistoryStore", InterfaceLayer.class);
     assertAnnotatedByName("cafe.woden.ircclient.ui.NickContextMenuFactory", InterfaceLayer.class);
