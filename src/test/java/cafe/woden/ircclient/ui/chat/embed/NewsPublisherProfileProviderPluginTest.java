@@ -23,6 +23,33 @@ class NewsPublisherProfileProviderPluginTest {
   @TempDir Path tempDir;
 
   @Test
+  void newsPublisherProfilesIncludeBuiltInsWithoutInstalledPlugins() {
+    List<NewsPublisherProfile> profiles = LinkPreviewPluginProviders.newsPublisherProfiles(null);
+
+    assertEquals(1, profiles.stream().filter(profile -> "reuters".equals(profile.key())).count());
+    assertTrue(
+        NewsPreviewUtil.isLikelyNewsArticleUri(
+            URI.create("https://www.reuters.com/world/us/sample-story-2026-06-17/"), profiles));
+  }
+
+  @Test
+  void loadsBuiltInNewsPublisherProfileProviderThroughClasspathServiceLoader() {
+    RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+
+    List<NewsPublisherProfile> profiles =
+        LinkPreviewPluginProviders.newsPublisherProfiles(installedPlugins);
+
+    assertTrue(installedPlugins.pluginProblems().isEmpty());
+    assertEquals(1, profiles.stream().filter(profile -> "abc".equals(profile.key())).count());
+    assertTrue(
+        NewsPreviewUtil.isLikelyNewsArticleUri(
+            URI.create(
+                "https://abcnews.com/GMA/Culture/sample-story-develops-123456/story?id=123456"),
+            profiles));
+  }
+
+  @Test
   void loadsNewsPublisherProfilesFromPluginDirectoryJar() throws Exception {
     Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
     Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));

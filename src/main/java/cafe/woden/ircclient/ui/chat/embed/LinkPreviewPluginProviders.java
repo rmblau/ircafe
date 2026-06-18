@@ -5,12 +5,18 @@ import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
 import cafe.woden.ircclient.ui.chat.embed.spi.NewsPublisherProfile;
 import cafe.woden.ircclient.ui.chat.embed.spi.NewsPublisherProfileProvider;
 import cafe.woden.ircclient.ui.chat.embed.spi.OEmbedLinkPreviewProvider;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 
 /** Shared helpers for ServiceLoader-backed link preview plugin providers. */
 @InterfaceLayer
 final class LinkPreviewPluginProviders {
+  private static final List<NewsPublisherProfileProvider> BUILT_IN_NEWS_PROFILE_PROVIDERS =
+      List.of(new BuiltInNewsPublisherProfileProvider());
+
   private LinkPreviewPluginProviders() {}
 
   static List<LinkPreviewResolver> linkPreviewResolvers(
@@ -32,11 +38,25 @@ final class LinkPreviewPluginProviders {
   }
 
   static List<NewsPublisherProfile> newsPublisherProfiles(InstalledPluginsPort installedPlugins) {
-    if (installedPlugins == null) {
-      return NewsPreviewUtil.publisherProfilesFromProviders(List.of());
+    List<NewsPublisherProfileProvider> providers = BUILT_IN_NEWS_PROFILE_PROVIDERS;
+    if (installedPlugins != null) {
+      providers =
+          dedupeByProviderClass(
+              installedPlugins.loadInstalledServices(
+                  NewsPublisherProfileProvider.class, BUILT_IN_NEWS_PROFILE_PROVIDERS));
     }
-    List<NewsPublisherProfileProvider> providers =
-        installedPlugins.loadInstalledServices(NewsPublisherProfileProvider.class, List.of());
     return NewsPreviewUtil.publisherProfilesFromProviders(providers);
+  }
+
+  private static <T> List<T> dedupeByProviderClass(List<? extends T> services) {
+    LinkedHashSet<String> providerClassNames = new LinkedHashSet<>();
+    ArrayList<T> deduped = new ArrayList<>();
+    for (T service : Objects.requireNonNullElse(services, List.<T>of())) {
+      if (service == null || !providerClassNames.add(service.getClass().getName())) {
+        continue;
+      }
+      deduped.add(service);
+    }
+    return List.copyOf(deduped);
   }
 }

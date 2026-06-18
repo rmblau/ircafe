@@ -32,21 +32,6 @@ final class NewsPreviewUtil {
 
   private NewsPreviewUtil() {}
 
-  private static final HostProfile[] HOST_PROFILES = {
-    new HostProfile("abcnews.com", "abc"),
-    new HostProfile("reuters.com", "reuters"),
-    new HostProfile("apnews.com", "ap"),
-    new HostProfile("nytimes.com", "nyt"),
-    new HostProfile("bbc.com", "bbc"),
-    new HostProfile("bbc.co.uk", "bbc"),
-    new HostProfile("cnn.com", "cnn"),
-    new HostProfile("washingtonpost.com", "wapo"),
-    new HostProfile("theguardian.com", "guardian"),
-    new HostProfile("guardian.co.uk", "guardian"),
-    new HostProfile("npr.org", "npr"),
-    new HostProfile("wsj.com", "wsj")
-  };
-
   private static final String[] GENERIC_PARAGRAPH_SELECTORS = {
     "article p",
     "main article p",
@@ -137,139 +122,7 @@ final class NewsPreviewUtil {
           GENERIC_DATE_META_KEYS);
 
   private static final List<NewsPublisherProfile> PUBLISHER_PROFILES =
-      List.of(
-          new NewsPublisherProfile(
-              "abc",
-              "ABC News",
-              new String[] {"article p", "main article p", "section article p"},
-              new String[] {"[data-testid='byline']", "[class*='Byline']", "[class*='byline']"},
-              GENERIC_IMAGE_SELECTORS,
-              new String[] {"author", "article:author", "parsely-author"},
-              new String[] {"article:published_time", "parsely-pub-date", "date"}),
-          new NewsPublisherProfile(
-              "reuters",
-              "Reuters",
-              new String[] {
-                "div[data-testid='Body'] p",
-                "article[data-testid='Body'] p",
-                "article[data-testid='ArticleBody'] p",
-                "article p",
-                "main article p"
-              },
-              new String[] {
-                "[data-testid='AuthorName']",
-                "a[data-testid='AuthorName']",
-                "[class*='author-name']",
-                "[class*='Byline']"
-              },
-              GENERIC_IMAGE_SELECTORS,
-              new String[] {"author", "article:author", "parsely-author"},
-              new String[] {"article:published_time", "parsely-pub-date", "date"}),
-          new NewsPublisherProfile(
-              "ap",
-              "AP News",
-              new String[] {
-                "div.RichTextStoryBody p",
-                "article p",
-                "main article p",
-                "div[data-key='article'] p"
-              },
-              new String[] {"[class*='byline']", "[class*='Author']", "[data-key='byline']"},
-              GENERIC_IMAGE_SELECTORS,
-              new String[] {"author", "article:author", "parsely-author"},
-              new String[] {"article:published_time", "parsely-pub-date", "date"}),
-          new NewsPublisherProfile(
-              "nyt",
-              "New York Times",
-              new String[] {"section[name='articleBody'] p", "article section p", "article p"},
-              new String[] {"[data-testid='byline']", "span[itemprop='name']", "[class*='byline']"},
-              GENERIC_IMAGE_SELECTORS,
-              new String[] {"byl", "author", "article:author", "parsely-author"},
-              new String[] {"article:published_time", "ptime", "parsely-pub-date", "date"}),
-          new NewsPublisherProfile(
-              "bbc",
-              "BBC",
-              new String[] {"article [data-component='text-block'] p", "article p", "main p"},
-              new String[] {
-                "[data-component='byline-block'] a",
-                "[data-component='byline-block'] span",
-                "[class*='byline']"
-              },
-              GENERIC_IMAGE_SELECTORS,
-              new String[] {"byl", "author", "article:author"},
-              new String[] {"article:published_time", "article:modified_time", "date"}),
-          new NewsPublisherProfile(
-              "cnn",
-              "CNN",
-              new String[] {
-                "div.article__content p",
-                "div.article__main p",
-                "article p",
-                "[data-component-name='paragraph']"
-              },
-              new String[] {
-                "[class*='byline']", "[data-editable='byline']", "[class*='metadata__byline']"
-              },
-              GENERIC_IMAGE_SELECTORS,
-              new String[] {"author", "article:author", "parsely-author"},
-              new String[] {
-                "article:published_time", "og:updated_time", "parsely-pub-date", "date"
-              }),
-          new NewsPublisherProfile(
-              "wapo",
-              "Washington Post",
-              new String[] {
-                "div[data-qa='article-body'] p",
-                "article div[data-qa='article-body'] p",
-                "article p"
-              },
-              new String[] {"[data-qa='author-name']", "[data-qa='byline']", "[class*='byline']"},
-              GENERIC_IMAGE_SELECTORS,
-              new String[] {"author", "article:author", "parsely-author"},
-              new String[] {"article:published_time", "parsely-pub-date", "date"}),
-          new NewsPublisherProfile(
-              "guardian",
-              "The Guardian",
-              new String[] {
-                "div[data-gu-name='body'] p",
-                "article div[data-gu-name='body'] p",
-                "article div[class*='article-body'] p",
-                "article p"
-              },
-              new String[] {"a[rel='author']", "[class*='byline']"},
-              GENERIC_IMAGE_SELECTORS,
-              new String[] {"author", "article:author", "parsely-author"},
-              new String[] {"article:published_time", "parsely-pub-date", "date"}),
-          new NewsPublisherProfile(
-              "npr",
-              "NPR",
-              new String[] {
-                "div.storytext p",
-                "article div.storytext p",
-                "article [id*='storytext'] p",
-                "article p",
-                "main p"
-              },
-              new String[] {"[class*='byline']", "[itemprop='author']", "a[rel='author']"},
-              GENERIC_IMAGE_SELECTORS,
-              new String[] {"author", "article:author", "dc.creator", "parsely-author"},
-              new String[] {"article:published_time", "parsely-pub-date", "date", "dc.date"}),
-          new NewsPublisherProfile(
-              "wsj",
-              "Wall Street Journal",
-              new String[] {
-                "div[data-module='ArticleBody'] p",
-                "article [data-module='ArticleBody'] p",
-                "article [class*='article-content'] p",
-                "article p",
-                "[itemprop='articleBody'] p"
-              },
-              new String[] {"[class*='author-name']", "a[rel='author']", "[class*='byline']"},
-              GENERIC_IMAGE_SELECTORS,
-              new String[] {"author", "article:author", "parsely-author"},
-              new String[] {
-                "article:published_time", "article:modified_time", "parsely-pub-date", "date"
-              }));
+      BuiltInNewsPublisherProfileProvider.profiles();
 
   static List<NewsPublisherProfile> defaultPublisherProfiles() {
     return PUBLISHER_PROFILES;
@@ -277,7 +130,7 @@ final class NewsPreviewUtil {
 
   static List<NewsPublisherProfile> publisherProfilesFromProviders(
       List<NewsPublisherProfileProvider> providers) {
-    ArrayList<NewsPublisherProfile> profiles = new ArrayList<>(PUBLISHER_PROFILES);
+    ArrayList<NewsPublisherProfile> profiles = new ArrayList<>();
     for (NewsPublisherProfileProvider provider :
         Objects.requireNonNullElse(providers, List.<NewsPublisherProfileProvider>of())) {
       if (provider == null) continue;
@@ -809,12 +662,6 @@ final class NewsPreviewUtil {
       String host, List<NewsPublisherProfile> publisherProfiles) {
     String h = normalizeHost(host);
     if (h == null) return null;
-    for (HostProfile hp : HOST_PROFILES) {
-      String suffix = hp.hostSuffix();
-      if (h.equals(suffix) || h.endsWith("." + suffix)) {
-        return hp.publisherKey();
-      }
-    }
     for (NewsPublisherProfile profile :
         Objects.requireNonNullElse(publisherProfiles, List.<NewsPublisherProfile>of())) {
       if (profile == null) continue;
@@ -1070,5 +917,4 @@ final class NewsPreviewUtil {
     return t.isEmpty() ? null : t;
   }
 
-  private record HostProfile(String hostSuffix, String publisherKey) {}
 }
