@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.ui.chat.embed.builtins.BuiltInImageUrlExtensionProvider;
 import cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider;
 import java.util.ArrayList;
 import java.util.Collections;

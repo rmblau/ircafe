@@ -55,6 +55,7 @@ rewrite {
 dependencies {
     implementation project(':ircafe-plugin-api')
     implementation project(':ircafe-builtins-notify')
+    implementation project(':ircafe-builtins-embed')
     compileOnly lib('lombok')
     compileOnly lib('autoServiceAnnotations')
     annotationProcessor lib('lombok')

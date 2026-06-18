@@ -45,16 +45,22 @@ class BuiltInProviderSubprojectBoundaryTest {
   }
 
   @Test
-  void appIncludesFirstBuiltInProviderJarOnRuntimeClasspath() throws IOException {
+  void appIncludesBuiltInProviderJarsOnRuntimeClasspath() throws IOException {
     String settings = Files.readString(Path.of("settings.gradle"));
     String build = Files.readString(Path.of("build.gradle"));
 
+    assertBuiltInProviderJarIncluded(settings, build, "ircafe-builtins-notify");
+    assertBuiltInProviderJarIncluded(settings, build, "ircafe-builtins-embed");
+  }
+
+  private static void assertBuiltInProviderJarIncluded(
+      String settings, String build, String projectName) {
     assertTrue(
-        settings.contains("include 'ircafe-builtins-notify'"),
-        "settings.gradle should include the built-in notification provider subproject");
+        settings.contains("include '" + projectName + "'"),
+        "settings.gradle should include the " + projectName + " provider subproject");
     assertTrue(
-        build.contains("implementation project(':ircafe-builtins-notify')"),
-        "the app should depend on the built-in notification provider jar so bootJar packages it");
+        build.contains("implementation project(':" + projectName + "')"),
+        "the app should depend on the " + projectName + " provider jar so bootJar packages it");
   }
 
   private static Set<Path> builtInProviderSourceRoots() throws IOException {
