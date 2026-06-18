@@ -5,18 +5,50 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
+import cafe.woden.ircclient.ui.spi.ExternalBrowserSchemeProvider;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 class ExternalBrowserSchemeProviderPluginTest {
 
   @TempDir Path tempDir;
+
+  @Test
+  void externalBrowserSchemeProvidersIncludeBuiltInsWithoutInstalledPlugins() {
+    List<ExternalBrowserSchemeProvider> providers =
+        ExternalBrowserPluginProviders.schemeProviders(null);
+
+    assertEquals(Set.of("http", "https"), ExternalBrowserPluginProviders.allowedSchemes(null));
+    assertEquals(
+        1,
+        providers.stream()
+            .filter(provider -> provider instanceof BuiltInExternalBrowserSchemeProvider)
+            .count());
+  }
+
+  @Test
+  void loadsBuiltInExternalBrowserSchemeProviderThroughClasspathServiceLoader() {
+    RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+
+    List<ExternalBrowserSchemeProvider> providers =
+        ExternalBrowserPluginProviders.schemeProviders(installedPlugins);
+
+    assertTrue(installedPlugins.pluginProblems().isEmpty());
+    assertTrue(ExternalBrowserPluginProviders.allowedSchemes(installedPlugins).contains("https"));
+    assertEquals(
+        1,
+        providers.stream()
+            .filter(provider -> provider instanceof BuiltInExternalBrowserSchemeProvider)
+            .count());
+  }
 
   @Test
   void loadsExternalBrowserSchemesFromPluginDirectoryJar() throws Exception {

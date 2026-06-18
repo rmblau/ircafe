@@ -1,6 +1,9 @@
 package cafe.woden.ircclient.ui;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.ui.spi.ExternalBrowserCommandProvider;
+import cafe.woden.ircclient.ui.spi.ExternalBrowserSchemeProvider;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
@@ -13,10 +16,12 @@ import org.slf4j.LoggerFactory;
 @InterfaceLayer
 final class ExternalBrowserPluginProviders {
   private static final Logger log = LoggerFactory.getLogger(ExternalBrowserPluginProviders.class);
+  private static final List<ExternalBrowserSchemeProvider> BUILT_IN_SCHEME_PROVIDERS =
+      List.of(new BuiltInExternalBrowserSchemeProvider());
 
   private ExternalBrowserPluginProviders() {}
 
-  static List<cafe.woden.ircclient.ui.spi.ExternalBrowserCommandProvider> commandProviders(
+  static List<ExternalBrowserCommandProvider> commandProviders(
       InstalledPluginsPort installedPlugins) {
     if (installedPlugins == null) {
       return List.of();
@@ -26,18 +31,9 @@ final class ExternalBrowserPluginProviders {
             cafe.woden.ircclient.ui.spi.ExternalBrowserCommandProvider.class, List.of()));
   }
 
-  static Set<String> allowedSchemes(
-      InstalledPluginsPort installedPlugins, Set<String> defaultSchemes) {
-    LinkedHashSet<String> schemes =
-        new LinkedHashSet<>(Objects.requireNonNullElse(defaultSchemes, Set.<String>of()));
-    if (installedPlugins == null) {
-      return Set.copyOf(schemes);
-    }
-    List<cafe.woden.ircclient.ui.spi.ExternalBrowserSchemeProvider> loadedProviders =
-        installedPlugins.loadInstalledServices(
-            cafe.woden.ircclient.ui.spi.ExternalBrowserSchemeProvider.class, List.of());
-    for (cafe.woden.ircclient.ui.spi.ExternalBrowserSchemeProvider provider :
-        dedupeByProviderClass(loadedProviders)) {
+  static Set<String> allowedSchemes(InstalledPluginsPort installedPlugins) {
+    LinkedHashSet<String> schemes = new LinkedHashSet<>();
+    for (ExternalBrowserSchemeProvider provider : schemeProviders(installedPlugins)) {
       if (provider == null) {
         continue;
       }
@@ -47,8 +43,7 @@ final class ExternalBrowserPluginProviders {
   }
 
   private static void addAllowedSchemes(
-      LinkedHashSet<String> schemes,
-      cafe.woden.ircclient.ui.spi.ExternalBrowserSchemeProvider provider) {
+      LinkedHashSet<String> schemes, ExternalBrowserSchemeProvider provider) {
     try {
       for (String scheme :
           Objects.requireNonNullElse(provider.allowedSchemes(), Set.<String>of())) {
@@ -62,9 +57,19 @@ final class ExternalBrowserPluginProviders {
     }
   }
 
+  static List<ExternalBrowserSchemeProvider> schemeProviders(
+      InstalledPluginsPort installedPlugins) {
+    if (installedPlugins == null) {
+      return BUILT_IN_SCHEME_PROVIDERS;
+    }
+    return dedupeByProviderClass(
+        installedPlugins.loadInstalledServices(
+            ExternalBrowserSchemeProvider.class, BUILT_IN_SCHEME_PROVIDERS));
+  }
+
   private static <T> List<T> dedupeByProviderClass(List<? extends T> services) {
-    java.util.LinkedHashSet<String> providerClassNames = new java.util.LinkedHashSet<>();
-    java.util.ArrayList<T> deduped = new java.util.ArrayList<>();
+    LinkedHashSet<String> providerClassNames = new LinkedHashSet<>();
+    ArrayList<T> deduped = new ArrayList<>();
     for (T service : Objects.requireNonNullElse(services, List.<T>of())) {
       if (service == null || !providerClassNames.add(service.getClass().getName())) {
         continue;

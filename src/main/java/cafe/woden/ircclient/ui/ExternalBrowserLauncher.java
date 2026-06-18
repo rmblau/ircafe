@@ -40,7 +40,8 @@ public class ExternalBrowserLauncher {
           "opera",
           "vivaldi");
 
-  private static final Set<String> DEFAULT_ALLOWED_SCHEMES = Set.of("http", "https");
+  private static final Set<String> DEFAULT_ALLOWED_SCHEMES =
+      BuiltInExternalBrowserSchemeProvider.schemes();
 
   private final List<cafe.woden.ircclient.ui.spi.ExternalBrowserCommandProvider> commandProviders;
   private final Set<String> allowedSchemes;
@@ -56,8 +57,7 @@ public class ExternalBrowserLauncher {
 
   ExternalBrowserLauncher(InstalledPluginsPort installedPlugins) {
     this.commandProviders = ExternalBrowserPluginProviders.commandProviders(installedPlugins);
-    this.allowedSchemes =
-        ExternalBrowserPluginProviders.allowedSchemes(installedPlugins, DEFAULT_ALLOWED_SCHEMES);
+    this.allowedSchemes = ExternalBrowserPluginProviders.allowedSchemes(installedPlugins);
   }
 
   public void openAsync(String rawUrl) {
