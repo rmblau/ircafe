@@ -16,6 +16,7 @@
       "interceptors",
       "irc",
       "irc::backend",
+      "irc::backend-spi",
       "irc::ircv3",
       "irc::playback",
       "irc::port",

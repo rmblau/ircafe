@@ -105,6 +105,7 @@ import cafe.woden.ircclient.irc.adapter.IrcShutdownPortAdapter;
 import cafe.woden.ircclient.irc.adapter.IrcTargetMembershipPortAdapter;
 import cafe.woden.ircclient.irc.adapter.IrcTypingPortAdapter;
 import cafe.woden.ircclient.irc.backend.BackendRoutingIrcClientService;
+import cafe.woden.ircclient.irc.backend.spi.IrcBackendClientService;
 import cafe.woden.ircclient.irc.enrichment.UserInfoEnrichmentService;
 import cafe.woden.ircclient.irc.ircv3.Ircv3CapabilityCatalog;
 import cafe.woden.ircclient.irc.ircv3.Ircv3DraftNormalizer;
@@ -361,6 +362,7 @@ class SpringModulithIncrementalAdoptionTest {
     assertThat(moduleFor(modules, MatrixIrcClientService.class)).isEqualTo(ircModule);
     assertThat(ircModule.getBasePackage().getName()).isEqualTo("cafe.woden.ircclient.irc");
     assertNamedInterfaceContains(ircModule, "matrix", MatrixIrcClientService.class);
+    assertNamedInterfaceContains(ircModule, "backend-spi", IrcBackendClientService.class);
     assertNamedInterfaceContains(ircModule, "soju", SojuAutoConnectStore.class);
     assertNamedInterfaceContains(ircModule, "znc", ZncAutoConnectStore.class);
     assertNamedInterfaceContains(ircModule, "enrichment", UserInfoEnrichmentService.class);
@@ -492,6 +494,7 @@ class SpringModulithIncrementalAdoptionTest {
             "ignore::api",
             "irc",
             "irc::backend",
+            "irc::backend-spi",
             "irc::enrichment",
             "irc::playback",
             "irc::port",
@@ -519,6 +522,7 @@ class SpringModulithIncrementalAdoptionTest {
             "interceptors",
             "irc",
             "irc::backend",
+            "irc::backend-spi",
             "irc::ircv3",
             "irc::playback",
             "irc::port",
@@ -561,6 +565,7 @@ class SpringModulithIncrementalAdoptionTest {
     assertThat(BackendNamedCommandHandler.class.isAnnotationPresent(SecondaryPort.class)).isTrue();
     assertThat(BackendNamedCommandExecutor.class.isAnnotationPresent(SecondaryPort.class)).isTrue();
     assertThat(BackendExtension.class.isAnnotationPresent(SecondaryPort.class)).isTrue();
+    assertThat(IrcBackendClientService.class.isAnnotationPresent(SecondaryPort.class)).isTrue();
     assertThat(MessageMutationOutboundCommands.class.isAnnotationPresent(SecondaryPort.class))
         .isTrue();
     assertThat(OutboundBackendFeatureAdapter.class.isAnnotationPresent(SecondaryPort.class))

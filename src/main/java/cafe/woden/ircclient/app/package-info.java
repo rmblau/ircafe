@@ -7,6 +7,7 @@
       "ignore::api",
       "irc",
       "irc::backend",
+      "irc::backend-spi",
       "irc::enrichment",
       "irc::playback",
       "irc::port",

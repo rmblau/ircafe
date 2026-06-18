@@ -136,6 +136,7 @@ import cafe.woden.ircclient.irc.adapter.IrcTargetMembershipPortAdapter;
 import cafe.woden.ircclient.irc.adapter.IrcTypingPortAdapter;
 import cafe.woden.ircclient.irc.backend.BackendRoutingIrcClientService;
 import cafe.woden.ircclient.irc.backend.IrcHeartbeatMaintenanceService;
+import cafe.woden.ircclient.irc.backend.spi.IrcBackendClientService;
 import cafe.woden.ircclient.irc.enrichment.UserInfoEnrichmentPlanner;
 import cafe.woden.ircclient.irc.enrichment.UserInfoEnrichmentService;
 import cafe.woden.ircclient.irc.ircv3.Ircv3StsPolicyService;
@@ -591,6 +592,7 @@ class JmoleculesIncrementalAdoptionTest {
     assertAnnotated(BackendNamedCommandHandler.class, ApplicationLayer.class);
     assertAnnotated(BackendNamedCommandExecutor.class, ApplicationLayer.class);
     assertAnnotated(BackendExtension.class, ApplicationLayer.class);
+    assertAnnotated(IrcBackendClientService.class, ApplicationLayer.class);
     assertAnnotated(OutboundCommandDispatcher.class, ApplicationLayer.class);
     assertAnnotated(MessageMutationOutboundCommands.class, ApplicationLayer.class);
     assertAnnotated(OutboundBackendFeatureAdapter.class, ApplicationLayer.class);
