@@ -155,8 +155,6 @@ import cafe.woden.ircclient.notify.api.NotificationSoundPort;
 import cafe.woden.ircclient.notify.api.PushyNotificationPort;
 import cafe.woden.ircclient.notify.pushy.PushyNotificationService;
 import cafe.woden.ircclient.notify.sound.NotificationSoundService;
-import cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider;
-import cafe.woden.ircclient.notify.spi.CustomSoundPlaybackProvider;
 import cafe.woden.ircclient.perform.PerformOnConnectService;
 import cafe.woden.ircclient.state.AwayStatusStore;
 import cafe.woden.ircclient.state.ModeRoutingState;
@@ -419,11 +417,6 @@ class SpringModulithIncrementalAdoptionTest {
         notifyModule, "api", NotificationSoundPort.class, PushyNotificationPort.class);
     assertNamedInterfaceContains(notifyModule, "sound", NotificationSoundService.class);
     assertNamedInterfaceContains(notifyModule, "pushy", PushyNotificationService.class);
-    assertNamedInterfaceContains(
-        notifyModule,
-        "spi",
-        CustomSoundFileExtensionProvider.class,
-        CustomSoundPlaybackProvider.class);
 
     ApplicationModule uiModule = moduleFor(modules, RuntimeEventsPanel.class);
     assertThat(uiModule).isNotEqualTo(appModule);

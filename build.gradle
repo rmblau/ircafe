@@ -53,6 +53,7 @@ rewrite {
 }
 
 dependencies {
+    implementation project(':ircafe-plugin-api')
     compileOnly lib('lombok')
     compileOnly lib('autoServiceAnnotations')
     annotationProcessor lib('lombok')

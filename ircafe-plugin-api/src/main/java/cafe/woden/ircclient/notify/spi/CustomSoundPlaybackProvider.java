@@ -1,8 +1,6 @@
 package cafe.woden.ircclient.notify.spi;
 
 import java.nio.file.Path;
-import org.jmolecules.architecture.hexagonal.SecondaryPort;
-import org.jmolecules.architecture.layered.ApplicationLayer;
 
 /**
  * ServiceLoader-backed contribution point for playing imported IRCafe custom sound files.
@@ -10,8 +8,6 @@ import org.jmolecules.architecture.layered.ApplicationLayer;
  * <p>Plugins register implementations in {@code
  * META-INF/services/cafe.woden.ircclient.notify.spi.CustomSoundPlaybackProvider}.
  */
-@SecondaryPort
-@ApplicationLayer
 public interface CustomSoundPlaybackProvider {
 
   /**

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -80,10 +81,6 @@ class PluginApiDependencyAuditTest {
           "src/main/java/cafe/woden/ircclient/irc/ircv3/spi/Ircv3ExtensionProvider.java -> org.jmolecules.architecture.hexagonal.SecondaryPort",
           "src/main/java/cafe/woden/ircclient/irc/ircv3/spi/Ircv3ExtensionProvider.java -> org.jmolecules.architecture.layered.ApplicationLayer",
           "src/main/java/cafe/woden/ircclient/irc/ircv3/spi/package-info.java -> org.springframework.modulith.NamedInterface",
-          "src/main/java/cafe/woden/ircclient/notify/spi/CustomSoundFileExtensionProvider.java -> org.jmolecules.architecture.hexagonal.SecondaryPort",
-          "src/main/java/cafe/woden/ircclient/notify/spi/CustomSoundFileExtensionProvider.java -> org.jmolecules.architecture.layered.ApplicationLayer",
-          "src/main/java/cafe/woden/ircclient/notify/spi/CustomSoundPlaybackProvider.java -> org.jmolecules.architecture.hexagonal.SecondaryPort",
-          "src/main/java/cafe/woden/ircclient/notify/spi/CustomSoundPlaybackProvider.java -> org.jmolecules.architecture.layered.ApplicationLayer",
           "src/main/java/cafe/woden/ircclient/notify/spi/package-info.java -> org.springframework.modulith.NamedInterface",
           "src/main/java/cafe/woden/ircclient/ui/chat/embed/spi/EmbedHttpHeaderProvider.java -> org.jmolecules.architecture.layered.InterfaceLayer",
           "src/main/java/cafe/woden/ircclient/ui/chat/embed/spi/ImageUrlExtensionProvider.java -> org.jmolecules.architecture.layered.InterfaceLayer",
@@ -129,17 +126,22 @@ class PluginApiDependencyAuditTest {
   }
 
   private static Set<String> scanBlockingDependencies() throws IOException {
-    Path sourceRoot = Path.of("src/main/java");
     Set<String> blockers = new TreeSet<>();
 
-    try (Stream<Path> files = Files.walk(sourceRoot)) {
-      for (Path file :
-          files.filter(PluginApiDependencyAuditTest::isSpiJavaSource).sorted().toList()) {
-        Matcher matcher = IMPORT_PATTERN.matcher(Files.readString(file));
-        while (matcher.find()) {
-          String dependency = matcher.group(1);
-          if (!isPluginApiPortable(dependency)) {
-            blockers.add(file + " -> " + dependency);
+    for (Path sourceRoot :
+        List.of(Path.of("src/main/java"), Path.of("ircafe-plugin-api/src/main/java"))) {
+      if (!Files.exists(sourceRoot)) {
+        continue;
+      }
+      try (Stream<Path> files = Files.walk(sourceRoot)) {
+        for (Path file :
+            files.filter(PluginApiDependencyAuditTest::isSpiJavaSource).sorted().toList()) {
+          Matcher matcher = IMPORT_PATTERN.matcher(Files.readString(file));
+          while (matcher.find()) {
+            String dependency = matcher.group(1);
+            if (!isPluginApiPortable(dependency)) {
+              blockers.add(file + " -> " + dependency);
+            }
           }
         }
       }
@@ -150,7 +152,8 @@ class PluginApiDependencyAuditTest {
 
   private static boolean isSpiJavaSource(Path path) {
     String normalized = path.toString().replace('\\', '/');
-    return normalized.startsWith("src/main/java/")
+    return (normalized.startsWith("src/main/java/")
+            || normalized.startsWith("ircafe-plugin-api/src/main/java/"))
         && normalized.contains("/spi/")
         && normalized.endsWith(".java");
   }
