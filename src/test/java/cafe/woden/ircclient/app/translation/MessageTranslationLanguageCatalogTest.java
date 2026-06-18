@@ -106,6 +106,20 @@ class MessageTranslationLanguageCatalogTest {
                 language -> language.code().equals("tlh") && language.label().equals("Klingon")));
   }
 
+  @Test
+  void loadsCommonLanguageProviderThroughClasspathServiceLoader() {
+    RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+
+    List<MessageTranslationLanguageProvider> providers =
+        MessageTranslationPluginProviders.languageProviders(List.of(), installedPlugins);
+
+    assertTrue(installedPlugins.pluginProblems().isEmpty());
+    assertTrue(
+        providers.stream()
+            .anyMatch(provider -> provider instanceof CommonMessageTranslationLanguageProvider));
+  }
+
   private static String pluginLanguageProviderSource() {
     return """
         package plugin.translation;
