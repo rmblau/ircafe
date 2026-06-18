@@ -15,6 +15,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.app.api.AvailableBackendIdsPort;
+import cafe.woden.ircclient.app.api.BackendAvailabilityReasonFormatter;
 import cafe.woden.ircclient.app.api.TrayNotificationsPort;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
@@ -59,15 +60,8 @@ class ConnectionCoordinatorTest {
     when(irc.disconnect("libera", null)).thenReturn(Completable.complete());
 
     ConnectionCoordinator coordinator =
-        new ConnectionCoordinator(
-            IrcConnectionLifecyclePort.from(irc),
-            irc,
-            ui,
-            serverRegistry,
-            serverCatalog,
-            runtimeConfig,
-            LOG_PROPS,
-            trayNotificationService);
+        connectionCoordinator(
+            irc, ui, serverRegistry, serverCatalog, runtimeConfig, trayNotificationService);
 
     coordinator.connectOne("libera");
     coordinator.disconnectOne("libera");
@@ -97,15 +91,8 @@ class ConnectionCoordinatorTest {
     when(irc.disconnect(anyString(), any())).thenReturn(Completable.complete());
 
     ConnectionCoordinator coordinator =
-        new ConnectionCoordinator(
-            IrcConnectionLifecyclePort.from(irc),
-            irc,
-            ui,
-            serverRegistry,
-            serverCatalog,
-            runtimeConfig,
-            LOG_PROPS,
-            trayNotificationService);
+        connectionCoordinator(
+            irc, ui, serverRegistry, serverCatalog, runtimeConfig, trayNotificationService);
 
     coordinator.connectOne("libera");
     coordinator.connectOne("oftc");
@@ -136,15 +123,8 @@ class ConnectionCoordinatorTest {
     when(irc.connect(anyString())).thenReturn(Completable.complete());
 
     ConnectionCoordinator coordinator =
-        new ConnectionCoordinator(
-            IrcConnectionLifecyclePort.from(irc),
-            irc,
-            ui,
-            serverRegistry,
-            serverCatalog,
-            runtimeConfig,
-            LOG_PROPS,
-            trayNotificationService);
+        connectionCoordinator(
+            irc, ui, serverRegistry, serverCatalog, runtimeConfig, trayNotificationService);
 
     coordinator.connectAutoConnectOnStartServers();
 
@@ -174,15 +154,8 @@ class ConnectionCoordinatorTest {
     when(runtimeConfig.readKnownChannels("hybrid")).thenReturn(List.of());
 
     ConnectionCoordinator coordinator =
-        new ConnectionCoordinator(
-            IrcConnectionLifecyclePort.from(irc),
-            irc,
-            ui,
-            serverRegistry,
-            serverCatalog,
-            runtimeConfig,
-            LOG_PROPS,
-            trayNotificationService);
+        connectionCoordinator(
+            irc, ui, serverRegistry, serverCatalog, runtimeConfig, trayNotificationService);
 
     coordinator.handleConnectivityEvent(
         "hybrid", new IrcEvent.Connected(Instant.now(), "irc.example.net", 6697, "tester"), null);
@@ -222,15 +195,8 @@ class ConnectionCoordinatorTest {
                     "not implemented yet")));
 
     ConnectionCoordinator coordinator =
-        new ConnectionCoordinator(
-            IrcConnectionLifecyclePort.from(irc),
-            irc,
-            ui,
-            serverRegistry,
-            serverCatalog,
-            runtimeConfig,
-            LOG_PROPS,
-            trayNotificationService);
+        connectionCoordinator(
+            irc, ui, serverRegistry, serverCatalog, runtimeConfig, trayNotificationService);
 
     coordinator.connectOne("quassel");
 
@@ -256,15 +222,8 @@ class ConnectionCoordinatorTest {
     when(serverCatalog.containsId("libera")).thenReturn(true);
 
     ConnectionCoordinator coordinator =
-        new ConnectionCoordinator(
-            IrcConnectionLifecyclePort.from(irc),
-            irc,
-            ui,
-            serverRegistry,
-            serverCatalog,
-            runtimeConfig,
-            LOG_PROPS,
-            trayNotificationService);
+        connectionCoordinator(
+            irc, ui, serverRegistry, serverCatalog, runtimeConfig, trayNotificationService);
 
     coordinator.handleConnectivityEvent(
         "libera",
@@ -288,15 +247,8 @@ class ConnectionCoordinatorTest {
     when(serverCatalog.containsId("libera")).thenReturn(true);
 
     ConnectionCoordinator coordinator =
-        new ConnectionCoordinator(
-            IrcConnectionLifecyclePort.from(irc),
-            irc,
-            ui,
-            serverRegistry,
-            serverCatalog,
-            runtimeConfig,
-            LOG_PROPS,
-            trayNotificationService);
+        connectionCoordinator(
+            irc, ui, serverRegistry, serverCatalog, runtimeConfig, trayNotificationService);
 
     coordinator.handleConnectivityEvent(
         "libera", new IrcEvent.Reconnecting(Instant.now(), 1, 5_000L, "Ping timeout"), null);
@@ -320,15 +272,8 @@ class ConnectionCoordinatorTest {
     when(irc.connect("libera")).thenReturn(Completable.complete());
 
     ConnectionCoordinator coordinator =
-        new ConnectionCoordinator(
-            IrcConnectionLifecyclePort.from(irc),
-            irc,
-            ui,
-            serverRegistry,
-            serverCatalog,
-            runtimeConfig,
-            LOG_PROPS,
-            trayNotificationService);
+        connectionCoordinator(
+            irc, ui, serverRegistry, serverCatalog, runtimeConfig, trayNotificationService);
     coordinator.connectOne("libera");
 
     coordinator.handleConnectivityEvent(
@@ -353,15 +298,8 @@ class ConnectionCoordinatorTest {
     when(runtimeConfig.readKnownChannels("libera")).thenReturn(List.of("#ircafe"));
 
     ConnectionCoordinator coordinator =
-        new ConnectionCoordinator(
-            IrcConnectionLifecyclePort.from(irc),
-            irc,
-            ui,
-            serverRegistry,
-            serverCatalog,
-            runtimeConfig,
-            LOG_PROPS,
-            trayNotificationService);
+        connectionCoordinator(
+            irc, ui, serverRegistry, serverCatalog, runtimeConfig, trayNotificationService);
 
     coordinator.handleConnectivityEvent(
         "libera", new IrcEvent.Connected(Instant.now(), "irc.libera.chat", 6697, "alice-me"), null);
@@ -397,15 +335,8 @@ class ConnectionCoordinatorTest {
     when(runtimeConfig.readKnownChannels("quassel")).thenReturn(List.of("#ircafe"));
 
     ConnectionCoordinator coordinator =
-        new ConnectionCoordinator(
-            IrcConnectionLifecyclePort.from(irc),
-            irc,
-            ui,
-            serverRegistry,
-            serverCatalog,
-            runtimeConfig,
-            LOG_PROPS,
-            trayNotificationService);
+        connectionCoordinator(
+            irc, ui, serverRegistry, serverCatalog, runtimeConfig, trayNotificationService);
 
     coordinator.handleConnectivityEvent(
         "quassel", new IrcEvent.Connected(Instant.now(), "core.local", 4242, "quassel"), null);
@@ -431,15 +362,8 @@ class ConnectionCoordinatorTest {
     when(runtimeConfig.readKnownChannels("libera")).thenReturn(List.of());
 
     ConnectionCoordinator coordinator =
-        new ConnectionCoordinator(
-            IrcConnectionLifecyclePort.from(irc),
-            irc,
-            ui,
-            serverRegistry,
-            serverCatalog,
-            runtimeConfig,
-            LOG_PROPS,
-            trayNotificationService);
+        connectionCoordinator(
+            irc, ui, serverRegistry, serverCatalog, runtimeConfig, trayNotificationService);
 
     coordinator.handleConnectivityEvent(
         "libera", new IrcEvent.Connected(Instant.now(), "irc.libera.chat", 6697, "alice-me"), null);
@@ -461,15 +385,8 @@ class ConnectionCoordinatorTest {
     when(serverCatalog.containsId("libera")).thenReturn(true);
 
     ConnectionCoordinator coordinator =
-        new ConnectionCoordinator(
-            IrcConnectionLifecyclePort.from(irc),
-            irc,
-            ui,
-            serverRegistry,
-            serverCatalog,
-            runtimeConfig,
-            LOG_PROPS,
-            trayNotificationService);
+        connectionCoordinator(
+            irc, ui, serverRegistry, serverCatalog, runtimeConfig, trayNotificationService);
 
     coordinator.handleConnectivityEvent(
         "libera",
@@ -497,15 +414,8 @@ class ConnectionCoordinatorTest {
     when(runtimeConfig.readKnownChannels("quassel")).thenReturn(List.of());
 
     ConnectionCoordinator coordinator =
-        new ConnectionCoordinator(
-            IrcConnectionLifecyclePort.from(irc),
-            irc,
-            ui,
-            serverRegistry,
-            serverCatalog,
-            runtimeConfig,
-            LOG_PROPS,
-            trayNotificationService);
+        connectionCoordinator(
+            irc, ui, serverRegistry, serverCatalog, runtimeConfig, trayNotificationService);
 
     coordinator.handleConnectivityEvent(
         "quassel",
@@ -581,15 +491,8 @@ class ConnectionCoordinatorTest {
     when(irc.connect("quassel")).thenReturn(Completable.never());
 
     ConnectionCoordinator coordinator =
-        new ConnectionCoordinator(
-            IrcConnectionLifecyclePort.from(irc),
-            irc,
-            ui,
-            serverRegistry,
-            serverCatalog,
-            runtimeConfig,
-            LOG_PROPS,
-            trayNotificationService);
+        connectionCoordinator(
+            irc, ui, serverRegistry, serverCatalog, runtimeConfig, trayNotificationService);
 
     coordinator.connectOne("quassel");
     coordinator.handleConnectivityEvent(
@@ -655,15 +558,8 @@ class ConnectionCoordinatorTest {
     when(irc.quasselCoreNetworks("quassel")).thenReturn(List.of());
 
     ConnectionCoordinator coordinator =
-        new ConnectionCoordinator(
-            IrcConnectionLifecyclePort.from(irc),
-            irc,
-            ui,
-            serverRegistry,
-            serverCatalog,
-            runtimeConfig,
-            LOG_PROPS,
-            trayNotificationService);
+        connectionCoordinator(
+            irc, ui, serverRegistry, serverCatalog, runtimeConfig, trayNotificationService);
 
     coordinator.connectOne("quassel");
     coordinator.handleConnectivityEvent(
@@ -709,15 +605,8 @@ class ConnectionCoordinatorTest {
     when(irc.connect("quassel")).thenReturn(Completable.never());
 
     ConnectionCoordinator coordinator =
-        new ConnectionCoordinator(
-            IrcConnectionLifecyclePort.from(irc),
-            irc,
-            ui,
-            serverRegistry,
-            serverCatalog,
-            runtimeConfig,
-            LOG_PROPS,
-            trayNotificationService);
+        connectionCoordinator(
+            irc, ui, serverRegistry, serverCatalog, runtimeConfig, trayNotificationService);
 
     coordinator.queueOpenQuasselNetworkManagerOnSyncReady("quassel");
     coordinator.connectOne("quassel");
@@ -751,15 +640,8 @@ class ConnectionCoordinatorTest {
     when(irc.quasselCoreSetupPrompt("quassel")).thenReturn(Optional.of(prompt));
 
     ConnectionCoordinator coordinator =
-        new ConnectionCoordinator(
-            IrcConnectionLifecyclePort.from(irc),
-            irc,
-            ui,
-            serverRegistry,
-            serverCatalog,
-            runtimeConfig,
-            LOG_PROPS,
-            trayNotificationService);
+        connectionCoordinator(
+            irc, ui, serverRegistry, serverCatalog, runtimeConfig, trayNotificationService);
 
     coordinator.connectAutoConnectOnStartServers();
     coordinator.handleConnectivityEvent(
@@ -792,15 +674,8 @@ class ConnectionCoordinatorTest {
     when(serverCatalog.containsId("quassel")).thenReturn(true);
 
     ConnectionCoordinator coordinator =
-        new ConnectionCoordinator(
-            IrcConnectionLifecyclePort.from(irc),
-            irc,
-            ui,
-            serverRegistry,
-            serverCatalog,
-            runtimeConfig,
-            LOG_PROPS,
-            trayNotificationService);
+        connectionCoordinator(
+            irc, ui, serverRegistry, serverCatalog, runtimeConfig, trayNotificationService);
 
     coordinator.handleConnectivityEvent(
         "quassel",
@@ -833,15 +708,8 @@ class ConnectionCoordinatorTest {
     when(irc.quasselCoreNetworks("quassel")).thenReturn(List.of(summary));
 
     ConnectionCoordinator coordinator =
-        new ConnectionCoordinator(
-            IrcConnectionLifecyclePort.from(irc),
-            irc,
-            ui,
-            serverRegistry,
-            serverCatalog,
-            runtimeConfig,
-            LOG_PROPS,
-            trayNotificationService);
+        connectionCoordinator(
+            irc, ui, serverRegistry, serverCatalog, runtimeConfig, trayNotificationService);
 
     TargetRef active = new TargetRef("quassel", "#ircafe");
     coordinator.handleConnectivityEvent(
@@ -886,15 +754,8 @@ class ConnectionCoordinatorTest {
     when(serverCatalog.containsId("quassel")).thenReturn(true);
 
     ConnectionCoordinator coordinator =
-        new ConnectionCoordinator(
-            IrcConnectionLifecyclePort.from(irc),
-            irc,
-            ui,
-            serverRegistry,
-            serverCatalog,
-            runtimeConfig,
-            LOG_PROPS,
-            trayNotificationService);
+        connectionCoordinator(
+            irc, ui, serverRegistry, serverCatalog, runtimeConfig, trayNotificationService);
 
     coordinator.handleConnectivityEvent(
         "quassel",
@@ -965,15 +826,8 @@ class ConnectionCoordinatorTest {
     when(serverCatalog.containsId("quassel")).thenReturn(true);
 
     ConnectionCoordinator coordinator =
-        new ConnectionCoordinator(
-            IrcConnectionLifecyclePort.from(irc),
-            irc,
-            ui,
-            serverRegistry,
-            serverCatalog,
-            runtimeConfig,
-            LOG_PROPS,
-            trayNotificationService);
+        connectionCoordinator(
+            irc, ui, serverRegistry, serverCatalog, runtimeConfig, trayNotificationService);
 
     TargetRef active = new TargetRef("quassel", "#ircafe");
     coordinator.handleConnectivityEvent(
@@ -1007,15 +861,8 @@ class ConnectionCoordinatorTest {
     when(serverRegistry.serverIds()).thenReturn(Set.of("libera"));
     when(runtimeConfig.readKnownChannels("libera")).thenReturn(List.of("#ircafe", "#java"));
 
-    new ConnectionCoordinator(
-        IrcConnectionLifecyclePort.from(irc),
-        irc,
-        ui,
-        serverRegistry,
-        serverCatalog,
-        runtimeConfig,
-        LOG_PROPS,
-        trayNotificationService);
+    connectionCoordinator(
+        irc, ui, serverRegistry, serverCatalog, runtimeConfig, trayNotificationService);
 
     verify(ui, atLeastOnce()).ensureTargetExists(new TargetRef("libera", "#ircafe"));
     verify(ui, atLeastOnce()).setChannelDisconnected(new TargetRef("libera", "#ircafe"), true);
@@ -1044,15 +891,8 @@ class ConnectionCoordinatorTest {
                     IrcProperties.Server.Backend.QUASSEL_CORE)));
     when(runtimeConfig.readKnownChannels("quassel")).thenReturn(List.of("#ircafe"));
 
-    new ConnectionCoordinator(
-        IrcConnectionLifecyclePort.from(irc),
-        irc,
-        ui,
-        serverRegistry,
-        serverCatalog,
-        runtimeConfig,
-        LOG_PROPS,
-        trayNotificationService);
+    connectionCoordinator(
+        irc, ui, serverRegistry, serverCatalog, runtimeConfig, trayNotificationService);
 
     verify(ui, never()).ensureTargetExists(new TargetRef("quassel", "#ircafe"));
     verify(ui, never()).setChannelDisconnected(new TargetRef("quassel", "#ircafe"), true);
@@ -1085,15 +925,8 @@ class ConnectionCoordinatorTest {
     TrayNotificationsPort trayNotificationService = mock(TrayNotificationsPort.class);
 
     ConnectionCoordinator coordinator =
-        new ConnectionCoordinator(
-            IrcConnectionLifecyclePort.from(irc),
-            irc,
-            ui,
-            serverRegistry,
-            serverCatalog,
-            runtimeConfig,
-            LOG_PROPS,
-            trayNotificationService);
+        connectionCoordinator(
+            irc, ui, serverRegistry, serverCatalog, runtimeConfig, trayNotificationService);
     var method =
         ConnectionCoordinator.class.getDeclaredMethod(
             "summarizeReconnectChange", IrcProperties.Server.class, IrcProperties.Server.class);
@@ -1111,6 +944,27 @@ class ConnectionCoordinatorTest {
   private static IrcProperties.Server server(
       String id, String host, int port, boolean tls, IrcProperties.Server.Backend backend) {
     return serverBuilder(id, host, port, tls).backend(backend).build();
+  }
+
+  private static ConnectionCoordinator connectionCoordinator(
+      IrcBackendClientService irc,
+      UiPort ui,
+      ServerRegistry serverRegistry,
+      ServerCatalog serverCatalog,
+      ConnectionRuntimeConfigPort runtimeConfig,
+      TrayNotificationsPort trayNotificationService) {
+    return new ConnectionCoordinator(
+        IrcConnectionLifecyclePort.from(irc),
+        irc,
+        irc,
+        ui,
+        serverRegistry,
+        serverCatalog,
+        runtimeConfig,
+        LOG_PROPS,
+        trayNotificationService,
+        null,
+        BackendAvailabilityReasonFormatter.builtInsBackendMetadata());
   }
 
   private static IrcProperties.Server server(

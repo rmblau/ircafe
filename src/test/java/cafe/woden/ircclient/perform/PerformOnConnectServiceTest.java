@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.app.api.AvailableBackendIdsPort;
+import cafe.woden.ircclient.app.api.BackendAvailabilityReasonFormatter;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.commands.CommandParser;
 import cafe.woden.ircclient.app.commands.ParsedInput;
@@ -53,7 +54,14 @@ class PerformOnConnectServiceTest {
     events = PublishProcessor.create();
     when(irc.events()).thenReturn(events);
     when(irc.currentNick("libera")).thenReturn(Optional.of("me"));
-    service = new PerformOnConnectService(irc, irc, serverCatalog, commandParser, ui);
+    service =
+        new PerformOnConnectService(
+            irc,
+            irc,
+            BackendAvailabilityReasonFormatter.builtInsBackendMetadata(),
+            serverCatalog,
+            commandParser,
+            ui);
   }
 
   @AfterEach

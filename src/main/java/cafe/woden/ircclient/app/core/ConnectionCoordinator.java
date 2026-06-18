@@ -16,7 +16,6 @@ import cafe.woden.ircclient.irc.DisconnectRequestSource;
 import cafe.woden.ircclient.irc.IrcEvent;
 import cafe.woden.ircclient.irc.backend.BackendNotAvailableException;
 import cafe.woden.ircclient.irc.backend.IrcBackendAvailabilityPort;
-import cafe.woden.ircclient.irc.backend.spi.IrcBackendClientService;
 import cafe.woden.ircclient.irc.port.IrcConnectionLifecyclePort;
 import cafe.woden.ircclient.irc.quassel.control.QuasselCoreControlPort;
 import cafe.woden.ircclient.model.TargetRef;
@@ -152,30 +151,6 @@ public class ConnectionCoordinator {
     }
 
     updateConnectionUi();
-  }
-
-  @Deprecated(forRemoval = false)
-  public ConnectionCoordinator(
-      IrcConnectionLifecyclePort irc,
-      IrcBackendClientService ircClientService,
-      UiPort ui,
-      ServerRegistry serverRegistry,
-      ServerCatalog serverCatalog,
-      ConnectionRuntimeConfigPort runtimeConfig,
-      LogProperties logProps,
-      TrayNotificationsPort trayNotificationService) {
-    this(
-        irc,
-        ircClientService,
-        ircClientService,
-        ui,
-        serverRegistry,
-        serverCatalog,
-        runtimeConfig,
-        logProps,
-        trayNotificationService,
-        null,
-        BackendAvailabilityReasonFormatter.builtInsBackendMetadata());
   }
 
   @PreDestroy
