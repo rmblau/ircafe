@@ -23,6 +23,42 @@ class MatrixUploadMsgTypeProviderPluginTest {
   @TempDir Path tempDir;
 
   @Test
+  void matrixUploadMsgTypeProvidersIncludeBuiltInsWithoutInstalledPlugins() {
+    List<MatrixUploadMsgTypeProvider> providers =
+        MessageInputPluginProviders.matrixUploadMsgTypeProviders(null);
+    MatrixMessageInputUploadUxMode mode = new MatrixMessageInputUploadUxMode(providers);
+    UploadContext context = new UploadContext(tempDir.resolve("photo.png").toFile());
+
+    assertEquals(
+        1,
+        providers.stream()
+            .filter(provider -> provider instanceof BuiltInMatrixUploadMsgTypeProvider)
+            .count());
+    assertTrue(mode.importFileDrop(context, List.of(context.file)));
+    assertEquals(
+        List.of("/upload m.image \"" + context.file.getAbsolutePath() + "\""), context.lines);
+  }
+
+  @Test
+  void loadsBuiltInMatrixUploadMsgTypeProviderThroughClasspathServiceLoader() {
+    RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+
+    List<MatrixUploadMsgTypeProvider> providers =
+        MessageInputPluginProviders.matrixUploadMsgTypeProviders(installedPlugins);
+
+    assertTrue(installedPlugins.pluginProblems().isEmpty());
+    assertEquals(
+        1,
+        providers.stream()
+            .filter(provider -> provider instanceof BuiltInMatrixUploadMsgTypeProvider)
+            .count());
+    assertTrue(
+        MatrixMessageInputUploadUxMode.msgTypeRulesFromProviders(providers).stream()
+            .anyMatch(rule -> rule.msgType().equals("m.image")));
+  }
+
+  @Test
   void loadsMatrixUploadMsgTypeRulesFromPluginDirectoryJar() throws Exception {
     Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
     Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));

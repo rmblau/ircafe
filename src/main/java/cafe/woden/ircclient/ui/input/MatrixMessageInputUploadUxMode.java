@@ -6,10 +6,10 @@ import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Set;
 import javax.swing.JFileChooser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,18 +17,11 @@ import org.slf4j.LoggerFactory;
 final class MatrixMessageInputUploadUxMode implements MessageInputUploadUxMode {
   private static final Logger log = LoggerFactory.getLogger(MatrixMessageInputUploadUxMode.class);
 
-  private static final Set<String> MATRIX_IMAGE_EXTENSIONS =
-      Set.of(
-          "png", "jpg", "jpeg", "gif", "webp", "bmp", "svg", "heic", "heif", "avif", "tif", "tiff");
-  private static final Set<String> MATRIX_VIDEO_EXTENSIONS =
-      Set.of("mp4", "m4v", "mov", "mkv", "webm", "avi", "wmv", "flv", "mpeg", "mpg", "3gp", "ogv");
-  private static final Set<String> MATRIX_AUDIO_EXTENSIONS =
-      Set.of("mp3", "m4a", "aac", "wav", "flac", "ogg", "oga", "opus", "weba", "amr");
   private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
   private final List<MatrixUploadMsgTypeRule> msgTypeRules;
 
   MatrixMessageInputUploadUxMode() {
-    this(List.of());
+    this(MessageInputPluginProviders.builtInMatrixUploadMsgTypeProviders());
   }
 
   MatrixMessageInputUploadUxMode(List<MatrixUploadMsgTypeProvider> msgTypeProviders) {
@@ -36,17 +29,13 @@ final class MatrixMessageInputUploadUxMode implements MessageInputUploadUxMode {
   }
 
   static List<MatrixUploadMsgTypeRule> defaultMsgTypeRules() {
-    return List.of(
-        new MatrixUploadMsgTypeRule("m.image", MATRIX_IMAGE_EXTENSIONS.toArray(String[]::new)),
-        new MatrixUploadMsgTypeRule("m.video", MATRIX_VIDEO_EXTENSIONS.toArray(String[]::new)),
-        new MatrixUploadMsgTypeRule("m.audio", MATRIX_AUDIO_EXTENSIONS.toArray(String[]::new)));
+    return new BuiltInMatrixUploadMsgTypeProvider().uploadMsgTypeRules();
   }
 
   static List<MatrixUploadMsgTypeRule> msgTypeRulesFromProviders(
       List<MatrixUploadMsgTypeProvider> providers) {
-    ArrayList<MatrixUploadMsgTypeRule> rules = new ArrayList<>(defaultMsgTypeRules());
-    for (MatrixUploadMsgTypeProvider provider :
-        Objects.requireNonNullElse(providers, List.<MatrixUploadMsgTypeProvider>of())) {
+    ArrayList<MatrixUploadMsgTypeRule> rules = new ArrayList<>();
+    for (MatrixUploadMsgTypeProvider provider : msgTypeProviderChain(providers)) {
       if (provider == null) continue;
       try {
         List<MatrixUploadMsgTypeRule> contributed = provider.uploadMsgTypeRules();
@@ -62,6 +51,31 @@ final class MatrixMessageInputUploadUxMode implements MessageInputUploadUxMode {
       }
     }
     return List.copyOf(rules);
+  }
+
+  private static List<MatrixUploadMsgTypeProvider> msgTypeProviderChain(
+      List<MatrixUploadMsgTypeProvider> providers) {
+    LinkedHashSet<String> providerClassNames = new LinkedHashSet<>();
+    ArrayList<MatrixUploadMsgTypeProvider> chain = new ArrayList<>();
+    addProviders(
+        chain,
+        providerClassNames,
+        MessageInputPluginProviders.builtInMatrixUploadMsgTypeProviders());
+    addProviders(chain, providerClassNames, providers);
+    return List.copyOf(chain);
+  }
+
+  private static void addProviders(
+      ArrayList<MatrixUploadMsgTypeProvider> providers,
+      LinkedHashSet<String> providerClassNames,
+      List<MatrixUploadMsgTypeProvider> candidates) {
+    for (MatrixUploadMsgTypeProvider provider :
+        Objects.requireNonNullElse(candidates, List.<MatrixUploadMsgTypeProvider>of())) {
+      if (provider == null || !providerClassNames.add(provider.getClass().getName())) {
+        continue;
+      }
+      providers.add(provider);
+    }
   }
 
   private static final ActionPresentation PRESENTATION =
