@@ -5,6 +5,7 @@ import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
 import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.auto.service.AutoService;
 import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -16,7 +17,8 @@ import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-final class ImdbLinkPreviewResolver implements LinkPreviewResolver {
+@AutoService(LinkPreviewResolver.class)
+public final class ImdbLinkPreviewResolver implements LinkPreviewResolver {
 
   private static final Logger log = LoggerFactory.getLogger(ImdbLinkPreviewResolver.class);
 

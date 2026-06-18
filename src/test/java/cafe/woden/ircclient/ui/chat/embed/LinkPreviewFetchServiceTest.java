@@ -54,6 +54,28 @@ class LinkPreviewFetchServiceTest {
     assertTrue(installedPlugins.pluginProblems().isEmpty());
   }
 
+  @Test
+  void loadsNoArgBuiltInResolversThroughClasspathServiceLoader() {
+    RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+
+    List<String> resolverClassNames =
+        LinkPreviewPluginProviders.linkPreviewResolvers(List.of(), installedPlugins).stream()
+            .map(resolver -> resolver.getClass().getName())
+            .toList();
+
+    assertTrue(
+        resolverClassNames.contains(
+            "cafe.woden.ircclient.ui.chat.embed.WikipediaLinkPreviewResolver"));
+    assertTrue(
+        resolverClassNames.contains(
+            "cafe.woden.ircclient.ui.chat.embed.GitHubLinkPreviewResolver"));
+    assertTrue(
+        resolverClassNames.contains(
+            "cafe.woden.ircclient.ui.chat.embed.MastodonStatusApiPreviewResolver"));
+    assertTrue(installedPlugins.pluginProblems().isEmpty());
+  }
+
   private void writePluginJar(Path jarPath) throws Exception {
     String providerClassName = "cafe.woden.ircclient.testplugins.PluginLinkPreviewResolver";
     String providerSource =
