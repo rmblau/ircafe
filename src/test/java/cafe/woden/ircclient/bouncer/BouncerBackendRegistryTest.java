@@ -6,13 +6,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
+import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class BouncerBackendRegistryTest {
+
+  @TempDir Path tempDir;
 
   @Test
   void buildsDescriptorsFromMappingStrategies() {
@@ -89,6 +95,17 @@ class BouncerBackendRegistryTest {
     assertEquals("plugin-spi:", plugin.ephemeralIdPrefix());
     assertEquals("Plugin SPI Networks", plugin.networksGroupLabel());
     assertEquals(Set.of("example.com/plugin-spi"), plugin.capabilityHints());
+  }
+
+  @Test
+  void loadsNoArgBuiltInMappingStrategiesThroughClasspathServiceLoader() {
+    RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+
+    BouncerBackendRegistry registry = new BouncerBackendRegistry(List.of(), installedPlugins);
+
+    assertTrue(installedPlugins.pluginProblems().isEmpty());
+    assertTrue(registry.backendIds().containsAll(Set.of("soju", "znc")));
   }
 
   private record FakeStrategy(

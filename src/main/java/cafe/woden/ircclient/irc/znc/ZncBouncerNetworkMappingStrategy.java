@@ -6,6 +6,7 @@ import cafe.woden.ircclient.bouncer.BouncerDiscoveredNetwork;
 import cafe.woden.ircclient.bouncer.ResolvedBouncerNetwork;
 import cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy;
 import cafe.woden.ircclient.config.IrcProperties;
+import com.google.auto.service.AutoService;
 import java.util.List;
 import java.util.Set;
 import org.jmolecules.architecture.layered.ApplicationLayer;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component;
 /** ZNC-specific naming and login shaping strategy for bouncer discovery. */
 @Component
 @ApplicationLayer
+@AutoService(BouncerNetworkMappingStrategy.class)
 public class ZncBouncerNetworkMappingStrategy implements BouncerNetworkMappingStrategy {
 
   public static final String BACKEND_ID = "znc";
