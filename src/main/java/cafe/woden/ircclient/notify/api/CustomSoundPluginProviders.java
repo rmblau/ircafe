@@ -1,30 +1,38 @@
 package cafe.woden.ircclient.notify.api;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider;
+import cafe.woden.ircclient.notify.spi.CustomSoundPlaybackProvider;
 import java.util.List;
 
 /** Centralizes ServiceLoader-backed custom sound plugin provider handling. */
 public final class CustomSoundPluginProviders {
+  private static final List<CustomSoundFileExtensionProvider> BUILT_IN_EXTENSION_PROVIDERS =
+      List.of(new BuiltInCustomSoundFileExtensionProvider());
+
   private CustomSoundPluginProviders() {}
 
-  public static List<cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider>
-      extensionProviders(InstalledPluginsPort installedPlugins) {
+  public static List<CustomSoundFileExtensionProvider> extensionProviders(
+      InstalledPluginsPort installedPlugins) {
     if (installedPlugins == null) {
-      return List.of();
+      return BUILT_IN_EXTENSION_PROVIDERS;
     }
     return dedupeByProviderClass(
         installedPlugins.loadInstalledServices(
-            cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider.class, List.of()));
+            CustomSoundFileExtensionProvider.class, BUILT_IN_EXTENSION_PROVIDERS));
   }
 
-  public static List<cafe.woden.ircclient.notify.spi.CustomSoundPlaybackProvider> playbackProviders(
+  public static List<CustomSoundPlaybackProvider> playbackProviders(
       InstalledPluginsPort installedPlugins) {
     if (installedPlugins == null) {
       return List.of();
     }
     return dedupeByProviderClass(
-        installedPlugins.loadInstalledServices(
-            cafe.woden.ircclient.notify.spi.CustomSoundPlaybackProvider.class, List.of()));
+        installedPlugins.loadInstalledServices(CustomSoundPlaybackProvider.class, List.of()));
+  }
+
+  static List<CustomSoundFileExtensionProvider> builtInExtensionProviders() {
+    return BUILT_IN_EXTENSION_PROVIDERS;
   }
 
   private static <T> List<T> nonNullServices(List<? extends T> services) {
