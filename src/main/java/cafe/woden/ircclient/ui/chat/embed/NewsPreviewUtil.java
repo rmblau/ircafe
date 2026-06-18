@@ -916,5 +916,4 @@ final class NewsPreviewUtil {
     String t = s.strip();
     return t.isEmpty() ? null : t;
   }
-
 }
