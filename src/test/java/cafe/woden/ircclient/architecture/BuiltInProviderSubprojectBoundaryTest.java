@@ -52,6 +52,7 @@ class BuiltInProviderSubprojectBoundaryTest {
     assertBuiltInProviderJarIncluded(settings, build, "ircafe-builtins-notify");
     assertBuiltInProviderJarIncluded(settings, build, "ircafe-builtins-embed");
     assertBuiltInProviderJarIncluded(settings, build, "ircafe-builtins-input");
+    assertBuiltInProviderJarIncluded(settings, build, "ircafe-builtins-outbound");
   }
 
   private static void assertBuiltInProviderJarIncluded(

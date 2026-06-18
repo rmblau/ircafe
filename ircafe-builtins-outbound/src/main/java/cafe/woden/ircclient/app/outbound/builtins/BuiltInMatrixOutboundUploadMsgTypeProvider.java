@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.app.outbound.backend;
+package cafe.woden.ircclient.app.outbound.builtins;
 
 import cafe.woden.ircclient.app.outbound.upload.spi.MatrixOutboundUploadMsgTypeProvider;
 import com.google.auto.service.AutoService;
@@ -7,12 +7,8 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
-import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
-import org.jmolecules.architecture.layered.ApplicationLayer;
 
 /** Built-in Matrix /upload msgtype aliases and accepted msgtypes. */
-@SecondaryAdapter
-@ApplicationLayer
 @AutoService(MatrixOutboundUploadMsgTypeProvider.class)
 public final class BuiltInMatrixOutboundUploadMsgTypeProvider
     implements MatrixOutboundUploadMsgTypeProvider {

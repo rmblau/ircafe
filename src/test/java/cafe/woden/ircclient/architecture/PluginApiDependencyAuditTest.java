@@ -48,8 +48,6 @@ class PluginApiDependencyAuditTest {
           "src/main/java/cafe/woden/ircclient/app/outbound/spi/LocalFilterCommandHandler.java -> org.jmolecules.architecture.hexagonal.SecondaryPort",
           "src/main/java/cafe/woden/ircclient/app/outbound/spi/LocalFilterCommandHandler.java -> org.jmolecules.architecture.layered.ApplicationLayer",
           "src/main/java/cafe/woden/ircclient/app/outbound/spi/package-info.java -> org.springframework.modulith.NamedInterface",
-          "src/main/java/cafe/woden/ircclient/app/outbound/upload/spi/MatrixOutboundUploadMsgTypeProvider.java -> org.jmolecules.architecture.hexagonal.SecondaryPort",
-          "src/main/java/cafe/woden/ircclient/app/outbound/upload/spi/MatrixOutboundUploadMsgTypeProvider.java -> org.jmolecules.architecture.layered.ApplicationLayer",
           "src/main/java/cafe/woden/ircclient/app/outbound/upload/spi/SemanticUploadCommandHandler.java -> cafe.woden.ircclient.model.TargetRef",
           "src/main/java/cafe/woden/ircclient/app/outbound/upload/spi/SemanticUploadCommandHandler.java -> org.jmolecules.architecture.hexagonal.SecondaryPort",
           "src/main/java/cafe/woden/ircclient/app/outbound/upload/spi/SemanticUploadCommandHandler.java -> org.jmolecules.architecture.layered.ApplicationLayer",

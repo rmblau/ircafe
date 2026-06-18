@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.app.outbound.backend;
 
+import cafe.woden.ircclient.app.outbound.builtins.BuiltInMatrixOutboundUploadMsgTypeProvider;
 import cafe.woden.ircclient.app.outbound.upload.spi.MatrixOutboundUploadMsgTypeProvider;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import java.util.ArrayList;
