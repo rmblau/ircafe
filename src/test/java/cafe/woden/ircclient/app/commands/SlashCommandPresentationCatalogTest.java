@@ -153,7 +153,8 @@ class SlashCommandPresentationCatalogTest {
     assertTrue(installedPlugins.pluginProblems().isEmpty());
     List<String> commands =
         catalog.autocompleteCommands().stream().map(SlashCommandDescriptor::command).toList();
-    assertEquals(List.of("/plugin-help"), commands);
+    assertTrue(commands.contains("/join"));
+    assertTrue(commands.contains("/plugin-help"));
 
     ArrayList<String> generalHelp = new ArrayList<>();
     catalog.appendGeneralHelp(
@@ -191,7 +192,8 @@ class SlashCommandPresentationCatalogTest {
     assertTrue(installedPlugins.pluginProblems().isEmpty());
     List<String> commands =
         catalog.autocompleteCommands().stream().map(SlashCommandDescriptor::command).toList();
-    assertEquals(List.of("/plugin-help"), commands);
+    assertTrue(commands.contains("/join"));
+    assertTrue(commands.contains("/plugin-help"));
 
     ArrayList<String> generalHelp = new ArrayList<>();
     catalog.appendGeneralHelp(
@@ -205,6 +207,21 @@ class SlashCommandPresentationCatalogTest {
         .get("plugin-help")
         .accept(new TargetRef("libera", "status"));
     assertEquals("status:/plugin-help <arg>", topicHelp.get());
+  }
+
+  @Test
+  void loadsCorePresentationContributorThroughClasspathServiceLoader() {
+    RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+    SlashCommandPresentationCatalog catalog =
+        new SlashCommandPresentationCatalog(
+            List.of(), BackendNamedCommandCatalog.empty(), installedPlugins);
+
+    assertTrue(installedPlugins.pluginProblems().isEmpty());
+    List<String> commands =
+        catalog.autocompleteCommands().stream().map(SlashCommandDescriptor::command).toList();
+    assertTrue(commands.contains("/join"));
+    assertTrue(commands.contains("/raw"));
   }
 
   @Test

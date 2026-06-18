@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.app.commands;
 
+import cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor;
+import com.google.auto.service.AutoService;
 import java.util.List;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 import org.springframework.stereotype.Component;
@@ -7,8 +9,9 @@ import org.springframework.stereotype.Component;
 /** Shared presentation metadata for built-in slash commands handled by the typed parser path. */
 @Component
 @ApplicationLayer
+@AutoService(SlashCommandPresentationContributor.class)
 public final class CoreSlashCommandPresentationContributor
-    implements cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor {
+    implements SlashCommandPresentationContributor {
 
   private static final List<SlashCommandDescriptor> COMMANDS =
       List.of(
