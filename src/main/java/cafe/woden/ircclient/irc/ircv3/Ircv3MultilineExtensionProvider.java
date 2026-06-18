@@ -3,11 +3,13 @@ package cafe.woden.ircclient.irc.ircv3;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_MULTILINE;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MULTILINE;
 
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider;
+import com.google.auto.service.AutoService;
 import java.util.List;
 
 /** SPI provider for the IRCv3 multiline draft extension. */
-public final class Ircv3MultilineExtensionProvider
-    implements cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider {
+@AutoService(Ircv3ExtensionProvider.class)
+public final class Ircv3MultilineExtensionProvider implements Ircv3ExtensionProvider {
 
   @Override
   public String providerId() {

@@ -100,12 +100,6 @@ public final class Ircv3ExtensionRegistry {
     }
   }
 
-  private static final List<Ircv3ExtensionProvider> BUILT_IN_PROVIDERS =
-      List.of(
-          new Ircv3CoreTransportExtensionProvider(),
-          new Ircv3CoreHistoryExtensionProvider(),
-          new Ircv3CoreMiscExtensionProvider());
-
   private static final Snapshot DEFAULT_SNAPSHOT = new Snapshot(loadProviders());
 
   private Ircv3ExtensionRegistry() {}
@@ -234,10 +228,6 @@ public final class Ircv3ExtensionRegistry {
     return DEFAULT_SNAPSHOT.normalizePreferenceKey(name);
   }
 
-  static List<Ircv3ExtensionProvider> builtInProviders() {
-    return BUILT_IN_PROVIDERS;
-  }
-
   static List<Ircv3ExtensionProvider> defaultProviders() {
     return DEFAULT_SNAPSHOT.providers();
   }
@@ -247,7 +237,7 @@ public final class Ircv3ExtensionRegistry {
   }
 
   private static List<Ircv3ExtensionProvider> loadProviders() {
-    ArrayList<Ircv3ExtensionProvider> providers = new ArrayList<>(BUILT_IN_PROVIDERS);
+    ArrayList<Ircv3ExtensionProvider> providers = new ArrayList<>();
     ClassLoader classLoader = Ircv3ExtensionProvider.class.getClassLoader();
     loadProviders(Ircv3ExtensionProvider.class, classLoader, providers);
     return normalizeProviders(providers);

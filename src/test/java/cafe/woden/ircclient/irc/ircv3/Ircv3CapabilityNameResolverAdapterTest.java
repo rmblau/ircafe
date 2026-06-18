@@ -43,7 +43,7 @@ class Ircv3CapabilityNameResolverAdapterTest {
   @Test
   void catalogResolverNormalizesPluginProvidedAliases() {
     ArrayList<Ircv3ExtensionProvider> providers =
-        new ArrayList<>(Ircv3ExtensionRegistry.builtInProviders());
+        new ArrayList<>(Ircv3ExtensionRegistry.defaultProviders());
     providers.add(new ExampleCapabilityProvider());
 
     Ircv3CapabilityNameResolverAdapter resolver =

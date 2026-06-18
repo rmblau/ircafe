@@ -2,11 +2,13 @@ package cafe.woden.ircclient.irc.ircv3;
 
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.BATCH;
 
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider;
+import com.google.auto.service.AutoService;
 import java.util.List;
 
 /** Built-in provider for core history-related IRCv3 transport capabilities. */
-public final class Ircv3CoreHistoryExtensionProvider
-    implements cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider {
+@AutoService(Ircv3ExtensionProvider.class)
+public final class Ircv3CoreHistoryExtensionProvider implements Ircv3ExtensionProvider {
 
   @Override
   public String providerId() {

@@ -93,7 +93,7 @@ class Ircv3ExtensionRegistryTest {
   @Test
   void duplicateCapabilityTokensAreRejected() {
     ArrayList<Ircv3ExtensionProvider> providers =
-        new ArrayList<>(Ircv3ExtensionRegistry.builtInProviders());
+        new ArrayList<>(Ircv3ExtensionRegistry.defaultProviders());
     providers.add(
         new Ircv3ExtensionProvider() {
           @Override
@@ -133,7 +133,7 @@ class Ircv3ExtensionRegistryTest {
   @Test
   void duplicateProviderIdsAreRejected() {
     ArrayList<Ircv3ExtensionProvider> providers =
-        new ArrayList<>(Ircv3ExtensionRegistry.builtInProviders());
+        new ArrayList<>(Ircv3ExtensionRegistry.defaultProviders());
     providers.add(
         new Ircv3ExtensionProvider() {
           @Override
@@ -158,7 +158,7 @@ class Ircv3ExtensionRegistryTest {
   @Test
   void duplicateRequestTokensAreRejected() {
     ArrayList<Ircv3ExtensionProvider> providers =
-        new ArrayList<>(Ircv3ExtensionRegistry.builtInProviders());
+        new ArrayList<>(Ircv3ExtensionRegistry.defaultProviders());
     providers.add(
         new Ircv3ExtensionProvider() {
           @Override
@@ -199,7 +199,7 @@ class Ircv3ExtensionRegistryTest {
   @Test
   void duplicateVisibleFeatureLabelsAreRejected() {
     ArrayList<Ircv3ExtensionProvider> providers =
-        new ArrayList<>(Ircv3ExtensionRegistry.builtInProviders());
+        new ArrayList<>(Ircv3ExtensionRegistry.defaultProviders());
     providers.add(
         new Ircv3ExtensionProvider() {
           @Override

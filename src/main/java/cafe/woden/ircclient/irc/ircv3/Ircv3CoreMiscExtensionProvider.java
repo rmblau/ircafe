@@ -18,11 +18,13 @@ import static cafe.woden.ircclient.util.Ircv3CapabilityNames.UNREACT;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.USERHOST_IN_NAMES;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.ZNC_PLAYBACK;
 
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider;
+import com.google.auto.service.AutoService;
 import java.util.List;
 
 /** Built-in provider for remaining non-transport IRCv3 metadata and tag features. */
-public final class Ircv3CoreMiscExtensionProvider
-    implements cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider {
+@AutoService(Ircv3ExtensionProvider.class)
+public final class Ircv3CoreMiscExtensionProvider implements Ircv3ExtensionProvider {
 
   @Override
   public String providerId() {

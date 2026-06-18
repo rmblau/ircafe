@@ -3,11 +3,13 @@ package cafe.woden.ircclient.irc.ircv3;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_MESSAGE_REDACTION;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MESSAGE_REDACTION;
 
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider;
+import com.google.auto.service.AutoService;
 import java.util.List;
 
 /** SPI provider for the IRCv3 message-redaction draft extension. */
-public final class Ircv3MessageRedactionExtensionProvider
-    implements cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider {
+@AutoService(Ircv3ExtensionProvider.class)
+public final class Ircv3MessageRedactionExtensionProvider implements Ircv3ExtensionProvider {
 
   @Override
   public String providerId() {

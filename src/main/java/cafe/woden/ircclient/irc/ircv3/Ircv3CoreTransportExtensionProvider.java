@@ -16,11 +16,13 @@ import static cafe.woden.ircclient.util.Ircv3CapabilityNames.SERVER_TIME;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.SETNAME;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.STANDARD_REPLIES;
 
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider;
+import com.google.auto.service.AutoService;
 import java.util.List;
 
 /** Built-in provider for the core IRCv3 transport and metadata capabilities. */
-public final class Ircv3CoreTransportExtensionProvider
-    implements cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider {
+@AutoService(Ircv3ExtensionProvider.class)
+public final class Ircv3CoreTransportExtensionProvider implements Ircv3ExtensionProvider {
 
   @Override
   public String providerId() {
