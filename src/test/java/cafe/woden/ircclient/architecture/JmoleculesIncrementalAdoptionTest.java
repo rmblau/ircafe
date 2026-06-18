@@ -229,8 +229,6 @@ import cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider;
 import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreview;
 import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
 import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
-import cafe.woden.ircclient.ui.input.spi.MessageInputSpellcheckDictionaryProvider;
-import cafe.woden.ircclient.ui.input.spi.MessageInputWordSuggestionProvider;
 import cafe.woden.ircclient.ui.settings.theme.spi.ThemeContributionProvider;
 import cafe.woden.ircclient.ui.settings.theme.spi.ThemePresetContribution;
 import java.lang.annotation.Annotation;
@@ -631,8 +629,6 @@ class JmoleculesIncrementalAdoptionTest {
     assertAnnotated(LinkPreview.class, InterfaceLayer.class);
     assertAnnotated(LinkPreviewHttp.class, InterfaceLayer.class);
     assertAnnotated(LinkPreviewResolver.class, InterfaceLayer.class);
-    assertAnnotated(MessageInputSpellcheckDictionaryProvider.class, InterfaceLayer.class);
-    assertAnnotated(MessageInputWordSuggestionProvider.class, InterfaceLayer.class);
     assertAnnotated(ThemeContributionProvider.class, InterfaceLayer.class);
     assertAnnotated(ThemePresetContribution.class, InterfaceLayer.class);
     assertAnnotatedByName("cafe.woden.ircclient.ui.ChatDockable", InterfaceLayer.class);

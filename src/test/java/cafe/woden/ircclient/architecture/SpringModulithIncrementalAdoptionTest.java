@@ -183,8 +183,6 @@ import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.chat.transcript.history.ChatHistoryTranscriptPortAdapter;
 import cafe.woden.ircclient.ui.chat.transcript.rebuild.TranscriptRebuildService;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
-import cafe.woden.ircclient.ui.input.spi.MessageInputSpellcheckDictionaryProvider;
-import cafe.woden.ircclient.ui.input.spi.MessageInputWordSuggestionProvider;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import cafe.woden.ircclient.ui.settings.UiSettingsPortAdapter;
 import cafe.woden.ircclient.ui.settings.theme.ThemeIdUtils;
@@ -430,11 +428,6 @@ class SpringModulithIncrementalAdoptionTest {
         ThemeContributionProvider.class,
         ThemePresetContribution.class);
     assertNamedInterfaceContains(uiModule, "spi", ExternalBrowserCommandProvider.class);
-    assertNamedInterfaceContains(
-        uiModule,
-        "input-spi",
-        MessageInputSpellcheckDictionaryProvider.class,
-        MessageInputWordSuggestionProvider.class);
     assertNamedInterfaceContains(
         uiModule,
         "chat-embed-spi",
