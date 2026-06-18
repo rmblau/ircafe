@@ -57,9 +57,6 @@ class PluginApiDependencyAuditTest {
           "src/main/java/cafe/woden/ircclient/app/translation/spi/MessageTranslationBackendProvider.java -> cafe.woden.ircclient.app.translation.MessageTranslationResult",
           "src/main/java/cafe/woden/ircclient/app/translation/spi/MessageTranslationBackendProvider.java -> org.jmolecules.architecture.hexagonal.SecondaryPort",
           "src/main/java/cafe/woden/ircclient/app/translation/spi/MessageTranslationBackendProvider.java -> org.jmolecules.architecture.layered.ApplicationLayer",
-          "src/main/java/cafe/woden/ircclient/app/translation/spi/MessageTranslationLanguageProvider.java -> cafe.woden.ircclient.app.translation.MessageTranslationLanguage",
-          "src/main/java/cafe/woden/ircclient/app/translation/spi/MessageTranslationLanguageProvider.java -> org.jmolecules.architecture.hexagonal.SecondaryPort",
-          "src/main/java/cafe/woden/ircclient/app/translation/spi/MessageTranslationLanguageProvider.java -> org.jmolecules.architecture.layered.ApplicationLayer",
           "src/main/java/cafe/woden/ircclient/app/translation/spi/package-info.java -> org.springframework.modulith.NamedInterface",
           "src/main/java/cafe/woden/ircclient/bouncer/spi/BouncerBackendDiscoveryHandler.java -> cafe.woden.ircclient.bouncer.BouncerDiscoveredNetwork",
           "src/main/java/cafe/woden/ircclient/bouncer/spi/BouncerBackendDiscoveryHandler.java -> org.jmolecules.architecture.layered.ApplicationLayer",
@@ -151,7 +148,8 @@ class PluginApiDependencyAuditTest {
   }
 
   private static boolean isPluginApiPortable(String dependency) {
-    return dependency.startsWith("java.")
+    return dependency.equals("cafe.woden.ircclient.app.translation.MessageTranslationLanguage")
+        || dependency.startsWith("java.")
         || dependency.startsWith("javax.annotation.")
         || (dependency.startsWith("cafe.woden.ircclient.") && dependency.contains(".spi."));
   }

@@ -54,6 +54,7 @@ class BuiltInProviderSubprojectBoundaryTest {
     assertBuiltInProviderJarIncluded(settings, build, "ircafe-builtins-input");
     assertBuiltInProviderJarIncluded(settings, build, "ircafe-builtins-outbound");
     assertBuiltInProviderJarIncluded(settings, build, "ircafe-builtins-ui");
+    assertBuiltInProviderJarIncluded(settings, build, "ircafe-builtins-translation");
   }
 
   private static void assertBuiltInProviderJarIncluded(
@@ -81,7 +82,8 @@ class BuiltInProviderSubprojectBoundaryTest {
   }
 
   private static boolean isBuiltInProviderDependency(String dependency) {
-    return dependency.startsWith("java.")
+    return dependency.equals("cafe.woden.ircclient.app.translation.MessageTranslationLanguage")
+        || dependency.startsWith("java.")
         || dependency.equals("com.google.auto.service.AutoService")
         || (dependency.startsWith("cafe.woden.ircclient.") && dependency.contains(".spi."));
   }

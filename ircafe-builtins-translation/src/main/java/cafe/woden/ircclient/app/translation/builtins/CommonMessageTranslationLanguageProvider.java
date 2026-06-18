@@ -1,14 +1,11 @@
-package cafe.woden.ircclient.app.translation;
+package cafe.woden.ircclient.app.translation.builtins;
 
+import cafe.woden.ircclient.app.translation.MessageTranslationLanguage;
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider;
 import com.google.auto.service.AutoService;
 import java.util.List;
-import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
-import org.jmolecules.architecture.layered.ApplicationLayer;
 
 /** Built-in common target languages for manual translation controls. */
-@SecondaryAdapter
-@ApplicationLayer
 @AutoService(MessageTranslationLanguageProvider.class)
 public final class CommonMessageTranslationLanguageProvider
     implements MessageTranslationLanguageProvider {
@@ -48,10 +45,6 @@ public final class CommonMessageTranslationLanguageProvider
           new MessageTranslationLanguage("uk", "Ukrainian"),
           new MessageTranslationLanguage("vi", "Vietnamese"),
           new MessageTranslationLanguage("zh", "Chinese"));
-
-  static List<MessageTranslationLanguage> commonLanguages() {
-    return LANGUAGES;
-  }
 
   @Override
   public List<MessageTranslationLanguage> languages() {
