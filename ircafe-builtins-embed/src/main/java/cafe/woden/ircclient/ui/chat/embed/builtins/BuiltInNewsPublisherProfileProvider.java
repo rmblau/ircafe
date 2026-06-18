@@ -1,13 +1,11 @@
-package cafe.woden.ircclient.ui.chat.embed;
+package cafe.woden.ircclient.ui.chat.embed.builtins;
 
 import cafe.woden.ircclient.ui.chat.embed.spi.NewsPublisherProfile;
 import cafe.woden.ircclient.ui.chat.embed.spi.NewsPublisherProfileProvider;
 import com.google.auto.service.AutoService;
 import java.util.List;
-import org.jmolecules.architecture.layered.InterfaceLayer;
 
 /** Built-in publisher profiles used by the generic news/article preview resolver. */
-@InterfaceLayer
 @AutoService(NewsPublisherProfileProvider.class)
 public final class BuiltInNewsPublisherProfileProvider implements NewsPublisherProfileProvider {
   private static final String[] GENERIC_IMAGE_SELECTORS = {
@@ -164,7 +162,7 @@ public final class BuiltInNewsPublisherProfileProvider implements NewsPublisherP
                 "article:published_time", "article:modified_time", "parsely-pub-date", "date"
               }));
 
-  static List<NewsPublisherProfile> profiles() {
+  public static List<NewsPublisherProfile> profiles() {
     return PROFILES;
   }
 

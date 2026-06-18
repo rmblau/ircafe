@@ -3,10 +3,8 @@ package cafe.woden.ircclient.ui.chat.embed.spi;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Objects;
-import org.jmolecules.architecture.layered.InterfaceLayer;
 
 /** Publisher-specific selectors used by the generic news/article preview resolver. */
-@InterfaceLayer
 public record NewsPublisherProfile(
     String key,
     String displayName,

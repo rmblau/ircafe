@@ -87,8 +87,6 @@ class PluginApiDependencyAuditTest {
           "src/main/java/cafe/woden/ircclient/ui/chat/embed/spi/LinkPreviewHttp.java -> cafe.woden.ircclient.net.HttpLite",
           "src/main/java/cafe/woden/ircclient/ui/chat/embed/spi/LinkPreviewHttp.java -> org.jmolecules.architecture.layered.InterfaceLayer",
           "src/main/java/cafe/woden/ircclient/ui/chat/embed/spi/LinkPreviewResolver.java -> org.jmolecules.architecture.layered.InterfaceLayer",
-          "src/main/java/cafe/woden/ircclient/ui/chat/embed/spi/NewsPublisherProfile.java -> org.jmolecules.architecture.layered.InterfaceLayer",
-          "src/main/java/cafe/woden/ircclient/ui/chat/embed/spi/NewsPublisherProfileProvider.java -> org.jmolecules.architecture.layered.InterfaceLayer",
           "src/main/java/cafe/woden/ircclient/ui/chat/embed/spi/OEmbedLinkPreviewProvider.java -> org.jmolecules.architecture.layered.InterfaceLayer",
           "src/main/java/cafe/woden/ircclient/ui/chat/embed/spi/OEmbedResponseFields.java -> org.jmolecules.architecture.layered.InterfaceLayer",
           "src/main/java/cafe/woden/ircclient/ui/chat/embed/spi/package-info.java -> org.springframework.modulith.NamedInterface",
