@@ -7,8 +7,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
+import cafe.woden.ircclient.ui.settings.theme.builtins.BuiltInThemeContributionProvider;
 import cafe.woden.ircclient.ui.settings.theme.spi.ThemeContributionProvider;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemeOption;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemePack;
 import cafe.woden.ircclient.ui.settings.theme.spi.ThemePresetContribution;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemeTone;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.nio.file.Files;
@@ -28,7 +32,7 @@ class ThemeContributionProviderTest {
 
   @Test
   void builtInThemeOptionsLoadWithoutInstalledPlugins() {
-    List<ThemeManager.ThemeOption> options = ThemeContributionProviders.builtInThemeOptions(null);
+    List<ThemeOption> options = ThemeContributionProviders.builtInThemeOptions(null);
 
     assertEquals(1, options.stream().filter(option -> option.id().equals("dark")).count());
     assertTrue(
@@ -37,7 +41,7 @@ class ThemeContributionProviderTest {
                 option ->
                     option.id().equals("dark")
                         && option.label().equals("Flat Dark")
-                        && option.pack() == ThemeManager.ThemePack.FLATLAF));
+                        && option.pack() == ThemePack.FLATLAF));
   }
 
   @Test
@@ -45,8 +49,7 @@ class ThemeContributionProviderTest {
     RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
 
-    List<ThemeManager.ThemeOption> options =
-        ThemeContributionProviders.builtInThemeOptions(installedPlugins);
+    List<ThemeOption> options = ThemeContributionProviders.builtInThemeOptions(installedPlugins);
 
     assertTrue(
         ServiceLoader.load(ThemeContributionProvider.class).stream()
@@ -70,7 +73,7 @@ class ThemeContributionProviderTest {
                 option ->
                     option.id().equals("plugin-aurora")
                         && option.label().equals("Plugin Aurora")
-                        && option.pack() == ThemeManager.ThemePack.PLUGIN));
+                        && option.pack() == ThemePack.PLUGIN));
   }
 
   @Test
@@ -82,7 +85,7 @@ class ThemeContributionProviderTest {
                     new SingleThemeContributionProvider(
                         List.of(pluginThemeOption("dark", "Plugin Dark")), List.of()))));
 
-    ThemeManager.ThemeOption dark =
+    ThemeOption dark =
         List.of(catalog.supportedThemes()).stream()
             .filter(option -> option.id().equals("dark"))
             .findFirst()
@@ -157,33 +160,31 @@ class ThemeContributionProviderTest {
         "#7755CC", registry.byId("plugin-nebula").extraDefaults().get(UiColorKeys.ACCENT_COLOR));
   }
 
-  private static ThemeManager.ThemeOption pluginThemeOption(String id, String label) {
-    return new ThemeManager.ThemeOption(
-        id, label, ThemeManager.ThemeTone.DARK, ThemeManager.ThemePack.PLUGIN, false);
+  private static ThemeOption pluginThemeOption(String id, String label) {
+    return new ThemeOption(id, label, ThemeTone.DARK, ThemePack.PLUGIN, false);
   }
 
   private static String pluginProviderSource() {
-    return
-"""
+    return """
         package plugin.theme;
 
-        import cafe.woden.ircclient.ui.settings.theme.ThemeManager;
         import cafe.woden.ircclient.ui.settings.theme.spi.ThemeContributionProvider;
+        import cafe.woden.ircclient.ui.settings.theme.spi.ThemeOption;
+        import cafe.woden.ircclient.ui.settings.theme.spi.ThemePack;
         import cafe.woden.ircclient.ui.settings.theme.spi.ThemePresetContribution;
-        import cafe.woden.ircclient.ui.util.UiColorKeys;
+        import cafe.woden.ircclient.ui.settings.theme.spi.ThemeTone;
         import java.util.List;
         import java.util.Map;
-import java.util.ServiceLoader;
 
         public final class PluginThemeProvider implements ThemeContributionProvider {
           @Override
-          public List<ThemeManager.ThemeOption> themeOptions() {
+          public List<ThemeOption> themeOptions() {
             return List.of(
-                new ThemeManager.ThemeOption(
+                new ThemeOption(
                     "plugin-nebula",
                     "Plugin Nebula",
-                    ThemeManager.ThemeTone.DARK,
-                    ThemeManager.ThemePack.PLUGIN,
+                    ThemeTone.DARK,
+                    ThemePack.PLUGIN,
                     false));
           }
 
@@ -193,14 +194,14 @@ import java.util.ServiceLoader;
                 new ThemePresetContribution(
                     "plugin-nebula",
                     true,
-                    Map.of(UiColorKeys.ACCENT_COLOR, "#7755CC")));
+                    Map.of("@accentColor", "#7755CC")));
           }
         }
         """;
   }
 
   private record SingleThemeContributionProvider(
-      List<ThemeManager.ThemeOption> themeOptions, List<ThemePresetContribution> themePresets)
+      List<ThemeOption> themeOptions, List<ThemePresetContribution> themePresets)
       implements ThemeContributionProvider {}
 
   private record RecordingInstalledPluginsPort(List<ThemeContributionProvider> providers)

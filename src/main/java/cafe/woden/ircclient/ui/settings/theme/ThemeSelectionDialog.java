@@ -7,6 +7,9 @@ import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
 import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemeOption;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemePack;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemeTone;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import com.formdev.flatlaf.FlatClientProperties;
 import java.awt.BorderLayout;
@@ -43,14 +46,14 @@ import org.springframework.stereotype.Component;
 public class ThemeSelectionDialog {
   private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
 
-  private record ToneChoice(String label, ThemeManager.ThemeTone tone) {
+  private record ToneChoice(String label, ThemeTone tone) {
     @Override
     public String toString() {
       return label;
     }
   }
 
-  private record PackChoice(String label, ThemeManager.ThemePack pack) {
+  private record PackChoice(String label, ThemePack pack) {
     @Override
     public String toString() {
       return label;
@@ -62,7 +65,7 @@ public class ThemeSelectionDialog {
   private final UiSettingsRuntimeConfigPort runtimeConfig;
 
   private JDialog dialog;
-  private JList<ThemeManager.ThemeOption> themeList;
+  private JList<ThemeOption> themeList;
   private JEditorPane transcriptPreview;
   private String committedThemeId;
   private String previewThemeId;
@@ -100,39 +103,31 @@ public class ThemeSelectionDialog {
     JCheckBox allIntelliJ = new JCheckBox(MESSAGES.text("themeSelection.allIntelliJ"));
     allIntelliJ.setToolTipText(MESSAGES.text("themeSelection.allIntelliJ.tooltip"));
 
-    ThemeManager.ThemeOption[] allThemes = themeManager.themesForPicker(false);
+    ThemeOption[] allThemes = themeManager.themesForPicker(false);
 
-    DefaultListModel<ThemeManager.ThemeOption> model = new DefaultListModel<>();
+    DefaultListModel<ThemeOption> model = new DefaultListModel<>();
 
     JComboBox<ToneChoice> toneFilter =
         new JComboBox<>(
             new ToneChoice[] {
               new ToneChoice(MESSAGES.text("themeSelection.filter.tone.all"), null),
-              new ToneChoice(toneLabel(ThemeManager.ThemeTone.DARK), ThemeManager.ThemeTone.DARK),
-              new ToneChoice(toneLabel(ThemeManager.ThemeTone.LIGHT), ThemeManager.ThemeTone.LIGHT),
-              new ToneChoice(
-                  toneLabel(ThemeManager.ThemeTone.SYSTEM), ThemeManager.ThemeTone.SYSTEM)
+              new ToneChoice(toneLabel(ThemeTone.DARK), ThemeTone.DARK),
+              new ToneChoice(toneLabel(ThemeTone.LIGHT), ThemeTone.LIGHT),
+              new ToneChoice(toneLabel(ThemeTone.SYSTEM), ThemeTone.SYSTEM)
             });
 
     JComboBox<PackChoice> packFilter =
         new JComboBox<>(
             new PackChoice[] {
               new PackChoice(MESSAGES.text("themeSelection.filter.pack.all"), null),
-              new PackChoice(
-                  packLabel(ThemeManager.ThemePack.SYSTEM), ThemeManager.ThemePack.SYSTEM),
-              new PackChoice(
-                  packLabel(ThemeManager.ThemePack.FLATLAF), ThemeManager.ThemePack.FLATLAF),
-              new PackChoice(
-                  packLabel(ThemeManager.ThemePack.DARKLAF), ThemeManager.ThemePack.DARKLAF),
-              new PackChoice(packLabel(ThemeManager.ThemePack.RETRO), ThemeManager.ThemePack.RETRO),
-              new PackChoice(
-                  packLabel(ThemeManager.ThemePack.MODERN), ThemeManager.ThemePack.MODERN),
-              new PackChoice(
-                  packLabel(ThemeManager.ThemePack.IRCAFE), ThemeManager.ThemePack.IRCAFE),
-              new PackChoice(
-                  packLabel(ThemeManager.ThemePack.INTELLIJ), ThemeManager.ThemePack.INTELLIJ),
-              new PackChoice(
-                  packLabel(ThemeManager.ThemePack.PLUGIN), ThemeManager.ThemePack.PLUGIN)
+              new PackChoice(packLabel(ThemePack.SYSTEM), ThemePack.SYSTEM),
+              new PackChoice(packLabel(ThemePack.FLATLAF), ThemePack.FLATLAF),
+              new PackChoice(packLabel(ThemePack.DARKLAF), ThemePack.DARKLAF),
+              new PackChoice(packLabel(ThemePack.RETRO), ThemePack.RETRO),
+              new PackChoice(packLabel(ThemePack.MODERN), ThemePack.MODERN),
+              new PackChoice(packLabel(ThemePack.IRCAFE), ThemePack.IRCAFE),
+              new PackChoice(packLabel(ThemePack.INTELLIJ), ThemePack.INTELLIJ),
+              new PackChoice(packLabel(ThemePack.PLUGIN), ThemePack.PLUGIN)
             });
 
     JTextField search = new JTextField(14);
@@ -145,7 +140,7 @@ public class ThemeSelectionDialog {
     Runnable refresh =
         () -> {
           String keepId = ThemeIdUtils.normalizeThemeId(selectedThemeId());
-          ThemeManager.ThemeOption[] pool = themeManager.themesForPicker(allIntelliJ.isSelected());
+          ThemeOption[] pool = themeManager.themesForPicker(allIntelliJ.isSelected());
           rebuildModel(
               model,
               pool,
@@ -299,7 +294,7 @@ public class ThemeSelectionDialog {
     dialog.setVisible(true);
   }
 
-  private static String toneLabel(ThemeManager.ThemeTone tone) {
+  private static String toneLabel(ThemeTone tone) {
     return switch (tone) {
       case SYSTEM -> MESSAGES.text("themeSelection.tone.system");
       case DARK -> MESSAGES.text("themeSelection.tone.dark");
@@ -307,7 +302,7 @@ public class ThemeSelectionDialog {
     };
   }
 
-  private static String packLabel(ThemeManager.ThemePack pack) {
+  private static String packLabel(ThemePack pack) {
     return switch (pack) {
       case SYSTEM -> MESSAGES.text("themeSelection.pack.system");
       case FLATLAF -> MESSAGES.text("themeSelection.pack.flatLaf");
@@ -321,13 +316,13 @@ public class ThemeSelectionDialog {
   }
 
   private static void rebuildModel(
-      DefaultListModel<ThemeManager.ThemeOption> model,
-      ThemeManager.ThemeOption[] all,
+      DefaultListModel<ThemeOption> model,
+      ThemeOption[] all,
       ToneChoice toneChoice,
       PackChoice packChoice,
       String queryRaw) {
-    ThemeManager.ThemeTone tone = toneChoice != null ? toneChoice.tone() : null;
-    ThemeManager.ThemePack pack = packChoice != null ? packChoice.pack() : null;
+    ThemeTone tone = toneChoice != null ? toneChoice.tone() : null;
+    ThemePack pack = packChoice != null ? packChoice.pack() : null;
     String q = SettingsValueSupport.lowerTrimmedString(queryRaw);
 
     model.clear();
@@ -373,7 +368,7 @@ public class ThemeSelectionDialog {
     if (themeList == null) return;
     String wanted = ThemeIdUtils.normalizeThemeId(id);
     for (int i = 0; i < themeList.getModel().getSize(); i++) {
-      ThemeManager.ThemeOption opt = themeList.getModel().getElementAt(i);
+      ThemeOption opt = themeList.getModel().getElementAt(i);
       if (opt != null && ThemeIdUtils.sameTheme(opt.id(), wanted)) {
         themeList.setSelectedIndex(i);
         themeList.ensureIndexIsVisible(i);
@@ -381,7 +376,7 @@ public class ThemeSelectionDialog {
       }
     }
     for (int i = 0; i < themeList.getModel().getSize(); i++) {
-      ThemeManager.ThemeOption opt = themeList.getModel().getElementAt(i);
+      ThemeOption opt = themeList.getModel().getElementAt(i);
       if (opt != null && ThemeIdUtils.sameTheme(opt.id(), "darcula")) {
         themeList.setSelectedIndex(i);
         themeList.ensureIndexIsVisible(i);
@@ -389,7 +384,7 @@ public class ThemeSelectionDialog {
       }
     }
     for (int i = 0; i < themeList.getModel().getSize(); i++) {
-      ThemeManager.ThemeOption opt = themeList.getModel().getElementAt(i);
+      ThemeOption opt = themeList.getModel().getElementAt(i);
       if (opt != null && ThemeIdUtils.sameTheme(opt.id(), "dark")) {
         themeList.setSelectedIndex(i);
         themeList.ensureIndexIsVisible(i);
@@ -402,7 +397,7 @@ public class ThemeSelectionDialog {
   }
 
   private String selectedThemeId() {
-    ThemeManager.ThemeOption sel = themeList != null ? themeList.getSelectedValue() : null;
+    ThemeOption sel = themeList != null ? themeList.getSelectedValue() : null;
     if (sel == null) return committedThemeId;
     return sel.id();
   }

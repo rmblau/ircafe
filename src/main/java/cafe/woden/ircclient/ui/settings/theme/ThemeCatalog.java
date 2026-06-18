@@ -1,6 +1,9 @@
 package cafe.woden.ircclient.ui.settings.theme;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemeOption;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemePack;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemeTone;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -19,11 +22,7 @@ import org.springframework.stereotype.Component;
 class ThemeCatalog {
 
   private record LegacySystemThemeDefinition(
-      String id,
-      String label,
-      ThemeManager.ThemeTone tone,
-      String lafClassName,
-      boolean featured) {}
+      String id, String label, ThemeTone tone, String lafClassName, boolean featured) {}
 
   private static final String NIMBUS_LAF_CLASS = "javax.swing.plaf.nimbus.NimbusLookAndFeel";
   private static final String METAL_LAF_CLASS = "javax.swing.plaf.metal.MetalLookAndFeel";
@@ -35,93 +34,51 @@ class ThemeCatalog {
   private static final LegacySystemThemeDefinition[] LEGACY_SYSTEM_THEME_DEFINITIONS =
       new LegacySystemThemeDefinition[] {
         new LegacySystemThemeDefinition(
-            "nimbus", "Nimbus", ThemeManager.ThemeTone.LIGHT, NIMBUS_LAF_CLASS, true),
+            "nimbus", "Nimbus", ThemeTone.LIGHT, NIMBUS_LAF_CLASS, true),
         new LegacySystemThemeDefinition(
-            "nimbus-dark", "Nimbus (Dark)", ThemeManager.ThemeTone.DARK, NIMBUS_LAF_CLASS, false),
+            "nimbus-dark", "Nimbus (Dark)", ThemeTone.DARK, NIMBUS_LAF_CLASS, false),
         new LegacySystemThemeDefinition(
-            "nimbus-dark-amber",
-            "Nimbus (Dark Amber)",
-            ThemeManager.ThemeTone.DARK,
-            NIMBUS_LAF_CLASS,
-            false),
+            "nimbus-dark-amber", "Nimbus (Dark Amber)", ThemeTone.DARK, NIMBUS_LAF_CLASS, false),
         new LegacySystemThemeDefinition(
-            "nimbus-dark-blue",
-            "Nimbus (Dark Blue)",
-            ThemeManager.ThemeTone.DARK,
-            NIMBUS_LAF_CLASS,
-            false),
+            "nimbus-dark-blue", "Nimbus (Dark Blue)", ThemeTone.DARK, NIMBUS_LAF_CLASS, false),
         new LegacySystemThemeDefinition(
-            "nimbus-dark-violet",
-            "Nimbus (Dark Violet)",
-            ThemeManager.ThemeTone.DARK,
-            NIMBUS_LAF_CLASS,
-            false),
+            "nimbus-dark-violet", "Nimbus (Dark Violet)", ThemeTone.DARK, NIMBUS_LAF_CLASS, false),
         new LegacySystemThemeDefinition(
-            "nimbus-dark-green",
-            "Nimbus (Dark Green)",
-            ThemeManager.ThemeTone.DARK,
-            NIMBUS_LAF_CLASS,
-            false),
+            "nimbus-dark-green", "Nimbus (Dark Green)", ThemeTone.DARK, NIMBUS_LAF_CLASS, false),
         new LegacySystemThemeDefinition(
-            "nimbus-dark-orange",
-            "Nimbus (Dark Orange)",
-            ThemeManager.ThemeTone.DARK,
-            NIMBUS_LAF_CLASS,
-            false),
+            "nimbus-dark-orange", "Nimbus (Dark Orange)", ThemeTone.DARK, NIMBUS_LAF_CLASS, false),
         new LegacySystemThemeDefinition(
             "nimbus-dark-magenta",
             "Nimbus (Dark Magenta)",
-            ThemeManager.ThemeTone.DARK,
+            ThemeTone.DARK,
             NIMBUS_LAF_CLASS,
             false),
         new LegacySystemThemeDefinition(
-            "nimbus-orange",
-            "Nimbus (Orange)",
-            ThemeManager.ThemeTone.LIGHT,
-            NIMBUS_LAF_CLASS,
-            false),
+            "nimbus-orange", "Nimbus (Orange)", ThemeTone.LIGHT, NIMBUS_LAF_CLASS, false),
         new LegacySystemThemeDefinition(
-            "nimbus-green",
-            "Nimbus (Green)",
-            ThemeManager.ThemeTone.LIGHT,
-            NIMBUS_LAF_CLASS,
-            false),
+            "nimbus-green", "Nimbus (Green)", ThemeTone.LIGHT, NIMBUS_LAF_CLASS, false),
         new LegacySystemThemeDefinition(
-            "nimbus-blue", "Nimbus (Blue)", ThemeManager.ThemeTone.LIGHT, NIMBUS_LAF_CLASS, false),
+            "nimbus-blue", "Nimbus (Blue)", ThemeTone.LIGHT, NIMBUS_LAF_CLASS, false),
         new LegacySystemThemeDefinition(
-            "nimbus-violet",
-            "Nimbus (Violet)",
-            ThemeManager.ThemeTone.LIGHT,
-            NIMBUS_LAF_CLASS,
-            false),
+            "nimbus-violet", "Nimbus (Violet)", ThemeTone.LIGHT, NIMBUS_LAF_CLASS, false),
         new LegacySystemThemeDefinition(
-            "nimbus-magenta",
-            "Nimbus (Magenta)",
-            ThemeManager.ThemeTone.LIGHT,
-            NIMBUS_LAF_CLASS,
-            false),
+            "nimbus-magenta", "Nimbus (Magenta)", ThemeTone.LIGHT, NIMBUS_LAF_CLASS, false),
         new LegacySystemThemeDefinition(
-            "nimbus-amber",
-            "Nimbus (Amber)",
-            ThemeManager.ThemeTone.LIGHT,
-            NIMBUS_LAF_CLASS,
-            false),
+            "nimbus-amber", "Nimbus (Amber)", ThemeTone.LIGHT, NIMBUS_LAF_CLASS, false),
         new LegacySystemThemeDefinition(
-            "metal-ocean", "Metal (Ocean)", ThemeManager.ThemeTone.LIGHT, METAL_LAF_CLASS, true),
+            "metal-ocean", "Metal (Ocean)", ThemeTone.LIGHT, METAL_LAF_CLASS, true),
         new LegacySystemThemeDefinition(
-            "metal-steel", "Metal (Steel)", ThemeManager.ThemeTone.LIGHT, METAL_LAF_CLASS, false),
+            "metal-steel", "Metal (Steel)", ThemeTone.LIGHT, METAL_LAF_CLASS, false),
+        new LegacySystemThemeDefinition("motif", "Motif", ThemeTone.LIGHT, MOTIF_LAF_CLASS, true),
         new LegacySystemThemeDefinition(
-            "motif", "Motif", ThemeManager.ThemeTone.LIGHT, MOTIF_LAF_CLASS, true),
-        new LegacySystemThemeDefinition(
-            "windows", "Windows Classic", ThemeManager.ThemeTone.SYSTEM, WINDOWS_LAF_CLASS, false),
-        new LegacySystemThemeDefinition(
-            "gtk", "GTK", ThemeManager.ThemeTone.SYSTEM, GTK_LAF_CLASS, false)
+            "windows", "Windows Classic", ThemeTone.SYSTEM, WINDOWS_LAF_CLASS, false),
+        new LegacySystemThemeDefinition("gtk", "GTK", ThemeTone.SYSTEM, GTK_LAF_CLASS, false)
       };
 
-  private final List<ThemeManager.ThemeOption> builtInThemeOptions;
-  private final List<ThemeManager.ThemeOption> pluginThemeOptions;
-  private volatile ThemeManager.ThemeOption[] cachedThemes;
-  private volatile ThemeManager.ThemeOption[] cachedThemesWithAllIntelliJ;
+  private final List<ThemeOption> builtInThemeOptions;
+  private final List<ThemeOption> pluginThemeOptions;
+  private volatile ThemeOption[] cachedThemes;
+  private volatile ThemeOption[] cachedThemesWithAllIntelliJ;
 
   ThemeCatalog() {
     this((InstalledPluginsPort) null);
@@ -137,38 +94,37 @@ class ThemeCatalog {
     this.pluginThemeOptions = ThemeContributionProviders.pluginThemeOptions(installedPlugins);
   }
 
-  ThemeManager.ThemeOption[] supportedThemes() {
+  ThemeOption[] supportedThemes() {
     return allThemes().clone();
   }
 
-  ThemeManager.ThemeOption[] featuredThemes() {
-    ThemeManager.ThemeOption[] all = allThemes();
-    List<ThemeManager.ThemeOption> featured =
-        Arrays.stream(all).filter(ThemeManager.ThemeOption::featured).toList();
+  ThemeOption[] featuredThemes() {
+    ThemeOption[] all = allThemes();
+    List<ThemeOption> featured = Arrays.stream(all).filter(ThemeOption::featured).toList();
 
-    List<ThemeManager.ThemeOption> out = new ArrayList<>(featured.size());
+    List<ThemeOption> out = new ArrayList<>(featured.size());
     addFeaturedById(out, featured, "darcula");
     addFeaturedById(out, featured, "darklaf");
 
-    for (ThemeManager.ThemeOption t : featured) {
+    for (ThemeOption t : featured) {
       if (t == null || t.id() == null) continue;
       if ("darcula".equalsIgnoreCase(t.id())) continue;
       if ("darklaf".equalsIgnoreCase(t.id())) continue;
       out.add(t);
     }
 
-    return out.toArray(ThemeManager.ThemeOption[]::new);
+    return out.toArray(ThemeOption[]::new);
   }
 
-  ThemeManager.ThemeOption[] themesForPicker(boolean includeAllIntelliJThemes) {
+  ThemeOption[] themesForPicker(boolean includeAllIntelliJThemes) {
     if (!includeAllIntelliJThemes) {
       return supportedThemes();
     }
 
-    ThemeManager.ThemeOption[] cached = cachedThemesWithAllIntelliJ;
+    ThemeOption[] cached = cachedThemesWithAllIntelliJ;
     if (cached != null) return cached.clone();
 
-    List<ThemeManager.ThemeOption> out = new ArrayList<>();
+    List<ThemeOption> out = new ArrayList<>();
     out.addAll(builtInThemeOptions);
     out.addAll(darkLafThemes());
     out.addAll(legacySystemThemes());
@@ -176,7 +132,7 @@ class ThemeCatalog {
     List<IntelliJThemePack.PackTheme> pack = IntelliJThemePack.listThemes();
     if (!pack.isEmpty()) {
       Set<String> seen = new HashSet<>();
-      for (ThemeManager.ThemeOption o : out) {
+      for (ThemeOption o : out) {
         if (o != null && o.id() != null) seen.add(o.id());
       }
 
@@ -184,48 +140,45 @@ class ThemeCatalog {
         if (t == null || t.id() == null || t.id().isBlank()) continue;
         if (!seen.add(t.id())) continue;
 
-        ThemeManager.ThemeTone tone =
-            t.dark() ? ThemeManager.ThemeTone.DARK : ThemeManager.ThemeTone.LIGHT;
-        out.add(
-            new ThemeManager.ThemeOption(
-                t.id(), "IntelliJ: " + t.label(), tone, ThemeManager.ThemePack.INTELLIJ, false));
+        ThemeTone tone = t.dark() ? ThemeTone.DARK : ThemeTone.LIGHT;
+        out.add(new ThemeOption(t.id(), "IntelliJ: " + t.label(), tone, ThemePack.INTELLIJ, false));
       }
     }
 
     addPluginThemeOptions(out);
 
-    cached = out.toArray(ThemeManager.ThemeOption[]::new);
+    cached = out.toArray(ThemeOption[]::new);
     cachedThemesWithAllIntelliJ = cached;
     return cached.clone();
   }
 
-  private ThemeManager.ThemeOption[] allThemes() {
-    ThemeManager.ThemeOption[] cached = cachedThemes;
+  private ThemeOption[] allThemes() {
+    ThemeOption[] cached = cachedThemes;
     if (cached != null) return cached;
 
-    List<ThemeManager.ThemeOption> out = new ArrayList<>();
+    List<ThemeOption> out = new ArrayList<>();
     out.addAll(builtInThemeOptions);
     out.addAll(darkLafThemes());
     out.addAll(legacySystemThemes());
     out.addAll(buildCuratedIntelliJThemes());
     addPluginThemeOptions(out);
 
-    cached = out.toArray(ThemeManager.ThemeOption[]::new);
+    cached = out.toArray(ThemeOption[]::new);
     cachedThemes = cached;
     return cached;
   }
 
-  private void addPluginThemeOptions(List<ThemeManager.ThemeOption> out) {
+  private void addPluginThemeOptions(List<ThemeOption> out) {
     if (out == null || pluginThemeOptions.isEmpty()) return;
 
     Set<String> seen = new HashSet<>();
-    for (ThemeManager.ThemeOption option : out) {
+    for (ThemeOption option : out) {
       if (option != null && option.id() != null) {
         seen.add(option.id().toLowerCase(Locale.ROOT));
       }
     }
 
-    for (ThemeManager.ThemeOption option : pluginThemeOptions) {
+    for (ThemeOption option : pluginThemeOptions) {
       if (option == null || option.id() == null || option.id().isBlank()) continue;
       if (!seen.add(option.id().toLowerCase(Locale.ROOT))) continue;
       out.add(option);
@@ -237,70 +190,55 @@ class ThemeCatalog {
     return installedPluginsProvider != null ? installedPluginsProvider.getIfAvailable() : null;
   }
 
-  private static List<ThemeManager.ThemeOption> darkLafThemes() {
+  private static List<ThemeOption> darkLafThemes() {
     if (!DarkLafSupport.isAvailable()) return List.of();
     return List.of(
-        new ThemeManager.ThemeOption(
-            "darklaf",
-            "DarkLaf (One Dark)",
-            ThemeManager.ThemeTone.DARK,
-            ThemeManager.ThemePack.DARKLAF,
-            true),
-        new ThemeManager.ThemeOption(
-            "darklaf-darcula",
-            "DarkLaf (Darcula)",
-            ThemeManager.ThemeTone.DARK,
-            ThemeManager.ThemePack.DARKLAF,
-            false),
-        new ThemeManager.ThemeOption(
+        new ThemeOption("darklaf", "DarkLaf (One Dark)", ThemeTone.DARK, ThemePack.DARKLAF, true),
+        new ThemeOption(
+            "darklaf-darcula", "DarkLaf (Darcula)", ThemeTone.DARK, ThemePack.DARKLAF, false),
+        new ThemeOption(
             "darklaf-solarized-dark",
             "DarkLaf (Solarized Dark)",
-            ThemeManager.ThemeTone.DARK,
-            ThemeManager.ThemePack.DARKLAF,
+            ThemeTone.DARK,
+            ThemePack.DARKLAF,
             false),
-        new ThemeManager.ThemeOption(
+        new ThemeOption(
             "darklaf-high-contrast-dark",
             "DarkLaf (High Contrast Dark)",
-            ThemeManager.ThemeTone.DARK,
-            ThemeManager.ThemePack.DARKLAF,
+            ThemeTone.DARK,
+            ThemePack.DARKLAF,
             false),
-        new ThemeManager.ThemeOption(
+        new ThemeOption(
             "darklaf-light",
             "DarkLaf (Solarized Light)",
-            ThemeManager.ThemeTone.LIGHT,
-            ThemeManager.ThemePack.DARKLAF,
+            ThemeTone.LIGHT,
+            ThemePack.DARKLAF,
             false),
-        new ThemeManager.ThemeOption(
+        new ThemeOption(
             "darklaf-high-contrast-light",
             "DarkLaf (High Contrast Light)",
-            ThemeManager.ThemeTone.LIGHT,
-            ThemeManager.ThemePack.DARKLAF,
+            ThemeTone.LIGHT,
+            ThemePack.DARKLAF,
             false),
-        new ThemeManager.ThemeOption(
-            "darklaf-intellij",
-            "DarkLaf (IntelliJ)",
-            ThemeManager.ThemeTone.LIGHT,
-            ThemeManager.ThemePack.DARKLAF,
-            false));
+        new ThemeOption(
+            "darklaf-intellij", "DarkLaf (IntelliJ)", ThemeTone.LIGHT, ThemePack.DARKLAF, false));
   }
 
-  private static List<ThemeManager.ThemeOption> legacySystemThemes() {
+  private static List<ThemeOption> legacySystemThemes() {
     Set<String> installed = ThemeLookAndFeelUtils.installedLookAndFeelClassNames();
     if (installed.isEmpty()) return List.of();
 
-    List<ThemeManager.ThemeOption> out = new ArrayList<>();
+    List<ThemeOption> out = new ArrayList<>();
     for (LegacySystemThemeDefinition def : LEGACY_SYSTEM_THEME_DEFINITIONS) {
       if (def == null || def.lafClassName() == null || def.lafClassName().isBlank()) continue;
       if (!installed.contains(def.lafClassName().toLowerCase(Locale.ROOT))) continue;
-      out.add(
-          new ThemeManager.ThemeOption(
-              def.id(), def.label(), def.tone(), ThemeManager.ThemePack.SYSTEM, def.featured()));
+      out.add(new ThemeOption(def.id(), def.label(), def.tone(), ThemePack.SYSTEM, def.featured()));
     }
 
     return out;
   }
 
-  private static List<ThemeManager.ThemeOption> buildCuratedIntelliJThemes() {
+  private static List<ThemeOption> buildCuratedIntelliJThemes() {
     List<IntelliJThemePack.PackTheme> pack = IntelliJThemePack.listThemes();
     if (pack.isEmpty()) return List.of();
 
@@ -327,24 +265,19 @@ class ThemeCatalog {
     final int maxThemes = 16;
 
     Set<String> chosenIds = new HashSet<>();
-    List<ThemeManager.ThemeOption> curated = new ArrayList<>();
+    List<ThemeOption> curated = new ArrayList<>();
 
     java.util.function.Consumer<IntelliJThemePack.PackTheme> add =
         t -> {
           if (t == null) return;
           if (!chosenIds.add(t.id())) return;
 
-          ThemeManager.ThemeTone tone =
-              t.dark() ? ThemeManager.ThemeTone.DARK : ThemeManager.ThemeTone.LIGHT;
+          ThemeTone tone = t.dark() ? ThemeTone.DARK : ThemeTone.LIGHT;
           boolean featured = curated.size() < 3;
 
           curated.add(
-              new ThemeManager.ThemeOption(
-                  t.id(),
-                  "IntelliJ: " + t.label(),
-                  tone,
-                  ThemeManager.ThemePack.INTELLIJ,
-                  featured));
+              new ThemeOption(
+                  t.id(), "IntelliJ: " + t.label(), tone, ThemePack.INTELLIJ, featured));
         };
 
     for (String fragment : priority) {
@@ -379,12 +312,10 @@ class ThemeCatalog {
   }
 
   private static void addFeaturedById(
-      List<ThemeManager.ThemeOption> out,
-      List<ThemeManager.ThemeOption> featured,
-      String wantedId) {
+      List<ThemeOption> out, List<ThemeOption> featured, String wantedId) {
     if (out == null || featured == null || wantedId == null || wantedId.isBlank()) return;
 
-    for (ThemeManager.ThemeOption t : featured) {
+    for (ThemeOption t : featured) {
       if (t == null || t.id() == null) continue;
       if (t.id().equalsIgnoreCase(wantedId)) {
         out.add(t);

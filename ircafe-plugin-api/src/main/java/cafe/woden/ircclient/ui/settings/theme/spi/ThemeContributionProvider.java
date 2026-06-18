@@ -1,8 +1,6 @@
 package cafe.woden.ircclient.ui.settings.theme.spi;
 
-import cafe.woden.ircclient.ui.settings.theme.ThemeManager;
 import java.util.List;
-import org.jmolecules.architecture.layered.InterfaceLayer;
 
 /**
  * ServiceLoader-backed provider for plugin-contributed theme picker options and FlatLaf presets.
@@ -10,10 +8,9 @@ import org.jmolecules.architecture.layered.InterfaceLayer;
  * <p>Plugins register implementations in {@code
  * META-INF/services/cafe.woden.ircclient.ui.settings.theme.spi.ThemeContributionProvider}.
  */
-@InterfaceLayer
 public interface ThemeContributionProvider {
 
-  default List<ThemeManager.ThemeOption> themeOptions() {
+  default List<ThemeOption> themeOptions() {
     return List.of();
   }
 

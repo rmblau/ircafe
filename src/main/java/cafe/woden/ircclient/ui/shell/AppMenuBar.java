@@ -28,6 +28,7 @@ import cafe.woden.ircclient.ui.settings.memory.MemoryUsageDisplayMode;
 import cafe.woden.ircclient.ui.settings.theme.ThemeIdUtils;
 import cafe.woden.ircclient.ui.settings.theme.ThemeManager;
 import cafe.woden.ircclient.ui.settings.theme.ThemeSelectionDialog;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemeOption;
 import cafe.woden.ircclient.ui.tray.TrayNotificationService;
 import cafe.woden.ircclient.ui.util.PopupMenuThemeSupport;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
@@ -619,7 +620,7 @@ public class AppMenuBar extends JMenuBar {
     ButtonGroup themeGroup = new ButtonGroup();
     Map<String, JRadioButtonMenuItem> themeItems = new LinkedHashMap<>();
 
-    for (ThemeManager.ThemeOption opt : themeManager.featuredThemes()) {
+    for (ThemeOption opt : themeManager.featuredThemes()) {
       if (opt == null) continue;
       JRadioButtonMenuItem item = new JRadioButtonMenuItem(opt.label());
       item.addActionListener(

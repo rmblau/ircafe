@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.settings.theme.ThemeManager;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemeOption;
 import java.awt.Color;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.JTextField;
@@ -34,8 +35,8 @@ class ThemeSwitchingFunctionalTest {
 
   @Test
   void nimbusDarkBlueToDarkSwitchCycleKeepsDistinctTintedTextSurfaces() throws Exception {
-    ThemeManager.ThemeOption nimbusDark = findThemeById("nimbus-dark");
-    ThemeManager.ThemeOption nimbusDarkBlue = findThemeById("nimbus-dark-blue");
+    ThemeOption nimbusDark = findThemeById("nimbus-dark");
+    ThemeOption nimbusDarkBlue = findThemeById("nimbus-dark-blue");
     assertNotNull(nimbusDark, "nimbus-dark theme must be present");
     assertNotNull(nimbusDarkBlue, "nimbus-dark-blue theme must be present");
 
@@ -74,9 +75,9 @@ class ThemeSwitchingFunctionalTest {
         });
   }
 
-  private ThemeManager.ThemeOption findThemeById(String id) {
+  private ThemeOption findThemeById(String id) {
     if (id == null || id.isBlank()) return null;
-    for (ThemeManager.ThemeOption theme : themeManager.supportedThemes()) {
+    for (ThemeOption theme : themeManager.supportedThemes()) {
       if (theme == null || theme.id() == null) continue;
       if (theme.id().equalsIgnoreCase(id)) return theme;
     }

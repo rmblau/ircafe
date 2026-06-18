@@ -29,7 +29,7 @@ import cafe.woden.ircclient.ignore.IgnoreStatusService;
 import cafe.woden.ircclient.interceptors.InterceptorStore;
 import cafe.woden.ircclient.irc.IrcClientService;
 import cafe.woden.ircclient.irc.backend.IrcBackendAvailabilityPort;
-import cafe.woden.ircclient.irc.backend.IrcBackendClientService;
+import cafe.woden.ircclient.irc.backend.spi.IrcBackendClientService;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionCatalog;
 import cafe.woden.ircclient.irc.port.IrcConnectionLifecyclePort;
 import cafe.woden.ircclient.irc.quassel.control.QuasselCoreControlPort;

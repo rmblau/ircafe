@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemeOption;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemePack;
 import cafe.woden.ircclient.ui.util.PopupMenuThemeSupport;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import cafe.woden.ircclient.ui.util.UiDefaultKeys;
@@ -55,11 +57,11 @@ class ThemeValidatorTest {
 
   @Test
   void supportedThemesHaveUniqueIdsAndLabels() {
-    ThemeManager.ThemeOption[] themes = themeManager.supportedThemes();
+    ThemeOption[] themes = themeManager.supportedThemes();
     assertTrue(themes.length > 0, "Expected at least one supported theme");
 
     Set<String> ids = new HashSet<>();
-    for (ThemeManager.ThemeOption theme : themes) {
+    for (ThemeOption theme : themes) {
       assertNotNull(theme, "Theme option cannot be null");
       assertNotNull(theme.id(), "Theme id cannot be null");
       assertFalse(theme.id().isBlank(), "Theme id cannot be blank");
@@ -72,13 +74,13 @@ class ThemeValidatorTest {
   @Test
   void featuredThemesAreIncludedInSupportedThemes() {
     Set<String> supportedIds = new HashSet<>();
-    for (ThemeManager.ThemeOption theme : themeManager.supportedThemes()) {
+    for (ThemeOption theme : themeManager.supportedThemes()) {
       supportedIds.add(theme.id());
     }
 
-    ThemeManager.ThemeOption[] featured = themeManager.featuredThemes();
+    ThemeOption[] featured = themeManager.featuredThemes();
     assertTrue(featured.length > 0, "Expected at least one featured theme");
-    for (ThemeManager.ThemeOption theme : featured) {
+    for (ThemeOption theme : featured) {
       assertTrue(
           supportedIds.contains(theme.id()),
           () -> "Featured theme is not in supported themes: " + theme.id());
@@ -87,7 +89,7 @@ class ThemeValidatorTest {
 
   @Test
   void eachSupportedThemeAppliesAndKeepsCoreContrastReadable() throws Exception {
-    for (ThemeManager.ThemeOption theme : themeManager.supportedThemes()) {
+    for (ThemeOption theme : themeManager.supportedThemes()) {
       onEdt(() -> themeManager.installLookAndFeel(theme.id()));
       onEdt(() -> assertCoreReadability(theme));
     }
@@ -95,8 +97,8 @@ class ThemeValidatorTest {
 
   @Test
   void canSwitchBetweenDarculaAndDarkLaf() throws Exception {
-    ThemeManager.ThemeOption darcula = findThemeById("darcula");
-    ThemeManager.ThemeOption darklaf = findThemeById("darklaf");
+    ThemeOption darcula = findThemeById("darcula");
+    ThemeOption darklaf = findThemeById("darklaf");
     assertNotNull(darcula, "darcula theme must be present");
     assertNotNull(darklaf, "darklaf theme must be present");
 
@@ -112,7 +114,7 @@ class ThemeValidatorTest {
 
   @Test
   void darklafThemeAppliesAsDarkTone() throws Exception {
-    ThemeManager.ThemeOption darklaf = findThemeById("darklaf");
+    ThemeOption darklaf = findThemeById("darklaf");
     assertNotNull(darklaf, "darklaf theme must be present");
 
     onEdt(() -> themeManager.installLookAndFeel(darklaf.id()));
@@ -134,8 +136,8 @@ class ThemeValidatorTest {
 
   @Test
   void switchingAwayFromNimbusDarkClearsNimbusSpecificOverrides() throws Exception {
-    ThemeManager.ThemeOption nimbusDark = findThemeById("nimbus-dark");
-    ThemeManager.ThemeOption darcula = findThemeById("darcula");
+    ThemeOption nimbusDark = findThemeById("nimbus-dark");
+    ThemeOption darcula = findThemeById("darcula");
     assertNotNull(nimbusDark, "nimbus-dark theme must be present");
     assertNotNull(darcula, "darcula theme must be present");
 
@@ -183,7 +185,7 @@ class ThemeValidatorTest {
 
   @Test
   void nimbusDarkSetsDarkMenuButtonAndComboDefaults() throws Exception {
-    ThemeManager.ThemeOption nimbusDark = findThemeById("nimbus-dark");
+    ThemeOption nimbusDark = findThemeById("nimbus-dark");
     assertNotNull(nimbusDark, "nimbus-dark theme must be present");
 
     onEdt(() -> themeManager.installLookAndFeel(nimbusDark.id()));
@@ -223,7 +225,7 @@ class ThemeValidatorTest {
 
   @Test
   void nimbusDarkComponentsHaveReadableIdleStates() throws Exception {
-    ThemeManager.ThemeOption nimbusDark = findThemeById("nimbus-dark");
+    ThemeOption nimbusDark = findThemeById("nimbus-dark");
     assertNotNull(nimbusDark, "nimbus-dark theme must be present");
 
     onEdt(() -> themeManager.installLookAndFeel(nimbusDark.id()));
@@ -271,8 +273,8 @@ class ThemeValidatorTest {
 
   @Test
   void nimbusDarkBlueUsesTintedTextFieldAndTextPaneBackgrounds() throws Exception {
-    ThemeManager.ThemeOption nimbusDark = findThemeById("nimbus-dark");
-    ThemeManager.ThemeOption nimbusDarkBlue = findThemeById("nimbus-dark-blue");
+    ThemeOption nimbusDark = findThemeById("nimbus-dark");
+    ThemeOption nimbusDarkBlue = findThemeById("nimbus-dark-blue");
     assertNotNull(nimbusDark, "nimbus-dark theme must be present");
     assertNotNull(nimbusDarkBlue, "nimbus-dark-blue theme must be present");
 
@@ -319,8 +321,8 @@ class ThemeValidatorTest {
 
   @RepeatedTest(5)
   void nimbusDarkBlueSwitchCycleRemainsTintedAcrossRepeatedRuns() throws Exception {
-    ThemeManager.ThemeOption nimbusDark = findThemeById("nimbus-dark");
-    ThemeManager.ThemeOption nimbusDarkBlue = findThemeById("nimbus-dark-blue");
+    ThemeOption nimbusDark = findThemeById("nimbus-dark");
+    ThemeOption nimbusDarkBlue = findThemeById("nimbus-dark-blue");
     assertNotNull(nimbusDark, "nimbus-dark theme must be present");
     assertNotNull(nimbusDarkBlue, "nimbus-dark-blue theme must be present");
 
@@ -347,7 +349,7 @@ class ThemeValidatorTest {
 
   @Test
   void nimbusDarkOrangePopupMenusUseReadableTintedPalette() throws Exception {
-    ThemeManager.ThemeOption nimbusDarkOrange = findThemeById("nimbus-dark-orange");
+    ThemeOption nimbusDarkOrange = findThemeById("nimbus-dark-orange");
     assertNotNull(nimbusDarkOrange, "nimbus-dark-orange theme must be present");
 
     onEdt(() -> themeManager.installLookAndFeel(nimbusDarkOrange.id()));
@@ -400,7 +402,7 @@ class ThemeValidatorTest {
 
   @Test
   void nimbusDarkOrangeTabbedPaneUsesDarkReadablePalette() throws Exception {
-    ThemeManager.ThemeOption nimbusDarkOrange = findThemeById("nimbus-dark-orange");
+    ThemeOption nimbusDarkOrange = findThemeById("nimbus-dark-orange");
     assertNotNull(nimbusDarkOrange, "nimbus-dark-orange theme must be present");
 
     onEdt(() -> themeManager.installLookAndFeel(nimbusDarkOrange.id()));
@@ -461,7 +463,7 @@ class ThemeValidatorTest {
 
   @Test
   void nimbusDarkOrangeComboBoxUsesDarkReadablePainters() throws Exception {
-    ThemeManager.ThemeOption nimbusDarkOrange = findThemeById("nimbus-dark-orange");
+    ThemeOption nimbusDarkOrange = findThemeById("nimbus-dark-orange");
     assertNotNull(nimbusDarkOrange, "nimbus-dark-orange theme must be present");
 
     onEdt(() -> themeManager.installLookAndFeel(nimbusDarkOrange.id()));
@@ -525,7 +527,7 @@ class ThemeValidatorTest {
         });
   }
 
-  private static void assertCoreReadability(ThemeManager.ThemeOption theme) {
+  private static void assertCoreReadability(ThemeOption theme) {
     String themeId = theme.id();
     assertNotNull(UIManager.getLookAndFeel(), () -> themeId + ": no active LookAndFeel");
 
@@ -582,7 +584,7 @@ class ThemeValidatorTest {
             UiColorKeys.TEXT_HIGHLIGHT,
             UiColorKeys.LIST_SELECTION_BACKGROUND,
             UiColorKeys.LABEL_FOREGROUND);
-    boolean systemPack = theme.pack() == ThemeManager.ThemePack.SYSTEM;
+    boolean systemPack = theme.pack() == ThemePack.SYSTEM;
     double accentMin = systemPack ? 1.25 : MIN_ACCENT_CONTRAST;
     assertContrastAtLeast(themeId, "Accent vs Panel.background", accent, panelBg, accentMin);
   }
@@ -659,9 +661,9 @@ class ThemeValidatorTest {
     SwingUtilities.invokeAndWait(r);
   }
 
-  private ThemeManager.ThemeOption findThemeById(String id) {
+  private ThemeOption findThemeById(String id) {
     if (id == null || id.isBlank()) return null;
-    for (ThemeManager.ThemeOption theme : themeManager.supportedThemes()) {
+    for (ThemeOption theme : themeManager.supportedThemes()) {
       if (theme == null || theme.id() == null) continue;
       if (theme.id().equalsIgnoreCase(id)) return theme;
     }
