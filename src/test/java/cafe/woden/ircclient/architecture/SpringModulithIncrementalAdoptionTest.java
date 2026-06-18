@@ -190,7 +190,6 @@ import cafe.woden.ircclient.ui.settings.theme.ThemeManager;
 import cafe.woden.ircclient.ui.settings.theme.spi.ThemeContributionProvider;
 import cafe.woden.ircclient.ui.settings.theme.spi.ThemePresetContribution;
 import cafe.woden.ircclient.ui.shell.MainFrame;
-import cafe.woden.ircclient.ui.spi.ExternalBrowserCommandProvider;
 import cafe.woden.ircclient.ui.terminal.TerminalDockable;
 import cafe.woden.ircclient.ui.tray.TrayNotificationService;
 import cafe.woden.ircclient.ui.tray.TrayService;
@@ -427,7 +426,6 @@ class SpringModulithIncrementalAdoptionTest {
         "settings-theme-spi",
         ThemeContributionProvider.class,
         ThemePresetContribution.class);
-    assertNamedInterfaceContains(uiModule, "spi", ExternalBrowserCommandProvider.class);
     assertNamedInterfaceContains(
         uiModule,
         "chat-embed-spi",
