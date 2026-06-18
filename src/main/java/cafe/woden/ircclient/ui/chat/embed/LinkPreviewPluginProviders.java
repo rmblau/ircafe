@@ -1,7 +1,9 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.ui.chat.embed.builtins.BuiltInMastodonOEmbedLinkPreviewProvider;
 import cafe.woden.ircclient.ui.chat.embed.builtins.BuiltInNewsPublisherProfileProvider;
+import cafe.woden.ircclient.ui.chat.embed.builtins.BuiltInSpotifyOEmbedLinkPreviewProvider;
 import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
 import cafe.woden.ircclient.ui.chat.embed.spi.NewsPublisherProfile;
 import cafe.woden.ircclient.ui.chat.embed.spi.NewsPublisherProfileProvider;
@@ -17,6 +19,10 @@ import org.jmolecules.architecture.layered.InterfaceLayer;
 final class LinkPreviewPluginProviders {
   private static final List<NewsPublisherProfileProvider> BUILT_IN_NEWS_PROFILE_PROVIDERS =
       List.of(new BuiltInNewsPublisherProfileProvider());
+  private static final List<OEmbedLinkPreviewProvider> BUILT_IN_OEMBED_PROVIDERS =
+      List.of(
+          new BuiltInSpotifyOEmbedLinkPreviewProvider(),
+          new BuiltInMastodonOEmbedLinkPreviewProvider());
 
   private LinkPreviewPluginProviders() {}
 
@@ -31,11 +37,12 @@ final class LinkPreviewPluginProviders {
   }
 
   static List<OEmbedLinkPreviewProvider> oEmbedProviders(InstalledPluginsPort installedPlugins) {
-    List<OEmbedLinkPreviewProvider> providers = OEmbedLinkPreviewResolver.defaultProviders();
     if (installedPlugins == null) {
-      return providers;
+      return BUILT_IN_OEMBED_PROVIDERS;
     }
-    return installedPlugins.loadInstalledServices(OEmbedLinkPreviewProvider.class, providers);
+    return dedupeByProviderClass(
+        installedPlugins.loadInstalledServices(
+            OEmbedLinkPreviewProvider.class, BUILT_IN_OEMBED_PROVIDERS));
   }
 
   static List<NewsPublisherProfile> newsPublisherProfiles(InstalledPluginsPort installedPlugins) {

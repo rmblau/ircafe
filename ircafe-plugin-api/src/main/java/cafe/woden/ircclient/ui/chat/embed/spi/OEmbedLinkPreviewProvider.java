@@ -1,7 +1,6 @@
 package cafe.woden.ircclient.ui.chat.embed.spi;
 
 import java.net.URI;
-import org.jmolecules.architecture.layered.InterfaceLayer;
 
 /**
  * ServiceLoader-backed contribution point for URL providers handled by the generic oEmbed preview
@@ -10,7 +9,6 @@ import org.jmolecules.architecture.layered.InterfaceLayer;
  * <p>Register implementations with {@code
  * META-INF/services/cafe.woden.ircclient.ui.chat.embed.spi.OEmbedLinkPreviewProvider}.
  */
-@InterfaceLayer
 public interface OEmbedLinkPreviewProvider {
 
   /** Stable provider id used for provider-specific preview behavior. */

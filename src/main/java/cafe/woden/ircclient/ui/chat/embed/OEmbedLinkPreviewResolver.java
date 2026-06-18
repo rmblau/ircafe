@@ -6,11 +6,7 @@ import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
 import cafe.woden.ircclient.ui.chat.embed.spi.OEmbedLinkPreviewProvider;
 import cafe.woden.ircclient.ui.chat.embed.spi.OEmbedResponseFields;
 import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Locale;
-import java.util.regex.Pattern;
 
 /**
  * Generic oEmbed-based link preview resolver.
@@ -24,10 +20,6 @@ final class OEmbedLinkPreviewResolver implements LinkPreviewResolver {
 
   OEmbedLinkPreviewResolver(List<OEmbedLinkPreviewProvider> providers) {
     this.providers = providers == null ? List.of() : List.copyOf(providers);
-  }
-
-  static List<OEmbedLinkPreviewProvider> defaultProviders() {
-    return List.of(spotifyProvider(), mastodonProvider());
   }
 
   @Override
@@ -91,98 +83,6 @@ final class OEmbedLinkPreviewResolver implements LinkPreviewResolver {
       }
     }
     return null;
-  }
-
-  // ---- Providers ----
-
-  private static OEmbedLinkPreviewProvider spotifyProvider() {
-    return new OEmbedLinkPreviewProvider() {
-      @Override
-      public String id() {
-        return "spotify";
-      }
-
-      @Override
-      public boolean matches(URI uri) {
-        String host = uri.getHost();
-        if (host == null || host.isBlank()) return false;
-        String h = host.toLowerCase(Locale.ROOT);
-        return h.equals("open.spotify.com")
-            || h.equals("spotify.link")
-            || h.endsWith(".spotify.com");
-      }
-
-      @Override
-      public URI endpointFor(URI uri, String originalUrl) {
-        String enc = URLEncoder.encode(originalUrl, StandardCharsets.UTF_8);
-        // Spotify's public oEmbed endpoint lives on open.spotify.com.
-        return URI.create("https://open.spotify.com/oembed?url=" + enc);
-      }
-
-      @Override
-      public String defaultSiteName() {
-        return "Spotify";
-      }
-
-      @Override
-      public String titleFallback(OEmbedResponseFields fields) {
-        return "Spotify";
-      }
-    };
-  }
-
-  private static final Pattern MASTODON_AT_STYLE = Pattern.compile("^/@[^/]+/\\d+(/.*)?$");
-  private static final Pattern MASTODON_USERS_STYLE =
-      Pattern.compile("^/users/[^/]+/statuses/\\d+(/.*)?$");
-  private static final Pattern MASTODON_WEB_STYLE = Pattern.compile("^/web/statuses/\\d+(/.*)?$");
-
-  private static OEmbedLinkPreviewProvider mastodonProvider() {
-    return new OEmbedLinkPreviewProvider() {
-      @Override
-      public String id() {
-        return "mastodon";
-      }
-
-      @Override
-      public boolean matches(URI uri) {
-        String host = uri.getHost();
-        if (host == null || host.isBlank()) return false;
-        String path = uri.getPath() == null ? "" : uri.getPath();
-        return looksLikeMastodonStatusPath(path);
-      }
-
-      @Override
-      public URI endpointFor(URI uri, String originalUrl) {
-        // Use the instance that served the URL (scheme + authority).
-        if (uri.getScheme() == null || uri.getAuthority() == null) return null;
-        String base = uri.getScheme() + "://" + uri.getAuthority();
-        String enc = URLEncoder.encode(originalUrl, StandardCharsets.UTF_8);
-        // Some deployments expect an explicit format.
-        return URI.create(base + "/api/oembed?format=json&url=" + enc);
-      }
-
-      @Override
-      public String defaultSiteName() {
-        // provider_name may be the instance name; we keep it when present.
-        return "Mastodon";
-      }
-
-      @Override
-      public String titleFallback(OEmbedResponseFields fields) {
-        if (fields.authorName() != null) return "Post by " + fields.authorName();
-        return "Mastodon post";
-      }
-    };
-  }
-
-  private static boolean looksLikeMastodonStatusPath(String path) {
-    if (path == null) return false;
-    String p = path.strip();
-    if (p.isEmpty()) return false;
-    while (p.endsWith("/")) p = p.substring(0, p.length() - 1);
-    return MASTODON_AT_STYLE.matcher(p).matches()
-        || MASTODON_USERS_STYLE.matcher(p).matches()
-        || MASTODON_WEB_STYLE.matcher(p).matches();
   }
 
   private static String mastodonDescFromOEmbedHtml(String html) {

@@ -29,6 +29,35 @@ class OEmbedLinkPreviewProviderPluginTest {
   @TempDir Path tempDir;
 
   @Test
+  void oEmbedProvidersIncludeBuiltInsWithoutInstalledPlugins() {
+    List<String> providerIds =
+        LinkPreviewPluginProviders.oEmbedProviders(null).stream()
+            .map(OEmbedLinkPreviewProvider::id)
+            .toList();
+
+    assertTrue(providerIds.contains("spotify"));
+    assertTrue(providerIds.contains("mastodon"));
+  }
+
+  @Test
+  void oEmbedProvidersDedupeClasspathBuiltIns() throws Exception {
+    Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
+    Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
+    RuntimeConfigPathPort runtimeConfigPathPort =
+        () -> runtimeConfigDirectory.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+
+    List<String> providerIds =
+        LinkPreviewPluginProviders.oEmbedProviders(installedPlugins).stream()
+            .map(OEmbedLinkPreviewProvider::id)
+            .toList();
+
+    assertEquals(1, providerIds.stream().filter("spotify"::equals).count());
+    assertEquals(1, providerIds.stream().filter("mastodon"::equals).count());
+    assertTrue(installedPlugins.pluginProblems().isEmpty());
+  }
+
+  @Test
   void loadsOEmbedProvidersFromPluginDirectoryJar() throws Exception {
     try (JsonServer server = JsonServer.start()) {
       Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
