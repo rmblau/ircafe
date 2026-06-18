@@ -1156,12 +1156,6 @@ public class RuntimeConfigStore {
     stores.uiStores.timestampStore.rememberIncludePresenceMessages(includePresenceMessages);
   }
 
-  @Deprecated
-  public synchronized void rememberChatMessageTimestampsEnabled(boolean enabled) {
-    // Back-compat alias for older callers.
-    rememberTimestampsIncludeChatMessages(enabled);
-  }
-
   public synchronized void rememberChatHistoryInitialLoadLines(int lines) {
     stores.uiStores.chatHistoryStore.rememberInitialLoadLines(lines);
   }

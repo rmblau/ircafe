@@ -35,7 +35,6 @@ class ServerTreeRuntimeHeaderApiTest {
     api.setServerVersionDetails(context, "libera", "server", "v1", "i", "k");
     api.setStatusText(context, "Connected");
     api.setConnectionControlsEnabled(context, true, false);
-    api.setConnectedUi(context, true);
 
     verify(runtimeUiUpdater)
         .setServerConnectionState(runtimeUiUpdaterContext, "libera", ConnectionState.CONNECTED);
@@ -53,6 +52,5 @@ class ServerTreeRuntimeHeaderApiTest {
         .setServerVersionDetails(runtimeUiUpdaterContext, "libera", "server", "v1", "i", "k");
     verify(headerControls).setStatusText("Connected");
     verify(headerControls).setConnectionControlsEnabled(true, false);
-    verify(headerControls).setConnectionControlsEnabled(false, true);
   }
 }

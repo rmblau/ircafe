@@ -124,8 +124,4 @@ public final class ServerTreeRuntimeHeaderApi {
     Objects.requireNonNull(context, "context")
         .setConnectionControlsEnabled(connectEnabled, disconnectEnabled);
   }
-
-  public void setConnectedUi(Context context, boolean connected) {
-    setConnectionControlsEnabled(context, !connected, connected);
-  }
 }

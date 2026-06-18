@@ -115,7 +115,6 @@ class IrcEventNotificationRulesBusTest {
             "VERSION",
             IrcEventNotificationRuleProperties.CtcpMatchMode.GLOB,
             "*hexchat*",
-            IrcEventNotificationRuleProperties.SourceFilter.ANY,
             null,
             null);
     UiProperties props = mock(UiProperties.class);
