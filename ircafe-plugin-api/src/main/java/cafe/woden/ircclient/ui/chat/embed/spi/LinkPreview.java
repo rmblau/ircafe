@@ -1,8 +1,5 @@
 package cafe.woden.ircclient.ui.chat.embed.spi;
 
-import org.jmolecules.architecture.layered.InterfaceLayer;
-
-@InterfaceLayer
 public record LinkPreview(
     String url,
     String title,

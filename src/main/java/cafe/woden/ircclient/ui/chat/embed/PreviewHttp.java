@@ -4,6 +4,8 @@ import cafe.woden.ircclient.net.HttpHeaderNames;
 import cafe.woden.ircclient.net.HttpLite;
 import cafe.woden.ircclient.net.ProxyPlan;
 import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttpHeaders;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttpResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -69,22 +71,23 @@ public final class PreviewHttp implements LinkPreviewHttp {
     this.headerProviders = List.copyOf(headerProviders == null ? List.of() : headerProviders);
   }
 
-  public HttpLite.Response<InputStream> getStream(URI uri, String accept) throws IOException {
+  public LinkPreviewHttpResponse<InputStream> getStream(URI uri, String accept) throws IOException {
     return getStream(uri, accept, Map.of());
   }
 
-  public HttpLite.Response<InputStream> getStream(
+  public LinkPreviewHttpResponse<InputStream> getStream(
       URI uri, String accept, Map<String, String> extraHeaders) throws IOException {
     Map<String, String> headers = headersFor(uri, accept, extraHeaders, headerProviders);
 
-    return HttpLite.getStream(uri, headers, proxy, connectTimeoutMs, readTimeoutMs);
+    return toLinkPreviewResponse(
+        HttpLite.getStream(uri, headers, proxy, connectTimeoutMs, readTimeoutMs));
   }
 
-  public HttpLite.Response<String> getString(URI uri) throws IOException {
+  public LinkPreviewHttpResponse<String> getString(URI uri) throws IOException {
     return getString(uri, Map.of());
   }
 
-  public HttpLite.Response<String> getString(URI uri, Map<String, String> extraHeaders)
+  public LinkPreviewHttpResponse<String> getString(URI uri, Map<String, String> extraHeaders)
       throws IOException {
     return getString(
         uri, "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", extraHeaders);
@@ -97,11 +100,12 @@ public final class PreviewHttp implements LinkPreviewHttp {
    * @param accept explicit Accept header (e.g. application/json)
    * @param extraHeaders optional extra headers (may be null)
    */
-  public HttpLite.Response<String> getString(
+  public LinkPreviewHttpResponse<String> getString(
       URI uri, String accept, Map<String, String> extraHeaders) throws IOException {
     Map<String, String> headers = headersFor(uri, accept, extraHeaders, headerProviders);
 
-    return HttpLite.getString(uri, headers, proxy, connectTimeoutMs, readTimeoutMs);
+    return toLinkPreviewResponse(
+        HttpLite.getString(uri, headers, proxy, connectTimeoutMs, readTimeoutMs));
   }
 
   static Map<String, String> headersFor(
@@ -122,8 +126,16 @@ public final class PreviewHttp implements LinkPreviewHttp {
     return Map.copyOf(headers);
   }
 
-  public static Optional<String> header(HttpLite.Response<?> response, String name) {
+  public static Optional<String> header(LinkPreviewHttpResponse<?> response, String name) {
     return response.headers().firstValue(name);
+  }
+
+  private static <T> LinkPreviewHttpResponse<T> toLinkPreviewResponse(
+      HttpLite.Response<T> response) {
+    return new LinkPreviewHttpResponse<>(
+        response.statusCode(),
+        new LinkPreviewHttpHeaders(response.headers().raw()),
+        response.body());
   }
 
   public static Map<String, String> headers(Object... keyValues) {

@@ -76,12 +76,7 @@ class PluginApiDependencyAuditTest {
           "src/main/java/cafe/woden/ircclient/irc/ircv3/spi/Ircv3ExtensionProvider.java -> org.jmolecules.architecture.hexagonal.SecondaryPort",
           "src/main/java/cafe/woden/ircclient/irc/ircv3/spi/Ircv3ExtensionProvider.java -> org.jmolecules.architecture.layered.ApplicationLayer",
           "src/main/java/cafe/woden/ircclient/irc/ircv3/spi/package-info.java -> org.springframework.modulith.NamedInterface",
-          "src/main/java/cafe/woden/ircclient/notify/spi/package-info.java -> org.springframework.modulith.NamedInterface",
-          "src/main/java/cafe/woden/ircclient/ui/chat/embed/spi/LinkPreview.java -> org.jmolecules.architecture.layered.InterfaceLayer",
-          "src/main/java/cafe/woden/ircclient/ui/chat/embed/spi/LinkPreviewHttp.java -> cafe.woden.ircclient.net.HttpLite",
-          "src/main/java/cafe/woden/ircclient/ui/chat/embed/spi/LinkPreviewHttp.java -> org.jmolecules.architecture.layered.InterfaceLayer",
-          "src/main/java/cafe/woden/ircclient/ui/chat/embed/spi/LinkPreviewResolver.java -> org.jmolecules.architecture.layered.InterfaceLayer",
-          "src/main/java/cafe/woden/ircclient/ui/chat/embed/spi/package-info.java -> org.springframework.modulith.NamedInterface");
+          "src/main/java/cafe/woden/ircclient/notify/spi/package-info.java -> org.springframework.modulith.NamedInterface");
 
   @Test
   void spiPluginApiBlockersStayIntentional() throws IOException {
