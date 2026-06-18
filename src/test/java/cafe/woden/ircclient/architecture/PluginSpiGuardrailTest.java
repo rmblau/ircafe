@@ -24,15 +24,19 @@ class PluginSpiGuardrailTest {
       Pattern.compile(
           "\\bloadInstalledServices\\s*\\(\\s*([A-Za-z_$][\\w$]*(?:\\.[A-Za-z_$][\\w$]*)*)\\s*\\.class",
           Pattern.DOTALL);
+  private static final Pattern AUTO_SERVICE_PATTERN =
+      Pattern.compile(
+          "@AutoService\\s*\\(\\s*([A-Za-z_$][\\w$]*(?:\\.[A-Za-z_$][\\w$]*)*)\\s*\\.class",
+          Pattern.DOTALL);
 
   @Test
-  void installedPluginServiceContractsLiveInSpiPackages() throws IOException {
+  void pluginServiceContractsLiveInSpiPackages() throws IOException {
     Path sourceRoot = Path.of("src/main/java");
     List<String> violations = new ArrayList<>();
 
     try (Stream<Path> files = Files.walk(sourceRoot)) {
       for (Path file : files.filter(path -> path.toString().endsWith(".java")).sorted().toList()) {
-        scanLoadInstalledServicesCalls(sourceRoot, file, violations);
+        scanPluginServiceContracts(sourceRoot, file, violations);
       }
     }
 
@@ -65,19 +69,47 @@ class PluginSpiGuardrailTest {
                 .formatted(String.join(System.lineSeparator(), violations)));
   }
 
-  private static void scanLoadInstalledServicesCalls(
+  private static void scanPluginServiceContracts(
       Path sourceRoot, Path file, List<String> violations) throws IOException {
     String source = Files.readString(file);
-    Matcher matcher = LOAD_INSTALLED_SERVICES_PATTERN.matcher(source);
-    if (!matcher.find()) return;
-
     Map<String, String> imports = imports(source);
     String packageName = packageName(source);
+    scanClassLiteralContracts(
+        LOAD_INSTALLED_SERVICES_PATTERN,
+        sourceRoot,
+        file,
+        source,
+        imports,
+        packageName,
+        "loads",
+        violations);
+    scanClassLiteralContracts(
+        AUTO_SERVICE_PATTERN,
+        sourceRoot,
+        file,
+        source,
+        imports,
+        packageName,
+        "registers",
+        violations);
+  }
+
+  private static void scanClassLiteralContracts(
+      Pattern pattern,
+      Path sourceRoot,
+      Path file,
+      String source,
+      Map<String, String> imports,
+      String packageName,
+      String verb,
+      List<String> violations) {
+    Matcher matcher = pattern.matcher(source);
+    if (!matcher.find()) return;
     do {
       String expression = matcher.group(1);
       String contractName = resolveClassName(expression, imports, packageName);
       if (contractName.startsWith("cafe.woden.ircclient.") && !contractName.contains(".spi.")) {
-        violations.add(sourceRoot.relativize(file) + " loads " + contractName);
+        violations.add(sourceRoot.relativize(file) + " " + verb + " " + contractName);
       }
     } while (matcher.find());
   }
