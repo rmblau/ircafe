@@ -82,18 +82,9 @@ final class BackendExtensionCatalogState {
       Path pluginDirectory, ClassLoader applicationClassLoader) {
     PluginServiceLoaderSupport.LoadedServices<BackendExtension> loadedServices =
         PluginServiceLoaderSupport.loadInstalledServices(
-            BackendExtension.class,
-            builtInExtensions(),
-            pluginDirectory,
-            applicationClassLoader,
-            log);
+            BackendExtension.class, List.of(), pluginDirectory, applicationClassLoader, log);
     return new BackendExtensionCatalogState(
         loadedServices.services(), loadedServices.pluginClassLoaders());
-  }
-
-  private static List<BackendExtension> builtInExtensions() {
-    return List.of(
-        new IrcBackendExtension(), new MatrixBackendExtension(), new QuasselBackendExtension());
   }
 
   void shutdown() {
