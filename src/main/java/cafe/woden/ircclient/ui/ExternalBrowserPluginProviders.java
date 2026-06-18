@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.ui.builtins.BuiltInExternalBrowserSchemeProvider;
 import cafe.woden.ircclient.ui.spi.ExternalBrowserCommandProvider;
 import cafe.woden.ircclient.ui.spi.ExternalBrowserSchemeProvider;
 import java.util.ArrayList;

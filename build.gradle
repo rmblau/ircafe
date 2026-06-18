@@ -58,6 +58,7 @@ dependencies {
     implementation project(':ircafe-builtins-embed')
     implementation project(':ircafe-builtins-input')
     implementation project(':ircafe-builtins-outbound')
+    implementation project(':ircafe-builtins-ui')
     compileOnly lib('lombok')
     compileOnly lib('autoServiceAnnotations')
     annotationProcessor lib('lombok')

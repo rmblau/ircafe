@@ -40,8 +40,7 @@ public class ExternalBrowserLauncher {
           "opera",
           "vivaldi");
 
-  private static final Set<String> DEFAULT_ALLOWED_SCHEMES =
-      BuiltInExternalBrowserSchemeProvider.schemes();
+  private static final Set<String> DEFAULT_ALLOWED_SCHEMES = Set.of("http", "https");
 
   private final List<cafe.woden.ircclient.ui.spi.ExternalBrowserCommandProvider> commandProviders;
   private final Set<String> allowedSchemes;

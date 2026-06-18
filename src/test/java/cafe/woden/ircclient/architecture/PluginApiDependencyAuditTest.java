@@ -94,7 +94,6 @@ class PluginApiDependencyAuditTest {
           "src/main/java/cafe/woden/ircclient/ui/settings/theme/spi/ThemeContributionProvider.java -> org.jmolecules.architecture.layered.InterfaceLayer",
           "src/main/java/cafe/woden/ircclient/ui/settings/theme/spi/ThemePresetContribution.java -> org.jmolecules.architecture.layered.InterfaceLayer",
           "src/main/java/cafe/woden/ircclient/ui/spi/ExternalBrowserCommandProvider.java -> org.jmolecules.architecture.layered.InterfaceLayer",
-          "src/main/java/cafe/woden/ircclient/ui/spi/ExternalBrowserSchemeProvider.java -> org.jmolecules.architecture.layered.InterfaceLayer",
           "src/main/java/cafe/woden/ircclient/ui/spi/package-info.java -> org.springframework.modulith.NamedInterface");
 
   @Test
