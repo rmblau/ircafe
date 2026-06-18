@@ -1,25 +1,19 @@
 package cafe.woden.ircclient.irc.znc;
 
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.ZNC_PLAYBACK;
-
 import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
 import cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy;
 import cafe.woden.ircclient.bouncer.spi.BouncerServerProfile;
 import cafe.woden.ircclient.bouncer.spi.ResolvedBouncerNetwork;
 import com.google.auto.service.AutoService;
 import java.util.Set;
-import org.jmolecules.architecture.layered.ApplicationLayer;
-import org.springframework.stereotype.Component;
 
 /** ZNC-specific naming and login shaping strategy for bouncer discovery. */
-@Component
-@ApplicationLayer
 @AutoService(BouncerNetworkMappingStrategy.class)
 public class ZncBouncerNetworkMappingStrategy implements BouncerNetworkMappingStrategy {
 
   public static final String BACKEND_ID = "znc";
   public static final String NETWORKS_GROUP_LABEL = "ZNC Networks";
-  public static final String DISCOVERY_CAPABILITY = ZNC_PLAYBACK;
+  public static final String DISCOVERY_CAPABILITY = "znc.in/playback";
 
   @Override
   public String backendId() {

@@ -2,8 +2,6 @@ package cafe.woden.ircclient.irc.soju;
 
 import cafe.woden.ircclient.bouncer.spi.BouncerServerProfile;
 import java.util.Objects;
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 
 /**
  * Naming + username rules for ephemeral Soju network entries.
@@ -11,11 +9,12 @@ import lombok.NoArgsConstructor;
  * <p>The configured Soju host is treated as the "Bouncer Control" session. Discovered networks are
  * represented as ephemeral servers and are not persisted.
  */
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class SojuEphemeralNaming {
 
   public static final String EPHEMERAL_ID_PREFIX = "soju:";
   public static final String DEFAULT_CLIENT_SUFFIX = "ircafe";
+
+  private SojuEphemeralNaming() {}
 
   /**
    * Derived identifying info for an ephemeral Soju network server.
@@ -44,7 +43,7 @@ public final class SojuEphemeralNaming {
       throw new IllegalArgumentException("network.netId is required");
     }
 
-    String networkName = PircbotxSojuParsers.sanitizeNetworkName(network.name());
+    String networkName = sanitizeNetworkName(network.name());
     if (networkName.isBlank()) {
       networkName = "net-" + netId;
     }
@@ -102,5 +101,25 @@ public final class SojuEphemeralNaming {
   private static String normalize(String s) {
     String v = Objects.toString(s, "").trim();
     return v.isEmpty() ? null : v;
+  }
+
+  private static String sanitizeNetworkName(String name) {
+    if (name == null) return "";
+    StringBuilder sb = new StringBuilder(name.length());
+    for (int i = 0; i < name.length(); i++) {
+      char c = name.charAt(i);
+      if ((c >= 'a' && c <= 'z')
+          || (c >= 'A' && c <= 'Z')
+          || (c >= '0' && c <= '9')
+          || c == '.'
+          || c == '_'
+          || c == '-') {
+        sb.append(c);
+      } else {
+        sb.append('_');
+      }
+    }
+    String v = sb.toString();
+    return v.isBlank() ? "" : v;
   }
 }

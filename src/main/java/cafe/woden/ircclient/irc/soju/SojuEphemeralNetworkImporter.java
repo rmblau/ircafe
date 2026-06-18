@@ -29,6 +29,21 @@ public class SojuEphemeralNetworkImporter implements BouncerBackendDiscoveryHand
   private final SojuBouncerDiscoveryAdapter discoveryAdapter = new SojuBouncerDiscoveryAdapter();
 
   public SojuEphemeralNetworkImporter(
+      ServerRegistry serverRegistry,
+      EphemeralServerRegistry ephemeralServers,
+      SojuAutoConnectStore autoConnect,
+      BouncerDiscoveryConfigPort runtimeConfig,
+      BouncerConnectionPort connectionPort) {
+    this(
+        new SojuBouncerNetworkMappingStrategy(),
+        serverRegistry,
+        ephemeralServers,
+        autoConnect,
+        runtimeConfig,
+        connectionPort);
+  }
+
+  SojuEphemeralNetworkImporter(
       SojuBouncerNetworkMappingStrategy mappingStrategy,
       ServerRegistry serverRegistry,
       EphemeralServerRegistry ephemeralServers,

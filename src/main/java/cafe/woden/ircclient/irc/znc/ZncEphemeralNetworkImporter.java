@@ -29,6 +29,21 @@ public class ZncEphemeralNetworkImporter implements BouncerBackendDiscoveryHandl
   private final ZncBouncerDiscoveryAdapter discoveryAdapter = new ZncBouncerDiscoveryAdapter();
 
   public ZncEphemeralNetworkImporter(
+      ServerRegistry serverRegistry,
+      EphemeralServerRegistry ephemeralServers,
+      ZncAutoConnectStore autoConnect,
+      BouncerDiscoveryConfigPort runtimeConfig,
+      BouncerConnectionPort connectionPort) {
+    this(
+        new ZncBouncerNetworkMappingStrategy(),
+        serverRegistry,
+        ephemeralServers,
+        autoConnect,
+        runtimeConfig,
+        connectionPort);
+  }
+
+  ZncEphemeralNetworkImporter(
       ZncBouncerNetworkMappingStrategy mappingStrategy,
       ServerRegistry serverRegistry,
       EphemeralServerRegistry ephemeralServers,
