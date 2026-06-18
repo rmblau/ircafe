@@ -31,12 +31,14 @@ class PluginSpiGuardrailTest {
 
   @Test
   void pluginServiceContractsLiveInSpiPackages() throws IOException {
-    Path sourceRoot = Path.of("src/main/java");
     List<String> violations = new ArrayList<>();
 
-    try (Stream<Path> files = Files.walk(sourceRoot)) {
-      for (Path file : files.filter(path -> path.toString().endsWith(".java")).sorted().toList()) {
-        scanPluginServiceContracts(sourceRoot, file, violations);
+    for (Path sourceRoot : pluginServiceSourceRoots()) {
+      try (Stream<Path> files = Files.walk(sourceRoot)) {
+        for (Path file :
+            files.filter(path -> path.toString().endsWith(".java")).sorted().toList()) {
+          scanPluginServiceContracts(sourceRoot, file, violations);
+        }
       }
     }
 
@@ -49,15 +51,15 @@ class PluginSpiGuardrailTest {
 
   @Test
   void serviceDescriptorNamesLiveInSpiPackages() throws IOException {
-    Path servicesRoot = Path.of("src/main/resources/META-INF/services");
-    if (!Files.isDirectory(servicesRoot)) return;
-
     List<String> violations = new ArrayList<>();
-    try (Stream<Path> files = Files.list(servicesRoot)) {
-      for (Path file : files.filter(Files::isRegularFile).sorted().toList()) {
-        String serviceName = file.getFileName().toString();
-        if (!serviceName.contains(".spi.")) {
-          violations.add(servicesRoot.relativize(file) + " -> " + serviceName);
+
+    for (Path servicesRoot : pluginServiceDescriptorRoots()) {
+      try (Stream<Path> files = Files.list(servicesRoot)) {
+        for (Path file : files.filter(Files::isRegularFile).sorted().toList()) {
+          String serviceName = file.getFileName().toString();
+          if (!serviceName.contains(".spi.")) {
+            violations.add(servicesRoot.relativize(file) + " -> " + serviceName);
+          }
         }
       }
     }
@@ -67,6 +69,42 @@ class PluginSpiGuardrailTest {
         () ->
             "Service descriptor filenames should name .spi contracts:%n%s"
                 .formatted(String.join(System.lineSeparator(), violations)));
+  }
+
+  private static List<Path> pluginServiceDescriptorRoots() throws IOException {
+    List<Path> descriptorRoots = new ArrayList<>();
+    Path appDescriptorRoot = Path.of("src/main/resources/META-INF/services");
+    if (Files.isDirectory(appDescriptorRoot)) {
+      descriptorRoots.add(appDescriptorRoot);
+    }
+    try (Stream<Path> paths = Files.list(Path.of("."))) {
+      for (Path path : paths.filter(Files::isDirectory).sorted().toList()) {
+        Path descriptorRoot = path.resolve("src/main/resources/META-INF/services");
+        if (path.getFileName().toString().startsWith("ircafe-builtins-")
+            && Files.isDirectory(descriptorRoot)) {
+          descriptorRoots.add(descriptorRoot);
+        }
+      }
+    }
+    return List.copyOf(descriptorRoots);
+  }
+
+  private static List<Path> pluginServiceSourceRoots() throws IOException {
+    List<Path> sourceRoots = new ArrayList<>();
+    Path appSourceRoot = Path.of("src/main/java");
+    if (Files.isDirectory(appSourceRoot)) {
+      sourceRoots.add(appSourceRoot);
+    }
+    try (Stream<Path> paths = Files.list(Path.of("."))) {
+      for (Path path : paths.filter(Files::isDirectory).sorted().toList()) {
+        Path sourceRoot = path.resolve("src/main/java");
+        if (path.getFileName().toString().startsWith("ircafe-builtins-")
+            && Files.isDirectory(sourceRoot)) {
+          sourceRoots.add(sourceRoot);
+        }
+      }
+    }
+    return List.copyOf(sourceRoots);
   }
 
   private static void scanPluginServiceContracts(

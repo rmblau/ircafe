@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.notify.api;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.notify.builtins.BuiltInCustomSoundFileExtensionProvider;
 import cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider;
 import cafe.woden.ircclient.notify.spi.CustomSoundPlaybackProvider;
 import java.util.List;

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
+import cafe.woden.ircclient.notify.builtins.BuiltInCustomSoundFileExtensionProvider;
 import cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider;
 import java.nio.file.Path;
 import java.util.List;

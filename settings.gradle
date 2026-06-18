@@ -26,3 +26,4 @@ dependencyResolutionManagement {
 rootProject.name = "ircafe"
 
 include 'ircafe-plugin-api'
+include 'ircafe-builtins-notify'
