@@ -28,3 +28,4 @@ rootProject.name = "ircafe"
 include 'ircafe-plugin-api'
 include 'ircafe-builtins-notify'
 include 'ircafe-builtins-embed'
+include 'ircafe-builtins-input'

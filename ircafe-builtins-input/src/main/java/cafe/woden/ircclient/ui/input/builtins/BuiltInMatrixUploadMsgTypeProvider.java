@@ -1,14 +1,12 @@
-package cafe.woden.ircclient.ui.input;
+package cafe.woden.ircclient.ui.input.builtins;
 
 import cafe.woden.ircclient.ui.input.spi.MatrixUploadMsgTypeProvider;
 import cafe.woden.ircclient.ui.input.spi.MatrixUploadMsgTypeRule;
 import com.google.auto.service.AutoService;
 import java.util.List;
 import java.util.Set;
-import org.jmolecules.architecture.layered.InterfaceLayer;
 
 /** Built-in Matrix upload msgtype inference rules for common media extensions. */
-@InterfaceLayer
 @AutoService(MatrixUploadMsgTypeProvider.class)
 public final class BuiltInMatrixUploadMsgTypeProvider implements MatrixUploadMsgTypeProvider {
   private static final Set<String> MATRIX_IMAGE_EXTENSIONS =

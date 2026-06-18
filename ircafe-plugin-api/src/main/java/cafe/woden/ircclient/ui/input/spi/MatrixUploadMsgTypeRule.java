@@ -3,10 +3,8 @@ package cafe.woden.ircclient.ui.input.spi;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Objects;
-import org.jmolecules.architecture.layered.InterfaceLayer;
 
 /** File-extension to Matrix upload msgtype mapping contributed by upload plugins. */
-@InterfaceLayer
 public record MatrixUploadMsgTypeRule(String msgType, String[] extensions) {
 
   public MatrixUploadMsgTypeRule {

@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.input;
 
+import cafe.woden.ircclient.ui.input.builtins.BuiltInMatrixUploadMsgTypeProvider;
 import cafe.woden.ircclient.ui.input.spi.MatrixUploadMsgTypeProvider;
 import cafe.woden.ircclient.ui.input.spi.MatrixUploadMsgTypeRule;
 import cafe.woden.ircclient.ui.localization.UiMessages;

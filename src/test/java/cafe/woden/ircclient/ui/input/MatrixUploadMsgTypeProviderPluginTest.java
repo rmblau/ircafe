@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
+import cafe.woden.ircclient.ui.input.builtins.BuiltInMatrixUploadMsgTypeProvider;
 import cafe.woden.ircclient.ui.input.spi.MatrixUploadMsgTypeProvider;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.io.File;

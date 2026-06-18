@@ -185,8 +185,6 @@ import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.chat.transcript.history.ChatHistoryTranscriptPortAdapter;
 import cafe.woden.ircclient.ui.chat.transcript.rebuild.TranscriptRebuildService;
 import cafe.woden.ircclient.ui.filter.FilterEngine;
-import cafe.woden.ircclient.ui.input.spi.MatrixUploadMsgTypeProvider;
-import cafe.woden.ircclient.ui.input.spi.MatrixUploadMsgTypeRule;
 import cafe.woden.ircclient.ui.input.spi.MessageInputSpellcheckDictionaryProvider;
 import cafe.woden.ircclient.ui.input.spi.MessageInputWordSuggestionProvider;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
@@ -439,8 +437,6 @@ class SpringModulithIncrementalAdoptionTest {
     assertNamedInterfaceContains(
         uiModule,
         "input-spi",
-        MatrixUploadMsgTypeProvider.class,
-        MatrixUploadMsgTypeRule.class,
         MessageInputSpellcheckDictionaryProvider.class,
         MessageInputWordSuggestionProvider.class);
     assertNamedInterfaceContains(
