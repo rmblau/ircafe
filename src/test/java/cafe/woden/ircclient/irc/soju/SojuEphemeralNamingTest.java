@@ -2,24 +2,14 @@ package cafe.woden.ircclient.irc.soju;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
+import cafe.woden.ircclient.bouncer.spi.BouncerServerProfile;
 import org.junit.jupiter.api.Test;
 
 class SojuEphemeralNamingTest {
 
   @Test
   void derivesDeterministicIdAndUser() {
-    IrcProperties.Server.Sasl sasl =
-        new IrcProperties.Server.Sasl(true, "zimmerdon", "pw", "PLAIN", null);
-    IrcProperties.Server bouncer =
-        IrcPropertiesTestFixtures.serverBuilder("soju")
-            .host("bouncer.example")
-            .nick("zimmedon")
-            .login("zimmerdon")
-            .realName("Real")
-            .sasl(sasl)
-            .build();
+    BouncerServerProfile bouncer = new BouncerServerProfile("soju", "zimmerdon", "zimmerdon");
 
     SojuNetwork net = new SojuNetwork("soju", "123", "libera", java.util.Map.of("name", "libera"));
 
@@ -31,16 +21,7 @@ class SojuEphemeralNamingTest {
 
   @Test
   void stripsExistingNetworkAndClientSuffixFromBaseUser() {
-    IrcProperties.Server.Sasl sasl =
-        new IrcProperties.Server.Sasl(true, "user/libera@laptop", "pw", "PLAIN", null);
-    IrcProperties.Server bouncer =
-        IrcPropertiesTestFixtures.serverBuilder("soju")
-            .host("bouncer.example")
-            .nick("nick")
-            .login("")
-            .realName("Real")
-            .sasl(sasl)
-            .build();
+    BouncerServerProfile bouncer = new BouncerServerProfile("soju", "", "user/libera@laptop");
 
     SojuNetwork net = new SojuNetwork("soju", "9", "oftc", java.util.Map.of());
     SojuEphemeralNaming.Derived d = SojuEphemeralNaming.derive(bouncer, net);
@@ -49,14 +30,7 @@ class SojuEphemeralNamingTest {
 
   @Test
   void sanitizesNetworkNameForUsernames() {
-    IrcProperties.Server bouncer =
-        IrcPropertiesTestFixtures.serverBuilder("soju")
-            .host("bouncer.example")
-            .nick("nick")
-            .login("user")
-            .realName("Real")
-            .sasl(new IrcProperties.Server.Sasl(false, "", "", "PLAIN", null))
-            .build();
+    BouncerServerProfile bouncer = new BouncerServerProfile("soju", "user", "");
 
     SojuNetwork net = new SojuNetwork("soju", "42", "my weird net", java.util.Map.of());
     SojuEphemeralNaming.Derived d = SojuEphemeralNaming.derive(bouncer, net);

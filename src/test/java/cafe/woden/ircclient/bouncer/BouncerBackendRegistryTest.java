@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
 import cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy;
+import cafe.woden.ircclient.bouncer.spi.BouncerServerProfile;
 import cafe.woden.ircclient.bouncer.spi.ResolvedBouncerNetwork;
-import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
@@ -120,17 +120,9 @@ class BouncerBackendRegistryTest {
 
     @Override
     public ResolvedBouncerNetwork resolveNetwork(
-        IrcProperties.Server bouncer, BouncerDiscoveredNetwork network) {
+        BouncerServerProfile bouncer, BouncerDiscoveredNetwork network) {
       return new ResolvedBouncerNetwork(
           ephemeralIdPrefix + "origin:" + idSuffix, "user/" + idSuffix, "display", "display");
-    }
-
-    @Override
-    public IrcProperties.Server buildEphemeralServer(
-        IrcProperties.Server bouncer,
-        ResolvedBouncerNetwork resolved,
-        List<String> autoJoinChannels) {
-      return bouncer;
     }
   }
 
@@ -144,17 +136,9 @@ class BouncerBackendRegistryTest {
 
     @Override
     public ResolvedBouncerNetwork resolveNetwork(
-        IrcProperties.Server bouncer, BouncerDiscoveredNetwork network) {
+        BouncerServerProfile bouncer, BouncerDiscoveredNetwork network) {
       return new ResolvedBouncerNetwork(
           ephemeralIdPrefix + "origin:" + idSuffix, "user/" + idSuffix, "display", "display");
-    }
-
-    @Override
-    public IrcProperties.Server buildEphemeralServer(
-        IrcProperties.Server bouncer,
-        ResolvedBouncerNetwork resolved,
-        List<String> autoJoinChannels) {
-      return bouncer;
     }
   }
 
@@ -168,17 +152,9 @@ class BouncerBackendRegistryTest {
 
     @Override
     public ResolvedBouncerNetwork resolveNetwork(
-        IrcProperties.Server bouncer, BouncerDiscoveredNetwork network) {
+        BouncerServerProfile bouncer, BouncerDiscoveredNetwork network) {
       return new ResolvedBouncerNetwork(
           ephemeralIdPrefix + "origin:" + idSuffix, "user/" + idSuffix, "display", "display");
-    }
-
-    @Override
-    public IrcProperties.Server buildEphemeralServer(
-        IrcProperties.Server bouncer,
-        ResolvedBouncerNetwork resolved,
-        List<String> autoJoinChannels) {
-      return bouncer;
     }
   }
 

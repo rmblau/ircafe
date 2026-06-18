@@ -273,7 +273,6 @@ class SpringModulithIncrementalAdoptionTest {
         .isEqualTo(bouncerModule);
     assertThat(bouncerModule.getBasePackage().getName()).isEqualTo("cafe.woden.ircclient.bouncer");
     assertNamedInterfaceContains(bouncerModule, "spi", BouncerNetworkMappingStrategy.class);
-
     ApplicationModule performModule = moduleFor(modules, PerformOnConnectService.class);
     assertThat(performModule).isNotEqualTo(appModule);
     assertThat(performModule.getBasePackage().getName()).isEqualTo("cafe.woden.ircclient.perform");

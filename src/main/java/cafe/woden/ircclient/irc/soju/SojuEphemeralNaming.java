@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.irc.soju;
 
-import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.bouncer.spi.BouncerServerProfile;
 import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -26,12 +26,12 @@ public final class SojuEphemeralNaming {
    */
   public record Derived(String serverId, String loginUser, String networkName) {}
 
-  public static Derived derive(IrcProperties.Server bouncerServer, SojuNetwork network) {
+  public static Derived derive(BouncerServerProfile bouncerServer, SojuNetwork network) {
     return derive(bouncerServer, network, DEFAULT_CLIENT_SUFFIX);
   }
 
   public static Derived derive(
-      IrcProperties.Server bouncerServer, SojuNetwork network, String clientSuffix) {
+      BouncerServerProfile bouncerServer, SojuNetwork network, String clientSuffix) {
     Objects.requireNonNull(bouncerServer, "bouncerServer");
     Objects.requireNonNull(network, "network");
     String bouncerId = normalize(bouncerServer.id());
@@ -66,14 +66,9 @@ public final class SojuEphemeralNaming {
   }
 
   /** Select a base username from the bouncer server config (SASL username preferred). */
-  public static String pickBaseUser(IrcProperties.Server bouncerServer) {
+  public static String pickBaseUser(BouncerServerProfile bouncerServer) {
     if (bouncerServer == null) return null;
-    String saslUser = null;
-    if (bouncerServer.sasl() != null) {
-      saslUser = normalize(bouncerServer.sasl().username());
-    }
-    String login = normalize(bouncerServer.login());
-    return (saslUser != null) ? saslUser : login;
+    return bouncerServer.preferredLoginUser();
   }
 
   /**

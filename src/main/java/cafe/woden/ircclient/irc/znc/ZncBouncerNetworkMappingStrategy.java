@@ -4,10 +4,9 @@ import static cafe.woden.ircclient.util.Ircv3CapabilityNames.ZNC_PLAYBACK;
 
 import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
 import cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy;
+import cafe.woden.ircclient.bouncer.spi.BouncerServerProfile;
 import cafe.woden.ircclient.bouncer.spi.ResolvedBouncerNetwork;
-import cafe.woden.ircclient.config.IrcProperties;
 import com.google.auto.service.AutoService;
-import java.util.List;
 import java.util.Set;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 import org.springframework.stereotype.Component;
@@ -44,45 +43,11 @@ public class ZncBouncerNetworkMappingStrategy implements BouncerNetworkMappingSt
 
   @Override
   public ResolvedBouncerNetwork resolveNetwork(
-      IrcProperties.Server bouncer, BouncerDiscoveredNetwork network) {
+      BouncerServerProfile bouncer, BouncerDiscoveredNetwork network) {
     ZncNetwork zncNetwork = new ZncNetwork(network.originServerId(), network.displayName(), null);
     ZncEphemeralNaming.Derived d = ZncEphemeralNaming.derive(bouncer, zncNetwork);
     return new ResolvedBouncerNetwork(
         d.serverId(), d.loginUser(), network.displayName(), network.autoConnectName());
-  }
-
-  @Override
-  public IrcProperties.Server buildEphemeralServer(
-      IrcProperties.Server bouncer,
-      ResolvedBouncerNetwork resolved,
-      List<String> autoJoinChannels) {
-    IrcProperties.Server.Sasl sasl = bouncer.sasl();
-
-    // Always set the derived username variant (even if SASL is disabled) so later toggles
-    // don't require re-importing.
-    IrcProperties.Server.Sasl updatedSasl =
-        new IrcProperties.Server.Sasl(
-            sasl.enabled(),
-            resolved.loginUser(),
-            sasl.password(),
-            sasl.mechanism(),
-            sasl.disconnectOnFailure());
-
-    return new IrcProperties.Server(
-        resolved.serverId(),
-        bouncer.host(),
-        bouncer.port(),
-        bouncer.tls(),
-        bouncer.serverPassword(),
-        bouncer.nick(),
-        resolved.loginUser(),
-        bouncer.realName(),
-        updatedSasl,
-        bouncer.nickserv(),
-        autoJoinChannels == null ? List.of() : List.copyOf(autoJoinChannels),
-        List.of(),
-        bouncer.proxy(),
-        bouncer.backend());
   }
 
   @Override

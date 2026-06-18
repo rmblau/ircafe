@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.irc.znc;
 
-import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.bouncer.spi.BouncerServerProfile;
 import java.util.Locale;
 import java.util.Objects;
 
@@ -20,7 +20,7 @@ public final class ZncEphemeralNaming {
    */
   public record Derived(String serverId, String loginUser, String networkKey) {}
 
-  public static Derived derive(IrcProperties.Server bouncerServer, ZncNetwork network) {
+  public static Derived derive(BouncerServerProfile bouncerServer, ZncNetwork network) {
     Objects.requireNonNull(bouncerServer, "bouncerServer");
     Objects.requireNonNull(network, "network");
 
@@ -62,14 +62,9 @@ public final class ZncEphemeralNaming {
   }
 
   /** Select the base login for ZNC connections (SASL username preferred). */
-  public static String pickBaseLoginUser(IrcProperties.Server bouncerServer) {
+  public static String pickBaseLoginUser(BouncerServerProfile bouncerServer) {
     if (bouncerServer == null) return null;
-    String saslUser = null;
-    if (bouncerServer.sasl() != null) {
-      saslUser = normalize(bouncerServer.sasl().username());
-    }
-    String login = normalize(bouncerServer.login());
-    return (saslUser != null) ? saslUser : login;
+    return bouncerServer.preferredLoginUser();
   }
 
   /**
