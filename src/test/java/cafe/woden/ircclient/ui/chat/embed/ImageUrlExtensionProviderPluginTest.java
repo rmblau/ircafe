@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
+import cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,6 +18,38 @@ class ImageUrlExtensionProviderPluginTest {
   @TempDir Path tempDir;
 
   @Test
+  void imageUrlExtensionProvidersIncludeBuiltInsWithoutInstalledPlugins() {
+    List<ImageUrlExtensionProvider> providers =
+        ImageUrlExtensionProviders.loadInstalledProviders(null);
+
+    assertEquals(
+        1,
+        providers.stream()
+            .filter(provider -> provider instanceof BuiltInImageUrlExtensionProvider)
+            .count());
+    assertEquals(
+        List.of("https://cdn.example/photo.png"),
+        ImageUrlExtractor.extractImageUrls("image: https://cdn.example/photo.png", providers));
+  }
+
+  @Test
+  void loadsBuiltInImageUrlExtensionProviderThroughClasspathServiceLoader() {
+    RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+
+    List<ImageUrlExtensionProvider> providers =
+        ImageUrlExtensionProviders.loadInstalledProviders(installedPlugins);
+
+    assertTrue(installedPlugins.pluginProblems().isEmpty());
+    assertTrue(ImageUrlExtensionProviders.imageExtensions(providers).contains(".webp"));
+    assertEquals(
+        1,
+        providers.stream()
+            .filter(provider -> provider instanceof BuiltInImageUrlExtensionProvider)
+            .count());
+  }
+
+  @Test
   void loadsImageUrlExtensionsFromPluginDirectoryJar() throws Exception {
     Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
     Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
@@ -25,7 +58,7 @@ class ImageUrlExtensionProviderPluginTest {
         () -> runtimeConfigDirectory.resolve("ircafe.yml");
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
 
-    List<cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider> providers =
+    List<ImageUrlExtensionProvider> providers =
         ImageUrlExtensionProviders.loadInstalledProviders(installedPlugins);
 
     assertEquals(

@@ -1,6 +1,8 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -17,30 +19,22 @@ final class ImageUrlExtensionProviders {
 
   private static final Logger log = LoggerFactory.getLogger(ImageUrlExtensionProviders.class);
 
-  private static final List<String> DEFAULT_IMAGE_EXTENSIONS =
-      List.of(".png", ".jpg", ".jpeg", ".gif", ".webp");
+  private static final List<ImageUrlExtensionProvider> BUILT_IN_EXTENSION_PROVIDERS =
+      List.of(new BuiltInImageUrlExtensionProvider());
 
   private ImageUrlExtensionProviders() {}
 
-  static List<cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>
-      loadInstalledProviders(InstalledPluginsPort installedPlugins) {
-    if (installedPlugins == null) return List.of();
-    return List.copyOf(
-        Objects.requireNonNullElse(
-            installedPlugins.loadInstalledServices(
-                cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider.class, List.of()),
-            List.<cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>of()));
+  static List<ImageUrlExtensionProvider> loadInstalledProviders(
+      InstalledPluginsPort installedPlugins) {
+    if (installedPlugins == null) return BUILT_IN_EXTENSION_PROVIDERS;
+    return dedupeByProviderClass(
+        installedPlugins.loadInstalledServices(
+            ImageUrlExtensionProvider.class, BUILT_IN_EXTENSION_PROVIDERS));
   }
 
-  static Set<String> imageExtensions(
-      List<? extends cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>
-          extensionProviders) {
-    LinkedHashSet<String> extensions = new LinkedHashSet<>(DEFAULT_IMAGE_EXTENSIONS);
-    for (cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider provider :
-        Objects.requireNonNullElse(
-            extensionProviders,
-            Collections
-                .<cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>emptyList())) {
+  static Set<String> imageExtensions(List<? extends ImageUrlExtensionProvider> extensionProviders) {
+    LinkedHashSet<String> extensions = new LinkedHashSet<>();
+    for (ImageUrlExtensionProvider provider : extensionProviderChain(extensionProviders)) {
       if (provider == null) continue;
       try {
         List<String> contributed = provider.imageFileExtensions();
@@ -57,6 +51,40 @@ final class ImageUrlExtensionProviders {
       }
     }
     return Collections.unmodifiableSet(extensions);
+  }
+
+  private static List<ImageUrlExtensionProvider> extensionProviderChain(
+      List<? extends ImageUrlExtensionProvider> extensionProviders) {
+    LinkedHashSet<String> providerClassNames = new LinkedHashSet<>();
+    ArrayList<ImageUrlExtensionProvider> providers = new ArrayList<>();
+    addProviders(providers, providerClassNames, BUILT_IN_EXTENSION_PROVIDERS);
+    addProviders(providers, providerClassNames, extensionProviders);
+    return List.copyOf(providers);
+  }
+
+  private static void addProviders(
+      ArrayList<ImageUrlExtensionProvider> providers,
+      LinkedHashSet<String> providerClassNames,
+      List<? extends ImageUrlExtensionProvider> candidates) {
+    for (ImageUrlExtensionProvider provider :
+        Objects.requireNonNullElse(candidates, List.<ImageUrlExtensionProvider>of())) {
+      if (provider == null || !providerClassNames.add(provider.getClass().getName())) {
+        continue;
+      }
+      providers.add(provider);
+    }
+  }
+
+  private static <T> List<T> dedupeByProviderClass(List<? extends T> services) {
+    LinkedHashSet<String> providerClassNames = new LinkedHashSet<>();
+    ArrayList<T> deduped = new ArrayList<>();
+    for (T service : Objects.requireNonNullElse(services, List.<T>of())) {
+      if (service == null || !providerClassNames.add(service.getClass().getName())) {
+        continue;
+      }
+      deduped.add(service);
+    }
+    return List.copyOf(deduped);
   }
 
   private static String normalizeImageExtension(String value) {
