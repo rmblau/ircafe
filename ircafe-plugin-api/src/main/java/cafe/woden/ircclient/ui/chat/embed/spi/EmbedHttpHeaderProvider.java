@@ -2,7 +2,6 @@ package cafe.woden.ircclient.ui.chat.embed.spi;
 
 import java.net.URI;
 import java.util.Map;
-import org.jmolecules.architecture.layered.InterfaceLayer;
 
 /**
  * ServiceLoader-backed contribution point for embed HTTP request headers.
@@ -14,7 +13,6 @@ import org.jmolecules.architecture.layered.InterfaceLayer;
  * <p>Register implementations with {@code
  * META-INF/services/cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider}.
  */
-@InterfaceLayer
 public interface EmbedHttpHeaderProvider {
 
   /**

@@ -174,7 +174,6 @@ import cafe.woden.ircclient.ui.SwingUiEventAdapter;
 import cafe.woden.ircclient.ui.SwingUiPort;
 import cafe.woden.ircclient.ui.application.RuntimeEventsPanel;
 import cafe.woden.ircclient.ui.chat.ChatDockManager;
-import cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider;
 import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreview;
 import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
 import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
@@ -429,7 +428,6 @@ class SpringModulithIncrementalAdoptionTest {
     assertNamedInterfaceContains(
         uiModule,
         "chat-embed-spi",
-        EmbedHttpHeaderProvider.class,
         LinkPreview.class,
         LinkPreviewHttp.class,
         LinkPreviewResolver.class);
