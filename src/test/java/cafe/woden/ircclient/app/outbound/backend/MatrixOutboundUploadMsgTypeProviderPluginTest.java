@@ -9,12 +9,47 @@ import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 class MatrixOutboundUploadMsgTypeProviderPluginTest {
 
   @TempDir Path tempDir;
+
+  @Test
+  void matrixOutboundUploadMsgTypeProvidersIncludeBuiltInsWithoutInstalledPlugins() {
+    List<MatrixOutboundUploadMsgTypeProvider> providers =
+        MatrixOutboundPluginProviders.uploadMsgTypeProviders(null);
+    MatrixOutboundCommandSupport support = new MatrixOutboundCommandSupport();
+
+    assertEquals(
+        1,
+        providers.stream()
+            .filter(provider -> provider instanceof BuiltInMatrixOutboundUploadMsgTypeProvider)
+            .count());
+    assertEquals("m.image", support.normalizeUploadMsgType("image"));
+    assertEquals("m.file", support.normalizeUploadMsgType("m.file"));
+  }
+
+  @Test
+  void loadsBuiltInMatrixOutboundUploadMsgTypeProviderThroughClasspathServiceLoader() {
+    RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+
+    List<MatrixOutboundUploadMsgTypeProvider> providers =
+        MatrixOutboundPluginProviders.uploadMsgTypeProviders(installedPlugins);
+    MatrixOutboundCommandSupport support = new MatrixOutboundCommandSupport(installedPlugins);
+
+    assertTrue(installedPlugins.pluginProblems().isEmpty());
+    assertEquals(
+        1,
+        providers.stream()
+            .filter(provider -> provider instanceof BuiltInMatrixOutboundUploadMsgTypeProvider)
+            .count());
+    assertEquals("m.video", support.normalizeUploadMsgType("video"));
+    assertEquals("m.audio", support.normalizeUploadMsgType("m.audio"));
+  }
 
   @Test
   void loadsMatrixOutboundUploadMsgTypesFromPluginDirectoryJar() throws Exception {

@@ -2,6 +2,7 @@ package cafe.woden.ircclient.app.outbound.backend;
 
 import cafe.woden.ircclient.app.outbound.upload.spi.MatrixOutboundUploadMsgTypeProvider;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -20,8 +21,8 @@ import org.springframework.beans.factory.ObjectProvider;
 final class MatrixOutboundPluginProviders {
   private static final Logger log = LoggerFactory.getLogger(MatrixOutboundPluginProviders.class);
 
-  private static final Map<String, String> BUILT_IN_UPLOAD_MSGTYPE_ALIASES =
-      builtInUploadMsgTypeAliases();
+  private static final List<MatrixOutboundUploadMsgTypeProvider> BUILT_IN_UPLOAD_MSGTYPE_PROVIDERS =
+      List.of(new BuiltInMatrixOutboundUploadMsgTypeProvider());
 
   private MatrixOutboundPluginProviders() {}
 
@@ -31,7 +32,7 @@ final class MatrixOutboundPluginProviders {
   }
 
   static Map<String, String> uploadMsgTypeAliases(InstalledPluginsPort installedPlugins) {
-    LinkedHashMap<String, String> aliases = new LinkedHashMap<>(BUILT_IN_UPLOAD_MSGTYPE_ALIASES);
+    LinkedHashMap<String, String> aliases = new LinkedHashMap<>();
     for (MatrixOutboundUploadMsgTypeProvider provider : uploadMsgTypeProviders(installedPlugins)) {
       if (provider == null) continue;
       try {
@@ -52,7 +53,7 @@ final class MatrixOutboundPluginProviders {
 
   static Set<String> uploadMsgTypes(
       InstalledPluginsPort installedPlugins, Map<String, String> aliases) {
-    LinkedHashSet<String> values = new LinkedHashSet<>(BUILT_IN_UPLOAD_MSGTYPE_ALIASES.values());
+    LinkedHashSet<String> values = new LinkedHashSet<>();
     for (String value : aliases.values()) {
       String normalized = normalizeMsgType(value);
       if (!normalized.isEmpty()) values.add(normalized);
@@ -72,22 +73,14 @@ final class MatrixOutboundPluginProviders {
     return Collections.unmodifiableSet(new LinkedHashSet<>(values));
   }
 
-  private static List<MatrixOutboundUploadMsgTypeProvider> uploadMsgTypeProviders(
+  static List<MatrixOutboundUploadMsgTypeProvider> uploadMsgTypeProviders(
       InstalledPluginsPort installedPlugins) {
     if (installedPlugins == null) {
-      return List.of();
+      return BUILT_IN_UPLOAD_MSGTYPE_PROVIDERS;
     }
-    return installedPlugins.loadInstalledServices(
-        MatrixOutboundUploadMsgTypeProvider.class, List.of());
-  }
-
-  private static Map<String, String> builtInUploadMsgTypeAliases() {
-    LinkedHashMap<String, String> aliases = new LinkedHashMap<>();
-    aliases.put("image", "m.image");
-    aliases.put("file", "m.file");
-    aliases.put("video", "m.video");
-    aliases.put("audio", "m.audio");
-    return Collections.unmodifiableMap(aliases);
+    return dedupeByProviderClass(
+        installedPlugins.loadInstalledServices(
+            MatrixOutboundUploadMsgTypeProvider.class, BUILT_IN_UPLOAD_MSGTYPE_PROVIDERS));
   }
 
   private static String normalizeAlias(String raw) {
@@ -103,5 +96,17 @@ final class MatrixOutboundPluginProviders {
     if (!token.startsWith("m.")) return "";
     if (token.chars().anyMatch(Character::isWhitespace)) return "";
     return token;
+  }
+
+  private static <T> List<T> dedupeByProviderClass(List<? extends T> services) {
+    LinkedHashSet<String> providerClassNames = new LinkedHashSet<>();
+    ArrayList<T> deduped = new ArrayList<>();
+    for (T service : Objects.requireNonNullElse(services, List.<T>of())) {
+      if (service == null || !providerClassNames.add(service.getClass().getName())) {
+        continue;
+      }
+      deduped.add(service);
+    }
+    return List.copyOf(deduped);
   }
 }
