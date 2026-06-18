@@ -48,7 +48,6 @@ import cafe.woden.ircclient.app.outbound.upload.spi.UploadCommandTranslationHand
 import cafe.woden.ircclient.bouncer.AbstractBouncerAutoConnectStore;
 import cafe.woden.ircclient.bouncer.BouncerConnectionPort;
 import cafe.woden.ircclient.bouncer.BouncerNetworkDiscoveryOrchestrator;
-import cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler;
 import cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
@@ -273,11 +272,7 @@ class SpringModulithIncrementalAdoptionTest {
     assertThat(moduleFor(modules, BouncerNetworkDiscoveryOrchestrator.class))
         .isEqualTo(bouncerModule);
     assertThat(bouncerModule.getBasePackage().getName()).isEqualTo("cafe.woden.ircclient.bouncer");
-    assertNamedInterfaceContains(
-        bouncerModule,
-        "spi",
-        BouncerBackendDiscoveryHandler.class,
-        BouncerNetworkMappingStrategy.class);
+    assertNamedInterfaceContains(bouncerModule, "spi", BouncerNetworkMappingStrategy.class);
 
     ApplicationModule performModule = moduleFor(modules, PerformOnConnectService.class);
     assertThat(performModule).isNotEqualTo(appModule);

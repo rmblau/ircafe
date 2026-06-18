@@ -3,6 +3,7 @@ package cafe.woden.ircclient.bouncer;
 import static cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures.bouncerDiscoveryPort;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;

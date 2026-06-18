@@ -1,7 +1,5 @@
 package cafe.woden.ircclient.bouncer.spi;
 
-import cafe.woden.ircclient.bouncer.BouncerDiscoveredNetwork;
-import cafe.woden.ircclient.bouncer.ResolvedBouncerNetwork;
 import cafe.woden.ircclient.config.IrcProperties;
 import java.util.List;
 import java.util.Set;

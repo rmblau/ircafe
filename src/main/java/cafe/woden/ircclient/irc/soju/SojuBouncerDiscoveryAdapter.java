@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.irc.soju;
 
-import cafe.woden.ircclient.bouncer.BouncerDiscoveredNetwork;
+import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;

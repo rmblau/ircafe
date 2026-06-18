@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.bouncer;
+package cafe.woden.ircclient.bouncer.spi;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -6,10 +6,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import org.jmolecules.ddd.annotation.ValueObject;
 
 /** Generic discovered-network event emitted by bouncer protocol adapters. */
-@ValueObject
 public record BouncerDiscoveredNetwork(
     String backendId,
     String originServerId,

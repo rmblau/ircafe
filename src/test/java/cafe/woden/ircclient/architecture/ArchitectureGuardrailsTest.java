@@ -66,9 +66,7 @@ class ArchitectureGuardrailsTest {
               || name.startsWith("cafe.woden.ircclient.bouncer.AbstractBouncerAutoConnectStore$")
               || name.equals("cafe.woden.ircclient.bouncer.BouncerNetworkDiscoveryOrchestrator")
               || name.startsWith(
-                  "cafe.woden.ircclient.bouncer.BouncerNetworkDiscoveryOrchestrator$")
-              || name.equals("cafe.woden.ircclient.bouncer.ResolvedBouncerNetwork")
-              || name.startsWith("cafe.woden.ircclient.bouncer.ResolvedBouncerNetwork$");
+                  "cafe.woden.ircclient.bouncer.BouncerNetworkDiscoveryOrchestrator$");
         }
       };
 

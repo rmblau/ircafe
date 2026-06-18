@@ -71,9 +71,9 @@ class PircbotxConnectPreparationSupportTest {
     connection.beginZncPlaybackRequest();
     connection.beginZncListNetworksRequest();
     connection.storeSojuDiscoveredNetwork(
-        "net", mock(cafe.woden.ircclient.bouncer.BouncerDiscoveredNetwork.class));
+        "net", mock(cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork.class));
     connection.storeGenericBouncerDiscoveredNetwork(
-        "generic", mock(cafe.woden.ircclient.bouncer.BouncerDiscoveredNetwork.class));
+        "generic", mock(cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork.class));
     connection.beginSojuListNetworksRequest();
     connection.setSojuBouncerNetId("bound-net");
 

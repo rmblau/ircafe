@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.bouncer;
 
+import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 
 /** App-facing ingress for backend-agnostic bouncer discovery events. */

@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.bouncer;
 
+import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import java.util.HashMap;
 import java.util.List;

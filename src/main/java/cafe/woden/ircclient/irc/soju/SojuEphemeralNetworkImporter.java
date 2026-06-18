@@ -1,9 +1,9 @@
 package cafe.woden.ircclient.irc.soju;
 
 import cafe.woden.ircclient.bouncer.BouncerConnectionPort;
-import cafe.woden.ircclient.bouncer.BouncerDiscoveredNetwork;
 import cafe.woden.ircclient.bouncer.BouncerNetworkDiscoveryOrchestrator;
 import cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler;
+import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
 import cafe.woden.ircclient.config.servers.EphemeralServerRegistry;
 import cafe.woden.ircclient.config.servers.ServerRegistry;

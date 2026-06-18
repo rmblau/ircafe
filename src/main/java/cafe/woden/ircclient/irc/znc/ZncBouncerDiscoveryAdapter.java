@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.irc.znc;
 
-import cafe.woden.ircclient.bouncer.BouncerDiscoveredNetwork;
+import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
 import cafe.woden.ircclient.irc.pircbotx.parse.PircbotxZncParsers;
 import java.util.HashMap;
 import java.util.LinkedHashSet;

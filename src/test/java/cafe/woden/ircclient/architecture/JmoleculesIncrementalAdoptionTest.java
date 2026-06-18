@@ -71,8 +71,6 @@ import cafe.woden.ircclient.bouncer.BouncerNetworkDiscoveryOrchestrator;
 import cafe.woden.ircclient.bouncer.GenericBouncerAutoConnectStore;
 import cafe.woden.ircclient.bouncer.GenericBouncerEphemeralNetworkImporter;
 import cafe.woden.ircclient.bouncer.GenericBouncerNetworkMappingStrategy;
-import cafe.woden.ircclient.bouncer.ResolvedBouncerNetwork;
-import cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler;
 import cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
@@ -357,7 +355,6 @@ class JmoleculesIncrementalAdoptionTest {
     assertAnnotated(BouncerBackendRegistry.class, ApplicationLayer.class);
     assertAnnotated(BouncerDiscoveryEventDispatcher.class, ApplicationLayer.class);
     assertAnnotated(BouncerNetworkDiscoveryOrchestrator.class, ApplicationLayer.class);
-    assertAnnotated(BouncerBackendDiscoveryHandler.class, ApplicationLayer.class);
     assertAnnotated(BouncerNetworkMappingStrategy.class, ApplicationLayer.class);
     assertAnnotated(GenericBouncerAutoConnectStore.class, ApplicationLayer.class);
     assertAnnotated(GenericBouncerNetworkMappingStrategy.class, ApplicationLayer.class);
@@ -839,7 +836,6 @@ class JmoleculesIncrementalAdoptionTest {
     assertAnnotated(InterceptorDefinition.class, ValueObject.class);
     assertAnnotated(InterceptorRule.class, ValueObject.class);
     assertAnnotated(InterceptorHit.class, ValueObject.class);
-    assertAnnotated(ResolvedBouncerNetwork.class, ValueObject.class);
     assertAnnotated(RegexSpec.class, ValueObject.class);
     assertAnnotated(FilterScopeOverride.class, ValueObject.class);
     assertAnnotated(ModeVocabulary.class, ValueObject.class);

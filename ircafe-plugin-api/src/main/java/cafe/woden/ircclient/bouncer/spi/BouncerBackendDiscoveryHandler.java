@@ -1,15 +1,11 @@
 package cafe.woden.ircclient.bouncer.spi;
 
-import cafe.woden.ircclient.bouncer.BouncerDiscoveredNetwork;
-import org.jmolecules.architecture.layered.ApplicationLayer;
-
 /**
  * ServiceLoader-backed backend-specific handler for generic bouncer discovery events.
  *
  * <p>Plugins register implementations in {@code
  * META-INF/services/cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler}.
  */
-@ApplicationLayer
 public interface BouncerBackendDiscoveryHandler {
 
   String backendId();
