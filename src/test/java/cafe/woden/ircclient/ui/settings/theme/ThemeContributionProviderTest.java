@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.ServiceLoader;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -24,6 +25,35 @@ class ThemeContributionProviderTest {
   private static final String PLUGIN_PROVIDER_CLASS = "plugin.theme.PluginThemeProvider";
 
   @TempDir Path tempDir;
+
+  @Test
+  void builtInThemeOptionsLoadWithoutInstalledPlugins() {
+    List<ThemeManager.ThemeOption> options = ThemeContributionProviders.builtInThemeOptions(null);
+
+    assertEquals(1, options.stream().filter(option -> option.id().equals("dark")).count());
+    assertTrue(
+        options.stream()
+            .anyMatch(
+                option ->
+                    option.id().equals("dark")
+                        && option.label().equals("Flat Dark")
+                        && option.pack() == ThemeManager.ThemePack.FLATLAF));
+  }
+
+  @Test
+  void classpathServiceLoaderDoesNotDuplicateBuiltInThemeOptions() {
+    RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+
+    List<ThemeManager.ThemeOption> options =
+        ThemeContributionProviders.builtInThemeOptions(installedPlugins);
+
+    assertTrue(
+        ServiceLoader.load(ThemeContributionProvider.class).stream()
+            .anyMatch(provider -> provider.type() == BuiltInThemeContributionProvider.class));
+    assertTrue(installedPlugins.pluginProblems().isEmpty());
+    assertEquals(1, options.stream().filter(option -> option.id().equals("darcula")).count());
+  }
 
   @Test
   void themeCatalogLoadsOptionsThroughInstalledPluginPort() {
@@ -133,7 +163,8 @@ class ThemeContributionProviderTest {
   }
 
   private static String pluginProviderSource() {
-    return """
+    return
+"""
         package plugin.theme;
 
         import cafe.woden.ircclient.ui.settings.theme.ThemeManager;
@@ -142,6 +173,7 @@ class ThemeContributionProviderTest {
         import cafe.woden.ircclient.ui.util.UiColorKeys;
         import java.util.List;
         import java.util.Map;
+import java.util.ServiceLoader;
 
         public final class PluginThemeProvider implements ThemeContributionProvider {
           @Override

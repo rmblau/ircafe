@@ -6,17 +6,30 @@ import cafe.woden.ircclient.ui.settings.theme.spi.ThemePresetContribution;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Predicate;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 
 /** Centralizes ServiceLoader-backed theme contribution provider handling. */
 @InterfaceLayer
 final class ThemeContributionProviders {
+  private static final List<ThemeContributionProvider> BUILT_IN_PROVIDERS =
+      List.of(new BuiltInThemeContributionProvider());
+
   private ThemeContributionProviders() {}
 
-  static List<ThemeManager.ThemeOption> themeOptions(InstalledPluginsPort installedPlugins) {
+  static List<ThemeManager.ThemeOption> builtInThemeOptions(InstalledPluginsPort installedPlugins) {
+    return themeOptions(installedPlugins, ThemeContributionProviders::isBuiltInProvider);
+  }
+
+  static List<ThemeManager.ThemeOption> pluginThemeOptions(InstalledPluginsPort installedPlugins) {
+    return themeOptions(installedPlugins, provider -> !isBuiltInProvider(provider));
+  }
+
+  private static List<ThemeManager.ThemeOption> themeOptions(
+      InstalledPluginsPort installedPlugins, Predicate<ThemeContributionProvider> providerFilter) {
     ArrayList<ThemeManager.ThemeOption> out = new ArrayList<>();
     for (ThemeContributionProvider provider : load(installedPlugins)) {
-      if (provider == null) {
+      if (provider == null || !providerFilter.test(provider)) {
         continue;
       }
       for (ThemeManager.ThemeOption option :
@@ -50,8 +63,13 @@ final class ThemeContributionProviders {
 
   private static List<ThemeContributionProvider> load(InstalledPluginsPort installedPlugins) {
     if (installedPlugins == null) {
-      return List.of();
+      return BUILT_IN_PROVIDERS;
     }
-    return installedPlugins.loadInstalledServices(ThemeContributionProvider.class, List.of());
+    return installedPlugins.loadInstalledServices(
+        ThemeContributionProvider.class, BUILT_IN_PROVIDERS);
+  }
+
+  private static boolean isBuiltInProvider(ThemeContributionProvider provider) {
+    return provider != null && provider.getClass() == BuiltInThemeContributionProvider.class;
   }
 }
