@@ -48,8 +48,13 @@ class Ircv3ExtensionProviderGuideFixtureTest {
     return """
         package example.ircv3;
 
-        import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionRegistry;
+        import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionContribution;
+        import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionKind;
         import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider;
+        import cafe.woden.ircclient.irc.ircv3.spi.Ircv3FeatureContribution;
+        import cafe.woden.ircclient.irc.ircv3.spi.Ircv3SpecStatus;
+        import cafe.woden.ircclient.irc.ircv3.spi.Ircv3UiGroup;
+        import cafe.woden.ircclient.irc.ircv3.spi.Ircv3UiMetadata;
         import java.util.List;
 
         public final class ExampleIrcv3Provider implements Ircv3ExtensionProvider {
@@ -65,26 +70,26 @@ class Ircv3ExtensionProviderGuideFixtureTest {
           }
 
           @Override
-          public List<Ircv3ExtensionRegistry.ExtensionDefinition> extensions() {
+          public List<Ircv3ExtensionContribution> extensions() {
             return List.of(
-                new Ircv3ExtensionRegistry.ExtensionDefinition(
+                new Ircv3ExtensionContribution(
                     "example-cap",
-                    Ircv3ExtensionRegistry.ExtensionKind.CAPABILITY,
-                    Ircv3ExtensionRegistry.SpecStatus.DRAFT,
+                    Ircv3ExtensionKind.CAPABILITY,
+                    Ircv3SpecStatus.DRAFT,
                     List.of("draft/example-cap"),
                     "draft/example-cap",
                     "example-cap",
-                    new Ircv3ExtensionRegistry.UiMetadata(
+                    new Ircv3UiMetadata(
                         "Example capability (draft)",
-                        Ircv3ExtensionRegistry.UiGroup.OTHER,
+                        Ircv3UiGroup.OTHER,
                         900,
                         "Adds example plugin-provided IRCv3 capability metadata.")));
           }
 
           @Override
-          public List<Ircv3ExtensionRegistry.FeatureDefinition> visibleFeatures() {
+          public List<Ircv3FeatureContribution> visibleFeatures() {
             return List.of(
-                new Ircv3ExtensionRegistry.FeatureDefinition(
+                new Ircv3FeatureContribution(
                     900,
                     "Example feature",
                     List.of("message-tags"),

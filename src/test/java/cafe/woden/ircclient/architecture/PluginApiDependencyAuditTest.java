@@ -66,9 +66,6 @@ class PluginApiDependencyAuditTest {
           "src/main/java/cafe/woden/ircclient/irc/backend/spi/IrcBackendClientService.java -> org.jmolecules.architecture.hexagonal.SecondaryPort",
           "src/main/java/cafe/woden/ircclient/irc/backend/spi/IrcBackendClientService.java -> org.jmolecules.architecture.layered.ApplicationLayer",
           "src/main/java/cafe/woden/ircclient/irc/backend/spi/package-info.java -> org.springframework.modulith.NamedInterface",
-          "src/main/java/cafe/woden/ircclient/irc/ircv3/spi/Ircv3ExtensionProvider.java -> cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionRegistry",
-          "src/main/java/cafe/woden/ircclient/irc/ircv3/spi/Ircv3ExtensionProvider.java -> org.jmolecules.architecture.hexagonal.SecondaryPort",
-          "src/main/java/cafe/woden/ircclient/irc/ircv3/spi/Ircv3ExtensionProvider.java -> org.jmolecules.architecture.layered.ApplicationLayer",
           "src/main/java/cafe/woden/ircclient/irc/ircv3/spi/package-info.java -> org.springframework.modulith.NamedInterface",
           "src/main/java/cafe/woden/ircclient/notify/spi/package-info.java -> org.springframework.modulith.NamedInterface");
 

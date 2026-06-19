@@ -4,7 +4,11 @@ import static cafe.woden.ircclient.util.Ircv3CapabilityNames.CHATHISTORY;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_CHATHISTORY;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.ZNC_PLAYBACK;
 
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionContribution;
 import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3FeatureContribution;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3SpecStatus;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3UiGroup;
 import com.google.auto.service.AutoService;
 import java.util.List;
 
@@ -23,22 +27,22 @@ public final class Ircv3ChatHistoryExtensionProvider implements Ircv3ExtensionPr
   }
 
   @Override
-  public List<Ircv3ExtensionRegistry.ExtensionDefinition> extensions() {
+  public List<Ircv3ExtensionContribution> extensions() {
     return List.of(
         Ircv3ExtensionProviderSupport.capability(
             CHATHISTORY,
-            Ircv3ExtensionRegistry.SpecStatus.DRAFT,
+            Ircv3SpecStatus.DRAFT,
             DRAFT_CHATHISTORY,
             CHATHISTORY,
             "Chat history (draft)",
-            Ircv3ExtensionRegistry.UiGroup.HISTORY,
+            Ircv3UiGroup.HISTORY,
             430,
             "Enables server-side history retrieval and backfill features.",
             DRAFT_CHATHISTORY));
   }
 
   @Override
-  public List<Ircv3ExtensionRegistry.FeatureDefinition> visibleFeatures() {
+  public List<Ircv3FeatureContribution> visibleFeatures() {
     return List.of(
         Ircv3ExtensionProviderSupport.feature(
             500, "History", List.of(), List.of(CHATHISTORY, DRAFT_CHATHISTORY, ZNC_PLAYBACK)));

@@ -3,7 +3,11 @@ package cafe.woden.ircclient.irc.ircv3;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_MESSAGE_REDACTION;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MESSAGE_REDACTION;
 
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionContribution;
 import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3FeatureContribution;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3SpecStatus;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3UiGroup;
 import com.google.auto.service.AutoService;
 import java.util.List;
 
@@ -22,22 +26,22 @@ public final class Ircv3MessageRedactionExtensionProvider implements Ircv3Extens
   }
 
   @Override
-  public List<Ircv3ExtensionRegistry.ExtensionDefinition> extensions() {
+  public List<Ircv3ExtensionContribution> extensions() {
     return List.of(
         Ircv3ExtensionProviderSupport.capability(
             MESSAGE_REDACTION,
-            Ircv3ExtensionRegistry.SpecStatus.DRAFT,
+            Ircv3SpecStatus.DRAFT,
             DRAFT_MESSAGE_REDACTION,
             MESSAGE_REDACTION,
             "Message redaction (draft)",
-            Ircv3ExtensionRegistry.UiGroup.CONVERSATION,
+            Ircv3UiGroup.CONVERSATION,
             300,
             "Allows delete/redaction updates for messages.",
             DRAFT_MESSAGE_REDACTION));
   }
 
   @Override
-  public List<Ircv3ExtensionRegistry.FeatureDefinition> visibleFeatures() {
+  public List<Ircv3FeatureContribution> visibleFeatures() {
     return List.of(
         Ircv3ExtensionProviderSupport.feature(
             400,

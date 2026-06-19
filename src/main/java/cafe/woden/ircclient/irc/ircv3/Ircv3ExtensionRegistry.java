@@ -1,6 +1,9 @@
 package cafe.woden.ircclient.irc.ircv3;
 
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionContribution;
 import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3FeatureContribution;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3UiMetadata;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -289,7 +292,15 @@ public final class Ircv3ExtensionRegistry {
       if (provider == null) {
         continue;
       }
-      definitions.addAll(Objects.requireNonNullElse(provider.extensions(), List.of()));
+      List<Ircv3ExtensionContribution> contributions = provider.extensions();
+      if (contributions == null) {
+        continue;
+      }
+      for (Ircv3ExtensionContribution contribution : contributions) {
+        if (contribution != null) {
+          definitions.add(toExtensionDefinition(contribution));
+        }
+      }
     }
     return List.copyOf(definitions);
   }
@@ -301,7 +312,15 @@ public final class Ircv3ExtensionRegistry {
       if (provider == null) {
         continue;
       }
-      features.addAll(Objects.requireNonNullElse(provider.visibleFeatures(), List.of()));
+      List<Ircv3FeatureContribution> contributions = provider.visibleFeatures();
+      if (contributions == null) {
+        continue;
+      }
+      for (Ircv3FeatureContribution contribution : contributions) {
+        if (contribution != null) {
+          features.add(toFeatureDefinition(contribution));
+        }
+      }
     }
     features.sort(
         Comparator.comparingInt(FeatureDefinition::sortOrder)
@@ -322,6 +341,34 @@ public final class Ircv3ExtensionRegistry {
       }
     }
     return List.copyOf(features);
+  }
+
+  private static ExtensionDefinition toExtensionDefinition(
+      Ircv3ExtensionContribution contribution) {
+    return new ExtensionDefinition(
+        contribution.id(),
+        ExtensionKind.valueOf(contribution.kind().name()),
+        SpecStatus.valueOf(contribution.specStatus().name()),
+        contribution.aliases(),
+        contribution.requestToken(),
+        contribution.preferenceKey(),
+        toUiMetadata(contribution.uiMetadata()));
+  }
+
+  private static UiMetadata toUiMetadata(Ircv3UiMetadata metadata) {
+    return new UiMetadata(
+        metadata.label(),
+        UiGroup.valueOf(metadata.group().name()),
+        metadata.sortOrder(),
+        metadata.impactSummary());
+  }
+
+  private static FeatureDefinition toFeatureDefinition(Ircv3FeatureContribution contribution) {
+    return new FeatureDefinition(
+        contribution.sortOrder(),
+        contribution.label(),
+        contribution.requiredAll(),
+        contribution.requiredAny());
   }
 
   private static Map<String, ExtensionDefinition> indexDefinitions(

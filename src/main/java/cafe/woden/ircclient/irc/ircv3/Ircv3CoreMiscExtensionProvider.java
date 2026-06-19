@@ -18,7 +18,11 @@ import static cafe.woden.ircclient.util.Ircv3CapabilityNames.UNREACT;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.USERHOST_IN_NAMES;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.ZNC_PLAYBACK;
 
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionContribution;
 import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3FeatureContribution;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3SpecStatus;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3UiGroup;
 import com.google.auto.service.AutoService;
 import java.util.List;
 
@@ -37,87 +41,87 @@ public final class Ircv3CoreMiscExtensionProvider implements Ircv3ExtensionProvi
   }
 
   @Override
-  public List<Ircv3ExtensionRegistry.ExtensionDefinition> extensions() {
+  public List<Ircv3ExtensionContribution> extensions() {
     return List.of(
         Ircv3ExtensionProviderSupport.capability(
             ZNC_PLAYBACK,
-            Ircv3ExtensionRegistry.SpecStatus.STABLE,
+            Ircv3SpecStatus.STABLE,
             "ZNC playback",
-            Ircv3ExtensionRegistry.UiGroup.HISTORY,
+            Ircv3UiGroup.HISTORY,
             440,
             "Requests playback support from ZNC bouncers when available."),
         Ircv3ExtensionProviderSupport.capability(
             ACCOUNT_TAG,
-            Ircv3ExtensionRegistry.SpecStatus.STABLE,
+            Ircv3SpecStatus.STABLE,
             "Account tags",
-            Ircv3ExtensionRegistry.UiGroup.CORE,
+            Ircv3UiGroup.CORE,
             70,
             "Attaches account metadata to messages for richer identity info."),
         Ircv3ExtensionProviderSupport.capability(
             USERHOST_IN_NAMES,
-            Ircv3ExtensionRegistry.SpecStatus.STABLE,
+            Ircv3SpecStatus.STABLE,
             "USERHOST in NAMES",
-            Ircv3ExtensionRegistry.UiGroup.CORE,
+            Ircv3UiGroup.CORE,
             150,
             "May provide richer host/user identity details during names lists."),
         Ircv3ExtensionProviderSupport.nonRequestableCapability(
             STS,
-            Ircv3ExtensionRegistry.SpecStatus.STABLE,
+            Ircv3SpecStatus.STABLE,
             "Strict transport security",
-            Ircv3ExtensionRegistry.UiGroup.CORE,
+            Ircv3UiGroup.CORE,
             20,
             "Learns strict transport policy and upgrades future connects for this host to TLS."),
         Ircv3ExtensionProviderSupport.tagFeature(
             REPLY,
-            Ircv3ExtensionRegistry.SpecStatus.STABLE,
+            Ircv3SpecStatus.STABLE,
             "Replies",
-            Ircv3ExtensionRegistry.UiGroup.CONVERSATION,
+            Ircv3UiGroup.CONVERSATION,
             250,
             "Reply threading is carried by message tags on top of message-tags transport.",
             DRAFT_REPLY),
         Ircv3ExtensionProviderSupport.tagFeature(
             REACT,
-            Ircv3ExtensionRegistry.SpecStatus.DRAFT,
+            Ircv3SpecStatus.DRAFT,
             "Reactions",
-            Ircv3ExtensionRegistry.UiGroup.CONVERSATION,
+            Ircv3UiGroup.CONVERSATION,
             260,
             "Reactions are carried by message tags on top of message-tags transport.",
             DRAFT_REACT),
         Ircv3ExtensionProviderSupport.tagFeature(
             UNREACT,
-            Ircv3ExtensionRegistry.SpecStatus.DRAFT,
+            Ircv3SpecStatus.DRAFT,
             "Reaction removal",
-            Ircv3ExtensionRegistry.UiGroup.CONVERSATION,
+            Ircv3UiGroup.CONVERSATION,
             265,
             "Reaction removals are carried by message tags on top of message-tags transport.",
             DRAFT_UNREACT),
         Ircv3ExtensionProviderSupport.tagFeature(
             TYPING,
-            Ircv3ExtensionRegistry.SpecStatus.STABLE,
+            Ircv3SpecStatus.STABLE,
             "Typing",
-            Ircv3ExtensionRegistry.UiGroup.CONVERSATION,
+            Ircv3UiGroup.CONVERSATION,
             230,
             "Typing indicators are sent as client-only tags and depend on CLIENTTAGDENY policy.",
             DRAFT_TYPING),
         Ircv3ExtensionProviderSupport.tagFeature(
             CHANNEL_CONTEXT,
-            Ircv3ExtensionRegistry.SpecStatus.DRAFT,
+            Ircv3SpecStatus.DRAFT,
             "Channel context",
-            Ircv3ExtensionRegistry.UiGroup.CONVERSATION,
+            Ircv3UiGroup.CONVERSATION,
             245,
             "Channel-context is a client tag layered on top of message-tags transport.",
             DRAFT_CHANNEL_CONTEXT),
         Ircv3ExtensionProviderSupport.experimental(
             MESSAGE_EDIT,
             "Message edits (experimental)",
-            Ircv3ExtensionRegistry.UiGroup.CONVERSATION,
+            Ircv3UiGroup.CONVERSATION,
             280,
             "Experimental message editing support; not part of the published IRCv3 surface.",
             DRAFT_MESSAGE_EDIT));
   }
 
   @Override
-  public List<Ircv3ExtensionRegistry.FeatureDefinition> visibleFeatures() {
+  public List<Ircv3FeatureContribution> visibleFeatures() {
     return List.of(
         Ircv3ExtensionProviderSupport.feature(100, "Replies", List.of(MESSAGE_TAGS), List.of()),
         Ircv3ExtensionProviderSupport.feature(200, "Reactions", List.of(MESSAGE_TAGS), List.of()),

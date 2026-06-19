@@ -8,7 +8,10 @@ import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigPathAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionContribution;
 import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3SpecStatus;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3UiGroup;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -72,15 +75,15 @@ class Ircv3CapabilityNameResolverAdapterTest {
     }
 
     @Override
-    public List<Ircv3ExtensionRegistry.ExtensionDefinition> extensions() {
+    public List<Ircv3ExtensionContribution> extensions() {
       return List.of(
           Ircv3ExtensionProviderSupport.capability(
               "plugin-example-cap",
-              Ircv3ExtensionRegistry.SpecStatus.DRAFT,
+              Ircv3SpecStatus.DRAFT,
               "draft/plugin-example-cap",
               "plugin-example-cap",
               "Plugin example capability",
-              Ircv3ExtensionRegistry.UiGroup.OTHER,
+              Ircv3UiGroup.OTHER,
               940,
               "Test-only plugin-provided capability alias mapping.",
               "plugin/example-cap",
