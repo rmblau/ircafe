@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationBackendProvider;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationResult;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.model.TargetRef;
 import java.util.List;

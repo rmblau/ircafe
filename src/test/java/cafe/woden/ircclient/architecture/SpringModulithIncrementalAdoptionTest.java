@@ -453,6 +453,7 @@ class SpringModulithIncrementalAdoptionTest {
             "app::commands-spi",
             "app::outbound-filter",
             "app::translation",
+            "app::translation-spi",
             "bouncer",
             "config",
             "config::api",

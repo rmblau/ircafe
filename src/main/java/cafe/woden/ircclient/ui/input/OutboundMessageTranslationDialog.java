@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.ui.input;
 
 import cafe.woden.ircclient.app.translation.MessageTranslationLanguage;
-import cafe.woden.ircclient.app.translation.MessageTranslationResult;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationResult;
 import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.translation.TranslationLanguageChoice;
 import java.awt.BorderLayout;

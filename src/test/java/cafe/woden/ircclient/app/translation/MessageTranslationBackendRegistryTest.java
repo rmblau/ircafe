@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationBackendProvider;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationResult;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
@@ -130,7 +131,7 @@ class MessageTranslationBackendRegistryTest {
 
         import cafe.woden.ircclient.app.translation.spi.MessageTranslationBackendProvider;
         import cafe.woden.ircclient.app.translation.MessageTranslationRequest;
-        import cafe.woden.ircclient.app.translation.MessageTranslationResult;
+        import cafe.woden.ircclient.app.translation.spi.MessageTranslationResult;
         import java.util.concurrent.CompletableFuture;
         import java.util.concurrent.CompletionStage;
 
@@ -156,7 +157,7 @@ class MessageTranslationBackendRegistryTest {
         package plugin.translation;
 
         import cafe.woden.ircclient.app.translation.MessageTranslationRequest;
-        import cafe.woden.ircclient.app.translation.MessageTranslationResult;
+        import cafe.woden.ircclient.app.translation.spi.MessageTranslationResult;
         import cafe.woden.ircclient.app.translation.spi.MessageTranslationBackendProvider;
         import java.util.concurrent.CompletableFuture;
         import java.util.concurrent.CompletionStage;

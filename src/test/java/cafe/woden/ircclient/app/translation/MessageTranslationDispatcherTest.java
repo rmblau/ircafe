@@ -15,6 +15,7 @@ import cafe.woden.ircclient.app.api.MessageTranslation;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationBackendProvider;
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationResult;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.model.TargetRef;

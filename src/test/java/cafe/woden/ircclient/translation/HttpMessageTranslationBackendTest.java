@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.app.translation.MessageTranslationRequest;
-import cafe.woden.ircclient.app.translation.MessageTranslationResult;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationResult;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.model.TargetRef;
 import com.fasterxml.jackson.databind.JsonNode;

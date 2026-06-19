@@ -1,10 +1,8 @@
-package cafe.woden.ircclient.app.translation;
+package cafe.woden.ircclient.app.translation.spi;
 
 import java.util.Objects;
-import org.jmolecules.ddd.annotation.ValueObject;
 
 /** Backend response for one translated message. */
-@ValueObject
 public record MessageTranslationResult(
     String translatedText, String sourceLanguage, String targetLanguage, String provider) {
 
