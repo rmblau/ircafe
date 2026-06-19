@@ -30,8 +30,6 @@ class PluginApiDependencyAuditTest {
           "src/main/java/cafe/woden/ircclient/app/commands/spi/BackendNamedCommandHandler.java -> org.jmolecules.architecture.layered.ApplicationLayer",
           "src/main/java/cafe/woden/ircclient/app/commands/spi/SlashCommandParseStrategy.java -> cafe.woden.ircclient.app.commands.ParsedInput",
           "src/main/java/cafe/woden/ircclient/app/commands/spi/SlashCommandParseStrategy.java -> org.jmolecules.architecture.layered.ApplicationLayer",
-          "src/main/java/cafe/woden/ircclient/app/commands/spi/SlashCommandPresentationContributor.java -> cafe.woden.ircclient.model.TargetRef",
-          "src/main/java/cafe/woden/ircclient/app/commands/spi/SlashCommandPresentationContributor.java -> org.jmolecules.architecture.layered.ApplicationLayer",
           "src/main/java/cafe/woden/ircclient/app/commands/spi/package-info.java -> org.springframework.modulith.NamedInterface",
           "src/main/java/cafe/woden/ircclient/app/outbound/backend/spi/BackendExtension.java -> cafe.woden.ircclient.app.api.BackendEditorProfileSpec",
           "src/main/java/cafe/woden/ircclient/app/outbound/backend/spi/BackendExtension.java -> cafe.woden.ircclient.app.outbound.mutation.MessageMutationOutboundCommands",

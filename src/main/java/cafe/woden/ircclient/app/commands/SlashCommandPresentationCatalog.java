@@ -1,6 +1,8 @@
 package cafe.woden.ircclient.app.commands;
 
 import cafe.woden.ircclient.app.commands.spi.SlashCommandDescriptor;
+import cafe.woden.ircclient.app.commands.spi.SlashCommandHelpSink;
+import cafe.woden.ircclient.app.commands.spi.SlashCommandTargetView;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.model.TargetRef;
 import java.util.LinkedHashMap;
@@ -62,9 +64,10 @@ public class SlashCommandPresentationCatalog {
 
   public void appendGeneralHelp(TargetRef out, BiConsumer<TargetRef, String> lineAppender) {
     Objects.requireNonNull(lineAppender, "lineAppender");
+    SlashCommandHelpSink help = helpSink(out, lineAppender);
     for (cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor contributor :
         contributors) {
-      contributor.appendGeneralHelp(out, lineAppender);
+      contributor.appendGeneralHelp(help);
     }
     backendNamedCommandCatalog
         .generalHelpLines()
@@ -110,13 +113,13 @@ public class SlashCommandPresentationCatalog {
     LinkedHashMap<String, Consumer<TargetRef>> handlers = new LinkedHashMap<>();
     for (cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor contributor :
         contributors) {
-      Map<String, Consumer<TargetRef>> topicHandlers =
-          Objects.requireNonNullElse(contributor.topicHelpHandlers(lineAppender), Map.of());
-      for (Map.Entry<String, Consumer<TargetRef>> entry : topicHandlers.entrySet()) {
+      Map<String, Consumer<SlashCommandHelpSink>> topicHandlers =
+          Objects.requireNonNullElse(contributor.topicHelpHandlers(), Map.of());
+      for (Map.Entry<String, Consumer<SlashCommandHelpSink>> entry : topicHandlers.entrySet()) {
         String topic = normalizeHelpTopic(entry.getKey());
-        Consumer<TargetRef> consumer = entry.getValue();
+        Consumer<SlashCommandHelpSink> consumer = entry.getValue();
         if (!topic.isEmpty() && consumer != null) {
-          handlers.put(topic, consumer);
+          handlers.put(topic, out -> consumer.accept(helpSink(out, lineAppender)));
         }
       }
     }
@@ -145,6 +148,28 @@ public class SlashCommandPresentationCatalog {
       TargetRef out, String line, BiConsumer<TargetRef, String> lineAppender) {
     if (out == null || line == null || line.isBlank() || lineAppender == null) return;
     lineAppender.accept(out, line);
+  }
+
+  private static SlashCommandHelpSink helpSink(
+      TargetRef out, BiConsumer<TargetRef, String> lineAppender) {
+    return new CatalogSlashCommandHelpSink(out, lineAppender);
+  }
+
+  private record CatalogSlashCommandHelpSink(
+      TargetRef out, BiConsumer<TargetRef, String> lineAppender) implements SlashCommandHelpSink {
+
+    @Override
+    public SlashCommandTargetView target() {
+      if (out == null) {
+        return new SlashCommandTargetView("", "");
+      }
+      return new SlashCommandTargetView(out.serverId(), out.target());
+    }
+
+    @Override
+    public void appendLine(String line) {
+      appendStaticHelpLine(out, line, lineAppender);
+    }
   }
 
   private static String normalizeHelpTopic(String raw) {

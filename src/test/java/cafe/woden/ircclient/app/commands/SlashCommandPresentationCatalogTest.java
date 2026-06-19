@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
 import cafe.woden.ircclient.app.commands.spi.SlashCommandDescriptor;
+import cafe.woden.ircclient.app.commands.spi.SlashCommandHelpSink;
 import cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
@@ -18,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -94,8 +94,8 @@ class SlashCommandPresentationCatalogTest {
     SlashCommandPresentationContributor contributor =
         new SlashCommandPresentationContributor() {
           @Override
-          public void appendGeneralHelp(TargetRef out, BiConsumer<TargetRef, String> lineAppender) {
-            lineAppender.accept(out, "/plugin-help - plugin-provided help");
+          public void appendGeneralHelp(SlashCommandHelpSink help) {
+            help.appendLine("/plugin-help - plugin-provided help");
           }
         };
     SlashCommandPresentationCatalog catalog =
@@ -111,13 +111,32 @@ class SlashCommandPresentationCatalogTest {
   }
 
   @Test
+  void presentationContributorsCanReadPortableHelpTargetView() {
+    SlashCommandPresentationContributor contributor =
+        new SlashCommandPresentationContributor() {
+          @Override
+          public void appendGeneralHelp(SlashCommandHelpSink help) {
+            help.appendLine(help.target().serverId() + ":" + help.target().target());
+          }
+        };
+    SlashCommandPresentationCatalog catalog =
+        new SlashCommandPresentationCatalog(
+            List.of(contributor), BackendNamedCommandCatalog.empty());
+    ArrayList<String> rendered = new ArrayList<>();
+
+    catalog.appendGeneralHelp(
+        new TargetRef("libera", "#java"), (target, line) -> rendered.add(line));
+
+    assertEquals(List.of("libera:#java"), rendered);
+  }
+
+  @Test
   void presentationContributorsCanRenderTopicHelpThroughLineAppender() {
     SlashCommandPresentationContributor contributor =
         new SlashCommandPresentationContributor() {
           @Override
-          public Map<String, Consumer<TargetRef>> topicHelpHandlers(
-              BiConsumer<TargetRef, String> lineAppender) {
-            return Map.of("plugin-help", out -> lineAppender.accept(out, "/plugin-help <arg>"));
+          public Map<String, Consumer<SlashCommandHelpSink>> topicHelpHandlers() {
+            return Map.of("plugin-help", help -> help.appendLine("/plugin-help <arg>"));
           }
         };
     SlashCommandPresentationCatalog catalog =
@@ -272,11 +291,10 @@ class SlashCommandPresentationCatalogTest {
         package plugin.commands;
 
         import cafe.woden.ircclient.app.commands.spi.SlashCommandDescriptor;
+        import cafe.woden.ircclient.app.commands.spi.SlashCommandHelpSink;
         import cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor;
-        import cafe.woden.ircclient.model.TargetRef;
         import java.util.List;
         import java.util.Map;
-        import java.util.function.BiConsumer;
         import java.util.function.Consumer;
 
         public final class PluginHelpContributor implements SlashCommandPresentationContributor {
@@ -286,14 +304,13 @@ class SlashCommandPresentationCatalogTest {
           }
 
           @Override
-          public void appendGeneralHelp(TargetRef out, BiConsumer<TargetRef, String> lineAppender) {
-            lineAppender.accept(out, "/plugin-help - plugin jar help");
+          public void appendGeneralHelp(SlashCommandHelpSink help) {
+            help.appendLine("/plugin-help - plugin jar help");
           }
 
           @Override
-          public Map<String, Consumer<TargetRef>> topicHelpHandlers(
-              BiConsumer<TargetRef, String> lineAppender) {
-            return Map.of("plugin-help", out -> lineAppender.accept(out, "/plugin-help <arg>"));
+          public Map<String, Consumer<SlashCommandHelpSink>> topicHelpHandlers() {
+            return Map.of("plugin-help", help -> help.appendLine("/plugin-help <arg>"));
           }
         }
         """;
@@ -304,11 +321,10 @@ class SlashCommandPresentationCatalogTest {
         package plugin.commands;
 
         import cafe.woden.ircclient.app.commands.spi.SlashCommandDescriptor;
+        import cafe.woden.ircclient.app.commands.spi.SlashCommandHelpSink;
         import cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor;
-        import cafe.woden.ircclient.model.TargetRef;
         import java.util.List;
         import java.util.Map;
-        import java.util.function.BiConsumer;
         import java.util.function.Consumer;
 
         public final class PluginSpiHelpContributor
@@ -319,14 +335,13 @@ class SlashCommandPresentationCatalogTest {
           }
 
           @Override
-          public void appendGeneralHelp(TargetRef out, BiConsumer<TargetRef, String> lineAppender) {
-            lineAppender.accept(out, "/plugin-help - plugin jar help");
+          public void appendGeneralHelp(SlashCommandHelpSink help) {
+            help.appendLine("/plugin-help - plugin jar help");
           }
 
           @Override
-          public Map<String, Consumer<TargetRef>> topicHelpHandlers(
-              BiConsumer<TargetRef, String> lineAppender) {
-            return Map.of("plugin-help", out -> lineAppender.accept(out, "/plugin-help <arg>"));
+          public Map<String, Consumer<SlashCommandHelpSink>> topicHelpHandlers() {
+            return Map.of("plugin-help", help -> help.appendLine("/plugin-help <arg>"));
           }
         }
         """;
