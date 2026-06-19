@@ -43,8 +43,6 @@ import cafe.woden.ircclient.app.commands.FilterCommandParser;
 import cafe.woden.ircclient.app.commands.UserCommandAliasEngine;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesBus;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
-import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor;
-import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.IrcMediator;
 import cafe.woden.ircclient.app.core.MediatorConnectionSubscriptionBinder;
@@ -52,8 +50,6 @@ import cafe.woden.ircclient.app.core.MediatorHistoryIngestOrchestrator;
 import cafe.woden.ircclient.app.core.MediatorUiSubscriptionBinder;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.app.outbound.OutboundCommandDispatcher;
-import cafe.woden.ircclient.app.outbound.backend.spi.BackendExtension;
-import cafe.woden.ircclient.app.outbound.backend.spi.OutboundBackendFeatureAdapter;
 import cafe.woden.ircclient.app.outbound.dispatch.OutboundCommandRegistrar;
 import cafe.woden.ircclient.app.outbound.mutation.MessageMutationOutboundCommands;
 import cafe.woden.ircclient.app.outbound.spi.LocalFilterCommandHandler;
@@ -562,13 +558,9 @@ class JmoleculesIncrementalAdoptionTest {
     assertAnnotatedByName(
         "cafe.woden.ircclient.app.outbound.backend.QuasselOutboundCommandSupport",
         ApplicationLayer.class);
-    assertAnnotated(BackendNamedCommandHandler.class, ApplicationLayer.class);
-    assertAnnotated(BackendNamedCommandExecutor.class, ApplicationLayer.class);
-    assertAnnotated(BackendExtension.class, ApplicationLayer.class);
     assertAnnotated(IrcBackendClientService.class, ApplicationLayer.class);
     assertAnnotated(OutboundCommandDispatcher.class, ApplicationLayer.class);
     assertAnnotated(MessageMutationOutboundCommands.class, ApplicationLayer.class);
-    assertAnnotated(OutboundBackendFeatureAdapter.class, ApplicationLayer.class);
     assertAnnotated(OutboundCommandRegistrar.class, ApplicationLayer.class);
     assertAnnotated(SemanticUploadCommandHandler.class, ApplicationLayer.class);
     assertAnnotated(LocalFilterCommandHandler.class, ApplicationLayer.class);

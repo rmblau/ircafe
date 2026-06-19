@@ -1,12 +1,8 @@
 package cafe.woden.ircclient.app.outbound.backend.spi;
 
 import cafe.woden.ircclient.irc.port.IrcNegotiatedFeaturePort;
-import org.jmolecules.architecture.hexagonal.SecondaryPort;
-import org.jmolecules.architecture.layered.ApplicationLayer;
 
 /** Backend-specific outbound command feature adapter. */
-@SecondaryPort
-@ApplicationLayer
 public interface OutboundBackendFeatureAdapter {
 
   default String backendId() {

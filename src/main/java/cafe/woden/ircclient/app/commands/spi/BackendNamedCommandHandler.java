@@ -4,8 +4,6 @@ import cafe.woden.ircclient.app.commands.ParsedInput;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.jmolecules.architecture.hexagonal.SecondaryPort;
-import org.jmolecules.architecture.layered.ApplicationLayer;
 
 /**
  * ServiceLoader-backed metadata and parser contribution for backend-scoped named commands.
@@ -13,8 +11,6 @@ import org.jmolecules.architecture.layered.ApplicationLayer;
  * <p>Plugins register implementations in {@code
  * META-INF/services/cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler}.
  */
-@SecondaryPort
-@ApplicationLayer
 public interface BackendNamedCommandHandler {
 
   Set<String> supportedCommandNames();
