@@ -58,7 +58,6 @@ import cafe.woden.ircclient.app.outbound.dispatch.OutboundCommandRegistrar;
 import cafe.woden.ircclient.app.outbound.mutation.MessageMutationOutboundCommands;
 import cafe.woden.ircclient.app.outbound.spi.LocalFilterCommandHandler;
 import cafe.woden.ircclient.app.outbound.upload.spi.SemanticUploadCommandHandler;
-import cafe.woden.ircclient.app.outbound.upload.spi.UploadCommandTranslationHandler;
 import cafe.woden.ircclient.bouncer.AbstractBouncerAutoConnectStore;
 import cafe.woden.ircclient.bouncer.BouncerAutoConnectStore;
 import cafe.woden.ircclient.bouncer.BouncerBackendRegistry;
@@ -572,7 +571,6 @@ class JmoleculesIncrementalAdoptionTest {
     assertAnnotated(OutboundBackendFeatureAdapter.class, ApplicationLayer.class);
     assertAnnotated(OutboundCommandRegistrar.class, ApplicationLayer.class);
     assertAnnotated(SemanticUploadCommandHandler.class, ApplicationLayer.class);
-    assertAnnotated(UploadCommandTranslationHandler.class, ApplicationLayer.class);
     assertAnnotated(LocalFilterCommandHandler.class, ApplicationLayer.class);
     assertAnnotated(PerformOnConnectService.class, ApplicationLayer.class);
     assertAnnotated(IrcHeartbeatMaintenanceService.class, ApplicationLayer.class);

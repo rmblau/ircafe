@@ -45,8 +45,6 @@ class PluginApiDependencyAuditTest {
           "src/main/java/cafe/woden/ircclient/app/outbound/upload/spi/SemanticUploadCommandHandler.java -> cafe.woden.ircclient.model.TargetRef",
           "src/main/java/cafe/woden/ircclient/app/outbound/upload/spi/SemanticUploadCommandHandler.java -> org.jmolecules.architecture.hexagonal.SecondaryPort",
           "src/main/java/cafe/woden/ircclient/app/outbound/upload/spi/SemanticUploadCommandHandler.java -> org.jmolecules.architecture.layered.ApplicationLayer",
-          "src/main/java/cafe/woden/ircclient/app/outbound/upload/spi/UploadCommandTranslationHandler.java -> org.jmolecules.architecture.hexagonal.SecondaryPort",
-          "src/main/java/cafe/woden/ircclient/app/outbound/upload/spi/UploadCommandTranslationHandler.java -> org.jmolecules.architecture.layered.ApplicationLayer",
           "src/main/java/cafe/woden/ircclient/app/translation/spi/MessageTranslationBackendProvider.java -> cafe.woden.ircclient.app.translation.MessageTranslationRequest",
           "src/main/java/cafe/woden/ircclient/app/translation/spi/MessageTranslationBackendProvider.java -> cafe.woden.ircclient.app.translation.MessageTranslationResult",
           "src/main/java/cafe/woden/ircclient/app/translation/spi/MessageTranslationBackendProvider.java -> org.jmolecules.architecture.hexagonal.SecondaryPort",

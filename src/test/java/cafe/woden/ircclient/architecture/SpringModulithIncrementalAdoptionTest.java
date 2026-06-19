@@ -43,7 +43,6 @@ import cafe.woden.ircclient.app.outbound.dispatch.ObservedOutboundCommandDispatc
 import cafe.woden.ircclient.app.outbound.mutation.MessageMutationOutboundCommands;
 import cafe.woden.ircclient.app.outbound.spi.LocalFilterCommandHandler;
 import cafe.woden.ircclient.app.outbound.upload.spi.SemanticUploadCommandHandler;
-import cafe.woden.ircclient.app.outbound.upload.spi.UploadCommandTranslationHandler;
 import cafe.woden.ircclient.bouncer.AbstractBouncerAutoConnectStore;
 import cafe.woden.ircclient.bouncer.BouncerConnectionPort;
 import cafe.woden.ircclient.bouncer.BouncerNetworkDiscoveryOrchestrator;
@@ -515,8 +514,6 @@ class SpringModulithIncrementalAdoptionTest {
     assertThat(OutboundBackendFeatureAdapter.class.isAnnotationPresent(SecondaryPort.class))
         .isTrue();
     assertThat(SemanticUploadCommandHandler.class.isAnnotationPresent(SecondaryPort.class))
-        .isTrue();
-    assertThat(UploadCommandTranslationHandler.class.isAnnotationPresent(SecondaryPort.class))
         .isTrue();
     for (Class<?> type :
         new Class<?>[] {
