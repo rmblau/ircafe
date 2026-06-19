@@ -1,8 +1,5 @@
 package cafe.woden.ircclient.irc.ircv3;
 
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_MULTILINE;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MULTILINE;
-
 import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionContribution;
 import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider;
 import cafe.woden.ircclient.irc.ircv3.spi.Ircv3SpecStatus;
@@ -16,7 +13,7 @@ public final class Ircv3MultilineExtensionProvider implements Ircv3ExtensionProv
 
   @Override
   public String providerId() {
-    return MULTILINE;
+    return Ircv3CapabilityNames.MULTILINE;
   }
 
   @Override
@@ -28,14 +25,14 @@ public final class Ircv3MultilineExtensionProvider implements Ircv3ExtensionProv
   public List<Ircv3ExtensionContribution> extensions() {
     return List.of(
         Ircv3ExtensionProviderSupport.capability(
-            MULTILINE,
+            Ircv3CapabilityNames.MULTILINE,
             Ircv3SpecStatus.DRAFT,
-            DRAFT_MULTILINE,
-            MULTILINE,
+            Ircv3CapabilityNames.DRAFT_MULTILINE,
+            Ircv3CapabilityNames.MULTILINE,
             "Multiline messages (draft)",
             Ircv3UiGroup.CONVERSATION,
             220,
             "Allows sending and receiving multiline messages as a single logical message.",
-            DRAFT_MULTILINE));
+            Ircv3CapabilityNames.DRAFT_MULTILINE));
   }
 }

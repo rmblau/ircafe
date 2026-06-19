@@ -1,8 +1,5 @@
 package cafe.woden.ircclient.irc.ircv3;
 
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_READ_MARKER;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.READ_MARKER;
-
 import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionContribution;
 import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider;
 import cafe.woden.ircclient.irc.ircv3.spi.Ircv3FeatureContribution;
@@ -11,39 +8,42 @@ import cafe.woden.ircclient.irc.ircv3.spi.Ircv3UiGroup;
 import com.google.auto.service.AutoService;
 import java.util.List;
 
-/** SPI provider for the IRCv3 read-marker draft extension. */
+/** SPI provider for the IRCv3 message-redaction draft extension. */
 @AutoService(Ircv3ExtensionProvider.class)
-public final class Ircv3ReadMarkerExtensionProvider implements Ircv3ExtensionProvider {
+public final class Ircv3MessageRedactionExtensionProvider implements Ircv3ExtensionProvider {
 
   @Override
   public String providerId() {
-    return READ_MARKER;
+    return Ircv3CapabilityNames.MESSAGE_REDACTION;
   }
 
   @Override
   public int sortOrder() {
-    return 200;
+    return 220;
   }
 
   @Override
   public List<Ircv3ExtensionContribution> extensions() {
     return List.of(
         Ircv3ExtensionProviderSupport.capability(
-            READ_MARKER,
+            Ircv3CapabilityNames.MESSAGE_REDACTION,
             Ircv3SpecStatus.DRAFT,
-            DRAFT_READ_MARKER,
-            READ_MARKER,
-            "Read markers (draft)",
+            Ircv3CapabilityNames.DRAFT_MESSAGE_REDACTION,
+            Ircv3CapabilityNames.MESSAGE_REDACTION,
+            "Message redaction (draft)",
             Ircv3UiGroup.CONVERSATION,
-            240,
-            "Enables read-position markers on servers that support them.",
-            DRAFT_READ_MARKER));
+            300,
+            "Allows delete/redaction updates for messages.",
+            Ircv3CapabilityNames.DRAFT_MESSAGE_REDACTION));
   }
 
   @Override
   public List<Ircv3FeatureContribution> visibleFeatures() {
     return List.of(
         Ircv3ExtensionProviderSupport.feature(
-            700, "Read markers", List.of(), List.of(READ_MARKER, DRAFT_READ_MARKER)));
+            400,
+            "Message redaction",
+            List.of(),
+            List.of(Ircv3CapabilityNames.MESSAGE_REDACTION, Ircv3CapabilityNames.DRAFT_MESSAGE_REDACTION)));
   }
 }
