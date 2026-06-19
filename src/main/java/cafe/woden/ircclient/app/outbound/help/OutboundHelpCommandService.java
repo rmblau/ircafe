@@ -4,6 +4,8 @@ import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.commands.SlashCommandPresentationCatalog;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpContributor;
+import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpSink;
+import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpTargetView;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.model.TargetRef;
 import java.util.LinkedHashMap;
@@ -91,8 +93,9 @@ public final class OutboundHelpCommandService {
         out,
         "(help)",
         "Invites: /invites /invjoin (/join -i) /invignore /invwhois /invblock /inviteautojoin (/ajinvite)");
+    OutboundHelpSink help = helpSink(out);
     for (OutboundHelpContributor contributor : contributors) {
-      contributor.appendGeneralHelp(out, this::appendStaticHelpLine);
+      contributor.appendGeneralHelp(help);
     }
     slashCommandPresentationCatalog.appendGeneralHelp(out, this::appendStaticHelpLine);
     ui.appendStatus(out, "(help)", "Tip: /help dcc for direct-chat/file-transfer commands.");
@@ -106,10 +109,9 @@ public final class OutboundHelpCommandService {
     LinkedHashMap<String, HelpTopicHandler> handlers = new LinkedHashMap<>();
     registerHelpTopicHandler(handlers, this::appendDccHelp, "dcc");
     for (OutboundHelpContributor contributor : contributors) {
-      registerHelpTopicHandlers(
-          handlers, contributor.topicHelpHandlers(this::appendStaticHelpLine));
+      registerHelpTopicHandlers(handlers, contributor.topicHelpHandlers());
     }
-    registerHelpTopicHandlers(
+    registerTargetHelpTopicHandlers(
         handlers, slashCommandPresentationCatalog.topicHelpHandlers(this::appendStaticHelpLine));
     return Map.copyOf(handlers);
   }
@@ -117,6 +119,10 @@ public final class OutboundHelpCommandService {
   private void appendStaticHelpLine(TargetRef out, String line) {
     if (out == null || line == null || line.isBlank()) return;
     ui.appendStatus(out, "(help)", line);
+  }
+
+  private OutboundHelpSink helpSink(TargetRef out) {
+    return new ServiceOutboundHelpSink(out);
   }
 
   private static void registerHelpTopicHandler(
@@ -130,7 +136,20 @@ public final class OutboundHelpCommandService {
     }
   }
 
-  private static void registerHelpTopicHandlers(
+  private void registerHelpTopicHandlers(
+      Map<String, HelpTopicHandler> handlers,
+      Map<String, Consumer<OutboundHelpSink>> topicHandlers) {
+    if (handlers == null || topicHandlers == null || topicHandlers.isEmpty()) return;
+    for (Map.Entry<String, Consumer<OutboundHelpSink>> entry : topicHandlers.entrySet()) {
+      String topic = normalizeHelpTopic(entry.getKey());
+      Consumer<OutboundHelpSink> consumer = entry.getValue();
+      if (!topic.isEmpty() && consumer != null) {
+        handlers.put(topic, out -> consumer.accept(helpSink(out)));
+      }
+    }
+  }
+
+  private static void registerTargetHelpTopicHandlers(
       Map<String, HelpTopicHandler> handlers, Map<String, Consumer<TargetRef>> topicHandlers) {
     if (handlers == null || topicHandlers == null || topicHandlers.isEmpty()) return;
     for (Map.Entry<String, Consumer<TargetRef>> entry : topicHandlers.entrySet()) {
@@ -139,6 +158,27 @@ public final class OutboundHelpCommandService {
       if (!topic.isEmpty() && consumer != null) {
         handlers.put(topic, consumer::accept);
       }
+    }
+  }
+
+  private final class ServiceOutboundHelpSink implements OutboundHelpSink {
+    private final TargetRef out;
+
+    private ServiceOutboundHelpSink(TargetRef out) {
+      this.out = out;
+    }
+
+    @Override
+    public OutboundHelpTargetView target() {
+      if (out == null) {
+        return new OutboundHelpTargetView("", "");
+      }
+      return new OutboundHelpTargetView(out.serverId(), out.target());
+    }
+
+    @Override
+    public void appendLine(String line) {
+      appendStaticHelpLine(out, line);
     }
   }
 

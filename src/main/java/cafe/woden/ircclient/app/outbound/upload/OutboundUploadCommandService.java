@@ -4,6 +4,7 @@ import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpContributor;
+import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpSink;
 import cafe.woden.ircclient.app.outbound.support.OutboundRawCommandSupport;
 import cafe.woden.ircclient.app.outbound.upload.spi.SemanticUploadCommandHandler;
 import cafe.woden.ircclient.irc.port.IrcTargetMembershipPort;
@@ -38,13 +39,23 @@ public final class OutboundUploadCommandService implements OutboundHelpContribut
   }
 
   @Override
-  public void appendGeneralHelp(TargetRef out) {
-    appendUploadHelp(out);
+  public void appendGeneralHelp(OutboundHelpSink help) {
+    appendUploadHelp(targetRef(help));
   }
 
   @Override
-  public Map<String, Consumer<TargetRef>> topicHelpHandlers() {
-    return Map.of("upload", this::appendUploadHelp);
+  public Map<String, Consumer<OutboundHelpSink>> topicHelpHandlers() {
+    return Map.of("upload", help -> appendUploadHelp(targetRef(help)));
+  }
+
+  private TargetRef targetRef(OutboundHelpSink help) {
+    if (help == null
+        || help.target() == null
+        || help.target().serverId().isBlank()
+        || help.target().target().isBlank()) {
+      return targetCoordinator.safeStatusTarget();
+    }
+    return new TargetRef(help.target().serverId(), help.target().target());
   }
 
   public void handleUpload(

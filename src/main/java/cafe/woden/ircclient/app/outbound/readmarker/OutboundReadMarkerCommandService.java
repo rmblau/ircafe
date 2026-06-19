@@ -4,6 +4,8 @@ import cafe.woden.ircclient.app.api.Ircv3ReadMarkerFeatureSupport;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpContributor;
+import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpSink;
+import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpTargetView;
 import cafe.woden.ircclient.app.outbound.support.OutboundCommandAvailabilitySupport;
 import cafe.woden.ircclient.app.outbound.support.OutboundConnectionStatusSupport;
 import cafe.woden.ircclient.model.TargetRef;
@@ -30,12 +32,12 @@ public final class OutboundReadMarkerCommandService implements OutboundHelpContr
   @NonNull private final TargetCoordinator targetCoordinator;
 
   @Override
-  public void appendGeneralHelp(TargetRef out) {
-    appendMarkReadHelp(out);
+  public void appendGeneralHelp(OutboundHelpSink help) {
+    appendMarkReadHelp(help);
   }
 
   @Override
-  public Map<String, Consumer<TargetRef>> topicHelpHandlers() {
+  public Map<String, Consumer<OutboundHelpSink>> topicHelpHandlers() {
     return Map.of("markread", this::appendMarkReadHelp);
   }
 
@@ -81,16 +83,22 @@ public final class OutboundReadMarkerCommandService implements OutboundHelpContr
                 () -> {}, err -> ui.appendError(status, "(markread-error)", String.valueOf(err))));
   }
 
-  private void appendMarkReadHelp(TargetRef out) {
-    TargetRef target = out != null ? out : targetCoordinator.safeStatusTarget();
+  private void appendMarkReadHelp(OutboundHelpSink help) {
+    OutboundHelpTargetView target = helpTarget(help);
     String sid = target.serverId();
     boolean available = isReadMarkerSupportedForServer(sid);
-    ui.appendStatus(
-        target,
-        "(help)",
+    help.appendLine(
         "/markread"
             + outboundCommandAvailabilitySupport.helpAvailabilitySuffix(
                 sid, available, readMarkerFeatureSupport.requirementHint()));
+  }
+
+  private OutboundHelpTargetView helpTarget(OutboundHelpSink help) {
+    if (help != null && help.target() != null && !help.target().serverId().isBlank()) {
+      return help.target();
+    }
+    TargetRef safe = targetCoordinator.safeStatusTarget();
+    return new OutboundHelpTargetView(safe.serverId(), safe.target());
   }
 
   private boolean isReadMarkerSupportedForServer(String serverId) {

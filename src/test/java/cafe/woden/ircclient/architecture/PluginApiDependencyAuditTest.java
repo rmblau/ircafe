@@ -38,8 +38,6 @@ class PluginApiDependencyAuditTest {
           "src/main/java/cafe/woden/ircclient/app/outbound/backend/spi/OutboundBackendFeatureAdapter.java -> cafe.woden.ircclient.irc.port.IrcNegotiatedFeaturePort",
           "src/main/java/cafe/woden/ircclient/app/outbound/backend/spi/OutboundBackendFeatureAdapter.java -> org.jmolecules.architecture.hexagonal.SecondaryPort",
           "src/main/java/cafe/woden/ircclient/app/outbound/backend/spi/OutboundBackendFeatureAdapter.java -> org.jmolecules.architecture.layered.ApplicationLayer",
-          "src/main/java/cafe/woden/ircclient/app/outbound/help/spi/OutboundHelpContributor.java -> cafe.woden.ircclient.model.TargetRef",
-          "src/main/java/cafe/woden/ircclient/app/outbound/help/spi/OutboundHelpContributor.java -> org.jmolecules.architecture.layered.ApplicationLayer",
           "src/main/java/cafe/woden/ircclient/app/outbound/spi/LocalFilterCommandHandler.java -> cafe.woden.ircclient.app.commands.FilterCommand",
           "src/main/java/cafe/woden/ircclient/app/outbound/spi/LocalFilterCommandHandler.java -> org.jmolecules.architecture.hexagonal.SecondaryPort",
           "src/main/java/cafe/woden/ircclient/app/outbound/spi/LocalFilterCommandHandler.java -> org.jmolecules.architecture.layered.ApplicationLayer",

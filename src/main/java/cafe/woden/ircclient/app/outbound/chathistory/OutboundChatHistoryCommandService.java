@@ -3,6 +3,7 @@ package cafe.woden.ircclient.app.outbound.chathistory;
 import cafe.woden.ircclient.app.api.Ircv3ChatHistoryFeatureSupport;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpContributor;
+import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpSink;
 import cafe.woden.ircclient.irc.IrcClientService;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ChatHistorySelectors;
 import cafe.woden.ircclient.model.TargetRef;
@@ -35,11 +36,11 @@ public final class OutboundChatHistoryCommandService implements OutboundHelpCont
   @NonNull private final OutboundChatHistoryRequestSupport chatHistoryRequestSupport;
 
   @Override
-  public void appendGeneralHelp(TargetRef out) {}
+  public void appendGeneralHelp(OutboundHelpSink help) {}
 
   @Override
-  public Map<String, Consumer<TargetRef>> topicHelpHandlers() {
-    return Map.of("chathistory", this::appendChatHistoryUsage);
+  public Map<String, Consumer<OutboundHelpSink>> topicHelpHandlers() {
+    return Map.of("chathistory", help -> appendChatHistoryUsage(targetRef(help)));
   }
 
   public void handleChatHistoryBefore(CompositeDisposable disposables, int limit) {
@@ -222,6 +223,16 @@ public final class OutboundChatHistoryCommandService implements OutboundHelpCont
     chatHistoryRequestSupport.appendHelp(
         target, "/chathistory around <msgid=...|timestamp=...> [limit]");
     chatHistoryRequestSupport.appendHelp(target, "/chathistory between <start> <end> [limit]");
+  }
+
+  private TargetRef targetRef(OutboundHelpSink help) {
+    if (help == null
+        || help.target() == null
+        || help.target().serverId().isBlank()
+        || help.target().target().isBlank()) {
+      return targetCoordinator.safeStatusTarget();
+    }
+    return new TargetRef(help.target().serverId(), help.target().target());
   }
 
   private String helpAvailabilitySuffix(String serverId) {
