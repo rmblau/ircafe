@@ -1,33 +1,3 @@
-plugins {
-    id 'java-library'
-}
-
-group = rootProject.group
 description = 'Built-in IRCafe notification plugin providers.'
 
-def libsCatalog = extensions.getByType(org.gradle.api.artifacts.VersionCatalogsExtension).named("libs")
-def lib = { String alias -> libsCatalog.findLibrary(alias).get() }
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(rootProject.ext.javaRelease)
-    }
-    withSourcesJar()
-}
-
-tasks.withType(JavaCompile).configureEach {
-    options.release = rootProject.ext.javaRelease
-    options.warnings = false
-    options.compilerArgs.removeAll { it.startsWith('-Xlint') }
-    options.compilerArgs += ['-Xlint:none']
-}
-
-tasks.matching { it.name in ['cyclonedxBom', 'cyclonedxDirectBom'] }.configureEach {
-    dependsOn(':ircafe-plugin-api:compileJava')
-}
-
-dependencies {
-    api project(':ircafe-plugin-api')
-    compileOnly lib('autoServiceAnnotations')
-    annotationProcessor lib('autoService')
-}
+apply from: rootProject.file('gradle/builtins-provider-conventions.gradle')

@@ -59,6 +59,18 @@ class BuiltInProviderSubprojectBoundaryTest {
     assertBuiltInProviderJarIncluded(settings, build, "ircafe-builtins-ircv3");
   }
 
+  @Test
+  void builtInProviderSubprojectsApplySharedBuildConvention() throws IOException {
+    for (Path projectDir : builtInProviderProjectDirs()) {
+      Path buildFile = projectDir.resolve("build.gradle");
+      String build = Files.readString(buildFile);
+      assertTrue(
+          build.contains(
+              "apply from: rootProject.file('gradle/builtins-provider-conventions.gradle')"),
+          buildFile + " should apply the shared built-in provider Gradle convention");
+    }
+  }
+
   private static void assertBuiltInProviderJarIncluded(
       String settings, String build, String projectName) {
     assertTrue(
@@ -71,16 +83,25 @@ class BuiltInProviderSubprojectBoundaryTest {
 
   private static Set<Path> builtInProviderSourceRoots() throws IOException {
     Set<Path> sourceRoots = new TreeSet<>();
-    try (Stream<Path> paths = Files.list(Path.of("."))) {
-      for (Path path : paths.filter(Files::isDirectory).sorted().toList()) {
-        Path sourceRoot = path.resolve("src/main/java");
-        if (path.getFileName().toString().startsWith("ircafe-builtins-")
-            && Files.isDirectory(sourceRoot)) {
-          sourceRoots.add(sourceRoot);
-        }
+    for (Path path : builtInProviderProjectDirs()) {
+      Path sourceRoot = path.resolve("src/main/java");
+      if (Files.isDirectory(sourceRoot)) {
+        sourceRoots.add(sourceRoot);
       }
     }
     return sourceRoots;
+  }
+
+  private static Set<Path> builtInProviderProjectDirs() throws IOException {
+    Set<Path> projectDirs = new TreeSet<>();
+    try (Stream<Path> paths = Files.list(Path.of("."))) {
+      for (Path path : paths.filter(Files::isDirectory).sorted().toList()) {
+        if (path.getFileName().toString().startsWith("ircafe-builtins-")) {
+          projectDirs.add(path);
+        }
+      }
+    }
+    return projectDirs;
   }
 
   private static boolean isBuiltInProviderDependency(String dependency) {
