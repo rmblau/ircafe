@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.app.commands;
 
+import cafe.woden.ircclient.app.commands.spi.SlashCommandDescriptor;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.util.PluginServiceLoaderSupport;

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
+import cafe.woden.ircclient.app.commands.spi.SlashCommandDescriptor;
 import cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
@@ -270,7 +271,7 @@ class SlashCommandPresentationCatalogTest {
     return """
         package plugin.commands;
 
-        import cafe.woden.ircclient.app.commands.SlashCommandDescriptor;
+        import cafe.woden.ircclient.app.commands.spi.SlashCommandDescriptor;
         import cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor;
         import cafe.woden.ircclient.model.TargetRef;
         import java.util.List;
@@ -302,7 +303,7 @@ class SlashCommandPresentationCatalogTest {
     return """
         package plugin.commands;
 
-        import cafe.woden.ircclient.app.commands.SlashCommandDescriptor;
+        import cafe.woden.ircclient.app.commands.spi.SlashCommandDescriptor;
         import cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor;
         import cafe.woden.ircclient.model.TargetRef;
         import java.util.List;

@@ -1,7 +1,6 @@
 package cafe.woden.ircclient.app.commands.spi;
 
 import cafe.woden.ircclient.app.commands.ParsedInput;
-import cafe.woden.ircclient.app.commands.SlashCommandDescriptor;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;

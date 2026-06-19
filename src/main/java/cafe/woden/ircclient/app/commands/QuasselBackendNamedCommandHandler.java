@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.app.commands;
 
+import cafe.woden.ircclient.app.commands.spi.SlashCommandDescriptor;
 import com.google.auto.service.AutoService;
 import java.util.List;
 import java.util.Set;

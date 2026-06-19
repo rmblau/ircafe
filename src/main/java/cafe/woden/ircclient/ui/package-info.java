@@ -4,6 +4,7 @@
       "app",
       "app::api",
       "app::commands",
+      "app::commands-spi",
       "app::outbound-filter",
       "app::translation",
       "bouncer",

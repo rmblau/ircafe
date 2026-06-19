@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.input;
 
-import cafe.woden.ircclient.app.commands.SlashCommandDescriptor;
+import cafe.woden.ircclient.app.commands.spi.SlashCommandDescriptor;
 import cafe.woden.ircclient.ui.input.spi.MessageInputWordSuggestionProvider;
 import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.awt.*;

@@ -1,11 +1,9 @@
-package cafe.woden.ircclient.app.commands;
+package cafe.woden.ircclient.app.commands.spi;
 
 import java.util.Locale;
 import java.util.Objects;
-import org.jmolecules.architecture.layered.ApplicationLayer;
 
 /** Presentation metadata for a slash command exposed in autocomplete/help surfaces. */
-@ApplicationLayer
 public record SlashCommandDescriptor(String command, String summary) {
 
   public SlashCommandDescriptor {

@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
+import cafe.woden.ircclient.app.commands.spi.SlashCommandDescriptor;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
@@ -158,7 +159,7 @@ class BackendNamedCommandCatalogTest {
         package plugin.commands;
 
         import cafe.woden.ircclient.app.commands.ParsedInput;
-        import cafe.woden.ircclient.app.commands.SlashCommandDescriptor;
+        import cafe.woden.ircclient.app.commands.spi.SlashCommandDescriptor;
         import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
         import java.util.List;
         import java.util.Set;
