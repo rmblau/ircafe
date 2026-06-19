@@ -1,10 +1,8 @@
 package cafe.woden.ircclient.app.commands;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
-import java.util.List;
 import java.util.Objects;
 import org.jmolecules.architecture.layered.ApplicationLayer;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -17,37 +15,33 @@ import org.springframework.stereotype.Component;
 @ApplicationLayer
 public class CommandParser {
 
-  private final FilterCommandParser filterCommandParser;
   private final BackendNamedCommandParser backendNamedCommandParser;
-  private final List<cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy> strategies;
+  private final SlashCommandParseStrategyCatalog slashCommandParseStrategyCatalog;
 
   @Autowired
   public CommandParser(
-      FilterCommandParser filterCommandParser,
       BackendNamedCommandParser backendNamedCommandParser,
-      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
-    this(
-        filterCommandParser,
-        backendNamedCommandParser,
-        CommandPluginProviders.resolveInstalledPlugins(installedPluginsProvider));
+      SlashCommandParseStrategyCatalog slashCommandParseStrategyCatalog) {
+    this.backendNamedCommandParser =
+        Objects.requireNonNull(backendNamedCommandParser, "backendNamedCommandParser");
+    this.slashCommandParseStrategyCatalog =
+        Objects.requireNonNull(
+            slashCommandParseStrategyCatalog, "slashCommandParseStrategyCatalog");
   }
 
   public CommandParser(
       FilterCommandParser filterCommandParser,
       BackendNamedCommandParser backendNamedCommandParser) {
-    this(filterCommandParser, backendNamedCommandParser, (InstalledPluginsPort) null);
+    this(backendNamedCommandParser, new SlashCommandParseStrategyCatalog(filterCommandParser));
   }
 
   public CommandParser(
       FilterCommandParser filterCommandParser,
       BackendNamedCommandParser backendNamedCommandParser,
       InstalledPluginsPort installedPlugins) {
-    this.filterCommandParser = Objects.requireNonNull(filterCommandParser, "filterCommandParser");
-    this.backendNamedCommandParser =
-        Objects.requireNonNull(backendNamedCommandParser, "backendNamedCommandParser");
-    this.strategies =
-        CommandPluginProviders.slashCommandParseStrategies(
-            builtInStrategies(this.filterCommandParser), installedPlugins);
+    this(
+        backendNamedCommandParser,
+        new SlashCommandParseStrategyCatalog(filterCommandParser, installedPlugins));
   }
 
   public ParsedInput parse(String raw) {
@@ -66,22 +60,9 @@ public class CommandParser {
     ParsedInput backendNamed = backendNamedCommandParser.parse(line);
     if (backendNamed != null) return backendNamed;
 
-    for (cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy strategy : strategies) {
-      ParsedInput parsed = strategy.tryParse(line);
-      if (parsed != null) {
-        return parsed;
-      }
-    }
+    ParsedInput parsed = slashCommandParseStrategyCatalog.tryParse(line);
+    if (parsed != null) return parsed;
 
     return new ParsedInput.Unknown(line);
-  }
-
-  private static List<cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy>
-      builtInStrategies(FilterCommandParser filterCommandParser) {
-    return List.of(
-        new ConnectionLifecycleSlashCommandParseStrategy(),
-        new IdentityMessagingSlashCommandParseStrategy(),
-        new ChannelInteractionSlashCommandParseStrategy(),
-        new AdvancedFeatureSlashCommandParseStrategy(filterCommandParser));
   }
 }
