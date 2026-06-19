@@ -27,9 +27,12 @@ class SharedCustomSoundFileExtensionProviderInterceptorTest {
     RuntimeConfigPathPort runtimeConfigPathPort =
         () -> runtimeConfigDirectory.resolve("ircafe.yml");
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+    TestInterceptorConfig interceptorConfig = new TestInterceptorConfig(runtimeConfigPathPort);
     InterceptorStore store =
         new InterceptorStore(
-            new TestInterceptorConfig(runtimeConfigPathPort), installedPlugins, 200);
+            interceptorConfig,
+            new InterceptorSoundFileImporter(interceptorConfig, installedPlugins),
+            200);
 
     Path source = Files.writeString(tempDir.resolve("Interceptor Alert!.ogg"), "audio");
 
