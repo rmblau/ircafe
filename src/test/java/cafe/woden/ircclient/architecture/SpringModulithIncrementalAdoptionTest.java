@@ -502,7 +502,6 @@ class SpringModulithIncrementalAdoptionTest {
     assertThat(ChatTranscriptHistoryPort.class.isAnnotationPresent(SecondaryPort.class)).isTrue();
     assertThat(ChannelMetadataPort.class.isAnnotationPresent(SecondaryPort.class)).isTrue();
     assertThat(ChatHistoryTranscriptPort.class.isAnnotationPresent(SecondaryPort.class)).isTrue();
-    assertThat(IrcBackendClientService.class.isAnnotationPresent(SecondaryPort.class)).isTrue();
     assertThat(MessageMutationOutboundCommands.class.isAnnotationPresent(SecondaryPort.class))
         .isTrue();
     for (Class<?> type :

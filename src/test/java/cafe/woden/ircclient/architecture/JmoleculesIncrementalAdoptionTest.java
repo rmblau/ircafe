@@ -558,7 +558,6 @@ class JmoleculesIncrementalAdoptionTest {
     assertAnnotatedByName(
         "cafe.woden.ircclient.app.outbound.backend.QuasselOutboundCommandSupport",
         ApplicationLayer.class);
-    assertAnnotated(IrcBackendClientService.class, ApplicationLayer.class);
     assertAnnotated(OutboundCommandDispatcher.class, ApplicationLayer.class);
     assertAnnotated(MessageMutationOutboundCommands.class, ApplicationLayer.class);
     assertAnnotated(OutboundCommandRegistrar.class, ApplicationLayer.class);
@@ -716,6 +715,9 @@ class JmoleculesIncrementalAdoptionTest {
         IrcEchoCapabilityPort.class.isInterface(),
         "IrcEchoCapabilityPort should remain an interface");
     assertTrue(IrcLagProbePort.class.isInterface(), "IrcLagProbePort should remain an interface");
+    assertTrue(
+        IrcBackendClientService.class.isInterface(),
+        "IrcBackendClientService should remain an interface");
     assertTrue(
         IrcMediatorInteractionPort.class.isInterface(),
         "IrcMediatorInteractionPort should remain an interface");

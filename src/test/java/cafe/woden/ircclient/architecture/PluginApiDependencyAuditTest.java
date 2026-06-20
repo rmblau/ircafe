@@ -39,8 +39,6 @@ class PluginApiDependencyAuditTest {
           "src/main/java/cafe/woden/ircclient/irc/backend/spi/IrcBackendClientService.java -> cafe.woden.ircclient.irc.backend.IrcBackendAvailabilityPort",
           "src/main/java/cafe/woden/ircclient/irc/backend/spi/IrcBackendClientService.java -> cafe.woden.ircclient.irc.playback.IrcBouncerPlaybackPort",
           "src/main/java/cafe/woden/ircclient/irc/backend/spi/IrcBackendClientService.java -> cafe.woden.ircclient.irc.quassel.control.QuasselCoreControlPort",
-          "src/main/java/cafe/woden/ircclient/irc/backend/spi/IrcBackendClientService.java -> org.jmolecules.architecture.hexagonal.SecondaryPort",
-          "src/main/java/cafe/woden/ircclient/irc/backend/spi/IrcBackendClientService.java -> org.jmolecules.architecture.layered.ApplicationLayer",
           "src/main/java/cafe/woden/ircclient/irc/backend/spi/package-info.java -> org.springframework.modulith.NamedInterface",
           "src/main/java/cafe/woden/ircclient/irc/ircv3/spi/package-info.java -> org.springframework.modulith.NamedInterface",
           "src/main/java/cafe/woden/ircclient/notify/spi/package-info.java -> org.springframework.modulith.NamedInterface");
