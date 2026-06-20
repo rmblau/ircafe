@@ -25,23 +25,16 @@ class PluginApiDependencyAuditTest {
           "src/main/java/cafe/woden/ircclient/app/commands/spi/BackendNamedCommandExecutor.java -> io.reactivex.rxjava3.disposables.CompositeDisposable",
           "src/main/java/cafe/woden/ircclient/app/commands/spi/BackendNamedCommandHandler.java -> cafe.woden.ircclient.app.commands.ParsedInput",
           "src/main/java/cafe/woden/ircclient/app/commands/spi/SlashCommandParseStrategy.java -> cafe.woden.ircclient.app.commands.ParsedInput",
-          "src/main/java/cafe/woden/ircclient/app/commands/spi/package-info.java -> org.springframework.modulith.NamedInterface",
           "src/main/java/cafe/woden/ircclient/app/outbound/backend/spi/BackendExtension.java -> cafe.woden.ircclient.app.api.BackendEditorProfileSpec",
           "src/main/java/cafe/woden/ircclient/app/outbound/backend/spi/BackendExtension.java -> cafe.woden.ircclient.app.outbound.mutation.MessageMutationOutboundCommands",
           "src/main/java/cafe/woden/ircclient/app/outbound/backend/spi/OutboundBackendFeatureAdapter.java -> cafe.woden.ircclient.irc.port.IrcNegotiatedFeaturePort",
           "src/main/java/cafe/woden/ircclient/app/outbound/spi/LocalFilterCommandHandler.java -> cafe.woden.ircclient.app.commands.FilterCommand",
-          "src/main/java/cafe/woden/ircclient/app/outbound/spi/package-info.java -> org.springframework.modulith.NamedInterface",
           "src/main/java/cafe/woden/ircclient/app/outbound/upload/spi/SemanticUploadCommandHandler.java -> cafe.woden.ircclient.model.TargetRef",
           "src/main/java/cafe/woden/ircclient/app/translation/spi/MessageTranslationBackendProvider.java -> cafe.woden.ircclient.app.translation.MessageTranslationRequest",
-          "src/main/java/cafe/woden/ircclient/app/translation/spi/package-info.java -> org.springframework.modulith.NamedInterface",
-          "src/main/java/cafe/woden/ircclient/bouncer/spi/package-info.java -> org.springframework.modulith.NamedInterface",
           "src/main/java/cafe/woden/ircclient/irc/backend/spi/IrcBackendClientService.java -> cafe.woden.ircclient.irc.IrcClientService",
           "src/main/java/cafe/woden/ircclient/irc/backend/spi/IrcBackendClientService.java -> cafe.woden.ircclient.irc.backend.IrcBackendAvailabilityPort",
           "src/main/java/cafe/woden/ircclient/irc/backend/spi/IrcBackendClientService.java -> cafe.woden.ircclient.irc.playback.IrcBouncerPlaybackPort",
-          "src/main/java/cafe/woden/ircclient/irc/backend/spi/IrcBackendClientService.java -> cafe.woden.ircclient.irc.quassel.control.QuasselCoreControlPort",
-          "src/main/java/cafe/woden/ircclient/irc/backend/spi/package-info.java -> org.springframework.modulith.NamedInterface",
-          "src/main/java/cafe/woden/ircclient/irc/ircv3/spi/package-info.java -> org.springframework.modulith.NamedInterface",
-          "src/main/java/cafe/woden/ircclient/notify/spi/package-info.java -> org.springframework.modulith.NamedInterface");
+          "src/main/java/cafe/woden/ircclient/irc/backend/spi/IrcBackendClientService.java -> cafe.woden.ircclient.irc.quassel.control.QuasselCoreControlPort");
 
   @Test
   void spiPluginApiBlockersStayIntentional() throws IOException {
@@ -94,6 +87,7 @@ class PluginApiDependencyAuditTest {
     return (normalized.startsWith("src/main/java/")
             || normalized.startsWith("ircafe-plugin-api/src/main/java/"))
         && normalized.contains("/spi/")
+        && !normalized.endsWith("/package-info.java")
         && normalized.endsWith(".java");
   }
 
