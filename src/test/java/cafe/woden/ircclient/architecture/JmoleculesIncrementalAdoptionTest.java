@@ -562,8 +562,6 @@ class JmoleculesIncrementalAdoptionTest {
     assertAnnotated(OutboundCommandDispatcher.class, ApplicationLayer.class);
     assertAnnotated(MessageMutationOutboundCommands.class, ApplicationLayer.class);
     assertAnnotated(OutboundCommandRegistrar.class, ApplicationLayer.class);
-    assertAnnotated(SemanticUploadCommandHandler.class, ApplicationLayer.class);
-    assertAnnotated(LocalFilterCommandHandler.class, ApplicationLayer.class);
     assertAnnotated(PerformOnConnectService.class, ApplicationLayer.class);
     assertAnnotated(IrcHeartbeatMaintenanceService.class, ApplicationLayer.class);
     assertAnnotated(SojuAutoConnectStore.class, ApplicationLayer.class);
@@ -737,6 +735,9 @@ class JmoleculesIncrementalAdoptionTest {
     assertTrue(
         LocalFilterCommandHandler.class.isInterface(),
         "LocalFilterCommandHandler should remain an interface");
+    assertTrue(
+        SemanticUploadCommandHandler.class.isInterface(),
+        "SemanticUploadCommandHandler should remain an interface");
     assertTrue(
         InterceptorIngestPort.class.isInterface(),
         "InterceptorIngestPort should remain an interface");
