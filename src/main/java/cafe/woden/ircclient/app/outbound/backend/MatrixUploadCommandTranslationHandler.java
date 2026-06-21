@@ -1,8 +1,7 @@
 package cafe.woden.ircclient.app.outbound.backend;
 
+import cafe.woden.ircclient.app.outbound.backend.spi.BuiltInBackendIds;
 import cafe.woden.ircclient.app.outbound.upload.spi.UploadCommandTranslationHandler;
-import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
@@ -15,13 +14,11 @@ import org.springframework.stereotype.Component;
 @RequiredArgsConstructor
 public final class MatrixUploadCommandTranslationHandler
     implements UploadCommandTranslationHandler {
-  private static final BackendDescriptorCatalog BACKEND_DESCRIPTORS =
-      BackendDescriptorCatalog.builtIns();
   @NonNull private final MatrixOutboundCommandSupport matrixCommandSupport;
 
   @Override
   public String backendId() {
-    return BACKEND_DESCRIPTORS.idFor(IrcProperties.Server.Backend.MATRIX);
+    return BuiltInBackendIds.MATRIX;
   }
 
   @Override
