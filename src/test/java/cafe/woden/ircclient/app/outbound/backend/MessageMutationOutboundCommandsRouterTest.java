@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.app.outbound.backend;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -37,8 +38,8 @@ class MessageMutationOutboundCommandsRouterTest {
                 new IrcMessageMutationOutboundCommands(),
                 new MatrixMessageMutationOutboundCommands()));
 
-    assertInstanceOf(IrcMessageMutationOutboundCommands.class, router.commandsFor(""));
-    assertInstanceOf(IrcMessageMutationOutboundCommands.class, router.commandsFor("quassel-core"));
+    assertIrcMessageMutationCommands(router.commandsFor(""));
+    assertIrcMessageMutationCommands(router.commandsFor("quassel-core"));
   }
 
   @Test
@@ -59,7 +60,7 @@ class MessageMutationOutboundCommandsRouterTest {
         cafe.woden.ircclient.app.outbound.TestBackendSupport.messageMutationOutboundCommandsRouter(
             List.of(new MatrixMessageMutationOutboundCommands()));
 
-    assertInstanceOf(IrcMessageMutationOutboundCommands.class, router.commandsFor("irc"));
+    assertIrcMessageMutationCommands(router.commandsFor("irc"));
   }
 
   @Test
@@ -70,6 +71,26 @@ class MessageMutationOutboundCommandsRouterTest {
             List.of(new IrcMessageMutationOutboundCommands(), pluginCommands));
 
     assertInstanceOf(PluginMessageMutationOutboundCommands.class, router.commandsFor("plugin"));
+  }
+
+  private static void assertIrcMessageMutationCommands(MessageMutationOutboundCommands commands) {
+    MessageMutationTargetView target = new MessageMutationTargetView("server", "#ircafe");
+
+    assertEquals("irc", commands.backendId());
+    assertEquals(
+        "@+reply=reply-1 PRIVMSG #ircafe :hello",
+        commands.buildReplyRawLine(target, "reply-1", "hello"));
+    assertEquals(
+        "@+draft/react=:;+reply=reply-1 TAGMSG #ircafe",
+        commands.buildReactRawLine(target, "reply-1", ":"));
+    assertEquals(
+        "@+draft/unreact=:;+reply=reply-1 TAGMSG #ircafe",
+        commands.buildUnreactRawLine(target, "reply-1", ":"));
+    assertEquals(
+        "@+draft/edit=msg-1 PRIVMSG #ircafe :edited",
+        commands.buildEditRawLine(target, "msg-1", "edited"));
+    assertEquals(
+        "REDACT #ircafe msg-1 :cleanup", commands.buildRedactRawLine(target, "msg-1", "cleanup"));
   }
 
   private static final class DuplicateIrcMessageMutationOutboundCommands

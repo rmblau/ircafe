@@ -3,10 +3,12 @@ package cafe.woden.ircclient.app.outbound.backend;
 import cafe.woden.ircclient.app.api.BackendEditorProfileSpec;
 import cafe.woden.ircclient.app.outbound.backend.spi.BackendEditorProfile;
 import cafe.woden.ircclient.app.outbound.backend.spi.BackendExtension;
+import cafe.woden.ircclient.app.outbound.backend.spi.BuiltInBackendIds;
 import cafe.woden.ircclient.app.outbound.backend.spi.OutboundBackendFeatureAdapter;
+import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationOutboundCommandLines;
 import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationOutboundCommands;
+import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationTargetView;
 import cafe.woden.ircclient.app.outbound.upload.spi.UploadCommandTranslationHandler;
-import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
@@ -28,13 +30,53 @@ final class BackendExtensionCatalogState {
       BackendDescriptorCatalog.builtIns();
 
   private static final MessageMutationOutboundCommands DEFAULT_MESSAGE_MUTATION_COMMANDS =
-      new IrcMessageMutationOutboundCommands();
+      new MessageMutationOutboundCommands() {
+        @Override
+        public String backendId() {
+          return BuiltInBackendIds.IRC;
+        }
+
+        @Override
+        public String buildReplyRawLine(
+            MessageMutationTargetView target, String replyToMessageId, String message) {
+          return MessageMutationOutboundCommandLines.buildReplyRawLine(
+              target, replyToMessageId, message);
+        }
+
+        @Override
+        public String buildReactRawLine(
+            MessageMutationTargetView target, String replyToMessageId, String reaction) {
+          return MessageMutationOutboundCommandLines.buildReactRawLine(
+              target, replyToMessageId, reaction);
+        }
+
+        @Override
+        public String buildUnreactRawLine(
+            MessageMutationTargetView target, String replyToMessageId, String reaction) {
+          return MessageMutationOutboundCommandLines.buildUnreactRawLine(
+              target, replyToMessageId, reaction);
+        }
+
+        @Override
+        public String buildEditRawLine(
+            MessageMutationTargetView target, String targetMessageId, String editedText) {
+          return MessageMutationOutboundCommandLines.buildEditRawLine(
+              target, targetMessageId, editedText);
+        }
+
+        @Override
+        public String buildRedactRawLine(
+            MessageMutationTargetView target, String targetMessageId, String reason) {
+          return MessageMutationOutboundCommandLines.buildRedactRawLine(
+              target, targetMessageId, reason);
+        }
+      };
 
   private static final OutboundBackendFeatureAdapter DEFAULT_FEATURE_ADAPTER =
       new OutboundBackendFeatureAdapter() {
         @Override
         public String backendId() {
-          return BACKEND_DESCRIPTORS.idFor(IrcProperties.Server.Backend.IRC);
+          return BuiltInBackendIds.IRC;
         }
       };
 
@@ -268,7 +310,7 @@ final class BackendExtensionCatalogState {
     return new BackendExtension() {
       @Override
       public String backendId() {
-        return BACKEND_DESCRIPTORS.idFor(IrcProperties.Server.Backend.IRC);
+        return BuiltInBackendIds.IRC;
       }
 
       @Override
