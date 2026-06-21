@@ -62,6 +62,14 @@ class BuiltInProviderSubprojectBoundaryTest {
   }
 
   @Test
+  void appDoesNotCompileAgainstServiceLoaderOnlyCommandAndBackendProviders() throws IOException {
+    String build = Files.readString(Path.of("build.gradle"));
+
+    assertServiceLoaderOnlyProvider(build, "ircafe-builtins-commands");
+    assertServiceLoaderOnlyProvider(build, "ircafe-builtins-backend");
+  }
+
+  @Test
   void builtInProviderSubprojectsApplySharedBuildConvention() throws IOException {
     for (Path projectDir : builtInProviderProjectDirs()) {
       Path buildFile = projectDir.resolve("build.gradle");
@@ -79,8 +87,23 @@ class BuiltInProviderSubprojectBoundaryTest {
         settings.contains("include '" + projectName + "'"),
         "settings.gradle should include the " + projectName + " provider subproject");
     assertTrue(
-        build.contains("implementation project(':" + projectName + "')"),
-        "the app should depend on the " + projectName + " provider jar so bootJar packages it");
+        build.contains("implementation project(':" + projectName + "')")
+            || build.contains("runtimeOnly project(':" + projectName + "')"),
+        "the app should include the "
+            + projectName
+            + " provider jar on the runtime classpath so bootJar packages it");
+  }
+
+  private static void assertServiceLoaderOnlyProvider(String build, String projectName) {
+    assertTrue(
+        !build.contains("implementation project(':" + projectName + "')"),
+        projectName + " should not be on the app compile classpath");
+    assertTrue(
+        build.contains("runtimeOnly project(':" + projectName + "')"),
+        projectName + " should be loaded from the app runtime classpath");
+    assertTrue(
+        build.contains("testImplementation project(':" + projectName + "')"),
+        projectName + " should remain visible to focused tests that assert built-in behavior");
   }
 
   private static Set<Path> builtInProviderSourceRoots() throws IOException {
