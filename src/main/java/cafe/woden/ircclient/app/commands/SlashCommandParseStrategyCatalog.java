@@ -1,5 +1,8 @@
 package cafe.woden.ircclient.app.commands;
 
+import cafe.woden.ircclient.app.commands.builtins.BuiltInChannelInteractionSlashCommandParseStrategy;
+import cafe.woden.ircclient.app.commands.builtins.BuiltInConnectionLifecycleSlashCommandParseStrategy;
+import cafe.woden.ircclient.app.commands.builtins.BuiltInIdentityMessagingSlashCommandParseStrategy;
 import cafe.woden.ircclient.app.commands.spi.SlashCommandParseResult;
 import cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
@@ -35,7 +38,8 @@ public class SlashCommandParseStrategyCatalog {
       FilterCommandParser filterCommandParser, InstalledPluginsPort installedPlugins) {
     this(
         builtInStrategies(filterCommandParser),
-        CommandPluginProviders.slashCommandParseStrategies(List.of(), installedPlugins));
+        CommandPluginProviders.slashCommandParseStrategies(
+            builtInPluginStrategies(), installedPlugins));
   }
 
   public static SlashCommandParseStrategyCatalog fromStrategies(
@@ -71,10 +75,13 @@ public class SlashCommandParseStrategyCatalog {
 
   private static List<BuiltInSlashCommandParseStrategy> builtInStrategies(
       FilterCommandParser filterCommandParser) {
+    return List.of(new AdvancedFeatureSlashCommandParseStrategy(filterCommandParser));
+  }
+
+  private static List<SlashCommandParseStrategy> builtInPluginStrategies() {
     return List.of(
-        new ConnectionLifecycleSlashCommandParseStrategy(),
-        new IdentityMessagingSlashCommandParseStrategy(),
-        new ChannelInteractionSlashCommandParseStrategy(),
-        new AdvancedFeatureSlashCommandParseStrategy(filterCommandParser));
+        new BuiltInConnectionLifecycleSlashCommandParseStrategy(),
+        new BuiltInIdentityMessagingSlashCommandParseStrategy(),
+        new BuiltInChannelInteractionSlashCommandParseStrategy());
   }
 }
