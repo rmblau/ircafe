@@ -26,7 +26,9 @@ final class CommandPluginProviders {
               builtInStrategies,
           InstalledPluginsPort installedPlugins) {
     List<cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy> strategies =
-        nonNullServices(builtInStrategies);
+        applicationClasspathServices(
+            cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy.class,
+            builtInStrategies);
     if (installedPlugins == null) {
       return strategies;
     }
@@ -117,6 +119,15 @@ final class CommandPluginProviders {
             cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor.class, executors);
     return new BackendNamedCommandExecutors(
         dedupeBackendNamedExecutors(loadedExecutors), List.of());
+  }
+
+  private static <T> List<T> applicationClasspathServices(
+      Class<T> serviceType, List<? extends T> builtInServices) {
+    return PluginServiceLoaderSupport.loadInstalledServices(
+        serviceType,
+        nonNullServices(builtInServices),
+        PluginServiceLoaderSupport.defaultApplicationClassLoader(CommandPluginProviders.class),
+        null);
   }
 
   private static <T> List<T> nonNullServices(List<? extends T> services) {
