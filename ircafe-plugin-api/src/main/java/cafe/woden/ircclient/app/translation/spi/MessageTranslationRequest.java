@@ -1,15 +1,12 @@
-package cafe.woden.ircclient.app.translation;
+package cafe.woden.ircclient.app.translation.spi;
 
-import cafe.woden.ircclient.model.TargetRef;
 import java.time.Instant;
 import java.util.Locale;
 import java.util.Objects;
-import org.jmolecules.ddd.annotation.ValueObject;
 
-/** Immutable input for translating one rendered transcript message. */
-@ValueObject
+/** Immutable input for translating one rendered transcript message or outbound draft. */
 public record MessageTranslationRequest(
-    TargetRef target,
+    MessageTranslationTargetView target,
     Instant at,
     String fromNick,
     String messageId,

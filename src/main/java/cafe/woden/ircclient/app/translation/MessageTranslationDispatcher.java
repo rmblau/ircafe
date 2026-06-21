@@ -3,7 +3,9 @@ package cafe.woden.ircclient.app.translation;
 import cafe.woden.ircclient.app.api.MessageTranslation;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationBackendProvider;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationRequest;
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationResult;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationTargetView;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.execution.ExecutorConfig;
@@ -132,7 +134,7 @@ public final class MessageTranslationDispatcher {
 
     MessageTranslationRequest request =
         new MessageTranslationRequest(
-            target,
+            translationTarget(target),
             at,
             fromNick,
             normalizedMessageId,
@@ -257,7 +259,7 @@ public final class MessageTranslationDispatcher {
                     if (ui != null) {
                       boolean applied =
                           ui.applyMessageTranslation(
-                              request.target(),
+                              targetRef(request),
                               request.at(),
                               toMessageTranslation(backend, request, result));
                       if (!applied) {
@@ -339,6 +341,15 @@ public final class MessageTranslationDispatcher {
 
   private void releaseSlot() {
     inFlight.updateAndGet(current -> Math.max(0, current - 1));
+  }
+
+  private static MessageTranslationTargetView translationTarget(TargetRef target) {
+    return new MessageTranslationTargetView(target.serverId(), target.target());
+  }
+
+  private static TargetRef targetRef(MessageTranslationRequest request) {
+    MessageTranslationTargetView target = request.target();
+    return new TargetRef(target.serverId(), target.target());
   }
 
   private static boolean shouldTranslateBetween(String sourceLanguage, String targetLanguage) {

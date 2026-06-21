@@ -1,7 +1,9 @@
 package cafe.woden.ircclient.app.translation;
 
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationBackendProvider;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationRequest;
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationResult;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationTargetView;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.execution.ExecutorConfig;
 import cafe.woden.ircclient.model.TargetRef;
@@ -74,7 +76,7 @@ public class OutboundMessageTranslationService {
 
     MessageTranslationRequest request =
         new MessageTranslationRequest(
-            target,
+            translationTarget(target),
             Instant.now(),
             "",
             "outbound-" + System.nanoTime(),
@@ -113,6 +115,10 @@ public class OutboundMessageTranslationService {
 
   private static String normalizeLanguage(String value) {
     return Objects.toString(value, "").trim().toLowerCase(java.util.Locale.ROOT);
+  }
+
+  private static MessageTranslationTargetView translationTarget(TargetRef target) {
+    return new MessageTranslationTargetView(target.serverId(), target.target());
   }
 
   private static IllegalStateException nullStageException() {

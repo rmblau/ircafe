@@ -1,6 +1,5 @@
 package cafe.woden.ircclient.app.translation.spi;
 
-import cafe.woden.ircclient.app.translation.MessageTranslationRequest;
 import java.util.concurrent.CompletionStage;
 
 /**
