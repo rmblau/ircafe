@@ -52,7 +52,7 @@ class OutboundUploadCommandServiceTest {
       new MatrixOutboundCommandSupport();
   private final BackendUploadCommandRegistry backendUploadCommandRegistry =
       cafe.woden.ircclient.app.outbound.TestBackendSupport.backendUploadCommandRegistry(
-          List.of(new MatrixUploadCommandTranslationHandler(matrixCommandSupport)));
+          List.of(new MatrixUploadCommandTranslationHandler()));
   private final MatrixOutboundCommandService matrixOutboundCommandService =
       new MatrixOutboundCommandService(
           ui, outboundBackendCapabilityPolicy, matrixCommandSupport, backendUploadCommandRegistry);
