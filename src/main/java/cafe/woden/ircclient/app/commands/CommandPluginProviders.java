@@ -43,7 +43,9 @@ final class CommandPluginProviders {
               builtInContributors,
           InstalledPluginsPort installedPlugins) {
     List<cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor> contributors =
-        nonNullServices(builtInContributors);
+        applicationClasspathServices(
+            cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor.class,
+            builtInContributors);
     if (installedPlugins == null) {
       return contributors;
     }

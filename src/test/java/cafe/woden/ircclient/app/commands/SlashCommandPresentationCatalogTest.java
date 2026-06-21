@@ -87,7 +87,9 @@ class SlashCommandPresentationCatalogTest {
     List<String> commands =
         catalog.autocompleteCommands().stream().map(SlashCommandDescriptor::command).toList();
 
-    assertEquals(List.of("/built-in", "/plugin-help"), commands);
+    assertTrue(commands.contains("/built-in"));
+    assertTrue(commands.contains("/join"));
+    assertTrue(commands.contains("/plugin-help"));
   }
 
   @Test
@@ -241,6 +243,19 @@ class SlashCommandPresentationCatalogTest {
     assertTrue(installedPlugins.pluginProblems().isEmpty());
     List<String> commands =
         catalog.autocompleteCommands().stream().map(SlashCommandDescriptor::command).toList();
+    assertTrue(commands.contains("/join"));
+    assertTrue(commands.contains("/raw"));
+  }
+
+  @Test
+  void loadsCorePresentationContributorThroughClasspathServiceLoaderWithoutInstalledPlugins() {
+    SlashCommandPresentationCatalog catalog =
+        new SlashCommandPresentationCatalog(
+            List.of(), BackendNamedCommandCatalog.empty(), (InstalledPluginsPort) null);
+
+    List<String> commands =
+        catalog.autocompleteCommands().stream().map(SlashCommandDescriptor::command).toList();
+
     assertTrue(commands.contains("/join"));
     assertTrue(commands.contains("/raw"));
   }
