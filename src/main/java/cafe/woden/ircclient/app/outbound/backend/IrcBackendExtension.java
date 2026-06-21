@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.app.outbound.backend;
 
-import cafe.woden.ircclient.app.api.BackendEditorProfileSpec;
 import cafe.woden.ircclient.app.api.BuiltInBackendEditorProfiles;
+import cafe.woden.ircclient.app.outbound.backend.spi.BackendEditorProfile;
 import cafe.woden.ircclient.app.outbound.backend.spi.BackendExtension;
 import cafe.woden.ircclient.app.outbound.backend.spi.OutboundBackendFeatureAdapter;
 import cafe.woden.ircclient.app.outbound.mutation.MessageMutationOutboundCommands;
@@ -48,7 +48,7 @@ public final class IrcBackendExtension implements BackendExtension {
   }
 
   @Override
-  public BackendEditorProfileSpec editorProfile() {
-    return BuiltInBackendEditorProfiles.irc();
+  public BackendEditorProfile editorProfile() {
+    return BackendEditorProfileAdapters.toPluginProfile(BuiltInBackendEditorProfiles.irc());
   }
 }

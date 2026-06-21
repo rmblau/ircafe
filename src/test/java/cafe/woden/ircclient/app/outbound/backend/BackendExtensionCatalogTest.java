@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import cafe.woden.ircclient.app.api.BackendEditorProfileSpec;
+import cafe.woden.ircclient.app.outbound.backend.spi.BackendEditorProfile;
 import cafe.woden.ircclient.app.outbound.backend.spi.BackendExtension;
 import cafe.woden.ircclient.app.outbound.backend.spi.OutboundBackendFeatureAdapter;
 import cafe.woden.ircclient.config.IrcProperties;
@@ -229,8 +229,8 @@ class BackendExtensionCatalogTest {
     }
 
     @Override
-    public BackendEditorProfileSpec editorProfile() {
-      return new BackendEditorProfileSpec(
+    public BackendEditorProfile editorProfile() {
+      return new BackendEditorProfile(
           "plugin-backend",
           "Plugin Backend",
           7000,

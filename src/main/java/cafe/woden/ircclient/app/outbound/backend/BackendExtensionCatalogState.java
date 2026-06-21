@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.app.outbound.backend;
 
 import cafe.woden.ircclient.app.api.BackendEditorProfileSpec;
+import cafe.woden.ircclient.app.outbound.backend.spi.BackendEditorProfile;
 import cafe.woden.ircclient.app.outbound.backend.spi.BackendExtension;
 import cafe.woden.ircclient.app.outbound.backend.spi.OutboundBackendFeatureAdapter;
 import cafe.woden.ircclient.app.outbound.mutation.MessageMutationOutboundCommands;
@@ -122,8 +123,10 @@ final class BackendExtensionCatalogState {
   List<BackendEditorProfileSpec> availableBackendEditorProfiles() {
     ArrayList<BackendEditorProfileSpec> profiles = new ArrayList<>(extensionsByBackendId.size());
     for (BackendExtension extension : extensionsByBackendId.values()) {
-      if (extension == null || extension.editorProfile() == null) continue;
-      profiles.add(extension.editorProfile());
+      if (extension == null) continue;
+      BackendEditorProfile editorProfile = extension.editorProfile();
+      if (editorProfile == null) continue;
+      profiles.add(BackendEditorProfileAdapters.toAppProfile(editorProfile));
     }
     return List.copyOf(profiles);
   }
@@ -132,10 +135,13 @@ final class BackendExtensionCatalogState {
     String normalized = normalizeBackendId(backendId);
     if (normalized.isEmpty()) return "";
     BackendExtension extension = extensionsByBackendId.get(normalized);
-    if (extension != null && extension.editorProfile() != null) {
-      String displayName = Objects.toString(extension.editorProfile().displayName(), "").trim();
-      if (!displayName.isEmpty()) {
-        return displayName;
+    if (extension != null) {
+      BackendEditorProfile editorProfile = extension.editorProfile();
+      if (editorProfile != null) {
+        String displayName = Objects.toString(editorProfile.displayName(), "").trim();
+        if (!displayName.isEmpty()) {
+          return displayName;
+        }
       }
     }
     return BACKEND_DESCRIPTORS
@@ -223,7 +229,7 @@ final class BackendExtensionCatalogState {
 
   private static void validateContributionBackend(
       String backendId,
-      BackendEditorProfileSpec editorProfile,
+      BackendEditorProfile editorProfile,
       String contributionType,
       BackendExtension extension) {
     if (editorProfile == null) return;
