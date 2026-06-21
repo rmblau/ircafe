@@ -53,9 +53,7 @@ final class BackendExtensionCatalogState {
     InstalledPluginsPort pluginServices =
         Objects.requireNonNull(installedPluginsPort, "installedPluginsPort");
     return new BackendExtensionCatalogState(
-        pluginServices.loadInstalledServices(
-            BackendExtension.class,
-            List.copyOf(Objects.requireNonNullElse(builtInExtensions, List.of()))),
+        BackendExtensionPluginProviders.backendExtensions(builtInExtensions, pluginServices),
         List.of());
   }
 
