@@ -354,9 +354,6 @@ class JmoleculesIncrementalAdoptionTest {
     assertAnnotated(UserCommandAliasesPort.class, ApplicationLayer.class);
     assertAnnotated(UserCommandAliasesBus.class, ApplicationLayer.class);
     assertAnnotatedByName(
-        "cafe.woden.ircclient.app.commands.QuasselBackendNamedCommandHandler",
-        ApplicationLayer.class);
-    assertAnnotatedByName(
         "cafe.woden.ircclient.app.commands.QuasselBackendNamedCommandExecutor",
         ApplicationLayer.class);
     assertAnnotatedByName(
@@ -538,9 +535,6 @@ class JmoleculesIncrementalAdoptionTest {
         ApplicationLayer.class);
     assertAnnotatedByName(
         "cafe.woden.ircclient.app.outbound.upload.OutboundUploadCommandService",
-        ApplicationLayer.class);
-    assertAnnotatedByName(
-        "cafe.woden.ircclient.app.commands.QuasselBackendNamedCommandHandler",
         ApplicationLayer.class);
     assertAnnotatedByName(
         "cafe.woden.ircclient.app.outbound.backend.QuasselMessageMutationOutboundCommands",

@@ -1,21 +1,18 @@
-package cafe.woden.ircclient.app.commands;
+package cafe.woden.ircclient.app.commands.builtins;
 
+import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
 import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandParseResult;
 import cafe.woden.ircclient.app.commands.spi.SlashCommandDescriptor;
 import com.google.auto.service.AutoService;
 import java.util.List;
 import java.util.Set;
-import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
-import org.jmolecules.architecture.layered.ApplicationLayer;
-import org.springframework.stereotype.Component;
 
-/** Handles Quassel backend command parsing and startup-safe presentation metadata. */
-@Component
-@SecondaryAdapter
-@ApplicationLayer
-@AutoService(cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler.class)
-public final class QuasselBackendNamedCommandHandler
-    implements cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler {
+/** Built-in Quassel backend command parsing and startup-safe presentation metadata. */
+@AutoService(BackendNamedCommandHandler.class)
+public final class BuiltInQuasselBackendNamedCommandHandler implements BackendNamedCommandHandler {
+
+  private static final String QUASSEL_SETUP = "quasselsetup";
+  private static final String QUASSEL_NETWORK = "quasselnet";
 
   @Override
   public Set<String> supportedCommandNames() {
@@ -28,12 +25,10 @@ public final class QuasselBackendNamedCommandHandler
     return switch (matchedCommandName) {
       case "quasselsetup", "qsetup" ->
           new BackendNamedCommandParseResult(
-              BackendNamedCommandNames.QUASSEL_SETUP,
-              BackendNamedCommandParser.argAfter(line, commandToken));
+              QUASSEL_SETUP, BuiltInSlashCommandParsingSupport.argAfter(line, commandToken));
       case "quasselnet", "qnet" ->
           new BackendNamedCommandParseResult(
-              BackendNamedCommandNames.QUASSEL_NETWORK,
-              BackendNamedCommandParser.argAfter(line, commandToken));
+              QUASSEL_NETWORK, BuiltInSlashCommandParsingSupport.argAfter(line, commandToken));
       default -> null;
     };
   }

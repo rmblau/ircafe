@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cafe.woden.ircclient.app.commands.builtins.BuiltInQuasselBackendNamedCommandHandler;
 import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
 import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandParseResult;
 import java.util.List;
@@ -14,7 +15,7 @@ import org.junit.jupiter.api.Test;
 class BackendNamedCommandParserTest {
 
   private final BackendNamedCommandParser parser =
-      new BackendNamedCommandParser(List.of(new QuasselBackendNamedCommandHandler()));
+      new BackendNamedCommandParser(List.of(new BuiltInQuasselBackendNamedCommandHandler()));
 
   @Test
   void parsesQuasselSetupCommands() {

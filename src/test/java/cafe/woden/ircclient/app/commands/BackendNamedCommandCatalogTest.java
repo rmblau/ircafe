@@ -46,6 +46,21 @@ class BackendNamedCommandCatalogTest {
   }
 
   @Test
+  void loadsBuiltInBackendNamedHandlersFromApplicationClasspath() {
+    BackendNamedCommandCatalog catalog =
+        BackendNamedCommandCatalog.installed(
+            (cafe.woden.ircclient.config.api.RuntimeConfigPathPort) null,
+            BackendNamedCommandCatalogTest.class.getClassLoader());
+
+    ParsedInput parsed = catalog.parse("/qnet list");
+
+    assertTrue(parsed instanceof ParsedInput.BackendNamed);
+    assertEquals(
+        BackendNamedCommandNames.QUASSEL_NETWORK, ((ParsedInput.BackendNamed) parsed).command());
+    assertEquals("list", ((ParsedInput.BackendNamed) parsed).args());
+  }
+
+  @Test
   void loadsServiceProvidersFromPluginDirectoryJar() throws Exception {
     Path pluginDir = Files.createDirectories(tempDir.resolve("plugins"));
     writePluginJar(pluginDir.resolve("backendping.jar"));

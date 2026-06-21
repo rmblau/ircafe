@@ -2,6 +2,7 @@ package cafe.woden.ircclient.app.commands;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import cafe.woden.ircclient.app.commands.builtins.BuiltInQuasselBackendNamedCommandHandler;
 import cafe.woden.ircclient.app.commands.spi.SlashCommandParseResult;
 import cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
@@ -27,7 +28,7 @@ class CommandParserTest {
   private final CommandParser parser =
       new CommandParser(
           new FilterCommandParser(),
-          new BackendNamedCommandParser(List.of(new QuasselBackendNamedCommandHandler())));
+          new BackendNamedCommandParser(List.of(new BuiltInQuasselBackendNamedCommandHandler())));
 
   @Test
   void includesSlashParseStrategiesLoadedThroughInstalledPluginPort() {

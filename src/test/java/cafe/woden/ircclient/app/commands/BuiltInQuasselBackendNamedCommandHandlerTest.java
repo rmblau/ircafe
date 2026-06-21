@@ -3,13 +3,15 @@ package cafe.woden.ircclient.app.commands;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cafe.woden.ircclient.app.commands.builtins.BuiltInQuasselBackendNamedCommandHandler;
 import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandParseResult;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
-class QuasselBackendNamedCommandHandlerTest {
+class BuiltInQuasselBackendNamedCommandHandlerTest {
 
-  private final QuasselBackendNamedCommandHandler handler = new QuasselBackendNamedCommandHandler();
+  private final BuiltInQuasselBackendNamedCommandHandler handler =
+      new BuiltInQuasselBackendNamedCommandHandler();
 
   @Test
   void exposesSupportedCommandNames() {
