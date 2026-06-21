@@ -1,7 +1,6 @@
 package cafe.woden.ircclient.app.commands;
 
-final class IdentityMessagingSlashCommandParseStrategy
-    implements cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy {
+final class IdentityMessagingSlashCommandParseStrategy implements BuiltInSlashCommandParseStrategy {
 
   @Override
   public ParsedInput tryParse(String line) {

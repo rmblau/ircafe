@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.app.commands;
 
+import cafe.woden.ircclient.app.commands.spi.SlashCommandParseResult;
 import cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import java.util.List;
@@ -14,7 +15,8 @@ import org.springframework.stereotype.Component;
 @ApplicationLayer
 public class SlashCommandParseStrategyCatalog {
 
-  private final List<SlashCommandParseStrategy> strategies;
+  private final List<BuiltInSlashCommandParseStrategy> builtInStrategies;
+  private final List<SlashCommandParseStrategy> pluginStrategies;
 
   @Autowired
   public SlashCommandParseStrategyCatalog(
@@ -32,22 +34,34 @@ public class SlashCommandParseStrategyCatalog {
   public SlashCommandParseStrategyCatalog(
       FilterCommandParser filterCommandParser, InstalledPluginsPort installedPlugins) {
     this(
-        CommandPluginProviders.slashCommandParseStrategies(
-            builtInStrategies(filterCommandParser), installedPlugins));
+        builtInStrategies(filterCommandParser),
+        CommandPluginProviders.slashCommandParseStrategies(List.of(), installedPlugins));
   }
 
   public static SlashCommandParseStrategyCatalog fromStrategies(
       List<? extends SlashCommandParseStrategy> strategies) {
-    return new SlashCommandParseStrategyCatalog(strategies);
+    return new SlashCommandParseStrategyCatalog(List.of(), strategies);
   }
 
-  private SlashCommandParseStrategyCatalog(List<? extends SlashCommandParseStrategy> strategies) {
-    this.strategies = List.copyOf(Objects.requireNonNull(strategies, "strategies"));
+  private SlashCommandParseStrategyCatalog(
+      List<? extends BuiltInSlashCommandParseStrategy> builtInStrategies,
+      List<? extends SlashCommandParseStrategy> pluginStrategies) {
+    this.builtInStrategies =
+        List.copyOf(Objects.requireNonNull(builtInStrategies, "builtInStrategies"));
+    this.pluginStrategies =
+        List.copyOf(Objects.requireNonNull(pluginStrategies, "pluginStrategies"));
   }
 
   public ParsedInput tryParse(String line) {
-    for (SlashCommandParseStrategy strategy : strategies) {
+    for (BuiltInSlashCommandParseStrategy strategy : builtInStrategies) {
       ParsedInput parsed = strategy.tryParse(line);
+      if (parsed != null) {
+        return parsed;
+      }
+    }
+    for (SlashCommandParseStrategy strategy : pluginStrategies) {
+      SlashCommandParseResult result = strategy.tryParse(line);
+      ParsedInput parsed = SlashCommandParseResultAdapters.toParsedInput(result);
       if (parsed != null) {
         return parsed;
       }
@@ -55,7 +69,7 @@ public class SlashCommandParseStrategyCatalog {
     return null;
   }
 
-  private static List<SlashCommandParseStrategy> builtInStrategies(
+  private static List<BuiltInSlashCommandParseStrategy> builtInStrategies(
       FilterCommandParser filterCommandParser) {
     return List.of(
         new ConnectionLifecycleSlashCommandParseStrategy(),

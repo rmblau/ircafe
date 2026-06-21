@@ -20,7 +20,6 @@ class PluginApiDependencyAuditTest {
 
   private static final Set<String> APPROVED_PLUGIN_API_BLOCKERS =
       Set.of(
-          "src/main/java/cafe/woden/ircclient/app/commands/spi/SlashCommandParseStrategy.java -> cafe.woden.ircclient.app.commands.ParsedInput",
           "src/main/java/cafe/woden/ircclient/app/outbound/spi/LocalFilterCommandHandler.java -> cafe.woden.ircclient.app.commands.FilterCommand",
           "src/main/java/cafe/woden/ircclient/irc/backend/spi/IrcBackendClientService.java -> cafe.woden.ircclient.irc.IrcClientService",
           "src/main/java/cafe/woden/ircclient/irc/backend/spi/IrcBackendClientService.java -> cafe.woden.ircclient.irc.backend.IrcBackendAvailabilityPort",

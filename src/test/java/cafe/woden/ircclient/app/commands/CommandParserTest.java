@@ -2,6 +2,7 @@ package cafe.woden.ircclient.app.commands;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import cafe.woden.ircclient.app.commands.spi.SlashCommandParseResult;
 import cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
@@ -525,20 +526,20 @@ class CommandParserTest {
     return """
         package plugin.commands;
 
-        import cafe.woden.ircclient.app.commands.ParsedInput;
+        import cafe.woden.ircclient.app.commands.spi.SlashCommandParseResult;
         import cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy;
 
         public final class PluginQuoteSlashCommandParseStrategy
             implements SlashCommandParseStrategy {
           @Override
-          public ParsedInput tryParse(String line) {
+          public SlashCommandParseResult tryParse(String line) {
             if (line == null || !line.startsWith("/pluginquote")) {
               return null;
             }
             String rest = line.length() > "/pluginquote".length()
                 ? line.substring("/pluginquote".length()).trim()
                 : "";
-            return new ParsedInput.Quote(rest);
+            return SlashCommandParseResult.quote(rest);
           }
         }
         """;
@@ -548,20 +549,20 @@ class CommandParserTest {
     return """
         package plugin.commands;
 
-        import cafe.woden.ircclient.app.commands.ParsedInput;
+        import cafe.woden.ircclient.app.commands.spi.SlashCommandParseResult;
         import cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy;
 
         public final class PluginSpiQuoteSlashCommandParseStrategy
             implements SlashCommandParseStrategy {
           @Override
-          public ParsedInput tryParse(String line) {
+          public SlashCommandParseResult tryParse(String line) {
             if (line == null || !line.startsWith("/pluginquote")) {
               return null;
             }
             String rest = line.length() > "/pluginquote".length()
                 ? line.substring("/pluginquote".length()).trim()
                 : "";
-            return new ParsedInput.Quote(rest);
+            return SlashCommandParseResult.quote(rest);
           }
         }
         """;
@@ -589,7 +590,7 @@ class CommandParserTest {
   private static final class PluginQuoteSlashCommandParseStrategy
       implements SlashCommandParseStrategy {
     @Override
-    public ParsedInput tryParse(String line) {
+    public SlashCommandParseResult tryParse(String line) {
       if (line == null || !line.startsWith("/pluginquote")) {
         return null;
       }
@@ -597,7 +598,7 @@ class CommandParserTest {
           line.length() > "/pluginquote".length()
               ? line.substring("/pluginquote".length()).trim()
               : "";
-      return new ParsedInput.Quote(rest);
+      return SlashCommandParseResult.quote(rest);
     }
   }
 }

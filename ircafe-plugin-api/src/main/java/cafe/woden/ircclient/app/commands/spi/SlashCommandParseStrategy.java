@@ -1,7 +1,5 @@
 package cafe.woden.ircclient.app.commands.spi;
 
-import cafe.woden.ircclient.app.commands.ParsedInput;
-
 /**
  * ServiceLoader-backed contribution point for parsing a subset of slash commands.
  *
@@ -10,5 +8,5 @@ import cafe.woden.ircclient.app.commands.ParsedInput;
  */
 public interface SlashCommandParseStrategy {
 
-  ParsedInput tryParse(String line);
+  SlashCommandParseResult tryParse(String line);
 }
