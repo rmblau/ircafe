@@ -124,8 +124,8 @@ import cafe.woden.ircclient.irc.adapter.IrcShutdownPortAdapter;
 import cafe.woden.ircclient.irc.adapter.IrcTargetMembershipPortAdapter;
 import cafe.woden.ircclient.irc.adapter.IrcTypingPortAdapter;
 import cafe.woden.ircclient.irc.backend.BackendRoutingIrcClientService;
+import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
 import cafe.woden.ircclient.irc.backend.IrcHeartbeatMaintenanceService;
-import cafe.woden.ircclient.irc.backend.spi.IrcBackendClientService;
 import cafe.woden.ircclient.irc.enrichment.UserInfoEnrichmentPlanner;
 import cafe.woden.ircclient.irc.enrichment.UserInfoEnrichmentService;
 import cafe.woden.ircclient.irc.ircv3.Ircv3StsPolicyService;
@@ -714,8 +714,8 @@ class JmoleculesIncrementalAdoptionTest {
         "IrcEchoCapabilityPort should remain an interface");
     assertTrue(IrcLagProbePort.class.isInterface(), "IrcLagProbePort should remain an interface");
     assertTrue(
-        IrcBackendClientService.class.isInterface(),
-        "IrcBackendClientService should remain an interface");
+        IrcBackendRuntimeClientService.class.isInterface(),
+        "IrcBackendRuntimeClientService should remain an interface");
     assertTrue(
         IrcMediatorInteractionPort.class.isInterface(),
         "IrcMediatorInteractionPort should remain an interface");

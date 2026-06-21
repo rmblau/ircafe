@@ -16,7 +16,7 @@ import cafe.woden.ircclient.config.api.BackendMetadataPort;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.irc.backend.BackendRoutingIrcClientService;
-import cafe.woden.ircclient.irc.backend.spi.IrcBackendClientService;
+import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
 import cafe.woden.ircclient.irc.quassel.control.QuasselCoreControlPort;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.processors.PublishProcessor;
@@ -34,8 +34,8 @@ class BackendRoutingIrcClientServiceTest {
   @Test
   void routesCallsByConfiguredBackend() {
     ServerCatalog serverCatalog = mock(ServerCatalog.class);
-    IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
-    IrcBackendClientService quasselBackend = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService ircBackend = mock(IrcBackendRuntimeClientService.class);
+    IrcBackendRuntimeClientService quasselBackend = mock(IrcBackendRuntimeClientService.class);
 
     when(ircBackend.backendId()).thenReturn("irc");
     when(quasselBackend.backendId()).thenReturn("quassel-core");
@@ -64,8 +64,8 @@ class BackendRoutingIrcClientServiceTest {
   @Test
   void routesCallsByConfiguredMatrixBackend() {
     ServerCatalog serverCatalog = mock(ServerCatalog.class);
-    IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
-    IrcBackendClientService matrixBackend = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService ircBackend = mock(IrcBackendRuntimeClientService.class);
+    IrcBackendRuntimeClientService matrixBackend = mock(IrcBackendRuntimeClientService.class);
 
     when(ircBackend.backendId()).thenReturn("irc");
     when(matrixBackend.backendId()).thenReturn("matrix");
@@ -90,8 +90,8 @@ class BackendRoutingIrcClientServiceTest {
   @Test
   void routesCallsByConfiguredCustomBackendId() {
     ServerCatalog serverCatalog = mock(ServerCatalog.class);
-    IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
-    IrcBackendClientService pluginBackend = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService ircBackend = mock(IrcBackendRuntimeClientService.class);
+    IrcBackendRuntimeClientService pluginBackend = mock(IrcBackendRuntimeClientService.class);
 
     when(ircBackend.backendId()).thenReturn("irc");
     when(pluginBackend.backendId()).thenReturn("plugin-backend");
@@ -117,8 +117,8 @@ class BackendRoutingIrcClientServiceTest {
   @Test
   void loadsBackendServicesFromInstalledPluginsPort() {
     ServerCatalog serverCatalog = mock(ServerCatalog.class);
-    IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
-    IrcBackendClientService pluginBackend = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService ircBackend = mock(IrcBackendRuntimeClientService.class);
+    IrcBackendRuntimeClientService pluginBackend = mock(IrcBackendRuntimeClientService.class);
     ObjectProvider<BackendMetadataPort> backendMetadataProvider = mock(ObjectProvider.class);
 
     when(backendMetadataProvider.getIfAvailable()).thenReturn(BackendMetadataPort.builtInsOnly());
@@ -135,7 +135,8 @@ class BackendRoutingIrcClientServiceTest {
         new InstalledPluginsPort() {
           @Override
           public <T> List<T> loadInstalledServices(Class<T> serviceType, List<T> builtInServices) {
-            if (!IrcBackendClientService.class.equals(serviceType)) {
+            if (!cafe.woden.ircclient.irc.backend.spi.IrcBackendClientService.class.equals(
+                serviceType)) {
               return InstalledPluginsPort.super.loadInstalledServices(serviceType, builtInServices);
             }
             ArrayList<T> services = new ArrayList<>(builtInServices);
@@ -159,8 +160,8 @@ class BackendRoutingIrcClientServiceTest {
   @Test
   void reportsMatrixBackendServerFromConfiguration() {
     ServerCatalog serverCatalog = mock(ServerCatalog.class);
-    IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
-    IrcBackendClientService matrixBackend = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService ircBackend = mock(IrcBackendRuntimeClientService.class);
+    IrcBackendRuntimeClientService matrixBackend = mock(IrcBackendRuntimeClientService.class);
 
     when(ircBackend.backendId()).thenReturn("irc");
     when(matrixBackend.backendId()).thenReturn("matrix");
@@ -184,8 +185,8 @@ class BackendRoutingIrcClientServiceTest {
   @Test
   void routesMatrixRoomMessagesToChannelPath() {
     ServerCatalog serverCatalog = mock(ServerCatalog.class);
-    IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
-    IrcBackendClientService matrixBackend = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService ircBackend = mock(IrcBackendRuntimeClientService.class);
+    IrcBackendRuntimeClientService matrixBackend = mock(IrcBackendRuntimeClientService.class);
 
     when(ircBackend.backendId()).thenReturn("irc");
     when(matrixBackend.backendId()).thenReturn("matrix");
@@ -212,8 +213,8 @@ class BackendRoutingIrcClientServiceTest {
   @Test
   void routesRegularIrcOperationsToQuasselBackendWhenServerUsesQuassel() {
     ServerCatalog serverCatalog = mock(ServerCatalog.class);
-    IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
-    IrcBackendClientService quasselBackend = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService ircBackend = mock(IrcBackendRuntimeClientService.class);
+    IrcBackendRuntimeClientService quasselBackend = mock(IrcBackendRuntimeClientService.class);
 
     when(ircBackend.backendId()).thenReturn("irc");
     when(quasselBackend.backendId()).thenReturn("quassel-core");
@@ -243,8 +244,8 @@ class BackendRoutingIrcClientServiceTest {
   @Test
   void fallsBackToIrcBackendWhenServerIsUnknown() {
     ServerCatalog serverCatalog = mock(ServerCatalog.class);
-    IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
-    IrcBackendClientService quasselBackend = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService ircBackend = mock(IrcBackendRuntimeClientService.class);
+    IrcBackendRuntimeClientService quasselBackend = mock(IrcBackendRuntimeClientService.class);
 
     when(ircBackend.backendId()).thenReturn("irc");
     when(quasselBackend.backendId()).thenReturn("quassel-core");
@@ -267,8 +268,8 @@ class BackendRoutingIrcClientServiceTest {
   @Test
   void delegatesLagProbeStrategyToConfiguredBackend() {
     ServerCatalog serverCatalog = mock(ServerCatalog.class);
-    IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
-    IrcBackendClientService quasselBackend = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService ircBackend = mock(IrcBackendRuntimeClientService.class);
+    IrcBackendRuntimeClientService quasselBackend = mock(IrcBackendRuntimeClientService.class);
 
     when(ircBackend.backendId()).thenReturn("irc");
     when(quasselBackend.backendId()).thenReturn("quassel-core");
@@ -302,7 +303,7 @@ class BackendRoutingIrcClientServiceTest {
   @Test
   void throwsWhenConfiguredBackendIsMissing() {
     ServerCatalog serverCatalog = mock(ServerCatalog.class);
-    IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService ircBackend = mock(IrcBackendRuntimeClientService.class);
 
     when(ircBackend.backendId()).thenReturn("irc");
     when(ircBackend.events())
@@ -325,7 +326,7 @@ class BackendRoutingIrcClientServiceTest {
   void throwsWhenConfiguredPluginBackendIsMissingUsingPluginDisplayName() {
     ServerCatalog serverCatalog = mock(ServerCatalog.class);
     BackendMetadataPort backendMetadata = mock(BackendMetadataPort.class);
-    IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService ircBackend = mock(IrcBackendRuntimeClientService.class);
 
     when(ircBackend.backendId()).thenReturn("irc");
     when(ircBackend.events())
@@ -346,8 +347,8 @@ class BackendRoutingIrcClientServiceTest {
   @Test
   void resolvesBackendAvailabilityReasonFromConfiguredBackend() {
     ServerCatalog serverCatalog = mock(ServerCatalog.class);
-    IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
-    IrcBackendClientService quasselBackend = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService ircBackend = mock(IrcBackendRuntimeClientService.class);
+    IrcBackendRuntimeClientService quasselBackend = mock(IrcBackendRuntimeClientService.class);
 
     when(ircBackend.backendId()).thenReturn("irc");
     when(quasselBackend.backendId()).thenReturn("quassel-core");
@@ -372,8 +373,8 @@ class BackendRoutingIrcClientServiceTest {
   @Test
   void routesQuasselSetupOperationsToConfiguredBackend() {
     ServerCatalog serverCatalog = mock(ServerCatalog.class);
-    IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
-    IrcBackendClientService quasselBackend = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService ircBackend = mock(IrcBackendRuntimeClientService.class);
+    IrcBackendRuntimeClientService quasselBackend = mock(IrcBackendRuntimeClientService.class);
     QuasselCoreControlPort.QuasselCoreSetupPrompt prompt =
         new QuasselCoreControlPort.QuasselCoreSetupPrompt(
             "quassel", "setup required", List.of("SQLite"), List.of("Database"), Map.of());
@@ -441,8 +442,8 @@ class BackendRoutingIrcClientServiceTest {
   @Test
   void mergesEventsFromAllBackends() {
     ServerCatalog serverCatalog = mock(ServerCatalog.class);
-    IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
-    IrcBackendClientService quasselBackend = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService ircBackend = mock(IrcBackendRuntimeClientService.class);
+    IrcBackendRuntimeClientService quasselBackend = mock(IrcBackendRuntimeClientService.class);
     PublishProcessor<ServerIrcEvent> ircEvents = PublishProcessor.create();
     PublishProcessor<ServerIrcEvent> quasselEvents = PublishProcessor.create();
 
@@ -466,8 +467,8 @@ class BackendRoutingIrcClientServiceTest {
   @Test
   void forwardsHeartbeatRescheduleToAllBackends() {
     ServerCatalog serverCatalog = mock(ServerCatalog.class);
-    IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
-    IrcBackendClientService quasselBackend = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService ircBackend = mock(IrcBackendRuntimeClientService.class);
+    IrcBackendRuntimeClientService quasselBackend = mock(IrcBackendRuntimeClientService.class);
 
     when(ircBackend.backendId()).thenReturn("irc");
     when(quasselBackend.backendId()).thenReturn("quassel-core");
@@ -489,8 +490,8 @@ class BackendRoutingIrcClientServiceTest {
   @Test
   void rejectsDuplicateBackendRegistrations() {
     ServerCatalog serverCatalog = mock(ServerCatalog.class);
-    IrcBackendClientService one = mock(IrcBackendClientService.class);
-    IrcBackendClientService two = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService one = mock(IrcBackendRuntimeClientService.class);
+    IrcBackendRuntimeClientService two = mock(IrcBackendRuntimeClientService.class);
 
     when(one.backendId()).thenReturn("irc");
     when(two.backendId()).thenReturn("irc");
@@ -507,8 +508,8 @@ class BackendRoutingIrcClientServiceTest {
   @Test
   void disconnectUsesActiveBackendOwnershipWhenConfigurationBackendChanges() {
     ServerCatalog serverCatalog = mock(ServerCatalog.class);
-    IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
-    IrcBackendClientService quasselBackend = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService ircBackend = mock(IrcBackendRuntimeClientService.class);
+    IrcBackendRuntimeClientService quasselBackend = mock(IrcBackendRuntimeClientService.class);
     PublishProcessor<ServerIrcEvent> ircEvents = PublishProcessor.create();
     PublishProcessor<ServerIrcEvent> quasselEvents = PublishProcessor.create();
 

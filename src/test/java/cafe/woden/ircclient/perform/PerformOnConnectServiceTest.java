@@ -20,7 +20,7 @@ import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.irc.IrcEvent;
 import cafe.woden.ircclient.irc.ServerIrcEvent;
-import cafe.woden.ircclient.irc.backend.spi.IrcBackendClientService;
+import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
 import cafe.woden.ircclient.model.TargetRef;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.plugins.RxJavaPlugins;
@@ -38,7 +38,7 @@ import org.mockito.Mockito;
 
 class PerformOnConnectServiceTest {
 
-  private IrcBackendClientService irc;
+  private IrcBackendRuntimeClientService irc;
   private ServerCatalog serverCatalog;
   private CommandParser commandParser;
   private UiPort ui;
@@ -47,7 +47,7 @@ class PerformOnConnectServiceTest {
 
   @BeforeEach
   void setUp() {
-    irc = Mockito.mock(IrcBackendClientService.class);
+    irc = Mockito.mock(IrcBackendRuntimeClientService.class);
     serverCatalog = Mockito.mock(ServerCatalog.class);
     commandParser = Mockito.mock(CommandParser.class);
     ui = Mockito.mock(UiPort.class);

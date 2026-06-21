@@ -18,12 +18,7 @@ class PluginApiDependencyAuditTest {
   private static final Pattern IMPORT_PATTERN =
       Pattern.compile("(?m)^\\s*import\\s+(?:static\\s+)?([\\w.]+)\\s*;");
 
-  private static final Set<String> APPROVED_PLUGIN_API_BLOCKERS =
-      Set.of(
-          "src/main/java/cafe/woden/ircclient/irc/backend/spi/IrcBackendClientService.java -> cafe.woden.ircclient.irc.IrcClientService",
-          "src/main/java/cafe/woden/ircclient/irc/backend/spi/IrcBackendClientService.java -> cafe.woden.ircclient.irc.backend.IrcBackendAvailabilityPort",
-          "src/main/java/cafe/woden/ircclient/irc/backend/spi/IrcBackendClientService.java -> cafe.woden.ircclient.irc.playback.IrcBouncerPlaybackPort",
-          "src/main/java/cafe/woden/ircclient/irc/backend/spi/IrcBackendClientService.java -> cafe.woden.ircclient.irc.quassel.control.QuasselCoreControlPort");
+  private static final Set<String> APPROVED_PLUGIN_API_BLOCKERS = Set.of();
 
   @Test
   void spiPluginApiBlockersStayIntentional() throws IOException {

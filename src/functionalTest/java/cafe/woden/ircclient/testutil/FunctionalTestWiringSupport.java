@@ -29,7 +29,7 @@ import cafe.woden.ircclient.ignore.IgnoreStatusService;
 import cafe.woden.ircclient.interceptors.InterceptorStore;
 import cafe.woden.ircclient.irc.IrcClientService;
 import cafe.woden.ircclient.irc.backend.IrcBackendAvailabilityPort;
-import cafe.woden.ircclient.irc.backend.spi.IrcBackendClientService;
+import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionCatalog;
 import cafe.woden.ircclient.irc.port.IrcConnectionLifecyclePort;
 import cafe.woden.ircclient.irc.quassel.control.QuasselCoreControlPort;
@@ -331,7 +331,7 @@ public final class FunctionalTestWiringSupport {
       Constructor<ConnectionCoordinator> ctor =
           ConnectionCoordinator.class.getConstructor(
               IrcConnectionLifecyclePort.class,
-              IrcBackendClientService.class,
+              IrcBackendRuntimeClientService.class,
               UiPort.class,
               ServerRegistry.class,
               ServerCatalog.class,
@@ -380,7 +380,7 @@ public final class FunctionalTestWiringSupport {
 
   public static ConnectionCoordinator newConnectionCoordinator(
       IrcConnectionLifecyclePort lifecycle,
-      IrcBackendClientService backendClient,
+      IrcBackendRuntimeClientService backendClient,
       UiPort ui,
       ServerRegistry serverRegistry,
       ServerCatalog serverCatalog,
@@ -391,7 +391,7 @@ public final class FunctionalTestWiringSupport {
       Constructor<ConnectionCoordinator> ctor =
           ConnectionCoordinator.class.getConstructor(
               IrcConnectionLifecyclePort.class,
-              IrcBackendClientService.class,
+              IrcBackendRuntimeClientService.class,
               UiPort.class,
               ServerRegistry.class,
               ServerCatalog.class,
@@ -530,7 +530,7 @@ public final class FunctionalTestWiringSupport {
     }
   }
 
-  private static IrcBackendClientService compositeBackendClient(
+  private static IrcBackendRuntimeClientService compositeBackendClient(
       IrcBackendAvailabilityPort backendAvailability, QuasselCoreControlPort quasselControl) {
     InvocationHandler handler =
         (proxy, method, args) -> {
@@ -546,10 +546,10 @@ public final class FunctionalTestWiringSupport {
           if (delegated != NOT_HANDLED) return delegated;
           return defaultValue(method.getReturnType());
         };
-    return (IrcBackendClientService)
+    return (IrcBackendRuntimeClientService)
         Proxy.newProxyInstance(
             FunctionalTestWiringSupport.class.getClassLoader(),
-            new Class<?>[] {IrcBackendClientService.class},
+            new Class<?>[] {IrcBackendRuntimeClientService.class},
             handler);
   }
 

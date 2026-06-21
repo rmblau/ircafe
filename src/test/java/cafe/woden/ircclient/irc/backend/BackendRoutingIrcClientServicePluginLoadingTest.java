@@ -13,7 +13,6 @@ import cafe.woden.ircclient.config.api.BackendMetadataPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.irc.ServerIrcEvent;
-import cafe.woden.ircclient.irc.backend.spi.IrcBackendClientService;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Flowable;
@@ -40,7 +39,7 @@ class BackendRoutingIrcClientServicePluginLoadingTest {
 
   @AfterEach
   void tearDown() {
-    PluginProvidedIrcBackendClientService.reset();
+    PluginProvidedIrcBackendRuntimeClientService.reset();
   }
 
   @Test
@@ -48,7 +47,7 @@ class BackendRoutingIrcClientServicePluginLoadingTest {
     Path pluginDir = Files.createDirectories(tempDir.resolve("plugins"));
     writePluginJar(pluginDir.resolve("plugin-backend.jar"));
     ServerCatalog serverCatalog = mock(ServerCatalog.class);
-    IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService ircBackend = mock(IrcBackendRuntimeClientService.class);
     when(ircBackend.backendId()).thenReturn("irc");
     when(ircBackend.events())
         .thenReturn(PublishProcessor.<ServerIrcEvent>create().onBackpressureBuffer());
@@ -66,7 +65,8 @@ class BackendRoutingIrcClientServicePluginLoadingTest {
 
       service.connect("plugin").blockingAwait();
 
-      assertTrue(PluginProvidedIrcBackendClientService.connectedServers().contains("plugin"));
+      assertTrue(
+          PluginProvidedIrcBackendRuntimeClientService.connectedServers().contains("plugin"));
       verify(ircBackend, never()).connect("plugin");
     } finally {
       service.closePluginClassLoaders();
@@ -81,7 +81,7 @@ class BackendRoutingIrcClientServicePluginLoadingTest {
     RuntimeConfigPathPort runtimeConfigPathPort =
         () -> runtimeConfigDirectory.resolve("ircafe.yml");
     ServerCatalog serverCatalog = mock(ServerCatalog.class);
-    IrcBackendClientService ircBackend = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService ircBackend = mock(IrcBackendRuntimeClientService.class);
     when(ircBackend.backendId()).thenReturn("irc");
     when(ircBackend.events())
         .thenReturn(PublishProcessor.<ServerIrcEvent>create().onBackpressureBuffer());
@@ -99,7 +99,8 @@ class BackendRoutingIrcClientServicePluginLoadingTest {
 
       service.connect("plugin").blockingAwait();
 
-      assertTrue(PluginProvidedIrcBackendClientService.connectedServers().contains("plugin"));
+      assertTrue(
+          PluginProvidedIrcBackendRuntimeClientService.connectedServers().contains("plugin"));
       verify(ircBackend, never()).connect("plugin");
     } finally {
       service.closePluginClassLoaders();
@@ -117,9 +118,11 @@ class BackendRoutingIrcClientServicePluginLoadingTest {
     }
     try (JarOutputStream out = new JarOutputStream(Files.newOutputStream(jarPath), manifest)) {
       out.putNextEntry(
-          new JarEntry("META-INF/services/" + IrcBackendClientService.class.getName()));
+          new JarEntry(
+              "META-INF/services/"
+                  + cafe.woden.ircclient.irc.backend.spi.IrcBackendClientService.class.getName()));
       out.write(
-          (PluginProvidedIrcBackendClientService.class.getName() + System.lineSeparator())
+          (PluginProvidedIrcBackendRuntimeClientService.class.getName() + System.lineSeparator())
               .getBytes(StandardCharsets.UTF_8));
       out.closeEntry();
     }
@@ -134,7 +137,7 @@ class BackendRoutingIrcClientServicePluginLoadingTest {
         .build();
   }
 
-  public static final class PluginProvidedIrcBackendClientService
+  public static final class PluginProvidedIrcBackendRuntimeClientService
       extends NoOpBackendClientServiceSupport {
 
     private static final CopyOnWriteArrayList<String> CONNECTED_SERVERS =
@@ -160,7 +163,7 @@ class BackendRoutingIrcClientServicePluginLoadingTest {
     }
   }
 
-  abstract static class NoOpBackendClientServiceSupport implements IrcBackendClientService {
+  abstract static class NoOpBackendClientServiceSupport implements IrcBackendRuntimeClientService {
 
     @Override
     public Flowable<ServerIrcEvent> events() {

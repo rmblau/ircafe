@@ -19,7 +19,7 @@ import cafe.woden.ircclient.irc.adapter.IrcShutdownPortAdapter;
 import cafe.woden.ircclient.irc.adapter.IrcTargetMembershipPortAdapter;
 import cafe.woden.ircclient.irc.adapter.IrcTypingPortAdapter;
 import cafe.woden.ircclient.irc.backend.BackendRoutingIrcClientService;
-import cafe.woden.ircclient.irc.backend.spi.IrcBackendClientService;
+import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
 import cafe.woden.ircclient.irc.port.IrcConnectionLifecyclePort;
 import cafe.woden.ircclient.irc.port.IrcCurrentNickPort;
 import cafe.woden.ircclient.irc.port.IrcMediatorInteractionPort;
@@ -56,13 +56,13 @@ class IrcModuleIntegrationTest {
   @MockitoBean ServerProxyResolver serverProxyResolver;
 
   @TestBean(name = "pircbotxIrcClientService")
-  IrcBackendClientService pircbotxIrcClientService;
+  IrcBackendRuntimeClientService pircbotxIrcClientService;
 
   @TestBean(name = "quasselCoreIrcClientService")
-  IrcBackendClientService quasselCoreIrcClientService;
+  IrcBackendRuntimeClientService quasselCoreIrcClientService;
 
   @TestBean(name = "matrixIrcClientService")
-  IrcBackendClientService matrixIrcClientService;
+  IrcBackendRuntimeClientService matrixIrcClientService;
 
   @TestBean BouncerBackendRegistry bouncerBackendRegistry;
 
@@ -118,17 +118,17 @@ class IrcModuleIntegrationTest {
   }
 
   @SuppressWarnings("unused")
-  static IrcBackendClientService pircbotxIrcClientService() {
+  static IrcBackendRuntimeClientService pircbotxIrcClientService() {
     return backendStub(IrcProperties.Server.Backend.IRC);
   }
 
   @SuppressWarnings("unused")
-  static IrcBackendClientService quasselCoreIrcClientService() {
+  static IrcBackendRuntimeClientService quasselCoreIrcClientService() {
     return backendStub(IrcProperties.Server.Backend.QUASSEL_CORE);
   }
 
   @SuppressWarnings("unused")
-  static IrcBackendClientService matrixIrcClientService() {
+  static IrcBackendRuntimeClientService matrixIrcClientService() {
     return backendStub(IrcProperties.Server.Backend.MATRIX);
   }
 
@@ -158,9 +158,12 @@ class IrcModuleIntegrationTest {
     };
   }
 
-  private static IrcBackendClientService backendStub(IrcProperties.Server.Backend backendType) {
-    IrcBackendClientService backend =
-        mock(IrcBackendClientService.class, backendType.name().toLowerCase() + "-backend-stub");
+  private static IrcBackendRuntimeClientService backendStub(
+      IrcProperties.Server.Backend backendType) {
+    IrcBackendRuntimeClientService backend =
+        mock(
+            IrcBackendRuntimeClientService.class,
+            backendType.name().toLowerCase() + "-backend-stub");
     when(backend.backendId()).thenReturn(backendIdFor(backendType));
     when(backend.events()).thenReturn(Flowable.empty());
     when(backend.quasselCoreNetworkEvents()).thenReturn(Flowable.empty());
@@ -182,7 +185,7 @@ class IrcModuleIntegrationTest {
   @Test
   void exposesIrcModuleBeansAndPorts() {
     assertEquals(1, applicationContext.getBeansOfType(BackendRoutingIrcClientService.class).size());
-    assertEquals(3, applicationContext.getBeansOfType(IrcBackendClientService.class).size());
+    assertEquals(3, applicationContext.getBeansOfType(IrcBackendRuntimeClientService.class).size());
     assertEquals(1, applicationContext.getBeansOfType(IrcConnectionLifecyclePort.class).size());
     assertEquals(1, applicationContext.getBeansOfType(IrcCurrentNickPort.class).size());
     assertEquals(1, applicationContext.getBeansOfType(IrcTargetMembershipPort.class).size());

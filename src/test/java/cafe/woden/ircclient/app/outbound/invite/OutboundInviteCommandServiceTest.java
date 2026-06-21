@@ -18,7 +18,7 @@ import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.ignore.api.IgnoreListCommandPort;
-import cafe.woden.ircclient.irc.backend.spi.IrcBackendClientService;
+import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
 import cafe.woden.ircclient.irc.port.IrcMediatorInteractionPort;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.state.api.LabeledResponseRoutingPort;
@@ -34,7 +34,7 @@ import org.junit.jupiter.api.Test;
 
 class OutboundInviteCommandServiceTest {
 
-  private final IrcBackendClientService irc = mock(IrcBackendClientService.class);
+  private final IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
   private final UiPort ui = mock(UiPort.class);
   private final ConnectionCoordinator connectionCoordinator = mock(ConnectionCoordinator.class);
   private final TargetCoordinator targetCoordinator = mock(TargetCoordinator.class);

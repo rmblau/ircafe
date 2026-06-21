@@ -16,7 +16,7 @@ import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.irc.backend.BackendRoutingIrcClientService;
-import cafe.woden.ircclient.irc.backend.spi.IrcBackendClientService;
+import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.processors.PublishProcessor;
 import java.time.Instant;
@@ -41,9 +41,9 @@ class BackendRoutingIrcClientServiceSpringIntegrationTest {
 
   private final ApplicationContext applicationContext;
   private final IrcClientService ircClientService;
-  private final IrcBackendClientService ircBackend;
-  private final IrcBackendClientService quasselBackend;
-  private final IrcBackendClientService matrixBackend;
+  private final IrcBackendRuntimeClientService ircBackend;
+  private final IrcBackendRuntimeClientService quasselBackend;
+  private final IrcBackendRuntimeClientService matrixBackend;
   private final BackendStreamHandle ircStream;
   private final BackendStreamHandle quasselStream;
   private final BackendStreamHandle matrixStream;
@@ -52,9 +52,9 @@ class BackendRoutingIrcClientServiceSpringIntegrationTest {
   BackendRoutingIrcClientServiceSpringIntegrationTest(
       ApplicationContext applicationContext,
       @Qualifier("ircClientService") IrcClientService ircClientService,
-      @Qualifier("ircBackendService") IrcBackendClientService ircBackend,
-      @Qualifier("quasselBackendService") IrcBackendClientService quasselBackend,
-      @Qualifier("matrixBackendService") IrcBackendClientService matrixBackend,
+      @Qualifier("ircBackendService") IrcBackendRuntimeClientService ircBackend,
+      @Qualifier("quasselBackendService") IrcBackendRuntimeClientService quasselBackend,
+      @Qualifier("matrixBackendService") IrcBackendRuntimeClientService matrixBackend,
       @Qualifier("ircBackendStream") BackendStreamHandle ircStream,
       @Qualifier("quasselBackendStream") BackendStreamHandle quasselStream,
       @Qualifier("matrixBackendStream") BackendStreamHandle matrixStream,
@@ -86,7 +86,7 @@ class BackendRoutingIrcClientServiceSpringIntegrationTest {
 
     assertTrue(bean instanceof BackendRoutingIrcClientService);
     assertSame(bean, ircClientService);
-    assertEquals(3, applicationContext.getBeansOfType(IrcBackendClientService.class).size());
+    assertEquals(3, applicationContext.getBeansOfType(IrcBackendRuntimeClientService.class).size());
   }
 
   @Test
@@ -217,8 +217,9 @@ class BackendRoutingIrcClientServiceSpringIntegrationTest {
     InstalledPluginsPort installedPluginsPort() {
       InstalledPluginsPort installedPlugins = mock(InstalledPluginsPort.class);
       when(installedPlugins.loadInstalledServices(
-              eq(IrcBackendClientService.class),
-              org.mockito.ArgumentMatchers.<List<IrcBackendClientService>>any()))
+              eq(cafe.woden.ircclient.irc.backend.spi.IrcBackendClientService.class),
+              org.mockito.ArgumentMatchers
+                  .<List<cafe.woden.ircclient.irc.backend.spi.IrcBackendClientService>>any()))
           .thenAnswer(invocation -> invocation.getArgument(1));
       return installedPlugins;
     }
@@ -239,26 +240,26 @@ class BackendRoutingIrcClientServiceSpringIntegrationTest {
     }
 
     @Bean("ircBackendService")
-    IrcBackendClientService ircBackendService(
+    IrcBackendRuntimeClientService ircBackendService(
         @Qualifier("ircBackendStream") BackendStreamHandle stream) {
       return createBackend(IrcProperties.Server.Backend.IRC, stream);
     }
 
     @Bean("quasselBackendService")
-    IrcBackendClientService quasselBackendService(
+    IrcBackendRuntimeClientService quasselBackendService(
         @Qualifier("quasselBackendStream") BackendStreamHandle stream) {
       return createBackend(IrcProperties.Server.Backend.QUASSEL_CORE, stream);
     }
 
     @Bean("matrixBackendService")
-    IrcBackendClientService matrixBackendService(
+    IrcBackendRuntimeClientService matrixBackendService(
         @Qualifier("matrixBackendStream") BackendStreamHandle stream) {
       return createBackend(IrcProperties.Server.Backend.MATRIX, stream);
     }
 
-    private static IrcBackendClientService createBackend(
+    private static IrcBackendRuntimeClientService createBackend(
         IrcProperties.Server.Backend backendType, BackendStreamHandle stream) {
-      IrcBackendClientService backend = mock(IrcBackendClientService.class);
+      IrcBackendRuntimeClientService backend = mock(IrcBackendRuntimeClientService.class);
       when(backend.backendId()).thenReturn(backendIdFor(backendType));
       when(backend.events()).thenReturn(stream.processor().onBackpressureBuffer());
 

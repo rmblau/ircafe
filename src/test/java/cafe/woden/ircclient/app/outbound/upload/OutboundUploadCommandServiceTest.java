@@ -18,7 +18,7 @@ import cafe.woden.ircclient.app.outbound.support.OutboundRawLineCorrelationServi
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
-import cafe.woden.ircclient.irc.backend.spi.IrcBackendClientService;
+import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
 import cafe.woden.ircclient.irc.port.IrcNegotiatedFeaturePort;
 import cafe.woden.ircclient.irc.port.IrcTargetMembershipPort;
 import cafe.woden.ircclient.model.TargetRef;
@@ -32,7 +32,7 @@ import org.junit.jupiter.api.Test;
 
 class OutboundUploadCommandServiceTest {
 
-  private final IrcBackendClientService irc = mock(IrcBackendClientService.class);
+  private final IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
   private final UiPort ui = mock(UiPort.class);
   private final ConnectionCoordinator connectionCoordinator = mock(ConnectionCoordinator.class);
   private final TargetCoordinator targetCoordinator = mock(TargetCoordinator.class);

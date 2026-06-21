@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.app.api.Ircv3ChatHistoryFeatureSupport;
 import cafe.woden.ircclient.app.api.Ircv3MessageRedactionFeatureSupport;
 import cafe.woden.ircclient.app.outbound.backend.OutboundBackendCapabilityPolicy;
-import cafe.woden.ircclient.irc.backend.spi.IrcBackendClientService;
+import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
 import cafe.woden.ircclient.irc.port.IrcNegotiatedFeaturePort;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +17,7 @@ class IrcMessageActionCapabilityPolicyTest {
 
   @Test
   void delegatesCapabilitiesPerServer() {
-    IrcBackendClientService irc = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
     when(irc.isMessageTagsAvailable("matrix")).thenReturn(true);
     when(irc.isExperimentalMessageEditAvailable("matrix")).thenReturn(true);
     when(irc.isMessageRedactionAvailable("matrix")).thenReturn(true);
@@ -51,7 +51,7 @@ class IrcMessageActionCapabilityPolicyTest {
 
   @Test
   void returnsFalseWhenBackendCapabilityLookupThrows() {
-    IrcBackendClientService irc = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
     when(irc.isMessageTagsAvailable("broken")).thenThrow(new RuntimeException("boom"));
     when(irc.isChatHistoryAvailable("broken")).thenThrow(new RuntimeException("boom"));
     when(irc.isZncPlaybackAvailable("broken")).thenThrow(new RuntimeException("boom"));
@@ -82,7 +82,7 @@ class IrcMessageActionCapabilityPolicyTest {
     assertFalse(policy.canLoadNewerHistory("any"));
   }
 
-  private static IrcMessageActionCapabilityPolicy newPolicy(IrcBackendClientService irc) {
+  private static IrcMessageActionCapabilityPolicy newPolicy(IrcBackendRuntimeClientService irc) {
     IrcNegotiatedFeaturePort negotiatedFeaturePort = IrcNegotiatedFeaturePort.from(irc);
     Ircv3ChatHistoryFeatureSupport chatHistoryFeatureSupport =
         new Ircv3ChatHistoryFeatureSupport(chatHistoryPolicy(irc), negotiatedFeaturePort, irc);
@@ -92,7 +92,8 @@ class IrcMessageActionCapabilityPolicyTest {
         negotiatedFeaturePort, chatHistoryFeatureSupport, messageRedactionFeatureSupport);
   }
 
-  private static OutboundBackendCapabilityPolicy chatHistoryPolicy(IrcBackendClientService irc) {
+  private static OutboundBackendCapabilityPolicy chatHistoryPolicy(
+      IrcBackendRuntimeClientService irc) {
     OutboundBackendCapabilityPolicy policy = mock(OutboundBackendCapabilityPolicy.class);
     when(policy.featureUnavailableMessage(anyString(), anyString()))
         .thenAnswer(invocation -> invocation.getArgument(1));
@@ -102,7 +103,7 @@ class IrcMessageActionCapabilityPolicyTest {
   }
 
   private static OutboundBackendCapabilityPolicy messageRedactionPolicy(
-      IrcBackendClientService irc) {
+      IrcBackendRuntimeClientService irc) {
     OutboundBackendCapabilityPolicy policy = mock(OutboundBackendCapabilityPolicy.class);
     when(policy.supportsMessageRedaction(anyString()))
         .thenAnswer(invocation -> irc.isMessageRedactionAvailable(invocation.getArgument(0)));

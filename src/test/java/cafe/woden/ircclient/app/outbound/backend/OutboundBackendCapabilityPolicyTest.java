@@ -13,7 +13,7 @@ import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.irc.backend.IrcBackendAvailabilityPort;
-import cafe.woden.ircclient.irc.backend.spi.IrcBackendClientService;
+import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
 import cafe.woden.ircclient.irc.port.IrcNegotiatedFeaturePort;
 import java.util.List;
 import java.util.Optional;
@@ -22,7 +22,7 @@ import org.junit.jupiter.api.Test;
 class OutboundBackendCapabilityPolicyTest {
 
   private final ServerCatalog serverCatalog = mock(ServerCatalog.class);
-  private final IrcBackendClientService irc = mock(IrcBackendClientService.class);
+  private final IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
   private final IrcBackendAvailabilityPort backendAvailability = irc;
   private final CommandTargetPolicy commandTargetPolicy =
       cafe.woden.ircclient.app.outbound.TestBackendSupport.commandTargetPolicy(serverCatalog);
