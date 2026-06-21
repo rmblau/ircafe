@@ -2,6 +2,7 @@ package cafe.woden.ircclient.app.outbound.backend;
 
 import cafe.woden.ircclient.app.api.AvailableBackendIdsPort;
 import cafe.woden.ircclient.app.api.BackendAvailabilityReasonFormatter;
+import cafe.woden.ircclient.app.outbound.backend.spi.OutboundBackendFeatureContext;
 import cafe.woden.ircclient.app.outbound.support.CommandTargetPolicy;
 import cafe.woden.ircclient.irc.backend.IrcBackendAvailabilityPort;
 import cafe.woden.ircclient.irc.port.IrcNegotiatedFeaturePort;
@@ -63,7 +64,7 @@ public final class OutboundBackendCapabilityPolicy {
     if (sid.isEmpty()) return false;
     return outboundBackendFeatureRegistry
         .adapterFor(backendIdForServer(sid))
-        .supportsReadMarker(irc, sid);
+        .supportsReadMarker(featureContext(sid));
   }
 
   public boolean supportsMonitor(String serverId) {
@@ -71,7 +72,7 @@ public final class OutboundBackendCapabilityPolicy {
     if (sid.isEmpty()) return false;
     return outboundBackendFeatureRegistry
         .adapterFor(backendIdForServer(sid))
-        .supportsMonitor(irc, sid);
+        .supportsMonitor(featureContext(sid));
   }
 
   public boolean supportsLabeledResponse(String serverId) {
@@ -79,7 +80,7 @@ public final class OutboundBackendCapabilityPolicy {
     if (sid.isEmpty()) return false;
     return outboundBackendFeatureRegistry
         .adapterFor(backendIdForServer(sid))
-        .supportsLabeledResponse(irc, sid);
+        .supportsLabeledResponse(featureContext(sid));
   }
 
   public boolean supportsMultiline(String serverId) {
@@ -87,7 +88,7 @@ public final class OutboundBackendCapabilityPolicy {
     if (sid.isEmpty()) return false;
     return outboundBackendFeatureRegistry
         .adapterFor(backendIdForServer(sid))
-        .supportsMultiline(irc, sid);
+        .supportsMultiline(featureContext(sid));
   }
 
   public boolean supportsMessageTags(String serverId) {
@@ -95,7 +96,7 @@ public final class OutboundBackendCapabilityPolicy {
     if (sid.isEmpty()) return false;
     return outboundBackendFeatureRegistry
         .adapterFor(backendIdForServer(sid))
-        .supportsMessageTags(irc, sid);
+        .supportsMessageTags(featureContext(sid));
   }
 
   public boolean supportsDraftReply(String serverId) {
@@ -103,7 +104,7 @@ public final class OutboundBackendCapabilityPolicy {
     if (sid.isEmpty()) return false;
     return outboundBackendFeatureRegistry
         .adapterFor(backendIdForServer(sid))
-        .supportsDraftReply(irc, sid);
+        .supportsDraftReply(featureContext(sid));
   }
 
   public boolean supportsDraftReact(String serverId) {
@@ -111,7 +112,7 @@ public final class OutboundBackendCapabilityPolicy {
     if (sid.isEmpty()) return false;
     return outboundBackendFeatureRegistry
         .adapterFor(backendIdForServer(sid))
-        .supportsDraftReact(irc, sid);
+        .supportsDraftReact(featureContext(sid));
   }
 
   public boolean supportsDraftUnreact(String serverId) {
@@ -119,7 +120,7 @@ public final class OutboundBackendCapabilityPolicy {
     if (sid.isEmpty()) return false;
     return outboundBackendFeatureRegistry
         .adapterFor(backendIdForServer(sid))
-        .supportsDraftUnreact(irc, sid);
+        .supportsDraftUnreact(featureContext(sid));
   }
 
   public boolean supportsExperimentalMessageEdit(String serverId) {
@@ -127,7 +128,7 @@ public final class OutboundBackendCapabilityPolicy {
     if (sid.isEmpty()) return false;
     return outboundBackendFeatureRegistry
         .adapterFor(backendIdForServer(sid))
-        .supportsExperimentalMessageEdit(irc, sid);
+        .supportsExperimentalMessageEdit(featureContext(sid));
   }
 
   public boolean supportsMessageRedaction(String serverId) {
@@ -135,7 +136,7 @@ public final class OutboundBackendCapabilityPolicy {
     if (sid.isEmpty()) return false;
     return outboundBackendFeatureRegistry
         .adapterFor(backendIdForServer(sid))
-        .supportsMessageRedaction(irc, sid);
+        .supportsMessageRedaction(featureContext(sid));
   }
 
   public String backendAvailabilityReason(String serverId) {
@@ -173,5 +174,67 @@ public final class OutboundBackendCapabilityPolicy {
 
   private static String normalizeServerId(String serverId) {
     return Objects.toString(serverId, "").trim();
+  }
+
+  private OutboundBackendFeatureContext featureContext(String serverId) {
+    return new IrcNegotiatedFeatureContext(irc, serverId);
+  }
+
+  private record IrcNegotiatedFeatureContext(IrcNegotiatedFeaturePort irc, String serverId)
+      implements OutboundBackendFeatureContext {
+
+    private IrcNegotiatedFeatureContext {
+      serverId = normalizeServerId(serverId);
+    }
+
+    @Override
+    public boolean readMarkerAvailable() {
+      return irc != null && irc.isReadMarkerAvailable(serverId);
+    }
+
+    @Override
+    public boolean monitorAvailable() {
+      return irc != null && irc.isMonitorAvailable(serverId);
+    }
+
+    @Override
+    public boolean labeledResponseAvailable() {
+      return irc != null && irc.isLabeledResponseAvailable(serverId);
+    }
+
+    @Override
+    public boolean multilineAvailable() {
+      return irc != null && irc.isMultilineAvailable(serverId);
+    }
+
+    @Override
+    public boolean messageTagsAvailable() {
+      return irc != null && irc.isMessageTagsAvailable(serverId);
+    }
+
+    @Override
+    public boolean draftReplyAvailable() {
+      return irc != null && irc.isDraftReplyAvailable(serverId);
+    }
+
+    @Override
+    public boolean draftReactAvailable() {
+      return irc != null && irc.isDraftReactAvailable(serverId);
+    }
+
+    @Override
+    public boolean draftUnreactAvailable() {
+      return irc != null && irc.isDraftUnreactAvailable(serverId);
+    }
+
+    @Override
+    public boolean experimentalMessageEditAvailable() {
+      return irc != null && irc.isExperimentalMessageEditAvailable(serverId);
+    }
+
+    @Override
+    public boolean messageRedactionAvailable() {
+      return irc != null && irc.isMessageRedactionAvailable(serverId);
+    }
   }
 }

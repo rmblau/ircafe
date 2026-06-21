@@ -27,7 +27,6 @@ class PluginApiDependencyAuditTest {
           "src/main/java/cafe/woden/ircclient/app/commands/spi/SlashCommandParseStrategy.java -> cafe.woden.ircclient.app.commands.ParsedInput",
           "src/main/java/cafe/woden/ircclient/app/outbound/backend/spi/BackendExtension.java -> cafe.woden.ircclient.app.api.BackendEditorProfileSpec",
           "src/main/java/cafe/woden/ircclient/app/outbound/backend/spi/BackendExtension.java -> cafe.woden.ircclient.app.outbound.mutation.MessageMutationOutboundCommands",
-          "src/main/java/cafe/woden/ircclient/app/outbound/backend/spi/OutboundBackendFeatureAdapter.java -> cafe.woden.ircclient.irc.port.IrcNegotiatedFeaturePort",
           "src/main/java/cafe/woden/ircclient/app/outbound/spi/LocalFilterCommandHandler.java -> cafe.woden.ircclient.app.commands.FilterCommand",
           "src/main/java/cafe/woden/ircclient/irc/backend/spi/IrcBackendClientService.java -> cafe.woden.ircclient.irc.IrcClientService",
           "src/main/java/cafe/woden/ircclient/irc/backend/spi/IrcBackendClientService.java -> cafe.woden.ircclient.irc.backend.IrcBackendAvailabilityPort",
