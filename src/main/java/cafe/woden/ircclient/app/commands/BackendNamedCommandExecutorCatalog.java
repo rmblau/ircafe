@@ -3,7 +3,6 @@ package cafe.woden.ircclient.app.commands;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.util.PluginServiceLoaderSupport;
-import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import jakarta.annotation.PreDestroy;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
@@ -99,15 +98,17 @@ public final class BackendNamedCommandExecutorCatalog {
   }
 
   public boolean handle(
-      BackendNamedCommandExecutionContext context,
-      CompositeDisposable disposables,
+      cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutionContext context,
       ParsedInput.BackendNamed command) {
-    if (context == null || disposables == null || command == null) return false;
+    if (context == null || command == null) return false;
     cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor executor =
         executionHandlersByCommandName.get(
             BackendNamedCommandRegistrationSupport.normalizeCommandName(command.command()));
     if (executor == null) return false;
-    return executor.handle(context, disposables, command);
+    return executor.handle(
+        context,
+        new cafe.woden.ircclient.app.commands.spi.BackendNamedCommandRequest(
+            command.command(), command.args()));
   }
 
   private static Map<String, cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor>

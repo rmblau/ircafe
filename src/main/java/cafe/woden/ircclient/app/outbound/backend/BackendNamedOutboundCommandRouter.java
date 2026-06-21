@@ -1,16 +1,16 @@
 package cafe.woden.ircclient.app.outbound.backend;
 
 import cafe.woden.ircclient.app.api.UiPort;
-import cafe.woden.ircclient.app.commands.BackendNamedCommandExecutionContext;
 import cafe.woden.ircclient.app.commands.BackendNamedCommandExecutorCatalog;
 import cafe.woden.ircclient.app.commands.BackendNamedCommandRegistrationSupport;
 import cafe.woden.ircclient.app.commands.ParsedInput;
+import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutionContext;
+import cafe.woden.ircclient.app.commands.spi.SlashCommandTargetView;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.irc.port.IrcMediatorInteractionPort;
 import cafe.woden.ircclient.model.TargetRef;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
-import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -33,12 +33,10 @@ public final class BackendNamedOutboundCommandRouter {
   private final IrcMediatorInteractionPort mediatorIrc;
 
   @NonNull private final UiPort ui;
-  private final BackendNamedCommandExecutionContext pluginExecutionContext =
-      new RouterCommandExecutionContext();
 
   public void handle(CompositeDisposable disposables, ParsedInput.BackendNamed command) {
     String name = BackendNamedCommandRegistrationSupport.normalizeCommandName(command.command());
-    if (commandExecutors.handle(pluginExecutionContext, disposables, command)) {
+    if (commandExecutors.handle(new RouterCommandExecutionContext(disposables), command)) {
       return;
     }
     TargetRef active = targetCoordinator.getActiveTarget();
@@ -47,21 +45,20 @@ public final class BackendNamedOutboundCommandRouter {
   }
 
   private final class RouterCommandExecutionContext implements BackendNamedCommandExecutionContext {
+    private final CompositeDisposable disposables;
 
-    @Override
-    public TargetRef activeTarget() {
-      return targetCoordinator.getActiveTarget();
+    private RouterCommandExecutionContext(CompositeDisposable disposables) {
+      this.disposables = disposables;
     }
 
     @Override
-    public TargetRef safeStatusTarget() {
-      return targetCoordinator.safeStatusTarget();
+    public SlashCommandTargetView activeTarget() {
+      return targetView(targetCoordinator.getActiveTarget());
     }
 
     @Override
-    public TargetRef statusTarget(String serverId) {
-      String sid = Objects.toString(serverId, "").trim();
-      return sid.isEmpty() ? safeStatusTarget() : new TargetRef(sid, "status");
+    public SlashCommandTargetView safeStatusTarget() {
+      return targetView(targetCoordinator.safeStatusTarget());
     }
 
     @Override
@@ -70,30 +67,52 @@ public final class BackendNamedOutboundCommandRouter {
     }
 
     @Override
-    public void appendStatus(TargetRef target, String prefix, String message) {
-      ui.appendStatus(target != null ? target : safeStatusTarget(), prefix, message);
+    public void appendStatus(SlashCommandTargetView target, String prefix, String message) {
+      ui.appendStatus(targetRef(target, targetCoordinator.safeStatusTarget()), prefix, message);
     }
 
     @Override
-    public void appendError(TargetRef target, String prefix, String message) {
-      ui.appendError(target != null ? target : safeStatusTarget(), prefix, message);
+    public void appendError(SlashCommandTargetView target, String prefix, String message) {
+      ui.appendError(targetRef(target, targetCoordinator.safeStatusTarget()), prefix, message);
     }
 
     @Override
-    public void ensureTargetExists(TargetRef target) {
+    public void ensureTargetExists(SlashCommandTargetView target) {
       if (target == null) return;
-      ui.ensureTargetExists(target);
+      ui.ensureTargetExists(targetRef(target, null));
     }
 
     @Override
-    public void selectTarget(TargetRef target) {
+    public void selectTarget(SlashCommandTargetView target) {
       if (target == null) return;
-      ui.selectTarget(target);
+      ui.selectTarget(targetRef(target, null));
     }
 
     @Override
-    public io.reactivex.rxjava3.core.Completable sendRaw(String serverId, String line) {
-      return mediatorIrc.sendRaw(serverId, line);
+    public void sendRaw(String serverId, String line) {
+      if (disposables == null) {
+        mediatorIrc.sendRaw(serverId, line).subscribe();
+        return;
+      }
+      disposables.add(
+          mediatorIrc
+              .sendRaw(serverId, line)
+              .subscribe(
+                  () -> {},
+                  err ->
+                      ui.appendError(
+                          targetCoordinator.safeStatusTarget(),
+                          "(backend-command-error)",
+                          String.valueOf(err))));
     }
+  }
+
+  private static SlashCommandTargetView targetView(TargetRef target) {
+    return target == null ? null : new SlashCommandTargetView(target.serverId(), target.target());
+  }
+
+  private static TargetRef targetRef(SlashCommandTargetView target, TargetRef fallback) {
+    if (target == null) return fallback;
+    return new TargetRef(target.serverId(), target.target());
   }
 }

@@ -1,8 +1,5 @@
 package cafe.woden.ircclient.app.commands.spi;
 
-import cafe.woden.ircclient.app.commands.BackendNamedCommandExecutionContext;
-import cafe.woden.ircclient.app.commands.ParsedInput;
-import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import java.util.Set;
 
 /**
@@ -15,8 +12,5 @@ public interface BackendNamedCommandExecutor {
 
   Set<String> handledCommandNames();
 
-  boolean handle(
-      BackendNamedCommandExecutionContext context,
-      CompositeDisposable disposables,
-      ParsedInput.BackendNamed command);
+  boolean handle(BackendNamedCommandExecutionContext context, BackendNamedCommandRequest command);
 }

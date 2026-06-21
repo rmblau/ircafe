@@ -1,7 +1,9 @@
 package cafe.woden.ircclient.app.commands;
 
+import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutionContext;
+import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor;
+import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandRequest;
 import cafe.woden.ircclient.app.outbound.backend.QuasselOutboundCommandService;
-import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import java.util.Objects;
 import java.util.Set;
 import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
@@ -12,8 +14,7 @@ import org.springframework.stereotype.Component;
 @Component
 @SecondaryAdapter
 @ApplicationLayer
-public final class QuasselBackendNamedCommandExecutor
-    implements cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor {
+public final class QuasselBackendNamedCommandExecutor implements BackendNamedCommandExecutor {
 
   private final QuasselOutboundCommandService quasselOutboundCommandService;
 
@@ -33,23 +34,21 @@ public final class QuasselBackendNamedCommandExecutor
 
   @Override
   public boolean handle(
-      BackendNamedCommandExecutionContext context,
-      CompositeDisposable disposables,
-      ParsedInput.BackendNamed command) {
-    if (disposables == null || command == null) {
+      BackendNamedCommandExecutionContext context, BackendNamedCommandRequest command) {
+    if (command == null) {
       return false;
     }
     return switch (Objects.toString(command.command(), "")) {
       case BackendNamedCommandNames.QUASSEL_SETUP -> {
-        quasselOutboundCommandService.handleQuasselSetup(disposables, command.args());
+        quasselOutboundCommandService.handleQuasselSetup(command.args());
         yield true;
       }
       case BackendNamedCommandNames.QUASSEL_NETWORK -> {
-        quasselOutboundCommandService.handleQuasselNetwork(disposables, command.args());
+        quasselOutboundCommandService.handleQuasselNetwork(command.args());
         yield true;
       }
       case BackendNamedCommandNames.QUASSEL_NETWORK_MANAGER -> {
-        quasselOutboundCommandService.handleQuasselNetworkManager(disposables, command.args());
+        quasselOutboundCommandService.handleQuasselNetworkManager(command.args());
         yield true;
       }
       default -> false;
