@@ -51,7 +51,7 @@ import cafe.woden.ircclient.app.core.MediatorUiSubscriptionBinder;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.app.outbound.OutboundCommandDispatcher;
 import cafe.woden.ircclient.app.outbound.dispatch.OutboundCommandRegistrar;
-import cafe.woden.ircclient.app.outbound.spi.LocalFilterCommandHandler;
+import cafe.woden.ircclient.app.outbound.filter.LocalFilterCommandHandler;
 import cafe.woden.ircclient.app.outbound.upload.spi.SemanticUploadCommandHandler;
 import cafe.woden.ircclient.bouncer.AbstractBouncerAutoConnectStore;
 import cafe.woden.ircclient.bouncer.BouncerAutoConnectStore;

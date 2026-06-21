@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.app.outbound.spi;
+package cafe.woden.ircclient.app.outbound.filter;
 
 import cafe.woden.ircclient.app.commands.FilterCommand;
 

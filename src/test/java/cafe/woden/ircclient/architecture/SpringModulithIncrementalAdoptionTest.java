@@ -35,7 +35,7 @@ import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.app.outbound.OutboundCommandDispatcher;
 import cafe.woden.ircclient.app.outbound.dispatch.DefaultOutboundCommandDispatcher;
 import cafe.woden.ircclient.app.outbound.dispatch.ObservedOutboundCommandDispatcher;
-import cafe.woden.ircclient.app.outbound.spi.LocalFilterCommandHandler;
+import cafe.woden.ircclient.app.outbound.filter.LocalFilterCommandHandler;
 import cafe.woden.ircclient.bouncer.AbstractBouncerAutoConnectStore;
 import cafe.woden.ircclient.bouncer.BouncerConnectionPort;
 import cafe.woden.ircclient.bouncer.BouncerNetworkDiscoveryOrchestrator;

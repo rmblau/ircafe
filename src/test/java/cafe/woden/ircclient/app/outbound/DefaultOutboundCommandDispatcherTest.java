@@ -22,6 +22,7 @@ import cafe.woden.ircclient.app.outbound.chathistory.OutboundChatHistoryCommandS
 import cafe.woden.ircclient.app.outbound.dcc.OutboundDccCommandService;
 import cafe.woden.ircclient.app.outbound.dispatch.DefaultOutboundCommandDispatcher;
 import cafe.woden.ircclient.app.outbound.dispatch.OutboundCommandRegistrar;
+import cafe.woden.ircclient.app.outbound.filter.LocalFilterCommandHandler;
 import cafe.woden.ircclient.app.outbound.help.OutboundHelpCommandService;
 import cafe.woden.ircclient.app.outbound.identity.OutboundNickAwayCommandService;
 import cafe.woden.ircclient.app.outbound.ignore.OutboundIgnoreCommandService;
@@ -31,7 +32,6 @@ import cafe.woden.ircclient.app.outbound.messaging.OutboundSayQuoteCommandServic
 import cafe.woden.ircclient.app.outbound.monitor.OutboundMonitorCommandService;
 import cafe.woden.ircclient.app.outbound.mutation.OutboundMessageMutationCommandService;
 import cafe.woden.ircclient.app.outbound.readmarker.OutboundReadMarkerCommandService;
-import cafe.woden.ircclient.app.outbound.spi.LocalFilterCommandHandler;
 import cafe.woden.ircclient.app.outbound.upload.OutboundUploadCommandService;
 import cafe.woden.ircclient.model.TargetRef;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
