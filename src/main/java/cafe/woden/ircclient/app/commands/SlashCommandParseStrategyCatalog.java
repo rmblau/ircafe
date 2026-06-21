@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.app.commands;
 
+import cafe.woden.ircclient.app.commands.builtins.BuiltInAdvancedFeatureSlashCommandParseStrategy;
 import cafe.woden.ircclient.app.commands.builtins.BuiltInChannelInteractionSlashCommandParseStrategy;
 import cafe.woden.ircclient.app.commands.builtins.BuiltInConnectionLifecycleSlashCommandParseStrategy;
 import cafe.woden.ircclient.app.commands.builtins.BuiltInIdentityMessagingSlashCommandParseStrategy;
@@ -80,6 +81,7 @@ public class SlashCommandParseStrategyCatalog {
 
   private static List<SlashCommandParseStrategy> builtInPluginStrategies() {
     return List.of(
+        new BuiltInAdvancedFeatureSlashCommandParseStrategy(),
         new BuiltInConnectionLifecycleSlashCommandParseStrategy(),
         new BuiltInIdentityMessagingSlashCommandParseStrategy(),
         new BuiltInChannelInteractionSlashCommandParseStrategy());

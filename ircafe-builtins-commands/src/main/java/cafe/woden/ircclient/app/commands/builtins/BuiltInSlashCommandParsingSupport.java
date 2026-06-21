@@ -122,6 +122,285 @@ final class BuiltInSlashCommandParsingSupport {
     return new ParsedTargetList(channel, List.copyOf(items));
   }
 
+
+  static SlashCommandParseResult parseDccInput(String rest) {
+    String r = rest == null ? "" : rest.trim();
+    if (r.isEmpty()) return SlashCommandParseResult.command("dcc", "", "", "");
+
+    int sp1 = r.indexOf(' ');
+    if (sp1 < 0) {
+      return SlashCommandParseResult.command("dcc", r, "", "");
+    }
+
+    String sub = r.substring(0, sp1).trim();
+    String rest2 = r.substring(sp1 + 1).trim();
+    if (rest2.isEmpty()) {
+      return SlashCommandParseResult.command("dcc", sub, "", "");
+    }
+
+    int sp2 = rest2.indexOf(' ');
+    if (sp2 < 0) {
+      return SlashCommandParseResult.command("dcc", sub, rest2.trim(), "");
+    }
+
+    String nick = rest2.substring(0, sp2).trim();
+    String arg = rest2.substring(sp2 + 1).trim();
+    return SlashCommandParseResult.command("dcc", sub, nick, arg);
+  }
+
+  static SlashCommandParseResult parseUploadInput(String rest) {
+    String raw = rest == null ? "" : rest.trim();
+    if (raw.isEmpty()) return SlashCommandParseResult.command("upload", "", "", "");
+
+    int firstSpace = raw.indexOf(' ');
+    if (firstSpace <= 0) {
+      return SlashCommandParseResult.command("upload", raw.trim(), "", "");
+    }
+
+    String msgType = raw.substring(0, firstSpace).trim();
+    String remaining = raw.substring(firstSpace + 1).trim();
+    if (remaining.isEmpty()) {
+      return SlashCommandParseResult.command("upload", msgType, "", "");
+    }
+
+    ParsedPathToken pathToken = parsePathToken(remaining);
+    return SlashCommandParseResult.command(
+        "upload", msgType, pathToken.path(), pathToken.remainder() == null ? "" : pathToken.remainder());
+  }
+
+  private static ParsedPathToken parsePathToken(String raw) {
+    String input = raw == null ? "" : raw.trim();
+    if (input.isEmpty()) {
+      return new ParsedPathToken("", "");
+    }
+
+    if (!input.startsWith("\"")) {
+      int sp = input.indexOf(' ');
+      if (sp < 0) {
+        return new ParsedPathToken(input, "");
+      }
+      return new ParsedPathToken(input.substring(0, sp).trim(), input.substring(sp + 1).trim());
+    }
+
+    StringBuilder token = new StringBuilder();
+    boolean escaped = false;
+    for (int i = 1; i < input.length(); i++) {
+      char ch = input.charAt(i);
+      if (escaped) {
+        token.append(ch);
+        escaped = false;
+        continue;
+      }
+      if (ch == '\\') {
+        escaped = true;
+        continue;
+      }
+      if (ch == '"') {
+        String remainder = i + 1 < input.length() ? input.substring(i + 1).trim() : "";
+        return new ParsedPathToken(token.toString(), remainder);
+      }
+      token.append(ch);
+    }
+
+    return new ParsedPathToken("", "");
+  }
+
+  static SlashCommandParseResult parseReplyInput(String rest) {
+    String r = rest == null ? "" : rest.trim();
+    if (r.isEmpty()) return SlashCommandParseResult.command("reply", "", "");
+    int sp = r.indexOf(' ');
+    if (sp <= 0) return SlashCommandParseResult.command("reply", r.trim(), "");
+    String msgId = r.substring(0, sp).trim();
+    String body = r.substring(sp + 1).trim();
+    return SlashCommandParseResult.command("reply", msgId, body);
+  }
+
+  static SlashCommandParseResult parseReactInput(String rest) {
+    String r = rest == null ? "" : rest.trim();
+    if (r.isEmpty()) return SlashCommandParseResult.command("react", "", "");
+    int sp = r.indexOf(' ');
+    if (sp <= 0) return SlashCommandParseResult.command("react", r.trim(), "");
+    String msgId = r.substring(0, sp).trim();
+    String reaction = r.substring(sp + 1).trim();
+    return SlashCommandParseResult.command("react", msgId, reaction);
+  }
+
+  static SlashCommandParseResult parseUnreactInput(String rest) {
+    String r = rest == null ? "" : rest.trim();
+    if (r.isEmpty()) return SlashCommandParseResult.command("unreact", "", "");
+    int sp = r.indexOf(' ');
+    if (sp <= 0) return SlashCommandParseResult.command("unreact", r.trim(), "");
+    String msgId = r.substring(0, sp).trim();
+    String reaction = r.substring(sp + 1).trim();
+    return SlashCommandParseResult.command("unreact", msgId, reaction);
+  }
+
+  static SlashCommandParseResult parseEditInput(String rest) {
+    String r = rest == null ? "" : rest.trim();
+    if (r.isEmpty()) return SlashCommandParseResult.command("edit", "", "");
+    int sp = r.indexOf(' ');
+    if (sp <= 0) return SlashCommandParseResult.command("edit", r.trim(), "");
+    String msgId = r.substring(0, sp).trim();
+    String body = r.substring(sp + 1).trim();
+    return SlashCommandParseResult.command("edit", msgId, body);
+  }
+
+  static SlashCommandParseResult parseRedactInput(String rest) {
+    String r = rest == null ? "" : rest.trim();
+    if (r.isEmpty()) return SlashCommandParseResult.command("redact", "", "");
+    int sp = r.indexOf(' ');
+    if (sp < 0) {
+      return SlashCommandParseResult.command("redact", r, "");
+    }
+    String msgId = r.substring(0, sp).trim();
+    String reason = r.substring(sp + 1).trim();
+    return SlashCommandParseResult.command("redact", msgId, reason);
+  }
+
+  static SlashCommandParseResult parseChatHistoryInput(String rest) {
+    String r = rest == null ? "" : rest.trim();
+    if (r.isEmpty()) {
+      return SlashCommandParseResult.command("chat-history-before", "0", "");
+    }
+
+    String[] toks = r.split("\\s+");
+    if (toks.length == 0) {
+      return SlashCommandParseResult.command("chat-history-before", "0", "");
+    }
+
+    String head = toks[0].toLowerCase(java.util.Locale.ROOT);
+    return switch (head) {
+      case "before" -> parseChatHistoryBefore(toks, 1);
+      case "latest" -> parseChatHistoryLatest(toks, 1);
+      case "between" -> parseChatHistoryBetween(toks, 1);
+      case "around" -> parseChatHistoryAround(toks, 1);
+      default -> parseChatHistoryBefore(toks, 0);
+    };
+  }
+
+  private static SlashCommandParseResult parseChatHistoryBefore(String[] toks, int startIdx) {
+    if (toks == null || startIdx >= toks.length) {
+      return SlashCommandParseResult.command("chat-history-before", "0", "");
+    }
+
+    int idx = startIdx;
+    int lim = 50;
+    String selector = "";
+    String first = toks[idx];
+    if (isIntegerToken(first)) {
+      lim = parseIntOrZero(first);
+      idx++;
+    } else {
+      selector = normalizeChatHistorySelector(first);
+      idx++;
+      if (selector.isEmpty()) {
+        return SlashCommandParseResult.command("chat-history-before", "0", "");
+      }
+    }
+
+    if (idx < toks.length) {
+      if (!isIntegerToken(toks[idx])) return SlashCommandParseResult.command("chat-history-before", "0", "");
+      lim = parseIntOrZero(toks[idx]);
+      idx++;
+    }
+    if (idx < toks.length) {
+      return SlashCommandParseResult.command("chat-history-before", "0", "");
+    }
+    return SlashCommandParseResult.command("chat-history-before", Integer.toString(lim), selector);
+  }
+
+  private static SlashCommandParseResult parseChatHistoryLatest(String[] toks, int startIdx) {
+    int idx = startIdx;
+    int lim = 50;
+    String selector = "*";
+
+    if (toks == null) return SlashCommandParseResult.command("chat-history-latest", "0", selector);
+
+    if (idx < toks.length) {
+      String first = toks[idx];
+      if (isIntegerToken(first)) {
+        lim = parseIntOrZero(first);
+        idx++;
+      } else {
+        selector = normalizeChatHistorySelectorOrWildcard(first);
+        idx++;
+        if (selector.isEmpty()) {
+          return SlashCommandParseResult.command("chat-history-latest", "0", "");
+        }
+      }
+    }
+
+    if (idx < toks.length) {
+      if (!isIntegerToken(toks[idx])) return SlashCommandParseResult.command("chat-history-latest", "0", "");
+      lim = parseIntOrZero(toks[idx]);
+      idx++;
+    }
+    if (idx < toks.length) return SlashCommandParseResult.command("chat-history-latest", "0", "");
+
+    return SlashCommandParseResult.command("chat-history-latest", Integer.toString(lim), selector);
+  }
+
+  private static SlashCommandParseResult parseChatHistoryAround(String[] toks, int startIdx) {
+    if (toks == null || startIdx >= toks.length) return SlashCommandParseResult.command("chat-history-around", "", "0");
+
+    int idx = startIdx;
+    String selector = normalizeChatHistorySelector(toks[idx]);
+    if (selector.isEmpty()) return SlashCommandParseResult.command("chat-history-around", "", "0");
+    idx++;
+
+    int lim = 50;
+    if (idx < toks.length) {
+      if (!isIntegerToken(toks[idx])) return SlashCommandParseResult.command("chat-history-around", "", "0");
+      lim = parseIntOrZero(toks[idx]);
+      idx++;
+    }
+    if (idx < toks.length) return SlashCommandParseResult.command("chat-history-around", "", "0");
+
+    return SlashCommandParseResult.command("chat-history-around", selector, Integer.toString(lim));
+  }
+
+  private static SlashCommandParseResult parseChatHistoryBetween(String[] toks, int startIdx) {
+    if (toks == null || startIdx + 1 >= toks.length) {
+      return SlashCommandParseResult.command("chat-history-between", "", "", "0");
+    }
+
+    int idx = startIdx;
+    String startSelector = normalizeChatHistorySelectorOrWildcard(toks[idx++]);
+    String endSelector = normalizeChatHistorySelectorOrWildcard(toks[idx++]);
+    if (startSelector.isEmpty() || endSelector.isEmpty()) {
+      return SlashCommandParseResult.command("chat-history-between", "", "", "0");
+    }
+
+    int lim = 50;
+    if (idx < toks.length) {
+      if (!isIntegerToken(toks[idx])) return SlashCommandParseResult.command("chat-history-between", "", "", "0");
+      lim = parseIntOrZero(toks[idx]);
+      idx++;
+    }
+    if (idx < toks.length) return SlashCommandParseResult.command("chat-history-between", "", "", "0");
+
+    return SlashCommandParseResult.command(
+        "chat-history-between", startSelector, endSelector, Integer.toString(lim));
+  }
+
+  private static String normalizeChatHistorySelector(String raw) {
+    String s = raw == null ? "" : raw.trim();
+    if (s.isEmpty()) return "";
+    int eq = s.indexOf('=');
+    if (eq <= 0 || eq == s.length() - 1) return "";
+    String key = s.substring(0, eq).trim().toLowerCase(java.util.Locale.ROOT);
+    String value = s.substring(eq + 1).trim();
+    if (value.isEmpty()) return "";
+    if (!"timestamp".equals(key) && !"msgid".equals(key)) return "";
+    return key + "=" + value;
+  }
+
+  private static String normalizeChatHistorySelectorOrWildcard(String raw) {
+    String s = raw == null ? "" : raw.trim();
+    if ("*".equals(s)) return "*";
+    return normalizeChatHistorySelector(s);
+  }
+
   static boolean isIntegerToken(String raw) {
     String s = raw == null ? "" : raw.trim();
     if (s.isEmpty()) return false;
@@ -147,4 +426,6 @@ final class BuiltInSlashCommandParsingSupport {
   record ParsedTargetList(String channel, List<String> items) {}
 
   record ParsedKick(String channel, String nick, String reason) {}
+
+  private record ParsedPathToken(String path, String remainder) {}
 }
