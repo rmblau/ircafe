@@ -1,17 +1,13 @@
-package cafe.woden.ircclient.app.commands;
+package cafe.woden.ircclient.app.commands.builtins;
 
 import cafe.woden.ircclient.app.commands.spi.SlashCommandDescriptor;
 import cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor;
 import com.google.auto.service.AutoService;
 import java.util.List;
-import org.jmolecules.architecture.layered.ApplicationLayer;
-import org.springframework.stereotype.Component;
 
 /** Shared presentation metadata for built-in slash commands handled by the typed parser path. */
-@Component
-@ApplicationLayer
 @AutoService(SlashCommandPresentationContributor.class)
-public final class CoreSlashCommandPresentationContributor
+public final class BuiltInSlashCommandPresentationContributor
     implements SlashCommandPresentationContributor {
 
   private static final List<SlashCommandDescriptor> COMMANDS =
