@@ -1,9 +1,8 @@
 package cafe.woden.ircclient.app.outbound.backend;
 
+import cafe.woden.ircclient.app.outbound.backend.spi.BuiltInBackendIds;
 import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationOutboundCommands;
 import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationTargetView;
-import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 import org.springframework.stereotype.Component;
@@ -14,12 +13,9 @@ import org.springframework.stereotype.Component;
 @ApplicationLayer
 public final class QuasselMessageMutationOutboundCommands
     implements MessageMutationOutboundCommands {
-  private static final BackendDescriptorCatalog BACKEND_DESCRIPTORS =
-      BackendDescriptorCatalog.builtIns();
-
   @Override
   public String backendId() {
-    return BACKEND_DESCRIPTORS.idFor(IrcProperties.Server.Backend.QUASSEL_CORE);
+    return BuiltInBackendIds.QUASSEL_CORE;
   }
 
   @Override

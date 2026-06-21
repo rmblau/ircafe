@@ -3,10 +3,9 @@ package cafe.woden.ircclient.app.outbound.backend;
 import cafe.woden.ircclient.app.api.BuiltInBackendEditorProfiles;
 import cafe.woden.ircclient.app.outbound.backend.spi.BackendEditorProfile;
 import cafe.woden.ircclient.app.outbound.backend.spi.BackendExtension;
+import cafe.woden.ircclient.app.outbound.backend.spi.BuiltInBackendIds;
 import cafe.woden.ircclient.app.outbound.backend.spi.OutboundBackendFeatureAdapter;
 import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationOutboundCommands;
-import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import com.google.auto.service.AutoService;
 import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
 import org.jmolecules.architecture.layered.ApplicationLayer;
@@ -18,9 +17,6 @@ import org.springframework.stereotype.Component;
 @ApplicationLayer
 @AutoService(BackendExtension.class)
 public final class QuasselBackendExtension implements BackendExtension {
-  private static final BackendDescriptorCatalog BACKEND_DESCRIPTORS =
-      BackendDescriptorCatalog.builtIns();
-
   private static final MessageMutationOutboundCommands MESSAGE_MUTATION_COMMANDS =
       new QuasselMessageMutationOutboundCommands();
 
@@ -29,7 +25,7 @@ public final class QuasselBackendExtension implements BackendExtension {
 
   @Override
   public String backendId() {
-    return BACKEND_DESCRIPTORS.idFor(IrcProperties.Server.Backend.QUASSEL_CORE);
+    return BuiltInBackendIds.QUASSEL_CORE;
   }
 
   @Override
