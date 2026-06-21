@@ -1,8 +1,8 @@
 package cafe.woden.ircclient.app.outbound.backend;
 
-import cafe.woden.ircclient.app.api.BuiltInBackendEditorProfiles;
 import cafe.woden.ircclient.app.outbound.backend.spi.BackendEditorProfile;
 import cafe.woden.ircclient.app.outbound.backend.spi.BackendExtension;
+import cafe.woden.ircclient.app.outbound.backend.spi.BuiltInBackendEditorProfiles;
 import cafe.woden.ircclient.app.outbound.backend.spi.BuiltInBackendIds;
 import cafe.woden.ircclient.app.outbound.backend.spi.OutboundBackendFeatureAdapter;
 import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationOutboundCommands;
@@ -40,6 +40,6 @@ public final class QuasselBackendExtension implements BackendExtension {
 
   @Override
   public BackendEditorProfile editorProfile() {
-    return BackendEditorProfileAdapters.toPluginProfile(BuiltInBackendEditorProfiles.quasselCore());
+    return BuiltInBackendEditorProfiles.quasselCore();
   }
 }
