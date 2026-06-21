@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.outbound.support.CommandTargetPolicy;
 import cafe.woden.ircclient.app.outbound.upload.spi.SemanticUploadCommandHandler;
+import cafe.woden.ircclient.app.outbound.upload.spi.UploadCommandTargetView;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
@@ -50,8 +51,8 @@ class MatrixOutboundCommandServiceTest {
   void appendUploadHelpAndUsageDelegateToUiStatus() {
     TargetRef out = new TargetRef("matrix", "!room:example.org");
 
-    service.appendUploadHelp(out);
-    service.appendUploadUsage(out);
+    service.appendUploadHelp(targetView(out));
+    service.appendUploadUsage(targetView(out));
 
     verify(ui)
         .appendStatus(
@@ -73,7 +74,7 @@ class MatrixOutboundCommandServiceTest {
         .thenReturn(Optional.of(serverWithBackend("matrix", IrcProperties.Server.Backend.MATRIX)));
 
     SemanticUploadCommandHandler.UploadPreparation preparation =
-        service.prepareUpload(room, "image", "/tmp/My File.png", "");
+        service.prepareUpload(targetView(room), "image", "/tmp/My File.png", "");
 
     assertFalse(preparation.showUsage());
     assertEquals("", preparation.statusMessage());
@@ -89,7 +90,7 @@ class MatrixOutboundCommandServiceTest {
         .thenReturn(Optional.of(serverWithBackend("libera", IrcProperties.Server.Backend.IRC)));
 
     SemanticUploadCommandHandler.UploadPreparation preparation =
-        service.prepareUpload(channel, "m.image", "/tmp/photo.png", "caption");
+        service.prepareUpload(targetView(channel), "m.image", "/tmp/photo.png", "caption");
 
     assertFalse(preparation.showUsage());
     assertEquals("", preparation.line());
@@ -101,9 +102,9 @@ class MatrixOutboundCommandServiceTest {
     TargetRef room = new TargetRef("matrix", "!room:example.org");
 
     SemanticUploadCommandHandler.UploadPreparation invalidMsgType =
-        service.prepareUpload(room, "m.bad", "/tmp/photo.png", "caption");
+        service.prepareUpload(targetView(room), "m.bad", "/tmp/photo.png", "caption");
     SemanticUploadCommandHandler.UploadPreparation blankPath =
-        service.prepareUpload(room, "m.image", "   ", "caption");
+        service.prepareUpload(targetView(room), "m.image", "   ", "caption");
 
     assertTrue(invalidMsgType.showUsage());
     assertEquals("", invalidMsgType.line());
@@ -122,5 +123,9 @@ class MatrixOutboundCommandServiceTest {
         .serverPassword("secret")
         .backend(backend)
         .build();
+  }
+
+  private static UploadCommandTargetView targetView(TargetRef target) {
+    return new UploadCommandTargetView(target.serverId(), target.target());
   }
 }

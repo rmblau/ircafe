@@ -7,6 +7,7 @@ import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpContributor;
 import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpSink;
 import cafe.woden.ircclient.app.outbound.support.OutboundRawCommandSupport;
 import cafe.woden.ircclient.app.outbound.upload.spi.SemanticUploadCommandHandler;
+import cafe.woden.ircclient.app.outbound.upload.spi.UploadCommandTargetView;
 import cafe.woden.ircclient.irc.port.IrcTargetMembershipPort;
 import cafe.woden.ircclient.model.TargetRef;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -35,7 +36,7 @@ public final class OutboundUploadCommandService implements OutboundHelpContribut
   @NonNull private final OutboundRawCommandSupport rawCommandSupport;
 
   public void appendUploadHelp(TargetRef out) {
-    semanticUploadCommandHandler.appendUploadHelp(out);
+    semanticUploadCommandHandler.appendUploadHelp(uploadTarget(out));
   }
 
   @Override
@@ -73,9 +74,9 @@ public final class OutboundUploadCommandService implements OutboundHelpContribut
     }
 
     SemanticUploadCommandHandler.UploadPreparation uploadPreparation =
-        semanticUploadCommandHandler.prepareUpload(at, msgType, path, caption);
+        semanticUploadCommandHandler.prepareUpload(uploadTarget(at), msgType, path, caption);
     if (uploadPreparation.showUsage()) {
-      semanticUploadCommandHandler.appendUploadUsage(at);
+      semanticUploadCommandHandler.appendUploadUsage(uploadTarget(at));
       return;
     }
     if (!connectionCoordinator.isConnected(at.serverId())) {
@@ -103,5 +104,9 @@ public final class OutboundUploadCommandService implements OutboundHelpContribut
                         targetCoordinator.safeStatusTarget(),
                         "(upload-error)",
                         String.valueOf(err))));
+  }
+
+  private static UploadCommandTargetView uploadTarget(TargetRef target) {
+    return target == null ? null : new UploadCommandTargetView(target.serverId(), target.target());
   }
 }
