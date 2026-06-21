@@ -7,14 +7,8 @@ import cafe.woden.ircclient.app.outbound.backend.spi.BuiltInBackendIds;
 import cafe.woden.ircclient.app.outbound.backend.spi.OutboundBackendFeatureAdapter;
 import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationOutboundCommands;
 import com.google.auto.service.AutoService;
-import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
-import org.jmolecules.architecture.layered.ApplicationLayer;
-import org.springframework.stereotype.Component;
 
 /** Built-in backend extension for the standard IRC transport. */
-@Component
-@SecondaryAdapter
-@ApplicationLayer
 @AutoService(BackendExtension.class)
 public final class IrcBackendExtension implements BackendExtension {
   private static final MessageMutationOutboundCommands MESSAGE_MUTATION_COMMANDS =

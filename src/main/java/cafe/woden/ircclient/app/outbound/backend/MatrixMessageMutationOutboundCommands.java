@@ -3,14 +3,8 @@ package cafe.woden.ircclient.app.outbound.backend;
 import cafe.woden.ircclient.app.outbound.backend.spi.BuiltInBackendIds;
 import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationOutboundCommands;
 import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationTargetView;
-import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
-import org.jmolecules.architecture.layered.ApplicationLayer;
-import org.springframework.stereotype.Component;
 
 /** Matrix backend payload shaping for message mutation commands. */
-@Component
-@SecondaryAdapter
-@ApplicationLayer
 public final class MatrixMessageMutationOutboundCommands
     implements MessageMutationOutboundCommands {
 

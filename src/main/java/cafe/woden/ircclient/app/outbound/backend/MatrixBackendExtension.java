@@ -8,14 +8,8 @@ import cafe.woden.ircclient.app.outbound.backend.spi.OutboundBackendFeatureAdapt
 import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationOutboundCommands;
 import cafe.woden.ircclient.app.outbound.upload.spi.UploadCommandTranslationHandler;
 import com.google.auto.service.AutoService;
-import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
-import org.jmolecules.architecture.layered.ApplicationLayer;
-import org.springframework.stereotype.Component;
 
 /** Built-in backend extension for the Matrix transport. */
-@Component
-@SecondaryAdapter
-@ApplicationLayer
 @AutoService(BackendExtension.class)
 public final class MatrixBackendExtension implements BackendExtension {
   private static final MessageMutationOutboundCommands MESSAGE_MUTATION_COMMANDS =

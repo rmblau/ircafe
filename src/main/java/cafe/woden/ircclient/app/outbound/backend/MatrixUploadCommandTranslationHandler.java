@@ -3,13 +3,7 @@ package cafe.woden.ircclient.app.outbound.backend;
 import cafe.woden.ircclient.app.outbound.backend.spi.BuiltInBackendIds;
 import cafe.woden.ircclient.app.outbound.upload.spi.UploadCommandTranslationHandler;
 import java.util.Objects;
-import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
-import org.jmolecules.architecture.layered.ApplicationLayer;
-import org.springframework.stereotype.Component;
 
-@Component
-@SecondaryAdapter
-@ApplicationLayer
 public final class MatrixUploadCommandTranslationHandler
     implements UploadCommandTranslationHandler {
   @Override

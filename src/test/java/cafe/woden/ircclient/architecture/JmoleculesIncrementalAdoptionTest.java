@@ -404,26 +404,10 @@ class JmoleculesIncrementalAdoptionTest {
         "cafe.woden.ircclient.app.outbound.dispatch.ObservedOutboundCommandDispatcher",
         ApplicationLayer.class);
     assertAnnotatedByName(
-        "cafe.woden.ircclient.app.outbound.backend.IrcMessageMutationOutboundCommands",
-        ApplicationLayer.class);
-    assertAnnotatedByName(
-        "cafe.woden.ircclient.app.outbound.backend.IrcBackendExtension", ApplicationLayer.class);
-    assertAnnotatedByName(
-        "cafe.woden.ircclient.app.outbound.backend.MatrixMessageMutationOutboundCommands",
-        ApplicationLayer.class);
-    assertAnnotatedByName(
-        "cafe.woden.ircclient.app.outbound.backend.MatrixOutboundBackendFeatureAdapter",
-        ApplicationLayer.class);
-    assertAnnotatedByName(
-        "cafe.woden.ircclient.app.outbound.backend.MatrixBackendExtension", ApplicationLayer.class);
-    assertAnnotatedByName(
         "cafe.woden.ircclient.app.outbound.backend.MatrixOutboundCommandService",
         ApplicationLayer.class);
     assertAnnotatedByName(
         "cafe.woden.ircclient.app.outbound.backend.MatrixOutboundCommandSupport",
-        ApplicationLayer.class);
-    assertAnnotatedByName(
-        "cafe.woden.ircclient.app.outbound.backend.MatrixUploadCommandTranslationHandler",
         ApplicationLayer.class);
     assertAnnotatedByName(
         "cafe.woden.ircclient.app.outbound.chathistory.OutboundChatHistoryCommandService",
@@ -535,15 +519,6 @@ class JmoleculesIncrementalAdoptionTest {
         ApplicationLayer.class);
     assertAnnotatedByName(
         "cafe.woden.ircclient.app.outbound.upload.OutboundUploadCommandService",
-        ApplicationLayer.class);
-    assertAnnotatedByName(
-        "cafe.woden.ircclient.app.outbound.backend.QuasselMessageMutationOutboundCommands",
-        ApplicationLayer.class);
-    assertAnnotatedByName(
-        "cafe.woden.ircclient.app.outbound.backend.QuasselOutboundBackendFeatureAdapter",
-        ApplicationLayer.class);
-    assertAnnotatedByName(
-        "cafe.woden.ircclient.app.outbound.backend.QuasselBackendExtension",
         ApplicationLayer.class);
     assertAnnotatedByName(
         "cafe.woden.ircclient.app.outbound.backend.QuasselOutboundCommandService",

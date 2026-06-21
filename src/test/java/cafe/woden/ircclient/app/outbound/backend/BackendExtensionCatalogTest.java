@@ -82,6 +82,24 @@ class BackendExtensionCatalogTest {
   }
 
   @Test
+  void loadsBuiltInBackendExtensionsFromApplicationClasspath() {
+    BackendExtensionCatalog catalog =
+        new BackendExtensionCatalog(
+            BackendExtensionCatalogState.fromInstalledServices(
+                java.util.List.of(), new FakeInstalledPluginsPort(java.util.List.of())));
+
+    assertInstanceOf(
+        IrcMessageMutationOutboundCommands.class, catalog.messageMutationCommandsFor("irc"));
+    assertInstanceOf(
+        MatrixUploadCommandTranslationHandler.class, catalog.uploadTranslationHandlerFor("matrix"));
+    assertInstanceOf(
+        QuasselMessageMutationOutboundCommands.class,
+        catalog.messageMutationCommandsFor("quassel-core"));
+    assertTrue(catalog.featureAdapterFor("matrix").supportsSemanticUpload());
+    assertTrue(catalog.featureAdapterFor("quassel-core").supportsQuasselCoreCommands());
+  }
+
+  @Test
   void loadsBackendExtensionsFromInstalledPluginsPort() {
     BackendExtensionCatalog catalog =
         new BackendExtensionCatalog(
