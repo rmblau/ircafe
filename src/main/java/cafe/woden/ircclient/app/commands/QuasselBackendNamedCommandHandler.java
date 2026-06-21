@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.app.commands;
 
+import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandParseResult;
 import cafe.woden.ircclient.app.commands.spi.SlashCommandDescriptor;
 import com.google.auto.service.AutoService;
 import java.util.List;
@@ -22,15 +23,15 @@ public final class QuasselBackendNamedCommandHandler
   }
 
   @Override
-  public ParsedInput parse(String line, String matchedCommandName) {
+  public BackendNamedCommandParseResult parse(String line, String matchedCommandName) {
     String commandToken = "/" + matchedCommandName;
     return switch (matchedCommandName) {
       case "quasselsetup", "qsetup" ->
-          new ParsedInput.BackendNamed(
+          new BackendNamedCommandParseResult(
               BackendNamedCommandNames.QUASSEL_SETUP,
               BackendNamedCommandParser.argAfter(line, commandToken));
       case "quasselnet", "qnet" ->
-          new ParsedInput.BackendNamed(
+          new BackendNamedCommandParseResult(
               BackendNamedCommandNames.QUASSEL_NETWORK,
               BackendNamedCommandParser.argAfter(line, commandToken));
       default -> null;

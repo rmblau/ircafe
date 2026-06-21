@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
+import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandParseResult;
 import cafe.woden.ircclient.app.commands.spi.SlashCommandDescriptor;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
@@ -113,7 +114,7 @@ class BackendNamedCommandCatalogTest {
           }
 
           @Override
-          public ParsedInput parse(String line, String matchedCommandName) {
+          public BackendNamedCommandParseResult parse(String line, String matchedCommandName) {
             return null;
           }
         };
@@ -125,7 +126,7 @@ class BackendNamedCommandCatalogTest {
           }
 
           @Override
-          public ParsedInput parse(String line, String matchedCommandName) {
+          public BackendNamedCommandParseResult parse(String line, String matchedCommandName) {
             return null;
           }
         };
@@ -158,7 +159,7 @@ class BackendNamedCommandCatalogTest {
     return """
         package plugin.commands;
 
-        import cafe.woden.ircclient.app.commands.ParsedInput;
+        import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandParseResult;
         import cafe.woden.ircclient.app.commands.spi.SlashCommandDescriptor;
         import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
         import java.util.List;
@@ -172,12 +173,12 @@ class BackendNamedCommandCatalogTest {
           }
 
           @Override
-          public ParsedInput parse(String line, String matchedCommandName) {
+          public BackendNamedCommandParseResult parse(String line, String matchedCommandName) {
             String commandToken = "/" + matchedCommandName;
             String args = line != null && line.length() > commandToken.length()
                 ? line.substring(commandToken.length()).trim()
                 : "";
-            return new ParsedInput.BackendNamed(
+            return new BackendNamedCommandParseResult(
                 matchedCommandName,
                 args);
           }
@@ -219,8 +220,8 @@ class BackendNamedCommandCatalogTest {
     }
 
     @Override
-    public ParsedInput parse(String line, String matchedCommandName) {
-      return new ParsedInput.BackendNamed(
+    public BackendNamedCommandParseResult parse(String line, String matchedCommandName) {
+      return new BackendNamedCommandParseResult(
           matchedCommandName, BackendNamedCommandParser.argAfter(line, "/" + matchedCommandName));
     }
 

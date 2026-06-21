@@ -31,7 +31,6 @@ import cafe.woden.ircclient.app.commands.FilterCommand;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesBus;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
 import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor;
-import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
 import cafe.woden.ircclient.app.commands.spi.SlashCommandParseStrategy;
 import cafe.woden.ircclient.app.core.IrcMediator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
@@ -649,7 +648,6 @@ class SpringModulithIncrementalAdoptionTest {
         appModule,
         "commands-spi",
         BackendNamedCommandExecutor.class,
-        BackendNamedCommandHandler.class,
         SlashCommandParseStrategy.class);
     assertNamedInterfaceContains(appModule, "outbound-filter", LocalFilterCommandHandler.class);
   }

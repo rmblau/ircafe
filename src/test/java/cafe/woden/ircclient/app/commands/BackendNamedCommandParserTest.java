@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
+import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandParseResult;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -60,15 +61,16 @@ class BackendNamedCommandParserTest {
           }
 
           @Override
-          public ParsedInput parse(String line, String matchedCommandName) {
-            return new ParsedInput.Help(matchedCommandName);
+          public BackendNamedCommandParseResult parse(String line, String matchedCommandName) {
+            return new BackendNamedCommandParseResult(matchedCommandName, "delegated");
           }
         };
     BackendNamedCommandParser parser = new BackendNamedCommandParser(List.of(custom));
 
     ParsedInput parsed = parser.parse("/backendping");
-    assertTrue(parsed instanceof ParsedInput.Help);
-    assertEquals("backendping", ((ParsedInput.Help) parsed).topic());
+    assertTrue(parsed instanceof ParsedInput.BackendNamed);
+    assertEquals("backendping", ((ParsedInput.BackendNamed) parsed).command());
+    assertEquals("delegated", ((ParsedInput.BackendNamed) parsed).args());
   }
 
   @Test
@@ -81,7 +83,7 @@ class BackendNamedCommandParserTest {
           }
 
           @Override
-          public ParsedInput parse(String line, String matchedCommandName) {
+          public BackendNamedCommandParseResult parse(String line, String matchedCommandName) {
             return null;
           }
         };
@@ -93,7 +95,7 @@ class BackendNamedCommandParserTest {
           }
 
           @Override
-          public ParsedInput parse(String line, String matchedCommandName) {
+          public BackendNamedCommandParseResult parse(String line, String matchedCommandName) {
             return null;
           }
         };
@@ -125,7 +127,7 @@ class BackendNamedCommandParserTest {
           }
 
           @Override
-          public ParsedInput parse(String line, String matchedCommandName) {
+          public BackendNamedCommandParseResult parse(String line, String matchedCommandName) {
             return null;
           }
         };

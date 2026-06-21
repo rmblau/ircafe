@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.app.commands;
 
+import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandParseResult;
 import cafe.woden.ircclient.app.commands.spi.SlashCommandDescriptor;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
@@ -123,7 +124,9 @@ public class BackendNamedCommandCatalog {
     cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler handler =
         parseHandlersByCommandName.get(commandName);
     if (handler == null) return null;
-    return handler.parse(raw, commandName);
+    BackendNamedCommandParseResult parsed = handler.parse(raw, commandName);
+    if (parsed == null) return null;
+    return new ParsedInput.BackendNamed(parsed.command(), parsed.args());
   }
 
   public List<SlashCommandDescriptor> autocompleteCommands() {

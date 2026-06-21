@@ -1,6 +1,5 @@
 package cafe.woden.ircclient.app.commands.spi;
 
-import cafe.woden.ircclient.app.commands.ParsedInput;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,7 +14,7 @@ public interface BackendNamedCommandHandler {
 
   Set<String> supportedCommandNames();
 
-  ParsedInput parse(String line, String matchedCommandName);
+  BackendNamedCommandParseResult parse(String line, String matchedCommandName);
 
   default List<SlashCommandDescriptor> autocompleteCommands() {
     return List.of();

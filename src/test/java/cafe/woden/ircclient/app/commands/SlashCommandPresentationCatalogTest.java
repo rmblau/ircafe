@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
+import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandParseResult;
 import cafe.woden.ircclient.app.commands.spi.SlashCommandDescriptor;
 import cafe.woden.ircclient.app.commands.spi.SlashCommandHelpSink;
 import cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor;
@@ -48,8 +49,8 @@ class SlashCommandPresentationCatalogTest {
           }
 
           @Override
-          public ParsedInput parse(String line, String matchedCommandName) {
-            return new ParsedInput.BackendNamed("backendping", "");
+          public BackendNamedCommandParseResult parse(String line, String matchedCommandName) {
+            return new BackendNamedCommandParseResult("backendping", "");
           }
 
           @Override
@@ -254,8 +255,8 @@ class SlashCommandPresentationCatalogTest {
           }
 
           @Override
-          public ParsedInput parse(String line, String matchedCommandName) {
-            return new ParsedInput.BackendNamed("backendping", "");
+          public BackendNamedCommandParseResult parse(String line, String matchedCommandName) {
+            return new BackendNamedCommandParseResult("backendping", "");
           }
 
           @Override

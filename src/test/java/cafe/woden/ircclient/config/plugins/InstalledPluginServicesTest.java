@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
+import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandParseResult;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.io.IOException;
@@ -137,7 +138,7 @@ class InstalledPluginServicesTest {
         package plugin.installed;
 
         import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
-        import cafe.woden.ircclient.app.commands.ParsedInput;
+        import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandParseResult;
         import java.util.Set;
 
         public final class RuntimeBackendNamedCommandHandler implements BackendNamedCommandHandler {
@@ -147,8 +148,8 @@ class InstalledPluginServicesTest {
           }
 
           @Override
-          public ParsedInput parse(String line, String matchedCommandName) {
-            return new ParsedInput.BackendNamed(matchedCommandName, "");
+          public BackendNamedCommandParseResult parse(String line, String matchedCommandName) {
+            return new BackendNamedCommandParseResult(matchedCommandName, "");
           }
         }
         """;
@@ -195,9 +196,8 @@ class InstalledPluginServicesTest {
     }
 
     @Override
-    public cafe.woden.ircclient.app.commands.ParsedInput parse(
-        String line, String matchedCommandName) {
-      return new cafe.woden.ircclient.app.commands.ParsedInput.BackendNamed("built-in", "");
+    public BackendNamedCommandParseResult parse(String line, String matchedCommandName) {
+      return new BackendNamedCommandParseResult("built-in", "");
     }
   }
 }

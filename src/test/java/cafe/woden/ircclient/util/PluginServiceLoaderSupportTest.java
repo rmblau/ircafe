@@ -5,8 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import cafe.woden.ircclient.app.commands.ParsedInput;
 import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
+import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandParseResult;
 import java.io.IOException;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
@@ -269,7 +269,7 @@ class PluginServiceLoaderSupportTest {
         package %s;
 
         import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
-        import cafe.woden.ircclient.app.commands.ParsedInput;
+        import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandParseResult;
         import java.util.Set;
 
         public final class %s implements BackendNamedCommandHandler {
@@ -279,8 +279,8 @@ class PluginServiceLoaderSupportTest {
           }
 
           @Override
-          public ParsedInput parse(String line, String matchedCommandName) {
-            return new ParsedInput.BackendNamed(matchedCommandName, "ok");
+          public BackendNamedCommandParseResult parse(String line, String matchedCommandName) {
+            return new BackendNamedCommandParseResult(matchedCommandName, "ok");
           }
         }
         """
@@ -312,7 +312,7 @@ class PluginServiceLoaderSupportTest {
     }
 
     @Override
-    public ParsedInput parse(String line, String matchedCommandName) {
+    public BackendNamedCommandParseResult parse(String line, String matchedCommandName) {
       return null;
     }
   }

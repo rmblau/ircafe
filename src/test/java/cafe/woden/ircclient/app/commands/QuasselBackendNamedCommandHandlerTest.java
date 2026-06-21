@@ -3,6 +3,7 @@ package cafe.woden.ircclient.app.commands;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandParseResult;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
@@ -21,21 +22,17 @@ class QuasselBackendNamedCommandHandlerTest {
 
   @Test
   void parsesQuasselSetupAliasToCanonicalCommand() {
-    ParsedInput parsed = handler.parse("/qsetup core", "qsetup");
+    BackendNamedCommandParseResult parsed = handler.parse("/qsetup core", "qsetup");
 
-    assertTrue(parsed instanceof ParsedInput.BackendNamed);
-    assertEquals(
-        BackendNamedCommandNames.QUASSEL_SETUP, ((ParsedInput.BackendNamed) parsed).command());
-    assertEquals("core", ((ParsedInput.BackendNamed) parsed).args());
+    assertEquals(BackendNamedCommandNames.QUASSEL_SETUP, parsed.command());
+    assertEquals("core", parsed.args());
   }
 
   @Test
   void parsesQuasselNetworkAliasToCanonicalCommand() {
-    ParsedInput parsed = handler.parse("/qnet list", "qnet");
+    BackendNamedCommandParseResult parsed = handler.parse("/qnet list", "qnet");
 
-    assertTrue(parsed instanceof ParsedInput.BackendNamed);
-    assertEquals(
-        BackendNamedCommandNames.QUASSEL_NETWORK, ((ParsedInput.BackendNamed) parsed).command());
-    assertEquals("list", ((ParsedInput.BackendNamed) parsed).args());
+    assertEquals(BackendNamedCommandNames.QUASSEL_NETWORK, parsed.command());
+    assertEquals("list", parsed.args());
   }
 }
