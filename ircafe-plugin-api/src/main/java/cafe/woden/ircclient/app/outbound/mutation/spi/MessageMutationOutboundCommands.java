@@ -1,29 +1,29 @@
-package cafe.woden.ircclient.app.outbound.mutation;
+package cafe.woden.ircclient.app.outbound.mutation.spi;
 
-import cafe.woden.ircclient.model.TargetRef;
 import java.util.Map;
 import java.util.Objects;
-import org.jmolecules.architecture.hexagonal.SecondaryPort;
-import org.jmolecules.architecture.layered.ApplicationLayer;
 
 /** Backend-specific payload shaping for reply/react/edit/redact outbound commands. */
-@SecondaryPort
-@ApplicationLayer
 public interface MessageMutationOutboundCommands {
 
   default String backendId() {
     return "";
   }
 
-  String buildReplyRawLine(TargetRef target, String replyToMessageId, String message);
+  String buildReplyRawLine(
+      MessageMutationTargetView target, String replyToMessageId, String message);
 
-  String buildReactRawLine(TargetRef target, String replyToMessageId, String reaction);
+  String buildReactRawLine(
+      MessageMutationTargetView target, String replyToMessageId, String reaction);
 
-  String buildUnreactRawLine(TargetRef target, String replyToMessageId, String reaction);
+  String buildUnreactRawLine(
+      MessageMutationTargetView target, String replyToMessageId, String reaction);
 
-  String buildEditRawLine(TargetRef target, String targetMessageId, String editedText);
+  String buildEditRawLine(
+      MessageMutationTargetView target, String targetMessageId, String editedText);
 
-  String buildRedactRawLine(TargetRef target, String targetMessageId, String reason);
+  String buildRedactRawLine(
+      MessageMutationTargetView target, String targetMessageId, String reason);
 
   default Map<String, String> localEchoEditTags(String targetMessageId) {
     String msgId = Objects.toString(targetMessageId, "").trim();

@@ -3,7 +3,7 @@ package cafe.woden.ircclient.app.outbound.backend;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_REACT;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_UNREACT;
 
-import cafe.woden.ircclient.model.TargetRef;
+import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationTargetView;
 import java.util.Objects;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
@@ -12,7 +12,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 final class MessageMutationOutboundCommandLineBuilder {
 
-  static String buildReplyRawLine(TargetRef target, String replyToMessageId, String message) {
+  static String buildReplyRawLine(
+      MessageMutationTargetView target, String replyToMessageId, String message) {
     String outTarget = normalizeTarget(target);
     String msgId = normalizeToken(replyToMessageId);
     String text = normalizeText(message);
@@ -20,15 +21,18 @@ final class MessageMutationOutboundCommandLineBuilder {
     return "@+reply=" + escapeIrcv3TagValue(msgId) + " PRIVMSG " + outTarget + " :" + text;
   }
 
-  static String buildReactRawLine(TargetRef target, String replyToMessageId, String reaction) {
+  static String buildReactRawLine(
+      MessageMutationTargetView target, String replyToMessageId, String reaction) {
     return buildReactionRawLine(target, replyToMessageId, reaction, DRAFT_REACT);
   }
 
-  static String buildUnreactRawLine(TargetRef target, String replyToMessageId, String reaction) {
+  static String buildUnreactRawLine(
+      MessageMutationTargetView target, String replyToMessageId, String reaction) {
     return buildReactionRawLine(target, replyToMessageId, reaction, DRAFT_UNREACT);
   }
 
-  static String buildEditRawLine(TargetRef target, String targetMessageId, String editedText) {
+  static String buildEditRawLine(
+      MessageMutationTargetView target, String targetMessageId, String editedText) {
     String outTarget = normalizeTarget(target);
     String msgId = normalizeToken(targetMessageId);
     String text = normalizeText(editedText);
@@ -36,7 +40,8 @@ final class MessageMutationOutboundCommandLineBuilder {
     return "@+draft/edit=" + escapeIrcv3TagValue(msgId) + " PRIVMSG " + outTarget + " :" + text;
   }
 
-  static String buildRedactRawLine(TargetRef target, String targetMessageId, String reason) {
+  static String buildRedactRawLine(
+      MessageMutationTargetView target, String targetMessageId, String reason) {
     String outTarget = normalizeTarget(target);
     String msgId = normalizeToken(targetMessageId);
     if (outTarget.isEmpty() || msgId.isEmpty()) return "";
@@ -47,7 +52,10 @@ final class MessageMutationOutboundCommandLineBuilder {
   }
 
   private static String buildReactionRawLine(
-      TargetRef target, String replyToMessageId, String reaction, String reactionTagKey) {
+      MessageMutationTargetView target,
+      String replyToMessageId,
+      String reaction,
+      String reactionTagKey) {
     String outTarget = normalizeTarget(target);
     String msgId = normalizeToken(replyToMessageId);
     String react = normalizeToken(reaction);
@@ -63,7 +71,7 @@ final class MessageMutationOutboundCommandLineBuilder {
         + outTarget;
   }
 
-  private static String normalizeTarget(TargetRef target) {
+  private static String normalizeTarget(MessageMutationTargetView target) {
     if (target == null) return "";
     return Objects.toString(target.target(), "").trim();
   }

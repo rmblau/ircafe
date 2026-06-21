@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.app.outbound.backend.spi;
 
-import cafe.woden.ircclient.app.outbound.mutation.MessageMutationOutboundCommands;
+import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationOutboundCommands;
 import cafe.woden.ircclient.app.outbound.upload.spi.UploadCommandTranslationHandler;
 
 /** ServiceLoader-backed backend extension bundle for backend-specific outbound behavior. */

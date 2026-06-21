@@ -4,7 +4,7 @@ import cafe.woden.ircclient.app.api.AvailableBackendIdsPort;
 import cafe.woden.ircclient.app.api.BackendEditorProfileSpec;
 import cafe.woden.ircclient.app.outbound.backend.spi.BackendExtension;
 import cafe.woden.ircclient.app.outbound.backend.spi.OutboundBackendFeatureAdapter;
-import cafe.woden.ircclient.app.outbound.mutation.MessageMutationOutboundCommands;
+import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationOutboundCommands;
 import cafe.woden.ircclient.app.outbound.upload.spi.UploadCommandTranslationHandler;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import jakarta.annotation.PreDestroy;

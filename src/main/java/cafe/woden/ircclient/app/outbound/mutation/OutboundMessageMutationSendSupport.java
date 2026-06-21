@@ -4,6 +4,8 @@ import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.app.outbound.backend.MessageMutationOutboundCommandsRouter;
 import cafe.woden.ircclient.app.outbound.backend.OutboundBackendCapabilityPolicy;
+import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationOutboundCommands;
+import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationTargetView;
 import cafe.woden.ircclient.app.outbound.support.OutboundConnectionStatusSupport;
 import cafe.woden.ircclient.app.outbound.support.OutboundRawLineCorrelationService;
 import cafe.woden.ircclient.irc.port.IrcEchoCapabilityPort;
@@ -56,8 +58,9 @@ final class OutboundMessageMutationSendSupport {
           target, pendingEntry.pendingId(), pendingEntry.createdAt(), me, text);
     }
 
+    MessageMutationTargetView mutationTarget = toMutationTarget(target);
     MessageMutationOutboundCommands mutationCommands = mutationCommandsForServer(target.serverId());
-    String rawLine = mutationCommands.buildReplyRawLine(target, msgId, text);
+    String rawLine = mutationCommands.buildReplyRawLine(mutationTarget, msgId, text);
     if (rawLine.isBlank()) return;
 
     OutboundRawLineCorrelationService.PreparedRawLine prepared =
@@ -96,8 +99,9 @@ final class OutboundMessageMutationSendSupport {
     String react = OutboundMessageMutationCommandService.normalizeReactionToken(reaction);
     if (msgId.isEmpty() || react.isEmpty() || !ensureConnected(target)) return;
 
+    MessageMutationTargetView mutationTarget = toMutationTarget(target);
     MessageMutationOutboundCommands mutationCommands = mutationCommandsForServer(target.serverId());
-    String rawLine = mutationCommands.buildReactRawLine(target, msgId, react);
+    String rawLine = mutationCommands.buildReactRawLine(mutationTarget, msgId, react);
     if (rawLine.isBlank()) return;
 
     OutboundRawLineCorrelationService.PreparedRawLine prepared =
@@ -119,8 +123,9 @@ final class OutboundMessageMutationSendSupport {
     String react = OutboundMessageMutationCommandService.normalizeReactionToken(reaction);
     if (msgId.isEmpty() || react.isEmpty() || !ensureConnected(target)) return;
 
+    MessageMutationTargetView mutationTarget = toMutationTarget(target);
     MessageMutationOutboundCommands mutationCommands = mutationCommandsForServer(target.serverId());
-    String rawLine = mutationCommands.buildUnreactRawLine(target, msgId, react);
+    String rawLine = mutationCommands.buildUnreactRawLine(mutationTarget, msgId, react);
     if (rawLine.isBlank()) return;
 
     OutboundRawLineCorrelationService.PreparedRawLine prepared =
@@ -145,8 +150,9 @@ final class OutboundMessageMutationSendSupport {
     String text = editedText == null ? "" : editedText.trim();
     if (msgId.isEmpty() || text.isEmpty() || !ensureConnected(target)) return;
 
+    MessageMutationTargetView mutationTarget = toMutationTarget(target);
     MessageMutationOutboundCommands mutationCommands = mutationCommandsForServer(target.serverId());
-    String rawLine = mutationCommands.buildEditRawLine(target, msgId, text);
+    String rawLine = mutationCommands.buildEditRawLine(mutationTarget, msgId, text);
     if (rawLine.isBlank()) return;
 
     OutboundRawLineCorrelationService.PreparedRawLine prepared =
@@ -168,8 +174,9 @@ final class OutboundMessageMutationSendSupport {
     String msgId = OutboundMessageMutationCommandService.normalizeIrcv3Token(targetMessageId);
     if (msgId.isEmpty() || !ensureConnected(target)) return;
 
+    MessageMutationTargetView mutationTarget = toMutationTarget(target);
     MessageMutationOutboundCommands mutationCommands = mutationCommandsForServer(target.serverId());
-    String rawLine = mutationCommands.buildRedactRawLine(target, msgId, reason);
+    String rawLine = mutationCommands.buildRedactRawLine(mutationTarget, msgId, reason);
     if (rawLine.isBlank()) return;
 
     OutboundRawLineCorrelationService.PreparedRawLine prepared =
@@ -207,6 +214,12 @@ final class OutboundMessageMutationSendSupport {
 
   private boolean shouldUseLocalEcho(String serverId) {
     return !echoCapabilityPort.isEchoMessageAvailable(serverId);
+  }
+
+  private static MessageMutationTargetView toMutationTarget(TargetRef target) {
+    return target == null
+        ? new MessageMutationTargetView("", "")
+        : new MessageMutationTargetView(target.serverId(), target.target());
   }
 
   private MessageMutationOutboundCommands mutationCommandsForServer(String serverId) {

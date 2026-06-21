@@ -3,10 +3,10 @@ package cafe.woden.ircclient.app.outbound.backend;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import cafe.woden.ircclient.app.outbound.mutation.MessageMutationOutboundCommands;
+import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationOutboundCommands;
+import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationTargetView;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
-import cafe.woden.ircclient.model.TargetRef;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -81,27 +81,32 @@ class MessageMutationOutboundCommandsRouterTest {
     }
 
     @Override
-    public String buildReplyRawLine(TargetRef target, String replyToMessageId, String message) {
+    public String buildReplyRawLine(
+        MessageMutationTargetView target, String replyToMessageId, String message) {
       return "";
     }
 
     @Override
-    public String buildReactRawLine(TargetRef target, String replyToMessageId, String reaction) {
+    public String buildReactRawLine(
+        MessageMutationTargetView target, String replyToMessageId, String reaction) {
       return "";
     }
 
     @Override
-    public String buildUnreactRawLine(TargetRef target, String replyToMessageId, String reaction) {
+    public String buildUnreactRawLine(
+        MessageMutationTargetView target, String replyToMessageId, String reaction) {
       return "";
     }
 
     @Override
-    public String buildEditRawLine(TargetRef target, String targetMessageId, String editedText) {
+    public String buildEditRawLine(
+        MessageMutationTargetView target, String targetMessageId, String editedText) {
       return "";
     }
 
     @Override
-    public String buildRedactRawLine(TargetRef target, String targetMessageId, String reason) {
+    public String buildRedactRawLine(
+        MessageMutationTargetView target, String targetMessageId, String reason) {
       return "";
     }
   }
@@ -114,27 +119,32 @@ class MessageMutationOutboundCommandsRouterTest {
     }
 
     @Override
-    public String buildReplyRawLine(TargetRef target, String replyToMessageId, String message) {
+    public String buildReplyRawLine(
+        MessageMutationTargetView target, String replyToMessageId, String message) {
       return "";
     }
 
     @Override
-    public String buildReactRawLine(TargetRef target, String replyToMessageId, String reaction) {
+    public String buildReactRawLine(
+        MessageMutationTargetView target, String replyToMessageId, String reaction) {
       return "";
     }
 
     @Override
-    public String buildUnreactRawLine(TargetRef target, String replyToMessageId, String reaction) {
+    public String buildUnreactRawLine(
+        MessageMutationTargetView target, String replyToMessageId, String reaction) {
       return "";
     }
 
     @Override
-    public String buildEditRawLine(TargetRef target, String targetMessageId, String editedText) {
+    public String buildEditRawLine(
+        MessageMutationTargetView target, String targetMessageId, String editedText) {
       return "";
     }
 
     @Override
-    public String buildRedactRawLine(TargetRef target, String targetMessageId, String reason) {
+    public String buildRedactRawLine(
+        MessageMutationTargetView target, String targetMessageId, String reason) {
       return "";
     }
   }
