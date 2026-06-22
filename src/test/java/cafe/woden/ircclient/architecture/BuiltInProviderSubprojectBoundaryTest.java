@@ -69,6 +69,7 @@ class BuiltInProviderSubprojectBoundaryTest {
     assertServiceLoaderOnlyProvider(build, "ircafe-builtins-outbound");
     assertServiceLoaderOnlyProvider(build, "ircafe-builtins-commands");
     assertServiceLoaderOnlyProvider(build, "ircafe-builtins-backend");
+    assertServiceLoaderOnlyProvider(build, "ircafe-builtins-ircv3");
   }
 
   @Test
