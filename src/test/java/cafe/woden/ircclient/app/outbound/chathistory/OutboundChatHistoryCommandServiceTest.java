@@ -177,6 +177,16 @@ class OutboundChatHistoryCommandServiceTest {
             "/chathistory [limit] (unavailable: requires negotiated draft/chathistory or chathistory)");
   }
 
+  @Test
+  void helpIncludesHistoryAliasTopic() {
+    TargetRef chan = new TargetRef("libera", "#ircafe");
+    when(irc.isChatHistoryAvailable("libera")).thenReturn(true);
+
+    service.topicHelpHandlers().get("history").accept(helpSink(chan));
+
+    verify(ui).appendStatus(chan, "(help)", "/chathistory [limit]");
+  }
+
   private static OutboundBackendCapabilityPolicy backendCapabilityPolicy() {
     OutboundBackendCapabilityPolicy policy = mock(OutboundBackendCapabilityPolicy.class);
     when(policy.featureUnavailableMessage(anyString(), anyString()))

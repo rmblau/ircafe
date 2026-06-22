@@ -349,6 +349,27 @@ class SlashCommandPresentationCatalogTest {
   }
 
   @Test
+  void loadsCoreChatHistoryTopicHelpThroughClasspathServiceLoader() {
+    RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+    SlashCommandPresentationCatalog catalog =
+        new SlashCommandPresentationCatalog(
+            List.of(), BackendNamedCommandCatalog.empty(), installedPlugins);
+    ArrayList<String> rendered = new ArrayList<>();
+    Map<String, Consumer<TargetRef>> handlers =
+        catalog.topicHelpHandlers((target, line) -> rendered.add(line));
+
+    assertTrue(handlers.containsKey("chathistory"));
+    assertTrue(handlers.containsKey("history"));
+    handlers.get("history").accept(new TargetRef("libera", "status"));
+
+    assertTrue(rendered.contains("/chathistory before <msgid=...|timestamp=...> [limit]"));
+    assertTrue(rendered.contains("/chathistory latest [*|msgid=...|timestamp=...] [limit]"));
+    assertTrue(rendered.contains("/chathistory around <msgid=...|timestamp=...> [limit]"));
+    assertTrue(rendered.contains("/chathistory between <start> <end> [limit]"));
+  }
+
+  @Test
   void loadsCoreRawQuoteTopicHelpThroughClasspathServiceLoader() {
     RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);

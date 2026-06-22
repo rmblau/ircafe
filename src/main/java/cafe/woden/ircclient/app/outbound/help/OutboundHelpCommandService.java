@@ -8,6 +8,7 @@ import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpSink;
 import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpTargetView;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.model.TargetRef;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -28,7 +29,7 @@ public final class OutboundHelpCommandService {
   private final TargetCoordinator targetCoordinator;
   private final SlashCommandPresentationCatalog slashCommandPresentationCatalog;
   private final List<OutboundHelpContributor> contributors;
-  private final Map<String, HelpTopicHandler> helpTopicHandlers;
+  private final Map<String, List<HelpTopicHandler>> helpTopicHandlers;
 
   @Autowired
   public OutboundHelpCommandService(
@@ -77,9 +78,9 @@ public final class OutboundHelpCommandService {
     TargetRef out = (at != null) ? at : targetCoordinator.safeStatusTarget();
     String t = normalizeHelpTopic(topic);
     if (!t.isEmpty()) {
-      HelpTopicHandler handler = helpTopicHandlers.get(t);
-      if (handler != null) {
-        handler.handle(out);
+      List<HelpTopicHandler> handlers = helpTopicHandlers.get(t);
+      if (handlers != null && !handlers.isEmpty()) {
+        handlers.forEach(handler -> handler.handle(out));
         return;
       }
       ui.appendStatus(out, "(help)", "No dedicated help for '" + t + "'. Showing common commands.");
@@ -92,14 +93,16 @@ public final class OutboundHelpCommandService {
     }
   }
 
-  private Map<String, HelpTopicHandler> buildHelpTopicHandlers() {
-    LinkedHashMap<String, HelpTopicHandler> handlers = new LinkedHashMap<>();
+  private Map<String, List<HelpTopicHandler>> buildHelpTopicHandlers() {
+    LinkedHashMap<String, List<HelpTopicHandler>> handlers = new LinkedHashMap<>();
     for (OutboundHelpContributor contributor : contributors) {
       registerHelpTopicHandlers(handlers, contributor.topicHelpHandlers());
     }
     registerTargetHelpTopicHandlers(
         handlers, slashCommandPresentationCatalog.topicHelpHandlers(this::appendStaticHelpLine));
-    return Map.copyOf(handlers);
+    LinkedHashMap<String, List<HelpTopicHandler>> immutable = new LinkedHashMap<>();
+    handlers.forEach((topic, topicHandlers) -> immutable.put(topic, List.copyOf(topicHandlers)));
+    return Map.copyOf(immutable);
   }
 
   private void appendStaticHelpLine(TargetRef out, String line) {
@@ -112,26 +115,31 @@ public final class OutboundHelpCommandService {
   }
 
   private void registerHelpTopicHandlers(
-      Map<String, HelpTopicHandler> handlers,
+      Map<String, List<HelpTopicHandler>> handlers,
       Map<String, Consumer<OutboundHelpSink>> topicHandlers) {
     if (handlers == null || topicHandlers == null || topicHandlers.isEmpty()) return;
     for (Map.Entry<String, Consumer<OutboundHelpSink>> entry : topicHandlers.entrySet()) {
       String topic = normalizeHelpTopic(entry.getKey());
       Consumer<OutboundHelpSink> consumer = entry.getValue();
       if (!topic.isEmpty() && consumer != null) {
-        handlers.put(topic, out -> consumer.accept(helpSink(out)));
+        handlers
+            .computeIfAbsent(topic, ignored -> new ArrayList<>())
+            .add(out -> consumer.accept(helpSink(out)));
       }
     }
   }
 
   private static void registerTargetHelpTopicHandlers(
-      Map<String, HelpTopicHandler> handlers, Map<String, Consumer<TargetRef>> topicHandlers) {
+      Map<String, List<HelpTopicHandler>> handlers,
+      Map<String, Consumer<TargetRef>> topicHandlers) {
     if (handlers == null || topicHandlers == null || topicHandlers.isEmpty()) return;
     for (Map.Entry<String, Consumer<TargetRef>> entry : topicHandlers.entrySet()) {
       String topic = normalizeHelpTopic(entry.getKey());
       Consumer<TargetRef> consumer = entry.getValue();
       if (!topic.isEmpty() && consumer != null) {
-        handlers.put(topic, consumer::accept);
+        List<HelpTopicHandler> topicHandlersForKey =
+            handlers.computeIfAbsent(topic, ignored -> new ArrayList<>());
+        topicHandlersForKey.add(consumer::accept);
       }
     }
   }

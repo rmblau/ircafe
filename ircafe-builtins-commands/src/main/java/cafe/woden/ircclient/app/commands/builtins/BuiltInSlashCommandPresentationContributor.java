@@ -119,6 +119,10 @@ public final class BuiltInSlashCommandPresentationContributor
         BuiltInSlashCommandPresentationContributor::appendMonitorHelp,
         "mon",
         BuiltInSlashCommandPresentationContributor::appendMonitorHelp,
+        "chathistory",
+        BuiltInSlashCommandPresentationContributor::appendChatHistoryHelpDetails,
+        "history",
+        BuiltInSlashCommandPresentationContributor::appendChatHistoryHelpDetails,
         "quote",
         BuiltInSlashCommandPresentationContributor::appendRawQuoteHelp,
         "raw",
@@ -145,6 +149,16 @@ public final class BuiltInSlashCommandPresentationContributor
     help.appendLine("Usage: /monitor <+|-|list|status|clear> [nicks]");
     help.appendLine("Aliases: /mon, /monitor +nick1 nick2, /monitor -nick1,nick2");
     help.appendLine("Examples: /monitor +alice,bob  |  /monitor list  |  /monitor clear");
+  }
+
+  private static void appendChatHistoryHelpDetails(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("/chathistory before <msgid=...|timestamp=...> [limit]");
+    help.appendLine("/chathistory latest [*|msgid=...|timestamp=...] [limit]");
+    help.appendLine("/chathistory around <msgid=...|timestamp=...> [limit]");
+    help.appendLine("/chathistory between <start> <end> [limit]");
   }
 
   private static void appendRawQuoteHelp(SlashCommandHelpSink help) {

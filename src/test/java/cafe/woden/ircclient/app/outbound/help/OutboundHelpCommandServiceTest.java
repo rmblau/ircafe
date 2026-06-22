@@ -11,6 +11,8 @@ import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.commands.BackendNamedCommandCatalog;
 import cafe.woden.ircclient.app.commands.SlashCommandPresentationCatalog;
 import cafe.woden.ircclient.app.commands.builtins.BuiltInSlashCommandPresentationContributor;
+import cafe.woden.ircclient.app.commands.spi.SlashCommandHelpSink;
+import cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.app.outbound.backend.*;
@@ -283,6 +285,38 @@ class OutboundHelpCommandServiceTest {
     service.handleHelp("upload");
 
     verify(outboundUploadCommandService).appendUploadHelp(chan);
+  }
+
+  @Test
+  void topicHelpCombinesOutboundAndPresentationContributors() {
+    TargetRef chan = new TargetRef("libera", "#ircafe");
+    when(targetCoordinator.getActiveTarget()).thenReturn(chan);
+    OutboundHelpContributor outboundContributor =
+        new OutboundHelpContributor() {
+          @Override
+          public Map<String, Consumer<OutboundHelpSink>> topicHelpHandlers() {
+            return Map.of("shared", help -> help.appendLine("outbound shared help"));
+          }
+        };
+    SlashCommandPresentationContributor presentationContributor =
+        new SlashCommandPresentationContributor() {
+          @Override
+          public Map<String, Consumer<SlashCommandHelpSink>> topicHelpHandlers() {
+            return Map.of("shared", help -> help.appendLine("presentation shared help"));
+          }
+        };
+    OutboundHelpCommandService composedService =
+        new OutboundHelpCommandService(
+            ui,
+            targetCoordinator,
+            List.of(outboundContributor),
+            new SlashCommandPresentationCatalog(
+                List.of(presentationContributor), BackendNamedCommandCatalog.empty()));
+
+    composedService.handleHelp("shared");
+
+    verify(ui).appendStatus(chan, "(help)", "outbound shared help");
+    verify(ui).appendStatus(chan, "(help)", "presentation shared help");
   }
 
   @Test

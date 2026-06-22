@@ -40,7 +40,9 @@ public final class OutboundChatHistoryCommandService implements OutboundHelpCont
 
   @Override
   public Map<String, Consumer<OutboundHelpSink>> topicHelpHandlers() {
-    return Map.of("chathistory", help -> appendChatHistoryUsage(targetRef(help)));
+    return Map.of(
+        "chathistory", help -> appendChatHistoryAvailability(targetRef(help)),
+        "history", help -> appendChatHistoryAvailability(targetRef(help)));
   }
 
   public void handleChatHistoryBefore(CompositeDisposable disposables, int limit) {
@@ -214,8 +216,17 @@ public final class OutboundChatHistoryCommandService implements OutboundHelpCont
 
   private void appendChatHistoryUsage(TargetRef out) {
     TargetRef target = out != null ? out : targetCoordinator.safeStatusTarget();
+    appendChatHistoryAvailability(target);
+    appendChatHistoryUsageDetails(target);
+  }
+
+  private void appendChatHistoryAvailability(TargetRef out) {
+    TargetRef target = out != null ? out : targetCoordinator.safeStatusTarget();
     chatHistoryRequestSupport.appendHelp(
         target, "/chathistory [limit]" + helpAvailabilitySuffix(target.serverId()));
+  }
+
+  private void appendChatHistoryUsageDetails(TargetRef target) {
     chatHistoryRequestSupport.appendHelp(
         target, "/chathistory before <msgid=...|timestamp=...> [limit]");
     chatHistoryRequestSupport.appendHelp(
