@@ -31,7 +31,6 @@ public class ZncEphemeralNetworkImporter implements BouncerBackendDiscoveryHandl
   private static final Logger log = LoggerFactory.getLogger(ZncEphemeralNetworkImporter.class);
 
   private final BouncerNetworkDiscoveryOrchestrator orchestrator;
-  private final ZncBouncerDiscoveryAdapter discoveryAdapter = new ZncBouncerDiscoveryAdapter();
 
   public ZncEphemeralNetworkImporter(
       ServerRegistry serverRegistry,
@@ -102,11 +101,6 @@ public class ZncEphemeralNetworkImporter implements BouncerBackendDiscoveryHandl
   @Override
   public void onOriginDisconnected(String originServerId) {
     orchestrator.onOriginDisconnected(originServerId);
-  }
-
-  public void onZncNetworkDiscovered(ZncNetwork network) {
-    BouncerDiscoveredNetwork discovered = discoveryAdapter.fromZncNetwork(network);
-    onNetworkDiscovered(discovered);
   }
 
   public void onZncOriginDisconnected(String originServerId) {

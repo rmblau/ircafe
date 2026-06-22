@@ -48,32 +48,6 @@ public class ZncBouncerDiscoveryAdapter {
     return PircbotxZncParsers.looksLikeListNetworksDoneLine(messageText);
   }
 
-  public BouncerDiscoveredNetwork fromZncNetwork(ZncNetwork network) {
-    if (network == null) return null;
-
-    String name = Objects.toString(network.name(), "").trim();
-    String networkId = BuiltInBouncerNetworkNaming.normalizeZncNetworkKey(name);
-    if (networkId == null || networkId.isBlank()) {
-      networkId = name.toLowerCase(Locale.ROOT);
-    }
-
-    HashMap<String, String> attrs = new HashMap<>();
-    attrs.put("source", BuiltInBouncerBackendIds.ZNC);
-    if (network.onIrc() != null) {
-      attrs.put("onIrc", String.valueOf(network.onIrc()));
-    }
-
-    return new BouncerDiscoveredNetwork(
-        BuiltInBouncerBackendIds.ZNC,
-        network.bouncerServerId(),
-        networkId,
-        name,
-        name,
-        loginUserHint(attrs),
-        capabilityFlags(attrs),
-        Map.copyOf(attrs));
-  }
-
   private static String loginUserHint(Map<String, String> attrs) {
     return firstNonBlank(attrs, "loginUser", "login", "username", "user");
   }

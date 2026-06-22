@@ -31,7 +31,6 @@ public class SojuEphemeralNetworkImporter implements BouncerBackendDiscoveryHand
   private static final Logger log = LoggerFactory.getLogger(SojuEphemeralNetworkImporter.class);
 
   private final BouncerNetworkDiscoveryOrchestrator orchestrator;
-  private final SojuBouncerDiscoveryAdapter discoveryAdapter = new SojuBouncerDiscoveryAdapter();
 
   public SojuEphemeralNetworkImporter(
       ServerRegistry serverRegistry,
@@ -102,11 +101,6 @@ public class SojuEphemeralNetworkImporter implements BouncerBackendDiscoveryHand
   @Override
   public void onOriginDisconnected(String originServerId) {
     orchestrator.onOriginDisconnected(originServerId);
-  }
-
-  public void onSojuNetworkDiscovered(SojuNetwork network) {
-    BouncerDiscoveredNetwork discovered = discoveryAdapter.fromSojuNetwork(network);
-    onNetworkDiscovered(discovered);
   }
 
   public void onSojuOriginDisconnected(String originServerId) {

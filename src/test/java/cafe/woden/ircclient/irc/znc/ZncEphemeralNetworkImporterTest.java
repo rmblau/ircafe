@@ -7,6 +7,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.bouncer.BouncerConnectionPort;
+import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
+import cafe.woden.ircclient.bouncer.spi.BuiltInBouncerBackendIds;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
@@ -56,7 +58,7 @@ class ZncEphemeralNetworkImporterTest {
             bouncerDiscoveryPort(runtime),
             connectionPort);
 
-    importer.onZncNetworkDiscovered(new ZncNetwork("znc", "Libera.Chat", true));
+    importer.onNetworkDiscovered(zncNetwork("znc", "Libera.Chat", true));
 
     assertTrue(ephemeral.containsId("znc:znc:libera.chat"));
     IrcProperties.Server imported = ephemeral.require("znc:znc:libera.chat");
@@ -98,10 +100,10 @@ class ZncEphemeralNetworkImporterTest {
             autoConnect,
             bouncerDiscoveryPort(runtime),
             connectionPort);
-    ZncNetwork net = new ZncNetwork("znc", "oftc", false);
+    BouncerDiscoveredNetwork net = zncNetwork("znc", "oftc", false);
 
-    importer.onZncNetworkDiscovered(net);
-    importer.onZncNetworkDiscovered(net);
+    importer.onNetworkDiscovered(net);
+    importer.onNetworkDiscovered(net);
 
     assertEquals(1, ephemeral.serverIds().size());
     assertTrue(ephemeral.containsId("znc:znc:oftc"));
@@ -141,8 +143,8 @@ class ZncEphemeralNetworkImporterTest {
             bouncerDiscoveryPort(runtime),
             connectionPort);
 
-    importer.onZncNetworkDiscovered(new ZncNetwork("znc", "libera", true));
-    importer.onZncNetworkDiscovered(new ZncNetwork("znc", "oftc", true));
+    importer.onNetworkDiscovered(zncNetwork("znc", "libera", true));
+    importer.onNetworkDiscovered(zncNetwork("znc", "oftc", true));
 
     assertEquals(2, ephemeral.serverIds().size());
 
@@ -189,10 +191,17 @@ class ZncEphemeralNetworkImporterTest {
             autoConnect,
             bouncerDiscoveryPort(runtime),
             connectionPort);
-    importer.onZncNetworkDiscovered(new ZncNetwork("znc", "Libera.Chat", true));
+    importer.onNetworkDiscovered(zncNetwork("znc", "Libera.Chat", true));
 
     IrcProperties.Server imported = ephemeral.require("znc:znc:libera.chat");
     assertTrue(imported.autoJoin().contains("#ircafe"));
     assertFalse(imported.autoJoin().contains("#off"));
+  }
+
+  private static BouncerDiscoveredNetwork zncNetwork(
+      String originServerId, String name, Boolean onIrc) {
+    Map<String, String> attrs = onIrc == null ? Map.of() : Map.of("onIrc", String.valueOf(onIrc));
+    return new BouncerDiscoveredNetwork(
+        BuiltInBouncerBackendIds.ZNC, originServerId, name, name, name, attrs);
   }
 }

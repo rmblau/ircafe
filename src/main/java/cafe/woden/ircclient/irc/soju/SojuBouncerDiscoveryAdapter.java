@@ -36,24 +36,6 @@ public class SojuBouncerDiscoveryAdapter {
         Map.copyOf(attrs));
   }
 
-  public BouncerDiscoveredNetwork fromSojuNetwork(SojuNetwork network) {
-    if (network == null) return null;
-    HashMap<String, String> attrs = new HashMap<>();
-    if (network.attrs() != null) {
-      attrs.putAll(network.attrs());
-    }
-    attrs.put("source", BuiltInBouncerBackendIds.SOJU);
-    return new BouncerDiscoveredNetwork(
-        BuiltInBouncerBackendIds.SOJU,
-        network.bouncerServerId(),
-        network.netId(),
-        network.name(),
-        network.name(),
-        loginUserHint(attrs),
-        capabilityFlags(attrs),
-        Map.copyOf(attrs));
-  }
-
   private static String loginUserHint(Map<String, String> attrs) {
     String hint = firstNonBlank(attrs, "loginUser", "login", "username", "user");
     return hint == null ? null : hint.trim();
