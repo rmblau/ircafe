@@ -1,8 +1,8 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
-import cafe.woden.ircclient.ui.chat.embed.builtins.BuiltInImageUrlExtensionProvider;
 import cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider;
+import cafe.woden.ircclient.util.PluginServiceLoaderSupport;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -20,17 +20,14 @@ final class ImageUrlExtensionProviders {
 
   private static final Logger log = LoggerFactory.getLogger(ImageUrlExtensionProviders.class);
 
-  private static final List<ImageUrlExtensionProvider> BUILT_IN_EXTENSION_PROVIDERS =
-      List.of(new BuiltInImageUrlExtensionProvider());
-
   private ImageUrlExtensionProviders() {}
 
   static List<ImageUrlExtensionProvider> loadInstalledProviders(
       InstalledPluginsPort installedPlugins) {
-    if (installedPlugins == null) return BUILT_IN_EXTENSION_PROVIDERS;
+    List<ImageUrlExtensionProvider> builtInProviders = builtInExtensionProviders();
+    if (installedPlugins == null) return builtInProviders;
     return dedupeByProviderClass(
-        installedPlugins.loadInstalledServices(
-            ImageUrlExtensionProvider.class, BUILT_IN_EXTENSION_PROVIDERS));
+        installedPlugins.loadInstalledServices(ImageUrlExtensionProvider.class, builtInProviders));
   }
 
   static Set<String> imageExtensions(List<? extends ImageUrlExtensionProvider> extensionProviders) {
@@ -58,9 +55,17 @@ final class ImageUrlExtensionProviders {
       List<? extends ImageUrlExtensionProvider> extensionProviders) {
     LinkedHashSet<String> providerClassNames = new LinkedHashSet<>();
     ArrayList<ImageUrlExtensionProvider> providers = new ArrayList<>();
-    addProviders(providers, providerClassNames, BUILT_IN_EXTENSION_PROVIDERS);
+    addProviders(providers, providerClassNames, builtInExtensionProviders());
     addProviders(providers, providerClassNames, extensionProviders);
     return List.copyOf(providers);
+  }
+
+  private static List<ImageUrlExtensionProvider> builtInExtensionProviders() {
+    return PluginServiceLoaderSupport.loadInstalledServices(
+        ImageUrlExtensionProvider.class,
+        List.of(),
+        PluginServiceLoaderSupport.defaultApplicationClassLoader(ImageUrlExtensionProviders.class),
+        null);
   }
 
   private static void addProviders(

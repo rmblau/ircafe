@@ -66,6 +66,7 @@ class BuiltInProviderSubprojectBoundaryTest {
     String build = Files.readString(Path.of("build.gradle"));
 
     assertServiceLoaderOnlyProvider(build, "ircafe-builtins-notify");
+    assertServiceLoaderOnlyProvider(build, "ircafe-builtins-embed");
     assertServiceLoaderOnlyProvider(build, "ircafe-builtins-input");
     assertServiceLoaderOnlyProvider(build, "ircafe-builtins-outbound");
     assertServiceLoaderOnlyProvider(build, "ircafe-builtins-commands");

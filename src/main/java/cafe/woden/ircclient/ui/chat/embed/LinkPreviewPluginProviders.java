@@ -1,13 +1,11 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
-import cafe.woden.ircclient.ui.chat.embed.builtins.BuiltInMastodonOEmbedLinkPreviewProvider;
-import cafe.woden.ircclient.ui.chat.embed.builtins.BuiltInNewsPublisherProfileProvider;
-import cafe.woden.ircclient.ui.chat.embed.builtins.BuiltInSpotifyOEmbedLinkPreviewProvider;
 import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
 import cafe.woden.ircclient.ui.chat.embed.spi.NewsPublisherProfile;
 import cafe.woden.ircclient.ui.chat.embed.spi.NewsPublisherProfileProvider;
 import cafe.woden.ircclient.ui.chat.embed.spi.OEmbedLinkPreviewProvider;
+import cafe.woden.ircclient.util.PluginServiceLoaderSupport;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -17,13 +15,6 @@ import org.jmolecules.architecture.layered.InterfaceLayer;
 /** Shared helpers for ServiceLoader-backed link preview plugin providers. */
 @InterfaceLayer
 final class LinkPreviewPluginProviders {
-  private static final List<NewsPublisherProfileProvider> BUILT_IN_NEWS_PROFILE_PROVIDERS =
-      List.of(new BuiltInNewsPublisherProfileProvider());
-  private static final List<OEmbedLinkPreviewProvider> BUILT_IN_OEMBED_PROVIDERS =
-      List.of(
-          new BuiltInSpotifyOEmbedLinkPreviewProvider(),
-          new BuiltInMastodonOEmbedLinkPreviewProvider());
-
   private LinkPreviewPluginProviders() {}
 
   static List<LinkPreviewResolver> linkPreviewResolvers(
@@ -37,23 +28,39 @@ final class LinkPreviewPluginProviders {
   }
 
   static List<OEmbedLinkPreviewProvider> oEmbedProviders(InstalledPluginsPort installedPlugins) {
+    List<OEmbedLinkPreviewProvider> builtInProviders = builtInOEmbedProviders();
     if (installedPlugins == null) {
-      return BUILT_IN_OEMBED_PROVIDERS;
+      return builtInProviders;
     }
     return dedupeByProviderClass(
-        installedPlugins.loadInstalledServices(
-            OEmbedLinkPreviewProvider.class, BUILT_IN_OEMBED_PROVIDERS));
+        installedPlugins.loadInstalledServices(OEmbedLinkPreviewProvider.class, builtInProviders));
   }
 
   static List<NewsPublisherProfile> newsPublisherProfiles(InstalledPluginsPort installedPlugins) {
-    List<NewsPublisherProfileProvider> providers = BUILT_IN_NEWS_PROFILE_PROVIDERS;
+    List<NewsPublisherProfileProvider> providers = builtInNewsProfileProviders();
     if (installedPlugins != null) {
       providers =
           dedupeByProviderClass(
               installedPlugins.loadInstalledServices(
-                  NewsPublisherProfileProvider.class, BUILT_IN_NEWS_PROFILE_PROVIDERS));
+                  NewsPublisherProfileProvider.class, providers));
     }
     return NewsPreviewUtil.publisherProfilesFromProviders(providers);
+  }
+
+  private static List<OEmbedLinkPreviewProvider> builtInOEmbedProviders() {
+    return PluginServiceLoaderSupport.loadInstalledServices(
+        OEmbedLinkPreviewProvider.class,
+        List.of(),
+        PluginServiceLoaderSupport.defaultApplicationClassLoader(LinkPreviewPluginProviders.class),
+        null);
+  }
+
+  private static List<NewsPublisherProfileProvider> builtInNewsProfileProviders() {
+    return PluginServiceLoaderSupport.loadInstalledServices(
+        NewsPublisherProfileProvider.class,
+        List.of(),
+        PluginServiceLoaderSupport.defaultApplicationClassLoader(LinkPreviewPluginProviders.class),
+        null);
   }
 
   private static <T> List<T> dedupeByProviderClass(List<? extends T> services) {

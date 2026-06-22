@@ -1,9 +1,9 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
-import cafe.woden.ircclient.ui.chat.embed.builtins.BuiltInNewsPublisherProfileProvider;
 import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreview;
 import cafe.woden.ircclient.ui.chat.embed.spi.NewsPublisherProfile;
 import cafe.woden.ircclient.ui.chat.embed.spi.NewsPublisherProfileProvider;
+import cafe.woden.ircclient.util.PluginServiceLoaderSupport;
 import java.net.URI;
 import java.text.BreakIterator;
 import java.time.Instant;
@@ -123,7 +123,12 @@ final class NewsPreviewUtil {
           GENERIC_DATE_META_KEYS);
 
   private static final List<NewsPublisherProfile> PUBLISHER_PROFILES =
-      BuiltInNewsPublisherProfileProvider.profiles();
+      publisherProfilesFromProviders(
+          PluginServiceLoaderSupport.loadInstalledServices(
+              NewsPublisherProfileProvider.class,
+              List.of(),
+              PluginServiceLoaderSupport.defaultApplicationClassLoader(NewsPreviewUtil.class),
+              null));
 
   static List<NewsPublisherProfile> defaultPublisherProfiles() {
     return PUBLISHER_PROFILES;
