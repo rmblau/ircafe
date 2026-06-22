@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
 import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandParseResult;
+import cafe.woden.ircclient.app.commands.spi.BuiltInBackendNamedCommandNames;
 import cafe.woden.ircclient.app.commands.spi.SlashCommandDescriptor;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
@@ -56,7 +57,8 @@ class BackendNamedCommandCatalogTest {
 
     assertTrue(parsed instanceof ParsedInput.BackendNamed);
     assertEquals(
-        BackendNamedCommandNames.QUASSEL_NETWORK, ((ParsedInput.BackendNamed) parsed).command());
+        BuiltInBackendNamedCommandNames.QUASSEL_NETWORK,
+        ((ParsedInput.BackendNamed) parsed).command());
     assertEquals("list", ((ParsedInput.BackendNamed) parsed).args());
   }
 

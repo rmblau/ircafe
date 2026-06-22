@@ -2,6 +2,7 @@ package cafe.woden.ircclient.app.commands.builtins;
 
 import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
 import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandParseResult;
+import cafe.woden.ircclient.app.commands.spi.BuiltInBackendNamedCommandNames;
 import cafe.woden.ircclient.app.commands.spi.SlashCommandDescriptor;
 import com.google.auto.service.AutoService;
 import java.util.List;
@@ -10,9 +11,6 @@ import java.util.Set;
 /** Built-in Quassel backend command parsing and startup-safe presentation metadata. */
 @AutoService(BackendNamedCommandHandler.class)
 public final class BuiltInQuasselBackendNamedCommandHandler implements BackendNamedCommandHandler {
-
-  private static final String QUASSEL_SETUP = "quasselsetup";
-  private static final String QUASSEL_NETWORK = "quasselnet";
 
   @Override
   public Set<String> supportedCommandNames() {
@@ -25,10 +23,12 @@ public final class BuiltInQuasselBackendNamedCommandHandler implements BackendNa
     return switch (matchedCommandName) {
       case "quasselsetup", "qsetup" ->
           new BackendNamedCommandParseResult(
-              QUASSEL_SETUP, BuiltInSlashCommandParsingSupport.argAfter(line, commandToken));
+              BuiltInBackendNamedCommandNames.QUASSEL_SETUP,
+              BuiltInSlashCommandParsingSupport.argAfter(line, commandToken));
       case "quasselnet", "qnet" ->
           new BackendNamedCommandParseResult(
-              QUASSEL_NETWORK, BuiltInSlashCommandParsingSupport.argAfter(line, commandToken));
+              BuiltInBackendNamedCommandNames.QUASSEL_NETWORK,
+              BuiltInSlashCommandParsingSupport.argAfter(line, commandToken));
       default -> null;
     };
   }

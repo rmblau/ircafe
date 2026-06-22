@@ -6,8 +6,8 @@ import cafe.woden.ircclient.app.api.QuasselNetworkManagerAction;
 import cafe.woden.ircclient.app.api.UiInteractionPort;
 import cafe.woden.ircclient.app.api.UiViewStatePort;
 import cafe.woden.ircclient.app.api.UserActionRequest;
-import cafe.woden.ircclient.app.commands.BackendNamedCommandNames;
 import cafe.woden.ircclient.app.commands.ParsedInput;
+import cafe.woden.ircclient.app.commands.spi.BuiltInBackendNamedCommandNames;
 import cafe.woden.ircclient.irc.quassel.control.QuasselCoreControlPort;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.bus.OutboundLineBus;
@@ -171,12 +171,12 @@ final class SwingUiInteractionPort implements UiInteractionPort {
                   String normalized = normalizeBackendCommandArgs(sid);
                   revealBackendStatusTarget(normalized);
                   return new ParsedInput.BackendNamed(
-                      BackendNamedCommandNames.QUASSEL_SETUP, normalized);
+                      BuiltInBackendNamedCommandNames.QUASSEL_SETUP, normalized);
                 }),
             networkManagerRequests.map(
                 sid ->
                     new ParsedInput.BackendNamed(
-                        BackendNamedCommandNames.QUASSEL_NETWORK_MANAGER,
+                        BuiltInBackendNamedCommandNames.QUASSEL_NETWORK_MANAGER,
                         normalizeBackendCommandArgs(sid))))
         .onBackpressureBuffer();
   }

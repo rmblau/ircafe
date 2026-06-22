@@ -8,10 +8,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.app.api.UiPort;
-import cafe.woden.ircclient.app.commands.BackendNamedCommandNames;
 import cafe.woden.ircclient.app.commands.FilterCommand;
 import cafe.woden.ircclient.app.commands.ParsedInput;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesBus;
+import cafe.woden.ircclient.app.commands.spi.BuiltInBackendNamedCommandNames;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.app.outbound.backend.BackendNamedOutboundCommandRouter;
 import cafe.woden.ircclient.app.outbound.channel.OutboundJoinPartCommandService;
@@ -167,7 +167,7 @@ class DefaultOutboundCommandDispatcherTest {
   @Test
   void dispatchQuasselSetupRoutesToQuasselService() {
     ParsedInput.BackendNamed command =
-        new ParsedInput.BackendNamed(BackendNamedCommandNames.QUASSEL_SETUP, "quassel");
+        new ParsedInput.BackendNamed(BuiltInBackendNamedCommandNames.QUASSEL_SETUP, "quassel");
     dispatcher.dispatch(disposables, command);
     verify(backendNamedRouter).handle(disposables, command);
   }
@@ -175,7 +175,7 @@ class DefaultOutboundCommandDispatcherTest {
   @Test
   void dispatchQuasselNetworkRoutesToQuasselService() {
     ParsedInput.BackendNamed command =
-        new ParsedInput.BackendNamed(BackendNamedCommandNames.QUASSEL_NETWORK, "list");
+        new ParsedInput.BackendNamed(BuiltInBackendNamedCommandNames.QUASSEL_NETWORK, "list");
     dispatcher.dispatch(disposables, command);
     verify(backendNamedRouter).handle(disposables, command);
   }

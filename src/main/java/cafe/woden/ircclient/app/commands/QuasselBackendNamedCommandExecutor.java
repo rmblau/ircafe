@@ -3,6 +3,7 @@ package cafe.woden.ircclient.app.commands;
 import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutionContext;
 import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor;
 import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandRequest;
+import cafe.woden.ircclient.app.commands.spi.BuiltInBackendNamedCommandNames;
 import cafe.woden.ircclient.app.outbound.backend.QuasselOutboundCommandService;
 import java.util.Objects;
 import java.util.Set;
@@ -27,9 +28,9 @@ public final class QuasselBackendNamedCommandExecutor implements BackendNamedCom
   @Override
   public Set<String> handledCommandNames() {
     return Set.of(
-        BackendNamedCommandNames.QUASSEL_SETUP,
-        BackendNamedCommandNames.QUASSEL_NETWORK,
-        BackendNamedCommandNames.QUASSEL_NETWORK_MANAGER);
+        BuiltInBackendNamedCommandNames.QUASSEL_SETUP,
+        BuiltInBackendNamedCommandNames.QUASSEL_NETWORK,
+        BuiltInBackendNamedCommandNames.QUASSEL_NETWORK_MANAGER);
   }
 
   @Override
@@ -39,15 +40,15 @@ public final class QuasselBackendNamedCommandExecutor implements BackendNamedCom
       return false;
     }
     return switch (Objects.toString(command.command(), "")) {
-      case BackendNamedCommandNames.QUASSEL_SETUP -> {
+      case BuiltInBackendNamedCommandNames.QUASSEL_SETUP -> {
         quasselOutboundCommandService.handleQuasselSetup(command.args());
         yield true;
       }
-      case BackendNamedCommandNames.QUASSEL_NETWORK -> {
+      case BuiltInBackendNamedCommandNames.QUASSEL_NETWORK -> {
         quasselOutboundCommandService.handleQuasselNetwork(command.args());
         yield true;
       }
-      case BackendNamedCommandNames.QUASSEL_NETWORK_MANAGER -> {
+      case BuiltInBackendNamedCommandNames.QUASSEL_NETWORK_MANAGER -> {
         quasselOutboundCommandService.handleQuasselNetworkManager(command.args());
         yield true;
       }

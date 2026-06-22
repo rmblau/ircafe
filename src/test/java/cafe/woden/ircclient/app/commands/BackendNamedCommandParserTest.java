@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import cafe.woden.ircclient.app.commands.builtins.BuiltInQuasselBackendNamedCommandHandler;
 import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
 import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandParseResult;
+import cafe.woden.ircclient.app.commands.spi.BuiltInBackendNamedCommandNames;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
@@ -22,13 +23,14 @@ class BackendNamedCommandParserTest {
     ParsedInput full = parser.parse("/quasselsetup core");
     assertTrue(full instanceof ParsedInput.BackendNamed);
     assertEquals(
-        BackendNamedCommandNames.QUASSEL_SETUP, ((ParsedInput.BackendNamed) full).command());
+        BuiltInBackendNamedCommandNames.QUASSEL_SETUP, ((ParsedInput.BackendNamed) full).command());
     assertEquals("core", ((ParsedInput.BackendNamed) full).args());
 
     ParsedInput alias = parser.parse("/qsetup");
     assertTrue(alias instanceof ParsedInput.BackendNamed);
     assertEquals(
-        BackendNamedCommandNames.QUASSEL_SETUP, ((ParsedInput.BackendNamed) alias).command());
+        BuiltInBackendNamedCommandNames.QUASSEL_SETUP,
+        ((ParsedInput.BackendNamed) alias).command());
     assertEquals("", ((ParsedInput.BackendNamed) alias).args());
   }
 
@@ -37,13 +39,15 @@ class BackendNamedCommandParserTest {
     ParsedInput full = parser.parse("/quasselnet connect libera");
     assertTrue(full instanceof ParsedInput.BackendNamed);
     assertEquals(
-        BackendNamedCommandNames.QUASSEL_NETWORK, ((ParsedInput.BackendNamed) full).command());
+        BuiltInBackendNamedCommandNames.QUASSEL_NETWORK,
+        ((ParsedInput.BackendNamed) full).command());
     assertEquals("connect libera", ((ParsedInput.BackendNamed) full).args());
 
     ParsedInput alias = parser.parse("/qnet list");
     assertTrue(alias instanceof ParsedInput.BackendNamed);
     assertEquals(
-        BackendNamedCommandNames.QUASSEL_NETWORK, ((ParsedInput.BackendNamed) alias).command());
+        BuiltInBackendNamedCommandNames.QUASSEL_NETWORK,
+        ((ParsedInput.BackendNamed) alias).command());
     assertEquals("list", ((ParsedInput.BackendNamed) alias).args());
   }
 
@@ -114,7 +118,8 @@ class BackendNamedCommandParserTest {
 
     assertTrue(parsed instanceof ParsedInput.BackendNamed);
     assertEquals(
-        BackendNamedCommandNames.QUASSEL_SETUP, ((ParsedInput.BackendNamed) parsed).command());
+        BuiltInBackendNamedCommandNames.QUASSEL_SETUP,
+        ((ParsedInput.BackendNamed) parsed).command());
     assertEquals("core", ((ParsedInput.BackendNamed) parsed).args());
   }
 

@@ -27,10 +27,10 @@ import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.api.UiSettingsPort;
 import cafe.woden.ircclient.app.api.UiSettingsSnapshot;
 import cafe.woden.ircclient.app.api.UiSettingsSnapshotTestFixtures;
-import cafe.woden.ircclient.app.commands.BackendNamedCommandNames;
 import cafe.woden.ircclient.app.commands.CommandParser;
 import cafe.woden.ircclient.app.commands.ParsedInput;
 import cafe.woden.ircclient.app.commands.UserCommandAliasEngine;
+import cafe.woden.ircclient.app.commands.spi.BuiltInBackendNamedCommandNames;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.IrcMediator;
 import cafe.woden.ircclient.app.core.MediatorAlertNotificationHandler;
@@ -393,14 +393,14 @@ class IrcMediatorMockVerifyTest {
         .getValue()
         .accept(
             new ParsedInput.BackendNamed(
-                BackendNamedCommandNames.QUASSEL_NETWORK_MANAGER, "quassel"));
+                BuiltInBackendNamedCommandNames.QUASSEL_NETWORK_MANAGER, "quassel"));
 
     verify(outboundCommandDispatcher)
         .dispatch(
             any(CompositeDisposable.class),
             eq(
                 new ParsedInput.BackendNamed(
-                    BackendNamedCommandNames.QUASSEL_NETWORK_MANAGER, "quassel")));
+                    BuiltInBackendNamedCommandNames.QUASSEL_NETWORK_MANAGER, "quassel")));
   }
 
   @Test
@@ -426,12 +426,15 @@ class IrcMediatorMockVerifyTest {
 
     quasselSetupRequestCaptor
         .getValue()
-        .accept(new ParsedInput.BackendNamed(BackendNamedCommandNames.QUASSEL_SETUP, "quassel"));
+        .accept(
+            new ParsedInput.BackendNamed(BuiltInBackendNamedCommandNames.QUASSEL_SETUP, "quassel"));
 
     verify(outboundCommandDispatcher)
         .dispatch(
             any(CompositeDisposable.class),
-            eq(new ParsedInput.BackendNamed(BackendNamedCommandNames.QUASSEL_SETUP, "quassel")));
+            eq(
+                new ParsedInput.BackendNamed(
+                    BuiltInBackendNamedCommandNames.QUASSEL_SETUP, "quassel")));
   }
 
   @Test
