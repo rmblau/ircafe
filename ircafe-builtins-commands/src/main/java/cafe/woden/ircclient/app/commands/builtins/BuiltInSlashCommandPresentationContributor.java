@@ -50,6 +50,8 @@ public final class BuiltInSlashCommandPresentationContributor
           new SlashCommandDescriptor("/names", "Request NAMES"),
           new SlashCommandDescriptor("/who", "Request WHO"),
           new SlashCommandDescriptor("/list", "Request LIST"),
+          new SlashCommandDescriptor("/monitor", "Manage watched nicks"),
+          new SlashCommandDescriptor("/mon", "Alias: /monitor"),
           new SlashCommandDescriptor("/mode", "Set/query mode"),
           new SlashCommandDescriptor("/op", "Grant op"),
           new SlashCommandDescriptor("/deop", "Remove op"),
@@ -110,7 +112,13 @@ public final class BuiltInSlashCommandPresentationContributor
 
   @Override
   public Map<String, Consumer<SlashCommandHelpSink>> topicHelpHandlers() {
-    return Map.of("dcc", BuiltInSlashCommandPresentationContributor::appendDccHelp);
+    return Map.of(
+        "dcc",
+        BuiltInSlashCommandPresentationContributor::appendDccHelp,
+        "monitor",
+        BuiltInSlashCommandPresentationContributor::appendMonitorHelp,
+        "mon",
+        BuiltInSlashCommandPresentationContributor::appendMonitorHelp);
   }
 
   private static void appendDccHelp(SlashCommandHelpSink help) {
@@ -124,5 +132,14 @@ public final class BuiltInSlashCommandPresentationContributor
     help.appendLine("/dcc msg <nick> <text>  (alias: /dccmsg <nick> <text>)");
     help.appendLine("/dcc close <nick>  /dcc list  /dcc panel");
     help.appendLine("UI: right-click a nick and use the DCC submenu.");
+  }
+
+  private static void appendMonitorHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /monitor <+|-|list|status|clear> [nicks]");
+    help.appendLine("Aliases: /mon, /monitor +nick1 nick2, /monitor -nick1,nick2");
+    help.appendLine("Examples: /monitor +alice,bob  |  /monitor list  |  /monitor clear");
   }
 }

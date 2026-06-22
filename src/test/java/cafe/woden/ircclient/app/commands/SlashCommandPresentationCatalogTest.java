@@ -261,6 +261,8 @@ class SlashCommandPresentationCatalogTest {
     List<String> commands =
         catalog.autocompleteCommands().stream().map(SlashCommandDescriptor::command).toList();
     assertTrue(commands.contains("/join"));
+    assertTrue(commands.contains("/monitor"));
+    assertTrue(commands.contains("/mon"));
     assertTrue(commands.contains("/raw"));
   }
 
@@ -274,6 +276,8 @@ class SlashCommandPresentationCatalogTest {
         catalog.autocompleteCommands().stream().map(SlashCommandDescriptor::command).toList();
 
     assertTrue(commands.contains("/join"));
+    assertTrue(commands.contains("/monitor"));
+    assertTrue(commands.contains("/mon"));
     assertTrue(commands.contains("/raw"));
   }
 
@@ -321,6 +325,27 @@ class SlashCommandPresentationCatalogTest {
     assertTrue(rendered.contains("/dcc chat <nick>"));
     assertTrue(rendered.contains("/dcc send <nick> <file-path>"));
     assertTrue(rendered.contains("UI: right-click a nick and use the DCC submenu."));
+  }
+
+  @Test
+  void loadsCoreMonitorTopicHelpThroughClasspathServiceLoader() {
+    RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+    SlashCommandPresentationCatalog catalog =
+        new SlashCommandPresentationCatalog(
+            List.of(), BackendNamedCommandCatalog.empty(), installedPlugins);
+    ArrayList<String> rendered = new ArrayList<>();
+    Map<String, Consumer<TargetRef>> handlers =
+        catalog.topicHelpHandlers((target, line) -> rendered.add(line));
+
+    assertTrue(handlers.containsKey("monitor"));
+    assertTrue(handlers.containsKey("mon"));
+    handlers.get("monitor").accept(new TargetRef("libera", "status"));
+
+    assertTrue(rendered.contains("Usage: /monitor <+|-|list|status|clear> [nicks]"));
+    assertTrue(rendered.contains("Aliases: /mon, /monitor +nick1 nick2, /monitor -nick1,nick2"));
+    assertTrue(
+        rendered.contains("Examples: /monitor +alice,bob  |  /monitor list  |  /monitor clear"));
   }
 
   @Test
