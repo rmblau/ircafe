@@ -17,10 +17,13 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-/** Shared autocomplete/help catalog for built-in and backend-named slash commands. */
+/** Shared autocomplete/help catalog for app-owned, built-in, and backend-named slash commands. */
 @Component
 @ApplicationLayer
 public class SlashCommandPresentationCatalog {
+
+  private static final List<SlashCommandDescriptor> APP_OWNED_AUTOCOMPLETE_COMMANDS =
+      List.of(new SlashCommandDescriptor("/filter", "Local filtering controls"));
 
   private final List<cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor>
       contributors;
@@ -92,6 +95,8 @@ public class SlashCommandPresentationCatalog {
 
   private List<SlashCommandDescriptor> buildAutocompleteCommands() {
     LinkedHashMap<String, SlashCommandDescriptor> merged = new LinkedHashMap<>();
+    APP_OWNED_AUTOCOMPLETE_COMMANDS.forEach(
+        command -> merged.putIfAbsent(command.command().toLowerCase(Locale.ROOT), command));
     for (cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor contributor :
         contributors) {
       for (SlashCommandDescriptor command :

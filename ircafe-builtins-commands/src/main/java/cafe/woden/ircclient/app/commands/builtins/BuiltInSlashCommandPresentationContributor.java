@@ -80,7 +80,6 @@ public final class BuiltInSlashCommandPresentationContributor
           new SlashCommandDescriptor("/edit", "Edit message-id (experimental draft)"),
           new SlashCommandDescriptor("/redact", "Redact message-id"),
           new SlashCommandDescriptor("/delete", "Alias: /redact"),
-          new SlashCommandDescriptor("/filter", "Local filtering controls"),
           new SlashCommandDescriptor("/quote", "Send raw IRC line"),
           new SlashCommandDescriptor("/raw", "Alias: /quote"));
 

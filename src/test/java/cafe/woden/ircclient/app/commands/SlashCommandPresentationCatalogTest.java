@@ -72,6 +72,17 @@ class SlashCommandPresentationCatalogTest {
   }
 
   @Test
+  void includesAppOwnedFilterAutocompleteCommandWithoutProviderContributors() {
+    SlashCommandPresentationCatalog catalog =
+        new SlashCommandPresentationCatalog(List.of(), BackendNamedCommandCatalog.empty());
+
+    List<String> commands =
+        catalog.autocompleteCommands().stream().map(SlashCommandDescriptor::command).toList();
+
+    assertTrue(commands.contains("/filter"));
+  }
+
+  @Test
   void includesPresentationContributorsLoadedThroughInstalledPluginPort() {
     SlashCommandPresentationContributor builtInContributor =
         autocompleteContributor("/built-in", "Built-in command");
