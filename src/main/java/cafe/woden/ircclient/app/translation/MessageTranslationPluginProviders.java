@@ -1,7 +1,9 @@
 package cafe.woden.ircclient.app.translation;
 
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationBackendProvider;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.util.PluginServiceLoaderSupport;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -31,22 +33,25 @@ final class MessageTranslationPluginProviders {
                 MessageTranslationBackendProvider.class, backends)));
   }
 
-  static List<cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider>
-      languageProviders(
-          List<
-                  ? extends
-                      cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider>
-              builtInProviders,
-          InstalledPluginsPort installedPlugins) {
-    List<cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider> providers =
-        nonNullServices(builtInProviders);
+  static List<MessageTranslationLanguageProvider> builtInLanguageProviders() {
+    return PluginServiceLoaderSupport.loadInstalledServices(
+        MessageTranslationLanguageProvider.class,
+        List.of(),
+        PluginServiceLoaderSupport.defaultApplicationClassLoader(
+            MessageTranslationPluginProviders.class),
+        (ClassLoader) null);
+  }
+
+  static List<MessageTranslationLanguageProvider> languageProviders(
+      List<? extends MessageTranslationLanguageProvider> builtInProviders,
+      InstalledPluginsPort installedPlugins) {
+    List<MessageTranslationLanguageProvider> providers = nonNullServices(builtInProviders);
     if (installedPlugins == null) {
       return providers;
     }
     return nonNullServices(
         installedPlugins.loadInstalledServices(
-            cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider.class,
-            providers));
+            MessageTranslationLanguageProvider.class, providers));
   }
 
   private static List<MessageTranslationBackendProvider> dedupeProviders(

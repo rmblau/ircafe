@@ -1,6 +1,5 @@
 package cafe.woden.ircclient.app.translation;
 
-import cafe.woden.ircclient.app.translation.builtins.CommonMessageTranslationLanguageProvider;
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
@@ -17,7 +16,7 @@ public final class MessageTranslationLanguageCatalog {
   private MessageTranslationLanguageCatalog() {}
 
   private static final List<MessageTranslationLanguageProvider> BUILT_IN_PROVIDERS =
-      List.of(new CommonMessageTranslationLanguageProvider());
+      MessageTranslationPluginProviders.builtInLanguageProviders();
 
   private static final List<MessageTranslationLanguage> COMMON_TARGETS =
       mergeLanguages(BUILT_IN_PROVIDERS);
