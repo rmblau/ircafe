@@ -101,6 +101,9 @@ public final class BuiltInSlashCommandPresentationContributor
     help.appendLine(
         "Invites: /invites /invjoin (/join -i) /invignore /invwhois /invblock /inviteautojoin (/ajinvite)");
     help.appendLine("Tip: /help dcc for direct-chat/file-transfer commands.");
+    help.appendLine("/reply <msgid> <message> (requires message-tags)");
+    help.appendLine("/react <msgid> <reaction-token> (requires message-tags)");
+    help.appendLine("/unreact <msgid> <reaction-token> (requires message-tags)");
     help.appendLine(
         "Tip: /help edit, /help redact, /help markread, or /help upload for focused details.");
   }

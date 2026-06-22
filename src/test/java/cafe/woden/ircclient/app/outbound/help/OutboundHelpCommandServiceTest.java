@@ -90,9 +90,6 @@ class OutboundHelpCommandServiceTest {
       new OutboundHelpContributor() {
         @Override
         public void appendGeneralHelp(OutboundHelpSink help) {
-          help.appendLine("/reply <msgid> <message> (requires message-tags)");
-          help.appendLine("/react <msgid> <reaction-token> (requires message-tags)");
-          help.appendLine("/unreact <msgid> <reaction-token> (requires message-tags)");
           appendEditHelp(targetRef(help));
           appendRedactHelp(targetRef(help));
         }

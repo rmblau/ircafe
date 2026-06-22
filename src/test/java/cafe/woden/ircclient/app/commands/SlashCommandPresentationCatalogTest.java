@@ -296,6 +296,9 @@ class SlashCommandPresentationCatalogTest {
         rendered.contains(
             "Invites: /invites /invjoin (/join -i) /invignore /invwhois /invblock /inviteautojoin (/ajinvite)"));
     assertTrue(rendered.contains("Tip: /help dcc for direct-chat/file-transfer commands."));
+    assertTrue(rendered.contains("/reply <msgid> <message> (requires message-tags)"));
+    assertTrue(rendered.contains("/react <msgid> <reaction-token> (requires message-tags)"));
+    assertTrue(rendered.contains("/unreact <msgid> <reaction-token> (requires message-tags)"));
     assertTrue(
         rendered.contains(
             "Tip: /help edit, /help redact, /help markread, or /help upload for focused details."));

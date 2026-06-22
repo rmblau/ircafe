@@ -33,9 +33,6 @@ public final class OutboundMessageMutationCommandService implements OutboundHelp
 
   @Override
   public void appendGeneralHelp(OutboundHelpSink help) {
-    help.appendLine("/reply <msgid> <message> (requires message-tags)");
-    help.appendLine("/react <msgid> <reaction-token> (requires message-tags)");
-    help.appendLine("/unreact <msgid> <reaction-token> (requires message-tags)");
     appendEditHelp(help);
     appendRedactHelp(help);
   }
