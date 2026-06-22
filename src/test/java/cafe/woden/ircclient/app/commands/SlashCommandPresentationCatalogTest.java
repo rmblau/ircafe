@@ -349,6 +349,26 @@ class SlashCommandPresentationCatalogTest {
   }
 
   @Test
+  void loadsCoreRawQuoteTopicHelpThroughClasspathServiceLoader() {
+    RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+    SlashCommandPresentationCatalog catalog =
+        new SlashCommandPresentationCatalog(
+            List.of(), BackendNamedCommandCatalog.empty(), installedPlugins);
+    ArrayList<String> rendered = new ArrayList<>();
+    Map<String, Consumer<TargetRef>> handlers =
+        catalog.topicHelpHandlers((target, line) -> rendered.add(line));
+
+    assertTrue(handlers.containsKey("quote"));
+    assertTrue(handlers.containsKey("raw"));
+    handlers.get("raw").accept(new TargetRef("libera", "status"));
+
+    assertTrue(rendered.contains("Usage: /quote <RAW IRC LINE>"));
+    assertTrue(rendered.contains("Alias: /raw <RAW IRC LINE>"));
+    assertTrue(rendered.contains("Sends one raw IRC protocol line to the active server."));
+  }
+
+  @Test
   void backendTopicHelpLinesAreExposedThroughCatalogHandlers() {
     BackendNamedCommandHandler backendHandler =
         new BackendNamedCommandHandler() {

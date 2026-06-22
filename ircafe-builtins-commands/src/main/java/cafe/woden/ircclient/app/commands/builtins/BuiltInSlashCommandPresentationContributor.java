@@ -118,7 +118,11 @@ public final class BuiltInSlashCommandPresentationContributor
         "monitor",
         BuiltInSlashCommandPresentationContributor::appendMonitorHelp,
         "mon",
-        BuiltInSlashCommandPresentationContributor::appendMonitorHelp);
+        BuiltInSlashCommandPresentationContributor::appendMonitorHelp,
+        "quote",
+        BuiltInSlashCommandPresentationContributor::appendRawQuoteHelp,
+        "raw",
+        BuiltInSlashCommandPresentationContributor::appendRawQuoteHelp);
   }
 
   private static void appendDccHelp(SlashCommandHelpSink help) {
@@ -141,5 +145,14 @@ public final class BuiltInSlashCommandPresentationContributor
     help.appendLine("Usage: /monitor <+|-|list|status|clear> [nicks]");
     help.appendLine("Aliases: /mon, /monitor +nick1 nick2, /monitor -nick1,nick2");
     help.appendLine("Examples: /monitor +alice,bob  |  /monitor list  |  /monitor clear");
+  }
+
+  private static void appendRawQuoteHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /quote <RAW IRC LINE>");
+    help.appendLine("Alias: /raw <RAW IRC LINE>");
+    help.appendLine("Sends one raw IRC protocol line to the active server.");
   }
 }
