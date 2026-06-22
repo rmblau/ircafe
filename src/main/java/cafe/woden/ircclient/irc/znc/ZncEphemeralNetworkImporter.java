@@ -1,9 +1,14 @@
 package cafe.woden.ircclient.irc.znc;
 
+import cafe.woden.ircclient.bouncer.BouncerBackendRegistry;
 import cafe.woden.ircclient.bouncer.BouncerConnectionPort;
 import cafe.woden.ircclient.bouncer.BouncerNetworkDiscoveryOrchestrator;
 import cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler;
 import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
+import cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy;
+import cafe.woden.ircclient.bouncer.spi.BouncerServerProfile;
+import cafe.woden.ircclient.bouncer.spi.BuiltInBouncerBackendIds;
+import cafe.woden.ircclient.bouncer.spi.ResolvedBouncerNetwork;
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
 import cafe.woden.ircclient.config.servers.EphemeralServerRegistry;
 import cafe.woden.ircclient.config.servers.ServerRegistry;
@@ -33,9 +38,10 @@ public class ZncEphemeralNetworkImporter implements BouncerBackendDiscoveryHandl
       EphemeralServerRegistry ephemeralServers,
       ZncAutoConnectStore autoConnect,
       BouncerDiscoveryConfigPort runtimeConfig,
-      BouncerConnectionPort connectionPort) {
+      BouncerConnectionPort connectionPort,
+      BouncerBackendRegistry bouncerBackends) {
     this(
-        new ZncBouncerNetworkMappingStrategy(),
+        mappingStrategy(bouncerBackends),
         serverRegistry,
         ephemeralServers,
         autoConnect,
@@ -44,7 +50,7 @@ public class ZncEphemeralNetworkImporter implements BouncerBackendDiscoveryHandl
   }
 
   ZncEphemeralNetworkImporter(
-      ZncBouncerNetworkMappingStrategy mappingStrategy,
+      BouncerNetworkMappingStrategy mappingStrategy,
       ServerRegistry serverRegistry,
       EphemeralServerRegistry ephemeralServers,
       ZncAutoConnectStore autoConnect,
@@ -59,6 +65,28 @@ public class ZncEphemeralNetworkImporter implements BouncerBackendDiscoveryHandl
             autoConnect,
             runtimeConfig,
             connectionPort);
+  }
+
+  private static BouncerNetworkMappingStrategy mappingStrategy(
+      BouncerBackendRegistry bouncerBackends) {
+    return Objects.requireNonNull(bouncerBackends, "bouncerBackends")
+        .mappingStrategy(BuiltInBouncerBackendIds.ZNC)
+        .orElseGet(() -> missingMappingStrategy(BuiltInBouncerBackendIds.ZNC));
+  }
+
+  private static BouncerNetworkMappingStrategy missingMappingStrategy(String backendId) {
+    return new BouncerNetworkMappingStrategy() {
+      @Override
+      public String backendId() {
+        return backendId;
+      }
+
+      @Override
+      public ResolvedBouncerNetwork resolveNetwork(
+          BouncerServerProfile bouncer, BouncerDiscoveredNetwork network) {
+        throw new IllegalStateException("Missing bouncer mapping strategy: " + backendId);
+      }
+    };
   }
 
   @Override

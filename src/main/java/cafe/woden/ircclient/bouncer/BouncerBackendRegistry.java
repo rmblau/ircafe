@@ -22,6 +22,8 @@ public class BouncerBackendRegistry {
 
   private final List<BouncerBackendDescriptor> descriptors;
   private final Map<String, BouncerBackendDescriptor> byBackendId;
+  private final Map<String, cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy>
+      strategyByBackendId;
 
   @Autowired
   public BouncerBackendRegistry(
@@ -72,13 +74,23 @@ public class BouncerBackendRegistry {
     discovered.sort(java.util.Comparator.comparing(BouncerBackendDescriptor::backendId));
 
     LinkedHashMap<String, BouncerBackendDescriptor> map = new LinkedHashMap<>();
+    LinkedHashMap<String, cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy>
+        strategyMap = new LinkedHashMap<>();
     for (BouncerBackendDescriptor descriptor : discovered) {
       if (descriptor == null) continue;
       map.putIfAbsent(descriptor.backendId(), descriptor);
     }
+    for (cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy strategy :
+        mappingStrategies) {
+      if (strategy == null) continue;
+      String backend = normalize(strategy.backendId());
+      if (backend == null || !map.containsKey(backend)) continue;
+      strategyMap.putIfAbsent(backend, strategy);
+    }
 
     this.descriptors = List.copyOf(map.values());
     this.byBackendId = java.util.Collections.unmodifiableMap(map);
+    this.strategyByBackendId = java.util.Collections.unmodifiableMap(strategyMap);
   }
 
   public List<BouncerBackendDescriptor> descriptors() {
@@ -95,6 +107,11 @@ public class BouncerBackendRegistry {
 
   public Optional<BouncerBackendDescriptor> find(String backendId) {
     return Optional.ofNullable(byBackendId.get(normalize(backendId)));
+  }
+
+  public Optional<cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy> mappingStrategy(
+      String backendId) {
+    return Optional.ofNullable(strategyByBackendId.get(normalize(backendId)));
   }
 
   private record ResolvedStrategies(

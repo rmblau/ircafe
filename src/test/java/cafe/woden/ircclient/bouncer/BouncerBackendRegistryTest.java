@@ -56,6 +56,20 @@ class BouncerBackendRegistryTest {
   }
 
   @Test
+  void exposesMappingStrategiesByBackendId() {
+    FakeStrategy first = new FakeStrategy("soju", "soju:", "Soju Networks", Set.of(), "one");
+    FakeStrategy duplicate =
+        new FakeStrategy(" SOJU ", "soju:", "Soju Networks 2", Set.of(), "two");
+    FakeStrategy znc = new FakeStrategy("znc", "znc:", "ZNC Networks", Set.of(), "three");
+
+    BouncerBackendRegistry registry = new BouncerBackendRegistry(List.of(first, duplicate, znc));
+
+    assertEquals(first, registry.mappingStrategy("SOJU").orElseThrow());
+    assertEquals(znc, registry.mappingStrategy("znc").orElseThrow());
+    assertTrue(registry.mappingStrategy("missing").isEmpty());
+  }
+
+  @Test
   void loadsMappingStrategiesFromInstalledPluginsPort() {
     BouncerBackendRegistry registry =
         new BouncerBackendRegistry(
