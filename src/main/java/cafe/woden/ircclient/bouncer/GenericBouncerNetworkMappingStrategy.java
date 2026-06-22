@@ -3,6 +3,7 @@ package cafe.woden.ircclient.bouncer;
 import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
 import cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy;
 import cafe.woden.ircclient.bouncer.spi.BouncerServerProfile;
+import cafe.woden.ircclient.bouncer.spi.BuiltInBouncerBackendIds;
 import cafe.woden.ircclient.bouncer.spi.ResolvedBouncerNetwork;
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
 import java.util.Locale;
@@ -17,7 +18,7 @@ import org.springframework.stereotype.Component;
 @ApplicationLayer
 public class GenericBouncerNetworkMappingStrategy implements BouncerNetworkMappingStrategy {
 
-  public static final String BACKEND_ID = "generic";
+  public static final String BACKEND_ID = BuiltInBouncerBackendIds.GENERIC;
   public static final String DEFAULT_LOGIN_TEMPLATE = "{base}/{network}";
   public static final String EPHEMERAL_ID_PREFIX = "bouncer:";
   public static final String NETWORKS_GROUP_LABEL = "Bouncer Networks";

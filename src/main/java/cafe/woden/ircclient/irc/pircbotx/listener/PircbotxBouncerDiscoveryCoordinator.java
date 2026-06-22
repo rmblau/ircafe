@@ -3,17 +3,15 @@ package cafe.woden.ircclient.irc.pircbotx.listener;
 import cafe.woden.ircclient.bouncer.BouncerBackendRegistry;
 import cafe.woden.ircclient.bouncer.BouncerDiscoveryEventPort;
 import cafe.woden.ircclient.bouncer.GenericBouncerDiscoveryLineParser;
-import cafe.woden.ircclient.bouncer.GenericBouncerNetworkMappingStrategy;
 import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
+import cafe.woden.ircclient.bouncer.spi.BuiltInBouncerBackendIds;
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
 import cafe.woden.ircclient.irc.ircv3.*;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
 import cafe.woden.ircclient.irc.playback.*;
 import cafe.woden.ircclient.irc.soju.SojuBouncerDiscoveryAdapter;
-import cafe.woden.ircclient.irc.soju.SojuBouncerNetworkMappingStrategy;
 import cafe.woden.ircclient.irc.znc.ZncBouncerDiscoveryAdapter;
-import cafe.woden.ircclient.irc.znc.ZncBouncerNetworkMappingStrategy;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -222,13 +220,11 @@ public final class PircbotxBouncerDiscoveryCoordinator {
     if (sojuEnabled) {
       adapters.add(
           new UnknownLineDiscoveryAdapter(
-              SojuBouncerNetworkMappingStrategy.BACKEND_ID,
-              sojuDiscoveryAdapter::parseBouncerNetworkLine));
+              BuiltInBouncerBackendIds.SOJU, sojuDiscoveryAdapter::parseBouncerNetworkLine));
     }
     adapters.add(
         new UnknownLineDiscoveryAdapter(
-            GenericBouncerNetworkMappingStrategy.BACKEND_ID,
-            genericDiscoveryAdapter::parseNetworkLine));
+            BuiltInBouncerBackendIds.GENERIC, genericDiscoveryAdapter::parseNetworkLine));
     return List.copyOf(adapters);
   }
 
@@ -238,11 +234,11 @@ public final class PircbotxBouncerDiscoveryCoordinator {
     String backend = normalizeLower(network.backendId());
     if (backend == null) return false;
 
-    if (SojuBouncerNetworkMappingStrategy.BACKEND_ID.equals(backend)) {
+    if (BuiltInBouncerBackendIds.SOJU.equals(backend)) {
       if (!sojuDiscoveryEnabled) return false;
       return upsertSojuDiscoveredNetwork(network, sourceAdapterId);
     }
-    if (ZncBouncerNetworkMappingStrategy.BACKEND_ID.equals(backend)) {
+    if (BuiltInBouncerBackendIds.ZNC.equals(backend)) {
       if (!zncDiscoveryEnabled) return false;
       return upsertZncDiscoveredNetwork(network, sourceAdapterId);
     }

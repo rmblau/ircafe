@@ -3,6 +3,7 @@ package cafe.woden.ircclient.irc.soju;
 import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
 import cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy;
 import cafe.woden.ircclient.bouncer.spi.BouncerServerProfile;
+import cafe.woden.ircclient.bouncer.spi.BuiltInBouncerBackendIds;
 import cafe.woden.ircclient.bouncer.spi.ResolvedBouncerNetwork;
 import com.google.auto.service.AutoService;
 import java.util.Set;
@@ -11,7 +12,7 @@ import java.util.Set;
 @AutoService(BouncerNetworkMappingStrategy.class)
 public class SojuBouncerNetworkMappingStrategy implements BouncerNetworkMappingStrategy {
 
-  public static final String BACKEND_ID = "soju";
+  public static final String BACKEND_ID = BuiltInBouncerBackendIds.SOJU;
   public static final String NETWORKS_GROUP_LABEL = "Soju Networks";
   public static final String DISCOVERY_CAPABILITY = "soju.im/bouncer-networks";
 
