@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.irc.znc;
 
 import cafe.woden.ircclient.bouncer.AbstractBouncerAutoConnectStore;
+import cafe.woden.ircclient.bouncer.spi.BuiltInBouncerNetworkNaming;
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
 import cafe.woden.ircclient.config.properties.ZncProperties;
 import java.util.Locale;
@@ -32,7 +33,7 @@ public class ZncAutoConnectStore extends AbstractBouncerAutoConnectStore {
 
   @Override
   protected String normalizeNetworkKey(String networkName) {
-    String v = ZncEphemeralNaming.sanitizeNetworkSegment(networkName);
+    String v = BuiltInBouncerNetworkNaming.sanitizeZncNetworkSegment(networkName);
     v = Objects.toString(v, "").trim();
     if (v.isEmpty()) return null;
 

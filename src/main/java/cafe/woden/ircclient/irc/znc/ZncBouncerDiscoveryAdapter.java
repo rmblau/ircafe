@@ -2,6 +2,7 @@ package cafe.woden.ircclient.irc.znc;
 
 import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
 import cafe.woden.ircclient.bouncer.spi.BuiltInBouncerBackendIds;
+import cafe.woden.ircclient.bouncer.spi.BuiltInBouncerNetworkNaming;
 import cafe.woden.ircclient.irc.pircbotx.parse.PircbotxZncParsers;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -21,7 +22,7 @@ public class ZncBouncerDiscoveryAdapter {
     String name = Objects.toString(row.name, "").trim();
     if (name.isEmpty()) return null;
 
-    String networkId = ZncEphemeralNaming.normalizeNetworkKey(name);
+    String networkId = BuiltInBouncerNetworkNaming.normalizeZncNetworkKey(name);
     if (networkId == null || networkId.isBlank()) {
       networkId = name.toLowerCase(Locale.ROOT);
     }
@@ -51,7 +52,7 @@ public class ZncBouncerDiscoveryAdapter {
     if (network == null) return null;
 
     String name = Objects.toString(network.name(), "").trim();
-    String networkId = ZncEphemeralNaming.normalizeNetworkKey(name);
+    String networkId = BuiltInBouncerNetworkNaming.normalizeZncNetworkKey(name);
     if (networkId == null || networkId.isBlank()) {
       networkId = name.toLowerCase(Locale.ROOT);
     }

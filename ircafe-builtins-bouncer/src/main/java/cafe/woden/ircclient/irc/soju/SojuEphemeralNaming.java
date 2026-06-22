@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.irc.soju;
 
 import cafe.woden.ircclient.bouncer.spi.BouncerServerProfile;
+import cafe.woden.ircclient.bouncer.spi.BuiltInBouncerNetworkNaming;
 import java.util.Objects;
 
 /**
@@ -11,8 +12,10 @@ import java.util.Objects;
  */
 public final class SojuEphemeralNaming {
 
-  public static final String EPHEMERAL_ID_PREFIX = "soju:";
-  public static final String DEFAULT_CLIENT_SUFFIX = "ircafe";
+  public static final String EPHEMERAL_ID_PREFIX =
+      BuiltInBouncerNetworkNaming.SOJU_EPHEMERAL_ID_PREFIX;
+  public static final String DEFAULT_CLIENT_SUFFIX =
+      BuiltInBouncerNetworkNaming.SOJU_DEFAULT_CLIENT_SUFFIX;
 
   private SojuEphemeralNaming() {}
 
@@ -67,7 +70,7 @@ public final class SojuEphemeralNaming {
   /** Select a base username from the bouncer server config (SASL username preferred). */
   public static String pickBaseUser(BouncerServerProfile bouncerServer) {
     if (bouncerServer == null) return null;
-    return bouncerServer.preferredLoginUser();
+    return BuiltInBouncerNetworkNaming.pickSojuBaseUser(bouncerServer);
   }
 
   /**
@@ -82,20 +85,7 @@ public final class SojuEphemeralNaming {
    * </ul>
    */
   public static String normalizeBaseUser(String user) {
-    String u = normalize(user);
-    if (u == null) return null;
-
-    int slash = u.indexOf('/');
-    if (slash >= 0) {
-      u = u.substring(0, slash);
-    }
-    int at = u.indexOf('@');
-    if (at >= 0) {
-      u = u.substring(0, at);
-    }
-
-    u = u.trim();
-    return u.isEmpty() ? null : u;
+    return BuiltInBouncerNetworkNaming.normalizeSojuBaseUser(user);
   }
 
   private static String normalize(String s) {
@@ -104,22 +94,6 @@ public final class SojuEphemeralNaming {
   }
 
   private static String sanitizeNetworkName(String name) {
-    if (name == null) return "";
-    StringBuilder sb = new StringBuilder(name.length());
-    for (int i = 0; i < name.length(); i++) {
-      char c = name.charAt(i);
-      if ((c >= 'a' && c <= 'z')
-          || (c >= 'A' && c <= 'Z')
-          || (c >= '0' && c <= '9')
-          || c == '.'
-          || c == '_'
-          || c == '-') {
-        sb.append(c);
-      } else {
-        sb.append('_');
-      }
-    }
-    String v = sb.toString();
-    return v.isBlank() ? "" : v;
+    return BuiltInBouncerNetworkNaming.sanitizeSojuNetworkName(name);
   }
 }

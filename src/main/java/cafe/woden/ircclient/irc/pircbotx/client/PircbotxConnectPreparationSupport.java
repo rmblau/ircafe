@@ -1,10 +1,11 @@
 package cafe.woden.ircclient.irc.pircbotx.client;
 
+import cafe.woden.ircclient.bouncer.spi.BuiltInBouncerNetworkNaming;
+import cafe.woden.ircclient.bouncer.spi.BuiltInBouncerNetworkNaming.ZncLoginParts;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.irc.ircv3.Ircv3StsPolicyService;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
-import cafe.woden.ircclient.irc.znc.ZncLoginParts;
 import cafe.woden.ircclient.state.api.ServerIsupportStatePort;
 import java.util.Objects;
 
@@ -59,10 +60,10 @@ final class PircbotxConnectPreparationSupport {
       connection.clearZncListNetworksRequest();
       connection.cancelZncPlaybackCapture("reconnect");
 
-      ZncLoginParts loginParts = ZncLoginParts.parse(server.login());
+      ZncLoginParts loginParts = BuiltInBouncerNetworkNaming.parseZncLogin(server.login());
       ZncLoginParts saslParts =
           (server.sasl() != null && server.sasl().enabled())
-              ? ZncLoginParts.parse(server.sasl().username())
+              ? BuiltInBouncerNetworkNaming.parseZncLogin(server.sasl().username())
               : new ZncLoginParts("", "", "");
 
       ZncLoginParts merged = loginParts.mergePreferThis(saslParts);

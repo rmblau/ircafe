@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.irc.znc;
 
-import java.util.Objects;
+import cafe.woden.ircclient.bouncer.spi.BuiltInBouncerNetworkNaming;
 
 /**
  * Parses ZNC-style usernames.
@@ -30,34 +30,9 @@ public record ZncLoginParts(String baseUser, String clientId, String network) {
   }
 
   public static ZncLoginParts parse(String login) {
-    String s = Objects.toString(login, "").trim();
-    if (s.isBlank()) return new ZncLoginParts("", "", "");
-
-    // Split on first '/': user[@client]/network
-    String left;
-    String net;
-    int slash = s.indexOf('/');
-    if (slash >= 0) {
-      left = s.substring(0, slash).trim();
-      net = s.substring(slash + 1).trim();
-    } else {
-      left = s.trim();
-      net = "";
-    }
-
-    // Split on first '@': user@client
-    String user;
-    String client;
-    int at = left.indexOf('@');
-    if (at >= 0) {
-      user = left.substring(0, at).trim();
-      client = left.substring(at + 1).trim();
-    } else {
-      user = left.trim();
-      client = "";
-    }
-
-    return new ZncLoginParts(user, client, net);
+    BuiltInBouncerNetworkNaming.ZncLoginParts parsed =
+        BuiltInBouncerNetworkNaming.parseZncLogin(login);
+    return new ZncLoginParts(parsed.baseUser(), parsed.clientId(), parsed.network());
   }
 
   /** Merge two parses, preferring non-empty fields from {@code this}. */

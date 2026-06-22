@@ -1,13 +1,14 @@
 package cafe.woden.ircclient.irc.znc;
 
 import cafe.woden.ircclient.bouncer.spi.BouncerServerProfile;
-import java.util.Locale;
+import cafe.woden.ircclient.bouncer.spi.BuiltInBouncerNetworkNaming;
 import java.util.Objects;
 
 /** Naming + username rules for ephemeral ZNC network entries. */
 public final class ZncEphemeralNaming {
 
-  public static final String EPHEMERAL_ID_PREFIX = "znc:";
+  public static final String EPHEMERAL_ID_PREFIX =
+      BuiltInBouncerNetworkNaming.ZNC_EPHEMERAL_ID_PREFIX;
 
   private ZncEphemeralNaming() {}
 
@@ -64,7 +65,7 @@ public final class ZncEphemeralNaming {
   /** Select the base login for ZNC connections (SASL username preferred). */
   public static String pickBaseLoginUser(BouncerServerProfile bouncerServer) {
     if (bouncerServer == null) return null;
-    return bouncerServer.preferredLoginUser();
+    return BuiltInBouncerNetworkNaming.pickZncBaseLoginUser(bouncerServer);
   }
 
   /**
@@ -79,36 +80,12 @@ public final class ZncEphemeralNaming {
    * </ul>
    */
   public static String normalizeNetworkKey(String networkName) {
-    String s = sanitizeNetworkSegment(networkName);
-    return s.toLowerCase(Locale.ROOT);
+    return BuiltInBouncerNetworkNaming.normalizeZncNetworkKey(networkName);
   }
 
   /** Sanitize a ZNC network name to safe characters for usernames. */
   public static String sanitizeNetworkSegment(String networkName) {
-    String s = Objects.toString(networkName, "").trim();
-    if (s.isEmpty()) return "";
-
-    StringBuilder out = new StringBuilder(s.length());
-    for (int i = 0; i < s.length(); i++) {
-      char c = s.charAt(i);
-      boolean ok =
-          (c >= 'a' && c <= 'z')
-              || (c >= 'A' && c <= 'Z')
-              || (c >= '0' && c <= '9')
-              || c == '.'
-              || c == '_'
-              || c == '-';
-      out.append(ok ? c : '_');
-    }
-
-    // Trim leading/trailing underscores introduced by sanitization.
-    int start = 0;
-    int end = out.length();
-    while (start < end && out.charAt(start) == '_') start++;
-    while (end > start && out.charAt(end - 1) == '_') end--;
-
-    String v = out.substring(start, end);
-    return v;
+    return BuiltInBouncerNetworkNaming.sanitizeZncNetworkSegment(networkName);
   }
 
   private static String normalize(String s) {
