@@ -1,15 +1,20 @@
 package cafe.woden.ircclient.notify.api;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
-import cafe.woden.ircclient.notify.builtins.BuiltInCustomSoundFileExtensionProvider;
 import cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider;
 import cafe.woden.ircclient.notify.spi.CustomSoundPlaybackProvider;
+import cafe.woden.ircclient.util.PluginServiceLoaderSupport;
 import java.util.List;
 
 /** Centralizes ServiceLoader-backed custom sound plugin provider handling. */
 public final class CustomSoundPluginProviders {
   private static final List<CustomSoundFileExtensionProvider> BUILT_IN_EXTENSION_PROVIDERS =
-      List.of(new BuiltInCustomSoundFileExtensionProvider());
+      PluginServiceLoaderSupport.loadInstalledServices(
+          CustomSoundFileExtensionProvider.class,
+          List.of(),
+          PluginServiceLoaderSupport.defaultApplicationClassLoader(
+              CustomSoundPluginProviders.class),
+          (ClassLoader) null);
 
   private CustomSoundPluginProviders() {}
 
