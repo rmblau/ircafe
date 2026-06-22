@@ -167,6 +167,75 @@ class SlashCommandPresentationCatalogTest {
   }
 
   @Test
+  void presentationContributorsWithSameTopicAreComposed() {
+    SlashCommandPresentationContributor first =
+        new SlashCommandPresentationContributor() {
+          @Override
+          public Map<String, Consumer<SlashCommandHelpSink>> topicHelpHandlers() {
+            return Map.of("shared", help -> help.appendLine("first shared line"));
+          }
+        };
+    SlashCommandPresentationContributor second =
+        new SlashCommandPresentationContributor() {
+          @Override
+          public Map<String, Consumer<SlashCommandHelpSink>> topicHelpHandlers() {
+            return Map.of("shared", help -> help.appendLine("second shared line"));
+          }
+        };
+    SlashCommandPresentationCatalog catalog =
+        new SlashCommandPresentationCatalog(
+            List.of(first, second), BackendNamedCommandCatalog.empty());
+    ArrayList<String> rendered = new ArrayList<>();
+
+    catalog
+        .topicHelpHandlers((target, line) -> rendered.add(line))
+        .get("shared")
+        .accept(new TargetRef("libera", "status"));
+
+    assertEquals(List.of("first shared line", "second shared line"), rendered);
+  }
+
+  @Test
+  void backendTopicHelpLinesComposeWithPresentationContributors() {
+    SlashCommandPresentationContributor presentationContributor =
+        new SlashCommandPresentationContributor() {
+          @Override
+          public Map<String, Consumer<SlashCommandHelpSink>> topicHelpHandlers() {
+            return Map.of("backendping", help -> help.appendLine("presentation backendping line"));
+          }
+        };
+    BackendNamedCommandHandler backendHandler =
+        new BackendNamedCommandHandler() {
+          @Override
+          public Set<String> supportedCommandNames() {
+            return Set.of("backendping");
+          }
+
+          @Override
+          public BackendNamedCommandParseResult parse(String line, String matchedCommandName) {
+            return new BackendNamedCommandParseResult("backendping", "");
+          }
+
+          @Override
+          public Map<String, List<String>> topicHelpLines() {
+            return Map.of("backendping", List.of("/backendping <arg>"));
+          }
+        };
+    SlashCommandPresentationCatalog catalog =
+        new SlashCommandPresentationCatalog(
+            List.of(presentationContributor),
+            BackendNamedCommandCatalog.fromHandlers(List.of(backendHandler)));
+    ArrayList<String> rendered = new ArrayList<>();
+
+    catalog
+        .topicHelpHandlers((target, line) -> rendered.add(line))
+        .get("backendping")
+        .accept(new TargetRef("libera", "status"));
+
+    assertEquals(List.of("presentation backendping line", "/backendping <arg>"), rendered);
+  }
+
+  @Test
   void loadsServiceLoaderPresentationContributorsFromInstalledPlugins() throws Exception {
     Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
     Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));

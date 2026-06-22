@@ -5,6 +5,7 @@ import cafe.woden.ircclient.app.commands.spi.SlashCommandHelpSink;
 import cafe.woden.ircclient.app.commands.spi.SlashCommandTargetView;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.model.TargetRef;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
@@ -80,17 +81,16 @@ public class SlashCommandPresentationCatalog {
   public Map<String, Consumer<TargetRef>> topicHelpHandlers(
       BiConsumer<TargetRef, String> lineAppender) {
     Objects.requireNonNull(lineAppender, "lineAppender");
-    LinkedHashMap<String, Consumer<TargetRef>> handlers =
-        new LinkedHashMap<>(buildTopicHelpHandlers(lineAppender));
-    for (Map.Entry<String, List<String>> entry :
-        backendNamedCommandCatalog.topicHelpLines().entrySet()) {
-      String topic = normalizeHelpTopic(entry.getKey());
-      List<String> lines = entry.getValue();
-      if (topic.isEmpty() || lines == null || lines.isEmpty()) continue;
-      handlers.put(
-          topic, out -> lines.forEach(line -> appendStaticHelpLine(out, line, lineAppender)));
+    LinkedHashMap<String, List<Consumer<TargetRef>>> handlers = new LinkedHashMap<>();
+    appendPresentationTopicHelpHandlers(handlers, lineAppender);
+    appendBackendTopicHelpHandlers(handlers, lineAppender);
+
+    LinkedHashMap<String, Consumer<TargetRef>> composed = new LinkedHashMap<>();
+    for (Map.Entry<String, List<Consumer<TargetRef>>> entry : handlers.entrySet()) {
+      List<Consumer<TargetRef>> topicHandlers = List.copyOf(entry.getValue());
+      composed.put(entry.getKey(), out -> topicHandlers.forEach(handler -> handler.accept(out)));
     }
-    return Map.copyOf(handlers);
+    return Map.copyOf(composed);
   }
 
   private List<SlashCommandDescriptor> buildAutocompleteCommands() {
@@ -113,22 +113,44 @@ public class SlashCommandPresentationCatalog {
     return List.copyOf(merged.values());
   }
 
-  private Map<String, Consumer<TargetRef>> buildTopicHelpHandlers(
+  private void appendPresentationTopicHelpHandlers(
+      LinkedHashMap<String, List<Consumer<TargetRef>>> handlers,
       BiConsumer<TargetRef, String> lineAppender) {
-    LinkedHashMap<String, Consumer<TargetRef>> handlers = new LinkedHashMap<>();
     for (cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor contributor :
         contributors) {
       Map<String, Consumer<SlashCommandHelpSink>> topicHandlers =
-          Objects.requireNonNullElse(contributor.topicHelpHandlers(), Map.of());
+          Objects.requireNonNullElse(
+              contributor.topicHelpHandlers(), Map.<String, Consumer<SlashCommandHelpSink>>of());
       for (Map.Entry<String, Consumer<SlashCommandHelpSink>> entry : topicHandlers.entrySet()) {
         String topic = normalizeHelpTopic(entry.getKey());
         Consumer<SlashCommandHelpSink> consumer = entry.getValue();
         if (!topic.isEmpty() && consumer != null) {
-          handlers.put(topic, out -> consumer.accept(helpSink(out, lineAppender)));
+          addTopicHelpHandler(handlers, topic, out -> consumer.accept(helpSink(out, lineAppender)));
         }
       }
     }
-    return Map.copyOf(handlers);
+  }
+
+  private void appendBackendTopicHelpHandlers(
+      LinkedHashMap<String, List<Consumer<TargetRef>>> handlers,
+      BiConsumer<TargetRef, String> lineAppender) {
+    for (Map.Entry<String, List<String>> entry :
+        backendNamedCommandCatalog.topicHelpLines().entrySet()) {
+      String topic = normalizeHelpTopic(entry.getKey());
+      List<String> lines = entry.getValue();
+      if (topic.isEmpty() || lines == null || lines.isEmpty()) continue;
+      addTopicHelpHandler(
+          handlers,
+          topic,
+          out -> lines.forEach(line -> appendStaticHelpLine(out, line, lineAppender)));
+    }
+  }
+
+  private static void addTopicHelpHandler(
+      LinkedHashMap<String, List<Consumer<TargetRef>>> handlers,
+      String topic,
+      Consumer<TargetRef> handler) {
+    handlers.computeIfAbsent(topic, ignored -> new ArrayList<>()).add(handler);
   }
 
   private static List<cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor>
