@@ -10,12 +10,12 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-/** Catalog for built-in and ServiceLoader-backed slash command parse strategies. */
+/** Catalog for app-owned slash commands and ServiceLoader-backed parse strategies. */
 @Component
 @ApplicationLayer
 public class SlashCommandParseStrategyCatalog {
 
-  private final List<BuiltInSlashCommandParseStrategy> builtInStrategies;
+  private final FilterCommandParser filterCommandParser;
   private final List<SlashCommandParseStrategy> pluginStrategies;
 
   @Autowired
@@ -34,30 +34,27 @@ public class SlashCommandParseStrategyCatalog {
   public SlashCommandParseStrategyCatalog(
       FilterCommandParser filterCommandParser, InstalledPluginsPort installedPlugins) {
     this(
-        builtInStrategies(filterCommandParser),
+        filterCommandParser,
         CommandPluginProviders.slashCommandParseStrategies(List.of(), installedPlugins));
   }
 
   public static SlashCommandParseStrategyCatalog fromStrategies(
       List<? extends SlashCommandParseStrategy> strategies) {
-    return new SlashCommandParseStrategyCatalog(List.of(), strategies);
+    return new SlashCommandParseStrategyCatalog(null, strategies);
   }
 
   private SlashCommandParseStrategyCatalog(
-      List<? extends BuiltInSlashCommandParseStrategy> builtInStrategies,
+      FilterCommandParser filterCommandParser,
       List<? extends SlashCommandParseStrategy> pluginStrategies) {
-    this.builtInStrategies =
-        List.copyOf(Objects.requireNonNull(builtInStrategies, "builtInStrategies"));
+    this.filterCommandParser = filterCommandParser;
     this.pluginStrategies =
         List.copyOf(Objects.requireNonNull(pluginStrategies, "pluginStrategies"));
   }
 
   public ParsedInput tryParse(String line) {
-    for (BuiltInSlashCommandParseStrategy strategy : builtInStrategies) {
-      ParsedInput parsed = strategy.tryParse(line);
-      if (parsed != null) {
-        return parsed;
-      }
+    ParsedInput filterCommand = tryParseFilterCommand(line);
+    if (filterCommand != null) {
+      return filterCommand;
     }
     for (SlashCommandParseStrategy strategy : pluginStrategies) {
       SlashCommandParseResult result = strategy.tryParse(line);
@@ -69,8 +66,19 @@ public class SlashCommandParseStrategyCatalog {
     return null;
   }
 
-  private static List<BuiltInSlashCommandParseStrategy> builtInStrategies(
-      FilterCommandParser filterCommandParser) {
-    return List.of(new AdvancedFeatureSlashCommandParseStrategy(filterCommandParser));
+  private ParsedInput tryParseFilterCommand(String line) {
+    if (filterCommandParser == null || !matchesCommand(line, "/filter")) {
+      return null;
+    }
+    return new ParsedInput.Filter(filterCommandParser.parse(line));
+  }
+
+  private static boolean matchesCommand(String line, String cmd) {
+    if (line == null || cmd == null) return false;
+    if (line.length() < cmd.length()) return false;
+    if (!line.regionMatches(true, 0, cmd, 0, cmd.length())) return false;
+    if (line.length() == cmd.length()) return true;
+    char next = line.charAt(cmd.length());
+    return Character.isWhitespace(next);
   }
 }
