@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.app.translation;
 
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguage;
 import com.github.pemistahl.lingua.api.Language;
 import com.github.pemistahl.lingua.api.LanguageDetector;
 import com.github.pemistahl.lingua.api.LanguageDetectorBuilder;

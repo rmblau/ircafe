@@ -1,6 +1,5 @@
 package cafe.woden.ircclient.app.translation.spi;
 
-import cafe.woden.ircclient.app.translation.MessageTranslationLanguage;
 import java.util.List;
 
 /**

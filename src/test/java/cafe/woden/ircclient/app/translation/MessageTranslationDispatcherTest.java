@@ -14,6 +14,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import cafe.woden.ircclient.app.api.MessageTranslation;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationBackendProvider;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguage;
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider;
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationRequest;
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationResult;

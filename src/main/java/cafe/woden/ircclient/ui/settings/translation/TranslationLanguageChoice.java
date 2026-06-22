@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.settings.translation;
 
-import cafe.woden.ircclient.app.translation.MessageTranslationLanguage;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguage;
 import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.util.Objects;
 

@@ -43,8 +43,7 @@ class PluginApiSubprojectBoundaryTest {
   }
 
   private static boolean isPluginApiDependency(String dependency) {
-    return dependency.equals("cafe.woden.ircclient.app.translation.MessageTranslationLanguage")
-        || dependency.startsWith("java.")
+    return dependency.startsWith("java.")
         || dependency.startsWith("javax.annotation.")
         || (dependency.startsWith("cafe.woden.ircclient.") && dependency.contains(".spi."));
   }

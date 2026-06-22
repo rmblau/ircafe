@@ -1,4 +1,4 @@
-package cafe.woden.ircclient.app.translation;
+package cafe.woden.ircclient.app.translation.spi;
 
 import java.util.Objects;
 

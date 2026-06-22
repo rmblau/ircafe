@@ -1,8 +1,8 @@
 package cafe.woden.ircclient.ui.settings.translation;
 
-import cafe.woden.ircclient.app.translation.MessageTranslationLanguage;
 import cafe.woden.ircclient.app.translation.MessageTranslationLanguageCatalog;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguage;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;

@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.app.translation.builtins;
 
-import cafe.woden.ircclient.app.translation.MessageTranslationLanguage;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguage;
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider;
 import com.google.auto.service.AutoService;
 import java.util.List;

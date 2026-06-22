@@ -138,8 +138,7 @@ class BuiltInProviderSubprojectBoundaryTest {
   }
 
   private static boolean isBuiltInProviderDependency(String dependency) {
-    return dependency.equals("cafe.woden.ircclient.app.translation.MessageTranslationLanguage")
-        || dependency.startsWith("java.")
+    return dependency.startsWith("java.")
         || dependency.equals("com.google.auto.service.AutoService")
         || (dependency.startsWith("cafe.woden.ircclient.") && dependency.contains(".spi."));
   }

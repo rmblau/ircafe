@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.app.translation.builtins.CommonMessageTranslationLanguageProvider;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguage;
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
@@ -125,7 +126,7 @@ class MessageTranslationLanguageCatalogTest {
     return """
         package plugin.translation;
 
-        import cafe.woden.ircclient.app.translation.MessageTranslationLanguage;
+        import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguage;
         import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider;
         import java.util.List;
 
