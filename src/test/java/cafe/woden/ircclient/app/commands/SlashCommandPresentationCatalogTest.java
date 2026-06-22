@@ -194,7 +194,10 @@ class SlashCommandPresentationCatalogTest {
     catalog.appendGeneralHelp(
         new TargetRef("libera", "status"),
         (target, line) -> generalHelp.add(target.target() + ":" + line));
-    assertEquals(List.of("status:/plugin-help - plugin jar help"), generalHelp);
+    assertTrue(
+        generalHelp.contains(
+            "status:Common: /join /part /msg /notice /me /query /whois /names /list /topic /monitor /chathistory /quote /dcc"));
+    assertTrue(generalHelp.contains("status:/plugin-help - plugin jar help"));
 
     AtomicReference<String> topicHelp = new AtomicReference<>();
     catalog
@@ -233,7 +236,10 @@ class SlashCommandPresentationCatalogTest {
     catalog.appendGeneralHelp(
         new TargetRef("libera", "status"),
         (target, line) -> generalHelp.add(target.target() + ":" + line));
-    assertEquals(List.of("status:/plugin-help - plugin jar help"), generalHelp);
+    assertTrue(
+        generalHelp.contains(
+            "status:Common: /join /part /msg /notice /me /query /whois /names /list /topic /monitor /chathistory /quote /dcc"));
+    assertTrue(generalHelp.contains("status:/plugin-help - plugin jar help"));
 
     AtomicReference<String> topicHelp = new AtomicReference<>();
     catalog
@@ -269,6 +275,30 @@ class SlashCommandPresentationCatalogTest {
 
     assertTrue(commands.contains("/join"));
     assertTrue(commands.contains("/raw"));
+  }
+
+  @Test
+  void loadsCoreGeneralHelpThroughClasspathServiceLoader() {
+    RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+    SlashCommandPresentationCatalog catalog =
+        new SlashCommandPresentationCatalog(
+            List.of(), BackendNamedCommandCatalog.empty(), installedPlugins);
+    ArrayList<String> rendered = new ArrayList<>();
+
+    catalog.appendGeneralHelp(
+        new TargetRef("libera", "status"), (target, line) -> rendered.add(line));
+
+    assertTrue(
+        rendered.contains(
+            "Common: /join /part /msg /notice /me /query /whois /names /list /topic /monitor /chathistory /quote /dcc"));
+    assertTrue(
+        rendered.contains(
+            "Invites: /invites /invjoin (/join -i) /invignore /invwhois /invblock /inviteautojoin (/ajinvite)"));
+    assertTrue(rendered.contains("Tip: /help dcc for direct-chat/file-transfer commands."));
+    assertTrue(
+        rendered.contains(
+            "Tip: /help edit, /help redact, /help markread, or /help upload for focused details."));
   }
 
   @Test

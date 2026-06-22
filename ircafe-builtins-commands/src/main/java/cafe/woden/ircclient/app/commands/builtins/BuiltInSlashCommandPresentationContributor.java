@@ -92,6 +92,20 @@ public final class BuiltInSlashCommandPresentationContributor
   }
 
   @Override
+  public void appendGeneralHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine(
+        "Common: /join /part /msg /notice /me /query /whois /names /list /topic /monitor /chathistory /quote /dcc");
+    help.appendLine(
+        "Invites: /invites /invjoin (/join -i) /invignore /invwhois /invblock /inviteautojoin (/ajinvite)");
+    help.appendLine("Tip: /help dcc for direct-chat/file-transfer commands.");
+    help.appendLine(
+        "Tip: /help edit, /help redact, /help markread, or /help upload for focused details.");
+  }
+
+  @Override
   public Map<String, Consumer<SlashCommandHelpSink>> topicHelpHandlers() {
     return Map.of("dcc", BuiltInSlashCommandPresentationContributor::appendDccHelp);
   }

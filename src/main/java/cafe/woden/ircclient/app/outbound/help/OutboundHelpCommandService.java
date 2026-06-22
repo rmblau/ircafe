@@ -85,24 +85,11 @@ public final class OutboundHelpCommandService {
       ui.appendStatus(out, "(help)", "No dedicated help for '" + t + "'. Showing common commands.");
     }
 
-    ui.appendStatus(
-        out,
-        "(help)",
-        "Common: /join /part /msg /notice /me /query /whois /names /list /topic /monitor /chathistory /quote /dcc");
-    ui.appendStatus(
-        out,
-        "(help)",
-        "Invites: /invites /invjoin (/join -i) /invignore /invwhois /invblock /inviteautojoin (/ajinvite)");
+    slashCommandPresentationCatalog.appendGeneralHelp(out, this::appendStaticHelpLine);
     OutboundHelpSink help = helpSink(out);
     for (OutboundHelpContributor contributor : contributors) {
       contributor.appendGeneralHelp(help);
     }
-    slashCommandPresentationCatalog.appendGeneralHelp(out, this::appendStaticHelpLine);
-    ui.appendStatus(out, "(help)", "Tip: /help dcc for direct-chat/file-transfer commands.");
-    ui.appendStatus(
-        out,
-        "(help)",
-        "Tip: /help edit, /help redact, /help markread, or /help upload for focused details.");
   }
 
   private Map<String, HelpTopicHandler> buildHelpTopicHandlers() {
