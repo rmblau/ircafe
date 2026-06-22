@@ -1,13 +1,15 @@
 package cafe.woden.ircclient.ui.settings.theme;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
-import cafe.woden.ircclient.ui.settings.theme.builtins.BuiltInThemeContributionProvider;
 import cafe.woden.ircclient.ui.settings.theme.spi.ThemeContributionProvider;
 import cafe.woden.ircclient.ui.settings.theme.spi.ThemeOption;
 import cafe.woden.ircclient.ui.settings.theme.spi.ThemePresetContribution;
+import cafe.woden.ircclient.util.PluginServiceLoaderSupport;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Predicate;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 
@@ -15,7 +17,14 @@ import org.jmolecules.architecture.layered.InterfaceLayer;
 @InterfaceLayer
 final class ThemeContributionProviders {
   private static final List<ThemeContributionProvider> BUILT_IN_PROVIDERS =
-      List.of(new BuiltInThemeContributionProvider());
+      PluginServiceLoaderSupport.loadInstalledServices(
+          ThemeContributionProvider.class,
+          List.of(),
+          PluginServiceLoaderSupport.defaultApplicationClassLoader(
+              ThemeContributionProviders.class),
+          (ClassLoader) null);
+  private static final Set<String> BUILT_IN_PROVIDER_CLASS_NAMES =
+      providerClassNames(BUILT_IN_PROVIDERS);
 
   private ThemeContributionProviders() {}
 
@@ -71,6 +80,19 @@ final class ThemeContributionProviders {
   }
 
   private static boolean isBuiltInProvider(ThemeContributionProvider provider) {
-    return provider != null && provider.getClass() == BuiltInThemeContributionProvider.class;
+    return provider != null
+        && BUILT_IN_PROVIDER_CLASS_NAMES.contains(provider.getClass().getName());
+  }
+
+  private static Set<String> providerClassNames(
+      List<? extends ThemeContributionProvider> providers) {
+    LinkedHashSet<String> classNames = new LinkedHashSet<>();
+    for (ThemeContributionProvider provider :
+        Objects.requireNonNullElse(providers, List.<ThemeContributionProvider>of())) {
+      if (provider != null) {
+        classNames.add(provider.getClass().getName());
+      }
+    }
+    return Set.copyOf(classNames);
   }
 }

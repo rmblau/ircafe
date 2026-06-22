@@ -1,9 +1,9 @@
 package cafe.woden.ircclient.ui;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
-import cafe.woden.ircclient.ui.builtins.BuiltInExternalBrowserSchemeProvider;
 import cafe.woden.ircclient.ui.spi.ExternalBrowserCommandProvider;
 import cafe.woden.ircclient.ui.spi.ExternalBrowserSchemeProvider;
+import cafe.woden.ircclient.util.PluginServiceLoaderSupport;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -18,7 +18,12 @@ import org.slf4j.LoggerFactory;
 final class ExternalBrowserPluginProviders {
   private static final Logger log = LoggerFactory.getLogger(ExternalBrowserPluginProviders.class);
   private static final List<ExternalBrowserSchemeProvider> BUILT_IN_SCHEME_PROVIDERS =
-      List.of(new BuiltInExternalBrowserSchemeProvider());
+      PluginServiceLoaderSupport.loadInstalledServices(
+          ExternalBrowserSchemeProvider.class,
+          List.of(),
+          PluginServiceLoaderSupport.defaultApplicationClassLoader(
+              ExternalBrowserPluginProviders.class),
+          (ClassLoader) null);
 
   private ExternalBrowserPluginProviders() {}
 
