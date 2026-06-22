@@ -272,6 +272,25 @@ class SlashCommandPresentationCatalogTest {
   }
 
   @Test
+  void loadsCoreDccTopicHelpThroughClasspathServiceLoader() {
+    RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+    SlashCommandPresentationCatalog catalog =
+        new SlashCommandPresentationCatalog(
+            List.of(), BackendNamedCommandCatalog.empty(), installedPlugins);
+    ArrayList<String> rendered = new ArrayList<>();
+    Map<String, Consumer<TargetRef>> handlers =
+        catalog.topicHelpHandlers((target, line) -> rendered.add(line));
+
+    assertTrue(handlers.containsKey("dcc"));
+    handlers.get("dcc").accept(new TargetRef("libera", "status"));
+
+    assertTrue(rendered.contains("/dcc chat <nick>"));
+    assertTrue(rendered.contains("/dcc send <nick> <file-path>"));
+    assertTrue(rendered.contains("UI: right-click a nick and use the DCC submenu."));
+  }
+
+  @Test
   void backendTopicHelpLinesAreExposedThroughCatalogHandlers() {
     BackendNamedCommandHandler backendHandler =
         new BackendNamedCommandHandler() {

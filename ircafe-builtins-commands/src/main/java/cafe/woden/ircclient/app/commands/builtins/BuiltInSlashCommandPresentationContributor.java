@@ -1,9 +1,12 @@
 package cafe.woden.ircclient.app.commands.builtins;
 
 import cafe.woden.ircclient.app.commands.spi.SlashCommandDescriptor;
+import cafe.woden.ircclient.app.commands.spi.SlashCommandHelpSink;
 import cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor;
 import com.google.auto.service.AutoService;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
 
 /** Shared presentation metadata for built-in slash commands handled by the typed parser path. */
 @AutoService(SlashCommandPresentationContributor.class)
@@ -86,5 +89,23 @@ public final class BuiltInSlashCommandPresentationContributor
   @Override
   public List<SlashCommandDescriptor> autocompleteCommands() {
     return COMMANDS;
+  }
+
+  @Override
+  public Map<String, Consumer<SlashCommandHelpSink>> topicHelpHandlers() {
+    return Map.of("dcc", BuiltInSlashCommandPresentationContributor::appendDccHelp);
+  }
+
+  private static void appendDccHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("/dcc chat <nick>");
+    help.appendLine("/dcc send <nick> <file-path>");
+    help.appendLine("/dcc accept <nick>");
+    help.appendLine("/dcc get <nick> [save-path]");
+    help.appendLine("/dcc msg <nick> <text>  (alias: /dccmsg <nick> <text>)");
+    help.appendLine("/dcc close <nick>  /dcc list  /dcc panel");
+    help.appendLine("UI: right-click a nick and use the DCC submenu.");
   }
 }

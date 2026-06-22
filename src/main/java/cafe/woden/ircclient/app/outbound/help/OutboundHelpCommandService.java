@@ -107,7 +107,6 @@ public final class OutboundHelpCommandService {
 
   private Map<String, HelpTopicHandler> buildHelpTopicHandlers() {
     LinkedHashMap<String, HelpTopicHandler> handlers = new LinkedHashMap<>();
-    registerHelpTopicHandler(handlers, this::appendDccHelp, "dcc");
     for (OutboundHelpContributor contributor : contributors) {
       registerHelpTopicHandlers(handlers, contributor.topicHelpHandlers());
     }
@@ -123,17 +122,6 @@ public final class OutboundHelpCommandService {
 
   private OutboundHelpSink helpSink(TargetRef out) {
     return new ServiceOutboundHelpSink(out);
-  }
-
-  private static void registerHelpTopicHandler(
-      Map<String, HelpTopicHandler> handlers, HelpTopicHandler handler, String... topics) {
-    if (handlers == null || handler == null || topics == null) return;
-    for (String rawTopic : topics) {
-      String topic = normalizeHelpTopic(rawTopic);
-      if (!topic.isEmpty()) {
-        handlers.put(topic, handler);
-      }
-    }
   }
 
   private void registerHelpTopicHandlers(
@@ -185,16 +173,6 @@ public final class OutboundHelpCommandService {
   @FunctionalInterface
   private interface HelpTopicHandler {
     void handle(TargetRef out);
-  }
-
-  private void appendDccHelp(TargetRef out) {
-    ui.appendStatus(out, "(help)", "/dcc chat <nick>");
-    ui.appendStatus(out, "(help)", "/dcc send <nick> <file-path>");
-    ui.appendStatus(out, "(help)", "/dcc accept <nick>");
-    ui.appendStatus(out, "(help)", "/dcc get <nick> [save-path]");
-    ui.appendStatus(out, "(help)", "/dcc msg <nick> <text>  (alias: /dccmsg <nick> <text>)");
-    ui.appendStatus(out, "(help)", "/dcc close <nick>  /dcc list  /dcc panel");
-    ui.appendStatus(out, "(help)", "UI: right-click a nick and use the DCC submenu.");
   }
 
   private static String normalizeHelpTopic(String raw) {

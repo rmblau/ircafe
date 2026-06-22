@@ -10,6 +10,7 @@ import cafe.woden.ircclient.app.api.Ircv3ReadMarkerFeatureSupport;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.commands.BackendNamedCommandCatalog;
 import cafe.woden.ircclient.app.commands.SlashCommandPresentationCatalog;
+import cafe.woden.ircclient.app.commands.builtins.BuiltInSlashCommandPresentationContributor;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.app.outbound.backend.*;
@@ -114,7 +115,9 @@ class OutboundHelpCommandServiceTest {
           ui,
           targetCoordinator);
   private final SlashCommandPresentationCatalog slashCommandPresentationCatalog =
-      new SlashCommandPresentationCatalog(List.of(), BackendNamedCommandCatalog.empty());
+      new SlashCommandPresentationCatalog(
+          List.of(new BuiltInSlashCommandPresentationContributor()),
+          BackendNamedCommandCatalog.empty());
   private final OutboundHelpCommandService service =
       new OutboundHelpCommandService(
           ui,
