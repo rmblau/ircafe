@@ -1,29 +1,26 @@
 package cafe.woden.ircclient.ui.input;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
-import cafe.woden.ircclient.ui.input.builtins.BuiltInMatrixUploadMsgTypeProvider;
 import cafe.woden.ircclient.ui.input.spi.MatrixUploadMsgTypeProvider;
 import cafe.woden.ircclient.ui.input.spi.MessageInputSpellcheckDictionaryProvider;
 import cafe.woden.ircclient.ui.input.spi.MessageInputWordSuggestionProvider;
+import cafe.woden.ircclient.util.PluginServiceLoaderSupport;
 import java.util.List;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 
 /** Centralizes ServiceLoader-backed message input plugin contribution points. */
 @InterfaceLayer
 final class MessageInputPluginProviders {
-  private static final List<MatrixUploadMsgTypeProvider> BUILT_IN_MATRIX_UPLOAD_MSGTYPE_PROVIDERS =
-      List.of(new BuiltInMatrixUploadMsgTypeProvider());
-
   private MessageInputPluginProviders() {}
 
   static List<MatrixUploadMsgTypeProvider> matrixUploadMsgTypeProviders(
       InstalledPluginsPort installedPlugins) {
+    List<MatrixUploadMsgTypeProvider> providers = builtInMatrixUploadMsgTypeProviders();
     if (installedPlugins == null) {
-      return BUILT_IN_MATRIX_UPLOAD_MSGTYPE_PROVIDERS;
+      return providers;
     }
     return dedupeByProviderClass(
-        installedPlugins.loadInstalledServices(
-            MatrixUploadMsgTypeProvider.class, BUILT_IN_MATRIX_UPLOAD_MSGTYPE_PROVIDERS));
+        installedPlugins.loadInstalledServices(MatrixUploadMsgTypeProvider.class, providers));
   }
 
   static List<MessageInputSpellcheckDictionaryProvider> spellcheckDictionaryProviders(
@@ -41,7 +38,11 @@ final class MessageInputPluginProviders {
   }
 
   static List<MatrixUploadMsgTypeProvider> builtInMatrixUploadMsgTypeProviders() {
-    return BUILT_IN_MATRIX_UPLOAD_MSGTYPE_PROVIDERS;
+    return PluginServiceLoaderSupport.loadInstalledServices(
+        MatrixUploadMsgTypeProvider.class,
+        List.of(),
+        PluginServiceLoaderSupport.defaultApplicationClassLoader(MessageInputPluginProviders.class),
+        null);
   }
 
   private static <T> List<T> dedupeByProviderClass(List<? extends T> services) {

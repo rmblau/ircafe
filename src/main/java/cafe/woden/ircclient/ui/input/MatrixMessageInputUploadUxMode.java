@@ -1,6 +1,5 @@
 package cafe.woden.ircclient.ui.input;
 
-import cafe.woden.ircclient.ui.input.builtins.BuiltInMatrixUploadMsgTypeProvider;
 import cafe.woden.ircclient.ui.input.spi.MatrixUploadMsgTypeProvider;
 import cafe.woden.ircclient.ui.input.spi.MatrixUploadMsgTypeRule;
 import cafe.woden.ircclient.ui.localization.UiMessages;
@@ -30,7 +29,8 @@ final class MatrixMessageInputUploadUxMode implements MessageInputUploadUxMode {
   }
 
   static List<MatrixUploadMsgTypeRule> defaultMsgTypeRules() {
-    return new BuiltInMatrixUploadMsgTypeProvider().uploadMsgTypeRules();
+    return msgTypeRulesFromProviders(
+        MessageInputPluginProviders.builtInMatrixUploadMsgTypeProviders());
   }
 
   static List<MatrixUploadMsgTypeRule> msgTypeRulesFromProviders(

@@ -62,9 +62,11 @@ class BuiltInProviderSubprojectBoundaryTest {
   }
 
   @Test
-  void appDoesNotCompileAgainstServiceLoaderOnlyCommandAndBackendProviders() throws IOException {
+  void appDoesNotCompileAgainstServiceLoaderOnlyProviders() throws IOException {
     String build = Files.readString(Path.of("build.gradle"));
 
+    assertServiceLoaderOnlyProvider(build, "ircafe-builtins-input");
+    assertServiceLoaderOnlyProvider(build, "ircafe-builtins-outbound");
     assertServiceLoaderOnlyProvider(build, "ircafe-builtins-commands");
     assertServiceLoaderOnlyProvider(build, "ircafe-builtins-backend");
   }

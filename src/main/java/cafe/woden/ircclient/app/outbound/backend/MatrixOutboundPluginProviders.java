@@ -1,8 +1,8 @@
 package cafe.woden.ircclient.app.outbound.backend;
 
-import cafe.woden.ircclient.app.outbound.builtins.BuiltInMatrixOutboundUploadMsgTypeProvider;
 import cafe.woden.ircclient.app.outbound.upload.spi.MatrixOutboundUploadMsgTypeProvider;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.util.PluginServiceLoaderSupport;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -21,9 +21,6 @@ import org.springframework.beans.factory.ObjectProvider;
 @ApplicationLayer
 final class MatrixOutboundPluginProviders {
   private static final Logger log = LoggerFactory.getLogger(MatrixOutboundPluginProviders.class);
-
-  private static final List<MatrixOutboundUploadMsgTypeProvider> BUILT_IN_UPLOAD_MSGTYPE_PROVIDERS =
-      List.of(new BuiltInMatrixOutboundUploadMsgTypeProvider());
 
   private MatrixOutboundPluginProviders() {}
 
@@ -76,12 +73,22 @@ final class MatrixOutboundPluginProviders {
 
   static List<MatrixOutboundUploadMsgTypeProvider> uploadMsgTypeProviders(
       InstalledPluginsPort installedPlugins) {
+    List<MatrixOutboundUploadMsgTypeProvider> providers = applicationClasspathProviders();
     if (installedPlugins == null) {
-      return BUILT_IN_UPLOAD_MSGTYPE_PROVIDERS;
+      return providers;
     }
     return dedupeByProviderClass(
         installedPlugins.loadInstalledServices(
-            MatrixOutboundUploadMsgTypeProvider.class, BUILT_IN_UPLOAD_MSGTYPE_PROVIDERS));
+            MatrixOutboundUploadMsgTypeProvider.class, providers));
+  }
+
+  private static List<MatrixOutboundUploadMsgTypeProvider> applicationClasspathProviders() {
+    return PluginServiceLoaderSupport.loadInstalledServices(
+        MatrixOutboundUploadMsgTypeProvider.class,
+        List.of(),
+        PluginServiceLoaderSupport.defaultApplicationClassLoader(
+            MatrixOutboundPluginProviders.class),
+        null);
   }
 
   private static String normalizeAlias(String raw) {
