@@ -486,6 +486,38 @@ class SlashCommandPresentationCatalogTest {
   }
 
   @Test
+  void loadsCoreConnectionChannelTopicHelpThroughClasspathServiceLoader() {
+    RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+    SlashCommandPresentationCatalog catalog =
+        new SlashCommandPresentationCatalog(
+            List.of(), BackendNamedCommandCatalog.empty(), installedPlugins);
+    ArrayList<String> rendered = new ArrayList<>();
+    Map<String, Consumer<TargetRef>> handlers =
+        catalog.topicHelpHandlers((target, line) -> rendered.add(line));
+
+    assertTrue(handlers.containsKey("join"));
+    assertTrue(handlers.containsKey("j"));
+    assertTrue(handlers.containsKey("connect"));
+    assertTrue(handlers.containsKey("topic"));
+    assertTrue(handlers.containsKey("mode"));
+    assertTrue(handlers.containsKey("op"));
+    assertTrue(handlers.containsKey("unban"));
+
+    handlers.get("join").accept(new TargetRef("libera", "status"));
+    handlers.get("mode").accept(new TargetRef("libera", "status"));
+    handlers.get("op").accept(new TargetRef("libera", "status"));
+
+    assertTrue(rendered.contains("Usage: /join <#channel> [key]"));
+    assertTrue(rendered.contains("Alias: /j <#channel> [key]"));
+    assertTrue(rendered.contains("Usage: /mode <target> [mode-spec [args...]]"));
+    assertTrue(rendered.contains("Queries or changes user/channel modes."));
+    assertTrue(
+        rendered.contains("Usage: /op|/deop|/voice|/devoice [#channel] <nick> [more nicks...]"));
+    assertTrue(rendered.contains("Changes common channel privilege modes for one or more nicks."));
+  }
+
+  @Test
   void backendTopicHelpLinesAreExposedThroughCatalogHandlers() {
     BackendNamedCommandHandler backendHandler =
         new BackendNamedCommandHandler() {

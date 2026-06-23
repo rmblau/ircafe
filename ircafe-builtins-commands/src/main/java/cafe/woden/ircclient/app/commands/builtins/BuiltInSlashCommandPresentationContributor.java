@@ -113,6 +113,14 @@ public final class BuiltInSlashCommandPresentationContributor
   @Override
   public Map<String, Consumer<SlashCommandHelpSink>> topicHelpHandlers() {
     return Map.ofEntries(
+        Map.entry("join", BuiltInSlashCommandPresentationContributor::appendJoinHelp),
+        Map.entry("j", BuiltInSlashCommandPresentationContributor::appendJoinHelp),
+        Map.entry("part", BuiltInSlashCommandPresentationContributor::appendPartHelp),
+        Map.entry("leave", BuiltInSlashCommandPresentationContributor::appendPartHelp),
+        Map.entry("connect", BuiltInSlashCommandPresentationContributor::appendConnectHelp),
+        Map.entry("disconnect", BuiltInSlashCommandPresentationContributor::appendDisconnectHelp),
+        Map.entry("reconnect", BuiltInSlashCommandPresentationContributor::appendReconnectHelp),
+        Map.entry("quit", BuiltInSlashCommandPresentationContributor::appendQuitHelp),
         Map.entry("nick", BuiltInSlashCommandPresentationContributor::appendNickHelp),
         Map.entry("away", BuiltInSlashCommandPresentationContributor::appendAwayHelp),
         Map.entry("query", BuiltInSlashCommandPresentationContributor::appendQueryHelp),
@@ -129,6 +137,18 @@ public final class BuiltInSlashCommandPresentationContributor
         Map.entry("dcc", BuiltInSlashCommandPresentationContributor::appendDccHelp),
         Map.entry("monitor", BuiltInSlashCommandPresentationContributor::appendMonitorHelp),
         Map.entry("mon", BuiltInSlashCommandPresentationContributor::appendMonitorHelp),
+        Map.entry("topic", BuiltInSlashCommandPresentationContributor::appendTopicHelp),
+        Map.entry("kick", BuiltInSlashCommandPresentationContributor::appendKickHelp),
+        Map.entry("names", BuiltInSlashCommandPresentationContributor::appendNamesHelp),
+        Map.entry("who", BuiltInSlashCommandPresentationContributor::appendWhoHelp),
+        Map.entry("list", BuiltInSlashCommandPresentationContributor::appendListHelp),
+        Map.entry("mode", BuiltInSlashCommandPresentationContributor::appendModeHelp),
+        Map.entry("op", BuiltInSlashCommandPresentationContributor::appendOperatorModeHelp),
+        Map.entry("deop", BuiltInSlashCommandPresentationContributor::appendOperatorModeHelp),
+        Map.entry("voice", BuiltInSlashCommandPresentationContributor::appendOperatorModeHelp),
+        Map.entry("devoice", BuiltInSlashCommandPresentationContributor::appendOperatorModeHelp),
+        Map.entry("ban", BuiltInSlashCommandPresentationContributor::appendBanHelp),
+        Map.entry("unban", BuiltInSlashCommandPresentationContributor::appendBanHelp),
         Map.entry(
             "chathistory",
             BuiltInSlashCommandPresentationContributor::appendChatHistoryHelpDetails),
@@ -136,6 +156,54 @@ public final class BuiltInSlashCommandPresentationContributor
             "history", BuiltInSlashCommandPresentationContributor::appendChatHistoryHelpDetails),
         Map.entry("quote", BuiltInSlashCommandPresentationContributor::appendRawQuoteHelp),
         Map.entry("raw", BuiltInSlashCommandPresentationContributor::appendRawQuoteHelp));
+  }
+
+  private static void appendJoinHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /join <#channel> [key]");
+    help.appendLine("Alias: /j <#channel> [key]");
+  }
+
+  private static void appendPartHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /part [#channel] [reason]");
+    help.appendLine("Alias: /leave [#channel] [reason]");
+  }
+
+  private static void appendConnectHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /connect [server|all]");
+    help.appendLine("Connects the selected configured server, or all configured servers.");
+  }
+
+  private static void appendDisconnectHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /disconnect [server|all]");
+    help.appendLine("Disconnects the selected configured server, or all connected servers.");
+  }
+
+  private static void appendReconnectHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /reconnect [server|all]");
+    help.appendLine("Reconnects the selected configured server, or all configured servers.");
+  }
+
+  private static void appendQuitHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /quit [message]");
+    help.appendLine("Disconnects all servers and exits the client.");
   }
 
   private static void appendNickHelp(SlashCommandHelpSink help) {
@@ -238,6 +306,70 @@ public final class BuiltInSlashCommandPresentationContributor
     help.appendLine("Usage: /monitor <+|-|list|status|clear> [nicks]");
     help.appendLine("Aliases: /mon, /monitor +nick1 nick2, /monitor -nick1,nick2");
     help.appendLine("Examples: /monitor +alice,bob  |  /monitor list  |  /monitor clear");
+  }
+
+  private static void appendTopicHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /topic [#channel] [new topic...]");
+    help.appendLine("Shows or changes the topic for the active or specified channel.");
+  }
+
+  private static void appendKickHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /kick [#channel] <nick> [reason]");
+    help.appendLine("Kicks a nick from the active or specified channel.");
+  }
+
+  private static void appendNamesHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /names [#channel]");
+    help.appendLine("Requests the nick list for the active or specified channel.");
+  }
+
+  private static void appendWhoHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /who [mask|#channel]");
+    help.appendLine("Requests WHO information for a nick mask or channel.");
+  }
+
+  private static void appendListHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /list [pattern]");
+    help.appendLine("Requests the server channel list, optionally filtered by pattern.");
+  }
+
+  private static void appendModeHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /mode <target> [mode-spec [args...]]");
+    help.appendLine("Queries or changes user/channel modes.");
+  }
+
+  private static void appendOperatorModeHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /op|/deop|/voice|/devoice [#channel] <nick> [more nicks...]");
+    help.appendLine("Changes common channel privilege modes for one or more nicks.");
+  }
+
+  private static void appendBanHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /ban|/unban [#channel] <mask-or-nick> [more...]");
+    help.appendLine("Adds or removes channel ban masks.");
   }
 
   private static void appendChatHistoryHelpDetails(SlashCommandHelpSink help) {
