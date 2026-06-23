@@ -26,6 +26,12 @@ public class SlashCommandPresentationCatalog {
   private static final List<SlashCommandDescriptor> APP_OWNED_AUTOCOMPLETE_COMMANDS =
       List.of(new SlashCommandDescriptor("/filter", "Local filtering controls"));
 
+  private static final List<String> APP_OWNED_GENERAL_HELP_LINES =
+      List.of("Local: /filter help for local filtering controls.");
+
+  private static final Map<String, Consumer<SlashCommandHelpSink>> APP_OWNED_TOPIC_HELP_HANDLERS =
+      Map.of("filter", SlashCommandPresentationCatalog::appendFilterHelp);
+
   private final List<cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor>
       contributors;
   private final BackendNamedCommandCatalog backendNamedCommandCatalog;
@@ -68,6 +74,7 @@ public class SlashCommandPresentationCatalog {
 
   public void appendGeneralHelp(TargetRef out, BiConsumer<TargetRef, String> lineAppender) {
     Objects.requireNonNull(lineAppender, "lineAppender");
+    APP_OWNED_GENERAL_HELP_LINES.forEach(line -> appendStaticHelpLine(out, line, lineAppender));
     SlashCommandHelpSink help = helpSink(out, lineAppender);
     for (cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor contributor :
         contributors) {
@@ -82,6 +89,7 @@ public class SlashCommandPresentationCatalog {
       BiConsumer<TargetRef, String> lineAppender) {
     Objects.requireNonNull(lineAppender, "lineAppender");
     LinkedHashMap<String, List<Consumer<TargetRef>>> handlers = new LinkedHashMap<>();
+    appendAppOwnedTopicHelpHandlers(handlers, lineAppender);
     appendPresentationTopicHelpHandlers(handlers, lineAppender);
     appendBackendTopicHelpHandlers(handlers, lineAppender);
 
@@ -111,6 +119,19 @@ public class SlashCommandPresentationCatalog {
       merged.putIfAbsent(command.command().toLowerCase(Locale.ROOT), command);
     }
     return List.copyOf(merged.values());
+  }
+
+  private void appendAppOwnedTopicHelpHandlers(
+      LinkedHashMap<String, List<Consumer<TargetRef>>> handlers,
+      BiConsumer<TargetRef, String> lineAppender) {
+    for (Map.Entry<String, Consumer<SlashCommandHelpSink>> entry :
+        APP_OWNED_TOPIC_HELP_HANDLERS.entrySet()) {
+      String topic = normalizeHelpTopic(entry.getKey());
+      Consumer<SlashCommandHelpSink> consumer = entry.getValue();
+      if (!topic.isEmpty() && consumer != null) {
+        addTopicHelpHandler(handlers, topic, out -> consumer.accept(helpSink(out, lineAppender)));
+      }
+    }
   }
 
   private void appendPresentationTopicHelpHandlers(
@@ -169,6 +190,17 @@ public class SlashCommandPresentationCatalog {
       }
     }
     return List.copyOf(nonNull);
+  }
+
+  private static void appendFilterHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /filter help");
+    help.appendLine(
+        "Examples: /filter list, /filter add <name> key=value ..., /filter defaults ...");
+    help.appendLine(
+        "Local filtering remains app-owned because it depends on filter state and UI rendering.");
   }
 
   private static void appendStaticHelpLine(

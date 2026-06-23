@@ -83,6 +83,35 @@ class SlashCommandPresentationCatalogTest {
   }
 
   @Test
+  void appOwnedFilterHelpRendersWithoutProviderContributors() {
+    SlashCommandPresentationCatalog catalog =
+        new SlashCommandPresentationCatalog(List.of(), BackendNamedCommandCatalog.empty());
+    ArrayList<String> rendered = new ArrayList<>();
+
+    catalog.appendGeneralHelp(
+        new TargetRef("libera", "status"), (target, line) -> rendered.add(line));
+
+    assertTrue(rendered.contains("Local: /filter help for local filtering controls."));
+  }
+
+  @Test
+  void appOwnedFilterTopicHelpRendersWithoutProviderContributors() {
+    SlashCommandPresentationCatalog catalog =
+        new SlashCommandPresentationCatalog(List.of(), BackendNamedCommandCatalog.empty());
+    ArrayList<String> rendered = new ArrayList<>();
+    Map<String, Consumer<TargetRef>> handlers =
+        catalog.topicHelpHandlers((target, line) -> rendered.add(line));
+
+    assertTrue(handlers.containsKey("filter"));
+    handlers.get("filter").accept(new TargetRef("libera", "status"));
+
+    assertTrue(rendered.contains("Usage: /filter help"));
+    assertTrue(
+        rendered.contains(
+            "Examples: /filter list, /filter add <name> key=value ..., /filter defaults ..."));
+  }
+
+  @Test
   void includesPresentationContributorsLoadedThroughInstalledPluginPort() {
     SlashCommandPresentationContributor builtInContributor =
         autocompleteContributor("/built-in", "Built-in command");
@@ -121,7 +150,11 @@ class SlashCommandPresentationCatalogTest {
         new TargetRef("libera", "status"),
         (target, line) -> rendered.add(target.target() + ":" + line));
 
-    assertEquals(List.of("status:/plugin-help - plugin-provided help"), rendered);
+    assertEquals(
+        List.of(
+            "status:Local: /filter help for local filtering controls.",
+            "status:/plugin-help - plugin-provided help"),
+        rendered);
   }
 
   @Test
@@ -141,7 +174,8 @@ class SlashCommandPresentationCatalogTest {
     catalog.appendGeneralHelp(
         new TargetRef("libera", "#java"), (target, line) -> rendered.add(line));
 
-    assertEquals(List.of("libera:#java"), rendered);
+    assertEquals(
+        List.of("Local: /filter help for local filtering controls.", "libera:#java"), rendered);
   }
 
   @Test
