@@ -459,6 +459,33 @@ class SlashCommandPresentationCatalogTest {
   }
 
   @Test
+  void loadsCoreIdentityMessagingTopicHelpThroughClasspathServiceLoader() {
+    RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+    SlashCommandPresentationCatalog catalog =
+        new SlashCommandPresentationCatalog(
+            List.of(), BackendNamedCommandCatalog.empty(), installedPlugins);
+    ArrayList<String> rendered = new ArrayList<>();
+    Map<String, Consumer<TargetRef>> handlers =
+        catalog.topicHelpHandlers((target, line) -> rendered.add(line));
+
+    assertTrue(handlers.containsKey("nick"));
+    assertTrue(handlers.containsKey("away"));
+    assertTrue(handlers.containsKey("msg"));
+    assertTrue(handlers.containsKey("notice"));
+    assertTrue(handlers.containsKey("ctcp"));
+    assertTrue(handlers.containsKey("version"));
+
+    handlers.get("msg").accept(new TargetRef("libera", "status"));
+    handlers.get("ctcp").accept(new TargetRef("libera", "status"));
+
+    assertTrue(rendered.contains("Usage: /msg <nick> <message>"));
+    assertTrue(rendered.contains("Sends a private message without changing the active target."));
+    assertTrue(rendered.contains("Usage: /ctcp <nick> <command> [args...]"));
+    assertTrue(rendered.contains("Shortcuts: /version <nick>, /ping <nick>, /time <nick>."));
+  }
+
+  @Test
   void backendTopicHelpLinesAreExposedThroughCatalogHandlers() {
     BackendNamedCommandHandler backendHandler =
         new BackendNamedCommandHandler() {

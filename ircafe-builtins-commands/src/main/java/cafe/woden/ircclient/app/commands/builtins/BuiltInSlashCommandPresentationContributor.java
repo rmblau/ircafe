@@ -112,21 +112,110 @@ public final class BuiltInSlashCommandPresentationContributor
 
   @Override
   public Map<String, Consumer<SlashCommandHelpSink>> topicHelpHandlers() {
-    return Map.of(
-        "dcc",
-        BuiltInSlashCommandPresentationContributor::appendDccHelp,
-        "monitor",
-        BuiltInSlashCommandPresentationContributor::appendMonitorHelp,
-        "mon",
-        BuiltInSlashCommandPresentationContributor::appendMonitorHelp,
-        "chathistory",
-        BuiltInSlashCommandPresentationContributor::appendChatHistoryHelpDetails,
-        "history",
-        BuiltInSlashCommandPresentationContributor::appendChatHistoryHelpDetails,
-        "quote",
-        BuiltInSlashCommandPresentationContributor::appendRawQuoteHelp,
-        "raw",
-        BuiltInSlashCommandPresentationContributor::appendRawQuoteHelp);
+    return Map.ofEntries(
+        Map.entry("nick", BuiltInSlashCommandPresentationContributor::appendNickHelp),
+        Map.entry("away", BuiltInSlashCommandPresentationContributor::appendAwayHelp),
+        Map.entry("query", BuiltInSlashCommandPresentationContributor::appendQueryHelp),
+        Map.entry("msg", BuiltInSlashCommandPresentationContributor::appendMsgHelp),
+        Map.entry("notice", BuiltInSlashCommandPresentationContributor::appendNoticeHelp),
+        Map.entry("me", BuiltInSlashCommandPresentationContributor::appendMeHelp),
+        Map.entry("whois", BuiltInSlashCommandPresentationContributor::appendWhoisHelp),
+        Map.entry("wi", BuiltInSlashCommandPresentationContributor::appendWhoisHelp),
+        Map.entry("whowas", BuiltInSlashCommandPresentationContributor::appendWhowasHelp),
+        Map.entry("ctcp", BuiltInSlashCommandPresentationContributor::appendCtcpHelp),
+        Map.entry("version", BuiltInSlashCommandPresentationContributor::appendCtcpShortcutHelp),
+        Map.entry("ping", BuiltInSlashCommandPresentationContributor::appendCtcpShortcutHelp),
+        Map.entry("time", BuiltInSlashCommandPresentationContributor::appendCtcpShortcutHelp),
+        Map.entry("dcc", BuiltInSlashCommandPresentationContributor::appendDccHelp),
+        Map.entry("monitor", BuiltInSlashCommandPresentationContributor::appendMonitorHelp),
+        Map.entry("mon", BuiltInSlashCommandPresentationContributor::appendMonitorHelp),
+        Map.entry(
+            "chathistory",
+            BuiltInSlashCommandPresentationContributor::appendChatHistoryHelpDetails),
+        Map.entry(
+            "history", BuiltInSlashCommandPresentationContributor::appendChatHistoryHelpDetails),
+        Map.entry("quote", BuiltInSlashCommandPresentationContributor::appendRawQuoteHelp),
+        Map.entry("raw", BuiltInSlashCommandPresentationContributor::appendRawQuoteHelp));
+  }
+
+  private static void appendNickHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /nick <newNick>");
+    help.appendLine("Changes your nickname on the active server.");
+  }
+
+  private static void appendAwayHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /away [message]");
+    help.appendLine("Sets your away message, or clears away status when no message is provided.");
+  }
+
+  private static void appendQueryHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /query <nick>");
+    help.appendLine("Opens or focuses a private message tab for the nick.");
+  }
+
+  private static void appendMsgHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /msg <nick> <message>");
+    help.appendLine("Sends a private message without changing the active target.");
+  }
+
+  private static void appendNoticeHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /notice <target> <message>");
+    help.appendLine("Sends an IRC NOTICE to a nick or channel.");
+  }
+
+  private static void appendMeHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /me <action>");
+    help.appendLine("Sends a CTCP ACTION to the active channel or private message.");
+  }
+
+  private static void appendWhoisHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /whois <nick>");
+    help.appendLine("Alias: /wi <nick>");
+  }
+
+  private static void appendWhowasHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /whowas <nick> [count]");
+    help.appendLine("Requests WHOWAS information for a nick that is no longer online.");
+  }
+
+  private static void appendCtcpHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /ctcp <nick> <command> [args...]");
+    help.appendLine("Shortcuts: /version <nick>, /ping <nick>, /time <nick>.");
+  }
+
+  private static void appendCtcpShortcutHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /version <nick>  |  /ping <nick>  |  /time <nick>");
+    help.appendLine("Sends common CTCP requests without typing /ctcp explicitly.");
   }
 
   private static void appendDccHelp(SlashCommandHelpSink help) {
