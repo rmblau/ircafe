@@ -3,6 +3,7 @@ package cafe.woden.ircclient.app.outbound.help;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -362,6 +363,26 @@ class OutboundHelpCommandServiceTest {
     serviceWithPlugin.handleHelp("");
 
     verify(ui).appendStatus(chan, "(help)", "libera:#ircafe");
+  }
+
+  @Test
+  void duplicateOutboundHelpProviderClassesAreRegisteredOnce() {
+    TargetRef chan = new TargetRef("libera", "#ircafe");
+    when(targetCoordinator.getActiveTarget()).thenReturn(chan);
+
+    OutboundHelpCommandService serviceWithDuplicateProvider =
+        new OutboundHelpCommandService(
+            ui,
+            targetCoordinator,
+            List.of(new PluginHelpContributor()),
+            slashCommandPresentationCatalog,
+            new FakeInstalledPluginsPort(List.of(new PluginHelpContributor())));
+
+    serviceWithDuplicateProvider.handleHelp("");
+    serviceWithDuplicateProvider.handleHelp("pluginhelp");
+
+    verify(ui, times(1)).appendStatus(chan, "(help)", "/pluginhelp <arg> (provided by plugin)");
+    verify(ui, times(1)).appendStatus(chan, "(help)", "Plugin help topic from installed plugin");
   }
 
   @Test
