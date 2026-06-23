@@ -139,6 +139,22 @@ public final class BuiltInSlashCommandPresentationContributor
         Map.entry("mon", BuiltInSlashCommandPresentationContributor::appendMonitorHelp),
         Map.entry("topic", BuiltInSlashCommandPresentationContributor::appendTopicHelp),
         Map.entry("kick", BuiltInSlashCommandPresentationContributor::appendKickHelp),
+        Map.entry("invite", BuiltInSlashCommandPresentationContributor::appendInviteHelp),
+        Map.entry("invites", BuiltInSlashCommandPresentationContributor::appendInviteListHelp),
+        Map.entry("invjoin", BuiltInSlashCommandPresentationContributor::appendInviteJoinHelp),
+        Map.entry("invitejoin", BuiltInSlashCommandPresentationContributor::appendInviteJoinHelp),
+        Map.entry("invignore", BuiltInSlashCommandPresentationContributor::appendInviteIgnoreHelp),
+        Map.entry(
+            "inviteignore", BuiltInSlashCommandPresentationContributor::appendInviteIgnoreHelp),
+        Map.entry("invwhois", BuiltInSlashCommandPresentationContributor::appendInviteWhoisHelp),
+        Map.entry("invitewhois", BuiltInSlashCommandPresentationContributor::appendInviteWhoisHelp),
+        Map.entry("invblock", BuiltInSlashCommandPresentationContributor::appendInviteBlockHelp),
+        Map.entry("inviteblock", BuiltInSlashCommandPresentationContributor::appendInviteBlockHelp),
+        Map.entry(
+            "inviteautojoin", BuiltInSlashCommandPresentationContributor::appendInviteAutoJoinHelp),
+        Map.entry(
+            "invautojoin", BuiltInSlashCommandPresentationContributor::appendInviteAutoJoinHelp),
+        Map.entry("ajinvite", BuiltInSlashCommandPresentationContributor::appendInviteAutoJoinHelp),
         Map.entry("names", BuiltInSlashCommandPresentationContributor::appendNamesHelp),
         Map.entry("who", BuiltInSlashCommandPresentationContributor::appendWhoHelp),
         Map.entry("list", BuiltInSlashCommandPresentationContributor::appendListHelp),
@@ -322,6 +338,62 @@ public final class BuiltInSlashCommandPresentationContributor
     }
     help.appendLine("Usage: /kick [#channel] <nick> [reason]");
     help.appendLine("Kicks a nick from the active or specified channel.");
+  }
+
+  private static void appendInviteHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /invite <nick> [#channel]");
+    help.appendLine("Invites a nick to the active or specified channel.");
+  }
+
+  private static void appendInviteListHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /invites [serverId]");
+    help.appendLine("Lists pending channel invites for the active or specified server.");
+  }
+
+  private static void appendInviteJoinHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /invjoin [inviteId|last]");
+    help.appendLine("Aliases: /invitejoin [inviteId|last], /join -i [inviteId|last]");
+  }
+
+  private static void appendInviteIgnoreHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /invignore [inviteId|last]");
+    help.appendLine("Alias: /inviteignore [inviteId|last]");
+  }
+
+  private static void appendInviteWhoisHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /invwhois [inviteId|last]");
+    help.appendLine("Alias: /invitewhois [inviteId|last]");
+  }
+
+  private static void appendInviteBlockHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /invblock [inviteId|last]");
+    help.appendLine("Alias: /inviteblock [inviteId|last]");
+  }
+
+  private static void appendInviteAutoJoinHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /inviteautojoin [on|off|status]");
+    help.appendLine("Aliases: /invautojoin [on|off|status], /ajinvite [on|off|status|toggle]");
   }
 
   private static void appendNamesHelp(SlashCommandHelpSink help) {

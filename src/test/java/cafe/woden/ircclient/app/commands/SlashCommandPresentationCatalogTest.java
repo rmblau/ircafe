@@ -486,6 +486,38 @@ class SlashCommandPresentationCatalogTest {
   }
 
   @Test
+  void loadsCoreInviteTopicHelpThroughClasspathServiceLoader() {
+    RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+    SlashCommandPresentationCatalog catalog =
+        new SlashCommandPresentationCatalog(
+            List.of(), BackendNamedCommandCatalog.empty(), installedPlugins);
+    ArrayList<String> rendered = new ArrayList<>();
+    Map<String, Consumer<TargetRef>> handlers =
+        catalog.topicHelpHandlers((target, line) -> rendered.add(line));
+
+    assertTrue(handlers.containsKey("invite"));
+    assertTrue(handlers.containsKey("invites"));
+    assertTrue(handlers.containsKey("invjoin"));
+    assertTrue(handlers.containsKey("invitejoin"));
+    assertTrue(handlers.containsKey("inviteautojoin"));
+    assertTrue(handlers.containsKey("ajinvite"));
+
+    handlers.get("invite").accept(new TargetRef("libera", "status"));
+    handlers.get("invjoin").accept(new TargetRef("libera", "status"));
+    handlers.get("inviteautojoin").accept(new TargetRef("libera", "status"));
+
+    assertTrue(rendered.contains("Usage: /invite <nick> [#channel]"));
+    assertTrue(rendered.contains("Invites a nick to the active or specified channel."));
+    assertTrue(rendered.contains("Usage: /invjoin [inviteId|last]"));
+    assertTrue(rendered.contains("Aliases: /invitejoin [inviteId|last], /join -i [inviteId|last]"));
+    assertTrue(rendered.contains("Usage: /inviteautojoin [on|off|status]"));
+    assertTrue(
+        rendered.contains(
+            "Aliases: /invautojoin [on|off|status], /ajinvite [on|off|status|toggle]"));
+  }
+
+  @Test
   void loadsCoreConnectionChannelTopicHelpThroughClasspathServiceLoader() {
     RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
