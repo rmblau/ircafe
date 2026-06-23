@@ -459,6 +459,35 @@ class SlashCommandPresentationCatalogTest {
   }
 
   @Test
+  void loadsCoreMutationTopicHelpDetailsThroughClasspathServiceLoader() {
+    RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+    SlashCommandPresentationCatalog catalog =
+        new SlashCommandPresentationCatalog(
+            List.of(), BackendNamedCommandCatalog.empty(), installedPlugins);
+    ArrayList<String> rendered = new ArrayList<>();
+    Map<String, Consumer<TargetRef>> handlers =
+        catalog.topicHelpHandlers((target, line) -> rendered.add(line));
+
+    assertTrue(handlers.containsKey("edit"));
+    assertTrue(handlers.containsKey("redact"));
+    assertTrue(handlers.containsKey("delete"));
+
+    handlers.get("edit").accept(new TargetRef("libera", "status"));
+    handlers.get("delete").accept(new TargetRef("libera", "status"));
+
+    assertTrue(rendered.contains("Usage: /edit <msgid> <message>"));
+    assertTrue(
+        rendered.contains(
+            "Edits one of your recent messages when the backend supports draft/message-edit."));
+    assertTrue(rendered.contains("Usage: /redact <msgid> [reason]"));
+    assertTrue(rendered.contains("Alias: /delete <msgid> [reason]"));
+    assertTrue(
+        rendered.contains(
+            "Redacts one of your recent messages when the backend supports message redaction."));
+  }
+
+  @Test
   void loadsCoreRawQuoteTopicHelpThroughClasspathServiceLoader() {
     RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);

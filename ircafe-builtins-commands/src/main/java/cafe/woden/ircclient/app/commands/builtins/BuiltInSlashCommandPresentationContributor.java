@@ -180,6 +180,9 @@ public final class BuiltInSlashCommandPresentationContributor
         Map.entry(
             "history", BuiltInSlashCommandPresentationContributor::appendChatHistoryHelpDetails),
         Map.entry("markread", BuiltInSlashCommandPresentationContributor::appendMarkReadHelp),
+        Map.entry("edit", BuiltInSlashCommandPresentationContributor::appendEditHelpDetails),
+        Map.entry("redact", BuiltInSlashCommandPresentationContributor::appendRedactHelpDetails),
+        Map.entry("delete", BuiltInSlashCommandPresentationContributor::appendRedactHelpDetails),
         Map.entry("quote", BuiltInSlashCommandPresentationContributor::appendRawQuoteHelp),
         Map.entry("raw", BuiltInSlashCommandPresentationContributor::appendRawQuoteHelp));
   }
@@ -519,6 +522,23 @@ public final class BuiltInSlashCommandPresentationContributor
     }
     help.appendLine("Usage: /markread");
     help.appendLine("Sets the read marker for the active channel or query and clears unread state.");
+  }
+
+  private static void appendEditHelpDetails(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /edit <msgid> <message>");
+    help.appendLine("Edits one of your recent messages when the backend supports draft/message-edit.");
+  }
+
+  private static void appendRedactHelpDetails(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /redact <msgid> [reason]");
+    help.appendLine("Alias: /delete <msgid> [reason]");
+    help.appendLine("Redacts one of your recent messages when the backend supports message redaction.");
   }
 
   private static void appendRawQuoteHelp(SlashCommandHelpSink help) {
