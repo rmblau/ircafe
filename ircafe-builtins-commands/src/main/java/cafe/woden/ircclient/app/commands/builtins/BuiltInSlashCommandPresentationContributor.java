@@ -137,6 +137,15 @@ public final class BuiltInSlashCommandPresentationContributor
         Map.entry("dcc", BuiltInSlashCommandPresentationContributor::appendDccHelp),
         Map.entry("monitor", BuiltInSlashCommandPresentationContributor::appendMonitorHelp),
         Map.entry("mon", BuiltInSlashCommandPresentationContributor::appendMonitorHelp),
+        Map.entry("ignore", BuiltInSlashCommandPresentationContributor::appendIgnoreHelp),
+        Map.entry("unignore", BuiltInSlashCommandPresentationContributor::appendUnignoreHelp),
+        Map.entry("ignorelist", BuiltInSlashCommandPresentationContributor::appendIgnoreListHelp),
+        Map.entry("ignores", BuiltInSlashCommandPresentationContributor::appendIgnoreListHelp),
+        Map.entry("softignore", BuiltInSlashCommandPresentationContributor::appendSoftIgnoreHelp),
+        Map.entry("unsoftignore", BuiltInSlashCommandPresentationContributor::appendUnsoftIgnoreHelp),
+        Map.entry(
+            "softignorelist", BuiltInSlashCommandPresentationContributor::appendSoftIgnoreListHelp),
+        Map.entry("softignores", BuiltInSlashCommandPresentationContributor::appendSoftIgnoreListHelp),
         Map.entry("topic", BuiltInSlashCommandPresentationContributor::appendTopicHelp),
         Map.entry("kick", BuiltInSlashCommandPresentationContributor::appendKickHelp),
         Map.entry("invite", BuiltInSlashCommandPresentationContributor::appendInviteHelp),
@@ -322,6 +331,55 @@ public final class BuiltInSlashCommandPresentationContributor
     help.appendLine("Usage: /monitor <+|-|list|status|clear> [nicks]");
     help.appendLine("Aliases: /mon, /monitor +nick1 nick2, /monitor -nick1,nick2");
     help.appendLine("Examples: /monitor +alice,bob  |  /monitor list  |  /monitor clear");
+  }
+
+  private static void appendIgnoreHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /ignore [-options] [levels] <maskOrNick>");
+    help.appendLine(
+        "Options include -channels #a,#b, -pattern <text>, -regexp, -full, -expires <duration>, and -replies.");
+  }
+
+  private static void appendUnignoreHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /unignore <maskOrNick|index>");
+    help.appendLine("Removes a hard-ignore rule by mask/nick or visible list index.");
+  }
+
+  private static void appendIgnoreListHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /ignorelist");
+    help.appendLine("Alias: /ignores");
+  }
+
+  private static void appendSoftIgnoreHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /softignore <maskOrNick>");
+    help.appendLine("Soft-ignored users have inbound messages rendered as spoilers.");
+  }
+
+  private static void appendUnsoftIgnoreHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /unsoftignore <maskOrNick|index>");
+    help.appendLine("Removes a soft-ignore rule by mask/nick or visible list index.");
+  }
+
+  private static void appendSoftIgnoreListHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /softignorelist");
+    help.appendLine("Alias: /softignores");
   }
 
   private static void appendTopicHelp(SlashCommandHelpSink help) {

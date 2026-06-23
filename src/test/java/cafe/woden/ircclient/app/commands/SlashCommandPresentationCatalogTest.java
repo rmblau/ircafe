@@ -486,6 +486,40 @@ class SlashCommandPresentationCatalogTest {
   }
 
   @Test
+  void loadsCoreIgnoreTopicHelpThroughClasspathServiceLoader() {
+    RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+    SlashCommandPresentationCatalog catalog =
+        new SlashCommandPresentationCatalog(
+            List.of(), BackendNamedCommandCatalog.empty(), installedPlugins);
+    ArrayList<String> rendered = new ArrayList<>();
+    Map<String, Consumer<TargetRef>> handlers =
+        catalog.topicHelpHandlers((target, line) -> rendered.add(line));
+
+    assertTrue(handlers.containsKey("ignore"));
+    assertTrue(handlers.containsKey("unignore"));
+    assertTrue(handlers.containsKey("ignorelist"));
+    assertTrue(handlers.containsKey("ignores"));
+    assertTrue(handlers.containsKey("softignore"));
+    assertTrue(handlers.containsKey("unsoftignore"));
+    assertTrue(handlers.containsKey("softignorelist"));
+    assertTrue(handlers.containsKey("softignores"));
+
+    handlers.get("ignore").accept(new TargetRef("libera", "status"));
+    handlers.get("softignore").accept(new TargetRef("libera", "status"));
+    handlers.get("softignorelist").accept(new TargetRef("libera", "status"));
+
+    assertTrue(rendered.contains("Usage: /ignore [-options] [levels] <maskOrNick>"));
+    assertTrue(
+        rendered.contains(
+            "Options include -channels #a,#b, -pattern <text>, -regexp, -full, -expires <duration>, and -replies."));
+    assertTrue(rendered.contains("Usage: /softignore <maskOrNick>"));
+    assertTrue(rendered.contains("Soft-ignored users have inbound messages rendered as spoilers."));
+    assertTrue(rendered.contains("Usage: /softignorelist"));
+    assertTrue(rendered.contains("Alias: /softignores"));
+  }
+
+  @Test
   void loadsCoreInviteTopicHelpThroughClasspathServiceLoader() {
     RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
