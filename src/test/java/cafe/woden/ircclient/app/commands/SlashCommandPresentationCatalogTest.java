@@ -710,6 +710,41 @@ class SlashCommandPresentationCatalogTest {
   }
 
   @Test
+  void loadsCoreQuasselBackendNamedTopicHelpThroughClasspathServiceLoader() {
+    BackendNamedCommandCatalog backendCatalog =
+        BackendNamedCommandCatalog.installed(
+            (RuntimeConfigPathPort) null,
+            SlashCommandPresentationCatalogTest.class.getClassLoader());
+    SlashCommandPresentationCatalog catalog =
+        new SlashCommandPresentationCatalog(List.of(), backendCatalog);
+    ArrayList<String> rendered = new ArrayList<>();
+    Map<String, Consumer<TargetRef>> handlers =
+        catalog.topicHelpHandlers((target, line) -> rendered.add(line));
+
+    assertTrue(handlers.containsKey("quasselsetup"));
+    assertTrue(handlers.containsKey("qsetup"));
+    assertTrue(handlers.containsKey("quasselnet"));
+    assertTrue(handlers.containsKey("qnet"));
+
+    handlers.get("qsetup").accept(new TargetRef("libera", "status"));
+    handlers.get("qnet").accept(new TargetRef("libera", "status"));
+
+    assertTrue(rendered.contains("Usage: /quasselsetup [serverId]"));
+    assertTrue(rendered.contains("Alias: /qsetup [serverId]"));
+    assertTrue(
+        rendered.contains(
+            "Completes a pending Quassel Core setup flow for the selected or specified server."));
+    assertTrue(
+        rendered.contains(
+            "Usage: /quasselnet [serverId] list|connect|disconnect|remove|add|edit ..."));
+    assertTrue(
+        rendered.contains("Alias: /qnet [serverId] list|connect|disconnect|remove|add|edit ..."));
+    assertTrue(
+        rendered.contains(
+            "Manages Quassel Core network records for the selected or specified server."));
+  }
+
+  @Test
   void backendTopicHelpLinesAreExposedThroughCatalogHandlers() {
     BackendNamedCommandHandler backendHandler =
         new BackendNamedCommandHandler() {

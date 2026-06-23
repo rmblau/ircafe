@@ -6,6 +6,7 @@ import cafe.woden.ircclient.app.commands.spi.BuiltInBackendNamedCommandNames;
 import cafe.woden.ircclient.app.commands.spi.SlashCommandDescriptor;
 import com.google.auto.service.AutoService;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /** Built-in Quassel backend command parsing and startup-safe presentation metadata. */
@@ -47,5 +48,28 @@ public final class BuiltInQuasselBackendNamedCommandHandler implements BackendNa
     return List.of(
         "/quasselsetup [serverId] (complete pending Quassel Core setup)",
         "/quasselnet [serverId] list|connect|disconnect|remove|add|edit ... (manage Quassel networks)");
+  }
+
+  @Override
+  public Map<String, List<String>> topicHelpLines() {
+    return Map.ofEntries(
+        Map.entry("quasselsetup", quasselSetupHelpLines()),
+        Map.entry("qsetup", quasselSetupHelpLines()),
+        Map.entry("quasselnet", quasselNetworkHelpLines()),
+        Map.entry("qnet", quasselNetworkHelpLines()));
+  }
+
+  private static List<String> quasselSetupHelpLines() {
+    return List.of(
+        "Usage: /quasselsetup [serverId]",
+        "Alias: /qsetup [serverId]",
+        "Completes a pending Quassel Core setup flow for the selected or specified server.");
+  }
+
+  private static List<String> quasselNetworkHelpLines() {
+    return List.of(
+        "Usage: /quasselnet [serverId] list|connect|disconnect|remove|add|edit ...",
+        "Alias: /qnet [serverId] list|connect|disconnect|remove|add|edit ...",
+        "Manages Quassel Core network records for the selected or specified server.");
   }
 }
