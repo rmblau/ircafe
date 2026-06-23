@@ -135,6 +135,8 @@ public final class BuiltInSlashCommandPresentationContributor
         Map.entry("ping", BuiltInSlashCommandPresentationContributor::appendCtcpShortcutHelp),
         Map.entry("time", BuiltInSlashCommandPresentationContributor::appendCtcpShortcutHelp),
         Map.entry("dcc", BuiltInSlashCommandPresentationContributor::appendDccHelp),
+        Map.entry("dccmsg", BuiltInSlashCommandPresentationContributor::appendDccHelp),
+        Map.entry("upload", BuiltInSlashCommandPresentationContributor::appendUploadHelpDetails),
         Map.entry("monitor", BuiltInSlashCommandPresentationContributor::appendMonitorHelp),
         Map.entry("mon", BuiltInSlashCommandPresentationContributor::appendMonitorHelp),
         Map.entry("ignore", BuiltInSlashCommandPresentationContributor::appendIgnoreHelp),
@@ -326,6 +328,15 @@ public final class BuiltInSlashCommandPresentationContributor
     help.appendLine("/dcc msg <nick> <text>  (alias: /dccmsg <nick> <text>)");
     help.appendLine("/dcc close <nick>  /dcc list  /dcc panel");
     help.appendLine("UI: right-click a nick and use the DCC submenu.");
+  }
+
+  private static void appendUploadHelpDetails(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /upload <msgtype> <path> [caption]");
+    help.appendLine("Uploads or sends a media/file payload through the active backend when supported.");
+    help.appendLine("Backend help may add supported msgtypes and shortcuts below.");
   }
 
   private static void appendMonitorHelp(SlashCommandHelpSink help) {
