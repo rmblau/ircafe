@@ -655,6 +655,27 @@ class SlashCommandPresentationCatalogTest {
   }
 
   @Test
+  void loadsCoreHelpCommandTopicHelpThroughClasspathServiceLoader() {
+    RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+    SlashCommandPresentationCatalog catalog =
+        new SlashCommandPresentationCatalog(
+            List.of(), BackendNamedCommandCatalog.empty(), installedPlugins);
+    ArrayList<String> rendered = new ArrayList<>();
+    Map<String, Consumer<TargetRef>> handlers =
+        catalog.topicHelpHandlers((target, line) -> rendered.add(line));
+
+    assertTrue(handlers.containsKey("help"));
+    assertTrue(handlers.containsKey("commands"));
+    handlers.get("commands").accept(new TargetRef("libera", "status"));
+
+    assertTrue(rendered.contains("Usage: /help [topic]"));
+    assertTrue(rendered.contains("Alias: /commands [topic]"));
+    assertTrue(
+        rendered.contains("Shows general slash-command help or focused help for a command topic."));
+  }
+
+  @Test
   void backendTopicHelpLinesAreExposedThroughCatalogHandlers() {
     BackendNamedCommandHandler backendHandler =
         new BackendNamedCommandHandler() {

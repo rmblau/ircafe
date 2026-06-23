@@ -185,6 +185,8 @@ public final class BuiltInSlashCommandPresentationContributor
         Map.entry("edit", BuiltInSlashCommandPresentationContributor::appendEditHelpDetails),
         Map.entry("redact", BuiltInSlashCommandPresentationContributor::appendRedactHelpDetails),
         Map.entry("delete", BuiltInSlashCommandPresentationContributor::appendRedactHelpDetails),
+        Map.entry("help", BuiltInSlashCommandPresentationContributor::appendHelpCommandHelp),
+        Map.entry("commands", BuiltInSlashCommandPresentationContributor::appendHelpCommandHelp),
         Map.entry("quote", BuiltInSlashCommandPresentationContributor::appendRawQuoteHelp),
         Map.entry("raw", BuiltInSlashCommandPresentationContributor::appendRawQuoteHelp));
   }
@@ -550,6 +552,15 @@ public final class BuiltInSlashCommandPresentationContributor
     help.appendLine("Usage: /redact <msgid> [reason]");
     help.appendLine("Alias: /delete <msgid> [reason]");
     help.appendLine("Redacts one of your recent messages when the backend supports message redaction.");
+  }
+
+  private static void appendHelpCommandHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /help [topic]");
+    help.appendLine("Alias: /commands [topic]");
+    help.appendLine("Shows general slash-command help or focused help for a command topic.");
   }
 
   private static void appendRawQuoteHelp(SlashCommandHelpSink help) {
