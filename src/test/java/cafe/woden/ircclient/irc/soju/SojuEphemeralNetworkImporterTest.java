@@ -1,10 +1,13 @@
 package cafe.woden.ircclient.irc.soju;
 
+import static cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures.bouncerDiscoveryPort;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 import cafe.woden.ircclient.bouncer.BouncerConnectionPort;
+import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
+import cafe.woden.ircclient.bouncer.spi.BuiltInBouncerBackendIds;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
@@ -35,12 +38,14 @@ class SojuEphemeralNetworkImporterTest {
 
     IrcProperties props = IrcPropertiesTestFixtures.properties(bouncer);
     RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore(props);
-    ServerRegistry configured = new ServerRegistry(props, runtime);
+    ServerRegistry configured =
+        new ServerRegistry(props, RuntimeConfigStoreTestFixtures.serverRegistryPort(runtime));
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
 
     SojuAutoConnectStore autoConnect =
         new SojuAutoConnectStore(
-            new SojuProperties(Map.of(), new SojuProperties.Discovery(true)), runtime);
+            new SojuProperties(Map.of(), new SojuProperties.Discovery(true)),
+            bouncerDiscoveryPort(runtime));
     BouncerConnectionPort connectionPort = mock(BouncerConnectionPort.class);
     when(connectionPort.connect(anyString())).thenReturn(Completable.complete());
 
@@ -50,11 +55,11 @@ class SojuEphemeralNetworkImporterTest {
             configured,
             ephemeral,
             autoConnect,
-            runtime,
+            bouncerDiscoveryPort(runtime),
             connectionPort);
 
-    SojuNetwork net = new SojuNetwork("soju", "123", "libera", Map.of("name", "libera"));
-    importer.onSojuNetworkDiscovered(net);
+    BouncerDiscoveredNetwork net = sojuNetwork("soju", "123", "libera");
+    importer.onNetworkDiscovered(net);
 
     assertTrue(ephemeral.containsId("soju:soju:123"));
     IrcProperties.Server imported = ephemeral.require("soju:soju:123");
@@ -78,12 +83,14 @@ class SojuEphemeralNetworkImporterTest {
 
     IrcProperties props = IrcPropertiesTestFixtures.properties(bouncer);
     RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore(props);
-    ServerRegistry configured = new ServerRegistry(props, runtime);
+    ServerRegistry configured =
+        new ServerRegistry(props, RuntimeConfigStoreTestFixtures.serverRegistryPort(runtime));
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
 
     SojuAutoConnectStore autoConnect =
         new SojuAutoConnectStore(
-            new SojuProperties(Map.of(), new SojuProperties.Discovery(true)), runtime);
+            new SojuProperties(Map.of(), new SojuProperties.Discovery(true)),
+            bouncerDiscoveryPort(runtime));
     BouncerConnectionPort connectionPort = mock(BouncerConnectionPort.class);
     when(connectionPort.connect(anyString())).thenReturn(Completable.complete());
 
@@ -93,12 +100,12 @@ class SojuEphemeralNetworkImporterTest {
             configured,
             ephemeral,
             autoConnect,
-            runtime,
+            bouncerDiscoveryPort(runtime),
             connectionPort);
-    SojuNetwork net = new SojuNetwork("soju", "9", "oftc", Map.of("name", "oftc"));
+    BouncerDiscoveredNetwork net = sojuNetwork("soju", "9", "oftc");
 
-    importer.onSojuNetworkDiscovered(net);
-    importer.onSojuNetworkDiscovered(net);
+    importer.onNetworkDiscovered(net);
+    importer.onNetworkDiscovered(net);
 
     assertEquals(1, ephemeral.serverIds().size());
     assertTrue(ephemeral.containsId("soju:soju:9"));
@@ -119,7 +126,8 @@ class SojuEphemeralNetworkImporterTest {
 
     IrcProperties props = IrcPropertiesTestFixtures.properties(bouncer);
     RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore(props);
-    ServerRegistry configured = new ServerRegistry(props, runtime);
+    ServerRegistry configured =
+        new ServerRegistry(props, RuntimeConfigStoreTestFixtures.serverRegistryPort(runtime));
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
 
     // Persisted rule: auto-connect the 'libera' network on bouncer server id 'soju'.
@@ -127,7 +135,7 @@ class SojuEphemeralNetworkImporterTest {
         new SojuAutoConnectStore(
             new SojuProperties(
                 Map.of("soju", Map.of("libera", true)), new SojuProperties.Discovery(true)),
-            runtime);
+            bouncerDiscoveryPort(runtime));
 
     BouncerConnectionPort connectionPort = mock(BouncerConnectionPort.class);
     when(connectionPort.connect(anyString())).thenReturn(Completable.complete());
@@ -138,12 +146,12 @@ class SojuEphemeralNetworkImporterTest {
             configured,
             ephemeral,
             autoConnect,
-            runtime,
+            bouncerDiscoveryPort(runtime),
             connectionPort);
-    SojuNetwork net = new SojuNetwork("soju", "123", "libera", Map.of("name", "libera"));
+    BouncerDiscoveredNetwork net = sojuNetwork("soju", "123", "libera");
 
-    importer.onSojuNetworkDiscovered(net);
-    importer.onSojuNetworkDiscovered(net);
+    importer.onNetworkDiscovered(net);
+    importer.onNetworkDiscovered(net);
 
     verify(connectionPort, times(1)).connect("soju:soju:123");
   }
@@ -168,11 +176,13 @@ class SojuEphemeralNetworkImporterTest {
     runtime.rememberJoinedChannel("soju:soju:123", "#off");
     runtime.rememberServerTreeChannelAutoReattach("soju:soju:123", "#off", false);
 
-    ServerRegistry configured = new ServerRegistry(props, runtime);
+    ServerRegistry configured =
+        new ServerRegistry(props, RuntimeConfigStoreTestFixtures.serverRegistryPort(runtime));
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
     SojuAutoConnectStore autoConnect =
         new SojuAutoConnectStore(
-            new SojuProperties(Map.of(), new SojuProperties.Discovery(true)), runtime);
+            new SojuProperties(Map.of(), new SojuProperties.Discovery(true)),
+            bouncerDiscoveryPort(runtime));
     BouncerConnectionPort connectionPort = mock(BouncerConnectionPort.class);
     when(connectionPort.connect(anyString())).thenReturn(Completable.complete());
 
@@ -182,10 +192,9 @@ class SojuEphemeralNetworkImporterTest {
             configured,
             ephemeral,
             autoConnect,
-            runtime,
+            bouncerDiscoveryPort(runtime),
             connectionPort);
-    importer.onSojuNetworkDiscovered(
-        new SojuNetwork("soju", "123", "libera", Map.of("name", "libera")));
+    importer.onNetworkDiscovered(sojuNetwork("soju", "123", "libera"));
 
     IrcProperties.Server imported = ephemeral.require("soju:soju:123");
     assertTrue(imported.autoJoin().contains("#ircafe"));
@@ -207,12 +216,14 @@ class SojuEphemeralNetworkImporterTest {
 
     IrcProperties props = IrcPropertiesTestFixtures.properties(bouncer);
     RuntimeConfigStore runtime = RuntimeConfigStoreTestFixtures.inMemoryStore(props);
-    ServerRegistry configured = new ServerRegistry(props, runtime);
+    ServerRegistry configured =
+        new ServerRegistry(props, RuntimeConfigStoreTestFixtures.serverRegistryPort(runtime));
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
 
     SojuAutoConnectStore autoConnect =
         new SojuAutoConnectStore(
-            new SojuProperties(Map.of(), new SojuProperties.Discovery(true)), runtime);
+            new SojuProperties(Map.of(), new SojuProperties.Discovery(true)),
+            bouncerDiscoveryPort(runtime));
     BouncerConnectionPort connectionPort = mock(BouncerConnectionPort.class);
     when(connectionPort.connect(anyString())).thenReturn(Completable.complete());
 
@@ -222,17 +233,22 @@ class SojuEphemeralNetworkImporterTest {
             configured,
             ephemeral,
             autoConnect,
-            runtime,
+            bouncerDiscoveryPort(runtime),
             connectionPort);
 
-    importer.onSojuNetworkDiscovered(
-        new SojuNetwork("soju", "1", "libera", Map.of("name", "libera")));
-    importer.onSojuNetworkDiscovered(new SojuNetwork("soju", "2", "oftc", Map.of("name", "oftc")));
+    importer.onNetworkDiscovered(sojuNetwork("soju", "1", "libera"));
+    importer.onNetworkDiscovered(sojuNetwork("soju", "2", "oftc"));
 
     assertEquals(2, ephemeral.serverIds().size());
 
     importer.onOriginDisconnected("soju");
 
     assertEquals(0, ephemeral.serverIds().size());
+  }
+
+  private static BouncerDiscoveredNetwork sojuNetwork(
+      String originServerId, String networkId, String name) {
+    return new BouncerDiscoveredNetwork(
+        BuiltInBouncerBackendIds.SOJU, originServerId, networkId, name, name, Map.of("name", name));
   }
 }

@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.AppearanceRuntimeConfigPort;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettings;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsTestFixtures;
 import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettings;
@@ -154,7 +154,7 @@ class AppearanceControlsSupportTest {
 
   @Test
   void rememberSettingsPersistsAppearanceValues() {
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    AppearanceRuntimeConfigPort runtimeConfig = mock(AppearanceRuntimeConfigPort.class);
     var accentSettings = ThemeAppearanceSettingsTestFixtures.accent("#AABBCC", 80);
     ThemeTweakSettings tweakSettings =
         ThemeAppearanceSettingsTestFixtures.tweakBuilder()

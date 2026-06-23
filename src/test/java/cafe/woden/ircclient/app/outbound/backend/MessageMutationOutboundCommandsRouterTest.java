@@ -1,12 +1,13 @@
 package cafe.woden.ircclient.app.outbound.backend;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import cafe.woden.ircclient.app.outbound.mutation.MessageMutationOutboundCommands;
+import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationOutboundCommands;
+import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationTargetView;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
-import cafe.woden.ircclient.model.TargetRef;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -23,15 +24,10 @@ class MessageMutationOutboundCommandsRouterTest {
                 new MatrixMessageMutationOutboundCommands(),
                 new QuasselMessageMutationOutboundCommands()));
 
+    assertInstanceOf(IrcMessageMutationOutboundCommands.class, router.commandsFor("irc"));
+    assertInstanceOf(MatrixMessageMutationOutboundCommands.class, router.commandsFor("matrix"));
     assertInstanceOf(
-        IrcMessageMutationOutboundCommands.class,
-        router.commandsFor(IrcProperties.Server.Backend.IRC));
-    assertInstanceOf(
-        MatrixMessageMutationOutboundCommands.class,
-        router.commandsFor(IrcProperties.Server.Backend.MATRIX));
-    assertInstanceOf(
-        QuasselMessageMutationOutboundCommands.class,
-        router.commandsFor(IrcProperties.Server.Backend.QUASSEL_CORE));
+        QuasselMessageMutationOutboundCommands.class, router.commandsFor("quassel-core"));
   }
 
   @Test
@@ -42,12 +38,8 @@ class MessageMutationOutboundCommandsRouterTest {
                 new IrcMessageMutationOutboundCommands(),
                 new MatrixMessageMutationOutboundCommands()));
 
-    assertInstanceOf(
-        IrcMessageMutationOutboundCommands.class,
-        router.commandsFor((IrcProperties.Server.Backend) null));
-    assertInstanceOf(
-        IrcMessageMutationOutboundCommands.class,
-        router.commandsFor(IrcProperties.Server.Backend.QUASSEL_CORE));
+    assertIrcMessageMutationCommands(router.commandsFor(""));
+    assertIrcMessageMutationCommands(router.commandsFor("quassel-core"));
   }
 
   @Test
@@ -68,9 +60,7 @@ class MessageMutationOutboundCommandsRouterTest {
         cafe.woden.ircclient.app.outbound.TestBackendSupport.messageMutationOutboundCommandsRouter(
             List.of(new MatrixMessageMutationOutboundCommands()));
 
-    assertInstanceOf(
-        IrcMessageMutationOutboundCommands.class,
-        router.commandsFor(IrcProperties.Server.Backend.IRC));
+    assertIrcMessageMutationCommands(router.commandsFor("irc"));
   }
 
   @Test
@@ -83,6 +73,26 @@ class MessageMutationOutboundCommandsRouterTest {
     assertInstanceOf(PluginMessageMutationOutboundCommands.class, router.commandsFor("plugin"));
   }
 
+  private static void assertIrcMessageMutationCommands(MessageMutationOutboundCommands commands) {
+    MessageMutationTargetView target = new MessageMutationTargetView("server", "#ircafe");
+
+    assertEquals("irc", commands.backendId());
+    assertEquals(
+        "@+reply=reply-1 PRIVMSG #ircafe :hello",
+        commands.buildReplyRawLine(target, "reply-1", "hello"));
+    assertEquals(
+        "@+draft/react=:;+reply=reply-1 TAGMSG #ircafe",
+        commands.buildReactRawLine(target, "reply-1", ":"));
+    assertEquals(
+        "@+draft/unreact=:;+reply=reply-1 TAGMSG #ircafe",
+        commands.buildUnreactRawLine(target, "reply-1", ":"));
+    assertEquals(
+        "@+draft/edit=msg-1 PRIVMSG #ircafe :edited",
+        commands.buildEditRawLine(target, "msg-1", "edited"));
+    assertEquals(
+        "REDACT #ircafe msg-1 :cleanup", commands.buildRedactRawLine(target, "msg-1", "cleanup"));
+  }
+
   private static final class DuplicateIrcMessageMutationOutboundCommands
       implements MessageMutationOutboundCommands {
 
@@ -92,27 +102,32 @@ class MessageMutationOutboundCommandsRouterTest {
     }
 
     @Override
-    public String buildReplyRawLine(TargetRef target, String replyToMessageId, String message) {
+    public String buildReplyRawLine(
+        MessageMutationTargetView target, String replyToMessageId, String message) {
       return "";
     }
 
     @Override
-    public String buildReactRawLine(TargetRef target, String replyToMessageId, String reaction) {
+    public String buildReactRawLine(
+        MessageMutationTargetView target, String replyToMessageId, String reaction) {
       return "";
     }
 
     @Override
-    public String buildUnreactRawLine(TargetRef target, String replyToMessageId, String reaction) {
+    public String buildUnreactRawLine(
+        MessageMutationTargetView target, String replyToMessageId, String reaction) {
       return "";
     }
 
     @Override
-    public String buildEditRawLine(TargetRef target, String targetMessageId, String editedText) {
+    public String buildEditRawLine(
+        MessageMutationTargetView target, String targetMessageId, String editedText) {
       return "";
     }
 
     @Override
-    public String buildRedactRawLine(TargetRef target, String targetMessageId, String reason) {
+    public String buildRedactRawLine(
+        MessageMutationTargetView target, String targetMessageId, String reason) {
       return "";
     }
   }
@@ -125,27 +140,32 @@ class MessageMutationOutboundCommandsRouterTest {
     }
 
     @Override
-    public String buildReplyRawLine(TargetRef target, String replyToMessageId, String message) {
+    public String buildReplyRawLine(
+        MessageMutationTargetView target, String replyToMessageId, String message) {
       return "";
     }
 
     @Override
-    public String buildReactRawLine(TargetRef target, String replyToMessageId, String reaction) {
+    public String buildReactRawLine(
+        MessageMutationTargetView target, String replyToMessageId, String reaction) {
       return "";
     }
 
     @Override
-    public String buildUnreactRawLine(TargetRef target, String replyToMessageId, String reaction) {
+    public String buildUnreactRawLine(
+        MessageMutationTargetView target, String replyToMessageId, String reaction) {
       return "";
     }
 
     @Override
-    public String buildEditRawLine(TargetRef target, String targetMessageId, String editedText) {
+    public String buildEditRawLine(
+        MessageMutationTargetView target, String targetMessageId, String editedText) {
       return "";
     }
 
     @Override
-    public String buildRedactRawLine(TargetRef target, String targetMessageId, String reason) {
+    public String buildRedactRawLine(
+        MessageMutationTargetView target, String targetMessageId, String reason) {
       return "";
     }
   }

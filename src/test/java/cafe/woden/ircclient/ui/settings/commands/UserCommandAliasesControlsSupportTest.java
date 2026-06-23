@@ -7,7 +7,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.UserCommandAliasesConfigPort;
 import cafe.woden.ircclient.model.UserCommandAlias;
 import java.util.List;
 import javax.swing.JButton;
@@ -37,7 +37,7 @@ class UserCommandAliasesControlsSupportTest {
 
   @Test
   void rememberSettingsPersistsAliasesAndUpdatesBus() {
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    UserCommandAliasesConfigPort runtimeConfig = mock(UserCommandAliasesConfigPort.class);
     UserCommandAliasesPort aliasesBus = mock(UserCommandAliasesPort.class);
     List<UserCommandAlias> aliases = List.of(new UserCommandAlias(true, "hi", "/msg %1 hi"));
     UserCommandAliasesControlsSupport.UserCommandAliasSettings settings =

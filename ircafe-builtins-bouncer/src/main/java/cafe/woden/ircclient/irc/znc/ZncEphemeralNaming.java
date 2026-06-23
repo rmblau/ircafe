@@ -1,0 +1,95 @@
+package cafe.woden.ircclient.irc.znc;
+
+import cafe.woden.ircclient.bouncer.spi.BouncerServerProfile;
+import cafe.woden.ircclient.bouncer.spi.BuiltInBouncerNetworkNaming;
+import java.util.Objects;
+
+/** Naming + username rules for ephemeral ZNC network entries. */
+public final class ZncEphemeralNaming {
+
+  public static final String EPHEMERAL_ID_PREFIX =
+      BuiltInBouncerNetworkNaming.ZNC_EPHEMERAL_ID_PREFIX;
+
+  private ZncEphemeralNaming() {}
+
+  /**
+   * Derived identifying info for an ephemeral ZNC network server.
+   *
+   * @param serverId deterministic ephemeral id: {@code znc:<bouncerServerId>:<networkKey>}
+   * @param loginUser login/SASL username: {@code <user>[@clientId]/<networkName>}
+   * @param networkKey normalized stable key (lowercased, sanitized) used in ids and persistence
+   */
+  public record Derived(String serverId, String loginUser, String networkKey) {}
+
+  public static Derived derive(BouncerServerProfile bouncerServer, ZncNetwork network) {
+    Objects.requireNonNull(bouncerServer, "bouncerServer");
+    Objects.requireNonNull(network, "network");
+
+    String bouncerId = normalize(bouncerServer.id());
+    if (bouncerId == null) {
+      throw new IllegalArgumentException("bouncerServer.id is required");
+    }
+
+    ZncLoginParts base = ZncLoginParts.parse(pickBaseLoginUser(bouncerServer));
+    String baseUser = normalize(base.baseUser());
+    if (baseUser == null) {
+      throw new IllegalArgumentException(
+          "ZNC requires a base username; set irc.servers[].login or irc.servers[].sasl.username for server '"
+              + bouncerId
+              + "'");
+    }
+
+    String clientId = normalize(base.clientId());
+
+    String networkSegment = sanitizeNetworkSegment(network.name());
+    if (networkSegment.isBlank()) {
+      networkSegment = "network";
+    }
+
+    String networkKey = normalizeNetworkKey(networkSegment);
+    if (networkKey.isBlank()) {
+      // Should not happen after fallback, but keep it defensive.
+      networkKey = "network";
+    }
+
+    String left = baseUser;
+    if (clientId != null) {
+      left = left + "@" + clientId;
+    }
+
+    String loginUser = left + "/" + networkSegment;
+    String serverId = EPHEMERAL_ID_PREFIX + bouncerId + ":" + networkKey;
+    return new Derived(serverId, loginUser, networkKey);
+  }
+
+  /** Select the base login for ZNC connections (SASL username preferred). */
+  public static String pickBaseLoginUser(BouncerServerProfile bouncerServer) {
+    if (bouncerServer == null) return null;
+    return BuiltInBouncerNetworkNaming.pickZncBaseLoginUser(bouncerServer);
+  }
+
+  /**
+   * Normalize a network key used for ids/persistence.
+   *
+   * <p>Rules:
+   *
+   * <ul>
+   *   <li>Trim
+   *   <li>Replace non {@code [A-Za-z0-9._-]} with {@code _}
+   *   <li>Lowercase
+   * </ul>
+   */
+  public static String normalizeNetworkKey(String networkName) {
+    return BuiltInBouncerNetworkNaming.normalizeZncNetworkKey(networkName);
+  }
+
+  /** Sanitize a ZNC network name to safe characters for usernames. */
+  public static String sanitizeNetworkSegment(String networkName) {
+    return BuiltInBouncerNetworkNaming.sanitizeZncNetworkSegment(networkName);
+  }
+
+  private static String normalize(String s) {
+    String v = Objects.toString(s, "").trim();
+    return v.isEmpty() ? null : v;
+  }
+}

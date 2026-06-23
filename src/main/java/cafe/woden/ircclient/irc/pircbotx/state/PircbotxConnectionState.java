@@ -26,7 +26,7 @@ import static cafe.woden.ircclient.util.Ircv3CapabilityNames.STANDARD_REPLIES;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.STS;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.ZNC_PLAYBACK;
 
-import cafe.woden.ircclient.bouncer.BouncerDiscoveredNetwork;
+import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
 import cafe.woden.ircclient.irc.ircv3.*;

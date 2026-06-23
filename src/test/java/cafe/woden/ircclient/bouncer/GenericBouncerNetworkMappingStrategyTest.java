@@ -1,9 +1,10 @@
 package cafe.woden.ircclient.bouncer;
 
+import static cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures.bouncerDiscoveryPort;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
+import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
+import cafe.woden.ircclient.bouncer.spi.BouncerServerProfile;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import java.nio.file.Path;
@@ -116,18 +117,10 @@ class GenericBouncerNetworkMappingStrategyTest {
   }
 
   private static GenericBouncerNetworkMappingStrategy strategy(RuntimeConfigStore runtimeConfig) {
-    return new GenericBouncerNetworkMappingStrategy(runtimeConfig);
+    return new GenericBouncerNetworkMappingStrategy(bouncerDiscoveryPort(runtimeConfig));
   }
 
-  private static IrcProperties.Server sampleBouncerServer(String loginUser) {
-    IrcProperties.Server.Sasl sasl =
-        new IrcProperties.Server.Sasl(true, loginUser, "pw", "PLAIN", null);
-    return IrcPropertiesTestFixtures.serverBuilder("bouncer-1")
-        .host("bouncer.example")
-        .nick("nick")
-        .login(loginUser)
-        .realName("Real Name")
-        .sasl(sasl)
-        .build();
+  private static BouncerServerProfile sampleBouncerServer(String loginUser) {
+    return new BouncerServerProfile("bouncer-1", loginUser, loginUser);
   }
 }

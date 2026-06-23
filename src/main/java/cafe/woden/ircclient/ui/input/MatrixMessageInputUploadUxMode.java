@@ -1,24 +1,84 @@
 package cafe.woden.ircclient.ui.input;
 
+import cafe.woden.ircclient.ui.input.spi.MatrixUploadMsgTypeProvider;
+import cafe.woden.ircclient.ui.input.spi.MatrixUploadMsgTypeRule;
 import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
-import java.util.Set;
 import javax.swing.JFileChooser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 final class MatrixMessageInputUploadUxMode implements MessageInputUploadUxMode {
-  private static final Set<String> MATRIX_IMAGE_EXTENSIONS =
-      Set.of(
-          "png", "jpg", "jpeg", "gif", "webp", "bmp", "svg", "heic", "heif", "avif", "tif", "tiff");
-  private static final Set<String> MATRIX_VIDEO_EXTENSIONS =
-      Set.of("mp4", "m4v", "mov", "mkv", "webm", "avi", "wmv", "flv", "mpeg", "mpg", "3gp", "ogv");
-  private static final Set<String> MATRIX_AUDIO_EXTENSIONS =
-      Set.of("mp3", "m4a", "aac", "wav", "flac", "ogg", "oga", "opus", "weba", "amr");
+  private static final Logger log = LoggerFactory.getLogger(MatrixMessageInputUploadUxMode.class);
+
   private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
+  private final List<MatrixUploadMsgTypeRule> msgTypeRules;
+
+  MatrixMessageInputUploadUxMode() {
+    this(MessageInputPluginProviders.builtInMatrixUploadMsgTypeProviders());
+  }
+
+  MatrixMessageInputUploadUxMode(List<MatrixUploadMsgTypeProvider> msgTypeProviders) {
+    this.msgTypeRules = msgTypeRulesFromProviders(msgTypeProviders);
+  }
+
+  static List<MatrixUploadMsgTypeRule> defaultMsgTypeRules() {
+    return msgTypeRulesFromProviders(
+        MessageInputPluginProviders.builtInMatrixUploadMsgTypeProviders());
+  }
+
+  static List<MatrixUploadMsgTypeRule> msgTypeRulesFromProviders(
+      List<MatrixUploadMsgTypeProvider> providers) {
+    ArrayList<MatrixUploadMsgTypeRule> rules = new ArrayList<>();
+    for (MatrixUploadMsgTypeProvider provider : msgTypeProviderChain(providers)) {
+      if (provider == null) continue;
+      try {
+        List<MatrixUploadMsgTypeRule> contributed = provider.uploadMsgTypeRules();
+        if (contributed == null || contributed.isEmpty()) continue;
+        for (MatrixUploadMsgTypeRule rule : contributed) {
+          if (rule != null && rule.extensions().length > 0) rules.add(rule);
+        }
+      } catch (RuntimeException ex) {
+        log.warn(
+            "[ircafe] failed to load Matrix upload msgtype rules from {}",
+            provider.getClass().getName(),
+            ex);
+      }
+    }
+    return List.copyOf(rules);
+  }
+
+  private static List<MatrixUploadMsgTypeProvider> msgTypeProviderChain(
+      List<MatrixUploadMsgTypeProvider> providers) {
+    LinkedHashSet<String> providerClassNames = new LinkedHashSet<>();
+    ArrayList<MatrixUploadMsgTypeProvider> chain = new ArrayList<>();
+    addProviders(
+        chain,
+        providerClassNames,
+        MessageInputPluginProviders.builtInMatrixUploadMsgTypeProviders());
+    addProviders(chain, providerClassNames, providers);
+    return List.copyOf(chain);
+  }
+
+  private static void addProviders(
+      ArrayList<MatrixUploadMsgTypeProvider> providers,
+      LinkedHashSet<String> providerClassNames,
+      List<MatrixUploadMsgTypeProvider> candidates) {
+    for (MatrixUploadMsgTypeProvider provider :
+        Objects.requireNonNullElse(candidates, List.<MatrixUploadMsgTypeProvider>of())) {
+      if (provider == null || !providerClassNames.add(provider.getClass().getName())) {
+        continue;
+      }
+      providers.add(provider);
+    }
+  }
+
   private static final ActionPresentation PRESENTATION =
       new ActionPresentation(
           true,
@@ -88,11 +148,15 @@ final class MatrixMessageInputUploadUxMode implements MessageInputUploadUxMode {
     return path;
   }
 
-  private static String inferMatrixUploadMsgType(String path) {
+  private String inferMatrixUploadMsgType(String path) {
     String ext = extensionForPath(path);
-    if (MATRIX_IMAGE_EXTENSIONS.contains(ext)) return "m.image";
-    if (MATRIX_VIDEO_EXTENSIONS.contains(ext)) return "m.video";
-    if (MATRIX_AUDIO_EXTENSIONS.contains(ext)) return "m.audio";
+    if (ext.isEmpty()) return "m.file";
+    for (MatrixUploadMsgTypeRule rule : msgTypeRules) {
+      if (rule == null) continue;
+      for (String candidate : rule.extensions()) {
+        if (ext.equals(candidate)) return rule.msgType();
+      }
+    }
     return "m.file";
   }
 

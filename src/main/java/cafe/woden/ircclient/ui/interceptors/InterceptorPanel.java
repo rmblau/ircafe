@@ -1549,7 +1549,8 @@ public final class InterceptorPanel extends JPanel implements AutoCloseable {
     File selected =
         SoundFileChooserSupport.chooseSoundFile(
                 SwingUtilities.getWindowAncestor(this),
-                message("interceptors.sound.chooseDialogTitle"))
+                message("interceptors.sound.chooseDialogTitle"),
+                store.soundFileExtensionProviders())
             .orElse(null);
     if (selected == null) return;
 

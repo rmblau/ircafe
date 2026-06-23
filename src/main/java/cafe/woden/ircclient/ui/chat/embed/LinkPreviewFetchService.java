@@ -2,6 +2,8 @@ package cafe.woden.ircclient.ui.chat.embed;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.net.ServerProxyResolver;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreview;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
 import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
 import cafe.woden.ircclient.util.RxVirtualSchedulers;
 import io.reactivex.rxjava3.core.Single;
@@ -31,6 +33,8 @@ public class LinkPreviewFetchService {
 
   private final ServerProxyResolver proxyResolver;
   private final List<LinkPreviewResolver> resolvers;
+  private final List<cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider>
+      httpHeaderProviders;
 
   private final ConcurrentMap<String, java.lang.ref.SoftReference<LinkPreview>> cache =
       new ConcurrentHashMap<>();
@@ -54,7 +58,8 @@ public class LinkPreviewFetchService {
       List<LinkPreviewResolver> resolvers,
       InstalledPluginsPort installedPlugins) {
     this.proxyResolver = proxyResolver;
-    this.resolvers = loadInstalledResolvers(resolvers, installedPlugins);
+    this.resolvers = LinkPreviewPluginProviders.linkPreviewResolvers(resolvers, installedPlugins);
+    this.httpHeaderProviders = loadInstalledHeaderProviders(installedPlugins);
   }
 
   private static InstalledPluginsPort resolveInstalledPlugins(
@@ -62,14 +67,9 @@ public class LinkPreviewFetchService {
     return installedPluginsProvider == null ? null : installedPluginsProvider.getIfAvailable();
   }
 
-  private static List<LinkPreviewResolver> loadInstalledResolvers(
-      List<LinkPreviewResolver> resolvers, InstalledPluginsPort installedPlugins) {
-    List<LinkPreviewResolver> builtInResolvers =
-        List.copyOf(Objects.requireNonNullElse(resolvers, List.of()));
-    if (installedPlugins == null) {
-      return builtInResolvers;
-    }
-    return installedPlugins.loadInstalledServices(LinkPreviewResolver.class, builtInResolvers);
+  private static List<cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider>
+      loadInstalledHeaderProviders(InstalledPluginsPort installedPlugins) {
+    return EmbedHttpHeaderProviders.loadInstalledProviders(installedPlugins);
   }
 
   public Single<LinkPreview> fetch(String serverId, String url) {
@@ -142,7 +142,9 @@ public class LinkPreviewFetchService {
     }
 
     PreviewHttp http =
-        new PreviewHttp(proxyResolver != null ? proxyResolver.planForServer(serverId) : null);
+        new PreviewHttp(
+            proxyResolver != null ? proxyResolver.planForServer(serverId) : null,
+            httpHeaderProviders);
 
     for (LinkPreviewResolver r : resolvers) {
       try {

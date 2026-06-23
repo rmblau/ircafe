@@ -13,7 +13,9 @@ import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.app.outbound.backend.OutboundBackendCapabilityPolicy;
-import cafe.woden.ircclient.irc.backend.IrcBackendClientService;
+import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpSink;
+import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpTargetView;
+import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
 import cafe.woden.ircclient.irc.port.IrcNegotiatedFeaturePort;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.state.api.ChatHistoryRequestRoutingPort;
@@ -26,7 +28,7 @@ import org.junit.jupiter.api.Test;
 
 class OutboundChatHistoryCommandServiceTest {
 
-  private final IrcBackendClientService irc = mock(IrcBackendClientService.class);
+  private final IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
   private final UiPort ui = mock(UiPort.class);
   private final ConnectionCoordinator connectionCoordinator = mock(ConnectionCoordinator.class);
   private final TargetCoordinator targetCoordinator = mock(TargetCoordinator.class);
@@ -166,13 +168,23 @@ class OutboundChatHistoryCommandServiceTest {
     TargetRef chan = new TargetRef("libera", "#ircafe");
     when(irc.isChatHistoryAvailable("libera")).thenReturn(false);
 
-    service.topicHelpHandlers().get("chathistory").accept(chan);
+    service.topicHelpHandlers().get("chathistory").accept(helpSink(chan));
 
     verify(ui)
         .appendStatus(
             chan,
             "(help)",
             "/chathistory [limit] (unavailable: requires negotiated draft/chathistory or chathistory)");
+  }
+
+  @Test
+  void helpIncludesHistoryAliasTopic() {
+    TargetRef chan = new TargetRef("libera", "#ircafe");
+    when(irc.isChatHistoryAvailable("libera")).thenReturn(true);
+
+    service.topicHelpHandlers().get("history").accept(helpSink(chan));
+
+    verify(ui).appendStatus(chan, "(help)", "/chathistory [limit]");
   }
 
   private static OutboundBackendCapabilityPolicy backendCapabilityPolicy() {
@@ -182,5 +194,20 @@ class OutboundChatHistoryCommandServiceTest {
     when(policy.unavailableReasonForHelp(anyString(), anyString()))
         .thenAnswer(invocation -> invocation.getArgument(1));
     return policy;
+  }
+
+  private static OutboundHelpSink helpSink(TargetRef target) {
+    return new TestOutboundHelpSink(target);
+  }
+
+  private record TestOutboundHelpSink(TargetRef targetRef) implements OutboundHelpSink {
+
+    @Override
+    public OutboundHelpTargetView target() {
+      return new OutboundHelpTargetView(targetRef.serverId(), targetRef.target());
+    }
+
+    @Override
+    public void appendLine(String line) {}
   }
 }

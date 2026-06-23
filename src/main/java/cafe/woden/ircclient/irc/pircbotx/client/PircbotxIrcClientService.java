@@ -9,6 +9,7 @@ import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
+import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
 import cafe.woden.ircclient.irc.ircv3.*;
 import cafe.woden.ircclient.irc.pircbotx.listener.*;
 import cafe.woden.ircclient.irc.pircbotx.parse.PircbotxInputParserHookInstaller;
@@ -40,7 +41,7 @@ import org.springframework.stereotype.Service;
 @Service
 @InfrastructureLayer
 public class PircbotxIrcClientService
-    implements IrcBackendClientService, IrcDisconnectWithSourcePort {
+    implements IrcBackendRuntimeClientService, IrcDisconnectWithSourcePort {
 
   private static final Logger log = LoggerFactory.getLogger(PircbotxIrcClientService.class);
   private static final BackendDescriptorCatalog BACKEND_DESCRIPTORS =

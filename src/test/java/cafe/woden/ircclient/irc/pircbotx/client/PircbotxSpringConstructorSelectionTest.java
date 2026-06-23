@@ -6,6 +6,8 @@ import static org.mockito.Mockito.mock;
 import cafe.woden.ircclient.bouncer.BouncerBackendRegistry;
 import cafe.woden.ircclient.bouncer.BouncerDiscoveryEventPort;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.RuntimeConfigChatCommandAdapter;
+import cafe.woden.ircclient.config.RuntimeConfigCtcpReplyAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.properties.SojuProperties;
 import cafe.woden.ircclient.config.properties.ZncProperties;
@@ -25,7 +27,10 @@ class PircbotxSpringConstructorSelectionTest {
   private final ApplicationContextRunner runner =
       new ApplicationContextRunner()
           .withUserConfiguration(
-              PircbotxBridgeListenerFactory.class, PircbotxIrcClientService.class)
+              PircbotxBridgeListenerFactory.class,
+              PircbotxIrcClientService.class,
+              RuntimeConfigChatCommandAdapter.class,
+              RuntimeConfigCtcpReplyAdapter.class)
           .withBean(
               IrcProperties.class,
               () ->

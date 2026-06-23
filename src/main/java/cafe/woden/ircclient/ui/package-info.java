@@ -4,8 +4,10 @@
       "app",
       "app::api",
       "app::commands",
+      "app::commands-spi",
       "app::outbound-filter",
       "app::translation",
+      "app::translation-spi",
       "bouncer",
       "config",
       "config::api",
@@ -33,6 +35,7 @@
       "notify::api",
       "notify::pushy",
       "notify::sound",
+      "notify::spi",
       "state::api",
       "util"
     })

@@ -11,8 +11,8 @@ import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.app.api.ConnectionState;
 import cafe.woden.ircclient.app.api.MessageTranslation;
-import cafe.woden.ircclient.app.commands.BackendNamedCommandNames;
 import cafe.woden.ircclient.app.commands.ParsedInput;
+import cafe.woden.ircclient.app.commands.spi.BuiltInBackendNamedCommandNames;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.notifications.NotificationStore;
 import cafe.woden.ircclient.ui.bus.ActiveInputRouter;
@@ -70,9 +70,11 @@ class SwingUiPortCommandRoutingTest {
     ui.openQuasselNetworkManager(" app ");
 
     subscriber.assertValues(
-        new ParsedInput.BackendNamed(BackendNamedCommandNames.QUASSEL_SETUP, "quassel"),
-        new ParsedInput.BackendNamed(BackendNamedCommandNames.QUASSEL_NETWORK_MANAGER, "core"),
-        new ParsedInput.BackendNamed(BackendNamedCommandNames.QUASSEL_NETWORK_MANAGER, "app"));
+        new ParsedInput.BackendNamed(BuiltInBackendNamedCommandNames.QUASSEL_SETUP, "quassel"),
+        new ParsedInput.BackendNamed(
+            BuiltInBackendNamedCommandNames.QUASSEL_NETWORK_MANAGER, "core"),
+        new ParsedInput.BackendNamed(
+            BuiltInBackendNamedCommandNames.QUASSEL_NETWORK_MANAGER, "app"));
   }
 
   @Test

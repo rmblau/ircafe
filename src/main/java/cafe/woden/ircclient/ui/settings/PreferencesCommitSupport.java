@@ -4,7 +4,26 @@ import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.AppearanceRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ChatHistoryRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
+import cafe.woden.ircclient.config.api.EmbedPreviewRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
+import cafe.woden.ircclient.config.api.Ircv3CapabilityConfigPort;
+import cafe.woden.ircclient.config.api.LaunchJvmRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.NickColorRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.NotificationRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.OutgoingMessageRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.SpellcheckRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.TimestampRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.TrayRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.UserCommandAliasesConfigPort;
 import cafe.woden.ircclient.irc.backend.IrcHeartbeatMaintenanceService;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.notifications.api.IrcEventNotificationRulesPort;
@@ -36,6 +55,7 @@ import cafe.woden.ircclient.ui.settings.notifications.NotificationRulesControlsS
 import cafe.woden.ircclient.ui.settings.outgoing.OutgoingColorControlsSupport;
 import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckControlsSupport;
 import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettingsBus;
+import cafe.woden.ircclient.ui.settings.startup.LaunchJvmControlsSupport;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ThemeManager;
@@ -58,9 +78,9 @@ final class PreferencesCommitSupport {
     UiSettings next = snapshot.next();
 
     ChatBehaviorControlsSupport.rememberServerTreeSettings(
-        request.runtimeConfig(), snapshot.chatBehavior());
+        request.chatBehaviorRuntimeConfig(), snapshot.chatBehavior());
     AppearanceControlsSupport.rememberServerTreeSettings(
-        request.runtimeConfig(), snapshot.serverTreeAppearance());
+        request.appearanceRuntimeConfig(), snapshot.serverTreeAppearance());
     request
         .settingsBus()
         .setNickCompletionCycleWithTabEnabled(
@@ -101,7 +121,8 @@ final class PreferencesCommitSupport {
       UiSettings next) {
     RuntimeConfigStore runtimeConfig = request.runtimeConfig();
 
-    AppearanceControlsSupport.rememberAccentSettings(runtimeConfig, appearance.accent());
+    AppearanceControlsSupport.rememberAccentSettings(
+        request.appearanceRuntimeConfig(), appearance.accent());
 
     if (request.tweakSettingsBus() != null) {
       request.tweakSettingsBus().set(appearance.tweaks());
@@ -110,19 +131,18 @@ final class PreferencesCommitSupport {
     if (request.chatThemeSettingsBus() != null && appearance.chatThemeChanged()) {
       request.chatThemeSettingsBus().set(appearance.chatTheme());
     }
-    AppearanceControlsSupport.rememberTweakSettings(runtimeConfig, appearance.tweaks());
+    AppearanceControlsSupport.rememberTweakSettings(
+        request.appearanceRuntimeConfig(), appearance.tweaks());
 
     runtimeConfig.rememberUiSettings(next.theme(), next.chatFontFamily(), next.chatFontSize());
-    MemoryControlsSupport.rememberSettings(runtimeConfig, snapshot.memory());
-    AppearanceControlsSupport.rememberChatThemeSettings(runtimeConfig, appearance.chatTheme());
+    MemoryControlsSupport.rememberSettings(request.uiShellRuntimeConfig(), snapshot.memory());
+    AppearanceControlsSupport.rememberChatThemeSettings(
+        request.appearanceRuntimeConfig(), appearance.chatTheme());
     runtimeConfig.rememberAutoConnectOnStart(next.autoConnectOnStart());
-    runtimeConfig.rememberLaunchJvmJavaCommand(snapshot.launchJvm().javaCommand());
-    runtimeConfig.rememberLaunchJvmXmsMiB(snapshot.launchJvm().xmsMiB());
-    runtimeConfig.rememberLaunchJvmXmxMiB(snapshot.launchJvm().xmxMiB());
-    runtimeConfig.rememberLaunchJvmGc(snapshot.launchJvm().gc());
-    runtimeConfig.rememberLaunchJvmArgs(snapshot.launchJvm().args());
+    LaunchJvmControlsSupport.rememberSettings(
+        request.launchJvmRuntimeConfig(), snapshot.launchJvm());
     TrayControlsSupport.rememberSettings(
-        runtimeConfig,
+        request.trayRuntimeConfig(),
         request.notificationSoundSettingsBus(),
         request.pushySettingsBus(),
         request.updateNotifierService(),
@@ -130,32 +150,43 @@ final class PreferencesCommitSupport {
         request.trayService(),
         snapshot.tray());
     EmbedPreviewControlsSupport.rememberEmbedPreviewSettings(
-        runtimeConfig, request.embedCardStyleBus(), snapshot.embedPreview());
+        request.embedPreviewRuntimeConfig(), request.embedCardStyleBus(), snapshot.embedPreview());
     rememberEmbedLoadPolicy(request);
-    ChatBehaviorControlsSupport.rememberSettings(runtimeConfig, snapshot.chatBehavior());
-    CtcpAutoReplySupport.rememberSettings(runtimeConfig, snapshot.ctcpAutoReply());
-    SpellcheckControlsSupport.rememberSettings(runtimeConfig, snapshot.spellcheck());
-    Ircv3PanelSupport.persistCapabilities(runtimeConfig, snapshot.ircv3Capabilities());
+    ChatBehaviorControlsSupport.rememberSettings(
+        request.chatBehaviorRuntimeConfig(), snapshot.chatBehavior());
+    CtcpAutoReplySupport.rememberSettings(request.ctcpRuntimeConfig(), snapshot.ctcpAutoReply());
+    SpellcheckControlsSupport.rememberSettings(
+        request.spellcheckRuntimeConfig(), snapshot.spellcheck());
+    Ircv3PanelSupport.persistCapabilities(
+        request.ircv3CapabilityRuntimeConfig(), snapshot.ircv3Capabilities());
     NickColorControlsSupport.rememberSettings(
-        runtimeConfig, request.nickColorSettingsBus(), snapshot.nickColor());
-    TimestampControlsSupport.rememberSettings(runtimeConfig, snapshot.timestamp());
-    HistoryControlsSupport.rememberSettings(runtimeConfig, snapshot.history());
+        request.nickColorRuntimeConfig(), request.nickColorSettingsBus(), snapshot.nickColor());
+    TimestampControlsSupport.rememberSettings(
+        request.timestampRuntimeConfig(), snapshot.timestamp());
+    HistoryControlsSupport.rememberSettings(request.chatHistoryRuntimeConfig(), snapshot.history());
     FilterSettingsApplySupport.applyFromUi(
         request.filters(),
         request.filterSettingsBus(),
-        runtimeConfig,
+        request.filterRuntimeConfig(),
         request.targetCoordinator(),
         request.transcriptRebuildService());
-    LoggingControlsSupport.rememberSettings(runtimeConfig, snapshot.logging());
-    OutgoingColorControlsSupport.rememberSettings(runtimeConfig, snapshot.outgoingLine());
-    NotificationRulesControlsSupport.rememberSettings(runtimeConfig, snapshot.notification());
+    LoggingControlsSupport.rememberSettings(request.chatLoggingRuntimeConfig(), snapshot.logging());
+    OutgoingColorControlsSupport.rememberSettings(
+        request.outgoingRuntimeConfig(), snapshot.outgoingLine());
+    NotificationRulesControlsSupport.rememberSettings(
+        request.notificationRuntimeConfig(), snapshot.notification());
     IrcEventNotificationsTabSupport.rememberSettings(
-        runtimeConfig, request.ircEventNotificationRulesBus(), snapshot.ircEventNotification());
+        request.notificationRuntimeConfig(),
+        request.ircEventNotificationRulesBus(),
+        snapshot.ircEventNotification());
     UserCommandAliasesControlsSupport.rememberSettings(
-        runtimeConfig, request.userCommandAliasesBus(), snapshot.userCommand());
+        request.userCommandAliasesRuntimeConfig(),
+        request.userCommandAliasesBus(),
+        snapshot.userCommand());
     TranslationControlsSupport.rememberSettings(
         runtimeConfig, request.translationSettingsBus(), snapshot.translation());
-    DiagnosticsControlsSupport.rememberSettings(runtimeConfig, snapshot.diagnostics());
+    DiagnosticsControlsSupport.rememberSettings(
+        request.diagnosticsRuntimeConfig(), snapshot.diagnostics());
     if (snapshot.diagnosticsChanged()) {
       PreferencesUiSupport.showInfoMessage(
           request.dialogOwner(),
@@ -173,7 +204,7 @@ final class PreferencesCommitSupport {
         request.pendingEmbedLoadPolicy().get() != null
             ? request.pendingEmbedLoadPolicy().get()
             : EmbedLoadPolicySnapshot.defaults();
-    request.runtimeConfig().rememberEmbedLoadPolicy(embedPolicy);
+    request.embedLoadPolicyRuntimeConfig().rememberEmbedLoadPolicy(embedPolicy);
     if (request.embedLoadPolicyBus() != null) {
       request.embedLoadPolicyBus().set(embedPolicy);
     }
@@ -210,6 +241,25 @@ final class PreferencesCommitSupport {
   record CommitRequest(
       PreferencesApplySupport.Snapshot snapshot,
       RuntimeConfigStore runtimeConfig,
+      LaunchJvmRuntimeConfigPort launchJvmRuntimeConfig,
+      AppearanceRuntimeConfigPort appearanceRuntimeConfig,
+      ChatBehaviorRuntimeConfigPort chatBehaviorRuntimeConfig,
+      TrayRuntimeConfigPort trayRuntimeConfig,
+      UiShellRuntimeConfigPort uiShellRuntimeConfig,
+      ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
+      ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig,
+      DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,
+      FilterSettingsConfigPort filterRuntimeConfig,
+      EmbedPreviewRuntimeConfigPort embedPreviewRuntimeConfig,
+      Ircv3CapabilityConfigPort ircv3CapabilityRuntimeConfig,
+      EmbedLoadPolicyConfigPort embedLoadPolicyRuntimeConfig,
+      CtcpReplyRuntimeConfigPort ctcpRuntimeConfig,
+      OutgoingMessageRuntimeConfigPort outgoingRuntimeConfig,
+      TimestampRuntimeConfigPort timestampRuntimeConfig,
+      SpellcheckRuntimeConfigPort spellcheckRuntimeConfig,
+      NickColorRuntimeConfigPort nickColorRuntimeConfig,
+      UserCommandAliasesConfigPort userCommandAliasesRuntimeConfig,
+      NotificationRuntimeConfigPort notificationRuntimeConfig,
       UiSettingsBus settingsBus,
       SpellcheckSettingsBus spellcheckSettingsBus,
       ThemeAccentSettingsBus accentSettingsBus,

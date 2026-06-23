@@ -1,15 +1,12 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreview;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
+import cafe.woden.ircclient.ui.chat.embed.spi.OEmbedLinkPreviewProvider;
+import cafe.woden.ircclient.ui.chat.embed.spi.OEmbedResponseFields;
 import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
 
 /**
  * Generic oEmbed-based link preview resolver.
@@ -19,52 +16,21 @@ import java.util.regex.Pattern;
  */
 final class OEmbedLinkPreviewResolver implements LinkPreviewResolver {
 
-  record OEmbedFields(
-      String title, String authorName, String providerName, String thumbnailUrl, String html) {}
+  private final List<OEmbedLinkPreviewProvider> providers;
 
-  /**
-   * Provider definition:
-   *
-   * <ul>
-   *   <li>{@code matches}: whether the provider applies to the target URL
-   *   <li>{@code endpointBuilder}: builds the oEmbed endpoint for the target URL
-   *   <li>{@code defaultSiteName}: fallback site name when provider_name is absent
-   *   <li>{@code titleFallback}: builds a fallback title when oEmbed title is absent
-   * </ul>
-   */
-  record Provider(
-      String id,
-      Predicate<URI> matches,
-      BiFunction<URI, String, URI> endpointBuilder,
-      String defaultSiteName,
-      Function<OEmbedFields, String> titleFallback) {
-    Provider {
-      Objects.requireNonNull(id, "id");
-      Objects.requireNonNull(matches, "matches");
-      Objects.requireNonNull(endpointBuilder, "endpointBuilder");
-      Objects.requireNonNull(titleFallback, "titleFallback");
-    }
-  }
-
-  private final List<Provider> providers;
-
-  OEmbedLinkPreviewResolver(List<Provider> providers) {
+  OEmbedLinkPreviewResolver(List<OEmbedLinkPreviewProvider> providers) {
     this.providers = providers == null ? List.of() : List.copyOf(providers);
   }
 
-  static List<Provider> defaultProviders() {
-    return List.of(spotifyProvider(), mastodonProvider());
-  }
-
   @Override
-  public LinkPreview tryResolve(URI uri, String originalUrl, PreviewHttp http) {
+  public LinkPreview tryResolve(URI uri, String originalUrl, LinkPreviewHttp http) {
     try {
       if (uri == null || originalUrl == null || http == null) return null;
 
-      Provider p = firstMatchingProvider(uri);
+      OEmbedLinkPreviewProvider p = firstMatchingProvider(uri);
       if (p == null) return null;
 
-      URI api = p.endpointBuilder.apply(uri, originalUrl);
+      URI api = p.endpointFor(uri, originalUrl);
       if (api == null) return null;
 
       // Some providers (including Mastodon) advertise oEmbed as application/json+oembed.
@@ -76,17 +42,16 @@ final class OEmbedLinkPreviewResolver implements LinkPreviewResolver {
       String json = resp.body();
       if (json == null || json.isBlank()) return null;
 
-      OEmbedFields fields =
-          new OEmbedFields(
+      OEmbedResponseFields fields =
+          new OEmbedResponseFields(
               stripToNull(TinyJson.findString(json, "title")),
               stripToNull(TinyJson.findString(json, "author_name")),
               stripToNull(TinyJson.findString(json, "provider_name")),
               stripToNull(TinyJson.findString(json, "thumbnail_url")),
               stripToNull(TinyJson.findString(json, "html")));
 
-      String siteName = firstNonBlank(fields.providerName(), stripToNull(p.defaultSiteName));
-      String title =
-          firstNonBlank(fields.title(), stripToNull(p.titleFallback.apply(fields)), siteName);
+      String siteName = firstNonBlank(fields.providerName(), stripToNull(p.defaultSiteName()));
+      String title = firstNonBlank(fields.title(), stripToNull(p.titleFallback(fields)), siteName);
 
       // Keep descriptions short and stable.
       String description = null;
@@ -110,82 +75,14 @@ final class OEmbedLinkPreviewResolver implements LinkPreviewResolver {
     }
   }
 
-  private Provider firstMatchingProvider(URI uri) {
-    for (Provider p : providers) {
+  private OEmbedLinkPreviewProvider firstMatchingProvider(URI uri) {
+    for (OEmbedLinkPreviewProvider p : providers) {
       try {
-        if (p.matches.test(uri)) return p;
+        if (p.matches(uri)) return p;
       } catch (Exception ignored) {
       }
     }
     return null;
-  }
-
-  // ---- Providers ----
-
-  private static Provider spotifyProvider() {
-    Predicate<URI> match =
-        u -> {
-          String host = u.getHost();
-          if (host == null || host.isBlank()) return false;
-          String h = host.toLowerCase(Locale.ROOT);
-          return h.equals("open.spotify.com")
-              || h.equals("spotify.link")
-              || h.endsWith(".spotify.com");
-        };
-
-    BiFunction<URI, String, URI> endpoint =
-        (u, originalUrl) -> {
-          String enc = URLEncoder.encode(originalUrl, StandardCharsets.UTF_8);
-          // Spotify's public oEmbed endpoint lives on open.spotify.com.
-          return URI.create("https://open.spotify.com/oembed?url=" + enc);
-        };
-
-    Function<OEmbedFields, String> titleFallback = f -> "Spotify";
-    return new Provider("spotify", match, endpoint, "Spotify", titleFallback);
-  }
-
-  private static final Pattern MASTODON_AT_STYLE = Pattern.compile("^/@[^/]+/\\d+(/.*)?$");
-  private static final Pattern MASTODON_USERS_STYLE =
-      Pattern.compile("^/users/[^/]+/statuses/\\d+(/.*)?$");
-  private static final Pattern MASTODON_WEB_STYLE = Pattern.compile("^/web/statuses/\\d+(/.*)?$");
-
-  private static Provider mastodonProvider() {
-    Predicate<URI> match =
-        u -> {
-          String host = u.getHost();
-          if (host == null || host.isBlank()) return false;
-          String path = u.getPath() == null ? "" : u.getPath();
-          return looksLikeMastodonStatusPath(path);
-        };
-
-    BiFunction<URI, String, URI> endpoint =
-        (u, originalUrl) -> {
-          // Use the instance that served the URL (scheme + authority).
-          if (u.getScheme() == null || u.getAuthority() == null) return null;
-          String base = u.getScheme() + "://" + u.getAuthority();
-          String enc = URLEncoder.encode(originalUrl, StandardCharsets.UTF_8);
-          // Some deployments expect an explicit format.
-          return URI.create(base + "/api/oembed?format=json&url=" + enc);
-        };
-
-    Function<OEmbedFields, String> titleFallback =
-        f -> {
-          if (f.authorName() != null) return "Post by " + f.authorName();
-          return "Mastodon post";
-        };
-
-    // provider_name may be the instance name; we keep it when present.
-    return new Provider("mastodon", match, endpoint, "Mastodon", titleFallback);
-  }
-
-  private static boolean looksLikeMastodonStatusPath(String path) {
-    if (path == null) return false;
-    String p = path.strip();
-    if (p.isEmpty()) return false;
-    while (p.endsWith("/")) p = p.substring(0, p.length() - 1);
-    return MASTODON_AT_STYLE.matcher(p).matches()
-        || MASTODON_USERS_STYLE.matcher(p).matches()
-        || MASTODON_WEB_STYLE.matcher(p).matches();
   }
 
   private static String mastodonDescFromOEmbedHtml(String html) {

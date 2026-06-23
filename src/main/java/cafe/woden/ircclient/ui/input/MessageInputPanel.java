@@ -7,6 +7,9 @@ import cafe.woden.ircclient.ui.CommandHistoryStore;
 import cafe.woden.ircclient.ui.SingleLineEmojiTextPane;
 import cafe.woden.ircclient.ui.backend.BackendUiProfile;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
+import cafe.woden.ircclient.ui.input.spi.MatrixUploadMsgTypeProvider;
+import cafe.woden.ircclient.ui.input.spi.MessageInputSpellcheckDictionaryProvider;
+import cafe.woden.ircclient.ui.input.spi.MessageInputWordSuggestionProvider;
 import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
@@ -66,7 +69,7 @@ public class MessageInputPanel extends JPanel {
   private final MessageInputContextMenuSupport contextMenuSupport;
   private final MessageInputComposeSupport composeSupport;
   private final MessageInputUploadUxMode ircUploadUxMode = new IrcMessageInputUploadUxMode();
-  private final MessageInputUploadUxMode matrixUploadUxMode = new MatrixMessageInputUploadUxMode();
+  private final MessageInputUploadUxMode matrixUploadUxMode;
   private final MessageInputUploadUxMode.Context uploadUxContext =
       new MessageInputUploadUxContext();
   private boolean programmaticEdit;
@@ -114,15 +117,21 @@ public class MessageInputPanel extends JPanel {
     super(new BorderLayout(0, 0));
     this.settingsBus = settingsBus;
     this.spellcheckSettingsBus = spellcheckSettingsBus;
+    List<MatrixUploadMsgTypeProvider> matrixUploadMsgTypeProviders =
+        MessageInputPluginProviders.matrixUploadMsgTypeProviders(installedPlugins);
+    this.matrixUploadUxMode = new MatrixMessageInputUploadUxMode(matrixUploadMsgTypeProviders);
 
     this.undoSupport = new MessageInputUndoSupport(input, () -> programmaticEdit);
     SpellcheckSettings spellcheck =
         spellcheckSettingsBus != null ? spellcheckSettingsBus.get() : SpellcheckSettings.defaults();
-    this.spellcheckSupport = new MessageInputSpellcheckSupport(input, spellcheck);
+    List<MessageInputSpellcheckDictionaryProvider> spellcheckDictionaryProviders =
+        MessageInputPluginProviders.spellcheckDictionaryProviders(installedPlugins);
+    this.spellcheckSupport =
+        new MessageInputSpellcheckSupport(input, spellcheck, spellcheckDictionaryProviders);
     this.spellcheckHoverPopupSupport =
         new MessageInputSpellcheckHoverPopupSupport(this, input, spellcheckSupport, spellcheck);
     MessageInputWordSuggestionProvider wordSuggestionProvider =
-        CompositeMessageInputWordSuggestionProvider.from(spellcheckSupport, installedPlugins);
+        MessageInputPluginProviders.wordSuggestionProvider(spellcheckSupport, installedPlugins);
     this.nickCompletionSupport =
         new MessageInputNickCompletionSupport(
             this,

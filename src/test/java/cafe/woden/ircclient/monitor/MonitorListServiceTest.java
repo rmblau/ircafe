@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.monitor;
 
+import static cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures.monitorRosterPort;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import cafe.woden.ircclient.config.IrcProperties;
@@ -21,7 +22,7 @@ class MonitorListServiceTest {
     RuntimeConfigStore store =
         RuntimeConfigStoreTestFixtures.storeWithServers(
             tempDir.resolve("ircafe.yml"), server("libera"));
-    MonitorListService service = new MonitorListService(store);
+    MonitorListService service = new MonitorListService(monitorRosterPort(store));
 
     assertEquals(2, service.addNicks("libera", List.of("Alice", "bob", "alice")));
     assertEquals(List.of("Alice", "bob"), service.listNicks("libera"));
@@ -29,7 +30,7 @@ class MonitorListServiceTest {
     assertEquals(1, service.removeNicks("libera", List.of("ALICE", "charlie")));
     assertEquals(List.of("bob"), service.listNicks("libera"));
 
-    MonitorListService reloaded = new MonitorListService(store);
+    MonitorListService reloaded = new MonitorListService(monitorRosterPort(store));
     assertEquals(List.of("bob"), reloaded.listNicks("libera"));
   }
 
@@ -45,7 +46,7 @@ class MonitorListServiceTest {
     RuntimeConfigStore store =
         RuntimeConfigStoreTestFixtures.storeWithServers(
             tempDir.resolve("ircafe.yml"), server("libera"));
-    MonitorListService service = new MonitorListService(store);
+    MonitorListService service = new MonitorListService(monitorRosterPort(store));
 
     ArrayList<MonitorListService.Change> changes = new ArrayList<>();
     io.reactivex.rxjava3.disposables.Disposable sub = service.changes().subscribe(changes::add);

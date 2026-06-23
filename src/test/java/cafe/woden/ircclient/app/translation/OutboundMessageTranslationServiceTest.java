@@ -3,6 +3,10 @@ package cafe.woden.ircclient.app.translation;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationBackendProvider;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationRequest;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationResult;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationTargetView;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.model.TargetRef;
 import java.util.List;
@@ -20,6 +24,8 @@ import org.junit.jupiter.api.Test;
 class OutboundMessageTranslationServiceTest {
 
   private static final TargetRef TARGET = new TargetRef("libera", "#ircafe");
+  private static final MessageTranslationTargetView TARGET_VIEW =
+      new MessageTranslationTargetView("libera", "#ircafe");
 
   private ExecutorService executor;
 
@@ -61,7 +67,7 @@ class OutboundMessageTranslationServiceTest {
 
     assertEquals("hola mundo", result.translatedText());
     assertEquals("outbound-translation-test", threadName.get());
-    assertEquals(TARGET, requestRef.get().target());
+    assertEquals(TARGET_VIEW, requestRef.get().target());
     assertEquals("hello world", requestRef.get().text());
     assertEquals("es", requestRef.get().targetLanguage());
   }
@@ -79,7 +85,7 @@ class OutboundMessageTranslationServiceTest {
   }
 
   private OutboundMessageTranslationService service(
-      IrcProperties props, MessageTranslationBackend backend) {
+      IrcProperties props, MessageTranslationBackendProvider backend) {
     return new OutboundMessageTranslationService(
         new MessageTranslationSettingsBus(props),
         new MessageTranslationBackendRegistry(List.of(backend)),
@@ -112,7 +118,7 @@ class OutboundMessageTranslationServiceTest {
         List.of());
   }
 
-  private static final class CapturingBackend implements MessageTranslationBackend {
+  private static final class CapturingBackend implements MessageTranslationBackendProvider {
     private final java.util.function.Function<
             MessageTranslationRequest, CompletionStage<MessageTranslationResult>>
         handler;

@@ -86,10 +86,8 @@ class PircbotxInboundCtcpHandlerTest {
       String rawLine, List<ServerIrcEvent> seen, List<String> replies) {
     return new PircbotxInboundCtcpHandler(
         "libera",
-        () -> "me",
         (bot, nick) -> "me".equalsIgnoreCase(String.valueOf(nick)),
         (bot, nick) -> false,
-        bot -> "me",
         bot -> "me",
         event -> rawLine,
         event -> null,

@@ -1,9 +1,12 @@
 package cafe.woden.ircclient.notify.sound;
 
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.execution.ExecutorConfig;
 import cafe.woden.ircclient.model.BuiltInSound;
+import cafe.woden.ircclient.notify.api.CustomSoundPluginProviders;
 import cafe.woden.ircclient.notify.api.NotificationSoundPort;
+import cafe.woden.ircclient.notify.spi.CustomSoundPlaybackProvider;
 import jakarta.annotation.PreDestroy;
 import java.beans.PropertyChangeListener;
 import java.io.BufferedInputStream;
@@ -12,6 +15,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -21,6 +25,8 @@ import javax.sound.sampled.*;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
@@ -39,6 +45,7 @@ public class NotificationSoundService implements NotificationSoundPort {
 
   private final NotificationSoundSettingsBus settingsBus;
   private final RuntimeConfigPathPort runtimeConfig;
+  private final List<CustomSoundPlaybackProvider> customPlaybackProviders;
   private final PropertyChangeListener settingsListener;
 
   private final AtomicReference<Instant> lastPlayed = new AtomicReference<>(Instant.EPOCH);
@@ -60,9 +67,27 @@ public class NotificationSoundService implements NotificationSoundPort {
       NotificationSoundSettingsBus settingsBus,
       RuntimeConfigPathPort runtimeConfig,
       @Qualifier(ExecutorConfig.NOTIFICATION_SOUND_EXECUTOR) ExecutorService executor) {
+    this(settingsBus, runtimeConfig, executor, (InstalledPluginsPort) null);
+  }
+
+  @Autowired
+  public NotificationSoundService(
+      NotificationSoundSettingsBus settingsBus,
+      RuntimeConfigPathPort runtimeConfig,
+      @Qualifier(ExecutorConfig.NOTIFICATION_SOUND_EXECUTOR) ExecutorService executor,
+      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
+    this(settingsBus, runtimeConfig, executor, resolveInstalledPlugins(installedPluginsProvider));
+  }
+
+  NotificationSoundService(
+      NotificationSoundSettingsBus settingsBus,
+      RuntimeConfigPathPort runtimeConfig,
+      ExecutorService executor,
+      InstalledPluginsPort installedPlugins) {
     this.settingsBus = settingsBus;
     this.runtimeConfig = runtimeConfig;
     this.executor = executor;
+    this.customPlaybackProviders = CustomSoundPluginProviders.playbackProviders(installedPlugins);
 
     NotificationSoundSettings seed = settingsBus != null ? settingsBus.get() : null;
     applySettings(seed);
@@ -222,6 +247,10 @@ public class NotificationSoundService implements NotificationSoundPort {
             return;
           }
 
+          if (tryPluginPlayback(path, previewSeq)) {
+            return;
+          }
+
           try (AudioInputStream originalStream = AudioSystem.getAudioInputStream(path.toFile())) {
 
             if (isStalePreview(previewSeq)) {
@@ -234,6 +263,28 @@ public class NotificationSoundService implements NotificationSoundPort {
             log.debug("Failed to play custom notification sound: {}", path, e);
           }
         });
+  }
+
+  private boolean tryPluginPlayback(Path path, long previewSeq) {
+    for (CustomSoundPlaybackProvider provider : customPlaybackProviders) {
+      if (provider == null || isStalePreview(previewSeq)) continue;
+      try {
+        if (provider.playCustomSound(path)) {
+          if (!isStalePreview(previewSeq)) {
+            lastPlayed.set(Instant.now());
+          }
+          return true;
+        }
+      } catch (Exception e) {
+        log.debug("Custom sound playback provider failed: {}", provider.getClass().getName(), e);
+      }
+    }
+    return false;
+  }
+
+  private static InstalledPluginsPort resolveInstalledPlugins(
+      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
+    return installedPluginsProvider == null ? null : installedPluginsProvider.getIfAvailable();
   }
 
   private boolean isStalePreview(long previewSeq) {

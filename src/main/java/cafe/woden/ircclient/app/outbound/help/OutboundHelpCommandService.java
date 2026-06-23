@@ -4,6 +4,8 @@ import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.commands.SlashCommandPresentationCatalog;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpContributor;
+import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpSink;
+import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpTargetView;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.model.TargetRef;
 import java.util.ArrayList;
@@ -27,7 +29,7 @@ public final class OutboundHelpCommandService {
   private final TargetCoordinator targetCoordinator;
   private final SlashCommandPresentationCatalog slashCommandPresentationCatalog;
   private final List<OutboundHelpContributor> contributors;
-  private final Map<String, HelpTopicHandler> helpTopicHandlers;
+  private final Map<String, List<HelpTopicHandler>> helpTopicHandlers;
 
   @Autowired
   public OutboundHelpCommandService(
@@ -39,7 +41,9 @@ public final class OutboundHelpCommandService {
     this(
         ui,
         targetCoordinator,
-        loadInstalledContributors(contributors, installedPluginsProvider),
+        OutboundHelpPluginProviders.outboundHelpContributors(
+            contributors,
+            OutboundHelpPluginProviders.resolveInstalledPlugins(installedPluginsProvider)),
         slashCommandPresentationCatalog);
   }
 
@@ -50,7 +54,7 @@ public final class OutboundHelpCommandService {
       SlashCommandPresentationCatalog slashCommandPresentationCatalog) {
     this.ui = Objects.requireNonNull(ui, "ui");
     this.targetCoordinator = Objects.requireNonNull(targetCoordinator, "targetCoordinator");
-    this.contributors = nonNullContributors(contributors);
+    this.contributors = OutboundHelpPluginProviders.outboundHelpContributors(contributors, null);
     this.slashCommandPresentationCatalog =
         Objects.requireNonNull(slashCommandPresentationCatalog, "slashCommandPresentationCatalog");
     this.helpTopicHandlers = buildHelpTopicHandlers();
@@ -65,7 +69,7 @@ public final class OutboundHelpCommandService {
     this(
         ui,
         targetCoordinator,
-        loadInstalledContributors(contributors, installedPlugins),
+        OutboundHelpPluginProviders.outboundHelpContributors(contributors, installedPlugins),
         slashCommandPresentationCatalog);
   }
 
@@ -74,75 +78,31 @@ public final class OutboundHelpCommandService {
     TargetRef out = (at != null) ? at : targetCoordinator.safeStatusTarget();
     String t = normalizeHelpTopic(topic);
     if (!t.isEmpty()) {
-      HelpTopicHandler handler = helpTopicHandlers.get(t);
-      if (handler != null) {
-        handler.handle(out);
+      List<HelpTopicHandler> handlers = helpTopicHandlers.get(t);
+      if (handlers != null && !handlers.isEmpty()) {
+        handlers.forEach(handler -> handler.handle(out));
         return;
       }
       ui.appendStatus(out, "(help)", "No dedicated help for '" + t + "'. Showing common commands.");
     }
 
-    ui.appendStatus(
-        out,
-        "(help)",
-        "Common: /join /part /msg /notice /me /query /whois /names /list /topic /monitor /chathistory /quote /dcc");
-    ui.appendStatus(
-        out,
-        "(help)",
-        "Invites: /invites /invjoin (/join -i) /invignore /invwhois /invblock /inviteautojoin (/ajinvite)");
-    for (OutboundHelpContributor contributor : contributors) {
-      contributor.appendGeneralHelp(out, this::appendStaticHelpLine);
-    }
     slashCommandPresentationCatalog.appendGeneralHelp(out, this::appendStaticHelpLine);
-    ui.appendStatus(out, "(help)", "Tip: /help dcc for direct-chat/file-transfer commands.");
-    ui.appendStatus(
-        out,
-        "(help)",
-        "Tip: /help edit, /help redact, /help markread, or /help upload for focused details.");
-  }
-
-  private static List<OutboundHelpContributor> loadInstalledContributors(
-      List<OutboundHelpContributor> contributors,
-      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
-    InstalledPluginsPort installedPlugins =
-        installedPluginsProvider == null ? null : installedPluginsProvider.getIfAvailable();
-    return loadInstalledContributors(contributors, installedPlugins);
-  }
-
-  private static List<OutboundHelpContributor> loadInstalledContributors(
-      List<OutboundHelpContributor> contributors, InstalledPluginsPort installedPlugins) {
-    List<OutboundHelpContributor> builtInContributors = nonNullContributors(contributors);
-    if (installedPlugins == null) {
-      return builtInContributors;
-    }
-    return nonNullContributors(
-        installedPlugins.loadInstalledServices(OutboundHelpContributor.class, builtInContributors));
-  }
-
-  private static List<OutboundHelpContributor> nonNullContributors(
-      List<OutboundHelpContributor> contributors) {
-    if (contributors == null || contributors.isEmpty()) {
-      return List.of();
-    }
-    ArrayList<OutboundHelpContributor> resolved = new ArrayList<>(contributors.size());
+    OutboundHelpSink help = helpSink(out);
     for (OutboundHelpContributor contributor : contributors) {
-      if (contributor != null) {
-        resolved.add(contributor);
-      }
+      contributor.appendGeneralHelp(help);
     }
-    return List.copyOf(resolved);
   }
 
-  private Map<String, HelpTopicHandler> buildHelpTopicHandlers() {
-    LinkedHashMap<String, HelpTopicHandler> handlers = new LinkedHashMap<>();
-    registerHelpTopicHandler(handlers, this::appendDccHelp, "dcc");
+  private Map<String, List<HelpTopicHandler>> buildHelpTopicHandlers() {
+    LinkedHashMap<String, List<HelpTopicHandler>> handlers = new LinkedHashMap<>();
     for (OutboundHelpContributor contributor : contributors) {
-      registerHelpTopicHandlers(
-          handlers, contributor.topicHelpHandlers(this::appendStaticHelpLine));
+      registerHelpTopicHandlers(handlers, contributor.topicHelpHandlers());
     }
-    registerHelpTopicHandlers(
+    registerTargetHelpTopicHandlers(
         handlers, slashCommandPresentationCatalog.topicHelpHandlers(this::appendStaticHelpLine));
-    return Map.copyOf(handlers);
+    LinkedHashMap<String, List<HelpTopicHandler>> immutable = new LinkedHashMap<>();
+    handlers.forEach((topic, topicHandlers) -> immutable.put(topic, List.copyOf(topicHandlers)));
+    return Map.copyOf(immutable);
   }
 
   private void appendStaticHelpLine(TargetRef out, String line) {
@@ -150,42 +110,64 @@ public final class OutboundHelpCommandService {
     ui.appendStatus(out, "(help)", line);
   }
 
-  private static void registerHelpTopicHandler(
-      Map<String, HelpTopicHandler> handlers, HelpTopicHandler handler, String... topics) {
-    if (handlers == null || handler == null || topics == null) return;
-    for (String rawTopic : topics) {
-      String topic = normalizeHelpTopic(rawTopic);
-      if (!topic.isEmpty()) {
-        handlers.put(topic, handler);
+  private OutboundHelpSink helpSink(TargetRef out) {
+    return new ServiceOutboundHelpSink(out);
+  }
+
+  private void registerHelpTopicHandlers(
+      Map<String, List<HelpTopicHandler>> handlers,
+      Map<String, Consumer<OutboundHelpSink>> topicHandlers) {
+    if (handlers == null || topicHandlers == null || topicHandlers.isEmpty()) return;
+    for (Map.Entry<String, Consumer<OutboundHelpSink>> entry : topicHandlers.entrySet()) {
+      String topic = normalizeHelpTopic(entry.getKey());
+      Consumer<OutboundHelpSink> consumer = entry.getValue();
+      if (!topic.isEmpty() && consumer != null) {
+        handlers
+            .computeIfAbsent(topic, ignored -> new ArrayList<>())
+            .add(out -> consumer.accept(helpSink(out)));
       }
     }
   }
 
-  private static void registerHelpTopicHandlers(
-      Map<String, HelpTopicHandler> handlers, Map<String, Consumer<TargetRef>> topicHandlers) {
+  private static void registerTargetHelpTopicHandlers(
+      Map<String, List<HelpTopicHandler>> handlers,
+      Map<String, Consumer<TargetRef>> topicHandlers) {
     if (handlers == null || topicHandlers == null || topicHandlers.isEmpty()) return;
     for (Map.Entry<String, Consumer<TargetRef>> entry : topicHandlers.entrySet()) {
       String topic = normalizeHelpTopic(entry.getKey());
       Consumer<TargetRef> consumer = entry.getValue();
       if (!topic.isEmpty() && consumer != null) {
-        handlers.put(topic, consumer::accept);
+        List<HelpTopicHandler> topicHandlersForKey =
+            handlers.computeIfAbsent(topic, ignored -> new ArrayList<>());
+        topicHandlersForKey.add(consumer::accept);
       }
+    }
+  }
+
+  private final class ServiceOutboundHelpSink implements OutboundHelpSink {
+    private final TargetRef out;
+
+    private ServiceOutboundHelpSink(TargetRef out) {
+      this.out = out;
+    }
+
+    @Override
+    public OutboundHelpTargetView target() {
+      if (out == null) {
+        return new OutboundHelpTargetView("", "");
+      }
+      return new OutboundHelpTargetView(out.serverId(), out.target());
+    }
+
+    @Override
+    public void appendLine(String line) {
+      appendStaticHelpLine(out, line);
     }
   }
 
   @FunctionalInterface
   private interface HelpTopicHandler {
     void handle(TargetRef out);
-  }
-
-  private void appendDccHelp(TargetRef out) {
-    ui.appendStatus(out, "(help)", "/dcc chat <nick>");
-    ui.appendStatus(out, "(help)", "/dcc send <nick> <file-path>");
-    ui.appendStatus(out, "(help)", "/dcc accept <nick>");
-    ui.appendStatus(out, "(help)", "/dcc get <nick> [save-path]");
-    ui.appendStatus(out, "(help)", "/dcc msg <nick> <text>  (alias: /dccmsg <nick> <text>)");
-    ui.appendStatus(out, "(help)", "/dcc close <nick>  /dcc list  /dcc panel");
-    ui.appendStatus(out, "(help)", "UI: right-click a nick and use the DCC submenu.");
   }
 
   private static String normalizeHelpTopic(String raw) {

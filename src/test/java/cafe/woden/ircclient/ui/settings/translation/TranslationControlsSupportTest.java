@@ -8,8 +8,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguage;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComboBox;
 import org.junit.jupiter.api.Test;
@@ -180,6 +184,36 @@ class TranslationControlsSupportTest {
   }
 
   @Test
+  void sourceAndTargetLanguageCombosIncludePluginLanguages() {
+    TranslationControls controls =
+        TranslationControlsSupport.buildControls(
+            new IrcProperties.Client.Translation(
+                true,
+                IrcProperties.Client.Translation.Mode.MANUAL,
+                "google-web",
+                "https://translate.googleapis.com/translate_a/single",
+                "",
+                "auto",
+                "tlh",
+                true,
+                true,
+                List.of(),
+                null,
+                10_000,
+                4_000,
+                2),
+            List.of(),
+            new RecordingInstalledPluginsPort(
+                List.of(() -> List.of(new MessageTranslationLanguage("tlh", "Klingon")))));
+
+    assertTrue(languageCodes(controls.sourceLanguage()).contains("tlh"));
+    assertTrue(languageCodes(controls.targetLanguage()).contains("tlh"));
+
+    IrcProperties.Client.Translation settings = TranslationControlsSupport.readSettings(controls);
+    assertEquals("tlh", settings.targetLanguage());
+  }
+
+  @Test
   void targetLanguageFallsBackWhenNotAvailableInConfiguredDetectionLanguages() {
     TranslationControls controls =
         TranslationControlsSupport.buildControls(
@@ -289,5 +323,20 @@ class TranslationControlsSupportTest {
       codes.add(combo.getItemAt(i).code());
     }
     return codes;
+  }
+
+  private record RecordingInstalledPluginsPort(List<MessageTranslationLanguageProvider> providers)
+      implements InstalledPluginsPort {
+
+    @Override
+    public <T> List<T> loadInstalledServices(Class<T> serviceType, List<T> builtInServices) {
+      ArrayList<T> services = new ArrayList<>(builtInServices);
+      if (serviceType == MessageTranslationLanguageProvider.class) {
+        for (MessageTranslationLanguageProvider provider : providers) {
+          services.add(serviceType.cast(provider));
+        }
+      }
+      return List.copyOf(services);
+    }
   }
 }

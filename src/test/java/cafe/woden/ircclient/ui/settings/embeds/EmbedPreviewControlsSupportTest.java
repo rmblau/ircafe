@@ -5,7 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.EmbedPreviewRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.EmbedPreviewRuntimeConfigPort.EmbedPreviewSnapshot;
 import cafe.woden.ircclient.ui.settings.EmbedCardStyle;
 import cafe.woden.ircclient.ui.settings.EmbedCardStyleBus;
 import javax.swing.JCheckBox;
@@ -37,7 +38,7 @@ class EmbedPreviewControlsSupportTest {
 
   @Test
   void rememberEmbedPreviewSettingsPersistsDisplayValuesAndUpdatesStyleBus() {
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    EmbedPreviewRuntimeConfigPort runtimeConfig = mock(EmbedPreviewRuntimeConfigPort.class);
     EmbedCardStyleBus embedCardStyleBus = mock(EmbedCardStyleBus.class);
     EmbedPreviewControlsSupport.EmbedPreviewSettings settings =
         new EmbedPreviewControlsSupport.EmbedPreviewSettings(
@@ -46,15 +47,11 @@ class EmbedPreviewControlsSupportTest {
     EmbedPreviewControlsSupport.rememberEmbedPreviewSettings(
         runtimeConfig, embedCardStyleBus, settings);
 
-    verify(runtimeConfig).rememberImageEmbedsEnabled(true);
-    verify(runtimeConfig).rememberImageEmbedsCollapsedByDefault(false);
-    verify(runtimeConfig).rememberImageEmbedsMaxWidthPx(640);
-    verify(runtimeConfig).rememberImageEmbedsMaxHeightPx(480);
-    verify(runtimeConfig).rememberImageEmbedsAnimateGifs(true);
-    verify(runtimeConfig).rememberEmbedCardStyle(EmbedCardStyle.DENSER.token());
+    verify(runtimeConfig)
+        .rememberEmbedPreviewSettings(
+            new EmbedPreviewSnapshot(
+                true, false, 640, 480, true, true, false, EmbedCardStyle.DENSER.token()));
     verify(embedCardStyleBus).set(EmbedCardStyle.DENSER);
-    verify(runtimeConfig).rememberLinkPreviewsEnabled(true);
-    verify(runtimeConfig).rememberLinkPreviewsCollapsedByDefault(false);
   }
 
   private static ImageEmbedControls imageEmbedControls(

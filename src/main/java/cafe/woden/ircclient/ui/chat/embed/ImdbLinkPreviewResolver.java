@@ -1,7 +1,11 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreview;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.auto.service.AutoService;
 import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -13,7 +17,8 @@ import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-final class ImdbLinkPreviewResolver implements LinkPreviewResolver {
+@AutoService(LinkPreviewResolver.class)
+public final class ImdbLinkPreviewResolver implements LinkPreviewResolver {
 
   private static final Logger log = LoggerFactory.getLogger(ImdbLinkPreviewResolver.class);
 
@@ -24,7 +29,7 @@ final class ImdbLinkPreviewResolver implements LinkPreviewResolver {
       List.of("Movie", "TVSeries", "TVEpisode", "VideoGame");
 
   @Override
-  public LinkPreview tryResolve(URI uri, String originalUrl, PreviewHttp http) {
+  public LinkPreview tryResolve(URI uri, String originalUrl, LinkPreviewHttp http) {
     try {
       if (!ImdbPreviewUtil.isImdbTitleUri(uri)) return null;
 

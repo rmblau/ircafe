@@ -1,5 +1,10 @@
 package cafe.woden.ircclient.bouncer;
 
+import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
+import cafe.woden.ircclient.bouncer.spi.BouncerEphemeralServerSpec;
+import cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy;
+import cafe.woden.ircclient.bouncer.spi.BouncerServerProfile;
+import cafe.woden.ircclient.bouncer.spi.ResolvedBouncerNetwork;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
 import cafe.woden.ircclient.config.servers.EphemeralServerRegistry;
@@ -58,10 +63,12 @@ public final class BouncerNetworkDiscoveryOrchestrator {
     }
 
     IrcProperties.Server bouncer = bouncerOpt.get();
-    ResolvedBouncerNetwork resolved = mappingStrategy.resolveNetwork(bouncer, network);
-    IrcProperties.Server server =
+    BouncerServerProfile bouncerProfile = bouncerProfile(bouncer);
+    ResolvedBouncerNetwork resolved = mappingStrategy.resolveNetwork(bouncerProfile, network);
+    BouncerEphemeralServerSpec serverSpec =
         mappingStrategy.buildEphemeralServer(
-            bouncer, resolved, autoJoinChannelsFor(resolved.serverId()));
+            bouncerProfile, resolved, autoJoinChannelsFor(resolved.serverId()));
+    IrcProperties.Server server = buildEphemeralServer(bouncer, serverSpec);
 
     // If the user has chosen to persist this network entry, don't keep an ephemeral duplicate.
     if (serverRegistry.containsId(server.id())) {
@@ -134,6 +141,41 @@ public final class BouncerNetworkDiscoveryOrchestrator {
           sid,
           String.valueOf(e));
     }
+  }
+
+  private static BouncerServerProfile bouncerProfile(IrcProperties.Server bouncer) {
+    IrcProperties.Server.Sasl sasl = bouncer.sasl();
+    return new BouncerServerProfile(
+        bouncer.id(), bouncer.login(), sasl == null ? null : sasl.username());
+  }
+
+  private static IrcProperties.Server buildEphemeralServer(
+      IrcProperties.Server bouncer, BouncerEphemeralServerSpec spec) {
+    IrcProperties.Server.Sasl sasl = bouncer.sasl();
+
+    IrcProperties.Server.Sasl updatedSasl =
+        new IrcProperties.Server.Sasl(
+            sasl.enabled(),
+            spec.loginUser(),
+            sasl.password(),
+            sasl.mechanism(),
+            sasl.disconnectOnFailure());
+
+    return new IrcProperties.Server(
+        spec.serverId(),
+        bouncer.host(),
+        bouncer.port(),
+        bouncer.tls(),
+        bouncer.serverPassword(),
+        bouncer.nick(),
+        spec.loginUser(),
+        bouncer.realName(),
+        updatedSasl,
+        bouncer.nickserv(),
+        spec.autoJoinChannels(),
+        List.of(),
+        bouncer.proxy(),
+        bouncer.backend());
   }
 
   private List<String> autoJoinChannelsFor(String serverId) {

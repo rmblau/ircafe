@@ -1,9 +1,14 @@
 package cafe.woden.ircclient.irc.znc;
 
-import cafe.woden.ircclient.bouncer.BouncerBackendDiscoveryHandler;
+import cafe.woden.ircclient.bouncer.BouncerBackendRegistry;
 import cafe.woden.ircclient.bouncer.BouncerConnectionPort;
-import cafe.woden.ircclient.bouncer.BouncerDiscoveredNetwork;
 import cafe.woden.ircclient.bouncer.BouncerNetworkDiscoveryOrchestrator;
+import cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler;
+import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
+import cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy;
+import cafe.woden.ircclient.bouncer.spi.BouncerServerProfile;
+import cafe.woden.ircclient.bouncer.spi.BuiltInBouncerBackendIds;
+import cafe.woden.ircclient.bouncer.spi.ResolvedBouncerNetwork;
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
 import cafe.woden.ircclient.config.servers.EphemeralServerRegistry;
 import cafe.woden.ircclient.config.servers.ServerRegistry;
@@ -11,6 +16,7 @@ import java.util.Objects;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -26,10 +32,26 @@ public class ZncEphemeralNetworkImporter implements BouncerBackendDiscoveryHandl
   private static final Logger log = LoggerFactory.getLogger(ZncEphemeralNetworkImporter.class);
 
   private final BouncerNetworkDiscoveryOrchestrator orchestrator;
-  private final ZncBouncerDiscoveryAdapter discoveryAdapter = new ZncBouncerDiscoveryAdapter();
 
+  @Autowired
   public ZncEphemeralNetworkImporter(
-      ZncBouncerNetworkMappingStrategy mappingStrategy,
+      ServerRegistry serverRegistry,
+      EphemeralServerRegistry ephemeralServers,
+      ZncAutoConnectStore autoConnect,
+      BouncerDiscoveryConfigPort runtimeConfig,
+      BouncerConnectionPort connectionPort,
+      BouncerBackendRegistry bouncerBackends) {
+    this(
+        mappingStrategy(bouncerBackends),
+        serverRegistry,
+        ephemeralServers,
+        autoConnect,
+        runtimeConfig,
+        connectionPort);
+  }
+
+  ZncEphemeralNetworkImporter(
+      BouncerNetworkMappingStrategy mappingStrategy,
       ServerRegistry serverRegistry,
       EphemeralServerRegistry ephemeralServers,
       ZncAutoConnectStore autoConnect,
@@ -46,6 +68,28 @@ public class ZncEphemeralNetworkImporter implements BouncerBackendDiscoveryHandl
             connectionPort);
   }
 
+  private static BouncerNetworkMappingStrategy mappingStrategy(
+      BouncerBackendRegistry bouncerBackends) {
+    return Objects.requireNonNull(bouncerBackends, "bouncerBackends")
+        .mappingStrategy(BuiltInBouncerBackendIds.ZNC)
+        .orElseGet(() -> missingMappingStrategy(BuiltInBouncerBackendIds.ZNC));
+  }
+
+  private static BouncerNetworkMappingStrategy missingMappingStrategy(String backendId) {
+    return new BouncerNetworkMappingStrategy() {
+      @Override
+      public String backendId() {
+        return backendId;
+      }
+
+      @Override
+      public ResolvedBouncerNetwork resolveNetwork(
+          BouncerServerProfile bouncer, BouncerDiscoveredNetwork network) {
+        throw new IllegalStateException("Missing bouncer mapping strategy: " + backendId);
+      }
+    };
+  }
+
   @Override
   public String backendId() {
     return orchestrator.backendId();
@@ -59,11 +103,6 @@ public class ZncEphemeralNetworkImporter implements BouncerBackendDiscoveryHandl
   @Override
   public void onOriginDisconnected(String originServerId) {
     orchestrator.onOriginDisconnected(originServerId);
-  }
-
-  public void onZncNetworkDiscovered(ZncNetwork network) {
-    BouncerDiscoveredNetwork discovered = discoveryAdapter.fromZncNetwork(network);
-    onNetworkDiscovered(discovered);
   }
 
   public void onZncOriginDisconnected(String originServerId) {

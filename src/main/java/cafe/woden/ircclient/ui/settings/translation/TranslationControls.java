@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.settings.translation;
 
-import cafe.woden.ircclient.app.translation.MessageTranslationLanguage;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguage;
 import cafe.woden.ircclient.config.IrcProperties;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;

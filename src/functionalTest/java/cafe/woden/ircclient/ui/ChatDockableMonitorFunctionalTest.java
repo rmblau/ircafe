@@ -9,6 +9,8 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.app.api.ChannelMetadataPort;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
+import cafe.woden.ircclient.config.RuntimeConfigDiagnosticsAdapter;
+import cafe.woden.ircclient.config.RuntimeConfigMonitorRosterAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.dcc.DccTransferStore;
@@ -109,7 +111,8 @@ class ChatDockableMonitorFunctionalTest {
     RuntimeConfigStore runtimeConfig =
         RuntimeConfigStoreTestFixtures.storeWithServers(
             tempDir.resolve("ircafe.yml"), server("libera"));
-    MonitorListService monitorListService = new MonitorListService(runtimeConfig);
+    MonitorListService monitorListService =
+        new MonitorListService(new RuntimeConfigMonitorRosterAdapter(runtimeConfig));
 
     ChatTranscriptStore transcripts = mock(ChatTranscriptStore.class);
     ServerTreeDockable serverTree = mock(ServerTreeDockable.class);
@@ -143,7 +146,8 @@ class ChatDockableMonitorFunctionalTest {
     TerminalDockable terminalDockable = new TerminalDockable(mock(ConsoleTeeService.class));
     ApplicationDiagnosticsService applicationDiagnosticsService =
         mock(ApplicationDiagnosticsService.class);
-    JfrRuntimeEventsService jfrRuntimeEventsService = new JfrRuntimeEventsService(runtimeConfig);
+    JfrRuntimeEventsService jfrRuntimeEventsService =
+        new JfrRuntimeEventsService(new RuntimeConfigDiagnosticsAdapter(runtimeConfig));
     SpringRuntimeEventsService springRuntimeEventsService = new SpringRuntimeEventsService();
     UiSettingsBus settingsBus = mock(UiSettingsBus.class);
     when(settingsBus.get()).thenReturn(null);

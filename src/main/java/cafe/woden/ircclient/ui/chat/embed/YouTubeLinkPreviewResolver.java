@@ -1,12 +1,17 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreview;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
+import com.google.auto.service.AutoService;
 import java.net.URI;
 import java.time.Duration;
 
-final class YouTubeLinkPreviewResolver implements LinkPreviewResolver {
+@AutoService(LinkPreviewResolver.class)
+public final class YouTubeLinkPreviewResolver implements LinkPreviewResolver {
 
   @Override
-  public LinkPreview tryResolve(URI uri, String originalUrl, PreviewHttp http) {
+  public LinkPreview tryResolve(URI uri, String originalUrl, LinkPreviewHttp http) {
     try {
       if (!YouTubePreviewUtil.isYouTubeVideoUri(uri)) return null;
 

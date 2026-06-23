@@ -6,10 +6,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandRequest;
+import cafe.woden.ircclient.app.commands.spi.BuiltInBackendNamedCommandNames;
 import cafe.woden.ircclient.app.outbound.backend.QuasselOutboundCommandService;
-import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import java.util.Set;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 class QuasselBackendNamedCommandExecutorTest {
@@ -18,19 +18,13 @@ class QuasselBackendNamedCommandExecutorTest {
       mock(QuasselOutboundCommandService.class);
   private final QuasselBackendNamedCommandExecutor executor =
       new QuasselBackendNamedCommandExecutor(quasselOutboundCommandService);
-  private final CompositeDisposable disposables = new CompositeDisposable();
-
-  @AfterEach
-  void tearDown() {
-    disposables.dispose();
-  }
 
   @Test
   void exposesHandledCommandNames() {
     Set<String> commandNames = executor.handledCommandNames();
-    assertTrue(commandNames.contains(BackendNamedCommandNames.QUASSEL_SETUP));
-    assertTrue(commandNames.contains(BackendNamedCommandNames.QUASSEL_NETWORK));
-    assertTrue(commandNames.contains(BackendNamedCommandNames.QUASSEL_NETWORK_MANAGER));
+    assertTrue(commandNames.contains(BuiltInBackendNamedCommandNames.QUASSEL_SETUP));
+    assertTrue(commandNames.contains(BuiltInBackendNamedCommandNames.QUASSEL_NETWORK));
+    assertTrue(commandNames.contains(BuiltInBackendNamedCommandNames.QUASSEL_NETWORK_MANAGER));
     assertFalse(commandNames.contains("join"));
   }
 
@@ -39,11 +33,10 @@ class QuasselBackendNamedCommandExecutorTest {
     boolean handled =
         executor.handle(
             null,
-            disposables,
-            new ParsedInput.BackendNamed(BackendNamedCommandNames.QUASSEL_SETUP, "core"));
+            new BackendNamedCommandRequest(BuiltInBackendNamedCommandNames.QUASSEL_SETUP, "core"));
 
     assertTrue(handled);
-    verify(quasselOutboundCommandService).handleQuasselSetup(disposables, "core");
+    verify(quasselOutboundCommandService).handleQuasselSetup("core");
   }
 
   @Test
@@ -51,11 +44,11 @@ class QuasselBackendNamedCommandExecutorTest {
     boolean handled =
         executor.handle(
             null,
-            disposables,
-            new ParsedInput.BackendNamed(BackendNamedCommandNames.QUASSEL_NETWORK, "list"));
+            new BackendNamedCommandRequest(
+                BuiltInBackendNamedCommandNames.QUASSEL_NETWORK, "list"));
 
     assertTrue(handled);
-    verify(quasselOutboundCommandService).handleQuasselNetwork(disposables, "list");
+    verify(quasselOutboundCommandService).handleQuasselNetwork("list");
   }
 
   @Test
@@ -63,17 +56,16 @@ class QuasselBackendNamedCommandExecutorTest {
     boolean handled =
         executor.handle(
             null,
-            disposables,
-            new ParsedInput.BackendNamed(BackendNamedCommandNames.QUASSEL_NETWORK_MANAGER, "core"));
+            new BackendNamedCommandRequest(
+                BuiltInBackendNamedCommandNames.QUASSEL_NETWORK_MANAGER, "core"));
 
     assertTrue(handled);
-    verify(quasselOutboundCommandService).handleQuasselNetworkManager(disposables, "core");
+    verify(quasselOutboundCommandService).handleQuasselNetworkManager("core");
   }
 
   @Test
   void handleIgnoresUnknownCommands() {
-    boolean handled =
-        executor.handle(null, disposables, new ParsedInput.BackendNamed("unknown", "x"));
+    boolean handled = executor.handle(null, new BackendNamedCommandRequest("unknown", "x"));
 
     assertFalse(handled);
     verifyNoInteractions(quasselOutboundCommandService);

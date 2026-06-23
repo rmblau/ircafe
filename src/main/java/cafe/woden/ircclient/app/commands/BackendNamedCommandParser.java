@@ -22,7 +22,8 @@ public class BackendNamedCommandParser {
     this.commandCatalog = Objects.requireNonNull(commandCatalog, "commandCatalog");
   }
 
-  BackendNamedCommandParser(List<BackendNamedCommandHandler> handlers) {
+  BackendNamedCommandParser(
+      List<? extends cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler> handlers) {
     this(BackendNamedCommandCatalog.fromHandlers(handlers));
   }
 

@@ -3,6 +3,7 @@ package cafe.woden.ircclient.testutil;
 import cafe.woden.ircclient.app.InboundModeEventHandler;
 import cafe.woden.ircclient.app.JoinModeBurstService;
 import cafe.woden.ircclient.app.ModeFormattingService;
+import cafe.woden.ircclient.app.api.AvailableBackendIdsPort;
 import cafe.woden.ircclient.app.api.ChannelMetadataPort;
 import cafe.woden.ircclient.app.api.Ircv3ReadMarkerFeatureSupport;
 import cafe.woden.ircclient.app.api.TrayNotificationsPort;
@@ -11,6 +12,7 @@ import cafe.woden.ircclient.app.api.UiPortDecorator;
 import cafe.woden.ircclient.app.api.UiTranscriptPort;
 import cafe.woden.ircclient.app.commands.SlashCommandPresentationCatalog;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
+import cafe.woden.ircclient.app.outbound.backend.OutboundBackendCapabilityPolicy;
 import cafe.woden.ircclient.app.translation.MessageTranslationDispatcher;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.config.IrcProperties;
@@ -29,7 +31,7 @@ import cafe.woden.ircclient.ignore.IgnoreStatusService;
 import cafe.woden.ircclient.interceptors.InterceptorStore;
 import cafe.woden.ircclient.irc.IrcClientService;
 import cafe.woden.ircclient.irc.backend.IrcBackendAvailabilityPort;
-import cafe.woden.ircclient.irc.backend.IrcBackendClientService;
+import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionCatalog;
 import cafe.woden.ircclient.irc.port.IrcConnectionLifecyclePort;
 import cafe.woden.ircclient.irc.quassel.control.QuasselCoreControlPort;
@@ -331,22 +333,28 @@ public final class FunctionalTestWiringSupport {
       Constructor<ConnectionCoordinator> ctor =
           ConnectionCoordinator.class.getConstructor(
               IrcConnectionLifecyclePort.class,
-              IrcBackendClientService.class,
+              IrcBackendAvailabilityPort.class,
+              QuasselCoreControlPort.class,
               UiPort.class,
               ServerRegistry.class,
               ServerCatalog.class,
               ConnectionRuntimeConfigPort.class,
               LogProperties.class,
-              TrayNotificationsPort.class);
+              TrayNotificationsPort.class,
+              OutboundBackendCapabilityPolicy.class,
+              AvailableBackendIdsPort.class);
       return ctor.newInstance(
           lifecycle,
-          compositeBackendClient(backendAvailability, quasselControl),
+          backendAvailability,
+          quasselControl,
           ui,
           serverRegistry,
           serverCatalog,
           runtimeConfig,
           logProps,
-          trayNotificationsPort);
+          trayNotificationsPort,
+          null,
+          AvailableBackendIdsPort.builtInsOnly());
     } catch (NoSuchMethodException ignored) {
       try {
         Constructor<ConnectionCoordinator> ctor =
@@ -380,7 +388,7 @@ public final class FunctionalTestWiringSupport {
 
   public static ConnectionCoordinator newConnectionCoordinator(
       IrcConnectionLifecyclePort lifecycle,
-      IrcBackendClientService backendClient,
+      IrcBackendRuntimeClientService backendClient,
       UiPort ui,
       ServerRegistry serverRegistry,
       ServerCatalog serverCatalog,
@@ -391,22 +399,30 @@ public final class FunctionalTestWiringSupport {
       Constructor<ConnectionCoordinator> ctor =
           ConnectionCoordinator.class.getConstructor(
               IrcConnectionLifecyclePort.class,
-              IrcBackendClientService.class,
+              IrcBackendAvailabilityPort.class,
+              QuasselCoreControlPort.class,
               UiPort.class,
               ServerRegistry.class,
               ServerCatalog.class,
               ConnectionRuntimeConfigPort.class,
               LogProperties.class,
-              TrayNotificationsPort.class);
+              TrayNotificationsPort.class,
+              OutboundBackendCapabilityPolicy.class,
+              AvailableBackendIdsPort.class);
       return ctor.newInstance(
           lifecycle,
-          backendClient,
+          IrcBackendAvailabilityPort.from(backendClient),
+          (backendClient instanceof QuasselCoreControlPort control)
+              ? control
+              : new QuasselCoreControlPort() {},
           ui,
           serverRegistry,
           serverCatalog,
           runtimeConfig,
           logProps,
-          trayNotificationsPort);
+          trayNotificationsPort,
+          null,
+          AvailableBackendIdsPort.builtInsOnly());
     } catch (NoSuchMethodException ignored) {
       return newConnectionCoordinator(
           lifecycle,
@@ -530,7 +546,7 @@ public final class FunctionalTestWiringSupport {
     }
   }
 
-  private static IrcBackendClientService compositeBackendClient(
+  private static IrcBackendRuntimeClientService compositeBackendClient(
       IrcBackendAvailabilityPort backendAvailability, QuasselCoreControlPort quasselControl) {
     InvocationHandler handler =
         (proxy, method, args) -> {
@@ -546,10 +562,10 @@ public final class FunctionalTestWiringSupport {
           if (delegated != NOT_HANDLED) return delegated;
           return defaultValue(method.getReturnType());
         };
-    return (IrcBackendClientService)
+    return (IrcBackendRuntimeClientService)
         Proxy.newProxyInstance(
             FunctionalTestWiringSupport.class.getClassLoader(),
-            new Class<?>[] {IrcBackendClientService.class},
+            new Class<?>[] {IrcBackendRuntimeClientService.class},
             handler);
   }
 

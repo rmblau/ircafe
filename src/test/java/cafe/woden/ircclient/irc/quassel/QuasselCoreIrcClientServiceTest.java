@@ -74,7 +74,7 @@ class QuasselCoreIrcClientServiceTest {
             mock(QuasselCoreAuthHandshake.class),
             mock(QuasselCoreDatastreamCodec.class));
 
-    assertEquals(IrcProperties.Server.Backend.QUASSEL_CORE, service.backend());
+    assertEquals("quassel-core", service.backendId());
     assertEquals(
         "Quassel Core backend is not connected", service.backendAvailabilityReason("quassel"));
   }
@@ -3594,7 +3594,7 @@ class QuasselCoreIrcClientServiceTest {
         assertThrows(
             BackendNotAvailableException.class,
             () -> service.sendToChannel("quassel", "#chan", "hello").blockingAwait());
-    assertEquals(IrcProperties.Server.Backend.QUASSEL_CORE, err.backend());
+    assertEquals("quassel-core", err.backendId());
     assertEquals("send message to channel", err.operation());
     assertEquals("quassel", err.serverId());
   }

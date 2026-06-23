@@ -16,7 +16,7 @@ import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.irc.IrcEvent;
 import cafe.woden.ircclient.irc.ServerIrcEvent;
-import cafe.woden.ircclient.irc.backend.IrcBackendClientService;
+import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
 import cafe.woden.ircclient.irc.runtime.IrcRuntimeSettings;
 import cafe.woden.ircclient.irc.runtime.IrcRuntimeSettingsProvider;
 import cafe.woden.ircclient.irc.runtime.IrcRuntimeSettingsTestFixtures;
@@ -115,7 +115,7 @@ class UserInfoEnrichmentServiceTest {
   }
 
   private static Fixture fixtureWithSettings(IrcRuntimeSettings settings) {
-    IrcBackendClientService irc = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
     @SuppressWarnings("unchecked")
     ObjectProvider<IrcRuntimeSettingsProvider> settingsProvider = mock(ObjectProvider.class);
     UserInfoEnrichmentPlanner planner = mock(UserInfoEnrichmentPlanner.class);
@@ -153,7 +153,7 @@ class UserInfoEnrichmentServiceTest {
 
   private record Fixture(
       UserInfoEnrichmentService service,
-      IrcBackendClientService irc,
+      IrcBackendRuntimeClientService irc,
       UserInfoEnrichmentPlanner planner,
       PublishProcessor<ServerIrcEvent> events) {}
 

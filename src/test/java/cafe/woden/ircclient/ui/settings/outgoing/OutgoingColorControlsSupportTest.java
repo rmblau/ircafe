@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.OutgoingMessageRuntimeConfigPort;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -45,7 +45,7 @@ class OutgoingColorControlsSupportTest {
 
   @Test
   void rememberSettingsPersistsOutgoingLineValues() {
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    OutgoingMessageRuntimeConfigPort runtimeConfig = mock(OutgoingMessageRuntimeConfigPort.class);
     OutgoingColorControlsSupport.OutgoingLineSettings settings =
         new OutgoingColorControlsSupport.OutgoingLineSettings(true, "#112233", false);
 

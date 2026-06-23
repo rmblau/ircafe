@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.irc.pircbotx.state;
 
-import cafe.woden.ircclient.bouncer.BouncerDiscoveredNetwork;
+import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;

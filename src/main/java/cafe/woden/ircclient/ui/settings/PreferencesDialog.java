@@ -4,18 +4,40 @@ import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.AppearanceRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ChatHistoryRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
+import cafe.woden.ircclient.config.api.EmbedPreviewRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.config.api.Ircv3CapabilityConfigPort;
+import cafe.woden.ircclient.config.api.LaunchJvmRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.NickColorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.NotificationRule;
+import cafe.woden.ircclient.config.api.NotificationRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.OutgoingMessageRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.SpellcheckRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.TimestampRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.TrayRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.UserCommandAliasesConfigPort;
 import cafe.woden.ircclient.config.execution.ExecutorConfig;
 import cafe.woden.ircclient.config.properties.LogProperties;
 import cafe.woden.ircclient.irc.backend.IrcHeartbeatMaintenanceService;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionCatalog;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.notifications.api.IrcEventNotificationRulesPort;
+import cafe.woden.ircclient.notify.api.CustomSoundPluginProviders;
 import cafe.woden.ircclient.notify.api.NotificationSoundPort;
 import cafe.woden.ircclient.notify.api.PushyNotificationPort;
 import cafe.woden.ircclient.notify.pushy.PushySettingsBus;
 import cafe.woden.ircclient.notify.sound.NotificationSoundSettingsBus;
+import cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider;
 import cafe.woden.ircclient.ui.chat.NickColorService;
 import cafe.woden.ircclient.ui.chat.NickColorSettingsBus;
 import cafe.woden.ircclient.ui.chat.embed.EmbedLoadPolicyBus;
@@ -28,6 +50,7 @@ import cafe.woden.ircclient.ui.settings.appearance.AppearanceLivePreviewSession;
 import cafe.woden.ircclient.ui.settings.notifications.IrcEventNotificationRuleDialogSupport;
 import cafe.woden.ircclient.ui.settings.notifications.NotificationRuleDialogSupport;
 import cafe.woden.ircclient.ui.settings.notifications.NotificationRulesControlsSupport;
+import cafe.woden.ircclient.ui.settings.notifications.NotificationSoundControlsSupport;
 import cafe.woden.ircclient.ui.settings.notifications.NotificationSoundFileImportSupport;
 import cafe.woden.ircclient.ui.settings.spellcheck.SpellcheckSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsBus;
@@ -68,6 +91,25 @@ public class PreferencesDialog {
   private final ChatThemeSettingsBus chatThemeSettingsBus;
   private final SpellcheckSettingsBus spellcheckSettingsBus;
   private final RuntimeConfigStore runtimeConfig;
+  private final LaunchJvmRuntimeConfigPort launchJvmRuntimeConfig;
+  private final AppearanceRuntimeConfigPort appearanceRuntimeConfig;
+  private final ChatBehaviorRuntimeConfigPort chatBehaviorRuntimeConfig;
+  private final TrayRuntimeConfigPort trayRuntimeConfig;
+  private final UiShellRuntimeConfigPort uiShellRuntimeConfig;
+  private final ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig;
+  private final ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig;
+  private final DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig;
+  private final FilterSettingsConfigPort filterRuntimeConfig;
+  private final EmbedPreviewRuntimeConfigPort embedPreviewRuntimeConfig;
+  private final Ircv3CapabilityConfigPort ircv3CapabilityRuntimeConfig;
+  private final EmbedLoadPolicyConfigPort embedLoadPolicyRuntimeConfig;
+  private final CtcpReplyRuntimeConfigPort ctcpRuntimeConfig;
+  private final OutgoingMessageRuntimeConfigPort outgoingRuntimeConfig;
+  private final TimestampRuntimeConfigPort timestampRuntimeConfig;
+  private final SpellcheckRuntimeConfigPort spellcheckRuntimeConfig;
+  private final NickColorRuntimeConfigPort nickColorRuntimeConfig;
+  private final UserCommandAliasesConfigPort userCommandAliasesRuntimeConfig;
+  private final NotificationRuntimeConfigPort notificationRuntimeConfig;
   private final LogProperties logProps;
   private final NickColorSettingsBus nickColorSettingsBus;
   private final NickColorService nickColorService;
@@ -95,6 +137,7 @@ public class PreferencesDialog {
   private final ExecutorService notificationRuleTestExecutor;
   private final Ircv3ExtensionCatalog ircv3ExtensionCatalog;
   private final UiMessages messages;
+  private InstalledPluginsPort installedPlugins;
 
   private JDialog dialog;
 
@@ -107,6 +150,25 @@ public class PreferencesDialog {
       ChatThemeSettingsBus chatThemeSettingsBus,
       SpellcheckSettingsBus spellcheckSettingsBus,
       RuntimeConfigStore runtimeConfig,
+      LaunchJvmRuntimeConfigPort launchJvmRuntimeConfig,
+      AppearanceRuntimeConfigPort appearanceRuntimeConfig,
+      ChatBehaviorRuntimeConfigPort chatBehaviorRuntimeConfig,
+      TrayRuntimeConfigPort trayRuntimeConfig,
+      UiShellRuntimeConfigPort uiShellRuntimeConfig,
+      ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
+      ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig,
+      DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,
+      FilterSettingsConfigPort filterRuntimeConfig,
+      EmbedPreviewRuntimeConfigPort embedPreviewRuntimeConfig,
+      Ircv3CapabilityConfigPort ircv3CapabilityRuntimeConfig,
+      EmbedLoadPolicyConfigPort embedLoadPolicyRuntimeConfig,
+      CtcpReplyRuntimeConfigPort ctcpRuntimeConfig,
+      OutgoingMessageRuntimeConfigPort outgoingRuntimeConfig,
+      TimestampRuntimeConfigPort timestampRuntimeConfig,
+      SpellcheckRuntimeConfigPort spellcheckRuntimeConfig,
+      NickColorRuntimeConfigPort nickColorRuntimeConfig,
+      UserCommandAliasesConfigPort userCommandAliasesRuntimeConfig,
+      NotificationRuntimeConfigPort notificationRuntimeConfig,
       LogProperties logProps,
       NickColorSettingsBus nickColorSettingsBus,
       NickColorService nickColorService,
@@ -142,6 +204,25 @@ public class PreferencesDialog {
         chatThemeSettingsBus,
         spellcheckSettingsBus,
         runtimeConfig,
+        launchJvmRuntimeConfig,
+        appearanceRuntimeConfig,
+        chatBehaviorRuntimeConfig,
+        trayRuntimeConfig,
+        uiShellRuntimeConfig,
+        chatLoggingRuntimeConfig,
+        chatHistoryRuntimeConfig,
+        diagnosticsRuntimeConfig,
+        filterRuntimeConfig,
+        embedPreviewRuntimeConfig,
+        ircv3CapabilityRuntimeConfig,
+        embedLoadPolicyRuntimeConfig,
+        ctcpRuntimeConfig,
+        outgoingRuntimeConfig,
+        timestampRuntimeConfig,
+        spellcheckRuntimeConfig,
+        nickColorRuntimeConfig,
+        userCommandAliasesRuntimeConfig,
+        notificationRuntimeConfig,
         logProps,
         nickColorSettingsBus,
         nickColorService,
@@ -181,6 +262,25 @@ public class PreferencesDialog {
       ChatThemeSettingsBus chatThemeSettingsBus,
       SpellcheckSettingsBus spellcheckSettingsBus,
       RuntimeConfigStore runtimeConfig,
+      LaunchJvmRuntimeConfigPort launchJvmRuntimeConfig,
+      AppearanceRuntimeConfigPort appearanceRuntimeConfig,
+      ChatBehaviorRuntimeConfigPort chatBehaviorRuntimeConfig,
+      TrayRuntimeConfigPort trayRuntimeConfig,
+      UiShellRuntimeConfigPort uiShellRuntimeConfig,
+      ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
+      ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig,
+      DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,
+      FilterSettingsConfigPort filterRuntimeConfig,
+      EmbedPreviewRuntimeConfigPort embedPreviewRuntimeConfig,
+      Ircv3CapabilityConfigPort ircv3CapabilityRuntimeConfig,
+      EmbedLoadPolicyConfigPort embedLoadPolicyRuntimeConfig,
+      CtcpReplyRuntimeConfigPort ctcpRuntimeConfig,
+      OutgoingMessageRuntimeConfigPort outgoingRuntimeConfig,
+      TimestampRuntimeConfigPort timestampRuntimeConfig,
+      SpellcheckRuntimeConfigPort spellcheckRuntimeConfig,
+      NickColorRuntimeConfigPort nickColorRuntimeConfig,
+      UserCommandAliasesConfigPort userCommandAliasesRuntimeConfig,
+      NotificationRuntimeConfigPort notificationRuntimeConfig,
       LogProperties logProps,
       NickColorSettingsBus nickColorSettingsBus,
       NickColorService nickColorService,
@@ -217,6 +317,25 @@ public class PreferencesDialog {
     this.chatThemeSettingsBus = chatThemeSettingsBus;
     this.spellcheckSettingsBus = spellcheckSettingsBus;
     this.runtimeConfig = runtimeConfig;
+    this.launchJvmRuntimeConfig = launchJvmRuntimeConfig;
+    this.appearanceRuntimeConfig = appearanceRuntimeConfig;
+    this.chatBehaviorRuntimeConfig = chatBehaviorRuntimeConfig;
+    this.trayRuntimeConfig = trayRuntimeConfig;
+    this.uiShellRuntimeConfig = uiShellRuntimeConfig;
+    this.chatLoggingRuntimeConfig = chatLoggingRuntimeConfig;
+    this.chatHistoryRuntimeConfig = chatHistoryRuntimeConfig;
+    this.diagnosticsRuntimeConfig = diagnosticsRuntimeConfig;
+    this.filterRuntimeConfig = filterRuntimeConfig;
+    this.embedPreviewRuntimeConfig = embedPreviewRuntimeConfig;
+    this.ircv3CapabilityRuntimeConfig = ircv3CapabilityRuntimeConfig;
+    this.embedLoadPolicyRuntimeConfig = embedLoadPolicyRuntimeConfig;
+    this.ctcpRuntimeConfig = ctcpRuntimeConfig;
+    this.outgoingRuntimeConfig = outgoingRuntimeConfig;
+    this.timestampRuntimeConfig = timestampRuntimeConfig;
+    this.spellcheckRuntimeConfig = spellcheckRuntimeConfig;
+    this.nickColorRuntimeConfig = nickColorRuntimeConfig;
+    this.userCommandAliasesRuntimeConfig = userCommandAliasesRuntimeConfig;
+    this.notificationRuntimeConfig = notificationRuntimeConfig;
     this.logProps = logProps;
     this.nickColorSettingsBus = nickColorSettingsBus;
     this.nickColorService = nickColorService;
@@ -256,6 +375,11 @@ public class PreferencesDialog {
     }
   }
 
+  @Autowired(required = false)
+  void setInstalledPlugins(InstalledPluginsPort installedPlugins) {
+    this.installedPlugins = installedPlugins;
+  }
+
   public void open(Window owner) {
     if (!SwingUtilities.isEventDispatchThread()) {
       SwingUtilities.invokeLater(() -> open(owner));
@@ -277,7 +401,7 @@ public class PreferencesDialog {
             new java.util.concurrent.atomic.AtomicReference<>(
                 embedLoadPolicyBus != null
                     ? embedLoadPolicyBus.get()
-                    : runtimeConfig.readEmbedLoadPolicy());
+                    : embedLoadPolicyRuntimeConfig.readEmbedLoadPolicy());
 
     PreferencesDialogControls controls =
         PreferencesDialogControls.build(
@@ -295,6 +419,14 @@ public class PreferencesDialog {
                 chatThemeSettingsBus,
                 spellcheckSettingsBus,
                 runtimeConfig,
+                launchJvmRuntimeConfig,
+                trayRuntimeConfig,
+                chatBehaviorRuntimeConfig,
+                chatLoggingRuntimeConfig,
+                chatHistoryRuntimeConfig,
+                diagnosticsRuntimeConfig,
+                filterRuntimeConfig,
+                ircv3CapabilityRuntimeConfig,
                 logProps,
                 nickColorSettingsBus,
                 nickColorService,
@@ -313,10 +445,11 @@ public class PreferencesDialog {
                 notificationSoundService,
                 serverDialogs,
                 translationSettingsBus,
+                installedPlugins,
                 pushyTestExecutor,
                 notificationRuleTestExecutor,
                 ircv3ExtensionCatalog,
-                this::importNotificationSoundFileToRuntimeDir,
+                notificationSoundFileImporter(),
                 DEFAULT_GENERIC_BOUNCER_PREFER_LOGIN_HINT,
                 DEFAULT_GENERIC_BOUNCER_LOGIN_TEMPLATE));
     AppearanceLivePreviewSession appearancePreview = controls.appearance().preview();
@@ -344,8 +477,8 @@ public class PreferencesDialog {
                         chatThemeSettingsBus,
                         embedCardStyleBus,
                         settingsBus,
-                        runtimeConfig,
-                        runtimeConfig));
+                        chatBehaviorRuntimeConfig,
+                        diagnosticsRuntimeConfig));
           } catch (PreferencesApplySupport.ApplyException ex) {
             PreferencesUiSupport.showErrorMessage(dialog, ex.getMessage(), ex.title());
             return;
@@ -354,6 +487,25 @@ public class PreferencesDialog {
               new PreferencesCommitSupport.CommitRequest(
                   applySnapshot,
                   runtimeConfig,
+                  launchJvmRuntimeConfig,
+                  appearanceRuntimeConfig,
+                  chatBehaviorRuntimeConfig,
+                  trayRuntimeConfig,
+                  uiShellRuntimeConfig,
+                  chatLoggingRuntimeConfig,
+                  chatHistoryRuntimeConfig,
+                  diagnosticsRuntimeConfig,
+                  filterRuntimeConfig,
+                  embedPreviewRuntimeConfig,
+                  ircv3CapabilityRuntimeConfig,
+                  embedLoadPolicyRuntimeConfig,
+                  ctcpRuntimeConfig,
+                  outgoingRuntimeConfig,
+                  timestampRuntimeConfig,
+                  spellcheckRuntimeConfig,
+                  nickColorRuntimeConfig,
+                  userCommandAliasesRuntimeConfig,
+                  notificationRuntimeConfig,
                   settingsBus,
                   spellcheckSettingsBus,
                   accentSettingsBus,
@@ -398,18 +550,28 @@ public class PreferencesDialog {
 
   private String importNotificationSoundFileToRuntimeDir(File source) throws Exception {
     return NotificationSoundFileImportSupport.importToRuntimeDir(
-        runtimeConfig != null ? runtimeConfig.runtimeConfigPath() : null, source);
+        runtimeConfig != null ? runtimeConfig.runtimeConfigPath() : null, source, installedPlugins);
+  }
+
+  private NotificationSoundControlsSupport.SoundFileImporter notificationSoundFileImporter() {
+    return new NotificationSoundControlsSupport.SoundFileImporter() {
+      @Override
+      public String importFile(File source) throws Exception {
+        return importNotificationSoundFileToRuntimeDir(source);
+      }
+
+      @Override
+      public List<CustomSoundFileExtensionProvider> soundFileExtensionProviders() {
+        return CustomSoundPluginProviders.extensionProviders(installedPlugins);
+      }
+    };
   }
 
   private IrcEventNotificationRule promptIrcEventNotificationRuleDialog(
       String title, IrcEventNotificationRule seed) {
     Window owner = dialog != null ? dialog : null;
     return IrcEventNotificationRuleDialogSupport.promptIrcEventNotificationRuleDialog(
-        owner,
-        title,
-        seed,
-        notificationSoundService,
-        this::importNotificationSoundFileToRuntimeDir);
+        owner, title, seed, notificationSoundService, notificationSoundFileImporter());
   }
 
   private NotificationRule promptNotificationRuleDialog(String title, NotificationRule seed) {

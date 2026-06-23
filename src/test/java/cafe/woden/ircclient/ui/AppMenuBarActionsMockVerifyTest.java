@@ -20,6 +20,7 @@ import cafe.woden.ircclient.ui.settings.PreferencesDialog;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ThemeManager;
 import cafe.woden.ircclient.ui.settings.theme.ThemeSelectionDialog;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemeOption;
 import cafe.woden.ircclient.ui.shell.AppMenuBar;
 import java.awt.Component;
 import java.awt.Container;
@@ -107,7 +108,7 @@ class AppMenuBarActionsMockVerifyTest {
   @Test
   void syncDockAppearanceAfterLayoutResetReappliesThemeAppearance() throws Exception {
     ThemeManager themeManager = mock(ThemeManager.class);
-    when(themeManager.featuredThemes()).thenReturn(new ThemeManager.ThemeOption[0]);
+    when(themeManager.featuredThemes()).thenReturn(new ThemeOption[0]);
     AppMenuBar menuBar =
         onEdtCall(
             () ->
@@ -198,7 +199,7 @@ class AppMenuBarActionsMockVerifyTest {
     IgnoreListDialog ignoreListDialog = mock(IgnoreListDialog.class);
     ThemeSelectionDialog themeSelectionDialog = mock(ThemeSelectionDialog.class);
     ThemeManager themeManager = themeOverride != null ? themeOverride : mock(ThemeManager.class);
-    when(themeManager.featuredThemes()).thenReturn(new ThemeManager.ThemeOption[0]);
+    when(themeManager.featuredThemes()).thenReturn(new ThemeOption[0]);
     UiSettingsBus settingsBus = mock(UiSettingsBus.class);
     when(settingsBus.get()).thenReturn(null);
     RuntimeJfrService runtimeJfrService =

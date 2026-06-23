@@ -9,10 +9,10 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.bouncer.BouncerBackendRegistry;
-import cafe.woden.ircclient.bouncer.BouncerDiscoveredNetwork;
 import cafe.woden.ircclient.bouncer.BouncerDiscoveryEventPort;
-import cafe.woden.ircclient.bouncer.BouncerNetworkMappingStrategy;
-import cafe.woden.ircclient.bouncer.GenericBouncerNetworkMappingStrategy;
+import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
+import cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy;
+import cafe.woden.ircclient.bouncer.spi.BuiltInBouncerBackendIds;
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
 import cafe.woden.ircclient.irc.ircv3.*;
@@ -21,8 +21,6 @@ import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxServerResponseEmitter;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
 import cafe.woden.ircclient.irc.pircbotx.support.Ircv3MultilineAccumulator;
 import cafe.woden.ircclient.irc.playback.*;
-import cafe.woden.ircclient.irc.soju.SojuBouncerNetworkMappingStrategy;
-import cafe.woden.ircclient.irc.znc.ZncBouncerNetworkMappingStrategy;
 import java.io.IOException;
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -120,9 +118,9 @@ class PircbotxConnectionSessionHandlerTest {
     when(bouncerBackends.backendIds())
         .thenReturn(
             Set.of(
-                SojuBouncerNetworkMappingStrategy.BACKEND_ID,
-                ZncBouncerNetworkMappingStrategy.BACKEND_ID,
-                GenericBouncerNetworkMappingStrategy.BACKEND_ID));
+                BuiltInBouncerBackendIds.SOJU,
+                BuiltInBouncerBackendIds.ZNC,
+                BuiltInBouncerBackendIds.GENERIC));
     BouncerDiscoveryEventPort bouncerDiscoveryEvents = mock(BouncerDiscoveryEventPort.class);
     PircbotxConnectionSessionHandler handler =
         newHandler(

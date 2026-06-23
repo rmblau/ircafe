@@ -1666,16 +1666,6 @@ public class ServerTreeDockable extends JPanel implements Dockable, Scrollable {
         runtimeHeaderApiContext, connectEnabled, disconnectEnabled);
   }
 
-  /**
-   * Back-compat convenience: historically we used a single boolean to toggle the buttons.
-   *
-   * @deprecated Prefer {@link #setConnectionControlsEnabled(boolean, boolean)}.
-   */
-  @Deprecated
-  public void setConnectedUi(boolean connected) {
-    runtimeHeaderApi.setConnectedUi(runtimeHeaderApiContext, connected);
-  }
-
   public boolean isChannelListNodesVisible() {
     return nodeVisibilityApi.isChannelListNodesVisible();
   }

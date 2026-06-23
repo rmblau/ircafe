@@ -2,6 +2,7 @@ package cafe.woden.ircclient.bouncer;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
 import cafe.woden.ircclient.irc.ircv3.*;

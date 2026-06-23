@@ -1,6 +1,9 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
 import org.jmolecules.architecture.layered.InterfaceLayer;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -85,14 +88,31 @@ public class LinkPreviewResolverConfig {
 
   @Bean
   @Order(12)
-  LinkPreviewResolver oEmbedLinkPreviewResolver() {
-    return new OEmbedLinkPreviewResolver(OEmbedLinkPreviewResolver.defaultProviders());
+  LinkPreviewResolver oEmbedLinkPreviewResolver(
+      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
+    return oEmbedLinkPreviewResolver(resolveInstalledPlugins(installedPluginsProvider));
+  }
+
+  static LinkPreviewResolver oEmbedLinkPreviewResolver(InstalledPluginsPort installedPlugins) {
+    return new OEmbedLinkPreviewResolver(
+        LinkPreviewPluginProviders.oEmbedProviders(installedPlugins));
+  }
+
+  private static InstalledPluginsPort resolveInstalledPlugins(
+      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
+    return installedPluginsProvider == null ? null : installedPluginsProvider.getIfAvailable();
   }
 
   @Bean
   @Order(13)
-  LinkPreviewResolver newsLinkPreviewResolver() {
-    return new NewsLinkPreviewResolver(DEFAULT_MAX_HTML_BYTES);
+  LinkPreviewResolver newsLinkPreviewResolver(
+      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
+    return newsLinkPreviewResolver(resolveInstalledPlugins(installedPluginsProvider));
+  }
+
+  static LinkPreviewResolver newsLinkPreviewResolver(InstalledPluginsPort installedPlugins) {
+    return new NewsLinkPreviewResolver(
+        DEFAULT_MAX_HTML_BYTES, LinkPreviewPluginProviders.newsPublisherProfiles(installedPlugins));
   }
 
   @Bean

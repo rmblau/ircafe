@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cafe.woden.ircclient.config.RuntimeConfigServerTreeAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.config.api.ServerTreeRuntimeConfigPort;
@@ -36,7 +37,8 @@ class ServerTreeDockableApplicationRootVisibilityTest {
     onEdt(
         () -> {
           try {
-            ServerTreeDockable dockable = newDockable(runtimeConfig);
+            ServerTreeDockable dockable =
+                newDockable(new RuntimeConfigServerTreeAdapter(runtimeConfig));
 
             assertFalse(dockable.isApplicationRootVisible());
 

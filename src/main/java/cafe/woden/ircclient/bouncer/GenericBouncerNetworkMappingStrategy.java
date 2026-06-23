@@ -1,8 +1,11 @@
 package cafe.woden.ircclient.bouncer;
 
-import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
+import cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy;
+import cafe.woden.ircclient.bouncer.spi.BouncerServerProfile;
+import cafe.woden.ircclient.bouncer.spi.BuiltInBouncerBackendIds;
+import cafe.woden.ircclient.bouncer.spi.ResolvedBouncerNetwork;
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -15,7 +18,7 @@ import org.springframework.stereotype.Component;
 @ApplicationLayer
 public class GenericBouncerNetworkMappingStrategy implements BouncerNetworkMappingStrategy {
 
-  public static final String BACKEND_ID = "generic";
+  public static final String BACKEND_ID = BuiltInBouncerBackendIds.GENERIC;
   public static final String DEFAULT_LOGIN_TEMPLATE = "{base}/{network}";
   public static final String EPHEMERAL_ID_PREFIX = "bouncer:";
   public static final String NETWORKS_GROUP_LABEL = "Bouncer Networks";
@@ -49,7 +52,7 @@ public class GenericBouncerNetworkMappingStrategy implements BouncerNetworkMappi
 
   @Override
   public ResolvedBouncerNetwork resolveNetwork(
-      IrcProperties.Server bouncer, BouncerDiscoveredNetwork network) {
+      BouncerServerProfile bouncer, BouncerDiscoveredNetwork network) {
     String originId = requireNonBlank(network.originServerId(), "originServerId");
     String networkId = sanitizeKey(requireNonBlank(network.networkId(), "networkId"));
 
@@ -99,50 +102,13 @@ public class GenericBouncerNetworkMappingStrategy implements BouncerNetworkMappi
   }
 
   @Override
-  public IrcProperties.Server buildEphemeralServer(
-      IrcProperties.Server bouncer,
-      ResolvedBouncerNetwork resolved,
-      List<String> autoJoinChannels) {
-    IrcProperties.Server.Sasl sasl = bouncer.sasl();
-
-    IrcProperties.Server.Sasl updatedSasl =
-        new IrcProperties.Server.Sasl(
-            sasl.enabled(),
-            resolved.loginUser(),
-            sasl.password(),
-            sasl.mechanism(),
-            sasl.disconnectOnFailure());
-
-    return new IrcProperties.Server(
-        resolved.serverId(),
-        bouncer.host(),
-        bouncer.port(),
-        bouncer.tls(),
-        bouncer.serverPassword(),
-        bouncer.nick(),
-        resolved.loginUser(),
-        bouncer.realName(),
-        updatedSasl,
-        bouncer.nickserv(),
-        autoJoinChannels == null ? List.of() : List.copyOf(autoJoinChannels),
-        List.of(),
-        bouncer.proxy(),
-        bouncer.backend());
-  }
-
-  @Override
   public String networkDebugId(BouncerDiscoveredNetwork network) {
     return "networkId=" + network.networkId();
   }
 
-  private static String pickBaseLoginUser(IrcProperties.Server bouncerServer) {
+  private static String pickBaseLoginUser(BouncerServerProfile bouncerServer) {
     if (bouncerServer == null) return null;
-    String saslUser = null;
-    if (bouncerServer.sasl() != null) {
-      saslUser = normalize(bouncerServer.sasl().username());
-    }
-    String login = normalize(bouncerServer.login());
-    return saslUser != null ? saslUser : login;
+    return bouncerServer.preferredLoginUser();
   }
 
   private static String sanitizeLoginSegment(String value) {

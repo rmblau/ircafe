@@ -3,12 +3,13 @@ package cafe.woden.ircclient.app.commands;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutionContext;
+import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor;
+import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandRequest;
+import cafe.woden.ircclient.app.commands.spi.SlashCommandTargetView;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
-import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
-import io.reactivex.rxjava3.core.Completable;
-import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -25,17 +26,21 @@ import org.junit.jupiter.api.io.TempDir;
 
 class BackendNamedCommandExecutorCatalogTest {
 
+  private static final String SPI_PLUGIN_EXECUTOR_CLASS =
+      "plugin.commands.PluginSpiBackendNamedCommandExecutor";
+
   private static final BackendNamedCommandExecutionContext TEST_CONTEXT =
       new BackendNamedCommandExecutionContext() {
-        private final TargetRef statusTarget = new TargetRef("test", "status");
+        private final SlashCommandTargetView statusTarget =
+            new SlashCommandTargetView("test", "status");
 
         @Override
-        public TargetRef activeTarget() {
+        public SlashCommandTargetView activeTarget() {
           return null;
         }
 
         @Override
-        public TargetRef safeStatusTarget() {
+        public SlashCommandTargetView safeStatusTarget() {
           return statusTarget;
         }
 
@@ -45,21 +50,19 @@ class BackendNamedCommandExecutorCatalogTest {
         }
 
         @Override
-        public void appendStatus(TargetRef target, String prefix, String message) {}
+        public void appendStatus(SlashCommandTargetView target, String prefix, String message) {}
 
         @Override
-        public void appendError(TargetRef target, String prefix, String message) {}
+        public void appendError(SlashCommandTargetView target, String prefix, String message) {}
 
         @Override
-        public void ensureTargetExists(TargetRef target) {}
+        public void ensureTargetExists(SlashCommandTargetView target) {}
 
         @Override
-        public void selectTarget(TargetRef target) {}
+        public void selectTarget(SlashCommandTargetView target) {}
 
         @Override
-        public Completable sendRaw(String serverId, String line) {
-          return Completable.complete();
-        }
+        public void sendRaw(String serverId, String line) {}
       };
 
   @TempDir Path tempDir;
@@ -70,13 +73,10 @@ class BackendNamedCommandExecutorCatalogTest {
         new BackendNamedCommandExecutorCatalog(
             new FakeInstalledPluginsPort(List.of(new PluginProvidedBackendNamedCommandExecutor())),
             List.of());
-    CompositeDisposable disposables = new CompositeDisposable();
     try {
       assertTrue(
-          catalog.handle(
-              TEST_CONTEXT, disposables, new ParsedInput.BackendNamed("backendexec", "hello")));
+          catalog.handle(TEST_CONTEXT, new ParsedInput.BackendNamed("backendexec", "hello")));
     } finally {
-      disposables.dispose();
       catalog.shutdown();
     }
   }
@@ -89,13 +89,31 @@ class BackendNamedCommandExecutorCatalogTest {
     BackendNamedCommandExecutorCatalog catalog =
         BackendNamedCommandExecutorCatalog.installed(
             pluginDir, BackendNamedCommandExecutorCatalogTest.class.getClassLoader());
-    CompositeDisposable disposables = new CompositeDisposable();
     try {
       assertTrue(
-          catalog.handle(
-              TEST_CONTEXT, disposables, new ParsedInput.BackendNamed("backendexec", "hello")));
+          catalog.handle(TEST_CONTEXT, new ParsedInput.BackendNamed("backendexec", "hello")));
     } finally {
-      disposables.dispose();
+      catalog.shutdown();
+    }
+  }
+
+  @Test
+  void loadsExecutionProviderSpiFromPluginDirectoryJar() throws Exception {
+    Path pluginDir = Files.createDirectories(tempDir.resolve("plugins"));
+    CompiledPluginJarSupport.writePluginJar(
+        pluginDir.resolve("backendexec-spi.jar"),
+        SPI_PLUGIN_EXECUTOR_CLASS,
+        pluginSpiExecutorSource(),
+        cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor.class.getName(),
+        CompiledPluginJarSupport.compatibleManifest("backend-named-executor-spi-test", "1.0.0"));
+
+    BackendNamedCommandExecutorCatalog catalog =
+        BackendNamedCommandExecutorCatalog.installed(
+            pluginDir, BackendNamedCommandExecutorCatalogTest.class.getClassLoader());
+    try {
+      assertTrue(
+          catalog.handle(TEST_CONTEXT, new ParsedInput.BackendNamed("backendexec", "hello")));
+    } finally {
       catalog.shutdown();
     }
   }
@@ -110,13 +128,10 @@ class BackendNamedCommandExecutorCatalogTest {
 
     BackendNamedCommandExecutorCatalog catalog =
         new BackendNamedCommandExecutorCatalog(runtimeConfigPathPort, List.of());
-    CompositeDisposable disposables = new CompositeDisposable();
     try {
       assertTrue(
-          catalog.handle(
-              TEST_CONTEXT, disposables, new ParsedInput.BackendNamed("backendexec", "hello")));
+          catalog.handle(TEST_CONTEXT, new ParsedInput.BackendNamed("backendexec", "hello")));
     } finally {
-      disposables.dispose();
       catalog.shutdown();
     }
   }
@@ -132,9 +147,7 @@ class BackendNamedCommandExecutorCatalogTest {
 
           @Override
           public boolean handle(
-              BackendNamedCommandExecutionContext context,
-              io.reactivex.rxjava3.disposables.CompositeDisposable disposables,
-              ParsedInput.BackendNamed command) {
+              BackendNamedCommandExecutionContext context, BackendNamedCommandRequest command) {
             return false;
           }
         };
@@ -147,9 +160,7 @@ class BackendNamedCommandExecutorCatalogTest {
 
           @Override
           public boolean handle(
-              BackendNamedCommandExecutionContext context,
-              io.reactivex.rxjava3.disposables.CompositeDisposable disposables,
-              ParsedInput.BackendNamed command) {
+              BackendNamedCommandExecutionContext context, BackendNamedCommandRequest command) {
             return false;
           }
         };
@@ -176,6 +187,32 @@ class BackendNamedCommandExecutorCatalogTest {
               .getBytes(StandardCharsets.UTF_8));
       out.closeEntry();
     }
+  }
+
+  private static String pluginSpiExecutorSource() {
+    return """
+        package plugin.commands;
+
+        import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutionContext;
+        import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor;
+        import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandRequest;
+        import java.util.Set;
+
+        public final class PluginSpiBackendNamedCommandExecutor
+            implements BackendNamedCommandExecutor {
+          @Override
+          public Set<String> handledCommandNames() {
+            return Set.of("backendexec");
+          }
+
+          @Override
+          public boolean handle(
+              BackendNamedCommandExecutionContext context,
+              BackendNamedCommandRequest command) {
+            return command != null && "backendexec".equals(command.command());
+          }
+        }
+        """;
   }
 
   private static final class FakeInstalledPluginsPort implements InstalledPluginsPort {
@@ -208,9 +245,7 @@ class BackendNamedCommandExecutorCatalogTest {
 
     @Override
     public boolean handle(
-        BackendNamedCommandExecutionContext context,
-        CompositeDisposable disposables,
-        ParsedInput.BackendNamed command) {
+        BackendNamedCommandExecutionContext context, BackendNamedCommandRequest command) {
       return command != null && "backendexec".equals(command.command());
     }
   }

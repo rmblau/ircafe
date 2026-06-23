@@ -1,10 +1,11 @@
 package cafe.woden.ircclient.ui.settings.translation;
 
-import cafe.woden.ircclient.app.translation.MessageTranslationLanguage;
 import cafe.woden.ircclient.app.translation.MessageTranslationLanguageCatalog;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguage;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
@@ -52,6 +53,13 @@ public final class TranslationControlsSupport {
 
   public static TranslationControls buildControls(
       IrcProperties.Client.Translation settings, List<AutoCloseable> closeables) {
+    return buildControls(settings, closeables, null);
+  }
+
+  public static TranslationControls buildControls(
+      IrcProperties.Client.Translation settings,
+      List<AutoCloseable> closeables,
+      InstalledPluginsPort installedPlugins) {
     IrcProperties.Client.Translation effective = fallback(settings);
     TranslationServiceChoice initialChoice =
         TranslationServiceChoice.fromBackendId(effective.backendId());
@@ -89,7 +97,8 @@ public final class TranslationControlsSupport {
     JCheckBox detectAllLanguages =
         new JCheckBox(MESSAGES.text("preferences.translation.detectAllLanguages"));
     detectAllLanguages.setSelected(effective.detectAllLanguages());
-    List<MessageTranslationLanguage> catalog = MessageTranslationLanguageCatalog.commonTargets();
+    List<MessageTranslationLanguage> catalog =
+        MessageTranslationLanguageCatalog.commonTargets(installedPlugins);
     DefaultListModel<MessageTranslationLanguage> enabledDetectionLanguageModel =
         languageModel(enabledDetectionLanguages(effective, catalog));
     DefaultListModel<MessageTranslationLanguage> disabledDetectionLanguageModel =

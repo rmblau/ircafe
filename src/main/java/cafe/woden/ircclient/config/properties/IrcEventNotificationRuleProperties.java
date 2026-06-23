@@ -31,7 +31,6 @@ public record IrcEventNotificationRuleProperties(
     String ctcpCommandPattern,
     CtcpMatchMode ctcpValueMode,
     String ctcpValuePattern,
-    SourceFilter sourceFilter,
     String channelWhitelist,
     String channelBlacklist) {
 
@@ -96,26 +95,12 @@ public record IrcEventNotificationRuleProperties(
     REGEX
   }
 
-  /** Legacy source mode field kept for runtime-config backward compatibility. */
-  @Deprecated
-  public enum SourceFilter {
-    ANY,
-    SELF,
-    OTHERS
-  }
-
   public IrcEventNotificationRuleProperties {
     if (enabled == null) enabled = false;
     if (eventType == null) eventType = EventType.INVITE_RECEIVED;
 
     if (sourceMode == null) {
-      if (sourceFilter == SourceFilter.SELF) {
-        sourceMode = SourceMode.SELF;
-      } else if (sourceFilter == SourceFilter.OTHERS) {
-        sourceMode = SourceMode.OTHERS;
-      } else {
-        sourceMode = SourceMode.ANY;
-      }
+      sourceMode = SourceMode.ANY;
     }
     sourcePattern = trimToNull(sourcePattern);
     if (sourceMode == SourceMode.ANY
@@ -195,7 +180,6 @@ public record IrcEventNotificationRuleProperties(
       ctcpValuePattern = null;
     }
 
-    sourceFilter = sourceFilter != null ? sourceFilter : SourceFilter.ANY;
     channelWhitelist = includeLegacy;
     channelBlacklist = excludeLegacy;
   }
@@ -228,7 +212,6 @@ public record IrcEventNotificationRuleProperties(
               null,
               CtcpMatchMode.ANY,
               null,
-              SourceFilter.ANY,
               null,
               null));
     }
@@ -258,7 +241,6 @@ public record IrcEventNotificationRuleProperties(
               null,
               CtcpMatchMode.ANY,
               null,
-              SourceFilter.ANY,
               null,
               null));
     }

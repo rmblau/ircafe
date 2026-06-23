@@ -3,13 +3,26 @@ package cafe.woden.ircclient.app.translation;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cafe.woden.ircclient.app.translation.builtins.CommonMessageTranslationLanguageProvider;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguage;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
+import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
+import cafe.woden.ircclient.util.CompiledPluginJarSupport;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class MessageTranslationLanguageCatalogTest {
+
+  private static final String SPI_PROVIDER_CLASS = "plugin.translation.PluginLanguageProvider";
+
+  @TempDir Path tempDir;
 
   @Test
   void includesLanguagesLoadedThroughInstalledPluginPort() {
@@ -68,6 +81,62 @@ class MessageTranslationLanguageCatalogTest {
             .orElseThrow();
 
     assertEquals("English", english.label());
+  }
+
+  @Test
+  void loadsServiceLoaderTranslationLanguageProvidersFromInstalledPlugins() throws Exception {
+    Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
+    Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
+    CompiledPluginJarSupport.writePluginJar(
+        pluginDir.resolve("example-translation-language-provider.jar"),
+        SPI_PROVIDER_CLASS,
+        pluginLanguageProviderSource(),
+        cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider.class.getName(),
+        CompiledPluginJarSupport.compatibleManifest(
+            "example-translation-language-provider", "1.0.0"));
+    RuntimeConfigPathPort runtimeConfigPathPort =
+        () -> runtimeConfigDirectory.resolve("ircafe.yml");
+
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+    List<MessageTranslationLanguage> languages =
+        MessageTranslationLanguageCatalog.commonTargets(installedPlugins);
+
+    assertTrue(installedPlugins.pluginProblems().isEmpty());
+    assertTrue(
+        languages.stream()
+            .anyMatch(
+                language -> language.code().equals("tlh") && language.label().equals("Klingon")));
+  }
+
+  @Test
+  void loadsCommonLanguageProviderThroughClasspathServiceLoader() {
+    RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+
+    List<MessageTranslationLanguageProvider> providers =
+        MessageTranslationPluginProviders.languageProviders(List.of(), installedPlugins);
+
+    assertTrue(installedPlugins.pluginProblems().isEmpty());
+    assertTrue(
+        providers.stream()
+            .anyMatch(provider -> provider instanceof CommonMessageTranslationLanguageProvider));
+  }
+
+  private static String pluginLanguageProviderSource() {
+    return """
+        package plugin.translation;
+
+        import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguage;
+        import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider;
+        import java.util.List;
+
+        public final class PluginLanguageProvider implements MessageTranslationLanguageProvider {
+          @Override
+          public List<MessageTranslationLanguage> languages() {
+            return List.of(new MessageTranslationLanguage("tlh", "Klingon"));
+          }
+        }
+        """;
   }
 
   private record RecordingInstalledPluginsPort(List<MessageTranslationLanguage> pluginLanguages)

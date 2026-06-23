@@ -1,15 +1,21 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreview;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
+import com.google.auto.service.AutoService;
 import java.io.ByteArrayInputStream;
 import java.net.URI;
 
 /** Best-effort resolver for Slashdot story pages with a longer excerpt than OG/meta provides. */
-final class SlashdotLinkPreviewResolver implements LinkPreviewResolver {
+@AutoService(LinkPreviewResolver.class)
+public final class SlashdotLinkPreviewResolver implements LinkPreviewResolver {
 
   private static final int MAX_HTML_BYTES = 1024 * 1024; // 1 MiB
 
   @Override
-  public LinkPreview tryResolve(URI uri, String originalUrl, PreviewHttp http) throws Exception {
+  public LinkPreview tryResolve(URI uri, String originalUrl, LinkPreviewHttp http)
+      throws Exception {
     if (!SlashdotPreviewUtil.isSlashdotStoryUri(uri)) return null;
 
     var resp =

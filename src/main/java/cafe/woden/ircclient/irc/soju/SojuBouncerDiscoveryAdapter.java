@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.irc.soju;
 
-import cafe.woden.ircclient.bouncer.BouncerDiscoveredNetwork;
+import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
+import cafe.woden.ircclient.bouncer.spi.BuiltInBouncerBackendIds;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -19,35 +20,17 @@ public class SojuBouncerDiscoveryAdapter {
     if (parsed.attrs() != null) {
       attrs.putAll(parsed.attrs());
     }
-    attrs.put("source", SojuBouncerNetworkMappingStrategy.BACKEND_ID);
+    attrs.put("source", BuiltInBouncerBackendIds.SOJU);
 
     String name = Objects.toString(parsed.name(), "").trim();
     if (name.isEmpty()) name = "net-" + parsed.netId();
 
     return new BouncerDiscoveredNetwork(
-        SojuBouncerNetworkMappingStrategy.BACKEND_ID,
+        BuiltInBouncerBackendIds.SOJU,
         originServerId,
         parsed.netId(),
         name,
         name,
-        loginUserHint(attrs),
-        capabilityFlags(attrs),
-        Map.copyOf(attrs));
-  }
-
-  public BouncerDiscoveredNetwork fromSojuNetwork(SojuNetwork network) {
-    if (network == null) return null;
-    HashMap<String, String> attrs = new HashMap<>();
-    if (network.attrs() != null) {
-      attrs.putAll(network.attrs());
-    }
-    attrs.put("source", SojuBouncerNetworkMappingStrategy.BACKEND_ID);
-    return new BouncerDiscoveredNetwork(
-        SojuBouncerNetworkMappingStrategy.BACKEND_ID,
-        network.bouncerServerId(),
-        network.netId(),
-        network.name(),
-        network.name(),
         loginUserHint(attrs),
         capabilityFlags(attrs),
         Map.copyOf(attrs));

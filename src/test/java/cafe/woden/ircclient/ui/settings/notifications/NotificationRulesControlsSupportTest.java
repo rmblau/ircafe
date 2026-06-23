@@ -7,8 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.NotificationRule;
+import cafe.woden.ircclient.config.api.NotificationRuntimeConfigPort;
 import java.util.List;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
@@ -37,7 +37,7 @@ class NotificationRulesControlsSupportTest {
 
   @Test
   void rememberSettingsPersistsCooldownAndRules() {
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    NotificationRuntimeConfigPort runtimeConfig = mock(NotificationRuntimeConfigPort.class);
     NotificationRule rule =
         new NotificationRule("hello", NotificationRule.Type.WORD, "hello", true, false, true, null);
     NotificationRulesControlsSupport.NotificationSettings settings =

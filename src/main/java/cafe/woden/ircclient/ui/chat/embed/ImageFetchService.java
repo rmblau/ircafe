@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.net.HttpLite;
 import cafe.woden.ircclient.net.ProxyPlan;
 import cafe.woden.ircclient.net.ServerProxyResolver;
@@ -12,6 +13,7 @@ import java.lang.ref.SoftReference;
 import java.net.Proxy;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -20,6 +22,8 @@ import java.util.concurrent.ConcurrentMap;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -41,9 +45,23 @@ public class ImageFetchService {
   private final ConcurrentMap<String, Single<byte[]>> inflight = new ConcurrentHashMap<>();
 
   private final ServerProxyResolver proxyResolver;
+  private final List<cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider>
+      headerProviders;
 
   public ImageFetchService(ServerProxyResolver proxyResolver) {
+    this(proxyResolver, (InstalledPluginsPort) null);
+  }
+
+  @Autowired
+  public ImageFetchService(
+      ServerProxyResolver proxyResolver,
+      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
+    this(proxyResolver, resolveInstalledPlugins(installedPluginsProvider));
+  }
+
+  ImageFetchService(ServerProxyResolver proxyResolver, InstalledPluginsPort installedPlugins) {
     this.proxyResolver = proxyResolver;
+    this.headerProviders = loadHeaderProviders(installedPlugins);
   }
 
   public Single<byte[]> fetch(String serverId, String url) {
@@ -132,32 +150,7 @@ public class ImageFetchService {
 
     // Use HttpURLConnection (via HttpLite) so SOCKS proxies work.
     // java.net.http.HttpClient does not support SOCKS proxies.
-    Map<String, String> headers = new HashMap<>();
-    headers.put(
-        PreviewHttp.HEADER_USER_AGENT,
-        needsInstagramReferer(uri) ? PreviewHttp.BROWSER_USER_AGENT : PreviewHttp.USER_AGENT);
-    headers.put(PreviewHttp.HEADER_ACCEPT_LANGUAGE, PreviewHttp.ACCEPT_LANGUAGE);
-    headers.put(PreviewHttp.HEADER_ACCEPT_ENCODING, "gzip");
-    // IMPORTANT: Do NOT advertise AVIF by default.
-    // Some CDNs will pick AVIF whenever it's present in Accept (ignoring q=), and ImageIO
-    // can't decode it without a native/plugin decoder. If you later add AVIF support,
-    // you can add image/avif back into this header.
-    headers.put(
-        PreviewHttp.HEADER_ACCEPT,
-        "image/jpeg,image/png,image/webp,image/gif,image/*;q=0.5,*/*;q=0.4");
-    // Some CDNs are picky; these headers help us look like a browser fetching an image.
-    headers.put("Sec-Fetch-Dest", "image");
-    headers.put("Sec-Fetch-Mode", "no-cors");
-
-    // Some IMDb/Amazon image endpoints can be picky without a referer.
-    if (needsImdbReferer(uri)) {
-      headers.put(PreviewHttp.HEADER_REFERER, "https://www.imdb.com/");
-    }
-
-    // Instagram CDN endpoints can return bot-check HTML without a referer.
-    if (!headers.containsKey(PreviewHttp.HEADER_REFERER) && needsInstagramReferer(uri)) {
-      headers.put(PreviewHttp.HEADER_REFERER, "https://www.instagram.com/");
-    }
+    Map<String, String> headers = headersForEmbedProviders(uri, headerProviders);
 
     ProxyPlan plan =
         (proxyResolver != null) ? proxyResolver.planForServer(serverId) : ProxyPlan.direct();
@@ -268,6 +261,52 @@ public class ImageFetchService {
 
       return bytes;
     }
+  }
+
+  static Map<String, String> headersForEmbedProviders(
+      URI uri,
+      List<? extends cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider>
+          headerProviders) {
+    Map<String, String> headers = new HashMap<>();
+    headers.put(
+        PreviewHttp.HEADER_USER_AGENT,
+        needsInstagramReferer(uri) ? PreviewHttp.BROWSER_USER_AGENT : PreviewHttp.USER_AGENT);
+    headers.put(PreviewHttp.HEADER_ACCEPT_LANGUAGE, PreviewHttp.ACCEPT_LANGUAGE);
+    headers.put(PreviewHttp.HEADER_ACCEPT_ENCODING, "gzip");
+    // IMPORTANT: Do NOT advertise AVIF by default.
+    // Some CDNs will pick AVIF whenever it's present in Accept (ignoring q=), and ImageIO
+    // can't decode it without a native/plugin decoder. If you later add AVIF support,
+    // you can add image/avif back into this header.
+    headers.put(
+        PreviewHttp.HEADER_ACCEPT,
+        "image/jpeg,image/png,image/webp,image/gif,image/*;q=0.5,*/*;q=0.4");
+    // Some CDNs are picky; these headers help us look like a browser fetching an image.
+    headers.put("Sec-Fetch-Dest", "image");
+    headers.put("Sec-Fetch-Mode", "no-cors");
+
+    // Some IMDb/Amazon image endpoints can be picky without a referer.
+    if (needsImdbReferer(uri)) {
+      headers.put(PreviewHttp.HEADER_REFERER, "https://www.imdb.com/");
+    }
+
+    // Instagram CDN endpoints can return bot-check HTML without a referer.
+    if (!headers.containsKey(PreviewHttp.HEADER_REFERER) && needsInstagramReferer(uri)) {
+      headers.put(PreviewHttp.HEADER_REFERER, "https://www.instagram.com/");
+    }
+
+    EmbedHttpHeaderProviders.applyProviderHeaders(
+        headers, uri, headerProviders, log, "Embed HTTP header provider");
+    return Map.copyOf(headers);
+  }
+
+  private static List<cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider>
+      loadHeaderProviders(InstalledPluginsPort installedPlugins) {
+    return EmbedHttpHeaderProviders.loadInstalledProviders(installedPlugins);
+  }
+
+  private static InstalledPluginsPort resolveInstalledPlugins(
+      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
+    return installedPluginsProvider == null ? null : installedPluginsProvider.getIfAvailable();
   }
 
   private static String maybeSizedAmazonUrl(String url, int widthPx) {

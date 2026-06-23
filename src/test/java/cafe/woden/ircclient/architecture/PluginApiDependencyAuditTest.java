@@ -1,0 +1,87 @@
+package cafe.woden.ircclient.architecture;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
+import org.junit.jupiter.api.Test;
+
+class PluginApiDependencyAuditTest {
+
+  private static final Pattern IMPORT_PATTERN =
+      Pattern.compile("(?m)^\\s*import\\s+(?:static\\s+)?([\\w.]+)\\s*;");
+
+  private static final Set<String> APPROVED_PLUGIN_API_BLOCKERS = Set.of();
+
+  @Test
+  void spiPluginApiBlockersStayIntentional() throws IOException {
+    Set<String> actualBlockers = scanBlockingDependencies();
+
+    Set<String> added = new TreeSet<>(actualBlockers);
+    added.removeAll(APPROVED_PLUGIN_API_BLOCKERS);
+
+    Set<String> removed = new TreeSet<>(APPROVED_PLUGIN_API_BLOCKERS);
+    removed.removeAll(actualBlockers);
+
+    assertTrue(
+        added.isEmpty() && removed.isEmpty(),
+        () ->
+            "SPI plugin API dependency audit changed. "
+                + "Update the baseline only when the change is intentional.\n"
+                + "Added blockers:\n"
+                + formatLines(added)
+                + "\nRemoved blockers:\n"
+                + formatLines(removed));
+  }
+
+  private static Set<String> scanBlockingDependencies() throws IOException {
+    Set<String> blockers = new TreeSet<>();
+
+    for (Path sourceRoot :
+        List.of(Path.of("src/main/java"), Path.of("ircafe-plugin-api/src/main/java"))) {
+      if (!Files.exists(sourceRoot)) {
+        continue;
+      }
+      try (Stream<Path> files = Files.walk(sourceRoot)) {
+        for (Path file :
+            files.filter(PluginApiDependencyAuditTest::isSpiJavaSource).sorted().toList()) {
+          Matcher matcher = IMPORT_PATTERN.matcher(Files.readString(file));
+          while (matcher.find()) {
+            String dependency = matcher.group(1);
+            if (!isPluginApiPortable(dependency)) {
+              blockers.add(file + " -> " + dependency);
+            }
+          }
+        }
+      }
+    }
+
+    return blockers;
+  }
+
+  private static boolean isSpiJavaSource(Path path) {
+    String normalized = path.toString().replace('\\', '/');
+    return (normalized.startsWith("src/main/java/")
+            || normalized.startsWith("ircafe-plugin-api/src/main/java/"))
+        && normalized.contains("/spi/")
+        && !normalized.endsWith("/package-info.java")
+        && normalized.endsWith(".java");
+  }
+
+  private static boolean isPluginApiPortable(String dependency) {
+    return dependency.startsWith("java.")
+        || dependency.startsWith("javax.annotation.")
+        || (dependency.startsWith("cafe.woden.ircclient.") && dependency.contains(".spi."));
+  }
+
+  private static String formatLines(Set<String> lines) {
+    return lines.isEmpty() ? "  <none>" : "  " + String.join("\n  ", lines);
+  }
+}

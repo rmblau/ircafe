@@ -10,6 +10,9 @@ import cafe.woden.ircclient.app.api.ChannelMetadataPort;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
+import cafe.woden.ircclient.config.RuntimeConfigDiagnosticsAdapter;
+import cafe.woden.ircclient.config.RuntimeConfigMonitorRosterAdapter;
+import cafe.woden.ircclient.config.RuntimeConfigServerTreeAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.config.properties.LogProperties;
@@ -118,7 +121,8 @@ class ChannelListLoggingDecoratorFunctionalTest {
     IrcProperties props = IrcPropertiesTestFixtures.properties(server("libera"));
     RuntimeConfigStore runtimeConfig =
         RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"), props);
-    ServerRegistry serverRegistry = new ServerRegistry(props, runtimeConfig);
+    ServerRegistry serverRegistry =
+        new ServerRegistry(props, RuntimeConfigStoreTestFixtures.serverRegistryPort(runtimeConfig));
     ServerCatalog serverCatalog = new ServerCatalog(serverRegistry, new EphemeralServerRegistry());
     LogProperties logProps =
         new LogProperties(true, true, false, true, true, true, 0, null, null, null);
@@ -132,7 +136,7 @@ class ChannelListLoggingDecoratorFunctionalTest {
             () ->
                 FunctionalTestWiringSupport.newServerTreeDockable(
                     serverCatalog,
-                    runtimeConfig,
+                    new RuntimeConfigServerTreeAdapter(runtimeConfig),
                     logProps,
                     null,
                     null,
@@ -161,7 +165,8 @@ class ChannelListLoggingDecoratorFunctionalTest {
     IgnoreListService ignoreListService = mock(IgnoreListService.class);
     IgnoreStatusService ignoreStatusService = mock(IgnoreStatusService.class);
     IgnoreListDialog ignoreListDialog = mock(IgnoreListDialog.class);
-    MonitorListService monitorListService = new MonitorListService(runtimeConfig);
+    MonitorListService monitorListService =
+        new MonitorListService(new RuntimeConfigMonitorRosterAdapter(runtimeConfig));
     UserListStore userListStore = mock(UserListStore.class);
     when(userListStore.get(anyString(), anyString())).thenReturn(List.of());
     NickContextMenuFactory nickContextMenuFactory = new NickContextMenuFactory();
@@ -173,7 +178,8 @@ class ChannelListLoggingDecoratorFunctionalTest {
     TerminalDockable terminalDockable = new TerminalDockable(mock(ConsoleTeeService.class));
     ApplicationDiagnosticsService applicationDiagnosticsService =
         mock(ApplicationDiagnosticsService.class);
-    JfrRuntimeEventsService jfrRuntimeEventsService = new JfrRuntimeEventsService(runtimeConfig);
+    JfrRuntimeEventsService jfrRuntimeEventsService =
+        new JfrRuntimeEventsService(new RuntimeConfigDiagnosticsAdapter(runtimeConfig));
     SpringRuntimeEventsService springRuntimeEventsService = new SpringRuntimeEventsService();
     UiSettingsBus settingsBus = mock(UiSettingsBus.class);
     when(settingsBus.get()).thenReturn(null);

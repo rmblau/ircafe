@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ignore;
 
 import static cafe.woden.ircclient.config.IrcPropertiesTestFixtures.server;
+import static cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures.ignoreRulesPort;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
@@ -76,6 +77,7 @@ class IgnoreListServiceConcurrencyTest {
   private static IgnoreListService newService(Path configPath) {
     var runtimeConfig =
         RuntimeConfigStoreTestFixtures.storeWithServers(configPath, server("libera"));
-    return new IgnoreListService(new IgnoreProperties(true, false, Map.of()), runtimeConfig);
+    return new IgnoreListService(
+        new IgnoreProperties(true, false, Map.of()), ignoreRulesPort(runtimeConfig));
   }
 }

@@ -153,30 +153,6 @@ public class ConnectionCoordinator {
     updateConnectionUi();
   }
 
-  @Deprecated(forRemoval = false)
-  public ConnectionCoordinator(
-      IrcConnectionLifecyclePort irc,
-      cafe.woden.ircclient.irc.backend.IrcBackendClientService ircClientService,
-      UiPort ui,
-      ServerRegistry serverRegistry,
-      ServerCatalog serverCatalog,
-      ConnectionRuntimeConfigPort runtimeConfig,
-      LogProperties logProps,
-      TrayNotificationsPort trayNotificationService) {
-    this(
-        irc,
-        ircClientService,
-        ircClientService,
-        ui,
-        serverRegistry,
-        serverCatalog,
-        runtimeConfig,
-        logProps,
-        trayNotificationService,
-        null,
-        BackendAvailabilityReasonFormatter.builtInsBackendMetadata());
-  }
-
   @PreDestroy
   void shutdown() {
     disposables.dispose();

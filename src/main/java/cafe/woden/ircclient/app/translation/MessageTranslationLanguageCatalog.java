@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.app.translation;
 
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguage;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import java.util.LinkedHashMap;
@@ -14,44 +16,11 @@ import java.util.stream.Collectors;
 public final class MessageTranslationLanguageCatalog {
   private MessageTranslationLanguageCatalog() {}
 
-  private static final List<MessageTranslationLanguage> COMMON_TARGETS =
-      List.of(
-          new MessageTranslationLanguage("ar", "Arabic"),
-          new MessageTranslationLanguage("bg", "Bulgarian"),
-          new MessageTranslationLanguage("cs", "Czech"),
-          new MessageTranslationLanguage("da", "Danish"),
-          new MessageTranslationLanguage("de", "German"),
-          new MessageTranslationLanguage("el", "Greek"),
-          new MessageTranslationLanguage("en", "English"),
-          new MessageTranslationLanguage("es", "Spanish"),
-          new MessageTranslationLanguage("et", "Estonian"),
-          new MessageTranslationLanguage("fi", "Finnish"),
-          new MessageTranslationLanguage("fr", "French"),
-          new MessageTranslationLanguage("he", "Hebrew"),
-          new MessageTranslationLanguage("hi", "Hindi"),
-          new MessageTranslationLanguage("hu", "Hungarian"),
-          new MessageTranslationLanguage("id", "Indonesian"),
-          new MessageTranslationLanguage("it", "Italian"),
-          new MessageTranslationLanguage("ja", "Japanese"),
-          new MessageTranslationLanguage("ko", "Korean"),
-          new MessageTranslationLanguage("lt", "Lithuanian"),
-          new MessageTranslationLanguage("lv", "Latvian"),
-          new MessageTranslationLanguage("nl", "Dutch"),
-          new MessageTranslationLanguage("pl", "Polish"),
-          new MessageTranslationLanguage("pt", "Portuguese"),
-          new MessageTranslationLanguage("ro", "Romanian"),
-          new MessageTranslationLanguage("ru", "Russian"),
-          new MessageTranslationLanguage("sk", "Slovak"),
-          new MessageTranslationLanguage("sl", "Slovenian"),
-          new MessageTranslationLanguage("sv", "Swedish"),
-          new MessageTranslationLanguage("th", "Thai"),
-          new MessageTranslationLanguage("tr", "Turkish"),
-          new MessageTranslationLanguage("uk", "Ukrainian"),
-          new MessageTranslationLanguage("vi", "Vietnamese"),
-          new MessageTranslationLanguage("zh", "Chinese"));
-
   private static final List<MessageTranslationLanguageProvider> BUILT_IN_PROVIDERS =
-      List.of(() -> COMMON_TARGETS);
+      MessageTranslationPluginProviders.builtInLanguageProviders();
+
+  private static final List<MessageTranslationLanguage> COMMON_TARGETS =
+      mergeLanguages(BUILT_IN_PROVIDERS);
 
   public static List<MessageTranslationLanguage> commonTargets() {
     return COMMON_TARGETS;
@@ -63,8 +32,7 @@ public final class MessageTranslationLanguageCatalog {
       return COMMON_TARGETS;
     }
     return mergeLanguages(
-        installedPlugins.loadInstalledServices(
-            MessageTranslationLanguageProvider.class, BUILT_IN_PROVIDERS));
+        MessageTranslationPluginProviders.languageProviders(BUILT_IN_PROVIDERS, installedPlugins));
   }
 
   public static List<MessageTranslationLanguage> availableTargets(
@@ -94,9 +62,9 @@ public final class MessageTranslationLanguageCatalog {
   }
 
   private static List<MessageTranslationLanguage> mergeLanguages(
-      List<MessageTranslationLanguageProvider> providers) {
+      List<? extends MessageTranslationLanguageProvider> providers) {
     Map<String, MessageTranslationLanguage> byCode = new LinkedHashMap<>();
-    List<MessageTranslationLanguageProvider> safeProviders =
+    List<? extends MessageTranslationLanguageProvider> safeProviders =
         providers == null ? List.of() : providers;
     for (MessageTranslationLanguageProvider provider : safeProviders) {
       if (provider == null) {

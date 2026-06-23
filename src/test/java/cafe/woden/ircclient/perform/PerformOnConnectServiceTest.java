@@ -11,6 +11,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.app.api.AvailableBackendIdsPort;
+import cafe.woden.ircclient.app.api.BackendAvailabilityReasonFormatter;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.commands.CommandParser;
 import cafe.woden.ircclient.app.commands.ParsedInput;
@@ -19,7 +20,7 @@ import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.irc.IrcEvent;
 import cafe.woden.ircclient.irc.ServerIrcEvent;
-import cafe.woden.ircclient.irc.backend.IrcBackendClientService;
+import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
 import cafe.woden.ircclient.model.TargetRef;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.plugins.RxJavaPlugins;
@@ -37,7 +38,7 @@ import org.mockito.Mockito;
 
 class PerformOnConnectServiceTest {
 
-  private IrcBackendClientService irc;
+  private IrcBackendRuntimeClientService irc;
   private ServerCatalog serverCatalog;
   private CommandParser commandParser;
   private UiPort ui;
@@ -46,14 +47,21 @@ class PerformOnConnectServiceTest {
 
   @BeforeEach
   void setUp() {
-    irc = Mockito.mock(IrcBackendClientService.class);
+    irc = Mockito.mock(IrcBackendRuntimeClientService.class);
     serverCatalog = Mockito.mock(ServerCatalog.class);
     commandParser = Mockito.mock(CommandParser.class);
     ui = Mockito.mock(UiPort.class);
     events = PublishProcessor.create();
     when(irc.events()).thenReturn(events);
     when(irc.currentNick("libera")).thenReturn(Optional.of("me"));
-    service = new PerformOnConnectService(irc, irc, serverCatalog, commandParser, ui);
+    service =
+        new PerformOnConnectService(
+            irc,
+            irc,
+            BackendAvailabilityReasonFormatter.builtInsBackendMetadata(),
+            serverCatalog,
+            commandParser,
+            ui);
   }
 
   @AfterEach

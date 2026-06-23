@@ -10,6 +10,9 @@ import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import cafe.woden.ircclient.ui.settings.UiSettingsTestFixtures;
 import cafe.woden.ircclient.ui.settings.theme.ThemeManager;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemeOption;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemePack;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemeTone;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -21,13 +24,8 @@ class AppearancePreferencesSectionTest {
     ThemeManager themeManager = mock(ThemeManager.class);
     when(themeManager.supportedThemes())
         .thenReturn(
-            new ThemeManager.ThemeOption[] {
-              new ThemeManager.ThemeOption(
-                  "darcula",
-                  "Darcula",
-                  ThemeManager.ThemeTone.DARK,
-                  ThemeManager.ThemePack.FLATLAF,
-                  true)
+            new ThemeOption[] {
+              new ThemeOption("darcula", "Darcula", ThemeTone.DARK, ThemePack.FLATLAF, true)
             });
     List<AutoCloseable> closeables = new ArrayList<>();
 

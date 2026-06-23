@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
+import cafe.woden.ircclient.config.RuntimeConfigServerTreeAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayout;
@@ -283,9 +284,11 @@ class ServerTreeDockableBuiltInLayoutPerServerTest {
   }
 
   private static ServerTreeDockable newDockable(RuntimeConfigStore runtimeConfig) {
+    RuntimeConfigStore effectiveRuntimeConfig =
+        runtimeConfig != null ? runtimeConfig : RuntimeConfigStoreTestFixtures.inMemoryStore();
     return ServerTreeDockableTestSupport.newDockable(
         null,
-        runtimeConfig,
+        new RuntimeConfigServerTreeAdapter(effectiveRuntimeConfig),
         null,
         null,
         null,

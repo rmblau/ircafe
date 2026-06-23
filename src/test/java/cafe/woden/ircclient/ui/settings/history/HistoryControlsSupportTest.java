@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.settings.history;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cafe.woden.ircclient.config.RuntimeConfigChatHistoryAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import java.nio.file.Files;
@@ -45,7 +46,8 @@ class HistoryControlsSupportTest {
         new HistoryControlsSupport.HistorySettings(
             120, 240, 750, false, 30, 10, 8, true, false, 9, 24, 180, 250, 10_000);
 
-    HistoryControlsSupport.rememberSettings(runtimeConfig, settings);
+    HistoryControlsSupport.rememberSettings(
+        new RuntimeConfigChatHistoryAdapter(runtimeConfig), settings);
 
     String yaml = Files.readString(tempDir.resolve("ircafe.yml"));
     assertTrue(yaml.contains("chatHistoryInitialLoadLines: 120"));

@@ -18,15 +18,23 @@ final class ImageUrlExtractor {
   private ImageUrlExtractor() {}
 
   static List<String> extractImageUrls(String text) {
+    return extractImageUrls(text, List.of());
+  }
+
+  static List<String> extractImageUrls(
+      String text,
+      List<? extends cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>
+          extensionProviders) {
     if (text == null || text.isBlank()) return List.of();
 
+    Set<String> imageExtensions = imageExtensions(extensionProviders);
     Matcher m = URL_PATTERN.matcher(text);
     Set<String> out = new LinkedHashSet<>();
     while (m.find()) {
       String raw = m.group(1);
       UrlParts parts = splitUrlTrailingPunct(raw);
       String url = ChatRichTextRenderer.normalizeUrl(parts.url);
-      if (isLikelyDirectImageUrl(url)) {
+      if (isLikelyDirectImageUrl(url, imageExtensions)) {
         out.add(url);
       }
     }
@@ -34,7 +42,13 @@ final class ImageUrlExtractor {
     return new ArrayList<>(out);
   }
 
-  private static boolean isLikelyDirectImageUrl(String url) {
+  static Set<String> imageExtensions(
+      List<? extends cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>
+          extensionProviders) {
+    return ImageUrlExtensionProviders.imageExtensions(extensionProviders);
+  }
+
+  private static boolean isLikelyDirectImageUrl(String url, Set<String> imageExtensions) {
     if (url == null || url.isBlank()) return false;
     try {
       URI uri = URI.create(url);
@@ -47,12 +61,10 @@ final class ImageUrlExtractor {
       if (path == null) return false;
       String p = path.toLowerCase(Locale.ROOT);
 
-      // Direct image extensions.
-      return p.endsWith(".png")
-          || p.endsWith(".jpg")
-          || p.endsWith(".jpeg")
-          || p.endsWith(".gif")
-          || p.endsWith(".webp");
+      for (String extension : imageExtensions) {
+        if (p.endsWith(extension)) return true;
+      }
+      return false;
     } catch (Exception ignored) {
       return false;
     }

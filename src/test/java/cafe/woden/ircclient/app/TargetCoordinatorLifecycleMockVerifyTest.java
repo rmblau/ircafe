@@ -15,11 +15,12 @@ import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
+import cafe.woden.ircclient.config.RuntimeConfigServerTreeAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.servers.ServerRegistry;
 import cafe.woden.ircclient.ignore.api.IgnoreListQueryPort;
 import cafe.woden.ircclient.irc.IrcEvent;
-import cafe.woden.ircclient.irc.backend.IrcBackendClientService;
+import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
 import cafe.woden.ircclient.irc.enrichment.UserInfoEnrichmentService;
 import cafe.woden.ircclient.irc.port.IrcTargetMembershipPort;
 import cafe.woden.ircclient.irc.roster.UserListStore;
@@ -37,7 +38,7 @@ class TargetCoordinatorLifecycleMockVerifyTest {
   @Test
   void detachChannelMarksDetachedBeforeSendingPart() {
     UiPort ui = mock(UiPort.class);
-    IrcBackendClientService irc = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
     ConnectionCoordinator connectionCoordinator = mock(ConnectionCoordinator.class);
     RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
     TargetCoordinator coordinator = newCoordinator(ui, irc, connectionCoordinator, runtimeConfig);
@@ -56,7 +57,7 @@ class TargetCoordinatorLifecycleMockVerifyTest {
   @Test
   void closeAttachedChannelForgetsAndClosesBeforeParting() {
     UiPort ui = mock(UiPort.class);
-    IrcBackendClientService irc = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
     ConnectionCoordinator connectionCoordinator = mock(ConnectionCoordinator.class);
     RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
     TargetCoordinator coordinator = newCoordinator(ui, irc, connectionCoordinator, runtimeConfig);
@@ -77,7 +78,7 @@ class TargetCoordinatorLifecycleMockVerifyTest {
   @Test
   void closeAttachedChannelWithReasonForgetsAndClosesBeforeParting() {
     UiPort ui = mock(UiPort.class);
-    IrcBackendClientService irc = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
     ConnectionCoordinator connectionCoordinator = mock(ConnectionCoordinator.class);
     RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
     TargetCoordinator coordinator = newCoordinator(ui, irc, connectionCoordinator, runtimeConfig);
@@ -98,7 +99,7 @@ class TargetCoordinatorLifecycleMockVerifyTest {
   @Test
   void staleSelectionForClosedChannelIsIgnored() {
     UiPort ui = mock(UiPort.class);
-    IrcBackendClientService irc = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
     ConnectionCoordinator connectionCoordinator = mock(ConnectionCoordinator.class);
     RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
     TargetCoordinator coordinator = newCoordinator(ui, irc, connectionCoordinator, runtimeConfig);
@@ -122,7 +123,7 @@ class TargetCoordinatorLifecycleMockVerifyTest {
   @Test
   void joinThenJoinedEventTransitionsFromDetachedToAttachedWithoutPart() {
     UiPort ui = mock(UiPort.class);
-    IrcBackendClientService irc = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
     ConnectionCoordinator connectionCoordinator = mock(ConnectionCoordinator.class);
     RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
     TargetCoordinator coordinator = newCoordinator(ui, irc, connectionCoordinator, runtimeConfig);
@@ -146,7 +147,7 @@ class TargetCoordinatorLifecycleMockVerifyTest {
   @Test
   void joinOnQuasselServerDoesNotPersistJoinedChannel() {
     UiPort ui = mock(UiPort.class);
-    IrcBackendClientService irc = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
     ConnectionCoordinator connectionCoordinator = mock(ConnectionCoordinator.class);
     RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
     ServerRegistry serverRegistry = mock(ServerRegistry.class);
@@ -182,7 +183,7 @@ class TargetCoordinatorLifecycleMockVerifyTest {
   @Test
   void observedChannelActivityClearsDisconnectedStateForAttachedChannel() {
     UiPort ui = mock(UiPort.class);
-    IrcBackendClientService irc = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
     ConnectionCoordinator connectionCoordinator = mock(ConnectionCoordinator.class);
     RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
     TargetCoordinator coordinator = newCoordinator(ui, irc, connectionCoordinator, runtimeConfig);
@@ -199,7 +200,7 @@ class TargetCoordinatorLifecycleMockVerifyTest {
   @Test
   void observedChannelActivityDoesNotReattachUserDetachedChannel() {
     UiPort ui = mock(UiPort.class);
-    IrcBackendClientService irc = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
     ConnectionCoordinator connectionCoordinator = mock(ConnectionCoordinator.class);
     RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
     TargetCoordinator coordinator = newCoordinator(ui, irc, connectionCoordinator, runtimeConfig);
@@ -218,7 +219,7 @@ class TargetCoordinatorLifecycleMockVerifyTest {
   void matrixSetNameObservationRefreshesTranscriptLabelsWithoutRosterDelta() {
     UiPort ui = mock(UiPort.class);
     UserListStore userListStore = mock(UserListStore.class);
-    IrcBackendClientService irc = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
     ConnectionCoordinator connectionCoordinator = mock(ConnectionCoordinator.class);
     RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
     TargetCoordinator coordinator =
@@ -243,7 +244,7 @@ class TargetCoordinatorLifecycleMockVerifyTest {
 
   private static TargetCoordinator newCoordinator(
       UiPort ui,
-      IrcBackendClientService irc,
+      IrcBackendRuntimeClientService irc,
       ConnectionCoordinator connectionCoordinator,
       RuntimeConfigStore runtimeConfig) {
     return newCoordinator(
@@ -258,7 +259,7 @@ class TargetCoordinatorLifecycleMockVerifyTest {
   private static TargetCoordinator newCoordinator(
       UiPort ui,
       UserListStore userListStore,
-      IrcBackendClientService irc,
+      IrcBackendRuntimeClientService irc,
       ConnectionCoordinator connectionCoordinator,
       RuntimeConfigStore runtimeConfig) {
     return newCoordinator(
@@ -268,7 +269,7 @@ class TargetCoordinatorLifecycleMockVerifyTest {
   private static TargetCoordinator newCoordinator(
       UiPort ui,
       UserListStore userListStore,
-      IrcBackendClientService irc,
+      IrcBackendRuntimeClientService irc,
       ConnectionCoordinator connectionCoordinator,
       RuntimeConfigStore runtimeConfig,
       ServerRegistry serverRegistry) {
@@ -278,7 +279,7 @@ class TargetCoordinatorLifecycleMockVerifyTest {
         IrcTargetMembershipPort.from(irc),
         irc,
         serverRegistry,
-        runtimeConfig,
+        new RuntimeConfigServerTreeAdapter(runtimeConfig),
         connectionCoordinator,
         mock(IgnoreListQueryPort.class),
         mock(UserhostQueryService.class),

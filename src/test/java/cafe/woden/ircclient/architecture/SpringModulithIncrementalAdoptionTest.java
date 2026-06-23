@@ -27,24 +27,19 @@ import cafe.woden.ircclient.app.api.UiSettingsPort;
 import cafe.woden.ircclient.app.api.UiTranscriptPort;
 import cafe.woden.ircclient.app.api.UiViewStatePort;
 import cafe.woden.ircclient.app.api.ZncPlaybackEventsPort;
-import cafe.woden.ircclient.app.commands.BackendNamedCommandHandler;
 import cafe.woden.ircclient.app.commands.FilterCommand;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesBus;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
 import cafe.woden.ircclient.app.core.IrcMediator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.app.outbound.OutboundCommandDispatcher;
-import cafe.woden.ircclient.app.outbound.backend.spi.BackendExtension;
-import cafe.woden.ircclient.app.outbound.backend.spi.OutboundBackendFeatureAdapter;
 import cafe.woden.ircclient.app.outbound.dispatch.DefaultOutboundCommandDispatcher;
 import cafe.woden.ircclient.app.outbound.dispatch.ObservedOutboundCommandDispatcher;
-import cafe.woden.ircclient.app.outbound.mutation.MessageMutationOutboundCommands;
-import cafe.woden.ircclient.app.outbound.spi.LocalFilterCommandHandler;
-import cafe.woden.ircclient.app.outbound.upload.spi.SemanticUploadCommandHandler;
-import cafe.woden.ircclient.app.outbound.upload.spi.UploadCommandTranslationHandler;
+import cafe.woden.ircclient.app.outbound.filter.LocalFilterCommandHandler;
 import cafe.woden.ircclient.bouncer.AbstractBouncerAutoConnectStore;
 import cafe.woden.ircclient.bouncer.BouncerConnectionPort;
 import cafe.woden.ircclient.bouncer.BouncerNetworkDiscoveryOrchestrator;
+import cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
 import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
@@ -100,6 +95,7 @@ import cafe.woden.ircclient.irc.adapter.IrcShutdownPortAdapter;
 import cafe.woden.ircclient.irc.adapter.IrcTargetMembershipPortAdapter;
 import cafe.woden.ircclient.irc.adapter.IrcTypingPortAdapter;
 import cafe.woden.ircclient.irc.backend.BackendRoutingIrcClientService;
+import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
 import cafe.woden.ircclient.irc.enrichment.UserInfoEnrichmentService;
 import cafe.woden.ircclient.irc.ircv3.Ircv3CapabilityCatalog;
 import cafe.woden.ircclient.irc.ircv3.Ircv3DraftNormalizer;
@@ -267,7 +263,7 @@ class SpringModulithIncrementalAdoptionTest {
     assertThat(moduleFor(modules, BouncerNetworkDiscoveryOrchestrator.class))
         .isEqualTo(bouncerModule);
     assertThat(bouncerModule.getBasePackage().getName()).isEqualTo("cafe.woden.ircclient.bouncer");
-
+    assertNamedInterfaceContains(bouncerModule, "spi", BouncerNetworkMappingStrategy.class);
     ApplicationModule performModule = moduleFor(modules, PerformOnConnectService.class);
     assertThat(performModule).isNotEqualTo(appModule);
     assertThat(performModule.getBasePackage().getName()).isEqualTo("cafe.woden.ircclient.perform");
@@ -332,6 +328,7 @@ class SpringModulithIncrementalAdoptionTest {
     assertThat(moduleFor(modules, MatrixIrcClientService.class)).isEqualTo(ircModule);
     assertThat(ircModule.getBasePackage().getName()).isEqualTo("cafe.woden.ircclient.irc");
     assertNamedInterfaceContains(ircModule, "matrix", MatrixIrcClientService.class);
+    assertNamedInterfaceContains(ircModule, "backend", IrcBackendRuntimeClientService.class);
     assertNamedInterfaceContains(ircModule, "soju", SojuAutoConnectStore.class);
     assertNamedInterfaceContains(ircModule, "znc", ZncAutoConnectStore.class);
     assertNamedInterfaceContains(ircModule, "enrichment", UserInfoEnrichmentService.class);
@@ -447,8 +444,10 @@ class SpringModulithIncrementalAdoptionTest {
             "app",
             "app::api",
             "app::commands",
+            "app::commands-spi",
             "app::outbound-filter",
             "app::translation",
+            "app::translation-spi",
             "bouncer",
             "config",
             "config::api",
@@ -476,6 +475,7 @@ class SpringModulithIncrementalAdoptionTest {
             "notify::api",
             "notify::pushy",
             "notify::sound",
+            "notify::spi",
             "state::api",
             "util");
   }
@@ -496,17 +496,6 @@ class SpringModulithIncrementalAdoptionTest {
     assertThat(ChatTranscriptHistoryPort.class.isAnnotationPresent(SecondaryPort.class)).isTrue();
     assertThat(ChannelMetadataPort.class.isAnnotationPresent(SecondaryPort.class)).isTrue();
     assertThat(ChatHistoryTranscriptPort.class.isAnnotationPresent(SecondaryPort.class)).isTrue();
-    assertThat(LocalFilterCommandHandler.class.isAnnotationPresent(SecondaryPort.class)).isTrue();
-    assertThat(BackendNamedCommandHandler.class.isAnnotationPresent(SecondaryPort.class)).isTrue();
-    assertThat(BackendExtension.class.isAnnotationPresent(SecondaryPort.class)).isTrue();
-    assertThat(MessageMutationOutboundCommands.class.isAnnotationPresent(SecondaryPort.class))
-        .isTrue();
-    assertThat(OutboundBackendFeatureAdapter.class.isAnnotationPresent(SecondaryPort.class))
-        .isTrue();
-    assertThat(SemanticUploadCommandHandler.class.isAnnotationPresent(SecondaryPort.class))
-        .isTrue();
-    assertThat(UploadCommandTranslationHandler.class.isAnnotationPresent(SecondaryPort.class))
-        .isTrue();
     for (Class<?> type :
         new Class<?>[] {
           BouncerDiscoveryConfigPort.class,

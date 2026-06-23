@@ -2,9 +2,16 @@ package cafe.woden.ircclient.irc.ircv3;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionContribution;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3FeatureContribution;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3SpecStatus;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3UiGroup;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -61,6 +68,17 @@ class Ircv3ExtensionRegistryTest {
   }
 
   @Test
+  void serviceDescriptorUsesCanonicalSpiProviderName() {
+    ClassLoader classLoader = Ircv3ExtensionProvider.class.getClassLoader();
+
+    assertNotNull(
+        classLoader.getResource("META-INF/services/" + Ircv3ExtensionProvider.class.getName()));
+    assertNull(
+        classLoader.getResource(
+            "META-INF/services/cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionDefinitionProvider"));
+  }
+
+  @Test
   void visibleFeaturesRemainInStableDisplayOrder() {
     assertEquals(
         List.of(
@@ -78,10 +96,10 @@ class Ircv3ExtensionRegistryTest {
 
   @Test
   void duplicateCapabilityTokensAreRejected() {
-    ArrayList<Ircv3ExtensionDefinitionProvider> providers =
-        new ArrayList<>(Ircv3ExtensionRegistry.builtInProviders());
+    ArrayList<Ircv3ExtensionProvider> providers =
+        new ArrayList<>(Ircv3ExtensionRegistry.defaultProviders());
     providers.add(
-        new Ircv3ExtensionDefinitionProvider() {
+        new Ircv3ExtensionProvider() {
           @Override
           public String providerId() {
             return "duplicate-echo-message";
@@ -93,15 +111,15 @@ class Ircv3ExtensionRegistryTest {
           }
 
           @Override
-          public List<Ircv3ExtensionRegistry.ExtensionDefinition> extensions() {
+          public List<Ircv3ExtensionContribution> extensions() {
             return List.of(
                 Ircv3ExtensionProviderSupport.capability(
                     "plugin-echo-message-copy",
-                    Ircv3ExtensionRegistry.SpecStatus.STABLE,
+                    Ircv3SpecStatus.STABLE,
                     "echo-message",
                     "plugin-echo-message-copy",
                     "Echo message copy",
-                    Ircv3ExtensionRegistry.UiGroup.OTHER,
+                    Ircv3UiGroup.OTHER,
                     950,
                     "Conflicting test-only capability token."));
           }
@@ -118,10 +136,10 @@ class Ircv3ExtensionRegistryTest {
 
   @Test
   void duplicateProviderIdsAreRejected() {
-    ArrayList<Ircv3ExtensionDefinitionProvider> providers =
-        new ArrayList<>(Ircv3ExtensionRegistry.builtInProviders());
+    ArrayList<Ircv3ExtensionProvider> providers =
+        new ArrayList<>(Ircv3ExtensionRegistry.defaultProviders());
     providers.add(
-        new Ircv3ExtensionDefinitionProvider() {
+        new Ircv3ExtensionProvider() {
           @Override
           public String providerId() {
             return "core-transport";
@@ -143,10 +161,10 @@ class Ircv3ExtensionRegistryTest {
 
   @Test
   void duplicateRequestTokensAreRejected() {
-    ArrayList<Ircv3ExtensionDefinitionProvider> providers =
-        new ArrayList<>(Ircv3ExtensionRegistry.builtInProviders());
+    ArrayList<Ircv3ExtensionProvider> providers =
+        new ArrayList<>(Ircv3ExtensionRegistry.defaultProviders());
     providers.add(
-        new Ircv3ExtensionDefinitionProvider() {
+        new Ircv3ExtensionProvider() {
           @Override
           public String providerId() {
             return "duplicate-request-token";
@@ -158,15 +176,15 @@ class Ircv3ExtensionRegistryTest {
           }
 
           @Override
-          public List<Ircv3ExtensionRegistry.ExtensionDefinition> extensions() {
+          public List<Ircv3ExtensionContribution> extensions() {
             return List.of(
                 Ircv3ExtensionProviderSupport.capability(
                     "plugin-read-marker-copy",
-                    Ircv3ExtensionRegistry.SpecStatus.DRAFT,
+                    Ircv3SpecStatus.DRAFT,
                     "echo-message",
                     "plugin-read-marker-copy",
                     "Read marker copy",
-                    Ircv3ExtensionRegistry.UiGroup.OTHER,
+                    Ircv3UiGroup.OTHER,
                     950,
                     "Conflicting request token test-only capability.",
                     "plugin/read-marker-copy"));
@@ -184,10 +202,10 @@ class Ircv3ExtensionRegistryTest {
 
   @Test
   void duplicateVisibleFeatureLabelsAreRejected() {
-    ArrayList<Ircv3ExtensionDefinitionProvider> providers =
-        new ArrayList<>(Ircv3ExtensionRegistry.builtInProviders());
+    ArrayList<Ircv3ExtensionProvider> providers =
+        new ArrayList<>(Ircv3ExtensionRegistry.defaultProviders());
     providers.add(
-        new Ircv3ExtensionDefinitionProvider() {
+        new Ircv3ExtensionProvider() {
           @Override
           public String providerId() {
             return "duplicate-visible-feature";
@@ -199,7 +217,7 @@ class Ircv3ExtensionRegistryTest {
           }
 
           @Override
-          public List<Ircv3ExtensionRegistry.FeatureDefinition> visibleFeatures() {
+          public List<Ircv3FeatureContribution> visibleFeatures() {
             return List.of(
                 Ircv3ExtensionProviderSupport.feature(
                     960, "Replies", List.of("message-tags"), List.of()));

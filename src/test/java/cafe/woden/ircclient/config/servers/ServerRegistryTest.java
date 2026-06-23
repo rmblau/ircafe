@@ -16,6 +16,7 @@ import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
+import cafe.woden.ircclient.config.api.ServerRegistryConfigPort;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ class ServerRegistryTest {
 
   @Test
   void constructorLoadsServersAndPublishesInitialSnapshot() {
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    ServerRegistryConfigPort runtimeConfig = mock(ServerRegistryConfigPort.class);
     when(runtimeConfig.readExplicitServerAutoJoinById()).thenReturn(java.util.Map.of());
     IrcProperties.Server initialLibera = server("libera", "old.libera.example");
     IrcProperties.Server oftc = server("oftc", "irc.oftc.net");
@@ -54,7 +55,7 @@ class ServerRegistryTest {
 
   @Test
   void upsertWritesRuntimeConfigAndEmitsUpdatedSnapshot() {
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    ServerRegistryConfigPort runtimeConfig = mock(ServerRegistryConfigPort.class);
     ServerRegistry registry =
         new ServerRegistry(IrcPropertiesTestFixtures.properties(), runtimeConfig);
     var observer = registry.updates().test();
@@ -75,7 +76,7 @@ class ServerRegistryTest {
 
   @Test
   void setAllReplacesStateAndSkipsNullRows() {
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    ServerRegistryConfigPort runtimeConfig = mock(ServerRegistryConfigPort.class);
     IrcProperties.Server libera = server("libera", "irc.libera.chat");
     IrcProperties.Server oftc = server("oftc", "irc.oftc.net");
     ServerRegistry registry =
@@ -93,7 +94,7 @@ class ServerRegistryTest {
 
   @Test
   void removeIgnoresBlankIdsAndPersistsWhenPresentIdRemoved() {
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    ServerRegistryConfigPort runtimeConfig = mock(ServerRegistryConfigPort.class);
     IrcProperties.Server libera = server("libera", "irc.libera.chat");
     IrcProperties.Server oftc = server("oftc", "irc.oftc.net");
     ServerRegistry registry =
@@ -114,7 +115,7 @@ class ServerRegistryTest {
 
   @Test
   void requireThrowsForUnknownServer() {
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    ServerRegistryConfigPort runtimeConfig = mock(ServerRegistryConfigPort.class);
     ServerRegistry registry =
         new ServerRegistry(IrcPropertiesTestFixtures.properties(), runtimeConfig);
 
@@ -143,7 +144,9 @@ class ServerRegistryTest {
         server("libera", "irc.libera.chat", List.of("#app-default", "#runtime", "#support"));
 
     ServerRegistry registry =
-        new ServerRegistry(IrcPropertiesTestFixtures.properties(mergedServer), runtimeConfig);
+        new ServerRegistry(
+            IrcPropertiesTestFixtures.properties(mergedServer),
+            RuntimeConfigStoreTestFixtures.serverRegistryPort(runtimeConfig));
 
     assertEquals(List.of("#runtime", "#support"), registry.require("libera").autoJoin());
   }
@@ -165,14 +168,16 @@ class ServerRegistryTest {
         server("libera", "irc.libera.chat", List.of("#app-default", "#still-app"));
 
     ServerRegistry registry =
-        new ServerRegistry(IrcPropertiesTestFixtures.properties(boundServer), runtimeConfig);
+        new ServerRegistry(
+            IrcPropertiesTestFixtures.properties(boundServer),
+            RuntimeConfigStoreTestFixtures.serverRegistryPort(runtimeConfig));
 
     assertEquals(List.of("#app-default", "#still-app"), registry.require("libera").autoJoin());
   }
 
   @Test
   void syncRuntimeAutoJoinUpdatesInMemoryWithoutPersistingServers() {
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    ServerRegistryConfigPort runtimeConfig = mock(ServerRegistryConfigPort.class);
     when(runtimeConfig.readExplicitServerAutoJoinById()).thenReturn(java.util.Map.of());
     IrcProperties.Server boundServer =
         server("libera", "irc.libera.chat", List.of("#app-default", "#still-app"));

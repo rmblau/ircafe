@@ -1,13 +1,18 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreview;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
+import com.google.auto.service.AutoService;
 import java.net.URI;
 import java.util.Locale;
 
 /** Best-effort resolver for Reddit posts using the public {@code .json} endpoint. */
-final class RedditLinkPreviewResolver implements LinkPreviewResolver {
+@AutoService(LinkPreviewResolver.class)
+public final class RedditLinkPreviewResolver implements LinkPreviewResolver {
 
   @Override
-  public LinkPreview tryResolve(URI uri, String originalUrl, PreviewHttp http) {
+  public LinkPreview tryResolve(URI uri, String originalUrl, LinkPreviewHttp http) {
     try {
       if (uri == null || originalUrl == null) return null;
       String host = uri.getHost();

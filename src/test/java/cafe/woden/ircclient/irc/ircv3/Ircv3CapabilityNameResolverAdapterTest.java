@@ -5,8 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
+import cafe.woden.ircclient.config.RuntimeConfigPathAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionContribution;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3SpecStatus;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3UiGroup;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -21,6 +26,7 @@ class Ircv3CapabilityNameResolverAdapterTest {
           .withPropertyValues("ircafe.runtime-config=")
           .withUserConfiguration(
               RuntimeConfigStore.class,
+              RuntimeConfigPathAdapter.class,
               InstalledPluginServices.class,
               Ircv3ExtensionCatalog.class,
               Ircv3CapabilityNameResolverAdapter.class)
@@ -39,8 +45,8 @@ class Ircv3CapabilityNameResolverAdapterTest {
 
   @Test
   void catalogResolverNormalizesPluginProvidedAliases() {
-    ArrayList<Ircv3ExtensionDefinitionProvider> providers =
-        new ArrayList<>(Ircv3ExtensionRegistry.builtInProviders());
+    ArrayList<Ircv3ExtensionProvider> providers =
+        new ArrayList<>(Ircv3ExtensionRegistry.defaultProviders());
     providers.add(new ExampleCapabilityProvider());
 
     Ircv3CapabilityNameResolverAdapter resolver =
@@ -56,7 +62,7 @@ class Ircv3CapabilityNameResolverAdapterTest {
     assertEquals("", resolver.normalizeRequestToken("typing"));
   }
 
-  private static final class ExampleCapabilityProvider implements Ircv3ExtensionDefinitionProvider {
+  private static final class ExampleCapabilityProvider implements Ircv3ExtensionProvider {
 
     @Override
     public String providerId() {
@@ -69,15 +75,15 @@ class Ircv3CapabilityNameResolverAdapterTest {
     }
 
     @Override
-    public List<Ircv3ExtensionRegistry.ExtensionDefinition> extensions() {
+    public List<Ircv3ExtensionContribution> extensions() {
       return List.of(
           Ircv3ExtensionProviderSupport.capability(
               "plugin-example-cap",
-              Ircv3ExtensionRegistry.SpecStatus.DRAFT,
+              Ircv3SpecStatus.DRAFT,
               "draft/plugin-example-cap",
               "plugin-example-cap",
               "Plugin example capability",
-              Ircv3ExtensionRegistry.UiGroup.OTHER,
+              Ircv3UiGroup.OTHER,
               940,
               "Test-only plugin-provided capability alias mapping.",
               "plugin/example-cap",

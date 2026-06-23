@@ -8,8 +8,8 @@ import cafe.woden.ircclient.app.api.PrivateMessageRequest;
 import cafe.woden.ircclient.app.api.UiEventPort;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.api.UserActionRequest;
-import cafe.woden.ircclient.app.commands.BackendNamedCommandNames;
 import cafe.woden.ircclient.app.commands.ParsedInput;
+import cafe.woden.ircclient.app.commands.spi.BuiltInBackendNamedCommandNames;
 import cafe.woden.ircclient.app.core.MediatorUiSubscriptionBinder;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.model.TargetRef;
@@ -86,12 +86,13 @@ class MediatorUiSubscriptionBinderTest {
         onBackendNamedCommandRequest);
 
     backendNamedRequests.onNext(
-        new ParsedInput.BackendNamed(BackendNamedCommandNames.QUASSEL_NETWORK_MANAGER, "quassel"));
+        new ParsedInput.BackendNamed(
+            BuiltInBackendNamedCommandNames.QUASSEL_NETWORK_MANAGER, "quassel"));
 
     verify(onBackendNamedCommandRequest, timeout(1_000))
         .accept(
             new ParsedInput.BackendNamed(
-                BackendNamedCommandNames.QUASSEL_NETWORK_MANAGER, "quassel"));
+                BuiltInBackendNamedCommandNames.QUASSEL_NETWORK_MANAGER, "quassel"));
   }
 
   @Test
@@ -137,10 +138,11 @@ class MediatorUiSubscriptionBinderTest {
         onBackendNamedCommandRequest);
 
     backendNamedRequests.onNext(
-        new ParsedInput.BackendNamed(BackendNamedCommandNames.QUASSEL_SETUP, "quassel"));
+        new ParsedInput.BackendNamed(BuiltInBackendNamedCommandNames.QUASSEL_SETUP, "quassel"));
 
     verify(onBackendNamedCommandRequest, timeout(1_000))
-        .accept(new ParsedInput.BackendNamed(BackendNamedCommandNames.QUASSEL_SETUP, "quassel"));
+        .accept(
+            new ParsedInput.BackendNamed(BuiltInBackendNamedCommandNames.QUASSEL_SETUP, "quassel"));
   }
 
   private static void stubIdleUiEvents(UiEventPort uiEvents) {

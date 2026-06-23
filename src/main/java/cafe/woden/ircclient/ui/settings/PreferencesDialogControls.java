@@ -5,8 +5,15 @@ import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ChatHistoryRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
+import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.config.api.Ircv3CapabilityConfigPort;
+import cafe.woden.ircclient.config.api.LaunchJvmRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.TrayRuntimeConfigPort;
 import cafe.woden.ircclient.config.properties.LogProperties;
 import cafe.woden.ircclient.config.properties.PushyProperties;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionCatalog;
@@ -148,13 +155,14 @@ record PreferencesDialogControls(
             request.chatThemeSettingsBus());
 
     JCheckBox autoConnectOnStart = StartupPanelSupport.buildAutoConnectCheckbox(request.current());
-    LaunchJvmControls launchJvm = LaunchJvmControlsSupport.buildControls(request.runtimeConfig());
+    LaunchJvmControls launchJvm =
+        LaunchJvmControlsSupport.buildControls(request.launchJvmRuntimeConfig());
     TrayControls trayControls =
         TrayControlsSupport.buildControls(
             request.current(),
             initialNotificationSoundSettings(request),
             initialPushySettings(request),
-            request.runtimeConfig(),
+            request.trayRuntimeConfig(),
             request.gnomeDbusBackend(),
             request.trayNotificationService(),
             request.notificationSoundService(),
@@ -185,7 +193,8 @@ record PreferencesDialogControls(
     JCheckBox ctcpRequestsInActiveTarget =
         ChatBehaviorControlsSupport.buildCtcpRequestsInActiveTargetCheckbox(request.current());
     JTextField defaultQuitMessage =
-        ChatBehaviorControlsSupport.buildDefaultQuitMessageField(request.runtimeConfig());
+        ChatBehaviorControlsSupport.buildDefaultQuitMessageField(
+            request.chatBehaviorRuntimeConfig());
     JCheckBox nickCompletionCycleWithTab =
         ChatBehaviorControlsSupport.buildNickCompletionCycleWithTabCheckbox(
             nickCompletionCycleWithTabEnabled(request));
@@ -223,10 +232,10 @@ record PreferencesDialogControls(
         ChatBehaviorControlsSupport.buildServerTreeNotificationBadgesCheckbox(request.current());
     JSpinner serverTreeUnreadBadgeScalePercent =
         ChatBehaviorControlsSupport.buildServerTreeUnreadBadgeScalePercentSpinner(
-            request.runtimeConfig());
+            request.chatBehaviorRuntimeConfig());
     Ircv3CapabilitiesControls ircv3Capabilities =
         Ircv3PanelSupport.buildCapabilitiesControls(
-            request.runtimeConfig(), request.ircv3ExtensionCatalog());
+            request.ircv3CapabilityRuntimeConfig(), request.ircv3ExtensionCatalog());
     NickColorControls nickColors =
         NickColorControlsSupport.buildControls(
             request.owner(),
@@ -245,7 +254,7 @@ record PreferencesDialogControls(
             historyLockViewportDuringLoadOlder(request));
     LoggingControls logging =
         LoggingControlsSupport.buildControls(
-            request.runtimeConfig(),
+            request.chatLoggingRuntimeConfig(),
             request.logProps(),
             request.closeables(),
             request.serverDialogs(),
@@ -276,7 +285,7 @@ record PreferencesDialogControls(
             request.dialog(),
             request.closeables(),
             request.filterSettingsBus(),
-            request.runtimeConfig(),
+            request.filterRuntimeConfig(),
             request.targetCoordinator(),
             request.transcriptRebuildService());
     UserCommandAliasesControls userCommands =
@@ -286,9 +295,9 @@ record PreferencesDialogControls(
             request.dialog());
     TranslationControls translation =
         TranslationControlsSupport.buildControls(
-            initialTranslationSettings(request), request.closeables());
+            initialTranslationSettings(request), request.closeables(), request.installedPlugins());
     DiagnosticsControls diagnostics =
-        DiagnosticsControlsSupport.buildControls(request.runtimeConfig());
+        DiagnosticsControlsSupport.buildControls(request.diagnosticsRuntimeConfig());
 
     return new PreferencesDialogControls(
         appearance,
@@ -373,8 +382,8 @@ record PreferencesDialogControls(
   }
 
   private static boolean historyLockViewportDuringLoadOlder(BuildRequest request) {
-    return request.runtimeConfig() == null
-        || request.runtimeConfig().readChatHistoryLockViewportDuringLoadOlder(true);
+    return request.chatHistoryRuntimeConfig() == null
+        || request.chatHistoryRuntimeConfig().readChatHistoryLockViewportDuringLoadOlder(true);
   }
 
   private static List<IrcEventNotificationRule> initialIrcEventNotificationRules(
@@ -485,6 +494,14 @@ record PreferencesDialogControls(
       ChatThemeSettingsBus chatThemeSettingsBus,
       SpellcheckSettingsBus spellcheckSettingsBus,
       RuntimeConfigStore runtimeConfig,
+      LaunchJvmRuntimeConfigPort launchJvmRuntimeConfig,
+      TrayRuntimeConfigPort trayRuntimeConfig,
+      ChatBehaviorRuntimeConfigPort chatBehaviorRuntimeConfig,
+      ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
+      ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig,
+      DiagnosticsRuntimeConfigPort diagnosticsRuntimeConfig,
+      FilterSettingsConfigPort filterRuntimeConfig,
+      Ircv3CapabilityConfigPort ircv3CapabilityRuntimeConfig,
       LogProperties logProps,
       NickColorSettingsBus nickColorSettingsBus,
       NickColorService nickColorService,
@@ -503,6 +520,7 @@ record PreferencesDialogControls(
       NotificationSoundPort notificationSoundService,
       ServerDialogs serverDialogs,
       MessageTranslationSettingsBus translationSettingsBus,
+      InstalledPluginsPort installedPlugins,
       ExecutorService pushyTestExecutor,
       ExecutorService notificationRuleTestExecutor,
       Ircv3ExtensionCatalog ircv3ExtensionCatalog,

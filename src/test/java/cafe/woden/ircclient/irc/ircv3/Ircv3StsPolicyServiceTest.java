@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.irc.ircv3;
 
+import static cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures.ircv3StsPolicyPort;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -63,12 +64,12 @@ class Ircv3StsPolicyServiceTest {
     RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
     IrcProperties.Server configured = server("irc.example.net", 6667, false);
 
-    Ircv3StsPolicyService writer = new Ircv3StsPolicyService(store);
+    Ircv3StsPolicyService writer = new Ircv3StsPolicyService(ircv3StsPolicyPort(store));
     writer.observeFromCapList(
         "libera", configured.host(), true, "sts=duration=86400,port=6697,preload");
     assertTrue(store.readIrcv3StsPolicies().containsKey("irc.example.net"));
 
-    Ircv3StsPolicyService reader = new Ircv3StsPolicyService(store);
+    Ircv3StsPolicyService reader = new Ircv3StsPolicyService(ircv3StsPolicyPort(store));
     IrcProperties.Server effective = reader.applyPolicy(configured);
     assertTrue(effective.tls());
     assertEquals(6697, effective.port());
@@ -78,7 +79,7 @@ class Ircv3StsPolicyServiceTest {
   void durationZeroAlsoRemovesPersistedPolicy() {
     RuntimeConfigStore store = RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
     IrcProperties.Server configured = server("irc.example.net", 6667, false);
-    Ircv3StsPolicyService svc = new Ircv3StsPolicyService(store);
+    Ircv3StsPolicyService svc = new Ircv3StsPolicyService(ircv3StsPolicyPort(store));
 
     svc.observeFromCapList("libera", configured.host(), true, "sts=duration=86400,port=6697");
     assertTrue(store.readIrcv3StsPolicies().containsKey("irc.example.net"));

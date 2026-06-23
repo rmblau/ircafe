@@ -2086,11 +2086,6 @@ public record UiSettings(
         matrixUserListNameDisplayMode);
   }
 
-  @Deprecated
-  public UiSettings withChatMessageTimestampsEnabled(boolean enabled) {
-    return withTimestampsIncludeChatMessages(enabled);
-  }
-
   public UiSettings withMemoryUsageDisplayMode(MemoryUsageDisplayMode mode) {
     return new UiSettings(
         theme,

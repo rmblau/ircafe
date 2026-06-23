@@ -11,15 +11,13 @@ import cafe.woden.ircclient.model.InterceptorRule;
 import cafe.woden.ircclient.model.InterceptorRuleMode;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.notify.api.NotificationSoundPort;
+import cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider;
 import cafe.woden.ircclient.util.VirtualThreads;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.processors.FlowableProcessor;
 import io.reactivex.rxjava3.processors.PublishProcessor;
 import jakarta.annotation.PreDestroy;
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -66,6 +64,7 @@ public class InterceptorStore implements InterceptorIngestPort {
   private final NotificationSoundPort notificationSoundService;
   private final TrayNotificationsPort trayNotificationService;
   private final ExecutorService actionScriptExecutor;
+  private final InterceptorSoundFileImporter soundFileImporter;
 
   private final int maxHitsPerInterceptor;
   private final ExecutorService ingestExecutor;
@@ -91,6 +90,7 @@ public class InterceptorStore implements InterceptorIngestPort {
       InterceptorConfigPort runtimeConfig,
       NotificationSoundPort notificationSoundService,
       @Lazy TrayNotificationsPort trayNotificationService,
+      InterceptorSoundFileImporter soundFileImporter,
       @Qualifier(ExecutorConfig.IRC_EVENT_SCRIPT_EXECUTOR) ExecutorService actionScriptExecutor,
       @Qualifier(ExecutorConfig.INTERCEPTOR_STORE_INGEST_EXECUTOR) ExecutorService ingestExecutor,
       @Qualifier(ExecutorConfig.INTERCEPTOR_STORE_PERSIST_EXECUTOR)
@@ -99,6 +99,7 @@ public class InterceptorStore implements InterceptorIngestPort {
         runtimeConfig,
         notificationSoundService,
         trayNotificationService,
+        soundFileImporter,
         actionScriptExecutor,
         ingestExecutor,
         persistExecutor,
@@ -111,6 +112,23 @@ public class InterceptorStore implements InterceptorIngestPort {
         null,
         null,
         null,
+        new InterceptorSoundFileImporter(null, List.<CustomSoundFileExtensionProvider>of()),
+        null,
+        VirtualThreads.newSingleThreadExecutor("ircafe-interceptor-store"),
+        VirtualThreads.newSingleThreadExecutor("ircafe-interceptor-persist"),
+        maxHitsPerInterceptor,
+        false);
+  }
+
+  InterceptorStore(
+      InterceptorConfigPort runtimeConfig,
+      InterceptorSoundFileImporter soundFileImporter,
+      int maxHitsPerInterceptor) {
+    this(
+        runtimeConfig,
+        null,
+        null,
+        soundFileImporter,
         null,
         VirtualThreads.newSingleThreadExecutor("ircafe-interceptor-store"),
         VirtualThreads.newSingleThreadExecutor("ircafe-interceptor-persist"),
@@ -122,6 +140,7 @@ public class InterceptorStore implements InterceptorIngestPort {
       InterceptorConfigPort runtimeConfig,
       NotificationSoundPort notificationSoundService,
       TrayNotificationsPort trayNotificationService,
+      InterceptorSoundFileImporter soundFileImporter,
       ExecutorService actionScriptExecutor,
       ExecutorService ingestExecutor,
       ExecutorService persistExecutor,
@@ -134,6 +153,11 @@ public class InterceptorStore implements InterceptorIngestPort {
     this.ingestExecutor = Objects.requireNonNull(ingestExecutor, "ingestExecutor");
     this.persistExecutor = Objects.requireNonNull(persistExecutor, "persistExecutor");
     this.maxHitsPerInterceptor = Math.max(200, maxHitsPerInterceptor);
+    this.soundFileImporter =
+        soundFileImporter != null
+            ? soundFileImporter
+            : new InterceptorSoundFileImporter(
+                runtimeConfig, List.<CustomSoundFileExtensionProvider>of());
 
     if (loadFromRuntimeConfig) {
       loadPersistedDefinitions();
@@ -142,6 +166,10 @@ public class InterceptorStore implements InterceptorIngestPort {
 
   public Flowable<Change> changes() {
     return changes.onBackpressureBuffer();
+  }
+
+  public List<CustomSoundFileExtensionProvider> soundFileExtensionProviders() {
+    return soundFileImporter.soundFileExtensionProviders();
   }
 
   /** Preview interceptor sound settings without waiting for a real interceptor hit. */
@@ -165,48 +193,7 @@ public class InterceptorStore implements InterceptorIngestPort {
    * relative path.
    */
   public String importInterceptorCustomSoundFile(File source) throws Exception {
-    if (source == null) throw new IllegalArgumentException("Source file is required");
-
-    String name = Objects.toString(source.getName(), "").trim();
-    if (name.isBlank()) throw new IllegalArgumentException("Invalid file name");
-
-    String lower = name.toLowerCase(Locale.ROOT);
-    boolean mp3 = lower.endsWith(".mp3");
-    boolean wav = lower.endsWith(".wav");
-    if (!mp3 && !wav) {
-      throw new IllegalArgumentException("Only .mp3 and .wav are supported");
-    }
-
-    Path cfg = runtimeConfig != null ? runtimeConfig.runtimeConfigPath() : null;
-    Path base = cfg != null ? cfg.getParent() : null;
-    if (base == null) {
-      throw new IllegalStateException("Runtime config directory is unavailable");
-    }
-
-    Path soundsDir = base.resolve("sounds");
-    Files.createDirectories(soundsDir);
-
-    String sanitized = name.replaceAll("[^A-Za-z0-9._-]+", "_");
-    if (sanitized.isBlank()) {
-      sanitized = mp3 ? "interceptor.mp3" : "interceptor.wav";
-    }
-
-    String ext = mp3 ? "mp3" : "wav";
-    String baseName = sanitized;
-    int dot = sanitized.lastIndexOf('.');
-    if (dot > 0) {
-      baseName = sanitized.substring(0, dot);
-    }
-
-    Path dest = soundsDir.resolve(baseName + "." + ext);
-    int i = 2;
-    while (Files.exists(dest)) {
-      dest = soundsDir.resolve(baseName + "-" + i + "." + ext);
-      i++;
-    }
-
-    Files.copy(source.toPath(), dest, StandardCopyOption.REPLACE_EXISTING);
-    return "sounds/" + dest.getFileName();
+    return soundFileImporter.importCustomSoundFile(source);
   }
 
   public InterceptorDefinition createInterceptor(String serverId, String requestedName) {

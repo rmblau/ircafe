@@ -10,9 +10,8 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import cafe.woden.ircclient.bouncer.BouncerBackendRegistry;
 import cafe.woden.ircclient.bouncer.BouncerDiscoveryEventPort;
-import cafe.woden.ircclient.bouncer.GenericBouncerNetworkMappingStrategy;
+import cafe.woden.ircclient.bouncer.spi.BuiltInBouncerBackendIds;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
-import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.properties.SojuProperties;
@@ -25,8 +24,6 @@ import cafe.woden.ircclient.irc.pircbotx.listener.*;
 import cafe.woden.ircclient.irc.pircbotx.parse.PircbotxInputParserHookInstaller;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
 import cafe.woden.ircclient.irc.playback.*;
-import cafe.woden.ircclient.irc.soju.SojuBouncerNetworkMappingStrategy;
-import cafe.woden.ircclient.irc.znc.ZncBouncerNetworkMappingStrategy;
 import cafe.woden.ircclient.state.ServerIsupportState;
 import cafe.woden.ircclient.util.RxVirtualSchedulers;
 import io.reactivex.rxjava3.subscribers.TestSubscriber;
@@ -47,7 +44,8 @@ class PircbotxIrcClientServiceDisconnectTest {
     PircbotxInputParserHookInstaller inputParserHookInstaller =
         mock(PircbotxInputParserHookInstaller.class);
     PircbotxBotFactory botFactory = mock(PircbotxBotFactory.class);
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    CtcpReplyRuntimeConfigPort ctcpRuntimeConfig = mock(CtcpReplyRuntimeConfigPort.class);
+    ChatCommandRuntimeConfigPort commandRuntimeConfig = mock(ChatCommandRuntimeConfigPort.class);
     Ircv3StsPolicyService stsPolicies = mock(Ircv3StsPolicyService.class);
     BouncerBackendRegistry bouncerBackends = mock(BouncerBackendRegistry.class);
     BouncerDiscoveryEventPort bouncerDiscoveryEvents = mock(BouncerDiscoveryEventPort.class);
@@ -55,9 +53,9 @@ class PircbotxIrcClientServiceDisconnectTest {
     org.mockito.Mockito.when(bouncerBackends.backendIds())
         .thenReturn(
             Set.of(
-                SojuBouncerNetworkMappingStrategy.BACKEND_ID,
-                ZncBouncerNetworkMappingStrategy.BACKEND_ID,
-                GenericBouncerNetworkMappingStrategy.BACKEND_ID));
+                BuiltInBouncerBackendIds.SOJU,
+                BuiltInBouncerBackendIds.ZNC,
+                BuiltInBouncerBackendIds.GENERIC));
     ServerIsupportState serverIsupportState = new ServerIsupportState();
     PircbotxBridgeListenerFactory bridgeListenerFactory =
         new PircbotxBridgeListenerFactory(
@@ -75,8 +73,8 @@ class PircbotxIrcClientServiceDisconnectTest {
             inputParserHookInstaller,
             botFactory,
             bridgeListenerFactory,
-            (CtcpReplyRuntimeConfigPort) runtimeConfig,
-            (ChatCommandRuntimeConfigPort) runtimeConfig,
+            ctcpRuntimeConfig,
+            commandRuntimeConfig,
             stsPolicies,
             bouncerBackends,
             bouncerDiscoveryEvents,
@@ -98,11 +96,11 @@ class PircbotxIrcClientServiceDisconnectTest {
     verify(timers).cancelReconnect(any(PircbotxConnectionState.class));
     verify(timers).stopHeartbeat(any(PircbotxConnectionState.class));
     verify(bouncerDiscoveryEvents)
-        .onOriginDisconnected(eq(SojuBouncerNetworkMappingStrategy.BACKEND_ID), eq("libera"));
+        .onOriginDisconnected(eq(BuiltInBouncerBackendIds.SOJU), eq("libera"));
     verify(bouncerDiscoveryEvents)
-        .onOriginDisconnected(eq(ZncBouncerNetworkMappingStrategy.BACKEND_ID), eq("libera"));
+        .onOriginDisconnected(eq(BuiltInBouncerBackendIds.ZNC), eq("libera"));
     verify(bouncerDiscoveryEvents)
-        .onOriginDisconnected(eq(GenericBouncerNetworkMappingStrategy.BACKEND_ID), eq("libera"));
+        .onOriginDisconnected(eq(BuiltInBouncerBackendIds.GENERIC), eq("libera"));
   }
 
   @Test
@@ -111,7 +109,8 @@ class PircbotxIrcClientServiceDisconnectTest {
     PircbotxInputParserHookInstaller inputParserHookInstaller =
         mock(PircbotxInputParserHookInstaller.class);
     PircbotxBotFactory botFactory = mock(PircbotxBotFactory.class);
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    CtcpReplyRuntimeConfigPort ctcpRuntimeConfig = mock(CtcpReplyRuntimeConfigPort.class);
+    ChatCommandRuntimeConfigPort commandRuntimeConfig = mock(ChatCommandRuntimeConfigPort.class);
     Ircv3StsPolicyService stsPolicies = mock(Ircv3StsPolicyService.class);
     BouncerBackendRegistry bouncerBackends = mock(BouncerBackendRegistry.class);
     BouncerDiscoveryEventPort bouncerDiscoveryEvents = mock(BouncerDiscoveryEventPort.class);
@@ -133,8 +132,8 @@ class PircbotxIrcClientServiceDisconnectTest {
             inputParserHookInstaller,
             botFactory,
             bridgeListenerFactory,
-            (CtcpReplyRuntimeConfigPort) runtimeConfig,
-            (ChatCommandRuntimeConfigPort) runtimeConfig,
+            ctcpRuntimeConfig,
+            commandRuntimeConfig,
             stsPolicies,
             bouncerBackends,
             bouncerDiscoveryEvents,

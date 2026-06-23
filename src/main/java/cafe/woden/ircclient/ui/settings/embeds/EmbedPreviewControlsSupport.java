@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.embeds;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.EmbedPreviewRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.EmbedPreviewRuntimeConfigPort.EmbedPreviewSnapshot;
 import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.EmbedCardStyle;
 import cafe.woden.ircclient.ui.settings.EmbedCardStyleBus;
@@ -125,20 +126,22 @@ public final class EmbedPreviewControlsSupport {
   }
 
   public static void rememberEmbedPreviewSettings(
-      RuntimeConfigStore runtimeConfig,
+      EmbedPreviewRuntimeConfigPort runtimeConfig,
       EmbedCardStyleBus embedCardStyleBus,
       EmbedPreviewSettings settings) {
-    runtimeConfig.rememberImageEmbedsEnabled(settings.imageEmbedsEnabled());
-    runtimeConfig.rememberImageEmbedsCollapsedByDefault(settings.imageEmbedsCollapsedByDefault());
-    runtimeConfig.rememberImageEmbedsMaxWidthPx(settings.imageEmbedsMaxWidthPx());
-    runtimeConfig.rememberImageEmbedsMaxHeightPx(settings.imageEmbedsMaxHeightPx());
-    runtimeConfig.rememberImageEmbedsAnimateGifs(settings.imageEmbedsAnimateGifs());
-    runtimeConfig.rememberEmbedCardStyle(settings.embedCardStyle().token());
+    runtimeConfig.rememberEmbedPreviewSettings(
+        new EmbedPreviewSnapshot(
+            settings.imageEmbedsEnabled(),
+            settings.imageEmbedsCollapsedByDefault(),
+            settings.imageEmbedsMaxWidthPx(),
+            settings.imageEmbedsMaxHeightPx(),
+            settings.imageEmbedsAnimateGifs(),
+            settings.linkPreviewsEnabled(),
+            settings.linkPreviewsCollapsedByDefault(),
+            settings.embedCardStyle().token()));
     if (embedCardStyleBus != null) {
       embedCardStyleBus.set(settings.embedCardStyle());
     }
-    runtimeConfig.rememberLinkPreviewsEnabled(settings.linkPreviewsEnabled());
-    runtimeConfig.rememberLinkPreviewsCollapsedByDefault(settings.linkPreviewsCollapsedByDefault());
   }
 
   public record EmbedPreviewSettings(

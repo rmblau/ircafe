@@ -4,6 +4,7 @@ import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.chat.transcript.ChatTranscriptStore;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemeOption;
 import com.formdev.flatlaf.FlatLaf;
 import com.formdev.flatlaf.extras.FlatAnimatedLafChange;
 import java.awt.Window;
@@ -18,30 +19,6 @@ import org.springframework.stereotype.Component;
 @InterfaceLayer
 @Lazy
 public class ThemeManager {
-
-  public enum ThemeTone {
-    SYSTEM,
-    DARK,
-    LIGHT
-  }
-
-  public enum ThemePack {
-    SYSTEM,
-    FLATLAF,
-    DARKLAF,
-    RETRO,
-    MODERN,
-    IRCAFE,
-    INTELLIJ,
-    PLUGIN
-  }
-
-  public record ThemeOption(
-      String id, String label, ThemeTone tone, ThemePack pack, boolean featured) {
-    public boolean isDark() {
-      return tone == ThemeTone.DARK;
-    }
-  }
 
   private final ChatStyles chatStyles;
   private final ChatTranscriptStore transcripts;

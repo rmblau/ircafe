@@ -105,22 +105,6 @@ public class PerformOnConnectService {
                 err -> log.debug("PerformOnConnectService event handler failed", err));
   }
 
-  @Deprecated(forRemoval = false)
-  public PerformOnConnectService(
-      IrcClientService irc,
-      IrcBackendAvailabilityPort backendAvailability,
-      ServerCatalog serverCatalog,
-      CommandParser commandParser,
-      UiPort ui) {
-    this(
-        irc,
-        backendAvailability,
-        BackendAvailabilityReasonFormatter.builtInsBackendMetadata(),
-        serverCatalog,
-        commandParser,
-        ui);
-  }
-
   @jakarta.annotation.PreDestroy
   void shutdown() {
     try {

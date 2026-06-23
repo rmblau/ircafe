@@ -61,8 +61,8 @@ public class BackendRoutingIrcClientService
 
   private final ServerCatalog serverCatalog;
   private final BackendMetadataPort backendMetadata;
-  private final Map<String, IrcBackendClientService> backendsById;
-  private final List<IrcBackendClientService> backends;
+  private final Map<String, IrcBackendRuntimeClientService> backendsById;
+  private final List<IrcBackendRuntimeClientService> backends;
   private final List<URLClassLoader> pluginClassLoaders;
   private final Map<String, String> activeBackendByServer = new ConcurrentHashMap<>();
   private final Flowable<ServerIrcEvent> mergedEvents;
@@ -73,7 +73,7 @@ public class BackendRoutingIrcClientService
       ServerCatalog serverCatalog,
       InstalledPluginsPort installedPluginsPort,
       ObjectProvider<BackendMetadataPort> backendMetadataProvider,
-      List<IrcBackendClientService> backendServices) {
+      List<IrcBackendRuntimeClientService> backendServices) {
     this(
         serverCatalog,
         backendMetadataProvider.getIfAvailable(),
@@ -86,7 +86,7 @@ public class BackendRoutingIrcClientService
       ServerCatalog serverCatalog,
       RuntimeConfigPathPort runtimeConfigPathPort,
       ObjectProvider<BackendMetadataPort> backendMetadataProvider,
-      List<IrcBackendClientService> backendServices) {
+      List<IrcBackendRuntimeClientService> backendServices) {
     this(
         serverCatalog,
         backendMetadataProvider.getIfAvailable(),
@@ -102,7 +102,7 @@ public class BackendRoutingIrcClientService
   public BackendRoutingIrcClientService(
       ServerCatalog serverCatalog,
       BackendMetadataPort backendMetadata,
-      List<IrcBackendClientService> backendServices) {
+      List<IrcBackendRuntimeClientService> backendServices) {
     this(serverCatalog, backendMetadata, backendServices, List.of());
   }
 
@@ -120,7 +120,7 @@ public class BackendRoutingIrcClientService
   private BackendRoutingIrcClientService(
       ServerCatalog serverCatalog,
       BackendMetadataPort backendMetadata,
-      List<IrcBackendClientService> backendServices,
+      List<IrcBackendRuntimeClientService> backendServices,
       List<URLClassLoader> pluginClassLoaders) {
     this.serverCatalog = Objects.requireNonNull(serverCatalog, "serverCatalog");
     this.backendMetadata =
@@ -129,8 +129,8 @@ public class BackendRoutingIrcClientService
     this.pluginClassLoaders =
         List.copyOf(Objects.requireNonNull(pluginClassLoaders, "pluginClassLoaders"));
 
-    LinkedHashMap<String, IrcBackendClientService> map = new LinkedHashMap<>();
-    for (IrcBackendClientService backendService : backendServices) {
+    LinkedHashMap<String, IrcBackendRuntimeClientService> map = new LinkedHashMap<>();
+    for (IrcBackendRuntimeClientService backendService : backendServices) {
       if (backendService == null) continue;
       String backendId = backendIdOf(backendService);
       if (backendId.isEmpty()) {
@@ -138,7 +138,7 @@ public class BackendRoutingIrcClientService
             "Irc backend service reported blank backend id: "
                 + backendService.getClass().getName());
       }
-      IrcBackendClientService previous = map.putIfAbsent(backendId, backendService);
+      IrcBackendRuntimeClientService previous = map.putIfAbsent(backendId, backendService);
       if (previous != null) {
         throw new IllegalStateException(
             "Multiple Irc backend services registered for "
@@ -160,7 +160,7 @@ public class BackendRoutingIrcClientService
     ArrayList<Flowable<ServerIrcEvent>> streams = new ArrayList<>(backends.size());
     ArrayList<Flowable<QuasselCoreNetworkSnapshotEvent>> quasselNetworkStreams =
         new ArrayList<>(backends.size());
-    for (IrcBackendClientService backend : backends) {
+    for (IrcBackendRuntimeClientService backend : backends) {
       String backendId = backendIdOf(backend);
       streams.add(backend.events().doOnNext(event -> noteBackendOwnership(backendId, event)));
       quasselNetworkStreams.add(backend.quasselCoreNetworkEvents());
@@ -169,18 +169,12 @@ public class BackendRoutingIrcClientService
     this.mergedQuasselNetworkEvents = Flowable.merge(quasselNetworkStreams).onBackpressureBuffer();
   }
 
-  @Deprecated(forRemoval = false)
-  public BackendRoutingIrcClientService(
-      ServerCatalog serverCatalog, List<IrcBackendClientService> backendServices) {
-    this(serverCatalog, BackendMetadataPort.builtInsOnly(), backendServices);
-  }
-
   static BackendRoutingIrcClientService installed(
       ServerCatalog serverCatalog,
       BackendMetadataPort backendMetadata,
       Path pluginDirectory,
       ClassLoader applicationClassLoader,
-      List<IrcBackendClientService> builtInBackendServices) {
+      List<IrcBackendRuntimeClientService> builtInBackendServices) {
     return new BackendRoutingIrcClientService(
         serverCatalog,
         backendMetadata,
@@ -195,7 +189,7 @@ public class BackendRoutingIrcClientService
       BackendMetadataPort backendMetadata,
       RuntimeConfigPathPort runtimeConfigPathPort,
       ClassLoader applicationClassLoader,
-      List<IrcBackendClientService> builtInBackendServices) {
+      List<IrcBackendRuntimeClientService> builtInBackendServices) {
     return installed(
         serverCatalog,
         backendMetadata,
@@ -214,7 +208,7 @@ public class BackendRoutingIrcClientService
   @Override
   public void shutdownNow() {
     activeBackendByServer.clear();
-    for (IrcBackendClientService backend : backends) {
+    for (IrcBackendRuntimeClientService backend : backends) {
       try {
         backend.shutdownNow();
       } catch (Exception e) {
@@ -230,7 +224,7 @@ public class BackendRoutingIrcClientService
 
   @Override
   public void rescheduleActiveHeartbeats() {
-    for (IrcBackendClientService backend : backends) {
+    for (IrcBackendRuntimeClientService backend : backends) {
       try {
         backend.rescheduleActiveHeartbeats();
       } catch (Exception e) {
@@ -247,7 +241,7 @@ public class BackendRoutingIrcClientService
 
   @Override
   public Completable connect(String serverId) {
-    IrcBackendClientService delegate = routeConfigured(serverId);
+    IrcBackendRuntimeClientService delegate = routeConfigured(serverId);
     String sid = normalizeServerId(serverId);
     return delegate
         .connect(serverId)
@@ -278,7 +272,7 @@ public class BackendRoutingIrcClientService
   @Override
   public Completable disconnect(String serverId, String reason, DisconnectRequestSource source) {
     String sid = normalizeServerId(serverId);
-    IrcBackendClientService delegate = routeActiveOrConfigured(serverId);
+    IrcBackendRuntimeClientService delegate = routeActiveOrConfigured(serverId);
     Completable disconnect;
     if (delegate instanceof IrcDisconnectWithSourcePort sourceAware) {
       disconnect =
@@ -601,19 +595,19 @@ public class BackendRoutingIrcClientService
     return routeActiveOrConfigured(serverId).sendAction(serverId, target, action);
   }
 
-  private IrcBackendClientService routeActiveOrConfigured(String serverId) {
+  private IrcBackendRuntimeClientService routeActiveOrConfigured(String serverId) {
     String sid = normalizeServerId(serverId);
-    IrcBackendClientService active = resolveActiveOwner(sid);
+    IrcBackendRuntimeClientService active = resolveActiveOwner(sid);
     if (active != null) return active;
     return routeConfigured(serverId);
   }
 
-  private IrcBackendClientService routeConfigured(String serverId) {
+  private IrcBackendRuntimeClientService routeConfigured(String serverId) {
     String sid = normalizeServerId(serverId);
     Optional<IrcProperties.Server> configuredServer =
         sid.isEmpty() ? Optional.empty() : serverCatalog.find(sid);
     String backendId = configuredBackendId(configuredServer);
-    IrcBackendClientService delegate = backendsById.get(backendId);
+    IrcBackendRuntimeClientService delegate = backendsById.get(backendId);
     if (delegate != null) return delegate;
 
     if (configuredServer.isPresent()) {
@@ -624,7 +618,7 @@ public class BackendRoutingIrcClientService
               + renderBackend(backendId));
     }
 
-    IrcBackendClientService fallback =
+    IrcBackendRuntimeClientService fallback =
         backendsById.get(BACKEND_DESCRIPTORS.idFor(IrcProperties.Server.Backend.IRC));
     if (fallback != null) {
       if (sid.isEmpty()) {
@@ -638,7 +632,7 @@ public class BackendRoutingIrcClientService
       return fallback;
     }
 
-    IrcBackendClientService first = backends.get(0);
+    IrcBackendRuntimeClientService first = backends.get(0);
     if (sid.isEmpty()) {
       log.debug("Falling back to backend {} for blank server id", first.backendId());
     } else {
@@ -653,7 +647,7 @@ public class BackendRoutingIrcClientService
 
   private String effectiveBackendIdForServer(String serverId) {
     String sid = normalizeServerId(serverId);
-    IrcBackendClientService active = resolveActiveOwner(sid);
+    IrcBackendRuntimeClientService active = resolveActiveOwner(sid);
     if (active != null) {
       return normalizeBackendId(active.backendId());
     }
@@ -681,11 +675,11 @@ public class BackendRoutingIrcClientService
     return displayName + " (" + normalized + ")";
   }
 
-  private IrcBackendClientService resolveActiveOwner(String sid) {
+  private IrcBackendRuntimeClientService resolveActiveOwner(String sid) {
     if (sid.isEmpty()) return null;
     String activeBackendId = normalizeBackendId(activeBackendByServer.get(sid));
     if (activeBackendId.isEmpty()) return null;
-    IrcBackendClientService activeDelegate = backendsById.get(activeBackendId);
+    IrcBackendRuntimeClientService activeDelegate = backendsById.get(activeBackendId);
     if (activeDelegate == null) {
       activeBackendByServer.remove(sid, activeBackendId);
       return null;
@@ -724,39 +718,53 @@ public class BackendRoutingIrcClientService
     return Objects.toString(backendId, "").trim().toLowerCase(Locale.ROOT);
   }
 
-  private static String backendIdOf(IrcBackendClientService backendService) {
+  private static String backendIdOf(IrcBackendRuntimeClientService backendService) {
     if (backendService == null) return "";
-    String backendId = normalizeBackendId(backendService.backendId());
-    if (!backendId.isEmpty()) return backendId;
-    IrcProperties.Server.Backend backend = backendService.backend();
-    return backend == null ? "" : BACKEND_DESCRIPTORS.idFor(backend);
+    return normalizeBackendId(backendService.backendId());
   }
 
   private static LoadedBackendServices loadInstalledBackendServices(
-      List<IrcBackendClientService> builtInBackendServices,
+      List<IrcBackendRuntimeClientService> builtInBackendServices,
       Path pluginDirectory,
       ClassLoader applicationClassLoader) {
-    PluginServiceLoaderSupport.LoadedServices<IrcBackendClientService> loadedServices =
-        PluginServiceLoaderSupport.loadInstalledServices(
-            IrcBackendClientService.class,
-            builtInBackendServices,
-            pluginDirectory,
-            applicationClassLoader,
-            log);
+    List<cafe.woden.ircclient.irc.backend.spi.IrcBackendClientService> builtInIdentityServices =
+        new ArrayList<>(Objects.requireNonNullElse(builtInBackendServices, List.of()));
+    PluginServiceLoaderSupport.LoadedServices<
+            cafe.woden.ircclient.irc.backend.spi.IrcBackendClientService>
+        loadedServices =
+            PluginServiceLoaderSupport.loadInstalledServices(
+                cafe.woden.ircclient.irc.backend.spi.IrcBackendClientService.class,
+                builtInIdentityServices,
+                pluginDirectory,
+                applicationClassLoader,
+                log);
     return new LoadedBackendServices(
-        loadedServices.services(), loadedServices.pluginClassLoaders());
+        runtimeBackendServices(loadedServices.services()), loadedServices.pluginClassLoaders());
   }
 
   private static LoadedBackendServices loadInstalledBackendServices(
-      List<IrcBackendClientService> builtInBackendServices,
+      List<IrcBackendRuntimeClientService> builtInBackendServices,
       InstalledPluginsPort installedPluginsPort) {
     InstalledPluginsPort pluginServices =
         Objects.requireNonNull(installedPluginsPort, "installedPluginsPort");
+    List<cafe.woden.ircclient.irc.backend.spi.IrcBackendClientService> builtInIdentityServices =
+        new ArrayList<>(Objects.requireNonNullElse(builtInBackendServices, List.of()));
     return new LoadedBackendServices(
-        pluginServices.loadInstalledServices(IrcBackendClientService.class, builtInBackendServices),
+        runtimeBackendServices(
+            pluginServices.loadInstalledServices(
+                cafe.woden.ircclient.irc.backend.spi.IrcBackendClientService.class,
+                builtInIdentityServices)),
         List.of());
   }
 
+  private static List<IrcBackendRuntimeClientService> runtimeBackendServices(
+      List<cafe.woden.ircclient.irc.backend.spi.IrcBackendClientService> backendServices) {
+    return Objects.requireNonNullElse(backendServices, List.of()).stream()
+        .filter(IrcBackendRuntimeClientService.class::isInstance)
+        .map(IrcBackendRuntimeClientService.class::cast)
+        .toList();
+  }
+
   private record LoadedBackendServices(
-      List<IrcBackendClientService> services, List<URLClassLoader> pluginClassLoaders) {}
+      List<IrcBackendRuntimeClientService> services, List<URLClassLoader> pluginClassLoaders) {}
 }

@@ -10,6 +10,25 @@ import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.AppearanceRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ChatHistoryRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
+import cafe.woden.ircclient.config.api.EmbedPreviewRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
+import cafe.woden.ircclient.config.api.Ircv3CapabilityConfigPort;
+import cafe.woden.ircclient.config.api.LaunchJvmRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.NickColorRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.NotificationRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.OutgoingMessageRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.SpellcheckRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.TimestampRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.TrayRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.UserCommandAliasesConfigPort;
 import cafe.woden.ircclient.config.properties.LogProperties;
 import cafe.woden.ircclient.irc.backend.IrcHeartbeatMaintenanceService;
 import cafe.woden.ircclient.notifications.api.IrcEventNotificationRulesPort;
@@ -85,6 +104,25 @@ class PreferencesDialogConstructorTest {
         mock(ChatThemeSettingsBus.class),
         mock(SpellcheckSettingsBus.class),
         mock(RuntimeConfigStore.class),
+        mock(LaunchJvmRuntimeConfigPort.class),
+        mock(AppearanceRuntimeConfigPort.class),
+        mock(ChatBehaviorRuntimeConfigPort.class),
+        mock(TrayRuntimeConfigPort.class),
+        mock(UiShellRuntimeConfigPort.class),
+        mock(ChatLoggingRuntimeConfigPort.class),
+        mock(ChatHistoryRuntimeConfigPort.class),
+        mock(DiagnosticsRuntimeConfigPort.class),
+        mock(FilterSettingsConfigPort.class),
+        mock(EmbedPreviewRuntimeConfigPort.class),
+        mock(Ircv3CapabilityConfigPort.class),
+        mock(EmbedLoadPolicyConfigPort.class),
+        mock(CtcpReplyRuntimeConfigPort.class),
+        mock(OutgoingMessageRuntimeConfigPort.class),
+        mock(TimestampRuntimeConfigPort.class),
+        mock(SpellcheckRuntimeConfigPort.class),
+        mock(NickColorRuntimeConfigPort.class),
+        mock(UserCommandAliasesConfigPort.class),
+        mock(NotificationRuntimeConfigPort.class),
         mock(LogProperties.class),
         mock(NickColorSettingsBus.class),
         mock(NickColorService.class),

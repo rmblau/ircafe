@@ -1,7 +1,11 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreview;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.auto.service.AutoService;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -16,7 +20,8 @@ import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-final class RottenTomatoesLinkPreviewResolver implements LinkPreviewResolver {
+@AutoService(LinkPreviewResolver.class)
+public final class RottenTomatoesLinkPreviewResolver implements LinkPreviewResolver {
 
   private static final Logger log =
       LoggerFactory.getLogger(RottenTomatoesLinkPreviewResolver.class);
@@ -45,7 +50,7 @@ final class RottenTomatoesLinkPreviewResolver implements LinkPreviewResolver {
       Pattern.compile("\\b(\\d{1,3})m\\b", Pattern.CASE_INSENSITIVE);
 
   @Override
-  public LinkPreview tryResolve(URI uri, String originalUrl, PreviewHttp http) {
+  public LinkPreview tryResolve(URI uri, String originalUrl, LinkPreviewHttp http) {
     try {
       if (!RottenTomatoesPreviewUtil.isRottenTomatoesTitleUri(uri)) return null;
 

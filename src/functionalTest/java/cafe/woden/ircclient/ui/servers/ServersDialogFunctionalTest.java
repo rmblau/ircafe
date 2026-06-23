@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
+import cafe.woden.ircclient.config.RuntimeConfigServerTreeAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.config.servers.ServerRegistry;
@@ -44,9 +45,15 @@ class ServersDialogFunctionalTest {
     IrcProperties initial = IrcPropertiesTestFixtures.properties(initialServer);
     RuntimeConfigStore runtimeConfig =
         RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"), initial);
-    ServerRegistry registry = new ServerRegistry(initial, runtimeConfig);
+    ServerRegistry registry =
+        new ServerRegistry(
+            initial, RuntimeConfigStoreTestFixtures.serverRegistryPort(runtimeConfig));
 
-    ServersDialog dialog = onEdtCall(() -> new ServersDialog(null, registry, runtimeConfig));
+    ServersDialog dialog =
+        onEdtCall(
+            () ->
+                new ServersDialog(
+                    null, registry, new RuntimeConfigServerTreeAdapter(runtimeConfig)));
     JButton addBtn = readField(dialog, "addBtn", JButton.class);
     JButton editBtn = readField(dialog, "editBtn", JButton.class);
     JButton removeBtn = readField(dialog, "removeBtn", JButton.class);
@@ -96,9 +103,15 @@ class ServersDialogFunctionalTest {
     IrcProperties initial = IrcPropertiesTestFixtures.properties();
     RuntimeConfigStore runtimeConfig =
         RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"), initial);
-    ServerRegistry registry = new ServerRegistry(initial, runtimeConfig);
+    ServerRegistry registry =
+        new ServerRegistry(
+            initial, RuntimeConfigStoreTestFixtures.serverRegistryPort(runtimeConfig));
 
-    ServersDialog dialog = onEdtCall(() -> new ServersDialog(null, registry, runtimeConfig));
+    ServersDialog dialog =
+        onEdtCall(
+            () ->
+                new ServersDialog(
+                    null, registry, new RuntimeConfigServerTreeAdapter(runtimeConfig)));
     JButton addBtn = readField(dialog, "addBtn", JButton.class);
     try {
       Automation addFlow =

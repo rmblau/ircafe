@@ -1,5 +1,9 @@
 package cafe.woden.ircclient.irc.ircv3;
 
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionContribution;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3FeatureContribution;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3UiMetadata;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -99,19 +103,13 @@ public final class Ircv3ExtensionRegistry {
     }
   }
 
-  private static final List<Ircv3ExtensionDefinitionProvider> BUILT_IN_PROVIDERS =
-      List.of(
-          new Ircv3CoreTransportExtensionProvider(),
-          new Ircv3CoreHistoryExtensionProvider(),
-          new Ircv3CoreMiscExtensionProvider());
-
   private static final Snapshot DEFAULT_SNAPSHOT = new Snapshot(loadProviders());
 
   private Ircv3ExtensionRegistry() {}
 
   public static final class Snapshot {
 
-    private final List<Ircv3ExtensionDefinitionProvider> providers;
+    private final List<Ircv3ExtensionProvider> providers;
     private final List<String> providerIds;
     private final List<ExtensionDefinition> extensions;
     private final List<ExtensionDefinition> requestableCapabilities;
@@ -119,10 +117,9 @@ public final class Ircv3ExtensionRegistry {
     private final List<FeatureDefinition> visibleFeatures;
     private final Map<String, ExtensionDefinition> byName;
 
-    private Snapshot(List<Ircv3ExtensionDefinitionProvider> providers) {
+    private Snapshot(List<? extends Ircv3ExtensionProvider> providers) {
       this.providers = List.copyOf(Objects.requireNonNullElse(providers, List.of()));
-      this.providerIds =
-          this.providers.stream().map(Ircv3ExtensionDefinitionProvider::providerId).toList();
+      this.providerIds = this.providers.stream().map(Ircv3ExtensionProvider::providerId).toList();
       this.extensions = collectExtensions(this.providers);
       this.requestableCapabilities =
           this.extensions.stream().filter(ExtensionDefinition::requestable).toList();
@@ -156,7 +153,7 @@ public final class Ircv3ExtensionRegistry {
       return visibleFeatures;
     }
 
-    private List<Ircv3ExtensionDefinitionProvider> providers() {
+    private List<Ircv3ExtensionProvider> providers() {
       return providers;
     }
 
@@ -234,52 +231,52 @@ public final class Ircv3ExtensionRegistry {
     return DEFAULT_SNAPSHOT.normalizePreferenceKey(name);
   }
 
-  static List<Ircv3ExtensionDefinitionProvider> builtInProviders() {
-    return BUILT_IN_PROVIDERS;
-  }
-
-  static List<Ircv3ExtensionDefinitionProvider> defaultProviders() {
+  static List<Ircv3ExtensionProvider> defaultProviders() {
     return DEFAULT_SNAPSHOT.providers();
   }
 
-  static Snapshot snapshotForProviders(List<Ircv3ExtensionDefinitionProvider> providers) {
+  static Snapshot snapshotForProviders(List<? extends Ircv3ExtensionProvider> providers) {
     return new Snapshot(normalizeProviders(providers));
   }
 
-  private static List<Ircv3ExtensionDefinitionProvider> loadProviders() {
-    ArrayList<Ircv3ExtensionDefinitionProvider> providers = new ArrayList<>(BUILT_IN_PROVIDERS);
+  private static List<Ircv3ExtensionProvider> loadProviders() {
+    ArrayList<Ircv3ExtensionProvider> providers = new ArrayList<>();
+    ClassLoader classLoader = Ircv3ExtensionProvider.class.getClassLoader();
+    loadProviders(Ircv3ExtensionProvider.class, classLoader, providers);
+    return normalizeProviders(providers);
+  }
+
+  private static <T extends Ircv3ExtensionProvider> void loadProviders(
+      Class<T> serviceType, ClassLoader classLoader, List<Ircv3ExtensionProvider> providers) {
     try {
-      ServiceLoader<Ircv3ExtensionDefinitionProvider> loader =
-          ServiceLoader.load(
-              Ircv3ExtensionDefinitionProvider.class,
-              Ircv3ExtensionDefinitionProvider.class.getClassLoader());
-      for (Ircv3ExtensionDefinitionProvider provider : loader) {
+      ServiceLoader<T> loader = ServiceLoader.load(serviceType, classLoader);
+      for (T provider : loader) {
         if (provider != null) {
           providers.add(provider);
         }
       }
     } catch (ServiceConfigurationError error) {
-      throw new IllegalStateException("Failed to load IRCv3 extension definition providers", error);
+      throw new IllegalStateException(
+          "Failed to load IRCv3 extension providers for " + serviceType.getName(), error);
     }
-    return normalizeProviders(providers);
   }
 
-  private static List<Ircv3ExtensionDefinitionProvider> normalizeProviders(
-      List<Ircv3ExtensionDefinitionProvider> providers) {
-    ArrayList<Ircv3ExtensionDefinitionProvider> sorted =
+  private static List<Ircv3ExtensionProvider> normalizeProviders(
+      List<? extends Ircv3ExtensionProvider> providers) {
+    ArrayList<Ircv3ExtensionProvider> sorted =
         new ArrayList<>(Objects.requireNonNullElse(providers, List.of()));
     sorted.sort(
-        Comparator.<Ircv3ExtensionDefinitionProvider>comparingInt(
+        Comparator.<Ircv3ExtensionProvider>comparingInt(
                 provider -> provider == null ? Integer.MAX_VALUE : provider.sortOrder())
             .thenComparing(provider -> normalize(provider == null ? "" : provider.providerId())));
 
-    LinkedHashMap<String, Ircv3ExtensionDefinitionProvider> byId = new LinkedHashMap<>();
-    for (Ircv3ExtensionDefinitionProvider provider : sorted) {
+    LinkedHashMap<String, Ircv3ExtensionProvider> byId = new LinkedHashMap<>();
+    for (Ircv3ExtensionProvider provider : sorted) {
       String providerId = normalize(provider == null ? "" : provider.providerId());
       if (provider == null || providerId.isEmpty()) {
         throw new IllegalStateException("IRCv3 extension provider must declare a non-blank id");
       }
-      Ircv3ExtensionDefinitionProvider previous = byId.putIfAbsent(providerId, provider);
+      Ircv3ExtensionProvider previous = byId.putIfAbsent(providerId, provider);
       if (previous != null && previous.getClass() != provider.getClass()) {
         throw new IllegalStateException(
             "Duplicate IRCv3 extension provider id registered: " + providerId);
@@ -289,25 +286,41 @@ public final class Ircv3ExtensionRegistry {
   }
 
   private static List<ExtensionDefinition> collectExtensions(
-      List<Ircv3ExtensionDefinitionProvider> providers) {
+      List<Ircv3ExtensionProvider> providers) {
     ArrayList<ExtensionDefinition> definitions = new ArrayList<>();
-    for (Ircv3ExtensionDefinitionProvider provider : providers) {
+    for (Ircv3ExtensionProvider provider : providers) {
       if (provider == null) {
         continue;
       }
-      definitions.addAll(Objects.requireNonNullElse(provider.extensions(), List.of()));
+      List<Ircv3ExtensionContribution> contributions = provider.extensions();
+      if (contributions == null) {
+        continue;
+      }
+      for (Ircv3ExtensionContribution contribution : contributions) {
+        if (contribution != null) {
+          definitions.add(toExtensionDefinition(contribution));
+        }
+      }
     }
     return List.copyOf(definitions);
   }
 
   private static List<FeatureDefinition> collectVisibleFeatures(
-      List<Ircv3ExtensionDefinitionProvider> providers) {
+      List<Ircv3ExtensionProvider> providers) {
     ArrayList<FeatureDefinition> features = new ArrayList<>();
-    for (Ircv3ExtensionDefinitionProvider provider : providers) {
+    for (Ircv3ExtensionProvider provider : providers) {
       if (provider == null) {
         continue;
       }
-      features.addAll(Objects.requireNonNullElse(provider.visibleFeatures(), List.of()));
+      List<Ircv3FeatureContribution> contributions = provider.visibleFeatures();
+      if (contributions == null) {
+        continue;
+      }
+      for (Ircv3FeatureContribution contribution : contributions) {
+        if (contribution != null) {
+          features.add(toFeatureDefinition(contribution));
+        }
+      }
     }
     features.sort(
         Comparator.comparingInt(FeatureDefinition::sortOrder)
@@ -328,6 +341,34 @@ public final class Ircv3ExtensionRegistry {
       }
     }
     return List.copyOf(features);
+  }
+
+  private static ExtensionDefinition toExtensionDefinition(
+      Ircv3ExtensionContribution contribution) {
+    return new ExtensionDefinition(
+        contribution.id(),
+        ExtensionKind.valueOf(contribution.kind().name()),
+        SpecStatus.valueOf(contribution.specStatus().name()),
+        contribution.aliases(),
+        contribution.requestToken(),
+        contribution.preferenceKey(),
+        toUiMetadata(contribution.uiMetadata()));
+  }
+
+  private static UiMetadata toUiMetadata(Ircv3UiMetadata metadata) {
+    return new UiMetadata(
+        metadata.label(),
+        UiGroup.valueOf(metadata.group().name()),
+        metadata.sortOrder(),
+        metadata.impactSummary());
+  }
+
+  private static FeatureDefinition toFeatureDefinition(Ircv3FeatureContribution contribution) {
+    return new FeatureDefinition(
+        contribution.sortOrder(),
+        contribution.label(),
+        contribution.requiredAll(),
+        contribution.requiredAny());
   }
 
   private static Map<String, ExtensionDefinition> indexDefinitions(

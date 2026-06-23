@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import javax.swing.JCheckBox;
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +27,7 @@ class CtcpAutoReplySupportTest {
 
   @Test
   void rememberSettingsPersistsCtcpAutoReplySettings() {
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    CtcpReplyRuntimeConfigPort runtimeConfig = mock(CtcpReplyRuntimeConfigPort.class);
     CtcpAutoReplySupport.CtcpAutoReplySettings settings =
         new CtcpAutoReplySupport.CtcpAutoReplySettings(true, false, true, false);
 

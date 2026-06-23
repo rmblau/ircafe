@@ -1,16 +1,22 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreview;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.auto.service.AutoService;
 import java.net.URI;
 
 /** Mastodon status preview via the public instance API. */
-final class MastodonStatusApiPreviewResolver implements LinkPreviewResolver {
+@AutoService(LinkPreviewResolver.class)
+public final class MastodonStatusApiPreviewResolver implements LinkPreviewResolver {
 
   private static final ObjectMapper JSON = new ObjectMapper();
 
   @Override
-  public LinkPreview tryResolve(URI uri, String originalUrl, PreviewHttp http) throws Exception {
+  public LinkPreview tryResolve(URI uri, String originalUrl, LinkPreviewHttp http)
+      throws Exception {
     if (uri == null || originalUrl == null || http == null) return null;
 
     String host = uri.getHost();

@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.settings.ircv3;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.Ircv3CapabilityConfigPort;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionCatalog;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionRegistry;
 import cafe.woden.ircclient.ui.localization.UiMessages;
@@ -32,7 +32,7 @@ public final class Ircv3PanelSupport {
   private Ircv3PanelSupport() {}
 
   public static Ircv3CapabilitiesControls buildCapabilitiesControls(
-      RuntimeConfigStore runtimeConfig, Ircv3ExtensionCatalog ircv3ExtensionCatalog) {
+      Ircv3CapabilityConfigPort runtimeConfig, Ircv3ExtensionCatalog ircv3ExtensionCatalog) {
     Map<String, Boolean> persisted = runtimeConfig.readIrcv3Capabilities();
     Ircv3ExtensionCatalog catalog =
         ircv3ExtensionCatalog == null
@@ -285,7 +285,7 @@ public final class Ircv3PanelSupport {
   }
 
   public static void persistCapabilities(
-      RuntimeConfigStore runtimeConfig, Map<String, Boolean> capabilities) {
+      Ircv3CapabilityConfigPort runtimeConfig, Map<String, Boolean> capabilities) {
     if (capabilities == null || capabilities.isEmpty()) return;
     for (Map.Entry<String, Boolean> entry : capabilities.entrySet()) {
       String key = Ircv3ExtensionRegistry.preferenceKeyFor(entry.getKey());

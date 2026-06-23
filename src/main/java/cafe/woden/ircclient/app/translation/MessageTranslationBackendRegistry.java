@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.app.translation;
 
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationBackendProvider;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -22,24 +22,29 @@ import org.springframework.stereotype.Component;
 @ApplicationLayer
 public final class MessageTranslationBackendRegistry {
 
-  private final Map<String, MessageTranslationBackend> backendsById;
+  private final Map<String, MessageTranslationBackendProvider> backendsById;
 
   @Autowired
   public MessageTranslationBackendRegistry(
-      List<MessageTranslationBackend> backends,
+      List<MessageTranslationBackendProvider> backends,
       ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
-    this(loadInstalledBackends(backends, installedPluginsProvider));
+    this(
+        MessageTranslationPluginProviders.translationBackends(
+            backends,
+            MessageTranslationPluginProviders.resolveInstalledPlugins(installedPluginsProvider)));
   }
 
-  public MessageTranslationBackendRegistry(List<MessageTranslationBackend> backends) {
-    Map<String, MessageTranslationBackend> resolved = new LinkedHashMap<>();
-    for (MessageTranslationBackend backend : nonNullBackends(backends)) {
+  public MessageTranslationBackendRegistry(
+      List<? extends MessageTranslationBackendProvider> backends) {
+    Map<String, MessageTranslationBackendProvider> resolved = new LinkedHashMap<>();
+    for (MessageTranslationBackendProvider backend :
+        MessageTranslationPluginProviders.translationBackends(backends, null)) {
       String backendId = normalizeBackendId(backend.backendId());
       if (backendId.isBlank()) {
         throw new IllegalArgumentException(
             "Translation backend id must not be blank: " + backend.getClass().getName());
       }
-      MessageTranslationBackend existing = resolved.putIfAbsent(backendId, backend);
+      MessageTranslationBackendProvider existing = resolved.putIfAbsent(backendId, backend);
       if (existing != null) {
         throw new IllegalStateException("Duplicate translation backend id: " + backendId);
       }
@@ -48,47 +53,17 @@ public final class MessageTranslationBackendRegistry {
   }
 
   MessageTranslationBackendRegistry(
-      List<MessageTranslationBackend> backends, InstalledPluginsPort installedPlugins) {
-    this(loadInstalledBackends(backends, installedPlugins));
+      List<? extends MessageTranslationBackendProvider> backends,
+      InstalledPluginsPort installedPlugins) {
+    this(MessageTranslationPluginProviders.translationBackends(backends, installedPlugins));
   }
 
-  public Optional<MessageTranslationBackend> find(String backendId) {
+  public Optional<MessageTranslationBackendProvider> find(String backendId) {
     return Optional.ofNullable(backendsById.get(normalizeBackendId(backendId)));
   }
 
   public Set<String> backendIds() {
     return backendsById.keySet();
-  }
-
-  private static List<MessageTranslationBackend> loadInstalledBackends(
-      List<MessageTranslationBackend> backends,
-      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
-    InstalledPluginsPort installedPlugins =
-        installedPluginsProvider == null ? null : installedPluginsProvider.getIfAvailable();
-    return loadInstalledBackends(backends, installedPlugins);
-  }
-
-  private static List<MessageTranslationBackend> loadInstalledBackends(
-      List<MessageTranslationBackend> backends, InstalledPluginsPort installedPlugins) {
-    List<MessageTranslationBackend> builtInBackends = nonNullBackends(backends);
-    if (installedPlugins == null) {
-      return builtInBackends;
-    }
-    return installedPlugins.loadInstalledServices(MessageTranslationBackend.class, builtInBackends);
-  }
-
-  private static List<MessageTranslationBackend> nonNullBackends(
-      List<MessageTranslationBackend> backends) {
-    if (backends == null || backends.isEmpty()) {
-      return List.of();
-    }
-    ArrayList<MessageTranslationBackend> resolved = new ArrayList<>(backends.size());
-    for (MessageTranslationBackend backend : backends) {
-      if (backend != null) {
-        resolved.add(backend);
-      }
-    }
-    return List.copyOf(resolved);
   }
 
   public static String normalizeBackendId(String backendId) {

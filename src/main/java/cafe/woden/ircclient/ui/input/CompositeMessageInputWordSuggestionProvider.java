@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.input;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.ui.input.spi.MessageInputWordSuggestionProvider;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;

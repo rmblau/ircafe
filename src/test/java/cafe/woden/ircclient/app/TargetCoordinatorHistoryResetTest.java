@@ -16,10 +16,11 @@ import cafe.woden.ircclient.app.api.TargetLogMaintenancePort;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
+import cafe.woden.ircclient.config.RuntimeConfigServerTreeAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.servers.ServerRegistry;
 import cafe.woden.ircclient.ignore.api.IgnoreListQueryPort;
-import cafe.woden.ircclient.irc.backend.IrcBackendClientService;
+import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
 import cafe.woden.ircclient.irc.enrichment.UserInfoEnrichmentService;
 import cafe.woden.ircclient.irc.port.IrcTargetMembershipPort;
 import cafe.woden.ircclient.irc.roster.UserListStore;
@@ -38,7 +39,7 @@ class TargetCoordinatorHistoryResetTest {
     TargetCoordinator coordinator =
         newCoordinator(
             ui,
-            mock(IrcBackendClientService.class),
+            mock(IrcBackendRuntimeClientService.class),
             mock(ConnectionCoordinator.class),
             mock(RuntimeConfigStore.class),
             history);
@@ -56,7 +57,7 @@ class TargetCoordinatorHistoryResetTest {
     TargetCoordinator coordinator =
         newCoordinator(
             ui,
-            mock(IrcBackendClientService.class),
+            mock(IrcBackendRuntimeClientService.class),
             mock(ConnectionCoordinator.class),
             mock(RuntimeConfigStore.class),
             history);
@@ -76,7 +77,7 @@ class TargetCoordinatorHistoryResetTest {
     TargetCoordinator coordinator =
         newCoordinator(
             ui,
-            mock(IrcBackendClientService.class),
+            mock(IrcBackendRuntimeClientService.class),
             mock(ConnectionCoordinator.class),
             mock(RuntimeConfigStore.class),
             history);
@@ -96,7 +97,7 @@ class TargetCoordinatorHistoryResetTest {
     TargetCoordinator coordinator =
         newCoordinator(
             ui,
-            mock(IrcBackendClientService.class),
+            mock(IrcBackendRuntimeClientService.class),
             mock(ConnectionCoordinator.class),
             mock(RuntimeConfigStore.class),
             history);
@@ -115,7 +116,7 @@ class TargetCoordinatorHistoryResetTest {
   @Test
   void closeChannelResetsHistoryState() {
     UiPort ui = mock(UiPort.class);
-    IrcBackendClientService irc = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
     ConnectionCoordinator connectionCoordinator = mock(ConnectionCoordinator.class);
     RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
     TargetChatHistoryPort history = mock(TargetChatHistoryPort.class);
@@ -138,7 +139,7 @@ class TargetCoordinatorHistoryResetTest {
   @Test
   void closeChannelResetsHistoryBeforeUiClose() {
     UiPort ui = mock(UiPort.class);
-    IrcBackendClientService irc = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
     ConnectionCoordinator connectionCoordinator = mock(ConnectionCoordinator.class);
     RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
     TargetChatHistoryPort history = mock(TargetChatHistoryPort.class);
@@ -159,7 +160,7 @@ class TargetCoordinatorHistoryResetTest {
   @Test
   void closeAndReselectChannelTriggersHistoryPreloadAgain() {
     UiPort ui = mock(UiPort.class);
-    IrcBackendClientService irc = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
     ConnectionCoordinator connectionCoordinator = mock(ConnectionCoordinator.class);
     RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
     TargetChatHistoryPort history = mock(TargetChatHistoryPort.class);
@@ -182,7 +183,7 @@ class TargetCoordinatorHistoryResetTest {
 
   private static TargetCoordinator newCoordinator(
       UiPort ui,
-      IrcBackendClientService irc,
+      IrcBackendRuntimeClientService irc,
       ConnectionCoordinator connectionCoordinator,
       RuntimeConfigStore runtimeConfig,
       TargetChatHistoryPort history) {
@@ -192,7 +193,7 @@ class TargetCoordinatorHistoryResetTest {
         IrcTargetMembershipPort.from(irc),
         irc,
         mock(ServerRegistry.class),
-        runtimeConfig,
+        new RuntimeConfigServerTreeAdapter(runtimeConfig),
         connectionCoordinator,
         mock(IgnoreListQueryPort.class),
         mock(UserhostQueryService.class),

@@ -24,3 +24,15 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "ircafe"
+
+include 'ircafe-plugin-api'
+include 'ircafe-builtins-notify'
+include 'ircafe-builtins-embed'
+include 'ircafe-builtins-input'
+include 'ircafe-builtins-outbound'
+include 'ircafe-builtins-commands'
+include 'ircafe-builtins-backend'
+include 'ircafe-builtins-ui'
+include 'ircafe-builtins-translation'
+include 'ircafe-builtins-bouncer'
+include 'ircafe-builtins-ircv3'

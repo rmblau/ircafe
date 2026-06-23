@@ -9,6 +9,10 @@ import cafe.woden.ircclient.config.api.InstalledPluginProblem;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionContribution;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3SpecStatus;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3UiGroup;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -62,7 +66,7 @@ class Ircv3ExtensionCatalogTest {
         pluginDir.resolve("example-ircv3-provider.jar"),
         PLUGIN_PROVIDER_CLASS,
         pluginProviderSource(),
-        Ircv3ExtensionDefinitionProvider.class.getName(),
+        Ircv3ExtensionProvider.class.getName(),
         CompiledPluginJarSupport.compatibleManifest("example-ircv3-provider", "1.0.0"));
     RuntimeConfigPathPort runtimeConfigPathPort =
         () -> runtimeConfigDirectory.resolve("ircafe.yml");
@@ -87,7 +91,7 @@ class Ircv3ExtensionCatalogTest {
     RecordingInstalledPluginsPort installedPlugins =
         new RecordingInstalledPluginsPort(
             List.of(
-                new Ircv3ExtensionDefinitionProvider() {
+                new Ircv3ExtensionProvider() {
                   @Override
                   public String providerId() {
                     return "plugin-conflict";
@@ -99,15 +103,15 @@ class Ircv3ExtensionCatalogTest {
                   }
 
                   @Override
-                  public List<Ircv3ExtensionRegistry.ExtensionDefinition> extensions() {
+                  public List<Ircv3ExtensionContribution> extensions() {
                     return List.of(
                         Ircv3ExtensionProviderSupport.capability(
                             "plugin-conflict-cap",
-                            Ircv3ExtensionRegistry.SpecStatus.DRAFT,
+                            Ircv3SpecStatus.DRAFT,
                             "echo-message",
                             "plugin-conflict-cap",
                             "Conflicting capability",
-                            Ircv3ExtensionRegistry.UiGroup.OTHER,
+                            Ircv3UiGroup.OTHER,
                             950,
                             "Conflicting test-only capability."));
                   }
@@ -134,12 +138,17 @@ class Ircv3ExtensionCatalogTest {
     return """
         package plugin.ircv3;
 
-        import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionDefinitionProvider;
-        import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionRegistry;
+        import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionContribution;
+        import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionKind;
+        import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider;
+        import cafe.woden.ircclient.irc.ircv3.spi.Ircv3FeatureContribution;
+        import cafe.woden.ircclient.irc.ircv3.spi.Ircv3SpecStatus;
+        import cafe.woden.ircclient.irc.ircv3.spi.Ircv3UiGroup;
+        import cafe.woden.ircclient.irc.ircv3.spi.Ircv3UiMetadata;
         import java.util.List;
 
         public final class RuntimeIrcv3ExtensionProvider
-            implements Ircv3ExtensionDefinitionProvider {
+            implements Ircv3ExtensionProvider {
           @Override
           public String providerId() {
             return "plugin-example";
@@ -151,26 +160,26 @@ class Ircv3ExtensionCatalogTest {
           }
 
           @Override
-          public List<Ircv3ExtensionRegistry.ExtensionDefinition> extensions() {
+          public List<Ircv3ExtensionContribution> extensions() {
             return List.of(
-                new Ircv3ExtensionRegistry.ExtensionDefinition(
+                new Ircv3ExtensionContribution(
                     "example-cap",
-                    Ircv3ExtensionRegistry.ExtensionKind.CAPABILITY,
-                    Ircv3ExtensionRegistry.SpecStatus.DRAFT,
+                    Ircv3ExtensionKind.CAPABILITY,
+                    Ircv3SpecStatus.DRAFT,
                     List.of("draft/example-cap"),
                     "draft/example-cap",
                     "example-cap",
-                    new Ircv3ExtensionRegistry.UiMetadata(
+                    new Ircv3UiMetadata(
                         "Example capability (draft)",
-                        Ircv3ExtensionRegistry.UiGroup.OTHER,
+                        Ircv3UiGroup.OTHER,
                         910,
                         "Adds an example plugin-provided capability.")));
           }
 
           @Override
-          public List<Ircv3ExtensionRegistry.FeatureDefinition> visibleFeatures() {
+          public List<Ircv3FeatureContribution> visibleFeatures() {
             return List.of(
-                new Ircv3ExtensionRegistry.FeatureDefinition(
+                new Ircv3FeatureContribution(
                     910,
                     "Example feature",
                     List.of("message-tags"),
@@ -181,14 +190,14 @@ class Ircv3ExtensionCatalogTest {
   }
 
   private static final class RecordingInstalledPluginsPort implements InstalledPluginsPort {
-    private final List<Ircv3ExtensionDefinitionProvider> providers;
+    private final List<Ircv3ExtensionProvider> providers;
     private final List<InstalledPluginProblem> problems = new ArrayList<>();
 
     private RecordingInstalledPluginsPort() {
       this(List.of());
     }
 
-    private RecordingInstalledPluginsPort(List<Ircv3ExtensionDefinitionProvider> providers) {
+    private RecordingInstalledPluginsPort(List<Ircv3ExtensionProvider> providers) {
       this.providers = List.copyOf(providers);
     }
 
@@ -207,8 +216,8 @@ class Ircv3ExtensionCatalogTest {
     @Override
     public <T> List<T> loadInstalledServices(Class<T> serviceType, List<T> builtInServices) {
       ArrayList<T> services = new ArrayList<>(builtInServices);
-      if (serviceType == Ircv3ExtensionDefinitionProvider.class) {
-        for (Ircv3ExtensionDefinitionProvider provider : providers) {
+      if (serviceType == Ircv3ExtensionProvider.class) {
+        for (Ircv3ExtensionProvider provider : providers) {
           services.add(serviceType.cast(provider));
         }
       }

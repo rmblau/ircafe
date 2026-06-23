@@ -12,7 +12,7 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.app.api.Ircv3ChatHistoryFeatureSupport;
 import cafe.woden.ircclient.app.api.Ircv3MessageRedactionFeatureSupport;
 import cafe.woden.ircclient.app.outbound.backend.OutboundBackendCapabilityPolicy;
-import cafe.woden.ircclient.irc.backend.IrcBackendClientService;
+import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
 import cafe.woden.ircclient.irc.port.IrcNegotiatedFeaturePort;
 import cafe.woden.ircclient.logging.history.ChatHistoryService;
 import cafe.woden.ircclient.model.TargetRef;
@@ -24,7 +24,7 @@ class ChatHistoryActionCoordinatorTest {
 
   @Test
   void replyContextActionVisibleUsesIrcCapabilityForActiveTarget() {
-    IrcBackendClientService irc = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
     TargetRef channel = new TargetRef("libera", "#ircafe");
     when(irc.isMessageTagsAvailable("libera")).thenReturn(true);
 
@@ -53,7 +53,7 @@ class ChatHistoryActionCoordinatorTest {
 
   @Test
   void onReplyToMessageRequestedActivatesInputAndBeginsCompose() {
-    IrcBackendClientService irc = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
     TargetRef channel = new TargetRef("libera", "#ircafe");
     when(irc.isMessageTagsAvailable("libera")).thenReturn(true);
     AtomicReference<TargetRef> activatedTarget = new AtomicReference<>();
@@ -99,7 +99,7 @@ class ChatHistoryActionCoordinatorTest {
 
   @Test
   void unreactContextActionVisibleRequiresMessageTagsForActiveTarget() {
-    IrcBackendClientService irc = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
     TargetRef channel = new TargetRef("libera", "#ircafe");
     when(irc.isMessageTagsAvailable("libera")).thenReturn(true);
 
@@ -130,7 +130,7 @@ class ChatHistoryActionCoordinatorTest {
 
   @Test
   void onUnreactToMessageRequestedPrefillsCommandAndFocusesInput() {
-    IrcBackendClientService irc = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
     TargetRef channel = new TargetRef("libera", "#ircafe");
     when(irc.isMessageTagsAvailable("libera")).thenReturn(true);
     AtomicReference<TargetRef> activatedTarget = new AtomicReference<>();
@@ -168,7 +168,7 @@ class ChatHistoryActionCoordinatorTest {
 
   @Test
   void onLoadNewerHistoryRequestedEmitsLatestCommandWhenChatHistorySupported() {
-    IrcBackendClientService irc = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
     ChatHistoryService chatHistoryService = mock(ChatHistoryService.class);
     TargetRef channel = new TargetRef("libera", "#ircafe");
     AtomicReference<TargetRef> activatedTarget = new AtomicReference<>();
@@ -208,7 +208,7 @@ class ChatHistoryActionCoordinatorTest {
 
   @Test
   void onLoadNewerHistoryRequestedReloadsRecentWhenZncSupportedOnly() {
-    IrcBackendClientService irc = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
     ChatHistoryService chatHistoryService = mock(ChatHistoryService.class);
     TargetRef channel = new TargetRef("libera", "#ircafe");
     when(irc.isChatHistoryAvailable("libera")).thenReturn(false);
@@ -242,7 +242,7 @@ class ChatHistoryActionCoordinatorTest {
 
   @Test
   void requestHistoryAroundMessageReturnsFalseWhenUnsupported() {
-    IrcBackendClientService irc = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
     TargetRef channel = new TargetRef("libera", "#ircafe");
     when(irc.isChatHistoryAvailable("libera")).thenReturn(false);
 
@@ -271,7 +271,7 @@ class ChatHistoryActionCoordinatorTest {
 
   @Test
   void onRedactMessageRequestedEmitsRedactCommandWhenSupported() {
-    IrcBackendClientService irc = mock(IrcBackendClientService.class);
+    IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
     TargetRef channel = new TargetRef("libera", "#ircafe");
     AtomicReference<String> emittedCommand = new AtomicReference<>();
     when(irc.isMessageRedactionAvailable("libera")).thenReturn(true);
@@ -301,7 +301,8 @@ class ChatHistoryActionCoordinatorTest {
     assertEquals("/redact abc123", emittedCommand.get());
   }
 
-  private static MessageActionCapabilityPolicy capabilityPolicy(IrcBackendClientService irc) {
+  private static MessageActionCapabilityPolicy capabilityPolicy(
+      IrcBackendRuntimeClientService irc) {
     IrcNegotiatedFeaturePort negotiatedFeaturePort = IrcNegotiatedFeaturePort.from(irc);
     Ircv3ChatHistoryFeatureSupport chatHistoryFeatureSupport =
         new Ircv3ChatHistoryFeatureSupport(chatHistoryPolicy(irc), negotiatedFeaturePort, irc);
@@ -311,7 +312,8 @@ class ChatHistoryActionCoordinatorTest {
         negotiatedFeaturePort, chatHistoryFeatureSupport, messageRedactionFeatureSupport);
   }
 
-  private static OutboundBackendCapabilityPolicy chatHistoryPolicy(IrcBackendClientService irc) {
+  private static OutboundBackendCapabilityPolicy chatHistoryPolicy(
+      IrcBackendRuntimeClientService irc) {
     OutboundBackendCapabilityPolicy policy = mock(OutboundBackendCapabilityPolicy.class);
     when(policy.featureUnavailableMessage(anyString(), anyString()))
         .thenAnswer(invocation -> invocation.getArgument(1));
@@ -321,7 +323,7 @@ class ChatHistoryActionCoordinatorTest {
   }
 
   private static OutboundBackendCapabilityPolicy messageRedactionPolicy(
-      IrcBackendClientService irc) {
+      IrcBackendRuntimeClientService irc) {
     OutboundBackendCapabilityPolicy policy = mock(OutboundBackendCapabilityPolicy.class);
     when(policy.supportsMessageRedaction(anyString()))
         .thenAnswer(invocation -> irc.isMessageRedactionAvailable(invocation.getArgument(0)));

@@ -4,6 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
+import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandParseResult;
+import cafe.woden.ircclient.app.commands.spi.BuiltInBackendNamedCommandNames;
+import cafe.woden.ircclient.app.commands.spi.SlashCommandDescriptor;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
@@ -23,6 +27,9 @@ import org.junit.jupiter.api.io.TempDir;
 
 class BackendNamedCommandCatalogTest {
 
+  private static final String SPI_PLUGIN_HANDLER_CLASS =
+      "plugin.commands.PluginSpiBackendNamedCommandHandler";
+
   @TempDir Path tempDir;
 
   @Test
@@ -40,9 +47,46 @@ class BackendNamedCommandCatalogTest {
   }
 
   @Test
+  void loadsBuiltInBackendNamedHandlersFromApplicationClasspath() {
+    BackendNamedCommandCatalog catalog =
+        BackendNamedCommandCatalog.installed(
+            (cafe.woden.ircclient.config.api.RuntimeConfigPathPort) null,
+            BackendNamedCommandCatalogTest.class.getClassLoader());
+
+    ParsedInput parsed = catalog.parse("/qnet list");
+
+    assertTrue(parsed instanceof ParsedInput.BackendNamed);
+    assertEquals(
+        BuiltInBackendNamedCommandNames.QUASSEL_NETWORK,
+        ((ParsedInput.BackendNamed) parsed).command());
+    assertEquals("list", ((ParsedInput.BackendNamed) parsed).args());
+  }
+
+  @Test
   void loadsServiceProvidersFromPluginDirectoryJar() throws Exception {
     Path pluginDir = Files.createDirectories(tempDir.resolve("plugins"));
     writePluginJar(pluginDir.resolve("backendping.jar"));
+
+    BackendNamedCommandCatalog catalog =
+        BackendNamedCommandCatalog.installed(
+            pluginDir, BackendNamedCommandCatalogTest.class.getClassLoader());
+
+    ParsedInput parsed = catalog.parse("/backendping hello");
+
+    assertTrue(parsed instanceof ParsedInput.BackendNamed);
+    assertEquals("backendping", ((ParsedInput.BackendNamed) parsed).command());
+    assertEquals("hello", ((ParsedInput.BackendNamed) parsed).args());
+  }
+
+  @Test
+  void loadsServiceProviderSpiFromPluginDirectoryJar() throws Exception {
+    Path pluginDir = Files.createDirectories(tempDir.resolve("plugins"));
+    CompiledPluginJarSupport.writePluginJar(
+        pluginDir.resolve("backendping-spi.jar"),
+        SPI_PLUGIN_HANDLER_CLASS,
+        pluginSpiHandlerSource(),
+        cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler.class.getName(),
+        CompiledPluginJarSupport.compatibleManifest("backend-named-command-spi-test", "1.0.0"));
 
     BackendNamedCommandCatalog catalog =
         BackendNamedCommandCatalog.installed(
@@ -87,7 +131,7 @@ class BackendNamedCommandCatalogTest {
           }
 
           @Override
-          public ParsedInput parse(String line, String matchedCommandName) {
+          public BackendNamedCommandParseResult parse(String line, String matchedCommandName) {
             return null;
           }
         };
@@ -99,7 +143,7 @@ class BackendNamedCommandCatalogTest {
           }
 
           @Override
-          public ParsedInput parse(String line, String matchedCommandName) {
+          public BackendNamedCommandParseResult parse(String line, String matchedCommandName) {
             return null;
           }
         };
@@ -126,6 +170,42 @@ class BackendNamedCommandCatalogTest {
               .getBytes(StandardCharsets.UTF_8));
       out.closeEntry();
     }
+  }
+
+  private static String pluginSpiHandlerSource() {
+    return """
+        package plugin.commands;
+
+        import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandParseResult;
+        import cafe.woden.ircclient.app.commands.spi.SlashCommandDescriptor;
+        import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
+        import java.util.List;
+        import java.util.Set;
+
+        public final class PluginSpiBackendNamedCommandHandler
+            implements BackendNamedCommandHandler {
+          @Override
+          public Set<String> supportedCommandNames() {
+            return Set.of("backendping");
+          }
+
+          @Override
+          public BackendNamedCommandParseResult parse(String line, String matchedCommandName) {
+            String commandToken = "/" + matchedCommandName;
+            String args = line != null && line.length() > commandToken.length()
+                ? line.substring(commandToken.length()).trim()
+                : "";
+            return new BackendNamedCommandParseResult(
+                matchedCommandName,
+                args);
+          }
+
+          @Override
+          public List<SlashCommandDescriptor> autocompleteCommands() {
+            return List.of(new SlashCommandDescriptor("/backendping", "Plugin test command"));
+          }
+        }
+        """;
   }
 
   private static final class FakeInstalledPluginsPort implements InstalledPluginsPort {
@@ -157,8 +237,8 @@ class BackendNamedCommandCatalogTest {
     }
 
     @Override
-    public ParsedInput parse(String line, String matchedCommandName) {
-      return new ParsedInput.BackendNamed(
+    public BackendNamedCommandParseResult parse(String line, String matchedCommandName) {
+      return new BackendNamedCommandParseResult(
           matchedCommandName, BackendNamedCommandParser.argAfter(line, "/" + matchedCommandName));
     }
 

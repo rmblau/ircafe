@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.settings.EmbedCardStyle;
@@ -14,6 +15,7 @@ import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import org.jmolecules.architecture.layered.InterfaceLayer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +32,8 @@ public class ChatLinkPreviewEmbedder {
   private final ImageFetchService imageFetch;
   private final EmbedLoadPolicyMatcher policyMatcher;
   private final EmbedCardStyleBus embedCardStyleBus;
+  private volatile List<cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>
+      imageUrlExtensionProviders = List.of();
 
   public record AppendResult(int appendedCount, List<String> blockedUrls) {
     static AppendResult empty() {
@@ -54,6 +58,12 @@ public class ChatLinkPreviewEmbedder {
     this.embedCardStyleBus = embedCardStyleBus;
   }
 
+  @Autowired(required = false)
+  void setInstalledPluginsPort(InstalledPluginsPort installedPlugins) {
+    imageUrlExtensionProviders =
+        ImageUrlExtensionProviders.loadInstalledProviders(installedPlugins);
+  }
+
   public AppendResult appendPreviews(
       TargetRef ctx,
       StyledDocument doc,
@@ -64,7 +74,7 @@ public class ChatLinkPreviewEmbedder {
     if (!uiSettings.get().linkPreviewsEnabled()) return AppendResult.empty();
 
     String serverId = (ctx != null) ? ctx.serverId() : null;
-    List<String> urls = LinkUrlExtractor.extractUrls(messageText);
+    List<String> urls = LinkUrlExtractor.extractUrls(messageText, imageUrlExtensionProviders);
     if (urls.isEmpty()) return AppendResult.empty();
 
     int count = 0;

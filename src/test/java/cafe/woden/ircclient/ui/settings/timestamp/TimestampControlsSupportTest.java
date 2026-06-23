@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.TimestampRuntimeConfigPort;
 import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -42,7 +42,7 @@ class TimestampControlsSupportTest {
 
   @Test
   void rememberSettingsPersistsTimestampValues() {
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    TimestampRuntimeConfigPort runtimeConfig = mock(TimestampRuntimeConfigPort.class);
     TimestampControlsSupport.TimestampSettings settings =
         new TimestampControlsSupport.TimestampSettings(true, "HH:mm", false, true);
 

@@ -7,8 +7,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.app.commands.BackendNamedCommandCatalog;
-import cafe.woden.ircclient.app.commands.QuasselBackendNamedCommandHandler;
 import cafe.woden.ircclient.app.commands.SlashCommandPresentationCatalog;
+import cafe.woden.ircclient.app.commands.builtins.BuiltInQuasselBackendNamedCommandHandler;
+import cafe.woden.ircclient.ui.input.spi.MessageInputWordSuggestionProvider;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -302,7 +303,8 @@ class MessageInputNickCompletionSupportTest {
     JTextField input = new JTextField();
     MessageInputUndoSupport undoSupport = new MessageInputUndoSupport(input, () -> false);
     BackendNamedCommandCatalog catalog =
-        BackendNamedCommandCatalog.fromHandlers(List.of(new QuasselBackendNamedCommandHandler()));
+        BackendNamedCommandCatalog.fromHandlers(
+            List.of(new BuiltInQuasselBackendNamedCommandHandler()));
     SlashCommandPresentationCatalog slashCommandPresentationCatalog =
         new SlashCommandPresentationCatalog(List.of(), catalog);
     MessageInputNickCompletionSupport support =

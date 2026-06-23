@@ -21,6 +21,7 @@ import cafe.woden.ircclient.ui.settings.UiSettingsBus;
 import cafe.woden.ircclient.ui.settings.memory.MemoryUsageDisplayMode;
 import cafe.woden.ircclient.ui.settings.theme.ThemeManager;
 import cafe.woden.ircclient.ui.settings.theme.ThemeSelectionDialog;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemeOption;
 import cafe.woden.ircclient.ui.shell.AppMenuBar;
 import java.awt.Dimension;
 import java.awt.GraphicsEnvironment;
@@ -139,7 +140,7 @@ class AppMenuBarMemoryWidgetTest {
     IgnoreListDialog ignoreListDialog = mock(IgnoreListDialog.class);
     ThemeSelectionDialog themeSelectionDialog = mock(ThemeSelectionDialog.class);
     ThemeManager themeManager = mock(ThemeManager.class);
-    when(themeManager.featuredThemes()).thenReturn(new ThemeManager.ThemeOption[0]);
+    when(themeManager.featuredThemes()).thenReturn(new ThemeOption[0]);
     UiSettingsBus settingsBus = mock(UiSettingsBus.class);
     when(settingsBus.get()).thenReturn(null);
     RuntimeJfrService runtimeJfrService = mock(RuntimeJfrService.class);

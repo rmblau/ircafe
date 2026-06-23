@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.bouncer;
 
+import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
+import cafe.woden.ircclient.bouncer.spi.BuiltInBouncerBackendIds;
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
 import cafe.woden.ircclient.irc.ircv3.*;
@@ -65,7 +67,7 @@ public class GenericBouncerDiscoveryLineParser {
     Map<String, String> attrs = parseAttrs(attrsRaw);
     String backend = normalize(attrs.get("backend"));
     if (backend == null) {
-      backend = GenericBouncerNetworkMappingStrategy.BACKEND_ID;
+      backend = BuiltInBouncerBackendIds.GENERIC;
     }
 
     String display = normalize(attrs.get("name"));

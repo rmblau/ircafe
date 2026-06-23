@@ -8,10 +8,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.app.api.UiPort;
-import cafe.woden.ircclient.app.commands.BackendNamedCommandNames;
 import cafe.woden.ircclient.app.commands.FilterCommand;
 import cafe.woden.ircclient.app.commands.ParsedInput;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesBus;
+import cafe.woden.ircclient.app.commands.spi.BuiltInBackendNamedCommandNames;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.app.outbound.backend.BackendNamedOutboundCommandRouter;
 import cafe.woden.ircclient.app.outbound.channel.OutboundJoinPartCommandService;
@@ -22,6 +22,7 @@ import cafe.woden.ircclient.app.outbound.chathistory.OutboundChatHistoryCommandS
 import cafe.woden.ircclient.app.outbound.dcc.OutboundDccCommandService;
 import cafe.woden.ircclient.app.outbound.dispatch.DefaultOutboundCommandDispatcher;
 import cafe.woden.ircclient.app.outbound.dispatch.OutboundCommandRegistrar;
+import cafe.woden.ircclient.app.outbound.filter.LocalFilterCommandHandler;
 import cafe.woden.ircclient.app.outbound.help.OutboundHelpCommandService;
 import cafe.woden.ircclient.app.outbound.identity.OutboundNickAwayCommandService;
 import cafe.woden.ircclient.app.outbound.ignore.OutboundIgnoreCommandService;
@@ -31,7 +32,6 @@ import cafe.woden.ircclient.app.outbound.messaging.OutboundSayQuoteCommandServic
 import cafe.woden.ircclient.app.outbound.monitor.OutboundMonitorCommandService;
 import cafe.woden.ircclient.app.outbound.mutation.OutboundMessageMutationCommandService;
 import cafe.woden.ircclient.app.outbound.readmarker.OutboundReadMarkerCommandService;
-import cafe.woden.ircclient.app.outbound.spi.LocalFilterCommandHandler;
 import cafe.woden.ircclient.app.outbound.upload.OutboundUploadCommandService;
 import cafe.woden.ircclient.model.TargetRef;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -167,7 +167,7 @@ class DefaultOutboundCommandDispatcherTest {
   @Test
   void dispatchQuasselSetupRoutesToQuasselService() {
     ParsedInput.BackendNamed command =
-        new ParsedInput.BackendNamed(BackendNamedCommandNames.QUASSEL_SETUP, "quassel");
+        new ParsedInput.BackendNamed(BuiltInBackendNamedCommandNames.QUASSEL_SETUP, "quassel");
     dispatcher.dispatch(disposables, command);
     verify(backendNamedRouter).handle(disposables, command);
   }
@@ -175,7 +175,7 @@ class DefaultOutboundCommandDispatcherTest {
   @Test
   void dispatchQuasselNetworkRoutesToQuasselService() {
     ParsedInput.BackendNamed command =
-        new ParsedInput.BackendNamed(BackendNamedCommandNames.QUASSEL_NETWORK, "list");
+        new ParsedInput.BackendNamed(BuiltInBackendNamedCommandNames.QUASSEL_NETWORK, "list");
     dispatcher.dispatch(disposables, command);
     verify(backendNamedRouter).handle(disposables, command);
   }

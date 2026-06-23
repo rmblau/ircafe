@@ -23,6 +23,7 @@ import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
+import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
 import cafe.woden.ircclient.irc.ircv3.*;
 import cafe.woden.ircclient.irc.mode.*;
 import cafe.woden.ircclient.irc.pircbotx.parse.*;
@@ -79,7 +80,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 @InfrastructureLayer
-public class QuasselCoreIrcClientService implements IrcBackendClientService {
+public class QuasselCoreIrcClientService implements IrcBackendRuntimeClientService {
   private static final Logger log = LoggerFactory.getLogger(QuasselCoreIrcClientService.class);
   private static final BackendDescriptorCatalog BACKEND_DESCRIPTORS =
       BackendDescriptorCatalog.builtIns();

@@ -3,6 +3,7 @@ package cafe.woden.ircclient.app.outbound.help;
 import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -10,10 +11,14 @@ import cafe.woden.ircclient.app.api.Ircv3ReadMarkerFeatureSupport;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.commands.BackendNamedCommandCatalog;
 import cafe.woden.ircclient.app.commands.SlashCommandPresentationCatalog;
+import cafe.woden.ircclient.app.commands.builtins.BuiltInSlashCommandPresentationContributor;
+import cafe.woden.ircclient.app.commands.spi.SlashCommandHelpSink;
+import cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.app.outbound.backend.*;
 import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpContributor;
+import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpSink;
 import cafe.woden.ircclient.app.outbound.readmarker.OutboundReadMarkerCommandService;
 import cafe.woden.ircclient.app.outbound.support.CommandTargetPolicy;
 import cafe.woden.ircclient.app.outbound.support.OutboundCommandAvailabilitySupport;
@@ -24,7 +29,7 @@ import cafe.woden.ircclient.config.api.Ircv3CapabilityNameResolverPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
-import cafe.woden.ircclient.irc.backend.IrcBackendClientService;
+import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
 import cafe.woden.ircclient.irc.port.IrcNegotiatedFeaturePort;
 import cafe.woden.ircclient.irc.port.IrcReadMarkerPort;
 import cafe.woden.ircclient.model.TargetRef;
@@ -34,7 +39,6 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -45,7 +49,7 @@ class OutboundHelpCommandServiceTest {
 
   @TempDir Path tempDir;
 
-  private final IrcBackendClientService irc = mock(IrcBackendClientService.class);
+  private final IrcBackendRuntimeClientService irc = mock(IrcBackendRuntimeClientService.class);
   private final UiPort ui = mock(UiPort.class);
   private final ConnectionCoordinator connectionCoordinator = mock(ConnectionCoordinator.class);
   private final TargetCoordinator targetCoordinator = mock(TargetCoordinator.class);
@@ -75,33 +79,32 @@ class OutboundHelpCommandServiceTest {
   private final OutboundHelpContributor uploadHelpContributor =
       new OutboundHelpContributor() {
         @Override
-        public void appendGeneralHelp(TargetRef out) {
-          outboundUploadCommandService.appendUploadHelp(out);
+        public void appendGeneralHelp(OutboundHelpSink help) {
+          outboundUploadCommandService.appendUploadHelp(targetRef(help));
         }
 
         @Override
-        public Map<String, Consumer<TargetRef>> topicHelpHandlers() {
-          return Map.of("upload", outboundUploadCommandService::appendUploadHelp);
+        public Map<String, Consumer<OutboundHelpSink>> topicHelpHandlers() {
+          return Map.of(
+              "upload", help -> outboundUploadCommandService.appendUploadHelp(targetRef(help)));
         }
       };
   private final OutboundHelpContributor messageMutationHelpContributor =
       new OutboundHelpContributor() {
         @Override
-        public void appendGeneralHelp(TargetRef out) {
-          ui.appendStatus(out, "(help)", "/reply <msgid> <message> (requires message-tags)");
-          ui.appendStatus(out, "(help)", "/react <msgid> <reaction-token> (requires message-tags)");
-          ui.appendStatus(
-              out, "(help)", "/unreact <msgid> <reaction-token> (requires message-tags)");
-          appendEditHelp(out);
-          appendRedactHelp(out);
+        public void appendGeneralHelp(OutboundHelpSink help) {
+          appendEditHelp(targetRef(help));
+          appendRedactHelp(targetRef(help));
         }
 
         @Override
-        public Map<String, Consumer<TargetRef>> topicHelpHandlers() {
+        public Map<String, Consumer<OutboundHelpSink>> topicHelpHandlers() {
           return Map.of(
-              "edit", OutboundHelpCommandServiceTest.this::appendEditHelp,
-              "redact", OutboundHelpCommandServiceTest.this::appendRedactHelp,
-              "delete", OutboundHelpCommandServiceTest.this::appendRedactHelp);
+              "edit", help -> OutboundHelpCommandServiceTest.this.appendEditHelp(targetRef(help)),
+              "redact",
+                  help -> OutboundHelpCommandServiceTest.this.appendRedactHelp(targetRef(help)),
+              "delete",
+                  help -> OutboundHelpCommandServiceTest.this.appendRedactHelp(targetRef(help)));
         }
       };
   private final OutboundReadMarkerCommandService readMarkerCommandService =
@@ -112,7 +115,9 @@ class OutboundHelpCommandServiceTest {
           ui,
           targetCoordinator);
   private final SlashCommandPresentationCatalog slashCommandPresentationCatalog =
-      new SlashCommandPresentationCatalog(List.of(), BackendNamedCommandCatalog.empty());
+      new SlashCommandPresentationCatalog(
+          List.of(new BuiltInSlashCommandPresentationContributor()),
+          BackendNamedCommandCatalog.empty());
   private final OutboundHelpCommandService service =
       new OutboundHelpCommandService(
           ui,
@@ -148,6 +153,10 @@ class OutboundHelpCommandServiceTest {
                     serverId,
                     false,
                     "requires negotiated draft/message-redaction or message-redaction")));
+  }
+
+  private static TargetRef targetRef(OutboundHelpSink help) {
+    return new TargetRef(help.target().serverId(), help.target().target());
   }
 
   @Test
@@ -280,6 +289,38 @@ class OutboundHelpCommandServiceTest {
   }
 
   @Test
+  void topicHelpCombinesOutboundAndPresentationContributors() {
+    TargetRef chan = new TargetRef("libera", "#ircafe");
+    when(targetCoordinator.getActiveTarget()).thenReturn(chan);
+    OutboundHelpContributor outboundContributor =
+        new OutboundHelpContributor() {
+          @Override
+          public Map<String, Consumer<OutboundHelpSink>> topicHelpHandlers() {
+            return Map.of("shared", help -> help.appendLine("outbound shared help"));
+          }
+        };
+    SlashCommandPresentationContributor presentationContributor =
+        new SlashCommandPresentationContributor() {
+          @Override
+          public Map<String, Consumer<SlashCommandHelpSink>> topicHelpHandlers() {
+            return Map.of("shared", help -> help.appendLine("presentation shared help"));
+          }
+        };
+    OutboundHelpCommandService composedService =
+        new OutboundHelpCommandService(
+            ui,
+            targetCoordinator,
+            List.of(outboundContributor),
+            new SlashCommandPresentationCatalog(
+                List.of(presentationContributor), BackendNamedCommandCatalog.empty()));
+
+    composedService.handleHelp("shared");
+
+    verify(ui).appendStatus(chan, "(help)", "outbound shared help");
+    verify(ui).appendStatus(chan, "(help)", "presentation shared help");
+  }
+
+  @Test
   void loadsHelpContributorsFromInstalledPluginsPort() {
     TargetRef chan = new TargetRef("libera", "#ircafe");
     when(targetCoordinator.getActiveTarget()).thenReturn(chan);
@@ -297,6 +338,51 @@ class OutboundHelpCommandServiceTest {
 
     verify(ui).appendStatus(chan, "(help)", "/pluginhelp <arg> (provided by plugin)");
     verify(ui).appendStatus(chan, "(help)", "Plugin help topic from installed plugin");
+  }
+
+  @Test
+  void installedPluginHelpContributorsCanReadPortableTargetView() {
+    TargetRef chan = new TargetRef("libera", "#ircafe");
+    when(targetCoordinator.getActiveTarget()).thenReturn(chan);
+    OutboundHelpContributor targetEchoContributor =
+        new OutboundHelpContributor() {
+          @Override
+          public void appendGeneralHelp(OutboundHelpSink help) {
+            help.appendLine(help.target().serverId() + ":" + help.target().target());
+          }
+        };
+
+    OutboundHelpCommandService serviceWithPlugin =
+        new OutboundHelpCommandService(
+            ui,
+            targetCoordinator,
+            List.of(),
+            slashCommandPresentationCatalog,
+            new FakeInstalledPluginsPort(List.of(targetEchoContributor)));
+
+    serviceWithPlugin.handleHelp("");
+
+    verify(ui).appendStatus(chan, "(help)", "libera:#ircafe");
+  }
+
+  @Test
+  void duplicateOutboundHelpProviderClassesAreRegisteredOnce() {
+    TargetRef chan = new TargetRef("libera", "#ircafe");
+    when(targetCoordinator.getActiveTarget()).thenReturn(chan);
+
+    OutboundHelpCommandService serviceWithDuplicateProvider =
+        new OutboundHelpCommandService(
+            ui,
+            targetCoordinator,
+            List.of(new PluginHelpContributor()),
+            slashCommandPresentationCatalog,
+            new FakeInstalledPluginsPort(List.of(new PluginHelpContributor())));
+
+    serviceWithDuplicateProvider.handleHelp("");
+    serviceWithDuplicateProvider.handleHelp("pluginhelp");
+
+    verify(ui, times(1)).appendStatus(chan, "(help)", "/pluginhelp <arg> (provided by plugin)");
+    verify(ui, times(1)).appendStatus(chan, "(help)", "Plugin help topic from installed plugin");
   }
 
   @Test
@@ -331,23 +417,19 @@ class OutboundHelpCommandServiceTest {
         package plugin.help;
 
         import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpContributor;
-        import cafe.woden.ircclient.model.TargetRef;
+        import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpSink;
         import java.util.Map;
-        import java.util.function.BiConsumer;
         import java.util.function.Consumer;
 
         public final class PluginHelpContributor implements OutboundHelpContributor {
           @Override
-          public void appendGeneralHelp(
-              TargetRef out, BiConsumer<TargetRef, String> lineAppender) {
-            lineAppender.accept(out, "/pluginjar <arg> (provided by plugin jar)");
+          public void appendGeneralHelp(OutboundHelpSink help) {
+            help.appendLine("/pluginjar <arg> (provided by plugin jar)");
           }
 
           @Override
-          public Map<String, Consumer<TargetRef>> topicHelpHandlers(
-              BiConsumer<TargetRef, String> lineAppender) {
-            return Map.of(
-                "pluginjar", out -> lineAppender.accept(out, "Plugin jar help topic"));
+          public Map<String, Consumer<OutboundHelpSink>> topicHelpHandlers() {
+            return Map.of("pluginjar", help -> help.appendLine("Plugin jar help topic"));
           }
         }
         """;
@@ -374,15 +456,14 @@ class OutboundHelpCommandServiceTest {
 
   private static final class PluginHelpContributor implements OutboundHelpContributor {
     @Override
-    public void appendGeneralHelp(TargetRef out, BiConsumer<TargetRef, String> lineAppender) {
-      lineAppender.accept(out, "/pluginhelp <arg> (provided by plugin)");
+    public void appendGeneralHelp(OutboundHelpSink help) {
+      help.appendLine("/pluginhelp <arg> (provided by plugin)");
     }
 
     @Override
-    public Map<String, Consumer<TargetRef>> topicHelpHandlers(
-        BiConsumer<TargetRef, String> lineAppender) {
+    public Map<String, Consumer<OutboundHelpSink>> topicHelpHandlers() {
       return Map.of(
-          "pluginhelp", out -> lineAppender.accept(out, "Plugin help topic from installed plugin"));
+          "pluginhelp", help -> help.appendLine("Plugin help topic from installed plugin"));
     }
   }
 }

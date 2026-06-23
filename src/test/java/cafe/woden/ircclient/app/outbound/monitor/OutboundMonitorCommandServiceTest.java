@@ -15,7 +15,7 @@ import cafe.woden.ircclient.app.outbound.backend.OutboundBackendCapabilityPolicy
 import cafe.woden.ircclient.app.outbound.backend.OutboundBackendFeatureRegistry;
 import cafe.woden.ircclient.app.outbound.support.CommandTargetPolicy;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
-import cafe.woden.ircclient.irc.backend.IrcBackendClientService;
+import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
 import cafe.woden.ircclient.irc.port.IrcNegotiatedFeaturePort;
 import cafe.woden.ircclient.model.TargetRef;
 import io.reactivex.rxjava3.core.Completable;
@@ -26,7 +26,8 @@ import org.mockito.Mockito;
 
 class OutboundMonitorCommandServiceTest {
 
-  private final IrcBackendClientService irc = Mockito.mock(IrcBackendClientService.class);
+  private final IrcBackendRuntimeClientService irc =
+      Mockito.mock(IrcBackendRuntimeClientService.class);
   private final UiPort ui = Mockito.mock(UiPort.class);
   private final TargetCoordinator targetCoordinator = Mockito.mock(TargetCoordinator.class);
   private final ConnectionCoordinator connectionCoordinator =

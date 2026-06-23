@@ -1,11 +1,14 @@
 package cafe.woden.ircclient.app.outbound.backend;
 
 import cafe.woden.ircclient.app.api.BackendEditorProfileSpec;
+import cafe.woden.ircclient.app.outbound.backend.spi.BackendEditorProfile;
 import cafe.woden.ircclient.app.outbound.backend.spi.BackendExtension;
+import cafe.woden.ircclient.app.outbound.backend.spi.BuiltInBackendIds;
 import cafe.woden.ircclient.app.outbound.backend.spi.OutboundBackendFeatureAdapter;
-import cafe.woden.ircclient.app.outbound.mutation.MessageMutationOutboundCommands;
+import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationOutboundCommandLines;
+import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationOutboundCommands;
+import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationTargetView;
 import cafe.woden.ircclient.app.outbound.upload.spi.UploadCommandTranslationHandler;
-import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
@@ -27,13 +30,53 @@ final class BackendExtensionCatalogState {
       BackendDescriptorCatalog.builtIns();
 
   private static final MessageMutationOutboundCommands DEFAULT_MESSAGE_MUTATION_COMMANDS =
-      new IrcMessageMutationOutboundCommands();
+      new MessageMutationOutboundCommands() {
+        @Override
+        public String backendId() {
+          return BuiltInBackendIds.IRC;
+        }
+
+        @Override
+        public String buildReplyRawLine(
+            MessageMutationTargetView target, String replyToMessageId, String message) {
+          return MessageMutationOutboundCommandLines.buildReplyRawLine(
+              target, replyToMessageId, message);
+        }
+
+        @Override
+        public String buildReactRawLine(
+            MessageMutationTargetView target, String replyToMessageId, String reaction) {
+          return MessageMutationOutboundCommandLines.buildReactRawLine(
+              target, replyToMessageId, reaction);
+        }
+
+        @Override
+        public String buildUnreactRawLine(
+            MessageMutationTargetView target, String replyToMessageId, String reaction) {
+          return MessageMutationOutboundCommandLines.buildUnreactRawLine(
+              target, replyToMessageId, reaction);
+        }
+
+        @Override
+        public String buildEditRawLine(
+            MessageMutationTargetView target, String targetMessageId, String editedText) {
+          return MessageMutationOutboundCommandLines.buildEditRawLine(
+              target, targetMessageId, editedText);
+        }
+
+        @Override
+        public String buildRedactRawLine(
+            MessageMutationTargetView target, String targetMessageId, String reason) {
+          return MessageMutationOutboundCommandLines.buildRedactRawLine(
+              target, targetMessageId, reason);
+        }
+      };
 
   private static final OutboundBackendFeatureAdapter DEFAULT_FEATURE_ADAPTER =
       new OutboundBackendFeatureAdapter() {
         @Override
         public String backendId() {
-          return BACKEND_DESCRIPTORS.idFor(IrcProperties.Server.Backend.IRC);
+          return BuiltInBackendIds.IRC;
         }
       };
 
@@ -52,9 +95,7 @@ final class BackendExtensionCatalogState {
     InstalledPluginsPort pluginServices =
         Objects.requireNonNull(installedPluginsPort, "installedPluginsPort");
     return new BackendExtensionCatalogState(
-        pluginServices.loadInstalledServices(
-            BackendExtension.class,
-            List.copyOf(Objects.requireNonNullElse(builtInExtensions, List.of()))),
+        BackendExtensionPluginProviders.backendExtensions(builtInExtensions, pluginServices),
         List.of());
   }
 
@@ -82,18 +123,9 @@ final class BackendExtensionCatalogState {
       Path pluginDirectory, ClassLoader applicationClassLoader) {
     PluginServiceLoaderSupport.LoadedServices<BackendExtension> loadedServices =
         PluginServiceLoaderSupport.loadInstalledServices(
-            BackendExtension.class,
-            builtInExtensions(),
-            pluginDirectory,
-            applicationClassLoader,
-            log);
+            BackendExtension.class, List.of(), pluginDirectory, applicationClassLoader, log);
     return new BackendExtensionCatalogState(
         loadedServices.services(), loadedServices.pluginClassLoaders());
-  }
-
-  private static List<BackendExtension> builtInExtensions() {
-    return List.of(
-        new IrcBackendExtension(), new MatrixBackendExtension(), new QuasselBackendExtension());
   }
 
   void shutdown() {
@@ -131,8 +163,10 @@ final class BackendExtensionCatalogState {
   List<BackendEditorProfileSpec> availableBackendEditorProfiles() {
     ArrayList<BackendEditorProfileSpec> profiles = new ArrayList<>(extensionsByBackendId.size());
     for (BackendExtension extension : extensionsByBackendId.values()) {
-      if (extension == null || extension.editorProfile() == null) continue;
-      profiles.add(extension.editorProfile());
+      if (extension == null) continue;
+      BackendEditorProfile editorProfile = extension.editorProfile();
+      if (editorProfile == null) continue;
+      profiles.add(BackendEditorProfileAdapters.toAppProfile(editorProfile));
     }
     return List.copyOf(profiles);
   }
@@ -141,10 +175,13 @@ final class BackendExtensionCatalogState {
     String normalized = normalizeBackendId(backendId);
     if (normalized.isEmpty()) return "";
     BackendExtension extension = extensionsByBackendId.get(normalized);
-    if (extension != null && extension.editorProfile() != null) {
-      String displayName = Objects.toString(extension.editorProfile().displayName(), "").trim();
-      if (!displayName.isEmpty()) {
-        return displayName;
+    if (extension != null) {
+      BackendEditorProfile editorProfile = extension.editorProfile();
+      if (editorProfile != null) {
+        String displayName = Objects.toString(editorProfile.displayName(), "").trim();
+        if (!displayName.isEmpty()) {
+          return displayName;
+        }
       }
     }
     return BACKEND_DESCRIPTORS
@@ -232,7 +269,7 @@ final class BackendExtensionCatalogState {
 
   private static void validateContributionBackend(
       String backendId,
-      BackendEditorProfileSpec editorProfile,
+      BackendEditorProfile editorProfile,
       String contributionType,
       BackendExtension extension) {
     if (editorProfile == null) return;
@@ -273,7 +310,7 @@ final class BackendExtensionCatalogState {
     return new BackendExtension() {
       @Override
       public String backendId() {
-        return BACKEND_DESCRIPTORS.idFor(IrcProperties.Server.Backend.IRC);
+        return BuiltInBackendIds.IRC;
       }
 
       @Override
@@ -293,38 +330,18 @@ final class BackendExtensionCatalogState {
   }
 
   private static String backendIdOf(BackendExtension extension) {
-    String backendId = normalizeBackendId(extension.backendId());
-    if (!backendId.isEmpty()) {
-      return backendId;
-    }
-    IrcProperties.Server.Backend backend = extension.backend();
-    return backend == null ? "" : BACKEND_DESCRIPTORS.idFor(backend);
+    return normalizeBackendId(extension.backendId());
   }
 
   private static String backendIdOf(OutboundBackendFeatureAdapter featureAdapter) {
-    String backendId = normalizeBackendId(featureAdapter.backendId());
-    if (!backendId.isEmpty()) {
-      return backendId;
-    }
-    IrcProperties.Server.Backend backend = featureAdapter.backend();
-    return backend == null ? "" : BACKEND_DESCRIPTORS.idFor(backend);
+    return normalizeBackendId(featureAdapter.backendId());
   }
 
   private static String backendIdOf(MessageMutationOutboundCommands commands) {
-    String backendId = normalizeBackendId(commands.backendId());
-    if (!backendId.isEmpty()) {
-      return backendId;
-    }
-    IrcProperties.Server.Backend backend = commands.backend();
-    return backend == null ? "" : BACKEND_DESCRIPTORS.idFor(backend);
+    return normalizeBackendId(commands.backendId());
   }
 
   private static String backendIdOf(UploadCommandTranslationHandler translationHandler) {
-    String backendId = normalizeBackendId(translationHandler.backendId());
-    if (!backendId.isEmpty()) {
-      return backendId;
-    }
-    IrcProperties.Server.Backend backend = translationHandler.backend();
-    return backend == null ? "" : BACKEND_DESCRIPTORS.idFor(backend);
+    return normalizeBackendId(translationHandler.backendId());
   }
 }

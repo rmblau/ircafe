@@ -27,10 +27,10 @@ import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.api.UiSettingsPort;
 import cafe.woden.ircclient.app.api.UiSettingsSnapshot;
 import cafe.woden.ircclient.app.api.UiSettingsSnapshotTestFixtures;
-import cafe.woden.ircclient.app.commands.BackendNamedCommandNames;
 import cafe.woden.ircclient.app.commands.CommandParser;
 import cafe.woden.ircclient.app.commands.ParsedInput;
 import cafe.woden.ircclient.app.commands.UserCommandAliasEngine;
+import cafe.woden.ircclient.app.commands.spi.BuiltInBackendNamedCommandNames;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.IrcMediator;
 import cafe.woden.ircclient.app.core.MediatorAlertNotificationHandler;
@@ -58,6 +58,7 @@ import cafe.woden.ircclient.app.outbound.dcc.OutboundDccCommandService;
 import cafe.woden.ircclient.app.translation.MessageTranslationDispatcher;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
+import cafe.woden.ircclient.config.RuntimeConfigServerTreeAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.servers.ServerRegistry;
 import cafe.woden.ircclient.ignore.api.InboundIgnorePolicyPort;
@@ -191,7 +192,7 @@ class IrcMediatorMockVerifyTest {
           inboundModeEventHandler,
           userInfoEnrichmentService,
           joinRoutingState,
-          runtimeConfig,
+          new RuntimeConfigServerTreeAdapter(runtimeConfig),
           serverRegistry);
   private final MediatorRosterStatusEventHandler mediatorRosterStatusEventHandler =
       new MediatorRosterStatusEventHandler(ui, targetCoordinator);
@@ -218,7 +219,7 @@ class IrcMediatorMockVerifyTest {
           ui,
           commandParser,
           userCommandAliasEngine,
-          runtimeConfig,
+          new RuntimeConfigServerTreeAdapter(runtimeConfig),
           connectionCoordinator,
           outboundCommandDispatcher,
           targetCoordinator,
@@ -392,14 +393,14 @@ class IrcMediatorMockVerifyTest {
         .getValue()
         .accept(
             new ParsedInput.BackendNamed(
-                BackendNamedCommandNames.QUASSEL_NETWORK_MANAGER, "quassel"));
+                BuiltInBackendNamedCommandNames.QUASSEL_NETWORK_MANAGER, "quassel"));
 
     verify(outboundCommandDispatcher)
         .dispatch(
             any(CompositeDisposable.class),
             eq(
                 new ParsedInput.BackendNamed(
-                    BackendNamedCommandNames.QUASSEL_NETWORK_MANAGER, "quassel")));
+                    BuiltInBackendNamedCommandNames.QUASSEL_NETWORK_MANAGER, "quassel")));
   }
 
   @Test
@@ -425,12 +426,15 @@ class IrcMediatorMockVerifyTest {
 
     quasselSetupRequestCaptor
         .getValue()
-        .accept(new ParsedInput.BackendNamed(BackendNamedCommandNames.QUASSEL_SETUP, "quassel"));
+        .accept(
+            new ParsedInput.BackendNamed(BuiltInBackendNamedCommandNames.QUASSEL_SETUP, "quassel"));
 
     verify(outboundCommandDispatcher)
         .dispatch(
             any(CompositeDisposable.class),
-            eq(new ParsedInput.BackendNamed(BackendNamedCommandNames.QUASSEL_SETUP, "quassel")));
+            eq(
+                new ParsedInput.BackendNamed(
+                    BuiltInBackendNamedCommandNames.QUASSEL_SETUP, "quassel")));
   }
 
   @Test

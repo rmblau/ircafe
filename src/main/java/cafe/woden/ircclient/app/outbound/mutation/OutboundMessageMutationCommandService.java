@@ -5,6 +5,8 @@ import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.app.outbound.backend.OutboundBackendCapabilityPolicy;
 import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpContributor;
+import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpSink;
+import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpTargetView;
 import cafe.woden.ircclient.app.outbound.support.OutboundCommandAvailabilitySupport;
 import cafe.woden.ircclient.model.TargetRef;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -30,16 +32,13 @@ public final class OutboundMessageMutationCommandService implements OutboundHelp
   @NonNull private final OutboundMessageMutationSendSupport outboundMessageMutationSendSupport;
 
   @Override
-  public void appendGeneralHelp(TargetRef out) {
-    ui.appendStatus(out, "(help)", "/reply <msgid> <message> (requires message-tags)");
-    ui.appendStatus(out, "(help)", "/react <msgid> <reaction-token> (requires message-tags)");
-    ui.appendStatus(out, "(help)", "/unreact <msgid> <reaction-token> (requires message-tags)");
-    appendEditHelp(out);
-    appendRedactHelp(out);
+  public void appendGeneralHelp(OutboundHelpSink help) {
+    appendEditHelp(help);
+    appendRedactHelp(help);
   }
 
   @Override
-  public Map<String, Consumer<TargetRef>> topicHelpHandlers() {
+  public Map<String, Consumer<OutboundHelpSink>> topicHelpHandlers() {
     return Map.of(
         "edit",
         this::appendEditHelp,
@@ -231,13 +230,11 @@ public final class OutboundMessageMutationCommandService implements OutboundHelp
     return input != null && (input.indexOf('\n') >= 0 || input.indexOf('\r') >= 0);
   }
 
-  private void appendEditHelp(TargetRef out) {
-    TargetRef target = out != null ? out : targetCoordinator.safeStatusTarget();
+  private void appendEditHelp(OutboundHelpSink help) {
+    OutboundHelpTargetView target = helpTarget(help);
     String serverId = target.serverId();
     boolean available = backendCapabilityPolicy.supportsExperimentalMessageEdit(serverId);
-    ui.appendStatus(
-        target,
-        "(help)",
+    help.appendLine(
         "/edit <msgid> <message> (experimental draft/message-edit)"
             + (available
                 ? ""
@@ -245,18 +242,24 @@ public final class OutboundMessageMutationCommandService implements OutboundHelp
                     serverId, false, "requires negotiated experimental draft/message-edit")));
   }
 
-  private void appendRedactHelp(TargetRef out) {
-    TargetRef target = out != null ? out : targetCoordinator.safeStatusTarget();
+  private void appendRedactHelp(OutboundHelpSink help) {
+    OutboundHelpTargetView target = helpTarget(help);
     String serverId = target.serverId();
     boolean available = messageRedactionFeatureSupport.isAvailable(serverId);
-    ui.appendStatus(
-        target,
-        "(help)",
+    help.appendLine(
         "/redact <msgid> [reason] (alias: /delete)"
             + (available
                 ? ""
                 : outboundCommandAvailabilitySupport.helpAvailabilitySuffix(
                     serverId, false, messageRedactionFeatureSupport.requirementHint())));
+  }
+
+  private OutboundHelpTargetView helpTarget(OutboundHelpSink help) {
+    if (help != null && help.target() != null && !help.target().serverId().isBlank()) {
+      return help.target();
+    }
+    TargetRef safe = targetCoordinator.safeStatusTarget();
+    return new OutboundHelpTargetView(safe.serverId(), safe.target());
   }
 
   private String featureUnavailableMessage(String serverId, String fallback) {

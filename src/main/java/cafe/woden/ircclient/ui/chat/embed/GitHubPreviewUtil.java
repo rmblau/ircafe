@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreview;
 import java.net.URI;
 import java.text.NumberFormat;
 import java.time.Instant;

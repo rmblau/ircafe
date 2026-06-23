@@ -1,9 +1,9 @@
 package cafe.woden.ircclient.translation;
 
-import cafe.woden.ircclient.app.translation.MessageTranslationBackend;
-import cafe.woden.ircclient.app.translation.MessageTranslationRequest;
-import cafe.woden.ircclient.app.translation.MessageTranslationResult;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationBackendProvider;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationRequest;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationResult;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.net.HttpHeaderNames;
 import cafe.woden.ircclient.net.HttpLite;
@@ -24,7 +24,7 @@ import org.springframework.stereotype.Component;
 @SecondaryAdapter
 @InfrastructureLayer
 public final class DeepLMessageTranslationBackend extends AbstractHttpMessageTranslationBackend
-    implements MessageTranslationBackend {
+    implements MessageTranslationBackendProvider {
 
   public static final String BACKEND_ID = "deepl";
 

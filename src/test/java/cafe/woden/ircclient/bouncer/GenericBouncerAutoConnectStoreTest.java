@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.bouncer;
 
+import static cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures.bouncerDiscoveryPort;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -20,7 +21,8 @@ class GenericBouncerAutoConnectStoreTest {
     RuntimeConfigStore runtime = runtimeConfig();
     runtime.rememberGenericBouncerAutoConnectNetwork("bouncer-main", "Libera", true);
 
-    GenericBouncerAutoConnectStore store = new GenericBouncerAutoConnectStore(runtime);
+    GenericBouncerAutoConnectStore store =
+        new GenericBouncerAutoConnectStore(bouncerDiscoveryPort(runtime));
 
     assertTrue(store.isEnabled("bouncer-main", "libera"));
     assertTrue(store.isEnabled("BOUNCER-MAIN", "LIBERA"));
@@ -30,7 +32,8 @@ class GenericBouncerAutoConnectStoreTest {
   @Test
   void setEnabledAddsRemovesAndPersistsRules() {
     RuntimeConfigStore runtime = runtimeConfig();
-    GenericBouncerAutoConnectStore store = new GenericBouncerAutoConnectStore(runtime);
+    GenericBouncerAutoConnectStore store =
+        new GenericBouncerAutoConnectStore(bouncerDiscoveryPort(runtime));
 
     assertFalse(store.isEnabled("bouncer-main", "libera"));
 
@@ -39,7 +42,8 @@ class GenericBouncerAutoConnectStoreTest {
     assertEquals(Map.of("lib_era", true), store.networksForBouncer("bouncer-main"));
 
     RuntimeConfigStore reloadedRuntime = runtimeConfig();
-    GenericBouncerAutoConnectStore reloaded = new GenericBouncerAutoConnectStore(reloadedRuntime);
+    GenericBouncerAutoConnectStore reloaded =
+        new GenericBouncerAutoConnectStore(bouncerDiscoveryPort(reloadedRuntime));
     assertTrue(reloaded.isEnabled("bouncer-main", "lib_era"));
 
     store.setEnabled("bouncer-main", "lib era", false);

@@ -2,6 +2,7 @@ package cafe.woden.ircclient.app.outbound.backend;
 
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.outbound.upload.spi.SemanticUploadCommandHandler;
+import cafe.woden.ircclient.app.outbound.upload.spi.UploadCommandTargetView;
 import cafe.woden.ircclient.app.outbound.upload.spi.UploadCommandTranslationHandler;
 import cafe.woden.ircclient.model.TargetRef;
 import java.util.Objects;
@@ -24,19 +25,19 @@ public final class MatrixOutboundCommandService implements SemanticUploadCommand
   @NonNull private final BackendUploadCommandRegistry backendUploadCommandRegistry;
 
   @Override
-  public void appendUploadHelp(TargetRef out) {
-    matrixCommandSupport.appendUploadHelp(ui, out);
+  public void appendUploadHelp(UploadCommandTargetView out) {
+    matrixCommandSupport.appendUploadHelp(ui, targetRefOrNull(out));
   }
 
   @Override
-  public void appendUploadUsage(TargetRef out) {
-    matrixCommandSupport.appendUploadUsage(ui, out);
+  public void appendUploadUsage(UploadCommandTargetView out) {
+    matrixCommandSupport.appendUploadUsage(ui, targetRefOrNull(out));
   }
 
   @Override
   public UploadPreparation prepareUpload(
-      TargetRef target, String msgType, String path, String caption) {
-    if (target == null) return usage();
+      UploadCommandTargetView target, String msgType, String path, String caption) {
+    if (target == null || target.isBlank()) return usage();
 
     String normalizedType = matrixCommandSupport.normalizeUploadMsgType(msgType);
     String sourcePath = matrixCommandSupport.normalizeUploadPath(path);
@@ -70,6 +71,13 @@ public final class MatrixOutboundCommandService implements SemanticUploadCommand
       return usage();
     }
     return success(line);
+  }
+
+  private static TargetRef targetRefOrNull(UploadCommandTargetView target) {
+    if (target == null || target.isBlank()) {
+      return null;
+    }
+    return new TargetRef(target.serverId(), target.target());
   }
 
   private static UploadPreparation success(String line) {

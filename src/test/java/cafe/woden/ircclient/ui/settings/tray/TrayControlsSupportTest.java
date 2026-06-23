@@ -9,7 +9,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import cafe.woden.ircclient.config.PushyPropertiesTestFixtures;
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.TrayRuntimeConfigPort;
 import cafe.woden.ircclient.config.properties.PushyProperties;
 import cafe.woden.ircclient.model.BuiltInSound;
 import cafe.woden.ircclient.notify.pushy.PushySettingsBus;
@@ -138,7 +138,7 @@ class TrayControlsSupportTest {
 
   @Test
   void rememberSettingsPersistsTraySettingsAndUpdatesServices() {
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    TrayRuntimeConfigPort runtimeConfig = mock(TrayRuntimeConfigPort.class);
     NotificationSoundSettingsBus soundBus = mock(NotificationSoundSettingsBus.class);
     PushySettingsBus pushyBus = mock(PushySettingsBus.class);
     UpdateNotifierService updateNotifierService = mock(UpdateNotifierService.class);

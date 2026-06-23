@@ -2,7 +2,13 @@ package cafe.woden.ircclient.app.translation;
 
 import cafe.woden.ircclient.app.api.MessageTranslation;
 import cafe.woden.ircclient.app.api.UiPort;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationBackendProvider;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguage;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationRequest;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationResult;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationTargetView;
 import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.execution.ExecutorConfig;
 import cafe.woden.ircclient.model.TargetRef;
 import java.time.Instant;
@@ -18,6 +24,7 @@ import org.jmolecules.architecture.layered.ApplicationLayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
@@ -38,7 +45,14 @@ public final class MessageTranslationDispatcher {
   @Qualifier(ExecutorConfig.TRANSLATION_EXECUTOR)
   private final ExecutorService translationExecutor;
 
+  private volatile InstalledPluginsPort installedPlugins;
+
   private final AtomicInteger inFlight = new AtomicInteger();
+
+  @Autowired(required = false)
+  void setInstalledPlugins(InstalledPluginsPort installedPlugins) {
+    this.installedPlugins = installedPlugins;
+  }
 
   public boolean requestIncomingMessageTranslation(
       TargetRef target, Instant at, String fromNick, String messageId, String text) {
@@ -104,7 +118,8 @@ public final class MessageTranslationDispatcher {
       return false;
     }
 
-    Optional<MessageTranslationBackend> backend = backendRegistry.find(translation.backendId());
+    Optional<MessageTranslationBackendProvider> backend =
+        backendRegistry.find(translation.backendId());
     if (backend.isEmpty()) {
       logManualSkip(
           automatic, "configured backend is not registered (backend={})", translation.backendId());
@@ -120,7 +135,7 @@ public final class MessageTranslationDispatcher {
 
     MessageTranslationRequest request =
         new MessageTranslationRequest(
-            target,
+            translationTarget(target),
             at,
             fromNick,
             normalizedMessageId,
@@ -158,7 +173,7 @@ public final class MessageTranslationDispatcher {
   }
 
   private void runTranslationWithPreflight(
-      MessageTranslationBackend backend,
+      MessageTranslationBackendProvider backend,
       MessageTranslationRequest request,
       long timeoutMs,
       boolean suppressSameLanguageResult,
@@ -215,7 +230,7 @@ public final class MessageTranslationDispatcher {
   }
 
   private void runTranslation(
-      MessageTranslationBackend backend,
+      MessageTranslationBackendProvider backend,
       MessageTranslationRequest request,
       long timeoutMs,
       boolean suppressSameLanguageResult) {
@@ -245,7 +260,7 @@ public final class MessageTranslationDispatcher {
                     if (ui != null) {
                       boolean applied =
                           ui.applyMessageTranslation(
-                              request.target(),
+                              targetRef(request),
                               request.at(),
                               toMessageTranslation(backend, request, result));
                       if (!applied) {
@@ -302,7 +317,7 @@ public final class MessageTranslationDispatcher {
   }
 
   private static MessageTranslation toMessageTranslation(
-      MessageTranslationBackend backend,
+      MessageTranslationBackendProvider backend,
       MessageTranslationRequest request,
       MessageTranslationResult result) {
     String sourceLanguage = firstNonBlank(result.sourceLanguage(), request.sourceLanguage());
@@ -329,6 +344,15 @@ public final class MessageTranslationDispatcher {
     inFlight.updateAndGet(current -> Math.max(0, current - 1));
   }
 
+  private static MessageTranslationTargetView translationTarget(TargetRef target) {
+    return new MessageTranslationTargetView(target.serverId(), target.target());
+  }
+
+  private static TargetRef targetRef(MessageTranslationRequest request) {
+    MessageTranslationTargetView target = request.target();
+    return new TargetRef(target.serverId(), target.target());
+  }
+
   private static boolean shouldTranslateBetween(String sourceLanguage, String targetLanguage) {
     String source = Objects.toString(sourceLanguage, "").trim();
     String target = Objects.toString(targetLanguage, "").trim();
@@ -350,8 +374,9 @@ public final class MessageTranslationDispatcher {
     }
   }
 
-  private static List<String> detectionLanguageCodes(IrcProperties.Client.Translation translation) {
-    return MessageTranslationLanguageCatalog.availableTargets(translation).stream()
+  private List<String> detectionLanguageCodes(IrcProperties.Client.Translation translation) {
+    return MessageTranslationLanguageCatalog.availableTargets(translation, installedPlugins)
+        .stream()
         .map(MessageTranslationLanguage::code)
         .toList();
   }

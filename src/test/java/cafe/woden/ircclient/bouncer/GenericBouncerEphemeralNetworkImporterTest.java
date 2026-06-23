@@ -1,11 +1,13 @@
 package cafe.woden.ircclient.bouncer;
 
+import static cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures.bouncerDiscoveryPort;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
@@ -40,20 +42,22 @@ class GenericBouncerEphemeralNetworkImporterTest {
         RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"), props);
     runtime.rememberGenericBouncerAutoConnectNetwork("bouncer-1", "Libera", true);
 
-    ServerRegistry configured = new ServerRegistry(props, runtime);
+    ServerRegistry configured =
+        new ServerRegistry(props, RuntimeConfigStoreTestFixtures.serverRegistryPort(runtime));
     EphemeralServerRegistry ephemeral = new EphemeralServerRegistry();
-    GenericBouncerAutoConnectStore autoConnect = new GenericBouncerAutoConnectStore(runtime);
+    GenericBouncerAutoConnectStore autoConnect =
+        new GenericBouncerAutoConnectStore(bouncerDiscoveryPort(runtime));
 
     BouncerConnectionPort connectionPort = mock(BouncerConnectionPort.class);
     when(connectionPort.connect(anyString())).thenReturn(Completable.complete());
 
     GenericBouncerEphemeralNetworkImporter importer =
         new GenericBouncerEphemeralNetworkImporter(
-            new GenericBouncerNetworkMappingStrategy(runtime),
+            new GenericBouncerNetworkMappingStrategy(bouncerDiscoveryPort(runtime)),
             configured,
             ephemeral,
             autoConnect,
-            runtime,
+            bouncerDiscoveryPort(runtime),
             connectionPort);
 
     BouncerDiscoveredNetwork network =

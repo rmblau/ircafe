@@ -1,11 +1,10 @@
 package cafe.woden.ircclient.ui.settings.theme;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemePresetContribution;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -478,17 +477,10 @@ class ThemePresetRegistry {
       return Map.copyOf(map);
     }
 
-    List<ThemeContributionProvider> providers =
-        installedPlugins.loadInstalledServices(ThemeContributionProvider.class, List.of());
-    for (ThemeContributionProvider provider :
-        Objects.requireNonNullElse(providers, List.<ThemeContributionProvider>of())) {
-      if (provider == null) continue;
-      for (ThemePresetContribution preset :
-          Objects.requireNonNullElse(provider.themePresets(), List.<ThemePresetContribution>of())) {
-        if (preset == null || preset.id().isBlank()) continue;
-        String id = preset.id().toLowerCase(java.util.Locale.ROOT);
-        map.putIfAbsent(id, new ThemePreset(id, preset.dark(), preset.extraDefaults()));
-      }
+    for (ThemePresetContribution preset :
+        ThemeContributionProviders.themePresets(installedPlugins)) {
+      String id = preset.id().toLowerCase(java.util.Locale.ROOT);
+      map.putIfAbsent(id, new ThemePreset(id, preset.dark(), preset.extraDefaults()));
     }
     return Map.copyOf(map);
   }

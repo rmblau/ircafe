@@ -21,6 +21,7 @@ import java.awt.Window;
 import java.awt.datatransfer.StringSelection;
 import java.beans.PropertyChangeListener;
 import java.net.URI;
+import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -55,6 +56,8 @@ final class ChatImageComponent extends JPanel {
   private final ImageFetchService fetch;
   private final UiSettingsBus uiSettingsBus;
   private final EmbedCardStyle cardStyle;
+  private final List<cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>
+      imageUrlExtensionProviders;
 
   // Coordinates "only newest GIF animates" within a transcript.
   private final GifAnimationCoordinator gifCoordinator;
@@ -121,13 +124,17 @@ final class ChatImageComponent extends JPanel {
       UiSettingsBus uiSettingsBus,
       EmbedCardStyle cardStyle,
       GifAnimationCoordinator gifCoordinator,
-      long embedSeq) {
+      long embedSeq,
+      List<? extends cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>
+          imageUrlExtensionProviders) {
     super(new FlowLayout(FlowLayout.LEFT, 0, 0));
     this.serverId = serverId;
     this.url = url;
     this.fetch = fetch;
     this.uiSettingsBus = uiSettingsBus;
     this.cardStyle = cardStyle != null ? cardStyle : EmbedCardStyle.DEFAULT;
+    this.imageUrlExtensionProviders =
+        List.copyOf(java.util.Objects.requireNonNullElse(imageUrlExtensionProviders, List.of()));
     this.gifCoordinator = gifCoordinator;
     this.embedSeq = embedSeq;
 
@@ -601,7 +608,7 @@ final class ChatImageComponent extends JPanel {
     Window w = SwingUtilities.getWindowAncestor(this);
     if (w == null) return;
 
-    ImageViewerDialog.show(w, url, b);
+    ImageViewerDialog.show(w, url, b, imageUrlExtensionProviders);
   }
 
   private static String message(String key, Object... args) {

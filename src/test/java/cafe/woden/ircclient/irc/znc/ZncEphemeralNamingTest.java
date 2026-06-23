@@ -2,15 +2,14 @@ package cafe.woden.ircclient.irc.znc;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
+import cafe.woden.ircclient.bouncer.spi.BouncerServerProfile;
 import org.junit.jupiter.api.Test;
 
 class ZncEphemeralNamingTest {
 
   @Test
   void derive_usesLoginUser_whenNoSasl() {
-    IrcProperties.Server s = server("znc", "user", null);
+    BouncerServerProfile s = server("znc", "user", null);
     ZncNetwork net = new ZncNetwork("znc", "Libera.Chat", true);
 
     ZncEphemeralNaming.Derived d = ZncEphemeralNaming.derive(s, net);
@@ -22,7 +21,7 @@ class ZncEphemeralNamingTest {
 
   @Test
   void derive_stripsExistingNetworkFromLogin() {
-    IrcProperties.Server s = server("znc", "user/oldnet", null);
+    BouncerServerProfile s = server("znc", "user/oldnet", null);
     ZncNetwork net = new ZncNetwork("znc", "oftc", true);
 
     ZncEphemeralNaming.Derived d = ZncEphemeralNaming.derive(s, net);
@@ -34,7 +33,7 @@ class ZncEphemeralNamingTest {
 
   @Test
   void derive_preservesClientIdInLogin() {
-    IrcProperties.Server s = server("znc", "user@laptop/oldnet", null);
+    BouncerServerProfile s = server("znc", "user@laptop/oldnet", null);
     ZncNetwork net = new ZncNetwork("znc", "Libera", true);
 
     ZncEphemeralNaming.Derived d = ZncEphemeralNaming.derive(s, net);
@@ -46,7 +45,7 @@ class ZncEphemeralNamingTest {
 
   @Test
   void derive_prefersSaslUsernameOverLogin() {
-    IrcProperties.Server s = server("znc", "loginUser", "saslUser@desktop/ignored");
+    BouncerServerProfile s = server("znc", "loginUser", "saslUser@desktop/ignored");
     ZncNetwork net = new ZncNetwork("znc", "OFTC", true);
 
     ZncEphemeralNaming.Derived d = ZncEphemeralNaming.derive(s, net);
@@ -63,18 +62,7 @@ class ZncEphemeralNamingTest {
     assertEquals("my_net___cool", ZncEphemeralNaming.normalizeNetworkKey("  my net! (cool)  "));
   }
 
-  private static IrcProperties.Server server(String id, String login, String saslUser) {
-    IrcProperties.Server.Sasl sasl =
-        (saslUser == null)
-            ? new IrcProperties.Server.Sasl(false, "", "", "PLAIN", null)
-            : new IrcProperties.Server.Sasl(true, saslUser, "pw", "PLAIN", null);
-
-    return IrcPropertiesTestFixtures.serverBuilder(id)
-        .host("znc.example")
-        .nick("nick")
-        .login(login)
-        .realName("real")
-        .sasl(sasl)
-        .build();
+  private static BouncerServerProfile server(String id, String login, String saslUser) {
+    return new BouncerServerProfile(id, login, saslUser);
   }
 }

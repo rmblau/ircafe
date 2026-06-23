@@ -1,6 +1,8 @@
 package cafe.woden.ircclient.irc.znc;
 
-import cafe.woden.ircclient.bouncer.BouncerDiscoveredNetwork;
+import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
+import cafe.woden.ircclient.bouncer.spi.BuiltInBouncerBackendIds;
+import cafe.woden.ircclient.bouncer.spi.BuiltInBouncerNetworkNaming;
 import cafe.woden.ircclient.irc.pircbotx.parse.PircbotxZncParsers;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -20,19 +22,19 @@ public class ZncBouncerDiscoveryAdapter {
     String name = Objects.toString(row.name, "").trim();
     if (name.isEmpty()) return null;
 
-    String networkId = ZncEphemeralNaming.normalizeNetworkKey(name);
+    String networkId = BuiltInBouncerNetworkNaming.normalizeZncNetworkKey(name);
     if (networkId == null || networkId.isBlank()) {
       networkId = name.toLowerCase(Locale.ROOT);
     }
 
     HashMap<String, String> attrs = new HashMap<>();
-    attrs.put("source", ZncBouncerNetworkMappingStrategy.BACKEND_ID);
+    attrs.put("source", BuiltInBouncerBackendIds.ZNC);
     if (row.onIrc != null) {
       attrs.put("onIrc", String.valueOf(row.onIrc));
     }
 
     return new BouncerDiscoveredNetwork(
-        ZncBouncerNetworkMappingStrategy.BACKEND_ID,
+        BuiltInBouncerBackendIds.ZNC,
         originServerId,
         networkId,
         name,
@@ -44,32 +46,6 @@ public class ZncBouncerDiscoveryAdapter {
 
   public boolean looksLikeListNetworksDoneLine(String messageText) {
     return PircbotxZncParsers.looksLikeListNetworksDoneLine(messageText);
-  }
-
-  public BouncerDiscoveredNetwork fromZncNetwork(ZncNetwork network) {
-    if (network == null) return null;
-
-    String name = Objects.toString(network.name(), "").trim();
-    String networkId = ZncEphemeralNaming.normalizeNetworkKey(name);
-    if (networkId == null || networkId.isBlank()) {
-      networkId = name.toLowerCase(Locale.ROOT);
-    }
-
-    HashMap<String, String> attrs = new HashMap<>();
-    attrs.put("source", ZncBouncerNetworkMappingStrategy.BACKEND_ID);
-    if (network.onIrc() != null) {
-      attrs.put("onIrc", String.valueOf(network.onIrc()));
-    }
-
-    return new BouncerDiscoveredNetwork(
-        ZncBouncerNetworkMappingStrategy.BACKEND_ID,
-        network.bouncerServerId(),
-        networkId,
-        name,
-        name,
-        loginUserHint(attrs),
-        capabilityFlags(attrs),
-        Map.copyOf(attrs));
   }
 
   private static String loginUserHint(Map<String, String> attrs) {

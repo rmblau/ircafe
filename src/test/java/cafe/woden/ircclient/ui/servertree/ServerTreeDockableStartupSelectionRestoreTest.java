@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.servertree;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
+import cafe.woden.ircclient.config.RuntimeConfigServerTreeAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.config.api.ServerEntry;
@@ -88,7 +89,7 @@ class ServerTreeDockableStartupSelectionRestoreTest {
   private static ServerTreeDockable newDockable(RuntimeConfigStore runtimeConfigStore) {
     return ServerTreeDockableTestSupport.newDockable(
         null,
-        runtimeConfigStore,
+        new RuntimeConfigServerTreeAdapter(runtimeConfigStore),
         null,
         null,
         null,

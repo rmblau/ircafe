@@ -3,15 +3,24 @@ package cafe.woden.ircclient.bouncer;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import cafe.woden.ircclient.config.IrcProperties;
+import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
+import cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy;
+import cafe.woden.ircclient.bouncer.spi.BouncerServerProfile;
+import cafe.woden.ircclient.bouncer.spi.ResolvedBouncerNetwork;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
+import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class BouncerBackendRegistryTest {
+
+  @TempDir Path tempDir;
 
   @Test
   void buildsDescriptorsFromMappingStrategies() {
@@ -47,13 +56,27 @@ class BouncerBackendRegistryTest {
   }
 
   @Test
+  void exposesMappingStrategiesByBackendId() {
+    FakeStrategy first = new FakeStrategy("soju", "soju:", "Soju Networks", Set.of(), "one");
+    FakeStrategy duplicate =
+        new FakeStrategy(" SOJU ", "soju:", "Soju Networks 2", Set.of(), "two");
+    FakeStrategy znc = new FakeStrategy("znc", "znc:", "ZNC Networks", Set.of(), "three");
+
+    BouncerBackendRegistry registry = new BouncerBackendRegistry(List.of(first, duplicate, znc));
+
+    assertEquals(first, registry.mappingStrategy("SOJU").orElseThrow());
+    assertEquals(znc, registry.mappingStrategy("znc").orElseThrow());
+    assertTrue(registry.mappingStrategy("missing").isEmpty());
+  }
+
+  @Test
   void loadsMappingStrategiesFromInstalledPluginsPort() {
     BouncerBackendRegistry registry =
         new BouncerBackendRegistry(
             List.of(new FakeStrategy("generic", "bouncer:", "Bouncer Networks", Set.of(), "net-g")),
             new FakeInstalledPluginsPort(
                 List.of(
-                    new FakeStrategy(
+                    new FakePluginStrategy(
                         "plugin-bouncer",
                         "plugin:",
                         "Plugin Bouncer Networks",
@@ -68,6 +91,39 @@ class BouncerBackendRegistryTest {
     assertEquals(Set.of("example.com/plugin-bouncer"), plugin.capabilityHints());
   }
 
+  @Test
+  void loadsMappingStrategySpiFromInstalledPluginsPort() {
+    BouncerBackendRegistry registry =
+        new BouncerBackendRegistry(
+            List.of(new FakeStrategy("generic", "bouncer:", "Bouncer Networks", Set.of(), "net-g")),
+            new FakeInstalledPluginsPort(
+                List.of(
+                    new FakeSpiStrategy(
+                        "plugin-spi",
+                        "plugin-spi:",
+                        "Plugin SPI Networks",
+                        Set.of("example.com/plugin-spi"),
+                        "net-spi"))));
+
+    assertEquals(Set.of("generic", "plugin-spi"), registry.backendIds());
+
+    BouncerBackendDescriptor plugin = registry.find("PLUGIN-SPI").orElseThrow();
+    assertEquals("plugin-spi:", plugin.ephemeralIdPrefix());
+    assertEquals("Plugin SPI Networks", plugin.networksGroupLabel());
+    assertEquals(Set.of("example.com/plugin-spi"), plugin.capabilityHints());
+  }
+
+  @Test
+  void loadsNoArgBuiltInMappingStrategiesThroughClasspathServiceLoader() {
+    RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+
+    BouncerBackendRegistry registry = new BouncerBackendRegistry(List.of(), installedPlugins);
+
+    assertTrue(installedPlugins.pluginProblems().isEmpty());
+    assertTrue(registry.backendIds().containsAll(Set.of("soju", "znc")));
+  }
+
   private record FakeStrategy(
       String backendId,
       String ephemeralIdPrefix,
@@ -78,17 +134,41 @@ class BouncerBackendRegistryTest {
 
     @Override
     public ResolvedBouncerNetwork resolveNetwork(
-        IrcProperties.Server bouncer, BouncerDiscoveredNetwork network) {
+        BouncerServerProfile bouncer, BouncerDiscoveredNetwork network) {
       return new ResolvedBouncerNetwork(
           ephemeralIdPrefix + "origin:" + idSuffix, "user/" + idSuffix, "display", "display");
     }
+  }
+
+  private record FakeSpiStrategy(
+      String backendId,
+      String ephemeralIdPrefix,
+      String networksGroupLabel,
+      Set<String> capabilityHints,
+      String idSuffix)
+      implements cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy {
 
     @Override
-    public IrcProperties.Server buildEphemeralServer(
-        IrcProperties.Server bouncer,
-        ResolvedBouncerNetwork resolved,
-        List<String> autoJoinChannels) {
-      return bouncer;
+    public ResolvedBouncerNetwork resolveNetwork(
+        BouncerServerProfile bouncer, BouncerDiscoveredNetwork network) {
+      return new ResolvedBouncerNetwork(
+          ephemeralIdPrefix + "origin:" + idSuffix, "user/" + idSuffix, "display", "display");
+    }
+  }
+
+  private record FakePluginStrategy(
+      String backendId,
+      String ephemeralIdPrefix,
+      String networksGroupLabel,
+      Set<String> capabilityHints,
+      String idSuffix)
+      implements BouncerNetworkMappingStrategy {
+
+    @Override
+    public ResolvedBouncerNetwork resolveNetwork(
+        BouncerServerProfile bouncer, BouncerDiscoveredNetwork network) {
+      return new ResolvedBouncerNetwork(
+          ephemeralIdPrefix + "origin:" + idSuffix, "user/" + idSuffix, "display", "display");
     }
   }
 

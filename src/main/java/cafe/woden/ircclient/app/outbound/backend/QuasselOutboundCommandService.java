@@ -8,6 +8,7 @@ import cafe.woden.ircclient.irc.quassel.control.QuasselCoreControlPort;
 import cafe.woden.ircclient.model.TargetRef;
 import io.reactivex.rxjava3.core.Single;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import jakarta.annotation.PreDestroy;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -38,6 +39,7 @@ public final class QuasselOutboundCommandService {
   private final ConnectionCoordinator connectionCoordinator;
   private final TargetCoordinator targetCoordinator;
   private final QuasselOutboundCommandSupport quasselCommandSupport;
+  private final CompositeDisposable commandDisposables = new CompositeDisposable();
   private final Map<String, QuasselNetworkVerbHandler> quasselNetworkVerbHandlers;
 
   QuasselOutboundCommandService(
@@ -54,6 +56,15 @@ public final class QuasselOutboundCommandService {
     this.quasselCommandSupport =
         Objects.requireNonNull(quasselCommandSupport, "quasselCommandSupport");
     this.quasselNetworkVerbHandlers = buildQuasselNetworkVerbHandlers();
+  }
+
+  @PreDestroy
+  void shutdown() {
+    commandDisposables.dispose();
+  }
+
+  public void handleQuasselSetup(String serverId) {
+    handleQuasselSetup(commandDisposables, serverId);
   }
 
   public void handleQuasselSetup(CompositeDisposable disposables, String serverId) {
@@ -116,6 +127,10 @@ public final class QuasselOutboundCommandService {
                 err -> ui.appendError(status, "(qsetup-error)", String.valueOf(err))));
   }
 
+  public void handleQuasselNetwork(String args) {
+    handleQuasselNetwork(commandDisposables, args);
+  }
+
   public void handleQuasselNetwork(CompositeDisposable disposables, String args) {
     List<String> tokens = tokenizeWhitespaceArgs(args);
     TargetRef safe = targetCoordinator.safeStatusTarget();
@@ -158,6 +173,10 @@ public final class QuasselOutboundCommandService {
       return;
     }
     handler.handle(disposables, sid, status, tokens, cursor, verb);
+  }
+
+  public void handleQuasselNetworkManager(String args) {
+    handleQuasselNetworkManager(commandDisposables, args);
   }
 
   public void handleQuasselNetworkManager(CompositeDisposable disposables, String args) {

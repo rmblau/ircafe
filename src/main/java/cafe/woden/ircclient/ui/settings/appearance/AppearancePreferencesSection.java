@@ -11,6 +11,7 @@ import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettingsBus;
 import cafe.woden.ircclient.ui.settings.theme.ThemeManager;
 import cafe.woden.ircclient.ui.settings.theme.ThemeTweakSettings;
 import cafe.woden.ircclient.ui.settings.theme.ThemeTweakSettingsBus;
+import cafe.woden.ircclient.ui.settings.theme.spi.ThemeOption;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,7 +88,7 @@ public record AppearancePreferencesSection(
 
   private static Map<String, String> themeLabelById(ThemeManager themeManager) {
     Map<String, String> themeLabelById = new LinkedHashMap<>();
-    for (ThemeManager.ThemeOption opt : themeManager.supportedThemes()) {
+    for (ThemeOption opt : themeManager.supportedThemes()) {
       themeLabelById.put(opt.id(), opt.label());
     }
     return themeLabelById;

@@ -5,7 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.NickColorRuntimeConfigPort;
 import cafe.woden.ircclient.ui.chat.NickColorSettings;
 import cafe.woden.ircclient.ui.chat.NickColorSettingsBus;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
@@ -32,7 +32,7 @@ class NickColorControlsSupportTest {
 
   @Test
   void rememberSettingsUpdatesBusAndPersistsRuntimeConfig() {
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    NickColorRuntimeConfigPort runtimeConfig = mock(NickColorRuntimeConfigPort.class);
     NickColorSettingsBus nickColorSettingsBus = mock(NickColorSettingsBus.class);
     NickColorSettings settings = new NickColorSettings(true, 4.5);
 

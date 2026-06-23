@@ -19,6 +19,8 @@ import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
+import cafe.woden.ircclient.config.RuntimeConfigConnectionAdapter;
+import cafe.woden.ircclient.config.RuntimeConfigServerTreeAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
 import cafe.woden.ircclient.config.properties.LogProperties;
@@ -244,7 +246,8 @@ class DetachedChannelLifecycleFunctionalTest {
       runtimeConfig.rememberJoinedChannel("libera", channel);
     }
 
-    ServerRegistry serverRegistry = new ServerRegistry(props, runtimeConfig);
+    ServerRegistry serverRegistry =
+        new ServerRegistry(props, RuntimeConfigStoreTestFixtures.serverRegistryPort(runtimeConfig));
     ServerCatalog serverCatalog = new ServerCatalog(serverRegistry, new EphemeralServerRegistry());
     LogProperties logProps =
         new LogProperties(null, null, null, null, null, null, null, null, null, null);
@@ -335,7 +338,7 @@ class DetachedChannelLifecycleFunctionalTest {
             ui,
             serverRegistry,
             serverCatalog,
-            runtimeConfig,
+            new RuntimeConfigConnectionAdapter(runtimeConfig),
             logProps,
             tray);
 
@@ -346,7 +349,7 @@ class DetachedChannelLifecycleFunctionalTest {
             targetMembership,
             bouncerPlayback,
             serverRegistry,
-            runtimeConfig,
+            new RuntimeConfigServerTreeAdapter(runtimeConfig),
             connectionCoordinator,
             mock(IgnoreListQueryPort.class),
             mock(UserhostQueryService.class),

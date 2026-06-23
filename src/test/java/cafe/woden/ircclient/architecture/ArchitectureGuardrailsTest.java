@@ -7,10 +7,10 @@ import static com.tngtech.archunit.core.domain.JavaClass.Predicates.assignableTo
 import static com.tngtech.archunit.core.domain.properties.HasOwner.Predicates.With.owner;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
-import cafe.woden.ircclient.bouncer.BouncerBackendDiscoveryHandler;
 import cafe.woden.ircclient.bouncer.BouncerConnectionPort;
 import cafe.woden.ircclient.bouncer.BouncerDiscoveryEventPort;
-import cafe.woden.ircclient.bouncer.BouncerNetworkMappingStrategy;
+import cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler;
+import cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy;
 import cafe.woden.ircclient.irc.pircbotx.client.*;
 import cafe.woden.ircclient.irc.pircbotx.client.PircbotxIrcClientService;
 import cafe.woden.ircclient.irc.quassel.control.QuasselCoreControlPort;
@@ -66,9 +66,7 @@ class ArchitectureGuardrailsTest {
               || name.startsWith("cafe.woden.ircclient.bouncer.AbstractBouncerAutoConnectStore$")
               || name.equals("cafe.woden.ircclient.bouncer.BouncerNetworkDiscoveryOrchestrator")
               || name.startsWith(
-                  "cafe.woden.ircclient.bouncer.BouncerNetworkDiscoveryOrchestrator$")
-              || name.equals("cafe.woden.ircclient.bouncer.ResolvedBouncerNetwork")
-              || name.startsWith("cafe.woden.ircclient.bouncer.ResolvedBouncerNetwork$");
+                  "cafe.woden.ircclient.bouncer.BouncerNetworkDiscoveryOrchestrator$");
         }
       };
 
