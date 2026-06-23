@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Objects;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /** Handles interceptor custom sound imports and plugin-provided sound file extensions. */
@@ -20,6 +21,7 @@ public final class InterceptorSoundFileImporter {
   private final InterceptorConfigPort runtimeConfig;
   private final List<CustomSoundFileExtensionProvider> soundFileExtensionProviders;
 
+  @Autowired
   public InterceptorSoundFileImporter(
       InterceptorConfigPort runtimeConfig, ObjectProvider<InstalledPluginsPort> installedPlugins) {
     this(runtimeConfig, resolveInstalledPlugins(installedPlugins));

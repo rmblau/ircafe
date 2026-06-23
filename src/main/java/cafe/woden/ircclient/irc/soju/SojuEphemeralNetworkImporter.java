@@ -16,6 +16,7 @@ import java.util.Objects;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -32,6 +33,7 @@ public class SojuEphemeralNetworkImporter implements BouncerBackendDiscoveryHand
 
   private final BouncerNetworkDiscoveryOrchestrator orchestrator;
 
+  @Autowired
   public SojuEphemeralNetworkImporter(
       ServerRegistry serverRegistry,
       EphemeralServerRegistry ephemeralServers,
