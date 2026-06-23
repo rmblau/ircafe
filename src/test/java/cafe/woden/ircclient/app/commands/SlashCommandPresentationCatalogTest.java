@@ -116,7 +116,12 @@ class SlashCommandPresentationCatalogTest {
     SlashCommandPresentationContributor builtInContributor =
         autocompleteContributor("/built-in", "Built-in command");
     SlashCommandPresentationContributor pluginContributor =
-        autocompleteContributor("/plugin-help", "Plugin command");
+        new SlashCommandPresentationContributor() {
+          @Override
+          public List<SlashCommandDescriptor> autocompleteCommands() {
+            return List.of(new SlashCommandDescriptor("/plugin-help", "Plugin command"));
+          }
+        };
 
     SlashCommandPresentationCatalog catalog =
         new SlashCommandPresentationCatalog(
