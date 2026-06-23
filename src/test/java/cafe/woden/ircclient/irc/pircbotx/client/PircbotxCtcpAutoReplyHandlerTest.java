@@ -31,7 +31,7 @@ class PircbotxCtcpAutoReplyHandlerTest {
 
     assertTrue(handler.handleIfPresent(bot, "alice", "\u0001VERSION\u0001"));
 
-    verify(outputIrc).notice("alice", "\u0001VERSION IRCafe test\u0001");
+    verify(outputIrc).ctcpResponse("alice", "VERSION IRCafe test");
   }
 
   @Test
@@ -43,7 +43,7 @@ class PircbotxCtcpAutoReplyHandlerTest {
 
     assertTrue(handler.handleIfPresent(bot, "alice", "\u0001PING 123\u0001"));
 
-    verify(outputIrc, never()).notice("alice", "\u0001PING 123\u0001");
+    verify(outputIrc, never()).ctcpResponse("alice", "PING 123");
   }
 
   @Test
@@ -59,7 +59,7 @@ class PircbotxCtcpAutoReplyHandlerTest {
 
     assertTrue(handler.handleIfPresent(bot, "me", "\u0001VERSION\u0001"));
 
-    verify(outputIrc, never()).notice("me", "\u0001VERSION IRCafe test\u0001");
+    verify(outputIrc, never()).ctcpResponse("me", "VERSION IRCafe test");
   }
 
   private static PircbotxCtcpAutoReplyHandler newHandler(
