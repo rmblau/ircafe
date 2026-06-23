@@ -12,6 +12,7 @@ import cafe.woden.ircclient.irc.playback.*;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -81,6 +82,9 @@ public final class PircbotxNoticeEventEmitter {
 
     Instant at = PircbotxEventMetadata.inboundAt(event);
     String notice = event.getNotice();
+    if (PircbotxUtil.isCtcpWrapped(notice) && isFromSelf(event, from)) {
+      return;
+    }
     Map<String, String> ircv3Tags =
         PircbotxEventMetadata.withObservedHostmaskTag(
             new HashMap<>(PircbotxEventMetadata.ircv3TagsFromEvent(event)), event.getUser());
@@ -146,5 +150,27 @@ public final class PircbotxNoticeEventEmitter {
     emit.accept(
         new ServerIrcEvent(
             serverId, new IrcEvent.Notice(at, from, target, notice, messageId, ircv3Tags)));
+  }
+
+  private static boolean isFromSelf(NoticeEvent event, String from) {
+    String candidate = Objects.toString(from, "").trim();
+    if (candidate.isEmpty()) return false;
+    try {
+      if (event != null && event.getBot() != null) {
+        String nick = PircbotxUtil.safeStr(event.getBot()::getNick, "");
+        if (!nick.isBlank() && candidate.equalsIgnoreCase(nick.trim())) return true;
+      }
+    } catch (Exception ignored) {
+    }
+    try {
+      if (event != null && event.getBot() != null && event.getBot().getUserBot() != null) {
+        String nick = event.getBot().getUserBot().getNick();
+        if (nick != null && !nick.isBlank() && candidate.equalsIgnoreCase(nick.trim())) {
+          return true;
+        }
+      }
+    } catch (Exception ignored) {
+    }
+    return false;
   }
 }

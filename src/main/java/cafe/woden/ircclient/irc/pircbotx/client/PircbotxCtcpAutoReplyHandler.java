@@ -7,14 +7,10 @@ import java.util.Locale;
 import java.util.Objects;
 import org.jmolecules.architecture.layered.InfrastructureLayer;
 import org.pircbotx.PircBotX;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /** Handles built-in CTCP auto-replies for the PircBotX transport. */
 @InfrastructureLayer
 final class PircbotxCtcpAutoReplyHandler {
-  private static final Logger log = LoggerFactory.getLogger(PircbotxCtcpAutoReplyHandler.class);
-
   private final String version;
   private final CtcpReplyRuntimeConfigPort runtimeConfig;
 
@@ -29,13 +25,6 @@ final class PircbotxCtcpAutoReplyHandler {
 
     SelfNickSnapshot selfNick = resolveSelfNickSnapshot(bot);
     if (isSelfEcho(fromNick, selfNick)) {
-      log.debug(
-          "[ircafe] CTCPDBG service-drop-self from={} n1={} n2={} n3={} message={}",
-          Objects.toString(fromNick, "").trim(),
-          selfNick.currentNick(),
-          selfNick.userBotNick(),
-          selfNick.configuredNick(),
-          message.replace('\u0001', '|'));
       return true;
     }
 
@@ -43,23 +32,11 @@ final class PircbotxCtcpAutoReplyHandler {
     if (inner.isEmpty()) return false;
 
     String command = parseCommand(inner);
-    log.debug(
-        "[ircafe] CTCPDBG service-eval from={} cmd={} inner={} n1={} n2={} n3={}",
-        Objects.toString(fromNick, ""),
-        command,
-        inner,
-        selfNick.currentNick(),
-        selfNick.userBotNick(),
-        selfNick.configuredNick());
 
     if (!isKnownAutoReplyCommand(command)) {
       return false;
     }
     if (!isReplyEnabled(command)) {
-      log.debug(
-          "[ircafe] CTCPDBG service-drop-disabled from={} cmd={}",
-          Objects.toString(fromNick, ""),
-          command);
       return true;
     }
 
@@ -73,12 +50,7 @@ final class PircbotxCtcpAutoReplyHandler {
 
   private boolean sendVersionReply(PircBotX bot, String fromNick) {
     String resolvedVersion = (version == null) ? "IRCafe" : version;
-    log.debug(
-        "[ircafe] CTCPDBG service-send cmd=VERSION to={} payload={}",
-        Objects.toString(fromNick, ""),
-        "VERSION " + resolvedVersion);
-    bot.sendIRC()
-        .notice(PircbotxUtil.sanitizeNick(fromNick), "\u0001VERSION " + resolvedVersion + "\u0001");
+    bot.sendIRC().ctcpResponse(PircbotxUtil.sanitizeNick(fromNick), "VERSION " + resolvedVersion);
     return true;
   }
 
@@ -88,22 +60,14 @@ final class PircbotxCtcpAutoReplyHandler {
     if (separator >= 0 && separator + 1 < inner.length()) {
       payload = inner.substring(separator + 1).trim();
     }
-    String body = payload.isEmpty() ? "\u0001PING\u0001" : "\u0001PING " + payload + "\u0001";
-    log.debug(
-        "[ircafe] CTCPDBG service-send cmd=PING to={} payload={}",
-        Objects.toString(fromNick, ""),
-        body.replace('\u0001', '|'));
-    bot.sendIRC().notice(PircbotxUtil.sanitizeNick(fromNick), body);
+    String response = payload.isEmpty() ? "PING" : "PING " + payload;
+    bot.sendIRC().ctcpResponse(PircbotxUtil.sanitizeNick(fromNick), response);
     return true;
   }
 
   private boolean sendTimeReply(PircBotX bot, String fromNick) {
     String now = ZonedDateTime.now().toString();
-    log.debug(
-        "[ircafe] CTCPDBG service-send cmd=TIME to={} payload=TIME {}",
-        Objects.toString(fromNick, ""),
-        now);
-    bot.sendIRC().notice(PircbotxUtil.sanitizeNick(fromNick), "\u0001TIME " + now + "\u0001");
+    bot.sendIRC().ctcpResponse(PircbotxUtil.sanitizeNick(fromNick), "TIME " + now);
     return true;
   }
 

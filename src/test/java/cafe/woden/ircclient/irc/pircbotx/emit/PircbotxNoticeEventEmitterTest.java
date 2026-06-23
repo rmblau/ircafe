@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.pircbotx.Channel;
+import org.pircbotx.PircBotX;
 import org.pircbotx.User;
 import org.pircbotx.hooks.events.NoticeEvent;
 
@@ -68,6 +69,22 @@ class PircbotxNoticeEventEmitterTest {
     PircbotxNoticeEventEmitter emitter = newEmitter(conn, events, event -> "*status");
 
     NoticeEvent event = notice("*status", "| Network |", null);
+
+    emitter.onNotice(event);
+
+    assertEquals(0, events.size());
+  }
+
+  @Test
+  void onNoticeSuppressesSelfCtcpReplyEcho() {
+    PircbotxConnectionState conn = new PircbotxConnectionState("libera");
+    List<ServerIrcEvent> events = new ArrayList<>();
+    PircbotxNoticeEventEmitter emitter = newEmitter(conn, events, event -> "wodencafe2");
+
+    NoticeEvent event = notice("wodencafe2", "\u0001VERSION IRCafe\u0001", null);
+    PircBotX bot = mock(PircBotX.class);
+    when(bot.getNick()).thenReturn("wodencafe2");
+    when(event.getBot()).thenReturn(bot);
 
     emitter.onNotice(event);
 

@@ -12,7 +12,6 @@ import java.util.function.BiConsumer;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.Supplier;
 import lombok.AccessLevel;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -30,11 +29,9 @@ final class PircbotxInboundCtcpHandler {
   private static final Logger log = LoggerFactory.getLogger(PircbotxInboundCtcpHandler.class);
 
   @NonNull private final String serverId;
-  @NonNull private final Supplier<String> selfNickHintSupplier;
   @NonNull private final BiPredicate<PircBotX, String> nickMatchesSelf;
   @NonNull private final BiPredicate<PircBotX, String> selfEchoDetector;
   @NonNull private final Function<PircBotX, String> selfNickResolver;
-  @NonNull private final Function<PircBotX, String> botNickResolver;
   @NonNull private final Function<Object, String> rawLineResolver;
   @NonNull private final Function<Object, String> privateTargetResolver;
   @NonNull private final BiConsumer<String, User> hostmaskObserver;
@@ -53,17 +50,6 @@ final class PircbotxInboundCtcpHandler {
             new IrcEvent.CtcpRequestReceived(
                 route.at(), route.from(), route.command(), route.argument(), route.channel())));
 
-    log.debug(
-        "[{}] CTCPDBG autoreply-eval shouldAutoReply={} pmDest={} pmDestKnown={} botNick={} rawIsPrivmsg={} rawIsNotice={} cmd={} arg={}",
-        serverId,
-        route.shouldAutoReply(),
-        route.pmDest(),
-        route.pmDestKnown(),
-        route.botNick(),
-        route.rawIsPrivmsg(),
-        route.rawIsNotice(),
-        route.command(),
-        route.argument());
     if (route.shouldAutoReply()) {
       String wrapped =
           "\u0001"
@@ -72,11 +58,6 @@ final class PircbotxInboundCtcpHandler {
                   ? (" " + route.argument())
                   : "")
               + "\u0001";
-      log.debug(
-          "[{}] CTCPDBG autoreply-send to={} wrapped={}",
-          serverId,
-          route.from(),
-          wrapped.replace('\u0001', '|'));
       autoReplySender.handle(route.bot(), route.from(), wrapped);
     }
   }
@@ -103,7 +84,6 @@ final class PircbotxInboundCtcpHandler {
 
     PircBotX bot = event != null ? event.getBot() : null;
     String botNick = Objects.toString(selfNickResolver.apply(bot), "").trim();
-    String botNickDirect = Objects.toString(botNickResolver.apply(bot), "").trim();
     String from =
         Objects.toString(
                 event != null && event.getUser() != null ? event.getUser().getNick() : "", "")
@@ -123,44 +103,17 @@ final class PircbotxInboundCtcpHandler {
     }
     if (from.isBlank()) from = "server";
 
-    String rawCmd =
-        (rawParsed != null && rawParsed.command() != null)
-            ? rawParsed.command().toUpperCase(Locale.ROOT)
-            : "";
-    boolean rawIsNotice = "NOTICE".equals(rawCmd);
-    boolean rawIsPrivmsg = "PRIVMSG".equals(rawCmd);
-    String selfHintBefore = Objects.toString(selfNickHintSupplier.get(), "").trim();
     boolean fromSelf = nickMatchesSelf.test(bot, from);
     boolean rawFromSelf = nickMatchesSelf.test(bot, rawFrom);
     boolean selfEcho = selfEchoDetector.test(bot, from);
-    String selfHintAfter = Objects.toString(selfNickHintSupplier.get(), "").trim();
-
-    log.debug(
-        "[{}] CTCPDBG pre cmdClass={} from={} rawFrom={} rawCmd={} selfHintBefore={} selfHintAfter={} botNick={} botNickDirect={} fromSelf={} rawFromSelf={} selfEcho={} raw={}",
-        serverId,
-        (event == null) ? "null" : event.getClass().getSimpleName(),
-        from,
-        rawFrom,
-        rawCmd,
-        selfHintBefore,
-        selfHintAfter,
-        botNick,
-        botNickDirect,
-        fromSelf,
-        rawFromSelf,
-        selfEcho,
-        normalizedRaw);
 
     if (fromSelf) {
-      log.debug("[{}] CTCPDBG drop reason=self-from from={}", serverId, from);
       return null;
     }
     if (rawFromSelf) {
-      log.debug("[{}] CTCPDBG drop reason=self-raw-from rawFrom={}", serverId, rawFrom);
       return null;
     }
     if (selfEcho) {
-      log.debug("[{}] CTCPDBG drop reason=self-echo from={}", serverId, from);
       return null;
     }
 
@@ -175,32 +128,7 @@ final class PircbotxInboundCtcpHandler {
       }
       boolean pmDestKnown = !pmDest.isBlank();
       boolean destMismatch = pmDestKnown && !botNick.isBlank() && !pmDest.equalsIgnoreCase(botNick);
-      log.debug(
-          "[{}] CTCPDBG route channel={} pmDest={} pmDestKnown={} botNick={} rawIsPrivmsg={} rawIsNotice={} destMismatch={}",
-          serverId,
-          event.getChannel(),
-          pmDest,
-          pmDestKnown,
-          botNick,
-          rawIsPrivmsg,
-          rawIsNotice,
-          destMismatch);
-      if (log.isDebugEnabled()) {
-        log.debug(
-            "[{}] CTCP parsed rawCmd={} pmDest={} from={} botNick={} raw={}",
-            serverId,
-            rawCmd,
-            pmDest,
-            from,
-            botNick,
-            normalizedRaw);
-      }
       if (destMismatch) {
-        log.debug(
-            "[{}] CTCPDBG drop reason=dest-not-self pmDest={} botNick={}",
-            serverId,
-            pmDest,
-            botNick);
         return null;
       }
     }
@@ -218,19 +146,7 @@ final class PircbotxInboundCtcpHandler {
             && event.getChannel() == null
             && !botNick.isBlank()
             && (!pmDestKnown || pmDest.equalsIgnoreCase(botNick));
-    return new CtcpRoute(
-        at,
-        bot,
-        from,
-        commandUpper,
-        argument,
-        channel,
-        shouldAutoReply,
-        pmDest,
-        pmDestKnown,
-        botNick,
-        rawIsPrivmsg,
-        rawIsNotice);
+    return new CtcpRoute(at, bot, from, commandUpper, argument, channel, shouldAutoReply);
   }
 
   private static String deriveArgument(GenericCTCPEvent event) {
@@ -259,10 +175,5 @@ final class PircbotxInboundCtcpHandler {
       String command,
       String argument,
       String channel,
-      boolean shouldAutoReply,
-      String pmDest,
-      boolean pmDestKnown,
-      String botNick,
-      boolean rawIsPrivmsg,
-      boolean rawIsNotice) {}
+      boolean shouldAutoReply) {}
 }
