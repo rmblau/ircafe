@@ -15,13 +15,16 @@ import org.springframework.stereotype.Component;
 @ApplicationLayer
 public class CommandParser {
 
+  private final FilterCommandParser filterCommandParser;
   private final BackendNamedCommandParser backendNamedCommandParser;
   private final SlashCommandParseStrategyCatalog slashCommandParseStrategyCatalog;
 
   @Autowired
   public CommandParser(
+      FilterCommandParser filterCommandParser,
       BackendNamedCommandParser backendNamedCommandParser,
       SlashCommandParseStrategyCatalog slashCommandParseStrategyCatalog) {
+    this.filterCommandParser = Objects.requireNonNull(filterCommandParser, "filterCommandParser");
     this.backendNamedCommandParser =
         Objects.requireNonNull(backendNamedCommandParser, "backendNamedCommandParser");
     this.slashCommandParseStrategyCatalog =
@@ -32,7 +35,7 @@ public class CommandParser {
   public CommandParser(
       FilterCommandParser filterCommandParser,
       BackendNamedCommandParser backendNamedCommandParser) {
-    this(backendNamedCommandParser, new SlashCommandParseStrategyCatalog(filterCommandParser));
+    this(filterCommandParser, backendNamedCommandParser, new SlashCommandParseStrategyCatalog());
   }
 
   public CommandParser(
@@ -40,8 +43,9 @@ public class CommandParser {
       BackendNamedCommandParser backendNamedCommandParser,
       InstalledPluginsPort installedPlugins) {
     this(
+        filterCommandParser,
         backendNamedCommandParser,
-        new SlashCommandParseStrategyCatalog(filterCommandParser, installedPlugins));
+        new SlashCommandParseStrategyCatalog(installedPlugins));
   }
 
   public ParsedInput parse(String raw) {
@@ -60,9 +64,28 @@ public class CommandParser {
     ParsedInput backendNamed = backendNamedCommandParser.parse(line);
     if (backendNamed != null) return backendNamed;
 
+    ParsedInput filterCommand = tryParseFilterCommand(line);
+    if (filterCommand != null) return filterCommand;
+
     ParsedInput parsed = slashCommandParseStrategyCatalog.tryParse(line);
     if (parsed != null) return parsed;
 
     return new ParsedInput.Unknown(line);
+  }
+
+  private ParsedInput tryParseFilterCommand(String line) {
+    if (!matchesCommand(line, "/filter")) {
+      return null;
+    }
+    return new ParsedInput.Filter(filterCommandParser.parse(line));
+  }
+
+  private static boolean matchesCommand(String line, String cmd) {
+    if (line == null || cmd == null) return false;
+    if (line.length() < cmd.length()) return false;
+    if (!line.regionMatches(true, 0, cmd, 0, cmd.length())) return false;
+    if (line.length() == cmd.length()) return true;
+    char next = line.charAt(cmd.length());
+    return Character.isWhitespace(next);
   }
 }

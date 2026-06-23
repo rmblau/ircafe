@@ -46,6 +46,22 @@ class CommandParserTest {
   }
 
   @Test
+  void appOwnedFilterParserRunsBeforePluginSlashStrategies() {
+    SlashCommandParseStrategy catchAllPluginStrategy =
+        line ->
+            line != null && line.startsWith("/") ? SlashCommandParseResult.quote("plugin") : null;
+    CommandParser pluginParser =
+        new CommandParser(
+            new FilterCommandParser(),
+            new BackendNamedCommandParser(List.of()),
+            new RecordingInstalledPluginsPort(List.of(catchAllPluginStrategy)));
+
+    ParsedInput in = pluginParser.parse("/filter help");
+
+    assertTrue(in instanceof ParsedInput.Filter);
+  }
+
+  @Test
   void loadsServiceLoaderSlashParseStrategiesFromInstalledPlugins() throws Exception {
     Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
     Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
