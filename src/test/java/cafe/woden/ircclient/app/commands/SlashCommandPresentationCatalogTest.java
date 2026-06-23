@@ -439,6 +439,26 @@ class SlashCommandPresentationCatalogTest {
   }
 
   @Test
+  void loadsCoreMarkReadTopicHelpThroughClasspathServiceLoader() {
+    RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+    SlashCommandPresentationCatalog catalog =
+        new SlashCommandPresentationCatalog(
+            List.of(), BackendNamedCommandCatalog.empty(), installedPlugins);
+    ArrayList<String> rendered = new ArrayList<>();
+    Map<String, Consumer<TargetRef>> handlers =
+        catalog.topicHelpHandlers((target, line) -> rendered.add(line));
+
+    assertTrue(handlers.containsKey("markread"));
+    handlers.get("markread").accept(new TargetRef("libera", "status"));
+
+    assertTrue(rendered.contains("Usage: /markread"));
+    assertTrue(
+        rendered.contains(
+            "Sets the read marker for the active channel or query and clears unread state."));
+  }
+
+  @Test
   void loadsCoreRawQuoteTopicHelpThroughClasspathServiceLoader() {
     RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);

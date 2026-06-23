@@ -179,6 +179,7 @@ public final class BuiltInSlashCommandPresentationContributor
             BuiltInSlashCommandPresentationContributor::appendChatHistoryHelpDetails),
         Map.entry(
             "history", BuiltInSlashCommandPresentationContributor::appendChatHistoryHelpDetails),
+        Map.entry("markread", BuiltInSlashCommandPresentationContributor::appendMarkReadHelp),
         Map.entry("quote", BuiltInSlashCommandPresentationContributor::appendRawQuoteHelp),
         Map.entry("raw", BuiltInSlashCommandPresentationContributor::appendRawQuoteHelp));
   }
@@ -510,6 +511,14 @@ public final class BuiltInSlashCommandPresentationContributor
     help.appendLine("/chathistory latest [*|msgid=...|timestamp=...] [limit]");
     help.appendLine("/chathistory around <msgid=...|timestamp=...> [limit]");
     help.appendLine("/chathistory between <start> <end> [limit]");
+  }
+
+  private static void appendMarkReadHelp(SlashCommandHelpSink help) {
+    if (help == null) {
+      return;
+    }
+    help.appendLine("Usage: /markread");
+    help.appendLine("Sets the read marker for the active channel or query and clears unread state.");
   }
 
   private static void appendRawQuoteHelp(SlashCommandHelpSink help) {
