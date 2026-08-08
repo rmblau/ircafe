@@ -410,8 +410,17 @@ class UiMessagesTest {
             "preferences.notifications.rules.test.matchLine", "ops", "WORD", "hello [world]"));
     assertEquals("Test sound", messages.text("preferences.notifications.sound.test.default"));
     assertEquals(
-        "Choose notification sound (MP3 or WAV)",
+        "Choose notification sound",
         messages.text("preferences.notifications.sound.chooseDialogTitle"));
+    assertEquals(
+        "notification sound", messages.text("preferences.notifications.sound.chooseDialogSubject"));
+    assertEquals(
+        "Choose a supported audio file (.mp3 and .wav) and copy it into the IRCafe runtime config directory.",
+        messages.text("preferences.notifications.sound.button.browse.tooltip", ".mp3 and .wav"));
+    assertEquals(
+        "Browse/import custom sound file (.mp3 and .wav)",
+        messages.text(
+            "preferences.notifications.sound.button.browse.tooltip.icon", ".mp3 and .wav"));
     assertEquals(
         "Could not import sound file.\n\ntimeout",
         messages.text("preferences.notifications.sound.importFailed.message", "timeout"));
@@ -422,13 +431,17 @@ class UiMessagesTest {
         messages.text("preferences.notifications.sound.import.invalidFileName"));
     assertEquals(
         "Only .mp3 and .wav are supported",
-        messages.text("preferences.notifications.sound.import.unsupportedType"));
+        messages.text("preferences.notifications.sound.import.unsupportedType", ".mp3 and .wav"));
     assertEquals(
         "Runtime config directory is unavailable",
         messages.text("preferences.notifications.sound.import.runtimeConfigUnavailable"));
-    assertEquals("Audio files (MP3, WAV)", messages.text("common.fileChooser.audioFiles.mp3Wav"));
     assertEquals(
-        "Choose sound file (MP3 or WAV)", messages.text("common.fileChooser.sound.defaultTitle"));
+        "Audio files (*.mp3, *.wav)",
+        messages.text("common.fileChooser.audioFiles", "*.mp3, *.wav"));
+    assertEquals(
+        "Choose sound file (MP3 or WAV)",
+        messages.text("common.fileChooser.sound.title", "sound file", "MP3 or WAV"));
+    assertEquals("Choose sound file", messages.text("common.fileChooser.sound.defaultTitle"));
     assertEquals("IRC Events", messages.text("preferences.notifications.ircEvents.tab"));
   }
 
@@ -1452,6 +1465,7 @@ class UiMessagesTest {
     assertEquals(
         "Could not import custom sound file.\n\ntimeout",
         messages.text("interceptors.sound.importFailed.message", "timeout"));
+    assertEquals("interceptor sound", messages.text("interceptors.sound.chooseDialogSubject"));
   }
 
   @Test

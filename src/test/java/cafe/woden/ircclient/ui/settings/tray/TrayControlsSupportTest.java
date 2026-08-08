@@ -7,15 +7,20 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.config.PushyPropertiesTestFixtures;
+import cafe.woden.ircclient.config.api.LagIndicatorRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.PushyRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.TrayRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.UpdateNotifierRuntimeConfigPort;
 import cafe.woden.ircclient.config.properties.PushyProperties;
 import cafe.woden.ircclient.model.BuiltInSound;
 import cafe.woden.ircclient.notify.pushy.PushySettingsBus;
 import cafe.woden.ircclient.notify.sound.NotificationSoundSettings;
 import cafe.woden.ircclient.notify.sound.NotificationSoundSettingsBus;
 import cafe.woden.ircclient.ui.settings.NotificationBackendMode;
+import cafe.woden.ircclient.ui.settings.UiSettingsTestFixtures;
 import cafe.woden.ircclient.ui.shell.LagIndicatorService;
 import cafe.woden.ircclient.ui.shell.UpdateNotifierService;
 import cafe.woden.ircclient.ui.tray.TrayService;
@@ -106,6 +111,22 @@ class TrayControlsSupportTest {
   }
 
   @Test
+  void readSettingsUsesFeaturePushyDeviceTargetSelection() {
+    TrayControls controls = trayControls();
+    controls.pushyEnabled.setSelected(true);
+    controls.pushyEndpoint.setText(" https://push.example/push ");
+    controls.pushyApiKey.setText(" secret ");
+    controls.pushyTargetMode.setSelectedItem(PushyTargetMode.DEVICE_TOKEN);
+    controls.pushyTargetValue.setText(" device-token ");
+
+    TrayControlsSupport.TraySettings settings = TrayControlsSupport.readSettings(controls);
+
+    PushyProperties pushy = settings.pushySettings();
+    assertEquals("device-token", pushy.deviceToken());
+    assertNull(pushy.topic());
+  }
+
+  @Test
   void readSettingsThrowsTitledPushyValidationError() {
     TrayControls controls = trayControls();
     controls.pushyEnabled.setSelected(true);
@@ -137,8 +158,84 @@ class TrayControlsSupportTest {
   }
 
   @Test
+  void buildControlsReadsUpdateAndLagTogglesFromTheirNarrowPorts() {
+    UpdateNotifierRuntimeConfigPort updateRuntimeConfig =
+        mock(UpdateNotifierRuntimeConfigPort.class);
+    LagIndicatorRuntimeConfigPort lagRuntimeConfig = mock(LagIndicatorRuntimeConfigPort.class);
+    when(updateRuntimeConfig.readUpdateNotifierEnabled(true)).thenReturn(false);
+    when(lagRuntimeConfig.readLagIndicatorEnabled(true)).thenReturn(true);
+
+    TrayControls controls =
+        TrayControlsSupport.buildControls(
+            UiSettingsTestFixtures.defaultSettings(),
+            new NotificationSoundSettings(true, BuiltInSound.NOTIF_1.name(), false, null),
+            PushyPropertiesTestFixtures.builder().build(),
+            null,
+            updateRuntimeConfig,
+            lagRuntimeConfig,
+            null,
+            null,
+            null,
+            null,
+            mock(java.util.concurrent.ExecutorService.class),
+            null);
+
+    assertFalse(controls.updateNotifierEnabled.isSelected());
+    assertTrue(controls.lagIndicatorEnabled.isSelected());
+  }
+
+  @Test
+  void buildControlsUsesFeaturePushyControlAvailability() {
+    PushyProperties pushySettings =
+        PushyPropertiesTestFixtures.builder()
+            .enabled(true)
+            .endpoint("https://push.example/push")
+            .apiKey("")
+            .deviceToken("device-token")
+            .titlePrefix("IRCafe")
+            .connectTimeoutSeconds(5)
+            .readTimeoutSeconds(8)
+            .build();
+
+    TrayControls controls =
+        TrayControlsSupport.buildControls(
+            UiSettingsTestFixtures.defaultSettings(),
+            new NotificationSoundSettings(true, BuiltInSound.NOTIF_1.name(), false, null),
+            pushySettings,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            mock(java.util.concurrent.ExecutorService.class),
+            null);
+
+    assertTrue(controls.pushyEndpoint.isEnabled());
+    assertTrue(controls.pushyApiKey.isEnabled());
+    assertTrue(controls.pushyTargetMode.isEnabled());
+    assertTrue(controls.pushyTargetValue.isEnabled());
+    assertTrue(controls.pushyTitlePrefix.isEnabled());
+    assertTrue(controls.pushyConnectTimeoutSeconds.isEnabled());
+    assertTrue(controls.pushyReadTimeoutSeconds.isEnabled());
+    assertFalse(controls.pushyTest.isEnabled());
+    assertTrue(controls.pushyValidationLabel.isVisible());
+    assertEquals("Pushy API key is required.", controls.pushyValidationLabel.getText());
+
+    controls.pushyApiKey.setText("secret");
+
+    assertTrue(controls.pushyTest.isEnabled());
+    assertFalse(controls.pushyValidationLabel.isVisible());
+  }
+
+  @Test
   void rememberSettingsPersistsTraySettingsAndUpdatesServices() {
     TrayRuntimeConfigPort runtimeConfig = mock(TrayRuntimeConfigPort.class);
+    UpdateNotifierRuntimeConfigPort updateRuntimeConfig =
+        mock(UpdateNotifierRuntimeConfigPort.class);
+    LagIndicatorRuntimeConfigPort lagRuntimeConfig = mock(LagIndicatorRuntimeConfigPort.class);
+    PushyRuntimeConfigPort pushyRuntimeConfig = mock(PushyRuntimeConfigPort.class);
     NotificationSoundSettingsBus soundBus = mock(NotificationSoundSettingsBus.class);
     PushySettingsBus pushyBus = mock(PushySettingsBus.class);
     UpdateNotifierService updateNotifierService = mock(UpdateNotifierService.class);
@@ -177,6 +274,9 @@ class TrayControlsSupportTest {
 
     TrayControlsSupport.rememberSettings(
         runtimeConfig,
+        updateRuntimeConfig,
+        lagRuntimeConfig,
+        pushyRuntimeConfig,
         soundBus,
         pushyBus,
         updateNotifierService,
@@ -201,12 +301,12 @@ class TrayControlsSupportTest {
     verify(runtimeConfig).rememberTrayNotificationSound(BuiltInSound.NOTIF_2.name());
     verify(runtimeConfig).rememberTrayNotificationSoundUseCustom(false);
     verify(runtimeConfig).rememberTrayNotificationSoundCustomPath(null);
-    verify(runtimeConfig).rememberUpdateNotifierEnabled(true);
-    verify(runtimeConfig).rememberLagIndicatorEnabled(false);
+    verify(updateRuntimeConfig).rememberUpdateNotifierEnabled(true);
+    verify(lagRuntimeConfig).rememberLagIndicatorEnabled(false);
     verify(updateNotifierService).setEnabled(true);
     verify(lagIndicatorService).setEnabled(false);
     verify(pushyBus).set(pushySettings);
-    verify(runtimeConfig).rememberPushySettings(pushySettings);
+    verify(pushyRuntimeConfig).rememberPushySettings(pushySettings);
     verify(trayService).applySettings();
   }
 

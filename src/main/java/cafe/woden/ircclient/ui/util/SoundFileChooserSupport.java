@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.util;
 
-import cafe.woden.ircclient.notify.api.CustomSoundFileImportSupport;
+import cafe.woden.ircclient.notify.api.sound.CustomSoundFileImportSupport;
 import cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider;
 import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.awt.Component;
@@ -28,7 +28,7 @@ public final class SoundFileChooserSupport {
       List<? extends CustomSoundFileExtensionProvider> extensionProviders) {
     JFileChooser chooser = new JFileChooser();
     chooser.setDialogTitle(
-        Objects.toString(dialogTitle, MESSAGES.text("common.fileChooser.sound.defaultTitle")));
+        firstNonBlank(dialogTitle, soundDialogTitle("sound file", extensionProviders)));
     chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
     chooser.setAcceptAllFileFilterUsed(true);
     chooser.addChoosableFileFilter(audioFileFilter(extensionProviders));
@@ -41,20 +41,26 @@ public final class SoundFileChooserSupport {
       List<? extends CustomSoundFileExtensionProvider> extensionProviders) {
     Set<String> extensions = CustomSoundFileImportSupport.supportedExtensions(extensionProviders);
     return new FileNameExtensionFilter(
-        audioFilterLabel(extensions, extensionProviders), extensions.toArray(String[]::new));
+        audioFilterLabel(extensionProviders), extensions.toArray(String[]::new));
+  }
+
+  public static String soundDialogTitle(
+      String subject, List<? extends CustomSoundFileExtensionProvider> extensionProviders) {
+    return MESSAGES.text(
+        "common.fileChooser.sound.title",
+        firstNonBlank(subject, "sound file"),
+        CustomSoundFileImportSupport.supportedExtensionTitleList(extensionProviders));
   }
 
   private static String audioFilterLabel(
-      Set<String> extensions, List<? extends CustomSoundFileExtensionProvider> extensionProviders) {
-    if (CustomSoundFileImportSupport.hasOnlyBuiltInExtensions(extensionProviders)) {
-      return MESSAGES.text("common.fileChooser.audioFiles.mp3Wav");
-    }
-    String suffix =
-        extensions.stream()
-            .map(ext -> "*." + ext)
-            .sorted()
-            .reduce((a, b) -> a + ", " + b)
-            .orElse("*");
-    return "Audio files (" + suffix + ")";
+      List<? extends CustomSoundFileExtensionProvider> extensionProviders) {
+    return MESSAGES.text(
+        "common.fileChooser.audioFiles",
+        CustomSoundFileImportSupport.supportedExtensionFilterPattern(extensionProviders));
+  }
+
+  private static String firstNonBlank(String preferred, String fallback) {
+    String value = Objects.toString(preferred, "").trim();
+    return value.isBlank() ? fallback : value;
   }
 }

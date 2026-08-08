@@ -12,8 +12,8 @@ import cafe.woden.ircclient.bouncer.BouncerBackendRegistry;
 import cafe.woden.ircclient.bouncer.BouncerDiscoveryEventPort;
 import cafe.woden.ircclient.bouncer.spi.BuiltInBouncerBackendIds;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
-import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.QuitMessageRuntimeConfigPort;
 import cafe.woden.ircclient.config.properties.SojuProperties;
 import cafe.woden.ircclient.config.properties.ZncProperties;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
@@ -45,7 +45,8 @@ class PircbotxIrcClientServiceDisconnectTest {
         mock(PircbotxInputParserHookInstaller.class);
     PircbotxBotFactory botFactory = mock(PircbotxBotFactory.class);
     CtcpReplyRuntimeConfigPort ctcpRuntimeConfig = mock(CtcpReplyRuntimeConfigPort.class);
-    ChatCommandRuntimeConfigPort commandRuntimeConfig = mock(ChatCommandRuntimeConfigPort.class);
+    QuitMessageRuntimeConfigPort quitMessageRuntimeConfig =
+        mock(QuitMessageRuntimeConfigPort.class);
     Ircv3StsPolicyService stsPolicies = mock(Ircv3StsPolicyService.class);
     BouncerBackendRegistry bouncerBackends = mock(BouncerBackendRegistry.class);
     BouncerDiscoveryEventPort bouncerDiscoveryEvents = mock(BouncerDiscoveryEventPort.class);
@@ -57,6 +58,7 @@ class PircbotxIrcClientServiceDisconnectTest {
                 BuiltInBouncerBackendIds.ZNC,
                 BuiltInBouncerBackendIds.GENERIC));
     ServerIsupportState serverIsupportState = new ServerIsupportState();
+    Ircv3RuntimeTestFixtures.Runtime runtime = Ircv3RuntimeTestFixtures.runtime();
     PircbotxBridgeListenerFactory bridgeListenerFactory =
         new PircbotxBridgeListenerFactory(
             bouncerBackends,
@@ -64,7 +66,10 @@ class PircbotxIrcClientServiceDisconnectTest {
             new NoOpPlaybackCursorProvider(),
             serverIsupportState,
             new SojuProperties(null, null),
-            new ZncProperties(null, null));
+            new ZncProperties(null, null),
+            runtime.catalogs(),
+            runtime.serverTime(),
+            runtime.messageTags());
 
     PircbotxIrcClientService service =
         new PircbotxIrcClientService(
@@ -74,8 +79,9 @@ class PircbotxIrcClientServiceDisconnectTest {
             botFactory,
             bridgeListenerFactory,
             ctcpRuntimeConfig,
-            commandRuntimeConfig,
+            quitMessageRuntimeConfig,
             stsPolicies,
+            runtime.catalogs().outboundCommands(),
             bouncerBackends,
             bouncerDiscoveryEvents,
             timers,
@@ -110,12 +116,14 @@ class PircbotxIrcClientServiceDisconnectTest {
         mock(PircbotxInputParserHookInstaller.class);
     PircbotxBotFactory botFactory = mock(PircbotxBotFactory.class);
     CtcpReplyRuntimeConfigPort ctcpRuntimeConfig = mock(CtcpReplyRuntimeConfigPort.class);
-    ChatCommandRuntimeConfigPort commandRuntimeConfig = mock(ChatCommandRuntimeConfigPort.class);
+    QuitMessageRuntimeConfigPort quitMessageRuntimeConfig =
+        mock(QuitMessageRuntimeConfigPort.class);
     Ircv3StsPolicyService stsPolicies = mock(Ircv3StsPolicyService.class);
     BouncerBackendRegistry bouncerBackends = mock(BouncerBackendRegistry.class);
     BouncerDiscoveryEventPort bouncerDiscoveryEvents = mock(BouncerDiscoveryEventPort.class);
     PircbotxConnectionTimersRx timers = mock(PircbotxConnectionTimersRx.class);
     ServerIsupportState serverIsupportState = new ServerIsupportState();
+    Ircv3RuntimeTestFixtures.Runtime runtime = Ircv3RuntimeTestFixtures.runtime();
     PircbotxBridgeListenerFactory bridgeListenerFactory =
         new PircbotxBridgeListenerFactory(
             bouncerBackends,
@@ -123,7 +131,10 @@ class PircbotxIrcClientServiceDisconnectTest {
             new NoOpPlaybackCursorProvider(),
             serverIsupportState,
             new SojuProperties(null, null),
-            new ZncProperties(null, null));
+            new ZncProperties(null, null),
+            runtime.catalogs(),
+            runtime.serverTime(),
+            runtime.messageTags());
 
     PircbotxIrcClientService service =
         new PircbotxIrcClientService(
@@ -133,8 +144,9 @@ class PircbotxIrcClientServiceDisconnectTest {
             botFactory,
             bridgeListenerFactory,
             ctcpRuntimeConfig,
-            commandRuntimeConfig,
+            quitMessageRuntimeConfig,
             stsPolicies,
+            runtime.catalogs().outboundCommands(),
             bouncerBackends,
             bouncerDiscoveryEvents,
             timers,

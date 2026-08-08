@@ -1,9 +1,9 @@
 package cafe.woden.ircclient.irc.soju;
 
 import cafe.woden.ircclient.bouncer.AbstractBouncerAutoConnectStore;
+import cafe.woden.ircclient.bouncer.BouncerAutoConnectNetworkKeyNormalizer;
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
 import cafe.woden.ircclient.config.properties.SojuProperties;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import org.jmolecules.architecture.layered.ApplicationLayer;
@@ -18,14 +18,26 @@ import org.springframework.stereotype.Component;
  *   bouncerServerId -> networkName -> enabled
  * </pre>
  *
- * <p>Network names are canonicalized using Soju's name sanitizer and compared case-insensitively.
+ * <p>Network names are canonicalized using the feature-owned bouncer key normalizer and compared
+ * case-insensitively.
  */
 @Component
 @ApplicationLayer
 public class SojuAutoConnectStore extends AbstractBouncerAutoConnectStore {
 
+  private final BouncerAutoConnectNetworkKeyNormalizer networkKeyNormalizer;
+
   public SojuAutoConnectStore(SojuProperties props, BouncerDiscoveryConfigPort runtimeConfig) {
+    this(props, runtimeConfig, new BouncerAutoConnectNetworkKeyNormalizer());
+  }
+
+  SojuAutoConnectStore(
+      SojuProperties props,
+      BouncerDiscoveryConfigPort runtimeConfig,
+      BouncerAutoConnectNetworkKeyNormalizer networkKeyNormalizer) {
     super(runtimeConfig);
+    this.networkKeyNormalizer =
+        Objects.requireNonNull(networkKeyNormalizer, "networkKeyNormalizer");
     initialize(props == null ? Map.of() : props.autoConnectCopy());
   }
 
@@ -36,18 +48,7 @@ public class SojuAutoConnectStore extends AbstractBouncerAutoConnectStore {
 
   @Override
   protected String normalizeNetworkKey(String networkName) {
-    String v = PircbotxSojuParsers.sanitizeNetworkName(networkName);
-    v = Objects.toString(v, "").trim();
-    if (v.isEmpty()) return null;
-
-    // Make keys stable + user-friendly: collapse runs of '_' and trim leading/trailing '_'.
-    v = v.replaceAll("_+", "_");
-    while (v.startsWith("_")) v = v.substring(1);
-    while (v.endsWith("_")) v = v.substring(0, v.length() - 1);
-
-    v = v.trim();
-    if (v.isEmpty()) return null;
-    return v.toLowerCase(Locale.ROOT);
+    return networkKeyNormalizer.normalize(networkName);
   }
 
   @Override

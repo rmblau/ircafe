@@ -9,7 +9,9 @@ import static org.mockito.Mockito.verify;
 
 import cafe.woden.ircclient.config.api.NotificationRule;
 import cafe.woden.ircclient.config.api.NotificationRuntimeConfigPort;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import javax.swing.JLabel;
 import javax.swing.JSpinner;
 import javax.swing.JTable;
@@ -33,6 +35,19 @@ class NotificationRulesControlsSupportTest {
     assertNotNull(settings.validationError());
     assertFalse(NotificationRulesControlsSupport.refreshValidation(controls));
     assertTrue(controls.validationLabel.isVisible());
+  }
+
+  @Test
+  void buildControlsUsesFeatureOwnedCooldownDefaultsAndBounds() {
+    List<AutoCloseable> closeables = new ArrayList<>();
+    NotificationRulesControls controls =
+        NotificationRulesControlsSupport.buildControls(
+            null, closeables, mock(ExecutorService.class));
+    SpinnerNumberModel model = (SpinnerNumberModel) controls.cooldownSeconds.getModel();
+
+    assertEquals(15, controls.cooldownSeconds.getValue());
+    assertEquals(0, model.getMinimum());
+    assertEquals(3600, model.getMaximum());
   }
 
   @Test
@@ -61,6 +76,28 @@ class NotificationRulesControlsSupportTest {
     model.setHighlightFg(0, " abc ");
 
     assertEquals("#AABBCC", model.highlightFgAt(0));
+  }
+
+  @Test
+  void tableModelSummariesUseFeatureRuleNormalization() {
+    NotificationRule regexRule =
+        new NotificationRule("  ", NotificationRule.Type.REGEX, "  h.*o  ", true, true, true, null);
+    NotificationRulesTableModel model = new NotificationRulesTableModel(List.of(regexRule));
+
+    assertEquals("h.*o", model.getValueAt(0, NotificationRulesTableModel.COL_LABEL));
+    assertEquals("REGEX: h.*o", model.getValueAt(0, NotificationRulesTableModel.COL_MATCH));
+    assertEquals("Case", model.getValueAt(0, NotificationRulesTableModel.COL_OPTIONS));
+    assertFalse(model.snapshot().getFirst().wholeWord());
+  }
+
+  @Test
+  void validationErrorFormattingUsesFeatureDisplayPlan() {
+    ValidationError error = new ValidationError(4, "  ", "  h.*o  ", "  " + "x".repeat(200));
+
+    assertEquals("h.*o", error.effectiveLabel());
+    assertEquals("Invalid REGEX (row 5, h.*o): " + "x".repeat(180) + "…", error.formatForInline());
+    assertEquals(
+        "Row 5 (h.*o):\n" + "x".repeat(200) + "\n\nPattern:\nh.*o", error.formatForDialog());
   }
 
   private static NotificationRulesControls controls(

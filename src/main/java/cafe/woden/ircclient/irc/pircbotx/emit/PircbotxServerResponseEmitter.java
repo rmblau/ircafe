@@ -9,22 +9,35 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
-import lombok.AccessLevel;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.pircbotx.PircBotX;
 
 /**
  * Emits structured events from generic server numerics, channel list numerics, and ban-list
  * numerics.
  */
-@RequiredArgsConstructor(access = AccessLevel.PUBLIC)
 public final class PircbotxServerResponseEmitter {
   @NonNull private final String serverId;
   @NonNull private final Consumer<ServerIrcEvent> emit;
+  @NonNull private final Ircv3ServerTimeRuntimeSupport serverTimeRuntimeSupport;
+  @NonNull private final Ircv3MessageTagsRuntimeSupport messageTagsRuntimeSupport;
   private final Set<String> activeBanListChannels = new HashSet<>();
+
+  public PircbotxServerResponseEmitter(
+      String serverId,
+      Consumer<ServerIrcEvent> emit,
+      Ircv3ServerTimeRuntimeSupport serverTimeRuntimeSupport,
+      Ircv3MessageTagsRuntimeSupport messageTagsRuntimeSupport) {
+    this.serverId = Objects.requireNonNull(serverId, "serverId");
+    this.emit = Objects.requireNonNull(emit, "emit");
+    this.serverTimeRuntimeSupport =
+        Objects.requireNonNull(serverTimeRuntimeSupport, "serverTimeRuntimeSupport");
+    this.messageTagsRuntimeSupport =
+        Objects.requireNonNull(messageTagsRuntimeSupport, "messageTagsRuntimeSupport");
+  }
 
   public void clear() {
     activeBanListChannels.clear();
@@ -34,13 +47,12 @@ public final class PircbotxServerResponseEmitter {
     try {
       if (line == null || line.isBlank()) return;
       String originalLine = line.trim();
-      Map<String, String> ircv3Tags = Ircv3Tags.fromRawLine(originalLine);
-      String messageId = Ircv3Tags.firstTagValue(ircv3Tags, "msgid", "draft/msgid");
+      Map<String, String> ircv3Tags = messageTagsRuntimeSupport.fromRawLine(originalLine);
+      String messageId = messageTagsRuntimeSupport.messageId(ircv3Tags);
       String normalizedLine = PircbotxLineParseUtil.normalizeIrcLineForParsing(line);
       ParsedIrcLine pl = PircbotxInboundLineParsers.parseIrcLine(normalizedLine);
 
-      Instant at = Ircv3ServerTime.parseServerTimeFromRawLine(line);
-      if (at == null) at = Instant.now();
+      Instant at = serverTimeRuntimeSupport.resolveRawLineOrNow(line);
 
       String myNick = null;
       try {

@@ -5,10 +5,7 @@ import cafe.woden.ircclient.app.commands.spi.SlashCommandHelpSink;
 import cafe.woden.ircclient.app.commands.spi.SlashCommandTargetView;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.model.TargetRef;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -23,28 +20,15 @@ import org.springframework.stereotype.Component;
 @ApplicationLayer
 public class SlashCommandPresentationCatalog {
 
-  private static final List<SlashCommandDescriptor> APP_OWNED_AUTOCOMPLETE_COMMANDS =
-      List.of(new SlashCommandDescriptor("/filter", "Local filtering controls"));
-
-  private static final List<String> APP_OWNED_GENERAL_HELP_LINES =
-      List.of("Local: /filter help for local filtering controls.");
-
-  private static final Map<String, Consumer<SlashCommandHelpSink>> APP_OWNED_TOPIC_HELP_HANDLERS =
-      Map.of("filter", SlashCommandPresentationCatalog::appendFilterHelp);
-
-  private final List<cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor>
-      contributors;
-  private final BackendNamedCommandCatalog backendNamedCommandCatalog;
-  private final List<SlashCommandDescriptor> autocompleteCommands;
+  private final SlashCommandPresentationRegistry registry;
 
   @Autowired
   public SlashCommandPresentationCatalog(
-      List<cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor> contributors,
       BackendNamedCommandCatalog backendNamedCommandCatalog,
       ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
     this(
         CommandPluginProviders.slashCommandPresentationContributors(
-            contributors, CommandPluginProviders.resolveInstalledPlugins(installedPluginsProvider)),
+            List.of(), CommandPluginProviders.resolveInstalledPlugins(installedPluginsProvider)),
         backendNamedCommandCatalog);
   }
 
@@ -52,10 +36,17 @@ public class SlashCommandPresentationCatalog {
       List<? extends cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor>
           contributors,
       BackendNamedCommandCatalog backendNamedCommandCatalog) {
-    this.contributors = nonNullContributors(contributors);
-    this.backendNamedCommandCatalog =
+    BackendNamedCommandCatalog backend =
         Objects.requireNonNull(backendNamedCommandCatalog, "backendNamedCommandCatalog");
-    this.autocompleteCommands = buildAutocompleteCommands();
+    this.registry =
+        new SlashCommandPresentationRegistry(
+            contributors,
+            AppOwnedSlashCommandPresentation.autocompleteCommands(),
+            AppOwnedSlashCommandPresentation.generalHelpLines(),
+            AppOwnedSlashCommandPresentation.topicHelpHandlers(),
+            backend.autocompleteCommands(),
+            backend.generalHelpLines(),
+            backend.topicHelpLines());
   }
 
   SlashCommandPresentationCatalog(
@@ -69,138 +60,23 @@ public class SlashCommandPresentationCatalog {
   }
 
   public List<SlashCommandDescriptor> autocompleteCommands() {
-    return autocompleteCommands;
+    return registry.autocompleteCommands();
   }
 
   public void appendGeneralHelp(TargetRef out, BiConsumer<TargetRef, String> lineAppender) {
     Objects.requireNonNull(lineAppender, "lineAppender");
-    APP_OWNED_GENERAL_HELP_LINES.forEach(line -> appendStaticHelpLine(out, line, lineAppender));
-    SlashCommandHelpSink help = helpSink(out, lineAppender);
-    for (cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor contributor :
-        contributors) {
-      contributor.appendGeneralHelp(help);
-    }
-    backendNamedCommandCatalog
-        .generalHelpLines()
-        .forEach(line -> appendStaticHelpLine(out, line, lineAppender));
+    registry.appendGeneralHelp(helpSink(out, lineAppender));
   }
 
   public Map<String, Consumer<TargetRef>> topicHelpHandlers(
       BiConsumer<TargetRef, String> lineAppender) {
     Objects.requireNonNull(lineAppender, "lineAppender");
-    LinkedHashMap<String, List<Consumer<TargetRef>>> handlers = new LinkedHashMap<>();
-    appendAppOwnedTopicHelpHandlers(handlers, lineAppender);
-    appendPresentationTopicHelpHandlers(handlers, lineAppender);
-    appendBackendTopicHelpHandlers(handlers, lineAppender);
-
-    LinkedHashMap<String, Consumer<TargetRef>> composed = new LinkedHashMap<>();
-    for (Map.Entry<String, List<Consumer<TargetRef>>> entry : handlers.entrySet()) {
-      List<Consumer<TargetRef>> topicHandlers = List.copyOf(entry.getValue());
-      composed.put(entry.getKey(), out -> topicHandlers.forEach(handler -> handler.accept(out)));
-    }
-    return Map.copyOf(composed);
-  }
-
-  private List<SlashCommandDescriptor> buildAutocompleteCommands() {
-    LinkedHashMap<String, SlashCommandDescriptor> merged = new LinkedHashMap<>();
-    APP_OWNED_AUTOCOMPLETE_COMMANDS.forEach(
-        command -> merged.putIfAbsent(command.command().toLowerCase(Locale.ROOT), command));
-    for (cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor contributor :
-        contributors) {
-      for (SlashCommandDescriptor command :
-          Objects.requireNonNullElse(
-              contributor.autocompleteCommands(), List.<SlashCommandDescriptor>of())) {
-        if (command == null) continue;
-        merged.putIfAbsent(command.command().toLowerCase(Locale.ROOT), command);
-      }
-    }
-    for (SlashCommandDescriptor command : backendNamedCommandCatalog.autocompleteCommands()) {
-      if (command == null) continue;
-      merged.putIfAbsent(command.command().toLowerCase(Locale.ROOT), command);
-    }
-    return List.copyOf(merged.values());
-  }
-
-  private void appendAppOwnedTopicHelpHandlers(
-      LinkedHashMap<String, List<Consumer<TargetRef>>> handlers,
-      BiConsumer<TargetRef, String> lineAppender) {
-    for (Map.Entry<String, Consumer<SlashCommandHelpSink>> entry :
-        APP_OWNED_TOPIC_HELP_HANDLERS.entrySet()) {
-      String topic = normalizeHelpTopic(entry.getKey());
-      Consumer<SlashCommandHelpSink> consumer = entry.getValue();
-      if (!topic.isEmpty() && consumer != null) {
-        addTopicHelpHandler(handlers, topic, out -> consumer.accept(helpSink(out, lineAppender)));
-      }
-    }
-  }
-
-  private void appendPresentationTopicHelpHandlers(
-      LinkedHashMap<String, List<Consumer<TargetRef>>> handlers,
-      BiConsumer<TargetRef, String> lineAppender) {
-    for (cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor contributor :
-        contributors) {
-      Map<String, Consumer<SlashCommandHelpSink>> topicHandlers =
-          Objects.requireNonNullElse(
-              contributor.topicHelpHandlers(), Map.<String, Consumer<SlashCommandHelpSink>>of());
-      for (Map.Entry<String, Consumer<SlashCommandHelpSink>> entry : topicHandlers.entrySet()) {
-        String topic = normalizeHelpTopic(entry.getKey());
-        Consumer<SlashCommandHelpSink> consumer = entry.getValue();
-        if (!topic.isEmpty() && consumer != null) {
-          addTopicHelpHandler(handlers, topic, out -> consumer.accept(helpSink(out, lineAppender)));
-        }
-      }
-    }
-  }
-
-  private void appendBackendTopicHelpHandlers(
-      LinkedHashMap<String, List<Consumer<TargetRef>>> handlers,
-      BiConsumer<TargetRef, String> lineAppender) {
-    for (Map.Entry<String, List<String>> entry :
-        backendNamedCommandCatalog.topicHelpLines().entrySet()) {
-      String topic = normalizeHelpTopic(entry.getKey());
-      List<String> lines = entry.getValue();
-      if (topic.isEmpty() || lines == null || lines.isEmpty()) continue;
-      addTopicHelpHandler(
-          handlers,
-          topic,
-          out -> lines.forEach(line -> appendStaticHelpLine(out, line, lineAppender)));
-    }
-  }
-
-  private static void addTopicHelpHandler(
-      LinkedHashMap<String, List<Consumer<TargetRef>>> handlers,
-      String topic,
-      Consumer<TargetRef> handler) {
-    handlers.computeIfAbsent(topic, ignored -> new ArrayList<>()).add(handler);
-  }
-
-  private static List<cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor>
-      nonNullContributors(
-          List<? extends cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor>
-              contributors) {
-    if (contributors == null || contributors.isEmpty()) {
-      return List.of();
-    }
-    java.util.ArrayList<cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor>
-        nonNull = new java.util.ArrayList<>();
-    for (cafe.woden.ircclient.app.commands.spi.SlashCommandPresentationContributor contributor :
-        contributors) {
-      if (contributor != null) {
-        nonNull.add(contributor);
-      }
-    }
-    return List.copyOf(nonNull);
-  }
-
-  private static void appendFilterHelp(SlashCommandHelpSink help) {
-    if (help == null) {
-      return;
-    }
-    help.appendLine("Usage: /filter help");
-    help.appendLine(
-        "Examples: /filter list, /filter add <name> key=value ..., /filter defaults ...");
-    help.appendLine(
-        "Local filtering remains app-owned because it depends on filter state and UI rendering.");
+    Map<String, Consumer<SlashCommandHelpSink>> featureHandlers = registry.topicHelpHandlers();
+    return featureHandlers.entrySet().stream()
+        .collect(
+            java.util.stream.Collectors.toUnmodifiableMap(
+                Map.Entry::getKey,
+                entry -> out -> entry.getValue().accept(helpSink(out, lineAppender))));
   }
 
   private static void appendStaticHelpLine(
@@ -229,11 +105,5 @@ public class SlashCommandPresentationCatalog {
     public void appendLine(String line) {
       appendStaticHelpLine(out, line, lineAppender);
     }
-  }
-
-  private static String normalizeHelpTopic(String raw) {
-    String topic = Objects.toString(raw, "").trim().toLowerCase(Locale.ROOT);
-    if (topic.startsWith("/")) topic = topic.substring(1).trim();
-    return topic;
   }
 }

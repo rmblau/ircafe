@@ -6,12 +6,11 @@ import cafe.woden.ircclient.app.api.PrivateMessageRequest;
 import cafe.woden.ircclient.app.api.UserActionRequest;
 import cafe.woden.ircclient.app.commands.SlashCommandPresentationCatalog;
 import cafe.woden.ircclient.app.translation.MessageTranslationDispatcher;
-import cafe.woden.ircclient.app.translation.MessageTranslationLanguageCatalog;
+import cafe.woden.ircclient.app.translation.MessageTranslationLanguageCatalogSupport;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.app.translation.OutboundMessageTranslationService;
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguage;
 import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.api.InstalledPluginProblem;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.execution.ExecutorConfig;
 import cafe.woden.ircclient.dcc.api.DccTransferQueryPort;
@@ -36,6 +35,7 @@ import cafe.woden.ircclient.notifications.api.NotificationStorePort;
 import cafe.woden.ircclient.state.api.ModeRoutingPort;
 import cafe.woden.ircclient.state.api.ServerIsupportStatePort;
 import cafe.woden.ircclient.ui.application.InboundDedupDiagnosticsPanel;
+import cafe.woden.ircclient.ui.application.InstalledPluginRuntimeEvents;
 import cafe.woden.ircclient.ui.application.JfrDiagnosticsPanel;
 import cafe.woden.ircclient.ui.application.RuntimeEventsPanel;
 import cafe.woden.ircclient.ui.backend.BackendUiProfileProvider;
@@ -81,7 +81,6 @@ import cafe.woden.ircclient.ui.terminal.TerminalDockable;
 import cafe.woden.ircclient.ui.util.ChatRedactedMessageRevealSupport;
 import cafe.woden.ircclient.ui.util.ChatTranscriptContextMenuDecorator;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
-import cafe.woden.ircclient.util.InstalledPluginDescriptor;
 import io.github.andrewauclair.moderndocking.Dockable;
 import io.github.andrewauclair.moderndocking.app.Docking;
 import io.reactivex.rxjava3.core.Flowable;
@@ -493,14 +492,13 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
   }
 
   private RuntimeEventsPanel createPluginsPanel(InstalledPluginsPort installedPluginsPort) {
-    List<RuntimeDiagnosticEvent> rows = buildInstalledPluginEvents(installedPluginsPort);
     return new RuntimeEventsPanel(
         message("chatDock.runtime.plugins.title"),
         message("chatDock.runtime.plugins.subtitle"),
-        () -> rows,
+        () -> InstalledPluginRuntimeEvents.build(installedPluginsPort),
         null,
         "plugins",
-        Flowable.never());
+        null);
   }
 
   private InboundDedupDiagnosticsPanel createInboundDedupPanel(
@@ -528,109 +526,6 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
       }
     }
     return List.copyOf(out);
-  }
-
-  private static List<RuntimeDiagnosticEvent> buildInstalledPluginEvents(
-      InstalledPluginsPort installedPluginsPort) {
-    String pluginDirectory =
-        installedPluginsPort != null && installedPluginsPort.pluginDirectory() != null
-            ? installedPluginsPort.pluginDirectory().toString()
-            : "";
-    java.time.Instant recordedAt = java.time.Instant.now();
-    if (installedPluginsPort == null) {
-      return List.of(
-          new RuntimeDiagnosticEvent(
-              recordedAt,
-              "INFO",
-              message("chatDock.plugins.category"),
-              message("chatDock.plugins.unavailable.summary"),
-              pluginDirectory.isBlank()
-                  ? ""
-                  : message("chatDock.plugins.directory", pluginDirectory)));
-    }
-    List<InstalledPluginDescriptor> installedPlugins = installedPluginsPort.installedPlugins();
-    List<InstalledPluginProblem> pluginProblems = installedPluginsPort.pluginProblems();
-    boolean hasInstalledPlugins = installedPlugins != null && !installedPlugins.isEmpty();
-    boolean hasPluginProblems = pluginProblems != null && !pluginProblems.isEmpty();
-    if (!hasInstalledPlugins && !hasPluginProblems) {
-      return List.of(
-          new RuntimeDiagnosticEvent(
-              recordedAt,
-              "INFO",
-              message("chatDock.plugins.category"),
-              message("chatDock.plugins.none.summary"),
-              pluginDirectory.isBlank()
-                  ? ""
-                  : message("chatDock.plugins.directory", pluginDirectory)));
-    }
-
-    ArrayList<RuntimeDiagnosticEvent> rows =
-        new ArrayList<>(
-            (hasInstalledPlugins ? installedPlugins.size() : 0)
-                + (hasPluginProblems ? pluginProblems.size() : 0));
-    if (hasInstalledPlugins) {
-      for (InstalledPluginDescriptor descriptor : installedPlugins) {
-        if (descriptor == null) continue;
-        String pluginId = Objects.toString(descriptor.pluginId(), "").trim();
-        String pluginVersion = Objects.toString(descriptor.pluginVersion(), "").trim();
-        String versionLabel =
-            pluginVersion.isBlank() ? message("chatDock.plugins.unknown") : pluginVersion;
-        String sourceJar = Objects.toString(descriptor.sourceJar(), "").trim();
-        StringBuilder details = new StringBuilder();
-        details
-            .append(
-                message(
-                    "chatDock.plugins.detail.pluginId",
-                    pluginId.isBlank()
-                        ? message("chatDock.plugins.unknown.parenthesized")
-                        : pluginId))
-            .append('\n')
-            .append(message("chatDock.plugins.detail.version", versionLabel))
-            .append('\n')
-            .append(message("chatDock.plugins.detail.apiVersion", descriptor.pluginApiVersion()));
-        if (!sourceJar.isBlank()) {
-          details.append('\n').append(message("chatDock.plugins.detail.sourceJar", sourceJar));
-        }
-        if (!pluginDirectory.isBlank()) {
-          details
-              .append('\n')
-              .append(message("chatDock.plugins.detail.pluginDirectory", pluginDirectory));
-        }
-        rows.add(
-            new RuntimeDiagnosticEvent(
-                recordedAt,
-                "INFO",
-                message("chatDock.plugins.plugin.category"),
-                (pluginId.isBlank() ? message("chatDock.plugins.unknown.parenthesized") : pluginId)
-                    + " "
-                    + versionLabel,
-                details.toString()));
-      }
-    }
-    if (hasPluginProblems) {
-      for (InstalledPluginProblem problem : pluginProblems) {
-        if (problem == null) continue;
-        StringBuilder details = new StringBuilder(Objects.toString(problem.details(), ""));
-        if (!pluginDirectory.isBlank()
-            && !details.toString().contains(message("chatDock.plugins.directory.prefix"))
-            && !details
-                .toString()
-                .contains(message("chatDock.plugins.detail.pluginDirectory.prefix"))) {
-          if (!details.isEmpty()) {
-            details.append('\n');
-          }
-          details.append(message("chatDock.plugins.directory", pluginDirectory));
-        }
-        rows.add(
-            new RuntimeDiagnosticEvent(
-                recordedAt,
-                problem.level(),
-                message("chatDock.plugins.problem.category"),
-                problem.summary(),
-                details.toString()));
-      }
-    }
-    return List.copyOf(rows);
   }
 
   private static String message(String key, Object... args) {
@@ -1382,7 +1277,8 @@ public class ChatDockable extends ChatViewPanel implements Dockable {
   private List<MessageTranslationLanguage> outboundTranslationTargetLanguages() {
     IrcProperties.Client.Translation settings =
         translationSettingsBus != null ? translationSettingsBus.get() : null;
-    return MessageTranslationLanguageCatalog.availableTargets(settings, installedPluginsPort);
+    return MessageTranslationLanguageCatalogSupport.availableTargets(
+        settings, installedPluginsPort);
   }
 
   @Override

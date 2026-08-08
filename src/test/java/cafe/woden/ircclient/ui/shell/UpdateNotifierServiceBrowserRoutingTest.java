@@ -5,7 +5,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.UpdateNotifierRuntimeConfigPort;
 import cafe.woden.ircclient.ui.ExternalBrowserLauncher;
 import org.junit.jupiter.api.Test;
 
@@ -15,7 +15,7 @@ class UpdateNotifierServiceBrowserRoutingTest {
 
   @Test
   void workerDelegatesToSharedBrowserLauncher() {
-    UiShellRuntimeConfigPort runtimeConfig = mock(UiShellRuntimeConfigPort.class);
+    UpdateNotifierRuntimeConfigPort runtimeConfig = mock(UpdateNotifierRuntimeConfigPort.class);
     StatusBar statusBar = mock(StatusBar.class);
     ExternalBrowserLauncher browserLauncher = mock(ExternalBrowserLauncher.class);
     when(browserLauncher.open(RELEASES_URL)).thenReturn(true);
@@ -34,7 +34,7 @@ class UpdateNotifierServiceBrowserRoutingTest {
 
   @Test
   void workerNotifiesWhenSharedBrowserLauncherFails() {
-    UiShellRuntimeConfigPort runtimeConfig = mock(UiShellRuntimeConfigPort.class);
+    UpdateNotifierRuntimeConfigPort runtimeConfig = mock(UpdateNotifierRuntimeConfigPort.class);
     StatusBar statusBar = mock(StatusBar.class);
     ExternalBrowserLauncher browserLauncher = mock(ExternalBrowserLauncher.class);
     when(browserLauncher.open(RELEASES_URL)).thenReturn(false);

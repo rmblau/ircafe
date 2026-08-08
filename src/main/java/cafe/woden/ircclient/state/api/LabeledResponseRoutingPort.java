@@ -18,13 +18,6 @@ public interface LabeledResponseRoutingPort {
     TIMEOUT
   }
 
-  record PreparedRawLine(String line, String label, boolean injected) {
-    public PreparedRawLine {
-      line = Objects.toString(line, "").trim();
-      label = LabeledResponseRoutingPort.normalizeLabel(label);
-    }
-  }
-
   record PendingLabeledRequest(
       TargetRef originTarget,
       String requestPreview,
@@ -63,10 +56,6 @@ public interface LabeledResponseRoutingPort {
       timedOutAt = (timedOutAt == null) ? Instant.now() : timedOutAt;
     }
   }
-
-  LabeledResponseRoutingPort.PreparedRawLine prepareOutgoingRaw(String serverId, String rawLine);
-
-  String nextClientLabel(String serverId);
 
   void remember(
       String serverId,

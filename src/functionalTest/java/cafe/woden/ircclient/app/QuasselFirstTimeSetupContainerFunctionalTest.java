@@ -25,6 +25,7 @@ import cafe.woden.ircclient.irc.quassel.QuasselCoreDatastreamCodec;
 import cafe.woden.ircclient.irc.quassel.QuasselCoreIrcClientService;
 import cafe.woden.ircclient.irc.quassel.QuasselCoreProtocolProbe;
 import cafe.woden.ircclient.irc.quassel.QuasselCoreSocketConnector;
+import cafe.woden.ircclient.irc.quassel.QuasselFunctionalRuntimeFixtures;
 import cafe.woden.ircclient.irc.quassel.control.QuasselCoreControlPort;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.net.ServerProxyResolver;
@@ -857,7 +858,7 @@ class QuasselFirstTimeSetupContainerFunctionalTest {
                 null,
                 null),
             List.of(server));
-    return new QuasselCoreIrcClientService(
+    return QuasselFunctionalRuntimeFixtures.service(
         serverCatalog, socketConnector, protocolProbe, authHandshake, datastreamCodec, props);
   }
 

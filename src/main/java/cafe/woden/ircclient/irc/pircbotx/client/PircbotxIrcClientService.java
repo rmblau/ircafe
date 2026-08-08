@@ -4,8 +4,8 @@ import cafe.woden.ircclient.bouncer.BouncerBackendRegistry;
 import cafe.woden.ircclient.bouncer.BouncerDiscoveryEventPort;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
-import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.QuitMessageRuntimeConfigPort;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
@@ -60,7 +60,7 @@ public class PircbotxIrcClientService
   @NonNull private final BouncerDiscoveryEventPort bouncerDiscoveryEvents;
   @NonNull private final BouncerBackendRegistry bouncerBackends;
   private final CtcpReplyRuntimeConfigPort runtimeConfig;
-  private final ChatCommandRuntimeConfigPort chatCommandRuntimeConfig;
+  private final QuitMessageRuntimeConfigPort quitMessageRuntimeConfig;
   @NonNull private final ServerIsupportStatePort serverIsupportState;
   @NonNull private final Ircv3StsPolicyService stsPolicies;
   private final String version;
@@ -76,8 +76,7 @@ public class PircbotxIrcClientService
   private final PircbotxBasicCommandSupport basicCommandSupport;
   private final PircbotxQueryCommandSupport queryCommandSupport;
   private final PircbotxZncPlaybackRequestSupport zncPlaybackRequestSupport;
-  private final PircbotxMultilineMessageSupport multilineMessageSupport =
-      new PircbotxMultilineMessageSupport();
+  private final PircbotxMultilineMessageSupport multilineMessageSupport;
 
   public PircbotxIrcClientService(
       IrcProperties props,
@@ -86,8 +85,9 @@ public class PircbotxIrcClientService
       PircbotxBotFactory botFactory,
       PircbotxBridgeListenerFactory bridgeListenerFactory,
       CtcpReplyRuntimeConfigPort runtimeConfig,
-      ChatCommandRuntimeConfigPort chatCommandRuntimeConfig,
+      QuitMessageRuntimeConfigPort quitMessageRuntimeConfig,
       Ircv3StsPolicyService stsPolicies,
+      Ircv3OutboundCommandRuntimeCatalog outboundCommandRuntimeCatalog,
       BouncerBackendRegistry bouncerBackends,
       BouncerDiscoveryEventPort bouncerDiscoveryEvents,
       PircbotxConnectionTimersRx timers,
@@ -102,13 +102,16 @@ public class PircbotxIrcClientService
         Objects.requireNonNull(bouncerDiscoveryEvents, "bouncerDiscoveryEvents");
     this.bouncerBackends = Objects.requireNonNull(bouncerBackends, "bouncerBackends");
     this.runtimeConfig = Objects.requireNonNull(runtimeConfig, "runtimeConfig");
-    this.chatCommandRuntimeConfig =
-        Objects.requireNonNull(chatCommandRuntimeConfig, "chatCommandRuntimeConfig");
+    this.quitMessageRuntimeConfig =
+        Objects.requireNonNull(quitMessageRuntimeConfig, "quitMessageRuntimeConfig");
     this.serverIsupportState = Objects.requireNonNull(serverIsupportState, "serverIsupportState");
     this.stsPolicies = Objects.requireNonNull(stsPolicies, "stsPolicies");
     this.version = Objects.requireNonNull(props, "props").client().version();
     this.ctcpAutoReplyHandler = new PircbotxCtcpAutoReplyHandler(this.version, this.runtimeConfig);
-    this.capabilityCommandSupport = new PircbotxCapabilityCommandSupport();
+    Ircv3OutboundCommandRuntimeCatalog runtimeCommands =
+        Objects.requireNonNull(outboundCommandRuntimeCatalog, "outboundCommandRuntimeCatalog");
+    this.capabilityCommandSupport = new PircbotxCapabilityCommandSupport(runtimeCommands);
+    this.multilineMessageSupport = new PircbotxMultilineMessageSupport(runtimeCommands);
     this.connectPreparationSupport =
         new PircbotxConnectPreparationSupport(
             this.serverCatalog, this.stsPolicies, this.serverIsupportState, this.timers);
@@ -133,7 +136,8 @@ public class PircbotxIrcClientService
     this.lagProbeSupport = new PircbotxLagProbeSupport();
     this.basicCommandSupport = new PircbotxBasicCommandSupport();
     this.queryCommandSupport = new PircbotxQueryCommandSupport();
-    this.zncPlaybackRequestSupport = new PircbotxZncPlaybackRequestSupport(this.bus);
+    this.zncPlaybackRequestSupport =
+        new PircbotxZncPlaybackRequestSupport(this.bus, runtimeCommands);
   }
 
   @Override
@@ -330,8 +334,11 @@ public class PircbotxIrcClientService
   public Completable requestChatHistoryBefore(
       String serverId, String target, java.time.Instant beforeExclusive, int limit) {
     java.time.Instant before = beforeExclusive == null ? java.time.Instant.now() : beforeExclusive;
-    String selector = Ircv3ChatHistoryCommandBuilder.timestampSelector(before);
-    return requestChatHistoryBefore(serverId, target, selector, limit);
+    return io.reactivex.rxjava3.core.Completable.fromAction(
+            () ->
+                capabilityCommandSupport.requestChatHistoryBefore(
+                    serverId, conn(serverId), target, before, limit))
+        .subscribeOn(RxVirtualSchedulers.io());
   }
 
   @Override
@@ -667,7 +674,7 @@ public class PircbotxIrcClientService
   @Override
   public void shutdownNow() {
     shuttingDown.set(true);
-    String shutdownQuitReason = chatCommandRuntimeConfig.readDefaultQuitMessage();
+    String shutdownQuitReason = quitMessageRuntimeConfig.readDefaultQuitMessage();
     for (PircbotxConnectionState c : connections.values()) {
       if (c == null) continue;
       try {

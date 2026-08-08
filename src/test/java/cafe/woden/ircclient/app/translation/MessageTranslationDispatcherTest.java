@@ -13,6 +13,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 
 import cafe.woden.ircclient.app.api.MessageTranslation;
 import cafe.woden.ircclient.app.api.UiPort;
+import cafe.woden.ircclient.app.translation.spi.MessageTranslationBackendContext;
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationBackendProvider;
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguage;
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider;
@@ -192,6 +193,42 @@ class MessageTranslationDispatcherTest {
     MessageTranslation expected = new MessageTranslation("msg-1", "bonjour", "en", "fr", "deepl");
     verify(ui, timeout(1_000)).applyMessageTranslation(eq(TARGET), eq(AT), eq(expected));
     assertEquals("fr", backend.requests.getFirst().targetLanguage());
+  }
+
+  @Test
+  void passesRuntimeContextToBackend() {
+    UiPort ui = mock(UiPort.class);
+    CapturingBackend backend =
+        new CapturingBackend(
+            "deepl",
+            request ->
+                CompletableFuture.completedFuture(
+                    new MessageTranslationResult("bonjour", "en", "fr", "deepl")));
+    MessageTranslationDispatcher dispatcher =
+        dispatcher(
+            props(
+                IrcProperties.Client.Translation.Mode.MANUAL,
+                true,
+                "deepl",
+                "auto",
+                "es",
+                4_000,
+                2,
+                2_500,
+                true,
+                "https://translation.example/api",
+                "secret-token"),
+            ui,
+            backend);
+
+    assertTrue(
+        dispatcher.requestManualMessageTranslation(TARGET, AT, "alice", "msg-1", "hello", "fr"));
+
+    verify(ui, timeout(1_000)).applyMessageTranslation(eq(TARGET), eq(AT), any());
+    MessageTranslationBackendContext context = backend.contexts.getFirst();
+    assertEquals("https://translation.example/api", context.endpoint());
+    assertEquals("secret-token", context.apiKey());
+    assertEquals(2_500, context.requestTimeoutMs());
   }
 
   @Test
@@ -435,11 +472,15 @@ class MessageTranslationDispatcherTest {
       UiPort ui,
       MessageLanguageDetector languageDetector,
       MessageTranslationBackendProvider... backends) {
+    MessageTranslationPreflightService preflightService =
+        new MessageTranslationPreflightService(languageDetector);
+    MessageTranslationBackendRegistry backendRegistry =
+        new MessageTranslationBackendRegistry(List.of(backends));
     return new MessageTranslationDispatcher(
         props,
         new MessageTranslationSettingsBus(props),
-        new MessageTranslationBackendRegistry(List.of(backends)),
-        languageDetector,
+        new MessageTranslationDispatchPlanningService(backendRegistry, preflightService),
+        new MessageTranslationExecutionService(preflightService),
         fixedProvider(ui),
         executor);
   }
@@ -539,6 +580,32 @@ class MessageTranslationDispatcherTest {
       int maxConcurrentRequests,
       long requestTimeoutMs,
       boolean translateUnknownMessages) {
+    return props(
+        mode,
+        enabled,
+        backend,
+        sourceLanguage,
+        targetLanguage,
+        maxRequestChars,
+        maxConcurrentRequests,
+        requestTimeoutMs,
+        translateUnknownMessages,
+        "",
+        "test-key");
+  }
+
+  private static IrcProperties props(
+      IrcProperties.Client.Translation.Mode mode,
+      boolean enabled,
+      String backend,
+      String sourceLanguage,
+      String targetLanguage,
+      int maxRequestChars,
+      int maxConcurrentRequests,
+      long requestTimeoutMs,
+      boolean translateUnknownMessages,
+      String endpoint,
+      String apiKey) {
     return new IrcProperties(
         new IrcProperties.Client(
             "IRCafe",
@@ -550,8 +617,8 @@ class MessageTranslationDispatcherTest {
                 enabled,
                 mode,
                 backend,
-                "",
-                "test-key",
+                endpoint,
+                apiKey,
                 sourceLanguage,
                 targetLanguage,
                 translateUnknownMessages,
@@ -606,6 +673,7 @@ class MessageTranslationDispatcherTest {
     private final Function<MessageTranslationRequest, CompletionStage<MessageTranslationResult>>
         handler;
     private final List<MessageTranslationRequest> requests = new CopyOnWriteArrayList<>();
+    private final List<MessageTranslationBackendContext> contexts = new CopyOnWriteArrayList<>();
 
     private CapturingBackend(
         String backendId,
@@ -623,6 +691,13 @@ class MessageTranslationDispatcherTest {
     public CompletionStage<MessageTranslationResult> translate(MessageTranslationRequest request) {
       requests.add(request);
       return handler.apply(request);
+    }
+
+    @Override
+    public CompletionStage<MessageTranslationResult> translate(
+        MessageTranslationRequest request, MessageTranslationBackendContext context) {
+      contexts.add(context);
+      return translate(request);
     }
   }
 

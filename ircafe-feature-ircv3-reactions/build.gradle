@@ -1,0 +1,8 @@
+apply from: rootProject.file('gradle/ircv3-feature-conventions.gradle')
+
+description = 'IRCafe IRCv3 reaction draft, tag, and command policy.'
+
+dependencies {
+    implementation project(':ircafe-feature-ircv3-common')
+    implementation project(':ircafe-feature-ircv3-message-tags')
+}

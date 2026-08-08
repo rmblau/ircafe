@@ -2,22 +2,14 @@ package cafe.woden.ircclient.app.translation;
 
 import cafe.woden.ircclient.app.api.MessageTranslation;
 import cafe.woden.ircclient.app.api.UiPort;
-import cafe.woden.ircclient.app.translation.spi.MessageTranslationBackendProvider;
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguage;
-import cafe.woden.ircclient.app.translation.spi.MessageTranslationRequest;
-import cafe.woden.ircclient.app.translation.spi.MessageTranslationResult;
-import cafe.woden.ircclient.app.translation.spi.MessageTranslationTargetView;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.execution.ExecutorConfig;
 import cafe.woden.ircclient.model.TargetRef;
 import java.time.Instant;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.layered.ApplicationLayer;
@@ -38,8 +30,8 @@ public final class MessageTranslationDispatcher {
 
   private final IrcProperties ircProperties;
   private final MessageTranslationSettingsBus settingsBus;
-  private final MessageTranslationBackendRegistry backendRegistry;
-  private final MessageLanguageDetector languageDetector;
+  private final MessageTranslationDispatchPlanningService planningService;
+  private final MessageTranslationExecutionService executionService;
   private final ObjectProvider<UiPort> uiProvider;
 
   @Qualifier(ExecutorConfig.TRANSLATION_EXECUTOR)
@@ -77,92 +69,48 @@ public final class MessageTranslationDispatcher {
       String text,
       String targetLanguageOverride,
       boolean automatic) {
-    IrcProperties.Client.Translation translation = ircProperties.client().translation();
-    if (settingsBus != null) {
-      translation = settingsBus.get();
-    }
-    if (!translation.enabled()) {
-      logManualSkip(automatic, "translation is disabled");
-      return false;
-    }
-    if (automatic && translation.mode() != IrcProperties.Client.Translation.Mode.AUTO) {
-      return false;
-    }
-    if (target == null || target.isUiOnly()) {
+    MessageTranslationSettingsSnapshot translation = currentSettings();
+    if (MessageTranslationTargetRefAdapter.unavailableOrUiOnly(target)) {
       logManualSkip(automatic, "target is unavailable or UI-only");
       return false;
     }
 
-    String normalizedMessageId = Objects.toString(messageId, "").trim();
-    if (normalizedMessageId.isBlank()) {
-      logManualSkip(automatic, "message id is blank");
+    MessageTranslationDispatchPlanningService.PlanningResult planningResult =
+        planningService.plan(
+            new MessageTranslationDispatchPlanningService.PlanningInput(
+                translation,
+                MessageTranslationTargetRefAdapter.toTargetView(target),
+                at,
+                fromNick,
+                messageId,
+                text,
+                targetLanguageOverride,
+                automatic,
+                () -> detectionLanguageCodes(translation)));
+    if (!planningResult.accepted()) {
+      logManualSkip(automatic, planningResult.skipReason());
       return false;
     }
 
-    String textToTranslate = Objects.toString(text, "");
-    if (textToTranslate.isBlank() || textToTranslate.length() > translation.maxRequestChars()) {
-      logManualSkip(
-          automatic,
-          "message text is blank or exceeds maxRequestChars (length={}, max={})",
-          textToTranslate.length(),
-          translation.maxRequestChars());
-      return false;
-    }
-    String targetLanguage = firstNonBlank(targetLanguageOverride, translation.targetLanguage());
-    if (!shouldTranslateBetween(translation.sourceLanguage(), targetLanguage)) {
-      logManualSkip(
-          automatic,
-          "source and target languages do not require translation (source={}, target={})",
-          translation.sourceLanguage(),
-          targetLanguage);
-      return false;
-    }
-
-    Optional<MessageTranslationBackendProvider> backend =
-        backendRegistry.find(translation.backendId());
-    if (backend.isEmpty()) {
-      logManualSkip(
-          automatic, "configured backend is not registered (backend={})", translation.backendId());
-      return false;
-    }
-    if (!tryReserveSlot(translation.maxConcurrentRequests())) {
+    MessageTranslationDispatchPlanningService.TranslationPlan plan = planningResult.plan();
+    if (!tryReserveSlot(plan.maxConcurrentRequests())) {
       logManualSkip(
           automatic,
           "translation concurrency limit reached (max={})",
-          translation.maxConcurrentRequests());
+          plan.maxConcurrentRequests());
       return false;
     }
 
-    MessageTranslationRequest request =
-        new MessageTranslationRequest(
-            translationTarget(target),
-            at,
-            fromNick,
-            normalizedMessageId,
-            textToTranslate,
-            translation.sourceLanguage(),
-            targetLanguage);
-    long requestTimeoutMs = translation.requestTimeoutMs();
-    boolean translateUnknownMessages = translation.translateUnknownMessages();
-    List<String> detectionLanguageCodes = detectionLanguageCodes(translation);
     try {
-      translationExecutor.execute(
-          () ->
-              runTranslationWithPreflight(
-                  backend.get(),
-                  request,
-                  requestTimeoutMs,
-                  automatic,
-                  translateUnknownMessages,
-                  detectionLanguageCodes));
+      translationExecutor.execute(() -> runTranslation(plan));
       if (!automatic) {
         log.info(
             "[translation] scheduled manual request target={} msgid={} backend={} source={} target={}",
             target,
-            normalizedMessageId,
-            backend.get().backendId(),
-            request.sourceLanguage(),
-            request.targetLanguage());
+            plan.request().messageId(),
+            plan.backend().backendId(),
+            plan.request().sourceLanguage(),
+            plan.request().targetLanguage());
       }
       return true;
     } catch (RuntimeException ex) {
@@ -172,119 +120,32 @@ public final class MessageTranslationDispatcher {
     }
   }
 
-  private void runTranslationWithPreflight(
-      MessageTranslationBackendProvider backend,
-      MessageTranslationRequest request,
-      long timeoutMs,
-      boolean suppressSameLanguageResult,
-      boolean translateUnknownMessages,
-      List<String> detectionLanguageCodes) {
-    MessageTranslationRequest preparedRequest =
-        prepareTranslationRequest(
-            request, suppressSameLanguageResult, translateUnknownMessages, detectionLanguageCodes);
-    if (preparedRequest == null) {
-      releaseSlot();
-      return;
-    }
-    runTranslation(backend, preparedRequest, timeoutMs, suppressSameLanguageResult);
-  }
-
-  private MessageTranslationRequest prepareTranslationRequest(
-      MessageTranslationRequest request,
-      boolean automatic,
-      boolean translateUnknownMessages,
-      List<String> detectionLanguageCodes) {
-    if (!automatic || !isAutoLanguage(request.sourceLanguage())) {
-      return request;
-    }
-    Optional<String> detectedSourceLanguage =
-        detectAutomaticSourceLanguage(
-            automatic, request.sourceLanguage(), request.text(), detectionLanguageCodes);
-    if (detectedSourceLanguage.isEmpty()) {
-      if (!translateUnknownMessages) {
-        log.debug(
-            "[translation] skipped automatic request because source language is unknown target={} msgid={} targetLanguage={}",
-            request.target(),
-            request.messageId(),
-            request.targetLanguage());
-      }
-      return translateUnknownMessages ? request : null;
-    }
-    String detectedLanguage = detectedSourceLanguage.get();
-    if (sameLanguage(detectedLanguage, request.targetLanguage())) {
-      log.debug(
-          "[translation] skipped automatic request because detected language matches target target={} msgid={} language={}",
-          request.target(),
-          request.messageId(),
-          detectedLanguage);
-      return null;
-    }
-    return new MessageTranslationRequest(
-        request.target(),
-        request.at(),
-        request.fromNick(),
-        request.messageId(),
-        request.text(),
-        detectedLanguage,
-        request.targetLanguage());
-  }
-
-  private void runTranslation(
-      MessageTranslationBackendProvider backend,
-      MessageTranslationRequest request,
-      long timeoutMs,
-      boolean suppressSameLanguageResult) {
+  private void runTranslation(MessageTranslationDispatchPlanningService.TranslationPlan plan) {
     boolean completionRegistered = false;
     try {
-      CompletionStage<MessageTranslationResult> stage = backend.translate(request);
-      if (stage == null) {
-        log.warn(
-            "[translation] backend returned no completion stage target={} msgid={} backend={}",
-            request.target(),
-            request.messageId(),
-            backend.backendId());
-        return;
-      }
-      stage
-          .toCompletableFuture()
-          .orTimeout(Math.max(1L, timeoutMs), TimeUnit.MILLISECONDS)
+      executionService
+          .translate(
+              new MessageTranslationExecutionService.ExecutionInput(
+                  plan.backend(),
+                  plan.request(),
+                  plan.backendContext(),
+                  plan.requestTimeoutMs(),
+                  plan.suppressSameLanguageResult(),
+                  plan.translateUnknownMessages(),
+                  plan.detectionLanguageCodes()))
           .whenComplete(
               (result, error) -> {
                 try {
-                  if (error == null
-                      && result != null
-                      && !result.translatedText().isBlank()
-                      && !shouldSuppressTranslationResult(
-                          request, result, suppressSameLanguageResult)) {
-                    UiPort ui = uiProvider.getIfAvailable();
-                    if (ui != null) {
-                      boolean applied =
-                          ui.applyMessageTranslation(
-                              targetRef(request),
-                              request.at(),
-                              toMessageTranslation(backend, request, result));
-                      if (!applied) {
-                        log.warn(
-                            "[translation] UI did not apply translation target={} msgid={} backend={}",
-                            request.target(),
-                            request.messageId(),
-                            backend.backendId());
-                      }
-                    } else {
-                      log.warn(
-                          "[translation] UI port unavailable for translation result target={} msgid={} backend={}",
-                          request.target(),
-                          request.messageId(),
-                          backend.backendId());
-                    }
-                  } else if (error != null) {
+                  if (error != null) {
                     log.warn(
-                        "[translation] backend failed target={} msgid={} backend={} error={}",
-                        request.target(),
-                        request.messageId(),
-                        backend.backendId(),
+                        "[translation] execution failed target={} msgid={} backend={} error={}",
+                        plan.request().target(),
+                        plan.request().messageId(),
+                        plan.backend().backendId(),
                         error.toString());
+                    return;
                   }
+                  applyTranslationResult(result);
                 } finally {
                   releaseSlot();
                 }
@@ -293,9 +154,9 @@ public final class MessageTranslationDispatcher {
     } catch (Throwable ex) {
       log.warn(
           "[translation] backend threw before registering completion target={} msgid={} backend={} error={}",
-          request.target(),
-          request.messageId(),
-          backend.backendId(),
+          plan.request().target(),
+          plan.request().messageId(),
+          plan.backend().backendId(),
           ex.toString());
     } finally {
       if (!completionRegistered) {
@@ -304,27 +165,61 @@ public final class MessageTranslationDispatcher {
     }
   }
 
-  private static boolean shouldSuppressTranslationResult(
-      MessageTranslationRequest request,
-      MessageTranslationResult result,
-      boolean suppressSameLanguageResult) {
-    if (!suppressSameLanguageResult) {
-      return false;
+  private void applyTranslationResult(
+      MessageTranslationExecutionService.ExecutionResult executionResult) {
+    if (executionResult == null) {
+      log.warn("[translation] execution returned no result");
+      return;
     }
-    return sameLanguage(
-        firstNonBlank(result.sourceLanguage(), request.sourceLanguage()),
-        firstNonBlank(result.targetLanguage(), request.targetLanguage()));
+    MessageTranslationRenderResult renderResult = executionResult.renderResult();
+    if (executionResult.failed()) {
+      log.warn(
+          "[translation] backend failed target={} msgid={} error={}",
+          executionResult.request().target(),
+          executionResult.request().messageId(),
+          executionResult.error().toString());
+      return;
+    }
+    if (executionResult.skipped()) {
+      return;
+    }
+    if (renderResult == null) {
+      log.warn(
+          "[translation] execution produced no render result target={} msgid={}",
+          executionResult.request().target(),
+          executionResult.request().messageId());
+      return;
+    }
+    UiPort ui = uiProvider.getIfAvailable();
+    if (ui == null) {
+      log.warn(
+          "[translation] UI port unavailable for translation result target={} msgid={} backend={}",
+          renderResult.target(),
+          renderResult.targetMessageId(),
+          renderResult.provider());
+      return;
+    }
+    boolean applied =
+        ui.applyMessageTranslation(
+            MessageTranslationTargetRefAdapter.toTargetRef(renderResult.target()),
+            renderResult.at(),
+            toMessageTranslation(renderResult));
+    if (!applied) {
+      log.warn(
+          "[translation] UI did not apply translation target={} msgid={} backend={}",
+          renderResult.target(),
+          renderResult.targetMessageId(),
+          renderResult.provider());
+    }
   }
 
-  private static MessageTranslation toMessageTranslation(
-      MessageTranslationBackendProvider backend,
-      MessageTranslationRequest request,
-      MessageTranslationResult result) {
-    String sourceLanguage = firstNonBlank(result.sourceLanguage(), request.sourceLanguage());
-    String targetLanguage = firstNonBlank(result.targetLanguage(), request.targetLanguage());
-    String provider = firstNonBlank(result.provider(), backend.backendId());
+  private static MessageTranslation toMessageTranslation(MessageTranslationRenderResult result) {
     return new MessageTranslation(
-        request.messageId(), result.translatedText(), sourceLanguage, targetLanguage, provider);
+        result.targetMessageId(),
+        result.translatedText(),
+        result.sourceLanguage(),
+        result.targetLanguage(),
+        result.provider());
   }
 
   private boolean tryReserveSlot(int maxConcurrentRequests) {
@@ -344,73 +239,22 @@ public final class MessageTranslationDispatcher {
     inFlight.updateAndGet(current -> Math.max(0, current - 1));
   }
 
-  private static MessageTranslationTargetView translationTarget(TargetRef target) {
-    return new MessageTranslationTargetView(target.serverId(), target.target());
-  }
-
-  private static TargetRef targetRef(MessageTranslationRequest request) {
-    MessageTranslationTargetView target = request.target();
-    return new TargetRef(target.serverId(), target.target());
-  }
-
-  private static boolean shouldTranslateBetween(String sourceLanguage, String targetLanguage) {
-    String source = Objects.toString(sourceLanguage, "").trim();
-    String target = Objects.toString(targetLanguage, "").trim();
-    if (target.isBlank()) {
-      return false;
+  private MessageTranslationSettingsSnapshot currentSettings() {
+    if (settingsBus != null) {
+      return settingsBus.snapshot();
     }
-    return source.isBlank() || "auto".equalsIgnoreCase(source) || !sameLanguage(source, target);
+    IrcProperties.Client.Translation translation =
+        ircProperties == null || ircProperties.client() == null
+            ? null
+            : ircProperties.client().translation();
+    return MessageTranslationSettingsBus.snapshot(translation);
   }
 
-  private Optional<String> detectAutomaticSourceLanguage(
-      boolean automatic, String sourceLanguage, String text, List<String> detectionLanguageCodes) {
-    if (!automatic || !isAutoLanguage(sourceLanguage)) {
-      return Optional.empty();
-    }
-    try {
-      return languageDetector.detectLanguageCode(text, detectionLanguageCodes);
-    } catch (RuntimeException ignored) {
-      return Optional.empty();
-    }
-  }
-
-  private List<String> detectionLanguageCodes(IrcProperties.Client.Translation translation) {
-    return MessageTranslationLanguageCatalog.availableTargets(translation, installedPlugins)
+  private List<String> detectionLanguageCodes(MessageTranslationSettingsSnapshot translation) {
+    return MessageTranslationLanguageCatalogSupport.availableTargets(translation, installedPlugins)
         .stream()
         .map(MessageTranslationLanguage::code)
         .toList();
-  }
-
-  private static boolean isAutoLanguage(String value) {
-    return "auto".equals(normalizeLanguage(value));
-  }
-
-  private static String firstNonBlank(String preferred, String fallback) {
-    String value = Objects.toString(preferred, "").trim();
-    return value.isBlank() ? Objects.toString(fallback, "").trim() : value;
-  }
-
-  private static boolean sameLanguage(String left, String right) {
-    String a = normalizeLanguage(left);
-    String b = normalizeLanguage(right);
-    if (a.isBlank() || b.isBlank() || "auto".equals(a) || "auto".equals(b)) {
-      return false;
-    }
-    if (a.equals(b)) {
-      return true;
-    }
-    return languageBase(a).equals(languageBase(b))
-        && !languageBase(a).isBlank()
-        && (!a.contains("-") || !b.contains("-"));
-  }
-
-  private static String normalizeLanguage(String value) {
-    return Objects.toString(value, "").trim().toLowerCase(java.util.Locale.ROOT).replace('_', '-');
-  }
-
-  private static String languageBase(String value) {
-    int idx = value.indexOf('-');
-    return idx < 0 ? value : value.substring(0, idx);
   }
 
   private static void logManualSkip(boolean automatic, String message, Object... args) {

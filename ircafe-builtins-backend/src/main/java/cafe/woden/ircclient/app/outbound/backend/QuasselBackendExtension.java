@@ -5,15 +5,11 @@ import cafe.woden.ircclient.app.outbound.backend.spi.BackendExtension;
 import cafe.woden.ircclient.app.outbound.backend.spi.BuiltInBackendEditorProfiles;
 import cafe.woden.ircclient.app.outbound.backend.spi.BuiltInBackendIds;
 import cafe.woden.ircclient.app.outbound.backend.spi.OutboundBackendFeatureAdapter;
-import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationOutboundCommands;
 import com.google.auto.service.AutoService;
 
 /** Built-in backend extension for the Quassel Core transport. */
 @AutoService(BackendExtension.class)
 public final class QuasselBackendExtension implements BackendExtension {
-  private static final MessageMutationOutboundCommands MESSAGE_MUTATION_COMMANDS =
-      new QuasselMessageMutationOutboundCommands();
-
   private static final OutboundBackendFeatureAdapter FEATURE_ADAPTER =
       new QuasselOutboundBackendFeatureAdapter();
 
@@ -25,11 +21,6 @@ public final class QuasselBackendExtension implements BackendExtension {
   @Override
   public OutboundBackendFeatureAdapter featureAdapter() {
     return FEATURE_ADAPTER;
-  }
-
-  @Override
-  public MessageMutationOutboundCommands messageMutationOutboundCommands() {
-    return MESSAGE_MUTATION_COMMANDS;
   }
 
   @Override

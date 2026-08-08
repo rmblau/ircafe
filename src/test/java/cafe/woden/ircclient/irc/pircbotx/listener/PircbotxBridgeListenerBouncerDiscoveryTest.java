@@ -95,13 +95,17 @@ class PircbotxBridgeListenerBouncerDiscoveryTest {
       boolean sojuDiscoveryEnabled,
       boolean zncDiscoveryEnabled,
       BouncerDiscoveryEventPort bouncerEvents) {
+    Ircv3RuntimeTestFixtures.Runtime runtime = Ircv3RuntimeTestFixtures.runtime();
     return new PircbotxBridgeListenerFactory(
             new BouncerBackendRegistry(List.<BouncerNetworkMappingStrategy>of()),
             bouncerEvents,
             new NoOpPlaybackCursorProvider(),
             new ServerIsupportState(),
             new SojuProperties(Map.of(), new SojuProperties.Discovery(sojuDiscoveryEnabled)),
-            new ZncProperties(Map.of(), new ZncProperties.Discovery(zncDiscoveryEnabled)))
+            new ZncProperties(Map.of(), new ZncProperties.Discovery(zncDiscoveryEnabled)),
+            runtime.catalogs(),
+            runtime.serverTime(),
+            runtime.messageTags())
         .create(
             "libera",
             conn,

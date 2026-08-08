@@ -3,11 +3,8 @@ package cafe.woden.ircclient.app.outbound;
 import cafe.woden.ircclient.app.api.AvailableBackendIdsPort;
 import cafe.woden.ircclient.app.outbound.backend.BackendExtensionCatalog;
 import cafe.woden.ircclient.app.outbound.backend.BackendUploadCommandRegistry;
-import cafe.woden.ircclient.app.outbound.backend.IrcBackendExtension;
-import cafe.woden.ircclient.app.outbound.backend.MatrixBackendExtension;
 import cafe.woden.ircclient.app.outbound.backend.MessageMutationOutboundCommandsRouter;
 import cafe.woden.ircclient.app.outbound.backend.OutboundBackendFeatureRegistry;
-import cafe.woden.ircclient.app.outbound.backend.QuasselBackendExtension;
 import cafe.woden.ircclient.app.outbound.backend.spi.BackendExtension;
 import cafe.woden.ircclient.app.outbound.backend.spi.OutboundBackendFeatureAdapter;
 import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationOutboundCommands;
@@ -21,11 +18,8 @@ public final class TestBackendSupport {
   private TestBackendSupport() {}
 
   public static BackendExtensionCatalog builtInBackendExtensionCatalog() {
-    return BackendExtensionCatalog.fromExtensions(
-        List.of(
-            new IrcBackendExtension(),
-            new MatrixBackendExtension(),
-            new QuasselBackendExtension()));
+    return BackendExtensionCatalog.fromApplicationClasspath(
+        TestIrcv3RuntimeSupport.messageMutations());
   }
 
   public static CommandTargetPolicy commandTargetPolicy(ServerCatalog serverCatalog) {
@@ -50,7 +44,8 @@ public final class TestBackendSupport {
             Objects.requireNonNullElse(adapters, List.<OutboundBackendFeatureAdapter>of()).stream()
                 .filter(Objects::nonNull)
                 .map(TestBackendSupport::backendExtension)
-                .toList()));
+                .toList(),
+            TestIrcv3RuntimeSupport.messageMutations()));
   }
 
   public static MessageMutationOutboundCommandsRouter
@@ -66,7 +61,8 @@ public final class TestBackendSupport {
                 .stream()
                 .filter(Objects::nonNull)
                 .map(TestBackendSupport::backendExtension)
-                .toList()));
+                .toList(),
+            TestIrcv3RuntimeSupport.messageMutations()));
   }
 
   public static BackendUploadCommandRegistry backendUploadCommandRegistry(
@@ -77,7 +73,8 @@ public final class TestBackendSupport {
                 .stream()
                 .filter(Objects::nonNull)
                 .map(TestBackendSupport::backendExtension)
-                .toList()));
+                .toList(),
+            TestIrcv3RuntimeSupport.messageMutations()));
   }
 
   private static BackendExtension backendExtension(OutboundBackendFeatureAdapter adapter) {

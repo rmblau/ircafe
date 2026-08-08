@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.InstalledPluginProblem;
-import cafe.woden.ircclient.util.InstalledPluginDescriptor;
+import cafe.woden.ircclient.plugin.spi.InstalledPluginDescriptor;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;

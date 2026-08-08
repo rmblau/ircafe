@@ -59,6 +59,27 @@ class ThemeContributionProviderTest {
   }
 
   @Test
+  void duplicateThemeProviderClassesAreRegisteredOnce() {
+    ThemeContributionProvider duplicateBuiltInProvider = new BuiltInThemeContributionProvider();
+    ThemeContributionProvider duplicatePluginProvider =
+        new SingleThemeContributionProvider(
+            List.of(pluginThemeOption("plugin-aurora", "Plugin Aurora")), List.of());
+    InstalledPluginsPort installedPlugins =
+        new RecordingInstalledPluginsPort(
+            List.of(duplicateBuiltInProvider, duplicatePluginProvider, duplicatePluginProvider));
+
+    List<ThemeOption> builtInOptions =
+        ThemeContributionProviders.builtInThemeOptions(installedPlugins);
+    List<ThemeOption> pluginOptions =
+        ThemeContributionProviders.pluginThemeOptions(installedPlugins);
+
+    assertEquals(
+        1, builtInOptions.stream().filter(option -> option.id().equals("darcula")).count());
+    assertEquals(
+        1, pluginOptions.stream().filter(option -> option.id().equals("plugin-aurora")).count());
+  }
+
+  @Test
   void themeCatalogLoadsOptionsThroughInstalledPluginPort() {
     ThemeCatalog catalog =
         new ThemeCatalog(

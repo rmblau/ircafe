@@ -180,7 +180,7 @@ class QuasselCoreContainerNetworkE2eIntegrationTest {
                 null),
             List.of(server));
 
-    return new QuasselCoreIrcClientService(
+    return QuasselRuntimeTestFixtures.service(
         serverCatalog, socketConnector, protocolProbe, authHandshake, datastreamCodec, props);
   }
 

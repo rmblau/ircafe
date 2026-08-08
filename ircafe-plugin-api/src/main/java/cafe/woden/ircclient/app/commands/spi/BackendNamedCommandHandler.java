@@ -12,8 +12,13 @@ import java.util.Set;
  */
 public interface BackendNamedCommandHandler {
 
+  /** Returns command names without a leading slash. Matching is case-insensitive. */
   Set<String> supportedCommandNames();
 
+  /**
+   * Parses a line already matched to one of {@link #supportedCommandNames()}. The returned command
+   * should be the canonical executor-facing name; aliases may therefore map to one command.
+   */
   BackendNamedCommandParseResult parse(String line, String matchedCommandName);
 
   default List<SlashCommandDescriptor> autocompleteCommands() {

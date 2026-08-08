@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import cafe.woden.ircclient.app.outbound.backend.spi.BackendEditorProfile;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -18,6 +19,18 @@ class BackendEditorProfileCatalogTest {
     assertEquals("plugin-backend", catalog.displayName("plugin-backend"));
     assertEquals(BackendUiMode.IRC, catalog.uiModeForBackendId("plugin-backend"));
     assertFalse(catalog.supportsQuasselCoreCommands("plugin-backend"));
+  }
+
+  @Test
+  void builtInProfilesReusePluginFacingMetadata() {
+    List<BackendEditorProfileSpec> appProfiles = BuiltInBackendEditorProfiles.all();
+    List<BackendEditorProfile> pluginProfiles =
+        cafe.woden.ircclient.app.outbound.backend.spi.BuiltInBackendEditorProfiles.all();
+
+    assertEquals(pluginProfiles.size(), appProfiles.size());
+    for (int i = 0; i < pluginProfiles.size(); i++) {
+      assertEquivalentProfile(pluginProfiles.get(i), appProfiles.get(i));
+    }
   }
 
   @Test
@@ -70,6 +83,35 @@ class BackendEditorProfileCatalogTest {
     assertEquals("Plugin Matrix", catalog.displayName(" plugin-matrix "));
     assertEquals(BackendUiMode.MATRIX, catalog.uiModeForBackendId(" plugin-matrix "));
     assertFalse(catalog.supportsQuasselCoreCommands(" plugin-matrix "));
+  }
+
+  private static void assertEquivalentProfile(
+      BackendEditorProfile pluginProfile, BackendEditorProfileSpec appProfile) {
+    assertEquals(pluginProfile.backendId(), appProfile.backendId());
+    assertEquals(pluginProfile.displayName(), appProfile.displayName());
+    assertEquals(pluginProfile.uiMode().name(), appProfile.uiMode().name());
+    assertEquals(pluginProfile.defaultPlainPort(), appProfile.defaultPlainPort());
+    assertEquals(pluginProfile.defaultTlsPort(), appProfile.defaultTlsPort());
+    assertEquals(pluginProfile.directAuthEnabled(), appProfile.directAuthEnabled());
+    assertEquals(pluginProfile.matrixAuthSupported(), appProfile.matrixAuthSupported());
+    assertEquals(pluginProfile.requiresNick(), appProfile.requiresNick());
+    assertEquals(pluginProfile.usesNickAsDefaultLogin(), appProfile.usesNickAsDefaultLogin());
+    assertEquals(
+        pluginProfile.supportsQuasselCoreCommands(), appProfile.supportsQuasselCoreCommands());
+    assertEquals(pluginProfile.defaultLoginFallback(), appProfile.defaultLoginFallback());
+    assertEquals(pluginProfile.hostLabel(), appProfile.hostLabel());
+    assertEquals(pluginProfile.serverPasswordLabel(), appProfile.serverPasswordLabel());
+    assertEquals(pluginProfile.nickLabel(), appProfile.nickLabel());
+    assertEquals(pluginProfile.loginLabel(), appProfile.loginLabel());
+    assertEquals(pluginProfile.realNameLabel(), appProfile.realNameLabel());
+    assertEquals(pluginProfile.tlsToggleLabel(), appProfile.tlsToggleLabel());
+    assertEquals(pluginProfile.connectionHint(), appProfile.connectionHint());
+    assertEquals(pluginProfile.authDisabledHint(), appProfile.authDisabledHint());
+    assertEquals(pluginProfile.serverPasswordPlaceholder(), appProfile.serverPasswordPlaceholder());
+    assertEquals(pluginProfile.hostPlaceholder(), appProfile.hostPlaceholder());
+    assertEquals(pluginProfile.loginPlaceholder(), appProfile.loginPlaceholder());
+    assertEquals(pluginProfile.nickPlaceholder(), appProfile.nickPlaceholder());
+    assertEquals(pluginProfile.realNamePlaceholder(), appProfile.realNamePlaceholder());
   }
 
   private static BackendEditorProfileSpec pluginProfile(

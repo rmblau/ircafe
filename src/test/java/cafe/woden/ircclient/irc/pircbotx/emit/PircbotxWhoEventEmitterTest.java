@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.irc.pircbotx.emit;
 
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.whoEvents;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -7,10 +8,15 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
 import cafe.woden.ircclient.irc.ircv3.*;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundCommandOperation;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundCommandRequest;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundCommandSignal;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundCommandSignalProvider;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
 import cafe.woden.ircclient.irc.playback.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class PircbotxWhoEventEmitterTest {
@@ -19,7 +25,7 @@ class PircbotxWhoEventEmitterTest {
   void maybeEmitNumeric302EmitsHostmaskAndAway() {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> events = new ArrayList<>();
-    PircbotxWhoEventEmitter emitter = new PircbotxWhoEventEmitter("libera", conn, events::add);
+    PircbotxWhoEventEmitter emitter = whoEvents("libera", conn, events::add);
 
     assertTrue(
         emitter.maybeEmitNumeric(
@@ -47,7 +53,7 @@ class PircbotxWhoEventEmitterTest {
   void maybeEmitNumeric354StrictEmitsSchemaHostmaskAwayAndAccount() {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> events = new ArrayList<>();
-    PircbotxWhoEventEmitter emitter = new PircbotxWhoEventEmitter("libera", conn, events::add);
+    PircbotxWhoEventEmitter emitter = whoEvents("libera", conn, events::add);
 
     assertTrue(
         emitter.maybeEmitNumeric(
@@ -75,10 +81,10 @@ class PircbotxWhoEventEmitterTest {
   void maybeEmitNumeric318EmitsHereLogoutAndProbeCompleted() {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     conn.beginWhoisProbe("alice");
-    conn.markWhoisAccountNumericSupported();
+    conn.markWhoisAccountObserved("bob");
 
     List<ServerIrcEvent> events = new ArrayList<>();
-    PircbotxWhoEventEmitter emitter = new PircbotxWhoEventEmitter("libera", conn, events::add);
+    PircbotxWhoEventEmitter emitter = whoEvents("libera", conn, events::add);
 
     assertTrue(emitter.maybeEmitNumeric(318, ":server 318 me alice :End of /WHOIS list"));
 
@@ -100,7 +106,7 @@ class PircbotxWhoEventEmitterTest {
   void maybeEmitLineEmitsWhoisUserHostmask() {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> events = new ArrayList<>();
-    PircbotxWhoEventEmitter emitter = new PircbotxWhoEventEmitter("libera", conn, events::add);
+    PircbotxWhoEventEmitter emitter = whoEvents("libera", conn, events::add);
 
     emitter.maybeEmitLine(":server 311 me alice ident host.example * :Alice Example");
 
@@ -109,5 +115,56 @@ class PircbotxWhoEventEmitterTest {
         assertInstanceOf(IrcEvent.UserHostmaskObserved.class, events.get(0).event());
     assertEquals("alice", hostmask.nick());
     assertEquals("alice!ident@host.example", hostmask.hostmask());
+  }
+
+  @Test
+  void maybeEmitNumeric352UsesSelectedRuntimeProvider() {
+    PircbotxConnectionState conn = new PircbotxConnectionState("libera");
+    List<ServerIrcEvent> events = new ArrayList<>();
+    Ircv3InboundCommandSignalProvider plugin =
+        new Ircv3InboundCommandSignalProvider() {
+          @Override
+          public String providerId() {
+            return "plugin-names";
+          }
+
+          @Override
+          public int inboundCommandPriority() {
+            return 100;
+          }
+
+          @Override
+          public Set<Ircv3InboundCommandOperation> inboundCommandOperations() {
+            return Set.of(Ircv3InboundCommandOperation.WHO);
+          }
+
+          @Override
+          public List<Ircv3InboundCommandSignal> parse(
+              Ircv3InboundCommandOperation operation, Ircv3InboundCommandRequest request) {
+            return List.of(
+                new Ircv3InboundCommandSignal.ChannelHostmaskObserved(
+                    "#plugin", "override", "override!ident@plugin.example"),
+                new Ircv3InboundCommandSignal.UserAwayObserved(
+                    "override", false, null));
+          }
+        };
+    PircbotxWhoEventEmitter emitter =
+        new PircbotxWhoEventEmitter(
+            "libera",
+            conn,
+            events::add,
+            Ircv3InboundCommandSignalRuntimeCatalog.fromProviders(List.of(plugin)));
+
+    assertTrue(emitter.maybeEmitNumeric(352, ":server 352 ignored malformed"));
+
+    assertEquals(2, events.size());
+    IrcEvent.UserHostmaskObserved hostmask =
+        assertInstanceOf(IrcEvent.UserHostmaskObserved.class, events.get(0).event());
+    IrcEvent.UserAwayStateObserved away =
+        assertInstanceOf(IrcEvent.UserAwayStateObserved.class, events.get(1).event());
+    assertEquals("#plugin", hostmask.channel());
+    assertEquals("override", hostmask.nick());
+    assertEquals("override!ident@plugin.example", hostmask.hostmask());
+    assertEquals(IrcEvent.AwayState.HERE, away.awayState());
   }
 }

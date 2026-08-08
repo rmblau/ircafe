@@ -5,7 +5,7 @@ import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.app.outbound.support.CommandTargetPolicy;
 import cafe.woden.ircclient.app.outbound.support.OutboundRawCommandSupport;
-import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.IrcSessionRuntimeConfigPort;
 import cafe.woden.ircclient.irc.port.IrcTargetMembershipPort;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.state.api.JoinRoutingPort;
@@ -30,7 +30,7 @@ public final class OutboundJoinPartCommandService {
   @NonNull private final ConnectionCoordinator connectionCoordinator;
   @NonNull private final TargetCoordinator targetCoordinator;
   @NonNull private final CommandTargetPolicy commandTargetPolicy;
-  @NonNull private final ChatCommandRuntimeConfigPort runtimeConfig;
+  @NonNull private final IrcSessionRuntimeConfigPort runtimeConfig;
   @NonNull private final JoinRoutingPort joinRoutingState;
   @NonNull private final PartCommandSupport partCommandSupport;
 

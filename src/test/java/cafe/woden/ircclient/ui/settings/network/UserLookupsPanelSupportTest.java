@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.UserLookupRuntimeConfigPort;
 import javax.swing.JCheckBox;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
@@ -44,7 +44,7 @@ class UserLookupsPanelSupportTest {
 
   @Test
   void rememberSettingsPersistsLookupValues() {
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    UserLookupRuntimeConfigPort runtimeConfig = mock(UserLookupRuntimeConfigPort.class);
     UserLookupsPanelSupport.UserLookupSettings settings =
         new UserLookupsPanelSupport.UserLookupSettings(
             true, 5, 6, 30, 5, true, 15, 4, 60, 5, true, 60, 120, true, 300, 2, 30);

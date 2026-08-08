@@ -1,10 +1,20 @@
 package cafe.woden.ircclient.ui.settings.tray;
 
+import cafe.woden.ircclient.config.api.LagIndicatorRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.PushyRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.TrayRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.UpdateNotifierRuntimeConfigPort;
 import cafe.woden.ircclient.config.properties.PushyProperties;
 import cafe.woden.ircclient.model.BuiltInSound;
 import cafe.woden.ircclient.notify.api.NotificationSoundPort;
 import cafe.woden.ircclient.notify.api.PushyNotificationPort;
+import cafe.woden.ircclient.notify.api.pushy.PushyNotificationControlAvailabilityPlan;
+import cafe.woden.ircclient.notify.api.pushy.PushyNotificationControlAvailabilityPlanner;
+import cafe.woden.ircclient.notify.api.pushy.PushyNotificationSettingsSelectionPlan;
+import cafe.woden.ircclient.notify.api.pushy.PushyNotificationSettingsSelectionPlanner;
+import cafe.woden.ircclient.notify.api.pushy.PushyNotificationSettingsValidator;
+import cafe.woden.ircclient.notify.api.pushy.PushyNotificationTargetSelectionPlan;
+import cafe.woden.ircclient.notify.api.pushy.PushyNotificationTargetSelectionPlanner;
 import cafe.woden.ircclient.notify.pushy.PushySettingsBus;
 import cafe.woden.ircclient.notify.sound.NotificationSoundSettings;
 import cafe.woden.ircclient.notify.sound.NotificationSoundSettingsBus;
@@ -12,7 +22,6 @@ import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.NotificationBackendMode;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsDocumentListener;
-import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.notifications.NotificationSoundControlsSupport;
 import cafe.woden.ircclient.ui.shell.LagIndicatorService;
@@ -21,7 +30,6 @@ import cafe.woden.ircclient.ui.tray.TrayNotificationService;
 import cafe.woden.ircclient.ui.tray.TrayService;
 import cafe.woden.ircclient.ui.tray.dbus.GnomeDbusNotificationBackend;
 import cafe.woden.ircclient.ui.util.UiColorKeys;
-import java.net.URI;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import javax.swing.JButton;
@@ -44,6 +52,8 @@ public final class TrayControlsSupport {
       NotificationSoundSettings soundSettings,
       PushyProperties pushySettings,
       TrayRuntimeConfigPort runtimeConfig,
+      UpdateNotifierRuntimeConfigPort updateNotifierRuntimeConfig,
+      LagIndicatorRuntimeConfigPort lagIndicatorRuntimeConfig,
       GnomeDbusNotificationBackend gnomeDbusBackend,
       TrayNotificationService trayNotificationService,
       NotificationSoundPort notificationSoundService,
@@ -101,13 +111,15 @@ public final class TrayControlsSupport {
     JCheckBox updateNotifierEnabled =
         new JCheckBox(
             MESSAGES.text("preferences.tray.controls.updateNotifier.enabled"),
-            runtimeConfig == null || runtimeConfig.readUpdateNotifierEnabled(true));
+            updateNotifierRuntimeConfig == null
+                || updateNotifierRuntimeConfig.readUpdateNotifierEnabled(true));
     updateNotifierEnabled.setToolTipText(
         MESSAGES.text("preferences.tray.controls.updateNotifier.tooltip"));
     JCheckBox lagIndicatorEnabled =
         new JCheckBox(
             MESSAGES.text("preferences.tray.controls.lagIndicator.enabled"),
-            runtimeConfig == null || runtimeConfig.readLagIndicatorEnabled(true));
+            lagIndicatorRuntimeConfig == null
+                || lagIndicatorRuntimeConfig.readLagIndicatorEnabled(true));
     lagIndicatorEnabled.setToolTipText(
         MESSAGES.text("preferences.tray.controls.lagIndicator.tooltip"));
 
@@ -220,15 +232,11 @@ public final class TrayControlsSupport {
         new JPasswordField(Objects.toString(effectivePushySettings.apiKey(), ""));
     pushyApiKey.setToolTipText(MESSAGES.text("preferences.tray.controls.pushy.apiKey.tooltip"));
 
-    PushyTargetMode pushyInitialTargetMode =
-        effectivePushySettings.deviceToken() != null
-                && !effectivePushySettings.deviceToken().isBlank()
-            ? PushyTargetMode.DEVICE_TOKEN
-            : PushyTargetMode.TOPIC;
-    String pushyInitialTargetValue =
-        pushyInitialTargetMode == PushyTargetMode.DEVICE_TOKEN
-            ? Objects.toString(effectivePushySettings.deviceToken(), "")
-            : Objects.toString(effectivePushySettings.topic(), "");
+    PushyNotificationTargetSelectionPlan pushyInitialTarget =
+        PushyNotificationTargetSelectionPlanner.planInitial(
+            effectivePushySettings.deviceToken(), effectivePushySettings.topic());
+    PushyTargetMode pushyInitialTargetMode = pushyTargetModeValue(pushyInitialTarget.targetMode());
+    String pushyInitialTargetValue = pushyInitialTarget.targetValue();
 
     JComboBox<PushyTargetMode> pushyTargetMode = new JComboBox<>(PushyTargetMode.values());
     pushyTargetMode.setSelectedItem(pushyInitialTargetMode);
@@ -264,17 +272,19 @@ public final class TrayControlsSupport {
           String endpoint = PreferencesUiSupport.trimmedText(pushyEndpoint);
           String apiKey = PreferencesUiSupport.trimmedPasswordText(pushyApiKey);
           String target = PreferencesUiSupport.trimmedText(pushyTargetValue);
-          String error =
-              validatePushyInputs(pushyEnabled.isSelected(), endpoint, apiKey, mode, target);
-          if (error == null) {
+          PushyNotificationSettingsValidator.Error error =
+              validatePushyError(pushyEnabled.isSelected(), endpoint, apiKey, mode, target);
+          String message = pushyValidationMessage(error);
+          if (message == null) {
             pushyValidationLabel.setText(" ");
             pushyValidationLabel.setVisible(false);
-            pushyTest.setEnabled(pushyEnabled.isSelected());
           } else {
-            pushyValidationLabel.setText(error);
+            pushyValidationLabel.setText(message);
             pushyValidationLabel.setVisible(true);
-            pushyTest.setEnabled(false);
           }
+          PushyNotificationControlAvailabilityPlan availability =
+              PushyNotificationControlAvailabilityPlanner.plan(pushyEnabled.isSelected(), error);
+          pushyTest.setEnabled(availability.testEnabled());
         };
 
     pushyTest.addActionListener(
@@ -289,26 +299,26 @@ public final class TrayControlsSupport {
           int connectSeconds = PreferencesUiSupport.spinnerInt(pushyConnectTimeoutSeconds);
           int readSeconds = PreferencesUiSupport.spinnerInt(pushyReadTimeoutSeconds);
 
-          String error =
-              validatePushyInputs(pushyEnabled.isSelected(), endpoint, apiKey, mode, target);
-          if (error != null) {
-            pushyTestStatus.setText(error);
+          PushyNotificationSettingsValidator.Error error =
+              validatePushyError(pushyEnabled.isSelected(), endpoint, apiKey, mode, target);
+          String message = pushyValidationMessage(error);
+          if (message != null) {
+            pushyTestStatus.setText(message);
             pushyTestStatus.setForeground(PreferencesUiSupport.errorForeground());
             return;
           }
 
-          String deviceToken = mode == PushyTargetMode.DEVICE_TOKEN ? target : null;
-          String topic = mode == PushyTargetMode.TOPIC ? target : null;
-          PushyProperties draft =
-              new PushyProperties(
+          PushyNotificationSettingsSelectionPlan settingsPlan =
+              PushyNotificationSettingsSelectionPlanner.plan(
                   pushyEnabled.isSelected(),
-                  endpoint.isBlank() ? null : endpoint,
-                  apiKey.isBlank() ? null : apiKey,
-                  deviceToken,
-                  topic,
-                  titlePrefix.isBlank() ? null : titlePrefix,
+                  endpoint,
+                  apiKey,
+                  toFeatureTargetMode(mode),
+                  target,
+                  titlePrefix,
                   connectSeconds,
                   readSeconds);
+          PushyProperties draft = toPushyProperties(settingsPlan);
 
           pushyTest.setEnabled(false);
           pushyTestStatus.setText(MESSAGES.text("preferences.tray.controls.pushy.status.sending"));
@@ -359,13 +369,26 @@ public final class TrayControlsSupport {
     Runnable refreshPushyState =
         () -> {
           boolean enabledState = pushyEnabled.isSelected();
-          pushyEndpoint.setEnabled(enabledState);
-          pushyApiKey.setEnabled(enabledState);
-          pushyTargetMode.setEnabled(enabledState);
-          pushyTargetValue.setEnabled(enabledState);
-          pushyTitlePrefix.setEnabled(enabledState);
-          pushyConnectTimeoutSeconds.setEnabled(enabledState);
-          pushyReadTimeoutSeconds.setEnabled(enabledState);
+          PushyTargetMode mode =
+              PreferencesUiSupport.selectedComboItem(
+                  pushyTargetMode, PushyTargetMode.class, PushyTargetMode.DEVICE_TOKEN);
+          PushyNotificationSettingsValidator.Error error =
+              validatePushyError(
+                  enabledState,
+                  PreferencesUiSupport.trimmedText(pushyEndpoint),
+                  PreferencesUiSupport.trimmedPasswordText(pushyApiKey),
+                  mode,
+                  PreferencesUiSupport.trimmedText(pushyTargetValue));
+          PushyNotificationControlAvailabilityPlan availability =
+              PushyNotificationControlAvailabilityPlanner.plan(enabledState, error);
+          pushyEndpoint.setEnabled(availability.endpointEnabled());
+          pushyApiKey.setEnabled(availability.apiKeyEnabled());
+          pushyTargetMode.setEnabled(availability.targetModeEnabled());
+          pushyTargetValue.setEnabled(availability.targetValueEnabled());
+          pushyTitlePrefix.setEnabled(availability.titlePrefixEnabled());
+          pushyConnectTimeoutSeconds.setEnabled(availability.connectTimeoutEnabled());
+          pushyReadTimeoutSeconds.setEnabled(availability.readTimeoutEnabled());
+          pushyTest.setEnabled(availability.testEnabled());
           refreshPushyDestinationState.run();
           refreshPushyValidation.run();
         };
@@ -493,6 +516,9 @@ public final class TrayControlsSupport {
 
   public static void rememberSettings(
       TrayRuntimeConfigPort runtimeConfig,
+      UpdateNotifierRuntimeConfigPort updateNotifierRuntimeConfig,
+      LagIndicatorRuntimeConfigPort lagIndicatorRuntimeConfig,
+      PushyRuntimeConfigPort pushyRuntimeConfig,
       NotificationSoundSettingsBus notificationSoundSettingsBus,
       PushySettingsBus pushySettingsBus,
       UpdateNotifierService updateNotifierService,
@@ -523,8 +549,8 @@ public final class TrayControlsSupport {
     runtimeConfig.rememberTrayNotificationSoundUseCustom(soundSettings.useCustom());
     runtimeConfig.rememberTrayNotificationSoundCustomPath(soundSettings.customPath());
 
-    runtimeConfig.rememberUpdateNotifierEnabled(settings.updateNotifierEnabled());
-    runtimeConfig.rememberLagIndicatorEnabled(settings.lagIndicatorEnabled());
+    updateNotifierRuntimeConfig.rememberUpdateNotifierEnabled(settings.updateNotifierEnabled());
+    lagIndicatorRuntimeConfig.rememberLagIndicatorEnabled(settings.lagIndicatorEnabled());
     if (updateNotifierService != null) {
       updateNotifierService.setEnabled(settings.updateNotifierEnabled());
     }
@@ -535,7 +561,7 @@ public final class TrayControlsSupport {
     if (pushySettingsBus != null) {
       pushySettingsBus.set(settings.pushySettings());
     }
-    runtimeConfig.rememberPushySettings(settings.pushySettings());
+    pushyRuntimeConfig.rememberPushySettings(settings.pushySettings());
 
     if (trayService != null) {
       trayService.applySettings();
@@ -548,28 +574,32 @@ public final class TrayControlsSupport {
       String apiKey,
       PushyTargetMode targetMode,
       String targetValue) {
-    if (!enabled) return null;
+    return pushyValidationMessage(
+        validatePushyError(enabled, endpoint, apiKey, targetMode, targetValue));
+  }
 
-    String key = SettingsValueSupport.trimmedString(apiKey);
-    if (key.isEmpty()) {
-      return MESSAGES.text("preferences.tray.controls.pushy.validation.apiKeyRequired");
-    }
+  static PushyNotificationSettingsValidator.Error validatePushyError(
+      boolean enabled,
+      String endpoint,
+      String apiKey,
+      PushyTargetMode targetMode,
+      String targetValue) {
+    return PushyNotificationSettingsValidator.validate(
+        enabled, endpoint, apiKey, toFeatureTargetMode(targetMode), targetValue);
+  }
 
-    String target = SettingsValueSupport.trimmedString(targetValue);
-    if (target.isEmpty()) {
-      return switch (targetMode) {
-        case TOPIC -> MESSAGES.text("preferences.tray.controls.pushy.validation.topicRequired");
-        case DEVICE_TOKEN ->
-            MESSAGES.text("preferences.tray.controls.pushy.validation.deviceTokenRequired");
-      };
-    }
-
-    String trimmedEndpoint = SettingsValueSupport.trimmedString(endpoint);
-    if (!trimmedEndpoint.isEmpty() && !isValidPushyEndpoint(trimmedEndpoint)) {
-      return MESSAGES.text("preferences.tray.controls.pushy.validation.endpointInvalid");
-    }
-
-    return null;
+  private static String pushyValidationMessage(PushyNotificationSettingsValidator.Error error) {
+    return switch (error == null ? PushyNotificationSettingsValidator.Error.NONE : error) {
+      case NONE -> null;
+      case API_KEY_REQUIRED ->
+          MESSAGES.text("preferences.tray.controls.pushy.validation.apiKeyRequired");
+      case DEVICE_TOKEN_REQUIRED ->
+          MESSAGES.text("preferences.tray.controls.pushy.validation.deviceTokenRequired");
+      case TOPIC_REQUIRED ->
+          MESSAGES.text("preferences.tray.controls.pushy.validation.topicRequired");
+      case ENDPOINT_INVALID ->
+          MESSAGES.text("preferences.tray.controls.pushy.validation.endpointInvalid");
+    };
   }
 
   private static NotificationSoundSettings readNotificationSoundSettings(
@@ -606,20 +636,30 @@ public final class TrayControlsSupport {
           MESSAGES.text("preferences.tray.controls.pushy.validation.title"), validationError);
     }
 
-    String deviceToken =
-        targetMode == PushyTargetMode.DEVICE_TOKEN && !targetValue.isBlank() ? targetValue : null;
-    String topic =
-        targetMode == PushyTargetMode.TOPIC && !targetValue.isBlank() ? targetValue : null;
+    PushyNotificationSettingsSelectionPlan settingsPlan =
+        PushyNotificationSettingsSelectionPlanner.plan(
+            enabled,
+            endpoint,
+            apiKey,
+            toFeatureTargetMode(targetMode),
+            targetValue,
+            titlePrefix,
+            connectTimeoutSeconds,
+            readTimeoutSeconds);
 
+    return toPushyProperties(settingsPlan);
+  }
+
+  private static PushyProperties toPushyProperties(PushyNotificationSettingsSelectionPlan plan) {
     return new PushyProperties(
-        enabled,
-        endpoint.isBlank() ? null : endpoint,
-        apiKey.isBlank() ? null : apiKey,
-        deviceToken,
-        topic,
-        titlePrefix.isBlank() ? null : titlePrefix,
-        connectTimeoutSeconds,
-        readTimeoutSeconds);
+        plan.enabled(),
+        plan.endpoint(),
+        plan.apiKey(),
+        plan.deviceToken(),
+        plan.topic(),
+        plan.titlePrefix(),
+        plan.connectTimeoutSeconds(),
+        plan.readTimeoutSeconds());
   }
 
   public record TraySettings(
@@ -666,14 +706,17 @@ public final class TrayControlsSupport {
     }
   }
 
-  private static boolean isValidPushyEndpoint(String endpoint) {
-    try {
-      URI uri = URI.create(SettingsValueSupport.trimmedString(endpoint));
-      String scheme = SettingsValueSupport.lowerTrimmedString(uri.getScheme());
-      String host = SettingsValueSupport.trimmedString(uri.getHost());
-      return ("https".equals(scheme) || "http".equals(scheme)) && !host.isBlank();
-    } catch (Exception ignored) {
-      return false;
-    }
+  private static PushyNotificationSettingsValidator.TargetMode toFeatureTargetMode(
+      PushyTargetMode targetMode) {
+    return targetMode == PushyTargetMode.TOPIC
+        ? PushyNotificationSettingsValidator.TargetMode.TOPIC
+        : PushyNotificationSettingsValidator.TargetMode.DEVICE_TOKEN;
+  }
+
+  private static PushyTargetMode pushyTargetModeValue(
+      PushyNotificationSettingsValidator.TargetMode targetMode) {
+    return targetMode == PushyNotificationSettingsValidator.TargetMode.TOPIC
+        ? PushyTargetMode.TOPIC
+        : PushyTargetMode.DEVICE_TOKEN;
   }
 }

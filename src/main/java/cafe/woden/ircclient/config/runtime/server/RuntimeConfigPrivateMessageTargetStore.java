@@ -2,13 +2,11 @@ package cafe.woden.ircclient.config.runtime.server;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateStringList;
 
-import cafe.woden.ircclient.config.api.AutoJoinEntryCodec;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSection;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,15 +29,14 @@ public class RuntimeConfigPrivateMessageTargetStore {
     updateServer(
         serverId,
         server -> {
-          String n = Objects.toString(nick, "").trim();
+          String n = RuntimeConfigPrivateMessageTargetCodec.normalizeNick(nick);
           if (n.isEmpty()) return;
 
           List<String> autoJoin = getOrCreateStringList(server, "autoJoin");
-          if (AutoJoinEntryCodec.privateMessageNicks(autoJoin).stream()
-              .anyMatch(existing -> existing.equalsIgnoreCase(n))) {
+          if (RuntimeConfigPrivateMessageTargetCodec.containsPrivateMessageTarget(autoJoin, n)) {
             return;
           }
-          String encoded = AutoJoinEntryCodec.encodePrivateMessageNick(n);
+          String encoded = RuntimeConfigPrivateMessageTargetCodec.encodePrivateMessageTarget(n);
           if (!encoded.isEmpty()) {
             autoJoin.add(encoded);
           }
@@ -50,7 +47,7 @@ public class RuntimeConfigPrivateMessageTargetStore {
     updateServer(
         serverId,
         server -> {
-          String n = Objects.toString(nick, "").trim();
+          String n = RuntimeConfigPrivateMessageTargetCodec.normalizeNick(nick);
           if (n.isEmpty()) return;
 
           Object o = server.get("autoJoin");
@@ -58,28 +55,18 @@ public class RuntimeConfigPrivateMessageTargetStore {
           @SuppressWarnings("unchecked")
           List<String> autoJoin = (List<String>) list;
           autoJoin.removeIf(
-              entry -> {
-                String decoded = AutoJoinEntryCodec.decodePrivateMessageNick(entry);
-                return !decoded.isEmpty() && decoded.equalsIgnoreCase(n);
-              });
+              entry -> RuntimeConfigPrivateMessageTargetCodec.privateMessageEntryMatches(entry, n));
         });
   }
 
   public synchronized List<String> readPrivateMessageTargets(String serverId) {
     return servers
         .readExistingServer(serverId)
-        .map(RuntimeConfigPrivateMessageTargetStore::readPrivateMessageTargets)
+        .map(RuntimeConfigPrivateMessageTargetCodec::readPrivateMessageTargets)
         .orElse(List.of());
   }
 
   private void updateServer(String serverId, Consumer<Map<String, Object>> updater) {
     servers.mutateExistingServer(serverId, updater);
-  }
-
-  @SuppressWarnings("unchecked")
-  private static List<String> readPrivateMessageTargets(Map<String, Object> server) {
-    Object autoJoinObj = server.get("autoJoin");
-    if (!(autoJoinObj instanceof List<?> rawList)) return List.of();
-    return List.copyOf(AutoJoinEntryCodec.privateMessageNicks((List<String>) rawList));
   }
 }

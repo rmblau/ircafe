@@ -1,257 +1,209 @@
 package cafe.woden.ircclient.irc.pircbotx.emit;
 
-import cafe.woden.ircclient.irc.*;
-import cafe.woden.ircclient.irc.backend.*;
-import cafe.woden.ircclient.irc.ircv3.*;
-import cafe.woden.ircclient.irc.pircbotx.parse.*;
+import cafe.woden.ircclient.irc.IrcEvent;
+import cafe.woden.ircclient.irc.ServerIrcEvent;
+import cafe.woden.ircclient.irc.ircv3.Ircv3InboundCommandSignalRuntimeCatalog;
+import cafe.woden.ircclient.irc.ircv3.Ircv3WhoisProbeTracker;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundCommandOperation;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundCommandRequest;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundCommandSignal;
+import cafe.woden.ircclient.irc.pircbotx.parse.ParsedIrcLine;
+import cafe.woden.ircclient.irc.pircbotx.parse.PircbotxInboundLineParsers;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
-import cafe.woden.ircclient.irc.playback.*;
+import cafe.woden.ircclient.irc.pircbotx.support.PircbotxUtil;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
-import lombok.AccessLevel;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Emits structured WHO/WHOX/WHOIS events from numeric IRC lines. */
-@RequiredArgsConstructor(access = AccessLevel.PUBLIC)
+/** Emits structured WHO/WHOX/WHOIS events from runtime SPI-owned numeric observations. */
 public final class PircbotxWhoEventEmitter {
   private static final Logger log = LoggerFactory.getLogger(PircbotxWhoEventEmitter.class);
-  private static final String IRCAFE_WHOX_TOKEN = "1";
 
-  @NonNull private final String serverId;
-  @NonNull private final PircbotxConnectionState conn;
-  @NonNull private final Consumer<ServerIrcEvent> emit;
+  private final String serverId;
+  private final PircbotxConnectionState conn;
+  private final Consumer<ServerIrcEvent> emit;
+  private final Ircv3InboundCommandSignalRuntimeCatalog runtimeCatalog;
+
+  public PircbotxWhoEventEmitter(
+      String serverId,
+      PircbotxConnectionState conn,
+      Consumer<ServerIrcEvent> emit,
+      Ircv3InboundCommandSignalRuntimeCatalog runtimeCatalog) {
+    this.serverId = Objects.requireNonNull(serverId, "serverId");
+    this.conn = Objects.requireNonNull(conn, "conn");
+    this.emit = Objects.requireNonNull(emit, "emit");
+    this.runtimeCatalog = Objects.requireNonNull(runtimeCatalog, "runtimeCatalog");
+  }
 
   public void maybeEmitLine(String rawLine) {
     if (rawLine == null || rawLine.isBlank()) return;
-    emitRpl302Userhost(rawLine);
-    emitRpl301WhoisAway(rawLine);
-    emitRpl330WhoisAccount(rawLine);
-    emitRpl318EndOfWhois(rawLine);
-    emitRpl311Or314Hostmask(rawLine);
-    emitRpl352WhoReply(rawLine);
-    emitRpl354Whox(rawLine);
+    emit(Ircv3InboundCommandOperation.USERHOST, rawLine);
+    emit(Ircv3InboundCommandOperation.WHOIS_AWAY, rawLine);
+    emit(Ircv3InboundCommandOperation.WHOIS_ACCOUNT, rawLine);
+    emit(Ircv3InboundCommandOperation.WHOIS_END, rawLine);
+    emit(Ircv3InboundCommandOperation.WHOIS_USER, rawLine);
+    emit(Ircv3InboundCommandOperation.WHO, rawLine);
+    emit(Ircv3InboundCommandOperation.WHOX, rawLine);
   }
 
   public boolean maybeEmitNumeric(int code, String line) {
-    switch (code) {
-      case 302:
-        emitRpl302Userhost(line);
-        return true;
-      case 352:
-        emitRpl352WhoReply(line);
-        return true;
-      case 354:
-        emitRpl354Whox(line);
-        return true;
-      case 330:
-        emitRpl330WhoisAccount(line);
-        return true;
-      case 301:
-        emitRpl301WhoisAway(line);
-        return true;
-      case 318:
-        emitRpl318EndOfWhois(line);
-        return true;
-      default:
-        return false;
+    Ircv3InboundCommandOperation operation =
+        switch (code) {
+          case 302 -> Ircv3InboundCommandOperation.USERHOST;
+          case 352 -> Ircv3InboundCommandOperation.WHO;
+          case 354 -> Ircv3InboundCommandOperation.WHOX;
+          case 330 -> Ircv3InboundCommandOperation.WHOIS_ACCOUNT;
+          case 301 -> Ircv3InboundCommandOperation.WHOIS_AWAY;
+          case 318 -> Ircv3InboundCommandOperation.WHOIS_END;
+          default -> null;
+        };
+    if (operation == null) return false;
+    emit(operation, line);
+    return true;
+  }
+
+  private void emit(Ircv3InboundCommandOperation operation, String line) {
+    List<Ircv3InboundCommandSignal> signals = runtimeCatalog.parse(operation, request(line));
+    if (signals.isEmpty()) return;
+    Instant at = Instant.now();
+    for (Ircv3InboundCommandSignal signal : signals) {
+      adapt(operation, at, line, signal);
     }
   }
 
-  private void emitRpl302Userhost(String line) {
-    List<PircbotxWhoUserhostParsers.UserhostEntry> entries =
-        PircbotxWhoUserhostParsers.parseRpl302Userhost(line);
-    if (entries == null || entries.isEmpty()) return;
-    Instant now = Instant.now();
-    for (PircbotxWhoUserhostParsers.UserhostEntry entry : entries) {
-      if (entry == null) continue;
-      emit.accept(
-          new ServerIrcEvent(
-              serverId,
-              new IrcEvent.UserHostmaskObserved(now, "", entry.nick(), entry.hostmask())));
-      IrcEvent.AwayState as =
-          (entry.awayState() == null) ? IrcEvent.AwayState.UNKNOWN : entry.awayState();
-      if (as == IrcEvent.AwayState.AWAY || as == IrcEvent.AwayState.HERE) {
-        emit.accept(
-            new ServerIrcEvent(
-                serverId, new IrcEvent.UserAwayStateObserved(now, entry.nick(), as)));
+  private void adapt(
+      Ircv3InboundCommandOperation operation,
+      Instant at,
+      String rawLine,
+      Ircv3InboundCommandSignal signal) {
+    if (signal instanceof Ircv3InboundCommandSignal.HostmaskObserved hostmask) {
+      emitHostmask(at, "", hostmask.nick(), hostmask.hostmask());
+      return;
+    }
+    if (signal instanceof Ircv3InboundCommandSignal.ChannelHostmaskObserved hostmask) {
+      emitHostmask(at, hostmask.channel(), hostmask.nick(), hostmask.hostmask());
+      return;
+    }
+    if (signal instanceof Ircv3InboundCommandSignal.UserAwayObserved away) {
+      if (operation == Ircv3InboundCommandOperation.WHOIS_AWAY) {
+        conn.markWhoisAwayObserved(away.nick());
       }
-    }
-  }
-
-  private void emitRpl301WhoisAway(String line) {
-    PircbotxWhoisParsers.ParsedWhoisAway whoisAway =
-        PircbotxWhoisParsers.parseRpl301WhoisAway(line);
-    if (whoisAway == null || whoisAway.nick() == null || whoisAway.nick().isBlank()) return;
-    String nick = whoisAway.nick().trim();
-    conn.markWhoisAwayObserved(nick);
-    emit.accept(
-        new ServerIrcEvent(
-            serverId,
-            new IrcEvent.UserAwayStateObserved(
-                Instant.now(), nick, IrcEvent.AwayState.AWAY, whoisAway.message())));
-  }
-
-  private void emitRpl330WhoisAccount(String line) {
-    PircbotxWhoisParsers.ParsedWhoisAccount whoisAcct =
-        PircbotxWhoisParsers.parseRpl330WhoisAccount(line);
-    if (whoisAcct == null || whoisAcct.nick() == null || whoisAcct.nick().isBlank()) return;
-    String nick = whoisAcct.nick().trim();
-    conn.markWhoisAccountObserved(nick);
-    conn.markWhoisAccountNumericSupported();
-    emit.accept(
-        new ServerIrcEvent(
-            serverId,
-            new IrcEvent.UserAccountStateObserved(
-                Instant.now(), nick, IrcEvent.AccountState.LOGGED_IN, whoisAcct.account())));
-  }
-
-  private void emitRpl318EndOfWhois(String line) {
-    String nick = PircbotxWhoisParsers.parseRpl318EndOfWhoisNick(line);
-    if (nick == null || nick.isBlank()) return;
-    nick = nick.trim();
-    Boolean sawAway = conn.completeWhoisAwayProbe(nick);
-    if (sawAway != null && !sawAway.booleanValue()) {
       emit.accept(
           new ServerIrcEvent(
               serverId,
-              new IrcEvent.UserAwayStateObserved(Instant.now(), nick, IrcEvent.AwayState.HERE)));
+              new IrcEvent.UserAwayStateObserved(
+                  at,
+                  away.nick(),
+                  away.away() ? IrcEvent.AwayState.AWAY : IrcEvent.AwayState.HERE,
+                  away.message())));
+      return;
     }
-
-    Boolean sawAcct = conn.completeWhoisAccountProbe(nick);
-    if (sawAcct != null && !sawAcct.booleanValue() && conn.whoisAccountNumericSupported()) {
+    if (signal instanceof Ircv3InboundCommandSignal.AccountObserved account) {
+      if (operation == Ircv3InboundCommandOperation.WHOIS_ACCOUNT) {
+        conn.markWhoisAccountObserved(account.nick());
+      }
       emit.accept(
           new ServerIrcEvent(
               serverId,
               new IrcEvent.UserAccountStateObserved(
-                  Instant.now(), nick, IrcEvent.AccountState.LOGGED_OUT)));
+                  at,
+                  account.nick(),
+                  account.state() == Ircv3InboundCommandSignal.AccountState.LOGGED_IN
+                      ? IrcEvent.AccountState.LOGGED_IN
+                      : IrcEvent.AccountState.LOGGED_OUT,
+                  account.accountName())));
+      return;
     }
-    if (sawAway != null || sawAcct != null) {
-      emit.accept(
-          new ServerIrcEvent(
-              serverId,
-              new IrcEvent.WhoisProbeCompleted(
-                  Instant.now(),
-                  nick,
-                  sawAway != null && sawAway.booleanValue(),
-                  sawAcct != null && sawAcct.booleanValue(),
-                  conn.whoisAccountNumericSupported())));
+    if (signal instanceof Ircv3InboundCommandSignal.WhoisEndedObserved ended) {
+      emitWhoisCompletion(at, ended.nick());
+      return;
+    }
+    if (signal instanceof Ircv3InboundCommandSignal.WhoxSchemaObserved schema) {
+      emitWhoxSchemaObservation(at, rawLine, schema);
     }
   }
 
-  private void emitRpl311Or314Hostmask(String line) {
-    PircbotxWhoisParsers.ParsedWhoisUser whoisUser =
-        PircbotxWhoisParsers.parseRpl311WhoisUser(line);
-    if (whoisUser == null) whoisUser = PircbotxWhoisParsers.parseRpl314WhowasUser(line);
-    if (whoisUser == null
-        || whoisUser.nick().isBlank()
-        || whoisUser.user().isBlank()
-        || whoisUser.host().isBlank()) {
-      return;
-    }
-    String hostmask = whoisUser.nick() + "!" + whoisUser.user() + "@" + whoisUser.host();
+  private void emitHostmask(Instant at, String channel, String nick, String hostmask) {
+    if (!PircbotxUtil.isUsefulHostmask(hostmask)) return;
     emit.accept(
         new ServerIrcEvent(
             serverId,
-            new IrcEvent.UserHostmaskObserved(Instant.now(), "", whoisUser.nick(), hostmask)));
+            new IrcEvent.UserHostmaskObserved(
+                at,
+                Objects.toString(channel, "").trim(),
+                Objects.toString(nick, "").trim(),
+                hostmask)));
   }
 
-  private void emitRpl352WhoReply(String line) {
-    PircbotxWhoUserhostParsers.ParsedWhoReply whoReply =
-        PircbotxWhoUserhostParsers.parseRpl352WhoReply(line);
-    if (whoReply == null
-        || whoReply.channel().isBlank()
-        || whoReply.nick().isBlank()
-        || whoReply.user().isBlank()
-        || whoReply.host().isBlank()) {
-      return;
-    }
+  private void emitWhoisCompletion(Instant at, String nick) {
+    String normalizedNick = Objects.toString(nick, "").trim();
+    if (normalizedNick.isEmpty()) return;
+    Ircv3WhoisProbeTracker.Completion completion = conn.completeWhoisProbe(normalizedNick);
+    if (completion == null) return;
 
-    Instant now = Instant.now();
-    String hostmask = whoReply.nick() + "!" + whoReply.user() + "@" + whoReply.host();
-    emit.accept(
-        new ServerIrcEvent(
-            serverId,
-            new IrcEvent.UserHostmaskObserved(now, whoReply.channel(), whoReply.nick(), hostmask)));
-    emitAwayStateFromFlags(now, whoReply.nick(), whoReply.flags());
-  }
-
-  private void emitRpl354Whox(String line) {
-    PircbotxWhoUserhostParsers.ParsedWhoxTcuhnaf strict =
-        PircbotxWhoUserhostParsers.parseRpl354WhoxTcuhnaf(line, IRCAFE_WHOX_TOKEN);
-    if (strict != null) {
-      if (conn.markWhoxSchemaCompatibleObserved()) {
-        emit.accept(
-            new ServerIrcEvent(
-                serverId,
-                new IrcEvent.WhoxSchemaCompatibleObserved(Instant.now(), true, "strict-parse-ok")));
-      }
-      Instant now = Instant.now();
-      String hostmask = strict.nick() + "!" + strict.user() + "@" + strict.host();
+    if (!completion.sawAway()) {
       emit.accept(
           new ServerIrcEvent(
               serverId,
-              new IrcEvent.UserHostmaskObserved(now, strict.channel(), strict.nick(), hostmask)));
-      emitAwayStateFromFlags(now, strict.nick(), strict.flags());
-
-      IrcEvent.AccountState accountState = accountState(strict.account());
-      if (accountState != IrcEvent.AccountState.UNKNOWN) {
-        emit.accept(
-            new ServerIrcEvent(
-                serverId,
-                new IrcEvent.UserAccountStateObserved(
-                    now, strict.nick(), accountState, strict.account())));
-      }
-      return;
+              new IrcEvent.UserAwayStateObserved(
+                  at, normalizedNick, IrcEvent.AwayState.HERE)));
     }
-
-    if (PircbotxWhoUserhostParsers.seemsRpl354WhoxWithToken(line, IRCAFE_WHOX_TOKEN)
-        && conn.markWhoxSchemaIncompatibleObserved()) {
-      log.debug(
-          "[{}] WHOX schema mismatch: strict parse failed for token {}: {}",
-          serverId,
-          IRCAFE_WHOX_TOKEN,
-          line);
+    if (!completion.sawAccount() && completion.accountNumericSupported()) {
       emit.accept(
           new ServerIrcEvent(
               serverId,
-              new IrcEvent.WhoxSchemaCompatibleObserved(
-                  Instant.now(), false, "strict-parse-failed")));
+              new IrcEvent.UserAccountStateObserved(
+                  at, normalizedNick, IrcEvent.AccountState.LOGGED_OUT)));
     }
-
-    PircbotxWhoUserhostParsers.ParsedWhoxReply whox =
-        PircbotxWhoUserhostParsers.parseRpl354WhoxReply(line);
-    if (whox == null || whox.nick().isBlank() || whox.user().isBlank() || whox.host().isBlank()) {
-      return;
-    }
-    String hostmask = whox.nick() + "!" + whox.user() + "@" + whox.host();
-    String channel = (whox.channel() == null) ? "" : whox.channel();
     emit.accept(
         new ServerIrcEvent(
             serverId,
-            new IrcEvent.UserHostmaskObserved(Instant.now(), channel, whox.nick(), hostmask)));
+            new IrcEvent.WhoisProbeCompleted(
+                at,
+                normalizedNick,
+                completion.sawAway(),
+                completion.sawAccount(),
+                completion.accountNumericSupported())));
   }
 
-  private void emitAwayStateFromFlags(Instant at, String nick, String flags) {
-    IrcEvent.AwayState as = awayState(flags);
-    if (as == IrcEvent.AwayState.AWAY || as == IrcEvent.AwayState.HERE) {
-      emit.accept(new ServerIrcEvent(serverId, new IrcEvent.UserAwayStateObserved(at, nick, as)));
+  private void emitWhoxSchemaObservation(
+      Instant at, String rawLine, Ircv3InboundCommandSignal.WhoxSchemaObserved schema) {
+    boolean shouldEmit =
+        schema.compatible()
+            ? conn.markWhoxSchemaCompatibleObserved()
+            : conn.markWhoxSchemaIncompatibleObserved();
+    if (!shouldEmit) return;
+    if (!schema.compatible()) {
+      log.debug("[{}] WHOX schema mismatch: {}: {}", serverId, schema.reason(), rawLine);
     }
+    emit.accept(
+        new ServerIrcEvent(
+            serverId,
+            new IrcEvent.WhoxSchemaCompatibleObserved(
+                at, schema.compatible(), schema.reason())));
   }
 
-  private static IrcEvent.AwayState awayState(String flags) {
-    if (flags == null) return IrcEvent.AwayState.UNKNOWN;
-    if (flags.indexOf('G') >= 0) return IrcEvent.AwayState.AWAY;
-    if (flags.indexOf('H') >= 0) return IrcEvent.AwayState.HERE;
-    return IrcEvent.AwayState.UNKNOWN;
-  }
-
-  private static IrcEvent.AccountState accountState(String acct) {
-    if (acct == null) return IrcEvent.AccountState.UNKNOWN;
-    if ("*".equals(acct) || "0".equals(acct)) return IrcEvent.AccountState.LOGGED_OUT;
-    return IrcEvent.AccountState.LOGGED_IN;
+  private static Ircv3InboundCommandRequest request(String rawLine) {
+    String normalized = Objects.toString(rawLine, "").trim();
+    ParsedIrcLine parsed = PircbotxInboundLineParsers.parseIrcLine(normalized);
+    if (parsed == null) {
+      return new Ircv3InboundCommandRequest("", "", normalized, List.of(), Map.of());
+    }
+    ArrayList<String> parameters = new ArrayList<>(parsed.params());
+    String trailing = Objects.toString(parsed.trailing(), "").trim();
+    if (!trailing.isEmpty()) {
+      parameters.add(":" + trailing);
+    }
+    return new Ircv3InboundCommandRequest(
+        PircbotxInboundLineParsers.nickFromPrefix(parsed.prefix()),
+        parsed.command(),
+        normalized,
+        parameters,
+        Map.of());
   }
 }

@@ -77,7 +77,7 @@ class Ircv3CapabilityNameResolverAdapterTest {
     @Override
     public List<Ircv3ExtensionContribution> extensions() {
       return List.of(
-          Ircv3ExtensionProviderSupport.capability(
+          Ircv3TestExtensionContributions.capability(
               "plugin-example-cap",
               Ircv3SpecStatus.DRAFT,
               "draft/plugin-example-cap",

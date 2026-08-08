@@ -4,7 +4,6 @@ import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
 import cafe.woden.ircclient.irc.ircv3.*;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
-import cafe.woden.ircclient.irc.pircbotx.support.Ircv3MultilineAccumulator;
 import cafe.woden.ircclient.irc.pircbotx.support.PircbotxEventMetadata;
 import cafe.woden.ircclient.irc.pircbotx.support.PircbotxUtil;
 import cafe.woden.ircclient.irc.playback.*;
@@ -27,6 +26,8 @@ public final class PircbotxChannelMessageEmitter {
   @NonNull private final PircbotxChatHistoryBatchCollector chatHistoryBatches;
   @NonNull private final Ircv3MultilineAccumulator multilineAccumulator;
   @NonNull private final PircbotxPlaybackCaptureRecorder playbackCaptureRecorder;
+  @NonNull private final Ircv3ServerTimeRuntimeSupport serverTimeRuntimeSupport;
+  @NonNull private final Ircv3MessageTagsRuntimeSupport messageTagsRuntimeSupport;
   @NonNull private final Consumer<ServerIrcEvent> emit;
 
   public PircbotxChannelMessageEmitter(
@@ -35,25 +36,32 @@ public final class PircbotxChannelMessageEmitter {
       PircbotxRosterEmitter rosterEmitter,
       PircbotxChatHistoryBatchCollector chatHistoryBatches,
       Ircv3MultilineAccumulator multilineAccumulator,
-      Consumer<ServerIrcEvent> emit) {
+      Consumer<ServerIrcEvent> emit,
+      Ircv3ServerTimeRuntimeSupport serverTimeRuntimeSupport,
+      Ircv3MessageTagsRuntimeSupport messageTagsRuntimeSupport) {
     this(
         serverId,
         rosterEmitter,
         chatHistoryBatches,
         multilineAccumulator,
         new PircbotxPlaybackCaptureRecorder(conn),
+        serverTimeRuntimeSupport,
+        messageTagsRuntimeSupport,
         emit);
   }
 
   public void onMessage(MessageEvent event) {
-    Optional<String> batchId = Ircv3BatchTag.fromEvent(event);
+    Optional<String> batchId =
+        chatHistoryBatches.batchId(
+            PircbotxEventMetadata.ircv3TagsFromEvent(event, messageTagsRuntimeSupport));
     if (batchId.isPresent()) {
-      Instant at = PircbotxEventMetadata.inboundAt(event);
+      Instant at = PircbotxEventMetadata.inboundAt(event, serverTimeRuntimeSupport);
       String from = (event.getUser() != null) ? event.getUser().getNick() : "";
       String msg = PircbotxUtil.safeStr(event::getMessage, "");
       String action = PircbotxUtil.parseCtcpAction(msg);
-      Map<String, String> tags = PircbotxEventMetadata.ircv3TagsFromEvent(event);
-      String messageId = PircbotxEventMetadata.ircv3MessageId(tags);
+      Map<String, String> tags =
+          PircbotxEventMetadata.ircv3TagsFromEvent(event, messageTagsRuntimeSupport);
+      String messageId = messageTagsRuntimeSupport.messageId(tags);
       String target = event.getChannel() != null ? event.getChannel().getName() : "";
       ChatHistoryEntry.Kind kind =
           action != null ? ChatHistoryEntry.Kind.ACTION : ChatHistoryEntry.Kind.PRIVMSG;
@@ -65,15 +73,17 @@ public final class PircbotxChannelMessageEmitter {
       }
     }
 
-    Instant at = PircbotxEventMetadata.inboundAt(event);
+    Instant at = PircbotxEventMetadata.inboundAt(event, serverTimeRuntimeSupport);
     String channel = event.getChannel().getName();
     rosterEmitter.maybeEmitHostmaskObserved(channel, event.getUser());
     String msg = event.getMessage();
     String from = (event.getUser() == null) ? "" : event.getUser().getNick();
     Map<String, String> ircv3Tags =
         PircbotxEventMetadata.withObservedHostmaskTag(
-            new HashMap<>(PircbotxEventMetadata.ircv3TagsFromEvent(event)), event.getUser());
-    String messageId = PircbotxEventMetadata.ircv3MessageId(ircv3Tags);
+            new HashMap<>(
+                PircbotxEventMetadata.ircv3TagsFromEvent(event, messageTagsRuntimeSupport)),
+            event.getUser());
+    String messageId = messageTagsRuntimeSupport.messageId(ircv3Tags);
     Ircv3MultilineAccumulator.FoldResult folded =
         multilineAccumulator.fold("PRIVMSG", from, channel, at, msg, messageId, ircv3Tags);
     if (folded.suppressed()) {
@@ -85,7 +95,7 @@ public final class PircbotxChannelMessageEmitter {
     if (folded.messageId() != null && !folded.messageId().isBlank()) {
       messageId = folded.messageId();
     } else {
-      messageId = PircbotxEventMetadata.ircv3MessageId(ircv3Tags);
+      messageId = messageTagsRuntimeSupport.messageId(ircv3Tags);
     }
 
     String action = PircbotxUtil.parseCtcpAction(msg);

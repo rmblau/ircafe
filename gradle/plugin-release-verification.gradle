@@ -1,0 +1,374 @@
+import java.util.jar.JarFile
+import org.gradle.api.GradleException
+import org.gradle.api.Project
+import org.gradle.api.artifacts.ProjectDependency
+
+/**
+ * Release-oriented checks for the plugin/provider graph.
+ *
+ * Keep these checks in Gradle instead of production code so they can inspect built artifacts and
+ * dependency buckets directly without adding runtime classes only used by verification.
+ */
+
+def pluginApiProjectsForReleaseVerification = {
+    rootProject.subprojects
+        .findAll { it.name == 'ircafe-plugin-api' || it.name.startsWith('ircafe-plugin-api-') }
+        .sort { left, right -> left.name <=> right.name }
+}
+
+def builtInProviderProjectsForReleaseVerification = {
+    rootProject.subprojects
+        .findAll { it.name.startsWith('ircafe-builtins-') }
+        .sort { left, right -> left.name <=> right.name }
+}
+
+def featureProjectsForReleaseVerification = {
+    rootProject.subprojects
+        .findAll { it.name.startsWith('ircafe-feature-') }
+        .sort { left, right -> left.name <=> right.name }
+}
+
+def projectDependencyNames = { String configurationName ->
+    configurations.named(configurationName).get().dependencies.withType(ProjectDependency)
+        .collect { ProjectDependency dependency -> dependency.path.tokenize(':').last() }
+        .toSet()
+}
+
+def sourceFiles = { Project builtInProject ->
+    File sourceRoot = builtInProject.file('src/main/java')
+    if (!sourceRoot.isDirectory()) {
+        return []
+    }
+    return fileTree(sourceRoot) { include '**/*.java' }.files.sort { left, right ->
+        left.path <=> right.path
+    }
+}
+
+def autoServiceSources = { Project builtInProject ->
+    sourceFiles(builtInProject).findAll { it.text.contains('@AutoService') }
+}
+
+def serviceDescriptorEntries = { File jarFile ->
+    Map<String, String> descriptors = [:]
+    JarFile jar = new JarFile(jarFile)
+    try {
+        jar.entries().each { entry ->
+            if (!entry.directory && entry.name.startsWith('META-INF/services/')) {
+                descriptors[entry.name.substring('META-INF/services/'.length())] =
+                    jar.getInputStream(entry).getText('UTF-8').trim()
+            }
+        }
+    } finally {
+        jar.close()
+    }
+    return descriptors
+}
+
+
+def jarEntryNames = { File jarFile ->
+    List<String> names = []
+    JarFile jar = new JarFile(jarFile)
+    try {
+        jar.entries().each { entry ->
+            if (!entry.directory) {
+                names << entry.name
+            }
+        }
+    } finally {
+        jar.close()
+    }
+    return names.sort()
+}
+
+def projectJarFile = { Project projectToInspect ->
+    projectToInspect.tasks.named('jar').get().archiveFile.get().asFile
+}
+
+def pluginApiV1BaselineFile = rootProject.file('ircafe-plugin-api/api-baseline/v1.txt')
+def pluginApiBaselineSourceSet = sourceSets.create('pluginApiBaseline')
+def pluginApiBaselineMainClass = 'cafe.woden.ircclient.release.PluginApiBaselineTool'
+def pluginApiBaselineJavaLauncher = javaToolchains.launcherFor {
+    languageVersion = JavaLanguageVersion.of(rootProject.ext.javaRelease)
+}
+
+def configurePluginApiBaselineArguments = { org.gradle.api.tasks.JavaExec task, String mode ->
+    Project pluginApiProject = rootProject.findProject(':ircafe-plugin-api')
+    if (pluginApiProject == null) {
+        throw new GradleException('Plugin API baseline verification requires :ircafe-plugin-api')
+    }
+    File classesDirectory = pluginApiProject.sourceSets.main.output.classesDirs.singleFile
+    task.setArgs([
+        mode,
+        classesDirectory.absolutePath,
+        pluginApiV1BaselineFile.absolutePath,
+        '1'
+    ])
+}
+
+tasks.register('generatePluginApiV1Baseline', org.gradle.api.tasks.JavaExec) {
+    group = 'build setup'
+    description = 'Regenerates the reviewed plugin API v1 binary signature baseline.'
+    classpath = pluginApiBaselineSourceSet.runtimeClasspath
+    mainClass = pluginApiBaselineMainClass
+    javaLauncher = pluginApiBaselineJavaLauncher
+    doFirst { task ->
+        configurePluginApiBaselineArguments(task, 'write')
+    }
+}
+
+tasks.register('verifyPluginApiV1Baseline', org.gradle.api.tasks.JavaExec) {
+    group = 'verification'
+    description = 'Rejects unreviewed source or binary drift in the public plugin API v1 surface.'
+    classpath = pluginApiBaselineSourceSet.runtimeClasspath
+    mainClass = pluginApiBaselineMainClass
+    javaLauncher = pluginApiBaselineJavaLauncher
+    inputs.file(pluginApiV1BaselineFile)
+    doFirst { task ->
+        configurePluginApiBaselineArguments(task, 'verify')
+    }
+}
+
+tasks.register('verifyPluginApiJarPolicy') {
+    group = 'verification'
+    description = 'Verifies the public plugin API remains one stable authoring jar until a split is deliberate.'
+
+    doLast {
+        List<String> violations = []
+        List<String> apiProjectNames = pluginApiProjectsForReleaseVerification().collect { it.name }
+        if (apiProjectNames != ['ircafe-plugin-api']) {
+            violations << 'Plugin API policy expects exactly one public API project named :ircafe-plugin-api; found ' + apiProjectNames
+        }
+
+        Project pluginApiProject = rootProject.findProject(':ircafe-plugin-api')
+        if (pluginApiProject == null) {
+            violations << 'settings.gradle must include :ircafe-plugin-api as the single public plugin API jar project'
+        } else {
+            if (!pluginApiProject.plugins.hasPlugin('java-library')) {
+                violations << ':ircafe-plugin-api must stay a java-library project for plugin authors'
+            }
+            if (pluginApiProject.tasks.findByName('sourcesJar') == null) {
+                violations << ':ircafe-plugin-api must keep publishing a sourcesJar for plugin authors'
+            }
+
+            Set<String> projectDependencyPaths = [] as Set
+            ['api', 'implementation', 'compileOnly', 'runtimeOnly'].each { String configurationName ->
+                def configuration = pluginApiProject.configurations.findByName(configurationName)
+                if (configuration != null) {
+                    configuration.dependencies.withType(ProjectDependency).each { ProjectDependency dependency ->
+                        projectDependencyPaths << dependency.dependencyProject.path
+                    }
+                }
+            }
+            if (!projectDependencyPaths.isEmpty()) {
+                violations << ':ircafe-plugin-api must not depend on other IRCafe subprojects while it remains the single stable authoring jar; found ' + projectDependencyPaths.toList().sort()
+            }
+        }
+
+        if (!violations.isEmpty()) {
+            throw new GradleException(
+                'Plugin API jar policy verification failed:\n  ' + violations.join('\n  '))
+        }
+    }
+}
+
+tasks.register('verifyBuiltInProviderPackaging') {
+    group = 'verification'
+    description = 'Verifies built-in provider jars are runtime-packaged and include generated ServiceLoader descriptors.'
+
+    doLast {
+        List<Project> builtInProjects = builtInProviderProjectsForReleaseVerification()
+        if (builtInProjects.isEmpty()) {
+            throw new GradleException('settings.gradle should declare at least one ircafe-builtins-* project')
+        }
+
+        Set<String> runtimeOnlyProjects = projectDependencyNames('runtimeOnly')
+        Set<String> implementationProjects = projectDependencyNames('implementation')
+        List<String> violations = []
+
+        builtInProjects.each { Project builtInProject ->
+            String projectName = builtInProject.name
+            if (!runtimeOnlyProjects.contains(projectName)) {
+                violations << ":${projectName} must be declared as root runtimeOnly so bootJar packages it"
+            }
+            if (implementationProjects.contains(projectName)) {
+                violations << ":${projectName} must not be declared as root implementation; built-ins should load through ServiceLoader"
+            }
+
+            def jarTask = builtInProject.tasks.named('jar').get()
+            File jarFile = jarTask.archiveFile.get().asFile
+            if (!jarFile.isFile()) {
+                violations << ":${projectName} jar task did not produce ${jarFile}"
+            } else {
+                List<File> annotatedSources = autoServiceSources(builtInProject)
+                Map<String, String> descriptors = serviceDescriptorEntries(jarFile)
+                if (!annotatedSources.isEmpty() && descriptors.isEmpty()) {
+                    violations << ":${projectName} has @AutoService providers but ${jarFile.name} contains no META-INF/services descriptors"
+                }
+
+                descriptors.each { String descriptorName, String descriptorContent ->
+                    if (!descriptorName.contains('.spi.')) {
+                        violations << ":${projectName} descriptor ${descriptorName} should name a plugin .spi contract"
+                    }
+                    if (descriptorContent.isBlank()) {
+                        violations << ":${projectName} descriptor ${descriptorName} is blank"
+                    }
+                }
+            }
+        }
+
+        if (!violations.isEmpty()) {
+            throw new GradleException(
+                'Built-in provider packaging verification failed:\n  ' + violations.join('\n  '))
+        }
+    }
+}
+
+tasks.register('verifyBootJarPluginPackaging') {
+    group = 'verification'
+    description = 'Verifies the Spring Boot jar packages the plugin API, feature modules, and built-in provider jars.'
+
+    doLast {
+        File bootJarFile = tasks.named('bootJar').get().archiveFile.get().asFile
+        List<String> violations = []
+        if (!bootJarFile.isFile()) {
+            violations << "bootJar did not produce ${bootJarFile}"
+        }
+
+        List<Project> pluginApiProjects = pluginApiProjectsForReleaseVerification()
+        List<Project> featureProjects = featureProjectsForReleaseVerification()
+        List<Project> builtInProjects = builtInProviderProjectsForReleaseVerification()
+        if (pluginApiProjects.isEmpty()) {
+            violations << 'bootJar packaging expects :ircafe-plugin-api to exist'
+        }
+        if (featureProjects.isEmpty()) {
+            violations << 'bootJar packaging expects at least one ircafe-feature-* implementation module'
+        }
+        if (builtInProjects.isEmpty()) {
+            violations << 'bootJar packaging expects at least one ircafe-builtins-* provider module'
+        }
+
+        if (violations.isEmpty()) {
+            List<String> entries = jarEntryNames(bootJarFile)
+            Set<String> bootLibEntries = entries
+                .findAll { it.startsWith('BOOT-INF/lib/') && it.endsWith('.jar') }
+                .toSet()
+            List<Project> expectedProjects = (pluginApiProjects + featureProjects + builtInProjects)
+                .unique { Project projectToInspect -> projectToInspect.path }
+                .sort { left, right -> left.name <=> right.name }
+
+            expectedProjects.each { Project expectedProject ->
+                File projectJar = projectJarFile(expectedProject)
+                String expectedEntry = "BOOT-INF/lib/${projectJar.name}"
+                if (!projectJar.isFile()) {
+                    violations << ":${expectedProject.name} jar task did not produce ${projectJar}"
+                } else if (!bootLibEntries.contains(expectedEntry)) {
+                    violations << "bootJar must package ${expectedEntry}; present IRCafe libs are " +
+                        bootLibEntries.findAll { it.contains('/ircafe-') }.sort()
+                }
+            }
+        }
+
+        if (!violations.isEmpty()) {
+            throw new GradleException(
+                'bootJar plugin packaging verification failed:\n  ' + violations.join('\n  '))
+        }
+    }
+}
+
+gradle.projectsEvaluated {
+    Project pluginApiProject = rootProject.findProject(':ircafe-plugin-api')
+    [
+        tasks.named('generatePluginApiV1Baseline'),
+        tasks.named('verifyPluginApiV1Baseline')
+    ].each { baselineTask ->
+        baselineTask.configure {
+            dependsOn tasks.named(pluginApiBaselineSourceSet.classesTaskName)
+            if (pluginApiProject != null) {
+                dependsOn pluginApiProject.tasks.named('classes')
+                inputs.files(pluginApiProject.sourceSets.main.output.classesDirs)
+            }
+        }
+    }
+
+    tasks.named('verifyPluginApiJarPolicy') {
+        dependsOn tasks.named('verifyPluginApiV1Baseline')
+        if (pluginApiProject != null) {
+            dependsOn pluginApiProject.tasks.named('jar')
+            dependsOn pluginApiProject.tasks.named('sourcesJar')
+        }
+    }
+}
+
+gradle.projectsEvaluated {
+    tasks.named('verifyBuiltInProviderPackaging') {
+        dependsOn builtInProviderProjectsForReleaseVerification().collect { it.tasks.named('jar') }
+    }
+}
+
+gradle.projectsEvaluated {
+    tasks.named('verifyBootJarPluginPackaging') {
+        dependsOn tasks.named('bootJar')
+        dependsOn pluginApiProjectsForReleaseVerification().collect { it.tasks.named('jar') }
+        dependsOn featureProjectsForReleaseVerification().collect { it.tasks.named('jar') }
+        dependsOn builtInProviderProjectsForReleaseVerification().collect { it.tasks.named('jar') }
+    }
+}
+
+
+def ircv3FeatureProjectsForMigrationVerification = {
+    rootProject.subprojects
+        .findAll { it.name.startsWith('ircafe-feature-ircv3-') }
+        .sort { left, right -> left.name <=> right.name }
+}
+
+def ircv3BuiltInProjectsForMigrationVerification = {
+    rootProject.subprojects
+        .findAll { it.name.startsWith('ircafe-builtins-ircv3-') }
+        .sort { left, right -> left.name <=> right.name }
+}
+
+tasks.register('ircv3MigrationCheck') {
+    group = 'verification'
+    description = 'Runs the authoritative IRCv3 migration verification without formatting tasks.'
+    dependsOn tasks.named('test')
+    dependsOn tasks.named('architectureTest')
+    dependsOn tasks.named('verifyPluginApiJarPolicy')
+    dependsOn tasks.named('verifyBuiltInProviderPackaging')
+    dependsOn tasks.named('verifyBootJarPluginPackaging')
+    dependsOn tasks.named('verifyJavaFormattingCoverage')
+}
+
+gradle.projectsEvaluated {
+    tasks.named('ircv3MigrationCheck') {
+        Project pluginApiProject = rootProject.findProject(':ircafe-plugin-api')
+        if (pluginApiProject != null) {
+            dependsOn pluginApiProject.tasks.named('jar')
+        }
+        dependsOn ircv3FeatureProjectsForMigrationVerification()
+            .collect { it.tasks.named('test') }
+        dependsOn ircv3BuiltInProjectsForMigrationVerification()
+            .collect { it.tasks.named('cyclonedxDirectBom') }
+    }
+}
+
+tasks.register('externalPluginSmokeTest', Test) {
+    group = 'verification'
+    description = 'Runs release smoke coverage for loading an external plugin jar from the configured plugin directory.'
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+    useJUnitPlatform()
+    filter {
+        includeTestsMatching 'cafe.woden.ircclient.config.plugins.ExternalPluginReleaseSmokeTest'
+    }
+    shouldRunAfter(tasks.named('test'))
+}
+
+tasks.register('verifyPluginReleaseGraph') {
+    group = 'verification'
+    description = 'Runs release-oriented plugin graph checks for API policy, provider packaging, external plugin smoke, and boundaries.'
+    dependsOn tasks.named('verifyPluginApiJarPolicy')
+    dependsOn tasks.named('verifyBuiltInProviderPackaging')
+    dependsOn tasks.named('verifyBootJarPluginPackaging')
+    dependsOn tasks.named('externalPluginSmokeTest')
+    dependsOn tasks.named('architectureTest')
+}

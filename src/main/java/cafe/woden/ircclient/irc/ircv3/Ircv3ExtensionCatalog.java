@@ -3,8 +3,9 @@ package cafe.woden.ircclient.irc.ircv3;
 import cafe.woden.ircclient.config.api.InstalledPluginProblem;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.irc.ircv3.spi.Ircv3ExtensionProvider;
+import cafe.woden.ircclient.util.PluginServiceLoaderSupport;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -71,6 +72,11 @@ public final class Ircv3ExtensionCatalog {
     return snapshot.visibleFeatures();
   }
 
+  public List<Ircv3FeatureAvailabilityEvaluator.Evaluation> evaluateVisibleFeatures(
+      Collection<String> enabledCapabilities) {
+    return snapshot.evaluateVisibleFeatures(enabledCapabilities);
+  }
+
   public String requestTokenFor(String name) {
     return snapshot.requestTokenFor(name);
   }
@@ -109,20 +115,9 @@ public final class Ircv3ExtensionCatalog {
 
   private static List<Ircv3ExtensionProvider> loadInstalledProviders(
       InstalledPluginsPort installedPlugins) {
-    ArrayList<Ircv3ExtensionProvider> providers = new ArrayList<>();
-    providers.addAll(
+    return PluginServiceLoaderSupport.dedupeByProviderClass(
         installedPlugins.loadInstalledServices(
             Ircv3ExtensionProvider.class, Ircv3ExtensionRegistry.defaultProviders()));
-
-    LinkedHashSet<String> providerClassNames = new LinkedHashSet<>();
-    ArrayList<Ircv3ExtensionProvider> deduped = new ArrayList<>();
-    for (Ircv3ExtensionProvider provider : providers) {
-      if (provider == null || !providerClassNames.add(provider.getClass().getName())) {
-        continue;
-      }
-      deduped.add(provider);
-    }
-    return List.copyOf(deduped);
   }
 
   private static String buildConflictDetails(

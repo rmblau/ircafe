@@ -4,7 +4,6 @@ import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigServerYamlSection;
 import java.nio.file.Path;
 import java.util.Map;
-import java.util.Objects;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +24,7 @@ public class RuntimeConfigServerIdentityStore {
     updateServer(
         serverId,
         server -> {
-          String n = Objects.toString(nick, "").trim();
+          String n = RuntimeConfigServerIdentityCodec.normalizeNick(nick);
           if (!n.isEmpty()) server.put("nick", n);
         });
   }

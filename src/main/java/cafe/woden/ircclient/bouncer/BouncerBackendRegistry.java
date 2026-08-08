@@ -1,12 +1,7 @@
 package cafe.woden.ircclient.bouncer;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -20,10 +15,7 @@ import org.springframework.stereotype.Component;
 @ApplicationLayer
 public class BouncerBackendRegistry {
 
-  private final List<BouncerBackendDescriptor> descriptors;
-  private final Map<String, BouncerBackendDescriptor> byBackendId;
-  private final Map<String, cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy>
-      strategyByBackendId;
+  private final BouncerBackendCatalog catalog;
 
   @Autowired
   public BouncerBackendRegistry(
@@ -54,64 +46,29 @@ public class BouncerBackendRegistry {
   }
 
   private BouncerBackendRegistry(ResolvedStrategies resolvedStrategies) {
-    List<cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy> mappingStrategies =
-        resolvedStrategies.strategies();
-
-    ArrayList<BouncerBackendDescriptor> discovered = new ArrayList<>();
-    for (cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy strategy :
-        mappingStrategies) {
-      if (strategy == null) continue;
-      String backend = normalize(strategy.backendId());
-      if (backend == null) continue;
-      discovered.add(
-          new BouncerBackendDescriptor(
-              backend,
-              strategy.ephemeralIdPrefix(),
-              strategy.networksGroupLabel(),
-              strategy.capabilityHints()));
-    }
-
-    discovered.sort(java.util.Comparator.comparing(BouncerBackendDescriptor::backendId));
-
-    LinkedHashMap<String, BouncerBackendDescriptor> map = new LinkedHashMap<>();
-    LinkedHashMap<String, cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy>
-        strategyMap = new LinkedHashMap<>();
-    for (BouncerBackendDescriptor descriptor : discovered) {
-      if (descriptor == null) continue;
-      map.putIfAbsent(descriptor.backendId(), descriptor);
-    }
-    for (cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy strategy :
-        mappingStrategies) {
-      if (strategy == null) continue;
-      String backend = normalize(strategy.backendId());
-      if (backend == null || !map.containsKey(backend)) continue;
-      strategyMap.putIfAbsent(backend, strategy);
-    }
-
-    this.descriptors = List.copyOf(map.values());
-    this.byBackendId = java.util.Collections.unmodifiableMap(map);
-    this.strategyByBackendId = java.util.Collections.unmodifiableMap(strategyMap);
+    this.catalog = BouncerBackendCatalog.fromStrategies(resolvedStrategies.strategies());
   }
 
   public List<BouncerBackendDescriptor> descriptors() {
-    return descriptors;
+    return catalog.descriptors();
   }
 
   public Set<String> backendIds() {
-    LinkedHashSet<String> out = new LinkedHashSet<>();
-    for (BouncerBackendDescriptor descriptor : descriptors) {
-      out.add(descriptor.backendId());
-    }
-    return java.util.Collections.unmodifiableSet(out);
+    return catalog.backendIds();
   }
 
   public Optional<BouncerBackendDescriptor> find(String backendId) {
-    return Optional.ofNullable(byBackendId.get(normalize(backendId)));
+    return catalog.find(backendId);
   }
 
   public Optional<cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy> mappingStrategy(
       String backendId) {
-    return Optional.ofNullable(strategyByBackendId.get(normalize(backendId)));
+    return catalog.mappingStrategy(backendId);
+  }
+
+  public cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy mappingStrategyOrMissing(
+      String backendId) {
+    return catalog.mappingStrategyOrMissing(backendId);
   }
 
   private record ResolvedStrategies(
@@ -119,10 +76,5 @@ public class BouncerBackendRegistry {
     private ResolvedStrategies {
       strategies = List.copyOf(Objects.requireNonNullElse(strategies, List.of()));
     }
-  }
-
-  private static String normalize(String value) {
-    String v = Objects.toString(value, "").trim();
-    return v.isEmpty() ? null : v.toLowerCase(Locale.ROOT);
   }
 }

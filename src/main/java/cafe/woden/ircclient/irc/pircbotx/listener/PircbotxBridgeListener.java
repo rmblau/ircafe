@@ -20,8 +20,8 @@ import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxTopicEventEmitter;
 import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxUnknownCtcpEmitter;
 import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxWhoEventEmitter;
 import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxWhoisResultEmitter;
+import cafe.woden.ircclient.irc.pircbotx.parse.PircbotxPresenceSignalSupport;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
-import cafe.woden.ircclient.irc.pircbotx.support.Ircv3MultilineAccumulator;
 import cafe.woden.ircclient.irc.pircbotx.support.PircbotxEventAccessors;
 import cafe.woden.ircclient.irc.playback.*;
 import cafe.woden.ircclient.state.api.ServerIsupportStatePort;
@@ -76,7 +76,16 @@ final class PircbotxBridgeListener extends ListenerAdapter {
       BouncerBackendRegistry bouncerBackends,
       BouncerDiscoveryEventPort bouncerDiscoveryEvents,
       PlaybackCursorProvider playbackCursorProvider,
-      ServerIsupportStatePort serverIsupportState) {
+      ServerIsupportStatePort serverIsupportState,
+      Ircv3InboundCommandSignalRuntimeCatalog inboundCommandRuntimeCatalog,
+      Ircv3InboundTagSignalRuntimeCatalog inboundTagRuntimeCatalog,
+      Ircv3OutboundCommandRuntimeCatalog outboundCommandRuntimeCatalog,
+      Ircv3ServerTimeRuntimeSupport serverTimeRuntimeSupport,
+      Ircv3MessageTagsRuntimeSupport messageTagsRuntimeSupport,
+      Ircv3HistoryTransportRuntimeSupport historyTransportRuntimeSupport,
+      Ircv3IsupportRuntimeSupport isupportRuntimeSupport,
+      Ircv3TypingRuntimeSupport typingRuntimeSupport,
+      Ircv3SaslRuntimeSupport saslRuntimeSupport) {
     Objects.requireNonNull(serverId, "serverId");
     Objects.requireNonNull(conn, "conn");
     Objects.requireNonNull(bus, "bus");
@@ -89,6 +98,14 @@ final class PircbotxBridgeListener extends ListenerAdapter {
         Objects.requireNonNull(playbackCursorProvider, "playbackCursorProvider");
     ServerIsupportStatePort isupportState =
         Objects.requireNonNull(serverIsupportState, "serverIsupportState");
+    Ircv3HistoryTransportRuntimeSupport historyTransport =
+        Objects.requireNonNull(historyTransportRuntimeSupport, "historyTransportRuntimeSupport");
+    Ircv3IsupportRuntimeSupport isupport =
+        Objects.requireNonNull(isupportRuntimeSupport, "isupportRuntimeSupport");
+    Ircv3TypingRuntimeSupport typing =
+        Objects.requireNonNull(typingRuntimeSupport, "typingRuntimeSupport");
+    Ircv3SaslRuntimeSupport sasl =
+        Objects.requireNonNull(saslRuntimeSupport, "saslRuntimeSupport");
 
     this.bouncerDiscovery =
         new PircbotxBouncerDiscoveryCoordinator(
@@ -98,9 +115,20 @@ final class PircbotxBridgeListener extends ListenerAdapter {
             zncDiscoveryEnabled,
             bouncerBackends,
             bouncerDiscoveryEvents);
-    this.chatHistoryBatches = new PircbotxChatHistoryBatchCollector(serverId, bus::onNext);
-    this.monitorEvents = new PircbotxMonitorEventEmitter(serverId, bus::onNext);
-    this.serverResponses = new PircbotxServerResponseEmitter(serverId, bus::onNext);
+    this.chatHistoryBatches =
+        new PircbotxChatHistoryBatchCollector(
+            serverId,
+            bus::onNext,
+            inboundCommandRuntimeCatalog,
+            inboundTagRuntimeCatalog,
+            serverTimeRuntimeSupport,
+            messageTagsRuntimeSupport);
+    this.monitorEvents =
+        new PircbotxMonitorEventEmitter(
+            serverId, bus::onNext, inboundCommandRuntimeCatalog, serverTimeRuntimeSupport);
+    this.serverResponses =
+        new PircbotxServerResponseEmitter(
+            serverId, bus::onNext, serverTimeRuntimeSupport, messageTagsRuntimeSupport);
     this.session =
         new PircbotxConnectionSessionHandler(
             serverId,
@@ -118,16 +146,40 @@ final class PircbotxBridgeListener extends ListenerAdapter {
             bus::onNext,
             selfIdentity::nickMatchesSelf,
             PircbotxSelfIdentityTracker::isSelfEchoed,
-            selfIdentity::resolveSelfNick);
-    this.whoEvents = new PircbotxWhoEventEmitter(serverId, conn, bus::onNext);
+            selfIdentity::resolveSelfNick,
+            serverTimeRuntimeSupport);
+    this.whoEvents =
+        new PircbotxWhoEventEmitter(
+            serverId, conn, bus::onNext, inboundCommandRuntimeCatalog);
+    PircbotxPresenceSignalSupport presenceSignals =
+        new PircbotxPresenceSignalSupport(
+            serverId, bus::onNext, inboundCommandRuntimeCatalog);
     this.isupportObserver =
         new PircbotxIsupportObserver(
-            serverId, conn, isupportState, bus::onNext, bouncerDiscovery::observeSojuBouncerNetId);
+            serverId,
+            conn,
+            isupportState,
+            bus::onNext,
+            bouncerDiscovery::observeSojuBouncerNetId,
+            isupport,
+            typing);
     this.saslFailures =
-        new PircbotxSaslFailureHandler(serverId, conn, bus::onNext, disconnectOnSaslFailure);
+        new PircbotxSaslFailureHandler(
+            serverId,
+            conn,
+            bus::onNext,
+            disconnectOnSaslFailure,
+            sasl);
     this.registrationLifecycle =
         new PircbotxRegistrationLifecycleHandler(
-            serverId, conn, cursorProvider, bouncerDiscovery, serverResponses, bus::onNext);
+            serverId,
+            conn,
+            cursorProvider,
+            bouncerDiscovery,
+            serverResponses,
+            bus::onNext,
+            outboundCommandRuntimeCatalog,
+            historyTransport);
     this.rosterEmitter = new PircbotxRosterEmitter(serverId, conn, isupportState, bus::onNext);
     this.membershipEvents =
         new PircbotxMembershipEventEmitter(
@@ -138,7 +190,9 @@ final class PircbotxBridgeListener extends ListenerAdapter {
             selfIdentity::nickMatchesSelf,
             selfIdentity::rememberSelfNickHint,
             PircbotxSelfIdentityTracker::resolveBotNick);
-    this.inviteEvents = new PircbotxInviteEventEmitter(serverId, rosterEmitter, bus::onNext);
+    this.inviteEvents =
+        new PircbotxInviteEventEmitter(
+            serverId, rosterEmitter, inboundCommandRuntimeCatalog, bus::onNext);
     this.topicEvents = new PircbotxTopicEventEmitter(serverId, bus::onNext);
     this.channelModeEvents =
         new PircbotxChannelModeEventEmitter(
@@ -149,7 +203,14 @@ final class PircbotxBridgeListener extends ListenerAdapter {
             PircbotxEventAccessors::modeDetailsFromEvent);
     this.channelMessageEvents =
         new PircbotxChannelMessageEmitter(
-            serverId, conn, rosterEmitter, chatHistoryBatches, multilineAccumulator, bus::onNext);
+            serverId,
+            conn,
+            rosterEmitter,
+            chatHistoryBatches,
+            multilineAccumulator,
+            bus::onNext,
+            serverTimeRuntimeSupport,
+            messageTagsRuntimeSupport);
     this.privateMessageEvents =
         new PircbotxPrivateMessageEmitter(
             serverId,
@@ -160,7 +221,10 @@ final class PircbotxBridgeListener extends ListenerAdapter {
             multilineAccumulator,
             bus::onNext,
             selfIdentity::resolveSelfNick,
-            PircbotxEventAccessors::privmsgTargetFromEvent);
+            PircbotxEventAccessors::privmsgTargetFromEvent,
+            serverTimeRuntimeSupport,
+            messageTagsRuntimeSupport,
+            historyTransport);
     this.actionEvents =
         new PircbotxActionEventEmitter(
             serverId,
@@ -169,7 +233,10 @@ final class PircbotxBridgeListener extends ListenerAdapter {
             chatHistoryBatches,
             bus::onNext,
             selfIdentity::resolveSelfNick,
-            PircbotxEventAccessors::privmsgTargetFromEvent);
+            PircbotxEventAccessors::privmsgTargetFromEvent,
+            serverTimeRuntimeSupport,
+            messageTagsRuntimeSupport,
+            historyTransport);
     this.noticeEvents =
         new PircbotxNoticeEventEmitter(
             serverId,
@@ -180,7 +247,9 @@ final class PircbotxBridgeListener extends ListenerAdapter {
             multilineAccumulator,
             serverResponses,
             bus::onNext,
-            PircbotxEventAccessors::senderNickFromEvent);
+            PircbotxEventAccessors::senderNickFromEvent,
+            serverTimeRuntimeSupport,
+            messageTagsRuntimeSupport);
     this.inboundCtcpHandler =
         new PircbotxInboundCtcpHandler(
             serverId,
@@ -191,7 +260,8 @@ final class PircbotxBridgeListener extends ListenerAdapter {
             PircbotxEventAccessors::privmsgTargetFromEvent,
             rosterEmitter::maybeEmitHostmaskObserved,
             bus::onNext,
-            ctcpHandler);
+            ctcpHandler,
+            serverTimeRuntimeSupport);
     this.whoisResults = new PircbotxWhoisResultEmitter(serverId, bus::onNext);
     this.unknownLineFallback =
         new PircbotxUnknownLineFallbackHandler(
@@ -204,7 +274,11 @@ final class PircbotxBridgeListener extends ListenerAdapter {
             isupportObserver,
             whoEvents,
             bus::onNext,
-            selfIdentity::resolveSelfNick);
+            selfIdentity::resolveSelfNick,
+            serverTimeRuntimeSupport,
+            messageTagsRuntimeSupport,
+            presenceSignals,
+            historyTransport);
     this.unknownEventRouter =
         new PircbotxUnknownEventRouter(
             serverId,
@@ -215,6 +289,8 @@ final class PircbotxBridgeListener extends ListenerAdapter {
             chatHistoryBatches,
             unknownCtcp,
             unknownLineFallback,
+            serverTimeRuntimeSupport,
+            inboundCommandRuntimeCatalog,
             bus::onNext);
     this.serverNumericRouter =
         new PircbotxServerNumericRouter(
@@ -226,7 +302,8 @@ final class PircbotxBridgeListener extends ListenerAdapter {
             isupportObserver,
             registrationLifecycle,
             whoEvents,
-            serverResponses);
+            serverResponses,
+            presenceSignals);
   }
 
   @Override

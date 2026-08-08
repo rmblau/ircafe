@@ -1,5 +1,12 @@
 package cafe.woden.ircclient.irc.pircbotx.listener;
 
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.runtime;
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.monitorEvents;
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.serverResponses;
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.whoEvents;
+import static cafe.woden.ircclient.irc.pircbotx.listener.PircbotxListenerRuntimeTestFixtures.isupportObserver;
+import static cafe.woden.ircclient.irc.pircbotx.listener.PircbotxListenerRuntimeTestFixtures.registrationLifecycle;
+import static cafe.woden.ircclient.irc.pircbotx.listener.PircbotxListenerRuntimeTestFixtures.saslFailures;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.mock;
@@ -13,6 +20,7 @@ import cafe.woden.ircclient.irc.ircv3.*;
 import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxMonitorEventEmitter;
 import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxServerResponseEmitter;
 import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxWhoEventEmitter;
+import cafe.woden.ircclient.irc.pircbotx.parse.PircbotxPresenceSignalSupport;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
 import cafe.woden.ircclient.irc.playback.*;
 import cafe.woden.ircclient.state.ServerIsupportState;
@@ -101,6 +109,7 @@ class PircbotxServerNumericRouterTest {
       PircbotxConnectionState conn,
       java.util.function.Consumer<String> selfHint,
       List<ServerIrcEvent> events) {
+    var testRuntime = runtime();
     PircbotxBouncerDiscoveryCoordinator bouncerDiscovery =
         new PircbotxBouncerDiscoveryCoordinator(
             "libera",
@@ -110,27 +119,29 @@ class PircbotxServerNumericRouterTest {
             new BouncerBackendRegistry(List.of()),
             BouncerDiscoveryEventPort.noOp());
     PircbotxServerResponseEmitter serverResponses =
-        new PircbotxServerResponseEmitter("libera", events::add);
+        serverResponses("libera", events::add, testRuntime);
     PircbotxSaslFailureHandler saslFailures =
-        new PircbotxSaslFailureHandler("libera", conn, events::add, false);
+        saslFailures("libera", conn, events::add, false, testRuntime);
     PircbotxMonitorEventEmitter monitorEvents =
-        new PircbotxMonitorEventEmitter("libera", events::add);
+        monitorEvents("libera", events::add, testRuntime);
     PircbotxIsupportObserver isupportObserver =
-        new PircbotxIsupportObserver(
+        isupportObserver(
             "libera",
             conn,
             new ServerIsupportState(),
             events::add,
-            bouncerDiscovery::observeSojuBouncerNetId);
+            bouncerDiscovery::observeSojuBouncerNetId,
+            testRuntime);
     PircbotxRegistrationLifecycleHandler registrationLifecycle =
-        new PircbotxRegistrationLifecycleHandler(
+        registrationLifecycle(
             "libera",
             conn,
             new NoOpPlaybackCursorProvider(),
             bouncerDiscovery,
             serverResponses,
-            events::add);
-    PircbotxWhoEventEmitter whoEvents = new PircbotxWhoEventEmitter("libera", conn, events::add);
+            events::add,
+            testRuntime);
+    PircbotxWhoEventEmitter whoEvents = whoEvents("libera", conn, events::add, testRuntime);
     return new PircbotxServerNumericRouter(
         "libera",
         selfHint,
@@ -140,7 +151,9 @@ class PircbotxServerNumericRouterTest {
         isupportObserver,
         registrationLifecycle,
         whoEvents,
-        serverResponses);
+        serverResponses,
+        new PircbotxPresenceSignalSupport(
+            "libera", events::add, testRuntime.catalogs().inboundCommands()));
   }
 
   private static ServerResponseEvent serverResponse(int code, String line) {

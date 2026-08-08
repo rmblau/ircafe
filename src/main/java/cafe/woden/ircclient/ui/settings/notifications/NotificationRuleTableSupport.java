@@ -1,5 +1,9 @@
 package cafe.woden.ircclient.ui.settings.notifications;
 
+import cafe.woden.ircclient.notify.api.text.NotificationRuleTableMutationPlan;
+import cafe.woden.ircclient.notify.api.text.NotificationRuleTableMutationPlanner;
+import cafe.woden.ircclient.notify.api.text.NotificationRuleTableSelectionPlan;
+import cafe.woden.ircclient.notify.api.text.NotificationRuleTableSelectionPlanner;
 import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
 import java.util.function.IntSupplier;
 import java.util.function.Supplier;
@@ -18,12 +22,13 @@ final class NotificationRuleTableSupport {
       JButton up,
       JButton down) {
     int modelRow = SettingsTableSupport.selectedModelRow(table);
-    boolean hasSelection = modelRow >= 0;
-    setEnabled(edit, hasSelection);
-    setEnabled(duplicate, hasSelection);
-    setEnabled(remove, hasSelection);
-    setEnabled(up, hasSelection && modelRow > 0);
-    setEnabled(down, hasSelection && modelRow < safeRowCount(rowCount, table) - 1);
+    NotificationRuleTableSelectionPlan plan =
+        NotificationRuleTableSelectionPlanner.plan(modelRow, safeRowCount(rowCount, table));
+    setEnabled(edit, plan.editEnabled());
+    setEnabled(duplicate, plan.duplicateEnabled());
+    setEnabled(remove, plan.removeEnabled());
+    setEnabled(up, plan.moveUpEnabled());
+    setEnabled(down, plan.moveDownEnabled());
   }
 
   static <T> void addRow(
@@ -32,7 +37,8 @@ final class NotificationRuleTableSupport {
     T rowValue = rowCreator.get();
     if (rowValue == null) return;
     int modelRow = adder.addRow(rowValue);
-    SettingsTableSupport.selectModelRow(table, modelRow);
+    applySelectionPlan(
+        table, NotificationRuleTableMutationPlanner.afterMutation(modelRow, safeRowCount(table)));
     run(afterSelectionChanged);
   }
 
@@ -42,40 +48,47 @@ final class NotificationRuleTableSupport {
       RowEditor<T> editor,
       RowSetter<T> setter,
       Runnable afterSelectionChanged) {
-    int modelRow = SettingsTableSupport.selectedModelRow(table);
-    if (modelRow < 0 || valueProvider == null || editor == null || setter == null) return;
-    T seed = valueProvider.valueAt(modelRow);
+    NotificationRuleTableMutationPlan plan = selectedRowPlan(table);
+    if (!plan.proceed() || valueProvider == null || editor == null || setter == null) return;
+    T seed = valueProvider.valueAt(plan.row());
     if (seed == null) return;
     T edited = editor.edit(seed);
     if (edited == null) return;
-    setter.setRow(modelRow, edited);
-    SettingsTableSupport.selectModelRow(table, modelRow);
+    setter.setRow(plan.row(), edited);
+    applySelectionPlan(
+        table, NotificationRuleTableMutationPlanner.afterMutation(plan.row(), safeRowCount(table)));
     run(afterSelectionChanged);
   }
 
   static void duplicateSelectedRow(
       JTable table, RowDuplicator duplicator, Runnable afterSelectionChanged) {
-    int modelRow = SettingsTableSupport.selectedModelRow(table);
-    if (modelRow < 0 || duplicator == null) return;
-    int duplicateRow = duplicator.duplicateRow(modelRow);
-    SettingsTableSupport.selectModelRow(table, duplicateRow);
+    NotificationRuleTableMutationPlan plan = selectedRowPlan(table);
+    if (!plan.proceed() || duplicator == null) return;
+    int duplicateRow = duplicator.duplicateRow(plan.row());
+    applySelectionPlan(
+        table,
+        NotificationRuleTableMutationPlanner.afterMutation(duplicateRow, safeRowCount(table)));
     run(afterSelectionChanged);
   }
 
   static void updateSelectedRow(JTable table, RowUpdater updater, Runnable afterSelectionChanged) {
-    int modelRow = SettingsTableSupport.selectedModelRow(table);
-    if (modelRow < 0 || updater == null) return;
-    if (!updater.updateRow(modelRow)) return;
-    SettingsTableSupport.selectModelRow(table, modelRow);
+    NotificationRuleTableMutationPlan plan = selectedRowPlan(table);
+    if (!plan.proceed() || updater == null) return;
+    if (!updater.updateRow(plan.row())) return;
+    applySelectionPlan(
+        table, NotificationRuleTableMutationPlanner.afterMutation(plan.row(), safeRowCount(table)));
     run(afterSelectionChanged);
   }
 
   static void moveSelectedRow(
       JTable table, int targetOffset, RowMover mover, Runnable afterSelectionChanged) {
-    int modelRow = SettingsTableSupport.selectedModelRow(table);
-    if (modelRow < 0 || mover == null) return;
-    int movedRow = mover.moveRow(modelRow, modelRow + targetOffset);
-    SettingsTableSupport.selectModelRow(table, movedRow);
+    NotificationRuleTableMutationPlan plan =
+        NotificationRuleTableMutationPlanner.move(
+            SettingsTableSupport.selectedModelRow(table), safeRowCount(table), targetOffset);
+    if (!plan.proceed() || mover == null) return;
+    int movedRow = mover.moveRow(plan.row(), plan.targetRow());
+    applySelectionPlan(
+        table, NotificationRuleTableMutationPlanner.afterMutation(movedRow, safeRowCount(table)));
     run(afterSelectionChanged);
   }
 
@@ -85,18 +98,37 @@ final class NotificationRuleTableSupport {
       RowRemovalConfirmer confirmer,
       RowRemover remover,
       Runnable afterSelectionChanged) {
-    int modelRow = SettingsTableSupport.selectedModelRow(table);
-    if (modelRow < 0 || labelProvider == null || remover == null) return;
-    String label = labelProvider.labelForRow(modelRow);
+    NotificationRuleTableMutationPlan plan = selectedRowPlan(table);
+    if (!plan.proceed() || labelProvider == null || remover == null) return;
+    String label = labelProvider.labelForRow(plan.row());
     if (confirmer != null && !confirmer.confirmRemoval(label)) return;
-    remover.removeRow(modelRow);
-    SettingsTableSupport.selectAfterModelRowRemoval(table, modelRow);
+    remover.removeRow(plan.row());
+    applySelectionPlan(
+        table, NotificationRuleTableMutationPlanner.afterRemoval(plan.row(), safeRowCount(table)));
     run(afterSelectionChanged);
   }
 
   private static int safeRowCount(IntSupplier rowCount, JTable table) {
     if (rowCount != null) return Math.max(0, rowCount.getAsInt());
+    return safeRowCount(table);
+  }
+
+  private static int safeRowCount(JTable table) {
     return table != null && table.getModel() != null ? table.getModel().getRowCount() : 0;
+  }
+
+  private static NotificationRuleTableMutationPlan selectedRowPlan(JTable table) {
+    return NotificationRuleTableMutationPlanner.selectedRow(
+        SettingsTableSupport.selectedModelRow(table), safeRowCount(table));
+  }
+
+  private static void applySelectionPlan(JTable table, NotificationRuleTableMutationPlan plan) {
+    if (table == null || plan == null || !plan.proceed()) return;
+    if (plan.selectRow()) {
+      SettingsTableSupport.selectModelRow(table, plan.rowToSelect());
+    } else if (plan.clearSelection()) {
+      table.clearSelection();
+    }
   }
 
   private static void setEnabled(JButton button, boolean enabled) {

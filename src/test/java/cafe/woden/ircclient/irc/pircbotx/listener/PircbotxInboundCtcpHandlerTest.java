@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.irc.pircbotx.listener;
 
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.runtime;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -93,7 +94,8 @@ class PircbotxInboundCtcpHandlerTest {
         event -> null,
         (channel, user) -> {},
         seen::add,
-        (bot, fromNick, message) -> replies.add(fromNick + "|" + message));
+        (bot, fromNick, message) -> replies.add(fromNick + "|" + message),
+        runtime().serverTime());
   }
 
   private static User user(String nick) {

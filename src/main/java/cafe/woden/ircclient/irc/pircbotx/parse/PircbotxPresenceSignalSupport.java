@@ -2,165 +2,240 @@ package cafe.woden.ircclient.irc.pircbotx.parse;
 
 import cafe.woden.ircclient.irc.IrcEvent;
 import cafe.woden.ircclient.irc.ServerIrcEvent;
+import cafe.woden.ircclient.irc.ircv3.Ircv3InboundCommandSignalRuntimeCatalog;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundCommandOperation;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundCommandRequest;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundCommandSignal;
 import cafe.woden.ircclient.irc.pircbotx.support.PircbotxUtil;
 import java.time.Instant;
 import java.util.List;
-import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Parses away/account/join presence signals emitted as IRCv3 command events. */
+/** Adapts runtime SPI-owned IRCv3 presence and identity observations to root {@link IrcEvent}s. */
 public final class PircbotxPresenceSignalSupport {
 
   private static final Logger log = LoggerFactory.getLogger(PircbotxPresenceSignalSupport.class);
 
   private final String serverId;
   private final Consumer<ServerIrcEvent> sink;
+  private final Ircv3InboundCommandSignalRuntimeCatalog runtimeCatalog;
 
-  public PircbotxPresenceSignalSupport(String serverId, Consumer<ServerIrcEvent> sink) {
+  public PircbotxPresenceSignalSupport(
+      String serverId,
+      Consumer<ServerIrcEvent> sink,
+      Ircv3InboundCommandSignalRuntimeCatalog runtimeCatalog) {
     this.serverId = Objects.requireNonNull(serverId, "serverId");
     this.sink = Objects.requireNonNull(sink, "sink");
-  }
-
-  public boolean observes(String command) {
-    if (command == null || command.isBlank()) return false;
-    String normalized = command.trim().toUpperCase(Locale.ROOT);
-    return "AWAY".equals(normalized) || "ACCOUNT".equals(normalized) || "JOIN".equals(normalized);
+    this.runtimeCatalog = Objects.requireNonNull(runtimeCatalog, "runtimeCatalog");
   }
 
   public void observe(
       Instant at, String nick, String command, String rawLine, List<String> parsedLine) {
-    boolean isAway = "AWAY".equalsIgnoreCase(command);
-    boolean isAccount = "ACCOUNT".equalsIgnoreCase(command);
-    boolean isJoin = "JOIN".equalsIgnoreCase(command);
-    if (!isAway && !isAccount && !isJoin) return;
-
-    String observedHostmask = observedHostmask(rawLine);
-    if ((isAway || isAccount) && PircbotxUtil.isUsefulHostmask(observedHostmask)) {
-      sink.accept(
-          new ServerIrcEvent(
-              serverId, new IrcEvent.UserHostmaskObserved(at, "", nick, observedHostmask)));
-    }
-
-    if (isAway) {
-      boolean nowAway = parsedLine != null && !parsedLine.isEmpty();
-      IrcEvent.AwayState state = nowAway ? IrcEvent.AwayState.AWAY : IrcEvent.AwayState.HERE;
-
-      String message = null;
-      if (nowAway && parsedLine != null && !parsedLine.isEmpty()) {
-        message = stripLeadingColon(parsedLine.get(0));
-      }
-
-      log.debug(
-          "[{}] away-notify observed via InputParser: nick={} state={} msg={} params={} raw={}",
-          serverId,
-          nick,
-          state,
-          message,
-          parsedLine,
-          rawLine);
-
-      sink.accept(
-          new ServerIrcEvent(
-              serverId, new IrcEvent.UserAwayStateObserved(at, nick, state, message)));
-      return;
-    }
-
-    if (isAccount) {
-      String account =
-          parsedLine == null || parsedLine.isEmpty() ? null : stripLeadingColon(parsedLine.get(0));
-      IrcEvent.AccountState state = toAccountState(account);
-      if (state == IrcEvent.AccountState.LOGGED_OUT) {
-        account = null;
-      } else if (account != null) {
-        account = account.trim();
-      }
-
-      log.debug(
-          "[{}] account-notify observed via InputParser: nick={} state={} account={} params={} raw={}",
-          serverId,
-          nick,
-          state,
-          account,
-          parsedLine,
-          rawLine);
-
-      sink.accept(
-          new ServerIrcEvent(
-              serverId, new IrcEvent.UserAccountStateObserved(at, nick, state, account)));
-      return;
-    }
-
-    if (parsedLine == null || parsedLine.size() < 2) {
-      // Not an extended-join payload (server may not support it or didn't accept CAP).
-      return;
-    }
-
-    String channel = parsedLine.get(0);
-    String account = stripLeadingColon(parsedLine.get(1)).trim();
-    String realName = null;
-    if (parsedLine.size() >= 3) {
-      realName = stripLeadingColon(parsedLine.get(2)).trim();
-      if (realName.isEmpty()) realName = null;
-    }
-
-    IrcEvent.AccountState state = toAccountState(account);
-    if (state == IrcEvent.AccountState.LOGGED_OUT) {
-      account = null;
-    }
-
-    log.debug(
-        "[{}] extended-join observed via InputParser: nick={} channel={} state={} account={} realName={} params={} raw={}",
-        serverId,
-        nick,
-        channel,
-        state,
-        account,
-        realName,
+    Ircv3InboundCommandOperation operation = presenceOperation(command);
+    if (operation == null) return;
+    emit(
+        at,
+        command,
         parsedLine,
-        rawLine);
-
-    sink.accept(
-        new ServerIrcEvent(
-            serverId, new IrcEvent.UserAccountStateObserved(at, nick, state, account)));
-    if (realName != null) {
-      sink.accept(
-          new ServerIrcEvent(
-              serverId,
-              new IrcEvent.UserSetNameObserved(
-                  at, nick, realName, IrcEvent.UserSetNameObserved.Source.EXTENDED_JOIN)));
-    }
+        rawLine,
+        parseFocusedOrLegacy(
+            operation,
+            Ircv3InboundCommandOperation.PRESENCE,
+            request(nick, command, rawLine, parsedLine)));
   }
 
-  private static String observedHostmask(String rawLine) {
-    String line = Objects.toString(rawLine, "");
-    if (line.isBlank()) return null;
-    String normalized = line;
-    if (normalized.startsWith("@")) {
-      int firstSpace = normalized.indexOf(' ');
-      if (firstSpace > 0 && firstSpace < normalized.length() - 1) {
-        normalized = normalized.substring(firstSpace + 1);
+  public boolean observeIdentityChange(
+      Instant at, String nick, String command, String rawLine, List<String> parsedLine) {
+    Ircv3InboundCommandOperation operation = identityOperation(command);
+    if (operation == null) return false;
+    List<Ircv3InboundCommandSignal> signals =
+        parseFocusedOrLegacy(
+            operation,
+            Ircv3InboundCommandOperation.IDENTITY_CHANGE,
+            request(nick, command, rawLine, parsedLine));
+    emit(at, command, parsedLine, rawLine, signals);
+    return !signals.isEmpty();
+  }
+
+  public boolean observeAwayNotifyRawLine(Instant at, String rawLine) {
+    List<Ircv3InboundCommandSignal> signals =
+        parseFocusedOrLegacy(
+            Ircv3InboundCommandOperation.AWAY_NOTIFY,
+            Ircv3InboundCommandOperation.PRESENCE,
+            request("", "AWAY", rawLine, List.of()));
+    List<Ircv3InboundCommandSignal> awaySignals =
+        signals.stream()
+            .filter(Ircv3InboundCommandSignal.UserAwayObserved.class::isInstance)
+            .toList();
+    emit(at, "AWAY", List.of(), rawLine, awaySignals);
+    return !awaySignals.isEmpty();
+  }
+
+  public boolean observeSelfAwayConfirmation(Instant at, int numeric, String rawLine) {
+    if (numeric != 305 && numeric != 306) return false;
+    List<Ircv3InboundCommandSignal> signals =
+        parseFocusedOrLegacy(
+            Ircv3InboundCommandOperation.AWAY_NOTIFY,
+            Ircv3InboundCommandOperation.PRESENCE,
+            request("", Integer.toString(numeric), rawLine, List.of()));
+    List<Ircv3InboundCommandSignal> selfAwaySignals =
+        signals.stream()
+            .filter(Ircv3InboundCommandSignal.SelfAwayObserved.class::isInstance)
+            .toList();
+    emit(at, Integer.toString(numeric), List.of(), rawLine, selfAwaySignals);
+    return !selfAwaySignals.isEmpty();
+  }
+
+  public boolean observeSelfAwayConfirmationRawLine(Instant at, String rawLine) {
+    List<Ircv3InboundCommandSignal> signals =
+        parseFocusedOrLegacy(
+            Ircv3InboundCommandOperation.AWAY_NOTIFY,
+            Ircv3InboundCommandOperation.PRESENCE,
+            request("", "", rawLine, List.of()));
+    List<Ircv3InboundCommandSignal> selfAwaySignals =
+        signals.stream()
+            .filter(Ircv3InboundCommandSignal.SelfAwayObserved.class::isInstance)
+            .toList();
+    emit(at, "", List.of(), rawLine, selfAwaySignals);
+    return !selfAwaySignals.isEmpty();
+  }
+
+  private List<Ircv3InboundCommandSignal> parseFocusedOrLegacy(
+      Ircv3InboundCommandOperation focused,
+      Ircv3InboundCommandOperation legacy,
+      Ircv3InboundCommandRequest request) {
+    List<Ircv3InboundCommandSignal> focusedSignals = runtimeCatalog.parse(focused, request);
+    if (!focusedSignals.isEmpty() || !runtimeCatalog.supports(legacy)) {
+      return focusedSignals;
+    }
+    return runtimeCatalog.parse(legacy, request);
+  }
+
+  private static Ircv3InboundCommandOperation presenceOperation(String command) {
+    String normalized = Objects.toString(command, "").trim().toUpperCase(java.util.Locale.ROOT);
+    return switch (normalized) {
+      case "AWAY" -> Ircv3InboundCommandOperation.AWAY_NOTIFY;
+      case "ACCOUNT" -> Ircv3InboundCommandOperation.ACCOUNT_NOTIFY;
+      case "JOIN" -> Ircv3InboundCommandOperation.EXTENDED_JOIN;
+      default -> null;
+    };
+  }
+
+  private static Ircv3InboundCommandOperation identityOperation(String command) {
+    String normalized = Objects.toString(command, "").trim().toUpperCase(java.util.Locale.ROOT);
+    return switch (normalized) {
+      case "CHGHOST" -> Ircv3InboundCommandOperation.CHGHOST;
+      case "SETNAME" -> Ircv3InboundCommandOperation.SETNAME;
+      default -> null;
+    };
+  }
+
+  private void emit(
+      Instant at,
+      String command,
+      List<String> parsedLine,
+      String rawLine,
+      List<Ircv3InboundCommandSignal> signals) {
+    for (Ircv3InboundCommandSignal signal : signals) {
+      if (signal instanceof Ircv3InboundCommandSignal.HostmaskObserved hostmask) {
+        if (PircbotxUtil.isUsefulHostmask(hostmask.hostmask())) {
+          sink.accept(
+              new ServerIrcEvent(
+                  serverId,
+                  new IrcEvent.UserHostmaskObserved(
+                      at, "", hostmask.nick(), hostmask.hostmask())));
+        }
+        continue;
+      }
+
+      if (signal instanceof Ircv3InboundCommandSignal.UserAwayObserved away) {
+        IrcEvent.AwayState state = away.away() ? IrcEvent.AwayState.AWAY : IrcEvent.AwayState.HERE;
+        log.debug(
+            "[{}] away-notify observed via InputParser: nick={} state={} msg={} params={} raw={}",
+            serverId,
+            away.nick(),
+            state,
+            away.message(),
+            parsedLine,
+            rawLine);
+        sink.accept(
+            new ServerIrcEvent(
+                serverId,
+                new IrcEvent.UserAwayStateObserved(at, away.nick(), state, away.message())));
+        continue;
+      }
+
+      if (signal instanceof Ircv3InboundCommandSignal.SelfAwayObserved away) {
+        String message = away.message();
+        if (message == null || message.isBlank()) {
+          message =
+              away.away()
+                  ? "You have been marked as being away"
+                  : "You are no longer marked as being away";
+        }
+        sink.accept(
+            new ServerIrcEvent(
+                serverId, new IrcEvent.AwayStatusChanged(at, away.away(), message)));
+        continue;
+      }
+
+      if (signal instanceof Ircv3InboundCommandSignal.AccountObserved account) {
+        IrcEvent.AccountState state =
+            account.state() == Ircv3InboundCommandSignal.AccountState.LOGGED_IN
+                ? IrcEvent.AccountState.LOGGED_IN
+                : IrcEvent.AccountState.LOGGED_OUT;
+        log.debug(
+            "[{}] {} observed via InputParser: nick={} state={} account={} params={} raw={}",
+            serverId,
+            "JOIN".equalsIgnoreCase(command) ? "extended-join" : "account-notify",
+            account.nick(),
+            state,
+            account.accountName(),
+            parsedLine,
+            rawLine);
+        sink.accept(
+            new ServerIrcEvent(
+                serverId,
+                new IrcEvent.UserAccountStateObserved(
+                    at, account.nick(), state, account.accountName())));
+        continue;
+      }
+
+      if (signal instanceof Ircv3InboundCommandSignal.SetNameObserved setName) {
+        IrcEvent.UserSetNameObserved.Source source =
+            setName.source() == Ircv3InboundCommandSignal.SetNameSource.SETNAME
+                ? IrcEvent.UserSetNameObserved.Source.SETNAME
+                : IrcEvent.UserSetNameObserved.Source.EXTENDED_JOIN;
+        sink.accept(
+            new ServerIrcEvent(
+                serverId,
+                new IrcEvent.UserSetNameObserved(at, setName.nick(), setName.realName(), source)));
+        continue;
+      }
+
+      if (signal instanceof Ircv3InboundCommandSignal.HostChangedObserved hostChanged) {
+        sink.accept(
+            new ServerIrcEvent(
+                serverId,
+                new IrcEvent.UserHostChanged(
+                    at, hostChanged.nick(), hostChanged.user(), hostChanged.host())));
+        if (PircbotxUtil.isUsefulHostmask(hostChanged.hostmask())) {
+          sink.accept(
+              new ServerIrcEvent(
+                  serverId,
+                  new IrcEvent.UserHostmaskObserved(
+                      at, "", hostChanged.nick(), hostChanged.hostmask())));
+        }
       }
     }
-    if (!normalized.startsWith(":")) return null;
-    int firstSpace = normalized.indexOf(' ');
-    if (firstSpace <= 1) return null;
-    return normalized.substring(1, firstSpace).trim();
   }
 
-  private static IrcEvent.AccountState toAccountState(String accountRaw) {
-    String account = accountRaw == null ? "" : accountRaw.trim();
-    if (account.isEmpty() || "*".equals(account) || "0".equals(account)) {
-      return IrcEvent.AccountState.LOGGED_OUT;
-    }
-    return IrcEvent.AccountState.LOGGED_IN;
-  }
-
-  private static String stripLeadingColon(String raw) {
-    String value = Objects.toString(raw, "").trim();
-    if (value.startsWith(":")) value = value.substring(1).trim();
-    return value;
+  private static Ircv3InboundCommandRequest request(
+      String nick, String command, String rawLine, List<String> parsedLine) {
+    return new Ircv3InboundCommandRequest(nick, command, rawLine, parsedLine, Map.of());
   }
 }

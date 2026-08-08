@@ -1,5 +1,13 @@
 package cafe.woden.ircclient.irc.pircbotx.listener;
 
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.chatHistoryBatches;
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.runtime;
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.monitorEvents;
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.serverResponses;
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.unknownCtcp;
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.whoEvents;
+import static cafe.woden.ircclient.irc.pircbotx.listener.PircbotxListenerRuntimeTestFixtures.isupportObserver;
+import static cafe.woden.ircclient.irc.pircbotx.listener.PircbotxListenerRuntimeTestFixtures.saslFailures;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
@@ -14,6 +22,7 @@ import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxMonitorEventEmitter;
 import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxServerResponseEmitter;
 import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxUnknownCtcpEmitter;
 import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxWhoEventEmitter;
+import cafe.woden.ircclient.irc.pircbotx.parse.PircbotxPresenceSignalSupport;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
 import cafe.woden.ircclient.irc.playback.*;
 import cafe.woden.ircclient.state.ServerIsupportState;
@@ -94,6 +103,7 @@ class PircbotxUnknownEventRouterTest {
 
   private static PircbotxUnknownEventRouter newRouter(
       PircbotxConnectionState conn, List<ServerIrcEvent> events) {
+    var testRuntime = runtime();
     PircbotxBouncerDiscoveryCoordinator bouncerDiscovery =
         new PircbotxBouncerDiscoveryCoordinator(
             "libera",
@@ -103,24 +113,30 @@ class PircbotxUnknownEventRouterTest {
             new BouncerBackendRegistry(List.<BouncerNetworkMappingStrategy>of()),
             BouncerDiscoveryEventPort.noOp());
     PircbotxServerResponseEmitter serverResponses =
-        new PircbotxServerResponseEmitter("libera", events::add);
+        serverResponses("libera", events::add, testRuntime);
     PircbotxMonitorEventEmitter monitorEvents =
-        new PircbotxMonitorEventEmitter("libera", events::add);
+        monitorEvents("libera", events::add, testRuntime);
     PircbotxChatHistoryBatchCollector chatHistoryBatches =
-        new PircbotxChatHistoryBatchCollector("libera", events::add);
+        chatHistoryBatches("libera", events::add, testRuntime);
     PircbotxUnknownCtcpEmitter unknownCtcp =
-        new PircbotxUnknownCtcpEmitter(
-            "libera", events::add, (bot, nick) -> false, (bot, nick) -> false, bot -> "");
+        unknownCtcp(
+            "libera",
+            events::add,
+            (bot, nick) -> false,
+            (bot, nick) -> false,
+            bot -> "",
+            testRuntime);
     PircbotxSaslFailureHandler saslFailures =
-        new PircbotxSaslFailureHandler("libera", conn, events::add, false);
+        saslFailures("libera", conn, events::add, false, testRuntime);
     PircbotxIsupportObserver isupportObserver =
-        new PircbotxIsupportObserver(
+        isupportObserver(
             "libera",
             conn,
             new ServerIsupportState(),
             events::add,
-            bouncerDiscovery::observeSojuBouncerNetId);
-    PircbotxWhoEventEmitter whoEvents = new PircbotxWhoEventEmitter("libera", conn, events::add);
+            bouncerDiscovery::observeSojuBouncerNetId,
+            testRuntime);
+    PircbotxWhoEventEmitter whoEvents = whoEvents("libera", conn, events::add, testRuntime);
     PircbotxUnknownLineFallbackHandler fallback =
         new PircbotxUnknownLineFallbackHandler(
             "libera",
@@ -132,7 +148,12 @@ class PircbotxUnknownEventRouterTest {
             isupportObserver,
             whoEvents,
             events::add,
-            bot -> "");
+            bot -> "",
+            testRuntime.serverTime(),
+            testRuntime.messageTags(),
+            new PircbotxPresenceSignalSupport(
+                "libera", events::add, testRuntime.catalogs().inboundCommands()),
+            testRuntime.historyTransport());
     return new PircbotxUnknownEventRouter(
         "libera",
         conn::setSelfNickHint,
@@ -142,6 +163,8 @@ class PircbotxUnknownEventRouterTest {
         chatHistoryBatches,
         unknownCtcp,
         fallback,
+        testRuntime.serverTime(),
+        testRuntime.catalogs().inboundCommands(),
         events::add);
   }
 }

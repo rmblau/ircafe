@@ -1,12 +1,15 @@
 package cafe.woden.ircclient.irc.pircbotx.client;
 
+import cafe.woden.ircclient.irc.ircv3.Ircv3EchoMessageAvailability;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
 
 /** Reads capability and session availability state from a connection. */
 final class PircbotxAvailabilitySupport {
 
   boolean isEchoMessageAvailable(PircbotxConnectionState connection) {
-    return hasLiveBot(connection) && connection.capabilitySnapshot().echoMessageCapAcked();
+    return Ircv3EchoMessageAvailability.isAvailable(
+        hasLiveBot(connection),
+        connection != null && connection.capabilitySnapshot().echoMessageCapAcked());
   }
 
   boolean isMessageTagsAvailable(PircbotxConnectionState connection) {

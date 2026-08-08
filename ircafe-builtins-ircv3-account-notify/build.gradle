@@ -1,0 +1,7 @@
+apply from: rootProject.file('gradle/builtins-provider-conventions.gradle')
+
+description = 'Built-in IRCafe IRCv3 account-notify metadata and runtime provider.'
+
+dependencies {
+    implementation project(':ircafe-feature-ircv3-account-notify')
+}

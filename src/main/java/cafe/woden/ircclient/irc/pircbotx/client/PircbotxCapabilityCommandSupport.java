@@ -1,23 +1,36 @@
 package cafe.woden.ircclient.irc.pircbotx.client;
 
-import cafe.woden.ircclient.irc.ircv3.Ircv3ChatHistoryCommandBuilder;
+import cafe.woden.ircclient.irc.ircv3.Ircv3CapabilitySnapshot;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ChatHistoryAvailability;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ChatHistoryRuntimeSupport;
+import cafe.woden.ircclient.irc.ircv3.Ircv3OutboundCommandRuntimeCatalog;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ReadMarkerRuntimeSupport;
+import cafe.woden.ircclient.irc.ircv3.Ircv3TypingRuntimeSupport;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3OutboundCommandOperation;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
 import cafe.woden.ircclient.irc.pircbotx.support.PircbotxUtil;
 import java.time.Instant;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 import java.util.Objects;
 import org.pircbotx.PircBotX;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Handles IRCv3 capability-gated outbound commands for a live IRC connection. */
+/** Handles capability-gated outbound commands for a live IRC connection. */
 final class PircbotxCapabilityCommandSupport {
 
   private static final Logger log = LoggerFactory.getLogger(PircbotxCapabilityCommandSupport.class);
-  private static final DateTimeFormatter MARKREAD_TS_FMT =
-      DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'").withZone(ZoneOffset.UTC);
+
+  private final Ircv3OutboundCommandRuntimeCatalog runtimeCatalog;
+  private final Ircv3ChatHistoryRuntimeSupport chatHistoryRuntimeSupport;
+  private final Ircv3ReadMarkerRuntimeSupport readMarkerRuntimeSupport;
+  private final Ircv3TypingRuntimeSupport typingRuntimeSupport;
+
+  PircbotxCapabilityCommandSupport(Ircv3OutboundCommandRuntimeCatalog runtimeCatalog) {
+    this.runtimeCatalog = Objects.requireNonNull(runtimeCatalog, "runtimeCatalog");
+    this.chatHistoryRuntimeSupport = new Ircv3ChatHistoryRuntimeSupport(this.runtimeCatalog);
+    this.readMarkerRuntimeSupport = Ircv3ReadMarkerRuntimeSupport.outboundOnly(this.runtimeCatalog);
+    this.typingRuntimeSupport = Ircv3TypingRuntimeSupport.outboundOnly(this.runtimeCatalog);
+  }
 
   void sendTyping(
       String serverId, PircbotxConnectionState connection, String target, String state) {
@@ -34,17 +47,16 @@ final class PircbotxCapabilityCommandSupport {
               + serverId);
     }
 
-    String normalizedState = normalizeTypingState(state);
-    if (normalizedState.isEmpty()) {
-      return;
-    }
-
     String dest = sanitizeTarget(target);
-    String line = "@+typing=" + normalizedState + " TAGMSG " + dest;
-    if (log.isDebugEnabled()) {
-      log.debug("[{}] -> typing {} TAGMSG {}", serverId, normalizedState, dest);
-    }
-    requireConnectedBot(serverId, connection).sendRaw().rawLine(line);
+    typingRuntimeSupport
+        .render(dest, state)
+        .ifPresent(
+            plan -> {
+              if (log.isDebugEnabled()) {
+                log.debug("[{}] -> typing TAGMSG {} state={}", serverId, dest, plan.state());
+              }
+              requireConnectedBot(serverId, connection).sendRaw().rawLine(plan.rawLine());
+            });
   }
 
   void sendReadMarker(
@@ -54,13 +66,28 @@ final class PircbotxCapabilityCommandSupport {
           "read-marker capability not negotiated (requires read-marker or draft/read-marker): "
               + serverId);
     }
+    requireProvider(Ircv3OutboundCommandOperation.READ_MARKER, "read-marker", serverId);
 
     String dest = sanitizeTarget(target);
-    Instant at = markerAt == null ? Instant.now() : markerAt;
-    String ts = MARKREAD_TS_FMT.format(at);
-    requireConnectedBot(serverId, connection)
-        .sendRaw()
-        .rawLine("MARKREAD " + dest + " timestamp=" + ts);
+    String line = readMarkerRuntimeSupport.render(dest, markerAt).rawLine();
+    requireConnectedBot(serverId, connection).sendRaw().rawLine(line);
+  }
+
+  void requestChatHistoryBefore(
+      String serverId,
+      PircbotxConnectionState connection,
+      String target,
+      Instant beforeExclusive,
+      int limit) {
+    sendChatHistory(
+        serverId,
+        connection,
+        Ircv3OutboundCommandOperation.CHAT_HISTORY_BEFORE,
+        target,
+        "",
+        "",
+        limit,
+        beforeExclusive);
   }
 
   void requestChatHistoryBefore(
@@ -69,10 +96,15 @@ final class PircbotxCapabilityCommandSupport {
       String target,
       String selector,
       int limit) {
-    ensureChatHistoryNegotiated(serverId, connection);
-    requireConnectedBot(serverId, connection)
-        .sendRaw()
-        .rawLine(Ircv3ChatHistoryCommandBuilder.buildBefore(target, selector, limit));
+    sendChatHistory(
+        serverId,
+        connection,
+        Ircv3OutboundCommandOperation.CHAT_HISTORY_BEFORE,
+        target,
+        selector,
+        "",
+        limit,
+        null);
   }
 
   void requestChatHistoryLatest(
@@ -81,10 +113,15 @@ final class PircbotxCapabilityCommandSupport {
       String target,
       String selector,
       int limit) {
-    ensureChatHistoryNegotiated(serverId, connection);
-    requireConnectedBot(serverId, connection)
-        .sendRaw()
-        .rawLine(Ircv3ChatHistoryCommandBuilder.buildLatest(target, selector, limit));
+    sendChatHistory(
+        serverId,
+        connection,
+        Ircv3OutboundCommandOperation.CHAT_HISTORY_LATEST,
+        target,
+        selector,
+        "",
+        limit,
+        null);
   }
 
   void requestChatHistoryBetween(
@@ -94,11 +131,15 @@ final class PircbotxCapabilityCommandSupport {
       String startSelector,
       String endSelector,
       int limit) {
-    ensureChatHistoryNegotiated(serverId, connection);
-    requireConnectedBot(serverId, connection)
-        .sendRaw()
-        .rawLine(
-            Ircv3ChatHistoryCommandBuilder.buildBetween(target, startSelector, endSelector, limit));
+    sendChatHistory(
+        serverId,
+        connection,
+        Ircv3OutboundCommandOperation.CHAT_HISTORY_BETWEEN,
+        target,
+        startSelector,
+        endSelector,
+        limit,
+        null);
   }
 
   void requestChatHistoryAround(
@@ -107,17 +148,23 @@ final class PircbotxCapabilityCommandSupport {
       String target,
       String selector,
       int limit) {
-    ensureChatHistoryNegotiated(serverId, connection);
-    requireConnectedBot(serverId, connection)
-        .sendRaw()
-        .rawLine(Ircv3ChatHistoryCommandBuilder.buildAround(target, selector, limit));
+    sendChatHistory(
+        serverId,
+        connection,
+        Ircv3OutboundCommandOperation.CHAT_HISTORY_AROUND,
+        target,
+        selector,
+        "",
+        limit,
+        null);
   }
 
   boolean isTypingAvailable(PircbotxConnectionState connection) {
     if (connection == null || !connection.hasBot()) {
       return false;
     }
-    return connection.capabilitySnapshot().typingAvailable();
+    return typingRuntimeSupport.outboundAvailable()
+        && connection.capabilitySnapshot().typingAvailable();
   }
 
   String typingAvailabilityReason(PircbotxConnectionState connection) {
@@ -127,8 +174,11 @@ final class PircbotxCapabilityCommandSupport {
     if (!connection.hasBot()) {
       return "not connected";
     }
+    if (!typingRuntimeSupport.outboundAvailable()) {
+      return "typing runtime provider not loaded";
+    }
 
-    PircbotxConnectionState.CapabilitySnapshot caps = connection.capabilitySnapshot();
+    Ircv3CapabilitySnapshot caps = connection.capabilitySnapshot();
     if (!caps.messageTagsCapAcked()) {
       return "message-tags not negotiated";
     }
@@ -139,25 +189,69 @@ final class PircbotxCapabilityCommandSupport {
   }
 
   boolean isReadMarkerAvailable(PircbotxConnectionState connection) {
-    return connection != null
+    return readMarkerRuntimeSupport.outboundAvailable()
+        && connection != null
         && connection.hasBot()
         && connection.capabilitySnapshot().readMarkerCapAcked();
   }
 
   boolean isChatHistoryAvailable(PircbotxConnectionState connection) {
-    return connection != null && connection.capabilitySnapshot().chatHistoryAvailable();
+    Ircv3CapabilitySnapshot caps =
+        connection == null ? null : connection.capabilitySnapshot();
+    return supportsAllChatHistoryOperations()
+        && caps != null
+        && Ircv3ChatHistoryAvailability.isAvailable(
+            caps.chatHistoryCapAcked(), caps.batchCapAcked());
+  }
+
+  private void sendChatHistory(
+      String serverId,
+      PircbotxConnectionState connection,
+      Ircv3OutboundCommandOperation operation,
+      String target,
+      String primarySelector,
+      String secondarySelector,
+      int limit,
+      Instant fallbackTimestamp) {
+    ensureChatHistoryNegotiated(serverId, connection);
+    requireProvider(operation, "chat-history", serverId);
+    Ircv3ChatHistoryRuntimeSupport.Plan plan =
+        switch (operation) {
+          case CHAT_HISTORY_BEFORE ->
+              chatHistoryRuntimeSupport.before(
+                  target, primarySelector, limit, fallbackTimestamp);
+          case CHAT_HISTORY_LATEST ->
+              chatHistoryRuntimeSupport.latest(target, primarySelector, limit);
+          case CHAT_HISTORY_BETWEEN ->
+              chatHistoryRuntimeSupport.between(
+                  target, primarySelector, secondarySelector, limit);
+          case CHAT_HISTORY_AROUND ->
+              chatHistoryRuntimeSupport.around(target, primarySelector, limit);
+          default ->
+              throw new IllegalArgumentException(
+                  "Not a CHATHISTORY operation: " + operation);
+        };
+    requireConnectedBot(serverId, connection).sendRaw().rawLine(plan.rawLine());
   }
 
   private void ensureChatHistoryNegotiated(String serverId, PircbotxConnectionState connection) {
-    PircbotxConnectionState.CapabilitySnapshot caps =
+    Ircv3CapabilitySnapshot caps =
         connection == null ? null : connection.capabilitySnapshot();
-    if (caps == null || !caps.chatHistoryCapAcked()) {
+    Ircv3ChatHistoryAvailability.requireAvailable(
+        caps != null && caps.chatHistoryCapAcked(),
+        caps != null && caps.batchCapAcked(),
+        serverId);
+  }
+
+  private boolean supportsAllChatHistoryOperations() {
+    return chatHistoryRuntimeSupport.available();
+  }
+
+  private void requireProvider(
+      Ircv3OutboundCommandOperation operation, String feature, String serverId) {
+    if (!runtimeCatalog.supports(operation)) {
       throw new IllegalStateException(
-          "CHATHISTORY not negotiated (chathistory or draft/chathistory): " + serverId);
-    }
-    if (!caps.batchCapAcked()) {
-      throw new IllegalStateException(
-          "CHATHISTORY requires IRCv3 batch to be negotiated: " + serverId);
+          feature + " runtime provider not available for " + operation + ": " + serverId);
     }
   }
 
@@ -178,18 +272,5 @@ final class PircbotxCapabilityCommandSupport {
       return PircbotxUtil.sanitizeChannel(renderedTarget);
     }
     return PircbotxUtil.sanitizeNick(renderedTarget);
-  }
-
-  private static String normalizeTypingState(String state) {
-    String renderedState = Objects.toString(state, "").trim().toLowerCase(Locale.ROOT);
-    if (renderedState.isEmpty()) {
-      return "";
-    }
-    return switch (renderedState) {
-      case "active", "composing" -> "active";
-      case "paused" -> "paused";
-      case "done", "inactive" -> "done";
-      default -> "";
-    };
   }
 }

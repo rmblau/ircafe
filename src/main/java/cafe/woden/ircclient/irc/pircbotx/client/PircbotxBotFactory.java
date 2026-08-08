@@ -27,6 +27,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -59,20 +60,29 @@ public class PircbotxBotFactory {
   private final SojuProperties sojuProps;
   private final IrcSessionRuntimeConfigPort runtimeConfig;
   private final Ircv3ExtensionCatalog ircv3ExtensionCatalog;
-
-  public PircbotxBotFactory(
-      ServerProxyResolver proxyResolver,
-      SojuProperties sojuProps,
-      IrcSessionRuntimeConfigPort runtimeConfig) {
-    this(proxyResolver, sojuProps, runtimeConfig, Ircv3ExtensionCatalog.builtInCatalog());
-  }
+  private final Ircv3SaslRuntimeSupport saslRuntimeSupport;
 
   @Autowired
   public PircbotxBotFactory(
       ServerProxyResolver proxyResolver,
       SojuProperties sojuProps,
       IrcSessionRuntimeConfigPort runtimeConfig,
-      Ircv3ExtensionCatalog ircv3ExtensionCatalog) {
+      Ircv3ExtensionCatalog ircv3ExtensionCatalog,
+      Ircv3RuntimeCatalogs catalogs) {
+    this(
+        proxyResolver,
+        sojuProps,
+        runtimeConfig,
+        ircv3ExtensionCatalog,
+        Objects.requireNonNull(catalogs, "catalogs").inboundCommands());
+  }
+
+  public PircbotxBotFactory(
+      ServerProxyResolver proxyResolver,
+      SojuProperties sojuProps,
+      IrcSessionRuntimeConfigPort runtimeConfig,
+      Ircv3ExtensionCatalog ircv3ExtensionCatalog,
+      Ircv3InboundCommandSignalRuntimeCatalog inboundCommandRuntimeCatalog) {
     this.proxyResolver = proxyResolver;
     this.sojuProps = sojuProps;
     this.runtimeConfig = runtimeConfig;
@@ -80,6 +90,10 @@ public class PircbotxBotFactory {
         ircv3ExtensionCatalog == null
             ? Ircv3ExtensionCatalog.builtInCatalog()
             : ircv3ExtensionCatalog;
+    this.saslRuntimeSupport =
+        new Ircv3SaslRuntimeSupport(
+            Objects.requireNonNull(
+                inboundCommandRuntimeCatalog, "inboundCommandRuntimeCatalog"));
   }
 
   public PircBotX build(IrcProperties.Server s, String version, ListenerAdapter listener) {
@@ -185,7 +199,12 @@ public class PircbotxBotFactory {
       }
       builder.setCapEnabled(true);
       builder.addCapHandler(
-          new MultiSaslCapHandler(user, secret, mech, s.sasl().disconnectOnFailure()));
+          new MultiSaslCapHandler(
+              user,
+              secret,
+              mech,
+              s.sasl().disconnectOnFailure(),
+              saslRuntimeSupport));
     }
 
     return new PircbotxLagAwareBot(builder.buildConfiguration());

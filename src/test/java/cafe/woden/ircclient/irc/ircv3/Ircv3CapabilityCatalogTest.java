@@ -2,7 +2,7 @@ package cafe.woden.ircclient.irc.ircv3;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class Ircv3CapabilityCatalogTest {
@@ -10,7 +10,7 @@ class Ircv3CapabilityCatalogTest {
   @Test
   void requestableCapabilitiesMatchPublishedNegotiationSet() {
     assertEquals(
-        List.of(
+        Set.of(
             "multi-prefix",
             "cap-notify",
             "invite-notify",
@@ -34,6 +34,6 @@ class Ircv3CapabilityCatalogTest {
             "znc.in/playback",
             "account-tag",
             "userhost-in-names"),
-        Ircv3CapabilityCatalog.requestableCapabilities());
+        Set.copyOf(Ircv3CapabilityCatalog.requestableCapabilities()));
   }
 }

@@ -24,8 +24,7 @@ public class RuntimeConfigTimestampStore {
   }
 
   public synchronized void rememberFormat(String format) {
-    String fmt = (format == null || format.isBlank()) ? "HH:mm:ss" : format.trim();
-    rememberSetting("format", fmt);
+    rememberSetting("format", RuntimeConfigTimestampSettingsCodec.normalizeFormat(format));
   }
 
   public synchronized void rememberIncludeChatMessages(boolean includeChatMessages) {

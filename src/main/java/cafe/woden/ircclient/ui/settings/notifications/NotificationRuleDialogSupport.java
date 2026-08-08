@@ -1,6 +1,14 @@
 package cafe.woden.ircclient.ui.settings.notifications;
 
 import cafe.woden.ircclient.config.api.NotificationRule;
+import cafe.woden.ircclient.notifications.api.NotificationTextRuleAdapters;
+import cafe.woden.ircclient.notify.api.text.NotificationTextRule;
+import cafe.woden.ircclient.notify.api.text.NotificationTextRuleEditFieldPlan;
+import cafe.woden.ircclient.notify.api.text.NotificationTextRuleEditFieldPlanner;
+import cafe.woden.ircclient.notify.api.text.NotificationTextRuleEditPolicy;
+import cafe.woden.ircclient.notify.api.text.NotificationTextRuleEditSubmissionPlan;
+import cafe.woden.ircclient.notify.api.text.NotificationTextRuleEditSubmissionPlanner;
+import cafe.woden.ircclient.notify.api.text.NotificationTextRuleValidationError;
 import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.ColorSwatch;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
@@ -12,7 +20,6 @@ import cafe.woden.ircclient.ui.util.UiColorKeys;
 import java.awt.Color;
 import java.awt.Window;
 import java.util.Objects;
-import java.util.regex.Pattern;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -29,10 +36,7 @@ public final class NotificationRuleDialogSupport {
 
   public static NotificationRule promptNotificationRuleDialog(
       Window owner, String title, NotificationRule seed) {
-    NotificationRule base =
-        seed != null
-            ? seed
-            : new NotificationRule("", NotificationRule.Type.WORD, "", true, false, true, null);
+    NotificationRule base = seedFromPlan(seedPlan(seed));
 
     JCheckBox enabled =
         new JCheckBox(
@@ -66,11 +70,14 @@ public final class NotificationRuleDialogSupport {
 
     Runnable refreshWholeWordState =
         () -> {
-          boolean wordRule = NotificationRule.Type.WORD.equals(type.getSelectedItem());
-          wholeWord.setEnabled(wordRule);
-          if (!wordRule) {
-            wholeWord.setSelected(false);
-          }
+          NotificationRule.Type selectedType =
+              PreferencesUiSupport.selectedComboItem(
+                  type, NotificationRule.Type.class, NotificationRule.Type.WORD);
+          NotificationTextRuleEditFieldPlan plan =
+              NotificationTextRuleEditFieldPlanner.plan(
+                  NotificationTextRuleAdapters.toFeatureType(selectedType), wholeWord.isSelected());
+          wholeWord.setEnabled(plan.wholeWordAvailable());
+          wholeWord.setSelected(plan.wholeWordSelected());
         };
     type.addActionListener(e -> refreshWholeWordState.run());
     refreshWholeWordState.run();
@@ -153,35 +160,81 @@ public final class NotificationRuleDialogSupport {
           PreferencesUiSupport.selectedComboItem(
               type, NotificationRule.Type.class, NotificationRule.Type.WORD);
 
-      String patternText = PreferencesUiSupport.trimmedText(pattern);
-      if (selectedType == NotificationRule.Type.REGEX && !patternText.isEmpty()) {
-        try {
-          int flags = Pattern.UNICODE_CASE;
-          if (!caseSensitive.isSelected()) flags |= Pattern.CASE_INSENSITIVE;
-          Pattern.compile(patternText, flags);
-        } catch (Exception ex) {
-          String msg =
-              Objects.toString(
-                  ex.getMessage(),
-                  MESSAGES.text(
-                      "preferences.notifications.rules.dialog.validation.invalidRegex.default"));
-          PreferencesUiSupport.showErrorMessage(
-              owner,
-              MESSAGES.text(
-                  "preferences.notifications.rules.dialog.validation.invalidRegex.message", msg),
-              MESSAGES.text("preferences.notifications.rules.dialog.validation.invalid.title"));
-          continue;
-        }
+      NotificationTextRuleEditSubmissionPlan submission =
+          NotificationTextRuleEditSubmissionPlanner.plan(
+              label.getText(),
+              NotificationTextRuleAdapters.toFeatureType(selectedType),
+              pattern.getText(),
+              enabled.isSelected(),
+              caseSensitive.isSelected(),
+              wholeWord.isSelected(),
+              colorHex[0]);
+      NotificationTextRuleValidationError validationError =
+          NotificationTextRuleEditPolicy.validateRule(
+              0,
+              new NotificationTextRule(
+                  submission.label(),
+                  submission.type(),
+                  submission.pattern(),
+                  true,
+                  submission.caseSensitive(),
+                  submission.wholeWord(),
+                  submission.highlightFg()));
+      if (validationError != null) {
+        String validationMessage = validationError.message();
+        String msg =
+            validationMessage != null && !validationMessage.isBlank()
+                ? validationMessage
+                : MESSAGES.text(
+                    "preferences.notifications.rules.dialog.validation.invalidRegex.default");
+        PreferencesUiSupport.showErrorMessage(
+            owner,
+            MESSAGES.text(
+                "preferences.notifications.rules.dialog.validation.invalidRegex.message", msg),
+            MESSAGES.text("preferences.notifications.rules.dialog.validation.invalid.title"));
+        continue;
       }
 
       return new NotificationRule(
-          label.getText(),
-          selectedType,
-          patternText,
-          enabled.isSelected(),
-          caseSensitive.isSelected(),
-          selectedType == NotificationRule.Type.WORD && wholeWord.isSelected(),
-          colorHex[0]);
+          submission.label(),
+          toRootType(submission.type()),
+          submission.pattern(),
+          submission.enabled(),
+          submission.caseSensitive(),
+          submission.wholeWord(),
+          submission.highlightFg());
     }
+  }
+
+  private static cafe.woden.ircclient.notify.api.text.NotificationTextRuleEditSeedPlan seedPlan(
+      NotificationRule seed) {
+    if (seed == null)
+      return cafe.woden.ircclient.notify.api.text.NotificationTextRuleEditSeedPlanner.defaultSeed();
+    return cafe.woden.ircclient.notify.api.text.NotificationTextRuleEditSeedPlanner.plan(
+        seed.label(),
+        NotificationTextRuleAdapters.toFeatureType(seed.type()),
+        seed.pattern(),
+        seed.enabled(),
+        seed.caseSensitive(),
+        seed.wholeWord(),
+        seed.highlightFg());
+  }
+
+  private static NotificationRule seedFromPlan(
+      cafe.woden.ircclient.notify.api.text.NotificationTextRuleEditSeedPlan plan) {
+    return new NotificationRule(
+        plan.label(),
+        toRootType(plan.type()),
+        plan.pattern(),
+        plan.enabled(),
+        plan.caseSensitive(),
+        plan.wholeWord(),
+        plan.highlightFg());
+  }
+
+  private static NotificationRule.Type toRootType(NotificationTextRule.Type type) {
+    return type == NotificationTextRule.Type.REGEX
+        ? NotificationRule.Type.REGEX
+        : NotificationRule.Type.WORD;
   }
 }

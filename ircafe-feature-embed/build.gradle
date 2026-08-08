@@ -1,0 +1,48 @@
+plugins {
+    id 'java-library'
+}
+
+group = rootProject.group
+description = 'IRCafe embed and link-preview feature runtime.'
+
+def libsCatalog = extensions.getByType(org.gradle.api.artifacts.VersionCatalogsExtension).named("libs")
+def lib = { String alias -> libsCatalog.findLibrary(alias).get() }
+def catalogVersion = { String alias -> libsCatalog.findVersion(alias).get().requiredVersion }
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(rootProject.ext.javaRelease)
+    }
+    withSourcesJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = rootProject.ext.javaRelease
+    options.warnings = false
+    options.compilerArgs.removeAll { it.startsWith('-Xlint') }
+    options.compilerArgs += ['-Xlint:none']
+}
+
+tasks.matching { it.name in ['cyclonedxBom', 'cyclonedxDirectBom'] }.configureEach {
+    dependsOn(':ircafe-plugin-api:jar')
+}
+
+dependencies {
+    api project(':ircafe-plugin-api')
+    implementation platform("org.springframework.boot:spring-boot-dependencies:${catalogVersion('springBootPlugin')}")
+    implementation lib('jmoleculesLayeredArchitecture')
+    implementation lib('jsoup')
+    implementation lib('jacksonDatabind')
+    implementation lib('animatedGifLib')
+    implementation 'org.slf4j:slf4j-api'
+    implementation 'org.springframework:spring-context'
+
+    testImplementation platform("org.springframework.boot:spring-boot-dependencies:${catalogVersion('springBootPlugin')}")
+    testImplementation lib('springBootStarterTest')
+    testRuntimeOnly lib('junitPlatformLauncher')
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+    systemProperty 'java.awt.headless', 'true'
+}

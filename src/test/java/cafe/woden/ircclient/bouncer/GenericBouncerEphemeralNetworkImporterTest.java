@@ -53,7 +53,7 @@ class GenericBouncerEphemeralNetworkImporterTest {
 
     GenericBouncerEphemeralNetworkImporter importer =
         new GenericBouncerEphemeralNetworkImporter(
-            new GenericBouncerNetworkMappingStrategy(bouncerDiscoveryPort(runtime)),
+            new GenericBouncerNetworkMappingStrategy(),
             configured,
             ephemeral,
             autoConnect,

@@ -4,9 +4,11 @@ import static cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures.bouncer
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
+import cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingContext;
 import cafe.woden.ircclient.bouncer.spi.BouncerServerProfile;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.RuntimeConfigStoreTestFixtures;
+import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Set;
@@ -27,10 +29,7 @@ class GenericBouncerNetworkMappingStrategyTest {
             "generic", "bouncer-1", "net1", "Libera", "Libera", "hint-user", Set.of(), Map.of());
 
     assertEquals(
-        "hint-user",
-        strategy(runtimeConfig)
-            .resolveNetwork(sampleBouncerServer("base-user"), network)
-            .loginUser());
+        "hint-user", resolve(runtimeConfig, sampleBouncerServer("base-user"), network).loginUser());
   }
 
   @Test
@@ -44,9 +43,7 @@ class GenericBouncerNetworkMappingStrategyTest {
 
     assertEquals(
         "base-user/Libera",
-        strategy(runtimeConfig)
-            .resolveNetwork(sampleBouncerServer("base-user"), network)
-            .loginUser());
+        resolve(runtimeConfig, sampleBouncerServer("base-user"), network).loginUser());
   }
 
   @Test
@@ -60,9 +57,7 @@ class GenericBouncerNetworkMappingStrategyTest {
 
     assertEquals(
         "base-user|Lib_Era",
-        strategy(runtimeConfig)
-            .resolveNetwork(sampleBouncerServer("base-user"), network)
-            .loginUser());
+        resolve(runtimeConfig, sampleBouncerServer("base-user"), network).loginUser());
   }
 
   @Test
@@ -83,9 +78,7 @@ class GenericBouncerNetworkMappingStrategyTest {
 
     assertEquals(
         "Lib_Era:base-user",
-        strategy(runtimeConfig)
-            .resolveNetwork(sampleBouncerServer("base-user"), network)
-            .loginUser());
+        resolve(runtimeConfig, sampleBouncerServer("base-user"), network).loginUser());
   }
 
   @Test
@@ -107,17 +100,25 @@ class GenericBouncerNetworkMappingStrategyTest {
 
     assertEquals(
         "explicit-user",
-        strategy(runtimeConfig)
-            .resolveNetwork(sampleBouncerServer("base-user"), network)
-            .loginUser());
+        resolve(runtimeConfig, sampleBouncerServer("base-user"), network).loginUser());
   }
 
   private RuntimeConfigStore runtimeConfig() {
     return RuntimeConfigStoreTestFixtures.store(tempDir.resolve("ircafe.yml"));
   }
 
-  private static GenericBouncerNetworkMappingStrategy strategy(RuntimeConfigStore runtimeConfig) {
-    return new GenericBouncerNetworkMappingStrategy(bouncerDiscoveryPort(runtimeConfig));
+  private static cafe.woden.ircclient.bouncer.spi.ResolvedBouncerNetwork resolve(
+      RuntimeConfigStore runtimeConfig,
+      BouncerServerProfile bouncer,
+      BouncerDiscoveredNetwork network) {
+    BouncerDiscoveryConfigPort config = bouncerDiscoveryPort(runtimeConfig);
+    BouncerNetworkMappingContext context =
+        new BouncerNetworkMappingContext(
+            config.readGenericBouncerLoginTemplate(
+                BouncerNetworkMappingContext.DEFAULT_GENERIC_LOGIN_TEMPLATE),
+            config.readGenericBouncerPreferLoginHint(
+                BouncerNetworkMappingContext.DEFAULT_PREFER_LOGIN_HINT));
+    return new GenericBouncerNetworkMappingStrategy().resolveNetwork(bouncer, network, context);
   }
 
   private static BouncerServerProfile sampleBouncerServer(String loginUser) {

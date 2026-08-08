@@ -28,6 +28,23 @@ class MessageTranslationSettingsBusTest {
         true, ((IrcProperties.Client.Translation) events.getFirst().getNewValue()).enabled());
   }
 
+  @Test
+  void exposesRootIndependentSettingsSnapshot() {
+    MessageTranslationSettingsBus bus =
+        new MessageTranslationSettingsBus(props(true, "google-web", "ES"));
+
+    MessageTranslationSettingsSnapshot snapshot = bus.snapshot();
+
+    assertEquals(true, snapshot.enabled());
+    assertEquals(MessageTranslationSettingsSnapshot.Mode.AUTO, snapshot.mode());
+    assertEquals("google-web", snapshot.backendId());
+    assertEquals("auto", snapshot.sourceLanguage());
+    assertEquals("es", snapshot.targetLanguage());
+    assertEquals(10_000, snapshot.requestTimeoutMs());
+    assertEquals(4_000, snapshot.maxRequestChars());
+    assertEquals(2, snapshot.maxConcurrentRequests());
+  }
+
   private static IrcProperties props(boolean enabled, String backend, String targetLanguage) {
     return new IrcProperties(
         new IrcProperties.Client(

@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.config.properties;
 
-import cafe.woden.ircclient.util.HexColorSupport;
+import java.util.Locale;
 import java.util.Objects;
 
 /**
@@ -24,23 +24,63 @@ public record NotificationRuleProperties(
   }
 
   public NotificationRuleProperties {
-    if (enabled == null) enabled = true;
+    String normalizedPattern = normalize(pattern);
+    String normalizedLabel = normalize(label);
+    if (normalizedLabel.isEmpty() && !normalizedPattern.isEmpty()) {
+      normalizedLabel = normalizedPattern;
+    }
 
-    if (type == null) type = Type.WORD;
+    boolean normalizedEnabled = enabled == null || enabled;
+    if (normalizedPattern.isEmpty()) {
+      normalizedEnabled = false;
+    }
 
-    if (caseSensitive == null) caseSensitive = false;
-    if (wholeWord == null) wholeWord = true;
+    enabled = normalizedEnabled;
+    label = normalizedLabel;
+    type = typeOrDefault(enumName(type));
+    pattern = normalizedPattern;
+    caseSensitive = caseSensitive != null && caseSensitive;
+    wholeWord = wholeWord == null || wholeWord;
+    highlightFg = normalizeHexColorLenient(highlightFg);
+  }
 
-    String p = Objects.toString(pattern, "").trim();
-    pattern = p;
+  private static String enumName(Enum<?> value) {
+    return value == null ? null : value.name();
+  }
 
-    String l = Objects.toString(label, "").trim();
-    if (l.isEmpty() && !p.isEmpty()) l = p;
-    label = l;
+  private static String normalize(String value) {
+    return Objects.toString(value, "").trim();
+  }
 
-    highlightFg = HexColorSupport.normalizeHexColorLenient(highlightFg);
+  private static String normalizeHexColorLenient(String raw) {
+    if (raw == null) return null;
+    String value = raw.trim();
+    if (value.isEmpty()) return null;
+    if (value.startsWith("#")) value = value.substring(1).trim();
+    if (value.startsWith("0x") || value.startsWith("0X")) value = value.substring(2).trim();
 
-    // No pattern means no match; treat as disabled.
-    if (pattern.isEmpty()) enabled = false;
+    if (value.length() == 3) {
+      char r = value.charAt(0);
+      char g = value.charAt(1);
+      char b = value.charAt(2);
+      value = "" + r + r + g + g + b + b;
+    }
+
+    if (value.length() != 6) return null;
+    for (int i = 0; i < value.length(); i++) {
+      char c = value.charAt(i);
+      boolean ok = (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+      if (!ok) return null;
+    }
+    return "#" + value.toUpperCase(Locale.ROOT);
+  }
+
+  private static Type typeOrDefault(String value) {
+    if (value == null || value.isBlank()) return Type.WORD;
+    try {
+      return Type.valueOf(value.trim());
+    } catch (Exception ignored) {
+      return Type.WORD;
+    }
   }
 }

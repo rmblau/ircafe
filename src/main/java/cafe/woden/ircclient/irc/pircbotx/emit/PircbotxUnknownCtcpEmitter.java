@@ -13,20 +13,34 @@ import java.util.Objects;
 import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import lombok.AccessLevel;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.pircbotx.PircBotX;
 import org.pircbotx.hooks.events.UnknownEvent;
 
 /** Emits structured CTCP request events from raw unknown PRIVMSG/NOTICE lines. */
-@RequiredArgsConstructor(access = AccessLevel.PUBLIC)
 public final class PircbotxUnknownCtcpEmitter {
   @NonNull private final String serverId;
   @NonNull private final Consumer<ServerIrcEvent> emit;
   @NonNull private final BiPredicate<PircBotX, String> nickMatchesSelf;
   @NonNull private final BiPredicate<PircBotX, String> selfEchoDetector;
   @NonNull private final Function<PircBotX, String> selfNickResolver;
+  @NonNull private final Ircv3ServerTimeRuntimeSupport serverTimeRuntimeSupport;
+
+  public PircbotxUnknownCtcpEmitter(
+      String serverId,
+      Consumer<ServerIrcEvent> emit,
+      BiPredicate<PircBotX, String> nickMatchesSelf,
+      BiPredicate<PircBotX, String> selfEchoDetector,
+      Function<PircBotX, String> selfNickResolver,
+      Ircv3ServerTimeRuntimeSupport serverTimeRuntimeSupport) {
+    this.serverId = Objects.requireNonNull(serverId, "serverId");
+    this.emit = Objects.requireNonNull(emit, "emit");
+    this.nickMatchesSelf = Objects.requireNonNull(nickMatchesSelf, "nickMatchesSelf");
+    this.selfEchoDetector = Objects.requireNonNull(selfEchoDetector, "selfEchoDetector");
+    this.selfNickResolver = Objects.requireNonNull(selfNickResolver, "selfNickResolver");
+    this.serverTimeRuntimeSupport =
+        Objects.requireNonNull(serverTimeRuntimeSupport, "serverTimeRuntimeSupport");
+  }
 
   public boolean maybeEmit(
       UnknownEvent event,
@@ -72,8 +86,7 @@ public final class PircbotxUnknownCtcpEmitter {
       return true;
     }
 
-    Instant at = Ircv3ServerTime.parseServerTimeFromRawLine(lineWithTags);
-    if (at == null) at = Instant.now();
+    Instant at = serverTimeRuntimeSupport.resolveRawLineOrNow(lineWithTags);
     emit.accept(
         new ServerIrcEvent(
             serverId,

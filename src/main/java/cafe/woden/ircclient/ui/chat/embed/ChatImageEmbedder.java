@@ -2,16 +2,11 @@ package cafe.woden.ircclient.ui.chat.embed;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.model.TargetRef;
-import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.settings.EmbedCardStyle;
 import cafe.woden.ircclient.ui.settings.EmbedCardStyleBus;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,10 +20,11 @@ import org.springframework.stereotype.Component;
 public class ChatImageEmbedder {
 
   private final UiSettingsBus uiSettings;
-  private final ChatStyles styles;
   private final ImageFetchService fetch;
   private final EmbedLoadPolicyMatcher policyMatcher;
   private final EmbedCardStyleBus embedCardStyleBus;
+  private final EmbedDocumentApplicationService documentApplication;
+  private final EmbedRenderRequestService renderRequestService;
   private volatile List<cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>
       imageUrlExtensionProviders = List.of();
 
@@ -37,15 +33,18 @@ public class ChatImageEmbedder {
 
   public ChatImageEmbedder(
       UiSettingsBus uiSettings,
-      ChatStyles styles,
       ImageFetchService fetch,
       EmbedLoadPolicyMatcher policyMatcher,
-      EmbedCardStyleBus embedCardStyleBus) {
+      EmbedCardStyleBus embedCardStyleBus,
+      EmbedDocumentApplicationService documentApplication,
+      EmbedRenderRequestService renderRequestService) {
     this.uiSettings = uiSettings;
-    this.styles = styles;
     this.fetch = fetch;
     this.policyMatcher = policyMatcher;
     this.embedCardStyleBus = embedCardStyleBus;
+    this.documentApplication = documentApplication;
+    this.renderRequestService =
+        renderRequestService != null ? renderRequestService : new EmbedRenderRequestService();
   }
 
   @Autowired(required = false)
@@ -69,8 +68,6 @@ public class ChatImageEmbedder {
     }
   }
 
-  private record InsertResult(boolean appended, int nextInsertAt, String blockedUrl) {}
-
   /**
    * Scan the message text for direct image URLs and append a preview block for each.
    *
@@ -86,28 +83,32 @@ public class ChatImageEmbedder {
     String serverId = (ctx != null) ? ctx.serverId() : null;
 
     DocState st = stateFor(doc);
-    int insertAt = doc.getLength();
-    int appendedCount = 0;
-    LinkedHashSet<String> blocked = new LinkedHashSet<>();
+    EmbedAppendResultAccumulator accumulator =
+        EmbedAppendResultAccumulator.startingAt(doc.getLength());
     for (String url : ImageUrlExtractor.extractImageUrls(messageText, imageUrlExtensionProviders)) {
       try {
-        InsertResult result =
+        accumulator.add(
             insertEmbed(
-                ctx, doc, fromNick, ircv3Tags, serverId, st, url, false, Math.max(0, insertAt));
-        if (result.appended()) {
-          appendedCount++;
-          insertAt = result.nextInsertAt();
-        } else if (result.blockedUrl() != null && !result.blockedUrl().isBlank()) {
-          blocked.add(result.blockedUrl());
-        }
+                ctx,
+                doc,
+                fromNick,
+                ircv3Tags,
+                serverId,
+                st,
+                url,
+                false,
+                accumulator.nextInsertAt()));
       } catch (Exception ignored) {
         // best-effort
       }
     }
-    if (blocked.isEmpty()) {
-      return new AppendResult(appendedCount, List.of());
-    }
-    return new AppendResult(appendedCount, List.copyOf(blocked));
+    return toAppendResult(accumulator.finish());
+  }
+
+  private static AppendResult toAppendResult(EmbedAppendResult result) {
+    return result == null
+        ? AppendResult.empty()
+        : new AppendResult(result.appendedCount(), result.blockedUrls());
   }
 
   public boolean insertEmbedForUrlAt(TargetRef ctx, StyledDocument doc, String url, int insertAt) {
@@ -115,7 +116,7 @@ public class ChatImageEmbedder {
     String serverId = (ctx != null) ? ctx.serverId() : null;
     DocState st = stateFor(doc);
     try {
-      InsertResult result =
+      EmbedApplicationResult result =
           insertEmbed(ctx, doc, "", Map.of(), serverId, st, url, true, Math.max(0, insertAt));
       return result.appended();
     } catch (Exception ignored) {
@@ -123,7 +124,7 @@ public class ChatImageEmbedder {
     }
   }
 
-  private InsertResult insertEmbed(
+  private EmbedApplicationResult insertEmbed(
       TargetRef ctx,
       StyledDocument doc,
       String fromNick,
@@ -133,51 +134,49 @@ public class ChatImageEmbedder {
       String rawUrl,
       boolean bypassPolicy,
       int insertAt) {
-    String url = Objects.toString(rawUrl, "").trim();
-    if (doc == null || url.isEmpty()) {
-      return new InsertResult(false, Math.max(0, insertAt), null);
+    if (doc == null) {
+      return EmbedApplicationResult.skipped(insertAt);
+    }
+
+    long seq = st.nextSeq;
+    ImageEmbedRenderRequest request;
+    try {
+      request =
+          renderRequestService.imageRequest(
+              serverId, rawUrl, uiSettings.get().imageEmbedsCollapsedByDefault(), seq);
+    } catch (IllegalArgumentException ignored) {
+      return EmbedApplicationResult.skipped(insertAt);
     }
 
     if (!bypassPolicy
         && policyMatcher != null
-        && !policyMatcher.allow(ctx, fromNick, ircv3Tags, url)) {
-      return new InsertResult(false, Math.max(0, insertAt), url);
+        && !policyMatcher.allow(ctx, fromNick, ircv3Tags, request.url())) {
+      return EmbedApplicationResult.blocked(insertAt, request.url());
     }
-
-    long seq = st.nextSeq++;
+    st.nextSeq = seq + 1;
 
     // If it looks like a GIF by URL, proactively hint to stop older GIFs immediately.
     // If the decode later shows it's NOT a GIF, the component will call rejectGifHint(seq).
-    if (ImageDecodeUtil.looksLikeGif(url, null)) {
-      st.gifCoordinator.hintNewGifPlaceholder(seq);
+    if (request.gifUrlHint()) {
+      st.gifCoordinator.hintNewGifPlaceholder(request.sequence());
     }
 
     ChatImageComponent comp =
         new ChatImageComponent(
-            serverId,
-            url,
+            request.serverId(),
+            request.url(),
             fetch,
-            uiSettings.get().imageEmbedsCollapsedByDefault(),
+            request.collapsedByDefault(),
             uiSettings,
             embedCardStyleBus != null ? embedCardStyleBus.get() : EmbedCardStyle.DEFAULT,
             st.gifCoordinator,
-            seq,
+            request.sequence(),
             imageUrlExtensionProviders);
 
-    SimpleAttributeSet a = new SimpleAttributeSet(styles.message());
-    a.addAttribute(ChatStyles.ATTR_URL, url);
-    a.addAttribute(ChatStyles.ATTR_STYLE, ChatStyles.STYLE_MESSAGE);
-    StyleConstants.setComponent(a, comp);
-
-    int pos = Math.max(0, Math.min(insertAt, doc.getLength()));
-    try {
-      doc.insertString(pos, " ", a);
-      pos += 1;
-      doc.insertString(pos, "\n", styles.timestamp());
-      pos += 1;
-      return new InsertResult(true, pos, null);
-    } catch (Exception ignored) {
-      return new InsertResult(false, Math.max(0, insertAt), null);
-    }
+    EmbedDocumentApplicationService.InsertResult result =
+        documentApplication.insertComponent(doc, request.url(), comp, insertAt);
+    return result.inserted()
+        ? EmbedApplicationResult.appended(result.nextInsertAt())
+        : EmbedApplicationResult.skipped(insertAt);
   }
 }

@@ -2,17 +2,12 @@ package cafe.woden.ircclient.ui.chat.embed;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.model.TargetRef;
-import cafe.woden.ircclient.ui.chat.ChatStyles;
 import cafe.woden.ircclient.ui.settings.EmbedCardStyle;
 import cafe.woden.ircclient.ui.settings.EmbedCardStyleBus;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import cafe.woden.ircclient.ui.settings.UiSettingsBus;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import javax.swing.text.SimpleAttributeSet;
-import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
 import org.jmolecules.architecture.layered.InterfaceLayer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,11 +22,12 @@ public class ChatLinkPreviewEmbedder {
   private static final int MAX_PREVIEWS_PER_MESSAGE = 1;
 
   private final UiSettingsBus uiSettings;
-  private final ChatStyles styles;
   private final LinkPreviewFetchService fetch;
   private final ImageFetchService imageFetch;
   private final EmbedLoadPolicyMatcher policyMatcher;
   private final EmbedCardStyleBus embedCardStyleBus;
+  private final EmbedDocumentApplicationService documentApplication;
+  private final EmbedRenderRequestService renderRequestService;
   private volatile List<cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider>
       imageUrlExtensionProviders = List.of();
 
@@ -41,21 +37,22 @@ public class ChatLinkPreviewEmbedder {
     }
   }
 
-  private record InsertResult(boolean appended, int nextInsertAt, String blockedUrl) {}
-
   public ChatLinkPreviewEmbedder(
       UiSettingsBus uiSettings,
-      ChatStyles styles,
       LinkPreviewFetchService fetch,
       ImageFetchService imageFetch,
       EmbedLoadPolicyMatcher policyMatcher,
-      EmbedCardStyleBus embedCardStyleBus) {
+      EmbedCardStyleBus embedCardStyleBus,
+      EmbedDocumentApplicationService documentApplication,
+      EmbedRenderRequestService renderRequestService) {
     this.uiSettings = uiSettings;
-    this.styles = styles;
     this.fetch = fetch;
     this.imageFetch = imageFetch;
     this.policyMatcher = policyMatcher;
     this.embedCardStyleBus = embedCardStyleBus;
+    this.documentApplication = documentApplication;
+    this.renderRequestService =
+        renderRequestService != null ? renderRequestService : new EmbedRenderRequestService();
   }
 
   @Autowired(required = false)
@@ -77,28 +74,24 @@ public class ChatLinkPreviewEmbedder {
     List<String> urls = LinkUrlExtractor.extractUrls(messageText, imageUrlExtensionProviders);
     if (urls.isEmpty()) return AppendResult.empty();
 
-    int count = 0;
-    int insertAt = doc.getLength();
-    LinkedHashSet<String> blocked = new LinkedHashSet<>();
+    EmbedAppendResultAccumulator accumulator =
+        EmbedAppendResultAccumulator.startingAt(doc.getLength());
     for (String url : urls) {
-      if (count >= MAX_PREVIEWS_PER_MESSAGE) break;
+      if (!accumulator.canAppendMore(MAX_PREVIEWS_PER_MESSAGE)) break;
       try {
-        InsertResult result =
+        accumulator.add(
             insertPreview(
-                ctx, doc, fromNick, ircv3Tags, serverId, url, false, Math.max(0, insertAt));
-        if (result.appended()) {
-          count++;
-          insertAt = result.nextInsertAt();
-        } else if (result.blockedUrl() != null && !result.blockedUrl().isBlank()) {
-          blocked.add(result.blockedUrl());
-        }
+                ctx, doc, fromNick, ircv3Tags, serverId, url, false, accumulator.nextInsertAt()));
       } catch (Exception ignored) {
       }
     }
-    if (blocked.isEmpty()) {
-      return new AppendResult(count, List.of());
-    }
-    return new AppendResult(count, List.copyOf(blocked));
+    return toAppendResult(accumulator.finish());
+  }
+
+  private static AppendResult toAppendResult(EmbedAppendResult result) {
+    return result == null
+        ? AppendResult.empty()
+        : new AppendResult(result.appendedCount(), result.blockedUrls());
   }
 
   public boolean insertPreviewForUrlAt(
@@ -106,7 +99,7 @@ public class ChatLinkPreviewEmbedder {
     if (doc == null) return false;
     String serverId = (ctx != null) ? ctx.serverId() : null;
     try {
-      InsertResult result =
+      EmbedApplicationResult result =
           insertPreview(ctx, doc, "", Map.of(), serverId, rawUrl, true, Math.max(0, insertAt));
       return result.appended();
     } catch (Exception ignored) {
@@ -114,7 +107,7 @@ public class ChatLinkPreviewEmbedder {
     }
   }
 
-  private InsertResult insertPreview(
+  private EmbedApplicationResult insertPreview(
       TargetRef ctx,
       StyledDocument doc,
       String fromNick,
@@ -123,45 +116,44 @@ public class ChatLinkPreviewEmbedder {
       String rawUrl,
       boolean bypassPolicy,
       int insertAt) {
-    String url = Objects.toString(rawUrl, "").trim();
-    if (doc == null || url.isEmpty()) {
-      return new InsertResult(false, Math.max(0, insertAt), null);
-    }
-    if (!bypassPolicy
-        && policyMatcher != null
-        && !policyMatcher.allow(ctx, fromNick, ircv3Tags, url)) {
-      return new InsertResult(false, Math.max(0, insertAt), url);
+    if (doc == null) {
+      return EmbedApplicationResult.skipped(insertAt);
     }
 
     UiSettings settings = uiSettings.get();
-    boolean collapsedByDefault = settings != null && settings.linkPreviewsCollapsedByDefault();
-    int imageEmbedsMaxWidthPx = settings != null ? settings.imageEmbedsMaxWidthPx() : 0;
-    int imageEmbedsMaxHeightPx = settings != null ? settings.imageEmbedsMaxHeightPx() : 0;
+    LinkPreviewRenderRequest request;
+    try {
+      request =
+          renderRequestService.linkPreviewRequest(
+              serverId,
+              rawUrl,
+              settings != null && settings.linkPreviewsCollapsedByDefault(),
+              settings != null ? settings.imageEmbedsMaxWidthPx() : 0,
+              settings != null ? settings.imageEmbedsMaxHeightPx() : 0);
+    } catch (IllegalArgumentException ignored) {
+      return EmbedApplicationResult.skipped(insertAt);
+    }
+
+    if (!bypassPolicy
+        && policyMatcher != null
+        && !policyMatcher.allow(ctx, fromNick, ircv3Tags, request.url())) {
+      return EmbedApplicationResult.blocked(insertAt, request.url());
+    }
     ChatLinkPreviewComponent comp =
         new ChatLinkPreviewComponent(
-            serverId,
-            url,
+            request.serverId(),
+            request.url(),
             fetch,
             imageFetch,
-            collapsedByDefault,
+            request.collapsedByDefault(),
             embedCardStyleBus != null ? embedCardStyleBus.get() : EmbedCardStyle.DEFAULT,
-            imageEmbedsMaxWidthPx,
-            imageEmbedsMaxHeightPx);
+            request.imageEmbedsMaxWidthPx(),
+            request.imageEmbedsMaxHeightPx());
 
-    SimpleAttributeSet a = new SimpleAttributeSet(styles.message());
-    a.addAttribute(ChatStyles.ATTR_URL, url);
-    a.addAttribute(ChatStyles.ATTR_STYLE, ChatStyles.STYLE_MESSAGE);
-    StyleConstants.setComponent(a, comp);
-
-    int pos = Math.max(0, Math.min(insertAt, doc.getLength()));
-    try {
-      doc.insertString(pos, " ", a);
-      pos += 1;
-      doc.insertString(pos, "\n", styles.timestamp());
-      pos += 1;
-      return new InsertResult(true, pos, null);
-    } catch (Exception ignored) {
-      return new InsertResult(false, Math.max(0, insertAt), null);
-    }
+    EmbedDocumentApplicationService.InsertResult result =
+        documentApplication.insertComponent(doc, request.url(), comp, insertAt);
+    return result.inserted()
+        ? EmbedApplicationResult.appended(result.nextInsertAt())
+        : EmbedApplicationResult.skipped(insertAt);
   }
 }

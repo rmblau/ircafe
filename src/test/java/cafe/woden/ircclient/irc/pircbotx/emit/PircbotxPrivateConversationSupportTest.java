@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.irc.pircbotx.emit;
 
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.privateConversation;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -16,7 +17,7 @@ class PircbotxPrivateConversationSupportTest {
   @Test
   void deriveConversationTargetUsesSenderWhenDestinationIsSelf() {
     PircbotxPrivateConversationSupport support =
-        new PircbotxPrivateConversationSupport(new PircbotxConnectionState("libera"));
+        privateConversation(new PircbotxConnectionState("libera"));
 
     String target = support.deriveConversationTarget("me", "alice", "me");
 
@@ -26,7 +27,7 @@ class PircbotxPrivateConversationSupportTest {
   @Test
   void inferPrivateDestinationFromHintsUsesConnectionState() {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
-    PircbotxPrivateConversationSupport support = new PircbotxPrivateConversationSupport(conn);
+    PircbotxPrivateConversationSupport support = privateConversation(conn);
     long now = System.currentTimeMillis();
     conn.rememberPrivateTargetHint("me", "alice", "PRIVMSG", "hello", "msg-1", now);
 
@@ -38,7 +39,7 @@ class PircbotxPrivateConversationSupportTest {
   @Test
   void shouldSuppressSelfBootstrapMessageMatchesPlaybackAndStatusCommands() {
     PircbotxPrivateConversationSupport support =
-        new PircbotxPrivateConversationSupport(new PircbotxConnectionState("libera"));
+        privateConversation(new PircbotxConnectionState("libera"));
 
     assertTrue(support.shouldSuppressSelfBootstrapMessage(true, "*playback", "play * 19"));
     assertTrue(support.shouldSuppressSelfBootstrapMessage(true, "*status", "ListNetworks"));

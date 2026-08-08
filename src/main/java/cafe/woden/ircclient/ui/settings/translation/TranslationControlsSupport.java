@@ -1,10 +1,10 @@
 package cafe.woden.ircclient.ui.settings.translation;
 
-import cafe.woden.ircclient.app.translation.MessageTranslationLanguageCatalog;
+import cafe.woden.ircclient.app.translation.MessageTranslationLanguageCatalogSupport;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguage;
 import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.ClientTranslationRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
@@ -98,7 +98,7 @@ public final class TranslationControlsSupport {
         new JCheckBox(MESSAGES.text("preferences.translation.detectAllLanguages"));
     detectAllLanguages.setSelected(effective.detectAllLanguages());
     List<MessageTranslationLanguage> catalog =
-        MessageTranslationLanguageCatalog.commonTargets(installedPlugins);
+        MessageTranslationLanguageCatalogSupport.commonTargets(installedPlugins);
     DefaultListModel<MessageTranslationLanguage> enabledDetectionLanguageModel =
         languageModel(enabledDetectionLanguages(effective, catalog));
     DefaultListModel<MessageTranslationLanguage> disabledDetectionLanguageModel =
@@ -385,7 +385,7 @@ public final class TranslationControlsSupport {
   }
 
   public static void rememberSettings(
-      RuntimeConfigStore runtimeConfig,
+      ClientTranslationRuntimeConfigPort runtimeConfig,
       MessageTranslationSettingsBus settingsBus,
       IrcProperties.Client.Translation settings) {
     if (settingsBus != null) {

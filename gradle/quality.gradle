@@ -7,9 +7,28 @@ def errorPronePatchChecks =
             ?: 'CheckReturnValue,ReturnValueIgnored,SelfAssignment,MisleadingEscapedSpace,DuplicateBranches,UnnecessaryParentheses,DeprecatedVariable,UnusedVariable')
         .toString()
 
+def javaFormattingTargets = [
+    'src/**/*.java',
+    'ircafe-*/src/**/*.java'
+]
+
+def projectJavaSources = providers.provider {
+    rootProject.allprojects.collectMany { candidate ->
+        candidate.fileTree('src') {
+            include '**/*.java'
+        }.files
+    }
+}
+
+def formattedJavaSources = providers.provider {
+    rootProject.fileTree(rootProject.projectDir) {
+        include(javaFormattingTargets)
+    }.files
+}
+
 spotless {
     java {
-        target "src/**/*.java"
+        target javaFormattingTargets
         googleJavaFormat(catalogVersion("googleJavaFormat"))
         removeUnusedImports()
         trimTrailingWhitespace()
@@ -127,8 +146,37 @@ tasks.named('spotlessApply') {
     dependsOn('errorProneApply')
 }
 
+tasks.register('applyFormatting') {
+    group = 'formatting'
+    description = 'Applies Spotless formatting without running Error Prone auto-fixes.'
+    dependsOn('spotlessJavaApply', 'spotlessMiscApply')
+}
+
 tasks.named('spotlessCheck') {
     mustRunAfter('errorProneApply')
+}
+
+tasks.register('verifyJavaFormattingCoverage') {
+    group = 'verification'
+    description = 'Verifies that Spotless targets every Java source file in registered Gradle projects.'
+    inputs.files(projectJavaSources)
+    inputs.files(formattedJavaSources)
+
+    doLast {
+        Set<File> registeredSources = new LinkedHashSet<>(projectJavaSources.get())
+        Set<File> formattedSources = new LinkedHashSet<>(formattedJavaSources.get())
+        List<String> missingSources = registeredSources
+            .findAll { !formattedSources.contains(it) }
+            .collect { rootProject.relativePath(it) }
+            .sort()
+
+        if (!missingSources.isEmpty()) {
+            throw new GradleException(
+                'Spotless Java targets do not cover registered project sources:\n - '
+                    + missingSources.join('\n - ')
+            )
+        }
+    }
 }
 
 tasks.register('spotlessLint') {
@@ -149,7 +197,7 @@ tasks.register("lint") {
         "forbiddenApisTest"
     )
 }
-tasks.named("check") { dependsOn("lint") }
+tasks.named("check") { dependsOn("lint", "verifyJavaFormattingCoverage") }
 
 dependencyCheck {
     failBuildOnCVSS = 8.0
@@ -170,7 +218,32 @@ dependencyAnalysis {
 tasks.named("cyclonedxDirectBom") {
     includeConfigs = ["runtimeClasspath"]
 
+    // Gradle 9 validates task input provenance more strictly. The CycloneDX task
+    // resolves runtimeClasspath and reads project-dependency JARs directly, so make
+    // those producer tasks explicit instead of relying on incidental task order.
+    dependsOn(provider {
+        configurations.runtimeClasspath.dependencies
+            .withType(org.gradle.api.artifacts.ProjectDependency)
+            .collect { it.dependencyProject.tasks.named("jar") }
+    })
+
     jsonOutput = file("$buildDir/reports/ircafe-sbom.json")
+}
+
+// Gradle 9 validates task input provenance more strictly. The CycloneDX direct
+// BOM task resolves runtimeClasspath and reads project-dependency JAR files, but
+// the plugin keeps those files as plain inputs instead of preserving producer
+// task metadata. Bind the root task to every Java subproject JAR after all
+// projects have been evaluated so feature and builtins modules added later do
+// not create another implicit-dependency failure.
+gradle.projectsEvaluated {
+    tasks.named("cyclonedxDirectBom") {
+        dependsOn(
+            rootProject.subprojects
+                .findAll { it.tasks.findByName("jar") != null }
+                .collect { it.tasks.named("jar") }
+        )
+    }
 }
 
 tasks.named("cyclonedxBom") {

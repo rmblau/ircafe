@@ -8,6 +8,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.app.api.TrayNotificationsPort;
@@ -19,6 +20,40 @@ import java.util.concurrent.Executors;
 import org.junit.jupiter.api.Test;
 
 class IrcEventNotificationServiceTest {
+
+  @Test
+  void dispatchPreflightSkipsMissingEventTypeOrRules() {
+    IrcEventNotificationRulesBus rulesBus = mock(IrcEventNotificationRulesBus.class);
+    TrayNotificationsPort tray = mock(TrayNotificationsPort.class);
+    NotificationStore store = mock(NotificationStore.class);
+    PushyNotificationPort pushy = null;
+    when(rulesBus.get()).thenReturn(List.of());
+
+    ExecutorService exec = Executors.newSingleThreadExecutor();
+    try {
+      IrcEventNotificationService service =
+          new IrcEventNotificationService(rulesBus, tray, store, pushy, exec);
+
+      assertFalse(
+          service.notifyConfigured(
+              null,
+              "libera",
+              "#ircafe",
+              "alice",
+              Boolean.FALSE,
+              "Title",
+              "Body",
+              "libera",
+              "#ircafe"));
+      assertFalse(service.hasEnabledRuleFor(null));
+      assertFalse(
+          service.hasEnabledRuleFor(IrcEventNotificationRule.EventType.PRIVATE_MESSAGE_RECEIVED));
+
+      verifyNoInteractions(tray, store);
+    } finally {
+      exec.shutdownNow();
+    }
+  }
 
   @Test
   void appliesAllMatchingRulesForSameEventType() {

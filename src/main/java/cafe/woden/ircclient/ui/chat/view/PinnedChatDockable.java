@@ -3,7 +3,7 @@ package cafe.woden.ircclient.ui.chat.view;
 import cafe.woden.ircclient.app.api.Ircv3ReadMarkerFeatureSupport;
 import cafe.woden.ircclient.app.commands.SlashCommandPresentationCatalog;
 import cafe.woden.ircclient.app.translation.MessageTranslationDispatcher;
-import cafe.woden.ircclient.app.translation.MessageTranslationLanguageCatalog;
+import cafe.woden.ircclient.app.translation.MessageTranslationLanguageCatalogSupport;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.app.translation.OutboundMessageTranslationService;
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguage;
@@ -523,7 +523,8 @@ public class PinnedChatDockable extends ChatViewPanel implements Dockable, AutoC
   private List<MessageTranslationLanguage> outboundTranslationTargetLanguages() {
     IrcProperties.Client.Translation settings =
         translationSettingsBus != null ? translationSettingsBus.get() : null;
-    return MessageTranslationLanguageCatalog.availableTargets(settings, installedPluginsPort);
+    return MessageTranslationLanguageCatalogSupport.availableTargets(
+        settings, installedPluginsPort);
   }
 
   @Override

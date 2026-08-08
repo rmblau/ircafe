@@ -3,19 +3,23 @@ package cafe.woden.ircclient.ui.chat.embed.spi;
 import java.util.List;
 
 /**
- * ServiceLoader-backed provider for direct image URL extensions recognized by chat embeds.
+ * ServiceLoader contribution for direct-image URL extensions recognized by chat embeds.
+ *
+ * <p>Values may include or omit the leading dot. IRCafe trims and lowercases values, adds a missing
+ * dot, rejects path-like values, and deduplicates extensions in provider order. Provider failures,
+ * null lists, and null entries are ignored. The resulting extension set is used by direct-image
+ * detection, link-preview exclusion, and image-viewer temporary-file naming.
  *
  * <p>Register implementations in {@code
- * META-INF/services/cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider}. The
- * contributed extensions are used consistently by direct image embedding, link-preview exclusion,
- * and image-viewer temp-file naming.
+ * META-INF/services/cafe.woden.ircclient.ui.chat.embed.spi.ImageUrlExtensionProvider}.
+ * Implementations must be public and expose a public no-argument constructor.
  */
 public interface ImageUrlExtensionProvider {
 
   /**
-   * Returns additional file extensions that should be treated as direct image URLs.
+   * Returns additional direct-image file extensions.
    *
-   * <p>Values may be supplied with or without the leading dot and are matched case-insensitively.
+   * @return contributed extensions, or an empty list
    */
   List<String> imageFileExtensions();
 }

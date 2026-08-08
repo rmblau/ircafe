@@ -67,7 +67,7 @@ class QuasselCoreIrcClientServiceTest {
   @Test
   void reportsQuasselCoreBackend() {
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             mock(ServerCatalog.class),
             mock(QuasselCoreSocketConnector.class),
             mock(QuasselCoreProtocolProbe.class),
@@ -99,7 +99,7 @@ class QuasselCoreIrcClientServiceTest {
         .thenReturn(new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of()));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -155,7 +155,7 @@ class QuasselCoreIrcClientServiceTest {
         .thenReturn(new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of()));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -201,7 +201,7 @@ class QuasselCoreIrcClientServiceTest {
         .thenReturn(new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of()));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -245,7 +245,7 @@ class QuasselCoreIrcClientServiceTest {
                 "quassel", 1, List.of(1, 2), Map.of(20, net2Buffer)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -289,7 +289,7 @@ class QuasselCoreIrcClientServiceTest {
                 "quassel", 1, List.of(1, 2), Map.of(11, net1Buffer, 22, net2Buffer)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -341,7 +341,7 @@ class QuasselCoreIrcClientServiceTest {
         .thenReturn(new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of()));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -399,7 +399,7 @@ class QuasselCoreIrcClientServiceTest {
                 "quassel", 1, List.of(1, 2), Map.of(11, net1Buffer, 22, net2Buffer)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -443,7 +443,7 @@ class QuasselCoreIrcClientServiceTest {
                 "quassel", 1, List.of(1, 2), Map.of(11, net1Buffer, 22, net2Buffer)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -502,7 +502,7 @@ class QuasselCoreIrcClientServiceTest {
             new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of(11, chan)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
@@ -590,7 +590,7 @@ class QuasselCoreIrcClientServiceTest {
             new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of(11, chan)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
@@ -647,7 +647,7 @@ class QuasselCoreIrcClientServiceTest {
         .thenReturn(new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of()));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
@@ -691,7 +691,7 @@ class QuasselCoreIrcClientServiceTest {
         .thenReturn(new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of()));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
@@ -734,7 +734,7 @@ class QuasselCoreIrcClientServiceTest {
         .thenReturn(new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1, 2), Map.of()));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
@@ -797,7 +797,7 @@ class QuasselCoreIrcClientServiceTest {
         .thenReturn(new QuasselCoreAuthHandshake.AuthResult("quassel", -1, List.of(), Map.of()));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
@@ -856,7 +856,7 @@ class QuasselCoreIrcClientServiceTest {
         .thenReturn(new QuasselCoreAuthHandshake.AuthResult("quassel", 5, List.of(5), Map.of()));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
@@ -921,7 +921,7 @@ class QuasselCoreIrcClientServiceTest {
         .thenReturn(new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of()));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
@@ -995,7 +995,7 @@ class QuasselCoreIrcClientServiceTest {
         .thenReturn(new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of()));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
@@ -1116,7 +1116,7 @@ class QuasselCoreIrcClientServiceTest {
         .thenReturn(new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of()));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
@@ -1207,7 +1207,7 @@ class QuasselCoreIrcClientServiceTest {
                         "identityId", 1, "identityName", "quassel", "nicks", List.of("quassel")))));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
@@ -1270,7 +1270,7 @@ class QuasselCoreIrcClientServiceTest {
                 Map.of(1, Map.of("identityId", 1, "identityName", "quassel-user"))));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
@@ -1336,7 +1336,7 @@ class QuasselCoreIrcClientServiceTest {
                         "identityId", 1, "identityName", "quassel", "nicks", List.of("quassel")))));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
@@ -1385,7 +1385,7 @@ class QuasselCoreIrcClientServiceTest {
         .thenReturn(new QuasselCoreAuthHandshake.AuthResult("quassel", -1, List.of(), Map.of()));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
@@ -1444,7 +1444,7 @@ class QuasselCoreIrcClientServiceTest {
                 "quassel", 9, List.of(9), Map.of(100, statusBuffer)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
@@ -1492,7 +1492,7 @@ class QuasselCoreIrcClientServiceTest {
         .thenReturn(new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of()));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
@@ -1545,7 +1545,7 @@ class QuasselCoreIrcClientServiceTest {
             new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of(3, status)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
@@ -1599,7 +1599,7 @@ class QuasselCoreIrcClientServiceTest {
             new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of(3, status)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
@@ -1659,7 +1659,7 @@ class QuasselCoreIrcClientServiceTest {
             new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of(3, status)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
@@ -1802,7 +1802,7 @@ class QuasselCoreIrcClientServiceTest {
             new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of(3, status)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
@@ -1856,7 +1856,7 @@ class QuasselCoreIrcClientServiceTest {
             new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of(11, chan)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
@@ -1906,7 +1906,7 @@ class QuasselCoreIrcClientServiceTest {
             new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of(11, chan)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
@@ -1969,7 +1969,7 @@ class QuasselCoreIrcClientServiceTest {
             new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of(11, chan)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
@@ -2034,7 +2034,7 @@ class QuasselCoreIrcClientServiceTest {
             new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of(11, chan)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
@@ -2052,7 +2052,20 @@ class QuasselCoreIrcClientServiceTest {
                     0,
                     chan,
                     "alice!u@h",
-                    "@+typing=active;+draft/react=thumbsup;+draft/reply=42;+draft/unreact=thumbsup;+draft/delete=99;+draft/read-marker=timestamp=2026-03-03T12:00:00.000Z :alice!u@h TAGMSG #ircafe"))));
+                    "@+typing=active;+draft/react=thumbsup;+draft/reply=42;+draft/delete=99;+draft/read-marker=timestamp=2026-03-03T12:00:00.000Z :alice!u@h TAGMSG #ircafe"))));
+    socket.writeInbound(
+        encodeRpcCall(
+            datastreamCodec,
+            "2displayMsg(Message)",
+            List.of(
+                new QuasselCoreDatastreamCodec.MessageValue(
+                    503L,
+                    TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis()),
+                    0x0001,
+                    0,
+                    chan,
+                    "alice!u@h",
+                    "@+draft/unreact=thumbsup;+draft/reply=42 :alice!u@h TAGMSG #ircafe"))));
 
     awaitEvent(events, ev -> ev instanceof IrcEvent.MessageRedactionObserved);
     assertTrue(
@@ -2093,7 +2106,9 @@ class QuasselCoreIrcClientServiceTest {
         events.values().stream()
             .map(ServerIrcEvent::event)
             .anyMatch(
-                ev -> ev instanceof IrcEvent.ChannelMessage msg && "502".equals(msg.messageId())));
+                ev ->
+                    ev instanceof IrcEvent.ChannelMessage msg
+                        && ("502".equals(msg.messageId()) || "503".equals(msg.messageId()))));
   }
 
   @Test
@@ -2119,7 +2134,7 @@ class QuasselCoreIrcClientServiceTest {
             new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of(11, chan)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
@@ -2171,7 +2186,7 @@ class QuasselCoreIrcClientServiceTest {
         .thenReturn(new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of()));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -2223,7 +2238,7 @@ class QuasselCoreIrcClientServiceTest {
             new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of(11, chan)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -2271,7 +2286,7 @@ class QuasselCoreIrcClientServiceTest {
             new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of(11, chan)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -2347,7 +2362,7 @@ class QuasselCoreIrcClientServiceTest {
             new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of(11, chan)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -2395,7 +2410,7 @@ class QuasselCoreIrcClientServiceTest {
             new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of(11, chan)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -2460,7 +2475,7 @@ class QuasselCoreIrcClientServiceTest {
             new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of(11, chan)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();
@@ -2502,7 +2517,7 @@ class QuasselCoreIrcClientServiceTest {
                 "quassel", 1, List.of(1), Map.of(11, knownChannelBuffer)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -2565,7 +2580,7 @@ class QuasselCoreIrcClientServiceTest {
             new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of(3, status)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -2614,7 +2629,7 @@ class QuasselCoreIrcClientServiceTest {
         .thenReturn(new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of()));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -2659,7 +2674,7 @@ class QuasselCoreIrcClientServiceTest {
             new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of(11, chan)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -2768,7 +2783,7 @@ class QuasselCoreIrcClientServiceTest {
             new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of(11, chan)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -2826,7 +2841,7 @@ class QuasselCoreIrcClientServiceTest {
             new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of(11, chan)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -2896,7 +2911,7 @@ class QuasselCoreIrcClientServiceTest {
                 "quassel", 1, List.of(1), Map.of(11, channelBuffer)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -2947,7 +2962,7 @@ class QuasselCoreIrcClientServiceTest {
                 "quassel", 1, List.of(1), Map.of(11, channelBuffer)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -3022,7 +3037,7 @@ class QuasselCoreIrcClientServiceTest {
         .thenReturn(new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of()));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -3121,7 +3136,7 @@ class QuasselCoreIrcClientServiceTest {
             new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of(11, chan)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -3166,7 +3181,7 @@ class QuasselCoreIrcClientServiceTest {
                 "quassel", 1, List.of(1), Map.of(3, statusWithUnexpectedName)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -3218,7 +3233,7 @@ class QuasselCoreIrcClientServiceTest {
                 "quassel", 1, List.of(1), Map.of(3, statusWithUnexpectedName)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -3262,7 +3277,7 @@ class QuasselCoreIrcClientServiceTest {
     when(connector.connect(server)).thenThrow(new IOException("connection refused"));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -3300,7 +3315,7 @@ class QuasselCoreIrcClientServiceTest {
                 "Quassel Core setup is required before login", Map.of("Configured", false)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -3353,7 +3368,7 @@ class QuasselCoreIrcClientServiceTest {
         .thenReturn(new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of()));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec, props);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -3394,7 +3409,7 @@ class QuasselCoreIrcClientServiceTest {
                 "quassel", 1, List.of(1, 2), Map.of(11, net1Buffer, 22, net2Buffer)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -3450,7 +3465,7 @@ class QuasselCoreIrcClientServiceTest {
                 "quassel", 1, List.of(1, 2), Map.of(11, net1Buffer, 22, net2Buffer)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -3510,7 +3525,7 @@ class QuasselCoreIrcClientServiceTest {
                 0x00000001, QuasselCoreProtocolProbe.PROTOCOL_LEGACY, 0, 0));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -3554,7 +3569,7 @@ class QuasselCoreIrcClientServiceTest {
             new QuasselCoreAuthHandshake.CoreSetupRequiredException("setup required", setupFields));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -3583,7 +3598,7 @@ class QuasselCoreIrcClientServiceTest {
   @Test
   void sendOperationsReturnBackendUnavailableWhenSessionIsNotEstablished() {
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             mock(ServerCatalog.class),
             mock(QuasselCoreSocketConnector.class),
             mock(QuasselCoreProtocolProbe.class),

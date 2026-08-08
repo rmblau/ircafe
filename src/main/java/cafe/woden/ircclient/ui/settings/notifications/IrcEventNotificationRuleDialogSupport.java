@@ -3,6 +3,18 @@ package cafe.woden.ircclient.ui.settings.notifications;
 import cafe.woden.ircclient.model.BuiltInSound;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.notify.api.NotificationSoundPort;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationCtcpTemplatePlan;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationCtcpTemplatePlanner;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationRuleEditFieldPlan;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationRuleEditFieldPlanner;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationRuleEditPolicy;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationRuleEditSubmissionPlan;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationRuleEditSubmissionPlanner;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationRuleEditValidationDisplayPlanner;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationRuleEditValidationError;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationRuleEditValues;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationSoundSelectionPlan;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationSoundSelectionPlanner;
 import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PathChooserControlsSupport;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
@@ -12,7 +24,6 @@ import cafe.woden.ircclient.ui.util.MigLayouts;
 import java.awt.Dimension;
 import java.awt.Window;
 import java.util.Objects;
-import java.util.regex.Pattern;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -32,30 +43,7 @@ public final class IrcEventNotificationRuleDialogSupport {
       IrcEventNotificationRule seed,
       NotificationSoundPort notificationSoundService,
       NotificationSoundControlsSupport.SoundFileImporter soundFileImporter) {
-    IrcEventNotificationRule base =
-        seed != null
-            ? seed
-            : new IrcEventNotificationRule(
-                false,
-                IrcEventNotificationRule.EventType.INVITE_RECEIVED,
-                IrcEventNotificationRule.SourceMode.ANY,
-                null,
-                IrcEventNotificationRule.ChannelScope.ALL,
-                null,
-                true,
-                IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY,
-                true,
-                true,
-                false,
-                IrcEventNotificationPresetSupport.defaultBuiltInSoundForEvent(
-                        IrcEventNotificationRule.EventType.INVITE_RECEIVED)
-                    .name(),
-                false,
-                null,
-                false,
-                null,
-                null,
-                null);
+    IrcEventNotificationRule base = seedFromPlan(seedPlan(seed));
 
     JCheckBox enabled =
         new JCheckBox(
@@ -224,100 +212,84 @@ public final class IrcEventNotificationRuleDialogSupport {
 
     Runnable refreshSourceFieldState =
         () -> {
-          IrcEventNotificationRule.SourceMode mode =
-              PreferencesUiSupport.selectedComboItem(
+          IrcEventNotificationRuleEditFieldPlan plan =
+              currentEditFieldPlan(
+                  eventType,
                   sourceMode,
-                  IrcEventNotificationRule.SourceMode.class,
-                  IrcEventNotificationRule.SourceMode.ANY);
-          boolean needsPattern =
-              mode == IrcEventNotificationRule.SourceMode.NICK_LIST
-                  || mode == IrcEventNotificationRule.SourceMode.GLOB
-                  || mode == IrcEventNotificationRule.SourceMode.REGEX;
-          PreferencesUiSupport.setTextInputAvailable(sourcePattern, needsPattern);
-          String placeholder =
-              switch (mode) {
-                case NICK_LIST ->
-                    MESSAGES.text(
-                        "preferences.notifications.ircEvents.dialog.placeholder.source.nickList");
-                case GLOB ->
-                    MESSAGES.text(
-                        "preferences.notifications.ircEvents.dialog.placeholder.source.glob");
-                case REGEX ->
-                    MESSAGES.text(
-                        "preferences.notifications.ircEvents.dialog.placeholder.source.regex");
-                default -> "";
-              };
-          PreferencesUiSupport.placeholder(sourcePattern, placeholder);
+                  channelScope,
+                  ctcpCommandMode,
+                  ctcpValueMode,
+                  scriptEnabled.isSelected());
+          PreferencesUiSupport.setTextInputAvailable(sourcePattern, plan.sourcePatternAvailable());
+          PreferencesUiSupport.placeholder(
+              sourcePattern, sourcePlaceholder(plan.sourcePatternHint()));
         };
 
     Runnable refreshChannelFieldState =
         () -> {
-          IrcEventNotificationRule.ChannelScope scope =
-              PreferencesUiSupport.selectedComboItem(
+          IrcEventNotificationRuleEditFieldPlan plan =
+              currentEditFieldPlan(
+                  eventType,
+                  sourceMode,
                   channelScope,
-                  IrcEventNotificationRule.ChannelScope.class,
-                  IrcEventNotificationRule.ChannelScope.ALL);
-          boolean needsPattern =
-              scope == IrcEventNotificationRule.ChannelScope.ONLY
-                  || scope == IrcEventNotificationRule.ChannelScope.ALL_EXCEPT;
-          PreferencesUiSupport.setTextInputAvailable(channelPatterns, needsPattern);
+                  ctcpCommandMode,
+                  ctcpValueMode,
+                  scriptEnabled.isSelected());
+          PreferencesUiSupport.setTextInputAvailable(
+              channelPatterns, plan.channelPatternsAvailable());
           PreferencesUiSupport.placeholder(
               channelPatterns,
-              needsPattern
+              plan.channelPatternsAvailable()
                   ? MESSAGES.text("preferences.notifications.ircEvents.dialog.placeholder.channels")
                   : "");
         };
 
     Runnable refreshCtcpFieldState =
         () -> {
-          IrcEventNotificationRule.EventType selectedEvent =
-              PreferencesUiSupport.selectedComboItem(
+          IrcEventNotificationRuleEditFieldPlan plan =
+              currentEditFieldPlan(
                   eventType,
-                  IrcEventNotificationRule.EventType.class,
-                  IrcEventNotificationRule.EventType.INVITE_RECEIVED);
-          boolean ctcp = selectedEvent == IrcEventNotificationRule.EventType.CTCP_RECEIVED;
-
-          IrcEventNotificationRule.CtcpMatchMode selectedCommandMode =
-              PreferencesUiSupport.selectedComboItem(
+                  sourceMode,
+                  channelScope,
                   ctcpCommandMode,
-                  IrcEventNotificationRule.CtcpMatchMode.class,
-                  IrcEventNotificationRule.CtcpMatchMode.ANY);
-          boolean commandNeedsPattern =
-              ctcp && selectedCommandMode != IrcEventNotificationRule.CtcpMatchMode.ANY;
-          ctcpCommandMode.setEnabled(ctcp);
-          PreferencesUiSupport.setTextInputAvailable(ctcpCommandPattern, commandNeedsPattern);
+                  ctcpValueMode,
+                  scriptEnabled.isSelected());
+          ctcpCommandMode.setEnabled(plan.ctcpFiltersAvailable());
+          PreferencesUiSupport.setTextInputAvailable(
+              ctcpCommandPattern, plan.ctcpCommandPatternAvailable());
           PreferencesUiSupport.placeholder(
               ctcpCommandPattern,
-              commandNeedsPattern
+              plan.ctcpCommandPatternAvailable()
                   ? MESSAGES.text(
                       "preferences.notifications.ircEvents.dialog.placeholder.ctcpCommand")
                   : "");
 
-          IrcEventNotificationRule.CtcpMatchMode selectedValueMode =
-              PreferencesUiSupport.selectedComboItem(
-                  ctcpValueMode,
-                  IrcEventNotificationRule.CtcpMatchMode.class,
-                  IrcEventNotificationRule.CtcpMatchMode.ANY);
-          boolean valueNeedsPattern =
-              ctcp && selectedValueMode != IrcEventNotificationRule.CtcpMatchMode.ANY;
-          ctcpValueMode.setEnabled(ctcp);
-          PreferencesUiSupport.setTextInputAvailable(ctcpValuePattern, valueNeedsPattern);
+          ctcpValueMode.setEnabled(plan.ctcpFiltersAvailable());
+          PreferencesUiSupport.setTextInputAvailable(
+              ctcpValuePattern, plan.ctcpValuePatternAvailable());
           PreferencesUiSupport.placeholder(
               ctcpValuePattern,
-              valueNeedsPattern
+              plan.ctcpValuePatternAvailable()
                   ? MESSAGES.text(
                       "preferences.notifications.ircEvents.dialog.placeholder.ctcpValue")
                   : "");
 
-          ctcpTemplate.setEnabled(ctcp);
-          applyCtcpTemplate.setEnabled(ctcp);
+          ctcpTemplate.setEnabled(plan.ctcpFiltersAvailable());
+          applyCtcpTemplate.setEnabled(plan.ctcpFiltersAvailable());
         };
 
     Runnable refreshScriptState =
         () -> {
-          boolean run = scriptEnabled.isSelected();
+          IrcEventNotificationRuleEditFieldPlan plan =
+              currentEditFieldPlan(
+                  eventType,
+                  sourceMode,
+                  channelScope,
+                  ctcpCommandMode,
+                  ctcpValueMode,
+                  scriptEnabled.isSelected());
           scriptPathControls.refresh();
-          PreferencesUiSupport.setTextInputAvailable(scriptArgs, run);
+          PreferencesUiSupport.setTextInputAvailable(scriptArgs, plan.scriptFieldsAvailable());
           scriptWorkingDirectoryControls.refresh();
         };
 
@@ -338,15 +310,16 @@ public final class IrcEventNotificationRuleDialogSupport {
                   IrcEventNotificationRule.EventType.INVITE_RECEIVED);
           IrcEventNotificationRule.EventType previous = priorEvent[0];
           if (previous == null) previous = IrcEventNotificationRule.EventType.INVITE_RECEIVED;
-          if (!soundUseCustom.isSelected()) {
-            Object selectedSound = builtInSound.getSelectedItem();
-            if (selectedSound instanceof BuiltInSound currentSound) {
-              BuiltInSound previousDefault =
-                  IrcEventNotificationPresetSupport.defaultBuiltInSoundForEvent(previous);
-              if (currentSound == previousDefault) {
-                builtInSound.setSelectedItem(
-                    IrcEventNotificationPresetSupport.defaultBuiltInSoundForEvent(selectedEvent));
-              }
+          Object selectedSound = builtInSound.getSelectedItem();
+          if (selectedSound instanceof BuiltInSound currentSound) {
+            IrcEventNotificationSoundSelectionPlan plan =
+                IrcEventNotificationSoundSelectionPlanner.planDefaultSoundForEventChange(
+                    enumName(previous),
+                    enumName(selectedEvent),
+                    currentSound.name(),
+                    soundUseCustom.isSelected());
+            if (plan.updateBuiltInSound()) {
+              builtInSound.setSelectedItem(BuiltInSound.fromId(plan.soundId()));
             }
           }
           priorEvent[0] = selectedEvent;
@@ -366,19 +339,17 @@ public final class IrcEventNotificationRuleDialogSupport {
                   ctcpTemplate,
                   CtcpNotificationRuleTemplate.class,
                   CtcpNotificationRuleTemplate.CUSTOM);
-          eventType.setSelectedItem(IrcEventNotificationRule.EventType.CTCP_RECEIVED);
-          if (template == CtcpNotificationRuleTemplate.CUSTOM) {
-            ctcpCommandMode.setSelectedItem(IrcEventNotificationRule.CtcpMatchMode.ANY);
-            ctcpCommandPattern.setText("");
-            ctcpValueMode.setSelectedItem(IrcEventNotificationRule.CtcpMatchMode.ANY);
-            ctcpValuePattern.setText("");
-            refreshCtcpFieldState.run();
-            return;
-          }
-          ctcpCommandMode.setSelectedItem(IrcEventNotificationRule.CtcpMatchMode.LIKE);
-          ctcpCommandPattern.setText(template.command());
-          ctcpValueMode.setSelectedItem(IrcEventNotificationRule.CtcpMatchMode.ANY);
-          ctcpValuePattern.setText("");
+          IrcEventNotificationCtcpTemplatePlan plan =
+              IrcEventNotificationCtcpTemplatePlanner.plan(template.templateId());
+          eventType.setSelectedItem(
+              eventTypeValue(plan.eventType(), IrcEventNotificationRule.EventType.CTCP_RECEIVED));
+          ctcpCommandMode.setSelectedItem(
+              ctcpMatchModeValue(
+                  plan.ctcpCommandMode(), IrcEventNotificationRule.CtcpMatchMode.ANY));
+          ctcpCommandPattern.setText(plan.ctcpCommandPattern());
+          ctcpValueMode.setSelectedItem(
+              ctcpMatchModeValue(plan.ctcpValueMode(), IrcEventNotificationRule.CtcpMatchMode.ANY));
+          ctcpValuePattern.setText(plan.ctcpValuePattern());
           refreshCtcpFieldState.run();
         });
 
@@ -537,55 +508,7 @@ public final class IrcEventNotificationRuleDialogSupport {
               IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY);
 
       String sourcePatternValue = PreferencesUiSupport.trimmedTextOrNull(sourcePattern);
-      boolean sourceNeedsPattern =
-          selectedSourceMode == IrcEventNotificationRule.SourceMode.NICK_LIST
-              || selectedSourceMode == IrcEventNotificationRule.SourceMode.GLOB
-              || selectedSourceMode == IrcEventNotificationRule.SourceMode.REGEX;
-      if (sourceNeedsPattern && sourcePatternValue == null) {
-        showInvalidRuleMessage(
-            owner,
-            tabs,
-            0,
-            MESSAGES.text(
-                "preferences.notifications.ircEvents.dialog.validation.sourcePatternRequired",
-                selectedSourceMode));
-        continue;
-      }
-      if (selectedSourceMode == IrcEventNotificationRule.SourceMode.REGEX
-          && sourcePatternValue != null) {
-        try {
-          Pattern.compile(sourcePatternValue);
-        } catch (Exception ex) {
-          showInvalidRuleMessage(
-              owner,
-              tabs,
-              0,
-              MESSAGES.text(
-                  "preferences.notifications.ircEvents.dialog.validation.sourceRegexInvalid",
-                  Objects.toString(
-                      ex.getMessage(),
-                      MESSAGES.text(
-                          "preferences.notifications.ircEvents.dialog.validation.invalidRegex"))));
-          continue;
-        }
-      }
-      if (!sourceNeedsPattern) sourcePatternValue = null;
-
       String channelPatternsValue = PreferencesUiSupport.trimmedTextOrNull(channelPatterns);
-      boolean channelNeedsPattern =
-          selectedChannelScope == IrcEventNotificationRule.ChannelScope.ONLY
-              || selectedChannelScope == IrcEventNotificationRule.ChannelScope.ALL_EXCEPT;
-      if (channelNeedsPattern && channelPatternsValue == null) {
-        showInvalidRuleMessage(
-            owner,
-            tabs,
-            0,
-            MESSAGES.text(
-                "preferences.notifications.ircEvents.dialog.validation.channelPatternsRequired",
-                selectedChannelScope));
-        continue;
-      }
-      if (!channelNeedsPattern) channelPatternsValue = null;
 
       IrcEventNotificationRule.CtcpMatchMode selectedCtcpCommandMode =
           PreferencesUiSupport.selectedComboItem(
@@ -600,118 +523,293 @@ public final class IrcEventNotificationRuleDialogSupport {
       String ctcpCommandPatternValue = PreferencesUiSupport.trimmedTextOrNull(ctcpCommandPattern);
       String ctcpValuePatternValue = PreferencesUiSupport.trimmedTextOrNull(ctcpValuePattern);
 
-      boolean ctcpEvent = selectedEvent == IrcEventNotificationRule.EventType.CTCP_RECEIVED;
-      if (ctcpEvent && selectedCtcpCommandMode != IrcEventNotificationRule.CtcpMatchMode.ANY) {
-        if (ctcpCommandPatternValue == null) {
-          showInvalidRuleMessage(
-              owner,
-              tabs,
-              0,
-              MESSAGES.text(
-                  "preferences.notifications.ircEvents.dialog.validation.ctcpCommandPatternRequired",
-                  selectedCtcpCommandMode));
-          continue;
-        }
-        if (selectedCtcpCommandMode == IrcEventNotificationRule.CtcpMatchMode.REGEX) {
-          try {
-            Pattern.compile(ctcpCommandPatternValue);
-          } catch (Exception ex) {
-            showInvalidRuleMessage(
-                owner,
-                tabs,
-                0,
-                MESSAGES.text(
-                    "preferences.notifications.ircEvents.dialog.validation.ctcpCommandRegexInvalid",
-                    Objects.toString(
-                        ex.getMessage(),
-                        MESSAGES.text(
-                            "preferences.notifications.ircEvents.dialog.validation.invalidRegex"))));
-            continue;
-          }
-        }
-      }
-      if (ctcpEvent && selectedCtcpValueMode != IrcEventNotificationRule.CtcpMatchMode.ANY) {
-        if (ctcpValuePatternValue == null) {
-          showInvalidRuleMessage(
-              owner,
-              tabs,
-              0,
-              MESSAGES.text(
-                  "preferences.notifications.ircEvents.dialog.validation.ctcpValuePatternRequired",
-                  selectedCtcpValueMode));
-          continue;
-        }
-        if (selectedCtcpValueMode == IrcEventNotificationRule.CtcpMatchMode.REGEX) {
-          try {
-            Pattern.compile(ctcpValuePatternValue);
-          } catch (Exception ex) {
-            showInvalidRuleMessage(
-                owner,
-                tabs,
-                0,
-                MESSAGES.text(
-                    "preferences.notifications.ircEvents.dialog.validation.ctcpValueRegexInvalid",
-                    Objects.toString(
-                        ex.getMessage(),
-                        MESSAGES.text(
-                            "preferences.notifications.ircEvents.dialog.validation.invalidRegex"))));
-            continue;
-          }
-        }
-      }
-      if (!ctcpEvent) {
-        selectedCtcpCommandMode = IrcEventNotificationRule.CtcpMatchMode.ANY;
-        ctcpCommandPatternValue = null;
-        selectedCtcpValueMode = IrcEventNotificationRule.CtcpMatchMode.ANY;
-        ctcpValuePatternValue = null;
-      }
+      String scriptPathValue = PreferencesUiSupport.trimmedTextOrNull(scriptPath);
+      String scriptArgsValue = PreferencesUiSupport.trimmedTextOrNull(scriptArgs);
+      String scriptWorkingDirectoryValue =
+          PreferencesUiSupport.trimmedTextOrNull(scriptWorkingDirectory);
+      boolean runScript = scriptEnabled.isSelected();
 
+      IrcEventNotificationRuleEditValidationError validationError =
+          IrcEventNotificationRuleEditPolicy.validate(
+              new IrcEventNotificationRuleEditValues(
+                  enumName(selectedEvent),
+                  enumName(selectedSourceMode),
+                  sourcePatternValue,
+                  enumName(selectedChannelScope),
+                  channelPatternsValue,
+                  enumName(selectedCtcpCommandMode),
+                  ctcpCommandPatternValue,
+                  enumName(selectedCtcpValueMode),
+                  ctcpValuePatternValue,
+                  runScript,
+                  scriptPathValue));
+      if (validationError != null) {
+        showInvalidRuleMessage(
+            owner,
+            tabs,
+            validationTabIndex(validationError),
+            validationMessage(
+                validationError,
+                selectedSourceMode,
+                selectedChannelScope,
+                selectedCtcpCommandMode,
+                selectedCtcpValueMode));
+        continue;
+      }
       BuiltInSound selectedSound =
           PreferencesUiSupport.selectedComboItem(
               builtInSound,
               BuiltInSound.class,
               IrcEventNotificationPresetSupport.defaultBuiltInSoundForEvent(selectedEvent));
       String soundCustomPathValue = PreferencesUiSupport.trimmedTextOrNull(soundCustomPath);
-      boolean useCustomSound = soundUseCustom.isSelected() && soundCustomPathValue != null;
-
-      String scriptPathValue = PreferencesUiSupport.trimmedTextOrNull(scriptPath);
-      String scriptArgsValue = PreferencesUiSupport.trimmedTextOrNull(scriptArgs);
-      String scriptWorkingDirectoryValue =
-          PreferencesUiSupport.trimmedTextOrNull(scriptWorkingDirectory);
-      boolean runScript = scriptEnabled.isSelected();
-      if (runScript && scriptPathValue == null) {
-        showInvalidRuleMessage(
-            owner,
-            tabs,
-            3,
-            MESSAGES.text(
-                "preferences.notifications.ircEvents.dialog.validation.scriptPathRequired"));
-        continue;
-      }
+      IrcEventNotificationRuleEditSubmissionPlan submission =
+          IrcEventNotificationRuleEditSubmissionPlanner.plan(
+              enumName(selectedEvent),
+              enumName(selectedSourceMode),
+              sourcePatternValue,
+              enumName(selectedChannelScope),
+              channelPatternsValue,
+              enumName(selectedCtcpCommandMode),
+              ctcpCommandPatternValue,
+              enumName(selectedCtcpValueMode),
+              ctcpValuePatternValue,
+              soundUseCustom.isSelected(),
+              soundCustomPathValue,
+              runScript,
+              scriptPathValue,
+              scriptArgsValue,
+              scriptWorkingDirectoryValue);
 
       return new IrcEventNotificationRule(
           enabled.isSelected(),
           selectedEvent,
           selectedSourceMode,
-          sourcePatternValue,
+          submission.sourcePattern(),
           selectedChannelScope,
-          channelPatternsValue,
+          submission.channelPatterns(),
           toastEnabled.isSelected(),
           selectedFocusScope,
           statusBarEnabled.isSelected(),
           notificationsNodeEnabled.isSelected(),
           soundEnabled.isSelected(),
           selectedSound.name(),
-          useCustomSound,
-          soundCustomPathValue,
-          runScript,
-          scriptPathValue,
-          scriptArgsValue,
-          scriptWorkingDirectoryValue,
-          selectedCtcpCommandMode,
-          ctcpCommandPatternValue,
-          selectedCtcpValueMode,
-          ctcpValuePatternValue);
+          submission.soundUseCustom(),
+          submission.soundCustomPath(),
+          submission.scriptEnabled(),
+          submission.scriptPath(),
+          submission.scriptArgs(),
+          submission.scriptWorkingDirectory(),
+          ctcpMatchModeValue(
+              submission.ctcpCommandMode(), IrcEventNotificationRule.CtcpMatchMode.ANY),
+          submission.ctcpCommandPattern(),
+          ctcpMatchModeValue(
+              submission.ctcpValueMode(), IrcEventNotificationRule.CtcpMatchMode.ANY),
+          submission.ctcpValuePattern());
+    }
+  }
+
+  private static cafe.woden.ircclient.notify.api.irc.IrcEventNotificationRuleEditSeedPlan seedPlan(
+      IrcEventNotificationRule seed) {
+    if (seed == null) {
+      return cafe.woden.ircclient.notify.api.irc.IrcEventNotificationRuleEditSeedPlanner
+          .defaultSeed();
+    }
+    return cafe.woden.ircclient.notify.api.irc.IrcEventNotificationRuleEditSeedPlanner.plan(
+        seed.enabled(),
+        enumName(seed.eventType()),
+        enumName(seed.sourceMode()),
+        seed.sourcePattern(),
+        enumName(seed.channelScope()),
+        seed.channelPatterns(),
+        seed.toastEnabled(),
+        enumName(seed.focusScope()),
+        seed.statusBarEnabled(),
+        seed.notificationsNodeEnabled(),
+        seed.soundEnabled(),
+        seed.soundId(),
+        seed.soundUseCustom(),
+        seed.soundCustomPath(),
+        seed.scriptEnabled(),
+        seed.scriptPath(),
+        seed.scriptArgs(),
+        seed.scriptWorkingDirectory(),
+        enumName(seed.ctcpCommandMode()),
+        seed.ctcpCommandPattern(),
+        enumName(seed.ctcpValueMode()),
+        seed.ctcpValuePattern());
+  }
+
+  private static IrcEventNotificationRule seedFromPlan(
+      cafe.woden.ircclient.notify.api.irc.IrcEventNotificationRuleEditSeedPlan plan) {
+    return new IrcEventNotificationRule(
+        plan.enabled(),
+        eventTypeValue(plan.eventType(), IrcEventNotificationRule.EventType.INVITE_RECEIVED),
+        sourceModeValue(plan.sourceMode(), IrcEventNotificationRule.SourceMode.ANY),
+        plan.sourcePattern(),
+        channelScopeValue(plan.channelScope(), IrcEventNotificationRule.ChannelScope.ALL),
+        plan.channelPatterns(),
+        plan.toastEnabled(),
+        focusScopeValue(plan.focusScope(), IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY),
+        plan.statusBarEnabled(),
+        plan.notificationsNodeEnabled(),
+        plan.soundEnabled(),
+        plan.soundId(),
+        plan.soundUseCustom(),
+        plan.soundCustomPath(),
+        plan.scriptEnabled(),
+        plan.scriptPath(),
+        plan.scriptArgs(),
+        plan.scriptWorkingDirectory(),
+        ctcpMatchModeValue(plan.ctcpCommandMode(), IrcEventNotificationRule.CtcpMatchMode.ANY),
+        plan.ctcpCommandPattern(),
+        ctcpMatchModeValue(plan.ctcpValueMode(), IrcEventNotificationRule.CtcpMatchMode.ANY),
+        plan.ctcpValuePattern());
+  }
+
+  private static IrcEventNotificationRuleEditFieldPlan currentEditFieldPlan(
+      JComboBox<IrcEventNotificationRule.EventType> eventType,
+      JComboBox<IrcEventNotificationRule.SourceMode> sourceMode,
+      JComboBox<IrcEventNotificationRule.ChannelScope> channelScope,
+      JComboBox<IrcEventNotificationRule.CtcpMatchMode> ctcpCommandMode,
+      JComboBox<IrcEventNotificationRule.CtcpMatchMode> ctcpValueMode,
+      boolean scriptEnabled) {
+    return IrcEventNotificationRuleEditFieldPlanner.plan(
+        enumName(
+            PreferencesUiSupport.selectedComboItem(
+                eventType,
+                IrcEventNotificationRule.EventType.class,
+                IrcEventNotificationRule.EventType.INVITE_RECEIVED)),
+        enumName(
+            PreferencesUiSupport.selectedComboItem(
+                sourceMode,
+                IrcEventNotificationRule.SourceMode.class,
+                IrcEventNotificationRule.SourceMode.ANY)),
+        enumName(
+            PreferencesUiSupport.selectedComboItem(
+                channelScope,
+                IrcEventNotificationRule.ChannelScope.class,
+                IrcEventNotificationRule.ChannelScope.ALL)),
+        enumName(
+            PreferencesUiSupport.selectedComboItem(
+                ctcpCommandMode,
+                IrcEventNotificationRule.CtcpMatchMode.class,
+                IrcEventNotificationRule.CtcpMatchMode.ANY)),
+        enumName(
+            PreferencesUiSupport.selectedComboItem(
+                ctcpValueMode,
+                IrcEventNotificationRule.CtcpMatchMode.class,
+                IrcEventNotificationRule.CtcpMatchMode.ANY)),
+        scriptEnabled);
+  }
+
+  private static String sourcePlaceholder(
+      IrcEventNotificationRuleEditFieldPlan.SourcePatternHint hint) {
+    return switch (hint) {
+      case NICK_LIST ->
+          MESSAGES.text("preferences.notifications.ircEvents.dialog.placeholder.source.nickList");
+      case GLOB ->
+          MESSAGES.text("preferences.notifications.ircEvents.dialog.placeholder.source.glob");
+      case REGEX ->
+          MESSAGES.text("preferences.notifications.ircEvents.dialog.placeholder.source.regex");
+      case NONE -> "";
+    };
+  }
+
+  private static String enumName(Enum<?> value) {
+    return value == null ? null : value.name();
+  }
+
+  private static int validationTabIndex(IrcEventNotificationRuleEditValidationError error) {
+    return IrcEventNotificationRuleEditValidationDisplayPlanner.plan(error).tabIndex();
+  }
+
+  private static String validationMessage(
+      IrcEventNotificationRuleEditValidationError error,
+      IrcEventNotificationRule.SourceMode sourceMode,
+      IrcEventNotificationRule.ChannelScope channelScope,
+      IrcEventNotificationRule.CtcpMatchMode ctcpCommandMode,
+      IrcEventNotificationRule.CtcpMatchMode ctcpValueMode) {
+    if (error == null) return "";
+    String regexMessage =
+        !error.message().isBlank()
+            ? error.message()
+            : MESSAGES.text("preferences.notifications.ircEvents.dialog.validation.invalidRegex");
+    return switch (error.field()) {
+      case SOURCE_PATTERN ->
+          error.reason() == IrcEventNotificationRuleEditValidationError.Reason.REQUIRED
+              ? MESSAGES.text(
+                  "preferences.notifications.ircEvents.dialog.validation.sourcePatternRequired",
+                  sourceMode)
+              : MESSAGES.text(
+                  "preferences.notifications.ircEvents.dialog.validation.sourceRegexInvalid",
+                  regexMessage);
+      case CHANNEL_PATTERNS ->
+          MESSAGES.text(
+              "preferences.notifications.ircEvents.dialog.validation.channelPatternsRequired",
+              channelScope);
+      case CTCP_COMMAND_PATTERN ->
+          error.reason() == IrcEventNotificationRuleEditValidationError.Reason.REQUIRED
+              ? MESSAGES.text(
+                  "preferences.notifications.ircEvents.dialog.validation.ctcpCommandPatternRequired",
+                  ctcpCommandMode)
+              : MESSAGES.text(
+                  "preferences.notifications.ircEvents.dialog.validation.ctcpCommandRegexInvalid",
+                  regexMessage);
+      case CTCP_VALUE_PATTERN ->
+          error.reason() == IrcEventNotificationRuleEditValidationError.Reason.REQUIRED
+              ? MESSAGES.text(
+                  "preferences.notifications.ircEvents.dialog.validation.ctcpValuePatternRequired",
+                  ctcpValueMode)
+              : MESSAGES.text(
+                  "preferences.notifications.ircEvents.dialog.validation.ctcpValueRegexInvalid",
+                  regexMessage);
+      case SCRIPT_PATH ->
+          MESSAGES.text("preferences.notifications.ircEvents.dialog.validation.scriptPathRequired");
+    };
+  }
+
+  private static IrcEventNotificationRule.EventType eventTypeValue(
+      String value, IrcEventNotificationRule.EventType fallback) {
+    try {
+      return IrcEventNotificationRule.EventType.valueOf(Objects.toString(value, "").trim());
+    } catch (Exception ignored) {
+      return fallback;
+    }
+  }
+
+  private static IrcEventNotificationRule.SourceMode sourceModeValue(
+      String value, IrcEventNotificationRule.SourceMode fallback) {
+    try {
+      return IrcEventNotificationRule.SourceMode.valueOf(Objects.toString(value, "").trim());
+    } catch (Exception ignored) {
+      return fallback;
+    }
+  }
+
+  private static IrcEventNotificationRule.ChannelScope channelScopeValue(
+      String value, IrcEventNotificationRule.ChannelScope fallback) {
+    try {
+      return IrcEventNotificationRule.ChannelScope.valueOf(Objects.toString(value, "").trim());
+    } catch (Exception ignored) {
+      return fallback;
+    }
+  }
+
+  private static IrcEventNotificationRule.FocusScope focusScopeValue(
+      String value, IrcEventNotificationRule.FocusScope fallback) {
+    try {
+      return IrcEventNotificationRule.FocusScope.valueOf(Objects.toString(value, "").trim());
+    } catch (Exception ignored) {
+      return fallback;
+    }
+  }
+
+  private static IrcEventNotificationRule.CtcpMatchMode ctcpMatchModeValue(
+      String value, IrcEventNotificationRule.CtcpMatchMode fallback) {
+    try {
+      return IrcEventNotificationRule.CtcpMatchMode.valueOf(Objects.toString(value, "").trim());
+    } catch (Exception ignored) {
+      return fallback;
     }
   }
 
@@ -723,24 +821,38 @@ public final class IrcEventNotificationRuleDialogSupport {
   }
 
   private enum CtcpNotificationRuleTemplate {
-    CUSTOM("preferences.notifications.ircEvents.dialog.ctcpTemplate.custom", null),
-    VERSION("preferences.notifications.ircEvents.dialog.ctcpTemplate.version", "VERSION"),
-    PING("preferences.notifications.ircEvents.dialog.ctcpTemplate.ping", "PING"),
-    TIME("preferences.notifications.ircEvents.dialog.ctcpTemplate.time", "TIME"),
-    CLIENTINFO("preferences.notifications.ircEvents.dialog.ctcpTemplate.clientinfo", "CLIENTINFO"),
-    SOURCE("preferences.notifications.ircEvents.dialog.ctcpTemplate.source", "SOURCE"),
-    USERINFO("preferences.notifications.ircEvents.dialog.ctcpTemplate.userinfo", "USERINFO");
+    CUSTOM(
+        "preferences.notifications.ircEvents.dialog.ctcpTemplate.custom",
+        IrcEventNotificationCtcpTemplatePlanner.CUSTOM),
+    VERSION(
+        "preferences.notifications.ircEvents.dialog.ctcpTemplate.version",
+        IrcEventNotificationCtcpTemplatePlanner.VERSION),
+    PING(
+        "preferences.notifications.ircEvents.dialog.ctcpTemplate.ping",
+        IrcEventNotificationCtcpTemplatePlanner.PING),
+    TIME(
+        "preferences.notifications.ircEvents.dialog.ctcpTemplate.time",
+        IrcEventNotificationCtcpTemplatePlanner.TIME),
+    CLIENTINFO(
+        "preferences.notifications.ircEvents.dialog.ctcpTemplate.clientinfo",
+        IrcEventNotificationCtcpTemplatePlanner.CLIENTINFO),
+    SOURCE(
+        "preferences.notifications.ircEvents.dialog.ctcpTemplate.source",
+        IrcEventNotificationCtcpTemplatePlanner.SOURCE),
+    USERINFO(
+        "preferences.notifications.ircEvents.dialog.ctcpTemplate.userinfo",
+        IrcEventNotificationCtcpTemplatePlanner.USERINFO);
 
     private final String labelKey;
-    private final String command;
+    private final String templateId;
 
-    CtcpNotificationRuleTemplate(String labelKey, String command) {
+    CtcpNotificationRuleTemplate(String labelKey, String templateId) {
       this.labelKey = labelKey;
-      this.command = command;
+      this.templateId = templateId;
     }
 
-    String command() {
-      return command;
+    String templateId() {
+      return templateId;
     }
 
     @Override

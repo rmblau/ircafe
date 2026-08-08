@@ -1,0 +1,7 @@
+apply from: rootProject.file('gradle/builtins-provider-conventions.gradle')
+
+description = 'Built-in IRCafe IRCv3 MONITOR metadata, inbound command, and outbound command runtime provider.'
+
+dependencies {
+    implementation project(':ircafe-feature-ircv3-monitor')
+}

@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
-import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.PreferredNickRuntimeConfigPort;
 import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.state.api.AwayRoutingPort;
@@ -24,8 +24,8 @@ class OutboundNickAwayCommandServiceTest {
   private final UiPort ui = mock(UiPort.class);
   private final ConnectionCoordinator connectionCoordinator = mock(ConnectionCoordinator.class);
   private final TargetCoordinator targetCoordinator = mock(TargetCoordinator.class);
-  private final ChatCommandRuntimeConfigPort runtimeConfig =
-      mock(ChatCommandRuntimeConfigPort.class);
+  private final PreferredNickRuntimeConfigPort runtimeConfig =
+      mock(PreferredNickRuntimeConfigPort.class);
   private final AwayRoutingPort awayRoutingState = mock(AwayRoutingPort.class);
   private final NickCommandSupport nickCommandSupport =
       new NickCommandSupport(irc, ui, connectionCoordinator, targetCoordinator, runtimeConfig);

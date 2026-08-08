@@ -40,6 +40,7 @@ class PircbotxBridgeListenerRosterTest {
     bus.subscribe(seen::add);
 
     ServerIsupportState isupportState = new ServerIsupportState();
+    Ircv3RuntimeTestFixtures.Runtime runtime = Ircv3RuntimeTestFixtures.runtime();
     ListenerAdapter listener =
         new PircbotxBridgeListenerFactory(
                 new BouncerBackendRegistry(List.<BouncerNetworkMappingStrategy>of()),
@@ -47,7 +48,10 @@ class PircbotxBridgeListenerRosterTest {
                 new NoOpPlaybackCursorProvider(),
                 isupportState,
                 new SojuProperties(Map.of(), new SojuProperties.Discovery(false)),
-                new ZncProperties(Map.of(), new ZncProperties.Discovery(false)))
+                new ZncProperties(Map.of(), new ZncProperties.Discovery(false)),
+                runtime.catalogs(),
+                runtime.serverTime(),
+                runtime.messageTags())
             .create(
                 "libera",
                 new PircbotxConnectionState("libera"),

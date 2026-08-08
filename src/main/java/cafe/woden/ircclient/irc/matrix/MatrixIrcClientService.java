@@ -10,7 +10,7 @@ import cafe.woden.ircclient.irc.IrcEvent;
 import cafe.woden.ircclient.irc.ServerIrcEvent;
 import cafe.woden.ircclient.irc.backend.BackendNotAvailableException;
 import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
-import cafe.woden.ircclient.irc.ircv3.Ircv3Tags;
+import cafe.woden.ircclient.irc.ircv3.Ircv3TypingCommandBuilder;
 import cafe.woden.ircclient.util.RxVirtualSchedulers;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.core.Flowable;
@@ -20,7 +20,6 @@ import io.reactivex.rxjava3.processors.PublishProcessor;
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -33,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import org.jmolecules.architecture.layered.InfrastructureLayer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 /** Matrix backend with homeserver probe + token or username/password session bootstrap. */
@@ -93,10 +93,12 @@ public class MatrixIrcClientService implements IrcBackendRuntimeClientService {
   private final MatrixHistoryCursorCoordinator historyCursorCoordinator;
   private final MatrixLocalEchoEmitter localEchoEmitter;
   private final MatrixSyncClient syncClient;
+  private final MatrixIrcv3RuntimeSupport ircv3RuntimeSupport;
   private final Map<String, String> availabilityReasonByServer = new ConcurrentHashMap<>();
   private final Map<String, MatrixSession> sessionsByServer = new ConcurrentHashMap<>();
   private final AtomicLong transactionSequence = new AtomicLong();
 
+  @Autowired
   public MatrixIrcClientService(
       ServerCatalog serverCatalog,
       MatrixHomeserverProbe homeserverProbe,
@@ -114,7 +116,8 @@ public class MatrixIrcClientService implements IrcBackendRuntimeClientService {
       MatrixDirectRoomResolver directRoomResolver,
       MatrixMediaUploadClient mediaUploadClient,
       MatrixRoomMessageSender roomMessageSender,
-      MatrixSyncClient syncClient) {
+      MatrixSyncClient syncClient,
+      MatrixIrcv3RuntimeSupport ircv3RuntimeSupport) {
     this.serverCatalog = Objects.requireNonNull(serverCatalog, "serverCatalog");
     this.homeserverProbe = Objects.requireNonNull(homeserverProbe, "homeserverProbe");
     this.loginClient = Objects.requireNonNull(loginClient, "loginClient");
@@ -153,6 +156,8 @@ public class MatrixIrcClientService implements IrcBackendRuntimeClientService {
     this.rawLookupCommandHandler =
         new MatrixRawLookupCommandHandler(this::whois, this::requestNames, this::whowas);
     this.syncClient = Objects.requireNonNull(syncClient, "syncClient");
+    this.ircv3RuntimeSupport =
+        Objects.requireNonNull(ircv3RuntimeSupport, "ircv3RuntimeSupport");
     this.syncTimelineEventProjector = new MatrixSyncTimelineEventProjector(bus::onNext);
     this.syncSignalEventProjector = new MatrixSyncSignalEventProjector(bus::onNext);
     this.syncMutationEventProjector = new MatrixSyncMutationEventProjector(bus::onNext);
@@ -912,7 +917,7 @@ public class MatrixIrcClientService implements IrcBackendRuntimeClientService {
                     backendAvailabilityReason(sid));
               }
 
-              String normalizedState = normalizeTypingState(state);
+              String normalizedState = Ircv3TypingCommandBuilder.normalizeState(state);
               if (normalizedState.isEmpty()) {
                 return;
               }
@@ -1662,17 +1667,20 @@ public class MatrixIrcClientService implements IrcBackendRuntimeClientService {
   private Completable sendRawPrivmsg(String serverId, String rawLine, RawCommand raw) {
     String target = argOrBlank(raw, 0, "PRIVMSG requires target and message");
     String message = joinArgs(raw.arguments(), 1);
-    Map<String, String> tags = parseRawTags(rawLine);
+    Map<String, String> tags = ircv3RuntimeSupport.messageTags(rawLine);
     String matrixMsgType = rawMatrixMsgType(tags);
     if (message.isEmpty() && matrixMsgType.isEmpty()) {
       throw new IllegalArgumentException("PRIVMSG requires target and message");
     }
-    String editTarget = normalize(tags.get(MatrixProtocol.TAG_DRAFT_EDIT));
+    String editTarget =
+        ircv3RuntimeSupport.messageEditTarget(
+            raw.command(), target, raw.arguments(), tags, rawLine);
     if (!editTarget.isEmpty()) {
       return sendRawEdit(serverId, target, editTarget, message);
     }
     String replyTarget =
-        Ircv3Tags.firstTagValue(tags, MatrixProtocol.TAG_REPLY, MatrixProtocol.TAG_DRAFT_REPLY);
+        ircv3RuntimeSupport.replyTarget(
+            raw.command(), target, raw.arguments(), tags, rawLine);
     if (!replyTarget.isEmpty()) {
       return sendRawReply(serverId, target, replyTarget, message);
     }
@@ -1697,13 +1705,16 @@ public class MatrixIrcClientService implements IrcBackendRuntimeClientService {
     if (message.isEmpty()) {
       throw new IllegalArgumentException("NOTICE requires target and message");
     }
-    Map<String, String> tags = parseRawTags(rawLine);
-    String editTarget = normalize(tags.get(MatrixProtocol.TAG_DRAFT_EDIT));
+    Map<String, String> tags = ircv3RuntimeSupport.messageTags(rawLine);
+    String editTarget =
+        ircv3RuntimeSupport.messageEditTarget(
+            raw.command(), target, raw.arguments(), tags, rawLine);
     if (!editTarget.isEmpty()) {
       return sendRawEdit(serverId, target, editTarget, message);
     }
     String replyTarget =
-        Ircv3Tags.firstTagValue(tags, MatrixProtocol.TAG_REPLY, MatrixProtocol.TAG_DRAFT_REPLY);
+        ircv3RuntimeSupport.replyTarget(
+            raw.command(), target, raw.arguments(), tags, rawLine);
     if (!replyTarget.isEmpty()) {
       return sendRawReply(serverId, target, replyTarget, message);
     }
@@ -1916,25 +1927,29 @@ public class MatrixIrcClientService implements IrcBackendRuntimeClientService {
 
   private Completable sendRawTagmsg(String serverId, String rawLine, RawCommand raw) {
     String target = argOrBlank(raw, 0, "TAGMSG requires a target");
-    Map<String, String> tags = parseRawTags(rawLine);
-    String replyTarget =
-        Ircv3Tags.firstTagValue(tags, MatrixProtocol.TAG_REPLY, MatrixProtocol.TAG_DRAFT_REPLY);
-    String reaction = normalize(tags.get(MatrixProtocol.TAG_DRAFT_REACT));
-    String unreaction = normalize(tags.get(MatrixProtocol.TAG_DRAFT_UNREACT));
-    if (!reaction.isEmpty() && !unreaction.isEmpty()) {
+    Map<String, String> tags = ircv3RuntimeSupport.messageTags(rawLine);
+    MatrixIrcv3RuntimeSupport.ReactionPlan reactionPlan =
+        ircv3RuntimeSupport.reaction(
+            raw.command(), target, raw.arguments(), tags, rawLine);
+    if (reactionPlan.type() == MatrixIrcv3RuntimeSupport.ReactionType.AMBIGUOUS) {
       throw new IllegalArgumentException(
           "TAGMSG cannot include both +draft/react and +draft/unreact");
     }
-    if (!reaction.isEmpty() || !unreaction.isEmpty()) {
-      if (replyTarget.isEmpty()) {
+    if (reactionPlan.type() == MatrixIrcv3RuntimeSupport.ReactionType.REACT
+        || reactionPlan.type() == MatrixIrcv3RuntimeSupport.ReactionType.UNREACT) {
+      if (reactionPlan.messageId().isEmpty()) {
         throw new IllegalArgumentException("TAGMSG draft reactions require +reply=<msgid>");
       }
-      if (!reaction.isEmpty()) {
-        return sendRawReaction(serverId, target, replyTarget, reaction);
+      if (reactionPlan.type() == MatrixIrcv3RuntimeSupport.ReactionType.REACT) {
+        return sendRawReaction(
+            serverId, target, reactionPlan.messageId(), reactionPlan.reaction());
       }
-      return sendRawUnreaction(serverId, target, replyTarget, unreaction);
+      return sendRawUnreaction(
+          serverId, target, reactionPlan.messageId(), reactionPlan.reaction());
     }
-    String typingState = normalizeTypingState(rawTypingTagValue(tags));
+    String typingState =
+        ircv3RuntimeSupport.typingState(
+            raw.command(), target, raw.arguments(), tags, rawLine);
     if (typingState.isEmpty()) {
       throw new IllegalArgumentException("TAGMSG requires +typing=<active|paused|done>");
     }
@@ -2567,19 +2582,6 @@ public class MatrixIrcClientService implements IrcBackendRuntimeClientService {
         .collect(java.util.stream.Collectors.joining(" "));
   }
 
-  private static String normalizeTypingState(String state) {
-    String normalized = normalize(state).toLowerCase(Locale.ROOT);
-    if (normalized.isEmpty()) {
-      return "";
-    }
-    return switch (normalized) {
-      case "active", "composing" -> "active";
-      case "paused" -> "paused";
-      case "done", "inactive" -> "done";
-      default -> "";
-    };
-  }
-
   private static int parseRawChatHistoryLimit(String rawValue) {
     String token = normalize(rawValue);
     if (!looksLikeInteger(token)) {
@@ -2612,17 +2614,6 @@ public class MatrixIrcClientService implements IrcBackendRuntimeClientService {
       }
     }
     return true;
-  }
-
-  private static String rawTypingTagValue(Map<String, String> tags) {
-    if (tags == null || tags.isEmpty()) {
-      return "";
-    }
-    String plus = normalize(tags.get("+typing"));
-    if (!plus.isEmpty()) {
-      return plus;
-    }
-    return normalize(tags.get("typing"));
   }
 
   private static String rawMatrixMsgType(Map<String, String> tags) {
@@ -2670,40 +2661,6 @@ public class MatrixIrcClientService implements IrcBackendRuntimeClientService {
 
   private static boolean isMatrixMediaMsgType(String msgType) {
     return MatrixProtocol.MEDIA_MSGTYPES.contains(normalize(msgType));
-  }
-
-  private static Map<String, String> parseRawTags(String rawLine) {
-    String line = Objects.toString(rawLine, "");
-    if (!line.startsWith("@")) {
-      return Map.of();
-    }
-    int firstSpace = line.indexOf(' ');
-    if (firstSpace <= 1) {
-      return Map.of();
-    }
-
-    String rawTags = line.substring(1, firstSpace);
-    if (rawTags.isEmpty()) {
-      return Map.of();
-    }
-
-    Map<String, String> tags = new HashMap<>();
-    for (String token : rawTags.split(";")) {
-      String entry = normalize(token);
-      if (entry.isEmpty()) continue;
-      int eq = entry.indexOf('=');
-      String key = eq < 0 ? entry : normalize(entry.substring(0, eq));
-      if (key.isEmpty()) continue;
-      String value = eq < 0 ? "" : entry.substring(eq + 1);
-      tags.put(key, value);
-      if (key.startsWith("+") && key.length() > 1) {
-        tags.put(key.substring(1), value);
-      }
-    }
-    if (tags.isEmpty()) {
-      return Map.of();
-    }
-    return Map.copyOf(tags);
   }
 
   private Completable rawCommandUnsupported(String serverId, String command) {

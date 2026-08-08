@@ -59,7 +59,7 @@ class QuasselCoreIrcv3ReplayFixtureTest {
             new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of(11, chan)));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
     service.connect("quassel").blockingAwait();

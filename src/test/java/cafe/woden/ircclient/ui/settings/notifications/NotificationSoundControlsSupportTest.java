@@ -1,9 +1,11 @@
 package cafe.woden.ircclient.ui.settings.notifications;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 import cafe.woden.ircclient.model.BuiltInSound;
 import cafe.woden.ircclient.notify.api.NotificationSoundPort;
@@ -43,6 +45,32 @@ class NotificationSoundControlsSupportTest {
     controls.testSound().doClick();
 
     verify(soundPort).previewCustom("sounds/custom.wav");
+  }
+
+  @Test
+  void skipsCustomPreviewWhenCustomPathIsBlank() {
+    NotificationSoundPort soundPort = mock(NotificationSoundPort.class);
+    NotificationSoundControlsSupport.Controls controls =
+        controls(soundPort, true, true, true, false);
+
+    controls.testSound().doClick();
+
+    verifyNoInteractions(soundPort);
+  }
+
+  @Test
+  void clearCustomSoundResetsSelectionState() {
+    NotificationSoundControlsSupport.Controls controls =
+        controls(mock(NotificationSoundPort.class), true, true, true, true);
+    controls.customPath().setText("sounds/custom.wav");
+    controls.refresh();
+
+    controls.clearCustom().doClick();
+
+    assertFalse(controls.useCustom().isSelected());
+    assertEquals("", controls.customPath().getText());
+    assertFalse(controls.customPath().isEnabled());
+    assertFalse(controls.browseCustom().isEnabled());
   }
 
   @Test

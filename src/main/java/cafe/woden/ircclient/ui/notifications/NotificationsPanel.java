@@ -6,6 +6,29 @@ import cafe.woden.ircclient.notifications.api.IrcEventRuleEvent;
 import cafe.woden.ircclient.notifications.api.NotificationEvent;
 import cafe.woden.ircclient.notifications.api.NotificationStorePort;
 import cafe.woden.ircclient.notifications.api.RuleMatchEvent;
+import cafe.woden.ircclient.notify.api.panel.NotificationPanelActionStatePlan;
+import cafe.woden.ircclient.notify.api.panel.NotificationPanelActionStatePlanner;
+import cafe.woden.ircclient.notify.api.panel.NotificationPanelClearActionPlan;
+import cafe.woden.ircclient.notify.api.panel.NotificationPanelClearActionPlanner;
+import cafe.woden.ircclient.notify.api.panel.NotificationPanelCsvExportPolicy;
+import cafe.woden.ircclient.notify.api.panel.NotificationPanelCsvWritePlan;
+import cafe.woden.ircclient.notify.api.panel.NotificationPanelCsvWritePlanner;
+import cafe.woden.ircclient.notify.api.panel.NotificationPanelDisplayPolicy;
+import cafe.woden.ircclient.notify.api.panel.NotificationPanelEventRowPlan;
+import cafe.woden.ircclient.notify.api.panel.NotificationPanelEventRowPlanner;
+import cafe.woden.ircclient.notify.api.panel.NotificationPanelExportFilePlanner;
+import cafe.woden.ircclient.notify.api.panel.NotificationPanelJumpToMessagePlan;
+import cafe.woden.ircclient.notify.api.panel.NotificationPanelJumpToMessagePlanner;
+import cafe.woden.ircclient.notify.api.panel.NotificationPanelPointerPolicy;
+import cafe.woden.ircclient.notify.api.panel.NotificationPanelPopupSelectionPlan;
+import cafe.woden.ircclient.notify.api.panel.NotificationPanelPopupSelectionPlanner;
+import cafe.woden.ircclient.notify.api.panel.NotificationPanelRefreshPlan;
+import cafe.woden.ircclient.notify.api.panel.NotificationPanelRefreshPlanner;
+import cafe.woden.ircclient.notify.api.panel.NotificationPanelRowAccessPlan;
+import cafe.woden.ircclient.notify.api.panel.NotificationPanelRowAccessPlanner;
+import cafe.woden.ircclient.notify.api.panel.NotificationPanelTargetPlan;
+import cafe.woden.ircclient.notify.api.panel.NotificationPanelTargetPlanner;
+import cafe.woden.ircclient.notify.api.panel.NotificationPanelViewRowsPlanner;
 import cafe.woden.ircclient.ui.icons.SvgIcons;
 import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.util.PopupMenuThemeSupport;
@@ -23,11 +46,8 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.time.Instant;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -114,12 +134,14 @@ public class NotificationsPanel extends JPanel implements AutoCloseable {
         new MouseAdapter() {
           @Override
           public void mouseClicked(MouseEvent e) {
-            if (e == null || e.getButton() != MouseEvent.BUTTON1 || e.isPopupTrigger()) return;
+            if (e == null) return;
             int viewRow = table.rowAtPoint(e.getPoint());
             int viewCol = table.columnAtPoint(e.getPoint());
-            if (viewRow < 0 || viewCol < 0) return;
-            int modelCol = table.convertColumnIndexToModel(viewCol);
-            if (modelCol != COL_CHANNEL) return;
+            int modelCol = viewCol < 0 ? -1 : table.convertColumnIndexToModel(viewCol);
+            if (!NotificationPanelPointerPolicy.shouldActivateChannelCell(
+                e.getButton(), e.isPopupTrigger(), viewRow, modelCol, COL_CHANNEL)) {
+              return;
+            }
 
             Row row = rowAtView(viewRow);
             TargetRef target = targetRefForRow(row);
@@ -147,7 +169,8 @@ public class NotificationsPanel extends JPanel implements AutoCloseable {
             int viewRow = table.rowAtPoint(e.getPoint());
             int viewCol = table.columnAtPoint(e.getPoint());
             int modelCol = viewCol < 0 ? -1 : table.convertColumnIndexToModel(viewCol);
-            boolean overLink = viewRow >= 0 && modelCol == COL_CHANNEL;
+            boolean overLink =
+                NotificationPanelPointerPolicy.isChannelCell(viewRow, modelCol, COL_CHANNEL);
             table.setCursor(
                 overLink
                     ? Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
@@ -182,9 +205,9 @@ public class NotificationsPanel extends JPanel implements AutoCloseable {
             .changes()
             .subscribe(
                 change -> {
-                  String sid = NotificationsPanel.this.serverId;
-                  if (sid == null || sid.isBlank()) return;
-                  if (!sid.equals(change.serverId())) return;
+                  NotificationPanelRefreshPlan plan =
+                      NotificationPanelRefreshPlanner.plan(NotificationsPanel.this.serverId);
+                  if (!plan.appliesTo(change.serverId())) return;
                   SwingUtilities.invokeLater(NotificationsPanel.this::refresh);
                 },
                 err -> {
@@ -212,45 +235,47 @@ public class NotificationsPanel extends JPanel implements AutoCloseable {
 
   /** Force a reload of table contents from the store. */
   public void refresh() {
-    String sid = Objects.toString(serverId, "").trim();
-    if (sid.isEmpty()) {
+    NotificationPanelRefreshPlan refreshPlan = NotificationPanelRefreshPlanner.plan(serverId);
+    if (!refreshPlan.valid()) {
       model.setRows(List.of());
       updateActionState();
       return;
     }
+    String sid = refreshPlan.serverId();
 
     List<Row> rows = new ArrayList<>();
 
     List<HighlightEvent> highlights = store.listAll(sid);
     for (HighlightEvent event : highlights) {
       if (event != null) {
-        rows.add(new Row(event, message("notifications.match.mention"), event.snippet()));
+        NotificationPanelEventRowPlan plan =
+            NotificationPanelEventRowPlanner.highlight(
+                message("notifications.match.mention"), event.snippet());
+        rows.add(new Row(event, plan.match(), plan.snippet()));
       }
     }
 
     List<RuleMatchEvent> rules = store.listAllRuleMatches(sid);
     for (RuleMatchEvent event : rules) {
       if (event != null) {
-        rows.add(new Row(event, event.ruleLabel(), event.snippet()));
+        NotificationPanelEventRowPlan plan =
+            NotificationPanelEventRowPlanner.ruleMatch(event.ruleLabel(), event.snippet());
+        rows.add(new Row(event, plan.match(), plan.snippet()));
       }
     }
 
     List<IrcEventRuleEvent> ircEvents = store.listAllIrcEventRules(sid);
     for (IrcEventRuleEvent event : ircEvents) {
       if (event != null) {
-        rows.add(new Row(event, event.title(), event.body()));
+        NotificationPanelEventRowPlan plan =
+            NotificationPanelEventRowPlanner.ircEvent(event.title(), event.body());
+        rows.add(new Row(event, plan.match(), plan.snippet()));
       }
     }
 
     rows.sort(
-        (left, right) -> {
-          Instant leftAt = left.at();
-          Instant rightAt = right.at();
-          if (leftAt == null && rightAt == null) return 0;
-          if (leftAt == null) return 1;
-          if (rightAt == null) return -1;
-          return rightAt.compareTo(leftAt);
-        });
+        (left, right) ->
+            NotificationPanelEventRowPlanner.compareNewestFirst(left.at(), right.at()));
     model.setRows(rows);
     updateActionState();
   }
@@ -261,13 +286,15 @@ public class NotificationsPanel extends JPanel implements AutoCloseable {
   }
 
   private void maybeShowRowMenu(MouseEvent e) {
-    if (e == null || !e.isPopupTrigger()) return;
+    if (e == null) return;
     int viewRow = table.rowAtPoint(e.getPoint());
-    if (viewRow >= 0) {
-      if (!table.isRowSelected(viewRow)) {
-        table.setRowSelectionInterval(viewRow, viewRow);
-      }
-    } else {
+    boolean rowSelected = viewRow >= 0 && table.isRowSelected(viewRow);
+    NotificationPanelPopupSelectionPlan plan =
+        NotificationPanelPopupSelectionPlanner.plan(e.isPopupTrigger(), viewRow, rowSelected);
+    if (!plan.showMenu()) return;
+    if (plan.selectRow()) {
+      table.setRowSelectionInterval(plan.rowToSelect(), plan.rowToSelect());
+    } else if (plan.clearSelection()) {
       table.clearSelection();
     }
     updateActionState();
@@ -276,44 +303,44 @@ public class NotificationsPanel extends JPanel implements AutoCloseable {
   }
 
   private void updateActionState() {
-    boolean hasRows = model.getRowCount() > 0;
-    boolean hasSelection = table.getSelectedRowCount() > 0;
     Row selectedRow = selectedSingleRow();
-    boolean canJump = false;
-    if (selectedRow != null) {
-      String messageId = Objects.toString(selectedRow.messageId(), "").trim();
-      canJump = !messageId.isEmpty() && targetRefForRow(selectedRow) != null;
-    }
+    NotificationPanelActionStatePlan plan =
+        NotificationPanelActionStatePlanner.plan(
+            model.getRowCount(),
+            table.getSelectedRowCount(),
+            selectedRow != null ? selectedRow.messageId() : null,
+            targetPlanForRow(selectedRow).valid());
 
-    jumpToMessageMenuItem.setEnabled(canJump);
-    clearSelectedMenuItem.setEnabled(hasSelection);
-    clearAllMenuItem.setEnabled(hasRows);
-    exportSelectedMenuItem.setEnabled(hasSelection);
-    exportAllMenuItem.setEnabled(hasRows);
+    jumpToMessageMenuItem.setEnabled(plan.jumpToMessageEnabled());
+    clearSelectedMenuItem.setEnabled(plan.clearSelectedEnabled());
+    clearAllMenuItem.setEnabled(plan.clearAllEnabled());
+    exportSelectedMenuItem.setEnabled(plan.exportSelectedEnabled());
+    exportAllMenuItem.setEnabled(plan.exportAllEnabled());
   }
 
   private void clearSelectedRows() {
-    String sid = Objects.toString(serverId, "").trim();
-    if (sid.isEmpty()) return;
     List<NotificationEvent> selectedEvents = selectedEvents();
-    if (selectedEvents.isEmpty()) return;
-    store.clearSelected(sid, selectedEvents);
+    NotificationPanelClearActionPlan plan =
+        NotificationPanelClearActionPlanner.clearSelected(serverId, selectedEvents.size());
+    if (!plan.clear()) return;
+    store.clearSelected(plan.serverId(), selectedEvents);
   }
 
   private void clearAllRows() {
-    String sid = Objects.toString(serverId, "").trim();
-    if (sid.isEmpty() || model.getRowCount() <= 0) return;
-    store.clearServer(sid);
+    NotificationPanelClearActionPlan plan =
+        NotificationPanelClearActionPlanner.clearAll(serverId, model.getRowCount());
+    if (!plan.clear()) return;
+    store.clearServer(plan.serverId());
   }
 
   private void jumpToSelectedMessage() {
     Row row = selectedSingleRow();
     TargetRef target = targetRefForRow(row);
-    if (row == null || target == null) return;
-
-    String messageId = Objects.toString(row.messageId(), "").trim();
-    if (messageId.isEmpty()) return;
-    onJumpToMessage.accept(target, messageId);
+    NotificationPanelJumpToMessagePlan plan =
+        NotificationPanelJumpToMessagePlanner.plan(
+            target != null, row != null ? row.messageId() : null);
+    if (!plan.jump()) return;
+    onJumpToMessage.accept(target, plan.messageId());
   }
 
   private void exportSelectedToCsv() {
@@ -340,11 +367,7 @@ public class NotificationsPanel extends JPanel implements AutoCloseable {
     File selected = chooser.getSelectedFile();
     if (selected == null) return;
 
-    Path path = selected.toPath();
-    String fileName = path.getFileName() == null ? "" : path.getFileName().toString();
-    if (!fileName.toLowerCase(Locale.ROOT).endsWith(".csv")) {
-      path = path.resolveSibling(fileName + ".csv");
-    }
+    Path path = NotificationPanelExportFilePlanner.ensureCsvExtension(selected.toPath());
 
     try {
       writeCsv(path, viewRows);
@@ -359,19 +382,20 @@ public class NotificationsPanel extends JPanel implements AutoCloseable {
   }
 
   private void writeCsv(Path path, List<Integer> viewRows) throws Exception {
-    if (path == null) {
+    NotificationPanelCsvWritePlan plan = NotificationPanelCsvWritePlanner.plan(path, viewRows);
+    if (plan.outputPathRequired()) {
       throw new IllegalArgumentException(message("notifications.export.error.outputPathRequired"));
     }
-    if (viewRows == null || viewRows.isEmpty()) {
+    if (plan.rowRequired()) {
       throw new IllegalArgumentException(message("notifications.export.error.rowRequired"));
     }
-    if (path.getParent() != null) {
-      Files.createDirectories(path.getParent());
+    if (plan.path().getParent() != null) {
+      Files.createDirectories(plan.path().getParent());
     }
 
     try (var out =
         Files.newBufferedWriter(
-            path,
+            plan.path(),
             StandardCharsets.UTF_8,
             StandardOpenOption.CREATE,
             StandardOpenOption.TRUNCATE_EXISTING,
@@ -381,10 +405,10 @@ public class NotificationsPanel extends JPanel implements AutoCloseable {
       for (int viewCol = 0; viewCol < viewColumnCount; viewCol++) {
         headers.add(Objects.toString(table.getColumnName(viewCol), ""));
       }
-      out.write(joinCsv(headers));
+      out.write(NotificationPanelCsvExportPolicy.joinRow(headers));
       out.newLine();
 
-      for (int viewRow : viewRows) {
+      for (int viewRow : plan.viewRows()) {
         if (viewRow < 0 || viewRow >= table.getRowCount()) continue;
         int modelRow = table.convertRowIndexToModel(viewRow);
         ArrayList<String> row = new ArrayList<>(viewColumnCount);
@@ -392,33 +416,18 @@ public class NotificationsPanel extends JPanel implements AutoCloseable {
           int modelCol = table.convertColumnIndexToModel(viewCol);
           row.add(Objects.toString(model.getValueAt(modelRow, modelCol), ""));
         }
-        out.write(joinCsv(row));
+        out.write(NotificationPanelCsvExportPolicy.joinRow(row));
         out.newLine();
       }
     }
   }
 
   private List<Integer> allViewRows() {
-    int rowCount = table.getRowCount();
-    if (rowCount <= 0) return List.of();
-    ArrayList<Integer> rows = new ArrayList<>(rowCount);
-    for (int viewRow = 0; viewRow < rowCount; viewRow++) {
-      rows.add(viewRow);
-    }
-    return rows;
+    return NotificationPanelViewRowsPlanner.allRows(table.getRowCount());
   }
 
   private List<Integer> selectedViewRows() {
-    int[] selectedRows = table.getSelectedRows();
-    if (selectedRows == null || selectedRows.length == 0) return List.of();
-    Arrays.sort(selectedRows);
-    ArrayList<Integer> rows = new ArrayList<>(selectedRows.length);
-    for (int selectedRow : selectedRows) {
-      if (selectedRow >= 0) {
-        rows.add(selectedRow);
-      }
-    }
-    return rows;
+    return NotificationPanelViewRowsPlanner.selectedRows(table.getSelectedRows());
   }
 
   private List<NotificationEvent> selectedEvents() {
@@ -437,42 +446,37 @@ public class NotificationsPanel extends JPanel implements AutoCloseable {
   }
 
   private Row selectedSingleRow() {
-    if (table.getSelectedRowCount() != 1) return null;
-    return rowAtView(table.getSelectedRow());
+    NotificationPanelRowAccessPlan plan =
+        NotificationPanelRowAccessPlanner.selectedSingleRow(
+            table.getSelectedRowCount(), table.getSelectedRow(), table.getRowCount());
+    if (!plan.valid()) return null;
+    return rowAtView(plan.viewRow());
   }
 
   private Row rowAtView(int viewRow) {
-    if (viewRow < 0 || viewRow >= table.getRowCount()) return null;
-    int modelRow = table.convertRowIndexToModel(viewRow);
+    NotificationPanelRowAccessPlan plan =
+        NotificationPanelRowAccessPlanner.rowAtView(viewRow, table.getRowCount());
+    if (!plan.valid()) return null;
+    int modelRow = table.convertRowIndexToModel(plan.viewRow());
     return model.rowAt(modelRow);
   }
 
   private TargetRef targetRefForRow(Row row) {
-    if (row == null || row.event() == null) return null;
-    String sid = Objects.toString(row.event().serverId(), "").trim();
-    if (sid.isEmpty()) {
-      sid = Objects.toString(serverId, "").trim();
-    }
-    String channel = Objects.toString(row.channel(), "").trim();
-    if (sid.isEmpty() || channel.isEmpty()) return null;
-    return new TargetRef(sid, channel);
+    NotificationPanelTargetPlan plan = targetPlanForRow(row);
+    if (!plan.valid()) return null;
+    return new TargetRef(plan.serverId(), plan.channel());
+  }
+
+  private NotificationPanelTargetPlan targetPlanForRow(Row row) {
+    return NotificationPanelTargetPlanner.plan(
+        row != null && row.event() != null ? row.event().serverId() : null,
+        serverId,
+        row != null ? row.channel() : null);
   }
 
   private String defaultExportFileName(boolean selectedOnly) {
-    String sid = Objects.toString(serverId, "").trim();
-    if (sid.isEmpty()) sid = "server";
-    sid = sid.replaceAll("[^A-Za-z0-9._-]+", "_");
-    String ts =
-        DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss", Locale.ROOT)
-            .withZone(ZoneId.systemDefault())
-            .format(Instant.now());
-    return "ircafe-notifications"
-        + (selectedOnly ? "-selected" : "")
-        + "-"
-        + sid
-        + "-"
-        + ts
-        + ".csv";
+    return NotificationPanelExportFilePlanner.defaultFileName(
+        selectedOnly, serverId, Instant.now(), ZoneId.systemDefault());
   }
 
   private static String message(String code, Object... args) {
@@ -485,24 +489,6 @@ public class NotificationsPanel extends JPanel implements AutoCloseable {
     item.setDisabledIcon(SvgIcons.actionDisabled(iconName, 16));
   }
 
-  private static String joinCsv(List<String> cols) {
-    if (cols == null || cols.isEmpty()) return "";
-    StringBuilder sb = new StringBuilder(cols.size() * 24);
-    for (int i = 0; i < cols.size(); i++) {
-      if (i > 0) sb.append(',');
-      sb.append(csvCell(cols.get(i)));
-    }
-    return sb.toString();
-  }
-
-  private static String csvCell(String value) {
-    String s = Objects.toString(value, "");
-    boolean needsQuote =
-        s.indexOf(',') >= 0 || s.indexOf('"') >= 0 || s.indexOf('\n') >= 0 || s.indexOf('\r') >= 0;
-    if (!needsQuote) return s;
-    return "\"" + s.replace("\"", "\"\"") + "\"";
-  }
-
   private static final class NotificationsTableModel extends AbstractTableModel {
 
     private static final String[] COL_KEYS = {
@@ -512,9 +498,6 @@ public class NotificationsPanel extends JPanel implements AutoCloseable {
       "notifications.column.match",
       "notifications.column.snippet"
     };
-    private static final DateTimeFormatter TIME_FMT =
-        DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault());
-
     private List<Row> rows = List.of();
 
     void setRows(List<Row> rows) {
@@ -558,12 +541,7 @@ public class NotificationsPanel extends JPanel implements AutoCloseable {
     }
 
     private static String formatTime(Instant at) {
-      if (at == null) return "";
-      try {
-        return TIME_FMT.format(at);
-      } catch (Exception e) {
-        return at.toString();
-      }
+      return NotificationPanelDisplayPolicy.formatTime(at, ZoneId.systemDefault());
     }
   }
 
@@ -593,18 +571,10 @@ public class NotificationsPanel extends JPanel implements AutoCloseable {
       JLabel c =
           (JLabel)
               super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-      String s = Objects.toString(value, "");
-      c.setText("<html><u>" + escapeHtml(s) + "</u></html>");
+      String s = NotificationPanelDisplayPolicy.plainText(value);
+      c.setText(NotificationPanelDisplayPolicy.underlinedHtml(s));
       c.setToolTipText(s);
       return c;
-    }
-
-    private static String escapeHtml(String s) {
-      if (s == null) return "";
-      return s.replace("&", "&amp;")
-          .replace("<", "&lt;")
-          .replace(">", "&gt;")
-          .replace("\"", "&quot;");
     }
   }
 }

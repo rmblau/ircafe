@@ -48,14 +48,46 @@ class Ircv3ExtensionCatalogTest {
   void runtimeCatalogPreservesClasspathSpiExtensionProviders() {
     Ircv3ExtensionCatalog catalog = new Ircv3ExtensionCatalog(new RecordingInstalledPluginsPort());
 
+    assertTrue(catalog.providerIds().contains("message-tags"));
+    assertTrue(catalog.providerIds().contains("server-time"));
+    assertTrue(catalog.providerIds().contains("echo-message"));
+    assertTrue(catalog.providerIds().contains("standard-replies"));
+    assertTrue(catalog.providerIds().contains("labeled-response"));
+    assertTrue(catalog.providerIds().contains("away-notify"));
+    assertTrue(catalog.providerIds().contains("account-notify"));
+    assertTrue(catalog.providerIds().contains("extended-join"));
+    assertTrue(catalog.providerIds().contains("chghost"));
+    assertTrue(catalog.providerIds().contains("setname"));
+    assertTrue(catalog.providerIds().contains("invite-notify"));
+    assertTrue(catalog.providerIds().contains("monitor"));
+    assertTrue(catalog.providerIds().contains("extended-monitor"));
+    assertTrue(catalog.providerIds().contains("account-tag"));
+    assertTrue(catalog.providerIds().contains("multi-prefix"));
+    assertTrue(catalog.providerIds().contains("userhost-in-names"));
+    assertFalse(catalog.providerIds().contains("names"));
+    assertTrue(catalog.providerIds().contains("cap-notify"));
+    assertFalse(catalog.providerIds().contains("negotiation"));
+    assertTrue(catalog.providerIds().contains("batch"));
+    assertTrue(catalog.providerIds().contains("znc-playback"));
+    assertFalse(catalog.providerIds().contains("history-transport"));
     assertTrue(catalog.providerIds().contains("read-marker"));
     assertTrue(catalog.providerIds().contains("multiline"));
     assertTrue(catalog.providerIds().contains("message-redaction"));
     assertTrue(catalog.providerIds().contains("chathistory"));
+    assertTrue(catalog.providerIds().contains("reply"));
+    assertTrue(catalog.providerIds().contains("reactions"));
+    assertTrue(catalog.providerIds().contains("typing"));
+    assertTrue(catalog.providerIds().contains("channel-context"));
+    assertTrue(catalog.providerIds().contains("message-edit"));
     assertEquals("draft/read-marker", catalog.requestTokenFor("read-marker"));
     assertEquals("draft/multiline", catalog.requestTokenFor("multiline"));
     assertEquals("draft/message-redaction", catalog.requestTokenFor("message-redaction"));
     assertEquals("draft/chathistory", catalog.requestTokenFor("chathistory"));
+    assertEquals("reply", catalog.preferenceKeyFor("draft/reply"));
+    assertEquals("react", catalog.preferenceKeyFor("draft/react"));
+    assertEquals("typing", catalog.preferenceKeyFor("draft/typing"));
+    assertEquals("channel-context", catalog.preferenceKeyFor("draft/channel-context"));
+    assertEquals("message-edit", catalog.preferenceKeyFor("draft/message-edit"));
   }
 
   @Test
@@ -105,7 +137,7 @@ class Ircv3ExtensionCatalogTest {
                   @Override
                   public List<Ircv3ExtensionContribution> extensions() {
                     return List.of(
-                        Ircv3ExtensionProviderSupport.capability(
+                        Ircv3TestExtensionContributions.capability(
                             "plugin-conflict-cap",
                             Ircv3SpecStatus.DRAFT,
                             "echo-message",

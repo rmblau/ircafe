@@ -30,6 +30,8 @@ public final class PircbotxActionEventEmitter {
   @NonNull private final PircbotxChatHistoryBatchCollector chatHistoryBatches;
   @NonNull private final PircbotxPlaybackCaptureRecorder playbackCaptureRecorder;
   @NonNull private final PircbotxPrivateConversationSupport privateConversationSupport;
+  @NonNull private final Ircv3ServerTimeRuntimeSupport serverTimeRuntimeSupport;
+  @NonNull private final Ircv3MessageTagsRuntimeSupport messageTagsRuntimeSupport;
   @NonNull private final Consumer<ServerIrcEvent> emit;
   @NonNull private final Function<PircBotX, String> selfNickResolver;
   @NonNull private final Function<Object, String> privateTargetFromEvent;
@@ -41,13 +43,18 @@ public final class PircbotxActionEventEmitter {
       PircbotxChatHistoryBatchCollector chatHistoryBatches,
       Consumer<ServerIrcEvent> emit,
       Function<PircBotX, String> selfNickResolver,
-      Function<Object, String> privateTargetFromEvent) {
+      Function<Object, String> privateTargetFromEvent,
+      Ircv3ServerTimeRuntimeSupport serverTimeRuntimeSupport,
+      Ircv3MessageTagsRuntimeSupport messageTagsRuntimeSupport,
+      Ircv3HistoryTransportRuntimeSupport historyTransportRuntimeSupport) {
     this(
         serverId,
         rosterEmitter,
         chatHistoryBatches,
         new PircbotxPlaybackCaptureRecorder(conn),
-        new PircbotxPrivateConversationSupport(conn),
+        new PircbotxPrivateConversationSupport(conn, historyTransportRuntimeSupport),
+        serverTimeRuntimeSupport,
+        messageTagsRuntimeSupport,
         emit,
         selfNickResolver,
         privateTargetFromEvent);
@@ -59,15 +66,18 @@ public final class PircbotxActionEventEmitter {
     String botNick = selfNickResolver.apply(event.getBot());
     String pmDest = privateTargetFromEvent.apply(event);
 
-    Optional<String> batchId = Ircv3BatchTag.fromEvent(event);
+    Optional<String> batchId =
+        chatHistoryBatches.batchId(
+            PircbotxEventMetadata.ircv3TagsFromEvent(event, messageTagsRuntimeSupport));
     if (batchId.isPresent()) {
-      Instant at = PircbotxEventMetadata.inboundAt(event);
+      Instant at = PircbotxEventMetadata.inboundAt(event, serverTimeRuntimeSupport);
       String from = (event.getUser() != null) ? event.getUser().getNick() : "";
       String action = PircbotxUtil.safeStr(() -> event.getAction(), "");
       boolean fromSelf =
           botNick != null && !botNick.isBlank() && from != null && from.equalsIgnoreCase(botNick);
-      Map<String, String> tags = PircbotxEventMetadata.ircv3TagsFromEvent(event);
-      String batchMsgId = PircbotxEventMetadata.ircv3MessageId(tags);
+      Map<String, String> tags =
+          PircbotxEventMetadata.ircv3TagsFromEvent(event, messageTagsRuntimeSupport);
+      String batchMsgId = messageTagsRuntimeSupport.messageId(tags);
       if ((pmDest == null || pmDest.isBlank()) && fromSelf) {
         String hinted =
             privateConversationSupport.inferPrivateDestinationFromHints(
@@ -97,13 +107,15 @@ public final class PircbotxActionEventEmitter {
       }
     }
 
-    Instant at = PircbotxEventMetadata.inboundAt(event);
+    Instant at = PircbotxEventMetadata.inboundAt(event, serverTimeRuntimeSupport);
     String from = (event.getUser() != null) ? event.getUser().getNick() : "";
     String action = PircbotxUtil.safeStr(() -> event.getAction(), "");
     boolean fromSelf =
         botNick != null && !botNick.isBlank() && from != null && from.equalsIgnoreCase(botNick);
-    Map<String, String> tags = new HashMap<>(PircbotxEventMetadata.ircv3TagsFromEvent(event));
-    String messageId = PircbotxEventMetadata.ircv3MessageId(tags);
+    Map<String, String> tags =
+        new HashMap<>(
+            PircbotxEventMetadata.ircv3TagsFromEvent(event, messageTagsRuntimeSupport));
+    String messageId = messageTagsRuntimeSupport.messageId(tags);
     if ((pmDest == null || pmDest.isBlank()) && fromSelf) {
       String hinted =
           privateConversationSupport.inferPrivateDestinationFromHints(
@@ -117,7 +129,7 @@ public final class PircbotxActionEventEmitter {
     }
     PircbotxEventMetadata.withObservedHostmaskTag(tags, event.getUser());
     Map<String, String> ircv3Tags = tags;
-    messageId = PircbotxEventMetadata.ircv3MessageId(ircv3Tags);
+    messageId = messageTagsRuntimeSupport.messageId(ircv3Tags);
 
     if (event.getChannel() != null) {
       String channel = event.getChannel().getName();

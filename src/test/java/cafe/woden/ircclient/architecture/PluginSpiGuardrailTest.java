@@ -28,6 +28,11 @@ class PluginSpiGuardrailTest {
       Pattern.compile(
           "@AutoService\\s*\\(\\s*([A-Za-z_$][\\w$]*(?:\\.[A-Za-z_$][\\w$]*)*)\\s*\\.class",
           Pattern.DOTALL);
+  private static final Pattern RAW_SERVICE_LOADER_PATTERN =
+      Pattern.compile(
+          "(?m)^\\s*import\\s+java\\.util\\.(?:ServiceLoader|ServiceConfigurationError)\\s*;"
+              + "|\\b(?:java\\.util\\.)?ServiceLoader\\s*\\.\\s*load\\s*\\(",
+          Pattern.DOTALL);
 
   @Test
   void pluginServiceContractsLiveInSpiPackages() throws IOException {
@@ -71,6 +76,32 @@ class PluginSpiGuardrailTest {
                 .formatted(String.join(System.lineSeparator(), violations)));
   }
 
+  @Test
+  void productionServiceLoaderMechanicsStayCentralized() throws IOException {
+    List<String> violations = new ArrayList<>();
+
+    for (Path sourceRoot : pluginServiceSourceRoots()) {
+      try (Stream<Path> files = Files.walk(sourceRoot)) {
+        for (Path file :
+            files.filter(path -> path.toString().endsWith(".java")).sorted().toList()) {
+          if (isSharedServiceLoaderSupport(file)) {
+            continue;
+          }
+          String source = Files.readString(file);
+          if (RAW_SERVICE_LOADER_PATTERN.matcher(source).find()) {
+            violations.add(sourceRoot.relativize(file).toString());
+          }
+        }
+      }
+    }
+
+    assertTrue(
+        violations.isEmpty(),
+        () ->
+            "Raw ServiceLoader mechanics should stay centralized in PluginServiceLoaderSupport:%n%s"
+                .formatted(String.join(System.lineSeparator(), violations)));
+  }
+
   private static List<Path> pluginServiceDescriptorRoots() throws IOException {
     List<Path> descriptorRoots = new ArrayList<>();
     Path appDescriptorRoot = Path.of("src/main/resources/META-INF/services");
@@ -95,6 +126,10 @@ class PluginSpiGuardrailTest {
     if (Files.isDirectory(appSourceRoot)) {
       sourceRoots.add(appSourceRoot);
     }
+    Path pluginApiSourceRoot = Path.of("ircafe-plugin-api/src/main/java");
+    if (Files.isDirectory(pluginApiSourceRoot)) {
+      sourceRoots.add(pluginApiSourceRoot);
+    }
     try (Stream<Path> paths = Files.list(Path.of("."))) {
       for (Path path : paths.filter(Files::isDirectory).sorted().toList()) {
         Path sourceRoot = path.resolve("src/main/java");
@@ -105,6 +140,10 @@ class PluginSpiGuardrailTest {
       }
     }
     return List.copyOf(sourceRoots);
+  }
+
+  private static boolean isSharedServiceLoaderSupport(Path file) {
+    return file != null && file.endsWith(Path.of("util", "PluginServiceLoaderSupport.java"));
   }
 
   private static void scanPluginServiceContracts(

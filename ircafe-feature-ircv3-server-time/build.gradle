@@ -1,0 +1,7 @@
+apply from: rootProject.file('gradle/ircv3-feature-conventions.gradle')
+
+description = 'IRCafe IRCv3 server-time timestamp policy.'
+
+dependencies {
+    implementation project(':ircafe-feature-ircv3-message-tags')
+}

@@ -6,6 +6,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import cafe.woden.ircclient.app.outbound.TestIrcv3RuntimeSupport;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
@@ -15,7 +16,8 @@ import cafe.woden.ircclient.app.outbound.support.OutboundRawCommandSupport;
 import cafe.woden.ircclient.app.outbound.support.OutboundRawLineCorrelationService;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
-import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.InviteAutoJoinConfigPort;
+import cafe.woden.ircclient.config.api.IrcSessionRuntimeConfigPort;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.ignore.api.IgnoreListCommandPort;
 import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
@@ -46,11 +48,14 @@ class OutboundInviteCommandServiceTest {
   private final LabeledResponseRoutingPort labeledResponseRoutingState =
       mock(LabeledResponseRoutingPort.class);
   private final OutboundRawLineCorrelationService rawLineCorrelationService =
-      new OutboundRawLineCorrelationService(backendCapabilityPolicy, labeledResponseRoutingState);
+      TestIrcv3RuntimeSupport.rawLineCorrelation(
+          backendCapabilityPolicy, labeledResponseRoutingState);
   private final OutboundRawCommandSupport rawCommandSupport =
       new OutboundRawCommandSupport(rawLineCorrelationService);
-  private final ChatCommandRuntimeConfigPort runtimeConfig =
-      mock(ChatCommandRuntimeConfigPort.class);
+  private final IrcSessionRuntimeConfigPort sessionRuntimeConfig =
+      mock(IrcSessionRuntimeConfigPort.class);
+  private final InviteAutoJoinConfigPort inviteAutoJoinConfig =
+      mock(InviteAutoJoinConfigPort.class);
   private final PendingInvitePort pendingInviteState = mock(PendingInvitePort.class);
   private final WhoisRoutingPort whoisRoutingState = mock(WhoisRoutingPort.class);
   private final IgnoreListCommandPort ignoreListService = mock(IgnoreListCommandPort.class);
@@ -61,7 +66,8 @@ class OutboundInviteCommandServiceTest {
           connectionCoordinator,
           targetCoordinator,
           commandTargetPolicy,
-          runtimeConfig,
+          sessionRuntimeConfig,
+          inviteAutoJoinConfig,
           pendingInviteState,
           whoisRoutingState,
           ignoreListService);
@@ -105,7 +111,7 @@ class OutboundInviteCommandServiceTest {
 
     service.handleInviteJoin(disposables, "12");
 
-    verify(runtimeConfig).rememberJoinedChannel("libera", "#ircafe");
+    verify(sessionRuntimeConfig).rememberJoinedChannel("libera", "#ircafe");
     verify(targetCoordinator).syncRuntimeAutoJoinForReconnect("libera");
     verify(irc).joinChannel("libera", "#ircafe");
     verify(pendingInviteState).remove(12L);
@@ -131,7 +137,7 @@ class OutboundInviteCommandServiceTest {
 
     service.handleInviteJoin(disposables, "13");
 
-    verify(runtimeConfig, never()).rememberJoinedChannel("quassel", "#ircafe");
+    verify(sessionRuntimeConfig, never()).rememberJoinedChannel("quassel", "#ircafe");
     verify(targetCoordinator, never()).syncRuntimeAutoJoinForReconnect("quassel");
     verify(irc).joinChannel("quassel", "#ircafe");
     verify(pendingInviteState).remove(13L);
@@ -216,7 +222,7 @@ class OutboundInviteCommandServiceTest {
     service.handleInviteAutoJoin("toggle");
 
     verify(pendingInviteState).setInviteAutoJoinEnabled(true);
-    verify(runtimeConfig).rememberInviteAutoJoinEnabled(true);
+    verify(inviteAutoJoinConfig).rememberInviteAutoJoinEnabled(true);
     verify(ui).appendStatus(status, "(invite)", "Invite auto-join is now enabled.");
   }
 

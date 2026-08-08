@@ -11,15 +11,23 @@ import cafe.woden.ircclient.app.api.MonitorRosterPort;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
+import cafe.woden.ircclient.app.outbound.TestIrcv3RuntimeSupport;
 import cafe.woden.ircclient.app.outbound.backend.OutboundBackendCapabilityPolicy;
 import cafe.woden.ircclient.app.outbound.backend.OutboundBackendFeatureRegistry;
 import cafe.woden.ircclient.app.outbound.support.CommandTargetPolicy;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
+import cafe.woden.ircclient.irc.ircv3.Ircv3MonitorCommandRuntimeSupport;
+import cafe.woden.ircclient.irc.ircv3.Ircv3OutboundCommandRuntimeCatalog;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3OutboundCommandOperation;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3OutboundCommandProvider;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3OutboundCommandRequest;
 import cafe.woden.ircclient.irc.port.IrcNegotiatedFeaturePort;
 import cafe.woden.ircclient.model.TargetRef;
 import io.reactivex.rxjava3.core.Completable;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -57,7 +65,8 @@ class OutboundMonitorCommandServiceTest {
           outboundBackendCapabilityPolicy);
 
   private final OutboundMonitorCommandService service =
-      new OutboundMonitorCommandService(monitorRosterPort, monitorCommandSupport);
+      new OutboundMonitorCommandService(
+          monitorRosterPort, monitorCommandSupport, TestIrcv3RuntimeSupport.monitor());
 
   @AfterEach
   void tearDown() {
@@ -81,6 +90,49 @@ class OutboundMonitorCommandServiceTest {
 
     verify(monitorRosterPort).addNicks("libera", java.util.List.of("alice", "bob"));
     verify(irc).sendRaw("libera", "MONITOR +alice,bob");
+  }
+
+  @Test
+  void installedRuntimeProviderCanReplaceMonitorAddRendering() {
+    TargetRef active = new TargetRef("libera", "#ircafe");
+    when(targetCoordinator.getActiveTarget()).thenReturn(active);
+    when(connectionCoordinator.isConnected("libera")).thenReturn(true);
+    when(monitorRosterPort.parseNickInput("alice,bob"))
+        .thenReturn(List.of("alice", "bob"));
+    when(monitorRosterPort.addNicks("libera", List.of("alice", "bob"))).thenReturn(2);
+    when(irc.isMonitorAvailable("libera")).thenReturn(true);
+    when(irc.negotiatedMonitorLimit("libera")).thenReturn(25);
+    when(irc.sendRaw("libera", "PLUGIN MONITOR alice|bob"))
+        .thenReturn(Completable.complete());
+
+    Ircv3OutboundCommandProvider provider =
+        new Ircv3OutboundCommandProvider() {
+          @Override
+          public String providerId() {
+            return "monitor-plugin";
+          }
+
+          @Override
+          public Set<Ircv3OutboundCommandOperation> operations() {
+            return Set.of(Ircv3OutboundCommandOperation.MONITOR_ADD);
+          }
+
+          @Override
+          public List<String> build(
+              Ircv3OutboundCommandOperation operation, Ircv3OutboundCommandRequest request) {
+            return List.of("PLUGIN MONITOR " + String.join("|", request.values()));
+          }
+        };
+    OutboundMonitorCommandService runtimeService =
+        new OutboundMonitorCommandService(
+            monitorRosterPort,
+            monitorCommandSupport,
+            new Ircv3MonitorCommandRuntimeSupport(
+                Ircv3OutboundCommandRuntimeCatalog.fromProviders(List.of(provider))));
+
+    runtimeService.handleMonitor(disposables, "+alice,bob");
+
+    verify(irc).sendRaw("libera", "PLUGIN MONITOR alice|bob");
   }
 
   @Test

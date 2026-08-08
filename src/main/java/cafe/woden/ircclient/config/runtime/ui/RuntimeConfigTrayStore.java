@@ -4,8 +4,6 @@ import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import java.nio.file.Path;
-import java.util.Locale;
-import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,8 +83,7 @@ public class RuntimeConfigTrayStore {
   }
 
   public synchronized void rememberNotificationBackend(String backendToken) {
-    String v = Objects.toString(backendToken, "").trim().toLowerCase(Locale.ROOT);
-    if (v.isEmpty()) v = "auto";
+    String v = RuntimeConfigTraySettingsCodec.normalizeNotificationBackend(backendToken);
     rememberScalarSetting("notificationBackend", v, "tray.notificationBackend");
   }
 
@@ -95,8 +92,7 @@ public class RuntimeConfigTrayStore {
   }
 
   public synchronized void rememberNotificationSound(String soundId) {
-    String v = Objects.toString(soundId, "").trim();
-    if (v.isEmpty()) v = "NOTIF_1";
+    String v = RuntimeConfigTraySettingsCodec.normalizeNotificationSound(soundId);
     rememberScalarSetting("notificationSound", v, "tray.notificationSound");
   }
 
@@ -106,7 +102,7 @@ public class RuntimeConfigTrayStore {
   }
 
   public synchronized void rememberNotificationSoundCustomPath(String relativePath) {
-    String v = Objects.toString(relativePath, "").trim();
+    String v = RuntimeConfigTraySettingsCodec.normalizeNotificationSoundCustomPath(relativePath);
     if (v.isEmpty()) {
       traySection.removeExistingValueAndPruneEmptyParents(
           "tray.notificationSoundCustomPath", "notificationSoundCustomPath");

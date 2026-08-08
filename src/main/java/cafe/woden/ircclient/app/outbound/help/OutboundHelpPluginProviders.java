@@ -2,6 +2,7 @@ package cafe.woden.ircclient.app.outbound.help;
 
 import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpContributor;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
+import cafe.woden.ircclient.util.PluginServiceLoaderSupport;
 import java.util.List;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 import org.springframework.beans.factory.ObjectProvider;
@@ -18,27 +19,12 @@ final class OutboundHelpPluginProviders {
 
   static List<OutboundHelpContributor> outboundHelpContributors(
       List<OutboundHelpContributor> builtInContributors, InstalledPluginsPort installedPlugins) {
-    List<OutboundHelpContributor> contributors = dedupeByProviderClass(builtInContributors);
+    List<OutboundHelpContributor> contributors =
+        PluginServiceLoaderSupport.dedupeByProviderClass(builtInContributors);
     if (installedPlugins == null) {
       return contributors;
     }
-    return dedupeByProviderClass(
+    return PluginServiceLoaderSupport.dedupeByProviderClass(
         installedPlugins.loadInstalledServices(OutboundHelpContributor.class, contributors));
-  }
-
-  private static List<OutboundHelpContributor> dedupeByProviderClass(
-      List<? extends OutboundHelpContributor> contributors) {
-    if (contributors == null || contributors.isEmpty()) {
-      return List.of();
-    }
-    java.util.LinkedHashSet<String> providerClassNames = new java.util.LinkedHashSet<>();
-    java.util.ArrayList<OutboundHelpContributor> deduped = new java.util.ArrayList<>();
-    for (OutboundHelpContributor contributor : contributors) {
-      if (contributor == null || !providerClassNames.add(contributor.getClass().getName())) {
-        continue;
-      }
-      deduped.add(contributor);
-    }
-    return List.copyOf(deduped);
   }
 }

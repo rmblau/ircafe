@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.irc.pircbotx.listener;
 
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.runtime;
+import static cafe.woden.ircclient.irc.pircbotx.listener.PircbotxListenerRuntimeTestFixtures.saslFailures;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -19,8 +21,8 @@ class PircbotxSaslFailureHandlerTest {
   @Test
   void parseFailureCodeRecognizesKnownSaslErrors() {
     PircbotxSaslFailureHandler handler =
-        new PircbotxSaslFailureHandler(
-            "libera", new PircbotxConnectionState("libera"), ignored -> {}, false);
+        saslFailures(
+            "libera", new PircbotxConnectionState("libera"), ignored -> {}, false, runtime());
 
     assertEquals(904, handler.parseFailureCode(":server 904 me :SASL authentication failed"));
     assertEquals(905, handler.parseFailureCode(":server 905 me :SASL message too long"));
@@ -32,7 +34,7 @@ class PircbotxSaslFailureHandlerTest {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> events = new ArrayList<>();
     PircbotxSaslFailureHandler handler =
-        new PircbotxSaslFailureHandler("libera", conn, events::add, false);
+        saslFailures("libera", conn, events::add, false, runtime());
 
     handler.handle(905, ":server 905 me :SASL message too long");
 
@@ -51,7 +53,7 @@ class PircbotxSaslFailureHandlerTest {
     conn.overrideDisconnectReason("already failed");
     List<ServerIrcEvent> events = new ArrayList<>();
     PircbotxSaslFailureHandler handler =
-        new PircbotxSaslFailureHandler("libera", conn, events::add, false);
+        saslFailures("libera", conn, events::add, false, runtime());
 
     handler.handle(904, ":server 904 me :SASL authentication failed");
 

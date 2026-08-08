@@ -9,8 +9,8 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.bouncer.BouncerBackendRegistry;
 import cafe.woden.ircclient.bouncer.BouncerDiscoveryEventPort;
 import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.QuitMessageRuntimeConfigPort;
 import cafe.woden.ircclient.config.properties.SojuProperties;
 import cafe.woden.ircclient.config.properties.ZncProperties;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
@@ -973,20 +973,28 @@ class PircbotxContainerNetworkE2eIntegrationTest {
                 null),
             List.copyOf(serversById.values()));
 
-    Ircv3StsPolicyService stsPolicies = new Ircv3StsPolicyService();
+    Ircv3RuntimeTestFixtures.Runtime runtime = Ircv3RuntimeTestFixtures.runtime();
+    Ircv3StsPolicyService stsPolicies = runtime.stsPolicyService();
     PircbotxInputParserHookInstaller hookInstaller =
-        new PircbotxInputParserHookInstaller(stsPolicies);
+        new PircbotxInputParserHookInstaller(stsPolicies, runtime.catalogs());
 
     SojuProperties sojuProps = new SojuProperties(Map.of(), new SojuProperties.Discovery(false));
     ZncProperties zncProps = new ZncProperties(Map.of(), new ZncProperties.Discovery(false));
 
     ServerProxyResolver proxyResolver = new ServerProxyResolver(serverCatalog);
-    PircbotxBotFactory botFactory = new PircbotxBotFactory(proxyResolver, sojuProps, null);
+    PircbotxBotFactory botFactory =
+        new PircbotxBotFactory(
+            proxyResolver,
+            sojuProps,
+            null,
+            Ircv3ExtensionCatalog.builtInCatalog(),
+            runtime.catalogs());
 
     BouncerBackendRegistry bouncerBackends = mock(BouncerBackendRegistry.class);
     BouncerDiscoveryEventPort bouncerDiscoveryEvents = mock(BouncerDiscoveryEventPort.class);
     CtcpReplyRuntimeConfigPort ctcpRuntimeConfig = mock(CtcpReplyRuntimeConfigPort.class);
-    ChatCommandRuntimeConfigPort commandRuntimeConfig = mock(ChatCommandRuntimeConfigPort.class);
+    QuitMessageRuntimeConfigPort quitMessageRuntimeConfig =
+        mock(QuitMessageRuntimeConfigPort.class);
     when(bouncerBackends.backendIds()).thenReturn(Set.of());
 
     ScheduledExecutorService heartbeatExec =
@@ -1003,7 +1011,10 @@ class PircbotxContainerNetworkE2eIntegrationTest {
             new NoOpPlaybackCursorProvider(),
             serverIsupportState,
             sojuProps,
-            zncProps);
+            zncProps,
+            runtime.catalogs(),
+            runtime.serverTime(),
+            runtime.messageTags());
 
     PircbotxIrcClientService service =
         new PircbotxIrcClientService(
@@ -1013,8 +1024,9 @@ class PircbotxContainerNetworkE2eIntegrationTest {
             botFactory,
             bridgeListenerFactory,
             ctcpRuntimeConfig,
-            commandRuntimeConfig,
+            quitMessageRuntimeConfig,
             stsPolicies,
+            runtime.catalogs().outboundCommands(),
             bouncerBackends,
             bouncerDiscoveryEvents,
             timers,

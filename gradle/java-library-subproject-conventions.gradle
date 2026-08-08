@@ -1,0 +1,59 @@
+apply plugin: 'java-library'
+
+group = rootProject.group
+
+def libsCatalog = extensions.getByType(org.gradle.api.artifacts.VersionCatalogsExtension).named('libs')
+ext.ircv3Library = { String alias -> libsCatalog.findLibrary(alias).get() }
+ext.ircv3CatalogVersion = { String alias -> libsCatalog.findVersion(alias).get().requiredVersion }
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(rootProject.ext.javaRelease)
+    }
+    withSourcesJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = rootProject.ext.javaRelease
+    options.warnings = false
+    options.compilerArgs.removeAll { it.startsWith('-Xlint') }
+    options.compilerArgs += ['-Xlint:none']
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+    systemProperty 'java.awt.headless', 'true'
+}
+
+// CycloneDX resolves project dependency JARs as plain files. Gradle 9 therefore
+// requires explicit producer-task dependencies, including transitive feature
+// dependencies such as message-tags -> common.
+def collectProjectDependencies
+collectProjectDependencies = { Project source, Set<Project> discovered ->
+    ['api', 'implementation', 'runtimeOnly'].each { configurationName ->
+        def configuration = source.configurations.findByName(configurationName)
+        if (configuration == null) {
+            return
+        }
+        configuration.dependencies
+            .withType(org.gradle.api.artifacts.ProjectDependency)
+            .each { dependency ->
+                Project dependencyProject = source.project(dependency.path)
+                if (discovered.add(dependencyProject)) {
+                    collectProjectDependencies(dependencyProject, discovered)
+                }
+            }
+    }
+}
+
+gradle.projectsEvaluated {
+    tasks.matching { it.name in ['cyclonedxBom', 'cyclonedxDirectBom'] }.configureEach {
+        dependsOn(provider {
+            LinkedHashSet<Project> dependencies = new LinkedHashSet<>()
+            collectProjectDependencies(project, dependencies)
+            dependencies
+                .findAll { it.tasks.findByName('jar') != null }
+                .collect { it.tasks.named('jar') }
+        })
+    }
+}

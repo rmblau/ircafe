@@ -7,94 +7,121 @@ import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MESSAGE_TAGS;
 
 import cafe.woden.ircclient.irc.IrcEvent;
 import cafe.woden.ircclient.irc.ServerIrcEvent;
+import cafe.woden.ircclient.irc.ircv3.Ircv3CapabilityLine;
+import cafe.woden.ircclient.irc.ircv3.Ircv3CapabilityNegotiationRuntimeSupport;
+import cafe.woden.ircclient.irc.ircv3.Ircv3HistoryTransportRuntimeSupport;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundCommandRequest;
 import cafe.woden.ircclient.irc.pircbotx.capability.BatchedEnableCapHandler;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 import org.pircbotx.PircBotX;
 import org.pircbotx.cap.CapHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Handles tracked capability state changes and fallback requests from CAP lines. */
+/** Handles application-owned capability state changes and fallback CAP requests. */
 public final class PircbotxCapabilityNegotiationSupport {
 
   private static final Logger log =
       LoggerFactory.getLogger(PircbotxCapabilityNegotiationSupport.class);
+  private static final List<String> FALLBACK_CAPABILITIES =
+      List.of(MESSAGE_TAGS, BATCH, CHATHISTORY, DRAFT_CHATHISTORY);
 
   private final PircBotX bot;
   private final String serverId;
   private final PircbotxConnectionState conn;
   private final Consumer<ServerIrcEvent> sink;
   private final PircbotxCapabilityStateSupport capabilityStateSupport;
+  private final Ircv3CapabilityNegotiationRuntimeSupport runtimeSupport;
+  private final Ircv3HistoryTransportRuntimeSupport historyTransportRuntimeSupport;
 
   public PircbotxCapabilityNegotiationSupport(
       PircBotX bot,
       String serverId,
       PircbotxConnectionState conn,
       Consumer<ServerIrcEvent> sink,
-      PircbotxCapabilityStateSupport capabilityStateSupport) {
+      PircbotxCapabilityStateSupport capabilityStateSupport,
+      Ircv3CapabilityNegotiationRuntimeSupport runtimeSupport,
+      Ircv3HistoryTransportRuntimeSupport historyTransportRuntimeSupport) {
     this.bot = Objects.requireNonNull(bot, "bot");
     this.serverId = Objects.requireNonNull(serverId, "serverId");
     this.conn = Objects.requireNonNull(conn, "conn");
     this.sink = Objects.requireNonNull(sink, "sink");
     this.capabilityStateSupport =
         Objects.requireNonNull(capabilityStateSupport, "capabilityStateSupport");
+    this.runtimeSupport = Objects.requireNonNull(runtimeSupport, "runtimeSupport");
+    this.historyTransportRuntimeSupport =
+        Objects.requireNonNull(historyTransportRuntimeSupport, "historyTransportRuntimeSupport");
   }
 
-  public void observe(ParsedCapLine capLine) {
+  public void observe(Ircv3CapabilityLine capLine) {
     observe(capLine, List.of());
   }
 
-  public void observe(ParsedCapLine capLine, List<CapHandler> remainingCapHandlers) {
+  public void observe(Ircv3CapabilityLine capLine, List<CapHandler> remainingCapHandlers) {
+    Objects.requireNonNull(capLine, "capLine");
     if (!capLine.hasTokens()) return;
 
-    if (capLine.isAction("ACK", "DEL")) {
-      applyCapStateFromCapLine(capLine);
-    } else if (capLine.isAction("NEW", "LS")) {
-      emitCapAvailabilityFromCapLine(capLine);
-    } else if (capLine.isAction("NAK")) {
-      emitCapNakFromCapLine(capLine);
-    }
+    Set<String> pendingCapabilities = pendingFallbackCapabilities(remainingCapHandlers);
+    Ircv3CapabilityNegotiationRuntimeSupport.Plan plan =
+        runtimeSupport.plan(
+            new Ircv3InboundCommandRequest(
+                "server",
+                "CAP",
+                "",
+                List.of("*", capLine.action(), capLine.normalizedCaps()),
+                Map.of(),
+                "",
+                false,
+                0L,
+                conn.isMessageTagsCapAcked(),
+                conn.isBatchCapAcked(),
+                conn.isChatHistoryCapAcked(),
+                pendingCapabilities));
 
-    maybeRequestMessageTagsFallback(capLine, remainingCapHandlers);
-    maybeRequestHistoryCapabilityFallback(capLine, remainingCapHandlers);
+    applyCapabilityChanges(plan);
+    maybeRequestMessageTagsFallback(plan);
+    maybeRequestHistoryCapabilityFallback(plan);
   }
 
-  private void applyCapStateFromCapLine(ParsedCapLine capLine) {
-    String action = capLine.action();
-    boolean fromAck = capLine.isAction("ACK");
-    boolean fromDel = capLine.isAction("DEL");
-    if (!fromAck && !fromDel) return;
-
-    boolean emittedAny = false;
-    for (String token : capLine.tokens()) {
-      boolean tokenDisable = token.startsWith("-");
-      String capName = canonicalCapName(token);
-      if (capName == null) continue;
-
-      boolean enabled = fromAck && !tokenDisable;
-      if (fromDel || tokenDisable) enabled = false;
-
-      if (enabled && PircbotxZncParsers.seemsZncCap(capName)) {
-        if (conn.markZncDetected()) {
-          log.debug("[{}] detected ZNC via CAP {}: {}", serverId, action, capName);
+  private void applyCapabilityChanges(Ircv3CapabilityNegotiationRuntimeSupport.Plan plan) {
+    for (Ircv3CapabilityNegotiationRuntimeSupport.CapabilityChange change : plan.changes()) {
+      if (change.updateState()) {
+        Ircv3HistoryTransportRuntimeSupport.Detection detection =
+            change.enabled()
+                ? historyTransportRuntimeSupport.detectZncCapability(change.capabilityName())
+                : Ircv3HistoryTransportRuntimeSupport.Detection.notDetected();
+        if (detection.detected() && conn.markZncDetected()) {
+          log.debug(
+              "[{}] detected ZNC via CAP {}: {}",
+              serverId,
+              change.action(),
+              detection.evidence());
         }
+        capabilityStateSupport.apply(
+            change.capabilityName(), change.enabled(), change.action());
       }
 
-      capabilityStateSupport.apply(capName, enabled, action);
       sink.accept(
           new ServerIrcEvent(
               serverId,
-              new IrcEvent.Ircv3CapabilityChanged(Instant.now(), action, capName, enabled)));
-      emittedAny = true;
+              new IrcEvent.Ircv3CapabilityChanged(
+                  Instant.now(),
+                  change.action(),
+                  change.capabilityName(),
+                  change.enabled())));
     }
 
-    if (emittedAny) {
+    if (plan.refreshConnectionFeatures() && !plan.changes().isEmpty()) {
+      String action = plan.changes().getFirst().action();
       sink.accept(
           new ServerIrcEvent(
               serverId,
@@ -103,39 +130,10 @@ public final class PircbotxCapabilityNegotiationSupport {
     }
   }
 
-  private void emitCapAvailabilityFromCapLine(ParsedCapLine capLine) {
-    String action = capLine.action();
-    if (!capLine.isAction("NEW", "LS")) return;
-
-    for (String token : capLine.tokens()) {
-      String capName = canonicalCapName(token);
-      if (capName == null || capName.isBlank()) continue;
-      sink.accept(
-          new ServerIrcEvent(
-              serverId,
-              new IrcEvent.Ircv3CapabilityChanged(Instant.now(), action, capName, false)));
-    }
-  }
-
   private void maybeRequestMessageTagsFallback(
-      ParsedCapLine capLine, List<CapHandler> remainingCapHandlers) {
-    if (!capLine.isAction("LS", "NEW")) return;
-    if (conn.isMessageTagsCapAcked()) return;
-    if (isCapabilityRequestPending(remainingCapHandlers, MESSAGE_TAGS)) return;
+      Ircv3CapabilityNegotiationRuntimeSupport.Plan plan) {
+    if (!plan.requestMessageTags()) return;
     if (!conn.beginMessageTagsFallbackRequest()) return;
-
-    boolean offered = false;
-    for (String token : capLine.tokens()) {
-      String capName = canonicalCapName(token);
-      if (MESSAGE_TAGS.equalsIgnoreCase(capName)) {
-        offered = true;
-        break;
-      }
-    }
-    if (!offered) {
-      conn.clearMessageTagsFallbackRequest();
-      return;
-    }
 
     try {
       bot.sendCAP().request(MESSAGE_TAGS);
@@ -149,47 +147,17 @@ public final class PircbotxCapabilityNegotiationSupport {
   }
 
   private void maybeRequestHistoryCapabilityFallback(
-      ParsedCapLine capLine, List<CapHandler> remainingCapHandlers) {
-    if (!capLine.isAction("LS", "NEW")) return;
-
-    boolean offeredBatch = false;
-    boolean offeredChatHistory = false;
-    boolean offeredDraftChatHistory = false;
-    for (String token : capLine.tokens()) {
-      String capName = canonicalCapName(token);
-      if (BATCH.equalsIgnoreCase(capName)) {
-        offeredBatch = true;
-      } else if (CHATHISTORY.equalsIgnoreCase(capName)) {
-        offeredChatHistory = true;
-      } else if (DRAFT_CHATHISTORY.equalsIgnoreCase(capName)) {
-        offeredDraftChatHistory = true;
-      }
-    }
-
+      Ircv3CapabilityNegotiationRuntimeSupport.Plan plan) {
     ArrayList<String> requestedCaps = new ArrayList<>(2);
     boolean requestedBatch = false;
     boolean requestedHistory = false;
 
-    if (offeredBatch
-        && !conn.isBatchCapAcked()
-        && !isCapabilityRequestPending(remainingCapHandlers, BATCH)
-        && conn.beginBatchFallbackRequest()) {
+    if (plan.requestBatch() && conn.beginBatchFallbackRequest()) {
       requestedCaps.add(BATCH);
       requestedBatch = true;
     }
-
-    String historyCapToRequest = "";
-    if (!conn.isChatHistoryCapAcked()) {
-      if (offeredChatHistory) {
-        historyCapToRequest = CHATHISTORY;
-      } else if (offeredDraftChatHistory) {
-        historyCapToRequest = DRAFT_CHATHISTORY;
-      }
-    }
-    if (!historyCapToRequest.isEmpty()
-        && !isCapabilityRequestPending(remainingCapHandlers, historyCapToRequest)
-        && conn.beginChatHistoryFallbackRequest()) {
-      requestedCaps.add(historyCapToRequest);
+    if (plan.requestHistory() && conn.beginChatHistoryFallbackRequest()) {
+      requestedCaps.add(plan.historyCapability());
       requestedHistory = true;
     }
 
@@ -209,49 +177,22 @@ public final class PircbotxCapabilityNegotiationSupport {
     }
   }
 
-  private void emitCapNakFromCapLine(ParsedCapLine capLine) {
-    String action = capLine.action();
-    if (!capLine.isAction("NAK")) return;
-
-    for (String token : capLine.tokens()) {
-      String capName = canonicalCapName(token);
-      if (capName == null || capName.isBlank()) continue;
-      sink.accept(
-          new ServerIrcEvent(
-              serverId,
-              new IrcEvent.Ircv3CapabilityChanged(Instant.now(), action, capName, false)));
-    }
-  }
-
-  private static String canonicalCapName(String rawToken) {
-    String value = Objects.toString(rawToken, "").trim();
-    if (value.isEmpty()) return null;
-    if (value.startsWith(":")) value = value.substring(1).trim();
-    while (!value.isEmpty()) {
-      char leading = value.charAt(0);
-      if (leading == '-' || leading == '~' || leading == '=') {
-        value = value.substring(1).trim();
-        continue;
+  private static Set<String> pendingFallbackCapabilities(List<CapHandler> remainingCapHandlers) {
+    if (remainingCapHandlers == null || remainingCapHandlers.isEmpty()) return Set.of();
+    LinkedHashSet<String> pending = new LinkedHashSet<>();
+    for (String capability : FALLBACK_CAPABILITIES) {
+      if (isCapabilityRequestPending(remainingCapHandlers, capability)) {
+        pending.add(capability);
       }
-      break;
     }
-    int eq = value.indexOf('=');
-    if (eq >= 0) value = value.substring(0, eq).trim();
-    return value.isEmpty() ? null : value;
+    return Set.copyOf(pending);
   }
 
   private static boolean isCapabilityRequestPending(
       List<CapHandler> remainingCapHandlers, String capability) {
-    String normalizedCapability = canonicalCapName(capability);
-    if (normalizedCapability == null || normalizedCapability.isBlank()) {
-      return false;
-    }
-    if (remainingCapHandlers == null || remainingCapHandlers.isEmpty()) {
-      return false;
-    }
+    if (remainingCapHandlers == null || remainingCapHandlers.isEmpty()) return false;
     for (CapHandler handler : remainingCapHandlers) {
-      if (handler instanceof BatchedEnableCapHandler batched
-          && batched.isPending(normalizedCapability)) {
+      if (handler instanceof BatchedEnableCapHandler batched && batched.isPending(capability)) {
         return true;
       }
     }

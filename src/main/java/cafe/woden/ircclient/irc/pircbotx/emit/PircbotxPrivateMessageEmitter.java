@@ -5,7 +5,6 @@ import cafe.woden.ircclient.irc.backend.*;
 import cafe.woden.ircclient.irc.ircv3.*;
 import cafe.woden.ircclient.irc.pircbotx.listener.*;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
-import cafe.woden.ircclient.irc.pircbotx.support.Ircv3MultilineAccumulator;
 import cafe.woden.ircclient.irc.pircbotx.support.PircbotxEventMetadata;
 import cafe.woden.ircclient.irc.pircbotx.support.PircbotxUtil;
 import cafe.woden.ircclient.irc.playback.*;
@@ -34,6 +33,8 @@ public final class PircbotxPrivateMessageEmitter {
   @NonNull private final Ircv3MultilineAccumulator multilineAccumulator;
   @NonNull private final PircbotxPlaybackCaptureRecorder playbackCaptureRecorder;
   @NonNull private final PircbotxPrivateConversationSupport privateConversationSupport;
+  @NonNull private final Ircv3ServerTimeRuntimeSupport serverTimeRuntimeSupport;
+  @NonNull private final Ircv3MessageTagsRuntimeSupport messageTagsRuntimeSupport;
   @NonNull private final Consumer<ServerIrcEvent> emit;
   @NonNull private final Function<PircBotX, String> selfNickResolver;
   @NonNull private final Function<Object, String> privateTargetFromEvent;
@@ -47,7 +48,10 @@ public final class PircbotxPrivateMessageEmitter {
       Ircv3MultilineAccumulator multilineAccumulator,
       Consumer<ServerIrcEvent> emit,
       Function<PircBotX, String> selfNickResolver,
-      Function<Object, String> privateTargetFromEvent) {
+      Function<Object, String> privateTargetFromEvent,
+      Ircv3ServerTimeRuntimeSupport serverTimeRuntimeSupport,
+      Ircv3MessageTagsRuntimeSupport messageTagsRuntimeSupport,
+      Ircv3HistoryTransportRuntimeSupport historyTransportRuntimeSupport) {
     this(
         serverId,
         conn,
@@ -56,7 +60,9 @@ public final class PircbotxPrivateMessageEmitter {
         chatHistoryBatches,
         multilineAccumulator,
         new PircbotxPlaybackCaptureRecorder(conn),
-        new PircbotxPrivateConversationSupport(conn),
+        new PircbotxPrivateConversationSupport(conn, historyTransportRuntimeSupport),
+        serverTimeRuntimeSupport,
+        messageTagsRuntimeSupport,
         emit,
         selfNickResolver,
         privateTargetFromEvent);
@@ -68,16 +74,19 @@ public final class PircbotxPrivateMessageEmitter {
     String botNick = selfNickResolver.apply(event.getBot());
     String pmDest = privateTargetFromEvent.apply(event);
 
-    Optional<String> batchId = Ircv3BatchTag.fromEvent(event);
+    Optional<String> batchId =
+        chatHistoryBatches.batchId(
+            PircbotxEventMetadata.ircv3TagsFromEvent(event, messageTagsRuntimeSupport));
     if (batchId.isPresent()) {
-      Instant at = PircbotxEventMetadata.inboundAt(event);
+      Instant at = PircbotxEventMetadata.inboundAt(event, serverTimeRuntimeSupport);
       String from = (event.getUser() != null) ? event.getUser().getNick() : "";
       String msg = PircbotxUtil.safeStr(event::getMessage, "");
       String action = PircbotxUtil.parseCtcpAction(msg);
       String kind = action == null ? "PRIVMSG" : "ACTION";
       String hintPayload = action == null ? msg : action;
-      Map<String, String> tags = PircbotxEventMetadata.ircv3TagsFromEvent(event);
-      String batchMsgId = PircbotxEventMetadata.ircv3MessageId(tags);
+      Map<String, String> tags =
+          PircbotxEventMetadata.ircv3TagsFromEvent(event, messageTagsRuntimeSupport);
+      String batchMsgId = messageTagsRuntimeSupport.messageId(tags);
 
       boolean fromSelf =
           botNick != null && !botNick.isBlank() && from != null && from.equalsIgnoreCase(botNick);
@@ -104,7 +113,7 @@ public final class PircbotxPrivateMessageEmitter {
       }
     }
 
-    Instant at = PircbotxEventMetadata.inboundAt(event);
+    Instant at = PircbotxEventMetadata.inboundAt(event, serverTimeRuntimeSupport);
     String from = event.getUser().getNick();
     String msg = event.getMessage();
     String actionPayload = PircbotxUtil.parseCtcpAction(msg);
@@ -118,8 +127,10 @@ public final class PircbotxPrivateMessageEmitter {
     } catch (Exception ignored) {
     }
 
-    Map<String, String> tags = new HashMap<>(PircbotxEventMetadata.ircv3TagsFromEvent(event));
-    String messageId = PircbotxEventMetadata.ircv3MessageId(tags);
+    Map<String, String> tags =
+        new HashMap<>(
+            PircbotxEventMetadata.ircv3TagsFromEvent(event, messageTagsRuntimeSupport));
+    String messageId = messageTagsRuntimeSupport.messageId(tags);
     if ((pmDest == null || pmDest.isBlank()) && fromSelf) {
       String hinted =
           privateConversationSupport.inferPrivateDestinationFromHints(
@@ -133,7 +144,7 @@ public final class PircbotxPrivateMessageEmitter {
     }
     PircbotxEventMetadata.withObservedHostmaskTag(tags, event.getUser());
     Map<String, String> ircv3Tags = tags;
-    messageId = PircbotxEventMetadata.ircv3MessageId(ircv3Tags);
+    messageId = messageTagsRuntimeSupport.messageId(ircv3Tags);
 
     if (privateConversationSupport.shouldSuppressSelfBootstrapMessage(fromSelf, pmDest, msg)) {
       return;
@@ -163,7 +174,7 @@ public final class PircbotxPrivateMessageEmitter {
     if (folded.messageId() != null && !folded.messageId().isBlank()) {
       messageId = folded.messageId();
     } else {
-      messageId = PircbotxEventMetadata.ircv3MessageId(ircv3Tags);
+      messageId = messageTagsRuntimeSupport.messageId(ircv3Tags);
     }
     actionPayload = PircbotxUtil.parseCtcpAction(msg);
     if (!"*playback".equalsIgnoreCase(from)) {

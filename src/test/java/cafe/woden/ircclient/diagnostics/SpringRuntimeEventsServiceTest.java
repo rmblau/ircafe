@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.config.api.InstalledPluginProblem;
-import cafe.woden.ircclient.util.InstalledPluginDescriptor;
+import cafe.woden.ircclient.plugin.spi.InstalledPluginDescriptor;
 import io.reactivex.rxjava3.subscribers.TestSubscriber;
 import java.nio.file.Path;
 import java.util.List;

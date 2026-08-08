@@ -3,6 +3,7 @@ package cafe.woden.ircclient.ui.servertree.view;
 import cafe.woden.ircclient.app.api.ConnectionState;
 import cafe.woden.ircclient.config.api.IrcSessionRuntimeConfigPort;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionCatalog;
+import cafe.woden.ircclient.irc.ircv3.Ircv3FeatureAvailabilityEvaluator;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionRegistry;
 import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.servertree.ServerTreeConventions;
@@ -454,7 +455,8 @@ public final class ServerTreeNetworkInfoDialogBuilder {
         BorderFactory.createTitledBorder(message("serverTree.networkInfo.featureReadiness.title")));
 
     List<CapabilityFeatureStatus> statuses =
-        computeCapabilityFeatureStatuses(metadata, ircv3ExtensionCatalog.visibleFeatures());
+        toCapabilityFeatureStatuses(
+            ircv3ExtensionCatalog.evaluateVisibleFeatures(enabledCapabilities(metadata)));
     if (statuses.isEmpty()) {
       panel.add(
           new JLabel(message("serverTree.networkInfo.featureReadiness.empty")),
@@ -487,81 +489,58 @@ public final class ServerTreeNetworkInfoDialogBuilder {
 
   static List<CapabilityFeatureStatus> computeCapabilityFeatureStatuses(
       ServerRuntimeMetadata metadata) {
-    return computeCapabilityFeatureStatuses(metadata, Ircv3ExtensionRegistry.visibleFeatures());
+    return toCapabilityFeatureStatuses(
+        Ircv3ExtensionRegistry.evaluateVisibleFeatures(enabledCapabilities(metadata)));
   }
 
-  private static List<CapabilityFeatureStatus> computeCapabilityFeatureStatuses(
-      ServerRuntimeMetadata metadata,
-      List<Ircv3ExtensionRegistry.FeatureDefinition> capabilityFeatures) {
+  private static Set<String> enabledCapabilities(ServerRuntimeMetadata metadata) {
     Set<String> enabled = new LinkedHashSet<>();
-    if (metadata != null) {
-      for (Map.Entry<String, ServerRuntimeMetadata.CapabilityState> entry :
-          metadata.ircv3Caps.entrySet()) {
-        if (!ServerRuntimeMetadata.CapabilityState.ENABLED.equals(entry.getValue())) {
-          continue;
-        }
-        String cap = normalizeCapability(entry.getKey());
-        if (!cap.isEmpty()) {
-          enabled.add(cap);
-        }
+    if (metadata == null) {
+      return enabled;
+    }
+    for (Map.Entry<String, ServerRuntimeMetadata.CapabilityState> entry :
+        metadata.ircv3Caps.entrySet()) {
+      if (!ServerRuntimeMetadata.CapabilityState.ENABLED.equals(entry.getValue())) {
+        continue;
+      }
+      String capability = normalizeCapability(entry.getKey());
+      if (!capability.isEmpty()) {
+        enabled.add(capability);
       }
     }
+    return enabled;
+  }
 
-    List<Ircv3ExtensionRegistry.FeatureDefinition> features =
-        List.copyOf(Objects.requireNonNullElse(capabilityFeatures, List.of()));
-    List<CapabilityFeatureStatus> out = new ArrayList<>(features.size());
-    for (Ircv3ExtensionRegistry.FeatureDefinition feature : features) {
-      List<String> missing = new ArrayList<>();
-      int satisfiedRequired = 0;
-
-      for (String required : feature.requiredAll()) {
-        String cap = normalizeCapability(required);
-        if (cap.isEmpty()) {
-          continue;
-        }
-        if (enabled.contains(cap)) {
-          satisfiedRequired++;
-        } else {
-          missing.add(cap);
-        }
-      }
-
-      boolean hasRequiredAny = !feature.requiredAny().isEmpty();
-      boolean anySatisfied = !hasRequiredAny;
-      if (hasRequiredAny) {
-        for (String candidate : feature.requiredAny()) {
-          String cap = normalizeCapability(candidate);
-          if (!cap.isEmpty() && enabled.contains(cap)) {
-            anySatisfied = true;
-            break;
-          }
-        }
-      }
-      if (!feature.requiredAny().isEmpty() && !anySatisfied) {
+  private static List<CapabilityFeatureStatus> toCapabilityFeatureStatuses(
+      List<Ircv3FeatureAvailabilityEvaluator.Evaluation> evaluations) {
+    List<Ircv3FeatureAvailabilityEvaluator.Evaluation> safeEvaluations =
+        List.copyOf(Objects.requireNonNullElse(evaluations, List.of()));
+    List<CapabilityFeatureStatus> out = new ArrayList<>(safeEvaluations.size());
+    for (Ircv3FeatureAvailabilityEvaluator.Evaluation evaluation : safeEvaluations) {
+      List<String> missing = new ArrayList<>(evaluation.missingRequiredAll());
+      if (!evaluation.missingRequiredAny().isEmpty()) {
         missing.add(
             message(
                 "serverTree.networkInfo.featureReadiness.oneOf",
-                String.join(", ", feature.requiredAny())));
+                String.join(", ", evaluation.missingRequiredAny())));
       }
 
-      String status;
-      if (missing.isEmpty()) {
-        status = message("serverTree.networkInfo.featureReadiness.status.ready");
-      } else if (satisfiedRequired > 0 || (hasRequiredAny && anySatisfied)) {
-        status = message("serverTree.networkInfo.featureReadiness.status.partial");
-      } else {
-        status = message("serverTree.networkInfo.featureReadiness.status.unavailable");
-      }
-
+      String status =
+          switch (evaluation.readiness()) {
+            case READY -> message("serverTree.networkInfo.featureReadiness.status.ready");
+            case PARTIAL -> message("serverTree.networkInfo.featureReadiness.status.partial");
+            case UNAVAILABLE ->
+                message("serverTree.networkInfo.featureReadiness.status.unavailable");
+          };
       String detail =
           missing.isEmpty()
               ? message("serverTree.networkInfo.featureReadiness.detail.ready")
               : message(
                   "serverTree.networkInfo.featureReadiness.detail.missing",
                   String.join(", ", missing));
-      out.add(new CapabilityFeatureStatus(feature.label(), status, detail));
+      out.add(new CapabilityFeatureStatus(evaluation.label(), status, detail));
     }
-    return out;
+    return List.copyOf(out);
   }
 
   private static String normalizeCapability(String capability) {

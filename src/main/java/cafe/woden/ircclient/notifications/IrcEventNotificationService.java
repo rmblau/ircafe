@@ -4,11 +4,22 @@ import cafe.woden.ircclient.app.api.IrcEventNotifierPort;
 import cafe.woden.ircclient.app.api.TrayNotificationsPort;
 import cafe.woden.ircclient.config.execution.ExecutorConfig;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
+import cafe.woden.ircclient.notifications.api.IrcEventNotificationRuleAdapters;
 import cafe.woden.ircclient.notify.api.PushyNotificationPort;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationActionPlan;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationActionPlanner;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationDispatchContext;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationDispatchPreflightPlan;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationDispatchPreflightPlanner;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationMatchPolicy;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationRuleEvaluation;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationRuleEvaluator;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationScriptAction;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationScriptPlan;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationScriptPlanner;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationTrayAction;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import lombok.RequiredArgsConstructor;
@@ -80,46 +91,48 @@ public class IrcEventNotificationService implements IrcEventNotifierPort {
       String activeTarget,
       String ctcpCommand,
       String ctcpValue) {
-    if (eventType == null) return false;
-
     List<IrcEventNotificationRule> rules = rulesBus != null ? rulesBus.get() : List.of();
-    if (rules == null || rules.isEmpty()) return false;
+    IrcEventNotificationDispatchPreflightPlan preflight =
+        IrcEventNotificationDispatchPreflightPlanner.plan(
+            eventType != null ? eventType.name() : null, rules != null ? rules.size() : 0);
+    if (!preflight.shouldEvaluate()) return false;
 
-    String sid = Objects.toString(serverId, "").trim();
-    if (sid.isEmpty()) return false;
+    IrcEventNotificationRuleEvaluation evaluation =
+        IrcEventNotificationRuleEvaluator.evaluate(
+            IrcEventNotificationRuleAdapters.toMatchRules(rules),
+            preflight.eventTypeName(),
+            eventType.toString(),
+            serverId,
+            channel,
+            sourceNick,
+            sourceIsSelf,
+            title,
+            body,
+            activeServerId,
+            activeTarget,
+            ctcpCommand,
+            ctcpValue);
+    if (!evaluation.valid() || !evaluation.anyMatched()) return false;
 
-    String target = Objects.toString(channel, "").trim();
-    if (target.isEmpty()) target = "status";
-
-    String source = Objects.toString(sourceNick, "").trim();
-    if (source.isEmpty()) source = "server";
-
-    String t = Objects.toString(title, "").trim();
-    if (t.isEmpty()) t = eventType.toString();
-
-    String b = Objects.toString(body, "").trim();
-    String activeSid = Objects.toString(activeServerId, "").trim();
-    String activeTgt = Objects.toString(activeTarget, "").trim();
-    boolean activeSameServer = !activeSid.isEmpty() && sid.equalsIgnoreCase(activeSid);
-    boolean anyMatched = false;
-
-    for (IrcEventNotificationRule matched : rules) {
+    IrcEventNotificationDispatchContext context = evaluation.context();
+    for (Integer matchedIndex : evaluation.matchedRuleIndexes()) {
+      if (!preflight.matchedRuleIndexValid(matchedIndex)) continue;
+      IrcEventNotificationRule matched = rules.get(matchedIndex);
       if (matched == null) continue;
-      if (!matched.matches(
-          eventType,
-          sourceNick,
-          sourceIsSelf,
-          channel,
-          activeSameServer,
-          activeTgt,
-          ctcpCommand,
-          ctcpValue)) continue;
-      anyMatched = true;
       dispatchMatchedRule(
-          matched, eventType, sid, target, source, sourceIsSelf, t, b, ctcpCommand, ctcpValue);
+          matched,
+          eventType,
+          context.serverId(),
+          context.target(),
+          context.sourceNick(),
+          sourceIsSelf,
+          context.title(),
+          context.body(),
+          ctcpCommand,
+          ctcpValue);
     }
 
-    return anyMatched;
+    return true;
   }
 
   private void dispatchMatchedRule(
@@ -135,31 +148,35 @@ public class IrcEventNotificationService implements IrcEventNotifierPort {
       String ctcpValue) {
     if (matched == null) return;
 
-    if (matched.notificationsNodeEnabled() && notificationStore != null) {
+    IrcEventNotificationActionPlan actionPlan =
+        IrcEventNotificationActionPlanner.plan(
+            IrcEventNotificationRuleAdapters.toActionRule(matched));
+
+    if (actionPlan.recordNotification() && notificationStore != null) {
       notificationStore.recordIrcEvent(sid, target, source, title, body);
     }
 
-    boolean showToast = matched.toastEnabled();
-    boolean showStatusBar = matched.statusBarEnabled();
-    boolean playSound = matched.soundEnabled();
-    if ((showToast || showStatusBar || playSound) && trayNotificationService != null) {
+    IrcEventNotificationTrayAction trayAction = actionPlan.trayAction();
+    if (trayAction.enabled() && trayNotificationService != null) {
       trayNotificationService.notifyCustom(
           sid,
           target,
           title,
           body,
-          showToast,
-          showStatusBar,
-          matched.focusScope(),
-          playSound,
-          matched.soundId(),
-          matched.soundUseCustom(),
-          matched.soundCustomPath());
+          trayAction.showToast(),
+          trayAction.showStatusBar(),
+          IrcEventNotificationRuleAdapters.toFocusScope(
+              trayAction.focusScope(), matched.focusScope()),
+          trayAction.playSound(),
+          trayAction.soundId(),
+          trayAction.soundUseCustom(),
+          trayAction.soundCustomPath());
     }
 
-    if (matched.scriptEnabled()) {
+    IrcEventNotificationScriptAction scriptAction = actionPlan.scriptAction();
+    if (scriptAction.enabled()) {
       dispatchScript(
-          matched,
+          scriptAction,
           eventType,
           sid,
           target,
@@ -171,7 +188,7 @@ public class IrcEventNotificationService implements IrcEventNotifierPort {
           ctcpValue);
     }
 
-    if (pushyNotificationService != null) {
+    if (actionPlan.sendPush() && pushyNotificationService != null) {
       try {
         pushyNotificationService.notifyEvent(
             eventType, sid, target, source, sourceIsSelf, title, body);
@@ -182,19 +199,17 @@ public class IrcEventNotificationService implements IrcEventNotifierPort {
 
   @Override
   public boolean hasEnabledRuleFor(IrcEventNotificationRule.EventType eventType) {
-    if (eventType == null) return false;
     List<IrcEventNotificationRule> rules = rulesBus != null ? rulesBus.get() : List.of();
-    if (rules == null || rules.isEmpty()) return false;
-    for (IrcEventNotificationRule r : rules) {
-      if (r == null) continue;
-      if (!r.enabled()) continue;
-      if (r.eventType() == eventType) return true;
-    }
-    return false;
+    IrcEventNotificationDispatchPreflightPlan preflight =
+        IrcEventNotificationDispatchPreflightPlanner.plan(
+            eventType != null ? eventType.name() : null, rules != null ? rules.size() : 0);
+    if (!preflight.shouldEvaluate()) return false;
+    return IrcEventNotificationMatchPolicy.hasEnabledRuleFor(
+        IrcEventNotificationRuleAdapters.toMatchRules(rules), preflight.eventTypeName());
   }
 
   private void dispatchScript(
-      IrcEventNotificationRule rule,
+      IrcEventNotificationScriptAction scriptAction,
       IrcEventNotificationRule.EventType eventType,
       String serverId,
       String channel,
@@ -204,23 +219,14 @@ public class IrcEventNotificationService implements IrcEventNotifierPort {
       String body,
       String ctcpCommand,
       String ctcpValue) {
-    String script = Objects.toString(rule != null ? rule.scriptPath() : "", "").trim();
-    if (script.isEmpty()) return;
+    if (scriptAction == null || !scriptAction.enabled()) return;
 
-    String scriptArgs = Objects.toString(rule != null ? rule.scriptArgs() : "", "").trim();
-    if (scriptArgs.isEmpty()) scriptArgs = null;
-    String scriptWorkingDirectory =
-        Objects.toString(rule != null ? rule.scriptWorkingDirectory() : "", "").trim();
-    if (scriptWorkingDirectory.isEmpty()) scriptWorkingDirectory = null;
-
-    String args = scriptArgs;
-    String cwd = scriptWorkingDirectory;
     scriptExecutor.execute(
         () ->
             runScript(
-                script,
-                args,
-                cwd,
+                scriptAction.scriptPath(),
+                scriptAction.scriptArgs(),
+                scriptAction.workingDirectory(),
                 eventType,
                 serverId,
                 channel,
@@ -246,40 +252,41 @@ public class IrcEventNotificationService implements IrcEventNotifierPort {
       String ctcpCommand,
       String ctcpValue) {
     try {
-      List<String> command = new ArrayList<>();
-      command.add(scriptPath);
-      command.addAll(parseCommandArgs(scriptArgs));
+      IrcEventNotificationScriptPlan plan =
+          IrcEventNotificationScriptPlanner.plan(
+              scriptPath,
+              scriptArgs,
+              scriptWorkingDirectory,
+              eventType != null ? eventType.name() : "",
+              serverId,
+              channel,
+              sourceNick,
+              sourceIsSelf,
+              title,
+              body,
+              ctcpCommand,
+              ctcpValue,
+              System.currentTimeMillis());
+      if (plan.command().isEmpty()) return;
 
-      ProcessBuilder pb = new ProcessBuilder(command);
+      ProcessBuilder pb = new ProcessBuilder(plan.command());
       pb.redirectInput(ProcessBuilder.Redirect.PIPE);
       pb.redirectOutput(ProcessBuilder.Redirect.DISCARD);
       pb.redirectError(ProcessBuilder.Redirect.DISCARD);
 
-      if (scriptWorkingDirectory != null && !scriptWorkingDirectory.isBlank()) {
-        File cwd = new File(scriptWorkingDirectory);
+      if (plan.workingDirectory() != null && !plan.workingDirectory().isBlank()) {
+        File cwd = new File(plan.workingDirectory());
         if (!cwd.isDirectory()) {
           log.warn(
               "[ircafe] Event notification script working directory does not exist: {}",
-              scriptWorkingDirectory);
+              plan.workingDirectory());
           return;
         }
         pb.directory(cwd);
       }
 
       java.util.Map<String, String> env = pb.environment();
-      putEnv(env, "IRCAFE_EVENT_TYPE", eventType != null ? eventType.name() : "");
-      putEnv(env, "IRCAFE_SERVER_ID", serverId);
-      putEnv(env, "IRCAFE_CHANNEL", channel);
-      putEnv(env, "IRCAFE_SOURCE_NICK", sourceNick);
-      putEnv(
-          env,
-          "IRCAFE_SOURCE_IS_SELF",
-          sourceIsSelf == null ? "unknown" : Boolean.toString(sourceIsSelf));
-      putEnv(env, "IRCAFE_TITLE", title);
-      putEnv(env, "IRCAFE_BODY", body);
-      putEnv(env, "IRCAFE_CTCP_COMMAND", ctcpCommand);
-      putEnv(env, "IRCAFE_CTCP_VALUE", ctcpValue);
-      putEnv(env, "IRCAFE_TIMESTAMP_MS", Long.toString(System.currentTimeMillis()));
+      env.putAll(plan.environment());
 
       Process p = pb.start();
       boolean exited = p.waitFor(SCRIPT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
@@ -293,71 +300,5 @@ public class IrcEventNotificationService implements IrcEventNotifierPort {
     } catch (Exception ex) {
       log.warn("[ircafe] Could not run event notification script: {}", scriptPath, ex);
     }
-  }
-
-  /**
-   * Shell-like tokenizer for script argument strings.
-   *
-   * <p>Supports single/double quotes and backslash escaping without shell expansion.
-   */
-  private static List<String> parseCommandArgs(String rawArgs) {
-    String input = Objects.toString(rawArgs, "").trim();
-    if (input.isEmpty()) return List.of();
-
-    List<String> out = new ArrayList<>();
-    StringBuilder current = new StringBuilder();
-    boolean inSingle = false;
-    boolean inDouble = false;
-    boolean escaping = false;
-
-    for (int i = 0; i < input.length(); i++) {
-      char c = input.charAt(i);
-
-      if (escaping) {
-        current.append(c);
-        escaping = false;
-        continue;
-      }
-
-      if (c == '\\') {
-        escaping = true;
-        continue;
-      }
-
-      if (c == '\'' && !inDouble) {
-        inSingle = !inSingle;
-        continue;
-      }
-
-      if (c == '"' && !inSingle) {
-        inDouble = !inDouble;
-        continue;
-      }
-
-      if (Character.isWhitespace(c) && !inSingle && !inDouble) {
-        appendToken(out, current);
-        continue;
-      }
-
-      current.append(c);
-    }
-
-    if (escaping) current.append('\\');
-    if (inSingle || inDouble) {
-      throw new IllegalArgumentException("Unterminated quoted script arguments.");
-    }
-    appendToken(out, current);
-    return out;
-  }
-
-  private static void appendToken(List<String> out, StringBuilder current) {
-    if (current == null || current.isEmpty()) return;
-    out.add(current.toString());
-    current.setLength(0);
-  }
-
-  private static void putEnv(java.util.Map<String, String> env, String key, String value) {
-    if (env == null || key == null || key.isBlank()) return;
-    env.put(key, Objects.toString(value, ""));
   }
 }

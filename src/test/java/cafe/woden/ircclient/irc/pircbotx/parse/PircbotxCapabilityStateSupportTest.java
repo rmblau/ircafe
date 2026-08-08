@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import cafe.woden.ircclient.irc.ircv3.Ircv3CapabilitySnapshot;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
 import org.junit.jupiter.api.Test;
 
@@ -36,7 +37,7 @@ class PircbotxCapabilityStateSupportTest {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     PircbotxCapabilityStateSupport support = new PircbotxCapabilityStateSupport("libera", conn);
 
-    PircbotxConnectionState.CapabilitySnapshot before = conn.capabilitySnapshot();
+    Ircv3CapabilitySnapshot before = conn.capabilitySnapshot();
 
     support.apply("draft/typing", true, "ACK");
     support.apply("typing", false, "DEL");

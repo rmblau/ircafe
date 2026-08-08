@@ -1,38 +1,52 @@
 package cafe.woden.ircclient.irc.pircbotx.parse;
 
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.CHANNEL_CONTEXT;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_CHANNEL_CONTEXT;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_REACT;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_READ_MARKER;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_REPLY;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_UNREACT;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.READ_MARKER;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.REPLY;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.TYPING;
-
 import cafe.woden.ircclient.irc.IrcEvent;
 import cafe.woden.ircclient.irc.ServerIrcEvent;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ChannelContextRuntimeSupport;
+import cafe.woden.ircclient.irc.ircv3.Ircv3MessageMutationRuntimeSupport;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ReadMarkerRuntimeSupport;
+import cafe.woden.ircclient.irc.ircv3.Ircv3Tags;
+import cafe.woden.ircclient.irc.ircv3.Ircv3TypingRuntimeSupport;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundTagRequest;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundTagSignal;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundTagSignalType;
 import com.google.common.collect.ImmutableMap;
 import java.time.Instant;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/** Emits IRCv3 tag-derived message signals and exposes shared tag parsing helpers. */
+/** Adapts runtime SPI-owned IRCv3 tag signals into root IRC events. */
 public final class PircbotxTagSignalSupport {
 
   private static final Logger log = LoggerFactory.getLogger(PircbotxTagSignalSupport.class);
 
   private final String serverId;
   private final Consumer<ServerIrcEvent> sink;
+  private final Ircv3ChannelContextRuntimeSupport channelContextRuntimeSupport;
+  private final Ircv3MessageMutationRuntimeSupport messageMutationRuntimeSupport;
+  private final Ircv3ReadMarkerRuntimeSupport readMarkerRuntimeSupport;
+  private final Ircv3TypingRuntimeSupport typingRuntimeSupport;
 
-  public PircbotxTagSignalSupport(String serverId, Consumer<ServerIrcEvent> sink) {
+  public PircbotxTagSignalSupport(
+      String serverId,
+      Consumer<ServerIrcEvent> sink,
+      Ircv3ChannelContextRuntimeSupport channelContextRuntimeSupport,
+      Ircv3MessageMutationRuntimeSupport messageMutationRuntimeSupport,
+      Ircv3ReadMarkerRuntimeSupport readMarkerRuntimeSupport,
+      Ircv3TypingRuntimeSupport typingRuntimeSupport) {
     this.serverId = Objects.requireNonNull(serverId, "serverId");
     this.sink = Objects.requireNonNull(sink, "sink");
+    this.channelContextRuntimeSupport =
+        Objects.requireNonNull(channelContextRuntimeSupport, "channelContextRuntimeSupport");
+    this.messageMutationRuntimeSupport =
+        Objects.requireNonNull(messageMutationRuntimeSupport, "messageMutationRuntimeSupport");
+    this.readMarkerRuntimeSupport =
+        Objects.requireNonNull(readMarkerRuntimeSupport, "readMarkerRuntimeSupport");
+    this.typingRuntimeSupport =
+        Objects.requireNonNull(typingRuntimeSupport, "typingRuntimeSupport");
   }
 
   public void emitObservedSignals(
@@ -44,160 +58,94 @@ public final class PircbotxTagSignalSupport {
       ImmutableMap<String, String> tags) {
     if (tags == null || tags.isEmpty()) return;
 
-    String cmd = Objects.toString(command, "").trim().toUpperCase(Locale.ROOT);
     String firstParam = firstParam(parsedLine);
-    String msgTarget = !firstParam.isBlank() ? firstParam : stripLeadingColon(rawTarget);
-    String channelContext =
-        firstTag(
-            tags,
-            DRAFT_CHANNEL_CONTEXT,
-            "+" + DRAFT_CHANNEL_CONTEXT,
-            CHANNEL_CONTEXT,
-            "+" + CHANNEL_CONTEXT);
-    String convTarget = resolveSignalTarget(msgTarget, nick, channelContext);
+    String messageTarget = !firstParam.isBlank() ? firstParam : stripLeadingColon(rawTarget);
+    Ircv3InboundTagRequest request =
+        new Ircv3InboundTagRequest(command, nick, messageTarget, parsedLine, tags);
+    String conversationTarget = channelContextRuntimeSupport.resolve(request);
 
-    if (cmd.equals("PRIVMSG") || cmd.equals("NOTICE") || cmd.equals("TAGMSG")) {
-      String replyTo = firstTag(tags, REPLY, "+" + REPLY, DRAFT_REPLY, "+" + DRAFT_REPLY);
-      if (!replyTo.isBlank()) {
-        sink.accept(
-            new ServerIrcEvent(
-                serverId, new IrcEvent.MessageReplyObserved(at, nick, convTarget, replyTo)));
-      }
-
-      String react = firstTag(tags, DRAFT_REACT, "+" + DRAFT_REACT);
-      if (!react.isBlank()) {
-        sink.accept(
-            new ServerIrcEvent(
-                serverId,
-                new IrcEvent.MessageReactObserved(
-                    at, nick, convTarget, react, observedMessageId(tags))));
-      }
-
-      String unreact = firstTag(tags, DRAFT_UNREACT, "+" + DRAFT_UNREACT);
-      if (!unreact.isBlank()) {
-        sink.accept(
-            new ServerIrcEvent(
-                serverId,
-                new IrcEvent.MessageUnreactObserved(
-                    at, nick, convTarget, unreact, observedMessageId(tags))));
-      }
-
-      String redactMsgId =
-          firstTag(tags, "draft/delete", "+draft/delete", "draft/redact", "+draft/redact");
-      if (!redactMsgId.isBlank()) {
-        sink.accept(
-            new ServerIrcEvent(
-                serverId,
-                new IrcEvent.MessageRedactionObserved(at, nick, convTarget, redactMsgId)));
-      }
-
-      String typing = firstTag(tags, TYPING, "+" + TYPING);
-      if (!typing.isBlank()) {
-        if (log.isDebugEnabled()) {
-          log.debug(
-              "[{}] IRCv3 +typing tag: from={} target={} state={} cmd={}",
-              serverId,
-              nick,
-              convTarget,
-              typing,
-              cmd);
-        }
-        sink.accept(
-            new ServerIrcEvent(
-                serverId, new IrcEvent.UserTypingObserved(at, nick, convTarget, typing)));
-      }
-    }
-
-    String readMarker =
-        firstTag(tags, DRAFT_READ_MARKER, "+" + DRAFT_READ_MARKER, READ_MARKER, "+" + READ_MARKER);
-    if (!readMarker.isBlank()) {
-      sink.accept(
-          new ServerIrcEvent(
-              serverId, new IrcEvent.ReadMarkerObserved(at, nick, convTarget, readMarker)));
-    }
-  }
-
-  public static String resolveConversationTarget(String rawTarget, String fromNick) {
-    String target = Objects.toString(rawTarget, "").trim();
-    if (isChannelName(target)) return target;
-    String from = Objects.toString(fromNick, "").trim();
-    return from.isBlank() ? target : from;
-  }
-
-  public static boolean isChannelName(String target) {
-    String value = Objects.toString(target, "").trim();
-    if (value.isEmpty()) return false;
-    char leading = value.charAt(0);
-    return leading == '#' || leading == '&' || leading == '!' || leading == '+';
+    emitSignals(
+        at, nick, conversationTarget, messageMutationRuntimeSupport.conversationSignals(request));
+    typingRuntimeSupport
+        .fromTags(request)
+        .ifPresent(
+            observed -> {
+              if (log.isDebugEnabled()) {
+                log.debug(
+                    "[{}] IRCv3 +typing tag: from={} target={} state={} cmd={}",
+                    serverId,
+                    nick,
+                    conversationTarget,
+                    observed.state(),
+                    Objects.toString(command, ""));
+              }
+              emit(
+                  new IrcEvent.UserTypingObserved(
+                      at, nick, conversationTarget, observed.state()));
+            });
+    readMarkerRuntimeSupport
+        .fromTags(request)
+        .ifPresent(
+            observed ->
+                emit(
+                    new IrcEvent.ReadMarkerObserved(
+                        at, nick, conversationTarget, observed.marker())));
   }
 
   public static String firstTag(ImmutableMap<String, String> tags, String... keys) {
-    if (tags == null || tags.isEmpty() || keys == null) return "";
-    for (String key : keys) {
-      if (key == null || key.isBlank()) continue;
-      String wanted = normalizeTagKey(key);
-      for (Map.Entry<String, String> entry : tags.entrySet()) {
-        String actual = normalizeTagKey(entry.getKey());
-        if (!wanted.equals(actual)) continue;
-        String value = Objects.toString(entry.getValue(), "").trim();
-        if (value.isEmpty()) continue;
-        return unescapeTagValue(value);
+    return Ircv3Tags.firstDecodedTagValue(tags, keys);
+  }
+
+  private void emitSignals(
+      Instant at,
+      String nick,
+      String conversationTarget,
+      List<Ircv3InboundTagSignal> signals) {
+    for (Ircv3InboundTagSignal signal : signals) {
+      switch (signal.type()) {
+        case REPLY ->
+            emit(
+                new IrcEvent.MessageReplyObserved(
+                    at, nick, conversationTarget, signal.primaryValue()));
+        case REACT ->
+            emit(
+                new IrcEvent.MessageReactObserved(
+                    at,
+                    nick,
+                    conversationTarget,
+                    signal.primaryValue(),
+                    signal.secondaryValue()));
+        case UNREACT ->
+            emit(
+                new IrcEvent.MessageUnreactObserved(
+                    at,
+                    nick,
+                    conversationTarget,
+                    signal.primaryValue(),
+                    signal.secondaryValue()));
+        case MESSAGE_REDACTION ->
+            emit(
+                new IrcEvent.MessageRedactionObserved(
+                    at, nick, conversationTarget, signal.primaryValue()));
+        default -> {
+          // Other signal types are consumed by different root adapters.
+        }
       }
     }
-    return "";
+  }
+
+  private void emit(IrcEvent event) {
+    sink.accept(new ServerIrcEvent(serverId, event));
   }
 
   private static String firstParam(List<String> parsedLine) {
     if (parsedLine == null || parsedLine.isEmpty()) return "";
-    return stripLeadingColon(parsedLine.get(0));
+    return stripLeadingColon(parsedLine.getFirst());
   }
 
   private static String stripLeadingColon(String raw) {
     String value = Objects.toString(raw, "").trim();
     if (value.startsWith(":")) value = value.substring(1).trim();
     return value;
-  }
-
-  private static String resolveSignalTarget(
-      String rawTarget, String fromNick, String channelContextTag) {
-    String context = Objects.toString(channelContextTag, "").trim();
-    if (isChannelName(context)) return context;
-    return resolveConversationTarget(rawTarget, fromNick);
-  }
-
-  private static String observedMessageId(ImmutableMap<String, String> tags) {
-    String msgId = firstTag(tags, REPLY, "+" + REPLY, DRAFT_REPLY, "+" + DRAFT_REPLY);
-    if (!msgId.isBlank()) return msgId;
-    return firstTag(tags, "msgid", "+msgid", "draft/msgid", "+draft/msgid");
-  }
-
-  private static String normalizeTagKey(String raw) {
-    String key = Objects.toString(raw, "").trim();
-    if (key.startsWith("@")) key = key.substring(1).trim();
-    if (key.startsWith("+")) key = key.substring(1).trim();
-    return key.toLowerCase(Locale.ROOT);
-  }
-
-  private static String unescapeTagValue(String raw) {
-    if (raw == null || raw.isEmpty() || raw.indexOf('\\') < 0) return raw == null ? "" : raw;
-    StringBuilder out = new StringBuilder(raw.length());
-    for (int i = 0; i < raw.length(); i++) {
-      char current = raw.charAt(i);
-      if (current != '\\') {
-        out.append(current);
-        continue;
-      }
-      if (i + 1 >= raw.length()) break;
-      char escaped = raw.charAt(++i);
-      switch (escaped) {
-        case ':' -> out.append(';');
-        case 's' -> out.append(' ');
-        case 'r' -> out.append('\r');
-        case 'n' -> out.append('\n');
-        case '\\' -> out.append('\\');
-        default -> out.append(escaped);
-      }
-    }
-    return out.toString();
   }
 }

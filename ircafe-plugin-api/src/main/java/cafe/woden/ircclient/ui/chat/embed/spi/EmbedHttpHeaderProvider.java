@@ -4,22 +4,24 @@ import java.net.URI;
 import java.util.Map;
 
 /**
- * ServiceLoader-backed contribution point for embed HTTP request headers.
+ * ServiceLoader contribution for embed HTTP request headers.
  *
- * <p>This is the preferred HTTP-header SPI for new plugins. It is used for both direct image
- * fetches and link-preview fetches, so plugins can keep host-specific header behavior in one
- * provider instead of implementing separate image and preview adapters.
+ * <p>The provider is used for both direct-image and link-preview fetches. Return an empty map for
+ * unrelated URIs. IRCafe trims names and values, ignores blank entries, applies providers in order,
+ * and lets later valid values replace earlier values with the same header name. Provider failures
+ * are isolated from the fetch and may be reported through plugin diagnostics.
  *
  * <p>Register implementations with {@code
  * META-INF/services/cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider}.
+ * Implementations must be public and expose a public no-argument constructor.
  */
 public interface EmbedHttpHeaderProvider {
 
   /**
-   * Returns extra HTTP headers to apply when fetching the given embed URI.
+   * Returns extra headers for the URI, or an empty map when this provider does not apply.
    *
-   * <p>Providers should return an empty map when they do not apply to the URI. Blank header names
-   * or values are ignored by IRCafe before the request is sent.
+   * @param uri target embed URI
+   * @return contributed headers, or an empty map
    */
   Map<String, String> embedHttpHeaders(URI uri);
 }

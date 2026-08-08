@@ -12,6 +12,7 @@ import cafe.woden.ircclient.app.api.Ircv3ChatHistoryFeatureSupport;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
+import cafe.woden.ircclient.app.outbound.TestIrcv3RuntimeSupport;
 import cafe.woden.ircclient.app.outbound.backend.OutboundBackendCapabilityPolicy;
 import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpSink;
 import cafe.woden.ircclient.app.outbound.help.spi.OutboundHelpTargetView;
@@ -48,7 +49,11 @@ class OutboundChatHistoryCommandServiceTest {
           chatHistoryFeatureSupport);
   private final OutboundChatHistoryCommandService service =
       new OutboundChatHistoryCommandService(
-          irc, targetCoordinator, chatHistoryFeatureSupport, chatHistoryRequestSupport);
+          irc,
+          targetCoordinator,
+          chatHistoryFeatureSupport,
+          chatHistoryRequestSupport,
+          TestIrcv3RuntimeSupport.chatHistory());
   private final CompositeDisposable disposables = new CompositeDisposable();
 
   @AfterEach
@@ -185,6 +190,31 @@ class OutboundChatHistoryCommandServiceTest {
     service.topicHelpHandlers().get("history").accept(helpSink(chan));
 
     verify(ui).appendStatus(chan, "(help)", "/chathistory [limit]");
+  }
+
+  @Test
+  void chatHistorySelectorsUseFeatureNormalization() {
+    TargetRef chan = new TargetRef("libera", "#ircafe");
+    when(targetCoordinator.getActiveTarget()).thenReturn(chan);
+    when(connectionCoordinator.isConnected("libera")).thenReturn(true);
+    when(irc.isChatHistoryAvailable("libera")).thenReturn(true);
+    when(irc.requestChatHistoryBefore("libera", "#ircafe", "msgid=abc123", 200))
+        .thenReturn(Completable.complete());
+
+    service.handleChatHistoryBefore(disposables, 500, " MSGID=abc123 ");
+
+    verify(irc).requestChatHistoryBefore("libera", "#ircafe", "msgid=abc123", 200);
+  }
+
+  @Test
+  void chatHistoryRejectsUnsupportedSelectorKeys() {
+    TargetRef chan = new TargetRef("libera", "#ircafe");
+    when(targetCoordinator.getActiveTarget()).thenReturn(chan);
+
+    service.handleChatHistoryAround(disposables, "other=value", 20);
+
+    verify(ui).appendStatus(chan, "(chathistory)", "Around selector must be msgid=... or timestamp=...");
+    verify(irc, never()).requestChatHistoryAround(anyString(), anyString(), anyString(), eq(20));
   }
 
   private static OutboundBackendCapabilityPolicy backendCapabilityPolicy() {

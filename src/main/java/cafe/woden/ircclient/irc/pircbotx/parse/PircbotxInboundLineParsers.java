@@ -84,53 +84,6 @@ public final class PircbotxInboundLineParsers {
     return s.substring(trailingIdx + 2);
   }
 
-  public static ParsedInviteLine parseInviteLine(ParsedIrcLine parsed) {
-    if (parsed == null) return null;
-    String cmd = Objects.toString(parsed.command(), "").trim();
-    if (!"INVITE".equalsIgnoreCase(cmd)) return null;
-
-    String from = nickFromPrefix(parsed.prefix());
-    String invitee = "";
-    String channel = "";
-    String reason = "";
-
-    List<String> params = parsed.params();
-    if (params != null && !params.isEmpty()) {
-      invitee = Objects.toString(params.get(0), "").trim();
-      if (params.size() >= 2) {
-        channel = Objects.toString(params.get(1), "").trim();
-      }
-      if (params.size() >= 3) {
-        reason = Objects.toString(params.get(2), "").trim();
-      }
-    }
-
-    String trailing = Objects.toString(parsed.trailing(), "").trim();
-    if (!trailing.isEmpty()) {
-      if (channel.isEmpty()) {
-        int sp = trailing.indexOf(' ');
-        if (sp > 0) {
-          channel = trailing.substring(0, sp).trim();
-          reason = trailing.substring(sp + 1).trim();
-        } else {
-          channel = trailing;
-        }
-      } else if (!trailing.equalsIgnoreCase(channel)) {
-        if (trailing.startsWith(channel + " ")) {
-          reason = trailing.substring(channel.length()).trim();
-        } else {
-          reason = trailing;
-        }
-      }
-    }
-
-    if (channel.startsWith(":")) channel = channel.substring(1).trim();
-    if (reason.startsWith(":")) reason = reason.substring(1).trim();
-    if (channel.isBlank()) return null;
-
-    return new ParsedInviteLine(from, invitee, channel, reason);
-  }
-
   public static ParsedWallopsLine parseWallopsLine(ParsedIrcLine parsed) {
     if (parsed == null) return null;
     String cmd = Objects.toString(parsed.command(), "").trim();

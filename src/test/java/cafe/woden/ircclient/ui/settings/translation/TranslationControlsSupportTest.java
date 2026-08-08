@@ -11,7 +11,7 @@ import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguage;
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider;
 import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.ClientTranslationRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import java.util.ArrayList;
 import java.util.List;
@@ -309,7 +309,8 @@ class TranslationControlsSupportTest {
             2);
     MessageTranslationSettingsBus bus =
         new MessageTranslationSettingsBus(new IrcProperties(null, List.of()));
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    ClientTranslationRuntimeConfigPort runtimeConfig =
+        mock(ClientTranslationRuntimeConfigPort.class);
 
     TranslationControlsSupport.rememberSettings(runtimeConfig, bus, settings);
 

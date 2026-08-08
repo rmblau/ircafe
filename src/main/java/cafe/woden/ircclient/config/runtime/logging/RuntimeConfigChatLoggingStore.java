@@ -4,7 +4,6 @@ import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import java.nio.file.Path;
-import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,8 +47,7 @@ public class RuntimeConfigChatLoggingStore {
   }
 
   public synchronized void rememberDbFileBaseName(String fileBaseName) {
-    String base = Objects.toString(fileBaseName, "").trim();
-    if (base.isEmpty()) base = "ircafe-chatlog";
+    String base = RuntimeConfigChatLoggingSettingsCodec.normalizeDbFileBaseName(fileBaseName);
 
     rememberHsqldbScalarSetting("fileBaseName", base, "chat logging DB file base name");
   }
@@ -65,20 +63,22 @@ public class RuntimeConfigChatLoggingStore {
 
   public synchronized void rememberRetentionDays(int retentionDays) {
     rememberScalarSetting(
-        "retentionDays", Math.max(0, retentionDays), "chat logging retentionDays");
+        "retentionDays",
+        RuntimeConfigChatLoggingSettingsCodec.normalizeRetentionDays(retentionDays),
+        "chat logging retentionDays");
   }
 
   public synchronized void rememberWriterQueueMax(int writerQueueMax) {
     rememberScalarSetting(
         "writerQueueMax",
-        Math.max(100, Math.min(1_000_000, writerQueueMax)),
+        RuntimeConfigChatLoggingSettingsCodec.normalizeWriterQueueMax(writerQueueMax),
         "chat logging writerQueueMax");
   }
 
   public synchronized void rememberWriterBatchSize(int writerBatchSize) {
     rememberScalarSetting(
         "writerBatchSize",
-        Math.max(1, Math.min(10_000, writerBatchSize)),
+        RuntimeConfigChatLoggingSettingsCodec.normalizeWriterBatchSize(writerBatchSize),
         "chat logging writerBatchSize");
   }
 

@@ -8,6 +8,8 @@
       "irc",
       "irc::backend",
       "irc::enrichment",
+      "irc::ircv3",
+      "irc::ircv3-spi",
       "irc::playback",
       "irc::port",
       "irc::quassel-control",

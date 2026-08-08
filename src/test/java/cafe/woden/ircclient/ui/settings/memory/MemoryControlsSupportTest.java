@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.MemoryUsageRuntimeConfigPort;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JSpinner;
@@ -38,7 +38,7 @@ class MemoryControlsSupportTest {
 
   @Test
   void rememberSettingsPersistsMemoryValues() {
-    UiShellRuntimeConfigPort runtimeConfig = mock(UiShellRuntimeConfigPort.class);
+    MemoryUsageRuntimeConfigPort runtimeConfig = mock(MemoryUsageRuntimeConfigPort.class);
     MemoryControlsSupport.MemorySettings settings =
         new MemoryControlsSupport.MemorySettings(
             MemoryUsageDisplayMode.LONG, 2000, 7, true, false, true, false);

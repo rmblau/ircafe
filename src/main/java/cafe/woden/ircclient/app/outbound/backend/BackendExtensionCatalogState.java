@@ -5,13 +5,13 @@ import cafe.woden.ircclient.app.outbound.backend.spi.BackendEditorProfile;
 import cafe.woden.ircclient.app.outbound.backend.spi.BackendExtension;
 import cafe.woden.ircclient.app.outbound.backend.spi.BuiltInBackendIds;
 import cafe.woden.ircclient.app.outbound.backend.spi.OutboundBackendFeatureAdapter;
-import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationOutboundCommandLines;
 import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationOutboundCommands;
-import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationTargetView;
 import cafe.woden.ircclient.app.outbound.upload.spi.UploadCommandTranslationHandler;
 import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
+import cafe.woden.ircclient.irc.ircv3.Ircv3MessageMutationRuntimeCatalog;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3MessageMutationProvider;
 import cafe.woden.ircclient.util.PluginServiceLoaderSupport;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
@@ -29,49 +29,6 @@ final class BackendExtensionCatalogState {
   private static final BackendDescriptorCatalog BACKEND_DESCRIPTORS =
       BackendDescriptorCatalog.builtIns();
 
-  private static final MessageMutationOutboundCommands DEFAULT_MESSAGE_MUTATION_COMMANDS =
-      new MessageMutationOutboundCommands() {
-        @Override
-        public String backendId() {
-          return BuiltInBackendIds.IRC;
-        }
-
-        @Override
-        public String buildReplyRawLine(
-            MessageMutationTargetView target, String replyToMessageId, String message) {
-          return MessageMutationOutboundCommandLines.buildReplyRawLine(
-              target, replyToMessageId, message);
-        }
-
-        @Override
-        public String buildReactRawLine(
-            MessageMutationTargetView target, String replyToMessageId, String reaction) {
-          return MessageMutationOutboundCommandLines.buildReactRawLine(
-              target, replyToMessageId, reaction);
-        }
-
-        @Override
-        public String buildUnreactRawLine(
-            MessageMutationTargetView target, String replyToMessageId, String reaction) {
-          return MessageMutationOutboundCommandLines.buildUnreactRawLine(
-              target, replyToMessageId, reaction);
-        }
-
-        @Override
-        public String buildEditRawLine(
-            MessageMutationTargetView target, String targetMessageId, String editedText) {
-          return MessageMutationOutboundCommandLines.buildEditRawLine(
-              target, targetMessageId, editedText);
-        }
-
-        @Override
-        public String buildRedactRawLine(
-            MessageMutationTargetView target, String targetMessageId, String reason) {
-          return MessageMutationOutboundCommandLines.buildRedactRawLine(
-              target, targetMessageId, reason);
-        }
-      };
-
   private static final OutboundBackendFeatureAdapter DEFAULT_FEATURE_ADAPTER =
       new OutboundBackendFeatureAdapter() {
         @Override
@@ -82,26 +39,54 @@ final class BackendExtensionCatalogState {
 
   private final Map<String, BackendExtension> extensionsByBackendId;
   private final List<URLClassLoader> pluginClassLoaders;
+  private final Map<String, MessageMutationOutboundCommands> builtInMutationCommands;
 
   private BackendExtensionCatalogState(
-      List<BackendExtension> extensions, List<URLClassLoader> pluginClassLoaders) {
+      List<BackendExtension> extensions,
+      List<URLClassLoader> pluginClassLoaders,
+      Ircv3MessageMutationRuntimeCatalog mutationRuntimeCatalog) {
     this.extensionsByBackendId = indexExtensionsByBackendId(extensions);
     this.pluginClassLoaders =
         List.copyOf(Objects.requireNonNull(pluginClassLoaders, "pluginClassLoaders"));
+    Ircv3MessageMutationRuntimeCatalog runtimeCatalog =
+        Objects.requireNonNull(mutationRuntimeCatalog, "mutationRuntimeCatalog");
+    this.builtInMutationCommands =
+        Map.of(
+            BuiltInBackendIds.IRC,
+            new Ircv3MessageMutationOutboundCommands(BuiltInBackendIds.IRC, runtimeCatalog),
+            BuiltInBackendIds.MATRIX,
+            new Ircv3MessageMutationOutboundCommands(BuiltInBackendIds.MATRIX, runtimeCatalog),
+            BuiltInBackendIds.QUASSEL_CORE,
+            new Ircv3MessageMutationOutboundCommands(
+                BuiltInBackendIds.QUASSEL_CORE, runtimeCatalog));
+  }
+
+  static BackendExtensionCatalogState fromApplicationClasspath(
+      Ircv3MessageMutationRuntimeCatalog mutationRuntimeCatalog) {
+    return new BackendExtensionCatalogState(
+        BackendExtensionPluginProviders.applicationClasspathBackendExtensions(),
+        List.of(),
+        mutationRuntimeCatalog);
   }
 
   static BackendExtensionCatalogState fromInstalledServices(
-      List<BackendExtension> builtInExtensions, InstalledPluginsPort installedPluginsPort) {
+      InstalledPluginsPort installedPluginsPort,
+      Ircv3MessageMutationRuntimeCatalog mutationRuntimeCatalog) {
     InstalledPluginsPort pluginServices =
         Objects.requireNonNull(installedPluginsPort, "installedPluginsPort");
     return new BackendExtensionCatalogState(
-        BackendExtensionPluginProviders.backendExtensions(builtInExtensions, pluginServices),
-        List.of());
+        BackendExtensionPluginProviders.backendExtensions(pluginServices),
+        List.of(),
+        mutationRuntimeCatalog);
   }
 
-  static BackendExtensionCatalogState fromExtensions(List<BackendExtension> extensions) {
+  static BackendExtensionCatalogState fromExtensions(
+      List<BackendExtension> extensions,
+      Ircv3MessageMutationRuntimeCatalog mutationRuntimeCatalog) {
     return new BackendExtensionCatalogState(
-        List.copyOf(Objects.requireNonNull(extensions, "extensions")), List.of());
+        List.copyOf(Objects.requireNonNull(extensions, "extensions")),
+        List.of(),
+        mutationRuntimeCatalog);
   }
 
   static BackendExtensionCatalogState installed() {
@@ -121,11 +106,23 @@ final class BackendExtensionCatalogState {
 
   static BackendExtensionCatalogState installed(
       Path pluginDirectory, ClassLoader applicationClassLoader) {
-    PluginServiceLoaderSupport.LoadedServices<BackendExtension> loadedServices =
+    PluginServiceLoaderSupport.LoadedServices<BackendExtension> loadedExtensions =
         PluginServiceLoaderSupport.loadInstalledServices(
             BackendExtension.class, List.of(), pluginDirectory, applicationClassLoader, log);
+    PluginServiceLoaderSupport.LoadedServices<Ircv3MessageMutationProvider> loadedMutations =
+        PluginServiceLoaderSupport.loadInstalledServices(
+            Ircv3MessageMutationProvider.class,
+            List.of(),
+            pluginDirectory,
+            applicationClassLoader,
+            log);
+    ArrayList<URLClassLoader> pluginClassLoaders = new ArrayList<>();
+    pluginClassLoaders.addAll(loadedExtensions.pluginClassLoaders());
+    pluginClassLoaders.addAll(loadedMutations.pluginClassLoaders());
     return new BackendExtensionCatalogState(
-        loadedServices.services(), loadedServices.pluginClassLoaders());
+        loadedExtensions.services(),
+        pluginClassLoaders,
+        Ircv3MessageMutationRuntimeCatalog.fromProviders(loadedMutations.services()));
   }
 
   void shutdown() {
@@ -147,9 +144,16 @@ final class BackendExtensionCatalogState {
   }
 
   MessageMutationOutboundCommands messageMutationCommandsFor(String backendId) {
+    String normalizedBackendId = normalizeBackendId(backendId);
+    String resolvedBackendId =
+        normalizedBackendId.isEmpty() ? BuiltInBackendIds.IRC : normalizedBackendId;
     MessageMutationOutboundCommands commands =
-        extensionFor(backendId).messageMutationOutboundCommands();
-    return commands != null ? commands : DEFAULT_MESSAGE_MUTATION_COMMANDS;
+        extensionFor(resolvedBackendId).messageMutationOutboundCommands();
+    if (commands != null) {
+      return commands;
+    }
+    return builtInMutationCommands.getOrDefault(
+        resolvedBackendId, builtInMutationCommands.get(BuiltInBackendIds.IRC));
   }
 
   UploadCommandTranslationHandler uploadTranslationHandlerFor(String backendId) {
@@ -318,10 +322,6 @@ final class BackendExtensionCatalogState {
         return DEFAULT_FEATURE_ADAPTER;
       }
 
-      @Override
-      public MessageMutationOutboundCommands messageMutationOutboundCommands() {
-        return DEFAULT_MESSAGE_MUTATION_COMMANDS;
-      }
     };
   }
 

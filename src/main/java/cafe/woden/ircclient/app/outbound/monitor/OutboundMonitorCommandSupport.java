@@ -47,9 +47,8 @@ final class OutboundMonitorCommandSupport {
     return monitorFallbackPort.isFallbackActive(serverId);
   }
 
-  int negotiatedChunkSize(String serverId, int defaultChunkSize) {
-    int chunkSize = irc.negotiatedMonitorLimit(serverId);
-    return chunkSize > 0 ? chunkSize : defaultChunkSize;
+  int negotiatedChunkSize(String serverId) {
+    return Math.max(0, irc.negotiatedMonitorLimit(serverId));
   }
 
   void appendStatus(TargetRef target, String text) {

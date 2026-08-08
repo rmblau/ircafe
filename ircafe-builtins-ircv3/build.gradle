@@ -1,3 +1,0 @@
-description = 'Built-in IRCafe IRCv3 plugin providers.'
-
-apply from: rootProject.file('gradle/builtins-provider-conventions.gradle')

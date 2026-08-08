@@ -96,13 +96,17 @@ class PircbotxBridgeListenerUnknownCtcpTest {
 
   private static ListenerAdapter newListener(
       PircbotxConnectionState conn, FlowableProcessor<ServerIrcEvent> bus) {
+    Ircv3RuntimeTestFixtures.Runtime runtime = Ircv3RuntimeTestFixtures.runtime();
     return new PircbotxBridgeListenerFactory(
             new BouncerBackendRegistry(List.<BouncerNetworkMappingStrategy>of()),
             null,
             new NoOpPlaybackCursorProvider(),
             new ServerIsupportState(),
             new SojuProperties(Map.of(), new SojuProperties.Discovery(false)),
-            new ZncProperties(Map.of(), new ZncProperties.Discovery(false)))
+            new ZncProperties(Map.of(), new ZncProperties.Discovery(false)),
+            runtime.catalogs(),
+            runtime.serverTime(),
+            runtime.messageTags())
         .create(
             "libera",
             conn,

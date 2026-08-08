@@ -1,7 +1,9 @@
 package cafe.woden.ircclient.ui.shell;
 
 import cafe.woden.ircclient.app.ApplicationShutdownCoordinator;
-import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.DockLayoutRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.LagIndicatorRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.SelectedTargetRuntimeConfigPort;
 import cafe.woden.ircclient.config.properties.UiProperties;
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.ui.ChatDockable;
@@ -50,7 +52,7 @@ public class MainFrame extends JFrame {
   private static final int DEFAULT_SERVER_DOCK_WIDTH_PX = 280;
   private static final int DEFAULT_USERS_DOCK_WIDTH_PX = 240;
 
-  private final UiShellRuntimeConfigPort runtimeConfigStore;
+  private final SelectedTargetRuntimeConfigPort selectedTargetRuntimeConfig;
   private final ServerTreeDockable serverTree;
   private final LagIndicatorService lagIndicatorService;
   private final AtomicBoolean selectedTargetPersistedOnShutdown = new AtomicBoolean(false);
@@ -60,7 +62,9 @@ public class MainFrame extends JFrame {
   public MainFrame(
       AppMenuBar menuBar,
       UiProperties uiProps,
-      UiShellRuntimeConfigPort runtimeConfigStore,
+      DockLayoutRuntimeConfigPort dockLayoutRuntimeConfig,
+      SelectedTargetRuntimeConfigPort selectedTargetRuntimeConfig,
+      LagIndicatorRuntimeConfigPort lagIndicatorRuntimeConfig,
       TrayService trayService,
       ServerTreeDockable serverTree,
       ChatDockable chat,
@@ -71,7 +75,8 @@ public class MainFrame extends JFrame {
       StatusBar statusBar,
       ApplicationShutdownCoordinator shutdownCoordinator) {
     super(AppVersion.windowTitle());
-    this.runtimeConfigStore = runtimeConfigStore;
+
+    this.selectedTargetRuntimeConfig = selectedTargetRuntimeConfig;
     this.serverTree = serverTree;
     this.lagIndicatorService = lagIndicatorService;
 
@@ -112,8 +117,8 @@ public class MainFrame extends JFrame {
     add(root, BorderLayout.CENTER);
     add(statusBar, BorderLayout.SOUTH);
 
-    // Force initialization so lag polling starts even when the service bean is lazy.
-    this.lagIndicatorService.setEnabled(runtimeConfigStore.readLagIndicatorEnabled(true));
+    // Preserve the existing eager-start behavior while depending on the focused config port.
+    this.lagIndicatorService.setEnabled(lagIndicatorRuntimeConfig.readLagIndicatorEnabled(true));
 
     registerDockableIfNeeded(chat);
     registerDockableIfNeeded(serverTree);
@@ -133,7 +138,7 @@ public class MainFrame extends JFrame {
       if (dockingApi != null) {
         var appState = dockingApi.getAppState();
         if (appState != null) {
-          File persistFile = resolveDockLayoutPersistFile(runtimeConfigStore);
+          File persistFile = resolveDockLayoutPersistFile(dockLayoutRuntimeConfig);
           appState.setPersistFile(persistFile);
           appState.setAutoPersist(preserveDockLayout);
           if (preserveDockLayout && persistFile.isFile()) {
@@ -186,8 +191,8 @@ public class MainFrame extends JFrame {
               int clamped = Math.max(120, Math.min(1200, w));
               if (Math.abs(clamped - lastSavedServerDockWidth[0]) < 2) return;
               lastSavedServerDockWidth[0] = clamped;
-              if (runtimeConfigStore != null) {
-                runtimeConfigStore.rememberServerDockWidthPx(clamped);
+              if (dockLayoutRuntimeConfig != null) {
+                dockLayoutRuntimeConfig.rememberServerDockWidthPx(clamped);
               }
             });
     persistServerDockTimer.setRepeats(false);
@@ -201,8 +206,8 @@ public class MainFrame extends JFrame {
               int clamped = Math.max(120, Math.min(1200, w));
               if (Math.abs(clamped - lastSavedUsersDockWidth[0]) < 2) return;
               lastSavedUsersDockWidth[0] = clamped;
-              if (runtimeConfigStore != null) {
-                runtimeConfigStore.rememberUserDockWidthPx(clamped);
+              if (dockLayoutRuntimeConfig != null) {
+                dockLayoutRuntimeConfig.rememberUserDockWidthPx(clamped);
               }
             });
     persistUsersDockTimer.setRepeats(false);
@@ -222,8 +227,8 @@ public class MainFrame extends JFrame {
             int clamped = Math.max(120, Math.min(1200, sw));
             if (Math.abs(clamped - lastSavedServerDockWidth[0]) >= 2) {
               lastSavedServerDockWidth[0] = clamped;
-              if (runtimeConfigStore != null) {
-                runtimeConfigStore.rememberServerDockWidthPx(clamped);
+              if (dockLayoutRuntimeConfig != null) {
+                dockLayoutRuntimeConfig.rememberServerDockWidthPx(clamped);
               }
             }
           }
@@ -233,8 +238,8 @@ public class MainFrame extends JFrame {
             int clamped = Math.max(120, Math.min(1200, uw));
             if (Math.abs(clamped - lastSavedUsersDockWidth[0]) >= 2) {
               lastSavedUsersDockWidth[0] = clamped;
-              if (runtimeConfigStore != null) {
-                runtimeConfigStore.rememberUserDockWidthPx(clamped);
+              if (dockLayoutRuntimeConfig != null) {
+                dockLayoutRuntimeConfig.rememberUserDockWidthPx(clamped);
               }
             }
           }
@@ -243,16 +248,16 @@ public class MainFrame extends JFrame {
           int currentServerDockWidth = stableDockWidthSeed(serverTree, lastSavedServerDockWidth[0]);
           if (Math.abs(currentServerDockWidth - lastSavedServerDockWidth[0]) >= 2) {
             lastSavedServerDockWidth[0] = currentServerDockWidth;
-            if (runtimeConfigStore != null) {
-              runtimeConfigStore.rememberServerDockWidthPx(currentServerDockWidth);
+            if (dockLayoutRuntimeConfig != null) {
+              dockLayoutRuntimeConfig.rememberServerDockWidthPx(currentServerDockWidth);
             }
           }
 
           int currentUsersDockWidth = stableDockWidthSeed(users, lastSavedUsersDockWidth[0]);
           if (Math.abs(currentUsersDockWidth - lastSavedUsersDockWidth[0]) >= 2) {
             lastSavedUsersDockWidth[0] = currentUsersDockWidth;
-            if (runtimeConfigStore != null) {
-              runtimeConfigStore.rememberUserDockWidthPx(currentUsersDockWidth);
+            if (dockLayoutRuntimeConfig != null) {
+              dockLayoutRuntimeConfig.rememberUserDockWidthPx(currentUsersDockWidth);
             }
           }
         };
@@ -405,14 +410,15 @@ public class MainFrame extends JFrame {
   }
 
   private void persistSelectedTargetForShutdown() {
-    if (runtimeConfigStore == null || serverTree == null) return;
+    if (selectedTargetRuntimeConfig == null || serverTree == null) return;
     if (!selectedTargetPersistedOnShutdown.compareAndSet(false, true)) return;
 
     TargetRef selected = readSelectedTargetOnEdt();
     if (selected == null) return;
 
     try {
-      runtimeConfigStore.rememberLastSelectedTarget(selected.serverId(), selected.target());
+      selectedTargetRuntimeConfig.rememberLastSelectedTarget(
+          selected.serverId(), selected.target());
     } catch (Exception ignored) {
     }
   }
@@ -461,8 +467,8 @@ public class MainFrame extends JFrame {
     }
   }
 
-  private static File resolveDockLayoutPersistFile(UiShellRuntimeConfigPort runtimeConfigStore) {
-    Path configPath = runtimeConfigStore != null ? runtimeConfigStore.runtimeConfigPath() : null;
+  private static File resolveDockLayoutPersistFile(DockLayoutRuntimeConfigPort runtimeConfig) {
+    Path configPath = runtimeConfig != null ? runtimeConfig.runtimeConfigPath() : null;
     Path configDir = configPath != null ? configPath.getParent() : null;
     if (configDir == null) {
       String home = System.getProperty("user.home", ".");

@@ -1,22 +1,12 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
-import cafe.woden.ircclient.net.HttpLite;
-import cafe.woden.ircclient.net.ProxyPlan;
 import cafe.woden.ircclient.net.ServerProxyResolver;
 import cafe.woden.ircclient.util.RxVirtualSchedulers;
 import io.reactivex.rxjava3.core.Single;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.ref.SoftReference;
-import java.net.Proxy;
 import java.net.URI;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.jmolecules.architecture.layered.InterfaceLayer;
@@ -33,20 +23,25 @@ import org.springframework.stereotype.Component;
 public class ImageFetchService {
 
   private static final Logger log = LoggerFactory.getLogger(ImageFetchService.class);
+  private static final ImageFetchHttpHeaders IMAGE_HEADERS = new ImageFetchHttpHeaders();
+  private static final ImageFetchDownloadPolicy DEFAULT_DOWNLOAD_POLICY =
+      new ImageFetchDownloadPolicy();
+  private static final ImageFetchPlanningService DEFAULT_PLANNING_SERVICE =
+      new ImageFetchPlanningService();
 
   // Safety guardrails: stop reading after this many bytes.
   // IMDb/Amazon posters and some modern sites regularly exceed 8 MiB. We still keep a ceiling to
   // avoid runaway memory usage, but allow larger images.
-  public static final int MAX_BYTES = 20 * 1024 * 1024; // 20 MiB
+  public static final int MAX_BYTES = ImageFetchDownloadService.DEFAULT_MAX_BYTES;
   private static final int MAX_CACHE_KEYS = 2048;
   private static final int CACHE_PRUNE_MAX_REMOVALS = 256;
 
-  private final ConcurrentMap<String, SoftReference<byte[]>> cache = new ConcurrentHashMap<>();
+  private final EmbedSoftValueCache<byte[]> cache =
+      new EmbedSoftValueCache<>(MAX_CACHE_KEYS, CACHE_PRUNE_MAX_REMOVALS);
   private final ConcurrentMap<String, Single<byte[]>> inflight = new ConcurrentHashMap<>();
 
-  private final ServerProxyResolver proxyResolver;
-  private final List<cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider>
-      headerProviders;
+  private final ImageFetchPlanningService planningService;
+  private final ImageFetchDownloadService downloadService;
 
   public ImageFetchService(ServerProxyResolver proxyResolver) {
     this(proxyResolver, (InstalledPluginsPort) null);
@@ -55,26 +50,88 @@ public class ImageFetchService {
   @Autowired
   public ImageFetchService(
       ServerProxyResolver proxyResolver,
-      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
-    this(proxyResolver, resolveInstalledPlugins(installedPluginsProvider));
+      ObjectProvider<InstalledPluginsPort> installedPluginsProvider,
+      ImageFetchPlanningService planningService,
+      ImageFetchDownloadPolicy downloadPolicy,
+      ImageFetchResponseReader responseReader,
+      ImageFetchResponsePolicy responsePolicy,
+      ImageFetchHttpHeaders imageFetchHttpHeaders) {
+    this(
+        proxyResolver,
+        resolveInstalledPlugins(installedPluginsProvider),
+        planningService,
+        downloadPolicy,
+        responseReader,
+        responsePolicy,
+        imageFetchHttpHeaders);
   }
 
   ImageFetchService(ServerProxyResolver proxyResolver, InstalledPluginsPort installedPlugins) {
-    this.proxyResolver = proxyResolver;
-    this.headerProviders = loadHeaderProviders(installedPlugins);
+    this(
+        proxyResolver,
+        installedPlugins,
+        DEFAULT_PLANNING_SERVICE,
+        DEFAULT_DOWNLOAD_POLICY,
+        new ImageFetchResponseReader(DEFAULT_DOWNLOAD_POLICY),
+        new ImageFetchResponsePolicy(DEFAULT_DOWNLOAD_POLICY),
+        IMAGE_HEADERS);
+  }
+
+  ImageFetchService(
+      ServerProxyResolver proxyResolver,
+      InstalledPluginsPort installedPlugins,
+      ImageFetchDownloadPolicy downloadPolicy) {
+    this(
+        proxyResolver,
+        installedPlugins,
+        DEFAULT_PLANNING_SERVICE,
+        downloadPolicy,
+        new ImageFetchResponseReader(downloadPolicy),
+        new ImageFetchResponsePolicy(downloadPolicy),
+        IMAGE_HEADERS);
+  }
+
+  ImageFetchService(
+      ServerProxyResolver proxyResolver,
+      InstalledPluginsPort installedPlugins,
+      ImageFetchPlanningService planningService,
+      ImageFetchDownloadPolicy downloadPolicy,
+      ImageFetchResponseReader responseReader,
+      ImageFetchResponsePolicy responsePolicy,
+      ImageFetchHttpHeaders imageFetchHttpHeaders) {
+    this.planningService = planningService != null ? planningService : DEFAULT_PLANNING_SERVICE;
+    ImageFetchDownloadPolicy effectiveDownloadPolicy =
+        downloadPolicy != null ? downloadPolicy : DEFAULT_DOWNLOAD_POLICY;
+    ImageFetchResponseReader effectiveResponseReader =
+        responseReader != null
+            ? responseReader
+            : new ImageFetchResponseReader(effectiveDownloadPolicy);
+    ImageFetchResponsePolicy effectiveResponsePolicy =
+        responsePolicy != null
+            ? responsePolicy
+            : new ImageFetchResponsePolicy(effectiveDownloadPolicy);
+    this.downloadService =
+        new ImageFetchDownloadService(
+            new DefaultImageFetchHttpClient(proxyResolver),
+            loadHeaderProviders(installedPlugins),
+            imageFetchHttpHeaders != null ? imageFetchHttpHeaders : IMAGE_HEADERS,
+            effectiveResponseReader,
+            effectiveResponsePolicy,
+            MAX_BYTES,
+            ImageFetchService::logHeaderProviderFailure);
   }
 
   public Single<byte[]> fetch(String serverId, String url) {
-    String base = normalizeKey(url);
-    if (base.isEmpty()) {
-      return Single.error(new IllegalArgumentException("Empty URL"));
+    final ImageFetchPlan plan;
+    try {
+      plan = planningService.plan(serverId, url);
+    } catch (RuntimeException ex) {
+      return Single.error(ex);
     }
 
-    String sid = Objects.toString(serverId, "").trim();
-    // Images can vary by proxy (blocked/geo/CDN variants), so isolate cache by server.
-    String key = sid + "|" + base;
+    String key = plan.cacheKey();
 
-    byte[] cached = getCached(key);
+    byte[] cached = cache.get(key);
     if (cached != null) {
       return Single.just(cached);
     }
@@ -83,50 +140,19 @@ public class ImageFetchService {
     return inflight.computeIfAbsent(
         key,
         k ->
-            Single.fromCallable(() -> download(sid, base))
+            Single.fromCallable(() -> downloadService.download(plan.serverId(), plan.url()))
                 .subscribeOn(RxVirtualSchedulers.io())
-                .doOnSuccess(
-                    bytes -> {
-                      cache.put(k, new SoftReference<>(bytes));
-                      pruneCacheKeysIfNeeded();
-                    })
+                .doOnSuccess(bytes -> cache.put(k, bytes))
                 .doOnError(
                     err ->
                         log.warn(
-                            "Image fetch failed for {}: {}", safeForLog(base), summarizeErr(err)))
+                            "Image fetch failed for {}: {}",
+                            safeForLog(plan.url()),
+                            summarizeErr(err)))
                 .doFinally(() -> inflight.remove(k))
                 // cache() turns this into a replaying Single so late subscribers get the same
                 // outcome.
                 .cache());
-  }
-
-  private byte[] getCached(String key) {
-    SoftReference<byte[]> ref = cache.get(key);
-    return ref != null ? ref.get() : null;
-  }
-
-  private void pruneCacheKeysIfNeeded() {
-    int size = cache.size();
-    if (size <= MAX_CACHE_KEYS) {
-      return;
-    }
-
-    int removed = 0;
-    for (Map.Entry<String, SoftReference<byte[]>> e : cache.entrySet()) {
-      if (removed >= CACHE_PRUNE_MAX_REMOVALS) break;
-      SoftReference<byte[]> ref = e.getValue();
-      byte[] value = ref != null ? ref.get() : null;
-      if (value == null || cache.size() > MAX_CACHE_KEYS) {
-        if (cache.remove(e.getKey(), ref)) {
-          removed++;
-        }
-      }
-    }
-  }
-
-  private static String normalizeKey(String url) {
-    if (url == null) return "";
-    return Objects.toString(url, "").trim();
   }
 
   // Back-compat for any callers not yet server-aware.
@@ -134,169 +160,24 @@ public class ImageFetchService {
     return fetch(null, url);
   }
 
-  private byte[] download(String serverId, String url) throws IOException, InterruptedException {
-    return download(serverId, url, 0);
-  }
-
-  private byte[] download(String serverId, String url, int attempt)
-      throws IOException, InterruptedException {
-    URI uri = URI.create(url);
-    String scheme = uri.getScheme();
-    if (scheme == null) throw new IOException("URL has no scheme: " + url);
-    scheme = scheme.toLowerCase(Locale.ROOT);
-    if (!scheme.equals("http") && !scheme.equals("https")) {
-      throw new IOException("Unsupported URL scheme for image embed: " + scheme);
+  private static void logHeaderProviderFailure(LinkPreviewHttpHeaderProviderFailure failure) {
+    if (failure == null || failure.provider() == null) {
+      return;
     }
-
-    // Use HttpURLConnection (via HttpLite) so SOCKS proxies work.
-    // java.net.http.HttpClient does not support SOCKS proxies.
-    Map<String, String> headers = headersForEmbedProviders(uri, headerProviders);
-
-    ProxyPlan plan =
-        (proxyResolver != null) ? proxyResolver.planForServer(serverId) : ProxyPlan.direct();
-    Proxy proxy = (plan.proxy() != null) ? plan.proxy() : Proxy.NO_PROXY;
-    HttpLite.Response<InputStream> res =
-        HttpLite.getStream(uri, headers, proxy, plan.connectTimeoutMs(), plan.readTimeoutMs());
-    int code = res.statusCode();
-    String contentType = res.headers().firstValue("content-type").orElse("");
-    long contentLength = res.headers().firstValueAsLong("content-length").orElse(-1L);
-    if (code < 200 || code >= 300) {
-      log.warn(
-          "Image fetch HTTP {} for {} (content-type={}, content-length={})",
-          code,
-          safeForLog(url),
-          safeForLog(contentType),
-          contentLength);
-
-      // Ensure we don't leak the connection.
-      try (InputStream ignored = res.body()) {
-        // no-op
-      }
-
-      // Amazon CDN sometimes doesn't like certain sized variants. If we're on a sized URL and it
-      // fails, retry once with the unsized original.
-      if (attempt == 0) {
-        String fallback = maybeUnsizedAmazonUrl(url);
-        if (!fallback.equals(url)) {
-          log.warn(
-              "Retrying Amazon image without size token after HTTP {}: {}",
-              code,
-              safeForLog(fallback));
-          return download(serverId, fallback, attempt + 1);
-        }
-      }
-
-      throw new IOException("HTTP " + code + " for " + url);
-    }
-
-    // If the server tells us it's too big, try a sized Amazon variant once (when applicable).
-    if (contentLength > MAX_BYTES) {
-      // Ensure we don't leak the connection.
-      try (InputStream ignored = res.body()) {
-        // no-op
-      }
-      if (attempt == 0) {
-        String sized = maybeSizedAmazonUrl(url, 512);
-        if (!sized.equals(url)) {
-          log.warn(
-              "Image too large by content-length ({} bytes > {}), retrying sized Amazon URL: {}",
-              contentLength,
-              MAX_BYTES,
-              safeForLog(sized));
-          return download(serverId, sized, attempt + 1);
-        }
-      }
-      throw new IOException("Image too large (" + contentLength + " bytes > " + MAX_BYTES + ")");
-    }
-
-    try (InputStream in = res.body();
-        ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-      byte[] buf = new byte[8192];
-      int n;
-      int total = 0;
-      int sampleCap = 4096;
-      byte[] sample = new byte[sampleCap];
-      int sampleN = 0;
-      while ((n = in.read(buf)) >= 0) {
-        if (n == 0) continue;
-        total += n;
-        if (total > MAX_BYTES) {
-          if (attempt == 0) {
-            String sized = maybeSizedAmazonUrl(url, 512);
-            if (!sized.equals(url)) {
-              log.warn(
-                  "Image too large while streaming (> {} bytes), retrying sized Amazon URL: {}",
-                  MAX_BYTES,
-                  safeForLog(sized));
-              return download(serverId, sized, attempt + 1);
-            }
-          }
-          throw new IOException("Image too large (streamed > " + MAX_BYTES + " bytes)");
-        }
-        out.write(buf, 0, n);
-
-        // Capture a small sample to help diagnose CDN blocks returning HTML.
-        if (sampleN < sampleCap) {
-          int toCopy = Math.min(n, sampleCap - sampleN);
-          System.arraycopy(buf, 0, sample, sampleN, toCopy);
-          sampleN += toCopy;
-        }
-      }
-
-      byte[] bytes = out.toByteArray();
-
-      // Many CDNs (including IMDb/Amazon) sometimes return an HTML bot-check page with a 200.
-      // If that happens, ImageIO will fail and the user just sees a missing thumbnail.
-      // Detect that early and log a useful warning.
-      if (looksLikeHtmlResponse(contentType, sample, sampleN)) {
-        String sampleText = safeSampleText(sample, sampleN);
-        log.warn(
-            "Image fetch got HTML instead of an image for {} (content-type={}, bytes={}) sample={}",
-            safeForLog(url),
-            safeForLog(contentType),
-            bytes.length,
-            safeForLog(sampleText));
-        throw new IOException("Image endpoint returned HTML (likely blocked)");
-      }
-
-      return bytes;
-    }
+    cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider provider = failure.provider();
+    log.warn(
+        "Embed HTTP header provider failed: {}", provider.getClass().getName(), failure.error());
   }
 
   static Map<String, String> headersForEmbedProviders(
       URI uri,
       List<? extends cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider>
           headerProviders) {
-    Map<String, String> headers = new HashMap<>();
-    headers.put(
-        PreviewHttp.HEADER_USER_AGENT,
-        needsInstagramReferer(uri) ? PreviewHttp.BROWSER_USER_AGENT : PreviewHttp.USER_AGENT);
-    headers.put(PreviewHttp.HEADER_ACCEPT_LANGUAGE, PreviewHttp.ACCEPT_LANGUAGE);
-    headers.put(PreviewHttp.HEADER_ACCEPT_ENCODING, "gzip");
-    // IMPORTANT: Do NOT advertise AVIF by default.
-    // Some CDNs will pick AVIF whenever it's present in Accept (ignoring q=), and ImageIO
-    // can't decode it without a native/plugin decoder. If you later add AVIF support,
-    // you can add image/avif back into this header.
-    headers.put(
-        PreviewHttp.HEADER_ACCEPT,
-        "image/jpeg,image/png,image/webp,image/gif,image/*;q=0.5,*/*;q=0.4");
-    // Some CDNs are picky; these headers help us look like a browser fetching an image.
-    headers.put("Sec-Fetch-Dest", "image");
-    headers.put("Sec-Fetch-Mode", "no-cors");
-
-    // Some IMDb/Amazon image endpoints can be picky without a referer.
-    if (needsImdbReferer(uri)) {
-      headers.put(PreviewHttp.HEADER_REFERER, "https://www.imdb.com/");
+    LinkPreviewHttpHeaderResult result = IMAGE_HEADERS.headersFor(uri, headerProviders);
+    for (LinkPreviewHttpHeaderProviderFailure failure : result.failures()) {
+      logHeaderProviderFailure(failure);
     }
-
-    // Instagram CDN endpoints can return bot-check HTML without a referer.
-    if (!headers.containsKey(PreviewHttp.HEADER_REFERER) && needsInstagramReferer(uri)) {
-      headers.put(PreviewHttp.HEADER_REFERER, "https://www.instagram.com/");
-    }
-
-    EmbedHttpHeaderProviders.applyProviderHeaders(
-        headers, uri, headerProviders, log, "Embed HTTP header provider");
-    return Map.copyOf(headers);
+    return result.headers();
   }
 
   private static List<cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider>
@@ -307,113 +188,6 @@ public class ImageFetchService {
   private static InstalledPluginsPort resolveInstalledPlugins(
       ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
     return installedPluginsProvider == null ? null : installedPluginsProvider.getIfAvailable();
-  }
-
-  private static String maybeSizedAmazonUrl(String url, int widthPx) {
-    if (url == null || url.isBlank()) return url;
-    if (widthPx <= 0) return url;
-
-    String lower = url.toLowerCase(Locale.ROOT);
-    if (!(lower.contains("media-amazon.com") || lower.contains("images-amazon.com"))) return url;
-
-    String marker = "@._V1_";
-    int idx = url.indexOf(marker);
-    if (idx < 0) return url;
-
-    String after = url.substring(idx + marker.length());
-    if (after.startsWith("UX")
-        || after.startsWith("UY")
-        || after.startsWith("SX")
-        || after.startsWith("SY")) {
-      return url;
-    }
-
-    return url.substring(0, idx) + marker + "UX" + widthPx + "_" + after;
-  }
-
-  private static String maybeUnsizedAmazonUrl(String url) {
-    if (url == null || url.isBlank()) return url;
-    String lower = url.toLowerCase(Locale.ROOT);
-    if (!(lower.contains("media-amazon.com") || lower.contains("images-amazon.com"))) return url;
-
-    String marker = "@._V1_";
-    int idx = url.indexOf(marker);
-    if (idx < 0) return url;
-
-    String after = url.substring(idx + marker.length());
-    // Remove a leading size token like UX256_ or UY512_ if present.
-    // This is intentionally simple and only targets the immediate token after @._V1_.
-    String stripped = after.replaceFirst("^(U[XY]|S[XY])\\d+_", "");
-    if (stripped.equals(after)) return url;
-
-    return url.substring(0, idx) + marker + stripped;
-  }
-
-  private static boolean needsImdbReferer(URI uri) {
-    if (uri == null) return false;
-    String host = uri.getHost();
-    if (host == null) return false;
-    host = host.toLowerCase(Locale.ROOT);
-    return host.contains("media-amazon.com")
-        || host.contains("images-amazon.com")
-        || host.contains("amazonaws.com");
-  }
-
-  private static boolean needsInstagramReferer(URI uri) {
-    if (uri == null) return false;
-    String host = uri.getHost();
-    if (host == null || host.isBlank()) return false;
-    String h = host.toLowerCase(Locale.ROOT);
-    if (h.startsWith("www.")) h = h.substring(4);
-
-    if (h.equals("instagram.com") || h.endsWith(".instagram.com") || h.equals("instagr.am")) {
-      return true;
-    }
-
-    // Common direct media hosts.
-    if (h.contains("cdninstagram.com")) return true;
-    if (h.endsWith("fbcdn.net") && h.contains("instagram")) return true;
-    return false;
-  }
-
-  private static boolean looksLikeHtmlResponse(String contentType, byte[] sample, int sampleN) {
-    try {
-      if (contentType != null && !contentType.isBlank()) {
-        // If the server explicitly says it's HTML/XML, treat it as a block page.
-        String ct = contentType.toLowerCase(Locale.ROOT);
-        if (ct.contains("text/html") || ct.contains("application/xhtml") || ct.contains("xml"))
-          return true;
-        if (ct.startsWith("image/")) return false;
-      }
-      if (sample == null || sampleN <= 0) return false;
-
-      // Heuristic sniff: HTML typically starts with '<' or contains known bot-check text.
-      int i = 0;
-      while (i < sampleN
-          && (sample[i] == '\n' || sample[i] == '\r' || sample[i] == '\t' || sample[i] == ' ')) i++;
-      if (i < sampleN && sample[i] == '<') return true;
-      String s = safeSampleText(sample, sampleN).toLowerCase(Locale.ROOT);
-      return s.contains("not a robot")
-          || s.contains("verify")
-          || s.contains("javascript is disabled")
-          || s.contains("access denied")
-          || s.contains("captcha");
-    } catch (Exception ignored) {
-      return false;
-    }
-  }
-
-  private static String safeSampleText(byte[] sample, int n) {
-    if (sample == null || n <= 0) return "";
-    try {
-      int len = Math.min(n, sample.length);
-      String s = new String(sample, 0, len, java.nio.charset.StandardCharsets.UTF_8);
-      s = s.replaceAll("\\s+", " ").trim();
-      if (s.length() > 220) s = s.substring(0, 220) + "…";
-      return s;
-    } catch (Exception ignored) {
-      return "";
-    }
   }
 
   private static String safeForLog(String s) {

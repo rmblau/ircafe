@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.irc.pircbotx.emit;
 
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.runtime;
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.chatHistoryBatches;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.mock;
@@ -12,7 +14,6 @@ import cafe.woden.ircclient.irc.backend.*;
 import cafe.woden.ircclient.irc.ircv3.*;
 import cafe.woden.ircclient.irc.pircbotx.listener.*;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
-import cafe.woden.ircclient.irc.pircbotx.support.Ircv3MultilineAccumulator;
 import cafe.woden.ircclient.irc.playback.*;
 import cafe.woden.ircclient.state.ServerIsupportState;
 import java.util.ArrayList;
@@ -92,6 +93,7 @@ class PircbotxPrivateMessageEmitterTest {
       List<ServerIrcEvent> events,
       java.util.function.Function<Object, String> privateTargetResolver,
       java.util.function.Function<PircBotX, String> selfNickResolver) {
+    var runtime = runtime();
     PircbotxRosterEmitter rosterEmitter =
         new PircbotxRosterEmitter("libera", conn, new ServerIsupportState(), events::add);
     PircbotxBouncerDiscoveryCoordinator bouncerDiscovery =
@@ -103,7 +105,7 @@ class PircbotxPrivateMessageEmitterTest {
             new BouncerBackendRegistry(List.of()),
             BouncerDiscoveryEventPort.noOp());
     PircbotxChatHistoryBatchCollector batches =
-        new PircbotxChatHistoryBatchCollector("libera", events::add);
+        chatHistoryBatches("libera", events::add);
     return new PircbotxPrivateMessageEmitter(
         "libera",
         conn,
@@ -113,7 +115,10 @@ class PircbotxPrivateMessageEmitterTest {
         new Ircv3MultilineAccumulator(),
         events::add,
         selfNickResolver,
-        privateTargetResolver);
+        privateTargetResolver,
+        runtime.serverTime(),
+        runtime.messageTags(),
+        runtime.historyTransport());
   }
 
   private static PrivateMessageEvent privateMessage(String nick, String message) {

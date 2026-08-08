@@ -1,0 +1,8 @@
+apply from: rootProject.file('gradle/builtins-provider-conventions.gradle')
+
+description = 'Built-in IRCafe IRCv3 BATCH metadata and runtime provider.'
+
+dependencies {
+    implementation project(':ircafe-feature-ircv3-batch')
+    implementation project(':ircafe-feature-ircv3-message-tags')
+}

@@ -6,6 +6,7 @@
       "config::api",
       "model",
       "notify::api",
+      "notify::api-sound",
       "notify::spi",
       "util"
     })

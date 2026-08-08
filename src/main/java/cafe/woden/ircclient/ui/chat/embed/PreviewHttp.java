@@ -44,11 +44,8 @@ public final class PreviewHttp implements LinkPreviewHttp {
   public static final String HEADER_REFERER = HttpHeaderNames.REFERER;
   public static final String HEADER_USER_AGENT = HttpHeaderNames.USER_AGENT;
   public static final String HEADER_X_GITHUB_API_VERSION = HttpHeaderNames.X_GITHUB_API_VERSION;
-  private static final Map<String, String> BASE_HEADERS =
-      Map.of(
-          HEADER_USER_AGENT, USER_AGENT,
-          HEADER_ACCEPT_LANGUAGE, ACCEPT_LANGUAGE,
-          HEADER_ACCEPT_ENCODING, "gzip");
+  private static final LinkPreviewHttpAdapterHeaders ADAPTER_HEADERS =
+      new LinkPreviewHttpAdapterHeaders();
 
   private final Proxy proxy;
   private final int connectTimeoutMs;
@@ -114,16 +111,16 @@ public final class PreviewHttp implements LinkPreviewHttp {
       Map<String, String> extraHeaders,
       List<? extends cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider>
           headerProviders) {
-    Map<String, String> headers = new HashMap<>(BASE_HEADERS);
-    if (accept != null && !accept.isBlank()) {
-      headers.put(HEADER_ACCEPT, accept);
-    } else {
-      headers.put(HEADER_ACCEPT, "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8");
+    LinkPreviewHttpHeaderResult result =
+        ADAPTER_HEADERS.headersFor(uri, accept, extraHeaders, headerProviders);
+    for (LinkPreviewHttpHeaderProviderFailure failure : result.failures()) {
+      cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider provider = failure.provider();
+      log.warn(
+          "Preview HTTP header provider failed: {}",
+          provider.getClass().getName(),
+          failure.error());
     }
-    EmbedHttpHeaderProviders.applyProviderHeaders(
-        headers, uri, headerProviders, log, "Preview HTTP header provider");
-    if (extraHeaders != null) headers.putAll(extraHeaders);
-    return Map.copyOf(headers);
+    return result.headers();
   }
 
   public static Optional<String> header(LinkPreviewHttpResponse<?> response, String name) {

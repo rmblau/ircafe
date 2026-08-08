@@ -4,8 +4,6 @@ import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import java.nio.file.Path;
-import java.util.Locale;
-import java.util.Objects;
 import java.util.function.IntUnaryOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +20,7 @@ public class RuntimeConfigMemoryUsageStore {
   }
 
   public synchronized void rememberDisplayMode(String mode) {
-    String normalized = normalizeDisplayMode(mode);
+    String normalized = RuntimeConfigMemoryUsageSettingsCodec.normalizeDisplayMode(mode);
     rememberScalar("memoryUsageDisplayMode", normalized, "ui.memoryUsageDisplayMode");
   }
 
@@ -30,17 +28,17 @@ public class RuntimeConfigMemoryUsageStore {
     return readUiInt(
         "memoryUsageRefreshIntervalMs",
         defaultValue,
-        RuntimeConfigMemoryUsageStore::clampRefreshIntervalMs,
+        RuntimeConfigMemoryUsageSettingsCodec::normalizeRefreshIntervalMs,
         "ui.memoryUsageRefreshIntervalMs");
   }
 
   public synchronized void rememberRefreshIntervalMs(int intervalMs) {
-    int normalized = clampRefreshIntervalMs(intervalMs);
+    int normalized = RuntimeConfigMemoryUsageSettingsCodec.normalizeRefreshIntervalMs(intervalMs);
     rememberScalar("memoryUsageRefreshIntervalMs", normalized, "ui.memoryUsageRefreshIntervalMs");
   }
 
   public synchronized void rememberWarningNearMaxPercent(int percent) {
-    int normalized = Math.max(1, Math.min(50, percent));
+    int normalized = RuntimeConfigMemoryUsageSettingsCodec.normalizeWarningNearMaxPercent(percent);
     rememberScalar(
         "memoryUsageWarningNearMaxPercent", normalized, "ui.memoryUsageWarningNearMaxPercent");
   }
@@ -77,24 +75,5 @@ public class RuntimeConfigMemoryUsageStore {
 
   private void rememberScalar(String key, Object value, String description) {
     uiSection.putValue(description, value, key);
-  }
-
-  private static String normalizeDisplayMode(String mode) {
-    String normalized = Objects.toString(mode, "").trim().toLowerCase(Locale.ROOT);
-    return switch (normalized) {
-      case "short", "compact" -> "short";
-      case "indicator", "gauge", "bar" -> "indicator";
-      case "moon", "moon-phase", "moon-phases", "lunar" -> "moon";
-      case "hidden", "off", "none", "disable", "disabled" -> "hidden";
-      default -> "long";
-    };
-  }
-
-  private static int clampRefreshIntervalMs(int intervalMs) {
-    int value = intervalMs;
-    if (value <= 0) value = 1000;
-    if (value < 250) value = 250;
-    if (value > 60_000) value = 60_000;
-    return value;
   }
 }

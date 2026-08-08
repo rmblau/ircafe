@@ -1,17 +1,12 @@
 package cafe.woden.ircclient.config.api;
 
-import cafe.woden.ircclient.config.properties.PushyProperties;
 import org.jmolecules.architecture.hexagonal.SecondaryPort;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 
-/** Runtime-config contract for persisted tray, notification sound, and Pushy settings. */
+/** Runtime-config contract for persisted tray and notification-sound settings. */
 @SecondaryPort
 @ApplicationLayer
 public interface TrayRuntimeConfigPort extends RuntimeConfigPathPort {
-
-  boolean readUpdateNotifierEnabled(boolean defaultValue);
-
-  boolean readLagIndicatorEnabled(boolean defaultValue);
 
   void rememberTrayEnabled(boolean enabled);
 
@@ -44,10 +39,4 @@ public interface TrayRuntimeConfigPort extends RuntimeConfigPathPort {
   void rememberTrayNotificationSoundUseCustom(boolean useCustom);
 
   void rememberTrayNotificationSoundCustomPath(String relativePath);
-
-  void rememberUpdateNotifierEnabled(boolean enabled);
-
-  void rememberLagIndicatorEnabled(boolean enabled);
-
-  void rememberPushySettings(PushyProperties settings);
 }

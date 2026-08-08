@@ -1,12 +1,17 @@
 package cafe.woden.ircclient.config;
 
+import cafe.woden.ircclient.config.api.DockLayoutRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.LagIndicatorRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.MemoryUsageRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.SelectedTargetRuntimeConfigPort.LastSelectedTarget;
 import cafe.woden.ircclient.config.api.ServerTreeBuiltInVisibilityConfigPort.ServerTreeBuiltInNodesVisibility;
 import cafe.woden.ircclient.config.api.ServerTreeChannelStateConfigPort.ServerTreeChannelSortMode;
 import cafe.woden.ircclient.config.api.ServerTreeChannelStateConfigPort.ServerTreeChannelState;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayout;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeRootSiblingOrder;
 import cafe.woden.ircclient.config.api.ServerTreeRuntimeConfigPort;
-import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort.LastSelectedTarget;
+import cafe.woden.ircclient.config.api.TrayCloseHintRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.UpdateNotifierRuntimeConfigPort;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +27,13 @@ import org.springframework.stereotype.Component;
 @Component
 @SecondaryAdapter
 @ApplicationLayer
-public final class RuntimeConfigServerTreeAdapter implements ServerTreeRuntimeConfigPort {
+public final class RuntimeConfigServerTreeAdapter
+    implements ServerTreeRuntimeConfigPort,
+        DockLayoutRuntimeConfigPort,
+        LagIndicatorRuntimeConfigPort,
+        MemoryUsageRuntimeConfigPort,
+        TrayCloseHintRuntimeConfigPort,
+        UpdateNotifierRuntimeConfigPort {
   private final RuntimeConfigStore runtimeConfig;
 
   public RuntimeConfigServerTreeAdapter(RuntimeConfigStore runtimeConfig) {
@@ -237,6 +248,11 @@ public final class RuntimeConfigServerTreeAdapter implements ServerTreeRuntimeCo
   @Override
   public void rememberUserDockWidthPx(int userDockWidthPx) {
     runtimeConfig.rememberUserDockWidthPx(userDockWidthPx);
+  }
+
+  @Override
+  public void rememberPreserveDockLayout(boolean preserveDockLayout) {
+    runtimeConfig.rememberPreserveDockLayout(preserveDockLayout);
   }
 
   @Override

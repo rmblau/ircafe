@@ -1,10 +1,9 @@
 package cafe.woden.ircclient.irc.znc;
 
 import cafe.woden.ircclient.bouncer.AbstractBouncerAutoConnectStore;
-import cafe.woden.ircclient.bouncer.spi.BuiltInBouncerNetworkNaming;
+import cafe.woden.ircclient.bouncer.ZncAutoConnectNetworkKeyNormalizer;
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
 import cafe.woden.ircclient.config.properties.ZncProperties;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import org.jmolecules.architecture.layered.ApplicationLayer;
@@ -26,25 +25,25 @@ import org.springframework.stereotype.Component;
 @ApplicationLayer
 public class ZncAutoConnectStore extends AbstractBouncerAutoConnectStore {
 
+  private final ZncAutoConnectNetworkKeyNormalizer networkKeyNormalizer;
+
   public ZncAutoConnectStore(ZncProperties props, BouncerDiscoveryConfigPort runtimeConfig) {
+    this(props, runtimeConfig, new ZncAutoConnectNetworkKeyNormalizer());
+  }
+
+  ZncAutoConnectStore(
+      ZncProperties props,
+      BouncerDiscoveryConfigPort runtimeConfig,
+      ZncAutoConnectNetworkKeyNormalizer networkKeyNormalizer) {
     super(runtimeConfig);
+    this.networkKeyNormalizer =
+        Objects.requireNonNull(networkKeyNormalizer, "networkKeyNormalizer");
     initialize(props == null ? Map.of() : props.autoConnectCopy());
   }
 
   @Override
   protected String normalizeNetworkKey(String networkName) {
-    String v = BuiltInBouncerNetworkNaming.sanitizeZncNetworkSegment(networkName);
-    v = Objects.toString(v, "").trim();
-    if (v.isEmpty()) return null;
-
-    // Make keys stable + user-friendly: collapse runs of '_' and trim leading/trailing '_'.
-    v = v.replaceAll("_+", "_");
-    while (v.startsWith("_")) v = v.substring(1);
-    while (v.endsWith("_")) v = v.substring(0, v.length() - 1);
-
-    v = v.trim();
-    if (v.isEmpty()) return null;
-    return v.toLowerCase(Locale.ROOT);
+    return networkKeyNormalizer.normalize(networkName);
   }
 
   @Override

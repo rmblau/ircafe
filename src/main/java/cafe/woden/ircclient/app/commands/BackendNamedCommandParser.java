@@ -32,18 +32,10 @@ public class BackendNamedCommandParser {
   }
 
   static String argAfter(String line, String cmd) {
-    if (line == null || cmd == null) return "";
-    if (line.equalsIgnoreCase(cmd)) return "";
-    if (line.length() <= cmd.length()) return "";
-    String rest = line.substring(cmd.length());
-    return rest.trim();
+    return SlashCommandLineSupport.argAfter(line, cmd);
   }
 
   static boolean matchesCommand(String line, String command) {
-    if (line == null || command == null || line.isBlank() || command.isBlank()) return false;
-    if (line.equalsIgnoreCase(command)) return true;
-    return line.regionMatches(true, 0, command, 0, command.length())
-        && line.length() > command.length()
-        && Character.isWhitespace(line.charAt(command.length()));
+    return SlashCommandLineSupport.matchesCommand(line, command);
   }
 }

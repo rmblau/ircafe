@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler;
 import cafe.woden.ircclient.app.commands.spi.BackendNamedCommandParseResult;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
+import cafe.woden.ircclient.plugin.spi.IrcafePluginManifest;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -28,7 +29,9 @@ class InstalledPluginServicesTest {
   @Test
   void loadsServicesFromPluginsNextToRuntimeConfig() throws Exception {
     Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
-    Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
+    Path pluginDir =
+        Files.createDirectories(
+            runtimeConfigDirectory.resolve(IrcafePluginManifest.DEFAULT_PLUGIN_DIRECTORY_NAME));
     CompiledPluginJarSupport.writePluginJar(
         pluginDir.resolve("backendping.jar"),
         REAL_PLUGIN_PROVIDER_CLASS,
@@ -43,7 +46,9 @@ class InstalledPluginServicesTest {
       List<BackendNamedCommandHandler> services =
           installedPlugins.loadInstalledServices(BackendNamedCommandHandler.class, List.of());
 
-      assertEquals(runtimeConfigDirectory.resolve("plugins"), installedPlugins.pluginDirectory());
+      assertEquals(
+          runtimeConfigDirectory.resolve(IrcafePluginManifest.DEFAULT_PLUGIN_DIRECTORY_NAME),
+          installedPlugins.pluginDirectory());
       assertEquals(1, installedPlugins.installedPlugins().size());
       assertEquals("installed-plugin", installedPlugins.installedPlugins().getFirst().pluginId());
       assertTrue(installedPlugins.pluginProblems().isEmpty());
@@ -59,7 +64,9 @@ class InstalledPluginServicesTest {
   @Test
   void keepsHealthyPluginProvidersWhenAnotherPluginProviderIsInvalid() throws Exception {
     Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("broken-plugins/ircafe"));
-    Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
+    Path pluginDir =
+        Files.createDirectories(
+            runtimeConfigDirectory.resolve(IrcafePluginManifest.DEFAULT_PLUGIN_DIRECTORY_NAME));
     CompiledPluginJarSupport.writePluginJar(
         pluginDir.resolve("healthy-provider.jar"),
         REAL_PLUGIN_PROVIDER_CLASS,
@@ -94,6 +101,84 @@ class InstalledPluginServicesTest {
       assertTrue(installedPlugins.pluginProblems().getFirst().summary().contains("broken-plugin"));
       assertTrue(
           installedPlugins.pluginProblems().getFirst().details().contains("broken-provider.jar"));
+      assertTrue(installedPlugins.pluginProblems().getFirst().details().contains("Error type:"));
+    } finally {
+      installedPlugins.shutdown();
+    }
+  }
+
+  @Test
+  void recordsDuplicateDeclaredPluginIdsWithoutLoadingDuplicateJar() throws Exception {
+    Path runtimeConfigDirectory =
+        Files.createDirectories(tempDir.resolve("duplicate-plugins/ircafe"));
+    Path pluginDir =
+        Files.createDirectories(
+            runtimeConfigDirectory.resolve(IrcafePluginManifest.DEFAULT_PLUGIN_DIRECTORY_NAME));
+    CompiledPluginJarSupport.writePluginJar(
+        pluginDir.resolve("duplicate-one.jar"),
+        REAL_PLUGIN_PROVIDER_CLASS,
+        pluginProviderSource(),
+        BackendNamedCommandHandler.class.getName(),
+        CompiledPluginJarSupport.compatibleManifest("duplicate-plugin", "1.0.0"));
+    CompiledPluginJarSupport.writePluginJar(
+        pluginDir.resolve("duplicate-two.jar"),
+        REAL_PLUGIN_PROVIDER_CLASS,
+        pluginProviderSource(),
+        BackendNamedCommandHandler.class.getName(),
+        CompiledPluginJarSupport.compatibleManifest("duplicate-plugin", "2.0.0"));
+    RuntimeConfigPathPort runtimeConfigPathPort =
+        () -> runtimeConfigDirectory.resolve("ircafe.yml");
+
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+    try {
+      List<BackendNamedCommandHandler> services =
+          installedPlugins.loadInstalledServices(BackendNamedCommandHandler.class, List.of());
+
+      assertEquals(1, installedPlugins.installedPlugins().size());
+      assertEquals("duplicate-plugin", installedPlugins.installedPlugins().getFirst().pluginId());
+      assertEquals("1.0.0", installedPlugins.installedPlugins().getFirst().pluginVersion());
+      assertEquals(1, installedPlugins.pluginProblems().size());
+      assertTrue(
+          installedPlugins.pluginProblems().getFirst().summary().contains("duplicate-plugin"));
+      assertTrue(
+          installedPlugins.pluginProblems().getFirst().details().contains("duplicate-one.jar"));
+      assertTrue(
+          installedPlugins.pluginProblems().getFirst().details().contains("duplicate-two.jar"));
+      assertEquals(
+          1,
+          services.stream()
+              .filter(service -> REAL_PLUGIN_PROVIDER_CLASS.equals(service.getClass().getName()))
+              .count());
+    } finally {
+      installedPlugins.shutdown();
+    }
+  }
+
+  @Test
+  void exposesImplementationVersionFallbackInInstalledPluginDescriptor() throws Exception {
+    Path runtimeConfigDirectory =
+        Files.createDirectories(tempDir.resolve("implementation-version/ircafe"));
+    Path pluginDir =
+        Files.createDirectories(
+            runtimeConfigDirectory.resolve(IrcafePluginManifest.DEFAULT_PLUGIN_DIRECTORY_NAME));
+    CompiledPluginJarSupport.writePluginJar(
+        pluginDir.resolve("implementation-version-provider.jar"),
+        REAL_PLUGIN_PROVIDER_CLASS,
+        pluginProviderSource(),
+        BackendNamedCommandHandler.class.getName(),
+        CompiledPluginJarSupport.compatibleManifestUsingImplementationVersion(
+            "implementation-version-plugin", "7.8.9"));
+    RuntimeConfigPathPort runtimeConfigPathPort =
+        () -> runtimeConfigDirectory.resolve("ircafe.yml");
+
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+    try {
+      assertEquals(1, installedPlugins.installedPlugins().size());
+      assertEquals(
+          "implementation-version-plugin",
+          installedPlugins.installedPlugins().getFirst().pluginId());
+      assertEquals("7.8.9", installedPlugins.installedPlugins().getFirst().pluginVersion());
+      assertTrue(installedPlugins.pluginProblems().isEmpty());
     } finally {
       installedPlugins.shutdown();
     }
@@ -103,7 +188,9 @@ class InstalledPluginServicesTest {
   void keepsHealthyPluginWhenAnotherDeclaredPluginManifestIsInvalid() throws Exception {
     Path runtimeConfigDirectory =
         Files.createDirectories(tempDir.resolve("invalid-manifest/ircafe"));
-    Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
+    Path pluginDir =
+        Files.createDirectories(
+            runtimeConfigDirectory.resolve(IrcafePluginManifest.DEFAULT_PLUGIN_DIRECTORY_NAME));
     CompiledPluginJarSupport.writePluginJar(
         pluginDir.resolve("healthy-provider.jar"),
         REAL_PLUGIN_PROVIDER_CLASS,
@@ -176,10 +263,8 @@ class InstalledPluginServicesTest {
     var manifest = new java.util.jar.Manifest();
     var attributes = manifest.getMainAttributes();
     attributes.put(java.util.jar.Attributes.Name.MANIFEST_VERSION, "1.0");
-    attributes.putValue(
-        cafe.woden.ircclient.util.PluginServiceLoaderSupport.PLUGIN_ID_ATTRIBUTE, pluginId);
-    attributes.putValue(
-        cafe.woden.ircclient.util.PluginServiceLoaderSupport.PLUGIN_VERSION_ATTRIBUTE, "1.0.0");
+    attributes.putValue(IrcafePluginManifest.PLUGIN_ID_ATTRIBUTE, pluginId);
+    attributes.putValue(IrcafePluginManifest.PLUGIN_VERSION_ATTRIBUTE, "1.0.0");
     try (JarOutputStream out = new JarOutputStream(Files.newOutputStream(jarPath), manifest)) {
       out.putNextEntry(new JarEntry("plugin/metadata.txt"));
       out.write("invalid".getBytes(StandardCharsets.UTF_8));

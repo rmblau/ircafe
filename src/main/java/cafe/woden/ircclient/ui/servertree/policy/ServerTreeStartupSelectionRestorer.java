@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.servertree.policy;
 
-import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.SelectedTargetRuntimeConfigPort;
 import cafe.woden.ircclient.model.TargetRef;
 import java.util.Objects;
 import java.util.Optional;
@@ -85,12 +85,12 @@ public final class ServerTreeStartupSelectionRestorer {
     };
   }
 
-  public static TargetRef readRememberedSelection(UiShellRuntimeConfigPort runtimeConfig) {
+  public static TargetRef readRememberedSelection(SelectedTargetRuntimeConfigPort runtimeConfig) {
     if (runtimeConfig == null) return null;
-    Optional<UiShellRuntimeConfigPort.LastSelectedTarget> remembered =
+    Optional<SelectedTargetRuntimeConfigPort.LastSelectedTarget> remembered =
         runtimeConfig.readLastSelectedTarget();
     if (remembered.isEmpty()) return null;
-    UiShellRuntimeConfigPort.LastSelectedTarget selected = remembered.get();
+    SelectedTargetRuntimeConfigPort.LastSelectedTarget selected = remembered.get();
     if (!selected.isValid()) return null;
     try {
       return new TargetRef(selected.serverId(), selected.target());

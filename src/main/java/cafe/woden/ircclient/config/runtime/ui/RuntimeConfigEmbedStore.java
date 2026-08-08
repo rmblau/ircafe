@@ -3,8 +3,6 @@ package cafe.woden.ircclient.config.runtime.ui;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import java.nio.file.Path;
-import java.util.Locale;
-import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,12 +27,16 @@ public class RuntimeConfigEmbedStore {
 
   public synchronized void rememberImageEmbedsMaxWidthPx(int maxWidthPx) {
     rememberScalarSetting(
-        "imageEmbedsMaxWidthPx", Math.max(0, maxWidthPx), "image embed max width");
+        "imageEmbedsMaxWidthPx",
+        RuntimeConfigEmbedSettingsCodec.normalizeImageDimensionPx(maxWidthPx),
+        "image embed max width");
   }
 
   public synchronized void rememberImageEmbedsMaxHeightPx(int maxHeightPx) {
     rememberScalarSetting(
-        "imageEmbedsMaxHeightPx", Math.max(0, maxHeightPx), "image embed max height");
+        "imageEmbedsMaxHeightPx",
+        RuntimeConfigEmbedSettingsCodec.normalizeImageDimensionPx(maxHeightPx),
+        "image embed max height");
   }
 
   public synchronized void rememberImageEmbedsAnimateGifs(boolean animate) {
@@ -50,9 +52,10 @@ public class RuntimeConfigEmbedStore {
   }
 
   public synchronized void rememberEmbedCardStyle(String styleToken) {
-    String token = Objects.toString(styleToken, "").trim().toLowerCase(Locale.ROOT);
-    if (token.isBlank()) token = "default";
-    rememberScalarSetting("embedCardStyle", token, "embed card style");
+    rememberScalarSetting(
+        "embedCardStyle",
+        RuntimeConfigEmbedSettingsCodec.normalizeEmbedCardStyle(styleToken),
+        "embed card style");
   }
 
   private void rememberScalarSetting(String key, Object value, String description) {

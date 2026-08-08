@@ -1,12 +1,10 @@
 package cafe.woden.ircclient.config.runtime.ui;
 
-import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
-import cafe.woden.ircclient.config.properties.UiProperties;
+import cafe.woden.ircclient.config.api.QuitMessageRuntimeConfigPort;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import java.nio.file.Path;
-import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,7 +14,7 @@ public class RuntimeConfigChatBehaviorStore {
 
   private static final Logger log = LoggerFactory.getLogger(RuntimeConfigChatBehaviorStore.class);
   private static final String DEFAULT_QUIT_MESSAGE =
-      ChatCommandRuntimeConfigPort.DEFAULT_QUIT_MESSAGE;
+      QuitMessageRuntimeConfigPort.DEFAULT_QUIT_MESSAGE;
 
   private final RuntimeConfigYamlSection uiSection;
 
@@ -26,7 +24,7 @@ public class RuntimeConfigChatBehaviorStore {
 
   public synchronized String readDefaultQuitMessage() {
     return readUiValue("ui.defaultQuitMessage", "defaultQuitMessage")
-        .map(RuntimeConfigChatBehaviorStore::normalizeQuitMessage)
+        .map(RuntimeConfigChatBehaviorSettingsCodec::normalizeQuitMessage)
         .orElse(DEFAULT_QUIT_MESSAGE);
   }
 
@@ -49,7 +47,7 @@ public class RuntimeConfigChatBehaviorStore {
   }
 
   public synchronized void rememberDefaultQuitMessage(String message) {
-    String normalized = normalizeQuitMessage(message);
+    String normalized = RuntimeConfigChatBehaviorSettingsCodec.normalizeQuitMessage(message);
     if (DEFAULT_QUIT_MESSAGE.equals(normalized)) {
       uiSection.removeExistingValueAndPruneEmptyParents(
           "ui.defaultQuitMessage", "defaultQuitMessage");
@@ -82,7 +80,8 @@ public class RuntimeConfigChatBehaviorStore {
   }
 
   public synchronized void rememberTypingTreeIndicatorStyle(String style) {
-    String normalized = UiProperties.normalizeTypingTreeIndicatorStyle(style);
+    String normalized =
+        RuntimeConfigChatBehaviorSettingsCodec.normalizeTypingTreeIndicatorStyle(style);
     rememberScalarSetting("typingTreeIndicatorStyle", normalized, "typing tree indicator style");
   }
 
@@ -95,7 +94,8 @@ public class RuntimeConfigChatBehaviorStore {
   }
 
   public synchronized void rememberMatrixUserListNameDisplayMode(String mode) {
-    String normalized = UiProperties.normalizeMatrixUserListNameDisplayMode(mode);
+    String normalized =
+        RuntimeConfigChatBehaviorSettingsCodec.normalizeMatrixUserListNameDisplayMode(mode);
     rememberScalarSetting(
         "matrixUserListNameDisplayMode", normalized, "Matrix user list name display mode");
   }
@@ -109,15 +109,18 @@ public class RuntimeConfigChatBehaviorStore {
   }
 
   public synchronized int readServerTreeUnreadBadgeScalePercent(int defaultValue) {
-    int fallback = clampServerTreeUnreadBadgeScalePercent(defaultValue);
+    int fallback =
+        RuntimeConfigChatBehaviorSettingsCodec.normalizeServerTreeUnreadBadgeScalePercent(
+            defaultValue);
     return readUiValue("ui.serverTreeUnreadBadgeScalePercent", "serverTreeUnreadBadgeScalePercent")
         .flatMap(RuntimeConfigYamlSupport::asInt)
-        .map(RuntimeConfigChatBehaviorStore::clampServerTreeUnreadBadgeScalePercent)
+        .map(RuntimeConfigChatBehaviorSettingsCodec::normalizeServerTreeUnreadBadgeScalePercent)
         .orElse(fallback);
   }
 
   public synchronized void rememberServerTreeUnreadBadgeScalePercent(int percent) {
-    int normalized = clampServerTreeUnreadBadgeScalePercent(percent);
+    int normalized =
+        RuntimeConfigChatBehaviorSettingsCodec.normalizeServerTreeUnreadBadgeScalePercent(percent);
     rememberScalarSetting(
         "serverTreeUnreadBadgeScalePercent", normalized, "ui.serverTreeUnreadBadgeScalePercent");
   }
@@ -137,19 +140,5 @@ public class RuntimeConfigChatBehaviorStore {
 
   private void rememberScalarSetting(String key, Object value, String description) {
     uiSection.putValue(description, value, key);
-  }
-
-  private static String normalizeQuitMessage(Object message) {
-    String normalized = Objects.toString(message, "").replace('\r', ' ').replace('\n', ' ').trim();
-    if (normalized.isEmpty()) return DEFAULT_QUIT_MESSAGE;
-    return normalized;
-  }
-
-  private static int clampServerTreeUnreadBadgeScalePercent(int percent) {
-    int v = percent;
-    if (v <= 0) v = 100;
-    if (v < 50) v = 50;
-    if (v > 150) v = 150;
-    return v;
   }
 }

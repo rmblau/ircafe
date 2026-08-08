@@ -60,7 +60,7 @@ class QuasselCoreIrcClientServiceMockVerifyTest {
         .thenReturn(new QuasselCoreAuthHandshake.AuthResult("quassel", 1, List.of(1), Map.of()));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -107,7 +107,7 @@ class QuasselCoreIrcClientServiceMockVerifyTest {
         .thenThrow(new EOFException("end of replay"));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 
@@ -145,7 +145,7 @@ class QuasselCoreIrcClientServiceMockVerifyTest {
                 0x00000001, QuasselCoreProtocolProbe.PROTOCOL_LEGACY, 0, 0));
 
     QuasselCoreIrcClientService service =
-        new QuasselCoreIrcClientService(
+        QuasselRuntimeTestFixtures.service(
             serverCatalog, connector, protocolProbe, authHandshake, datastreamCodec);
     TestSubscriber<ServerIrcEvent> events = service.events().test();
 

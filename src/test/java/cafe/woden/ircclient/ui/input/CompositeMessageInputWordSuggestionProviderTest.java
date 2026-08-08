@@ -24,8 +24,8 @@ class CompositeMessageInputWordSuggestionProviderTest {
 
   @Test
   void mergesBuiltInAndPluginSuggestionsThroughInstalledPluginPort() {
-    MessageInputWordSuggestionProvider builtIn = new StaticSuggestions("hello", "help");
-    MessageInputWordSuggestionProvider plugin = new StaticSuggestions("help", "helium", "hero");
+    MessageInputWordSuggestionProvider builtIn = new BuiltInSuggestions("hello", "help");
+    MessageInputWordSuggestionProvider plugin = new PluginSuggestions("help", "helium", "hero");
     MessageInputWordSuggestionProvider composite =
         CompositeMessageInputWordSuggestionProvider.from(
             builtIn, new RecordingInstalledPluginsPort(List.of(plugin)));
@@ -35,12 +35,12 @@ class CompositeMessageInputWordSuggestionProviderTest {
 
   @Test
   void ignoresFailingPluginSuggestionProviders() {
-    MessageInputWordSuggestionProvider builtIn = new StaticSuggestions("hello");
+    MessageInputWordSuggestionProvider builtIn = new BuiltInSuggestions("hello");
     MessageInputWordSuggestionProvider failing =
         (token, maxSuggestions) -> {
           throw new IllegalStateException("boom");
         };
-    MessageInputWordSuggestionProvider plugin = new StaticSuggestions("help");
+    MessageInputWordSuggestionProvider plugin = new PluginSuggestions("help");
     MessageInputWordSuggestionProvider composite =
         CompositeMessageInputWordSuggestionProvider.from(
             builtIn, new RecordingInstalledPluginsPort(List.of(failing, plugin)));
@@ -64,18 +64,30 @@ class CompositeMessageInputWordSuggestionProviderTest {
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
     MessageInputWordSuggestionProvider composite =
         CompositeMessageInputWordSuggestionProvider.from(
-            new StaticSuggestions("built"), installedPlugins);
+            new BuiltInSuggestions("built"), installedPlugins);
 
     assertTrue(installedPlugins.pluginProblems().isEmpty());
     assertEquals(List.of("built", "plugin-alpha", "plugin-beta"), composite.suggestWords("pl", 8));
   }
 
   @Test
+  void dedupesSuggestionProvidersByProviderClass() {
+    MessageInputWordSuggestionProvider builtIn = new DuplicateSuggestions("built");
+    MessageInputWordSuggestionProvider duplicatePlugin = new DuplicateSuggestions("duplicate");
+    MessageInputWordSuggestionProvider plugin = new PluginSuggestions("plugin");
+    MessageInputWordSuggestionProvider composite =
+        CompositeMessageInputWordSuggestionProvider.from(
+            builtIn, new RecordingInstalledPluginsPort(List.of(duplicatePlugin, plugin)));
+
+    assertEquals(List.of("built", "plugin"), composite.suggestWords("", 4));
+  }
+
+  @Test
   void asyncSuggestionsMergeInProviderOrder() throws Exception {
     MessageInputWordSuggestionProvider first =
-        new AsyncSuggestions(CompletableFuture.completedFuture(List.of("hello", "help")));
+        new AsyncBuiltInSuggestions(CompletableFuture.completedFuture(List.of("hello", "help")));
     MessageInputWordSuggestionProvider second =
-        new AsyncSuggestions(CompletableFuture.completedFuture(List.of("helium", "help")));
+        new AsyncPluginSuggestions(CompletableFuture.completedFuture(List.of("helium", "help")));
     MessageInputWordSuggestionProvider composite =
         CompositeMessageInputWordSuggestionProvider.from(
             first, new RecordingInstalledPluginsPort(List.of(second)));
@@ -100,9 +112,9 @@ class CompositeMessageInputWordSuggestionProviderTest {
         """;
   }
 
-  private record StaticSuggestions(List<String> suggestions)
+  private record BuiltInSuggestions(List<String> suggestions)
       implements MessageInputWordSuggestionProvider {
-    StaticSuggestions(String... suggestions) {
+    BuiltInSuggestions(String... suggestions) {
       this(List.of(suggestions));
     }
 
@@ -112,7 +124,44 @@ class CompositeMessageInputWordSuggestionProviderTest {
     }
   }
 
-  private record AsyncSuggestions(CompletableFuture<List<String>> suggestions)
+  private record PluginSuggestions(List<String> suggestions)
+      implements MessageInputWordSuggestionProvider {
+    PluginSuggestions(String... suggestions) {
+      this(List.of(suggestions));
+    }
+
+    @Override
+    public List<String> suggestWords(String token, int maxSuggestions) {
+      return suggestions;
+    }
+  }
+
+  private record DuplicateSuggestions(List<String> suggestions)
+      implements MessageInputWordSuggestionProvider {
+    DuplicateSuggestions(String... suggestions) {
+      this(List.of(suggestions));
+    }
+
+    @Override
+    public List<String> suggestWords(String token, int maxSuggestions) {
+      return suggestions;
+    }
+  }
+
+  private record AsyncBuiltInSuggestions(CompletableFuture<List<String>> suggestions)
+      implements MessageInputWordSuggestionProvider {
+    @Override
+    public List<String> suggestWords(String token, int maxSuggestions) {
+      return suggestions.join();
+    }
+
+    @Override
+    public CompletableFuture<List<String>> suggestWordsAsync(String token, int maxSuggestions) {
+      return suggestions;
+    }
+  }
+
+  private record AsyncPluginSuggestions(CompletableFuture<List<String>> suggestions)
       implements MessageInputWordSuggestionProvider {
     @Override
     public List<String> suggestWords(String token, int maxSuggestions) {

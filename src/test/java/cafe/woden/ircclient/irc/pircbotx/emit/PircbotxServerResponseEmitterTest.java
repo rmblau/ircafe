@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.irc.pircbotx.emit;
 
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.serverResponses;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -20,7 +21,7 @@ class PircbotxServerResponseEmitterTest {
   void emitServerResponseLinePublishesListEntryAndStatusLine() {
     List<ServerIrcEvent> events = new ArrayList<>();
     PircbotxServerResponseEmitter emitter =
-        new PircbotxServerResponseEmitter("libera", events::add);
+        serverResponses("libera", events::add);
 
     emitter.emitServerResponseLine(null, 322, ":server 322 me #ircafe 42 :Topic here");
 
@@ -40,7 +41,7 @@ class PircbotxServerResponseEmitterTest {
   void emitChannelBanListEventTracksStartEntryAndEnd() {
     List<ServerIrcEvent> events = new ArrayList<>();
     PircbotxServerResponseEmitter emitter =
-        new PircbotxServerResponseEmitter("libera", events::add);
+        serverResponses("libera", events::add);
 
     emitter.emitChannelBanListEvent(
         Instant.parse("2026-03-13T12:30:00Z"),
@@ -67,7 +68,7 @@ class PircbotxServerResponseEmitterTest {
   void maybeEmitAlisChannelListEntryHandlesEntriesAndEndSummary() {
     List<ServerIrcEvent> events = new ArrayList<>();
     PircbotxServerResponseEmitter emitter =
-        new PircbotxServerResponseEmitter("libera", events::add);
+        serverResponses("libera", events::add);
 
     assertTrue(
         emitter.maybeEmitAlisChannelListEntry(
