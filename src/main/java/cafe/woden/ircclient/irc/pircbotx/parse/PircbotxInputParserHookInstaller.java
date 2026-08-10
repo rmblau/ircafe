@@ -33,8 +33,10 @@ public class PircbotxInputParserHookInstaller {
 
   @NonNull private final Ircv3StsPolicyService stsPolicies;
   @NonNull private final Ircv3InboundCommandSignalRuntimeCatalog inboundCommandRuntimeCatalog;
+
   @NonNull
   private final Ircv3CapabilityNegotiationRuntimeSupport capabilityNegotiationRuntimeSupport;
+
   @NonNull private final Ircv3HistoryTransportRuntimeSupport historyTransportRuntimeSupport;
   @NonNull private final Ircv3MessageMutationRuntimeSupport messageMutationRuntimeSupport;
   @NonNull private final Ircv3ReadMarkerRuntimeSupport readMarkerRuntimeSupport;

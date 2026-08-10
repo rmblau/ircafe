@@ -35,8 +35,7 @@ class QuasselIrcv3RuntimeSupportTest {
     QuasselIrcv3RuntimeSupport support = support();
 
     assertEquals(
-        List.of("@+typing=paused TAGMSG #ircafe"),
-        support.typingRawLines("#ircafe", "composing"));
+        List.of("@+typing=paused TAGMSG #ircafe"), support.typingRawLines("#ircafe", "composing"));
     assertEquals(
         List.of("MARKREAD #ircafe timestamp=2026-07-13T13:00:00Z"),
         support.readMarkerRawLines("#ircafe", Instant.ofEpochSecond(1_700_000_000L)));
@@ -66,18 +65,14 @@ class QuasselIrcv3RuntimeSupportTest {
 
     assertEquals(
         "#plugin",
-        support.channelContext(
-            "TAGMSG", "alice", "quassel", List.of("quassel"), tags, "raw"));
+        support.channelContext("TAGMSG", "alice", "quassel", List.of("quassel"), tags, "raw"));
     assertEquals(
         List.of(
             Ircv3InboundTagSignal.of(Ircv3InboundTagSignalType.REPLY, "plugin-reply"),
-            new Ircv3InboundTagSignal(
-                Ircv3InboundTagSignalType.REACT, "sparkle", "plugin-message"),
+            new Ircv3InboundTagSignal(Ircv3InboundTagSignalType.REACT, "sparkle", "plugin-message"),
             Ircv3InboundTagSignal.of(Ircv3InboundTagSignalType.TYPING, "active"),
-            Ircv3InboundTagSignal.of(
-                Ircv3InboundTagSignalType.READ_MARKER, "timestamp=plugin")),
-        support.conversationSignals(
-            "TAGMSG", "alice", "quassel", List.of("quassel"), tags, "raw"));
+            Ircv3InboundTagSignal.of(Ircv3InboundTagSignalType.READ_MARKER, "timestamp=plugin")),
+        support.conversationSignals("TAGMSG", "alice", "quassel", List.of("quassel"), tags, "raw"));
   }
 
   @Test
@@ -85,8 +80,7 @@ class QuasselIrcv3RuntimeSupportTest {
     QuasselIrcv3RuntimeSupport support = support();
 
     assertEquals(
-        Map.of("plugin", "raw-line"),
-        support.messageTags("@wire=1 :server NOTICE me :hi"));
+        Map.of("plugin", "raw-line"), support.messageTags("@wire=1 :server NOTICE me :hi"));
   }
 
   @Test
@@ -103,8 +97,7 @@ class QuasselIrcv3RuntimeSupportTest {
     QuasselIrcv3RuntimeSupport support = support();
 
     assertEquals(
-        new cafe.woden.ircclient.irc.ircv3.Ircv3IsupportRuntimeSupport.MonitorSupport(
-            true, 321),
+        new cafe.woden.ircclient.irc.ircv3.Ircv3IsupportRuntimeSupport.MonitorSupport(true, 321),
         support.monitorSupport(":server 005 me MONITOR=100 :supported").orElseThrow());
   }
 
@@ -124,8 +117,7 @@ class QuasselIrcv3RuntimeSupportTest {
             .orElseThrow();
 
     assertEquals(
-        cafe.woden.ircclient.irc.ircv3.Ircv3StandardReplyRuntimeSupport.Kind.FAIL,
-        reply.kind());
+        cafe.woden.ircclient.irc.ircv3.Ircv3StandardReplyRuntimeSupport.Kind.FAIL, reply.kind());
     assertEquals("PLUGIN", reply.command());
     assertEquals("OVERRIDE", reply.code());
     assertEquals("plugin-context", reply.context());
@@ -171,8 +163,7 @@ class QuasselIrcv3RuntimeSupportTest {
     return new QuasselIrcv3RuntimeSupport(
         Ircv3OutboundCommandRuntimeCatalog.fromProviders(List.of(new OutboundProvider())),
         Ircv3InboundTagSignalRuntimeCatalog.fromProviders(List.of(new TagProvider())),
-        Ircv3InboundCommandSignalRuntimeCatalog.fromProviders(
-            List.of(new CommandProvider())),
+        Ircv3InboundCommandSignalRuntimeCatalog.fromProviders(List.of(new CommandProvider())),
         Ircv3MessageTagsRuntimeCatalog.fromProviders(List.of(new MessageTagProvider())));
   }
 
@@ -198,8 +189,7 @@ class QuasselIrcv3RuntimeSupportTest {
     public List<String> build(
         Ircv3OutboundCommandOperation operation, Ircv3OutboundCommandRequest request) {
       return switch (operation) {
-        case TYPING ->
-            List.of("@+typing=paused TAGMSG " + request.target());
+        case TYPING -> List.of("@+typing=paused TAGMSG " + request.target());
         case READ_MARKER ->
             List.of("MARKREAD " + request.target() + " timestamp=2026-07-13T13:00:00Z");
         case CHAT_HISTORY_BEFORE ->
@@ -207,10 +197,7 @@ class QuasselIrcv3RuntimeSupportTest {
         case CHAT_HISTORY_LATEST ->
             List.of("CHATHISTORY LATEST " + request.target() + " msgid=plugin 17");
         case CHAT_HISTORY_BETWEEN ->
-            List.of(
-                "CHATHISTORY BETWEEN "
-                    + request.target()
-                    + " msgid=left msgid=right 23");
+            List.of("CHATHISTORY BETWEEN " + request.target() + " msgid=left msgid=right 23");
         case CHAT_HISTORY_AROUND ->
             List.of("CHATHISTORY AROUND " + request.target() + " msgid=around 21");
         default -> List.of();
@@ -255,8 +242,7 @@ class QuasselIrcv3RuntimeSupportTest {
             request.tags().containsKey("plugin/typing")
                 ? List.of(
                     Ircv3InboundTagSignal.of(
-                        Ircv3InboundTagSignalType.TYPING,
-                        request.tags().get("plugin/typing")))
+                        Ircv3InboundTagSignalType.TYPING, request.tags().get("plugin/typing")))
                 : List.of();
         case READ_MARKER ->
             request.tags().containsKey("plugin/read-marker")
@@ -309,9 +295,7 @@ class QuasselIrcv3RuntimeSupportTest {
         Ircv3InboundCommandOperation operation, Ircv3InboundCommandRequest request) {
       return switch (operation) {
         case MONITOR ->
-            List.of(
-                new Ircv3InboundCommandSignal.MonitorListObserved(
-                    List.of("alice", "bob")));
+            List.of(new Ircv3InboundCommandSignal.MonitorListObserved(List.of("alice", "bob")));
         case ISUPPORT_MONITOR ->
             List.of(new Ircv3InboundCommandSignal.MonitorSupportObserved(true, 321));
         case STANDARD_REPLY ->

@@ -27,8 +27,7 @@ public final class Ircv3NegotiationRuntimeProvider implements Ircv3InboundComman
   @Override
   public Set<Ircv3InboundCommandOperation> inboundCommandOperations() {
     return Set.of(
-        Ircv3InboundCommandOperation.CAP_NEGOTIATION,
-        Ircv3InboundCommandOperation.ISUPPORT_TOKENS);
+        Ircv3InboundCommandOperation.CAP_NEGOTIATION, Ircv3InboundCommandOperation.ISUPPORT_TOKENS);
   }
 
   @Override
@@ -77,10 +76,7 @@ public final class Ircv3NegotiationRuntimeProvider implements Ircv3InboundComman
     for (Ircv3CapabilityChangePlanner.Change change : changes.changes()) {
       signals.add(
           new Ircv3InboundCommandSignal.CapabilityChangeObserved(
-              change.action(),
-              change.capabilityName(),
-              change.enabled(),
-              change.updateState()));
+              change.action(), change.capabilityName(), change.enabled(), change.updateState()));
     }
     if (fallback.requestMessageTags() || fallback.requestBatch() || fallback.requestHistory()) {
       signals.add(

@@ -25,9 +25,7 @@ import java.util.Set;
   Ircv3InboundTagSignalProvider.class
 })
 public final class Ircv3LabeledResponseExtensionProvider
-    implements Ircv3ExtensionProvider,
-        Ircv3OutboundCommandProvider,
-        Ircv3InboundTagSignalProvider {
+    implements Ircv3ExtensionProvider, Ircv3OutboundCommandProvider, Ircv3InboundTagSignalProvider {
 
   private static final String CAPABILITY = "labeled-response";
 

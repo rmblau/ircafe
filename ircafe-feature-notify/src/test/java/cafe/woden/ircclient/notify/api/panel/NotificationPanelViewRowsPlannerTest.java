@@ -20,7 +20,8 @@ class NotificationPanelViewRowsPlannerTest {
 
   @Test
   void sortsAndFiltersSelectedRows() {
-    assertEquals(List.of(1, 3, 4), NotificationPanelViewRowsPlanner.selectedRows(new int[] {4, -2, 1, 3}));
+    assertEquals(
+        List.of(1, 3, 4), NotificationPanelViewRowsPlanner.selectedRows(new int[] {4, -2, 1, 3}));
   }
 
   @Test

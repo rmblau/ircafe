@@ -50,8 +50,7 @@ class Ircv3MessageIdRuntimeSupportTest {
                     provider(
                         100,
                         List.of(
-                            Ircv3InboundTagSignal.of(
-                                Ircv3InboundTagSignalType.MESSAGE_ID, "one"),
+                            Ircv3InboundTagSignal.of(Ircv3InboundTagSignalType.MESSAGE_ID, "one"),
                             Ircv3InboundTagSignal.of(
                                 Ircv3InboundTagSignalType.MESSAGE_ID, "two"))))));
     Ircv3MessageIdRuntimeSupport unsafe =

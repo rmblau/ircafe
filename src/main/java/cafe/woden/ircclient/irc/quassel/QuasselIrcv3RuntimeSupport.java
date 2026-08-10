@@ -142,8 +142,7 @@ public final class QuasselIrcv3RuntimeSupport {
         .ifPresent(
             observed ->
                 signals.add(
-                    Ircv3InboundTagSignal.of(
-                        Ircv3InboundTagSignalType.TYPING, observed.state())));
+                    Ircv3InboundTagSignal.of(Ircv3InboundTagSignalType.TYPING, observed.state())));
     readMarkerRuntimeSupport
         .fromTags(request)
         .ifPresent(
@@ -161,8 +160,7 @@ public final class QuasselIrcv3RuntimeSupport {
       List<String> parameters,
       Map<String, String> tags) {
     return readMarkerRuntimeSupport.fromCommand(
-        new Ircv3InboundCommandRequest(
-            sourceNick, command, rawLine, parameters, tags));
+        new Ircv3InboundCommandRequest(sourceNick, command, rawLine, parameters, tags));
   }
 
   public Optional<Ircv3MessageMutationRuntimeSupport.CommandRedactionObservation>
@@ -173,8 +171,7 @@ public final class QuasselIrcv3RuntimeSupport {
           List<String> parameters,
           Map<String, String> tags) {
     return messageMutationRuntimeSupport.redactionFromCommand(
-        new Ircv3InboundCommandRequest(
-            sourceNick, command, rawLine, parameters, tags));
+        new Ircv3InboundCommandRequest(sourceNick, command, rawLine, parameters, tags));
   }
 
   public Optional<Ircv3IsupportRuntimeSupport.MonitorSupport> monitorSupport(String rawLine) {
@@ -219,7 +216,6 @@ public final class QuasselIrcv3RuntimeSupport {
       List<String> parameters,
       Map<String, String> tags,
       String rawLine) {
-    return new Ircv3InboundTagRequest(
-        command, sourceNick, rawTarget, parameters, tags, rawLine);
+    return new Ircv3InboundTagRequest(command, sourceNick, rawTarget, parameters, tags, rawLine);
   }
 }

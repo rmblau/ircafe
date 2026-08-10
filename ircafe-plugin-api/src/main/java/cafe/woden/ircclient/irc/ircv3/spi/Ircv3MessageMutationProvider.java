@@ -19,6 +19,5 @@ public interface Ircv3MessageMutationProvider {
 
   Set<Ircv3MessageMutationOperation> operations();
 
-  String build(
-      Ircv3MessageMutationOperation operation, Ircv3MessageMutationRequest request);
+  String build(Ircv3MessageMutationOperation operation, Ircv3MessageMutationRequest request);
 }

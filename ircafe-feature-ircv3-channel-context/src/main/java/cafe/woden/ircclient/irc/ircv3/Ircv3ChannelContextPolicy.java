@@ -11,10 +11,8 @@ public final class Ircv3ChannelContextPolicy {
 
   private Ircv3ChannelContextPolicy() {}
 
-  public static String resolveTarget(
-      Map<String, String> tags, String rawTarget, String fromNick) {
-    String context =
-        Ircv3Tags.firstDecodedTagValue(tags, DRAFT_CHANNEL_CONTEXT, CHANNEL_CONTEXT);
+  public static String resolveTarget(Map<String, String> tags, String rawTarget, String fromNick) {
+    String context = Ircv3Tags.firstDecodedTagValue(tags, DRAFT_CHANNEL_CONTEXT, CHANNEL_CONTEXT);
     if (isChannelName(context)) return context;
     return resolveConversationTarget(rawTarget, fromNick);
   }

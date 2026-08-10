@@ -16,14 +16,12 @@ class ImageFetchDownloadPolicyTest {
     assertEquals(
         "https://m.media-amazon.com/images/M/poster@._V1_.jpg",
         policy
-            .retryUrlAfterHttpError(
-                "https://m.media-amazon.com/images/M/poster@._V1_UX512_.jpg", 0)
+            .retryUrlAfterHttpError("https://m.media-amazon.com/images/M/poster@._V1_UX512_.jpg", 0)
             .orElseThrow());
 
     assertTrue(
         policy
-            .retryUrlAfterHttpError(
-                "https://m.media-amazon.com/images/M/poster@._V1_UX512_.jpg", 1)
+            .retryUrlAfterHttpError("https://m.media-amazon.com/images/M/poster@._V1_UX512_.jpg", 1)
             .isEmpty());
   }
 
@@ -32,14 +30,12 @@ class ImageFetchDownloadPolicyTest {
     assertEquals(
         "https://m.media-amazon.com/images/M/poster@._V1_UX512_.jpg",
         policy
-            .retryUrlAfterOversize(
-                "https://m.media-amazon.com/images/M/poster@._V1_.jpg", 0, 512)
+            .retryUrlAfterOversize("https://m.media-amazon.com/images/M/poster@._V1_.jpg", 0, 512)
             .orElseThrow());
 
     assertTrue(
         policy
-            .retryUrlAfterOversize(
-                "https://m.media-amazon.com/images/M/poster@._V1_.jpg", 1, 512)
+            .retryUrlAfterOversize("https://m.media-amazon.com/images/M/poster@._V1_.jpg", 1, 512)
             .isEmpty());
   }
 
@@ -55,10 +51,12 @@ class ImageFetchDownloadPolicyTest {
   @Test
   void ignoresNonAmazonImageUrlsForAmazonRetryPolicy() {
     assertTrue(
-        policy.retryUrlAfterHttpError("https://cdn.example.test/poster@._V1_UX512_.jpg", 0)
+        policy
+            .retryUrlAfterHttpError("https://cdn.example.test/poster@._V1_UX512_.jpg", 0)
             .isEmpty());
     assertTrue(
-        policy.retryUrlAfterOversize("https://cdn.example.test/poster@._V1_.jpg", 0, 512)
+        policy
+            .retryUrlAfterOversize("https://cdn.example.test/poster@._V1_.jpg", 0, 512)
             .isEmpty());
   }
 
@@ -75,8 +73,7 @@ class ImageFetchDownloadPolicyTest {
     assertTrue(
         policy.looksLikeHtmlResponse(
             "",
-            "Access denied: please verify you are not a robot"
-                .getBytes(StandardCharsets.UTF_8),
+            "Access denied: please verify you are not a robot".getBytes(StandardCharsets.UTF_8),
             48));
     assertFalse(
         policy.looksLikeHtmlResponse(

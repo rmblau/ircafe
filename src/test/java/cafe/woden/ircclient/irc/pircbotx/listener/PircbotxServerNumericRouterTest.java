@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.irc.pircbotx.listener;
 
-import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.runtime;
 import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.monitorEvents;
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.runtime;
 import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.serverResponses;
 import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.whoEvents;
 import static cafe.woden.ircclient.irc.pircbotx.listener.PircbotxListenerRuntimeTestFixtures.isupportObserver;
@@ -122,8 +122,7 @@ class PircbotxServerNumericRouterTest {
         serverResponses("libera", events::add, testRuntime);
     PircbotxSaslFailureHandler saslFailures =
         saslFailures("libera", conn, events::add, false, testRuntime);
-    PircbotxMonitorEventEmitter monitorEvents =
-        monitorEvents("libera", events::add, testRuntime);
+    PircbotxMonitorEventEmitter monitorEvents = monitorEvents("libera", events::add, testRuntime);
     PircbotxIsupportObserver isupportObserver =
         isupportObserver(
             "libera",

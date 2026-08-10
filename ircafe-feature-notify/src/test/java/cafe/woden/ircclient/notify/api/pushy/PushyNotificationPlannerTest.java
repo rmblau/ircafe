@@ -71,13 +71,7 @@ class PushyNotificationPlannerTest {
             true, "https://push.example/push", "secret", null, "ops", "IRCafe", 5, 8);
     PushyNotificationEvent event =
         new PushyNotificationEvent(
-            "NOTICE",
-            "libera",
-            "status",
-            "bob",
-            null,
-            "IRCafe Alert",
-            "line one\n\"quoted\"");
+            "NOTICE", "libera", "status", "bob", null, "IRCafe Alert", "line one\n\"quoted\"");
 
     PushyNotificationPlan plan = PushyNotificationPlanner.planEvent(settings, event, 7L);
 

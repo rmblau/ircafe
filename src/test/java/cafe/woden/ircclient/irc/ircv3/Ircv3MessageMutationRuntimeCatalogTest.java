@@ -24,8 +24,7 @@ class Ircv3MessageMutationRuntimeCatalogTest {
         new Ircv3MessageMutationRequest("#ircafe", "abc 123;xyz\\tail", "hello");
 
     assertEquals(
-        List.of("reply", "reactions", "message-edit", "message-redaction"),
-        catalog.providerIds());
+        List.of("reply", "reactions", "message-edit", "message-redaction"), catalog.providerIds());
     assertEquals(
         "@+reply=abc\\s123\\:xyz\\\\tail PRIVMSG #ircafe :hello",
         catalog.build(Ircv3MessageMutationOperation.REPLY, request));

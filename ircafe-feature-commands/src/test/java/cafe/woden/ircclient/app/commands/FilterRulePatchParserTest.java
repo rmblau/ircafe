@@ -74,8 +74,7 @@ class FilterRulePatchParserTest {
     assertEquals(EnumSet.of(FilterRulePatchSpec.RegexFlag.I), glob.textRegex().flags());
 
     FilterRulePatchSpec cleared =
-        parser.parseKeyValuePatch(
-            List.of("/filter", "set", "g", "kind=", "from=", "text="), 3);
+        parser.parseKeyValuePatch(List.of("/filter", "set", "g", "kind=", "from=", "text="), 3);
     assertTrue(cleared.kinds().isEmpty());
     assertTrue(cleared.kindsSpecified());
     assertTrue(cleared.from().isEmpty());
@@ -90,16 +89,13 @@ class FilterRulePatchParserTest {
         assertThrows(
             IllegalArgumentException.class,
             () ->
-                parser.parseKeyValuePatch(
-                    List.of("/filter", "set", "bad", "enabled=perhaps"), 3));
+                parser.parseKeyValuePatch(List.of("/filter", "set", "bad", "enabled=perhaps"), 3));
     assertEquals("Invalid boolean for enabled=: 'perhaps'", invalidBoolean.getMessage());
 
     IllegalArgumentException unknownKey =
         assertThrows(
             IllegalArgumentException.class,
-            () ->
-                parser.parseKeyValuePatch(
-                    List.of("/filter", "set", "bad", "colour=blue"), 3));
+            () -> parser.parseKeyValuePatch(List.of("/filter", "set", "bad", "colour=blue"), 3));
     assertTrue(unknownKey.getMessage().startsWith("Unknown key: 'colour'."));
   }
 

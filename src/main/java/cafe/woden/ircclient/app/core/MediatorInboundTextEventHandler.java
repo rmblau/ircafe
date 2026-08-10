@@ -1,6 +1,5 @@
 package cafe.woden.ircclient.app.core;
 
-
 import cafe.woden.ircclient.app.api.InterceptorEventType;
 import cafe.woden.ircclient.app.api.IrcEventNotifierPort;
 import cafe.woden.ircclient.app.api.NotificationRuleMatch;
@@ -11,10 +10,10 @@ import cafe.woden.ircclient.app.outbound.dcc.OutboundDccCommandService;
 import cafe.woden.ircclient.app.translation.MessageTranslationDispatcher;
 import cafe.woden.ircclient.ignore.api.InboundIgnorePolicyPort;
 import cafe.woden.ircclient.irc.IrcEvent;
-import cafe.woden.ircclient.irc.ircv3.Ircv3MessageMutationRuntimeSupport;
-import cafe.woden.ircclient.irc.ircv3.Ircv3MessageIdRuntimeSupport;
-import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundTagRequest;
 import cafe.woden.ircclient.irc.enrichment.UserInfoEnrichmentService;
+import cafe.woden.ircclient.irc.ircv3.Ircv3MessageIdRuntimeSupport;
+import cafe.woden.ircclient.irc.ircv3.Ircv3MessageMutationRuntimeSupport;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundTagRequest;
 import cafe.woden.ircclient.irc.port.IrcNegotiatedFeaturePort;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.model.TargetRef;
@@ -1274,14 +1273,12 @@ public class MediatorInboundTextEventHandler {
   }
 
   private boolean hasMessageMutationTag(Map<String, String> tags) {
-    return messageMutationRuntimeSupport.hasNonReplyMutationTag(
-        inboundTagRequest("", "", tags));
+    return messageMutationRuntimeSupport.hasNonReplyMutationTag(inboundTagRequest("", "", tags));
   }
 
   private static Ircv3InboundTagRequest inboundTagRequest(
       String sourceNick, String rawTarget, Map<String, String> tags) {
-    return new Ircv3InboundTagRequest(
-        "PRIVMSG", sourceNick, rawTarget, java.util.List.of(), tags);
+    return new Ircv3InboundTagRequest("PRIVMSG", sourceNick, rawTarget, java.util.List.of(), tags);
   }
 
   private void clearRemoteTypingIndicatorsForSender(TargetRef target, String fromNick) {

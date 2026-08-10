@@ -123,8 +123,7 @@ class MessageMutationOutboundCommandsRouterTest {
         "@+draft/edit=msg-1 PRIVMSG #ircafe :edited",
         commands.buildEditRawLine(target, "msg-1", "edited"));
     assertEquals(
-        "REDACT #ircafe msg-1 :cleanup",
-        commands.buildRedactRawLine(target, "msg-1", "cleanup"));
+        "REDACT #ircafe msg-1 :cleanup", commands.buildRedactRawLine(target, "msg-1", "cleanup"));
   }
 
   private static final class TestMessageMutationOutboundCommands

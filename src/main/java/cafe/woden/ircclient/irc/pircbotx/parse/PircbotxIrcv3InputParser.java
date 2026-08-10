@@ -1,9 +1,9 @@
 package cafe.woden.ircclient.irc.pircbotx.parse;
 
-import cafe.woden.ircclient.irc.ircv3.Ircv3CapabilityLine;
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
 import cafe.woden.ircclient.irc.ircv3.*;
+import cafe.woden.ircclient.irc.ircv3.Ircv3CapabilityLine;
 import cafe.woden.ircclient.irc.ircv3.spi.*;
 import cafe.woden.ircclient.irc.mode.*;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
@@ -213,9 +213,7 @@ final class PircbotxIrcv3InputParser extends InputParser {
       List<String> parsedLine,
       ImmutableMap<String, String> tags) {
     return readMarkerRuntimeSupport
-        .fromCommand(
-            new Ircv3InboundCommandRequest(
-                sourceNick, command, rawLine, parsedLine, tags))
+        .fromCommand(new Ircv3InboundCommandRequest(sourceNick, command, rawLine, parsedLine, tags))
         .map(
             readMarker -> {
               String from = sourceNick.isBlank() ? "server" : sourceNick;
@@ -238,8 +236,7 @@ final class PircbotxIrcv3InputParser extends InputParser {
       ImmutableMap<String, String> tags) {
     return messageMutationRuntimeSupport
         .redactionFromCommand(
-            new Ircv3InboundCommandRequest(
-                sourceNick, command, rawLine, parsedLine, tags))
+            new Ircv3InboundCommandRequest(sourceNick, command, rawLine, parsedLine, tags))
         .map(
             redaction -> {
               String from = sourceNick.isBlank() ? "server" : sourceNick;
@@ -380,10 +377,6 @@ final class PircbotxIrcv3InputParser extends InputParser {
     return out.toString().trim();
   }
 
-
-
-
-
   private static String stripLeadingColon(String raw) {
     String s = Objects.toString(raw, "").trim();
     if (s.startsWith(":")) s = s.substring(1).trim();
@@ -433,5 +426,4 @@ final class PircbotxIrcv3InputParser extends InputParser {
     if (fromBot.isEmpty() || hinted.equalsIgnoreCase(fromBot)) return List.of(hinted);
     return List.of(hinted, fromBot);
   }
-
 }

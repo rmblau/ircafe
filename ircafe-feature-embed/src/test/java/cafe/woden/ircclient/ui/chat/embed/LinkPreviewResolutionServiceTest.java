@@ -52,7 +52,9 @@ class LinkPreviewResolutionServiceTest {
 
     LinkPreviewResolutionResult result =
         service.resolve(
-            request, new FakeLinkPreviewHttp(), Arrays.asList(throwing, (LinkPreviewResolver) null));
+            request,
+            new FakeLinkPreviewHttp(),
+            Arrays.asList(throwing, (LinkPreviewResolver) null));
 
     assertFalse(result.matched());
     assertEquals(1, result.failures().size());

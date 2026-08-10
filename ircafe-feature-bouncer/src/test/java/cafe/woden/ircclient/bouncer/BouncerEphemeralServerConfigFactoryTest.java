@@ -71,8 +71,7 @@ class BouncerEphemeralServerConfigFactoryTest {
     BouncerEphemeralServerSpec spec =
         new BouncerEphemeralServerSpec("server-id", "login-user", List.of());
     BouncerConfiguredServerTemplate configured =
-        new BouncerConfiguredServerTemplate(
-            "host", 6667, false, "", "nick", "login", "real", null);
+        new BouncerConfiguredServerTemplate("host", 6667, false, "", "nick", "login", "real", null);
 
     assertThrows(NullPointerException.class, () -> factory.fromConfiguredServer(null, spec));
     assertThrows(NullPointerException.class, () -> factory.fromConfiguredServer(configured, null));

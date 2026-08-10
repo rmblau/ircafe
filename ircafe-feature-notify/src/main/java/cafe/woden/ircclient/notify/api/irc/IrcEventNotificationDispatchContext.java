@@ -26,6 +26,7 @@ public record IrcEventNotificationDispatchContext(
   }
 
   public static IrcEventNotificationDispatchContext invalid() {
-    return new IrcEventNotificationDispatchContext(false, null, null, null, null, null, null, false);
+    return new IrcEventNotificationDispatchContext(
+        false, null, null, null, null, null, null, false);
   }
 }

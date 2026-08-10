@@ -28,7 +28,8 @@ public record BouncerOriginDisconnectPlan(
     return new BouncerOriginDisconnectPlan(Action.SKIP_NO_MATCHING_EPHEMERALS, originServerId, 0);
   }
 
-  public static BouncerOriginDisconnectPlan clearOrigin(String originServerId, long ephemeralCount) {
+  public static BouncerOriginDisconnectPlan clearOrigin(
+      String originServerId, long ephemeralCount) {
     String origin = requireNonBlank(originServerId, "originServerId");
     if (ephemeralCount <= 0) {
       throw new IllegalArgumentException("ephemeralCount must be positive");

@@ -22,8 +22,7 @@ class Ircv3CapabilityLineTest {
 
   @Test
   void parseDropsBlankTokens() {
-    Ircv3CapabilityLine parsed =
-        Ircv3CapabilityLine.parse("LS", "  :message-tags   typing   ");
+    Ircv3CapabilityLine parsed = Ircv3CapabilityLine.parse("LS", "  :message-tags   typing   ");
 
     assertEquals(List.of("message-tags", "typing"), parsed.tokens());
   }

@@ -63,8 +63,7 @@ public final class Ircv3AwayNotifyExtensionProvider
     }
 
     if (request.sourceNick().isBlank()) {
-      Ircv3AwayLineParser.AwayNotify away =
-          Ircv3AwayLineParser.parseAwayNotify(request.rawLine());
+      Ircv3AwayLineParser.AwayNotify away = Ircv3AwayLineParser.parseAwayNotify(request.rawLine());
       return away == null
           ? List.of()
           : List.of(

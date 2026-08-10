@@ -11,8 +11,7 @@ class Ircv3TypingTagSignalTest {
   @Test
   void readsClientOnlyTypingState() {
     assertEquals(
-        "active",
-        Ircv3TypingTagSignal.fromTags(Map.of("+typing", "active")).orElseThrow().state());
+        "active", Ircv3TypingTagSignal.fromTags(Map.of("+typing", "active")).orElseThrow().state());
   }
 
   @Test

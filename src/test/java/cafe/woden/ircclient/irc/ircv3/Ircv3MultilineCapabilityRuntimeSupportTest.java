@@ -55,15 +55,13 @@ class Ircv3MultilineCapabilityRuntimeSupportTest {
       public List<Ircv3InboundCommandSignal> parse(
           Ircv3InboundCommandOperation operation, Ircv3InboundCommandRequest request) {
         Ircv3InboundCommandSignal finalSignal =
-            new Ircv3InboundCommandSignal.MultilineLimitsObserved(
-                false, 4096L, 5L, 4096L, 5L);
+            new Ircv3InboundCommandSignal.MultilineLimitsObserved(false, 4096L, 5L, 4096L, 5L);
         if (duplicateFinal) {
           return List.of(finalSignal, finalSignal);
         }
         return List.of(
             finalSignal,
-            new Ircv3InboundCommandSignal.MultilineLimitsObserved(
-                true, 2048L, 3L, 2048L, 3L));
+            new Ircv3InboundCommandSignal.MultilineLimitsObserved(true, 2048L, 3L, 2048L, 3L));
       }
     };
   }

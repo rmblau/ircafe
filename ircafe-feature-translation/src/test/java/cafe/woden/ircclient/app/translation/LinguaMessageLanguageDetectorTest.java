@@ -29,8 +29,7 @@ class LinguaMessageLanguageDetectorTest {
         "en",
         detector
             .detectLanguageCode(
-                "Thanks everyone, I will review the patch after lunch today.",
-                ENGLISH_AND_SPANISH)
+                "Thanks everyone, I will review the patch after lunch today.", ENGLISH_AND_SPANISH)
             .orElseThrow());
   }
 

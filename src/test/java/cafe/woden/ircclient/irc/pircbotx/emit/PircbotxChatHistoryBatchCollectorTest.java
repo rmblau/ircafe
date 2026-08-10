@@ -23,8 +23,7 @@ class PircbotxChatHistoryBatchCollectorTest {
   @Test
   void appendIfActiveBuffersEntriesUntilBatchEnds() {
     List<ServerIrcEvent> events = new ArrayList<>();
-    PircbotxChatHistoryBatchCollector collector =
-        chatHistoryBatches("libera", events::add);
+    PircbotxChatHistoryBatchCollector collector = chatHistoryBatches("libera", events::add);
 
     assertTrue(
         collector.handleBatchControlLine(":server.example BATCH +abc draft/chathistory #ircafe"));
@@ -133,8 +132,7 @@ class PircbotxChatHistoryBatchCollectorTest {
   @Test
   void maybeCaptureUnknownLineUsesBatchTagAndBuffersPrivmsgEntries() {
     List<ServerIrcEvent> events = new ArrayList<>();
-    PircbotxChatHistoryBatchCollector collector =
-        chatHistoryBatches("libera", events::add);
+    PircbotxChatHistoryBatchCollector collector = chatHistoryBatches("libera", events::add);
 
     assertTrue(collector.handleBatchControlLine(":server.example BATCH +hist chathistory #ircafe"));
     assertTrue(

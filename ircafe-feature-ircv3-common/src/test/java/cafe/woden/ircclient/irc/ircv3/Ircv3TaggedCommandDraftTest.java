@@ -11,8 +11,7 @@ class Ircv3TaggedCommandDraftTest {
   @Test
   void parsesNormalizedClientOnlyTagKeys() {
     Ircv3TaggedCommandDraft draft =
-        Ircv3TaggedCommandDraft.parse(
-                "  /quote @+draft/react=:+1:;+reply=abc TAGMSG #ircafe")
+        Ircv3TaggedCommandDraft.parse("  /quote @+draft/react=:+1:;+reply=abc TAGMSG #ircafe")
             .orElseThrow();
 
     assertTrue(draft.hasAnyTag("draft/react"));
@@ -23,8 +22,7 @@ class Ircv3TaggedCommandDraftTest {
   @Test
   void removesSelectedTagsWhilePreservingOtherTagsAndCommand() {
     Ircv3TaggedCommandDraft draft =
-        Ircv3TaggedCommandDraft.parse(
-                "  /quote @+reply=abc;+label=42 TAGMSG #ircafe")
+        Ircv3TaggedCommandDraft.parse("  /quote @+reply=abc;+label=42 TAGMSG #ircafe")
             .orElseThrow();
 
     assertEquals("  /quote @+label=42 TAGMSG #ircafe", draft.withoutTags("reply"));
@@ -33,8 +31,7 @@ class Ircv3TaggedCommandDraftTest {
   @Test
   void removesTagSectionWhenNoTagsRemain() {
     Ircv3TaggedCommandDraft draft =
-        Ircv3TaggedCommandDraft.parse("/quote @+reply=abc PRIVMSG #ircafe :hello")
-            .orElseThrow();
+        Ircv3TaggedCommandDraft.parse("/quote @+reply=abc PRIVMSG #ircafe :hello").orElseThrow();
 
     assertEquals("/quote PRIVMSG #ircafe :hello", draft.withoutTags("reply"));
   }

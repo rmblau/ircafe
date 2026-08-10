@@ -29,8 +29,7 @@ class ZncBouncerListNetworksParserTest {
     assertEquals(
         new ZncBouncerListNetworksParser.ParsedRow("libera", true),
         parser.parseRow("libera connected"));
-    assertEquals(
-        new ZncBouncerListNetworksParser.ParsedRow("oftc", null), parser.parseRow("oftc"));
+    assertEquals(new ZncBouncerListNetworksParser.ParsedRow("oftc", null), parser.parseRow("oftc"));
   }
 
   @Test

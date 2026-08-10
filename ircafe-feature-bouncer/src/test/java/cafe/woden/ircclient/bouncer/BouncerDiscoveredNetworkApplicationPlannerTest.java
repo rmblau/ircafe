@@ -62,7 +62,6 @@ class BouncerDiscoveredNetworkApplicationPlannerTest {
   @Test
   void blankServerIdIsRejected() {
     assertThrows(
-        IllegalArgumentException.class,
-        () -> planner.plan(" ", "Libera", false, false, false));
+        IllegalArgumentException.class, () -> planner.plan(" ", "Libera", false, false, false));
   }
 }

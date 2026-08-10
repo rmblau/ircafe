@@ -321,7 +321,6 @@ final class BackendExtensionCatalogState {
       public OutboundBackendFeatureAdapter featureAdapter() {
         return DEFAULT_FEATURE_ADAPTER;
       }
-
     };
   }
 

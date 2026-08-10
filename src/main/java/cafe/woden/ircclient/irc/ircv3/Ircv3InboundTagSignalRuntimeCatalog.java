@@ -84,8 +84,7 @@ public final class Ircv3InboundTagSignalRuntimeCatalog {
     return List.copyOf(signals);
   }
 
-  public boolean hasAny(
-      Set<Ircv3InboundTagOperation> operations, Ircv3InboundTagRequest request) {
+  public boolean hasAny(Set<Ircv3InboundTagOperation> operations, Ircv3InboundTagRequest request) {
     if (operations == null || operations.isEmpty() || request == null) {
       return false;
     }

@@ -7,11 +7,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import cafe.woden.ircclient.app.outbound.TestIrcv3RuntimeSupport;
 import cafe.woden.ircclient.app.api.Ircv3MessageRedactionFeatureSupport;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
+import cafe.woden.ircclient.app.outbound.TestIrcv3RuntimeSupport;
 import cafe.woden.ircclient.app.outbound.backend.*;
 import cafe.woden.ircclient.app.outbound.support.CommandTargetPolicy;
 import cafe.woden.ircclient.app.outbound.support.OutboundCommandAvailabilitySupport;

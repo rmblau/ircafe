@@ -85,7 +85,8 @@ class CustomSoundPluginGuideFixtureTest {
       assertFalse(supportedExtensions.contains("bad extension"));
       CustomSoundPlaybackProvider handlingProvider =
           playbackProviders.stream()
-              .filter(provider -> GUIDE_PLAYBACK_PROVIDER_CLASS.equals(provider.getClass().getName()))
+              .filter(
+                  provider -> GUIDE_PLAYBACK_PROVIDER_CLASS.equals(provider.getClass().getName()))
               .findFirst()
               .orElseThrow();
       assertFalse(handlingProvider.playCustomSound(tempDir.resolve("ignored.wav")));

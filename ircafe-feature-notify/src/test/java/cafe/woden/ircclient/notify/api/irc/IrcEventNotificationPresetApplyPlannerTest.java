@@ -11,8 +11,10 @@ class IrcEventNotificationPresetApplyPlannerTest {
 
   @Test
   void skipsNullOrEmptyPreset() {
-    assertFalse(IrcEventNotificationPresetApplyPlanner.plan(List.of("INVITE_RECEIVED"), null).apply());
-    assertFalse(IrcEventNotificationPresetApplyPlanner.plan(List.of("INVITE_RECEIVED"), List.of()).apply());
+    assertFalse(
+        IrcEventNotificationPresetApplyPlanner.plan(List.of("INVITE_RECEIVED"), null).apply());
+    assertFalse(
+        IrcEventNotificationPresetApplyPlanner.plan(List.of("INVITE_RECEIVED"), List.of()).apply());
   }
 
   @Test
@@ -45,7 +47,6 @@ class IrcEventNotificationPresetApplyPlannerTest {
     assertEquals(-1, plan.operations().get(1).existingRow());
   }
 
-
   @Test
   void laterDuplicatePresetEventReplacesFirstAppendedRow() {
     IrcEventNotificationPresetApplyPlan plan =
@@ -73,7 +74,8 @@ class IrcEventNotificationPresetApplyPlannerTest {
   @Test
   void ignoresBlankPresetEvents() {
     IrcEventNotificationPresetApplyPlan plan =
-        IrcEventNotificationPresetApplyPlanner.plan(List.of("INVITE_RECEIVED"), List.of(" ", "KICKED"));
+        IrcEventNotificationPresetApplyPlanner.plan(
+            List.of("INVITE_RECEIVED"), List.of(" ", "KICKED"));
 
     assertTrue(plan.apply());
     assertEquals(1, plan.firstRowToSelect());

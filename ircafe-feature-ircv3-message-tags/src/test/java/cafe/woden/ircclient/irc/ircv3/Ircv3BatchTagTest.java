@@ -12,8 +12,7 @@ class Ircv3BatchTagTest {
   void extractsTrimmedBatchIdsFromRawLinesAndEvents() {
     assertEquals(
         "history-42",
-        Ircv3BatchTag.fromRawLine("@batch=history-42 :server PRIVMSG #c :hi")
-            .orElseThrow());
+        Ircv3BatchTag.fromRawLine("@batch=history-42 :server PRIVMSG #c :hi").orElseThrow());
     assertEquals("event-7", Ircv3BatchTag.fromEvent(new TaggedEvent()).orElseThrow());
     assertEquals("map-9", Ircv3BatchTag.fromTags(Map.of("@Batch", " map-9 ")).orElseThrow());
   }
@@ -22,9 +21,7 @@ class Ircv3BatchTagTest {
   void rejectsBlankOrMissingBatchIds() {
     assertTrue(Ircv3BatchTag.fromRawLine("@batch= :server PRIVMSG #c :hi").isEmpty());
     assertTrue(
-        Ircv3BatchTag.fromRawLine(
-                "@time=2026-07-11T12:00:00Z :server PRIVMSG #c :hi")
-            .isEmpty());
+        Ircv3BatchTag.fromRawLine("@time=2026-07-11T12:00:00Z :server PRIVMSG #c :hi").isEmpty());
     assertTrue(Ircv3BatchTag.fromEvent(null).isEmpty());
     assertTrue(Ircv3BatchTag.fromTags(Map.of("batch", " ")).isEmpty());
   }

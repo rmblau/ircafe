@@ -33,8 +33,7 @@ class Ircv3StsPersistedPolicyNormalizerTest {
     var result =
         normalizer.normalize(
             "irc.example.net",
-            new Ircv3StsPersistedPolicyNormalizer.Snapshot(
-                1_000L, 6697, false, 60L, "duration=60"),
+            new Ircv3StsPersistedPolicyNormalizer.Snapshot(1_000L, 6697, false, 60L, "duration=60"),
             1_000L);
 
     assertTrue(result.policy().isEmpty());

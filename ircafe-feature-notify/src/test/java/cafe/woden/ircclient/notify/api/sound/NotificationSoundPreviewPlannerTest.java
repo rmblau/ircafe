@@ -17,7 +17,8 @@ class NotificationSoundPreviewPlannerTest {
 
   @Test
   void plansTrimmedCustomPreviewWhenCustomPathIsPresent() {
-    NotificationSoundPreviewPlan plan = NotificationSoundPreviewPlanner.plan(true, " sounds/a.wav ");
+    NotificationSoundPreviewPlan plan =
+        NotificationSoundPreviewPlanner.plan(true, " sounds/a.wav ");
 
     assertEquals(NotificationSoundPreviewPlan.Action.CUSTOM_FILE, plan.action());
     assertEquals("sounds/a.wav", plan.customPath());

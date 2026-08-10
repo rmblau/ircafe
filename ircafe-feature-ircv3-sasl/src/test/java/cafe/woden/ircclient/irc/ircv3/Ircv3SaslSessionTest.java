@@ -39,8 +39,7 @@ class Ircv3SaslSessionTest {
     assertEquals(1, response.rawLines().size());
     String payload = response.rawLines().getFirst().substring("AUTHENTICATE ".length());
     assertEquals(
-        "\0user\0secret",
-        new String(Base64.getDecoder().decode(payload), StandardCharsets.UTF_8));
+        "\0user\0secret", new String(Base64.getDecoder().decode(payload), StandardCharsets.UTF_8));
   }
 
   @Test
@@ -75,8 +74,7 @@ class Ircv3SaslSessionTest {
         session.onCapabilityList(
             new Ircv3SaslCapabilityOffer(false, true, java.util.Set.of("PLAIN")));
     Ircv3SaslSessionUpdate ack =
-        session.onCapabilityAck(
-            new Ircv3SaslCapabilityOffer(false, true, java.util.Set.of()));
+        session.onCapabilityAck(new Ircv3SaslCapabilityOffer(false, true, java.util.Set.of()));
     Ircv3SaslSessionUpdate response =
         session.onParsedLine(new Ircv3SaslIrcLine("AUTHENTICATE", "+"));
 

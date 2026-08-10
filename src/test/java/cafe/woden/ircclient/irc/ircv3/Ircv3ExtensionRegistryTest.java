@@ -53,8 +53,7 @@ class Ircv3ExtensionRegistryTest {
     assertEquals("unreact", Ircv3ExtensionRegistry.preferenceKeyFor("draft/unreact"));
     assertEquals("typing", Ircv3ExtensionRegistry.preferenceKeyFor("draft/typing"));
     assertEquals(
-        "channel-context",
-        Ircv3ExtensionRegistry.preferenceKeyFor("draft/channel-context"));
+        "channel-context", Ircv3ExtensionRegistry.preferenceKeyFor("draft/channel-context"));
     assertEquals("message-edit", Ircv3ExtensionRegistry.preferenceKeyFor("draft/message-edit"));
   }
 

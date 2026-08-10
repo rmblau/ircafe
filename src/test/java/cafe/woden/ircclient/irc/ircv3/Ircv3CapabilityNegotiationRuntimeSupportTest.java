@@ -23,13 +23,7 @@ class Ircv3CapabilityNegotiationRuntimeSupportTest {
 
     Ircv3CapabilityNegotiationRuntimeSupport.Plan plan =
         support.plan(
-            request(
-                "LS",
-                "message-tags batch draft/chathistory",
-                false,
-                false,
-                false,
-                Set.of()));
+            request("LS", "message-tags batch draft/chathistory", false, false, false, Set.of()));
 
     assertEquals(3, plan.changes().size());
     assertFalse(plan.refreshConnectionFeatures());

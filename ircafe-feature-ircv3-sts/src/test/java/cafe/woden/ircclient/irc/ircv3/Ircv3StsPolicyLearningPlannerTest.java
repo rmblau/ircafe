@@ -13,8 +13,7 @@ class Ircv3StsPolicyLearningPlannerTest {
   @Test
   void learnsSecurePolicyWithNormalizedHostAndExpiry() {
     long now = 1_000L;
-    var decision =
-        planner.plan(" IRC.Example.NET ", true, "duration=60,port=6697,preload", now);
+    var decision = planner.plan(" IRC.Example.NET ", true, "duration=60,port=6697,preload", now);
 
     assertEquals(Ircv3StsPolicyLearningPlanner.Outcome.LEARN, decision.outcome());
     Ircv3StsPolicy policy = decision.policy().orElseThrow();
@@ -43,9 +42,7 @@ class Ircv3StsPolicyLearningPlannerTest {
         Ircv3StsPolicyLearningPlanner.Outcome.IGNORE_INVALID_DIRECTIVE,
         planner.plan("irc.example.net", true, "duration=nope", 1_000L).outcome());
     assertFalse(
-        planner
-            .plan("irc.example.net", false, "duration=60", 1_000L)
-            .changesStoredPolicy());
+        planner.plan("irc.example.net", false, "duration=60", 1_000L).changesStoredPolicy());
   }
 
   @Test

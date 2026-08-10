@@ -35,7 +35,8 @@ public class ImageFetchResponseReader {
       throw new IOException("Image response body is missing");
     }
     int byteLimit = Math.max(1, maxBytes);
-    try (InputStream body = in; ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+    try (InputStream body = in;
+        ByteArrayOutputStream out = new ByteArrayOutputStream()) {
       byte[] buf = new byte[BUFFER_BYTES];
       byte[] sample = new byte[SAMPLE_BYTES];
       int sampleN = 0;

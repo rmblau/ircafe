@@ -11,7 +11,6 @@ import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxServerResponseEmitter;
 import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxWhoEventEmitter;
 import cafe.woden.ircclient.irc.pircbotx.parse.*;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
-import cafe.woden.ircclient.irc.pircbotx.support.PircbotxEventMetadata;
 import cafe.woden.ircclient.irc.pircbotx.support.PircbotxUtil;
 import cafe.woden.ircclient.irc.playback.*;
 import java.time.Instant;
@@ -133,8 +132,7 @@ final class PircbotxUnknownLineFallbackHandler {
       return;
     }
 
-    if (presenceSignals.observeSelfAwayConfirmationRawLine(
-        Instant.now(), normalizedRawLine)) {
+    if (presenceSignals.observeSelfAwayConfirmationRawLine(Instant.now(), normalizedRawLine)) {
       return;
     }
 

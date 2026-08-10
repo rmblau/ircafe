@@ -33,8 +33,7 @@ class FilterManagementCommandAdapterTest {
           assertInstanceOf(
               FilterCommand.Move.class,
               adapter.toRoot(
-                  new FilterManagementCommandSpec.Move(
-                      "later", featureMode, 3, 2, "first")));
+                  new FilterManagementCommandSpec.Move("later", featureMode, 3, 2, "first")));
       assertEquals(featureMode.name(), move.mode().name());
     }
   }

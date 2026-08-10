@@ -36,13 +36,11 @@ public final class Ircv3MonitorCommandRuntimeSupport {
   }
 
   public List<String> addCommands(List<String> nicks, int negotiatedLimit) {
-    return buildModification(
-        Ircv3OutboundCommandOperation.MONITOR_ADD, nicks, negotiatedLimit);
+    return buildModification(Ircv3OutboundCommandOperation.MONITOR_ADD, nicks, negotiatedLimit);
   }
 
   public List<String> removeCommands(List<String> nicks, int negotiatedLimit) {
-    return buildModification(
-        Ircv3OutboundCommandOperation.MONITOR_REMOVE, nicks, negotiatedLimit);
+    return buildModification(Ircv3OutboundCommandOperation.MONITOR_REMOVE, nicks, negotiatedLimit);
   }
 
   private String buildSingle(Ircv3OutboundCommandOperation operation) {

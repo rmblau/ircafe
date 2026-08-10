@@ -144,8 +144,7 @@ class PircbotxWhoEventEmitterTest {
             return List.of(
                 new Ircv3InboundCommandSignal.ChannelHostmaskObserved(
                     "#plugin", "override", "override!ident@plugin.example"),
-                new Ircv3InboundCommandSignal.UserAwayObserved(
-                    "override", false, null));
+                new Ircv3InboundCommandSignal.UserAwayObserved("override", false, null));
           }
         };
     PircbotxWhoEventEmitter emitter =

@@ -23,8 +23,7 @@ public final class Ircv3StsExtensionProvider
     implements Ircv3ExtensionProvider, Ircv3InboundCommandSignalProvider {
 
   private static final String CAPABILITY = "sts";
-  private final Ircv3StsPolicyLearningPlanner learningPlanner =
-      new Ircv3StsPolicyLearningPlanner();
+  private final Ircv3StsPolicyLearningPlanner learningPlanner = new Ircv3StsPolicyLearningPlanner();
 
   @Override
   public String providerId() {

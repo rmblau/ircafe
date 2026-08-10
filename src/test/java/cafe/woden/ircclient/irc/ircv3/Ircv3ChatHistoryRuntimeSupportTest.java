@@ -21,22 +21,18 @@ class Ircv3ChatHistoryRuntimeSupportTest {
     Ircv3ChatHistoryRuntimeSupport.Plan before =
         support.before("#ircafe", "", 500, Instant.parse("2026-07-13T12:34:56Z"));
     Ircv3ChatHistoryRuntimeSupport.Plan latest = support.latest("#ircafe", "", 25);
-    Ircv3ChatHistoryRuntimeSupport.Plan between =
-        support.between("#ircafe", "MSGID=one", "*", 40);
+    Ircv3ChatHistoryRuntimeSupport.Plan between = support.between("#ircafe", "MSGID=one", "*", 40);
     Ircv3ChatHistoryRuntimeSupport.Plan around =
         support.around("#ircafe", "TIMESTAMP=2026-07-13T12:34:56Z", 30);
 
     assertEquals(
-        "CHATHISTORY BEFORE #ircafe timestamp=2026-07-13T12:34:56.000Z 200",
-        before.rawLine());
+        "CHATHISTORY BEFORE #ircafe timestamp=2026-07-13T12:34:56.000Z 200", before.rawLine());
     assertEquals("timestamp=2026-07-13T12:34:56.000Z", before.primarySelector());
     assertEquals(200, before.limit());
     assertEquals("CHATHISTORY LATEST #ircafe * 25", latest.rawLine());
     assertEquals("CHATHISTORY BETWEEN #ircafe msgid=one * 40", between.rawLine());
     assertEquals("msgid=one .. *", between.selectorSummary());
-    assertEquals(
-        "CHATHISTORY AROUND #ircafe timestamp=2026-07-13T12:34:56Z 30",
-        around.rawLine());
+    assertEquals("CHATHISTORY AROUND #ircafe timestamp=2026-07-13T12:34:56Z 30", around.rawLine());
     assertTrue(support.available());
   }
 
@@ -63,8 +59,7 @@ class Ircv3ChatHistoryRuntimeSupportTest {
 
           @Override
           public List<String> build(
-              Ircv3OutboundCommandOperation operation,
-              Ircv3OutboundCommandRequest request) {
+              Ircv3OutboundCommandOperation operation, Ircv3OutboundCommandRequest request) {
             return List.of("CHATHISTORY LATEST " + request.target() + " msgid=plugin 17");
           }
         };
@@ -83,8 +78,7 @@ class Ircv3ChatHistoryRuntimeSupportTest {
     Ircv3ChatHistoryRuntimeSupport support = Ircv3RuntimeTestFixtures.chatHistory();
 
     assertThrows(
-        IllegalArgumentException.class,
-        () -> support.around("#ircafe", "other=value", 20));
+        IllegalArgumentException.class, () -> support.around("#ircafe", "other=value", 20));
   }
 
   @Test
@@ -103,8 +97,7 @@ class Ircv3ChatHistoryRuntimeSupportTest {
 
           @Override
           public List<String> build(
-              Ircv3OutboundCommandOperation operation,
-              Ircv3OutboundCommandRequest request) {
+              Ircv3OutboundCommandOperation operation, Ircv3OutboundCommandRequest request) {
             return List.of("CHATHISTORY AROUND #other msgid=one 20");
           }
         };
@@ -112,8 +105,6 @@ class Ircv3ChatHistoryRuntimeSupportTest {
         new Ircv3ChatHistoryRuntimeSupport(
             Ircv3OutboundCommandRuntimeCatalog.fromProviders(List.of(provider)));
 
-    assertThrows(
-        IllegalStateException.class,
-        () -> support.around("#ircafe", "msgid=one", 20));
+    assertThrows(IllegalStateException.class, () -> support.around("#ircafe", "msgid=one", 20));
   }
 }

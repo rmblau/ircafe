@@ -95,10 +95,8 @@ class PircbotxMultilineCapStateSupportTest {
           public List<Ircv3InboundCommandSignal> parse(
               Ircv3InboundCommandOperation operation, Ircv3InboundCommandRequest request) {
             return List.of(
-                new Ircv3InboundCommandSignal.MultilineLimitsObserved(
-                    false, 8192L, 9L, 8192L, 9L),
-                new Ircv3InboundCommandSignal.MultilineLimitsObserved(
-                    true, 4096L, 4L, 4096L, 4L));
+                new Ircv3InboundCommandSignal.MultilineLimitsObserved(false, 8192L, 9L, 8192L, 9L),
+                new Ircv3InboundCommandSignal.MultilineLimitsObserved(true, 4096L, 4L, 4096L, 4L));
           }
         };
     PircbotxMultilineCapStateSupport overridden =

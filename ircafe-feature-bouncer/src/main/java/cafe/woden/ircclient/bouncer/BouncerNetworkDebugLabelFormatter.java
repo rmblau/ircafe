@@ -7,7 +7,8 @@ import java.util.Objects;
 /** Feature-owned formatting policy for optional discovered-network debug labels. */
 public final class BouncerNetworkDebugLabelFormatter {
 
-  public String suffixFor(BouncerNetworkMappingStrategy mappingStrategy, BouncerDiscoveredNetwork network) {
+  public String suffixFor(
+      BouncerNetworkMappingStrategy mappingStrategy, BouncerDiscoveredNetwork network) {
     Objects.requireNonNull(mappingStrategy, "mappingStrategy");
     Objects.requireNonNull(network, "network");
     return suffixFor(mappingStrategy.networkDebugId(network));

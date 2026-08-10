@@ -11,7 +11,7 @@ public final class IrcEventNotificationRuleEditValidationDisplayPlanner {
       IrcEventNotificationRuleEditValidationError error) {
     int tabIndex =
         error != null
-            && error.field() == IrcEventNotificationRuleEditValidationError.Field.SCRIPT_PATH
+                && error.field() == IrcEventNotificationRuleEditValidationError.Field.SCRIPT_PATH
             ? SCRIPT_TAB_INDEX
             : FILTERS_TAB_INDEX;
     return new IrcEventNotificationRuleEditValidationDisplayPlan(tabIndex);

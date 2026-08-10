@@ -27,14 +27,24 @@ class LinkPreviewFetchPreflightServiceTest {
 
   @Test
   void rejectsUnsupportedSchemes() {
-    assertThrows(IllegalArgumentException.class, () -> preflight.prepare("server-a", "ftp://example.com/file"));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> preflight.prepare("server-a", "ftp://example.com/file"));
   }
 
   @Test
   void rejectsLocalAndPrivateHosts() {
-    assertThrows(IllegalArgumentException.class, () -> preflight.prepare("server-a", "https://localhost/item"));
-    assertThrows(IllegalArgumentException.class, () -> preflight.prepare("server-a", "https://10.1.2.3/item"));
-    assertThrows(IllegalArgumentException.class, () -> preflight.prepare("server-a", "https://192.168.1.5/item"));
-    assertThrows(IllegalArgumentException.class, () -> preflight.prepare("server-a", "https://172.20.1.5/item"));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> preflight.prepare("server-a", "https://localhost/item"));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> preflight.prepare("server-a", "https://10.1.2.3/item"));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> preflight.prepare("server-a", "https://192.168.1.5/item"));
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> preflight.prepare("server-a", "https://172.20.1.5/item"));
   }
 }

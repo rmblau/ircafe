@@ -146,8 +146,7 @@ public final class PircbotxPresenceSignalSupport {
           sink.accept(
               new ServerIrcEvent(
                   serverId,
-                  new IrcEvent.UserHostmaskObserved(
-                      at, "", hostmask.nick(), hostmask.hostmask())));
+                  new IrcEvent.UserHostmaskObserved(at, "", hostmask.nick(), hostmask.hostmask())));
         }
         continue;
       }
@@ -178,8 +177,7 @@ public final class PircbotxPresenceSignalSupport {
                   : "You are no longer marked as being away";
         }
         sink.accept(
-            new ServerIrcEvent(
-                serverId, new IrcEvent.AwayStatusChanged(at, away.away(), message)));
+            new ServerIrcEvent(serverId, new IrcEvent.AwayStatusChanged(at, away.away(), message)));
         continue;
       }
 

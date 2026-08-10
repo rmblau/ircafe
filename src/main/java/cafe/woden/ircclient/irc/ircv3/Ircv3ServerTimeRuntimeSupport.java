@@ -32,8 +32,7 @@ public final class Ircv3ServerTimeRuntimeSupport {
 
   public Optional<Instant> resolve(Map<String, String> tags, String rawLine) {
     for (Ircv3InboundTagSignal signal :
-        runtimeCatalog.parse(
-            Ircv3InboundTagOperation.SERVER_TIME, request(tags, rawLine, 0L))) {
+        runtimeCatalog.parse(Ircv3InboundTagOperation.SERVER_TIME, request(tags, rawLine, 0L))) {
       if (signal.type() != Ircv3InboundTagSignalType.SERVER_TIME) {
         continue;
       }

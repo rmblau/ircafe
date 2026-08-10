@@ -27,7 +27,9 @@ public final class IrcEventNotificationDefaultRuleCatalog {
 
     List<IrcEventNotificationDefaultRule> out = new ArrayList<>();
     for (String eventType : events) {
-      out.add(defaultRule(defaultEnabledForEvent(eventType), eventType, defaultSourceModeForEvent(eventType)));
+      out.add(
+          defaultRule(
+              defaultEnabledForEvent(eventType), eventType, defaultSourceModeForEvent(eventType)));
     }
 
     Set<String> available = new LinkedHashSet<>(events);
@@ -77,7 +79,11 @@ public final class IrcEventNotificationDefaultRuleCatalog {
 
   public static boolean defaultEnabledForEvent(String eventType) {
     return switch (normalizeEventType(eventType)) {
-      case "PRIVATE_MESSAGE_RECEIVED", "INVITE_RECEIVED", "YOU_KICKED", "YOU_BANNED", "YOU_KLINED" ->
+      case "PRIVATE_MESSAGE_RECEIVED",
+          "INVITE_RECEIVED",
+          "YOU_KICKED",
+          "YOU_BANNED",
+          "YOU_KLINED" ->
           true;
       default -> false;
     };

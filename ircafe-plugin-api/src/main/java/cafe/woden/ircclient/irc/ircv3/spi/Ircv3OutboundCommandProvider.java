@@ -20,6 +20,5 @@ public interface Ircv3OutboundCommandProvider {
 
   Set<Ircv3OutboundCommandOperation> operations();
 
-  List<String> build(
-      Ircv3OutboundCommandOperation operation, Ircv3OutboundCommandRequest request);
+  List<String> build(Ircv3OutboundCommandOperation operation, Ircv3OutboundCommandRequest request);
 }

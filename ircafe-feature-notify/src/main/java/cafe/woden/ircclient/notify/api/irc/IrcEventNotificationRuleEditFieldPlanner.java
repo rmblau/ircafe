@@ -14,7 +14,8 @@ public final class IrcEventNotificationRuleEditFieldPlanner {
       String ctcpCommandMode,
       String ctcpValueMode,
       boolean scriptEnabled) {
-    boolean sourcePatternAvailable = IrcEventNotificationRuleEditPolicy.sourcePatternRequired(sourceMode);
+    boolean sourcePatternAvailable =
+        IrcEventNotificationRuleEditPolicy.sourcePatternRequired(sourceMode);
     boolean channelPatternsAvailable =
         IrcEventNotificationRuleEditPolicy.channelPatternsRequired(channelScope);
     boolean ctcpFiltersAvailable = IrcEventNotificationRuleEditPolicy.ctcpFiltersActive(eventType);
@@ -22,7 +23,8 @@ public final class IrcEventNotificationRuleEditFieldPlanner {
         ctcpFiltersAvailable
             && IrcEventNotificationRuleEditPolicy.ctcpPatternRequired(ctcpCommandMode);
     boolean ctcpValuePatternAvailable =
-        ctcpFiltersAvailable && IrcEventNotificationRuleEditPolicy.ctcpPatternRequired(ctcpValueMode);
+        ctcpFiltersAvailable
+            && IrcEventNotificationRuleEditPolicy.ctcpPatternRequired(ctcpValueMode);
 
     return new IrcEventNotificationRuleEditFieldPlan(
         sourcePatternHint(sourceMode),

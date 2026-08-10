@@ -127,9 +127,6 @@ public final class Ircv3MessageRedactionExtensionProvider
   public List<Ircv3FeatureContribution> visibleFeatures() {
     return List.of(
         new Ircv3FeatureContribution(
-            400,
-            "Message redaction",
-            List.of(),
-            List.of(CAPABILITY, DRAFT_CAPABILITY)));
+            400, "Message redaction", List.of(), List.of(CAPABILITY, DRAFT_CAPABILITY)));
   }
 }

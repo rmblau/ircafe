@@ -78,8 +78,7 @@ public final class Ircv3ReadMarkerExtensionProvider
       return List.of();
     }
     return List.of(
-        Ircv3ReadMarkerCommandBuilder.buildTimestampRawLine(
-            request.target(), request.timestamp()));
+        Ircv3ReadMarkerCommandBuilder.buildTimestampRawLine(request.target(), request.timestamp()));
   }
 
   @Override

@@ -30,8 +30,7 @@ final class PircbotxMultilineMessageSupport {
     if (!runtimeCatalog.supports(Ircv3OutboundCommandOperation.MULTILINE)) {
       throw new IllegalStateException("multiline runtime provider not available: " + serverId);
     }
-    Ircv3CapabilitySnapshot caps =
-        connection == null ? null : connection.capabilitySnapshot();
+    Ircv3CapabilitySnapshot caps = connection == null ? null : connection.capabilitySnapshot();
     String batchId = "ml" + Long.toUnsignedString(ThreadLocalRandom.current().nextLong(), 36);
     List<String> rawLines =
         runtimeCatalog.build(

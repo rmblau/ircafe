@@ -58,8 +58,7 @@ public final class Ircv3SaslRuntimeProvider implements Ircv3InboundCommandSignal
             offer.offeredMechanismsUpper().stream().sorted().toList()));
   }
 
-  private static List<Ircv3InboundCommandSignal> serverMessage(
-      Ircv3InboundCommandRequest request) {
+  private static List<Ircv3InboundCommandSignal> serverMessage(Ircv3InboundCommandRequest request) {
     Ircv3SaslIrcLine line = Ircv3SaslIrcLine.parse(request.rawLine());
     if (line == null) {
       return List.of();

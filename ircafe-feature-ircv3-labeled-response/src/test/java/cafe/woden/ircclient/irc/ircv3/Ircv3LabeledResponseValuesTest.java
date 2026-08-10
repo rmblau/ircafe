@@ -13,5 +13,4 @@ class Ircv3LabeledResponseValuesTest {
         Ircv3LabeledResponseValues.generateClientLabel(" Libera.Chat ", 12345));
     assertEquals("ircafe-srv-1", Ircv3LabeledResponseValues.generateClientLabel("!!!", 1));
   }
-
 }

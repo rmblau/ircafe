@@ -5,17 +5,14 @@ import java.util.Objects;
 
 /** Result of trying custom sound playback providers. */
 public record CustomSoundPlaybackProviderResult(
-    boolean handled,
-    boolean handledWhileFresh,
-    List<CustomSoundPlaybackProviderFailure> failures) {
+    boolean handled, boolean handledWhileFresh, List<CustomSoundPlaybackProviderFailure> failures) {
 
   public CustomSoundPlaybackProviderResult {
     if (!handled) {
       handledWhileFresh = false;
     }
     failures =
-        Objects.requireNonNullElse(failures, List.<CustomSoundPlaybackProviderFailure>of())
-            .stream()
+        Objects.requireNonNullElse(failures, List.<CustomSoundPlaybackProviderFailure>of()).stream()
             .filter(Objects::nonNull)
             .toList();
   }

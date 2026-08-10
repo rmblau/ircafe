@@ -24,12 +24,10 @@ public final class Ircv3CapabilityRequestBatchSession {
 
   public Ircv3CapabilityRequestBatchSession(Collection<String> desiredCapabilities) {
     LinkedHashMap<String, String> deduplicated = new LinkedHashMap<>();
-    for (String rawCapability : Objects.requireNonNullElse(desiredCapabilities, List.<String>of())) {
+    for (String rawCapability :
+        Objects.requireNonNullElse(desiredCapabilities, List.<String>of())) {
       Ircv3CapabilityToken.parse(rawCapability)
-          .ifPresent(
-              token ->
-                  deduplicated.putIfAbsent(
-                      token.normalizedName(), token.name()));
+          .ifPresent(token -> deduplicated.putIfAbsent(token.normalizedName(), token.name()));
     }
     this.desiredCapabilities = List.copyOf(deduplicated.values());
   }

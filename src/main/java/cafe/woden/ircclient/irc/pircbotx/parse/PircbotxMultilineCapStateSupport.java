@@ -11,8 +11,7 @@ public final class PircbotxMultilineCapStateSupport {
 
   private final Ircv3MultilineCapabilityRuntimeSupport runtimeSupport;
 
-  public PircbotxMultilineCapStateSupport(
-      Ircv3MultilineCapabilityRuntimeSupport runtimeSupport) {
+  public PircbotxMultilineCapStateSupport(Ircv3MultilineCapabilityRuntimeSupport runtimeSupport) {
     this.runtimeSupport = Objects.requireNonNull(runtimeSupport, "runtimeSupport");
   }
 

@@ -79,8 +79,7 @@ public final class Ircv3CapabilityState {
   }
 
   public boolean updateTrackedCapability(String capabilityName, boolean enabled) {
-    Ircv3TrackedCapability capability =
-        Ircv3TrackedCapability.resolve(capabilityName).orElse(null);
+    Ircv3TrackedCapability capability = Ircv3TrackedCapability.resolve(capabilityName).orElse(null);
     if (capability == null) {
       return false;
     }
@@ -99,14 +98,10 @@ public final class Ircv3CapabilityState {
       case CHGHOST -> update(chghostCapAcked, enabled);
       case STS -> update(stsCapAcked, enabled);
       case MULTILINE ->
-          updateWithLimitReset(
-              multilineCapAcked, multilineMaxBytes, multilineMaxLines, enabled);
+          updateWithLimitReset(multilineCapAcked, multilineMaxBytes, multilineMaxLines, enabled);
       case DRAFT_MULTILINE ->
           updateWithLimitReset(
-              draftMultilineCapAcked,
-              draftMultilineMaxBytes,
-              draftMultilineMaxLines,
-              enabled);
+              draftMultilineCapAcked, draftMultilineMaxBytes, draftMultilineMaxLines, enabled);
       case MESSAGE_EDIT -> update(draftMessageEditCapAcked, enabled);
       case MESSAGE_REDACTION -> update(draftMessageRedactionCapAcked, enabled);
       case MESSAGE_TAGS -> update(messageTagsCapAcked, enabled);

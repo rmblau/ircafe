@@ -163,8 +163,7 @@ class PircbotxPresenceSignalSupportTest {
     Ircv3InboundCommandSignalProvider focusedProvider =
         providerForSetName("focused", Ircv3InboundCommandOperation.SETNAME, "Focused Alice");
     Ircv3InboundCommandSignalProvider legacyProvider =
-        providerForSetName(
-            "legacy", Ircv3InboundCommandOperation.IDENTITY_CHANGE, "Legacy Alice");
+        providerForSetName("legacy", Ircv3InboundCommandOperation.IDENTITY_CHANGE, "Legacy Alice");
     List<ServerIrcEvent> out = new ArrayList<>();
     PircbotxPresenceSignalSupport support =
         new PircbotxPresenceSignalSupport(
@@ -181,8 +180,7 @@ class PircbotxPresenceSignalSupportTest {
             ":alice SETNAME :Alice Liddell",
             List.of(":Alice Liddell")));
 
-    IrcEvent.UserSetNameObserved observed =
-        assertEvent(out, IrcEvent.UserSetNameObserved.class);
+    IrcEvent.UserSetNameObserved observed = assertEvent(out, IrcEvent.UserSetNameObserved.class);
     assertEquals("Focused Alice", observed.realName());
   }
 
@@ -194,11 +192,9 @@ class PircbotxPresenceSignalSupportTest {
 
     assertTrue(
         support.observeAwayNotifyRawLine(
-            Instant.parse("2026-03-23T12:30:00Z"),
-            ":alice!u@h AWAY :Fallback away"));
+            Instant.parse("2026-03-23T12:30:00Z"), ":alice!u@h AWAY :Fallback away"));
 
-    IrcEvent.UserAwayStateObserved away =
-        assertEvent(out, IrcEvent.UserAwayStateObserved.class);
+    IrcEvent.UserAwayStateObserved away = assertEvent(out, IrcEvent.UserAwayStateObserved.class);
     assertEquals("alice", away.nick());
     assertEquals(IrcEvent.AwayState.AWAY, away.awayState());
     assertEquals("Fallback away", away.awayMessage());
@@ -309,8 +305,7 @@ class PircbotxPresenceSignalSupportTest {
 
       @Override
       public List<Ircv3InboundCommandSignal> parse(
-          Ircv3InboundCommandOperation requestedOperation,
-          Ircv3InboundCommandRequest request) {
+          Ircv3InboundCommandOperation requestedOperation, Ircv3InboundCommandRequest request) {
         return List.of(
             new Ircv3InboundCommandSignal.SetNameObserved(
                 request.sourceNick(),
@@ -321,8 +316,7 @@ class PircbotxPresenceSignalSupportTest {
     };
   }
 
-  private static <T extends IrcEvent> T assertEvent(
-      List<ServerIrcEvent> events, Class<T> type) {
+  private static <T extends IrcEvent> T assertEvent(List<ServerIrcEvent> events, Class<T> type) {
     return events.stream()
         .map(ServerIrcEvent::event)
         .filter(type::isInstance)

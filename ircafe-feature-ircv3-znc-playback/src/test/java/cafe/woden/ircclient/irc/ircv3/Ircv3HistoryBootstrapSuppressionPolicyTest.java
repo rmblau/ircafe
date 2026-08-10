@@ -14,17 +14,14 @@ class Ircv3HistoryBootstrapSuppressionPolicyTest {
         Ircv3HistoryBootstrapSuppressionPolicy.shouldSuppress(
             true, "*playback", "play #ircafe 1710000000"));
     assertFalse(
-        Ircv3HistoryBootstrapSuppressionPolicy.shouldSuppress(
-            false, "*playback", "play * 19"));
+        Ircv3HistoryBootstrapSuppressionPolicy.shouldSuppress(false, "*playback", "play * 19"));
   }
 
   @Test
   void suppressesZncNetworkDiscoveryStatusCommand() {
     assertTrue(
-        Ircv3HistoryBootstrapSuppressionPolicy.shouldSuppress(
-            true, "*status", "ListNetworks"));
-    assertFalse(
-        Ircv3HistoryBootstrapSuppressionPolicy.shouldSuppress(true, "*status", "Version"));
+        Ircv3HistoryBootstrapSuppressionPolicy.shouldSuppress(true, "*status", "ListNetworks"));
+    assertFalse(Ircv3HistoryBootstrapSuppressionPolicy.shouldSuppress(true, "*status", "Version"));
   }
 
   @Test

@@ -104,8 +104,7 @@ final class PircbotxBridgeListener extends ListenerAdapter {
         Objects.requireNonNull(isupportRuntimeSupport, "isupportRuntimeSupport");
     Ircv3TypingRuntimeSupport typing =
         Objects.requireNonNull(typingRuntimeSupport, "typingRuntimeSupport");
-    Ircv3SaslRuntimeSupport sasl =
-        Objects.requireNonNull(saslRuntimeSupport, "saslRuntimeSupport");
+    Ircv3SaslRuntimeSupport sasl = Objects.requireNonNull(saslRuntimeSupport, "saslRuntimeSupport");
 
     this.bouncerDiscovery =
         new PircbotxBouncerDiscoveryCoordinator(
@@ -149,11 +148,9 @@ final class PircbotxBridgeListener extends ListenerAdapter {
             selfIdentity::resolveSelfNick,
             serverTimeRuntimeSupport);
     this.whoEvents =
-        new PircbotxWhoEventEmitter(
-            serverId, conn, bus::onNext, inboundCommandRuntimeCatalog);
+        new PircbotxWhoEventEmitter(serverId, conn, bus::onNext, inboundCommandRuntimeCatalog);
     PircbotxPresenceSignalSupport presenceSignals =
-        new PircbotxPresenceSignalSupport(
-            serverId, bus::onNext, inboundCommandRuntimeCatalog);
+        new PircbotxPresenceSignalSupport(serverId, bus::onNext, inboundCommandRuntimeCatalog);
     this.isupportObserver =
         new PircbotxIsupportObserver(
             serverId,
@@ -164,12 +161,7 @@ final class PircbotxBridgeListener extends ListenerAdapter {
             isupport,
             typing);
     this.saslFailures =
-        new PircbotxSaslFailureHandler(
-            serverId,
-            conn,
-            bus::onNext,
-            disconnectOnSaslFailure,
-            sasl);
+        new PircbotxSaslFailureHandler(serverId, conn, bus::onNext, disconnectOnSaslFailure, sasl);
     this.registrationLifecycle =
         new PircbotxRegistrationLifecycleHandler(
             serverId,

@@ -16,7 +16,9 @@ public final class IrcafePluginManifest {
   /** Plugin version declared by each external plugin jar. */
   public static final String PLUGIN_VERSION_ATTRIBUTE = "Ircafe-Plugin-Version";
 
-  /** Fallback plugin version attribute accepted when {@link #PLUGIN_VERSION_ATTRIBUTE} is absent. */
+  /**
+   * Fallback plugin version attribute accepted when {@link #PLUGIN_VERSION_ATTRIBUTE} is absent.
+   */
   public static final String FALLBACK_PLUGIN_VERSION_ATTRIBUTE =
       Attributes.Name.IMPLEMENTATION_VERSION.toString();
 
@@ -53,8 +55,8 @@ public final class IrcafePluginManifest {
   }
 
   /**
-   * Builds a compatible manifest attribute set that uses the supported
-   * {@code Implementation-Version} fallback for the plugin version.
+   * Builds a compatible manifest attribute set that uses the supported {@code
+   * Implementation-Version} fallback for the plugin version.
    */
   public static Map<String, String> compatibleImplementationVersionManifestAttributes(
       String pluginId, String implementationVersion) {

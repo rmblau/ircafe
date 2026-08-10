@@ -51,7 +51,12 @@ public final class NotificationStoreEventPolicy {
   }
 
   public static NotificationStoreEventValues ircEvent(
-      String serverId, String target, String fromNick, String title, String body, String messageId) {
+      String serverId,
+      String target,
+      String fromNick,
+      String title,
+      String body,
+      String messageId) {
     String sid = normalizeServerId(serverId);
     if (sid.isEmpty()) {
       return NotificationStoreEventValues.invalid();

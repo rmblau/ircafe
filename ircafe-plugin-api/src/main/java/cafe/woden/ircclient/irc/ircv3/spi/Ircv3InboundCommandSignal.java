@@ -134,11 +134,7 @@ public sealed interface Ircv3InboundCommandSignal
   }
 
   record StandardReplyObserved(
-      StandardReplyKind kind,
-      String command,
-      String code,
-      String context,
-      String description)
+      StandardReplyKind kind, String command, String code, String context, String description)
       implements Ircv3InboundCommandSignal {
     public StandardReplyObserved {
       kind = Objects.requireNonNull(kind, "kind");
@@ -202,8 +198,7 @@ public sealed interface Ircv3InboundCommandSignal
     }
   }
 
-  record ReadMarkerObserved(String target, String marker)
-      implements Ircv3InboundCommandSignal {
+  record ReadMarkerObserved(String target, String marker) implements Ircv3InboundCommandSignal {
     public ReadMarkerObserved {
       target = Objects.toString(target, "").trim();
       marker = Objects.toString(marker, "").trim();
@@ -235,8 +230,7 @@ public sealed interface Ircv3InboundCommandSignal
 
   record HistoryBatchIgnored() implements Ircv3InboundCommandSignal {}
 
-  record ZncDetectedObserved(String source, String evidence)
-      implements Ircv3InboundCommandSignal {
+  record ZncDetectedObserved(String source, String evidence) implements Ircv3InboundCommandSignal {
     public ZncDetectedObserved {
       source = Objects.toString(source, "").trim();
       evidence = Objects.toString(evidence, "").trim();
@@ -285,8 +279,7 @@ public sealed interface Ircv3InboundCommandSignal
 
   record WhoxSupportObserved(boolean supported) implements Ircv3InboundCommandSignal {}
 
-  record MonitorSupportObserved(boolean supported, int limit)
-      implements Ircv3InboundCommandSignal {
+  record MonitorSupportObserved(boolean supported, int limit) implements Ircv3InboundCommandSignal {
     public MonitorSupportObserved {
       if (limit < 0) limit = 0;
       if (!supported) limit = 0;

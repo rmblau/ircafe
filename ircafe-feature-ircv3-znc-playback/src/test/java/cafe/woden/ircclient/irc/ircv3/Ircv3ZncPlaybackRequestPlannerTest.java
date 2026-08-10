@@ -38,7 +38,8 @@ class Ircv3ZncPlaybackRequestPlannerTest {
   @Test
   void nonPositiveUpperBoundMatchesLegacyOpenEndedCommand() {
     Ircv3ZncPlaybackRequestPlanner.Plan plan =
-        planner.plan("#ircafe", Instant.ofEpochSecond(10), Instant.EPOCH, Instant.ofEpochSecond(99));
+        planner.plan(
+            "#ircafe", Instant.ofEpochSecond(10), Instant.EPOCH, Instant.ofEpochSecond(99));
 
     assertEquals(Instant.EPOCH, plan.toInclusive());
     assertEquals("play #ircafe 10", plan.renderCommand("#ircafe"));

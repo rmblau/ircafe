@@ -87,7 +87,6 @@ public final class Ircv3ChatHistoryExtensionProvider
     return line.isEmpty() ? List.of() : List.of(line);
   }
 
-
   private static String beforeSelector(Ircv3OutboundCommandRequest request) {
     String selector = request.primaryValue();
     if (!selector.isBlank()) {
@@ -105,9 +104,6 @@ public final class Ircv3ChatHistoryExtensionProvider
   public List<Ircv3FeatureContribution> visibleFeatures() {
     return List.of(
         new Ircv3FeatureContribution(
-            500,
-            "History",
-            List.of(),
-            List.of(CAPABILITY, DRAFT_CAPABILITY, "znc.in/playback")));
+            500, "History", List.of(), List.of(CAPABILITY, DRAFT_CAPABILITY, "znc.in/playback")));
   }
 }

@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.translation;
 
-import cafe.woden.ircclient.app.translation.MessageTranslationSettingsProvider;
 import cafe.woden.ircclient.app.translation.MessageTranslationBackendContexts;
+import cafe.woden.ircclient.app.translation.MessageTranslationSettingsProvider;
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationBackendContext;
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationBackendProvider;
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationRequest;
@@ -30,13 +30,15 @@ abstract class AbstractHttpMessageTranslationBackend implements MessageTranslati
   private final MessageTranslationHttpClient httpClient;
 
   AbstractHttpMessageTranslationBackend(
-      MessageTranslationSettingsProvider settingsProvider, MessageTranslationHttpClient httpClient) {
+      MessageTranslationSettingsProvider settingsProvider,
+      MessageTranslationHttpClient httpClient) {
     this.settingsProvider = Objects.requireNonNull(settingsProvider, "settingsProvider");
     this.httpClient = Objects.requireNonNull(httpClient, "httpClient");
   }
 
   @Override
-  public final CompletionStage<MessageTranslationResult> translate(MessageTranslationRequest request) {
+  public final CompletionStage<MessageTranslationResult> translate(
+      MessageTranslationRequest request) {
     return translate(request, MessageTranslationBackendContexts.from(settingsProvider.snapshot()));
   }
 

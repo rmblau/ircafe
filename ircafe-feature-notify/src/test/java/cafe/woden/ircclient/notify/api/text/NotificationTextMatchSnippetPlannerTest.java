@@ -29,8 +29,7 @@ class NotificationTextMatchSnippetPlannerTest {
     String message = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     assertEquals(
-        "…vwxyz[ABC]DEFGH…",
-        NotificationTextMatchSnippetPlanner.snippetAround(message, 36, 39, 5));
+        "…vwxyz[ABC]DEFGH…", NotificationTextMatchSnippetPlanner.snippetAround(message, 36, 39, 5));
   }
 
   @Test

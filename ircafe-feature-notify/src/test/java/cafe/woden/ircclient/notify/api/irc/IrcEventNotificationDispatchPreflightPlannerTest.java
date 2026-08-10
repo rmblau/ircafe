@@ -23,11 +23,9 @@ class IrcEventNotificationDispatchPreflightPlannerTest {
     assertFalse(IrcEventNotificationDispatchPreflightPlanner.plan(" ", 2).shouldEvaluate());
     assertFalse(IrcEventNotificationDispatchPreflightPlanner.plan(null, 2).shouldEvaluate());
     assertFalse(
-        IrcEventNotificationDispatchPreflightPlanner.plan("MESSAGE_RECEIVED", 0)
-            .shouldEvaluate());
+        IrcEventNotificationDispatchPreflightPlanner.plan("MESSAGE_RECEIVED", 0).shouldEvaluate());
     assertFalse(
-        IrcEventNotificationDispatchPreflightPlanner.plan("MESSAGE_RECEIVED", -2)
-            .shouldEvaluate());
+        IrcEventNotificationDispatchPreflightPlanner.plan("MESSAGE_RECEIVED", -2).shouldEvaluate());
   }
 
   @Test

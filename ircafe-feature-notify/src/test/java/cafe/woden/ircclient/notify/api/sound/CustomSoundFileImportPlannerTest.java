@@ -17,7 +17,8 @@ class CustomSoundFileImportPlannerTest {
     CustomSoundFileImportPlan invalid =
         CustomSoundFileImportPlanner.plan(" ", "notification", List.of(builtIn), List.of());
     CustomSoundFileImportPlan unsupported =
-        CustomSoundFileImportPlanner.plan("notice.ogg", "notification", List.of(builtIn), List.of());
+        CustomSoundFileImportPlanner.plan(
+            "notice.ogg", "notification", List.of(builtIn), List.of());
 
     assertFalse(invalid.validFileName());
     assertFalse(invalid.importable());

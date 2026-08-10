@@ -40,8 +40,7 @@ final class BouncerPluginProviders {
             ? List.of()
             : installedPlugins.loadInstalledServices(
                 BouncerBackendDiscoveryHandler.class, List.of());
-    return BouncerPluginProviderCatalog.discoveryHandlers(
-        springManagedHandlers, installedHandlers);
+    return BouncerPluginProviderCatalog.discoveryHandlers(springManagedHandlers, installedHandlers);
   }
 
   private static List<BouncerNetworkMappingStrategy>

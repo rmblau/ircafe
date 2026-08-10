@@ -19,8 +19,7 @@ class Ircv3AwayLineParserTest {
     assertTrue(away.away());
     assertEquals("Gone away", away.message());
 
-    Ircv3AwayLineParser.AwayNotify here =
-        Ircv3AwayLineParser.parseAwayNotify(":alice!u@h AWAY");
+    Ircv3AwayLineParser.AwayNotify here = Ircv3AwayLineParser.parseAwayNotify(":alice!u@h AWAY");
     assertNotNull(here);
     assertFalse(here.away());
     assertNull(here.message());

@@ -11,7 +11,8 @@ public final class Ircv3MonitorCommandPlanner {
 
   private Ircv3MonitorCommandPlanner() {}
 
-  public sealed interface Action permits Usage, ListRequested, StatusRequested, ClearRequested, Modify {}
+  public sealed interface Action
+      permits Usage, ListRequested, StatusRequested, ClearRequested, Modify {}
 
   public record Usage() implements Action {}
 

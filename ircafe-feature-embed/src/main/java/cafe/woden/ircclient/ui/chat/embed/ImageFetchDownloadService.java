@@ -63,7 +63,8 @@ public class ImageFetchDownloadService {
     this.responseReader = responseReader != null ? responseReader : new ImageFetchResponseReader();
     this.responsePolicy = responsePolicy != null ? responsePolicy : new ImageFetchResponsePolicy();
     this.maxBytes = maxBytes > 0 ? maxBytes : DEFAULT_MAX_BYTES;
-    this.headerFailureConsumer = headerFailureConsumer != null ? headerFailureConsumer : failure -> {};
+    this.headerFailureConsumer =
+        headerFailureConsumer != null ? headerFailureConsumer : failure -> {};
   }
 
   public byte[] download(String serverId, String url) throws IOException, InterruptedException {

@@ -25,8 +25,7 @@ public final class Ircv3HistoryBootstrapSuppressionPolicy {
         && message.toLowerCase(Locale.ROOT).startsWith("play ")) {
       return true;
     }
-    return "*status".equalsIgnoreCase(normalizedTarget)
-        && "ListNetworks".equalsIgnoreCase(message);
+    return "*status".equalsIgnoreCase(normalizedTarget) && "ListNetworks".equalsIgnoreCase(message);
   }
 
   public static boolean isZncPlayStarCursorCommand(String message) {

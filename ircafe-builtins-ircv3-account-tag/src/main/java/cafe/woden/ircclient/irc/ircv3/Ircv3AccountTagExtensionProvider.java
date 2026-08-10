@@ -65,9 +65,7 @@ public final class Ircv3AccountTagExtensionProvider
             signal ->
                 List.of(
                     new Ircv3InboundTagSignal(
-                        Ircv3InboundTagSignalType.ACCOUNT_TAG,
-                        signal.nick(),
-                        signal.rawAccount())))
+                        Ircv3InboundTagSignalType.ACCOUNT_TAG, signal.nick(), signal.rawAccount())))
         .orElseGet(List::of);
   }
 }

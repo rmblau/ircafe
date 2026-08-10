@@ -101,23 +101,16 @@ public final class PircbotxCapabilityNegotiationSupport {
                 : Ircv3HistoryTransportRuntimeSupport.Detection.notDetected();
         if (detection.detected() && conn.markZncDetected()) {
           log.debug(
-              "[{}] detected ZNC via CAP {}: {}",
-              serverId,
-              change.action(),
-              detection.evidence());
+              "[{}] detected ZNC via CAP {}: {}", serverId, change.action(), detection.evidence());
         }
-        capabilityStateSupport.apply(
-            change.capabilityName(), change.enabled(), change.action());
+        capabilityStateSupport.apply(change.capabilityName(), change.enabled(), change.action());
       }
 
       sink.accept(
           new ServerIrcEvent(
               serverId,
               new IrcEvent.Ircv3CapabilityChanged(
-                  Instant.now(),
-                  change.action(),
-                  change.capabilityName(),
-                  change.enabled())));
+                  Instant.now(), change.action(), change.capabilityName(), change.enabled())));
     }
 
     if (plan.refreshConnectionFeatures() && !plan.changes().isEmpty()) {
@@ -130,8 +123,7 @@ public final class PircbotxCapabilityNegotiationSupport {
     }
   }
 
-  private void maybeRequestMessageTagsFallback(
-      Ircv3CapabilityNegotiationRuntimeSupport.Plan plan) {
+  private void maybeRequestMessageTagsFallback(Ircv3CapabilityNegotiationRuntimeSupport.Plan plan) {
     if (!plan.requestMessageTags()) return;
     if (!conn.beginMessageTagsFallbackRequest()) return;
 

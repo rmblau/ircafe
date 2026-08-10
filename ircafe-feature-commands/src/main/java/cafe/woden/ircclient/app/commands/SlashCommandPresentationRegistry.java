@@ -131,7 +131,8 @@ public final class SlashCommandPresentationRegistry {
       String topic = normalizeHelpTopic(entry.getKey());
       List<String> lines = entry.getValue();
       if (topic.isEmpty() || lines == null || lines.isEmpty()) continue;
-      addTopicHelpHandler(handlers, topic, help -> lines.forEach(line -> appendStaticHelpLine(help, line)));
+      addTopicHelpHandler(
+          handlers, topic, help -> lines.forEach(line -> appendStaticHelpLine(help, line)));
     }
   }
 
@@ -162,7 +163,8 @@ public final class SlashCommandPresentationRegistry {
     }
     LinkedHashMap<String, List<String>> copied = new LinkedHashMap<>();
     for (Map.Entry<String, List<String>> entry : lines.entrySet()) {
-      copied.put(entry.getKey(), List.copyOf(Objects.requireNonNullElse(entry.getValue(), List.of())));
+      copied.put(
+          entry.getKey(), List.copyOf(Objects.requireNonNullElse(entry.getValue(), List.of())));
     }
     return Map.copyOf(copied);
   }

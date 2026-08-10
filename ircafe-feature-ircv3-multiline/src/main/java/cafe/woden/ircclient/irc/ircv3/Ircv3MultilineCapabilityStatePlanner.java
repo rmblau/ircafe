@@ -87,10 +87,7 @@ public final class Ircv3MultilineCapabilityStatePlanner {
         if (parsedLines > 0L) offeredLines = parsedLines;
       }
       return new Limits(
-          offeredBytes,
-          offeredLines,
-          prior.negotiatedMaxBytes(),
-          prior.negotiatedMaxLines());
+          offeredBytes, offeredLines, prior.negotiatedMaxBytes(), prior.negotiatedMaxLines());
     }
 
     if (fromAck) {

@@ -43,10 +43,7 @@ public final class PircbotxAccountTagSupport {
   }
 
   private void emit(
-      Instant at,
-      String command,
-      String target,
-      Ircv3AccountTagTracker.Change change) {
+      Instant at, String command, String target, Ircv3AccountTagTracker.Change change) {
     IrcEvent.AccountState state =
         change.state() == Ircv3AccountTagTracker.AccountState.LOGGED_IN
             ? IrcEvent.AccountState.LOGGED_IN
@@ -63,7 +60,6 @@ public final class PircbotxAccountTagSupport {
     sink.accept(
         new ServerIrcEvent(
             serverId,
-            new IrcEvent.UserAccountStateObserved(
-                at, change.nick(), state, change.accountName())));
+            new IrcEvent.UserAccountStateObserved(at, change.nick(), state, change.accountName())));
   }
 }

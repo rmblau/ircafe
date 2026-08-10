@@ -34,8 +34,7 @@ public final class Ircv3FeatureAvailabilityEvaluator {
   private Ircv3FeatureAvailabilityEvaluator() {}
 
   public static List<Evaluation> evaluate(
-      List<? extends Ircv3FeatureContribution> features,
-      Collection<String> enabledCapabilities) {
+      List<? extends Ircv3FeatureContribution> features, Collection<String> enabledCapabilities) {
     Set<String> enabled = normalizeCapabilities(enabledCapabilities);
     List<? extends Ircv3FeatureContribution> safeFeatures =
         Objects.requireNonNullElse(features, List.of());
@@ -86,8 +85,7 @@ public final class Ircv3FeatureAvailabilityEvaluator {
       readiness = Readiness.UNAVAILABLE;
     }
 
-    return new Evaluation(
-        feature.label(), readiness, missingRequiredAll, missingRequiredAny);
+    return new Evaluation(feature.label(), readiness, missingRequiredAll, missingRequiredAny);
   }
 
   private static Set<String> normalizeCapabilities(Collection<String> capabilities) {

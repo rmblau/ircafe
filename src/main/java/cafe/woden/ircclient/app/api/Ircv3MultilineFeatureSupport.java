@@ -86,10 +86,7 @@ public final class Ircv3MultilineFeatureSupport implements Ircv3FeatureAvailabil
     }
 
     return Ircv3MultilineLimitPolicy.limitReason(
-        lineCount,
-        payloadUtf8Bytes,
-        negotiatedMaxLines(sid),
-        negotiatedMaxBytes(sid));
+        lineCount, payloadUtf8Bytes, negotiatedMaxLines(sid), negotiatedMaxBytes(sid));
   }
 
   private static String normalizeServerId(String serverId) {

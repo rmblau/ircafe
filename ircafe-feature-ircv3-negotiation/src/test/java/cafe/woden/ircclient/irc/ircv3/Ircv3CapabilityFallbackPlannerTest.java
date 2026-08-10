@@ -15,8 +15,7 @@ class Ircv3CapabilityFallbackPlannerTest {
   void plansMessageTagsBatchAndPreferredFinalHistoryCapability() {
     Ircv3CapabilityFallbackPlanner.Plan plan =
         planner.plan(
-            Ircv3CapabilityLine.parse(
-                "LS", ":message-tags batch draft/chathistory chathistory"),
+            Ircv3CapabilityLine.parse("LS", ":message-tags batch draft/chathistory chathistory"),
             new Ircv3CapabilityFallbackPlanner.State(false, false, false, Set.of()));
 
     assertTrue(plan.requestMessageTags());
@@ -28,8 +27,7 @@ class Ircv3CapabilityFallbackPlannerTest {
   void suppressesAckedAndPendingFallbacks() {
     Ircv3CapabilityFallbackPlanner.Plan plan =
         planner.plan(
-            Ircv3CapabilityLine.parse(
-                "NEW", ":message-tags batch draft/chathistory"),
+            Ircv3CapabilityLine.parse("NEW", ":message-tags batch draft/chathistory"),
             new Ircv3CapabilityFallbackPlanner.State(
                 true, false, false, Set.of("BATCH=max-bytes=4096", ":draft/chathistory")));
 

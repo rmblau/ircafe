@@ -8,8 +8,7 @@ import java.util.Locale;
 import java.util.Objects;
 
 /** Built-in backend adapter that routes message mutations through runtime IRCv3 SPI providers. */
-public final class Ircv3MessageMutationOutboundCommands
-    implements MessageMutationOutboundCommands {
+public final class Ircv3MessageMutationOutboundCommands implements MessageMutationOutboundCommands {
 
   private final String backendId;
   private final Ircv3MessageMutationRuntimeSupport runtimeSupport;

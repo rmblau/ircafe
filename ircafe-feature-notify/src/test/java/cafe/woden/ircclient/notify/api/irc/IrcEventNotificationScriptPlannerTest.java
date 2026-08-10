@@ -59,9 +59,11 @@ class IrcEventNotificationScriptPlannerTest {
   @Test
   void skipsBlankScriptAndUsesUnknownSelfState() {
     IrcEventNotificationScriptPlan skipped =
-        IrcEventNotificationScriptPlanner.plan(" ", "", "", "", "", "", "", null, "", "", "", "", 1L);
+        IrcEventNotificationScriptPlanner.plan(
+            " ", "", "", "", "", "", "", null, "", "", "", "", 1L);
     IrcEventNotificationScriptPlan plan =
-        IrcEventNotificationScriptPlanner.plan("script", null, null, null, null, null, null, null, null, null, null, null, 2L);
+        IrcEventNotificationScriptPlanner.plan(
+            "script", null, null, null, null, null, null, null, null, null, null, null, 2L);
 
     assertEquals(List.of(), skipped.command());
     assertEquals("unknown", plan.environment().get("IRCAFE_SOURCE_IS_SELF"));

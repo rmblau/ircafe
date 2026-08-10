@@ -49,8 +49,7 @@ class Ircv3IsupportRuntimeSupportTest {
           @Override
           public List<Ircv3InboundCommandSignal> parse(
               Ircv3InboundCommandOperation operation, Ircv3InboundCommandRequest request) {
-            return List.of(
-                new Ircv3InboundCommandSignal.IsupportTokenObserved(" ", "x", false));
+            return List.of(new Ircv3InboundCommandSignal.IsupportTokenObserved(" ", "x", false));
           }
         };
 
@@ -82,11 +81,9 @@ class Ircv3IsupportRuntimeSupportTest {
         return switch (operation) {
           case ISUPPORT_TOKENS ->
               List.of(
-                  new Ircv3InboundCommandSignal.IsupportTokenObserved(
-                      "MONITOR", "250", false),
+                  new Ircv3InboundCommandSignal.IsupportTokenObserved("MONITOR", "250", false),
                   new Ircv3InboundCommandSignal.IsupportTokenObserved("WHOX", "", true));
-          case ISUPPORT_WHOX ->
-              List.of(new Ircv3InboundCommandSignal.WhoxSupportObserved(false));
+          case ISUPPORT_WHOX -> List.of(new Ircv3InboundCommandSignal.WhoxSupportObserved(false));
           case ISUPPORT_MONITOR ->
               List.of(new Ircv3InboundCommandSignal.MonitorSupportObserved(true, 250));
           default -> List.of();

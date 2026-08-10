@@ -91,11 +91,9 @@ class CustomSoundProviderCatalogTest {
             "ALERT.OPUS", List.of(builtIn), List.of(installed)));
     assertEquals(
         "mp3",
-        CustomSoundProviderCatalog.extensionFor(
-            "alert.MP3", List.of(builtIn), List.of(installed)));
+        CustomSoundProviderCatalog.extensionFor("alert.MP3", List.of(builtIn), List.of(installed)));
     assertNull(
-        CustomSoundProviderCatalog.extensionFor(
-            "alert.txt", List.of(builtIn), List.of(installed)));
+        CustomSoundProviderCatalog.extensionFor("alert.txt", List.of(builtIn), List.of(installed)));
   }
 
   @Test
@@ -108,8 +106,7 @@ class CustomSoundProviderCatalogTest {
         CustomSoundProviderCatalog.hasOnlyBuiltInExtensions(
             List.of(builtIn), List.of(duplicateBuiltIn)));
     assertFalse(
-        CustomSoundProviderCatalog.hasOnlyBuiltInExtensions(
-            List.of(builtIn), List.of(installed)));
+        CustomSoundProviderCatalog.hasOnlyBuiltInExtensions(List.of(builtIn), List.of(installed)));
   }
 
   private record TestExtensionProvider(List<String> extensions)

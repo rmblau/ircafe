@@ -19,11 +19,7 @@ class Ircv3StsRuntimeSupportTest {
 
     var decision =
         support
-            .observe(
-                "IRC.Example.NET",
-                true,
-                "sts=duration=60,port=6697,preload",
-                1_000L)
+            .observe("IRC.Example.NET", true, "sts=duration=60,port=6697,preload", 1_000L)
             .getFirst();
 
     assertEquals(Ircv3StsPolicyLearningPlanner.Outcome.LEARN, decision.outcome());
@@ -48,9 +44,7 @@ class Ircv3StsRuntimeSupportTest {
                 60L));
 
     assertTrue(
-        support(provider)
-            .observe("irc.example.net", true, "sts=duration=60", 1_000L)
-            .isEmpty());
+        support(provider).observe("irc.example.net", true, "sts=duration=60", 1_000L).isEmpty());
   }
 
   @Test
@@ -67,9 +61,7 @@ class Ircv3StsRuntimeSupportTest {
                 0L));
 
     assertTrue(
-        support(provider)
-            .observe("irc.example.net", true, "sts=duration=60", 1_000L)
-            .isEmpty());
+        support(provider).observe("irc.example.net", true, "sts=duration=60", 1_000L).isEmpty());
   }
 
   private static Ircv3StsRuntimeSupport support(Ircv3InboundCommandSignalProvider provider) {
@@ -89,8 +81,7 @@ class Ircv3StsRuntimeSupportTest {
             60L));
   }
 
-  private static Ircv3InboundCommandSignalProvider provider(
-      Ircv3InboundCommandSignal signal) {
+  private static Ircv3InboundCommandSignalProvider provider(Ircv3InboundCommandSignal signal) {
     return new Ircv3InboundCommandSignalProvider() {
       @Override
       public String providerId() {

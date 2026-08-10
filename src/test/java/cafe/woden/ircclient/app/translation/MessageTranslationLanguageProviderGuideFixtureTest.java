@@ -13,7 +13,6 @@ import cafe.woden.ircclient.config.plugins.InstalledPluginServicesTestSupport;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -47,8 +46,7 @@ class MessageTranslationLanguageProviderGuideFixtureTest {
       assertTrue(commonTargets.contains(new MessageTranslationLanguage("tlh", "Klingon")));
       assertTrue(commonTargets.contains(new MessageTranslationLanguage("tok-pon", "Toki Pona")));
       assertEquals(
-          1,
-          commonTargets.stream().filter(language -> "tok-pon".equals(language.code())).count());
+          1, commonTargets.stream().filter(language -> "tok-pon".equals(language.code())).count());
       assertFalse(commonTargets.stream().anyMatch(language -> language.code().isBlank()));
 
       List<MessageTranslationLanguage> enabledTargets =

@@ -77,8 +77,7 @@ public final class PircbotxRuntimeTestFixtures {
       PircbotxConnectionState conn,
       Consumer<ServerIrcEvent> emit,
       Runtime runtime) {
-    return new PircbotxWhoEventEmitter(
-        serverId, conn, emit, runtime.catalogs().inboundCommands());
+    return new PircbotxWhoEventEmitter(serverId, conn, emit, runtime.catalogs().inboundCommands());
   }
 
   public static PircbotxUnknownCtcpEmitter unknownCtcp(
@@ -99,12 +98,7 @@ public final class PircbotxRuntimeTestFixtures {
       Function<PircBotX, String> selfNickResolver,
       Runtime runtime) {
     return new PircbotxUnknownCtcpEmitter(
-        serverId,
-        emit,
-        nickMatchesSelf,
-        selfEchoDetector,
-        selfNickResolver,
-        runtime.serverTime());
+        serverId, emit, nickMatchesSelf, selfEchoDetector, selfNickResolver, runtime.serverTime());
   }
 
   public static PircbotxPrivateConversationSupport privateConversation(

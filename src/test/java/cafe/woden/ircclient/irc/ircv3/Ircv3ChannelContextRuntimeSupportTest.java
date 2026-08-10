@@ -22,11 +22,7 @@ class Ircv3ChannelContextRuntimeSupportTest {
         "#plugin",
         support.resolve(
             new Ircv3InboundTagRequest(
-                "TAGMSG",
-                "alice",
-                "me",
-                List.of("me"),
-                Map.of("plugin/context", "#plugin"))));
+                "TAGMSG", "alice", "me", List.of("me"), Map.of("plugin/context", "#plugin"))));
   }
 
   @Test
@@ -42,8 +38,7 @@ class Ircv3ChannelContextRuntimeSupportTest {
         "alice",
         support(
                 List.of(
-                    Ircv3InboundTagSignal.of(
-                        Ircv3InboundTagSignalType.CONVERSATION_TARGET, "#one"),
+                    Ircv3InboundTagSignal.of(Ircv3InboundTagSignalType.CONVERSATION_TARGET, "#one"),
                     Ircv3InboundTagSignal.of(
                         Ircv3InboundTagSignalType.CONVERSATION_TARGET, "#two")))
             .resolve(request));
@@ -59,8 +54,7 @@ class Ircv3ChannelContextRuntimeSupportTest {
                     "PRIVMSG", "alice", "#ircafe", List.of("#ircafe"), Map.of())));
   }
 
-  private static Ircv3ChannelContextRuntimeSupport support(
-      List<Ircv3InboundTagSignal> signals) {
+  private static Ircv3ChannelContextRuntimeSupport support(List<Ircv3InboundTagSignal> signals) {
     Ircv3InboundTagSignalProvider provider =
         new Ircv3InboundTagSignalProvider() {
           @Override
@@ -84,8 +78,6 @@ class Ircv3ChannelContextRuntimeSupportTest {
   }
 
   private static List<Ircv3InboundTagSignal> signals(String target) {
-    return List.of(
-        Ircv3InboundTagSignal.of(
-            Ircv3InboundTagSignalType.CONVERSATION_TARGET, target));
+    return List.of(Ircv3InboundTagSignal.of(Ircv3InboundTagSignalType.CONVERSATION_TARGET, target));
   }
 }

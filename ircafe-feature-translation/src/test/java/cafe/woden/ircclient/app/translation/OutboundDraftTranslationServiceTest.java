@@ -58,7 +58,10 @@ class OutboundDraftTranslationServiceTest {
     OutboundDraftTranslationService service = service(settings(true, "test", "fr"), backend);
 
     MessageTranslationResult result =
-        service.translateDraft(TARGET, "hello", "fr").toCompletableFuture().get(1, TimeUnit.SECONDS);
+        service
+            .translateDraft(TARGET, "hello", "fr")
+            .toCompletableFuture()
+            .get(1, TimeUnit.SECONDS);
 
     assertEquals("bonjour", result.translatedText());
     assertEquals("outbound-feature-translation-test", threadName.get());
@@ -84,16 +87,13 @@ class OutboundDraftTranslationServiceTest {
         };
     OutboundDraftTranslationService service =
         service(
-            settings(
-                true,
-                "test",
-                "es",
-                "https://translation.example/api",
-                "secret-token",
-                2_500),
+            settings(true, "test", "es", "https://translation.example/api", "secret-token", 2_500),
             backend);
 
-    service.translateDraft(TARGET, "hello world", "es").toCompletableFuture().get(1, TimeUnit.SECONDS);
+    service
+        .translateDraft(TARGET, "hello world", "es")
+        .toCompletableFuture()
+        .get(1, TimeUnit.SECONDS);
 
     assertEquals("https://translation.example/api", contextRef.get().endpoint());
     assertEquals("secret-token", contextRef.get().apiKey());

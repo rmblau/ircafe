@@ -43,6 +43,7 @@ class PircbotxEventMetadataTest {
 
     assertEquals("modern", messageId);
   }
+
   @Test
   void ircv3MessageIdUsesRuntimeProviderOverride() {
     Ircv3InboundTagSignalProvider provider =
@@ -69,8 +70,6 @@ class PircbotxEventMetadataTest {
             Ircv3InboundTagSignalRuntimeCatalog.fromProviders(List.of(provider)));
 
     assertEquals(
-        "custom",
-        PircbotxEventMetadata.ircv3MessageId(Map.of("msgid", "built-in"), support));
+        "custom", PircbotxEventMetadata.ircv3MessageId(Map.of("msgid", "built-in"), support));
   }
-
 }

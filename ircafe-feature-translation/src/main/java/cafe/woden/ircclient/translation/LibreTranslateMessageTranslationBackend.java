@@ -20,7 +20,8 @@ public final class LibreTranslateMessageTranslationBackend
   public static final String BACKEND_ID = "libretranslate";
 
   public LibreTranslateMessageTranslationBackend(
-      MessageTranslationSettingsProvider settingsProvider, MessageTranslationHttpClient httpClient) {
+      MessageTranslationSettingsProvider settingsProvider,
+      MessageTranslationHttpClient httpClient) {
     super(settingsProvider, httpClient);
   }
 

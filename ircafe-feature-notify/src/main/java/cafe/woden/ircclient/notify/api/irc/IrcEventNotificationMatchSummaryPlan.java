@@ -28,7 +28,8 @@ public record IrcEventNotificationMatchSummaryPlan(
     }
 
     channelScope = defaultMode(channelScope, "ALL");
-    channelPatternsRequired = IrcEventNotificationRuleEditPolicy.channelPatternsRequired(channelScope);
+    channelPatternsRequired =
+        IrcEventNotificationRuleEditPolicy.channelPatternsRequired(channelScope);
     channelPatterns = trimToNull(channelPatterns);
     if (!channelPatternsRequired) {
       channelPatterns = null;

@@ -12,8 +12,7 @@ class Ircv3TypingClientTagPolicyTest {
   @Test
   void projectsTypingAllowanceFromClientTagDeny() {
     Ircv3TypingClientTagPolicy.Observation allowed =
-        Ircv3TypingClientTagPolicy.parseRpl005(
-            ":server 005 me CLIENTTAGDENY=*,-typing :supported");
+        Ircv3TypingClientTagPolicy.parseRpl005(":server 005 me CLIENTTAGDENY=*,-typing :supported");
     Ircv3TypingClientTagPolicy.Observation denied =
         Ircv3TypingClientTagPolicy.parseRpl005(
             ":server 005 me CLIENTTAGDENY=typing,react :supported");

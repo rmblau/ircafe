@@ -28,8 +28,7 @@ public enum Ircv3TrackedCapability {
   EXTENDED_MONITOR;
 
   public static Optional<Ircv3TrackedCapability> resolve(String capabilityName) {
-    String normalized =
-        Objects.toString(capabilityName, "").trim().toLowerCase(Locale.ROOT);
+    String normalized = Objects.toString(capabilityName, "").trim().toLowerCase(Locale.ROOT);
     return switch (normalized) {
       case "znc.in/playback" -> Optional.of(ZNC_PLAYBACK);
       case "batch" -> Optional.of(BATCH);

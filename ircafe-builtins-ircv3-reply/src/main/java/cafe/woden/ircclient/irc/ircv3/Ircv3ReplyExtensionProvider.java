@@ -26,9 +26,7 @@ import java.util.Set;
   Ircv3InboundTagSignalProvider.class
 })
 public final class Ircv3ReplyExtensionProvider
-    implements Ircv3ExtensionProvider,
-        Ircv3MessageMutationProvider,
-        Ircv3InboundTagSignalProvider {
+    implements Ircv3ExtensionProvider, Ircv3MessageMutationProvider, Ircv3InboundTagSignalProvider {
 
   private static final String FEATURE = "reply";
   private static final String LEGACY_FEATURE = "draft/reply";
@@ -100,7 +98,6 @@ public final class Ircv3ReplyExtensionProvider
 
   @Override
   public List<Ircv3FeatureContribution> visibleFeatures() {
-    return List.of(
-        new Ircv3FeatureContribution(100, "Replies", List.of(MESSAGE_TAGS), List.of()));
+    return List.of(new Ircv3FeatureContribution(100, "Replies", List.of(MESSAGE_TAGS), List.of()));
   }
 }

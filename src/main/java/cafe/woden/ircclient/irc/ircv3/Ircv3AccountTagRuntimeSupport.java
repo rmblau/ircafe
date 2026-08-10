@@ -21,8 +21,7 @@ public final class Ircv3AccountTagRuntimeSupport {
   private final Ircv3InboundTagSignalRuntimeCatalog inboundTagCatalog;
 
   @Autowired
-  public Ircv3AccountTagRuntimeSupport(
-      Ircv3InboundTagSignalRuntimeCatalog inboundTagCatalog) {
+  public Ircv3AccountTagRuntimeSupport(Ircv3InboundTagSignalRuntimeCatalog inboundTagCatalog) {
     this.inboundTagCatalog = Objects.requireNonNull(inboundTagCatalog, "inboundTagCatalog");
   }
 
@@ -81,8 +80,8 @@ public final class Ircv3AccountTagRuntimeSupport {
 
   public record Observation(String nick, String rawAccount) {
     public Observation {
-      nick = Objects.requireNonNull(nick, "nick");
-      rawAccount = Objects.requireNonNull(rawAccount, "rawAccount");
+      Objects.requireNonNull(nick, "nick");
+      Objects.requireNonNull(rawAccount, "rawAccount");
     }
   }
 }

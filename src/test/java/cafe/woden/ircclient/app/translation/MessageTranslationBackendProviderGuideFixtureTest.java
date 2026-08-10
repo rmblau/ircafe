@@ -75,8 +75,7 @@ class MessageTranslationBackendProviderGuideFixtureTest {
       assertEquals("[libera/#ircafe] fr: hello plugin", result.translatedText());
       assertEquals("auto", result.sourceLanguage());
       assertEquals("fr", result.targetLanguage());
-      assertEquals(
-          "https://translate.example/v1|guide-token|10000", result.provider());
+      assertEquals("https://translate.example/v1|guide-token|10000", result.provider());
     } finally {
       InstalledPluginServicesTestSupport.shutdown(installedPlugins);
     }

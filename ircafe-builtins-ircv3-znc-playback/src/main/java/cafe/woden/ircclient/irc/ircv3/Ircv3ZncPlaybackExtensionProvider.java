@@ -95,14 +95,12 @@ public final class Ircv3ZncPlaybackExtensionProvider
     return List.of();
   }
 
-  private static List<Ircv3InboundCommandSignal> parseRpl004(
-      Ircv3InboundCommandRequest request) {
+  private static List<Ircv3InboundCommandSignal> parseRpl004(Ircv3InboundCommandRequest request) {
     if (!Ircv3ZncDetector.seemsRpl004Znc(request.rawLine())) {
       return List.of();
     }
     return List.of(
-        new Ircv3InboundCommandSignal.ZncDetectedObserved(
-            "RPL_MYINFO/004", request.rawLine()));
+        new Ircv3InboundCommandSignal.ZncDetectedObserved("RPL_MYINFO/004", request.rawLine()));
   }
 
   @Override
@@ -113,8 +111,7 @@ public final class Ircv3ZncPlaybackExtensionProvider
   @Override
   public List<Ircv3InboundTagSignal> parse(
       Ircv3InboundTagOperation operation, Ircv3InboundTagRequest request) {
-    if (operation != Ircv3InboundTagOperation.HISTORY_BOOTSTRAP_SUPPRESSION
-        || request == null) {
+    if (operation != Ircv3InboundTagOperation.HISTORY_BOOTSTRAP_SUPPRESSION || request == null) {
       return List.of();
     }
     String message = request.parameters().isEmpty() ? "" : request.parameters().getFirst();
@@ -123,8 +120,7 @@ public final class Ircv3ZncPlaybackExtensionProvider
       return List.of();
     }
     return List.of(
-        Ircv3InboundTagSignal.of(
-            Ircv3InboundTagSignalType.HISTORY_BOOTSTRAP_SUPPRESSED, "true"));
+        Ircv3InboundTagSignal.of(Ircv3InboundTagSignalType.HISTORY_BOOTSTRAP_SUPPRESSED, "true"));
   }
 
   @Override

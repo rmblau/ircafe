@@ -11,7 +11,8 @@ class BackendNamedCommandRegistrationSupportTest {
   @Test
   void normalizesSlashPrefixedCommandNames() {
     assertEquals(
-        "backendping", BackendNamedCommandRegistrationSupport.normalizeCommandName(" /BackendPing "));
+        "backendping",
+        BackendNamedCommandRegistrationSupport.normalizeCommandName(" /BackendPing "));
   }
 
   @Test

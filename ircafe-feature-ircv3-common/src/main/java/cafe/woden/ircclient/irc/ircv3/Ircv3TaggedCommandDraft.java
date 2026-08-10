@@ -61,11 +61,7 @@ public final class Ircv3TaggedCommandDraft {
 
     return Optional.of(
         new Ircv3TaggedCommandDraft(
-            raw,
-            leadingWhitespace,
-            rest.substring(0, tagStart),
-            tags,
-            rest.substring(tagEnd)));
+            raw, leadingWhitespace, rest.substring(0, tagStart), tags, rest.substring(tagEnd)));
   }
 
   public boolean hasAnyTag(String... tagKeys) {
@@ -76,9 +72,7 @@ public final class Ircv3TaggedCommandDraft {
   public String withoutTags(String... tagKeys) {
     Set<String> normalizedKeys = normalizeKeys(tagKeys);
     List<Tag> kept =
-        tags.stream()
-            .filter(tag -> !normalizedKeys.contains(tag.normalizedKey()))
-            .toList();
+        tags.stream().filter(tag -> !normalizedKeys.contains(tag.normalizedKey())).toList();
     if (kept.size() == tags.size()) return original;
 
     if (kept.isEmpty()) {

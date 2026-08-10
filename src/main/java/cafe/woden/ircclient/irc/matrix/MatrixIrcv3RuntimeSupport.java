@@ -88,16 +88,13 @@ public final class MatrixIrcv3RuntimeSupport {
     Ircv3MessageMutationRuntimeSupport.ReactionSelection selection =
         messageMutationRuntimeSupport.reactionSelectionFromTags(
             request(command, rawTarget, parameters, tags, rawLine));
-    if (selection.type()
-        == Ircv3MessageMutationRuntimeSupport.ReactionSelectionType.AMBIGUOUS) {
+    if (selection.type() == Ircv3MessageMutationRuntimeSupport.ReactionSelectionType.AMBIGUOUS) {
       return ReactionPlan.ambiguous();
     }
-    if (selection.type()
-        != Ircv3MessageMutationRuntimeSupport.ReactionSelectionType.OBSERVED) {
+    if (selection.type() != Ircv3MessageMutationRuntimeSupport.ReactionSelectionType.OBSERVED) {
       return ReactionPlan.none();
     }
-    Ircv3MessageMutationRuntimeSupport.ReactionObservation observed =
-        selection.observation();
+    Ircv3MessageMutationRuntimeSupport.ReactionObservation observed = selection.observation();
     return new ReactionPlan(
         observed.operation() == Ircv3MessageMutationRuntimeSupport.ReactionOperation.REACT
             ? ReactionType.REACT
@@ -129,7 +126,7 @@ public final class MatrixIrcv3RuntimeSupport {
   public record ReactionPlan(ReactionType type, String messageId, String reaction) {
 
     public ReactionPlan {
-      type = Objects.requireNonNull(type, "type");
+      Objects.requireNonNull(type, "type");
       messageId = normalize(messageId);
       reaction = normalize(reaction);
       if ((type == ReactionType.REACT || type == ReactionType.UNREACT) && reaction.isEmpty()) {

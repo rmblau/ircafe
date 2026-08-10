@@ -12,9 +12,7 @@ class Ircv3ReplyTagSignalTest {
   void readsFinalAndLegacyReplyTags() {
     assertEquals(
         "final-1",
-        Ircv3ReplyTagSignal.fromTags(Map.of("+reply", "final-1"))
-            .orElseThrow()
-            .replyToMessageId());
+        Ircv3ReplyTagSignal.fromTags(Map.of("+reply", "final-1")).orElseThrow().replyToMessageId());
     assertEquals(
         "draft 1",
         Ircv3ReplyTagSignal.fromTags(Map.of("draft/reply", "draft\\s1"))

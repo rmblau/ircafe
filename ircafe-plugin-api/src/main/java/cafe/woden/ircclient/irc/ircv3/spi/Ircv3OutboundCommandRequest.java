@@ -75,7 +75,21 @@ public final class Ircv3OutboundCommandRequest {
   public static Ircv3OutboundCommandRequest zncPlayback(
       String target, Instant fromInclusive, Instant toInclusive) {
     return new Ircv3OutboundCommandRequest(
-        "", target, "", "", "", fromInclusive, toInclusive, 0, "", false, false, 0L, 0L, 0L, List.of());
+        "",
+        target,
+        "",
+        "",
+        "",
+        fromInclusive,
+        toInclusive,
+        0,
+        "",
+        false,
+        false,
+        0L,
+        0L,
+        0L,
+        List.of());
   }
 
   public static Ircv3OutboundCommandRequest chatHistory(
@@ -138,40 +152,13 @@ public final class Ircv3OutboundCommandRequest {
   public static Ircv3OutboundCommandRequest labeledResponse(
       String serverId, String rawLine, long sequence) {
     return new Ircv3OutboundCommandRequest(
-        serverId,
-        "",
-        "",
-        "",
-        rawLine,
-        null,
-        null,
-        0,
-        "",
-        false,
-        false,
-        0L,
-        0L,
-        sequence,
+        serverId, "", "", "", rawLine, null, null, 0, "", false, false, 0L, 0L, sequence,
         List.of());
   }
 
   public static Ircv3OutboundCommandRequest monitor(List<String> nicks, int limit) {
     return new Ircv3OutboundCommandRequest(
-        "",
-        "",
-        "",
-        "",
-        "",
-        null,
-        null,
-        limit,
-        "",
-        false,
-        false,
-        0L,
-        0L,
-        0L,
-        nicks);
+        "", "", "", "", "", null, null, limit, "", false, false, 0L, 0L, 0L, nicks);
   }
 
   public String serverId() {

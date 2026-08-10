@@ -9,10 +9,8 @@ import org.junit.jupiter.api.Test;
 
 class FilterRuleMutationCommandAdapterTest {
 
-  private final FilterRuleMutationCommandParser parser =
-      new FilterRuleMutationCommandParser();
-  private final FilterRuleMutationCommandAdapter adapter =
-      new FilterRuleMutationCommandAdapter();
+  private final FilterRuleMutationCommandParser parser = new FilterRuleMutationCommandParser();
+  private final FilterRuleMutationCommandAdapter adapter = new FilterRuleMutationCommandAdapter();
 
   @Test
   void adaptsAddAndAddReplaceWithoutChangingNamesOrPatches() {
@@ -22,20 +20,14 @@ class FilterRuleMutationCommandAdapterTest {
             adapter.toRoot(
                 parser.parse(
                     "add",
-                    List.of(
-                        "/filter",
-                        "add",
-                        "named rule",
-                        "scope=LIBERA/#JAVA",
-                        "text=hello"))));
+                    List.of("/filter", "add", "named rule", "scope=LIBERA/#JAVA", "text=hello"))));
     FilterCommand.AddReplace addReplace =
         assertInstanceOf(
             FilterCommand.AddReplace.class,
             adapter.toRoot(
                 parser.parse(
                     "addr",
-                    List.of(
-                        "/filter", "addr", "replacement", "action=highlight", "tags=notice"))));
+                    List.of("/filter", "addr", "replacement", "action=highlight", "tags=notice"))));
 
     assertEquals("named rule", add.name());
     assertEquals("LIBERA/#java", add.patch().scope());
@@ -56,8 +48,7 @@ class FilterRuleMutationCommandAdapterTest {
             FilterCommand.Set.class,
             adapter.toRoot(
                 parser.parse(
-                    "set",
-                    List.of("/filter", "set", "named", "enabled=off", "from=alice,bob"))));
+                    "set", List.of("/filter", "set", "named", "enabled=off", "from=alice,bob"))));
 
     assertEquals("named", empty.name());
     assertEquals(FilterCommand.FilterRulePatch.empty(), empty.patch());

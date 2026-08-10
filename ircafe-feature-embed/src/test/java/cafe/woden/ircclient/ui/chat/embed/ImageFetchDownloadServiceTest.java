@@ -43,8 +43,7 @@ class ImageFetchDownloadServiceTest {
     ImageFetchDownloadService service = new ImageFetchDownloadService(client);
 
     byte[] bytes =
-        service.download(
-            "libera", "https://m.media-amazon.com/images/M/poster@._V1_UX512_.jpg");
+        service.download("libera", "https://m.media-amazon.com/images/M/poster@._V1_UX512_.jpg");
 
     assertArrayEquals(new byte[] {4, 5, 6}, bytes);
     assertEquals(

@@ -27,8 +27,7 @@ class Ircv3ReadMarkerRuntimeSupportTest {
 
   @Test
   void builtInProviderRendersAndObservesReadMarkers() {
-    Ircv3ReadMarkerRuntimeSupport support =
-        Ircv3RuntimeTestFixtures.runtime().readMarker();
+    Ircv3ReadMarkerRuntimeSupport support = Ircv3RuntimeTestFixtures.runtime().readMarker();
 
     Ircv3ReadMarkerRuntimeSupport.OutboundPlan plan =
         support.render("#ircafe", Instant.parse("2026-07-13T12:34:56Z"));
@@ -54,8 +53,7 @@ class Ircv3ReadMarkerRuntimeSupportTest {
             .orElseThrow();
 
     assertTrue(support.outboundAvailable());
-    assertEquals(
-        "MARKREAD #ircafe timestamp=2026-07-13T12:34:56.000Z", plan.rawLine());
+    assertEquals("MARKREAD #ircafe timestamp=2026-07-13T12:34:56.000Z", plan.rawLine());
     assertEquals("#ircafe", plan.target());
     assertEquals("timestamp=2026-07-13T12:34:56.000Z", plan.marker());
     assertEquals("timestamp=2026-07-13T12:34:56Z", tagged.marker());
@@ -79,8 +77,7 @@ class Ircv3ReadMarkerRuntimeSupportTest {
 
           @Override
           public List<String> build(
-              Ircv3OutboundCommandOperation operation,
-              Ircv3OutboundCommandRequest request) {
+              Ircv3OutboundCommandOperation operation, Ircv3OutboundCommandRequest request) {
             return List.of("MARKREAD " + request.target() + " timestamp=2026-07-13T13:00:00Z");
           }
         };
@@ -118,8 +115,7 @@ class Ircv3ReadMarkerRuntimeSupportTest {
 
           @Override
           public List<Ircv3InboundCommandSignal> parse(
-              Ircv3InboundCommandOperation operation,
-              Ircv3InboundCommandRequest request) {
+              Ircv3InboundCommandOperation operation, Ircv3InboundCommandRequest request) {
             return List.of(
                 new Ircv3InboundCommandSignal.ReadMarkerObserved(
                     "#plugin", "timestamp=plugin-command"));
@@ -132,8 +128,7 @@ class Ircv3ReadMarkerRuntimeSupportTest {
             Ircv3InboundCommandSignalRuntimeCatalog.fromProviders(List.of(command)));
 
     assertEquals(
-        "timestamp=2026-07-13T13:00:00Z",
-        support.render("#ircafe", Instant.EPOCH).marker());
+        "timestamp=2026-07-13T13:00:00Z", support.render("#ircafe", Instant.EPOCH).marker());
     assertEquals(
         "timestamp=plugin-tag",
         support
@@ -141,11 +136,9 @@ class Ircv3ReadMarkerRuntimeSupportTest {
             .orElseThrow()
             .marker());
     assertEquals(
-        new Ircv3ReadMarkerRuntimeSupport.CommandObservation(
-            "#plugin", "timestamp=plugin-command"),
+        new Ircv3ReadMarkerRuntimeSupport.CommandObservation("#plugin", "timestamp=plugin-command"),
         support
-            .fromCommand(
-                new Ircv3InboundCommandRequest("", "MARKREAD", "", List.of(), Map.of()))
+            .fromCommand(new Ircv3InboundCommandRequest("", "MARKREAD", "", List.of(), Map.of()))
             .orElseThrow());
   }
 
@@ -165,8 +158,7 @@ class Ircv3ReadMarkerRuntimeSupportTest {
 
           @Override
           public List<String> build(
-              Ircv3OutboundCommandOperation operation,
-              Ircv3OutboundCommandRequest request) {
+              Ircv3OutboundCommandOperation operation, Ircv3OutboundCommandRequest request) {
             return List.of("MARKREAD #other timestamp=2026-07-13T12:34:56Z");
           }
         };
@@ -204,8 +196,7 @@ class Ircv3ReadMarkerRuntimeSupportTest {
 
           @Override
           public List<Ircv3InboundCommandSignal> parse(
-              Ircv3InboundCommandOperation operation,
-              Ircv3InboundCommandRequest request) {
+              Ircv3InboundCommandOperation operation, Ircv3InboundCommandRequest request) {
             return List.of(
                 new Ircv3InboundCommandSignal.ReadMarkerObserved(
                     "#ircafe\r\nQUIT", "timestamp=unsafe"));
@@ -226,8 +217,7 @@ class Ircv3ReadMarkerRuntimeSupportTest {
             .isPresent());
     assertFalse(
         support
-            .fromCommand(
-                new Ircv3InboundCommandRequest("", "MARKREAD", "", List.of(), Map.of()))
+            .fromCommand(new Ircv3InboundCommandRequest("", "MARKREAD", "", List.of(), Map.of()))
             .isPresent());
   }
 }

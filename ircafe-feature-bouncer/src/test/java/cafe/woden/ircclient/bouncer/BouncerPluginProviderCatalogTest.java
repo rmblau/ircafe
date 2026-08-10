@@ -19,7 +19,8 @@ class BouncerPluginProviderCatalogTest {
     ApplicationMappingStrategy applicationDuplicate =
         new ApplicationMappingStrategy("application-duplicate");
     InstalledMappingStrategy installed = new InstalledMappingStrategy("installed");
-    InstalledMappingStrategy installedDuplicate = new InstalledMappingStrategy("installed-duplicate");
+    InstalledMappingStrategy installedDuplicate =
+        new InstalledMappingStrategy("installed-duplicate");
 
     List<BouncerNetworkMappingStrategy> providers =
         BouncerPluginProviderCatalog.mappingStrategies(
@@ -55,8 +56,10 @@ class BouncerPluginProviderCatalogTest {
 
     assertEquals(List.of(), strategies);
     assertEquals(List.of(), handlers);
-    assertThrows(UnsupportedOperationException.class, () -> strategies.add(new MappingStrategy("x")));
-    assertThrows(UnsupportedOperationException.class, () -> handlers.add(new DiscoveryHandler("x")));
+    assertThrows(
+        UnsupportedOperationException.class, () -> strategies.add(new MappingStrategy("x")));
+    assertThrows(
+        UnsupportedOperationException.class, () -> handlers.add(new DiscoveryHandler("x")));
   }
 
   private static class MappingStrategy implements BouncerNetworkMappingStrategy {

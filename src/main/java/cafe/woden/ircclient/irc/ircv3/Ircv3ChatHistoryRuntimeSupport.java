@@ -3,7 +3,6 @@ package cafe.woden.ircclient.irc.ircv3;
 import cafe.woden.ircclient.irc.ircv3.spi.Ircv3OutboundCommandOperation;
 import cafe.woden.ircclient.irc.ircv3.spi.Ircv3OutboundCommandRequest;
 import java.time.Instant;
-import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import org.jmolecules.architecture.layered.InfrastructureLayer;
@@ -37,16 +36,10 @@ public final class Ircv3ChatHistoryRuntimeSupport {
 
   public Plan latest(String target, String selector, int limit) {
     return plan(
-        Ircv3OutboundCommandOperation.CHAT_HISTORY_LATEST,
-        target,
-        selector,
-        "",
-        limit,
-        null);
+        Ircv3OutboundCommandOperation.CHAT_HISTORY_LATEST, target, selector, "", limit, null);
   }
 
-  public Plan between(
-      String target, String startSelector, String endSelector, int limit) {
+  public Plan between(String target, String startSelector, String endSelector, int limit) {
     return plan(
         Ircv3OutboundCommandOperation.CHAT_HISTORY_BETWEEN,
         target,
@@ -58,12 +51,7 @@ public final class Ircv3ChatHistoryRuntimeSupport {
 
   public Plan around(String target, String selector, int limit) {
     return plan(
-        Ircv3OutboundCommandOperation.CHAT_HISTORY_AROUND,
-        target,
-        selector,
-        "",
-        limit,
-        null);
+        Ircv3OutboundCommandOperation.CHAT_HISTORY_AROUND, target, selector, "", limit, null);
   }
 
   public boolean available() {
@@ -86,14 +74,9 @@ public final class Ircv3ChatHistoryRuntimeSupport {
         catalog.buildSingle(
             operation,
             Ircv3OutboundCommandRequest.chatHistory(
-                requestedTarget,
-                primarySelector,
-                secondarySelector,
-                limit,
-                fallbackTimestamp));
+                requestedTarget, primarySelector, secondarySelector, limit, fallbackTimestamp));
     if (rawLine.isEmpty()) {
-      throw new IllegalStateException(
-          "CHATHISTORY runtime provider did not render " + operation);
+      throw new IllegalStateException("CHATHISTORY runtime provider did not render " + operation);
     }
     return parse(operation, requestedTarget, rawLine);
   }
@@ -106,8 +89,7 @@ public final class Ircv3ChatHistoryRuntimeSupport {
     }
 
     String[] tokens = line.split("\\s+");
-    int expectedTokens =
-        operation == Ircv3OutboundCommandOperation.CHAT_HISTORY_BETWEEN ? 6 : 5;
+    int expectedTokens = operation == Ircv3OutboundCommandOperation.CHAT_HISTORY_BETWEEN ? 6 : 5;
     if (tokens.length != expectedTokens
         || !"CHATHISTORY".equalsIgnoreCase(tokens[0])
         || !expectedMode(operation).equalsIgnoreCase(tokens[1])) {
@@ -132,9 +114,7 @@ public final class Ircv3ChatHistoryRuntimeSupport {
   }
 
   private static void validateRequestedSelectors(
-      Ircv3OutboundCommandOperation operation,
-      String primarySelector,
-      String secondarySelector) {
+      Ircv3OutboundCommandOperation operation, String primarySelector, String secondarySelector) {
     switch (operation) {
       case CHAT_HISTORY_BEFORE -> validateRequestedSelector(primarySelector, true, false);
       case CHAT_HISTORY_LATEST -> validateRequestedSelector(primarySelector, true, true);
@@ -253,11 +233,11 @@ public final class Ircv3ChatHistoryRuntimeSupport {
       int limit) {
 
     public Plan {
-      operation = Objects.requireNonNull(operation, "operation");
-      rawLine = Objects.requireNonNull(rawLine, "rawLine");
-      target = Objects.requireNonNull(target, "target");
-      primarySelector = Objects.requireNonNull(primarySelector, "primarySelector");
-      secondarySelector = Objects.requireNonNull(secondarySelector, "secondarySelector");
+      Objects.requireNonNull(operation, "operation");
+      Objects.requireNonNull(rawLine, "rawLine");
+      Objects.requireNonNull(target, "target");
+      Objects.requireNonNull(primarySelector, "primarySelector");
+      Objects.requireNonNull(secondarySelector, "secondarySelector");
     }
 
     public String selectorSummary() {

@@ -158,9 +158,7 @@ public final class Ircv3MessageMutationRuntimeSupport {
       if (messageId.isEmpty() || !accepted.isEmpty()) return Optional.empty();
       accepted = messageId;
     }
-    return accepted.isEmpty()
-        ? Optional.empty()
-        : Optional.of(new RedactionObservation(accepted));
+    return accepted.isEmpty() ? Optional.empty() : Optional.of(new RedactionObservation(accepted));
   }
 
   public Optional<CommandRedactionObservation> redactionFromCommand(
@@ -204,8 +202,7 @@ public final class Ircv3MessageMutationRuntimeSupport {
             observed ->
                 signals.add(
                     Ircv3InboundTagSignal.of(
-                        Ircv3InboundTagSignalType.MESSAGE_REDACTION,
-                        observed.messageId())));
+                        Ircv3InboundTagSignalType.MESSAGE_REDACTION, observed.messageId())));
     return List.copyOf(signals);
   }
 
@@ -216,16 +213,14 @@ public final class Ircv3MessageMutationRuntimeSupport {
   }
 
   private Optional<OutboundPlan> render(
-      Ircv3MessageMutationOperation operation,
-      String target,
-      String messageId,
-      String payload) {
+      Ircv3MessageMutationOperation operation, String target, String messageId, String payload) {
     Objects.requireNonNull(operation, "operation");
     String requestedTarget = requireTarget(target, IllegalArgumentException::new);
     String requestedMessageId =
         operation == Ircv3MessageMutationOperation.REDACT
             ? requireToken(messageId, "redaction message id", IllegalArgumentException::new)
-            : requireTagValue(messageId, "message id", MAX_MESSAGE_ID_LENGTH, IllegalArgumentException::new);
+            : requireTagValue(
+                messageId, "message id", MAX_MESSAGE_ID_LENGTH, IllegalArgumentException::new);
     String requestedPayload = normalizePayload(payload);
     if (operation != Ircv3MessageMutationOperation.REDACT && requestedPayload.isEmpty()) {
       return Optional.empty();
@@ -233,16 +228,10 @@ public final class Ircv3MessageMutationRuntimeSupport {
     String rawLine =
         outboundCatalog.build(
             operation,
-            new Ircv3MessageMutationRequest(
-                requestedTarget, requestedMessageId, requestedPayload));
+            new Ircv3MessageMutationRequest(requestedTarget, requestedMessageId, requestedPayload));
     if (rawLine.isBlank()) return Optional.empty();
     return Optional.of(
-        parseOutbound(
-            operation,
-            requestedTarget,
-            requestedMessageId,
-            requestedPayload,
-            rawLine));
+        parseOutbound(operation, requestedTarget, requestedMessageId, requestedPayload, rawLine));
   }
 
   private static OutboundPlan parseOutbound(
@@ -271,8 +260,7 @@ public final class Ircv3MessageMutationRuntimeSupport {
               List.of("draft/edit"));
       case REACT, UNREACT ->
           parseReaction(operation, requestedTarget, requestedMessageId, requestedPayload, line);
-      case REDACT ->
-          parseRedaction(requestedTarget, requestedMessageId, requestedPayload, line);
+      case REDACT -> parseRedaction(requestedTarget, requestedMessageId, requestedPayload, line);
     };
   }
 
@@ -302,8 +290,10 @@ public final class Ircv3MessageMutationRuntimeSupport {
         || !"PRIVMSG".equalsIgnoreCase(command.substring(0, firstSpace))) {
       throw invalid(operation, "returned an invalid PRIVMSG command");
     }
-    String renderedTarget = requireTarget(command.substring(firstSpace + 1, payloadMarker),
-        message -> invalid(operation, message));
+    String renderedTarget =
+        requireTarget(
+            command.substring(firstSpace + 1, payloadMarker),
+            message -> invalid(operation, message));
     if (!requestedTarget.equals(renderedTarget)) {
       throw invalid(operation, "changed the requested target");
     }
@@ -344,13 +334,12 @@ public final class Ircv3MessageMutationRuntimeSupport {
         || !"TAGMSG".equalsIgnoreCase(command.substring(0, firstSpace))) {
       throw invalid(operation, "returned an invalid TAGMSG command");
     }
-    String renderedTarget = requireTarget(command.substring(firstSpace + 1),
-        message -> invalid(operation, message));
+    String renderedTarget =
+        requireTarget(command.substring(firstSpace + 1), message -> invalid(operation, message));
     if (!requestedTarget.equals(renderedTarget)) {
       throw invalid(operation, "changed the requested target");
     }
-    return new OutboundPlan(
-        operation, line, renderedTarget, renderedMessageId, renderedReaction);
+    return new OutboundPlan(operation, line, renderedTarget, renderedMessageId, renderedReaction);
   }
 
   private static OutboundPlan parseRedaction(
@@ -362,8 +351,10 @@ public final class Ircv3MessageMutationRuntimeSupport {
         || !"REDACT".equalsIgnoreCase(line.substring(0, firstSpace))) {
       throw invalid(Ircv3MessageMutationOperation.REDACT, "returned an invalid REDACT command");
     }
-    String renderedTarget = requireTarget(line.substring(firstSpace + 1, secondSpace),
-        message -> invalid(Ircv3MessageMutationOperation.REDACT, message));
+    String renderedTarget =
+        requireTarget(
+            line.substring(firstSpace + 1, secondSpace),
+            message -> invalid(Ircv3MessageMutationOperation.REDACT, message));
     String remainder = line.substring(secondSpace + 1);
     int reasonMarker = remainder.indexOf(" :");
     String renderedMessageId = reasonMarker < 0 ? remainder : remainder.substring(0, reasonMarker);
@@ -419,8 +410,7 @@ public final class Ircv3MessageMutationRuntimeSupport {
     return accepted;
   }
 
-  private static String decodeTagValue(
-      String raw, Ircv3MessageMutationOperation operation) {
+  private static String decodeTagValue(String raw, Ircv3MessageMutationOperation operation) {
     StringBuilder decoded = new StringBuilder(raw.length());
     for (int i = 0; i < raw.length(); i++) {
       char c = raw.charAt(i);
@@ -444,7 +434,8 @@ public final class Ircv3MessageMutationRuntimeSupport {
   private static String normalizeRawLine(String rawLine) {
     String line = Objects.toString(rawLine, "").trim();
     if (line.isEmpty() || line.length() > MAX_RAW_LINE_LENGTH || containsControl(line)) {
-      throw new IllegalStateException("Message-mutation runtime provider returned an unsafe raw line");
+      throw new IllegalStateException(
+          "Message-mutation runtime provider returned an unsafe raw line");
     }
     return line;
   }
@@ -486,7 +477,8 @@ public final class Ircv3MessageMutationRuntimeSupport {
   private static String normalizePayload(String raw) {
     String payload = Objects.toString(raw, "").trim();
     if (payload.length() > MAX_PAYLOAD_LENGTH || containsControl(payload)) {
-      throw new IllegalArgumentException("message-mutation payload contains controls or is too long");
+      throw new IllegalArgumentException(
+          "message-mutation payload contains controls or is too long");
     }
     return payload;
   }
@@ -499,9 +491,7 @@ public final class Ircv3MessageMutationRuntimeSupport {
   }
 
   private static String requireToken(
-      String raw,
-      String label,
-      Function<String, ? extends RuntimeException> errorFactory) {
+      String raw, String label, Function<String, ? extends RuntimeException> errorFactory) {
     String token = normalizeToken(raw, MAX_MESSAGE_ID_LENGTH);
     if (token.isEmpty()) throw errorFactory.apply(label + " is blank or unsafe");
     return token;
@@ -541,15 +531,15 @@ public final class Ircv3MessageMutationRuntimeSupport {
     AMBIGUOUS
   }
 
-  public record ReactionSelection(
-      ReactionSelectionType type, ReactionObservation observation) {
+  public record ReactionSelection(ReactionSelectionType type, ReactionObservation observation) {
     public ReactionSelection {
-      type = Objects.requireNonNull(type, "type");
+      Objects.requireNonNull(type, "type");
       if (type == ReactionSelectionType.OBSERVED && observation == null) {
         throw new IllegalArgumentException("observed reaction selection requires an observation");
       }
       if (type != ReactionSelectionType.OBSERVED && observation != null) {
-        throw new IllegalArgumentException("empty reaction selection must not carry an observation");
+        throw new IllegalArgumentException(
+            "empty reaction selection must not carry an observation");
       }
     }
 
@@ -559,8 +549,7 @@ public final class Ircv3MessageMutationRuntimeSupport {
 
     public static ReactionSelection observed(ReactionObservation observation) {
       return new ReactionSelection(
-          ReactionSelectionType.OBSERVED,
-          Objects.requireNonNull(observation, "observation"));
+          ReactionSelectionType.OBSERVED, Objects.requireNonNull(observation, "observation"));
     }
 
     public static ReactionSelection ambiguous() {
@@ -575,45 +564,45 @@ public final class Ircv3MessageMutationRuntimeSupport {
       String messageId,
       String payload) {
     public OutboundPlan {
-      operation = Objects.requireNonNull(operation, "operation");
-      rawLine = Objects.requireNonNull(rawLine, "rawLine");
-      target = Objects.requireNonNull(target, "target");
-      messageId = Objects.requireNonNull(messageId, "messageId");
-      payload = Objects.requireNonNull(payload, "payload");
+      Objects.requireNonNull(operation, "operation");
+      Objects.requireNonNull(rawLine, "rawLine");
+      Objects.requireNonNull(target, "target");
+      Objects.requireNonNull(messageId, "messageId");
+      Objects.requireNonNull(payload, "payload");
     }
   }
 
   public record ReplyObservation(String messageId) {
     public ReplyObservation {
-      messageId = Objects.requireNonNull(messageId, "messageId");
+      Objects.requireNonNull(messageId, "messageId");
     }
   }
 
   public record ReactionObservation(
       ReactionOperation operation, String reaction, String messageId) {
     public ReactionObservation {
-      operation = Objects.requireNonNull(operation, "operation");
-      reaction = Objects.requireNonNull(reaction, "reaction");
-      messageId = Objects.requireNonNull(messageId, "messageId");
+      Objects.requireNonNull(operation, "operation");
+      Objects.requireNonNull(reaction, "reaction");
+      Objects.requireNonNull(messageId, "messageId");
     }
   }
 
   public record MessageEditObservation(String messageId) {
     public MessageEditObservation {
-      messageId = Objects.requireNonNull(messageId, "messageId");
+      Objects.requireNonNull(messageId, "messageId");
     }
   }
 
   public record RedactionObservation(String messageId) {
     public RedactionObservation {
-      messageId = Objects.requireNonNull(messageId, "messageId");
+      Objects.requireNonNull(messageId, "messageId");
     }
   }
 
   public record CommandRedactionObservation(String target, String messageId) {
     public CommandRedactionObservation {
-      target = Objects.requireNonNull(target, "target");
-      messageId = Objects.requireNonNull(messageId, "messageId");
+      Objects.requireNonNull(target, "target");
+      Objects.requireNonNull(messageId, "messageId");
     }
   }
 }

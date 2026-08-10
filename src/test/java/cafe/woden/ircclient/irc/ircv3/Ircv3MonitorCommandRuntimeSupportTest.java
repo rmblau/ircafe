@@ -13,8 +13,7 @@ class Ircv3MonitorCommandRuntimeSupportTest {
 
   @Test
   void rendersAllBuiltInMonitorOperations() {
-    Ircv3MonitorCommandRuntimeSupport support =
-        Ircv3RuntimeTestFixtures.monitorCommand();
+    Ircv3MonitorCommandRuntimeSupport support = Ircv3RuntimeTestFixtures.monitorCommand();
 
     assertEquals("MONITOR L", support.listCommand());
     assertEquals("MONITOR S", support.statusCommand());
@@ -23,8 +22,7 @@ class Ircv3MonitorCommandRuntimeSupportTest {
         List.of("MONITOR +alice,bob", "MONITOR +carol"),
         support.addCommands(List.of("alice", "bob", "carol"), 2));
     assertEquals(
-        List.of("MONITOR -alice,bob"),
-        support.removeCommands(List.of("alice", "bob"), 100));
+        List.of("MONITOR -alice,bob"), support.removeCommands(List.of("alice", "bob"), 100));
   }
 
   @Test
@@ -57,8 +55,7 @@ class Ircv3MonitorCommandRuntimeSupportTest {
             Ircv3OutboundCommandRuntimeCatalog.fromProviders(List.of(provider)));
 
     assertEquals(
-        List.of("PLUGIN MONITOR alice|bob"),
-        support.addCommands(List.of("alice", "bob"), 25));
+        List.of("PLUGIN MONITOR alice|bob"), support.addCommands(List.of("alice", "bob"), 25));
     assertEquals(List.of(), support.removeCommands(List.of("alice"), 25));
   }
 

@@ -93,9 +93,7 @@ public final class Ircv3MonitorParser {
    */
   public static ParsedMonitorSupport parseRpl005MonitorSupport(String rawLine) {
     Ircv3IsupportLine.Token token =
-        Ircv3IsupportLine.parse(rawLine)
-            .flatMap(line -> line.lastToken("MONITOR"))
-            .orElse(null);
+        Ircv3IsupportLine.parse(rawLine).flatMap(line -> line.lastToken("MONITOR")).orElse(null);
     if (token == null) return null;
     if (token.removed()) return new ParsedMonitorSupport(false, 0);
 

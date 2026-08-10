@@ -98,11 +98,7 @@ public final class Ircv3TypingExtensionProvider
     return Ircv3TypingTagSignal.fromTags(request.tags())
         .map(signal -> Ircv3TypingCommandBuilder.normalizeState(signal.state()))
         .filter(state -> !state.isEmpty())
-        .map(
-            state ->
-                List.of(
-                    Ircv3InboundTagSignal.of(
-                        Ircv3InboundTagSignalType.TYPING, state)))
+        .map(state -> List.of(Ircv3InboundTagSignal.of(Ircv3InboundTagSignalType.TYPING, state)))
         .orElseGet(List::of);
   }
 
@@ -129,7 +125,6 @@ public final class Ircv3TypingExtensionProvider
 
   @Override
   public List<Ircv3FeatureContribution> visibleFeatures() {
-    return List.of(
-        new Ircv3FeatureContribution(600, "Typing", List.of(MESSAGE_TAGS), List.of()));
+    return List.of(new Ircv3FeatureContribution(600, "Typing", List.of(MESSAGE_TAGS), List.of()));
   }
 }

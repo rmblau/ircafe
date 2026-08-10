@@ -32,8 +32,7 @@ class Ircv3SaslCapabilityOfferTest {
 
   @Test
   void stripsLeadingColonBeforeParsingTokens() {
-    Ircv3SaslCapabilityOffer offer =
-        Ircv3SaslCapabilityOffer.parse(List.of(":sasl=SCRAM-SHA-1"));
+    Ircv3SaslCapabilityOffer offer = Ircv3SaslCapabilityOffer.parse(List.of(":sasl=SCRAM-SHA-1"));
 
     assertTrue(offer.saslOffered());
     assertEquals(Set.of("SCRAM-SHA-1"), offer.offeredMechanismsUpper());

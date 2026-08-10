@@ -8,10 +8,10 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import cafe.woden.ircclient.app.outbound.TestIrcv3RuntimeSupport;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
+import cafe.woden.ircclient.app.outbound.TestIrcv3RuntimeSupport;
 import cafe.woden.ircclient.app.outbound.backend.OutboundBackendCapabilityPolicy;
 import cafe.woden.ircclient.app.outbound.support.CommandTargetPolicy;
 import cafe.woden.ircclient.app.outbound.support.OutboundConnectionStatusSupport;
@@ -107,9 +107,7 @@ class OutboundModeCommandServiceTest {
             eq("MODE #ircafe +o alice"),
             any(Instant.class));
     verify(ui).ensureTargetExists(channel);
-    verify(ui)
-        .appendStatus(
-            channel, "(mode)", "→ MODE #ircafe +o alice {label=ircafe-libera-1}");
+    verify(ui).appendStatus(channel, "(mode)", "→ MODE #ircafe +o alice {label=ircafe-libera-1}");
     verify(irc).sendRaw("libera", "@label=ircafe-libera-1 MODE #ircafe +o alice");
   }
 

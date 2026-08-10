@@ -29,8 +29,7 @@ class Ircv3HistoryBatchControlParserTest {
     Ircv3HistoryBatchControlParser.Start start =
         assertInstanceOf(
             Ircv3HistoryBatchControlParser.Start.class,
-            Ircv3HistoryBatchControlParser.parse(
-                    ":server.example BATCH +abc chathistory :#ircafe")
+            Ircv3HistoryBatchControlParser.parse(":server.example BATCH +abc chathistory :#ircafe")
                 .control());
     Ircv3HistoryBatchControlParser.End end =
         assertInstanceOf(

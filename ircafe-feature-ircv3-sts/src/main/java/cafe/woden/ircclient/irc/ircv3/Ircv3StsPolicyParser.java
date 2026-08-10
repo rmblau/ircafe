@@ -109,7 +109,6 @@ public final class Ircv3StsPolicyParser {
     }
 
     return Optional.of(
-        new Ircv3StsPolicyDirective(
-            durationSeconds, port, attributes.containsKey("preload"), raw));
+        new Ircv3StsPolicyDirective(durationSeconds, port, attributes.containsKey("preload"), raw));
   }
 }

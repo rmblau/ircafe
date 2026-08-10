@@ -13,14 +13,10 @@ class Ircv3ReadMarkerTimestampTest {
   void parsesTimestampWrapperIsoSecondsAndMilliseconds() {
     assertEquals(
         Instant.parse("2026-03-22T12:05:00Z").toEpochMilli(),
-        Ircv3ReadMarkerTimestamp.parseEpochMs(
-            "timestamp=2026-03-22T12:05:00Z", FALLBACK));
+        Ircv3ReadMarkerTimestamp.parseEpochMs("timestamp=2026-03-22T12:05:00Z", FALLBACK));
+    assertEquals(1_711_111_111_000L, Ircv3ReadMarkerTimestamp.parseEpochMs("1711111111", FALLBACK));
     assertEquals(
-        1_711_111_111_000L,
-        Ircv3ReadMarkerTimestamp.parseEpochMs("1711111111", FALLBACK));
-    assertEquals(
-        1_711_111_111_222L,
-        Ircv3ReadMarkerTimestamp.parseEpochMs("1711111111222", FALLBACK));
+        1_711_111_111_222L, Ircv3ReadMarkerTimestamp.parseEpochMs("1711111111222", FALLBACK));
   }
 
   @Test
@@ -28,7 +24,6 @@ class Ircv3ReadMarkerTimestampTest {
     assertEquals(0L, Ircv3ReadMarkerTimestamp.parseEpochMs("*", FALLBACK));
     assertEquals(
         FALLBACK.toEpochMilli(), Ircv3ReadMarkerTimestamp.parseEpochMs("invalid", FALLBACK));
-    assertEquals(
-        FALLBACK.toEpochMilli(), Ircv3ReadMarkerTimestamp.parseEpochMs("0", FALLBACK));
+    assertEquals(FALLBACK.toEpochMilli(), Ircv3ReadMarkerTimestamp.parseEpochMs("0", FALLBACK));
   }
 }

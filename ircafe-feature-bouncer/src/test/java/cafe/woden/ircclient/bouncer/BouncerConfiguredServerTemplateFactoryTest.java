@@ -46,7 +46,18 @@ class BouncerConfiguredServerTemplateFactoryTest {
   void appliesSaslDefaultsWhenConfiguredSaslIsMissing() {
     BouncerConfiguredServerTemplate template =
         factory.fromConfiguredServerFields(
-            "bouncer.example", 6667, false, null, "nick", "login", "Real", null, null, null, null, null);
+            "bouncer.example",
+            6667,
+            false,
+            null,
+            "nick",
+            "login",
+            "Real",
+            null,
+            null,
+            null,
+            null,
+            null);
 
     assertFalse(template.sasl().enabled());
     assertEquals("", template.sasl().username());

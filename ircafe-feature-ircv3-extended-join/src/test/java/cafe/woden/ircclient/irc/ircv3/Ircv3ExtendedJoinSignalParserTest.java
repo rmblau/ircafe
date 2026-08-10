@@ -25,8 +25,7 @@ class Ircv3ExtendedJoinSignalParserTest {
   @Test
   void parsesLoggedOutAccountWithoutRealName() {
     Ircv3ExtendedJoinSignalParser.Observation observed =
-        Ircv3ExtendedJoinSignalParser.parse("alice", "JOIN", List.of("#ircafe", "*"))
-            .orElseThrow();
+        Ircv3ExtendedJoinSignalParser.parse("alice", "JOIN", List.of("#ircafe", "*")).orElseThrow();
 
     assertEquals(Ircv3ExtendedJoinSignalParser.AccountState.LOGGED_OUT, observed.accountState());
     assertNull(observed.accountName());

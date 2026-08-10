@@ -63,11 +63,8 @@ class Ircv3MultilineCapabilityStatePlannerTest {
         new Ircv3MultilineCapabilityStatePlanner.State(
             new Ircv3MultilineCapabilityStatePlanner.Limits(10, 2, 8, 1), null);
 
+    assertEquals(initial, planner.apply(Ircv3CapabilityLine.parse("NAK", ":multiline"), initial));
     assertEquals(
-        initial,
-        planner.apply(Ircv3CapabilityLine.parse("NAK", ":multiline"), initial));
-    assertEquals(
-        initial,
-        planner.apply(Ircv3CapabilityLine.parse("ACK", ":message-tags"), initial));
+        initial, planner.apply(Ircv3CapabilityLine.parse("ACK", ":message-tags"), initial));
   }
 }

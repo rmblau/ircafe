@@ -18,12 +18,7 @@ final class QuasselRuntimeTestFixtures {
       QuasselCoreAuthHandshake authHandshake,
       QuasselCoreDatastreamCodec datastreamCodec) {
     return service(
-        serverCatalog,
-        socketConnector,
-        protocolProbe,
-        authHandshake,
-        datastreamCodec,
-        null);
+        serverCatalog, socketConnector, protocolProbe, authHandshake, datastreamCodec, null);
   }
 
   static QuasselCoreIrcClientService service(

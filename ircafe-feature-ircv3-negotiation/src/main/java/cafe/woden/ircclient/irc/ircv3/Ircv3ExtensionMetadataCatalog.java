@@ -87,9 +87,7 @@ public final class Ircv3ExtensionMetadataCatalog {
     }
 
     public String preferenceKeyFor(String name) {
-      return find(name)
-          .map(Ircv3ExtensionContribution::preferenceKey)
-          .orElse(normalize(name));
+      return find(name).map(Ircv3ExtensionContribution::preferenceKey).orElse(normalize(name));
     }
 
     public String normalizeRequestToken(String name) {
@@ -107,9 +105,7 @@ public final class Ircv3ExtensionMetadataCatalog {
       if (normalized.isEmpty()) {
         return null;
       }
-      return find(normalized)
-          .map(Ircv3ExtensionContribution::preferenceKey)
-          .orElse(normalized);
+      return find(normalized).map(Ircv3ExtensionContribution::preferenceKey).orElse(normalized);
     }
   }
 

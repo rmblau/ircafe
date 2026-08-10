@@ -119,9 +119,7 @@ class PircbotxCapabilityCommandSupportTest {
     support.requestChatHistoryBefore(
         "libera", connection, "#ircafe", Instant.parse("2026-07-13T12:34:56Z"), 500);
 
-    verify(outputRaw)
-        .rawLine(
-            "CHATHISTORY BEFORE #ircafe timestamp=2026-07-13T12:34:56.000Z 200");
+    verify(outputRaw).rawLine("CHATHISTORY BEFORE #ircafe timestamp=2026-07-13T12:34:56.000Z 200");
   }
 
   @Test

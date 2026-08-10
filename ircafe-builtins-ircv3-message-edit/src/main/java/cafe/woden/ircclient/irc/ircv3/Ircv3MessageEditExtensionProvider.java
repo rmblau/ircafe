@@ -25,9 +25,7 @@ import java.util.Set;
   Ircv3InboundTagSignalProvider.class
 })
 public final class Ircv3MessageEditExtensionProvider
-    implements Ircv3ExtensionProvider,
-        Ircv3MessageMutationProvider,
-        Ircv3InboundTagSignalProvider {
+    implements Ircv3ExtensionProvider, Ircv3MessageMutationProvider, Ircv3InboundTagSignalProvider {
 
   private static final String FEATURE = "message-edit";
   private static final String DRAFT_FEATURE = "draft/message-edit";

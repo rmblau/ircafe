@@ -26,8 +26,7 @@ public final class FilterManagementCommandParser {
       String token = tokens.get(index);
       int equals = token.indexOf('=');
       if (equals < 0) {
-        throw new IllegalArgumentException(
-            "Invalid token: '" + token + "' (expected key=value)");
+        throw new IllegalArgumentException("Invalid token: '" + token + "' (expected key=value)");
       }
 
       String key = token.substring(0, equals).trim().toLowerCase(Locale.ROOT);
@@ -67,8 +66,7 @@ public final class FilterManagementCommandParser {
         case "format" -> format = value.toLowerCase(Locale.ROOT);
         case "file", "path" -> file = value;
         default ->
-            throw new IllegalArgumentException(
-                "Unknown key for /filter export: '" + key + "'");
+            throw new IllegalArgumentException("Unknown key for /filter export: '" + key + "'");
       }
     }
 
@@ -120,8 +118,7 @@ public final class FilterManagementCommandParser {
           }
           case "before" -> {
             if (value.isBlank()) {
-              throw new IllegalArgumentException(
-                  "Usage: /filter move <name> before <other>");
+              throw new IllegalArgumentException("Usage: /filter move <name> before <other>");
             }
             yield move(name, FilterMoveModeSpec.BEFORE, null, 1, value);
           }
@@ -175,8 +172,7 @@ public final class FilterManagementCommandParser {
       List<String> tokens, String name, FilterMoveModeSpec mode) {
     String modeName = mode.name().toLowerCase(Locale.ROOT);
     if (tokens.size() > 5) {
-      throw new IllegalArgumentException(
-          "Usage: /filter move <name> " + modeName + " [n]");
+      throw new IllegalArgumentException("Usage: /filter move <name> " + modeName + " [n]");
     }
 
     int amount = 1;
@@ -196,8 +192,7 @@ public final class FilterManagementCommandParser {
       Integer positionOneBased,
       Integer amount,
       String other) {
-    return new FilterManagementCommandSpec.Move(
-        name, mode, positionOneBased, amount, other);
+    return new FilterManagementCommandSpec.Move(name, mode, positionOneBased, amount, other);
   }
 
   private static void requireSize(List<String> tokens, int size, String message) {

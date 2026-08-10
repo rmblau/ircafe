@@ -29,8 +29,7 @@ public class ImageFetchHttpHeaders {
 
   @Autowired
   public ImageFetchHttpHeaders(LinkPreviewHttpHeaderCatalog headerCatalog) {
-    this.headerCatalog =
-        headerCatalog != null ? headerCatalog : new LinkPreviewHttpHeaderCatalog();
+    this.headerCatalog = headerCatalog != null ? headerCatalog : new LinkPreviewHttpHeaderCatalog();
   }
 
   public LinkPreviewHttpHeaderResult headersFor(
@@ -42,8 +41,7 @@ public class ImageFetchHttpHeaders {
             ? LinkPreviewHttpDefaults.BROWSER_USER_AGENT
             : LinkPreviewHttpDefaults.USER_AGENT);
     baseHeaders.put(
-        LinkPreviewHttpDefaults.HEADER_ACCEPT_LANGUAGE,
-        LinkPreviewHttpDefaults.ACCEPT_LANGUAGE);
+        LinkPreviewHttpDefaults.HEADER_ACCEPT_LANGUAGE, LinkPreviewHttpDefaults.ACCEPT_LANGUAGE);
     baseHeaders.put(LinkPreviewHttpDefaults.HEADER_ACCEPT_ENCODING, "gzip");
     // IMPORTANT: Do NOT advertise AVIF by default.
     // Some CDNs will pick AVIF whenever it's present in Accept (ignoring q=), and ImageIO

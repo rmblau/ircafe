@@ -16,8 +16,7 @@ public final class Ircv3SaslSession {
   private final boolean disconnectOnFailure;
   private final Ircv3SaslAuthenticateFraming authenticateFraming =
       new Ircv3SaslAuthenticateFraming();
-  private final Ircv3SaslMechanismSelector mechanismSelector =
-      new Ircv3SaslMechanismSelector();
+  private final Ircv3SaslMechanismSelector mechanismSelector = new Ircv3SaslMechanismSelector();
   private final Ircv3SaslResponseFactory responseFactory = new Ircv3SaslResponseFactory();
   private final Ircv3ScramSaslConversation scramConversation;
 
@@ -42,8 +41,9 @@ public final class Ircv3SaslSession {
   }
 
   public Ircv3SaslSessionUpdate onCapabilityList(Ircv3SaslCapabilityOffer parsedOffer) {
-    parsedOffer = Objects.requireNonNullElseGet(
-        parsedOffer, () -> new Ircv3SaslCapabilityOffer(false, false, Set.of()));
+    parsedOffer =
+        Objects.requireNonNullElseGet(
+            parsedOffer, () -> new Ircv3SaslCapabilityOffer(false, false, Set.of()));
     if (parsedOffer.continuationOnly()) {
       return Ircv3SaslSessionUpdate.active();
     }
@@ -85,12 +85,7 @@ public final class Ircv3SaslSession {
 
     state = State.AUTH_SENT;
     return new Ircv3SaslSessionUpdate(
-        false,
-        false,
-        List.of("AUTHENTICATE " + chosenMechanism),
-        chosenMechanism,
-        null,
-        null);
+        false, false, List.of("AUTHENTICATE " + chosenMechanism), chosenMechanism, null, null);
   }
 
   public Ircv3SaslSessionUpdate onCapabilityNak(Collection<String> capabilities) {
@@ -108,8 +103,7 @@ public final class Ircv3SaslSession {
     return onParsedLine(Ircv3SaslIrcLine.parse(rawLine));
   }
 
-  public Ircv3SaslSessionUpdate onParsedLine(Ircv3SaslIrcLine parsed)
-      throws Ircv3SaslException {
+  public Ircv3SaslSessionUpdate onParsedLine(Ircv3SaslIrcLine parsed) throws Ircv3SaslException {
     if (state.isTerminal()) {
       return Ircv3SaslSessionUpdate.completed();
     }
@@ -152,8 +146,7 @@ public final class Ircv3SaslSession {
       case "EXTERNAL" -> beginSingleResponse(responseFactory.createExternal(username));
       case "SCRAM-SHA-1" ->
           encodeResponse(
-              scramConversation.nextResponse(
-                  "SHA-1", new String(decoded, StandardCharsets.UTF_8)));
+              scramConversation.nextResponse("SHA-1", new String(decoded, StandardCharsets.UTF_8)));
       case "SCRAM-SHA-256" ->
           encodeResponse(
               scramConversation.nextResponse(

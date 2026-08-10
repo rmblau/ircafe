@@ -15,8 +15,7 @@ public final class BouncerDiscoveryHandlerCatalog {
 
   private final Map<String, BouncerBackendDiscoveryHandler> handlersByBackendId;
 
-  private BouncerDiscoveryHandlerCatalog(
-      List<? extends BouncerBackendDiscoveryHandler> handlers) {
+  private BouncerDiscoveryHandlerCatalog(List<? extends BouncerBackendDiscoveryHandler> handlers) {
     LinkedHashMap<String, BouncerBackendDiscoveryHandler> byBackendId = new LinkedHashMap<>();
     List<? extends BouncerBackendDiscoveryHandler> source = handlers == null ? List.of() : handlers;
     for (BouncerBackendDiscoveryHandler handler : source) {

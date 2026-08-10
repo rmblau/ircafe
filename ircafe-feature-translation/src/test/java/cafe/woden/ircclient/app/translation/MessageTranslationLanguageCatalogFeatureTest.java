@@ -72,6 +72,7 @@ class MessageTranslationLanguageCatalogFeatureTest {
         List.of(new MessageTranslationLanguage("en", "English"));
 
     assertEquals(
-        List.of(), MessageTranslationLanguageCatalog.availableTargets(false, List.of(" "), languages));
+        List.of(),
+        MessageTranslationLanguageCatalog.availableTargets(false, List.of(" "), languages));
   }
 }

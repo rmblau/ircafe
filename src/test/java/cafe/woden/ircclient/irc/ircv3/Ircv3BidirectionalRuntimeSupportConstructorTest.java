@@ -35,9 +35,7 @@ class Ircv3BidirectionalRuntimeSupportConstructorTest {
   }
 
   private static void assertBoundary(
-      Class<?> supportType,
-      Class<?> outboundCatalogType,
-      Class<?>... constructorParameterTypes)
+      Class<?> supportType, Class<?> outboundCatalogType, Class<?>... constructorParameterTypes)
       throws Exception {
     assertEquals(1, supportType.getConstructors().length, supportType.getSimpleName());
     assertArrayEquals(

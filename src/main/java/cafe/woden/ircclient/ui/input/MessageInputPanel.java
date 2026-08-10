@@ -1115,8 +1115,7 @@ public class MessageInputPanel extends JPanel {
       boolean replySupported, boolean reactSupported) {
     boolean changed = false;
     String before = getDraftText();
-    String after =
-        normalizeIrcv3DraftForCapabilities(before, replySupported, reactSupported);
+    String after = normalizeIrcv3DraftForCapabilities(before, replySupported, reactSupported);
     if (!Objects.equals(before, after)) {
       setDraftText(after);
       changed = true;
@@ -1131,8 +1130,7 @@ public class MessageInputPanel extends JPanel {
   public static String normalizeIrcv3DraftForCapabilities(
       String draft, boolean replySupported, boolean reactSupported) {
     String reactionNormalized =
-        Ircv3ReactionDraftPolicy.normalizeForCapabilities(
-            draft, replySupported, reactSupported);
+        Ircv3ReactionDraftPolicy.normalizeForCapabilities(draft, replySupported, reactSupported);
     return Ircv3ReplyDraftPolicy.normalizeForCapability(reactionNormalized, replySupported);
   }
 

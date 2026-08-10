@@ -58,7 +58,8 @@ class LinkPreviewProviderCatalogTest {
           throw new IllegalStateException("boom");
         };
 
-    assertEquals(List.of(profile), catalog.newsPublisherProfiles(Arrays.asList(provider, broken, null)));
+    assertEquals(
+        List.of(profile), catalog.newsPublisherProfiles(Arrays.asList(provider, broken, null)));
   }
 
   private static NewsPublisherProfile profile(String key) {

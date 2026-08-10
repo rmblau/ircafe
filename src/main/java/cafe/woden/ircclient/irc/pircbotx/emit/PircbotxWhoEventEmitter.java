@@ -150,8 +150,7 @@ public final class PircbotxWhoEventEmitter {
       emit.accept(
           new ServerIrcEvent(
               serverId,
-              new IrcEvent.UserAwayStateObserved(
-                  at, normalizedNick, IrcEvent.AwayState.HERE)));
+              new IrcEvent.UserAwayStateObserved(at, normalizedNick, IrcEvent.AwayState.HERE)));
     }
     if (!completion.sawAccount() && completion.accountNumericSupported()) {
       emit.accept(
@@ -184,8 +183,7 @@ public final class PircbotxWhoEventEmitter {
     emit.accept(
         new ServerIrcEvent(
             serverId,
-            new IrcEvent.WhoxSchemaCompatibleObserved(
-                at, schema.compatible(), schema.reason())));
+            new IrcEvent.WhoxSchemaCompatibleObserved(at, schema.compatible(), schema.reason())));
   }
 
   private static Ircv3InboundCommandRequest request(String rawLine) {

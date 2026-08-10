@@ -65,8 +65,7 @@ class PircbotxMultilineMessageSupportTest {
     assertTrue(sent.get(0).matches("BATCH \\+ml[0-9a-z]+ draft/multiline #ircafe"));
     String batchId = sent.get(0).split(" ")[1].substring(1);
     assertEquals(
-        "@batch=" + batchId + ";+draft/multiline-concat=1 PRIVMSG #ircafe :one",
-        sent.get(1));
+        "@batch=" + batchId + ";+draft/multiline-concat=1 PRIVMSG #ircafe :one", sent.get(1));
     assertEquals("@batch=" + batchId + " PRIVMSG #ircafe :two", sent.get(2));
     assertEquals("BATCH -" + batchId, sent.get(3));
   }

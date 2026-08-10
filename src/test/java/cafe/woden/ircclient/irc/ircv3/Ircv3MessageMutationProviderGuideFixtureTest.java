@@ -16,8 +16,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 class Ircv3MessageMutationProviderGuideFixtureTest {
 
-  private static final String GUIDE_PROVIDER_CLASS =
-      "example.ircv3.ExampleReplyRuntimeProvider";
+  private static final String GUIDE_PROVIDER_CLASS = "example.ircv3.ExampleReplyRuntimeProvider";
 
   @TempDir Path tempDir;
 

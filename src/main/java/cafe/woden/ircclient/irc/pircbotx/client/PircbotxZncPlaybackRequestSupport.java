@@ -21,8 +21,7 @@ final class PircbotxZncPlaybackRequestSupport {
   private final Ircv3OutboundCommandRuntimeCatalog runtimeCatalog;
 
   PircbotxZncPlaybackRequestSupport(
-      FlowableProcessor<ServerIrcEvent> bus,
-      Ircv3OutboundCommandRuntimeCatalog runtimeCatalog) {
+      FlowableProcessor<ServerIrcEvent> bus, Ircv3OutboundCommandRuntimeCatalog runtimeCatalog) {
     this.bus = Objects.requireNonNull(bus, "bus");
     this.runtimeCatalog = Objects.requireNonNull(runtimeCatalog, "runtimeCatalog");
   }

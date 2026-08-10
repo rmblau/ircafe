@@ -7,6 +7,7 @@ import cafe.woden.ircclient.config.properties.ZncProperties;
 import java.util.Map;
 import java.util.Objects;
 import org.jmolecules.architecture.layered.ApplicationLayer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -27,6 +28,7 @@ public class ZncAutoConnectStore extends AbstractBouncerAutoConnectStore {
 
   private final ZncAutoConnectNetworkKeyNormalizer networkKeyNormalizer;
 
+  @Autowired
   public ZncAutoConnectStore(ZncProperties props, BouncerDiscoveryConfigPort runtimeConfig) {
     this(props, runtimeConfig, new ZncAutoConnectNetworkKeyNormalizer());
   }

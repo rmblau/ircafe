@@ -24,11 +24,7 @@ class Ircv3AccountTagRuntimeSupportTest {
         support
             .observe(
                 new Ircv3InboundTagRequest(
-                    "PRIVMSG",
-                    "alice",
-                    "#ircafe",
-                    List.of(),
-                    Map.of("account", "wire-account")))
+                    "PRIVMSG", "alice", "#ircafe", List.of(), Map.of("account", "wire-account")))
             .orElseThrow());
   }
 
@@ -66,8 +62,7 @@ class Ircv3AccountTagRuntimeSupportTest {
             .isEmpty());
   }
 
-  private static Ircv3AccountTagRuntimeSupport support(
-      List<Ircv3InboundTagSignal> signals) {
+  private static Ircv3AccountTagRuntimeSupport support(List<Ircv3InboundTagSignal> signals) {
     Ircv3InboundTagSignalProvider provider =
         new Ircv3InboundTagSignalProvider() {
           @Override
@@ -95,7 +90,6 @@ class Ircv3AccountTagRuntimeSupportTest {
   }
 
   private static Ircv3InboundTagSignal accountSignal(String nick, String account) {
-    return new Ircv3InboundTagSignal(
-        Ircv3InboundTagSignalType.ACCOUNT_TAG, nick, account);
+    return new Ircv3InboundTagSignal(Ircv3InboundTagSignalType.ACCOUNT_TAG, nick, account);
   }
 }

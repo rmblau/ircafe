@@ -48,6 +48,7 @@ public final class Ircv3ServerTimeExtensionProvider
                 30,
                 "Uses server-provided timestamps to improve ordering and replay accuracy.")));
   }
+
   @Override
   public Set<Ircv3InboundTagOperation> inboundTagOperations() {
     return Set.of(Ircv3InboundTagOperation.SERVER_TIME, Ircv3InboundTagOperation.SERVER_TIME_LAG);
@@ -71,9 +72,7 @@ public final class Ircv3ServerTimeExtensionProvider
       case SERVER_TIME_LAG ->
           Ircv3ServerTime.fromTagsOrRawLine(request.tags(), request.rawLine())
               .flatMap(
-                  instant ->
-                      Ircv3ServerTimeLagSample.from(
-                          instant, request.observedAtEpochMilli()))
+                  instant -> Ircv3ServerTimeLagSample.from(instant, request.observedAtEpochMilli()))
               .map(
                   sample ->
                       List.of(
@@ -85,5 +84,4 @@ public final class Ircv3ServerTimeExtensionProvider
       default -> List.of();
     };
   }
-
 }

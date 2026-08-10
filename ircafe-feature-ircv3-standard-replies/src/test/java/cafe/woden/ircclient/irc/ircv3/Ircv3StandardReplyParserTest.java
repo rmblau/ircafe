@@ -25,7 +25,6 @@ class Ircv3StandardReplyParserTest {
 
   @Test
   void ignoresNonStandardReplyCommands() {
-    assertTrue(
-        Ircv3StandardReplyParser.parse("PRIVMSG", List.of("#ircafe", ":hello")).isEmpty());
+    assertTrue(Ircv3StandardReplyParser.parse("PRIVMSG", List.of("#ircafe", ":hello")).isEmpty());
   }
 }

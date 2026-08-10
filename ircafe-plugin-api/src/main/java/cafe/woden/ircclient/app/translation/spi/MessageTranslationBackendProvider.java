@@ -25,8 +25,8 @@ public interface MessageTranslationBackendProvider {
    * Translates a request without app-provided runtime context.
    *
    * <p>Older stateless providers may continue to override this method. New providers that need
-   * endpoint, secret, or timeout values should override {@link #translate(MessageTranslationRequest,
-   * MessageTranslationBackendContext)} instead.
+   * endpoint, secret, or timeout values should override {@link
+   * #translate(MessageTranslationRequest, MessageTranslationBackendContext)} instead.
    *
    * <p>Return a non-null completion stage. Complete it exceptionally when translation fails. IRCafe
    * owns request scheduling, timeout enforcement, concurrency limits, result suppression, and UI

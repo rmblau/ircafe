@@ -49,7 +49,6 @@ class BouncerDiscoveredNetworkResolutionServiceTest {
     assertEquals(List.of("#one", "#two"), strategy.autoJoinChannels);
   }
 
-
   @Test
   void treatsNullAutoJoinChannelResultAsEmptyList() {
     RecordingStrategy strategy = new RecordingStrategy();

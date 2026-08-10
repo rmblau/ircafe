@@ -7,8 +7,7 @@ import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
 /** Translates soju protocol discovery lines into generic bouncer discovery events. */
 public class SojuBouncerDiscoveryAdapter {
 
-  private final SojuBouncerProtocolParser protocolParser =
-      new SojuBouncerProtocolParser();
+  private final SojuBouncerProtocolParser protocolParser = new SojuBouncerProtocolParser();
   private final BouncerDiscoveredNetworkMaterializer materializer =
       new BouncerDiscoveredNetworkMaterializer();
 

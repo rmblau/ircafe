@@ -34,8 +34,7 @@ class ImageFetchResponsePolicyTest {
 
     assertEquals(ImageFetchResponseDecision.Type.RETRY_AFTER_HTTP_ERROR, decision.type());
     assertEquals(
-        "https://m.media-amazon.com/images/M/poster@._V1_.jpg",
-        decision.retryUrl().orElseThrow());
+        "https://m.media-amazon.com/images/M/poster@._V1_.jpg", decision.retryUrl().orElseThrow());
 
     ImageFetchResponseDecision secondAttempt =
         policy.decide(
@@ -73,8 +72,7 @@ class ImageFetchResponsePolicyTest {
             1,
             20 * 1024 * 1024);
     assertEquals(ImageFetchResponseDecision.Type.FAIL_CONTENT_LENGTH, secondAttempt.type());
-    assertEquals(
-        "Image too large (22020096 bytes > 20971520)", secondAttempt.message());
+    assertEquals("Image too large (22020096 bytes > 20971520)", secondAttempt.message());
   }
 
   @Test
@@ -87,8 +85,7 @@ class ImageFetchResponsePolicyTest {
                 java.util.Optional.empty(),
                 ""));
     assertThrows(
-        IllegalArgumentException.class,
-        () -> ImageFetchResponseDecision.failHttpStatus(""));
+        IllegalArgumentException.class, () -> ImageFetchResponseDecision.failHttpStatus(""));
     assertThrows(
         IllegalArgumentException.class,
         () ->

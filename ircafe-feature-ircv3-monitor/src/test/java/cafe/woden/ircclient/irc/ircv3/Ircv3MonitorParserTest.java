@@ -63,8 +63,7 @@ class Ircv3MonitorParserTest {
 
   @Test
   void detectsEndOfMonitorList() {
-    assertTrue(
-        Ircv3MonitorParser.isRpl733MonitorListEnd(":server 733 me :End of MONITOR list"));
+    assertTrue(Ircv3MonitorParser.isRpl733MonitorListEnd(":server 733 me :End of MONITOR list"));
     assertFalse(Ircv3MonitorParser.isRpl733MonitorListEnd(":server 732 me :alice,bob"));
   }
 

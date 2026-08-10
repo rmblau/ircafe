@@ -11,8 +11,7 @@ import java.util.Set;
 
 /** Built-in runtime provider for transport-neutral IRC identity numerics. */
 @AutoService(Ircv3InboundCommandSignalProvider.class)
-public final class Ircv3UserIdentityRuntimeProvider
-    implements Ircv3InboundCommandSignalProvider {
+public final class Ircv3UserIdentityRuntimeProvider implements Ircv3InboundCommandSignalProvider {
 
   private static final String PROVIDER_ID = "user-identity";
   private static final String IRCAFE_WHOX_TOKEN = "1";
@@ -72,8 +71,7 @@ public final class Ircv3UserIdentityRuntimeProvider
       if (entry == null) {
         continue;
       }
-      signals.add(
-          new Ircv3InboundCommandSignal.HostmaskObserved(entry.nick(), entry.hostmask()));
+      signals.add(new Ircv3InboundCommandSignal.HostmaskObserved(entry.nick(), entry.hostmask()));
       if (entry.awayState() == Ircv3WhoUserhostParser.AwayState.AWAY) {
         signals.add(new Ircv3InboundCommandSignal.UserAwayObserved(entry.nick(), true, null));
       } else if (entry.awayState() == Ircv3WhoUserhostParser.AwayState.HERE) {
@@ -93,16 +91,13 @@ public final class Ircv3UserIdentityRuntimeProvider
   }
 
   private static List<Ircv3InboundCommandSignal> parseWhoisAccount(String rawLine) {
-    Ircv3WhoisParser.ParsedWhoisAccount account =
-        Ircv3WhoisParser.parseRpl330WhoisAccount(rawLine);
+    Ircv3WhoisParser.ParsedWhoisAccount account = Ircv3WhoisParser.parseRpl330WhoisAccount(rawLine);
     if (account == null) {
       return List.of();
     }
     return List.of(
         new Ircv3InboundCommandSignal.AccountObserved(
-            account.nick(),
-            Ircv3InboundCommandSignal.AccountState.LOGGED_IN,
-            account.account()));
+            account.nick(), Ircv3InboundCommandSignal.AccountState.LOGGED_IN, account.account()));
   }
 
   private static List<Ircv3InboundCommandSignal> parseWhoisEnd(String rawLine) {
@@ -127,8 +122,7 @@ public final class Ircv3UserIdentityRuntimeProvider
   }
 
   private static List<Ircv3InboundCommandSignal> parseWho(String rawLine) {
-    Ircv3WhoUserhostParser.ParsedWhoReply who =
-        Ircv3WhoUserhostParser.parseRpl352WhoReply(rawLine);
+    Ircv3WhoUserhostParser.ParsedWhoReply who = Ircv3WhoUserhostParser.parseRpl352WhoReply(rawLine);
     if (who == null) {
       return List.of();
     }
@@ -158,8 +152,7 @@ public final class Ircv3UserIdentityRuntimeProvider
 
     ArrayList<Ircv3InboundCommandSignal> signals = new ArrayList<>(2);
     if (Ircv3WhoUserhostParser.seemsRpl354WhoxWithToken(rawLine, IRCAFE_WHOX_TOKEN)) {
-      signals.add(
-          new Ircv3InboundCommandSignal.WhoxSchemaObserved(false, "strict-parse-failed"));
+      signals.add(new Ircv3InboundCommandSignal.WhoxSchemaObserved(false, "strict-parse-failed"));
     }
     Ircv3WhoUserhostParser.ParsedWhoxReply fallback =
         Ircv3WhoUserhostParser.parseRpl354WhoxReply(rawLine);

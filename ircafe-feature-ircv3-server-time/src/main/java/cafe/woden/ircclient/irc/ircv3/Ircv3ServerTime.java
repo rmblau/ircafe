@@ -26,8 +26,7 @@ public final class Ircv3ServerTime {
     return parseInstantSafe(rawTime);
   }
 
-  public static Optional<Instant> fromTagsOrRawLine(
-      Map<String, String> tags, String rawLine) {
+  public static Optional<Instant> fromTagsOrRawLine(Map<String, String> tags, String rawLine) {
     Optional<Instant> tagged = fromTags(tags);
     return tagged.isPresent() ? tagged : fromRawLine(rawLine);
   }

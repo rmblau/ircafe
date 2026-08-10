@@ -28,8 +28,7 @@ class NotificationStoreEventPolicyTest {
     assertFalse(
         NotificationStoreEventPolicy.highlight(" ", "#ircafe", "alice", "ping", "").valid());
     assertFalse(
-        NotificationStoreEventPolicy.ruleMatch("libera", " ", "alice", "Rule", "ping", "")
-            .valid());
+        NotificationStoreEventPolicy.ruleMatch("libera", " ", "alice", "Rule", "ping", "").valid());
   }
 
   @Test

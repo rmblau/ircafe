@@ -15,8 +15,7 @@ public final class Ircv3RuntimeTestFixtures {
     return stsPolicyService(null, catalogs());
   }
 
-  public static Ircv3StsPolicyService stsPolicyService(
-      Ircv3StsPolicyConfigPort runtimeConfig) {
+  public static Ircv3StsPolicyService stsPolicyService(Ircv3StsPolicyConfigPort runtimeConfig) {
     return stsPolicyService(runtimeConfig, catalogs());
   }
 
@@ -89,8 +88,7 @@ public final class Ircv3RuntimeTestFixtures {
     Ircv3TypingRuntimeSupport typing =
         new Ircv3TypingRuntimeSupport(
             catalogs.outboundCommands(), catalogs.inboundTags(), catalogs.inboundCommands());
-    Ircv3SaslRuntimeSupport sasl =
-        new Ircv3SaslRuntimeSupport(catalogs.inboundCommands());
+    Ircv3SaslRuntimeSupport sasl = new Ircv3SaslRuntimeSupport(catalogs.inboundCommands());
     return new Runtime(
         catalogs,
         messageId,

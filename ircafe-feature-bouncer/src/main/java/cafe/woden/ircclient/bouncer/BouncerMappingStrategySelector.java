@@ -27,8 +27,7 @@ public final class BouncerMappingStrategySelector {
     return Objects.toString(backendId, "").trim();
   }
 
-  private record MissingMappingStrategy(String backendId)
-      implements BouncerNetworkMappingStrategy {
+  private record MissingMappingStrategy(String backendId) implements BouncerNetworkMappingStrategy {
 
     @Override
     public ResolvedBouncerNetwork resolveNetwork(

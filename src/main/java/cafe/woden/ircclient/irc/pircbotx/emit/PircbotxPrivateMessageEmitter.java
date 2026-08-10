@@ -128,8 +128,7 @@ public final class PircbotxPrivateMessageEmitter {
     }
 
     Map<String, String> tags =
-        new HashMap<>(
-            PircbotxEventMetadata.ircv3TagsFromEvent(event, messageTagsRuntimeSupport));
+        new HashMap<>(PircbotxEventMetadata.ircv3TagsFromEvent(event, messageTagsRuntimeSupport));
     String messageId = messageTagsRuntimeSupport.messageId(tags);
     if ((pmDest == null || pmDest.isBlank()) && fromSelf) {
       String hinted =

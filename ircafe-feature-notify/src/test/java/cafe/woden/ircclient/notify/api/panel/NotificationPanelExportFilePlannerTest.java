@@ -14,10 +14,7 @@ class NotificationPanelExportFilePlannerTest {
   void buildsSanitizedDefaultFileNames() {
     String fileName =
         NotificationPanelExportFilePlanner.defaultFileName(
-            true,
-            " Libera/Test Server ",
-            Instant.parse("2026-07-07T22:15:30Z"),
-            ZoneId.of("UTC"));
+            true, " Libera/Test Server ", Instant.parse("2026-07-07T22:15:30Z"), ZoneId.of("UTC"));
 
     assertEquals("ircafe-notifications-selected-Libera_Test_Server-20260707-221530.csv", fileName);
   }

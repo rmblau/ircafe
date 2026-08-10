@@ -196,8 +196,7 @@ final class PircbotxCapabilityCommandSupport {
   }
 
   boolean isChatHistoryAvailable(PircbotxConnectionState connection) {
-    Ircv3CapabilitySnapshot caps =
-        connection == null ? null : connection.capabilitySnapshot();
+    Ircv3CapabilitySnapshot caps = connection == null ? null : connection.capabilitySnapshot();
     return supportsAllChatHistoryOperations()
         && caps != null
         && Ircv3ChatHistoryAvailability.isAvailable(
@@ -218,29 +217,23 @@ final class PircbotxCapabilityCommandSupport {
     Ircv3ChatHistoryRuntimeSupport.Plan plan =
         switch (operation) {
           case CHAT_HISTORY_BEFORE ->
-              chatHistoryRuntimeSupport.before(
-                  target, primarySelector, limit, fallbackTimestamp);
+              chatHistoryRuntimeSupport.before(target, primarySelector, limit, fallbackTimestamp);
           case CHAT_HISTORY_LATEST ->
               chatHistoryRuntimeSupport.latest(target, primarySelector, limit);
           case CHAT_HISTORY_BETWEEN ->
-              chatHistoryRuntimeSupport.between(
-                  target, primarySelector, secondarySelector, limit);
+              chatHistoryRuntimeSupport.between(target, primarySelector, secondarySelector, limit);
           case CHAT_HISTORY_AROUND ->
               chatHistoryRuntimeSupport.around(target, primarySelector, limit);
           default ->
-              throw new IllegalArgumentException(
-                  "Not a CHATHISTORY operation: " + operation);
+              throw new IllegalArgumentException("Not a CHATHISTORY operation: " + operation);
         };
     requireConnectedBot(serverId, connection).sendRaw().rawLine(plan.rawLine());
   }
 
   private void ensureChatHistoryNegotiated(String serverId, PircbotxConnectionState connection) {
-    Ircv3CapabilitySnapshot caps =
-        connection == null ? null : connection.capabilitySnapshot();
+    Ircv3CapabilitySnapshot caps = connection == null ? null : connection.capabilitySnapshot();
     Ircv3ChatHistoryAvailability.requireAvailable(
-        caps != null && caps.chatHistoryCapAcked(),
-        caps != null && caps.batchCapAcked(),
-        serverId);
+        caps != null && caps.chatHistoryCapAcked(), caps != null && caps.batchCapAcked(), serverId);
   }
 
   private boolean supportsAllChatHistoryOperations() {

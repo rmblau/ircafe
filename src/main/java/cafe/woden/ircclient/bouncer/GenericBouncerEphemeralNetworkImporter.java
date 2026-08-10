@@ -11,6 +11,7 @@ import java.util.Objects;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /** Generic backend handler for bouncer discovery events. */
@@ -23,6 +24,7 @@ public class GenericBouncerEphemeralNetworkImporter implements BouncerBackendDis
 
   private final BouncerNetworkDiscoveryOrchestrator orchestrator;
 
+  @Autowired
   public GenericBouncerEphemeralNetworkImporter(
       ServerRegistry serverRegistry,
       EphemeralServerRegistry ephemeralServers,

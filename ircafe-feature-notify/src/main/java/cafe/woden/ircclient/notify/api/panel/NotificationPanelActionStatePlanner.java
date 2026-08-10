@@ -18,10 +18,6 @@ public final class NotificationPanelActionStatePlanner {
     boolean canJump = singleSelection && hasMessageId && selectedTargetAvailable;
 
     return new NotificationPanelActionStatePlan(
-        canJump,
-        hasSelection,
-        hasRows,
-        hasSelection,
-        hasRows);
+        canJump, hasSelection, hasRows, hasSelection, hasRows);
   }
 }

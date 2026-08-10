@@ -89,7 +89,8 @@ class HttpMessageTranslationBackendTest {
             settings("libretranslate", endpoint, "optional-key"),
             new JdkMessageTranslationHttpClient());
 
-    MessageTranslationResult result = backend.translate(request("Hello")).toCompletableFuture().get();
+    MessageTranslationResult result =
+        backend.translate(request("Hello")).toCompletableFuture().get();
 
     assertEquals("Hola", result.translatedText());
     assertEquals("en", result.sourceLanguage());
@@ -286,7 +287,8 @@ class HttpMessageTranslationBackendTest {
   private record CapturedRequest(
       String method, String query, Map<String, String> headers, String body) {}
 
-  private static final class JdkMessageTranslationHttpClient implements MessageTranslationHttpClient {
+  private static final class JdkMessageTranslationHttpClient
+      implements MessageTranslationHttpClient {
     @Override
     public MessageTranslationHttpResponse getString(
         URI endpoint, Map<String, String> headers, long timeoutMs) throws IOException {

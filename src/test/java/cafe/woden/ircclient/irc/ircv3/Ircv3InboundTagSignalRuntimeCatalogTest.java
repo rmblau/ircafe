@@ -44,8 +44,7 @@ class Ircv3InboundTagSignalRuntimeCatalogTest {
                 Map.entry("batch", "history-42"),
                 Map.entry("label", "request-7"),
                 Map.entry("msgid", "message-8"),
-                Map.entry(
-                    "time", Instant.ofEpochMilli(observedAtMs - 250L).toString())),
+                Map.entry("time", Instant.ofEpochMilli(observedAtMs - 250L).toString())),
             "",
             observedAtMs);
 
@@ -167,10 +166,7 @@ class Ircv3InboundTagSignalRuntimeCatalogTest {
 
     assertEquals(
         "plugin",
-        catalog
-            .parse(Ircv3InboundTagOperation.REPLY, request())
-            .getFirst()
-            .primaryValue());
+        catalog.parse(Ircv3InboundTagOperation.REPLY, request()).getFirst().primaryValue());
     assertEquals(List.of("plugin"), catalog.providerIds());
   }
 

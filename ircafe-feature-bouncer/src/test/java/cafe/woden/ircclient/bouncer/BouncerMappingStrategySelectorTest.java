@@ -27,9 +27,7 @@ class BouncerMappingStrategySelectorTest {
 
     assertEquals("soju", strategy.backendId());
     IllegalStateException failure =
-        assertThrows(
-            IllegalStateException.class,
-            () -> strategy.resolveNetwork(null, null));
+        assertThrows(IllegalStateException.class, () -> strategy.resolveNetwork(null, null));
     assertEquals("Missing bouncer mapping strategy: soju", failure.getMessage());
   }
 
@@ -39,9 +37,7 @@ class BouncerMappingStrategySelectorTest {
 
     assertEquals("", strategy.backendId());
     IllegalStateException failure =
-        assertThrows(
-            IllegalStateException.class,
-            () -> strategy.resolveNetwork(null, null));
+        assertThrows(IllegalStateException.class, () -> strategy.resolveNetwork(null, null));
     assertEquals("Missing bouncer mapping strategy: ", failure.getMessage());
   }
 

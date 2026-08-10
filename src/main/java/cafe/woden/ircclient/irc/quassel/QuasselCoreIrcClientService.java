@@ -4,10 +4,7 @@ import static cafe.woden.ircclient.irc.backend.IrcBackendValidationMessages.SERV
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_MESSAGE_EDIT;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_MESSAGE_REDACTION;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_MULTILINE;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_REACT;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_READ_MARKER;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_REPLY;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_UNREACT;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.LABELED_RESPONSE;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MESSAGE_TAGS;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MULTILINE;
@@ -208,8 +205,7 @@ public class QuasselCoreIrcClientService implements IrcBackendRuntimeClientServi
     this.protocolProbe = Objects.requireNonNull(protocolProbe, "protocolProbe");
     this.authHandshake = Objects.requireNonNull(authHandshake, "authHandshake");
     this.datastreamCodec = Objects.requireNonNull(datastreamCodec, "datastreamCodec");
-    this.ircv3RuntimeSupport =
-        Objects.requireNonNull(ircv3RuntimeSupport, "ircv3RuntimeSupport");
+    this.ircv3RuntimeSupport = Objects.requireNonNull(ircv3RuntimeSupport, "ircv3RuntimeSupport");
     IrcProperties.Client client = props == null ? null : props.client();
     this.reconnectPolicy = client == null ? null : client.reconnect();
   }
@@ -761,8 +757,7 @@ public class QuasselCoreIrcClientService implements IrcBackendRuntimeClientServi
               }
 
               QualifiedTarget dest = sanitizeHistoryTarget(target);
-              List<String> rawLines =
-                  ircv3RuntimeSupport.typingRawLines(dest.rawTarget(), state);
+              List<String> rawLines = ircv3RuntimeSupport.typingRawLines(dest.rawTarget(), state);
               for (String rawLine : rawLines) {
                 sendRawInternal(session, sid, "send typing", rawLine);
               }
@@ -830,8 +825,7 @@ public class QuasselCoreIrcClientService implements IrcBackendRuntimeClientServi
                   prepareHistoryRequest(
                       serverId, plan.target(), plan.limit(), "request chat history");
               HistorySelector parsed = parseHistorySelector(plan.primarySelector(), false);
-              long anchorMsgId =
-                  resolveHistorySelectorMsgId(ctx.session(), ctx.target(), parsed);
+              long anchorMsgId = resolveHistorySelectorMsgId(ctx.session(), ctx.target(), parsed);
               int lastMsgId = anchorMsgId > 0 ? clampMsgId(anchorMsgId - 1L) : UNKNOWN_MSG_ID;
               sendBacklogRequest(
                   ctx.session(), ctx.bufferInfo(), UNKNOWN_MSG_ID, lastMsgId, ctx.limit());
@@ -889,8 +883,7 @@ public class QuasselCoreIrcClientService implements IrcBackendRuntimeClientServi
     return Completable.fromAction(
             () -> {
               Ircv3ChatHistoryRuntimeSupport.Plan plan =
-                  ircv3RuntimeSupport.chatHistoryBetween(
-                      target, startSelector, endSelector, limit);
+                  ircv3RuntimeSupport.chatHistoryBetween(target, startSelector, endSelector, limit);
               HistoryRequestContext ctx =
                   prepareHistoryRequest(
                       serverId, plan.target(), plan.limit(), "request bounded chat history");
@@ -924,10 +917,7 @@ public class QuasselCoreIrcClientService implements IrcBackendRuntimeClientServi
                   ircv3RuntimeSupport.chatHistoryAround(target, selector, limit);
               HistoryRequestContext ctx =
                   prepareHistoryRequest(
-                      serverId,
-                      plan.target(),
-                      plan.limit(),
-                      "request surrounding chat history");
+                      serverId, plan.target(), plan.limit(), "request surrounding chat history");
               HistorySelector parsed = parseHistorySelector(plan.primarySelector(), false);
               long anchorMsgId = resolveHistorySelectorMsgId(ctx.session(), ctx.target(), parsed);
 
@@ -2687,8 +2677,7 @@ public class QuasselCoreIrcClientService implements IrcBackendRuntimeClientServi
     }
     String marker =
         Ircv3ChatHistorySelectors.TIMESTAMP_PREFIX
-            + Ircv3ReadMarkerCommandBuilder.formatTimestamp(
-                Instant.ofEpochMilli(resolvedEpochMs));
+            + Ircv3ReadMarkerCommandBuilder.formatTimestamp(Instant.ofEpochMilli(resolvedEpochMs));
     bus.onNext(
         new ServerIrcEvent(
             session.serverId, new IrcEvent.ReadMarkerObserved(fallback, from, target, marker)));
@@ -3587,14 +3576,12 @@ public class QuasselCoreIrcClientService implements IrcBackendRuntimeClientServi
             bus.onNext(
                 new ServerIrcEvent(
                     session.serverId,
-                    new IrcEvent.UserTypingObserved(
-                        at, from, convTarget, signal.primaryValue())));
+                    new IrcEvent.UserTypingObserved(at, from, convTarget, signal.primaryValue())));
         case READ_MARKER ->
             bus.onNext(
                 new ServerIrcEvent(
                     session.serverId,
-                    new IrcEvent.ReadMarkerObserved(
-                        at, from, convTarget, signal.primaryValue())));
+                    new IrcEvent.ReadMarkerObserved(at, from, convTarget, signal.primaryValue())));
         default -> {
           // Other runtime tag signals are handled by their owning transport adapter.
         }
@@ -3612,14 +3599,12 @@ public class QuasselCoreIrcClientService implements IrcBackendRuntimeClientServi
         .monitorSupport(raw)
         .ifPresent(
             monitorSupport -> {
-              int resolvedNetworkId =
-                  networkId >= 0 ? networkId : firstKnownNetworkId(session);
+              int resolvedNetworkId = networkId >= 0 ? networkId : firstKnownNetworkId(session);
               if (resolvedNetworkId >= 0) {
                 session.monitorSupportByNetworkId.put(
                     resolvedNetworkId,
                     new MonitorSupportState(
-                        monitorSupport.supported(),
-                        Math.max(0L, (long) monitorSupport.limit())));
+                        monitorSupport.supported(), Math.max(0L, (long) monitorSupport.limit())));
                 trimMapToMaxSize(
                     session.monitorSupportByNetworkId, MAX_NETWORK_IDENTITIES_PER_SESSION);
               }
@@ -3650,8 +3635,7 @@ public class QuasselCoreIrcClientService implements IrcBackendRuntimeClientServi
         bus.onNext(
             new ServerIrcEvent(
                 session.serverId,
-                new IrcEvent.MonitorListFull(
-                    at, full.limit(), full.nicks(), full.message())));
+                new IrcEvent.MonitorListFull(at, full.limit(), full.nicks(), full.message())));
         handled = true;
       }
     }
@@ -3864,11 +3848,7 @@ public class QuasselCoreIrcClientService implements IrcBackendRuntimeClientServi
             observed -> {
               String resolvedTarget =
                   resolveSignalTargetForRawTarget(
-                      session,
-                      fromDisplay,
-                      fallbackTarget,
-                      networkId,
-                      observed.target());
+                      session, fromDisplay, fallbackTarget, networkId, observed.target());
               bus.onNext(
                   new ServerIrcEvent(
                       session.serverId,
@@ -3889,20 +3869,12 @@ public class QuasselCoreIrcClientService implements IrcBackendRuntimeClientServi
     String from = observedFrom.isEmpty() ? "server" : observedFrom;
     ircv3RuntimeSupport
         .redactionFromCommand(
-            from,
-            envelope.command(),
-            envelope.rawLine(),
-            envelope.params(),
-            envelope.ircv3Tags())
+            from, envelope.command(), envelope.rawLine(), envelope.params(), envelope.ircv3Tags())
         .ifPresent(
             observed -> {
               String resolvedTarget =
                   resolveSignalTargetForRawTarget(
-                      session,
-                      fromDisplay,
-                      fallbackTarget,
-                      networkId,
-                      observed.target());
+                      session, fromDisplay, fallbackTarget, networkId, observed.target());
               bus.onNext(
                   new ServerIrcEvent(
                       session.serverId,

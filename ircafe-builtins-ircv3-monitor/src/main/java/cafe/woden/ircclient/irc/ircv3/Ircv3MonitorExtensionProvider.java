@@ -66,18 +66,13 @@ public final class Ircv3MonitorExtensionProvider
       return List.of();
     }
     return switch (operation) {
-      case MONITOR_LIST ->
-          single(new Ircv3MonitorCommandPlanner.ListRequested());
-      case MONITOR_STATUS ->
-          single(new Ircv3MonitorCommandPlanner.StatusRequested());
-      case MONITOR_CLEAR ->
-          single(new Ircv3MonitorCommandPlanner.ClearRequested());
+      case MONITOR_LIST -> single(new Ircv3MonitorCommandPlanner.ListRequested());
+      case MONITOR_STATUS -> single(new Ircv3MonitorCommandPlanner.StatusRequested());
+      case MONITOR_CLEAR -> single(new Ircv3MonitorCommandPlanner.ClearRequested());
       case MONITOR_ADD ->
-          Ircv3MonitorCommandPlanner.modificationRawLines(
-              '+', request.values(), request.limit());
+          Ircv3MonitorCommandPlanner.modificationRawLines('+', request.values(), request.limit());
       case MONITOR_REMOVE ->
-          Ircv3MonitorCommandPlanner.modificationRawLines(
-              '-', request.values(), request.limit());
+          Ircv3MonitorCommandPlanner.modificationRawLines('-', request.values(), request.limit());
       default -> List.of();
     };
   }
@@ -85,8 +80,7 @@ public final class Ircv3MonitorExtensionProvider
   @Override
   public Set<Ircv3InboundCommandOperation> inboundCommandOperations() {
     return Set.of(
-        Ircv3InboundCommandOperation.MONITOR,
-        Ircv3InboundCommandOperation.ISUPPORT_MONITOR);
+        Ircv3InboundCommandOperation.MONITOR, Ircv3InboundCommandOperation.ISUPPORT_MONITOR);
   }
 
   @Override
@@ -136,8 +130,7 @@ public final class Ircv3MonitorExtensionProvider
       return List.of();
     }
     return List.of(
-        new Ircv3InboundCommandSignal.MonitorListFull(
-            full.limit(), full.nicks(), full.message()));
+        new Ircv3InboundCommandSignal.MonitorListFull(full.limit(), full.nicks(), full.message()));
   }
 
   private static List<String> single(Ircv3MonitorCommandPlanner.Action action) {

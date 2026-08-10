@@ -10,8 +10,8 @@ import org.pircbotx.exception.CAPException;
 /**
  * Requests multiple optional IRCv3 capabilities in one CAP REQ line.
  *
- * <p>The transport-independent offer matching and pending-resolution state live in
- * {@link Ircv3CapabilityRequestBatchSession}; this class only adapts that policy to PircBotX.
+ * <p>The transport-independent offer matching and pending-resolution state live in {@link
+ * Ircv3CapabilityRequestBatchSession}; this class only adapts that policy to PircBotX.
  */
 public final class BatchedEnableCapHandler implements CapHandler {
 

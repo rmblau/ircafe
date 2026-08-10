@@ -61,7 +61,8 @@ class PircbotxInputParserHookInstallerRuntimeCompositionTest {
           constructor.toString());
     }
     assertEquals(1, PircbotxIrcv3InputParser.class.getDeclaredConstructors().length);
-    assertEquals(17, PircbotxIrcv3InputParser.class.getDeclaredConstructors()[0].getParameterCount());
+    assertEquals(
+        17, PircbotxIrcv3InputParser.class.getDeclaredConstructors()[0].getParameterCount());
   }
 
   @Test
@@ -78,10 +79,7 @@ class PircbotxInputParserHookInstallerRuntimeCompositionTest {
       PircbotxInputParserHookInstaller installer, PircbotxIrcv3InputParser parser)
       throws Exception {
     PircbotxCapabilityNegotiationSupport capabilityNegotiationSupport =
-        field(
-            parser,
-            "capabilityNegotiationSupport",
-            PircbotxCapabilityNegotiationSupport.class);
+        field(parser, "capabilityNegotiationSupport", PircbotxCapabilityNegotiationSupport.class);
     assertSame(
         field(
             installer,
@@ -93,9 +91,7 @@ class PircbotxInputParserHookInstallerRuntimeCompositionTest {
             Ircv3CapabilityNegotiationRuntimeSupport.class));
     assertSame(
         field(
-            installer,
-            "historyTransportRuntimeSupport",
-            Ircv3HistoryTransportRuntimeSupport.class),
+            installer, "historyTransportRuntimeSupport", Ircv3HistoryTransportRuntimeSupport.class),
         field(
             capabilityNegotiationSupport,
             "historyTransportRuntimeSupport",
@@ -165,7 +161,6 @@ class PircbotxInputParserHookInstallerRuntimeCompositionTest {
         field(installer, "typingRuntimeSupport", Ircv3TypingRuntimeSupport.class),
         field(tagSignalSupport, "typingRuntimeSupport", Ircv3TypingRuntimeSupport.class));
   }
-
 
   private static void assertConstructor(Class<?> type, int parameterCount) {
     Constructor<?>[] constructors = type.getConstructors();

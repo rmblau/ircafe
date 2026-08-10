@@ -156,8 +156,7 @@ public class MatrixIrcClientService implements IrcBackendRuntimeClientService {
     this.rawLookupCommandHandler =
         new MatrixRawLookupCommandHandler(this::whois, this::requestNames, this::whowas);
     this.syncClient = Objects.requireNonNull(syncClient, "syncClient");
-    this.ircv3RuntimeSupport =
-        Objects.requireNonNull(ircv3RuntimeSupport, "ircv3RuntimeSupport");
+    this.ircv3RuntimeSupport = Objects.requireNonNull(ircv3RuntimeSupport, "ircv3RuntimeSupport");
     this.syncTimelineEventProjector = new MatrixSyncTimelineEventProjector(bus::onNext);
     this.syncSignalEventProjector = new MatrixSyncSignalEventProjector(bus::onNext);
     this.syncMutationEventProjector = new MatrixSyncMutationEventProjector(bus::onNext);
@@ -1679,8 +1678,7 @@ public class MatrixIrcClientService implements IrcBackendRuntimeClientService {
       return sendRawEdit(serverId, target, editTarget, message);
     }
     String replyTarget =
-        ircv3RuntimeSupport.replyTarget(
-            raw.command(), target, raw.arguments(), tags, rawLine);
+        ircv3RuntimeSupport.replyTarget(raw.command(), target, raw.arguments(), tags, rawLine);
     if (!replyTarget.isEmpty()) {
       return sendRawReply(serverId, target, replyTarget, message);
     }
@@ -1713,8 +1711,7 @@ public class MatrixIrcClientService implements IrcBackendRuntimeClientService {
       return sendRawEdit(serverId, target, editTarget, message);
     }
     String replyTarget =
-        ircv3RuntimeSupport.replyTarget(
-            raw.command(), target, raw.arguments(), tags, rawLine);
+        ircv3RuntimeSupport.replyTarget(raw.command(), target, raw.arguments(), tags, rawLine);
     if (!replyTarget.isEmpty()) {
       return sendRawReply(serverId, target, replyTarget, message);
     }
@@ -1929,8 +1926,7 @@ public class MatrixIrcClientService implements IrcBackendRuntimeClientService {
     String target = argOrBlank(raw, 0, "TAGMSG requires a target");
     Map<String, String> tags = ircv3RuntimeSupport.messageTags(rawLine);
     MatrixIrcv3RuntimeSupport.ReactionPlan reactionPlan =
-        ircv3RuntimeSupport.reaction(
-            raw.command(), target, raw.arguments(), tags, rawLine);
+        ircv3RuntimeSupport.reaction(raw.command(), target, raw.arguments(), tags, rawLine);
     if (reactionPlan.type() == MatrixIrcv3RuntimeSupport.ReactionType.AMBIGUOUS) {
       throw new IllegalArgumentException(
           "TAGMSG cannot include both +draft/react and +draft/unreact");
@@ -1941,15 +1937,12 @@ public class MatrixIrcClientService implements IrcBackendRuntimeClientService {
         throw new IllegalArgumentException("TAGMSG draft reactions require +reply=<msgid>");
       }
       if (reactionPlan.type() == MatrixIrcv3RuntimeSupport.ReactionType.REACT) {
-        return sendRawReaction(
-            serverId, target, reactionPlan.messageId(), reactionPlan.reaction());
+        return sendRawReaction(serverId, target, reactionPlan.messageId(), reactionPlan.reaction());
       }
-      return sendRawUnreaction(
-          serverId, target, reactionPlan.messageId(), reactionPlan.reaction());
+      return sendRawUnreaction(serverId, target, reactionPlan.messageId(), reactionPlan.reaction());
     }
     String typingState =
-        ircv3RuntimeSupport.typingState(
-            raw.command(), target, raw.arguments(), tags, rawLine);
+        ircv3RuntimeSupport.typingState(raw.command(), target, raw.arguments(), tags, rawLine);
     if (typingState.isEmpty()) {
       throw new IllegalArgumentException("TAGMSG requires +typing=<active|paused|done>");
     }

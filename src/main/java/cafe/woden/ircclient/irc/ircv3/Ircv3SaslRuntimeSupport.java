@@ -24,23 +24,17 @@ public final class Ircv3SaslRuntimeSupport {
 
   public Ircv3SaslCapabilityOffer capabilityList(Collection<String> capabilities) {
     return capability(
-        Ircv3InboundCommandOperation.SASL_CAPABILITY_LIST,
-        SaslCapabilityPhase.LIST,
-        capabilities);
+        Ircv3InboundCommandOperation.SASL_CAPABILITY_LIST, SaslCapabilityPhase.LIST, capabilities);
   }
 
   public Ircv3SaslCapabilityOffer capabilityAck(Collection<String> capabilities) {
     return capability(
-        Ircv3InboundCommandOperation.SASL_CAPABILITY_ACK,
-        SaslCapabilityPhase.ACK,
-        capabilities);
+        Ircv3InboundCommandOperation.SASL_CAPABILITY_ACK, SaslCapabilityPhase.ACK, capabilities);
   }
 
   public Ircv3SaslCapabilityOffer capabilityNak(Collection<String> capabilities) {
     return capability(
-        Ircv3InboundCommandOperation.SASL_CAPABILITY_NAK,
-        SaslCapabilityPhase.NAK,
-        capabilities);
+        Ircv3InboundCommandOperation.SASL_CAPABILITY_NAK, SaslCapabilityPhase.NAK, capabilities);
   }
 
   public Ircv3SaslIrcLine serverMessage(String rawLine) {

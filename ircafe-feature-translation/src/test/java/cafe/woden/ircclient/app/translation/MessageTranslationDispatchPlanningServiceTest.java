@@ -80,8 +80,7 @@ class MessageTranslationDispatchPlanningServiceTest {
 
     assertFalse(result.accepted());
     assertEquals(
-        "message text is blank or exceeds maxRequestChars (length=11, max=4)",
-        result.skipReason());
+        "message text is blank or exceeds maxRequestChars (length=11, max=4)", result.skipReason());
   }
 
   @Test

@@ -49,8 +49,7 @@ class Ircv3ServerTimeRuntimeSupportTest {
           @Override
           public Set<Ircv3InboundTagOperation> inboundTagOperations() {
             return Set.of(
-                Ircv3InboundTagOperation.SERVER_TIME,
-                Ircv3InboundTagOperation.SERVER_TIME_LAG);
+                Ircv3InboundTagOperation.SERVER_TIME, Ircv3InboundTagOperation.SERVER_TIME_LAG);
           }
 
           @Override
@@ -92,8 +91,7 @@ class Ircv3ServerTimeRuntimeSupportTest {
       @Override
       public Set<Ircv3InboundTagOperation> inboundTagOperations() {
         return Set.of(
-            Ircv3InboundTagOperation.SERVER_TIME,
-            Ircv3InboundTagOperation.SERVER_TIME_LAG);
+            Ircv3InboundTagOperation.SERVER_TIME, Ircv3InboundTagOperation.SERVER_TIME_LAG);
       }
 
       @Override

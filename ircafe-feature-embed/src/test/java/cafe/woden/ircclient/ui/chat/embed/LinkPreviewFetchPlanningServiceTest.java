@@ -28,7 +28,8 @@ class LinkPreviewFetchPlanningServiceTest {
         planning.plan("server-a", "https://imgur.com/a/album123").cacheKey());
     assertEquals(
         "server-a|https://www.nytimes.com/2026/06/29/world/example.html|news-v2",
-        planning.plan("server-a", "https://www.nytimes.com/2026/06/29/world/example.html")
+        planning
+            .plan("server-a", "https://www.nytimes.com/2026/06/29/world/example.html")
             .cacheKey());
   }
 

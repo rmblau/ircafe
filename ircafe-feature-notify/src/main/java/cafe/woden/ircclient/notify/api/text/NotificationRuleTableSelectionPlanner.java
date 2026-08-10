@@ -9,10 +9,6 @@ public final class NotificationRuleTableSelectionPlanner {
     if (selectedRow < 0 || selectedRow >= count) return NotificationRuleTableSelectionPlan.none();
 
     return new NotificationRuleTableSelectionPlan(
-        true,
-        true,
-        true,
-        selectedRow > 0,
-        selectedRow < count - 1);
+        true, true, true, selectedRow > 0, selectedRow < count - 1);
   }
 }

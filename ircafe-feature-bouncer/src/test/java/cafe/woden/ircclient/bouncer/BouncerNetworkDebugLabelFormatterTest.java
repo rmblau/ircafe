@@ -10,7 +10,8 @@ import org.junit.jupiter.api.Test;
 
 class BouncerNetworkDebugLabelFormatterTest {
 
-  private final BouncerNetworkDebugLabelFormatter formatter = new BouncerNetworkDebugLabelFormatter();
+  private final BouncerNetworkDebugLabelFormatter formatter =
+      new BouncerNetworkDebugLabelFormatter();
 
   @Test
   void formatsNonBlankDebugIdsAsSuffixes() {
@@ -25,7 +26,8 @@ class BouncerNetworkDebugLabelFormatterTest {
 
   @Test
   void readsDebugIdFromMappingStrategy() {
-    assertEquals(" (network-id)", formatter.suffixFor(new DebugStrategy(" network-id "), network()));
+    assertEquals(
+        " (network-id)", formatter.suffixFor(new DebugStrategy(" network-id "), network()));
   }
 
   @Test

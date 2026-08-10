@@ -50,14 +50,12 @@ public abstract class AbstractBouncerAutoConnectStore implements BouncerAutoConn
         .setEnabled(bouncerServerId, networkName, enable, this::normalizeNetworkKey)
         .ifPresent(
             rule -> {
-              persistAutoConnectRule(
-                  rule.bouncerServerId(), rule.networkKey(), rule.enabled());
+              persistAutoConnectRule(rule.bouncerServerId(), rule.networkKey(), rule.enabled());
               emit();
             });
   }
 
-  public synchronized boolean isAutoConnectEnabled(
-      String bouncerServerId, String networkName) {
+  public synchronized boolean isAutoConnectEnabled(String bouncerServerId, String networkName) {
     return isEnabled(bouncerServerId, networkName);
   }
 

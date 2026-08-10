@@ -9,7 +9,6 @@ import cafe.woden.ircclient.irc.ircv3.Ircv3Tags;
 import cafe.woden.ircclient.irc.ircv3.Ircv3TypingRuntimeSupport;
 import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundTagRequest;
 import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundTagSignal;
-import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundTagSignalType;
 import com.google.common.collect.ImmutableMap;
 import java.time.Instant;
 import java.util.List;
@@ -79,9 +78,7 @@ public final class PircbotxTagSignalSupport {
                     observed.state(),
                     Objects.toString(command, ""));
               }
-              emit(
-                  new IrcEvent.UserTypingObserved(
-                      at, nick, conversationTarget, observed.state()));
+              emit(new IrcEvent.UserTypingObserved(at, nick, conversationTarget, observed.state()));
             });
     readMarkerRuntimeSupport
         .fromTags(request)
@@ -97,10 +94,7 @@ public final class PircbotxTagSignalSupport {
   }
 
   private void emitSignals(
-      Instant at,
-      String nick,
-      String conversationTarget,
-      List<Ircv3InboundTagSignal> signals) {
+      Instant at, String nick, String conversationTarget, List<Ircv3InboundTagSignal> signals) {
     for (Ircv3InboundTagSignal signal : signals) {
       switch (signal.type()) {
         case REPLY ->
@@ -110,19 +104,11 @@ public final class PircbotxTagSignalSupport {
         case REACT ->
             emit(
                 new IrcEvent.MessageReactObserved(
-                    at,
-                    nick,
-                    conversationTarget,
-                    signal.primaryValue(),
-                    signal.secondaryValue()));
+                    at, nick, conversationTarget, signal.primaryValue(), signal.secondaryValue()));
         case UNREACT ->
             emit(
                 new IrcEvent.MessageUnreactObserved(
-                    at,
-                    nick,
-                    conversationTarget,
-                    signal.primaryValue(),
-                    signal.secondaryValue()));
+                    at, nick, conversationTarget, signal.primaryValue(), signal.secondaryValue()));
         case MESSAGE_REDACTION ->
             emit(
                 new IrcEvent.MessageRedactionObserved(

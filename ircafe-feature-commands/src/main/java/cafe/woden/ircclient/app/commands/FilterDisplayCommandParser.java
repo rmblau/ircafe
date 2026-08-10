@@ -80,9 +80,7 @@ public final class FilterDisplayCommandParser {
         scope = FilterScopePatternNormalizer.normalize(token.value());
       } else {
         throw new IllegalArgumentException(
-            "Unknown key for /filter placeholders: '"
-                + token.key()
-                + "' (allowed: target=)");
+            "Unknown key for /filter placeholders: '" + token.key() + "' (allowed: target=)");
       }
     }
 
@@ -266,9 +264,7 @@ public final class FilterDisplayCommandParser {
           scope = FilterScopePatternNormalizer.normalize(token.value());
         } else {
           throw new IllegalArgumentException(
-              "Unknown key for /filter override del: '"
-                  + token.key()
-                  + "' (allowed: scope=)");
+              "Unknown key for /filter override del: '" + token.key() + "' (allowed: scope=)");
         }
       }
     }
@@ -375,8 +371,7 @@ public final class FilterDisplayCommandParser {
       case "true", "1", "yes", "on" -> Boolean.TRUE;
       case "false", "0", "no", "off" -> Boolean.FALSE;
       default ->
-          throw new IllegalArgumentException(
-              "Invalid boolean for " + field + "=: '" + raw + "'");
+          throw new IllegalArgumentException("Invalid boolean for " + field + "=: '" + raw + "'");
     };
   }
 

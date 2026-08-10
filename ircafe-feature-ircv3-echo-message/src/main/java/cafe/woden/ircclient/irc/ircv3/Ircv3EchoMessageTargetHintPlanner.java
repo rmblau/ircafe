@@ -66,11 +66,9 @@ public final class Ircv3EchoMessageTargetHintPlanner {
     String kind = action == null ? "PRIVMSG" : "ACTION";
     String normalizedPayload = action == null ? payload : action;
     String messageId =
-        Ircv3Tags.firstDecodedTagValue(
-            tags, "msgid", "+msgid", "draft/msgid", "+draft/msgid");
+        Ircv3Tags.firstDecodedTagValue(tags, "msgid", "+msgid", "draft/msgid", "+draft/msgid");
 
-    return Optional.of(
-        new TargetHint(from, messageTarget, kind, normalizedPayload, messageId));
+    return Optional.of(new TargetHint(from, messageTarget, kind, normalizedPayload, messageId));
   }
 
   private static boolean matchesAny(String value, Collection<String> aliases) {

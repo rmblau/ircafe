@@ -3,7 +3,6 @@ package cafe.woden.ircclient.irc.ircv3;
 import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundTagOperation;
 import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundTagRequest;
 import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundTagSignal;
-import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundTagSignalType;
 import java.util.Objects;
 import java.util.Optional;
 import org.jmolecules.architecture.layered.InfrastructureLayer;

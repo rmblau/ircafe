@@ -17,8 +17,6 @@ class Ircv3CommandValuePolicyTest {
 
   @Test
   void escapesIrcv3TagValues() {
-    assertEquals(
-        "a\\:b\\sc\\\\d\\r\\n",
-        Ircv3CommandValuePolicy.escapeTagValue("a;b c\\d\r\n"));
+    assertEquals("a\\:b\\sc\\\\d\\r\\n", Ircv3CommandValuePolicy.escapeTagValue("a;b c\\d\r\n"));
   }
 }

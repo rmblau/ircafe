@@ -27,8 +27,7 @@ final class PircbotxIsupportObserver {
   @NonNull private final Ircv3IsupportRuntimeSupport isupportRuntimeSupport;
   @NonNull private final Ircv3TypingRuntimeSupport typingRuntimeSupport;
 
-  private final SojuBouncerProtocolParser sojuProtocolParser =
-      new SojuBouncerProtocolParser();
+  private final SojuBouncerProtocolParser sojuProtocolParser = new SojuBouncerProtocolParser();
 
   PircbotxIsupportObserver(
       String serverId,
@@ -81,8 +80,7 @@ final class PircbotxIsupportObserver {
     }
   }
 
-  private void applyTypingClientTagPolicy(
-      Ircv3TypingRuntimeSupport.ClientTagPolicy policy) {
+  private void applyTypingClientTagPolicy(Ircv3TypingRuntimeSupport.ClientTagPolicy policy) {
     if (conn.updateTypingClientTagPolicy(policy.allowed())) {
       log.debug(
           "[{}] CLIENTTAGDENY -> typing allowed={} (raw={})",

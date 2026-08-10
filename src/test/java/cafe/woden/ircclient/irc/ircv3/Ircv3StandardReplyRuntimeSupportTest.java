@@ -41,10 +41,8 @@ class Ircv3StandardReplyRuntimeSupportTest {
     Ircv3StandardReplyRuntimeSupport mismatched = support(new MismatchedProvider());
     Ircv3StandardReplyRuntimeSupport ambiguous = support(new AmbiguousProvider());
 
-    assertTrue(
-        mismatched.observe("FAIL", "raw", List.of("CMD", "CODE"), Map.of(), "").isEmpty());
-    assertTrue(
-        ambiguous.observe("NOTE", "raw", List.of("CMD", "CODE"), Map.of(), "").isEmpty());
+    assertTrue(mismatched.observe("FAIL", "raw", List.of("CMD", "CODE"), Map.of(), "").isEmpty());
+    assertTrue(ambiguous.observe("NOTE", "raw", List.of("CMD", "CODE"), Map.of(), "").isEmpty());
   }
 
   private static Ircv3StandardReplyRuntimeSupport support(
@@ -85,11 +83,7 @@ class Ircv3StandardReplyRuntimeSupportTest {
         Ircv3InboundCommandOperation operation, Ircv3InboundCommandRequest request) {
       return List.of(
           new Ircv3InboundCommandSignal.StandardReplyObserved(
-              Ircv3InboundCommandSignal.StandardReplyKind.NOTE,
-              "CHATHISTORY",
-              "OK",
-              "",
-              "done"));
+              Ircv3InboundCommandSignal.StandardReplyKind.NOTE, "CHATHISTORY", "OK", "", "done"));
     }
   }
 
@@ -99,11 +93,7 @@ class Ircv3StandardReplyRuntimeSupportTest {
         Ircv3InboundCommandOperation operation, Ircv3InboundCommandRequest request) {
       Ircv3InboundCommandSignal reply =
           new Ircv3InboundCommandSignal.StandardReplyObserved(
-              Ircv3InboundCommandSignal.StandardReplyKind.NOTE,
-              "CHATHISTORY",
-              "OK",
-              "",
-              "done");
+              Ircv3InboundCommandSignal.StandardReplyKind.NOTE, "CHATHISTORY", "OK", "", "done");
       return List.of(reply, reply);
     }
   }

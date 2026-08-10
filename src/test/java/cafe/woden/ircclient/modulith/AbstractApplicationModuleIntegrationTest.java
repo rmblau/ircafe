@@ -22,6 +22,14 @@ import cafe.woden.ircclient.ignore.api.IgnoreListQueryPort;
 import cafe.woden.ircclient.ignore.api.InboundIgnorePolicyPort;
 import cafe.woden.ircclient.irc.backend.BackendRoutingIrcClientService;
 import cafe.woden.ircclient.irc.enrichment.UserInfoEnrichmentService;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ChatHistoryRuntimeSupport;
+import cafe.woden.ircclient.irc.ircv3.Ircv3InboundTagSignalRuntimeCatalog;
+import cafe.woden.ircclient.irc.ircv3.Ircv3LabeledResponseRuntimeSupport;
+import cafe.woden.ircclient.irc.ircv3.Ircv3MessageIdRuntimeSupport;
+import cafe.woden.ircclient.irc.ircv3.Ircv3MessageMutationRuntimeCatalog;
+import cafe.woden.ircclient.irc.ircv3.Ircv3MessageMutationRuntimeSupport;
+import cafe.woden.ircclient.irc.ircv3.Ircv3MonitorCommandRuntimeSupport;
+import cafe.woden.ircclient.irc.ircv3.Ircv3OutboundCommandRuntimeCatalog;
 import cafe.woden.ircclient.irc.port.IrcConnectionLifecyclePort;
 import cafe.woden.ircclient.irc.port.IrcCurrentNickPort;
 import cafe.woden.ircclient.irc.port.IrcEchoCapabilityPort;
@@ -97,6 +105,31 @@ public abstract class AbstractApplicationModuleIntegrationTest {
   static Ircv3CapabilityNameResolverPort ircv3CapabilityNameResolverPort() {
     return new Ircv3CapabilityNameResolverPort() {};
   }
+
+  @TestBean Ircv3MessageMutationRuntimeCatalog ircv3MessageMutationRuntimeCatalog;
+
+  @SuppressWarnings("unused")
+  static Ircv3MessageMutationRuntimeCatalog ircv3MessageMutationRuntimeCatalog() {
+    return Ircv3MessageMutationRuntimeCatalog.fromProviders(List.of());
+  }
+
+  @MockitoBean Ircv3MessageMutationRuntimeSupport ircv3MessageMutationRuntimeSupport;
+
+  @TestBean Ircv3MessageIdRuntimeSupport ircv3MessageIdRuntimeSupport;
+
+  @SuppressWarnings("unused")
+  static Ircv3MessageIdRuntimeSupport ircv3MessageIdRuntimeSupport() {
+    return new Ircv3MessageIdRuntimeSupport(
+        Ircv3InboundTagSignalRuntimeCatalog.fromProviders(List.of()));
+  }
+
+  @MockitoBean Ircv3LabeledResponseRuntimeSupport ircv3LabeledResponseRuntimeSupport;
+
+  @MockitoBean Ircv3ChatHistoryRuntimeSupport ircv3ChatHistoryRuntimeSupport;
+
+  @MockitoBean Ircv3MonitorCommandRuntimeSupport ircv3MonitorCommandRuntimeSupport;
+
+  @MockitoBean Ircv3OutboundCommandRuntimeCatalog ircv3OutboundCommandRuntimeCatalog;
 
   @BeforeEach
   void resetIrcClientServiceDefaults() {

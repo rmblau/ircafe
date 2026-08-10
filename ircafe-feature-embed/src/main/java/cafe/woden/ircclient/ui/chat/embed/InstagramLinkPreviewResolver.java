@@ -125,7 +125,8 @@ final class InstagramLinkPreviewResolver implements LinkPreviewResolver {
       Map<String, String> headers =
           LinkPreviewHttpDefaults.headers(
               LinkPreviewHttpDefaults.HEADER_USER_AGENT, LinkPreviewHttpDefaults.BROWSER_USER_AGENT,
-              LinkPreviewHttpDefaults.HEADER_ACCEPT_LANGUAGE, LinkPreviewHttpDefaults.ACCEPT_LANGUAGE,
+              LinkPreviewHttpDefaults.HEADER_ACCEPT_LANGUAGE,
+                  LinkPreviewHttpDefaults.ACCEPT_LANGUAGE,
               LinkPreviewHttpDefaults.HEADER_REFERER, IG_ORIGIN);
 
       var resp = http.getStream(mediaUri, "image/*,*/*;q=0.8", headers);

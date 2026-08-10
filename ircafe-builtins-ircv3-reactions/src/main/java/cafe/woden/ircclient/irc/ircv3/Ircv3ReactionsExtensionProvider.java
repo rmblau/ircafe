@@ -26,9 +26,7 @@ import java.util.Set;
   Ircv3InboundTagSignalProvider.class
 })
 public final class Ircv3ReactionsExtensionProvider
-    implements Ircv3ExtensionProvider,
-        Ircv3MessageMutationProvider,
-        Ircv3InboundTagSignalProvider {
+    implements Ircv3ExtensionProvider, Ircv3MessageMutationProvider, Ircv3InboundTagSignalProvider {
 
   private static final String REACT = "react";
   private static final String DRAFT_REACT = "draft/react";
@@ -65,8 +63,7 @@ public final class Ircv3ReactionsExtensionProvider
 
   @Override
   public Set<Ircv3MessageMutationOperation> operations() {
-    return Set.of(
-        Ircv3MessageMutationOperation.REACT, Ircv3MessageMutationOperation.UNREACT);
+    return Set.of(Ircv3MessageMutationOperation.REACT, Ircv3MessageMutationOperation.UNREACT);
   }
 
   @Override
@@ -115,8 +112,7 @@ public final class Ircv3ReactionsExtensionProvider
   public List<Ircv3FeatureContribution> visibleFeatures() {
     return List.of(
         new Ircv3FeatureContribution(200, "Reactions", List.of(MESSAGE_TAGS), List.of()),
-        new Ircv3FeatureContribution(
-            300, "Reaction removal", List.of(MESSAGE_TAGS), List.of()));
+        new Ircv3FeatureContribution(300, "Reaction removal", List.of(MESSAGE_TAGS), List.of()));
   }
 
   private static Ircv3ExtensionContribution tagFeature(
@@ -128,7 +124,6 @@ public final class Ircv3ReactionsExtensionProvider
         List.of(alias),
         "",
         id,
-        new Ircv3UiMetadata(
-            label, Ircv3UiGroup.CONVERSATION, sortOrder, impactSummary));
+        new Ircv3UiMetadata(label, Ircv3UiGroup.CONVERSATION, sortOrder, impactSummary));
   }
 }

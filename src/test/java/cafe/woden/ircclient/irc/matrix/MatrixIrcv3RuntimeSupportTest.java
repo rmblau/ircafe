@@ -30,8 +30,7 @@ class MatrixIrcv3RuntimeSupportTest {
   void parsesRawTagsThroughSelectedRuntimeProvider() {
     MatrixIrcv3RuntimeSupport support =
         support(
-            request -> new Ircv3MessageTagParseResult(Map.of("runtime/reply", "event-42")),
-            null);
+            request -> new Ircv3MessageTagParseResult(Map.of("runtime/reply", "event-42")), null);
 
     assertEquals(
         Map.of("runtime/reply", "event-42"),
@@ -42,9 +41,7 @@ class MatrixIrcv3RuntimeSupportTest {
   void bundleConstructorDoesNotReloadApplicationClasspathProviders() {
     Ircv3RuntimeCatalogs catalogs =
         catalogs(
-            request ->
-                new Ircv3MessageTagParseResult(Map.of("runtime/reply", "event-42")),
-            null);
+            request -> new Ircv3MessageTagParseResult(Map.of("runtime/reply", "event-42")), null);
     Thread thread = Thread.currentThread();
     ClassLoader originalClassLoader = thread.getContextClassLoader();
     thread.setContextClassLoader(new RejectingServiceLoaderClassLoader(originalClassLoader));
@@ -64,15 +61,12 @@ class MatrixIrcv3RuntimeSupportTest {
         new StubInboundProvider(
             Map.of(
                 Ircv3InboundTagOperation.REPLY,
-                List.of(
-                    Ircv3InboundTagSignal.of(Ircv3InboundTagSignalType.REPLY, "reply-event")),
+                List.of(Ircv3InboundTagSignal.of(Ircv3InboundTagSignalType.REPLY, "reply-event")),
                 Ircv3InboundTagOperation.MESSAGE_EDIT,
                 List.of(
-                    Ircv3InboundTagSignal.of(
-                        Ircv3InboundTagSignalType.MESSAGE_EDIT, "edit-event")),
+                    Ircv3InboundTagSignal.of(Ircv3InboundTagSignalType.MESSAGE_EDIT, "edit-event")),
                 Ircv3InboundTagOperation.TYPING,
-                List.of(
-                    Ircv3InboundTagSignal.of(Ircv3InboundTagSignalType.TYPING, "active")),
+                List.of(Ircv3InboundTagSignal.of(Ircv3InboundTagSignalType.TYPING, "active")),
                 Ircv3InboundTagOperation.REACTIONS,
                 List.of(
                     new Ircv3InboundTagSignal(
@@ -84,14 +78,11 @@ class MatrixIrcv3RuntimeSupportTest {
     String rawLine = "@runtime=true PRIVMSG #ircafe :hello";
 
     assertEquals(
-        "reply-event",
-        support.replyTarget("PRIVMSG", "#ircafe", parameters, tags, rawLine));
+        "reply-event", support.replyTarget("PRIVMSG", "#ircafe", parameters, tags, rawLine));
     assertEquals(
-        "edit-event",
-        support.messageEditTarget("PRIVMSG", "#ircafe", parameters, tags, rawLine));
+        "edit-event", support.messageEditTarget("PRIVMSG", "#ircafe", parameters, tags, rawLine));
     assertEquals(
-        "active",
-        support.typingState("TAGMSG", "#ircafe", List.of("#ircafe"), tags, rawLine));
+        "active", support.typingState("TAGMSG", "#ircafe", List.of("#ircafe"), tags, rawLine));
     assertEquals(
         new MatrixIrcv3RuntimeSupport.ReactionPlan(
             MatrixIrcv3RuntimeSupport.ReactionType.REACT, "reaction-target", "👍"),
@@ -105,8 +96,7 @@ class MatrixIrcv3RuntimeSupportTest {
             Map.of(
                 Ircv3InboundTagOperation.REACTIONS,
                 List.of(
-                    new Ircv3InboundTagSignal(
-                        Ircv3InboundTagSignalType.REACT, "👍", "event-1"),
+                    new Ircv3InboundTagSignal(Ircv3InboundTagSignalType.REACT, "👍", "event-1"),
                     new Ircv3InboundTagSignal(
                         Ircv3InboundTagSignalType.UNREACT, "👍", "event-1"))));
     MatrixIrcv3RuntimeSupport support = support(request -> requestResult(request), provider);
@@ -126,16 +116,13 @@ class MatrixIrcv3RuntimeSupportTest {
                     Ircv3InboundTagSignal.of(Ircv3InboundTagSignalType.REPLY, "event-1"),
                     Ircv3InboundTagSignal.of(Ircv3InboundTagSignalType.REPLY, "event-2")),
                 Ircv3InboundTagOperation.MESSAGE_EDIT,
-                List.of(
-                    Ircv3InboundTagSignal.of(Ircv3InboundTagSignalType.TYPING, "active")),
+                List.of(Ircv3InboundTagSignal.of(Ircv3InboundTagSignalType.TYPING, "active")),
                 Ircv3InboundTagOperation.TYPING,
-                List.of(
-                    Ircv3InboundTagSignal.of(Ircv3InboundTagSignalType.TYPING, "invalid"))));
+                List.of(Ircv3InboundTagSignal.of(Ircv3InboundTagSignalType.TYPING, "invalid"))));
     MatrixIrcv3RuntimeSupport support = support(request -> requestResult(request), provider);
 
     assertEquals("", support.replyTarget("PRIVMSG", "#ircafe", List.of(), Map.of(), ""));
-    assertEquals(
-        "", support.messageEditTarget("PRIVMSG", "#ircafe", List.of(), Map.of(), ""));
+    assertEquals("", support.messageEditTarget("PRIVMSG", "#ircafe", List.of(), Map.of(), ""));
     assertEquals("", support.typingState("TAGMSG", "#ircafe", List.of(), Map.of(), ""));
   }
 
@@ -162,8 +149,7 @@ class MatrixIrcv3RuntimeSupportTest {
   }
 
   private static Ircv3RuntimeCatalogs catalogs(
-      Ircv3MessageTagParserProvider parserProvider,
-      Ircv3InboundTagSignalProvider inboundProvider) {
+      Ircv3MessageTagParserProvider parserProvider, Ircv3InboundTagSignalProvider inboundProvider) {
     return new Ircv3RuntimeCatalogs(
         Ircv3InboundCommandSignalRuntimeCatalog.fromProviders(List.of()),
         Ircv3InboundTagSignalRuntimeCatalog.fromProviders(

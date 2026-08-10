@@ -33,9 +33,7 @@ public final class PircbotxStandardReplySupport {
       List<String> parsedLine,
       ImmutableMap<String, String> tags) {
     Ircv3StandardReplyRuntimeSupport.Observation observation =
-        runtimeSupport
-            .observe(command, rawLine, parsedLine, tags, "")
-            .orElse(null);
+        runtimeSupport.observe(command, rawLine, parsedLine, tags, "").orElse(null);
     if (observation == null) {
       return false;
     }
@@ -64,8 +62,7 @@ public final class PircbotxStandardReplySupport {
                 ircv3Tags)));
   }
 
-  private static IrcEvent.StandardReplyKind toRootKind(
-      Ircv3StandardReplyRuntimeSupport.Kind kind) {
+  private static IrcEvent.StandardReplyKind toRootKind(Ircv3StandardReplyRuntimeSupport.Kind kind) {
     return switch (kind) {
       case FAIL -> IrcEvent.StandardReplyKind.FAIL;
       case WARN -> IrcEvent.StandardReplyKind.WARN;

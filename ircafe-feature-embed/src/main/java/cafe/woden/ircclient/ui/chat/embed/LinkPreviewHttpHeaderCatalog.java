@@ -34,7 +34,8 @@ public class LinkPreviewHttpHeaderCatalog {
       }
     }
 
-    java.util.ArrayList<LinkPreviewHttpHeaderProviderFailure> failures = new java.util.ArrayList<>();
+    java.util.ArrayList<LinkPreviewHttpHeaderProviderFailure> failures =
+        new java.util.ArrayList<>();
     for (EmbedHttpHeaderProvider provider : dedupeByProviderClass(providers)) {
       try {
         Map<String, String> provided = provider.embedHttpHeaders(uri);

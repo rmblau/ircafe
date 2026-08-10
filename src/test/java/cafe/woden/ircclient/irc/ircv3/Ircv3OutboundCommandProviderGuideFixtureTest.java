@@ -16,8 +16,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 class Ircv3OutboundCommandProviderGuideFixtureTest {
 
-  private static final String GUIDE_PROVIDER_CLASS =
-      "example.ircv3.ExampleTypingRuntimeProvider";
+  private static final String GUIDE_PROVIDER_CLASS = "example.ircv3.ExampleTypingRuntimeProvider";
 
   @TempDir Path tempDir;
 
@@ -30,7 +29,8 @@ class Ircv3OutboundCommandProviderGuideFixtureTest {
         GUIDE_PROVIDER_CLASS,
         guideProviderSource(),
         Ircv3OutboundCommandProvider.class.getName(),
-        CompiledPluginJarSupport.compatibleManifest("ircv3-outbound-runtime-guide-example", "1.0.0"));
+        CompiledPluginJarSupport.compatibleManifest(
+            "ircv3-outbound-runtime-guide-example", "1.0.0"));
     RuntimeConfigPathPort runtimeConfigPathPort =
         () -> runtimeConfigDirectory.resolve("ircafe.yml");
 

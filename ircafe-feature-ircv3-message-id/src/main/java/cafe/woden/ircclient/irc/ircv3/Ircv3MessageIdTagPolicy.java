@@ -9,12 +9,6 @@ public final class Ircv3MessageIdTagPolicy {
 
   public static String firstMessageId(Map<String, String> tags) {
     return Ircv3Tags.firstTagValue(
-        tags,
-        "msgid",
-        "+msgid",
-        "draft/msgid",
-        "+draft/msgid",
-        "znc.in/msgid",
-        "+znc.in/msgid");
+        tags, "msgid", "+msgid", "draft/msgid", "+draft/msgid", "znc.in/msgid", "+znc.in/msgid");
   }
 }

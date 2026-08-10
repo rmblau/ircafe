@@ -42,8 +42,7 @@ class FilterCommandAdapterTest {
     assertInstanceOf(
         FilterCommand.ListRules.class,
         adapter.toRoot(
-            new FilterCommandSpec.Management(
-                new FilterManagementCommandSpec.ListRules("cmd"))));
+            new FilterCommandSpec.Management(new FilterManagementCommandSpec.ListRules("cmd"))));
 
     assertInstanceOf(
         FilterCommand.Toggle.class,

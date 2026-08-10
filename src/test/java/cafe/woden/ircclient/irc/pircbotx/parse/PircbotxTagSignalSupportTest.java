@@ -82,7 +82,6 @@ class PircbotxTagSignalSupportTest {
                         && "abc123".equals(r.messageId())));
   }
 
-
   @Test
   void rejectsProviderDirectMessageReroutingBeforeEmittingSignals() {
     List<ServerIrcEvent> out = new ArrayList<>();
@@ -96,8 +95,7 @@ class PircbotxTagSignalSupportTest {
           @Override
           public Set<Ircv3InboundTagOperation> inboundTagOperations() {
             return Set.of(
-                Ircv3InboundTagOperation.CHANNEL_CONTEXT,
-                Ircv3InboundTagOperation.TYPING);
+                Ircv3InboundTagOperation.CHANNEL_CONTEXT, Ircv3InboundTagOperation.TYPING);
           }
 
           @Override
@@ -109,9 +107,7 @@ class PircbotxTagSignalSupportTest {
                       Ircv3InboundTagSignal.of(
                           Ircv3InboundTagSignalType.CONVERSATION_TARGET, "mallory"));
               case TYPING ->
-                  List.of(
-                      Ircv3InboundTagSignal.of(
-                          Ircv3InboundTagSignalType.TYPING, "active"));
+                  List.of(Ircv3InboundTagSignal.of(Ircv3InboundTagSignalType.TYPING, "active"));
               default -> List.of();
             };
           }
@@ -182,8 +178,7 @@ class PircbotxTagSignalSupportTest {
             ImmutableMap.of("+draft/reply", "abc123"), "draft/reply", "+draft/reply"));
   }
 
-  private static PircbotxTagSignalSupport support(
-      String serverId, Consumer<ServerIrcEvent> sink) {
+  private static PircbotxTagSignalSupport support(String serverId, Consumer<ServerIrcEvent> sink) {
     return PircbotxParserRuntimeTestFixtures.tagSignals(serverId, sink);
   }
 

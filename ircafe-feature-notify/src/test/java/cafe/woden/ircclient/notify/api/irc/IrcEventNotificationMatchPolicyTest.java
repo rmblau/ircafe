@@ -65,27 +65,32 @@ class IrcEventNotificationMatchPolicyTest {
     assertTrue(IrcEventNotificationMatchPolicy.matches(rule, event("KLINED", null, null, null)));
     assertTrue(
         IrcEventNotificationMatchPolicy.matches(rule, event("KLINED", null, null, "#general")));
-    assertFalse(
-        IrcEventNotificationMatchPolicy.matches(rule, event("KLINED", null, null, "#ops")));
+    assertFalse(IrcEventNotificationMatchPolicy.matches(rule, event("KLINED", null, null, "#ops")));
   }
 
   @Test
   void activeTargetOnlyScopeRequiresSameServerAndMatchingActiveChannel() {
     IrcEventNotificationMatchRule rule =
-        rule("TOPIC_CHANGED", "ANY", null, "ACTIVE_TARGET_ONLY", "#ignored", "ANY", null, "ANY", null);
+        rule(
+            "TOPIC_CHANGED",
+            "ANY",
+            null,
+            "ACTIVE_TARGET_ONLY",
+            "#ignored",
+            "ANY",
+            null,
+            "ANY",
+            null);
 
     assertFalse(
         IrcEventNotificationMatchPolicy.matches(
-            rule,
-            event("TOPIC_CHANGED", null, null, "#chat", false, "#chat", null, null)));
+            rule, event("TOPIC_CHANGED", null, null, "#chat", false, "#chat", null, null)));
     assertFalse(
         IrcEventNotificationMatchPolicy.matches(
-            rule,
-            event("TOPIC_CHANGED", null, null, "#chat", true, "#other", null, null)));
+            rule, event("TOPIC_CHANGED", null, null, "#chat", true, "#other", null, null)));
     assertTrue(
         IrcEventNotificationMatchPolicy.matches(
-            rule,
-            event("TOPIC_CHANGED", null, null, "#chat", true, "#chat", null, null)));
+            rule, event("TOPIC_CHANGED", null, null, "#chat", true, "#chat", null, null)));
   }
 
   @Test
@@ -116,20 +121,12 @@ class IrcEventNotificationMatchPolicyTest {
     assertFalse(
         IrcEventNotificationMatchPolicy.matches(
             ctcp,
-            event(
-                "CTCP_RECEIVED", "alice", Boolean.FALSE, "#chan", false, null, "PING", "123")));
+            event("CTCP_RECEIVED", "alice", Boolean.FALSE, "#chan", false, null, "PING", "123")));
     assertFalse(
         IrcEventNotificationMatchPolicy.matches(
             ctcp,
             event(
-                "CTCP_RECEIVED",
-                "alice",
-                Boolean.FALSE,
-                "#chan",
-                false,
-                null,
-                "VERSION",
-                "mIRC")));
+                "CTCP_RECEIVED", "alice", Boolean.FALSE, "#chan", false, null, "VERSION", "mIRC")));
     assertTrue(
         IrcEventNotificationMatchPolicy.matches(
             ctcp,
@@ -144,8 +141,7 @@ class IrcEventNotificationMatchPolicyTest {
                 "HexChat 2.16.2")));
     assertTrue(
         IrcEventNotificationMatchPolicy.matches(
-            nonCtcp,
-            event("NOTICE_RECEIVED", "server", null, null, false, null, "PING", "123")));
+            nonCtcp, event("NOTICE_RECEIVED", "server", null, null, false, null, "PING", "123")));
   }
 
   private static IrcEventNotificationMatchRule rule(

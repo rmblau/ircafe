@@ -53,8 +53,10 @@ class NotificationRuleTableSelectionPlannerTest {
 
   @Test
   void outOfRangeSelectionAndNegativeCountsDisableAllActions() {
-    NotificationRuleTableSelectionPlan outOfRange = NotificationRuleTableSelectionPlanner.plan(3, 2);
-    NotificationRuleTableSelectionPlan negativeCount = NotificationRuleTableSelectionPlanner.plan(0, -1);
+    NotificationRuleTableSelectionPlan outOfRange =
+        NotificationRuleTableSelectionPlanner.plan(3, 2);
+    NotificationRuleTableSelectionPlan negativeCount =
+        NotificationRuleTableSelectionPlanner.plan(0, -1);
 
     assertFalse(outOfRange.editEnabled());
     assertFalse(outOfRange.moveDownEnabled());

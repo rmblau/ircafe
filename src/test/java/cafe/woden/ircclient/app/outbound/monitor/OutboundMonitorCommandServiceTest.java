@@ -97,13 +97,11 @@ class OutboundMonitorCommandServiceTest {
     TargetRef active = new TargetRef("libera", "#ircafe");
     when(targetCoordinator.getActiveTarget()).thenReturn(active);
     when(connectionCoordinator.isConnected("libera")).thenReturn(true);
-    when(monitorRosterPort.parseNickInput("alice,bob"))
-        .thenReturn(List.of("alice", "bob"));
+    when(monitorRosterPort.parseNickInput("alice,bob")).thenReturn(List.of("alice", "bob"));
     when(monitorRosterPort.addNicks("libera", List.of("alice", "bob"))).thenReturn(2);
     when(irc.isMonitorAvailable("libera")).thenReturn(true);
     when(irc.negotiatedMonitorLimit("libera")).thenReturn(25);
-    when(irc.sendRaw("libera", "PLUGIN MONITOR alice|bob"))
-        .thenReturn(Completable.complete());
+    when(irc.sendRaw("libera", "PLUGIN MONITOR alice|bob")).thenReturn(Completable.complete());
 
     Ircv3OutboundCommandProvider provider =
         new Ircv3OutboundCommandProvider() {

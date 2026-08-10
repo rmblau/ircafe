@@ -96,8 +96,7 @@ class PircbotxInviteEventEmitterTest {
 
                   @Override
                   public List<Ircv3InboundCommandSignal> parse(
-                      Ircv3InboundCommandOperation operation,
-                      Ircv3InboundCommandRequest request) {
+                      Ircv3InboundCommandOperation operation, Ircv3InboundCommandRequest request) {
                     return List.of(
                         new Ircv3InboundCommandSignal.InviteObserved(
                             "plugin-source", "plugin-invitee", "#plugin", "plugin reason"));

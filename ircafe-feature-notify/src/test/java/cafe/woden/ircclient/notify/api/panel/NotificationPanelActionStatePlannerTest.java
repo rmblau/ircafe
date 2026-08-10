@@ -34,15 +34,11 @@ class NotificationPanelActionStatePlannerTest {
   @Test
   void jumpRequiresSingleSelectionMessageIdAndTarget() {
     assertTrue(
-        NotificationPanelActionStatePlanner.plan(3, 1, " msg-1 ", true)
-            .jumpToMessageEnabled());
+        NotificationPanelActionStatePlanner.plan(3, 1, " msg-1 ", true).jumpToMessageEnabled());
+    assertFalse(NotificationPanelActionStatePlanner.plan(3, 1, " ", true).jumpToMessageEnabled());
     assertFalse(
-        NotificationPanelActionStatePlanner.plan(3, 1, " ", true).jumpToMessageEnabled());
+        NotificationPanelActionStatePlanner.plan(3, 1, "msg-1", false).jumpToMessageEnabled());
     assertFalse(
-        NotificationPanelActionStatePlanner.plan(3, 1, "msg-1", false)
-            .jumpToMessageEnabled());
-    assertFalse(
-        NotificationPanelActionStatePlanner.plan(3, 2, "msg-1", true)
-            .jumpToMessageEnabled());
+        NotificationPanelActionStatePlanner.plan(3, 2, "msg-1", true).jumpToMessageEnabled());
   }
 }

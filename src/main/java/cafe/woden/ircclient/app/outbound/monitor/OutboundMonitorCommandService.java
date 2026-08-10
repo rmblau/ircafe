@@ -81,10 +81,7 @@ public final class OutboundMonitorCommandService {
       return;
     }
     monitorCommandSupport.sendMonitorRaw(
-        disposables,
-        context,
-        monitorRuntimeSupport.listCommand(),
-        true);
+        disposables, context, monitorRuntimeSupport.listCommand(), true);
   }
 
   private void handleClear(CompositeDisposable disposables, MonitorCommandContext context) {
@@ -100,10 +97,7 @@ public final class OutboundMonitorCommandService {
       return;
     }
     monitorCommandSupport.sendMonitorRaw(
-        disposables,
-        context,
-        monitorRuntimeSupport.clearCommand(),
-        false);
+        disposables, context, monitorRuntimeSupport.clearCommand(), false);
   }
 
   private void handleSigned(

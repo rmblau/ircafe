@@ -41,8 +41,7 @@ class LinkPreviewUrlExtractionServiceTest {
         ".jxl",
         service.extensionFromUrl("https://cdn.example/artwork.jxl?download=1", List.of(provider)));
     assertEquals(
-        ".img",
-        service.extensionFromUrl("https://cdn.example/artwork.unknown", List.of(provider)));
+        ".img", service.extensionFromUrl("https://cdn.example/artwork.unknown", List.of(provider)));
   }
 
   @Test

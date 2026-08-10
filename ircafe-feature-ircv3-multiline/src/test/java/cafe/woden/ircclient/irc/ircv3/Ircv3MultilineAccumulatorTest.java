@@ -75,6 +75,7 @@ class Ircv3MultilineAccumulatorTest {
     assertEquals("regular batched line", out.text());
     assertEquals("m2", out.messageId());
   }
+
   @Test
   void normalizesBatchAndConcatTagKeysAcrossChunks() {
     Ircv3MultilineAccumulator acc = new Ircv3MultilineAccumulator();
@@ -105,5 +106,4 @@ class Ircv3MultilineAccumulatorTest {
     assertEquals("m1", out.messageId());
     assertFalse(out.tags().containsKey("+DRAFT/MULTILINE-CONCAT"));
   }
-
 }

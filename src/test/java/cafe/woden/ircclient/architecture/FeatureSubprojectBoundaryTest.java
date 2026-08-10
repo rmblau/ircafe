@@ -54,8 +54,7 @@ class FeatureSubprojectBoundaryTest {
       Path buildFile = Path.of(projectName, "build.gradle");
       String build = Files.readString(buildFile);
       assertTrue(
-          build.contains(
-              "apply from: rootProject.file('gradle/ircv3-feature-conventions.gradle')"),
+          build.contains("apply from: rootProject.file('gradle/ircv3-feature-conventions.gradle')"),
           buildFile + " should apply the shared IRCv3 feature convention");
       assertTrue(
           !build.contains("JavaLanguageVersion.of")
@@ -413,12 +412,9 @@ class FeatureSubprojectBoundaryTest {
                 + "GenericBouncerEphemeralNetworkImporter.java");
     Path sojuImporter =
         Path.of(
-            "src/main/java/cafe/woden/ircclient/irc/soju/"
-                + "SojuEphemeralNetworkImporter.java");
+            "src/main/java/cafe/woden/ircclient/irc/soju/" + "SojuEphemeralNetworkImporter.java");
     Path zncImporter =
-        Path.of(
-            "src/main/java/cafe/woden/ircclient/irc/znc/"
-                + "ZncEphemeralNetworkImporter.java");
+        Path.of("src/main/java/cafe/woden/ircclient/irc/znc/" + "ZncEphemeralNetworkImporter.java");
 
     assertTrue(
         Files.isRegularFile(featureSelector),
@@ -471,8 +467,7 @@ class FeatureSubprojectBoundaryTest {
                 + "BouncerDiscoveryHandlerCatalog.java");
     Path rootDispatcher =
         Path.of(
-            "src/main/java/cafe/woden/ircclient/bouncer/"
-                + "BouncerDiscoveryEventDispatcher.java");
+            "src/main/java/cafe/woden/ircclient/bouncer/" + "BouncerDiscoveryEventDispatcher.java");
 
     assertTrue(
         Files.isRegularFile(featureRouter),
@@ -533,12 +528,9 @@ class FeatureSubprojectBoundaryTest {
                 + "GenericBouncerDiscoveryLineParser.java");
     Path sojuAdapter =
         Path.of(
-            "src/main/java/cafe/woden/ircclient/irc/soju/"
-                + "SojuBouncerDiscoveryAdapter.java");
+            "src/main/java/cafe/woden/ircclient/irc/soju/" + "SojuBouncerDiscoveryAdapter.java");
     Path zncAdapter =
-        Path.of(
-            "src/main/java/cafe/woden/ircclient/irc/znc/"
-                + "ZncBouncerDiscoveryAdapter.java");
+        Path.of("src/main/java/cafe/woden/ircclient/irc/znc/" + "ZncBouncerDiscoveryAdapter.java");
 
     assertTrue(
         Files.isRegularFile(featureMaterializer),
@@ -577,15 +569,13 @@ class FeatureSubprojectBoundaryTest {
 
   @Test
   void bouncerProtocolDiscoveryParsingLivesInFeatureSubproject() throws IOException {
-    Path featureRoot =
-        Path.of("ircafe-feature-bouncer/src/main/java/cafe/woden/ircclient/bouncer");
+    Path featureRoot = Path.of("ircafe-feature-bouncer/src/main/java/cafe/woden/ircclient/bouncer");
     Path sojuParser = featureRoot.resolve("SojuBouncerProtocolParser.java");
     Path zncParser = featureRoot.resolve("ZncBouncerListNetworksParser.java");
     Path rootSojuParser =
         Path.of("src/main/java/cafe/woden/ircclient/irc/soju/PircbotxSojuParsers.java");
     Path rootZncParser =
-        Path.of(
-            "src/main/java/cafe/woden/ircclient/irc/pircbotx/parse/PircbotxZncParsers.java");
+        Path.of("src/main/java/cafe/woden/ircclient/irc/pircbotx/parse/PircbotxZncParsers.java");
     Path zncPlaybackDetector =
         Path.of(
             "ircafe-feature-ircv3-znc-playback/src/main/java/"
@@ -595,11 +585,9 @@ class FeatureSubprojectBoundaryTest {
         Files.isRegularFile(sojuParser),
         "Soju discovery protocol parsing should remain feature-owned");
     assertTrue(
-        Files.isRegularFile(zncParser),
-        "ZNC ListNetworks parsing should remain feature-owned");
+        Files.isRegularFile(zncParser), "ZNC ListNetworks parsing should remain feature-owned");
     assertTrue(
-        !Files.exists(rootSojuParser),
-        "the obsolete root Soju parser should not be reintroduced");
+        !Files.exists(rootSojuParser), "the obsolete root Soju parser should not be reintroduced");
 
     String sojuAdapterSource =
         Files.readString(
@@ -613,13 +601,11 @@ class FeatureSubprojectBoundaryTest {
                     + "PircbotxIsupportObserver.java"));
     String sojuStoreSource =
         Files.readString(
-            Path.of(
-                "src/main/java/cafe/woden/ircclient/irc/soju/SojuAutoConnectStore.java"));
+            Path.of("src/main/java/cafe/woden/ircclient/irc/soju/SojuAutoConnectStore.java"));
     String zncAdapterSource =
         Files.readString(
             Path.of(
-                "src/main/java/cafe/woden/ircclient/irc/znc/"
-                    + "ZncBouncerDiscoveryAdapter.java"));
+                "src/main/java/cafe/woden/ircclient/irc/znc/" + "ZncBouncerDiscoveryAdapter.java"));
     assertTrue(
         !Files.exists(rootZncParser),
         "the obsolete root ZNC heuristic parser should not be reintroduced");
@@ -650,18 +636,14 @@ class FeatureSubprojectBoundaryTest {
 
   @Test
   void bouncerAutoConnectRuleStateLivesInFeatureSubproject() throws IOException {
-    Path featureRoot =
-        Path.of("ircafe-feature-bouncer/src/main/java/cafe/woden/ircclient/bouncer");
+    Path featureRoot = Path.of("ircafe-feature-bouncer/src/main/java/cafe/woden/ircclient/bouncer");
     Path rulesState = featureRoot.resolve("BouncerAutoConnectRulesState.java");
     Path zncNormalizer = featureRoot.resolve("ZncAutoConnectNetworkKeyNormalizer.java");
     Path abstractStore =
         Path.of(
-            "src/main/java/cafe/woden/ircclient/bouncer/"
-                + "AbstractBouncerAutoConnectStore.java");
+            "src/main/java/cafe/woden/ircclient/bouncer/" + "AbstractBouncerAutoConnectStore.java");
     Path zncStore =
-        Path.of(
-            "src/main/java/cafe/woden/ircclient/irc/znc/"
-                + "ZncAutoConnectStore.java");
+        Path.of("src/main/java/cafe/woden/ircclient/irc/znc/" + "ZncAutoConnectStore.java");
 
     assertTrue(
         Files.isRegularFile(rulesState),
@@ -720,9 +702,7 @@ class FeatureSubprojectBoundaryTest {
             "ircafe-feature-ircv3-negotiation/src/main/java/cafe/woden/ircclient/irc/ircv3/"
                 + "Ircv3ExtensionMetadataCatalog.java");
     Path rootRegistry =
-        Path.of(
-            "src/main/java/cafe/woden/ircclient/irc/ircv3/"
-                + "Ircv3ExtensionRegistry.java");
+        Path.of("src/main/java/cafe/woden/ircclient/irc/ircv3/" + "Ircv3ExtensionRegistry.java");
 
     assertTrue(
         Files.isRegularFile(featureCatalog),
@@ -822,12 +802,9 @@ class FeatureSubprojectBoundaryTest {
         Path.of("ircafe-feature-ircv3/src/main/java/cafe/woden/ircclient/irc/ircv3");
     Path chatHistoryRoot =
         Path.of(
-            "ircafe-feature-ircv3-chat-history/src/main/java/"
-                + "cafe/woden/ircclient/irc/ircv3");
+            "ircafe-feature-ircv3-chat-history/src/main/java/" + "cafe/woden/ircclient/irc/ircv3");
     Path multilineRoot =
-        Path.of(
-            "ircafe-feature-ircv3-multiline/src/main/java/"
-                + "cafe/woden/ircclient/irc/ircv3");
+        Path.of("ircafe-feature-ircv3-multiline/src/main/java/" + "cafe/woden/ircclient/irc/ircv3");
     Path rootIrcv3 = Path.of("src/main/java/cafe/woden/ircclient/irc/ircv3");
     Path capabilityCommands =
         Path.of(
@@ -843,8 +820,7 @@ class FeatureSubprojectBoundaryTest {
                 + "OutboundMultilineMessageSupport.java");
     Path multilineFeatureSupport =
         Path.of(
-            "src/main/java/cafe/woden/ircclient/app/api/"
-                + "Ircv3MultilineFeatureSupport.java");
+            "src/main/java/cafe/woden/ircclient/app/api/" + "Ircv3MultilineFeatureSupport.java");
     Path outboundChatHistory =
         Path.of(
             "src/main/java/cafe/woden/ircclient/app/outbound/chathistory/"
@@ -986,30 +962,19 @@ class FeatureSubprojectBoundaryTest {
   @Test
   void ircv3ReplyAndReactionDraftPoliciesLiveInFocusedSubprojects() throws IOException {
     Path commonRoot =
-        Path.of(
-            "ircafe-feature-ircv3-common/src/main/java/"
-                + "cafe/woden/ircclient/irc/ircv3");
+        Path.of("ircafe-feature-ircv3-common/src/main/java/" + "cafe/woden/ircclient/irc/ircv3");
     Path replyRoot =
-        Path.of(
-            "ircafe-feature-ircv3-reply/src/main/java/"
-                + "cafe/woden/ircclient/irc/ircv3");
+        Path.of("ircafe-feature-ircv3-reply/src/main/java/" + "cafe/woden/ircclient/irc/ircv3");
     Path reactionsRoot =
-        Path.of(
-            "ircafe-feature-ircv3-reactions/src/main/java/"
-                + "cafe/woden/ircclient/irc/ircv3");
+        Path.of("ircafe-feature-ircv3-reactions/src/main/java/" + "cafe/woden/ircclient/irc/ircv3");
     Path multilineRoot =
-        Path.of(
-            "ircafe-feature-ircv3-multiline/src/main/java/"
-                + "cafe/woden/ircclient/irc/ircv3");
+        Path.of("ircafe-feature-ircv3-multiline/src/main/java/" + "cafe/woden/ircclient/irc/ircv3");
     Path messageTagRoot =
         Path.of(
-            "ircafe-feature-ircv3-message-tags/src/main/java/"
-                + "cafe/woden/ircclient/irc/ircv3");
+            "ircafe-feature-ircv3-message-tags/src/main/java/" + "cafe/woden/ircclient/irc/ircv3");
     Path rootIrcv3 = Path.of("src/main/java/cafe/woden/ircclient/irc/ircv3");
     Path oldDraftRoot =
-        Path.of(
-            "ircafe-feature-ircv3-draft/src/main/java/"
-                + "cafe/woden/ircclient/irc/ircv3");
+        Path.of("ircafe-feature-ircv3-draft/src/main/java/" + "cafe/woden/ircclient/irc/ircv3");
     Path oldAccumulator =
         Path.of(
             "src/main/java/cafe/woden/ircclient/irc/pircbotx/support/"
@@ -1106,8 +1071,7 @@ class FeatureSubprojectBoundaryTest {
         !accumulatorSource.contains("org.pircbotx"),
         "feature-owned multiline reassembly should remain transport-independent");
 
-    String clientTagPolicy =
-        Files.readString(messageTagRoot.resolve("Ircv3ClientTagPolicy.java"));
+    String clientTagPolicy = Files.readString(messageTagRoot.resolve("Ircv3ClientTagPolicy.java"));
     assertTrue(
         clientTagPolicy.contains("parseRpl005ClientTagDenyValue("),
         "the IRCv3 feature should own CLIENTTAGDENY token parsing");
@@ -1133,28 +1097,20 @@ class FeatureSubprojectBoundaryTest {
   void ircv3TaggedMessageSignalsLiveInCapabilitySubprojects() throws IOException {
     Path messageTagsRoot =
         Path.of(
-            "ircafe-feature-ircv3-message-tags/src/main/java/"
-                + "cafe/woden/ircclient/irc/ircv3");
+            "ircafe-feature-ircv3-message-tags/src/main/java/" + "cafe/woden/ircclient/irc/ircv3");
     Path channelContextRoot =
         Path.of(
             "ircafe-feature-ircv3-channel-context/src/main/java/"
                 + "cafe/woden/ircclient/irc/ircv3");
     Path replyRoot =
-        Path.of(
-            "ircafe-feature-ircv3-reply/src/main/java/"
-                + "cafe/woden/ircclient/irc/ircv3");
+        Path.of("ircafe-feature-ircv3-reply/src/main/java/" + "cafe/woden/ircclient/irc/ircv3");
     Path reactionsRoot =
-        Path.of(
-            "ircafe-feature-ircv3-reactions/src/main/java/"
-                + "cafe/woden/ircclient/irc/ircv3");
+        Path.of("ircafe-feature-ircv3-reactions/src/main/java/" + "cafe/woden/ircclient/irc/ircv3");
     Path typingRoot =
-        Path.of(
-            "ircafe-feature-ircv3-typing/src/main/java/"
-                + "cafe/woden/ircclient/irc/ircv3");
+        Path.of("ircafe-feature-ircv3-typing/src/main/java/" + "cafe/woden/ircclient/irc/ircv3");
     Path readMarkerRoot =
         Path.of(
-            "ircafe-feature-ircv3-read-marker/src/main/java/"
-                + "cafe/woden/ircclient/irc/ircv3");
+            "ircafe-feature-ircv3-read-marker/src/main/java/" + "cafe/woden/ircclient/irc/ircv3");
     Path redactionRoot =
         Path.of(
             "ircafe-feature-ircv3-message-redaction/src/main/java/"
@@ -1165,8 +1121,7 @@ class FeatureSubprojectBoundaryTest {
                 + "PircbotxTagSignalSupport.java");
     Path quasselRuntime =
         Path.of(
-            "src/main/java/cafe/woden/ircclient/irc/quassel/"
-                + "QuasselIrcv3RuntimeSupport.java");
+            "src/main/java/cafe/woden/ircclient/irc/quassel/" + "QuasselIrcv3RuntimeSupport.java");
 
     assertTrue(
         Files.readString(messageTagsRoot.resolve("Ircv3Tags.java"))
@@ -1271,17 +1226,14 @@ class FeatureSubprojectBoundaryTest {
     Path inviteNotifyRoot =
         Path.of("ircafe-feature-ircv3-invite-notify/src/main/java/cafe/woden/ircclient/irc/ircv3");
     Path monitorRoot =
-        Path.of(
-            "ircafe-feature-ircv3-monitor/src/main/java/"
-                + "cafe/woden/ircclient/irc/ircv3");
+        Path.of("ircafe-feature-ircv3-monitor/src/main/java/" + "cafe/woden/ircclient/irc/ircv3");
     Path standardRepliesRoot =
         Path.of(
             "ircafe-feature-ircv3-standard-replies/src/main/java/"
                 + "cafe/woden/ircclient/irc/ircv3");
     Path accountTagRoot =
         Path.of(
-            "ircafe-feature-ircv3-account-tag/src/main/java/"
-                + "cafe/woden/ircclient/irc/ircv3");
+            "ircafe-feature-ircv3-account-tag/src/main/java/" + "cafe/woden/ircclient/irc/ircv3");
     Path rootParser = Path.of("src/main/java/cafe/woden/ircclient/irc/pircbotx/parse");
     Path presenceAdapter = rootParser.resolve("PircbotxPresenceSignalSupport.java");
     Path serverNumericRouter =
@@ -1312,8 +1264,7 @@ class FeatureSubprojectBoundaryTest {
                 + "PircbotxMonitorEventEmitter.java");
     Path quasselAdapter =
         Path.of(
-            "src/main/java/cafe/woden/ircclient/irc/quassel/"
-                + "QuasselCoreIrcClientService.java");
+            "src/main/java/cafe/woden/ircclient/irc/quassel/" + "QuasselCoreIrcClientService.java");
 
     assertTrue(
         Files.isRegularFile(awayNotifyRoot.resolve("Ircv3AwayNotifySignalParser.java"))
@@ -1387,8 +1338,7 @@ class FeatureSubprojectBoundaryTest {
     assertTrue(
         serverNumericSource.contains("presenceSignals.observeSelfAwayConfirmation")
             && unknownFallbackSource.contains("presenceSignals.observeAwayNotifyRawLine")
-            && unknownFallbackSource.contains(
-                "presenceSignals.observeSelfAwayConfirmationRawLine"),
+            && unknownFallbackSource.contains("presenceSignals.observeSelfAwayConfirmationRawLine"),
         "PircBotX numeric and unknown-line away fallbacks should route through runtime SPI");
     assertTrue(
         !serverNumericSource.contains("Ircv3AwayLineParser")
@@ -1429,8 +1379,7 @@ class FeatureSubprojectBoundaryTest {
     assertTrue(
         standardReplySource.contains("Ircv3StandardReplyRuntimeSupport")
             && standardReplyRuntimeSource.contains("Ircv3InboundCommandSignalRuntimeCatalog")
-            && standardReplyRuntimeSource.contains(
-                "Ircv3InboundCommandOperation.STANDARD_REPLY"),
+            && standardReplyRuntimeSource.contains("Ircv3InboundCommandOperation.STANDARD_REPLY"),
         "PircBotX standard-reply adaptation should route through the shared runtime SPI boundary");
     assertTrue(
         !standardReplySource.contains("Ircv3StandardReplyParser")
@@ -1462,21 +1411,14 @@ class FeatureSubprojectBoundaryTest {
   @Test
   void ircv3IsupportNamesAndMonitorCommandPolicyLiveInFocusedSubprojects() throws IOException {
     Path commonRoot =
-        Path.of(
-            "ircafe-feature-ircv3-common/src/main/java/"
-                + "cafe/woden/ircclient/irc/ircv3");
+        Path.of("ircafe-feature-ircv3-common/src/main/java/" + "cafe/woden/ircclient/irc/ircv3");
     Path namesRoot =
         Path.of(
-            "ircafe-feature-ircv3-user-identity/src/main/java/"
-                + "cafe/woden/ircclient/irc/ircv3");
+            "ircafe-feature-ircv3-user-identity/src/main/java/" + "cafe/woden/ircclient/irc/ircv3");
     Path monitorRoot =
-        Path.of(
-            "ircafe-feature-ircv3-monitor/src/main/java/"
-                + "cafe/woden/ircclient/irc/ircv3");
+        Path.of("ircafe-feature-ircv3-monitor/src/main/java/" + "cafe/woden/ircclient/irc/ircv3");
     Path typingRoot =
-        Path.of(
-            "ircafe-feature-ircv3-typing/src/main/java/"
-                + "cafe/woden/ircclient/irc/ircv3");
+        Path.of("ircafe-feature-ircv3-typing/src/main/java/" + "cafe/woden/ircclient/irc/ircv3");
     Path rootParser = Path.of("src/main/java/cafe/woden/ircclient/irc/pircbotx/parse");
     Path isupportObserver =
         Path.of(
@@ -1484,8 +1426,7 @@ class FeatureSubprojectBoundaryTest {
                 + "PircbotxIsupportObserver.java");
     Path isupportRuntimeSupport =
         Path.of(
-            "src/main/java/cafe/woden/ircclient/irc/ircv3/"
-                + "Ircv3IsupportRuntimeSupport.java");
+            "src/main/java/cafe/woden/ircclient/irc/ircv3/" + "Ircv3IsupportRuntimeSupport.java");
     Path whoEmitter =
         Path.of(
             "src/main/java/cafe/woden/ircclient/irc/pircbotx/emit/"
@@ -1499,9 +1440,7 @@ class FeatureSubprojectBoundaryTest {
             "src/main/java/cafe/woden/ircclient/irc/ircv3/"
                 + "Ircv3MonitorCommandRuntimeSupport.java");
     Path typingRuntimeSupport =
-        Path.of(
-            "src/main/java/cafe/woden/ircclient/irc/ircv3/"
-                + "Ircv3TypingRuntimeSupport.java");
+        Path.of("src/main/java/cafe/woden/ircclient/irc/ircv3/" + "Ircv3TypingRuntimeSupport.java");
 
     assertTrue(
         Files.isRegularFile(commonRoot.resolve("Ircv3IsupportLine.java")),
@@ -1662,12 +1601,10 @@ class FeatureSubprojectBoundaryTest {
   void ircv3MessageTagPolicyLivesInFeatureSubproject() throws IOException {
     Path featureRoot =
         Path.of(
-            "ircafe-feature-ircv3-message-tags/src/main/java/"
-                + "cafe/woden/ircclient/irc/ircv3");
+            "ircafe-feature-ircv3-message-tags/src/main/java/" + "cafe/woden/ircclient/irc/ircv3");
     Path serverTimeRoot =
         Path.of(
-            "ircafe-feature-ircv3-server-time/src/main/java/"
-                + "cafe/woden/ircclient/irc/ircv3");
+            "ircafe-feature-ircv3-server-time/src/main/java/" + "cafe/woden/ircclient/irc/ircv3");
     Path umbrellaRoot =
         Path.of("ircafe-feature-ircv3/src/main/java/cafe/woden/ircclient/irc/ircv3");
     Path rootIrcv3 = Path.of("src/main/java/cafe/woden/ircclient/irc/ircv3");
@@ -1741,12 +1678,10 @@ class FeatureSubprojectBoundaryTest {
   void ircv3ServerTimeAndEchoMessagePoliciesLiveInFocusedSubprojects() throws IOException {
     Path serverTimeRoot =
         Path.of(
-            "ircafe-feature-ircv3-server-time/src/main/java/"
-                + "cafe/woden/ircclient/irc/ircv3");
+            "ircafe-feature-ircv3-server-time/src/main/java/" + "cafe/woden/ircclient/irc/ircv3");
     Path echoMessageRoot =
         Path.of(
-            "ircafe-feature-ircv3-echo-message/src/main/java/"
-                + "cafe/woden/ircclient/irc/ircv3");
+            "ircafe-feature-ircv3-echo-message/src/main/java/" + "cafe/woden/ircclient/irc/ircv3");
     Path inputParser =
         Path.of(
             "src/main/java/cafe/woden/ircclient/irc/pircbotx/parse/"
@@ -1777,7 +1712,8 @@ class FeatureSubprojectBoundaryTest {
               && !policySource.contains("PircbotxConnectionState"),
           policy + " should remain transport and root-state independent");
     }
-    assertTrue(!Files.exists(oldHintStore), "the PircBotX-only echo hint store should stay removed");
+    assertTrue(
+        !Files.exists(oldHintStore), "the PircBotX-only echo hint store should stay removed");
 
     String serverTimeSource = Files.readString(serverTime);
     assertTrue(
@@ -1810,8 +1746,7 @@ class FeatureSubprojectBoundaryTest {
             && !inputSource.contains("Ircv3EchoMessageTargetHintPlanner.plan"),
         "PircBotX should consume self-echo private-target planning through runtime SPI");
     assertTrue(
-        inputSource.contains("serverTimeRuntimeSupport")
-            && inputSource.contains(".passiveLag("),
+        inputSource.contains("serverTimeRuntimeSupport") && inputSource.contains(".passiveLag("),
         "PircBotX should delegate passive server-time lag derivation through the runtime SPI");
     assertTrue(
         !inputSource.contains("serverTaggedAt.toEpochMilli"),
@@ -1819,8 +1754,7 @@ class FeatureSubprojectBoundaryTest {
 
     Path runtimeSupport =
         Path.of(
-            "src/main/java/cafe/woden/ircclient/irc/ircv3/"
-                + "Ircv3ServerTimeRuntimeSupport.java");
+            "src/main/java/cafe/woden/ircclient/irc/ircv3/" + "Ircv3ServerTimeRuntimeSupport.java");
     assertTrue(Files.isRegularFile(runtimeSupport), "root should expose a server-time SPI adapter");
     String runtimeSource = Files.readString(runtimeSupport);
     assertTrue(
@@ -1851,17 +1785,13 @@ class FeatureSubprojectBoundaryTest {
   @Test
   void ircv3CapabilityNegotiationPolicyLivesInFeatureSubproject() throws IOException {
     Path commonRoot =
-        Path.of(
-            "ircafe-feature-ircv3-common/src/main/java/cafe/woden/ircclient/irc/ircv3");
+        Path.of("ircafe-feature-ircv3-common/src/main/java/cafe/woden/ircclient/irc/ircv3");
     Path negotiationRoot =
-        Path.of(
-            "ircafe-feature-ircv3-negotiation/src/main/java/cafe/woden/ircclient/irc/ircv3");
+        Path.of("ircafe-feature-ircv3-negotiation/src/main/java/cafe/woden/ircclient/irc/ircv3");
     Path umbrellaRoot =
         Path.of("ircafe-feature-ircv3/src/main/java/cafe/woden/ircclient/irc/ircv3");
     Path multilineRoot =
-        Path.of(
-            "ircafe-feature-ircv3-multiline/src/main/java/"
-                + "cafe/woden/ircclient/irc/ircv3");
+        Path.of("ircafe-feature-ircv3-multiline/src/main/java/" + "cafe/woden/ircclient/irc/ircv3");
     Path rootParse = Path.of("src/main/java/cafe/woden/ircclient/irc/pircbotx/parse");
     Path capabilityHandler =
         Path.of(
@@ -1878,8 +1808,7 @@ class FeatureSubprojectBoundaryTest {
         Files.isRegularFile(negotiationRoot.resolve("Ircv3CapabilityFallbackPlanner.java")),
         "IRCv3 fallback request planning should remain feature-owned");
     assertTrue(
-        Files.isRegularFile(
-            negotiationRoot.resolve("Ircv3CapabilityRequestBatchSession.java")),
+        Files.isRegularFile(negotiationRoot.resolve("Ircv3CapabilityRequestBatchSession.java")),
         "batched CAP offer matching and pending-resolution state should remain feature-owned");
     assertTrue(
         Files.isRegularFile(negotiationRoot.resolve("Ircv3CapabilityChangePlanner.java")),
@@ -1894,8 +1823,7 @@ class FeatureSubprojectBoundaryTest {
         Files.isRegularFile(negotiationRoot.resolve("Ircv3CapabilitySnapshot.java")),
         "the immutable negotiated capability snapshot should remain feature-owned");
     assertTrue(
-        Files.isRegularFile(
-            multilineRoot.resolve("Ircv3MultilineCapabilityStatePlanner.java")),
+        Files.isRegularFile(multilineRoot.resolve("Ircv3MultilineCapabilityStatePlanner.java")),
         "IRCv3 multiline CAP limit transitions should remain feature-owned");
     assertTrue(
         !Files.exists(rootParse.resolve("ParsedCapLine.java")),
@@ -2071,8 +1999,7 @@ class FeatureSubprojectBoundaryTest {
                     + "Ircv3SaslRuntimeProvider.java")),
         "the focused SASL built-in should publish executable server interpretation");
 
-    Path oldSaslSource =
-        Path.of("src/main/java/cafe/woden/ircclient/irc/pircbotx/capability");
+    Path oldSaslSource = Path.of("src/main/java/cafe/woden/ircclient/irc/pircbotx/capability");
     for (String oldClass :
         List.of(
             "PircbotxParsedIrcLine.java",
@@ -2142,8 +2069,7 @@ class FeatureSubprojectBoundaryTest {
     Path messageTagsBuild = Path.of("ircafe-feature-ircv3-message-tags/build.gradle");
     Path serverTimeBuild = Path.of("ircafe-feature-ircv3-server-time/build.gradle");
     Path echoMessageBuild = Path.of("ircafe-feature-ircv3-echo-message/build.gradle");
-    Path labeledResponseBuild =
-        Path.of("ircafe-feature-ircv3-labeled-response/build.gradle");
+    Path labeledResponseBuild = Path.of("ircafe-feature-ircv3-labeled-response/build.gradle");
     Path multilineBuild = Path.of("ircafe-feature-ircv3-multiline/build.gradle");
     Path chatHistoryBuild = Path.of("ircafe-feature-ircv3-chat-history/build.gradle");
     Path replyBuild = Path.of("ircafe-feature-ircv3-reply/build.gradle");
@@ -2162,15 +2088,13 @@ class FeatureSubprojectBoundaryTest {
     Path setnameBuild = Path.of("ircafe-feature-ircv3-setname/build.gradle");
     Path inviteNotifyBuild = Path.of("ircafe-feature-ircv3-invite-notify/build.gradle");
     Path monitorBuild = Path.of("ircafe-feature-ircv3-monitor/build.gradle");
-    Path standardRepliesBuild =
-        Path.of("ircafe-feature-ircv3-standard-replies/build.gradle");
+    Path standardRepliesBuild = Path.of("ircafe-feature-ircv3-standard-replies/build.gradle");
     Path accountTagBuild = Path.of("ircafe-feature-ircv3-account-tag/build.gradle");
     Path userIdentityBuild = Path.of("ircafe-feature-ircv3-user-identity/build.gradle");
     Path batchBuild = Path.of("ircafe-feature-ircv3-batch/build.gradle");
     Path zncPlaybackBuild = Path.of("ircafe-feature-ircv3-znc-playback/build.gradle");
     Path oldNamesBuild = Path.of("ircafe-feature-ircv3-names/build.gradle");
-    Path oldHistoryTransportBuild =
-        Path.of("ircafe-feature-ircv3-history-transport/build.gradle");
+    Path oldHistoryTransportBuild = Path.of("ircafe-feature-ircv3-history-transport/build.gradle");
     Path oldDraftBuild = Path.of("ircafe-feature-ircv3-draft/build.gradle");
     Path oldUmbrellaBuild = Path.of("ircafe-feature-ircv3/build.gradle");
 
@@ -2271,26 +2195,20 @@ class FeatureSubprojectBoundaryTest {
 
     assertTrue(Files.isRegularFile(commonBuild), "the IRCv3 common project needs a build file");
     assertTrue(
-        Files.isRegularFile(negotiationBuild),
-        "the IRCv3 negotiation project needs a build file");
+        Files.isRegularFile(negotiationBuild), "the IRCv3 negotiation project needs a build file");
     assertTrue(
-        Files.isRegularFile(messageTagsBuild),
-        "the IRCv3 message-tags project needs a build file");
+        Files.isRegularFile(messageTagsBuild), "the IRCv3 message-tags project needs a build file");
     assertTrue(
-        Files.isRegularFile(serverTimeBuild),
-        "the IRCv3 server-time project needs a build file");
+        Files.isRegularFile(serverTimeBuild), "the IRCv3 server-time project needs a build file");
     assertTrue(
-        Files.isRegularFile(echoMessageBuild),
-        "the IRCv3 echo-message project needs a build file");
+        Files.isRegularFile(echoMessageBuild), "the IRCv3 echo-message project needs a build file");
     assertTrue(
         Files.isRegularFile(labeledResponseBuild),
         "the IRCv3 labeled-response project needs a build file");
     assertTrue(
-        Files.isRegularFile(multilineBuild),
-        "the IRCv3 multiline project needs a build file");
+        Files.isRegularFile(multilineBuild), "the IRCv3 multiline project needs a build file");
     assertTrue(
-        Files.isRegularFile(chatHistoryBuild),
-        "the IRCv3 chat-history project needs a build file");
+        Files.isRegularFile(chatHistoryBuild), "the IRCv3 chat-history project needs a build file");
     assertTrue(Files.isRegularFile(replyBuild), "the IRCv3 reply project needs a build file");
     assertTrue(
         Files.isRegularFile(reactionsBuild), "the IRCv3 reactions project needs a build file");
@@ -2299,14 +2217,12 @@ class FeatureSubprojectBoundaryTest {
         "the IRCv3 channel-context project needs a build file");
     assertTrue(Files.isRegularFile(typingBuild), "the IRCv3 typing project needs a build file");
     assertTrue(
-        Files.isRegularFile(readMarkerBuild),
-        "the IRCv3 read-marker project needs a build file");
+        Files.isRegularFile(readMarkerBuild), "the IRCv3 read-marker project needs a build file");
     assertTrue(
         Files.isRegularFile(redactionBuild),
         "the IRCv3 message-redaction project needs a build file");
     assertTrue(
-        Files.isRegularFile(messageEditBuild),
-        "the IRCv3 message-edit project needs a build file");
+        Files.isRegularFile(messageEditBuild), "the IRCv3 message-edit project needs a build file");
     assertTrue(Files.isRegularFile(saslBuild), "the IRCv3 SASL project needs a build file");
     assertTrue(Files.isRegularFile(stsBuild), "the IRCv3 STS project needs a build file");
     for (Path focusedPresenceBuild :
@@ -2318,14 +2234,12 @@ class FeatureSubprojectBoundaryTest {
             setnameBuild,
             inviteNotifyBuild)) {
       assertTrue(
-          Files.isRegularFile(focusedPresenceBuild),
-          focusedPresenceBuild + " needs a build file");
+          Files.isRegularFile(focusedPresenceBuild), focusedPresenceBuild + " needs a build file");
     }
     assertTrue(
         !Files.exists(Path.of("ircafe-feature-ircv3-presence/build.gradle")),
         "the aggregate presence project should be removed");
-    assertTrue(
-        Files.isRegularFile(monitorBuild), "the IRCv3 MONITOR project needs a build file");
+    assertTrue(Files.isRegularFile(monitorBuild), "the IRCv3 MONITOR project needs a build file");
     assertTrue(
         Files.isRegularFile(standardRepliesBuild),
         "the IRCv3 standard-replies project needs a build file");
@@ -2336,11 +2250,8 @@ class FeatureSubprojectBoundaryTest {
         "the IRCv3 user-identity project needs a build file");
     assertTrue(Files.isRegularFile(batchBuild), "the IRCv3 BATCH project needs a build file");
     assertTrue(
-        Files.isRegularFile(zncPlaybackBuild),
-        "the IRCv3 ZNC playback project needs a build file");
-    assertTrue(
-        !Files.exists(oldNamesBuild),
-        "the aggregate names project should be removed");
+        Files.isRegularFile(zncPlaybackBuild), "the IRCv3 ZNC playback project needs a build file");
+    assertTrue(!Files.exists(oldNamesBuild), "the aggregate names project should be removed");
     assertTrue(
         !Files.exists(oldHistoryTransportBuild),
         "the aggregate history-transport project should be removed");
@@ -2408,8 +2319,7 @@ class FeatureSubprojectBoundaryTest {
             "setname",
             "invite-notify")) {
       assertTrue(
-          rootSource.contains(
-              "implementation project(':ircafe-feature-ircv3-" + capability + "')"),
+          rootSource.contains("implementation project(':ircafe-feature-ircv3-" + capability + "')"),
           "the root application should consume the focused " + capability + " runtime directly");
     }
     assertTrue(
@@ -2522,8 +2432,7 @@ class FeatureSubprojectBoundaryTest {
       Path policy = featureRoot.resolve(className);
       assertTrue(Files.isRegularFile(policy), policy + " should remain feature-owned");
       String source = Files.readString(policy);
-      assertTrue(
-          !source.contains("org.pircbotx"), policy + " should remain transport-independent");
+      assertTrue(!source.contains("org.pircbotx"), policy + " should remain transport-independent");
       assertTrue(
           !source.contains("cafe.woden.ircclient.state"),
           policy + " should not depend on root state contracts");
@@ -2547,8 +2456,7 @@ class FeatureSubprojectBoundaryTest {
     String stateAdapter =
         Files.readString(
             Path.of(
-                "src/main/java/cafe/woden/ircclient/state/"
-                    + "LabeledResponseRoutingState.java"));
+                "src/main/java/cafe/woden/ircclient/state/" + "LabeledResponseRoutingState.java"));
     assertTrue(
         !stateAdapter.contains("Ircv3LabeledResponse"),
         "the state module must not depend back on the IRC transport module");
@@ -2609,8 +2517,7 @@ class FeatureSubprojectBoundaryTest {
             readMarkerRoot.resolve("Ircv3ReadMarkerCommandBuilder.java"))) {
       assertTrue(Files.isRegularFile(policy), policy + " should remain feature-owned");
       String source = Files.readString(policy);
-      assertTrue(
-          !source.contains("org.pircbotx"), policy + " should remain transport-independent");
+      assertTrue(!source.contains("org.pircbotx"), policy + " should remain transport-independent");
       assertTrue(
           !source.contains("cafe.woden.ircclient.app"),
           policy + " should not depend on application-layer mutation models");
@@ -2628,8 +2535,7 @@ class FeatureSubprojectBoundaryTest {
                     + "QuasselCoreIrcClientService.java"));
     String matrix =
         Files.readString(
-            Path.of(
-                "src/main/java/cafe/woden/ircclient/irc/matrix/MatrixIrcClientService.java"));
+            Path.of("src/main/java/cafe/woden/ircclient/irc/matrix/MatrixIrcClientService.java"));
     String matrixRuntime =
         Files.readString(
             Path.of(
@@ -2766,8 +2672,10 @@ class FeatureSubprojectBoundaryTest {
                     + "Ircv3MessageMutationOutboundCommands.java"));
     assertTrue(
         messageTagRuntimeCatalog.contains("Ircv3MessageTagParserProvider.class")
-            && messageTagRuntimeCatalog.contains("Ircv3RuntimeProviderSupport.loadInstalledProviders")
-            && messageTagRuntimeCatalog.contains("Ircv3MessageTagParserProvider::messageTagParserPriority"),
+            && messageTagRuntimeCatalog.contains(
+                "Ircv3RuntimeProviderSupport.loadInstalledProviders")
+            && messageTagRuntimeCatalog.contains(
+                "Ircv3MessageTagParserProvider::messageTagParserPriority"),
         "message-tag parsing should load a replaceable runtime SPI provider");
     assertTrue(
         runtimeCatalog.contains("@Component")
@@ -2803,7 +2711,8 @@ class FeatureSubprojectBoundaryTest {
         "parsed inbound command interpretation should load replaceable runtime SPI providers");
     assertTrue(
         tagSignalAdapter.contains("Ircv3ChannelContextRuntimeSupport")
-            && containsIgnoringWhitespace(tagSignalAdapter, "channelContextRuntimeSupport.resolve(request)")
+            && containsIgnoringWhitespace(
+                tagSignalAdapter, "channelContextRuntimeSupport.resolve(request)")
             && tagSignalAdapter.contains("Ircv3MessageMutationRuntimeSupport")
             && tagSignalAdapter.contains("Ircv3TypingRuntimeSupport")
             && containsIgnoringWhitespace(tagSignalAdapter, ".conversationSignals(")
@@ -2849,24 +2758,21 @@ class FeatureSubprojectBoundaryTest {
                 + "Ircv3MessageTagsRuntimeCatalog.java");
     Path runtimeProviderSupport =
         Path.of(
-            "src/main/java/cafe/woden/ircclient/irc/ircv3/"
-                + "Ircv3RuntimeProviderSupport.java");
+            "src/main/java/cafe/woden/ircclient/irc/ircv3/" + "Ircv3RuntimeProviderSupport.java");
     Path runtimeSupport =
         Path.of(
             "src/main/java/cafe/woden/ircclient/irc/ircv3/"
                 + "Ircv3MessageTagsRuntimeSupport.java");
     Path messageIdSupport =
         Path.of(
-            "src/main/java/cafe/woden/ircclient/irc/ircv3/"
-                + "Ircv3MessageIdRuntimeSupport.java");
+            "src/main/java/cafe/woden/ircclient/irc/ircv3/" + "Ircv3MessageIdRuntimeSupport.java");
     Path eventMetadata =
         Path.of(
             "src/main/java/cafe/woden/ircclient/irc/pircbotx/support/"
                 + "PircbotxEventMetadata.java");
     Path quassel =
         Path.of(
-            "src/main/java/cafe/woden/ircclient/irc/quassel/"
-                + "QuasselCoreIrcClientService.java");
+            "src/main/java/cafe/woden/ircclient/irc/quassel/" + "QuasselCoreIrcClientService.java");
     Path inboundTextHandler =
         Path.of(
             "src/main/java/cafe/woden/ircclient/app/core/"
@@ -2978,7 +2884,8 @@ class FeatureSubprojectBoundaryTest {
             "src/main/java/cafe/woden/ircclient/irc/pircbotx/parse/"
                 + "PircbotxIrcv3InputParser.java");
 
-    assertTrue(Files.isRegularFile(planner), "echo-message target planning should stay feature-owned");
+    assertTrue(
+        Files.isRegularFile(planner), "echo-message target planning should stay feature-owned");
     String plannerSource = Files.readString(planner);
     assertTrue(
         !plannerSource.contains("org.pircbotx") && !plannerSource.contains("PircBotX"),
@@ -3010,21 +2917,24 @@ class FeatureSubprojectBoundaryTest {
         Path.of("ircafe-feature-ircv3-batch/src/main/java/cafe/woden/ircclient/irc/ircv3");
     Path zncPlaybackRoot =
         Path.of(
-            "ircafe-feature-ircv3-znc-playback/src/main/java/"
-                + "cafe/woden/ircclient/irc/ircv3");
+            "ircafe-feature-ircv3-znc-playback/src/main/java/" + "cafe/woden/ircclient/irc/ircv3");
     Path chghostParser = chghostRoot.resolve("Ircv3ChghostParser.java");
     Path setnameParser = setnameRoot.resolve("Ircv3SetnameParser.java");
     Path zncDetector = zncPlaybackRoot.resolve("Ircv3ZncDetector.java");
     Path playbackPlanner = zncPlaybackRoot.resolve("Ircv3ZncPlaybackRequestPlanner.java");
     Path batchParser = batchRoot.resolve("Ircv3HistoryBatchControlParser.java");
-    Path bootstrapPolicy =
-        zncPlaybackRoot.resolve("Ircv3HistoryBootstrapSuppressionPolicy.java");
+    Path bootstrapPolicy = zncPlaybackRoot.resolve("Ircv3HistoryBootstrapSuppressionPolicy.java");
     Path oldZncParser =
-        Path.of(
-            "src/main/java/cafe/woden/ircclient/irc/pircbotx/parse/PircbotxZncParsers.java");
+        Path.of("src/main/java/cafe/woden/ircclient/irc/pircbotx/parse/PircbotxZncParsers.java");
 
     for (Path policy :
-        List.of(chghostParser, setnameParser, zncDetector, playbackPlanner, batchParser, bootstrapPolicy)) {
+        List.of(
+            chghostParser,
+            setnameParser,
+            zncDetector,
+            playbackPlanner,
+            batchParser,
+            bootstrapPolicy)) {
       assertTrue(Files.isRegularFile(policy), policy + " should remain feature-owned");
       String policySource = Files.readString(policy);
       assertTrue(
@@ -3044,8 +2954,7 @@ class FeatureSubprojectBoundaryTest {
         inputParser.contains("presenceSignalSupport.observeIdentityChange"),
         "the PircBotX input adapter should route SETNAME/CHGHOST through runtime SPI");
     assertTrue(
-        !inputParser.contains("Ircv3ChghostParser")
-            && !inputParser.contains("Ircv3SetnameParser"),
+        !inputParser.contains("Ircv3ChghostParser") && !inputParser.contains("Ircv3SetnameParser"),
         "the PircBotX input adapter should not bypass focused inbound command providers");
     assertTrue(
         !inputParser.contains("\"SETNAME\".equalsIgnoreCase")
@@ -3127,19 +3036,17 @@ class FeatureSubprojectBoundaryTest {
         source.contains("implementation project(':ircafe-feature-ircv3-message-tags')"),
         buildFile + " should consume shared tag decoding through message-tags");
     assertTrue(
-        !source.contains("org.pircbotx"),
-        buildFile + " should remain transport-independent");
+        !source.contains("org.pircbotx"), buildFile + " should remain transport-independent");
   }
 
-  private static void assertTransportIndependentFocusedBuild(
-      Path buildFile, boolean requiresCommon) throws IOException {
+  private static void assertTransportIndependentFocusedBuild(Path buildFile, boolean requiresCommon)
+      throws IOException {
     String source = Files.readString(buildFile);
     assertTrue(
         !source.contains("project(':ircafe-feature-ircv3')"),
         buildFile + " must not depend on the removed compatibility umbrella");
     assertTrue(
-        !source.contains("org.pircbotx"),
-        buildFile + " should remain transport-independent");
+        !source.contains("org.pircbotx"), buildFile + " should remain transport-independent");
     if (requiresCommon) {
       assertTrue(
           source.contains("implementation project(':ircafe-feature-ircv3-common')"),
@@ -3154,8 +3061,7 @@ class FeatureSubprojectBoundaryTest {
 
     assertTrue(
         conventionSource.contains("collectProjectDependencies")
-            && conventionSource.contains(
-                "withType(org.gradle.api.artifacts.ProjectDependency)")
+            && conventionSource.contains("withType(org.gradle.api.artifacts.ProjectDependency)")
             && conventionSource.contains("source.project(dependency.path)")
             && conventionSource.contains(
                 "collectProjectDependencies(dependencyProject, discovered)")
@@ -3165,29 +3071,24 @@ class FeatureSubprojectBoundaryTest {
         "the shared Java-library convention should make CycloneDX depend recursively on project "
             + "JAR producers");
 
-    assertUsesIrcv3FeatureConvention(
-        Path.of("ircafe-feature-ircv3-channel-context/build.gradle"));
-    assertUsesIrcv3FeatureConvention(
-        Path.of("ircafe-feature-ircv3-server-time/build.gradle"));
-    assertUsesIrcv3FeatureConvention(
-        Path.of("ircafe-feature-ircv3-echo-message/build.gradle"));
+    assertUsesIrcv3FeatureConvention(Path.of("ircafe-feature-ircv3-channel-context/build.gradle"));
+    assertUsesIrcv3FeatureConvention(Path.of("ircafe-feature-ircv3-server-time/build.gradle"));
+    assertUsesIrcv3FeatureConvention(Path.of("ircafe-feature-ircv3-echo-message/build.gradle"));
   }
 
   private static void assertUsesIrcv3FeatureConvention(Path buildFile) throws IOException {
     String source = Files.readString(buildFile);
     assertTrue(
         source.contains("gradle/ircv3-feature-conventions.gradle"),
-        buildFile + " should inherit transitive CycloneDX producer wiring from the shared convention");
+        buildFile
+            + " should inherit transitive CycloneDX producer wiring from the shared convention");
   }
-
 
   @Test
   void ircv3SpringWiringUsesCanonicalRuntimeCatalogBundle() throws IOException {
     String catalogs =
         Files.readString(
-            Path.of(
-                "src/main/java/cafe/woden/ircclient/irc/ircv3/"
-                    + "Ircv3RuntimeCatalogs.java"));
+            Path.of("src/main/java/cafe/woden/ircclient/irc/ircv3/" + "Ircv3RuntimeCatalogs.java"));
     assertTrue(
         catalogs.contains("@Component")
             && catalogs.contains("record Ircv3RuntimeCatalogs")
@@ -3206,8 +3107,7 @@ class FeatureSubprojectBoundaryTest {
   }
 
   @Test
-  void ircv3OutboundApplicationServicesRequireExplicitRuntimeSupportInjection()
-      throws IOException {
+  void ircv3OutboundApplicationServicesRequireExplicitRuntimeSupportInjection() throws IOException {
     assertExplicitRuntimeSupportInjection(
         Path.of(
             "src/main/java/cafe/woden/ircclient/app/outbound/chathistory/"

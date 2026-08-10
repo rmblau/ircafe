@@ -33,9 +33,7 @@ public final class Ircv3CapabilityNameSupport {
           entry(Ircv3CapabilityNames.CHATHISTORY, Ircv3CapabilityNames.CHATHISTORY),
           entry(Ircv3CapabilityNames.DRAFT_CHATHISTORY, Ircv3CapabilityNames.CHATHISTORY),
           entry(Ircv3CapabilityNames.EXTENDED_MONITOR, Ircv3CapabilityNames.EXTENDED_MONITOR),
-          entry(
-              Ircv3CapabilityNames.DRAFT_EXTENDED_MONITOR,
-              Ircv3CapabilityNames.EXTENDED_MONITOR),
+          entry(Ircv3CapabilityNames.DRAFT_EXTENDED_MONITOR, Ircv3CapabilityNames.EXTENDED_MONITOR),
           entry(Ircv3CapabilityNames.MESSAGE_REDACTION, Ircv3CapabilityNames.MESSAGE_REDACTION),
           entry(
               Ircv3CapabilityNames.DRAFT_MESSAGE_REDACTION, Ircv3CapabilityNames.MESSAGE_REDACTION),

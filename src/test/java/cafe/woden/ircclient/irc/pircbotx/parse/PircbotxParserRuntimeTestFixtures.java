@@ -67,8 +67,7 @@ public final class PircbotxParserRuntimeTestFixtures {
 
   public static PircbotxPresenceSignalSupport presence(
       String serverId, Consumer<ServerIrcEvent> sink, Runtime runtime) {
-    return new PircbotxPresenceSignalSupport(
-        serverId, sink, runtime.catalogs().inboundCommands());
+    return new PircbotxPresenceSignalSupport(serverId, sink, runtime.catalogs().inboundCommands());
   }
 
   public static PircbotxStandardReplySupport standardReplies(

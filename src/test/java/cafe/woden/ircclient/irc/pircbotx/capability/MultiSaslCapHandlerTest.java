@@ -14,11 +14,11 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
 import cafe.woden.ircclient.irc.ircv3.*;
-import cafe.woden.ircclient.irc.playback.*;
 import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundCommandOperation;
 import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundCommandRequest;
 import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundCommandSignal;
 import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundCommandSignalProvider;
+import cafe.woden.ircclient.irc.playback.*;
 import com.google.common.collect.ImmutableList;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -45,11 +45,7 @@ class MultiSaslCapHandlerTest {
   void waitsForFinalLsWhenServerSendsContinuationMarker() throws Exception {
     MultiSaslCapHandler handler =
         new MultiSaslCapHandler(
-            "user",
-            "secret",
-            "PLAIN",
-            false,
-            Ircv3RuntimeTestFixtures.runtime().sasl());
+            "user", "secret", "PLAIN", false, Ircv3RuntimeTestFixtures.runtime().sasl());
     PircBotX bot = mock(PircBotX.class);
     OutputCAP outputCap = mock(OutputCAP.class);
     when(bot.sendCAP()).thenReturn(outputCap);
@@ -64,11 +60,7 @@ class MultiSaslCapHandlerTest {
   void authenticatePlusTerminatesBufferedServerChunkForScram() throws Exception {
     MultiSaslCapHandler handler =
         new MultiSaslCapHandler(
-            "user",
-            "secret",
-            "SCRAM-SHA-256",
-            false,
-            Ircv3RuntimeTestFixtures.runtime().sasl());
+            "user", "secret", "SCRAM-SHA-256", false, Ircv3RuntimeTestFixtures.runtime().sasl());
     PircBotX bot = mock(PircBotX.class);
     OutputCAP outputCap = mock(OutputCAP.class);
     OutputRaw outputRaw = mock(OutputRaw.class);
@@ -143,8 +135,7 @@ class MultiSaslCapHandlerTest {
         new Ircv3SaslRuntimeSupport(
             Ircv3InboundCommandSignalRuntimeCatalog.fromProviders(List.of(provider)));
     MultiSaslCapHandler handler =
-        new MultiSaslCapHandler(
-            "username-secret", "password-secret", "PLAIN", false, support);
+        new MultiSaslCapHandler("username-secret", "password-secret", "PLAIN", false, support);
     PircBotX bot = mock(PircBotX.class);
     OutputCAP outputCap = mock(OutputCAP.class);
     OutputRaw outputRaw = mock(OutputRaw.class);

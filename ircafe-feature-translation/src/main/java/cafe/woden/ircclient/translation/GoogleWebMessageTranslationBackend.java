@@ -17,12 +17,14 @@ import org.springframework.stereotype.Component;
 @Component
 @SecondaryAdapter
 @InfrastructureLayer
-public final class GoogleWebMessageTranslationBackend extends AbstractHttpMessageTranslationBackend {
+public final class GoogleWebMessageTranslationBackend
+    extends AbstractHttpMessageTranslationBackend {
 
   public static final String BACKEND_ID = "google-web";
 
   public GoogleWebMessageTranslationBackend(
-      MessageTranslationSettingsProvider settingsProvider, MessageTranslationHttpClient httpClient) {
+      MessageTranslationSettingsProvider settingsProvider,
+      MessageTranslationHttpClient httpClient) {
     super(settingsProvider, httpClient);
   }
 

@@ -26,7 +26,8 @@ public final class NotificationRuleMatchCooldown {
   }
 
   public static int normalizeCooldownSeconds(int configuredSeconds, int defaultSeconds) {
-    return NotificationRuleCooldownPolicy.normalizeCooldownSeconds(configuredSeconds, defaultSeconds);
+    return NotificationRuleCooldownPolicy.normalizeCooldownSeconds(
+        configuredSeconds, defaultSeconds);
   }
 
   public boolean allow(

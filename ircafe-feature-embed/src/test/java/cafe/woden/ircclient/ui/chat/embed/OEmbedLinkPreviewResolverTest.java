@@ -20,18 +20,21 @@ class OEmbedLinkPreviewResolverTest {
 
   @Test
   void resolvesMatchingProviderResponse() {
-    RecordingHttp http = new RecordingHttp("""
+    RecordingHttp http =
+        new RecordingHttp(
+            """
         {"title":"Example title","author_name":"Example Author","provider_name":"Example Site","thumbnail_url":"https://cdn.example/thumb.png"}
         """);
-    OEmbedLinkPreviewResolver resolver = new OEmbedLinkPreviewResolver(java.util.List.of(provider()));
+    OEmbedLinkPreviewResolver resolver =
+        new OEmbedLinkPreviewResolver(java.util.List.of(provider()));
 
     LinkPreview preview =
         resolver.tryResolve(
-            URI.create("https://oembed.example/post/42"),
-            "https://oembed.example/post/42",
-            http);
+            URI.create("https://oembed.example/post/42"), "https://oembed.example/post/42", http);
 
-    assertEquals(URI.create("https://api.example/oembed?url=https://oembed.example/post/42"), http.requestedUri);
+    assertEquals(
+        URI.create("https://api.example/oembed?url=https://oembed.example/post/42"),
+        http.requestedUri);
     assertEquals("application/json+oembed,application/json", http.accept);
     assertEquals("Example title", preview.title());
     assertEquals("by Example Author", preview.description());
@@ -42,16 +45,17 @@ class OEmbedLinkPreviewResolverTest {
 
   @Test
   void usesProviderFallbacksWhenResponseOmitsTitleAndProviderName() {
-    RecordingHttp http = new RecordingHttp("""
+    RecordingHttp http =
+        new RecordingHttp(
+            """
         {"author_name":"Example Author"}
         """);
-    OEmbedLinkPreviewResolver resolver = new OEmbedLinkPreviewResolver(java.util.List.of(provider()));
+    OEmbedLinkPreviewResolver resolver =
+        new OEmbedLinkPreviewResolver(java.util.List.of(provider()));
 
     LinkPreview preview =
         resolver.tryResolve(
-            URI.create("https://oembed.example/post/42"),
-            "https://oembed.example/post/42",
-            http);
+            URI.create("https://oembed.example/post/42"), "https://oembed.example/post/42", http);
 
     assertEquals("Fallback title", preview.title());
     assertEquals("Fallback Site", preview.siteName());
@@ -60,7 +64,8 @@ class OEmbedLinkPreviewResolverTest {
 
   @Test
   void returnsNullWhenNoProviderMatches() {
-    OEmbedLinkPreviewResolver resolver = new OEmbedLinkPreviewResolver(java.util.List.of(provider()));
+    OEmbedLinkPreviewResolver resolver =
+        new OEmbedLinkPreviewResolver(java.util.List.of(provider()));
 
     LinkPreview preview =
         resolver.tryResolve(

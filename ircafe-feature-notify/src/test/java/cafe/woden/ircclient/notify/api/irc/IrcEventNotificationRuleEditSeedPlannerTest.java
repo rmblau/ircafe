@@ -11,7 +11,8 @@ class IrcEventNotificationRuleEditSeedPlannerTest {
 
   @Test
   void defaultSeedUsesFeatureOwnedIrcEventDefaults() {
-    IrcEventNotificationRuleEditSeedPlan plan = IrcEventNotificationRuleEditSeedPlanner.defaultSeed();
+    IrcEventNotificationRuleEditSeedPlan plan =
+        IrcEventNotificationRuleEditSeedPlanner.defaultSeed();
 
     assertFalse(plan.enabled());
     assertEquals("INVITE_RECEIVED", plan.eventType());

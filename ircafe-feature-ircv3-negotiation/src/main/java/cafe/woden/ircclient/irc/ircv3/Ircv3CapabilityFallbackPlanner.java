@@ -23,8 +23,7 @@ public final class Ircv3CapabilityFallbackPlanner {
     }
   }
 
-  public record Plan(
-      boolean requestMessageTags, boolean requestBatch, String historyCapability) {
+  public record Plan(boolean requestMessageTags, boolean requestBatch, String historyCapability) {
 
     public Plan {
       historyCapability = Objects.toString(historyCapability, "").trim();

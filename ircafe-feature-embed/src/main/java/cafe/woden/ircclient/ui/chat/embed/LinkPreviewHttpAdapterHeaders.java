@@ -28,8 +28,7 @@ public class LinkPreviewHttpAdapterHeaders {
 
   @Autowired
   public LinkPreviewHttpAdapterHeaders(LinkPreviewHttpHeaderCatalog headerCatalog) {
-    this.headerCatalog =
-        headerCatalog != null ? headerCatalog : new LinkPreviewHttpHeaderCatalog();
+    this.headerCatalog = headerCatalog != null ? headerCatalog : new LinkPreviewHttpHeaderCatalog();
   }
 
   public LinkPreviewHttpHeaderResult headersFor(
@@ -40,8 +39,7 @@ public class LinkPreviewHttpAdapterHeaders {
     LinkedHashMap<String, String> baseHeaders = new LinkedHashMap<>();
     baseHeaders.put(LinkPreviewHttpDefaults.HEADER_USER_AGENT, LinkPreviewHttpDefaults.USER_AGENT);
     baseHeaders.put(
-        LinkPreviewHttpDefaults.HEADER_ACCEPT_LANGUAGE,
-        LinkPreviewHttpDefaults.ACCEPT_LANGUAGE);
+        LinkPreviewHttpDefaults.HEADER_ACCEPT_LANGUAGE, LinkPreviewHttpDefaults.ACCEPT_LANGUAGE);
     baseHeaders.put(LinkPreviewHttpDefaults.HEADER_ACCEPT_ENCODING, "gzip");
     baseHeaders.put(
         LinkPreviewHttpDefaults.HEADER_ACCEPT,

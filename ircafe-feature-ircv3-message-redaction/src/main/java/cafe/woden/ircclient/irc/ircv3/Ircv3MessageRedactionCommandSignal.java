@@ -23,8 +23,7 @@ public record Ircv3MessageRedactionCommandSignal(String target, String messageId
     if (!handles(command)) return Optional.empty();
     String messageId = secondParam(parsedLine);
     if (messageId.isEmpty()) return Optional.empty();
-    return Optional.of(
-        new Ircv3MessageRedactionCommandSignal(firstParam(parsedLine), messageId));
+    return Optional.of(new Ircv3MessageRedactionCommandSignal(firstParam(parsedLine), messageId));
   }
 
   private static String firstParam(List<String> parsedLine) {

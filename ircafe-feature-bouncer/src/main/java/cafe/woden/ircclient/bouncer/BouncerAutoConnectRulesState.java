@@ -64,9 +64,7 @@ public final class BouncerAutoConnectRulesState {
   }
 
   public boolean isEnabled(
-      String bouncerServerId,
-      String networkName,
-      UnaryOperator<String> networkKeyNormalizer) {
+      String bouncerServerId, String networkName, UnaryOperator<String> networkKeyNormalizer) {
     Objects.requireNonNull(networkKeyNormalizer, "networkKeyNormalizer");
 
     String bouncerKey = findBouncerKey(bouncerServerId);

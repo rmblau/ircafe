@@ -1,8 +1,8 @@
 package cafe.woden.ircclient.irc.pircbotx.listener;
 
 import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.chatHistoryBatches;
-import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.runtime;
 import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.monitorEvents;
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.runtime;
 import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.serverResponses;
 import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.unknownCtcp;
 import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.whoEvents;
@@ -114,8 +114,7 @@ class PircbotxUnknownEventRouterTest {
             BouncerDiscoveryEventPort.noOp());
     PircbotxServerResponseEmitter serverResponses =
         serverResponses("libera", events::add, testRuntime);
-    PircbotxMonitorEventEmitter monitorEvents =
-        monitorEvents("libera", events::add, testRuntime);
+    PircbotxMonitorEventEmitter monitorEvents = monitorEvents("libera", events::add, testRuntime);
     PircbotxChatHistoryBatchCollector chatHistoryBatches =
         chatHistoryBatches("libera", events::add, testRuntime);
     PircbotxUnknownCtcpEmitter unknownCtcp =

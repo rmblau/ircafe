@@ -20,7 +20,8 @@ class NotificationSoundPlaybackPolicyTest {
 
   @Test
   void treatsMissingLastPlayedAsPlayable() {
-    assertTrue(NotificationSoundPlaybackPolicy.canPlay(null, Instant.parse("2026-07-04T12:00:00Z")));
+    assertTrue(
+        NotificationSoundPlaybackPolicy.canPlay(null, Instant.parse("2026-07-04T12:00:00Z")));
   }
 
   @Test

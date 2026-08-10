@@ -11,18 +11,15 @@ class Ircv3LeafRuntimeSupportConstructorTest {
 
   @Test
   void leafSupportsRequireExplicitCatalogDependencies() {
-    assertBoundary(
-        Ircv3SaslRuntimeSupport.class, Ircv3InboundCommandSignalRuntimeCatalog.class);
+    assertBoundary(Ircv3SaslRuntimeSupport.class, Ircv3InboundCommandSignalRuntimeCatalog.class);
     assertBoundary(
         Ircv3HistoryTransportRuntimeSupport.class,
         Ircv3InboundCommandSignalRuntimeCatalog.class,
         Ircv3InboundTagSignalRuntimeCatalog.class);
-    assertBoundary(
-        Ircv3EchoMessageRuntimeSupport.class, Ircv3InboundTagSignalRuntimeCatalog.class);
+    assertBoundary(Ircv3EchoMessageRuntimeSupport.class, Ircv3InboundTagSignalRuntimeCatalog.class);
     assertBoundary(
         Ircv3MonitorCommandRuntimeSupport.class, Ircv3OutboundCommandRuntimeCatalog.class);
-    assertBoundary(
-        Ircv3ChatHistoryRuntimeSupport.class, Ircv3OutboundCommandRuntimeCatalog.class);
+    assertBoundary(Ircv3ChatHistoryRuntimeSupport.class, Ircv3OutboundCommandRuntimeCatalog.class);
     assertBoundary(
         Ircv3LabeledResponseRuntimeSupport.class, Ircv3InboundTagSignalRuntimeCatalog.class);
     assertBoundary(

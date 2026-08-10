@@ -19,8 +19,7 @@ public final class Ircv3ChannelContextRuntimeSupport {
   private final Ircv3InboundTagSignalRuntimeCatalog inboundTagCatalog;
 
   @Autowired
-  public Ircv3ChannelContextRuntimeSupport(
-      Ircv3InboundTagSignalRuntimeCatalog inboundTagCatalog) {
+  public Ircv3ChannelContextRuntimeSupport(Ircv3InboundTagSignalRuntimeCatalog inboundTagCatalog) {
     this.inboundTagCatalog = Objects.requireNonNull(inboundTagCatalog, "inboundTagCatalog");
   }
 

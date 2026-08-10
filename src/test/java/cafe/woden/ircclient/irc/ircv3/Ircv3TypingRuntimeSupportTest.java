@@ -39,10 +39,7 @@ class Ircv3TypingRuntimeSupportTest {
   @Test
   void acceptsValidReplacementProviderOutput() {
     Ircv3TypingRuntimeSupport support =
-        support(
-            new OutboundProvider("@+typing=paused TAGMSG #ircafe"),
-            null,
-            null);
+        support(new OutboundProvider("@+typing=paused TAGMSG #ircafe"), null, null);
 
     assertEquals(
         new Ircv3TypingRuntimeSupport.OutboundPlan(
@@ -57,12 +54,8 @@ class Ircv3TypingRuntimeSupportTest {
     Ircv3TypingRuntimeSupport unsafe =
         support(new OutboundProvider("@+typing=active TAGMSG #ircafe\r\nOPER root"), null, null);
 
-    assertThrows(
-        IllegalStateException.class,
-        () -> changedTarget.render("#ircafe", "active"));
-    assertThrows(
-        IllegalStateException.class,
-        () -> unsafe.render("#ircafe", "active"));
+    assertThrows(IllegalStateException.class, () -> changedTarget.render("#ircafe", "active"));
+    assertThrows(IllegalStateException.class, () -> unsafe.render("#ircafe", "active"));
   }
 
   @Test
@@ -80,8 +73,7 @@ class Ircv3TypingRuntimeSupportTest {
   @Test
   void rejectsAmbiguousOrNoncanonicalInboundProviderOutput() {
     Ircv3InboundTagRequest request =
-        new Ircv3InboundTagRequest(
-            "TAGMSG", "alice", "#ircafe", List.of("#ircafe"), Map.of());
+        new Ircv3InboundTagRequest("TAGMSG", "alice", "#ircafe", List.of("#ircafe"), Map.of());
     Ircv3TypingRuntimeSupport ambiguous =
         support(
             null,
@@ -94,9 +86,7 @@ class Ircv3TypingRuntimeSupportTest {
         support(
             null,
             new TagProvider(
-                List.of(
-                    Ircv3InboundTagSignal.of(
-                        Ircv3InboundTagSignalType.TYPING, "composing"))),
+                List.of(Ircv3InboundTagSignal.of(Ircv3InboundTagSignalType.TYPING, "composing"))),
             null);
 
     assertTrue(ambiguous.fromTags(request).isEmpty());
@@ -110,14 +100,12 @@ class Ircv3TypingRuntimeSupportTest {
     assertEquals(
         new Ircv3TypingRuntimeSupport.ClientTagPolicy(true, "*,-typing"),
         support
-            .clientTagPolicy(
-                ":server 005 me CLIENTTAGDENY=*,-typing :are supported")
+            .clientTagPolicy(":server 005 me CLIENTTAGDENY=*,-typing :are supported")
             .orElseThrow());
     assertEquals(
         new Ircv3TypingRuntimeSupport.ClientTagPolicy(false, "typing,react"),
         support
-            .clientTagPolicy(
-                ":server 005 me CLIENTTAGDENY=typing,react :are supported")
+            .clientTagPolicy(":server 005 me CLIENTTAGDENY=typing,react :are supported")
             .orElseThrow());
   }
 
@@ -136,8 +124,7 @@ class Ircv3TypingRuntimeSupportTest {
 
     assertFalse(
         support
-            .clientTagPolicy(
-                ":server 005 me CLIENTTAGDENY=*,-typing :are supported")
+            .clientTagPolicy(":server 005 me CLIENTTAGDENY=*,-typing :are supported")
             .isPresent());
   }
 

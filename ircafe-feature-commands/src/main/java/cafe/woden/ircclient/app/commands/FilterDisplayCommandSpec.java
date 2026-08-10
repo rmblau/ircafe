@@ -12,8 +12,7 @@ public sealed interface FilterDisplayCommandSpec
         FilterDisplayCommandSpec.OverrideSet,
         FilterDisplayCommandSpec.OverrideDel {
 
-  record Show(FilterToggleModeSpec mode, String scopePattern)
-      implements FilterDisplayCommandSpec {
+  record Show(FilterToggleModeSpec mode, String scopePattern) implements FilterDisplayCommandSpec {
     public Show {
       mode = Objects.requireNonNullElse(mode, FilterToggleModeSpec.TOGGLE);
       scopePattern = normalizeOptional(scopePattern);

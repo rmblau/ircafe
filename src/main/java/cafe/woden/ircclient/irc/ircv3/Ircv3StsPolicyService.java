@@ -159,7 +159,8 @@ public class Ircv3StsPolicyService {
       case CLEAR -> {
         byHostLower.remove(decision.hostLower());
         forgetPersistedPolicy(decision.hostLower());
-        log.info("[{}] cleared STS policy for host={} (duration=0)", serverId, decision.hostLower());
+        log.info(
+            "[{}] cleared STS policy for host={} (duration=0)", serverId, decision.hostLower());
         return;
       }
       case LEARN -> {

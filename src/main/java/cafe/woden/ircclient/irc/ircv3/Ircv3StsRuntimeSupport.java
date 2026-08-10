@@ -39,8 +39,7 @@ final class Ircv3StsRuntimeSupport {
       return List.of();
     }
 
-    ArrayList<Ircv3StsPolicyLearningPlanner.Decision> decisions =
-        new ArrayList<>(signals.size());
+    ArrayList<Ircv3StsPolicyLearningPlanner.Decision> decisions = new ArrayList<>(signals.size());
     for (Ircv3InboundCommandSignal signal : signals) {
       if (signal instanceof StsPolicyObserved observed) {
         toDecision(expectedHost, observedAtEpochMilli, observed).ifPresent(decisions::add);
@@ -92,7 +91,6 @@ final class Ircv3StsRuntimeSupport {
     }
 
     return Optional.of(
-        new Ircv3StsPolicyLearningPlanner.Decision(
-            outcome, hostLower, rawValue, Optional.empty()));
+        new Ircv3StsPolicyLearningPlanner.Decision(outcome, hostLower, rawValue, Optional.empty()));
   }
 }

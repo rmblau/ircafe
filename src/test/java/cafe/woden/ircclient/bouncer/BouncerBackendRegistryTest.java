@@ -131,9 +131,7 @@ class BouncerBackendRegistryTest {
     BouncerNetworkMappingStrategy missing = registry.mappingStrategyOrMissing(" MISSING ");
     assertEquals("missing", missing.backendId());
     IllegalStateException failure =
-        assertThrows(
-            IllegalStateException.class,
-            () -> missing.resolveNetwork(null, null));
+        assertThrows(IllegalStateException.class, () -> missing.resolveNetwork(null, null));
     assertEquals("Missing bouncer mapping strategy: missing", failure.getMessage());
   }
 

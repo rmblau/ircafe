@@ -31,10 +31,7 @@ public final class BouncerDiscoveredNetworkMaterializer {
   }
 
   public BouncerDiscoveredNetwork fromSojuNetwork(
-      String originServerId,
-      String networkId,
-      String displayName,
-      Map<String, String> attributes) {
+      String originServerId, String networkId, String displayName, Map<String, String> attributes) {
     String effectiveDisplay = normalize(displayName);
     if (effectiveDisplay == null) {
       effectiveDisplay = "net-" + networkId;
@@ -90,12 +87,7 @@ public final class BouncerDiscoveredNetworkMaterializer {
     merged.put("source", source);
 
     return new BouncerDiscoveredNetwork(
-        backendId,
-        originServerId,
-        networkId,
-        displayName,
-        autoConnectName,
-        Map.copyOf(merged));
+        backendId, originServerId, networkId, displayName, autoConnectName, Map.copyOf(merged));
   }
 
   private static String firstNonBlank(String... values) {

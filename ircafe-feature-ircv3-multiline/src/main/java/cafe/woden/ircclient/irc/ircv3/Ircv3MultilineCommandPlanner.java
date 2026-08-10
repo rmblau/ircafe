@@ -55,15 +55,12 @@ public final class Ircv3MultilineCommandPlanner {
               + Objects.toString(serverId, "").trim());
     }
 
-    Ircv3MultilineMessagePolicy.requireWithinMaxLines(
-        state.maxLines(), payload.lines(), serverId);
-    Ircv3MultilineMessagePolicy.requireWithinMaxBytes(
-        state.maxBytes(), payload.lines(), serverId);
+    Ircv3MultilineMessagePolicy.requireWithinMaxLines(state.maxLines(), payload.lines(), serverId);
+    Ircv3MultilineMessagePolicy.requireWithinMaxBytes(state.maxBytes(), payload.lines(), serverId);
 
     String normalizedBatchId = requireToken(batchId, "batch id");
     List<String> rawLines = new ArrayList<>(payload.lineCount() + 2);
-    rawLines.add(
-        "BATCH +" + normalizedBatchId + " " + batchType + " " + normalizedTarget);
+    rawLines.add("BATCH +" + normalizedBatchId + " " + batchType + " " + normalizedTarget);
     for (int i = 0; i < payload.lineCount(); i++) {
       String tagPrefix = "@batch=" + normalizedBatchId;
       if (i < payload.lineCount() - 1) {

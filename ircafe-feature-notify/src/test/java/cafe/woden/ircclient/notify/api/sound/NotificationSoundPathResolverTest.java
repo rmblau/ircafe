@@ -14,8 +14,7 @@ class NotificationSoundPathResolverTest {
 
     assertEquals(
         Path.of("config-home", "ircafe", "sounds", "custom.wav"),
-        NotificationSoundPathResolver.resolveCustomSoundPath(
-            runtimeConfig, " sounds/custom.wav "));
+        NotificationSoundPathResolver.resolveCustomSoundPath(runtimeConfig, " sounds/custom.wav "));
   }
 
   @Test
@@ -23,7 +22,8 @@ class NotificationSoundPathResolverTest {
     assertNull(
         NotificationSoundPathResolver.resolveCustomSoundPath(
             Path.of("config-home", "ircafe", "ircafe.yml"), " "));
-    assertNull(NotificationSoundPathResolver.resolveCustomSoundPath(Path.of("ircafe.yml"), "x.wav"));
+    assertNull(
+        NotificationSoundPathResolver.resolveCustomSoundPath(Path.of("ircafe.yml"), "x.wav"));
   }
 
   @Test

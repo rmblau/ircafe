@@ -59,7 +59,8 @@ class GitHubPreviewUtilTest {
         GitHubPreviewUtil.parse(URI.create("https://github.com/woden/ircafe/issues/42")).kind());
     assertEquals(
         GitHubPreviewUtil.Kind.COMMIT,
-        GitHubPreviewUtil.parse(URI.create("https://github.com/woden/ircafe/commit/abcdef0")).kind());
+        GitHubPreviewUtil.parse(URI.create("https://github.com/woden/ircafe/commit/abcdef0"))
+            .kind());
     assertEquals(
         GitHubPreviewUtil.Kind.RELEASE,
         GitHubPreviewUtil.parse(URI.create("https://github.com/woden/ircafe/releases/tag/v1.0.0"))

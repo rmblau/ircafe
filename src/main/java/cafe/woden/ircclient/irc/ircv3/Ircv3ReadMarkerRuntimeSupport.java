@@ -175,22 +175,22 @@ public final class Ircv3ReadMarkerRuntimeSupport {
 
   public record OutboundPlan(String rawLine, String target, String marker) {
     public OutboundPlan {
-      rawLine = Objects.requireNonNull(rawLine, "rawLine");
-      target = Objects.requireNonNull(target, "target");
-      marker = Objects.requireNonNull(marker, "marker");
+      Objects.requireNonNull(rawLine, "rawLine");
+      Objects.requireNonNull(target, "target");
+      Objects.requireNonNull(marker, "marker");
     }
   }
 
   public record TagObservation(String marker) {
     public TagObservation {
-      marker = Objects.requireNonNull(marker, "marker");
+      Objects.requireNonNull(marker, "marker");
     }
   }
 
   public record CommandObservation(String target, String marker) {
     public CommandObservation {
-      target = Objects.requireNonNull(target, "target");
-      marker = Objects.requireNonNull(marker, "marker");
+      Objects.requireNonNull(target, "target");
+      Objects.requireNonNull(marker, "marker");
     }
   }
 }

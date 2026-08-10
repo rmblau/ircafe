@@ -12,8 +12,7 @@ public record Ircv3InboundTagSignal(
     secondaryValue = Objects.toString(secondaryValue, "").trim();
   }
 
-  public static Ircv3InboundTagSignal of(
-      Ircv3InboundTagSignalType type, String primaryValue) {
+  public static Ircv3InboundTagSignal of(Ircv3InboundTagSignalType type, String primaryValue) {
     return new Ircv3InboundTagSignal(type, primaryValue, "");
   }
 }

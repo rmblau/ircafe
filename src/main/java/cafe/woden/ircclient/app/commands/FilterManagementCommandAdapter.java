@@ -5,8 +5,7 @@ final class FilterManagementCommandAdapter {
 
   FilterCommand toRoot(FilterManagementCommandSpec spec) {
     return switch (spec) {
-      case FilterManagementCommandSpec.ListRules list ->
-          new FilterCommand.ListRules(list.format());
+      case FilterManagementCommandSpec.ListRules list -> new FilterCommand.ListRules(list.format());
       case FilterManagementCommandSpec.Export export ->
           new FilterCommand.Export(export.format(), export.file());
       case FilterManagementCommandSpec.Move move ->

@@ -29,8 +29,7 @@ class FilterCommandSpecParserTest {
 
     FilterCommandSpec.Error unknown =
         assertInstanceOf(FilterCommandSpec.Error.class, parser.parse("/filter mystery"));
-    assertEquals(
-        "Unknown /filter subcommand: 'mystery'. Try: /filter help", unknown.message());
+    assertEquals("Unknown /filter subcommand: 'mystery'. Try: /filter help", unknown.message());
   }
 
   @Test
@@ -60,8 +59,7 @@ class FilterCommandSpecParserTest {
   void dispatchesDisplayAndManagementCommands() {
     FilterCommandSpec.Display display =
         assertInstanceOf(
-            FilterCommandSpec.Display.class,
-            parser.parse("/filter show on scope=libera/#JAVA"));
+            FilterCommandSpec.Display.class, parser.parse("/filter show on scope=libera/#JAVA"));
     FilterDisplayCommandSpec.Show show =
         assertInstanceOf(FilterDisplayCommandSpec.Show.class, display.command());
     assertEquals("libera/#java", show.scopePattern());
@@ -76,8 +74,7 @@ class FilterCommandSpecParserTest {
   void dispatchesLifecycleCommandsAndMapsChildErrors() {
     FilterCommandSpec.Lifecycle lifecycle =
         assertInstanceOf(
-            FilterCommandSpec.Lifecycle.class,
-            parser.parse("/filter toggle alpha beta*"));
+            FilterCommandSpec.Lifecycle.class, parser.parse("/filter toggle alpha beta*"));
     FilterLifecycleCommandSpec.Targets targets =
         assertInstanceOf(FilterLifecycleCommandSpec.Targets.class, lifecycle.command());
     assertEquals(FilterTargetActionSpec.TOGGLE, targets.action());

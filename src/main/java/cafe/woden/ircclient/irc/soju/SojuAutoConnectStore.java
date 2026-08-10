@@ -7,6 +7,7 @@ import cafe.woden.ircclient.config.properties.SojuProperties;
 import java.util.Map;
 import java.util.Objects;
 import org.jmolecules.architecture.layered.ApplicationLayer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 /**
@@ -27,6 +28,7 @@ public class SojuAutoConnectStore extends AbstractBouncerAutoConnectStore {
 
   private final BouncerAutoConnectNetworkKeyNormalizer networkKeyNormalizer;
 
+  @Autowired
   public SojuAutoConnectStore(SojuProperties props, BouncerDiscoveryConfigPort runtimeConfig) {
     this(props, runtimeConfig, new BouncerAutoConnectNetworkKeyNormalizer());
   }

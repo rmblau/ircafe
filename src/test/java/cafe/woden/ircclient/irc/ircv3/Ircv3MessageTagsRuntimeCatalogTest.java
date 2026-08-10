@@ -53,7 +53,8 @@ class Ircv3MessageTagsRuntimeCatalogTest {
   void higherPriorityProviderReplacesBuiltInParser() {
     Ircv3MessageTagsRuntimeCatalog catalog =
         Ircv3MessageTagsRuntimeCatalog.fromProviders(
-            List.of(provider("built-in", 0, Map.of("source", "built-in")),
+            List.of(
+                provider("built-in", 0, Map.of("source", "built-in")),
                 provider("plugin", 100, Map.of("source", "plugin"))));
 
     assertEquals("plugin", catalog.providerId());

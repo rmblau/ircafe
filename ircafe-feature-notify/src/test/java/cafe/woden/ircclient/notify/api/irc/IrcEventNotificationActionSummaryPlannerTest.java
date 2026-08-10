@@ -68,7 +68,8 @@ class IrcEventNotificationActionSummaryPlannerTest {
 
   @Test
   void nullRuleHasEmptySummary() {
-    IrcEventNotificationActionSummaryPlan plan = IrcEventNotificationActionSummaryPlanner.plan(null);
+    IrcEventNotificationActionSummaryPlan plan =
+        IrcEventNotificationActionSummaryPlanner.plan(null);
 
     assertFalse(plan.toastEnabled());
     assertFalse(plan.statusBarEnabled());

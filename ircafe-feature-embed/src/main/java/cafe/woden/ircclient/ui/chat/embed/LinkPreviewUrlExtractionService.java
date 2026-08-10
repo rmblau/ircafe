@@ -117,18 +117,8 @@ public class LinkPreviewUrlExtractionService {
     int end = raw.length();
     while (end > 0) {
       char c = raw.charAt(end - 1);
-      if (c == '.'
-          || c == ','
-          || c == ')'
-          || c == ']'
-          || c == '}'
-          || c == '>'
-          || c == '!'
-          || c == '?'
-          || c == ';'
-          || c == ':'
-          || c == '\''
-          || c == '"') {
+      if (c == '.' || c == ',' || c == ')' || c == ']' || c == '}' || c == '>' || c == '!'
+          || c == '?' || c == ';' || c == ':' || c == '\'' || c == '"') {
         end--;
       } else {
         break;

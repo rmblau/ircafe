@@ -8,10 +8,14 @@ public enum Ircv3InboundCommandOperation {
   CHGHOST,
   SETNAME,
   INVITE_NOTIFY,
-  /** @deprecated Use the focused capability operation constants. */
+  /**
+   * @deprecated Use the focused capability operation constants.
+   */
   @Deprecated
   PRESENCE,
-  /** @deprecated Use {@link #CHGHOST} or {@link #SETNAME}. */
+  /**
+   * @deprecated Use {@link #CHGHOST} or {@link #SETNAME}.
+   */
   @Deprecated
   IDENTITY_CHANGE,
   STANDARD_REPLY,

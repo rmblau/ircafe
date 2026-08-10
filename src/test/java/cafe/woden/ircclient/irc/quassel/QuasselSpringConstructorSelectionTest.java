@@ -21,8 +21,7 @@ class QuasselSpringConstructorSelectionTest {
             .filter(constructor -> constructor.isAnnotationPresent(Autowired.class))
             .count());
     assertTrue(
-        Arrays.stream(constructors)
-            .anyMatch(constructor -> constructor.getParameterCount() == 7));
+        Arrays.stream(constructors).anyMatch(constructor -> constructor.getParameterCount() == 7));
   }
 
   @Test
@@ -36,7 +35,6 @@ class QuasselSpringConstructorSelectionTest {
             .filter(constructor -> constructor.isAnnotationPresent(Autowired.class))
             .count());
     assertTrue(
-        Arrays.stream(constructors)
-            .anyMatch(constructor -> constructor.getParameterCount() == 4));
+        Arrays.stream(constructors).anyMatch(constructor -> constructor.getParameterCount() == 4));
   }
 }

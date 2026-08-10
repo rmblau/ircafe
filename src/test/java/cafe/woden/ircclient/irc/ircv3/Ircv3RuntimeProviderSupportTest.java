@@ -34,8 +34,7 @@ class Ircv3RuntimeProviderSupportTest {
         IllegalStateException.class,
         () -> index(List.of(new Provider(" ", 0, Set.of(Operation.FIRST)))));
     assertThrows(
-        IllegalStateException.class,
-        () -> index(List.of(new Provider("empty", 0, Set.of()))));
+        IllegalStateException.class, () -> index(List.of(new Provider("empty", 0, Set.of()))));
     assertThrows(
         IllegalStateException.class,
         () -> index(List.of(new Provider("null-operation", 0, operationsWithNull()))));
@@ -57,8 +56,7 @@ class Ircv3RuntimeProviderSupportTest {
     providers.add(null);
 
     assertThrows(
-        NullPointerException.class,
-        () -> Ircv3RuntimeProviderSupport.copyRequired(providers));
+        NullPointerException.class, () -> Ircv3RuntimeProviderSupport.copyRequired(providers));
   }
 
   @Test
@@ -75,8 +73,7 @@ class Ircv3RuntimeProviderSupportTest {
         IllegalStateException.class,
         () ->
             Ircv3RuntimeProviderSupport.selectHighestPriority(
-                List.of(
-                    new Provider("one", 50, Set.of()), new Provider("two", 50, Set.of())),
+                List.of(new Provider("one", 50, Set.of()), new Provider("two", 50, Set.of())),
                 Provider::providerId,
                 Provider::priority,
                 "test"));

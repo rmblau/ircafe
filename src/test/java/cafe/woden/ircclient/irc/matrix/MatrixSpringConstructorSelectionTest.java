@@ -29,8 +29,6 @@ class MatrixSpringConstructorSelectionTest {
     assertEquals(1, constructors.length);
     assertEquals(1, constructors[0].getParameterCount());
     assertTrue(constructors[0].isAnnotationPresent(Autowired.class));
-    assertEquals(
-        Ircv3RuntimeCatalogs.class,
-        constructors[0].getParameterTypes()[0]);
+    assertEquals(Ircv3RuntimeCatalogs.class, constructors[0].getParameterTypes()[0]);
   }
 }

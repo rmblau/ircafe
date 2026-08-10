@@ -72,8 +72,7 @@ class BouncerNetworkMappingStrategyGuideFixtureTest {
 
       ResolvedBouncerNetwork resolved = strategy.resolveNetwork(profile, network, context);
       BouncerEphemeralServerSpec serverSpec =
-          strategy.buildEphemeralServer(
-              profile, resolved, List.of("#ircafe", " ", "#plugins"));
+          strategy.buildEphemeralServer(profile, resolved, List.of("#ircafe", " ", "#plugins"));
 
       assertEquals("example:origin-1:libera", resolved.serverId());
       assertEquals("hint-user@libera", resolved.loginUser());

@@ -16,8 +16,7 @@ class Ircv3FeatureAvailabilityEvaluatorTest {
         new Ircv3FeatureContribution(
             10, "History", List.of("message-tags"), List.of("chathistory", "draft/chathistory"));
 
-    Evaluation evaluation =
-        single(feature, List.of(" MESSAGE-TAGS ", "DRAFT/CHATHISTORY"));
+    Evaluation evaluation = single(feature, List.of(" MESSAGE-TAGS ", "DRAFT/CHATHISTORY"));
 
     assertEquals(Readiness.READY, evaluation.readiness());
     assertEquals(List.of(), evaluation.missingRequiredAll());
@@ -27,8 +26,7 @@ class Ircv3FeatureAvailabilityEvaluatorTest {
   @Test
   void marksFeaturePartialWhenOnlySomeRequiredAllCapabilitiesAreSatisfied() {
     Ircv3FeatureContribution feature =
-        new Ircv3FeatureContribution(
-            10, "Replies", List.of("message-tags", "batch"), List.of());
+        new Ircv3FeatureContribution(10, "Replies", List.of("message-tags", "batch"), List.of());
 
     Evaluation evaluation = single(feature, List.of("message-tags"));
 

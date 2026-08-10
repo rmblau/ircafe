@@ -213,7 +213,8 @@ class OutboundChatHistoryCommandServiceTest {
 
     service.handleChatHistoryAround(disposables, "other=value", 20);
 
-    verify(ui).appendStatus(chan, "(chathistory)", "Around selector must be msgid=... or timestamp=...");
+    verify(ui)
+        .appendStatus(chan, "(chathistory)", "Around selector must be msgid=... or timestamp=...");
     verify(irc, never()).requestChatHistoryAround(anyString(), anyString(), anyString(), eq(20));
   }
 

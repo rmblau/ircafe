@@ -141,5 +141,4 @@ public final class Ircv3MessageTagsRuntimeCatalog {
     }
     return true;
   }
-
 }

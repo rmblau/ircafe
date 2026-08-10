@@ -12,10 +12,7 @@ class Ircv3InviteNotifyParserTest {
   void parsesInviteChannelFromTrailingParameter() {
     Ircv3InviteNotifyParser.Observation observed =
         Ircv3InviteNotifyParser.parse(
-                "alice",
-                "INVITE",
-                ":alice!u@h INVITE bob :#ircafe",
-                List.of("bob"))
+                "alice", "INVITE", ":alice!u@h INVITE bob :#ircafe", List.of("bob"))
             .orElseThrow();
 
     assertEquals("alice", observed.fromNick());
@@ -41,8 +38,7 @@ class Ircv3InviteNotifyParserTest {
   @Test
   void rejectsOtherCommandsAndMissingChannels() {
     assertTrue(
-        Ircv3InviteNotifyParser.parse("alice", "PRIVMSG", "", List.of("bob", "#ircafe"))
-            .isEmpty());
+        Ircv3InviteNotifyParser.parse("alice", "PRIVMSG", "", List.of("bob", "#ircafe")).isEmpty());
     assertTrue(
         Ircv3InviteNotifyParser.parse("alice", "INVITE", ":alice INVITE bob", List.of("bob"))
             .isEmpty());

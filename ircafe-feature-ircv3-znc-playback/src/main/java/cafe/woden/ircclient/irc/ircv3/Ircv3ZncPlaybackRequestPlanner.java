@@ -19,7 +19,10 @@ public final class Ircv3ZncPlaybackRequestPlanner {
     Instant from = fromInclusive == null ? Instant.EPOCH : fromInclusive;
     Instant captureTo = toInclusive == null ? Objects.requireNonNull(now, "now") : toInclusive;
     return new Plan(
-        normalizedTarget, from, captureTo, toInclusive != null && toInclusive.getEpochSecond() > 0L);
+        normalizedTarget,
+        from,
+        captureTo,
+        toInclusive != null && toInclusive.getEpochSecond() > 0L);
   }
 
   public record Plan(

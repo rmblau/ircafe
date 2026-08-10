@@ -47,8 +47,7 @@ public final class FilterRulePatchParser {
       String token = tokens.get(i);
       int equals = token.indexOf('=');
       if (equals < 0) {
-        throw new IllegalArgumentException(
-            "Invalid token: '" + token + "' (expected key=value)");
+        throw new IllegalArgumentException("Invalid token: '" + token + "' (expected key=value)");
       }
       String key = token.substring(0, equals).trim().toLowerCase(Locale.ROOT);
       String value = Objects.toString(token.substring(equals + 1), "").trim();
@@ -73,8 +72,7 @@ public final class FilterRulePatchParser {
           directionSpecified = true;
           direction = parseDirection(value);
           if (direction == null) {
-            throw new IllegalArgumentException(
-                "Invalid dir=: '" + value + "' (use in|out|any)");
+            throw new IllegalArgumentException("Invalid dir=: '" + value + "' (use in|out|any)");
           }
         }
         case "kind", "kinds" -> {
@@ -188,9 +186,7 @@ public final class FilterRulePatchParser {
             || lower.contains("away")) {
           kinds.add(FilterRulePatchSpec.Kind.PRESENCE);
           kindsSpecified = true;
-        } else if (lower.contains("topic")
-            || lower.contains("mode")
-            || lower.contains("status")) {
+        } else if (lower.contains("topic") || lower.contains("mode") || lower.contains("status")) {
           kinds.add(FilterRulePatchSpec.Kind.STATUS);
           kindsSpecified = true;
         } else if (lower.contains("privmsg")
@@ -258,8 +254,7 @@ public final class FilterRulePatchParser {
     return switch (Objects.toString(value, "").trim().toLowerCase(Locale.ROOT)) {
       case "", "hide" -> FilterRulePatchSpec.Action.HIDE;
       case "dim", "deemphasize", "de-emphasize" -> FilterRulePatchSpec.Action.DIM;
-      case "highlight", "hl", "emphasize", "emphasise" ->
-          FilterRulePatchSpec.Action.HIGHLIGHT;
+      case "highlight", "hl", "emphasize", "emphasise" -> FilterRulePatchSpec.Action.HIGHLIGHT;
       default ->
           throw new IllegalArgumentException(
               "Unknown action: '" + value + "' (use one of: hide, dim, highlight)");
@@ -319,13 +314,11 @@ public final class FilterRulePatchParser {
     String lower = normalized.toLowerCase(Locale.ROOT);
     if (lower.startsWith("glob:")) {
       return new FilterRulePatchSpec.RegexPattern(
-          globToRegexBody(normalized.substring(5)),
-          EnumSet.of(FilterRulePatchSpec.RegexFlag.I));
+          globToRegexBody(normalized.substring(5)), EnumSet.of(FilterRulePatchSpec.RegexFlag.I));
     }
     if (lower.startsWith("g:")) {
       return new FilterRulePatchSpec.RegexPattern(
-          globToRegexBody(normalized.substring(2)),
-          EnumSet.of(FilterRulePatchSpec.RegexFlag.I));
+          globToRegexBody(normalized.substring(2)), EnumSet.of(FilterRulePatchSpec.RegexFlag.I));
     }
     if (lower.startsWith("re:")) {
       return new FilterRulePatchSpec.RegexPattern(

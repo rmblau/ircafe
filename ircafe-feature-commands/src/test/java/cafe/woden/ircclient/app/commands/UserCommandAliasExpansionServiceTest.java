@@ -19,8 +19,7 @@ class UserCommandAliasExpansionServiceTest {
         service.expand(
             "/slap bob a large trout",
             List.of(
-                new UserCommandAliasDefinition(
-                    true, "slap", "/me slaps %1 with %2- in %c as %n")),
+                new UserCommandAliasDefinition(true, "slap", "/me slaps %1 with %2- in %c as %n")),
             context);
 
     assertEquals(List.of("/me slaps bob with a large trout in #ircafe as me"), result.lines());
@@ -62,9 +61,7 @@ class UserCommandAliasExpansionServiceTest {
   void detectsRecursiveAliases() {
     UserCommandAliasExpansionResult result =
         service.expand(
-            "/loop",
-            List.of(new UserCommandAliasDefinition(true, "loop", "/loop")),
-            context);
+            "/loop", List.of(new UserCommandAliasDefinition(true, "loop", "/loop")), context);
 
     assertTrue(result.lines().isEmpty());
     assertTrue(result.warnings().stream().anyMatch(warning -> warning.contains("recursion")));

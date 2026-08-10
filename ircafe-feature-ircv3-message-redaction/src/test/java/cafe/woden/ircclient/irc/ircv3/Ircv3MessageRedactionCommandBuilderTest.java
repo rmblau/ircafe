@@ -13,7 +13,6 @@ class Ircv3MessageRedactionCommandBuilderTest {
         Ircv3MessageRedactionCommandBuilder.buildRawLine("#ircafe", "abc", ""));
     assertEquals(
         "REDACT #ircafe abc :duplicate",
-        Ircv3MessageRedactionCommandBuilder.buildRawLine(
-            "#ircafe", "abc", " duplicate "));
+        Ircv3MessageRedactionCommandBuilder.buildRawLine("#ircafe", "abc", " duplicate "));
   }
 }

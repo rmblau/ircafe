@@ -5,7 +5,6 @@ import cafe.woden.ircclient.irc.backend.*;
 import cafe.woden.ircclient.irc.ircv3.*;
 import cafe.woden.ircclient.irc.ircv3.spi.*;
 import cafe.woden.ircclient.irc.pircbotx.parse.*;
-import cafe.woden.ircclient.irc.pircbotx.support.PircbotxEventMetadata;
 import cafe.woden.ircclient.irc.pircbotx.support.PircbotxUtil;
 import cafe.woden.ircclient.irc.playback.*;
 import java.time.Instant;
@@ -62,8 +61,7 @@ public final class PircbotxChatHistoryBatchCollector {
     List<Ircv3InboundCommandSignal> signals =
         inboundCommandRuntimeCatalog.parse(
             Ircv3InboundCommandOperation.HISTORY_BATCH_CONTROL,
-            new Ircv3InboundCommandRequest(
-                "", "BATCH", normalizedLine, List.of(), Map.of()));
+            new Ircv3InboundCommandRequest("", "BATCH", normalizedLine, List.of(), Map.of()));
     if (signals.isEmpty()) return false;
 
     for (Ircv3InboundCommandSignal signal : signals) {
@@ -94,10 +92,7 @@ public final class PircbotxChatHistoryBatchCollector {
               new ServerIrcEvent(
                   serverId,
                   new IrcEvent.ChatHistoryBatchReceived(
-                      Instant.now(),
-                      buf.target,
-                      end.batchId(),
-                      List.copyOf(buf.entries))));
+                      Instant.now(), buf.target, end.batchId(), List.copyOf(buf.entries))));
         }
       }
     }
@@ -105,11 +100,9 @@ public final class PircbotxChatHistoryBatchCollector {
   }
 
   public Optional<String> batchId(Map<String, String> ircv3Tags) {
-    Ircv3InboundTagRequest request =
-        new Ircv3InboundTagRequest("", "", "", List.of(), ircv3Tags);
+    Ircv3InboundTagRequest request = new Ircv3InboundTagRequest("", "", "", List.of(), ircv3Tags);
     for (Ircv3InboundTagSignal signal :
-        inboundTagRuntimeCatalog.parse(
-            Ircv3InboundTagOperation.HISTORY_BATCH_REFERENCE, request)) {
+        inboundTagRuntimeCatalog.parse(Ircv3InboundTagOperation.HISTORY_BATCH_REFERENCE, request)) {
       if (signal.type() == Ircv3InboundTagSignalType.HISTORY_BATCH_REFERENCE
           && !signal.primaryValue().isBlank()) {
         return Optional.of(signal.primaryValue());

@@ -50,8 +50,7 @@ final class PircbotxServerNumericRouter {
     this.emit = Objects.requireNonNull(emit, "emit");
     this.saslFailures = Objects.requireNonNull(saslFailures, "saslFailures");
     this.monitorEvents = Objects.requireNonNull(monitorEvents, "monitorEvents");
-    this.isupportObserver =
-        Objects.requireNonNull(isupportObserver, "isupportObserver");
+    this.isupportObserver = Objects.requireNonNull(isupportObserver, "isupportObserver");
     this.registrationLifecycle =
         Objects.requireNonNull(registrationLifecycle, "registrationLifecycle");
     this.whoEvents = Objects.requireNonNull(whoEvents, "whoEvents");

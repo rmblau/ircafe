@@ -44,6 +44,7 @@ class Ircv3MultilineSupportTest {
     assertEquals(4096L, parsed.maxBytes());
     assertEquals(4L, parsed.maxLines());
   }
+
   @Test
   void parsesLimitAliasesAndDefaultsMissingValues() {
     Ircv3MultilineSupport.LimitParams aliases =
@@ -56,5 +57,4 @@ class Ircv3MultilineSupportTest {
     assertEquals(-1L, missing.maxBytes());
     assertEquals(-1L, missing.maxLines());
   }
-
 }

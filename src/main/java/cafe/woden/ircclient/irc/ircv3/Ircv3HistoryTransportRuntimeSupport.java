@@ -30,11 +30,7 @@ public final class Ircv3HistoryTransportRuntimeSupport {
     return detect(
         Ircv3InboundCommandOperation.HISTORY_ZNC_CAPABILITY,
         new Ircv3InboundCommandRequest(
-            "server",
-            "CAP",
-            "",
-            List.of(Objects.toString(capabilityName, "")),
-            Map.of()));
+            "server", "CAP", "", List.of(Objects.toString(capabilityName, "")), Map.of()));
   }
 
   public Detection detectZncRpl004(String rawLine) {
@@ -60,7 +56,8 @@ public final class Ircv3HistoryTransportRuntimeSupport {
       Ircv3InboundCommandOperation operation, Ircv3InboundCommandRequest request) {
     List<Ircv3InboundCommandSignal> signals = commandCatalog.parse(operation, request);
     if (signals.size() != 1
-        || !(signals.getFirst() instanceof Ircv3InboundCommandSignal.ZncDetectedObserved detected)) {
+        || !(signals.getFirst()
+            instanceof Ircv3InboundCommandSignal.ZncDetectedObserved detected)) {
       return Detection.notDetected();
     }
     String source = bounded(detected.source());

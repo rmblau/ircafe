@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.ui.chat.embed.spi;
 
-import java.util.List;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;

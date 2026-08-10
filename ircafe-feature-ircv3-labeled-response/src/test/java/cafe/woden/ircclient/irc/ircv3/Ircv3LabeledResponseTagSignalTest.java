@@ -11,8 +11,7 @@ class Ircv3LabeledResponseTagSignalTest {
   @Test
   void extractsLabelFromTagsAndRawLines() {
     assertEquals(
-        "req-1",
-        Ircv3LabeledResponseTagSignal.fromTags(Map.of("label", "req-1")).orElseThrow());
+        "req-1", Ircv3LabeledResponseTagSignal.fromTags(Map.of("label", "req-1")).orElseThrow());
     assertEquals(
         "req;2",
         Ircv3LabeledResponseTagSignal.fromRawLine("@label=req\\:2 :server 200 me :ok")

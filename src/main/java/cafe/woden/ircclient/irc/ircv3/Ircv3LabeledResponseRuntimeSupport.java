@@ -26,13 +26,11 @@ public final class Ircv3LabeledResponseRuntimeSupport {
   }
 
   public Optional<Observation> fromTags(String command, Map<String, String> tags) {
-    return observe(
-        new Ircv3InboundTagRequest(command, "", "", List.of(), tags, ""));
+    return observe(new Ircv3InboundTagRequest(command, "", "", List.of(), tags, ""));
   }
 
   public Optional<Observation> fromRawLine(String command, String rawLine) {
-    return observe(
-        new Ircv3InboundTagRequest(command, "", "", List.of(), Map.of(), rawLine));
+    return observe(new Ircv3InboundTagRequest(command, "", "", List.of(), Map.of(), rawLine));
   }
 
   private Optional<Observation> observe(Ircv3InboundTagRequest request) {

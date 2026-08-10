@@ -84,8 +84,7 @@ class BuiltInProviderSubprojectBoundaryTest {
   void sharedJavaBuildConventionsOwnTransitiveCyclonedxJarDependencies() throws IOException {
     String moduleConvention =
         Files.readString(Path.of("gradle/java-library-subproject-conventions.gradle"));
-    String featureConvention =
-        Files.readString(Path.of("gradle/ircv3-feature-conventions.gradle"));
+    String featureConvention = Files.readString(Path.of("gradle/ircv3-feature-conventions.gradle"));
     String builtInConvention =
         Files.readString(Path.of("gradle/builtins-provider-conventions.gradle"));
 
@@ -110,8 +109,7 @@ class BuiltInProviderSubprojectBoundaryTest {
   }
 
   @Test
-  void builtInIrcv3MessageTagsAndMessageIdProvidersOwnFocusedRuntimeParsing()
-      throws IOException {
+  void builtInIrcv3MessageTagsAndMessageIdProvidersOwnFocusedRuntimeParsing() throws IOException {
     assertRuntimeMessageTagParserProvider(
         "ircafe-builtins-ircv3-message-tags",
         "ircafe-feature-ircv3-message-tags",
@@ -388,9 +386,7 @@ class BuiltInProviderSubprojectBoundaryTest {
         "ircafe-feature-ircv3-negotiation",
         "Ircv3NegotiationRuntimeProvider.java",
         List.of(
-            "Ircv3IsupportLine",
-            "Ircv3CapabilityChangePlanner",
-            "Ircv3CapabilityFallbackPlanner"),
+            "Ircv3IsupportLine", "Ircv3CapabilityChangePlanner", "Ircv3CapabilityFallbackPlanner"),
         List.of("ircafe-feature-ircv3-common"),
         false);
     assertRuntimeInboundCommandProvider(
@@ -417,13 +413,11 @@ class BuiltInProviderSubprojectBoundaryTest {
     assertFocusedIrcv3Provider(
         "ircafe-builtins-ircv3-echo-message", "Ircv3EchoMessageExtensionProvider.java");
     assertFocusedIrcv3Provider(
-        "ircafe-builtins-ircv3-standard-replies",
-        "Ircv3StandardRepliesExtensionProvider.java");
+        "ircafe-builtins-ircv3-standard-replies", "Ircv3StandardRepliesExtensionProvider.java");
     assertFocusedIrcv3Provider(
         "ircafe-builtins-ircv3-account-tag", "Ircv3AccountTagExtensionProvider.java");
     assertFocusedIrcv3Provider(
-        "ircafe-builtins-ircv3-labeled-response",
-        "Ircv3LabeledResponseExtensionProvider.java");
+        "ircafe-builtins-ircv3-labeled-response", "Ircv3LabeledResponseExtensionProvider.java");
     assertFocusedIrcv3Provider(
         "ircafe-builtins-ircv3-away-notify", "Ircv3AwayNotifyExtensionProvider.java");
     assertFocusedIrcv3Provider(
@@ -439,17 +433,14 @@ class BuiltInProviderSubprojectBoundaryTest {
     assertFocusedIrcv3Provider(
         "ircafe-builtins-ircv3-monitor", "Ircv3MonitorExtensionProvider.java");
     assertFocusedIrcv3Provider(
-        "ircafe-builtins-ircv3-extended-monitor",
-        "Ircv3ExtendedMonitorExtensionProvider.java");
+        "ircafe-builtins-ircv3-extended-monitor", "Ircv3ExtendedMonitorExtensionProvider.java");
     assertFocusedIrcv3Provider(
         "ircafe-builtins-ircv3-multi-prefix", "Ircv3MultiPrefixExtensionProvider.java");
     assertFocusedIrcv3Provider(
-        "ircafe-builtins-ircv3-userhost-in-names",
-        "Ircv3UserhostInNamesExtensionProvider.java");
+        "ircafe-builtins-ircv3-userhost-in-names", "Ircv3UserhostInNamesExtensionProvider.java");
     assertFocusedIrcv3Provider(
         "ircafe-builtins-ircv3-cap-notify", "Ircv3CapNotifyExtensionProvider.java");
-    assertFocusedIrcv3Provider(
-        "ircafe-builtins-ircv3-batch", "Ircv3BatchExtensionProvider.java");
+    assertFocusedIrcv3Provider("ircafe-builtins-ircv3-batch", "Ircv3BatchExtensionProvider.java");
     assertFocusedIrcv3Provider(
         "ircafe-builtins-ircv3-znc-playback", "Ircv3ZncPlaybackExtensionProvider.java");
     assertFocusedIrcv3Provider(
@@ -459,19 +450,14 @@ class BuiltInProviderSubprojectBoundaryTest {
     assertFocusedIrcv3Provider(
         "ircafe-builtins-ircv3-read-marker", "Ircv3ReadMarkerExtensionProvider.java");
     assertFocusedIrcv3Provider(
-        "ircafe-builtins-ircv3-message-redaction",
-        "Ircv3MessageRedactionExtensionProvider.java");
-    assertFocusedIrcv3Provider(
-        "ircafe-builtins-ircv3-sts", "Ircv3StsExtensionProvider.java");
-    assertFocusedIrcv3Provider(
-        "ircafe-builtins-ircv3-reply", "Ircv3ReplyExtensionProvider.java");
+        "ircafe-builtins-ircv3-message-redaction", "Ircv3MessageRedactionExtensionProvider.java");
+    assertFocusedIrcv3Provider("ircafe-builtins-ircv3-sts", "Ircv3StsExtensionProvider.java");
+    assertFocusedIrcv3Provider("ircafe-builtins-ircv3-reply", "Ircv3ReplyExtensionProvider.java");
     assertFocusedIrcv3Provider(
         "ircafe-builtins-ircv3-reactions", "Ircv3ReactionsExtensionProvider.java");
+    assertFocusedIrcv3Provider("ircafe-builtins-ircv3-typing", "Ircv3TypingExtensionProvider.java");
     assertFocusedIrcv3Provider(
-        "ircafe-builtins-ircv3-typing", "Ircv3TypingExtensionProvider.java");
-    assertFocusedIrcv3Provider(
-        "ircafe-builtins-ircv3-channel-context",
-        "Ircv3ChannelContextExtensionProvider.java");
+        "ircafe-builtins-ircv3-channel-context", "Ircv3ChannelContextExtensionProvider.java");
     assertFocusedIrcv3Provider(
         "ircafe-builtins-ircv3-message-edit", "Ircv3MessageEditExtensionProvider.java");
 
@@ -620,8 +606,7 @@ class BuiltInProviderSubprojectBoundaryTest {
         build.contains("implementation project(':" + featureProject + "')"),
         projectName + " should package its focused inbound tag feature");
     assertTrue(
-        provider.contains("Ircv3InboundTagSignalProvider")
-            && provider.contains(signalPolicyClass),
+        provider.contains("Ircv3InboundTagSignalProvider") && provider.contains(signalPolicyClass),
         providerFile + " should expose the inbound tag runtime ServiceLoader contract");
     if (publishesCapabilityMetadata) {
       assertTrue(
@@ -756,10 +741,10 @@ class BuiltInProviderSubprojectBoundaryTest {
       return true;
     }
     return isPairedIrcv3RuntimeDependency(
-        sourceRoot,
-        dependency,
-        "ircafe-builtins-ircv3-message-tags",
-        "cafe.woden.ircclient.irc.ircv3.Ircv3Tags")
+            sourceRoot,
+            dependency,
+            "ircafe-builtins-ircv3-message-tags",
+            "cafe.woden.ircclient.irc.ircv3.Ircv3Tags")
         || isPairedIrcv3RuntimeDependency(
             sourceRoot,
             dependency,

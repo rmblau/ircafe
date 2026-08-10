@@ -16,26 +16,19 @@ public final class Ircv3ExtendedJoinSignalParser {
   }
 
   public record Observation(
-      String nick,
-      String channel,
-      AccountState accountState,
-      String accountName,
-      String realName) {
+      String nick, String channel, AccountState accountState, String accountName, String realName) {
     public Observation {
       nick = Objects.toString(nick, "").trim();
       channel = Objects.toString(channel, "").trim();
       accountState = Objects.requireNonNull(accountState, "accountState");
-      accountName =
-          accountState == AccountState.LOGGED_OUT ? null : normalizeNullable(accountName);
+      accountName = accountState == AccountState.LOGGED_OUT ? null : normalizeNullable(accountName);
       realName = normalizeNullable(realName);
     }
   }
 
   public static Optional<Observation> parse(
       String sourceNick, String command, List<String> parameters) {
-    if (!"JOIN".equals(normalizedCommand(command))
-        || parameters == null
-        || parameters.size() < 2) {
+    if (!"JOIN".equals(normalizedCommand(command)) || parameters == null || parameters.size() < 2) {
       return Optional.empty();
     }
 

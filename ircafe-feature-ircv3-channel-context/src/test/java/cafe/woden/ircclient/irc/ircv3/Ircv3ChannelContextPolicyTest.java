@@ -20,8 +20,7 @@ class Ircv3ChannelContextPolicyTest {
   @Test
   void channelTargetsRemainChannelsAndDirectMessagesResolveToSender() {
     assertEquals(
-        "#ircafe",
-        Ircv3ChannelContextPolicy.resolveConversationTarget("#ircafe", "alice"));
+        "#ircafe", Ircv3ChannelContextPolicy.resolveConversationTarget("#ircafe", "alice"));
     assertEquals("alice", Ircv3ChannelContextPolicy.resolveConversationTarget("me", "alice"));
     assertEquals("me", Ircv3ChannelContextPolicy.resolveConversationTarget("me", ""));
   }

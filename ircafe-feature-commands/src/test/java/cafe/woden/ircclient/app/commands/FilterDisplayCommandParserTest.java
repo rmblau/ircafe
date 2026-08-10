@@ -92,8 +92,7 @@ class FilterDisplayCommandParserTest {
     FilterDisplayCommandSpec.OverrideDel delete =
         assertInstanceOf(
             FilterDisplayCommandSpec.OverrideDel.class,
-            parser.parse(
-                "override", tokens("/filter", "override", "remove", "libera/#OPS")));
+            parser.parse("override", tokens("/filter", "override", "remove", "libera/#OPS")));
     assertEquals("libera/#ops", delete.scopePattern());
 
     FilterDisplayCommandSpec.OverrideSet set =

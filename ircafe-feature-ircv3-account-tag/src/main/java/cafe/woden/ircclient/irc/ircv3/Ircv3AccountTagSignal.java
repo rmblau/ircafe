@@ -12,8 +12,7 @@ public record Ircv3AccountTagSignal(String nick, String rawAccount) {
     rawAccount = Objects.toString(rawAccount, "").trim();
   }
 
-  public static Optional<Ircv3AccountTagSignal> fromTags(
-      String nick, Map<String, String> tags) {
+  public static Optional<Ircv3AccountTagSignal> fromTags(String nick, Map<String, String> tags) {
     String normalizedNick = Objects.toString(nick, "").trim();
     if (normalizedNick.isEmpty() || tags == null || !tags.containsKey("account")) {
       return Optional.empty();

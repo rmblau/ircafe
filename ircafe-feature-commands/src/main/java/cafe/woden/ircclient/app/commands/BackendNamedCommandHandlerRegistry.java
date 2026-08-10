@@ -19,8 +19,7 @@ public final class BackendNamedCommandHandlerRegistry {
   private final List<String> generalHelpLines;
   private final Map<String, List<String>> topicHelpLines;
 
-  public BackendNamedCommandHandlerRegistry(
-      List<? extends BackendNamedCommandHandler> handlers) {
+  public BackendNamedCommandHandlerRegistry(List<? extends BackendNamedCommandHandler> handlers) {
     List<BackendNamedCommandHandler> safeHandlers = copyNonNullHandlers(handlers);
     this.handlersByCommandName = indexHandlersByCommandName(safeHandlers);
     this.autocompleteCommands = buildAutocompleteCommands(safeHandlers);

@@ -7,8 +7,7 @@ import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
 /** Translates ZNC *status ListNetworks lines into generic bouncer discovery events. */
 public class ZncBouncerDiscoveryAdapter {
 
-  private final ZncBouncerListNetworksParser protocolParser =
-      new ZncBouncerListNetworksParser();
+  private final ZncBouncerListNetworksParser protocolParser = new ZncBouncerListNetworksParser();
   private final BouncerDiscoveredNetworkMaterializer materializer =
       new BouncerDiscoveredNetworkMaterializer();
 

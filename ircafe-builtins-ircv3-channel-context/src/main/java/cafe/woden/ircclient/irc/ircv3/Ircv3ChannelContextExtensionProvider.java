@@ -66,8 +66,6 @@ public final class Ircv3ChannelContextExtensionProvider
             request.tags(), request.rawTarget(), request.sourceNick());
     return target.isEmpty()
         ? List.of()
-        : List.of(
-            Ircv3InboundTagSignal.of(
-                Ircv3InboundTagSignalType.CONVERSATION_TARGET, target));
+        : List.of(Ircv3InboundTagSignal.of(Ircv3InboundTagSignalType.CONVERSATION_TARGET, target));
   }
 }

@@ -11,14 +11,12 @@ class Ircv3MonitorCommandPlannerTest {
   @Test
   void parsesAliasesSignedFormsAndAddShorthand() {
     assertInstanceOf(
-        Ircv3MonitorCommandPlanner.ListRequested.class,
-        Ircv3MonitorCommandPlanner.parse("l"));
+        Ircv3MonitorCommandPlanner.ListRequested.class, Ircv3MonitorCommandPlanner.parse("l"));
     assertInstanceOf(
         Ircv3MonitorCommandPlanner.StatusRequested.class,
         Ircv3MonitorCommandPlanner.parse("status"));
     assertInstanceOf(
-        Ircv3MonitorCommandPlanner.ClearRequested.class,
-        Ircv3MonitorCommandPlanner.parse("c"));
+        Ircv3MonitorCommandPlanner.ClearRequested.class, Ircv3MonitorCommandPlanner.parse("c"));
 
     assertEquals(
         new Ircv3MonitorCommandPlanner.Modify('+', "alice bob"),
@@ -35,12 +33,10 @@ class Ircv3MonitorCommandPlannerTest {
   void plansSimpleAndChunkedRawLines() {
     assertEquals(
         "MONITOR S",
-        Ircv3MonitorCommandPlanner.simpleRawLine(
-            new Ircv3MonitorCommandPlanner.StatusRequested()));
+        Ircv3MonitorCommandPlanner.simpleRawLine(new Ircv3MonitorCommandPlanner.StatusRequested()));
     assertEquals(
         List.of("MONITOR +alice,bob", "MONITOR +carol"),
-        Ircv3MonitorCommandPlanner.modificationRawLines(
-            '+', List.of("alice", "bob", "carol"), 2));
+        Ircv3MonitorCommandPlanner.modificationRawLines('+', List.of("alice", "bob", "carol"), 2));
   }
 
   @Test

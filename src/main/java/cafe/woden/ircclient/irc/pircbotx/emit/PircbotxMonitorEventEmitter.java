@@ -54,7 +54,8 @@ public final class PircbotxMonitorEventEmitter {
         handled = true;
       } else if (signal instanceof Ircv3InboundCommandSignal.MonitorListObserved list) {
         if (list.nicks().isEmpty()) continue;
-        emit.accept(new ServerIrcEvent(serverId, new IrcEvent.MonitorListObserved(at, list.nicks())));
+        emit.accept(
+            new ServerIrcEvent(serverId, new IrcEvent.MonitorListObserved(at, list.nicks())));
         handled = true;
       } else if (signal instanceof Ircv3InboundCommandSignal.MonitorListEnded) {
         emit.accept(new ServerIrcEvent(serverId, new IrcEvent.MonitorListEnded(at)));

@@ -25,9 +25,7 @@ final class GitHubLinkPreviewResolver implements LinkPreviewResolver {
 
       var resp =
           http.getString(
-              api,
-              "application/vnd.github+json",
-              Map.of("X-GitHub-Api-Version", "2022-11-28"));
+              api, "application/vnd.github+json", Map.of("X-GitHub-Api-Version", "2022-11-28"));
 
       if (resp.statusCode() < 200 || resp.statusCode() >= 300) {
         return null;

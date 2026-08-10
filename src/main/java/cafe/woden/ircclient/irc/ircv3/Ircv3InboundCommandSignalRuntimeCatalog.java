@@ -73,8 +73,7 @@ public final class Ircv3InboundCommandSignalRuntimeCatalog {
 
   static List<Ircv3InboundCommandSignalProvider> loadApplicationProviders() {
     return Ircv3RuntimeProviderSupport.loadApplicationProviders(
-        Ircv3InboundCommandSignalProvider.class,
-        Ircv3InboundCommandSignalRuntimeCatalog.class);
+        Ircv3InboundCommandSignalProvider.class, Ircv3InboundCommandSignalRuntimeCatalog.class);
   }
 
   private static List<Ircv3InboundCommandSignalProvider> loadInstalledProviders(

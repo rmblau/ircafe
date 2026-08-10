@@ -49,7 +49,8 @@ class IrcEventNotificationDefaultRuleCatalogTest {
         IrcEventNotificationDefaultRuleCatalog.defaultBuiltInSoundIdForEvent("ctcp_received"));
     assertEquals(
         "NETSPLIT_1",
-        IrcEventNotificationDefaultRuleCatalog.defaultBuiltInSoundIdForEvent(" NETSPLIT_DETECTED "));
+        IrcEventNotificationDefaultRuleCatalog.defaultBuiltInSoundIdForEvent(
+            " NETSPLIT_DETECTED "));
     assertEquals(
         IrcEventNotificationDefaultRuleCatalog.DEFAULT_SOUND_ID,
         IrcEventNotificationDefaultRuleCatalog.defaultBuiltInSoundIdForEvent("not-a-real-event"));
@@ -64,7 +65,8 @@ class IrcEventNotificationDefaultRuleCatalogTest {
     assertEquals("UNKNOWN", defaults.get(0).eventType());
     assertFalse(defaults.get(0).enabled());
     assertEquals("ANY", defaults.get(0).sourceMode());
-    assertEquals(IrcEventNotificationDefaultRuleCatalog.DEFAULT_SOUND_ID, defaults.get(0).soundId());
+    assertEquals(
+        IrcEventNotificationDefaultRuleCatalog.DEFAULT_SOUND_ID, defaults.get(0).soundId());
 
     assertEquals("YOU_BANNED", defaults.get(1).eventType());
     assertTrue(defaults.get(1).enabled());

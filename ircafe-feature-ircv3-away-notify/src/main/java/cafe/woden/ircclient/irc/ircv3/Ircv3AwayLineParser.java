@@ -69,13 +69,9 @@ public final class Ircv3AwayLineParser {
     }
 
     boolean is305 =
-        normalized.startsWith("305 ")
-            || normalized.startsWith("305\t")
-            || normalized.equals("305");
+        normalized.startsWith("305 ") || normalized.startsWith("305\t") || normalized.equals("305");
     boolean is306 =
-        normalized.startsWith("306 ")
-            || normalized.startsWith("306\t")
-            || normalized.equals("306");
+        normalized.startsWith("306 ") || normalized.startsWith("306\t") || normalized.equals("306");
     if (!is305 && !is306) return null;
 
     String message = null;

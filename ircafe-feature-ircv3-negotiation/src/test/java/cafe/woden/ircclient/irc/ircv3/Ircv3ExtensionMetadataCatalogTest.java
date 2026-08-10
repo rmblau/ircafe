@@ -35,8 +35,7 @@ class Ircv3ExtensionMetadataCatalogTest {
         Ircv3ExtensionMetadataCatalog.snapshot(List.of(later, earlier));
 
     assertEquals(List.of("earlier", "later"), snapshot.providerIds());
-    assertEquals(
-        List.of("echo-message", "example"), snapshot.requestableCapabilityTokens());
+    assertEquals(List.of("echo-message", "example"), snapshot.requestableCapabilityTokens());
     assertEquals("example", snapshot.requestTokenFor("EXAMPLE-ALIAS"));
     assertEquals("example", snapshot.preferenceKeyFor("draft/example"));
     assertEquals(
@@ -80,8 +79,7 @@ class Ircv3ExtensionMetadataCatalogTest {
             new Ircv3UiMetadata("Typing", Ircv3UiGroup.CONVERSATION, 10, "Typing status."));
 
     Ircv3ExtensionMetadataCatalog.Snapshot snapshot =
-        Ircv3ExtensionMetadataCatalog.snapshot(
-            List.of(provider("typing", 10, tagFeature, null)));
+        Ircv3ExtensionMetadataCatalog.snapshot(List.of(provider("typing", 10, tagFeature, null)));
 
     assertEquals("", snapshot.normalizeRequestToken("draft/typing"));
     assertEquals("typing", snapshot.normalizePreferenceKey("draft/typing"));

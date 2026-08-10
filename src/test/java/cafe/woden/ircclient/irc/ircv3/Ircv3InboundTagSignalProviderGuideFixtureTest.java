@@ -18,8 +18,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 class Ircv3InboundTagSignalProviderGuideFixtureTest {
 
-  private static final String GUIDE_PROVIDER_CLASS =
-      "example.ircv3.ExampleReplyTagRuntimeProvider";
+  private static final String GUIDE_PROVIDER_CLASS = "example.ircv3.ExampleReplyTagRuntimeProvider";
 
   @TempDir Path tempDir;
 

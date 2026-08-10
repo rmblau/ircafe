@@ -76,8 +76,7 @@ class Ircv3WhoUserhostParserTest {
   @Test
   void parsesSingleRpl302UserhostEntry() {
     List<Ircv3WhoUserhostParser.UserhostEntry> entries =
-        Ircv3WhoUserhostParser.parseRpl302Userhost(
-            ":server 302 me :alice=+ident@host.example");
+        Ircv3WhoUserhostParser.parseRpl302Userhost(":server 302 me :alice=+ident@host.example");
 
     assertNotNull(entries);
     assertEquals(1, entries.size());

@@ -11,8 +11,7 @@ import org.junit.jupiter.api.Test;
 
 class FilterRuleMutationCommandParserTest {
 
-  private final FilterRuleMutationCommandParser parser =
-      new FilterRuleMutationCommandParser();
+  private final FilterRuleMutationCommandParser parser = new FilterRuleMutationCommandParser();
 
   @Test
   void parsesKeyValueAddEnvelopeAndPatch() {
@@ -22,12 +21,7 @@ class FilterRuleMutationCommandParserTest {
             parser.parse(
                 "add",
                 List.of(
-                    "/filter",
-                    "add",
-                    "named",
-                    "scope=LIBERA/#JAVA",
-                    "enabled=on",
-                    "text=hello")));
+                    "/filter", "add", "named", "scope=LIBERA/#JAVA", "enabled=on", "text=hello")));
 
     assertEquals("named", parsed.name());
     assertEquals("LIBERA/#java", parsed.patch().scope());
@@ -44,13 +38,7 @@ class FilterRuleMutationCommandParserTest {
             FilterRuleMutationCommandSpec.Add.class,
             parser.parse(
                 "add",
-                List.of(
-                    "/filter",
-                    "add",
-                    "eqrule",
-                    "irc.libera.#chan",
-                    "irc_privmsg",
-                    "foo=bar")));
+                List.of("/filter", "add", "eqrule", "irc.libera.#chan", "irc_privmsg", "foo=bar")));
 
     assertEquals("eqrule", parsed.name());
     assertEquals("libera/#chan", parsed.patch().scope());
@@ -64,8 +52,7 @@ class FilterRuleMutationCommandParserTest {
           assertInstanceOf(
               FilterRuleMutationCommandSpec.AddReplace.class,
               parser.parse(
-                  alias,
-                  List.of("/filter", alias, "named", "scope=*/#ops", "action=dim")));
+                  alias, List.of("/filter", alias, "named", "scope=*/#ops", "action=dim")));
 
       assertEquals("named", parsed.name());
       assertEquals("*/#ops", parsed.patch().scope());
@@ -83,8 +70,7 @@ class FilterRuleMutationCommandParserTest {
         assertInstanceOf(
             FilterRuleMutationCommandSpec.Set.class,
             parser.parse(
-                "set",
-                List.of("/filter", "set", "named", "enabled=off", "from=alice,bob")));
+                "set", List.of("/filter", "set", "named", "enabled=off", "from=alice,bob")));
 
     assertEquals("named", empty.name());
     assertFalse(empty.patch().scopeSpecified());

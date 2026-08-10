@@ -17,15 +17,12 @@ class Ircv3LabeledResponseRuntimeSupportTest {
 
   @Test
   void adaptsBuiltInTagAndRawLineSignals() {
-    Ircv3LabeledResponseRuntimeSupport support =
-        Ircv3RuntimeTestFixtures.labeledResponse();
+    Ircv3LabeledResponseRuntimeSupport support = Ircv3RuntimeTestFixtures.labeledResponse();
 
     Ircv3LabeledResponseRuntimeSupport.Observation success =
         support.fromTags("NOTE", Map.of("label", "request-1")).orElseThrow();
     Ircv3LabeledResponseRuntimeSupport.Observation failure =
-        support
-            .fromRawLine("FAIL", "@label=request-2 :server FAIL TEST BAD :no")
-            .orElseThrow();
+        support.fromRawLine("FAIL", "@label=request-2 :server FAIL TEST BAD :no").orElseThrow();
 
     assertEquals("request-1", success.label());
     assertEquals(Ircv3LabeledResponseRuntimeSupport.Outcome.SUCCESS, success.outcome());
@@ -52,9 +49,7 @@ class Ircv3LabeledResponseRuntimeSupportTest {
               Ircv3InboundTagOperation operation, Ircv3InboundTagRequest request) {
             return List.of(
                 new Ircv3InboundTagSignal(
-                    Ircv3InboundTagSignalType.LABELED_RESPONSE,
-                    "plugin-label",
-                    "FAILURE"));
+                    Ircv3InboundTagSignalType.LABELED_RESPONSE, "plugin-label", "FAILURE"));
           }
         };
     Ircv3LabeledResponseRuntimeSupport support =

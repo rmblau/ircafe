@@ -3,13 +3,16 @@ package cafe.woden.ircclient.notify.api.irc;
 import java.util.Locale;
 import java.util.Objects;
 
-/** Feature-owned policy for preserving or updating IRC-event built-in sound selections while editing. */
+/**
+ * Feature-owned policy for preserving or updating IRC-event built-in sound selections while
+ * editing.
+ */
 public final class IrcEventNotificationSoundSelectionPlanner {
   private IrcEventNotificationSoundSelectionPlanner() {}
 
   /**
-   * Returns a plan to update the built-in sound when the current selection still equals the previous
-   * event's default. Manual built-in selections and custom-sound selections are preserved.
+   * Returns a plan to update the built-in sound when the current selection still equals the
+   * previous event's default. Manual built-in selections and custom-sound selections are preserved.
    */
   public static IrcEventNotificationSoundSelectionPlan planDefaultSoundForEventChange(
       String previousEventType,

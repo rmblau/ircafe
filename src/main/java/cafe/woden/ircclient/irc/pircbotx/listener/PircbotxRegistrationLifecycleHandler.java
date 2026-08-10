@@ -49,8 +49,7 @@ final class PircbotxRegistrationLifecycleHandler {
     this.serverResponses = Objects.requireNonNull(serverResponses, "serverResponses");
     this.emit = Objects.requireNonNull(emit, "emit");
     this.outboundCommandRuntimeCatalog =
-        Objects.requireNonNull(
-            outboundCommandRuntimeCatalog, "outboundCommandRuntimeCatalog");
+        Objects.requireNonNull(outboundCommandRuntimeCatalog, "outboundCommandRuntimeCatalog");
     this.historyTransportRuntimeSupport =
         Objects.requireNonNull(historyTransportRuntimeSupport, "historyTransportRuntimeSupport");
   }
@@ -124,8 +123,7 @@ final class PircbotxRegistrationLifecycleHandler {
       String command =
           outboundCommandRuntimeCatalog.buildSingle(
               Ircv3OutboundCommandOperation.ZNC_PLAYBACK,
-              Ircv3OutboundCommandRequest.zncPlayback(
-                  "*", Instant.ofEpochSecond(request), null));
+              Ircv3OutboundCommandRequest.zncPlayback("*", Instant.ofEpochSecond(request), null));
       if (command.isBlank()) {
         throw new IllegalStateException("No IRCv3 ZNC playback runtime provider is available");
       }

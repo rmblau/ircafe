@@ -49,8 +49,7 @@ class EmbedLoadPolicyTagFactsParserTest {
   @Test
   void parsesAccountAgeFromCreationTimestampTags() {
     assertEquals(
-        10,
-        parser.parse(Map.of("account-created", "2026-06-19T12:00:00Z")).accountAgeDays());
+        10, parser.parse(Map.of("account-created", "2026-06-19T12:00:00Z")).accountAgeDays());
     assertEquals(10, parser.parse(Map.of("account-ts", "1781870400")).accountAgeDays());
     assertEquals(10, parser.parse(Map.of("account_registered", "1781870400000")).accountAgeDays());
   }

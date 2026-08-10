@@ -21,8 +21,7 @@ class Ircv3HistoryTransportRuntimeSupportTest {
 
   @Test
   void builtInProviderDetectsZncAndSuppressesBootstrapTraffic() {
-    Ircv3HistoryTransportRuntimeSupport support =
-        Ircv3RuntimeTestFixtures.historyTransport();
+    Ircv3HistoryTransportRuntimeSupport support = Ircv3RuntimeTestFixtures.historyTransport();
 
     Ircv3HistoryTransportRuntimeSupport.Detection capability =
         support.detectZncCapability("znc.in/playback");

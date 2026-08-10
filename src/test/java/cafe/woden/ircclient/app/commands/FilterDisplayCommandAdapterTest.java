@@ -17,8 +17,7 @@ class FilterDisplayCommandAdapterTest {
         assertInstanceOf(
             FilterCommand.Show.class,
             adapter.toRoot(
-                new FilterDisplayCommandSpec.Show(
-                    FilterToggleModeSpec.DEFAULT, "libera/#java")));
+                new FilterDisplayCommandSpec.Show(FilterToggleModeSpec.DEFAULT, "libera/#java")));
     assertEquals(FilterCommand.ToggleMode.DEFAULT, show.mode());
     assertEquals("libera/#java", show.scopePattern());
 
@@ -44,22 +43,8 @@ class FilterDisplayCommandAdapterTest {
             FilterCommand.Defaults.class,
             adapter.toRoot(
                 new FilterDisplayCommandSpec.Defaults(
-                    null,
-                    false,
-                    null,
-                    false,
-                    null,
-                    false,
-                    -1,
-                    true,
-                    60_000,
-                    true,
-                    501,
-                    true,
-                    5_001,
-                    true,
-                    null,
-                    false)));
+                    null, false, null, false, null, false, -1, true, 60_000, true, 501, true, 5_001,
+                    true, null, false)));
     assertEquals(0, defaults.placeholderMaxPreviewLines());
     assertEquals(50_000, defaults.placeholderMaxLinesPerRun());
     assertEquals(500, defaults.placeholderTooltipMaxTags());

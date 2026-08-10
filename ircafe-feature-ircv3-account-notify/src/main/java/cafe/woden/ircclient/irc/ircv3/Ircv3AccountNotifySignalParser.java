@@ -15,8 +15,7 @@ public final class Ircv3AccountNotifySignalParser {
     LOGGED_OUT
   }
 
-  public record Observation(
-      String nick, String hostmask, AccountState state, String accountName) {
+  public record Observation(String nick, String hostmask, AccountState state, String accountName) {
     public Observation {
       nick = Objects.toString(nick, "").trim();
       hostmask = Objects.toString(hostmask, "").trim();
@@ -34,9 +33,7 @@ public final class Ircv3AccountNotifySignalParser {
     if (nick.isEmpty()) return Optional.empty();
 
     String account =
-        parameters == null || parameters.isEmpty()
-            ? ""
-            : stripLeadingColon(parameters.getFirst());
+        parameters == null || parameters.isEmpty() ? "" : stripLeadingColon(parameters.getFirst());
     AccountState state = isLoggedOut(account) ? AccountState.LOGGED_OUT : AccountState.LOGGED_IN;
     return Optional.of(new Observation(nick, observedHostmask(rawLine), state, account));
   }

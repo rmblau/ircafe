@@ -134,8 +134,7 @@ public final class Ircv3TypingRuntimeSupport {
   private static String parseTypingTag(String raw) {
     String tag = Objects.toString(raw, "").trim();
     String prefix = "@+typing=";
-    if (!tag.regionMatches(true, 0, prefix, 0, prefix.length())
-        || tag.indexOf(';') >= 0) {
+    if (!tag.regionMatches(true, 0, prefix, 0, prefix.length()) || tag.indexOf(';') >= 0) {
       throw new IllegalStateException("Typing runtime provider returned an invalid typing tag");
     }
     String state = canonicalState(tag.substring(prefix.length()));
@@ -210,21 +209,21 @@ public final class Ircv3TypingRuntimeSupport {
 
   public record OutboundPlan(String rawLine, String target, String state) {
     public OutboundPlan {
-      rawLine = Objects.requireNonNull(rawLine, "rawLine");
-      target = Objects.requireNonNull(target, "target");
-      state = Objects.requireNonNull(state, "state");
+      Objects.requireNonNull(rawLine, "rawLine");
+      Objects.requireNonNull(target, "target");
+      Objects.requireNonNull(state, "state");
     }
   }
 
   public record TagObservation(String state) {
     public TagObservation {
-      state = Objects.requireNonNull(state, "state");
+      Objects.requireNonNull(state, "state");
     }
   }
 
   public record ClientTagPolicy(boolean allowed, String rawDenyValue) {
     public ClientTagPolicy {
-      rawDenyValue = Objects.requireNonNull(rawDenyValue, "rawDenyValue");
+      Objects.requireNonNull(rawDenyValue, "rawDenyValue");
     }
   }
 }

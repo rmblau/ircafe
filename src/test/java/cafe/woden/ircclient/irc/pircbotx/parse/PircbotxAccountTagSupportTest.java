@@ -73,9 +73,7 @@ class PircbotxAccountTagSupportTest {
               Ircv3InboundTagOperation operation, Ircv3InboundTagRequest request) {
             return List.of(
                 new Ircv3InboundTagSignal(
-                    Ircv3InboundTagSignalType.ACCOUNT_TAG,
-                    request.sourceNick(),
-                    "plugin-account"));
+                    Ircv3InboundTagSignalType.ACCOUNT_TAG, request.sourceNick(), "plugin-account"));
           }
         };
     PircbotxAccountTagSupport support =
@@ -95,7 +93,6 @@ class PircbotxAccountTagSupportTest {
         (IrcEvent.UserAccountStateObserved) out.getFirst().event();
     assertEquals("plugin-account", event.accountName());
   }
-
 
   @Test
   void rejectsRuntimeProvidersThatChangeTheObservedNick() {
@@ -117,9 +114,7 @@ class PircbotxAccountTagSupportTest {
               Ircv3InboundTagOperation operation, Ircv3InboundTagRequest request) {
             return List.of(
                 new Ircv3InboundTagSignal(
-                    Ircv3InboundTagSignalType.ACCOUNT_TAG,
-                    "mallory",
-                    "plugin-account"));
+                    Ircv3InboundTagSignalType.ACCOUNT_TAG, "mallory", "plugin-account"));
           }
         };
     PircbotxAccountTagSupport support =
@@ -153,8 +148,7 @@ class PircbotxAccountTagSupportTest {
     assertTrue(out.isEmpty());
   }
 
-  private static PircbotxAccountTagSupport support(
-      String serverId, Consumer<ServerIrcEvent> sink) {
+  private static PircbotxAccountTagSupport support(String serverId, Consumer<ServerIrcEvent> sink) {
     return PircbotxParserRuntimeTestFixtures.accountTags(serverId, sink);
   }
 

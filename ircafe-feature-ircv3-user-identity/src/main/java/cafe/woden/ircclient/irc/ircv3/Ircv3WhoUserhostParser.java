@@ -6,6 +6,7 @@ import java.util.List;
 /** Transport-neutral WHO, WHOX, and USERHOST parsing policy. */
 public final class Ircv3WhoUserhostParser {
   private Ircv3WhoUserhostParser() {}
+
   /**
    * Parse RPL_ISUPPORT (005) and return true if WHOX token is present.
    *
@@ -140,8 +141,7 @@ public final class Ircv3WhoUserhostParser {
       }
     }
 
-    if (channel == null || channel.isBlank() || !looksLikeChannel(channel))
-      return null;
+    if (channel == null || channel.isBlank() || !looksLikeChannel(channel)) return null;
     if (nick == null || nick.isBlank() || !looksLikeNick(nick)) return null;
     if (user == null || user.isBlank() || !looksLikeUser(user)) return null;
     if (host == null || host.isBlank() || !looksLikeHost(host)) return null;
@@ -243,9 +243,7 @@ public final class Ircv3WhoUserhostParser {
 
       if (i + 1 < fields.size()) {
         String b = fields.get(i + 1);
-        if (looksLikeHost(b)
-            && !looksLikeChannel(b)
-            && !looksNumeric(b)) {
+        if (looksLikeHost(b) && !looksLikeChannel(b) && !looksNumeric(b)) {
           userIdx = i;
           hostIdx = i + 1;
           break;
@@ -254,10 +252,7 @@ public final class Ircv3WhoUserhostParser {
       if (i + 2 < fields.size()) {
         String b = fields.get(i + 1);
         String c = fields.get(i + 2);
-        if (looksLikeIp(b)
-            && looksLikeHost(c)
-            && !looksLikeChannel(c)
-            && !looksNumeric(c)) {
+        if (looksLikeIp(b) && looksLikeHost(c) && !looksLikeChannel(c) && !looksNumeric(c)) {
           userIdx = i;
           hostIdx = i + 2;
           break;
@@ -384,7 +379,8 @@ public final class Ircv3WhoUserhostParser {
   private static boolean looksLikeNick(String value) {
     if (value == null || value.isBlank()) return false;
     if (looksLikeChannel(value) || looksNumeric(value)) return false;
-    return value.matches("[A-Za-z\\[\\]\\\\`_\\^\\{\\|\\}][A-Za-z0-9\\-\\.\\[\\]\\\\`_\\^\\{\\|\\}]*");
+    return value.matches(
+        "[A-Za-z\\[\\]\\\\`_\\^\\{\\|\\}][A-Za-z0-9\\-\\.\\[\\]\\\\`_\\^\\{\\|\\}]*");
   }
 
   private static boolean isUsefulHostmask(String hostmask) {

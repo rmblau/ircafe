@@ -23,7 +23,8 @@ public final class DeepLMessageTranslationBackend extends AbstractHttpMessageTra
   public static final String BACKEND_ID = "deepl";
 
   public DeepLMessageTranslationBackend(
-      MessageTranslationSettingsProvider settingsProvider, MessageTranslationHttpClient httpClient) {
+      MessageTranslationSettingsProvider settingsProvider,
+      MessageTranslationHttpClient httpClient) {
     super(settingsProvider, httpClient);
   }
 

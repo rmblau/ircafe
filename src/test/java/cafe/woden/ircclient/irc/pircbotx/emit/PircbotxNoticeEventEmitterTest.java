@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.irc.pircbotx.emit;
 
-import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.runtime;
 import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.chatHistoryBatches;
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.runtime;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.mock;
@@ -107,8 +107,7 @@ class PircbotxNoticeEventEmitterTest {
             true,
             new BouncerBackendRegistry(List.of()),
             BouncerDiscoveryEventPort.noOp());
-    PircbotxChatHistoryBatchCollector batches =
-        chatHistoryBatches("libera", events::add);
+    PircbotxChatHistoryBatchCollector batches = chatHistoryBatches("libera", events::add);
     PircbotxServerResponseEmitter serverResponseEmitter =
         new PircbotxServerResponseEmitter(
             "libera", events::add, runtime.serverTime(), runtime.messageTags());

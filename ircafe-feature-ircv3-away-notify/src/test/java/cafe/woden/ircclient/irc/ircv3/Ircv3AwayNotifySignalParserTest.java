@@ -25,8 +25,7 @@ class Ircv3AwayNotifySignalParserTest {
   @Test
   void parsesReturnFromAway() {
     Ircv3AwayNotifySignalParser.Observation observed =
-        Ircv3AwayNotifySignalParser.parse(
-                "alice", "AWAY", ":alice!u@h AWAY", List.of())
+        Ircv3AwayNotifySignalParser.parse("alice", "AWAY", ":alice!u@h AWAY", List.of())
             .orElseThrow();
 
     assertFalse(observed.away());
@@ -35,8 +34,7 @@ class Ircv3AwayNotifySignalParserTest {
 
   @Test
   void ignoresOtherCommandsAndBlankNicks() {
-    assertTrue(
-        Ircv3AwayNotifySignalParser.parse("alice", "ACCOUNT", "", List.of()).isEmpty());
+    assertTrue(Ircv3AwayNotifySignalParser.parse("alice", "ACCOUNT", "", List.of()).isEmpty());
     assertTrue(Ircv3AwayNotifySignalParser.parse("", "AWAY", "", List.of()).isEmpty());
   }
 }

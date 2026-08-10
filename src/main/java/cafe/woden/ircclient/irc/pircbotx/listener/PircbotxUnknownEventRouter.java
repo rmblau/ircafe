@@ -52,8 +52,7 @@ final class PircbotxUnknownEventRouter {
     this.monitorEvents = Objects.requireNonNull(monitorEvents, "monitorEvents");
     this.chatHistoryBatches = Objects.requireNonNull(chatHistoryBatches, "chatHistoryBatches");
     this.unknownCtcp = Objects.requireNonNull(unknownCtcp, "unknownCtcp");
-    this.unknownLineFallback =
-        Objects.requireNonNull(unknownLineFallback, "unknownLineFallback");
+    this.unknownLineFallback = Objects.requireNonNull(unknownLineFallback, "unknownLineFallback");
     this.serverTimeRuntimeSupport =
         Objects.requireNonNull(serverTimeRuntimeSupport, "serverTimeRuntimeSupport");
     this.inboundCommandRuntimeCatalog =
@@ -106,12 +105,7 @@ final class PircbotxUnknownEventRouter {
               new ServerIrcEvent(
                   serverId,
                   new IrcEvent.InvitedToChannel(
-                      at,
-                      invite.channel(),
-                      from,
-                      invite.inviteeNick(),
-                      invite.reason(),
-                      true)));
+                      at, invite.channel(), from, invite.inviteeNick(), invite.reason(), true)));
           return;
         }
       }

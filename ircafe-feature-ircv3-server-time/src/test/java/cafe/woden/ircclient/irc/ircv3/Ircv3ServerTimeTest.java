@@ -34,8 +34,7 @@ class Ircv3ServerTimeTest {
   @Test
   void ignoresInvalidOrMissingTimesAndUsesFallback() {
     assertTrue(
-        Ircv3ServerTime.fromRawLine("@time=not-an-instant :server NOTICE nick :hi")
-            .isEmpty());
+        Ircv3ServerTime.fromRawLine("@time=not-an-instant :server NOTICE nick :hi").isEmpty());
     assertNull(Ircv3ServerTime.parseServerTimeFromRawLine("NOTICE nick :hi"));
 
     Instant fallback = Instant.parse("2026-07-11T13:00:00Z");

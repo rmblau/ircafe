@@ -42,8 +42,7 @@ public final class PircbotxConnectionState {
   final AtomicReference<Disposable> reconnectDisposable = new AtomicReference<>();
   final AtomicReference<String> disconnectReasonOverride = new AtomicReference<>();
 
-  private final Ircv3HostmaskChangeTracker hostmaskChanges =
-      new Ircv3HostmaskChangeTracker();
+  private final Ircv3HostmaskChangeTracker hostmaskChanges = new Ircv3HostmaskChangeTracker();
   private final Ircv3WhoisProbeTracker whoisProbes = new Ircv3WhoisProbeTracker();
   private final Ircv3WhoxSchemaTracker whoxSchema = new Ircv3WhoxSchemaTracker();
 
@@ -670,5 +669,4 @@ public final class PircbotxConnectionState {
   public boolean hasPendingWhoisProbe(String nick) {
     return whoisProbes.hasPending(nick);
   }
-
 }

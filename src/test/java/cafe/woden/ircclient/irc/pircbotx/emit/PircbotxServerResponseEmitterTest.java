@@ -20,8 +20,7 @@ class PircbotxServerResponseEmitterTest {
   @Test
   void emitServerResponseLinePublishesListEntryAndStatusLine() {
     List<ServerIrcEvent> events = new ArrayList<>();
-    PircbotxServerResponseEmitter emitter =
-        serverResponses("libera", events::add);
+    PircbotxServerResponseEmitter emitter = serverResponses("libera", events::add);
 
     emitter.emitServerResponseLine(null, 322, ":server 322 me #ircafe 42 :Topic here");
 
@@ -40,8 +39,7 @@ class PircbotxServerResponseEmitterTest {
   @Test
   void emitChannelBanListEventTracksStartEntryAndEnd() {
     List<ServerIrcEvent> events = new ArrayList<>();
-    PircbotxServerResponseEmitter emitter =
-        serverResponses("libera", events::add);
+    PircbotxServerResponseEmitter emitter = serverResponses("libera", events::add);
 
     emitter.emitChannelBanListEvent(
         Instant.parse("2026-03-13T12:30:00Z"),
@@ -67,8 +65,7 @@ class PircbotxServerResponseEmitterTest {
   @Test
   void maybeEmitAlisChannelListEntryHandlesEntriesAndEndSummary() {
     List<ServerIrcEvent> events = new ArrayList<>();
-    PircbotxServerResponseEmitter emitter =
-        serverResponses("libera", events::add);
+    PircbotxServerResponseEmitter emitter = serverResponses("libera", events::add);
 
     assertTrue(
         emitter.maybeEmitAlisChannelListEntry(

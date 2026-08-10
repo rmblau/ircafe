@@ -25,7 +25,6 @@ class Ircv3ReactionDraftPolicyTest {
     assertEquals(
         supported, Ircv3ReactionDraftPolicy.normalizeForCapabilities(supported, true, true));
     assertEquals(
-        "/me waves",
-        Ircv3ReactionDraftPolicy.normalizeForCapabilities("/me waves", false, false));
+        "/me waves", Ircv3ReactionDraftPolicy.normalizeForCapabilities("/me waves", false, false));
   }
 }

@@ -18,8 +18,7 @@ class BouncerDiscoveryEventRouterTest {
   @Test
   void routesNetworkAndDisconnectEventsByNormalizedBackendId() {
     RecordingHandler handler = new RecordingHandler(" Plugin-Bouncer ");
-    BouncerDiscoveryEventRouter router =
-        BouncerDiscoveryEventRouter.fromHandlers(List.of(handler));
+    BouncerDiscoveryEventRouter router = BouncerDiscoveryEventRouter.fromHandlers(List.of(handler));
     BouncerDiscoveredNetwork network =
         new BouncerDiscoveredNetwork(
             "PLUGIN-BOUNCER", "origin", "network", "Network", "Network", Map.of());
@@ -35,11 +34,9 @@ class BouncerDiscoveryEventRouterTest {
   @Test
   void reportsUnroutedEventsWithoutInvokingOtherHandlers() {
     RecordingHandler handler = new RecordingHandler("generic");
-    BouncerDiscoveryEventRouter router =
-        BouncerDiscoveryEventRouter.fromHandlers(List.of(handler));
+    BouncerDiscoveryEventRouter router = BouncerDiscoveryEventRouter.fromHandlers(List.of(handler));
     BouncerDiscoveredNetwork network =
-        new BouncerDiscoveredNetwork(
-            "other", "origin", "network", "Network", "Network", Map.of());
+        new BouncerDiscoveredNetwork("other", "origin", "network", "Network", "Network", Map.of());
 
     assertFalse(router.routeNetworkDiscovered(null));
     assertFalse(router.routeNetworkDiscovered(network));
@@ -86,8 +83,7 @@ class BouncerDiscoveryEventRouterTest {
             throw failure;
           }
         };
-    BouncerDiscoveryEventRouter router =
-        BouncerDiscoveryEventRouter.fromHandlers(List.of(handler));
+    BouncerDiscoveryEventRouter router = BouncerDiscoveryEventRouter.fromHandlers(List.of(handler));
     BouncerDiscoveredNetwork network =
         new BouncerDiscoveredNetwork(
             "generic", "origin", "network", "Network", "Network", Map.of());
@@ -98,8 +94,7 @@ class BouncerDiscoveryEventRouterTest {
     assertSame(
         failure,
         assertThrows(
-            RuntimeException.class,
-            () -> router.routeOriginDisconnected("generic", "origin")));
+            RuntimeException.class, () -> router.routeOriginDisconnected("generic", "origin")));
   }
 
   private static final class RecordingHandler implements BouncerBackendDiscoveryHandler {

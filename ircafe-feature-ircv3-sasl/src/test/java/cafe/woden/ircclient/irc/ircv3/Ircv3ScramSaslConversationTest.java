@@ -15,8 +15,7 @@ class Ircv3ScramSaslConversationTest {
 
   @Test
   void completesScramConversationAndEmitsFinalEmptyResponse() throws Exception {
-    Ircv3ScramSaslConversation conversation =
-        new Ircv3ScramSaslConversation("user", "secret");
+    Ircv3ScramSaslConversation conversation = new Ircv3ScramSaslConversation("user", "secret");
 
     String clientFirst = decode(conversation.nextResponse("SHA-256", ""));
     assertTrue(clientFirst.startsWith("n,,"));
@@ -46,8 +45,7 @@ class Ircv3ScramSaslConversationTest {
 
   @Test
   void rejectsInvalidServerSignature() throws Exception {
-    Ircv3ScramSaslConversation conversation =
-        new Ircv3ScramSaslConversation("user", "secret");
+    Ircv3ScramSaslConversation conversation = new Ircv3ScramSaslConversation("user", "secret");
 
     String clientFirst = decode(conversation.nextResponse("SHA-256", ""));
     String clientNonce = extractField(clientFirst.substring(3), "r");

@@ -157,9 +157,7 @@ public final class OutboundChatHistoryCommandService implements OutboundHelpCont
     }
     Ircv3ChatHistoryRuntimeSupport.Plan plan;
     try {
-      plan =
-          chatHistoryRuntimeSupport.between(
-              at.target(), startSelector, endSelector, limit);
+      plan = chatHistoryRuntimeSupport.between(at.target(), startSelector, endSelector, limit);
     } catch (IllegalArgumentException error) {
       chatHistoryRequestSupport.appendStatus(
           at, "Between selectors must be * or msgid=... or timestamp=...");

@@ -57,8 +57,7 @@ class FilterLifecycleCommandAdapterTest {
         assertInstanceOf(
             FilterCommand.Enable.class,
             adapter.toRoot(
-                new FilterLifecycleCommandSpec.Targets(
-                    FilterTargetActionSpec.ENABLE, List.of())));
+                new FilterLifecycleCommandSpec.Targets(FilterTargetActionSpec.ENABLE, List.of())));
 
     assertEquals(List.of(), enable.namesOrMasks());
   }

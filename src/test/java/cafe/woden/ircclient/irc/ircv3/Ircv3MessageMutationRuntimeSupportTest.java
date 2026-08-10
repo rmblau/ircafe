@@ -115,9 +115,7 @@ class Ircv3MessageMutationRuntimeSupportTest {
                     new Ircv3InboundTagSignal(
                         Ircv3InboundTagSignalType.REACT, "sparkle", "message-1")),
                 Ircv3InboundTagOperation.MESSAGE_EDIT,
-                List.of(
-                    Ircv3InboundTagSignal.of(
-                        Ircv3InboundTagSignalType.MESSAGE_EDIT, "edit-1")),
+                List.of(Ircv3InboundTagSignal.of(Ircv3InboundTagSignalType.MESSAGE_EDIT, "edit-1")),
                 Ircv3InboundTagOperation.MESSAGE_REDACTION,
                 List.of(
                     Ircv3InboundTagSignal.of(
@@ -128,9 +126,7 @@ class Ircv3MessageMutationRuntimeSupportTest {
     assertEquals("reply-1", support.replyFromTags(request).orElseThrow().messageId());
     assertEquals(
         new Ircv3MessageMutationRuntimeSupport.ReactionObservation(
-            Ircv3MessageMutationRuntimeSupport.ReactionOperation.REACT,
-            "sparkle",
-            "message-1"),
+            Ircv3MessageMutationRuntimeSupport.ReactionOperation.REACT, "sparkle", "message-1"),
         support.reactionFromTags(request).orElseThrow());
     assertEquals("edit-1", support.messageEditFromTags(request).orElseThrow().messageId());
     assertEquals("redact-1", support.redactionFromTags(request).orElseThrow().messageId());
@@ -155,12 +151,10 @@ class Ircv3MessageMutationRuntimeSupportTest {
                         Ircv3InboundTagSignalType.UNREACT, "sparkle", "message-1")),
                 Ircv3InboundTagOperation.MESSAGE_EDIT,
                 List.of(
-                    Ircv3InboundTagSignal.of(
-                        Ircv3InboundTagSignalType.MESSAGE_EDIT, "bad\nedit")),
+                    Ircv3InboundTagSignal.of(Ircv3InboundTagSignalType.MESSAGE_EDIT, "bad\nedit")),
                 Ircv3InboundTagOperation.MESSAGE_REDACTION,
                 List.of(
-                    Ircv3InboundTagSignal.of(
-                        Ircv3InboundTagSignalType.MESSAGE_REDACTION, ""))));
+                    Ircv3InboundTagSignal.of(Ircv3InboundTagSignalType.MESSAGE_REDACTION, ""))));
     Ircv3MessageMutationRuntimeSupport support = inboundSupport(provider, null);
 
     assertTrue(support.replyFromTags(request()).isEmpty());

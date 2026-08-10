@@ -66,8 +66,7 @@ class PircbotxSpringConstructorSelectionTest {
               Ircv3OutboundCommandRuntimeCatalog.class,
               () -> mock(Ircv3OutboundCommandRuntimeCatalog.class))
           .withBean(
-              Ircv3ServerTimeRuntimeSupport.class,
-              () -> mock(Ircv3ServerTimeRuntimeSupport.class))
+              Ircv3ServerTimeRuntimeSupport.class, () -> mock(Ircv3ServerTimeRuntimeSupport.class))
           .withBean(
               Ircv3MessageTagsRuntimeSupport.class,
               () -> mock(Ircv3MessageTagsRuntimeSupport.class))

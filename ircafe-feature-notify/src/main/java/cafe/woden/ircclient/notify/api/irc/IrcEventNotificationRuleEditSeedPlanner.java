@@ -68,14 +68,16 @@ public final class IrcEventNotificationRuleEditSeedPlanner {
     }
 
     String normalizedChannelScope =
-        normalizeNameOrDefault(channelScope, IrcEventNotificationDefaultRuleCatalog.DEFAULT_CHANNEL_SCOPE);
+        normalizeNameOrDefault(
+            channelScope, IrcEventNotificationDefaultRuleCatalog.DEFAULT_CHANNEL_SCOPE);
     String normalizedChannelPatterns = normalizeTextOrNull(channelPatterns);
     if (!IrcEventNotificationRuleEditPolicy.channelPatternsRequired(normalizedChannelScope)) {
       normalizedChannelPatterns = null;
     }
 
     String normalizedFocusScope =
-        normalizeNameOrDefault(focusScope, IrcEventNotificationDefaultRuleCatalog.DEFAULT_FOCUS_SCOPE);
+        normalizeNameOrDefault(
+            focusScope, IrcEventNotificationDefaultRuleCatalog.DEFAULT_FOCUS_SCOPE);
 
     String normalizedSoundId = normalizeTextOrNull(soundId);
     if (normalizedSoundId == null) {
@@ -101,7 +103,8 @@ public final class IrcEventNotificationRuleEditSeedPlanner {
             ? normalizeNameOrDefault(
                 ctcpValueMode, IrcEventNotificationDefaultRuleCatalog.DEFAULT_CTCP_MATCH_MODE)
             : IrcEventNotificationDefaultRuleCatalog.DEFAULT_CTCP_MATCH_MODE;
-    String normalizedCtcpCommandPattern = ctcpActive ? normalizeTextOrNull(ctcpCommandPattern) : null;
+    String normalizedCtcpCommandPattern =
+        ctcpActive ? normalizeTextOrNull(ctcpCommandPattern) : null;
     String normalizedCtcpValuePattern = ctcpActive ? normalizeTextOrNull(ctcpValuePattern) : null;
     if (!IrcEventNotificationRuleEditPolicy.ctcpPatternRequired(normalizedCtcpCommandMode)) {
       normalizedCtcpCommandPattern = null;

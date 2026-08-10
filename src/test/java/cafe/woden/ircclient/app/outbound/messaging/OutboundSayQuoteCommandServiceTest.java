@@ -11,11 +11,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import cafe.woden.ircclient.app.outbound.TestIrcv3RuntimeSupport;
 import cafe.woden.ircclient.app.api.Ircv3MultilineFeatureSupport;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
+import cafe.woden.ircclient.app.outbound.TestIrcv3RuntimeSupport;
 import cafe.woden.ircclient.app.outbound.backend.OutboundBackendCapabilityPolicy;
 import cafe.woden.ircclient.app.outbound.support.OutboundConnectionStatusSupport;
 import cafe.woden.ircclient.app.outbound.support.OutboundRawCommandSupport;
@@ -268,11 +268,7 @@ class OutboundSayQuoteCommandServiceTest {
     verify(irc).sendRaw("libera", "@label=ircafe-libera-1 MONITOR +nick");
     verify(labeledResponseRoutingState)
         .remember(
-            eq("libera"),
-            eq("ircafe-libera-1"),
-            eq(chan),
-            eq("MONITOR +nick"),
-            any(Instant.class));
+            eq("libera"), eq("ircafe-libera-1"), eq(chan), eq("MONITOR +nick"), any(Instant.class));
     verify(ui)
         .appendStatus(
             eq(status),
@@ -332,11 +328,7 @@ class OutboundSayQuoteCommandServiceTest {
     verify(irc).sendRaw("libera", "@label=ircafe-libera-1 WHO #ircafe");
     verify(labeledResponseRoutingState)
         .remember(
-            eq("libera"),
-            eq("ircafe-libera-1"),
-            eq(status),
-            eq("WHO #ircafe"),
-            any(Instant.class));
+            eq("libera"), eq("ircafe-libera-1"), eq(status), eq("WHO #ircafe"), any(Instant.class));
     verify(ui)
         .appendStatus(
             eq(status),

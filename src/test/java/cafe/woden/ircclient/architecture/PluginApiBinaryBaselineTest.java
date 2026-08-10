@@ -74,8 +74,6 @@ class PluginApiBinaryBaselineTest {
     assertTrue(releaseVerification.contains("generatePluginApiV1Baseline"));
     assertTrue(releaseVerification.contains("verifyPluginApiV1Baseline"));
     assertTrue(releaseVerification.contains("pluginApiBaselineSourceSet"));
-    assertTrue(
-        releaseVerification.contains(
-            "dependsOn tasks.named('verifyPluginApiV1Baseline')"));
+    assertTrue(releaseVerification.contains("dependsOn tasks.named('verifyPluginApiV1Baseline')"));
   }
 }

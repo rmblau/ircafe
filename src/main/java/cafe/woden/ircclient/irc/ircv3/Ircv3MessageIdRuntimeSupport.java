@@ -11,7 +11,9 @@ import org.jmolecules.architecture.layered.InfrastructureLayer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-/** Validates runtime-provider message IDs before root transports or application state consume them. */
+/**
+ * Validates runtime-provider message IDs before root transports or application state consume them.
+ */
 @Component
 @InfrastructureLayer
 public final class Ircv3MessageIdRuntimeSupport {

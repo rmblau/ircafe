@@ -9,7 +9,8 @@ import java.util.Objects;
  * lifecycle policy. Translation backends get only the request-scoped values needed to call a
  * backend service. Providers must not retain this value after the translation call returns.
  */
-public record MessageTranslationBackendContext(String endpoint, String apiKey, long requestTimeoutMs) {
+public record MessageTranslationBackendContext(
+    String endpoint, String apiKey, long requestTimeoutMs) {
 
   private static final long DEFAULT_REQUEST_TIMEOUT_MS = 10_000L;
   private static final long MAX_REQUEST_TIMEOUT_MS = 120_000L;

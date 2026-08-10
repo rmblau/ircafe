@@ -9,8 +9,7 @@ class IrcEventNotificationRuleLabelPlannerTest {
   @Test
   void combinesEventAndSourceLabelsWhenBothArePresent() {
     IrcEventNotificationRuleLabelPlan plan =
-        IrcEventNotificationRuleLabelPlanner.plan(
-            " Invite Received ", " Someone else ", "Event");
+        IrcEventNotificationRuleLabelPlanner.plan(" Invite Received ", " Someone else ", "Event");
 
     assertEquals("Invite Received", plan.eventLabel());
     assertEquals("Someone else", plan.sourceLabel());

@@ -19,8 +19,8 @@ import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvid
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationRequest;
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationResult;
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationTargetView;
-import cafe.woden.ircclient.bouncer.BouncerBackendDescriptor;
 import cafe.woden.ircclient.bouncer.BouncerBackendCatalog;
+import cafe.woden.ircclient.bouncer.BouncerBackendDescriptor;
 import cafe.woden.ircclient.bouncer.BouncerDiscoveryEventRouter;
 import cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler;
 import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
@@ -55,9 +55,9 @@ import cafe.woden.ircclient.ui.settings.theme.spi.ThemePresetContribution;
 import cafe.woden.ircclient.ui.settings.theme.spi.ThemeTone;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.net.URI;
-import java.time.Instant;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -85,8 +85,7 @@ class ExternalPluginReleaseSmokeTest {
       "plugin.release.ReleaseSmokeThemeContributionProvider";
   private static final String LINK_PREVIEW_RESOLVER_CLASS =
       "plugin.release.ReleaseSmokeLinkPreviewResolver";
-  private static final String OEMBED_PROVIDER_CLASS =
-      "plugin.release.ReleaseSmokeOEmbedProvider";
+  private static final String OEMBED_PROVIDER_CLASS = "plugin.release.ReleaseSmokeOEmbedProvider";
   private static final String EMBED_HEADER_PROVIDER_CLASS =
       "plugin.release.ReleaseSmokeEmbedHttpHeaderProvider";
   private static final String IMAGE_EXTENSION_PROVIDER_CLASS =
@@ -101,8 +100,9 @@ class ExternalPluginReleaseSmokeTest {
   @TempDir Path tempDir;
 
   @Test
-  void loadsCompleteExternalCommandBouncerSoundThemeEmbedAndTranslationPluginFromConfiguredPluginDirectory()
-      throws Exception {
+  void
+      loadsCompleteExternalCommandBouncerSoundThemeEmbedAndTranslationPluginFromConfiguredPluginDirectory()
+          throws Exception {
     Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("config-home/ircafe"));
     Path pluginDirectory =
         Files.createDirectories(
@@ -128,34 +128,28 @@ class ExternalPluginReleaseSmokeTest {
                 Map.entry(TRANSLATION_BACKEND_CLASS, translationBackendSource()),
                 Map.entry(TRANSLATION_LANGUAGE_CLASS, translationLanguageSource())),
             Map.ofEntries(
-                Map.entry(
-                    BackendNamedCommandHandler.class.getName(), List.of(HANDLER_CLASS)),
-                Map.entry(
-                    BackendNamedCommandExecutor.class.getName(), List.of(EXECUTOR_CLASS)),
+                Map.entry(BackendNamedCommandHandler.class.getName(), List.of(HANDLER_CLASS)),
+                Map.entry(BackendNamedCommandExecutor.class.getName(), List.of(EXECUTOR_CLASS)),
                 Map.entry(SlashCommandParseStrategy.class.getName(), List.of(PARSER_CLASS)),
                 Map.entry(
                     SlashCommandPresentationContributor.class.getName(),
                     List.of(PRESENTATION_CLASS)),
                 Map.entry(
-                    BouncerNetworkMappingStrategy.class.getName(),
-                    List.of(BOUNCER_MAPPING_CLASS)),
+                    BouncerNetworkMappingStrategy.class.getName(), List.of(BOUNCER_MAPPING_CLASS)),
                 Map.entry(
-                    BouncerBackendDiscoveryHandler.class.getName(),
-                    List.of(BOUNCER_HANDLER_CLASS)),
+                    BouncerBackendDiscoveryHandler.class.getName(), List.of(BOUNCER_HANDLER_CLASS)),
                 Map.entry(
                     CustomSoundFileExtensionProvider.class.getName(),
                     List.of(SOUND_EXTENSION_CLASS)),
                 Map.entry(
                     CustomSoundPlaybackProvider.class.getName(), List.of(SOUND_PLAYBACK_CLASS)),
-                Map.entry(
-                    ThemeContributionProvider.class.getName(), List.of(THEME_PROVIDER_CLASS)),
+                Map.entry(ThemeContributionProvider.class.getName(), List.of(THEME_PROVIDER_CLASS)),
                 Map.entry(
                     LinkPreviewResolver.class.getName(), List.of(LINK_PREVIEW_RESOLVER_CLASS)),
                 Map.entry(
                     OEmbedLinkPreviewProvider.class.getName(), List.of(OEMBED_PROVIDER_CLASS)),
                 Map.entry(
-                    EmbedHttpHeaderProvider.class.getName(),
-                    List.of(EMBED_HEADER_PROVIDER_CLASS)),
+                    EmbedHttpHeaderProvider.class.getName(), List.of(EMBED_HEADER_PROVIDER_CLASS)),
                 Map.entry(
                     ImageUrlExtensionProvider.class.getName(),
                     List.of(IMAGE_EXTENSION_PROVIDER_CLASS)),
@@ -192,11 +186,9 @@ class ExternalPluginReleaseSmokeTest {
       List<BouncerNetworkMappingStrategy> mappingStrategies =
           installedPlugins.loadInstalledServices(BouncerNetworkMappingStrategy.class, List.of());
       List<BouncerBackendDiscoveryHandler> discoveryHandlers =
-          installedPlugins.loadInstalledServices(
-              BouncerBackendDiscoveryHandler.class, List.of());
+          installedPlugins.loadInstalledServices(BouncerBackendDiscoveryHandler.class, List.of());
       List<CustomSoundFileExtensionProvider> soundExtensionProviders =
-          installedPlugins.loadInstalledServices(
-              CustomSoundFileExtensionProvider.class, List.of());
+          installedPlugins.loadInstalledServices(CustomSoundFileExtensionProvider.class, List.of());
       List<CustomSoundPlaybackProvider> soundPlaybackProviders =
           installedPlugins.loadInstalledServices(CustomSoundPlaybackProvider.class, List.of());
       List<ThemeContributionProvider> themeProviders =
@@ -275,12 +267,9 @@ class ExternalPluginReleaseSmokeTest {
               Map.of("source", "release-smoke"));
       ResolvedBouncerNetwork resolved =
           mapping.resolveNetwork(
-              profile,
-              network,
-              new BouncerNetworkMappingContext("{base}/{network}", true));
+              profile, network, new BouncerNetworkMappingContext("{base}/{network}", true));
       BouncerEphemeralServerSpec serverSpec =
-          mapping.buildEphemeralServer(
-              profile, resolved, List.of("#ircafe", " ", "#plugins"));
+          mapping.buildEphemeralServer(profile, resolved, List.of("#ircafe", " ", "#plugins"));
       assertEquals("release:origin-1:libera", resolved.serverId());
       assertEquals("hint-user/libera", resolved.loginUser());
       assertEquals(List.of("#ircafe", "#plugins"), serverSpec.autoJoinChannels());
@@ -300,18 +289,15 @@ class ExternalPluginReleaseSmokeTest {
           onlyProvider(soundPlaybackProviders, SOUND_PLAYBACK_CLASS);
       assertEquals(
           Set.of("opus"),
-          CustomSoundProviderCatalog.supportedExtensions(
-              List.of(), List.of(soundExtension)));
+          CustomSoundProviderCatalog.supportedExtensions(List.of(), List.of(soundExtension)));
       Path soundPath = Files.writeString(tempDir.resolve("release.OPUS"), "release audio");
       CustomSoundPlaybackProviderResult soundResult =
-          CustomSoundPlaybackProviderChain.play(
-              soundPath, List.of(soundPlayback), () -> false);
+          CustomSoundPlaybackProviderChain.play(soundPath, List.of(soundPlayback), () -> false);
       assertTrue(soundResult.handled());
       assertTrue(soundResult.handledWhileFresh());
       assertEquals(soundPath.toString(), Files.readString(soundMarker));
 
-      ThemeContributionProvider themeProvider =
-          onlyProvider(themeProviders, THEME_PROVIDER_CLASS);
+      ThemeContributionProvider themeProvider = onlyProvider(themeProviders, THEME_PROVIDER_CLASS);
       ThemeOption themeOption = themeProvider.themeOptions().getFirst();
       ThemePresetContribution themePreset = themeProvider.themePresets().getFirst();
       assertEquals("release-nebula", themeOption.id());
@@ -323,12 +309,10 @@ class ExternalPluginReleaseSmokeTest {
       assertTrue(themePreset.dark());
       assertEquals("#6C63FF", themePreset.extraDefaults().get("@accentColor"));
 
-
       LinkPreviewResolver linkPreviewResolver =
           onlyProvider(linkPreviewResolvers, LINK_PREVIEW_RESOLVER_CLASS);
       assertEquals(
-          BuiltInLinkPreviewResolverOrders.PLUGIN_DEFAULT + 25,
-          linkPreviewResolver.sortOrder());
+          BuiltInLinkPreviewResolverOrders.PLUGIN_DEFAULT + 25, linkPreviewResolver.sortOrder());
       String previewUrl = "https://release-preview.example/items/42";
       LinkPreview linkPreview =
           linkPreviewResolver.tryResolve(URI.create(previewUrl), previewUrl, null);
@@ -366,8 +350,7 @@ class ExternalPluginReleaseSmokeTest {
                   List.of(embedHeaderProvider));
       assertTrue(headerResult.failures().isEmpty());
       assertEquals("plugin", headerResult.headers().get("X-Release-Embed"));
-      assertEquals(
-          "https://cdn.release-embed.example/", headerResult.headers().get("Referer"));
+      assertEquals("https://cdn.release-embed.example/", headerResult.headers().get("Referer"));
       assertTrue(!headerResult.headers().containsKey("Ignored-Blank"));
 
       ImageUrlExtensionProvider imageExtensionProvider =
@@ -386,8 +369,7 @@ class ExternalPluginReleaseSmokeTest {
       assertEquals("Release Daily", releaseProfile.displayName());
       assertEquals(List.of("release-news.example"), List.of(releaseProfile.hostSuffixes()));
       assertEquals(
-          List.of("article[data-release-story] p"),
-          List.of(releaseProfile.paragraphSelectors()));
+          List.of("article[data-release-story] p"), List.of(releaseProfile.paragraphSelectors()));
 
       MessageTranslationBackendProvider translationBackend =
           onlyProvider(translationBackends, TRANSLATION_BACKEND_CLASS);
@@ -413,8 +395,7 @@ class ExternalPluginReleaseSmokeTest {
               .toCompletableFuture()
               .get(1, TimeUnit.SECONDS);
       assertEquals(
-          "[libera/#ircafe] en->es: hello translation plugin",
-          translationResult.translatedText());
+          "[libera/#ircafe] en->es: hello translation plugin", translationResult.translatedText());
       assertEquals("en", translationResult.sourceLanguage());
       assertEquals("es", translationResult.targetLanguage());
       assertEquals(

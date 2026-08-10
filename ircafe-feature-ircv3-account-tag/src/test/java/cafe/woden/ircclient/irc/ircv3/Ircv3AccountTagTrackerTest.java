@@ -34,8 +34,7 @@ class Ircv3AccountTagTrackerTest {
   void acceptsRuntimeParsedRawAccountValues() {
     Ircv3AccountTagTracker tracker = new Ircv3AccountTagTracker();
 
-    Ircv3AccountTagTracker.Change login =
-        tracker.observe("alice", "alice-account").orElseThrow();
+    Ircv3AccountTagTracker.Change login = tracker.observe("alice", "alice-account").orElseThrow();
     Ircv3AccountTagTracker.Change logout = tracker.observe("alice", "*").orElseThrow();
 
     assertEquals(Ircv3AccountTagTracker.AccountState.LOGGED_IN, login.state());

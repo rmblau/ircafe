@@ -21,16 +21,14 @@ import org.pircbotx.PircBotX;
 
 class PircbotxIrcv3InputParserMockVerifyTest {
 
-  private static final Ircv3RuntimeCatalogs DEFAULT_CATALOGS =
-      Ircv3RuntimeTestFixtures.catalogs();
+  private static final Ircv3RuntimeCatalogs DEFAULT_CATALOGS = Ircv3RuntimeTestFixtures.catalogs();
 
   @Test
   void replayedRpl324LineEmitsSnapshotModeObservation() {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     @SuppressWarnings("unchecked")
     Consumer<ServerIrcEvent> sink = mock(Consumer.class);
-    PircbotxIrcv3InputParser parser =
-        parser(dummyBot(), "libera", conn, sink, stsPolicies());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, sink, stsPolicies());
 
     String line = ":osmium.libera.chat 324 me ##politics +CLTcnrt";
     List<String> parsed = List.of("me", "##politics", "+CLTcnrt");

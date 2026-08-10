@@ -11,8 +11,7 @@ class Ircv3MessageIdTagPolicyTest {
   @Test
   void selectsStableDraftClientAndBackendAliasesInPriorityOrder() {
     assertEquals("stable", Ircv3MessageIdTagPolicy.firstMessageId(Map.of("msgid", "stable")));
-    assertEquals(
-        "draft", Ircv3MessageIdTagPolicy.firstMessageId(Map.of("draft/msgid", "draft")));
+    assertEquals("draft", Ircv3MessageIdTagPolicy.firstMessageId(Map.of("draft/msgid", "draft")));
     assertEquals(
         "client", Ircv3MessageIdTagPolicy.firstMessageId(Map.of("+draft/msgid", "client")));
     assertEquals(

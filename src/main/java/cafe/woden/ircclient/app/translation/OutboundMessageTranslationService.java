@@ -8,6 +8,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutorService;
 import org.jmolecules.architecture.layered.ApplicationLayer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
@@ -18,6 +19,7 @@ public class OutboundMessageTranslationService {
 
   private final OutboundDraftTranslationService delegate;
 
+  @Autowired
   public OutboundMessageTranslationService(
       MessageTranslationSettingsProvider settingsProvider,
       MessageTranslationBackendRegistry backendRegistry,

@@ -35,8 +35,7 @@ public final class Ircv3SaslResponseFactory {
       byte[] signature = sig.sign();
       return Base64.getEncoder().encodeToString(signature);
     } catch (Exception e) {
-      throw new Ircv3SaslException(
-          Ircv3SaslException.Reason.OTHER, "Failed ECDSA SASL signing", e);
+      throw new Ircv3SaslException(Ircv3SaslException.Reason.OTHER, "Failed ECDSA SASL signing", e);
     }
   }
 }

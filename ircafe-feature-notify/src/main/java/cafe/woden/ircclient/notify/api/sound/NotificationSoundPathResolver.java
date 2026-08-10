@@ -12,7 +12,8 @@ public final class NotificationSoundPathResolver {
     return resolveCustomSoundPathFromBase(base, relativePath);
   }
 
-  public static Path resolveCustomSoundPathFromBase(Path runtimeConfigDirectory, String relativePath) {
+  public static Path resolveCustomSoundPathFromBase(
+      Path runtimeConfigDirectory, String relativePath) {
     String normalizedRelativePath = Objects.toString(relativePath, "").trim();
     if (normalizedRelativePath.isEmpty() || runtimeConfigDirectory == null) {
       return null;

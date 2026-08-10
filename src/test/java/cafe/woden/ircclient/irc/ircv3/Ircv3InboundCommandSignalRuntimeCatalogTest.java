@@ -86,11 +86,7 @@ class Ircv3InboundCommandSignalRuntimeCatalogTest {
             .parse(
                 Ircv3InboundCommandOperation.AWAY_NOTIFY,
                 new Ircv3InboundCommandRequest(
-                    "alice",
-                    "AWAY",
-                    ":alice!u@h AWAY :Gone away",
-                    List.of(":Gone away"),
-                    Map.of()))
+                    "alice", "AWAY", ":alice!u@h AWAY :Gone away", List.of(":Gone away"), Map.of()))
             .stream()
             .map(Object::getClass)
             .toList());
@@ -101,11 +97,7 @@ class Ircv3InboundCommandSignalRuntimeCatalogTest {
             .parse(
                 Ircv3InboundCommandOperation.AWAY_NOTIFY,
                 new Ircv3InboundCommandRequest(
-                    "",
-                    "AWAY",
-                    ":alice!u@h AWAY :Fallback away",
-                    List.of(),
-                    Map.of()))
+                    "", "AWAY", ":alice!u@h AWAY :Fallback away", List.of(), Map.of()))
             .getFirst());
 
     assertEquals(
@@ -183,8 +175,7 @@ class Ircv3InboundCommandSignalRuntimeCatalogTest {
             .getFirst());
 
     assertEquals(
-        new Ircv3InboundCommandSignal.InviteObserved(
-            "alice", "me", "#ircafe", "join us"),
+        new Ircv3InboundCommandSignal.InviteObserved("alice", "me", "#ircafe", "join us"),
         catalog
             .parse(
                 Ircv3InboundCommandOperation.INVITE_NOTIFY,
@@ -212,9 +203,7 @@ class Ircv3InboundCommandSignalRuntimeCatalogTest {
     assertEquals(
         new Ircv3InboundCommandSignal.MonitorStatusObserved(
             true,
-            List.of(
-                new Ircv3InboundCommandSignal.MonitorStatusEntry(
-                    "Alice", "Alice!u@host"))),
+            List.of(new Ircv3InboundCommandSignal.MonitorStatusEntry("Alice", "Alice!u@host"))),
         catalog
             .parse(
                 Ircv3InboundCommandOperation.MONITOR,
@@ -237,8 +226,7 @@ class Ircv3InboundCommandSignalRuntimeCatalogTest {
                 Map.of()));
     assertEquals(2, userhostSignals.size());
     assertEquals(
-        new Ircv3InboundCommandSignal.HostmaskObserved(
-            "alice", "alice!ident@host.example"),
+        new Ircv3InboundCommandSignal.HostmaskObserved("alice", "alice!ident@host.example"),
         userhostSignals.get(0));
     assertEquals(
         new Ircv3InboundCommandSignal.UserAwayObserved("alice", false, null),
@@ -279,18 +267,17 @@ class Ircv3InboundCommandSignalRuntimeCatalogTest {
     assertEquals(
         new Ircv3InboundCommandSignal.WhoxSchemaObserved(true, "strict-parse-ok"),
         whoxSignals.get(0));
-    assertInstanceOf(
-        Ircv3InboundCommandSignal.ChannelHostmaskObserved.class, whoxSignals.get(1));
+    assertInstanceOf(Ircv3InboundCommandSignal.ChannelHostmaskObserved.class, whoxSignals.get(1));
     assertEquals(
-        new Ircv3InboundCommandSignal.UserAwayObserved("alice", true, null),
-        whoxSignals.get(2));
+        new Ircv3InboundCommandSignal.UserAwayObserved("alice", true, null), whoxSignals.get(2));
     assertEquals(
         new Ircv3InboundCommandSignal.AccountObserved(
             "alice", Ircv3InboundCommandSignal.AccountState.LOGGED_IN, "account"),
         whoxSignals.get(3));
 
     assertEquals(
-        new Ircv3InboundCommandSignal.ReadMarkerObserved("#ircafe", "timestamp=2026-01-01T00:00:00Z"),
+        new Ircv3InboundCommandSignal.ReadMarkerObserved(
+            "#ircafe", "timestamp=2026-01-01T00:00:00Z"),
         catalog
             .parse(
                 Ircv3InboundCommandOperation.READ_MARKER,
@@ -316,8 +303,7 @@ class Ircv3InboundCommandSignalRuntimeCatalogTest {
             .getFirst());
 
     assertEquals(
-        new Ircv3InboundCommandSignal.HistoryBatchStarted(
-            "history-42", "chathistory", "#ircafe"),
+        new Ircv3InboundCommandSignal.HistoryBatchStarted("history-42", "chathistory", "#ircafe"),
         catalog
             .parse(
                 Ircv3InboundCommandOperation.HISTORY_BATCH_CONTROL,
@@ -370,16 +356,13 @@ class Ircv3InboundCommandSignalRuntimeCatalogTest {
                 Set.of()));
     assertEquals(4, capabilitySignals.size());
     assertEquals(
-        new Ircv3InboundCommandSignal.CapabilityChangeObserved(
-            "LS", "message-tags", false, false),
+        new Ircv3InboundCommandSignal.CapabilityChangeObserved("LS", "message-tags", false, false),
         capabilitySignals.getFirst());
     assertEquals(
-        new Ircv3InboundCommandSignal.CapabilityFallbackPlanned(
-            true, true, "draft/chathistory"),
+        new Ircv3InboundCommandSignal.CapabilityFallbackPlanned(true, true, "draft/chathistory"),
         capabilitySignals.getLast());
 
-    String isupport =
-        ":server 005 me MONITOR=250 WHOX CLIENTTAGDENY=*,-typing :are supported";
+    String isupport = ":server 005 me MONITOR=250 WHOX CLIENTTAGDENY=*,-typing :are supported";
     List<Ircv3InboundCommandSignal> tokenSignals =
         catalog.parse(
             Ircv3InboundCommandOperation.ISUPPORT_TOKENS,
@@ -393,25 +376,21 @@ class Ircv3InboundCommandSignalRuntimeCatalogTest {
         catalog
             .parse(
                 Ircv3InboundCommandOperation.ISUPPORT_WHOX,
-                new Ircv3InboundCommandRequest(
-                    "server", "005", isupport, List.of(), Map.of()))
+                new Ircv3InboundCommandRequest("server", "005", isupport, List.of(), Map.of()))
             .getFirst());
     assertEquals(
         new Ircv3InboundCommandSignal.MonitorSupportObserved(true, 250),
         catalog
             .parse(
                 Ircv3InboundCommandOperation.ISUPPORT_MONITOR,
-                new Ircv3InboundCommandRequest(
-                    "server", "005", isupport, List.of(), Map.of()))
+                new Ircv3InboundCommandRequest("server", "005", isupport, List.of(), Map.of()))
             .getFirst());
     assertEquals(
-        new Ircv3InboundCommandSignal.ClientTagPolicyObserved(
-            "typing", true, "*,-typing"),
+        new Ircv3InboundCommandSignal.ClientTagPolicyObserved("typing", true, "*,-typing"),
         catalog
             .parse(
                 Ircv3InboundCommandOperation.ISUPPORT_CLIENT_TAG_POLICY,
-                new Ircv3InboundCommandRequest(
-                    "server", "005", isupport, List.of(), Map.of()))
+                new Ircv3InboundCommandRequest("server", "005", isupport, List.of(), Map.of()))
             .getFirst());
 
     assertEquals(
@@ -454,8 +433,7 @@ class Ircv3InboundCommandSignalRuntimeCatalogTest {
                     Map.of()))
             .getFirst());
     assertEquals(
-        new Ircv3InboundCommandSignal.SaslServerMessageObserved(
-            "AUTHENTICATE", "+", null),
+        new Ircv3InboundCommandSignal.SaslServerMessageObserved("AUTHENTICATE", "+", null),
         catalog
             .parse(
                 Ircv3InboundCommandOperation.SASL_SERVER_MESSAGE,
@@ -496,10 +474,8 @@ class Ircv3InboundCommandSignalRuntimeCatalogTest {
 
     assertEquals(
         List.of(
-            new Ircv3InboundCommandSignal.MultilineLimitsObserved(
-                false, 4096L, 5L, 4096L, 5L),
-            new Ircv3InboundCommandSignal.MultilineLimitsObserved(
-                true, 2048L, 3L, 2048L, 3L)),
+            new Ircv3InboundCommandSignal.MultilineLimitsObserved(false, 4096L, 5L, 4096L, 5L),
+            new Ircv3InboundCommandSignal.MultilineLimitsObserved(true, 2048L, 3L, 2048L, 3L)),
         signals);
   }
 
@@ -511,9 +487,7 @@ class Ircv3InboundCommandSignalRuntimeCatalogTest {
 
     Ircv3InboundCommandSignal.SetNameObserved signal =
         (Ircv3InboundCommandSignal.SetNameObserved)
-            catalog
-                .parse(Ircv3InboundCommandOperation.SETNAME, request())
-                .getFirst();
+            catalog.parse(Ircv3InboundCommandOperation.SETNAME, request()).getFirst();
     assertEquals("plugin", signal.realName());
     assertEquals(List.of("plugin"), catalog.providerIds());
   }

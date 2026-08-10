@@ -19,8 +19,8 @@ public final class NotificationStoreEventBucketPolicy {
   }
 
   /**
-   * Appends an event to a bucket and removes oldest entries if the bucket exceeds {@code maxEvents}.
-   * The caller owns any synchronization needed for the supplied list.
+   * Appends an event to a bucket and removes oldest entries if the bucket exceeds {@code
+   * maxEvents}. The caller owns any synchronization needed for the supplied list.
    */
   public static <T> void appendCapped(List<T> bucket, T event, int maxEvents) {
     if (bucket == null || event == null) return;
@@ -39,8 +39,7 @@ public final class NotificationStoreEventBucketPolicy {
   }
 
   /**
-   * Returns a defensive copy of up to {@code max} newest events, preserving oldest-to-newest
-   * order.
+   * Returns a defensive copy of up to {@code max} newest events, preserving oldest-to-newest order.
    */
   public static <T> List<T> copyRecent(List<T> bucket, int max) {
     if (bucket == null || bucket.isEmpty() || max <= 0) return List.of();

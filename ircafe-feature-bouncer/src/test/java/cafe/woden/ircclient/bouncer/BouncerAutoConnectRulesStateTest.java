@@ -19,15 +19,12 @@ class BouncerAutoConnectRulesStateTest {
     Map<String, Map<String, Boolean>> seed = new LinkedHashMap<>();
     seed.put(" ", Map.of("ignored", true));
     seed.put(
-        " bouncer-main ",
-        new LinkedHashMap<>(
-            Map.of("Lib Era", true, "OFTC", false, "!!!", true)));
+        " bouncer-main ", new LinkedHashMap<>(Map.of("Lib Era", true, "OFTC", false, "!!!", true)));
 
     BouncerAutoConnectRulesState state = new BouncerAutoConnectRulesState();
     state.replace(seed, normalizer::normalize);
 
-    assertEquals(
-        Map.of("bouncer-main", Map.of("lib_era", true)), state.snapshot());
+    assertEquals(Map.of("bouncer-main", Map.of("lib_era", true)), state.snapshot());
     assertTrue(state.isEnabled("BOUNCER-MAIN", "LIB ERA", normalizer::normalize));
     assertFalse(state.isEnabled("bouncer-main", "oftc", normalizer::normalize));
   }

@@ -19,7 +19,8 @@ class ImageFetchResponseReaderTest {
     byte[] bytes = new byte[] {(byte) 0x89, 'P', 'N', 'G'};
 
     ImageFetchReadResult result =
-        reader.read(new ByteArrayInputStream(bytes), "image/png", "https://example.test/a.png", 0, 8);
+        reader.read(
+            new ByteArrayInputStream(bytes), "image/png", "https://example.test/a.png", 0, 8);
 
     assertArrayEquals(bytes, result.bytes());
     assertTrue(result.retryUrl().isEmpty());

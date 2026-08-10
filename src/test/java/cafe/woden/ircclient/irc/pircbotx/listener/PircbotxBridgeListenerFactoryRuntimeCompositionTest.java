@@ -20,8 +20,8 @@ import cafe.woden.ircclient.irc.ircv3.Ircv3SaslRuntimeSupport;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ServerTimeRuntimeSupport;
 import cafe.woden.ircclient.irc.ircv3.Ircv3TypingRuntimeSupport;
 import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxActionEventEmitter;
-import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxChatHistoryBatchCollector;
 import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxChannelMessageEmitter;
+import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxChatHistoryBatchCollector;
 import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxInviteEventEmitter;
 import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxMonitorEventEmitter;
 import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxNoticeEventEmitter;
@@ -31,8 +31,8 @@ import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxServerResponseEmitter;
 import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxUnknownCtcpEmitter;
 import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxWhoEventEmitter;
 import cafe.woden.ircclient.irc.pircbotx.parse.PircbotxPresenceSignalSupport;
-import cafe.woden.ircclient.irc.pircbotx.support.PircbotxEventMetadata;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
+import cafe.woden.ircclient.irc.pircbotx.support.PircbotxEventMetadata;
 import cafe.woden.ircclient.irc.playback.NoOpPlaybackCursorProvider;
 import cafe.woden.ircclient.state.ServerIsupportState;
 import io.reactivex.rxjava3.processors.FlowableProcessor;
@@ -66,14 +66,9 @@ class PircbotxBridgeListenerFactoryRuntimeCompositionTest {
 
     Ircv3InboundCommandSignalRuntimeCatalog inboundCommands =
         field(
-            factory,
-            "inboundCommandRuntimeCatalog",
-            Ircv3InboundCommandSignalRuntimeCatalog.class);
+            factory, "inboundCommandRuntimeCatalog", Ircv3InboundCommandSignalRuntimeCatalog.class);
     Ircv3OutboundCommandRuntimeCatalog outboundCommands =
-        field(
-            factory,
-            "outboundCommandRuntimeCatalog",
-            Ircv3OutboundCommandRuntimeCatalog.class);
+        field(factory, "outboundCommandRuntimeCatalog", Ircv3OutboundCommandRuntimeCatalog.class);
     Ircv3ServerTimeRuntimeSupport serverTime =
         field(factory, "serverTimeRuntimeSupport", Ircv3ServerTimeRuntimeSupport.class);
     Ircv3MessageTagsRuntimeSupport messageTags =
@@ -182,8 +177,7 @@ class PircbotxBridgeListenerFactoryRuntimeCompositionTest {
         Ircv3IsupportRuntimeSupport.class,
         Ircv3TypingRuntimeSupport.class);
     assertConstructorCount(PircbotxSaslFailureHandler.class, 1);
-    assertAllConstructorsRequire(
-        PircbotxSaslFailureHandler.class, Ircv3SaslRuntimeSupport.class);
+    assertAllConstructorsRequire(PircbotxSaslFailureHandler.class, Ircv3SaslRuntimeSupport.class);
   }
 
   private static PircbotxBridgeListener createListener(
@@ -222,16 +216,10 @@ class PircbotxBridgeListenerFactoryRuntimeCompositionTest {
     Object monitorEvents = field(listener, "monitorEvents", Object.class);
     assertSame(
         inboundCommands,
-        field(
-            monitorEvents,
-            "runtimeCatalog",
-            Ircv3InboundCommandSignalRuntimeCatalog.class));
+        field(monitorEvents, "runtimeCatalog", Ircv3InboundCommandSignalRuntimeCatalog.class));
     assertSame(
         serverTime,
-        field(
-            monitorEvents,
-            "serverTimeRuntimeSupport",
-            Ircv3ServerTimeRuntimeSupport.class));
+        field(monitorEvents, "serverTimeRuntimeSupport", Ircv3ServerTimeRuntimeSupport.class));
 
     Object inviteEvents = field(listener, "inviteEvents", Object.class);
     assertSame(
@@ -244,26 +232,17 @@ class PircbotxBridgeListenerFactoryRuntimeCompositionTest {
     Object whoEvents = field(listener, "whoEvents", Object.class);
     assertSame(
         inboundCommands,
-        field(
-            whoEvents,
-            "runtimeCatalog",
-            Ircv3InboundCommandSignalRuntimeCatalog.class));
+        field(whoEvents, "runtimeCatalog", Ircv3InboundCommandSignalRuntimeCatalog.class));
 
     Object unknownCtcp = field(listener, "unknownCtcp", Object.class);
     assertSame(
         serverTime,
-        field(
-            unknownCtcp,
-            "serverTimeRuntimeSupport",
-            Ircv3ServerTimeRuntimeSupport.class));
+        field(unknownCtcp, "serverTimeRuntimeSupport", Ircv3ServerTimeRuntimeSupport.class));
 
     Object inboundCtcpHandler = field(listener, "inboundCtcpHandler", Object.class);
     assertSame(
         serverTime,
-        field(
-            inboundCtcpHandler,
-            "serverTimeRuntimeSupport",
-            Ircv3ServerTimeRuntimeSupport.class));
+        field(inboundCtcpHandler, "serverTimeRuntimeSupport", Ircv3ServerTimeRuntimeSupport.class));
 
     Object historyBatches = field(listener, "chatHistoryBatches", Object.class);
     assertSame(
@@ -274,24 +253,16 @@ class PircbotxBridgeListenerFactoryRuntimeCompositionTest {
             Ircv3InboundCommandSignalRuntimeCatalog.class));
     assertSame(
         serverTime,
-        field(
-            historyBatches,
-            "serverTimeRuntimeSupport",
-            Ircv3ServerTimeRuntimeSupport.class));
+        field(historyBatches, "serverTimeRuntimeSupport", Ircv3ServerTimeRuntimeSupport.class));
     assertSame(
         messageTags,
-        field(
-            historyBatches,
-            "messageTagsRuntimeSupport",
-            Ircv3MessageTagsRuntimeSupport.class));
+        field(historyBatches, "messageTagsRuntimeSupport", Ircv3MessageTagsRuntimeSupport.class));
 
     Object unknownLineFallback = field(listener, "unknownLineFallback", Object.class);
     assertSame(
         serverTime,
         field(
-            unknownLineFallback,
-            "serverTimeRuntimeSupport",
-            Ircv3ServerTimeRuntimeSupport.class));
+            unknownLineFallback, "serverTimeRuntimeSupport", Ircv3ServerTimeRuntimeSupport.class));
     assertSame(
         messageTags,
         field(
@@ -319,21 +290,12 @@ class PircbotxBridgeListenerFactoryRuntimeCompositionTest {
             Ircv3InboundCommandSignalRuntimeCatalog.class));
     assertSame(
         serverTime,
-        field(
-            unknownEventRouter,
-            "serverTimeRuntimeSupport",
-            Ircv3ServerTimeRuntimeSupport.class));
+        field(unknownEventRouter, "serverTimeRuntimeSupport", Ircv3ServerTimeRuntimeSupport.class));
 
     Object serverNumericRouter = field(listener, "serverNumericRouter", Object.class);
     assertSame(
-        field(
-            unknownLineFallback,
-            "presenceSignals",
-            PircbotxPresenceSignalSupport.class),
-        field(
-            serverNumericRouter,
-            "presenceSignals",
-            PircbotxPresenceSignalSupport.class));
+        field(unknownLineFallback, "presenceSignals", PircbotxPresenceSignalSupport.class),
+        field(serverNumericRouter, "presenceSignals", PircbotxPresenceSignalSupport.class));
 
     Object registrationLifecycle = field(listener, "registrationLifecycle", Object.class);
     assertSame(
@@ -354,8 +316,7 @@ class PircbotxBridgeListenerFactoryRuntimeCompositionTest {
         isupport,
         field(isupportObserver, "isupportRuntimeSupport", Ircv3IsupportRuntimeSupport.class));
     assertSame(
-        typing,
-        field(isupportObserver, "typingRuntimeSupport", Ircv3TypingRuntimeSupport.class));
+        typing, field(isupportObserver, "typingRuntimeSupport", Ircv3TypingRuntimeSupport.class));
 
     Object saslFailures = field(listener, "saslFailures", Object.class);
     assertSame(sasl, field(saslFailures, "runtimeSupport", Ircv3SaslRuntimeSupport.class));
@@ -377,10 +338,7 @@ class PircbotxBridgeListenerFactoryRuntimeCompositionTest {
         field(emitter, "messageTagsRuntimeSupport", Ircv3MessageTagsRuntimeSupport.class));
     if (historyTransport != null) {
       PircbotxPrivateConversationSupport privateConversation =
-          field(
-              emitter,
-              "privateConversationSupport",
-              PircbotxPrivateConversationSupport.class);
+          field(emitter, "privateConversationSupport", PircbotxPrivateConversationSupport.class);
       assertSame(
           historyTransport,
           field(
@@ -400,11 +358,9 @@ class PircbotxBridgeListenerFactoryRuntimeCompositionTest {
     for (Constructor<?> constructor : publicConstructors) {
       List<Class<?>> parameterTypes = List.of(constructor.getParameterTypes());
       assertTrue(
-          parameterTypes.contains(Ircv3ServerTimeRuntimeSupport.class),
-          constructor.toString());
+          parameterTypes.contains(Ircv3ServerTimeRuntimeSupport.class), constructor.toString());
       assertTrue(
-          parameterTypes.contains(Ircv3MessageTagsRuntimeSupport.class),
-          constructor.toString());
+          parameterTypes.contains(Ircv3MessageTagsRuntimeSupport.class), constructor.toString());
       if (requiresHistoryTransport) {
         assertTrue(
             parameterTypes.contains(Ircv3HistoryTransportRuntimeSupport.class)

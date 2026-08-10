@@ -43,7 +43,8 @@ class LinkPreviewHttpHeaderCatalogTest {
         };
 
     LinkPreviewHttpHeaderResult result =
-        catalog.applyProviderHeaders(baseHeaders, URI.create("https://example.test/card"), List.of(provider));
+        catalog.applyProviderHeaders(
+            baseHeaders, URI.create("https://example.test/card"), List.of(provider));
 
     assertEquals("PluginAgent", result.headers().get("User-Agent"));
     assertEquals("yes", result.headers().get("X-Card"));
@@ -61,7 +62,8 @@ class LinkPreviewHttpHeaderCatalogTest {
     EmbedHttpHeaderProvider later = uri -> Map.of("X-Later", "ok");
 
     LinkPreviewHttpHeaderResult result =
-        catalog.applyProviderHeaders(Map.of(), URI.create("https://example.test/card"), List.of(broken, later));
+        catalog.applyProviderHeaders(
+            Map.of(), URI.create("https://example.test/card"), List.of(broken, later));
 
     assertEquals("ok", result.headers().get("X-Later"));
     assertEquals(1, result.failures().size());

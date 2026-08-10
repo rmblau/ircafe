@@ -41,8 +41,7 @@ class SlashCommandParseStrategyRegistryTest {
                 line -> SlashCommandParseResult.quote("RAW accepted")));
 
     SlashCommandParseResult result =
-        registry.tryParse(
-            "/plugin RAW", parsed -> "quote".equals(parsed.kind()) ? parsed : null);
+        registry.tryParse("/plugin RAW", parsed -> "quote".equals(parsed.kind()) ? parsed : null);
 
     assertEquals("quote", result.kind());
     assertEquals(List.of("RAW accepted"), result.arguments());

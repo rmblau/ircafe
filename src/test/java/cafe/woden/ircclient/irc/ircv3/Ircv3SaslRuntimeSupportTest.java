@@ -31,8 +31,7 @@ class Ircv3SaslRuntimeSupportTest {
     assertEquals("AUTHENTICATE", message.command());
     assertEquals("+", message.trailing());
 
-    Ircv3SaslFailureSignal failure =
-        support.failure(905, ":server 905 me :SASL message too long");
+    Ircv3SaslFailureSignal failure = support.failure(905, ":server 905 me :SASL message too long");
     assertNotNull(failure);
     assertEquals(905, failure.numeric());
     assertEquals(
@@ -111,8 +110,7 @@ class Ircv3SaslRuntimeSupportTest {
               Ircv3InboundCommandOperation operation, Ircv3InboundCommandRequest request) {
             if (operation == Ircv3InboundCommandOperation.SASL_SERVER_MESSAGE) {
               return List.of(
-                  new Ircv3InboundCommandSignal.SaslServerMessageObserved(
-                      "903", "ok", 904));
+                  new Ircv3InboundCommandSignal.SaslServerMessageObserved("903", "ok", 904));
             }
             return List.of(
                 new Ircv3InboundCommandSignal.SaslFailureObserved(

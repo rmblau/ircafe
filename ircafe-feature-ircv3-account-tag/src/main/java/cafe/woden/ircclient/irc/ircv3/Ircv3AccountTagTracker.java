@@ -52,8 +52,7 @@ public final class Ircv3AccountTagTracker {
     trimToLimit();
     if (Objects.equals(previous, rawAccount)) return Optional.empty();
 
-    AccountState state =
-        isLoggedOut(rawAccount) ? AccountState.LOGGED_OUT : AccountState.LOGGED_IN;
+    AccountState state = isLoggedOut(rawAccount) ? AccountState.LOGGED_OUT : AccountState.LOGGED_IN;
     return Optional.of(new Change(observedNick, state, rawAccount));
   }
 

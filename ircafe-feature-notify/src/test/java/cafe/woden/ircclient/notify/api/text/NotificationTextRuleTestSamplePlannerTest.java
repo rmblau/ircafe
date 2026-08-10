@@ -55,7 +55,8 @@ class NotificationTextRuleTestSamplePlannerTest {
 
   @Test
   void negativeMaximumBehavesLikeZeroCharactersAllowed() {
-    NotificationTextRuleTestSamplePlan plan = NotificationTextRuleTestSamplePlanner.plan("ping", -1);
+    NotificationTextRuleTestSamplePlan plan =
+        NotificationTextRuleTestSamplePlanner.plan("ping", -1);
 
     assertEquals("", plan.rawSample());
     assertEquals("", plan.matcherSample());

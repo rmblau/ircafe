@@ -34,7 +34,8 @@ public final class IrcEventNotificationPersistedRulePlanner {
       String channelWhitelist,
       String channelBlacklist) {
     String normalizedEvent =
-        normalizeNameOrDefault(eventType, IrcEventNotificationRuleEditSeedPlanner.DEFAULT_EVENT_TYPE);
+        normalizeNameOrDefault(
+            eventType, IrcEventNotificationRuleEditSeedPlanner.DEFAULT_EVENT_TYPE);
 
     String normalizedSourceMode =
         normalizeNameOrDefault(
@@ -78,7 +79,9 @@ public final class IrcEventNotificationPersistedRulePlanner {
               : IrcEventNotificationDefaultRuleCatalog.DEFAULT_FOCUS_SCOPE;
     }
     boolean normalizedToastWhenFocused =
-        toastWhenFocused != null ? toastWhenFocused : !"BACKGROUND_ONLY".equals(normalizedFocusScope);
+        toastWhenFocused != null
+            ? toastWhenFocused
+            : !"BACKGROUND_ONLY".equals(normalizedFocusScope);
 
     boolean normalizedSoundEnabled = booleanOrDefault(soundEnabled, false);
     boolean normalizedStatusBarEnabled =
@@ -117,7 +120,8 @@ public final class IrcEventNotificationPersistedRulePlanner {
             ? normalizeNameOrDefault(
                 ctcpValueMode, IrcEventNotificationDefaultRuleCatalog.DEFAULT_CTCP_MATCH_MODE)
             : IrcEventNotificationDefaultRuleCatalog.DEFAULT_CTCP_MATCH_MODE;
-    String normalizedCtcpCommandPattern = ctcpActive ? normalizeTextOrNull(ctcpCommandPattern) : null;
+    String normalizedCtcpCommandPattern =
+        ctcpActive ? normalizeTextOrNull(ctcpCommandPattern) : null;
     String normalizedCtcpValuePattern = ctcpActive ? normalizeTextOrNull(ctcpValuePattern) : null;
     if (!IrcEventNotificationRuleEditPolicy.ctcpPatternRequired(normalizedCtcpCommandMode)) {
       normalizedCtcpCommandPattern = null;

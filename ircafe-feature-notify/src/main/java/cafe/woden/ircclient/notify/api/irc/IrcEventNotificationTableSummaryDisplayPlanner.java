@@ -14,8 +14,7 @@ public final class IrcEventNotificationTableSummaryDisplayPlanner {
       IrcEventNotificationActionSummaryPlan actionSummary) {
     return new IrcEventNotificationTableSummaryDisplayPlan(
         bounded(
-            matchSummary != null ? matchSummary.sourcePattern() : null,
-            SOURCE_PATTERN_MAX_CHARS),
+            matchSummary != null ? matchSummary.sourcePattern() : null, SOURCE_PATTERN_MAX_CHARS),
         bounded(
             matchSummary != null ? matchSummary.channelPatterns() : null,
             CHANNEL_PATTERNS_MAX_CHARS),
@@ -23,8 +22,7 @@ public final class IrcEventNotificationTableSummaryDisplayPlanner {
             matchSummary != null ? matchSummary.ctcpCommandPattern() : null,
             CTCP_PATTERN_MAX_CHARS),
         bounded(
-            matchSummary != null ? matchSummary.ctcpValuePattern() : null,
-            CTCP_PATTERN_MAX_CHARS),
+            matchSummary != null ? matchSummary.ctcpValuePattern() : null, CTCP_PATTERN_MAX_CHARS),
         bounded(
             actionSummary != null ? actionSummary.scriptLeafName() : null,
             SCRIPT_LEAF_NAME_MAX_CHARS));

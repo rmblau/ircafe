@@ -90,7 +90,9 @@ class BackendNamedCommandHandlerRegistryTest {
       public BackendNamedCommandParseResult parse(String line, String matchedCommandName) {
         String commandToken = "/" + matchedCommandName;
         String args =
-            line.length() > commandToken.length() ? line.substring(commandToken.length()).trim() : "";
+            line.length() > commandToken.length()
+                ? line.substring(commandToken.length()).trim()
+                : "";
         return new BackendNamedCommandParseResult(matchedCommandName, args);
       }
 

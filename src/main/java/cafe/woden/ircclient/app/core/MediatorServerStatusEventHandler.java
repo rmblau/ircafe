@@ -375,9 +375,7 @@ public class MediatorServerStatusEventHandler {
     ui.ensureTargetExists(status);
     String rendered = renderStandardReply(event);
     Ircv3LabeledResponseRuntimeSupport.Observation labeled =
-        labeledResponseRuntimeSupport
-            .fromTags(event.kind().name(), event.ircv3Tags())
-            .orElse(null);
+        labeledResponseRuntimeSupport.fromTags(event.kind().name(), event.ircv3Tags()).orElse(null);
     String label = labeled == null ? "" : labeled.label();
     if (!label.isBlank()) {
       LabeledResponseRoutingPort.PendingLabeledRequest pending =

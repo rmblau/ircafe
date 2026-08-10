@@ -34,8 +34,7 @@ class Ircv3AccountNotifySignalParserTest {
 
   @Test
   void ignoresOtherCommandsAndBlankNicks() {
-    assertTrue(
-        Ircv3AccountNotifySignalParser.parse("alice", "AWAY", "", List.of()).isEmpty());
+    assertTrue(Ircv3AccountNotifySignalParser.parse("alice", "AWAY", "", List.of()).isEmpty());
     assertTrue(Ircv3AccountNotifySignalParser.parse("", "ACCOUNT", "", List.of()).isEmpty());
   }
 }

@@ -92,8 +92,7 @@ public class PircbotxBotFactory {
             : ircv3ExtensionCatalog;
     this.saslRuntimeSupport =
         new Ircv3SaslRuntimeSupport(
-            Objects.requireNonNull(
-                inboundCommandRuntimeCatalog, "inboundCommandRuntimeCatalog"));
+            Objects.requireNonNull(inboundCommandRuntimeCatalog, "inboundCommandRuntimeCatalog"));
   }
 
   public PircBotX build(IrcProperties.Server s, String version, ListenerAdapter listener) {
@@ -200,11 +199,7 @@ public class PircbotxBotFactory {
       builder.setCapEnabled(true);
       builder.addCapHandler(
           new MultiSaslCapHandler(
-              user,
-              secret,
-              mech,
-              s.sasl().disconnectOnFailure(),
-              saslRuntimeSupport));
+              user, secret, mech, s.sasl().disconnectOnFailure(), saslRuntimeSupport));
     }
 
     return new PircbotxLagAwareBot(builder.buildConfiguration());

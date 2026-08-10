@@ -17,8 +17,7 @@ class NotificationRuleTableMutationPlannerTest {
 
   @Test
   void selectedRowPlansCurrentRowForOperations() {
-    NotificationRuleTableMutationPlan plan =
-        NotificationRuleTableMutationPlanner.selectedRow(1, 3);
+    NotificationRuleTableMutationPlan plan = NotificationRuleTableMutationPlanner.selectedRow(1, 3);
 
     assertTrue(plan.proceed());
     assertEquals(1, plan.row());

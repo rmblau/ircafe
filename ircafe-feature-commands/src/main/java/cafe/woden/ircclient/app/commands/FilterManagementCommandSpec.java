@@ -22,11 +22,7 @@ public sealed interface FilterManagementCommandSpec
   }
 
   record Move(
-      String name,
-      FilterMoveModeSpec mode,
-      Integer positionOneBased,
-      Integer amount,
-      String other)
+      String name, FilterMoveModeSpec mode, Integer positionOneBased, Integer amount, String other)
       implements FilterManagementCommandSpec {
     public Move {
       name = Objects.toString(name, "").trim();

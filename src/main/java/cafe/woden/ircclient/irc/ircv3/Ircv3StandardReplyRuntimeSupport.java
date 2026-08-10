@@ -30,7 +30,7 @@ public final class Ircv3StandardReplyRuntimeSupport {
       String description,
       String messageId) {
     public Observation {
-      kind = Objects.requireNonNull(kind, "kind");
+      Objects.requireNonNull(kind, "kind");
       command = Objects.toString(command, "").trim();
       code = Objects.toString(code, "").trim();
       context = Objects.toString(context, "").trim();

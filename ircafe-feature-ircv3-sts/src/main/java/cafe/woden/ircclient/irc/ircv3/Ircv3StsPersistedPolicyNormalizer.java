@@ -7,11 +7,7 @@ import java.util.Optional;
 public final class Ircv3StsPersistedPolicyNormalizer {
 
   public record Snapshot(
-      long expiresAtEpochMs,
-      Integer port,
-      boolean preload,
-      long durationSeconds,
-      String rawValue) {
+      long expiresAtEpochMs, Integer port, boolean preload, long durationSeconds, String rawValue) {
     public Snapshot {
       rawValue = Objects.toString(rawValue, "");
     }

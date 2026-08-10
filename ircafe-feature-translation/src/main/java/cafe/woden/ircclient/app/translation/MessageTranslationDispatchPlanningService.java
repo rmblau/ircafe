@@ -58,8 +58,8 @@ public final class MessageTranslationDispatchPlanningService {
         .orElseGet(
             () ->
                 PlanningResult.skipped(
-                    "configured backend is not registered (backend=%s)".formatted(
-                        settings.backendId())));
+                    "configured backend is not registered (backend=%s)"
+                        .formatted(settings.backendId())));
   }
 
   private static TranslationPlan toPlan(

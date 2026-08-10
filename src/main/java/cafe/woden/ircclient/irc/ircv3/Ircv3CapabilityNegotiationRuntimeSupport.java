@@ -9,7 +9,9 @@ import java.util.Locale;
 import java.util.Objects;
 import java.util.Set;
 
-/** Validates portable CAP negotiation signals before application-owned state or transport changes. */
+/**
+ * Validates portable CAP negotiation signals before application-owned state or transport changes.
+ */
 public final class Ircv3CapabilityNegotiationRuntimeSupport {
 
   private static final Set<String> ACTIONS = Set.of("ACK", "DEL", "NEW", "LS", "NAK");
@@ -45,8 +47,7 @@ public final class Ircv3CapabilityNegotiationRuntimeSupport {
 
   private final Ircv3InboundCommandSignalRuntimeCatalog catalog;
 
-  public Ircv3CapabilityNegotiationRuntimeSupport(
-      Ircv3InboundCommandSignalRuntimeCatalog catalog) {
+  public Ircv3CapabilityNegotiationRuntimeSupport(Ircv3InboundCommandSignalRuntimeCatalog catalog) {
     this.catalog = Objects.requireNonNull(catalog, "catalog");
   }
 
@@ -64,8 +65,7 @@ public final class Ircv3CapabilityNegotiationRuntimeSupport {
         if (validated != null) {
           changes.add(validated);
         }
-      } else if (signal
-          instanceof Ircv3InboundCommandSignal.CapabilityFallbackPlanned fallback) {
+      } else if (signal instanceof Ircv3InboundCommandSignal.CapabilityFallbackPlanned fallback) {
         if ("LS".equals(observedAction) || "NEW".equals(observedAction)) {
           requestMessageTags |= fallback.requestMessageTags();
           requestBatch |= fallback.requestBatch();
@@ -93,7 +93,6 @@ public final class Ircv3CapabilityNegotiationRuntimeSupport {
     boolean enabled = updateState && "ACK".equals(action) && signal.enabled();
     return new CapabilityChange(action, capabilityName, enabled, updateState);
   }
-
 
   private static String requestAction(Ircv3InboundCommandRequest request) {
     for (String parameter : request.parameters()) {

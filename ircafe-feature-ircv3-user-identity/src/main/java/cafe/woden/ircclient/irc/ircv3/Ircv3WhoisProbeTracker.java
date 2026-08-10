@@ -11,10 +11,7 @@ public final class Ircv3WhoisProbeTracker {
   private final AtomicBoolean accountNumericSupported = new AtomicBoolean(false);
 
   public record Completion(
-      String nick,
-      boolean sawAway,
-      boolean sawAccount,
-      boolean accountNumericSupported) {}
+      String nick, boolean sawAway, boolean sawAccount, boolean accountNumericSupported) {}
 
   private record ProbeState(boolean sawAway, boolean sawAccount) {}
 

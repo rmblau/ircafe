@@ -40,8 +40,7 @@ class FilterLifecycleCommandParserTest {
   void parsesDeleteAliasesAndPreservesMaskOrder() {
     FilterLifecycleCommandSpec.Targets parsed =
         (FilterLifecycleCommandSpec.Targets)
-            parser.parse(
-                "remove", List.of("/filter", "remove", "named", "irc-*", "re:/ops.*/"));
+            parser.parse("remove", List.of("/filter", "remove", "named", "irc-*", "re:/ops.*/"));
 
     assertEquals(FilterTargetActionSpec.DELETE, parsed.action());
     assertEquals(List.of("named", "irc-*", "re:/ops.*/"), parsed.namesOrMasks());

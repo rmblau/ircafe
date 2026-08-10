@@ -22,8 +22,7 @@ public final class Ircv3LabeledResponseRawLinePreparer {
     int space = line.indexOf(' ');
     if (space <= 1) return new PreparedRawLine(line, "", false);
 
-    String existing =
-        Ircv3Tags.firstTagValue(Ircv3Tags.fromRawLine(line), "label", "+label");
+    String existing = Ircv3Tags.firstTagValue(Ircv3Tags.fromRawLine(line), "label", "+label");
     existing = Ircv3LabeledResponseValues.normalizeLabel(existing);
     if (!existing.isEmpty()) return new PreparedRawLine(line, existing, false);
 

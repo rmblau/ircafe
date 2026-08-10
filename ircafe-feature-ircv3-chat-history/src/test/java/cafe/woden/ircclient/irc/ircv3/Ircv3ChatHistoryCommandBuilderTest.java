@@ -78,10 +78,8 @@ class Ircv3ChatHistoryCommandBuilderTest {
         "msgid=abc123",
         Ircv3ChatHistoryCommandBuilder.normalizeRequestSelectorOrEmpty(" MSGID=abc123 "));
     assertEquals(
-        "*",
-        Ircv3ChatHistoryCommandBuilder.normalizeRequestSelectorOrWildcardOrEmpty(" * "));
-    assertEquals(
-        "", Ircv3ChatHistoryCommandBuilder.normalizeRequestSelectorOrEmpty("other=value"));
+        "*", Ircv3ChatHistoryCommandBuilder.normalizeRequestSelectorOrWildcardOrEmpty(" * "));
+    assertEquals("", Ircv3ChatHistoryCommandBuilder.normalizeRequestSelectorOrEmpty("other=value"));
     assertEquals(
         "",
         Ircv3ChatHistoryCommandBuilder.normalizeRequestSelectorOrWildcardOrEmpty(

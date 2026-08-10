@@ -57,9 +57,7 @@ class OpenGraphLinkPreviewResolverTest {
     assertThatThrownBy(
             () ->
                 resolver.tryResolve(
-                    URI.create("https://example.com/missing"),
-                    "https://example.com/missing",
-                    http))
+                    URI.create("https://example.com/missing"), "https://example.com/missing", http))
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("HTTP 404");
   }

@@ -18,8 +18,7 @@ public record Ircv3ServerTimeLagSample(long lagMs, long observedAtMs) {
     }
   }
 
-  public static Optional<Ircv3ServerTimeLagSample> from(
-      Instant serverTaggedAt, long observedAtMs) {
+  public static Optional<Ircv3ServerTimeLagSample> from(Instant serverTaggedAt, long observedAtMs) {
     if (serverTaggedAt == null) {
       return Optional.empty();
     }

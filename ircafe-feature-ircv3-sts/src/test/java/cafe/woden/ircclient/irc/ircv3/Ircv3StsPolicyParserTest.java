@@ -34,8 +34,7 @@ class Ircv3StsPolicyParserTest {
 
   @Test
   void acceptsDurationZeroForPolicyRemoval() {
-    assertEquals(
-        0L, Ircv3StsPolicyParser.parse("duration=0").orElseThrow().durationSeconds());
+    assertEquals(0L, Ircv3StsPolicyParser.parse("duration=0").orElseThrow().durationSeconds());
   }
 
   @Test

@@ -47,8 +47,7 @@ class Ircv3OutboundCommandRuntimeCatalogTest {
         "CHATHISTORY BETWEEN #ircafe msgid=one timestamp=123 25",
         catalog.buildSingle(
             Ircv3OutboundCommandOperation.CHAT_HISTORY_BETWEEN,
-            Ircv3OutboundCommandRequest.chatHistory(
-                "#ircafe", "msgid=one", "timestamp=123", 25)));
+            Ircv3OutboundCommandRequest.chatHistory("#ircafe", "msgid=one", "timestamp=123", 25)));
     assertEquals(
         List.of("PRIVMSG #ircafe :hello"),
         catalog.build(
@@ -65,8 +64,7 @@ class Ircv3OutboundCommandRuntimeCatalogTest {
         "@label=ircafe-libera-7 PRIVMSG #ircafe :hello",
         catalog.buildSingle(
             Ircv3OutboundCommandOperation.LABELED_RESPONSE,
-            Ircv3OutboundCommandRequest.labeledResponse(
-                "Libera", "PRIVMSG #ircafe :hello", 7L)));
+            Ircv3OutboundCommandRequest.labeledResponse("Libera", "PRIVMSG #ircafe :hello", 7L)));
     assertEquals(
         "MONITOR L",
         catalog.buildSingle(
@@ -76,8 +74,7 @@ class Ircv3OutboundCommandRuntimeCatalogTest {
         List.of("MONITOR +alice,bob", "MONITOR +carol"),
         catalog.build(
             Ircv3OutboundCommandOperation.MONITOR_ADD,
-            Ircv3OutboundCommandRequest.monitor(
-                List.of("alice", "bob", "carol"), 2)));
+            Ircv3OutboundCommandRequest.monitor(List.of("alice", "bob", "carol"), 2)));
   }
 
   @Test

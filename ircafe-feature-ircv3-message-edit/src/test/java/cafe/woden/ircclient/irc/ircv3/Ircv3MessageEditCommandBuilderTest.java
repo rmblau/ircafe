@@ -10,8 +10,7 @@ class Ircv3MessageEditCommandBuilderTest {
   void buildsMessageEditLine() {
     assertEquals(
         "@+draft/edit=abc\\:123 PRIVMSG #ircafe :corrected text",
-        Ircv3MessageEditCommandBuilder.buildRawLine(
-            "#ircafe", "abc;123", " corrected text "));
+        Ircv3MessageEditCommandBuilder.buildRawLine("#ircafe", "abc;123", " corrected text "));
   }
 
   @Test

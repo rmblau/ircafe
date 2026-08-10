@@ -97,8 +97,7 @@ class NotificationStoreEventBucketPolicyTest {
   void removeSelectedByIdentityHandlesEmptyInputsSafely() {
     List<EventRow> events = new ArrayList<>(List.of(new EventRow("keep")));
 
-    assertEquals(
-        0, NotificationStoreEventBucketPolicy.removeSelectedByIdentity(events, List.of()));
+    assertEquals(0, NotificationStoreEventBucketPolicy.removeSelectedByIdentity(events, List.of()));
     assertEquals(0, NotificationStoreEventBucketPolicy.removeSelectedByIdentity(events, null));
     assertEquals(0, NotificationStoreEventBucketPolicy.removeSelectedByIdentity(null, events));
     assertEquals(
