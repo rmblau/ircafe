@@ -1,17 +1,19 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
+import cafe.woden.ircclient.config.api.InstalledPluginProblem;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.net.ServerProxyResolver;
+import cafe.woden.ircclient.plugin.spi.InstalledPluginDescriptor;
 import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreview;
 import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
-import cafe.woden.ircclient.ui.chat.render.ChatRichTextRenderer;
 import cafe.woden.ircclient.util.RxVirtualSchedulers;
 import io.reactivex.rxjava3.core.Single;
-import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import org.jmolecules.architecture.layered.InterfaceLayer;
@@ -33,19 +35,31 @@ public class LinkPreviewFetchService {
 
   private final ServerProxyResolver proxyResolver;
   private final List<LinkPreviewResolver> resolvers;
+  private final InstalledPluginsPort installedPlugins;
+  private final LinkPreviewFetchPlanningService planningService;
+  private final LinkPreviewResolutionService resolutionService;
   private final List<cafe.woden.ircclient.ui.chat.embed.spi.EmbedHttpHeaderProvider>
       httpHeaderProviders;
 
-  private final ConcurrentMap<String, java.lang.ref.SoftReference<LinkPreview>> cache =
-      new ConcurrentHashMap<>();
+  private final EmbedSoftValueCache<LinkPreview> cache =
+      new EmbedSoftValueCache<>(MAX_CACHE_KEYS, CACHE_PRUNE_MAX_REMOVALS);
   private final ConcurrentMap<String, Single<LinkPreview>> inflight = new ConcurrentHashMap<>();
+  private final ConcurrentMap<String, Boolean> recordedResolverRuntimeProblems =
+      new ConcurrentHashMap<>();
 
   @Autowired
   public LinkPreviewFetchService(
       ServerProxyResolver proxyResolver,
       List<LinkPreviewResolver> resolvers,
-      ObjectProvider<InstalledPluginsPort> installedPluginsProvider) {
-    this(proxyResolver, resolvers, resolveInstalledPlugins(installedPluginsProvider));
+      ObjectProvider<InstalledPluginsPort> installedPluginsProvider,
+      LinkPreviewFetchPlanningService planningService,
+      LinkPreviewResolutionService resolutionService) {
+    this(
+        proxyResolver,
+        resolvers,
+        resolveInstalledPlugins(installedPluginsProvider),
+        planningService,
+        resolutionService);
   }
 
   public LinkPreviewFetchService(
@@ -57,7 +71,39 @@ public class LinkPreviewFetchService {
       ServerProxyResolver proxyResolver,
       List<LinkPreviewResolver> resolvers,
       InstalledPluginsPort installedPlugins) {
+    this(
+        proxyResolver,
+        resolvers,
+        installedPlugins,
+        new LinkPreviewFetchPlanningService(),
+        new LinkPreviewResolutionService());
+  }
+
+  LinkPreviewFetchService(
+      ServerProxyResolver proxyResolver,
+      List<LinkPreviewResolver> resolvers,
+      InstalledPluginsPort installedPlugins,
+      LinkPreviewFetchPreflightService preflight) {
+    this(
+        proxyResolver,
+        resolvers,
+        installedPlugins,
+        new LinkPreviewFetchPlanningService(preflight),
+        new LinkPreviewResolutionService());
+  }
+
+  LinkPreviewFetchService(
+      ServerProxyResolver proxyResolver,
+      List<LinkPreviewResolver> resolvers,
+      InstalledPluginsPort installedPlugins,
+      LinkPreviewFetchPlanningService planningService,
+      LinkPreviewResolutionService resolutionService) {
     this.proxyResolver = proxyResolver;
+    this.installedPlugins = installedPlugins;
+    this.planningService =
+        planningService != null ? planningService : new LinkPreviewFetchPlanningService();
+    this.resolutionService =
+        resolutionService != null ? resolutionService : new LinkPreviewResolutionService();
     this.resolvers = LinkPreviewPluginProviders.linkPreviewResolvers(resolvers, installedPlugins);
     this.httpHeaderProviders = loadInstalledHeaderProviders(installedPlugins);
   }
@@ -73,36 +119,29 @@ public class LinkPreviewFetchService {
   }
 
   public Single<LinkPreview> fetch(String serverId, String url) {
-    if (url == null || url.isBlank()) {
-      return Single.error(new IllegalArgumentException("url is blank"));
+    final LinkPreviewFetchPlan plan;
+    try {
+      plan = planningService.plan(serverId, url);
+    } catch (RuntimeException ex) {
+      return Single.error(ex);
     }
 
-    // Normalize early so cache keys are stable.
-    final String normalized = ChatRichTextRenderer.normalizeUrl(url.trim());
-
-    // Per-server cache key. Previews can vary by proxy (geo/CDN/bot pages), so we isolate.
-    final String sid = Objects.toString(serverId, "").trim();
-    final String key = sid + "|" + normalized + "|" + cacheVersion(normalized);
+    final LinkPreviewFetchRequest request = plan.request();
+    final String key = plan.cacheKey();
 
     // Cache hit
-    var ref = cache.get(key);
-    if (ref != null) {
-      var v = ref.get();
-      if (v != null) return Single.just(v);
-      cache.remove(key, ref);
+    LinkPreview cached = cache.get(key);
+    if (cached != null) {
+      return Single.just(cached);
     }
 
     // Inflight de-dupe: computeIfAbsent + cache() so multiple subscribers share the same work.
     return inflight.computeIfAbsent(
         key,
         k ->
-            Single.fromCallable(() -> load(sid, normalized))
+            Single.fromCallable(() -> load(request))
                 .subscribeOn(RxVirtualSchedulers.io())
-                .doOnSuccess(
-                    p -> {
-                      cache.put(k, new java.lang.ref.SoftReference<>(p));
-                      pruneCacheKeysIfNeeded();
-                    })
+                .doOnSuccess(p -> cache.put(k, p))
                 .doFinally(() -> inflight.remove(k))
                 .cache());
   }
@@ -112,117 +151,105 @@ public class LinkPreviewFetchService {
     return fetch(null, url);
   }
 
-  private void pruneCacheKeysIfNeeded() {
-    int size = cache.size();
-    if (size <= MAX_CACHE_KEYS) {
-      return;
-    }
-
-    int removed = 0;
-    for (Map.Entry<String, java.lang.ref.SoftReference<LinkPreview>> e : cache.entrySet()) {
-      if (removed >= CACHE_PRUNE_MAX_REMOVALS) break;
-      java.lang.ref.SoftReference<LinkPreview> ref = e.getValue();
-      LinkPreview value = ref != null ? ref.get() : null;
-      if (value == null || cache.size() > MAX_CACHE_KEYS) {
-        if (cache.remove(e.getKey(), ref)) {
-          removed++;
-        }
-      }
-    }
-  }
-
-  private LinkPreview load(String serverId, String url) throws Exception {
-    URI uri = URI.create(url);
-    String scheme = String.valueOf(uri.getScheme()).toLowerCase(Locale.ROOT);
-    if (!scheme.equals("http") && !scheme.equals("https")) {
-      throw new IllegalArgumentException("unsupported scheme: " + scheme);
-    }
-    if (isDefinitelyLocalOrPrivateHost(uri.getHost())) {
-      throw new IllegalArgumentException("refusing to fetch local/private host: " + uri.getHost());
-    }
-
+  private LinkPreview load(LinkPreviewFetchRequest request) throws Exception {
     PreviewHttp http =
         new PreviewHttp(
-            proxyResolver != null ? proxyResolver.planForServer(serverId) : null,
+            proxyResolver != null ? proxyResolver.planForServer(request.serverId()) : null,
             httpHeaderProviders);
 
-    for (LinkPreviewResolver r : resolvers) {
-      try {
-        LinkPreview p = r.tryResolve(uri, url, http);
-        if (p != null) return p;
-      } catch (Exception e) {
-        // Resolvers may throw when they apply but fail (e.g., HTTP errors).
-        // Don't fail the whole preview chain: keep trying fallbacks.
-        log.debug(
-            "Link preview resolver {} failed for {}: {}",
-            r.getClass().getSimpleName(),
-            url,
-            e.toString());
-        // Continue to the next resolver.
-      }
+    LinkPreviewResolutionResult result = resolutionService.resolve(request, http, resolvers);
+    for (LinkPreviewResolverFailure failure : result.failures()) {
+      // Resolvers may throw when they apply but fail (e.g., HTTP errors).
+      // Don't fail the whole preview chain: keep trying fallbacks.
+      recordInstalledResolverFailure(failure.resolver(), failure.normalizedUrl(), failure.error());
+      log.debug(
+          "Link preview resolver {} failed for {}: {}",
+          failure.resolver().getClass().getSimpleName(),
+          failure.normalizedUrl(),
+          failure.error().toString());
+    }
+    if (result.matched()) {
+      return result.preview();
     }
 
     throw new IllegalStateException("no preview resolver matched");
   }
 
-  private static boolean isDefinitelyLocalOrPrivateHost(String host) {
-    if (host == null || host.isBlank()) return false;
-    String h = host.toLowerCase(Locale.ROOT).trim();
-
-    if (h.equals("localhost")
-        || h.equals("localhost.localdomain")
-        || h.equals("0.0.0.0")
-        || h.equals("::1")) {
-      return true;
+  private void recordInstalledResolverFailure(
+      LinkPreviewResolver resolver, String originalUrl, Exception error) {
+    if (resolver == null || installedPlugins == null) {
+      return;
     }
-    // If it's an IPv4 literal, block common private ranges.
-    if (h.matches("\\d+\\.\\d+\\.\\d+\\.\\d+")) {
-      String[] parts = h.split("\\.");
-      if (parts.length == 4) {
-        int a = parseInt(parts[0]);
-        int b = parseInt(parts[1]);
-        if (a == 10) return true;
-        if (a == 127) return true;
-        if (a == 192 && b == 168) return true;
-        if (a == 172 && b >= 16 && b <= 31) return true;
-      }
+    Optional<InstalledPluginDescriptor> descriptor = descriptorForResolver(resolver);
+    if (descriptor.isEmpty()) {
+      return;
     }
-    // IPv6: block loopback + unique local + link-local.
-    if (h.contains(":")) {
-      if (h.equals("::1")) return true;
-      if (h.startsWith("fc") || h.startsWith("fd")) return true; // fc00::/7 (very rough)
-      if (h.startsWith("fe80")) return true; // link-local
+    InstalledPluginDescriptor plugin = descriptor.get();
+    String resolverClass = resolver.getClass().getName();
+    String problemKey = plugin.pluginId() + "|" + resolverClass;
+    if (recordedResolverRuntimeProblems.putIfAbsent(problemKey, Boolean.TRUE) != null) {
+      return;
     }
-
-    return false;
+    StringBuilder details = new StringBuilder();
+    details
+        .append("Plugin id: ")
+        .append(plugin.pluginId())
+        .append('\n')
+        .append("Plugin version: ")
+        .append(plugin.pluginVersion())
+        .append('\n')
+        .append("Plugin jar: ")
+        .append(plugin.sourceJar())
+        .append('\n')
+        .append("Resolver: ")
+        .append(resolverClass)
+        .append('\n')
+        .append("URL: ")
+        .append(Objects.toString(originalUrl, ""))
+        .append('\n')
+        .append("Error type: ")
+        .append(error.getClass().getName());
+    String message = Objects.toString(error.getMessage(), "").trim();
+    if (!message.isEmpty()) {
+      details.append('\n').append(message);
+    }
+    installedPlugins.recordPluginProblem(
+        new InstalledPluginProblem(
+            "ERROR",
+            "Link preview resolver failed for plugin '" + plugin.pluginId() + "'",
+            details.toString()));
   }
 
-  private static int parseInt(String s) {
-    try {
-      return Integer.parseInt(s);
-    } catch (Exception ignored) {
-      return -1;
+  private Optional<InstalledPluginDescriptor> descriptorForResolver(LinkPreviewResolver resolver) {
+    Optional<Path> resolverJar = resolverSourceJar(resolver);
+    if (resolverJar.isEmpty()) {
+      return Optional.empty();
     }
+    Path sourceJar = resolverJar.get();
+    return installedPlugins.installedPlugins().stream()
+        .filter(descriptor -> descriptor != null && samePath(descriptor.sourceJar(), sourceJar))
+        .findFirst();
   }
 
-  private static String cacheVersion(String normalizedUrl) {
+  private static Optional<Path> resolverSourceJar(LinkPreviewResolver resolver) {
     try {
-      URI uri = URI.create(normalizedUrl);
-      if (InstagramPreviewUtil.isInstagramPostUri(uri)) {
-        // Bump this when Instagram extraction/layout semantics change to avoid stale cached cards.
-        return "ig-v2";
-      }
-      if (ImgurPreviewUtil.isImgurUri(uri)) {
-        // Imgur has a dedicated resolver and metadata layout.
-        return "imgur-v1";
-      }
-      if (NewsPreviewUtil.isLikelyNewsArticleUri(uri)) {
-        // News previews can switch from plain OG to structured metadata+summary formatting.
-        return "news-v2";
+      Path sourcePath =
+          Path.of(resolver.getClass().getProtectionDomain().getCodeSource().getLocation().toURI())
+              .toAbsolutePath()
+              .normalize();
+      if (Files.isRegularFile(sourcePath)
+          && sourcePath.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".jar")) {
+        return Optional.of(sourcePath);
       }
     } catch (Exception ignored) {
-      // Fall through to default version.
+      // Runtime diagnostics are best-effort; source-less providers still get debug logging.
     }
-    return "v1";
+    return Optional.empty();
+  }
+
+  private static boolean samePath(Path left, Path right) {
+    return left != null
+        && right != null
+        && left.toAbsolutePath().normalize().equals(right.toAbsolutePath().normalize());
   }
 }

@@ -1,0 +1,8 @@
+apply from: rootProject.file('gradle/ircv3-feature-conventions.gradle')
+
+description = 'IRCafe IRCv3 capability negotiation, state, and extension metadata policy.'
+
+dependencies {
+    api project(':ircafe-plugin-api')
+    api project(':ircafe-feature-ircv3-common')
+}

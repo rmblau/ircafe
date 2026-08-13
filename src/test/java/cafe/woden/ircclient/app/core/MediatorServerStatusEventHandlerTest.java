@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.irc.IrcEvent;
+import cafe.woden.ircclient.irc.ircv3.Ircv3RuntimeTestFixtures;
 import cafe.woden.ircclient.irc.port.IrcMediatorInteractionPort;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.model.TargetRef;
@@ -114,7 +115,17 @@ class MediatorServerStatusEventHandlerTest {
 
   private static MediatorServerStatusEventHandler newHandler(
       IrcMediatorInteractionPort irc, UiPort ui) {
-    return new MediatorServerStatusEventHandler(irc, ui, null, null, null, null, null, null, null);
+    return new MediatorServerStatusEventHandler(
+        irc,
+        ui,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        Ircv3RuntimeTestFixtures.labeledResponse());
   }
 
   private static MediatorServerStatusEventHandler.Callbacks callbacks() {

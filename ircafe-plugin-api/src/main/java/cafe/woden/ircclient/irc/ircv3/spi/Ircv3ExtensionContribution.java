@@ -21,7 +21,8 @@ public record Ircv3ExtensionContribution(
     specStatus = Objects.requireNonNull(specStatus, "specStatus");
     aliases = copyNormalized(aliases);
     requestToken = normalize(requestToken);
-    preferenceKey = normalize(preferenceKey == null || preferenceKey.isBlank() ? id : preferenceKey);
+    preferenceKey =
+        normalize(preferenceKey == null || preferenceKey.isBlank() ? id : preferenceKey);
     uiMetadata = Objects.requireNonNull(uiMetadata, "uiMetadata");
   }
 

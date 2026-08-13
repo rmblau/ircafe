@@ -4,6 +4,7 @@ import cafe.woden.ircclient.app.api.InterceptorEventType;
 import cafe.woden.ircclient.app.api.MonitorFallbackPort;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.irc.IrcEvent;
+import cafe.woden.ircclient.irc.ircv3.Ircv3LabeledResponseRuntimeSupport;
 import cafe.woden.ircclient.irc.port.IrcMediatorInteractionPort;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.model.TargetRef;
@@ -67,6 +68,7 @@ public class MediatorServerStatusEventHandler {
   private final PendingEchoMessagePort pendingEchoMessageState;
   private final ServerIsupportStatePort serverIsupportState;
   private final ConnectionCoordinator connectionCoordinator;
+  private final Ircv3LabeledResponseRuntimeSupport labeledResponseRuntimeSupport;
 
   public void handleNickChanged(String sid, TargetRef status, IrcEvent.NickChanged event) {
     irc.currentNick(sid)
@@ -295,7 +297,11 @@ public class MediatorServerStatusEventHandler {
     } else if (event.code() == 323 && !msg.isBlank()) {
       rendered = "[323] " + msg + " (see Channel List).";
     }
-    String label = Objects.toString(event.ircv3Tags().get("label"), "").trim();
+    String label =
+        labeledResponseRuntimeSupport
+            .fromTags("", event.ircv3Tags())
+            .map(Ircv3LabeledResponseRuntimeSupport.Observation::label)
+            .orElse("");
     if (!label.isBlank()) {
       LabeledResponseRoutingPort.PendingLabeledRequest pending =
           labeledResponseRoutingState.findIfFresh(sid, label, LABELED_RESPONSE_CORRELATION_WINDOW);
@@ -368,16 +374,16 @@ public class MediatorServerStatusEventHandler {
       Callbacks callbacks, String sid, TargetRef status, IrcEvent.StandardReply event) {
     ui.ensureTargetExists(status);
     String rendered = renderStandardReply(event);
-    String label = Objects.toString(event.ircv3Tags().get("label"), "").trim();
+    Ircv3LabeledResponseRuntimeSupport.Observation labeled =
+        labeledResponseRuntimeSupport.fromTags(event.kind().name(), event.ircv3Tags()).orElse(null);
+    String label = labeled == null ? "" : labeled.label();
     if (!label.isBlank()) {
       LabeledResponseRoutingPort.PendingLabeledRequest pending =
           labeledResponseRoutingState.findIfFresh(sid, label, LABELED_RESPONSE_CORRELATION_WINDOW);
       if (pending != null && pending.originTarget() != null) {
         TargetRef dest = normalizeLabeledDestination(sid, status, pending.originTarget());
         LabeledResponseRoutingPort.Outcome outcome =
-            event.kind() == IrcEvent.StandardReplyKind.FAIL
-                ? LabeledResponseRoutingPort.Outcome.FAILURE
-                : LabeledResponseRoutingPort.Outcome.SUCCESS;
+            toRoutingOutcome(labeled == null ? null : labeled.outcome());
         LabeledResponseRoutingPort.PendingLabeledRequest transitioned =
             labeledResponseRoutingState.markOutcomeIfPending(sid, label, outcome, event.at());
         if (transitioned != null) {
@@ -663,6 +669,13 @@ public class MediatorServerStatusEventHandler {
       out.append(": ").append(desc);
     }
     return out.toString();
+  }
+
+  private static LabeledResponseRoutingPort.Outcome toRoutingOutcome(
+      Ircv3LabeledResponseRuntimeSupport.Outcome outcome) {
+    return outcome == Ircv3LabeledResponseRuntimeSupport.Outcome.FAILURE
+        ? LabeledResponseRoutingPort.Outcome.FAILURE
+        : LabeledResponseRoutingPort.Outcome.SUCCESS;
   }
 
   private void appendLabeledOutcome(

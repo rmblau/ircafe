@@ -2,7 +2,8 @@ package cafe.woden.ircclient.ui.input;
 
 import cafe.woden.ircclient.app.commands.SlashCommandPresentationCatalog;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
-import cafe.woden.ircclient.irc.ircv3.Ircv3DraftNormalizer;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ReactionDraftPolicy;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ReplyDraftPolicy;
 import cafe.woden.ircclient.ui.CommandHistoryStore;
 import cafe.woden.ircclient.ui.SingleLineEmojiTextPane;
 import cafe.woden.ircclient.ui.backend.BackendUiProfile;
@@ -1114,9 +1115,7 @@ public class MessageInputPanel extends JPanel {
       boolean replySupported, boolean reactSupported) {
     boolean changed = false;
     String before = getDraftText();
-    String after =
-        Ircv3DraftNormalizer.normalizeIrcv3DraftForCapabilities(
-            before, replySupported, reactSupported);
+    String after = normalizeIrcv3DraftForCapabilities(before, replySupported, reactSupported);
     if (!Objects.equals(before, after)) {
       setDraftText(after);
       changed = true;
@@ -1130,8 +1129,9 @@ public class MessageInputPanel extends JPanel {
 
   public static String normalizeIrcv3DraftForCapabilities(
       String draft, boolean replySupported, boolean reactSupported) {
-    return Ircv3DraftNormalizer.normalizeIrcv3DraftForCapabilities(
-        draft, replySupported, reactSupported);
+    String reactionNormalized =
+        Ircv3ReactionDraftPolicy.normalizeForCapabilities(draft, replySupported, reactSupported);
+    return Ircv3ReplyDraftPolicy.normalizeForCapability(reactionNormalized, replySupported);
   }
 
   public void setInputEnabled(boolean enabled) {

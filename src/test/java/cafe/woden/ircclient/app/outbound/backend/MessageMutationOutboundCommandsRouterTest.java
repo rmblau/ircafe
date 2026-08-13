@@ -6,40 +6,70 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationOutboundCommands;
 import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationTargetView;
-import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.api.BackendDescriptorCatalog;
+import cafe.woden.ircclient.irc.ircv3.Ircv3MessageMutationRuntimeCatalog;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3MessageMutationOperation;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3MessageMutationProvider;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3MessageMutationRequest;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class MessageMutationOutboundCommandsRouterTest {
-  private static final BackendDescriptorCatalog BACKEND_DESCRIPTORS =
-      BackendDescriptorCatalog.builtIns();
 
   @Test
-  void routesToBackendSpecificHandlers() {
+  void routesBuiltInBackendsThroughRuntimeIrcv3Providers() {
     MessageMutationOutboundCommandsRouter router =
-        cafe.woden.ircclient.app.outbound.TestBackendSupport.messageMutationOutboundCommandsRouter(
-            List.of(
-                new IrcMessageMutationOutboundCommands(),
-                new MatrixMessageMutationOutboundCommands(),
-                new QuasselMessageMutationOutboundCommands()));
+        cafe.woden.ircclient.app.outbound.TestBackendSupport
+            .builtInMessageMutationOutboundCommandsRouter();
 
-    assertInstanceOf(IrcMessageMutationOutboundCommands.class, router.commandsFor("irc"));
-    assertInstanceOf(MatrixMessageMutationOutboundCommands.class, router.commandsFor("matrix"));
+    assertInstanceOf(Ircv3MessageMutationOutboundCommands.class, router.commandsFor("irc"));
+    assertInstanceOf(Ircv3MessageMutationOutboundCommands.class, router.commandsFor("matrix"));
     assertInstanceOf(
-        QuasselMessageMutationOutboundCommands.class, router.commandsFor("quassel-core"));
+        Ircv3MessageMutationOutboundCommands.class, router.commandsFor("quassel-core"));
+    assertMessageMutationCommands(router.commandsFor("irc"), "irc");
+    assertMessageMutationCommands(router.commandsFor("matrix"), "matrix");
+    assertMessageMutationCommands(router.commandsFor("quassel-core"), "quassel-core");
   }
 
   @Test
-  void fallsBackToIrcHandlerWhenBackendHasNoRegisteredHandler() {
+  void fallsBackToRuntimeIrcHandlerWhenBackendHasNoRegisteredHandler() {
     MessageMutationOutboundCommandsRouter router =
         cafe.woden.ircclient.app.outbound.TestBackendSupport.messageMutationOutboundCommandsRouter(
-            List.of(
-                new IrcMessageMutationOutboundCommands(),
-                new MatrixMessageMutationOutboundCommands()));
+            List.of(new TestMessageMutationOutboundCommands("matrix")));
 
-    assertIrcMessageMutationCommands(router.commandsFor(""));
-    assertIrcMessageMutationCommands(router.commandsFor("quassel-core"));
+    assertMessageMutationCommands(router.commandsFor(""), "irc");
+    assertMessageMutationCommands(router.commandsFor("quassel-core"), "quassel-core");
+  }
+
+  @Test
+  void rejectsRuntimeProviderThatChangesRequestedTarget() {
+    Ircv3MessageMutationProvider provider =
+        new Ircv3MessageMutationProvider() {
+          @Override
+          public String providerId() {
+            return "unsafe-reply";
+          }
+
+          @Override
+          public Set<Ircv3MessageMutationOperation> operations() {
+            return Set.of(Ircv3MessageMutationOperation.REPLY);
+          }
+
+          @Override
+          public String build(
+              Ircv3MessageMutationOperation operation, Ircv3MessageMutationRequest request) {
+            return "@+reply=" + request.messageId() + " PRIVMSG #other :" + request.payload();
+          }
+        };
+    MessageMutationOutboundCommands commands =
+        new Ircv3MessageMutationOutboundCommands(
+            "irc", Ircv3MessageMutationRuntimeCatalog.fromProviders(List.of(provider)));
+
+    assertThrows(
+        IllegalStateException.class,
+        () ->
+            commands.buildReplyRawLine(
+                new MessageMutationTargetView("server", "#ircafe"), "m-1", "hello"));
   }
 
   @Test
@@ -50,33 +80,36 @@ class MessageMutationOutboundCommandsRouterTest {
             cafe.woden.ircclient.app.outbound.TestBackendSupport
                 .messageMutationOutboundCommandsRouter(
                     List.of(
-                        new IrcMessageMutationOutboundCommands(),
-                        new DuplicateIrcMessageMutationOutboundCommands())));
+                        new TestMessageMutationOutboundCommands("irc"),
+                        new TestMessageMutationOutboundCommands("irc"))));
   }
 
   @Test
-  void defaultsToBuiltInIrcHandlerWhenCatalogHasNoExplicitIrcHandler() {
+  void explicitBackendHandlerOverridesBuiltInRuntimeAdapter() {
+    MessageMutationOutboundCommands custom = new TestMessageMutationOutboundCommands("irc");
     MessageMutationOutboundCommandsRouter router =
         cafe.woden.ircclient.app.outbound.TestBackendSupport.messageMutationOutboundCommandsRouter(
-            List.of(new MatrixMessageMutationOutboundCommands()));
+            List.of(custom));
 
-    assertIrcMessageMutationCommands(router.commandsFor("irc"));
+    assertInstanceOf(TestMessageMutationOutboundCommands.class, router.commandsFor("irc"));
   }
 
   @Test
   void routesCustomBackendIds() {
-    MessageMutationOutboundCommands pluginCommands = new PluginMessageMutationOutboundCommands();
+    MessageMutationOutboundCommands pluginCommands =
+        new TestMessageMutationOutboundCommands("plugin");
     MessageMutationOutboundCommandsRouter router =
         cafe.woden.ircclient.app.outbound.TestBackendSupport.messageMutationOutboundCommandsRouter(
-            List.of(new IrcMessageMutationOutboundCommands(), pluginCommands));
+            List.of(pluginCommands));
 
-    assertInstanceOf(PluginMessageMutationOutboundCommands.class, router.commandsFor("plugin"));
+    assertInstanceOf(TestMessageMutationOutboundCommands.class, router.commandsFor("plugin"));
   }
 
-  private static void assertIrcMessageMutationCommands(MessageMutationOutboundCommands commands) {
+  private static void assertMessageMutationCommands(
+      MessageMutationOutboundCommands commands, String backendId) {
     MessageMutationTargetView target = new MessageMutationTargetView("server", "#ircafe");
 
-    assertEquals("irc", commands.backendId());
+    assertEquals(backendId, commands.backendId());
     assertEquals(
         "@+reply=reply-1 PRIVMSG #ircafe :hello",
         commands.buildReplyRawLine(target, "reply-1", "hello"));
@@ -93,80 +126,47 @@ class MessageMutationOutboundCommandsRouterTest {
         "REDACT #ircafe msg-1 :cleanup", commands.buildRedactRawLine(target, "msg-1", "cleanup"));
   }
 
-  private static final class DuplicateIrcMessageMutationOutboundCommands
+  private static final class TestMessageMutationOutboundCommands
       implements MessageMutationOutboundCommands {
+    private final String backendId;
+
+    private TestMessageMutationOutboundCommands(String backendId) {
+      this.backendId = backendId;
+    }
 
     @Override
     public String backendId() {
-      return BACKEND_DESCRIPTORS.idFor(IrcProperties.Server.Backend.IRC);
+      return backendId;
     }
 
     @Override
     public String buildReplyRawLine(
         MessageMutationTargetView target, String replyToMessageId, String message) {
-      return "";
+      return "test";
     }
 
     @Override
     public String buildReactRawLine(
         MessageMutationTargetView target, String replyToMessageId, String reaction) {
-      return "";
+      return "test";
     }
 
     @Override
     public String buildUnreactRawLine(
         MessageMutationTargetView target, String replyToMessageId, String reaction) {
-      return "";
+      return "test";
     }
 
     @Override
     public String buildEditRawLine(
         MessageMutationTargetView target, String targetMessageId, String editedText) {
-      return "";
+      return "test";
     }
 
     @Override
     public String buildRedactRawLine(
         MessageMutationTargetView target, String targetMessageId, String reason) {
-      return "";
-    }
-  }
-
-  private static final class PluginMessageMutationOutboundCommands
-      implements MessageMutationOutboundCommands {
-    @Override
-    public String backendId() {
-      return "plugin";
-    }
-
-    @Override
-    public String buildReplyRawLine(
-        MessageMutationTargetView target, String replyToMessageId, String message) {
-      return "";
-    }
-
-    @Override
-    public String buildReactRawLine(
-        MessageMutationTargetView target, String replyToMessageId, String reaction) {
-      return "";
-    }
-
-    @Override
-    public String buildUnreactRawLine(
-        MessageMutationTargetView target, String replyToMessageId, String reaction) {
-      return "";
-    }
-
-    @Override
-    public String buildEditRawLine(
-        MessageMutationTargetView target, String targetMessageId, String editedText) {
-      return "";
-    }
-
-    @Override
-    public String buildRedactRawLine(
-        MessageMutationTargetView target, String targetMessageId, String reason) {
-      return "";
+      return "test";
     }
   }
 }

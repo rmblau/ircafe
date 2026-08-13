@@ -32,12 +32,29 @@ class Ircv3ExtensionRegistryTest {
   }
 
   @Test
+  void extendedMonitorDraftAliasResolvesToFocusedCapability() {
+    Ircv3ExtensionRegistry.ExtensionDefinition extendedMonitor =
+        Ircv3ExtensionRegistry.find("draft/extended-monitor").orElseThrow();
+
+    assertEquals("extended-monitor", extendedMonitor.id());
+    assertEquals("extended-monitor", extendedMonitor.requestToken());
+    assertEquals("extended-monitor", extendedMonitor.preferenceKey());
+  }
+
+  @Test
   void tagFeaturesAndNonRequestableCapabilitiesCannotProduceCapReqTokens() {
     assertEquals("", Ircv3ExtensionRegistry.requestTokenFor("typing"));
     assertEquals("", Ircv3ExtensionRegistry.requestTokenFor("draft/reply"));
     assertEquals("", Ircv3ExtensionRegistry.requestTokenFor("draft/react"));
     assertEquals("", Ircv3ExtensionRegistry.requestTokenFor("sts"));
     assertEquals("", Ircv3ExtensionRegistry.requestTokenFor("message-edit"));
+    assertEquals("reply", Ircv3ExtensionRegistry.preferenceKeyFor("draft/reply"));
+    assertEquals("react", Ircv3ExtensionRegistry.preferenceKeyFor("draft/react"));
+    assertEquals("unreact", Ircv3ExtensionRegistry.preferenceKeyFor("draft/unreact"));
+    assertEquals("typing", Ircv3ExtensionRegistry.preferenceKeyFor("draft/typing"));
+    assertEquals(
+        "channel-context", Ircv3ExtensionRegistry.preferenceKeyFor("draft/channel-context"));
+    assertEquals("message-edit", Ircv3ExtensionRegistry.preferenceKeyFor("draft/message-edit"));
   }
 
   @Test
@@ -57,13 +74,35 @@ class Ircv3ExtensionRegistryTest {
   void providerAggregationIncludesBuiltInsAndSpiContributors() {
     assertEquals(
         List.of(
-            "core-transport",
+            "message-tags",
+            "server-time",
+            "echo-message",
+            "standard-replies",
+            "labeled-response",
+            "account-notify",
+            "away-notify",
+            "extended-join",
+            "chghost",
+            "setname",
+            "invite-notify",
+            "monitor",
+            "extended-monitor",
+            "account-tag",
+            "multi-prefix",
+            "userhost-in-names",
+            "cap-notify",
+            "sts",
             "read-marker",
             "multiline",
             "message-redaction",
-            "core-history",
+            "batch",
+            "znc-playback",
             "chathistory",
-            "core-misc"),
+            "reply",
+            "reactions",
+            "typing",
+            "channel-context",
+            "message-edit"),
         Ircv3ExtensionRegistry.providerIds());
   }
 
@@ -113,7 +152,7 @@ class Ircv3ExtensionRegistryTest {
           @Override
           public List<Ircv3ExtensionContribution> extensions() {
             return List.of(
-                Ircv3ExtensionProviderSupport.capability(
+                Ircv3TestExtensionContributions.capability(
                     "plugin-echo-message-copy",
                     Ircv3SpecStatus.STABLE,
                     "echo-message",
@@ -142,7 +181,7 @@ class Ircv3ExtensionRegistryTest {
         new Ircv3ExtensionProvider() {
           @Override
           public String providerId() {
-            return "core-transport";
+            return "message-tags";
           }
 
           @Override
@@ -178,7 +217,7 @@ class Ircv3ExtensionRegistryTest {
           @Override
           public List<Ircv3ExtensionContribution> extensions() {
             return List.of(
-                Ircv3ExtensionProviderSupport.capability(
+                Ircv3TestExtensionContributions.capability(
                     "plugin-read-marker-copy",
                     Ircv3SpecStatus.DRAFT,
                     "echo-message",
@@ -219,7 +258,7 @@ class Ircv3ExtensionRegistryTest {
           @Override
           public List<Ircv3FeatureContribution> visibleFeatures() {
             return List.of(
-                Ircv3ExtensionProviderSupport.feature(
+                Ircv3TestExtensionContributions.feature(
                     960, "Replies", List.of("message-tags"), List.of()));
           }
         });

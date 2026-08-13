@@ -8,5 +8,13 @@ package cafe.woden.ircclient.app.commands.spi;
  */
 public interface SlashCommandParseStrategy {
 
+  /**
+   * Attempts to parse one complete input line.
+   *
+   * @param line raw user input
+   * @return {@code null} when this strategy does not own the command; otherwise a portable parse
+   *     result. A strategy that recognizes its command but rejects the arguments should return
+   *     {@link SlashCommandParseResult#unknown(String)} so later strategies do not reinterpret it.
+   */
   SlashCommandParseResult tryParse(String line);
 }

@@ -1,6 +1,8 @@
 package cafe.woden.ircclient.notify.sound;
 
 import cafe.woden.ircclient.model.BuiltInSound;
+import cafe.woden.ircclient.notify.api.sound.NotificationSoundSettingsPolicy;
+import cafe.woden.ircclient.notify.api.sound.NotificationSoundSettingsValues;
 
 /**
  * Notification sound preferences.
@@ -11,17 +13,12 @@ public record NotificationSoundSettings(
     boolean enabled, String soundId, boolean useCustom, String customPath) {
 
   public NotificationSoundSettings {
-    if (soundId == null || soundId.isBlank()) {
-      soundId = BuiltInSound.NOTIF_1.name();
-    }
-
-    if (customPath != null && customPath.isBlank()) {
-      customPath = null;
-    }
-
-    // If custom is requested but we don't have a path, fall back to built-in.
-    if (useCustom && customPath == null) {
-      useCustom = false;
-    }
+    NotificationSoundSettingsValues normalized =
+        NotificationSoundSettingsPolicy.normalize(
+            enabled, soundId, useCustom, customPath, BuiltInSound.NOTIF_1.name());
+    enabled = normalized.enabled();
+    soundId = normalized.soundId();
+    useCustom = normalized.useCustom();
+    customPath = normalized.customPath();
   }
 }

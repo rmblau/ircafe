@@ -4,8 +4,6 @@ import cafe.woden.ircclient.app.translation.spi.MessageTranslationBackendProvide
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationLanguageProvider;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.util.PluginServiceLoaderSupport;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 import org.springframework.beans.factory.ObjectProvider;
@@ -23,67 +21,35 @@ final class MessageTranslationPluginProviders {
   static List<MessageTranslationBackendProvider> translationBackends(
       List<? extends MessageTranslationBackendProvider> builtInBackends,
       InstalledPluginsPort installedPlugins) {
-    List<MessageTranslationBackendProvider> backends = nonNullServices(builtInBackends);
+    List<MessageTranslationBackendProvider> seedBackends =
+        MessageTranslationProviderCatalog.translationBackends(builtInBackends, List.of());
     if (installedPlugins == null) {
-      return backends;
+      return seedBackends;
     }
-    return dedupeProviders(
-        nonNullServices(
-            installedPlugins.loadInstalledServices(
-                MessageTranslationBackendProvider.class, backends)));
+    return MessageTranslationProviderCatalog.translationBackends(
+        List.of(),
+        installedPlugins.loadInstalledServices(
+            MessageTranslationBackendProvider.class, seedBackends));
   }
 
   static List<MessageTranslationLanguageProvider> builtInLanguageProviders() {
-    return PluginServiceLoaderSupport.loadInstalledServices(
-        MessageTranslationLanguageProvider.class,
+    return MessageTranslationProviderCatalog.languageProviders(
         List.of(),
-        PluginServiceLoaderSupport.defaultApplicationClassLoader(
-            MessageTranslationPluginProviders.class),
-        (ClassLoader) null);
+        PluginServiceLoaderSupport.loadApplicationServices(
+            MessageTranslationLanguageProvider.class, MessageTranslationPluginProviders.class));
   }
 
   static List<MessageTranslationLanguageProvider> languageProviders(
       List<? extends MessageTranslationLanguageProvider> builtInProviders,
       InstalledPluginsPort installedPlugins) {
-    List<MessageTranslationLanguageProvider> providers = nonNullServices(builtInProviders);
+    List<MessageTranslationLanguageProvider> seedProviders =
+        MessageTranslationProviderCatalog.languageProviders(builtInProviders, List.of());
     if (installedPlugins == null) {
-      return providers;
+      return seedProviders;
     }
-    return nonNullServices(
+    return MessageTranslationProviderCatalog.languageProviders(
+        List.of(),
         installedPlugins.loadInstalledServices(
-            MessageTranslationLanguageProvider.class, providers));
-  }
-
-  private static List<MessageTranslationBackendProvider> dedupeProviders(
-      List<MessageTranslationBackendProvider> providers) {
-    LinkedHashSet<String> providerKeys = new LinkedHashSet<>();
-    ArrayList<MessageTranslationBackendProvider> deduped = new ArrayList<>();
-    for (MessageTranslationBackendProvider provider : providers) {
-      if (provider == null) {
-        continue;
-      }
-      String providerKey =
-          provider.getClass().getName()
-              + '\u0000'
-              + MessageTranslationBackendRegistry.normalizeBackendId(provider.backendId());
-      if (!providerKeys.add(providerKey)) {
-        continue;
-      }
-      deduped.add(provider);
-    }
-    return List.copyOf(deduped);
-  }
-
-  private static <T> List<T> nonNullServices(List<? extends T> services) {
-    if (services == null || services.isEmpty()) {
-      return List.of();
-    }
-    ArrayList<T> nonNull = new ArrayList<>();
-    for (T service : services) {
-      if (service != null) {
-        nonNull.add(service);
-      }
-    }
-    return List.copyOf(nonNull);
+            MessageTranslationLanguageProvider.class, seedProviders));
   }
 }

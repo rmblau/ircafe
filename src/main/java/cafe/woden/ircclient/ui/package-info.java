@@ -33,9 +33,16 @@
       "net",
       "notifications::api",
       "notify::api",
+      "notify::api-irc",
+      "notify::api-panel",
+      "notify::api-pushy",
+      "notify::api-sound",
+      "notify::api-store",
+      "notify::api-text",
       "notify::pushy",
       "notify::sound",
       "notify::spi",
+      "plugin::spi",
       "state::api",
       "util"
     })

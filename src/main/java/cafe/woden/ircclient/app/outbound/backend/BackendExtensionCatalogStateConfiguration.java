@@ -1,8 +1,7 @@
 package cafe.woden.ircclient.app.outbound.backend;
 
-import cafe.woden.ircclient.app.outbound.backend.spi.BackendExtension;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
-import java.util.List;
+import cafe.woden.ircclient.irc.ircv3.Ircv3MessageMutationRuntimeCatalog;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.layered.InfrastructureLayer;
@@ -14,11 +13,11 @@ import org.springframework.context.annotation.Configuration;
 @RequiredArgsConstructor
 class BackendExtensionCatalogStateConfiguration {
   @NonNull private final InstalledPluginsPort installedPluginsPort;
-  @NonNull private final List<BackendExtension> builtInExtensions;
+  @NonNull private final Ircv3MessageMutationRuntimeCatalog mutationRuntimeCatalog;
 
   @Bean
   BackendExtensionCatalogState backendExtensionCatalogState() {
     return BackendExtensionCatalogState.fromInstalledServices(
-        builtInExtensions, installedPluginsPort);
+        installedPluginsPort, mutationRuntimeCatalog);
   }
 }

@@ -11,7 +11,6 @@ import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxServerResponseEmitter;
 import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxWhoEventEmitter;
 import cafe.woden.ircclient.irc.pircbotx.parse.*;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
-import cafe.woden.ircclient.irc.pircbotx.support.PircbotxEventMetadata;
 import cafe.woden.ircclient.irc.pircbotx.support.PircbotxUtil;
 import cafe.woden.ircclient.irc.playback.*;
 import java.time.Instant;
@@ -45,6 +44,9 @@ final class PircbotxUnknownLineFallbackHandler {
   @NonNull private final PircbotxWhoEventEmitter whoEvents;
   @NonNull private final PircbotxPlaybackCaptureRecorder playbackCaptureRecorder;
   @NonNull private final PircbotxPrivateConversationSupport privateConversationSupport;
+  @NonNull private final Ircv3ServerTimeRuntimeSupport serverTimeRuntimeSupport;
+  @NonNull private final Ircv3MessageTagsRuntimeSupport messageTagsRuntimeSupport;
+  @NonNull private final PircbotxPresenceSignalSupport presenceSignals;
   @NonNull private final Consumer<ServerIrcEvent> emit;
   @NonNull private final Function<PircBotX, String> selfNickResolver;
 
@@ -58,7 +60,11 @@ final class PircbotxUnknownLineFallbackHandler {
       PircbotxIsupportObserver isupportObserver,
       PircbotxWhoEventEmitter whoEvents,
       Consumer<ServerIrcEvent> emit,
-      Function<PircBotX, String> selfNickResolver) {
+      Function<PircBotX, String> selfNickResolver,
+      Ircv3ServerTimeRuntimeSupport serverTimeRuntimeSupport,
+      Ircv3MessageTagsRuntimeSupport messageTagsRuntimeSupport,
+      PircbotxPresenceSignalSupport presenceSignals,
+      Ircv3HistoryTransportRuntimeSupport historyTransportRuntimeSupport) {
     this(
         serverId,
         conn,
@@ -69,7 +75,10 @@ final class PircbotxUnknownLineFallbackHandler {
         isupportObserver,
         whoEvents,
         new PircbotxPlaybackCaptureRecorder(conn),
-        new PircbotxPrivateConversationSupport(conn),
+        new PircbotxPrivateConversationSupport(conn, historyTransportRuntimeSupport),
+        serverTimeRuntimeSupport,
+        messageTagsRuntimeSupport,
+        presenceSignals,
         emit,
         selfNickResolver);
   }
@@ -98,20 +107,7 @@ final class PircbotxUnknownLineFallbackHandler {
           "[{}] inbound AWAY-ish line received in onUnknown: {}", serverId, normalizedRawLine);
     }
 
-    PircbotxAwayParsers.ParsedAwayNotify awayNotify =
-        PircbotxAwayParsers.parseAwayNotify(normalizedRawLine);
-    if (awayNotify != null && awayNotify.nick() != null && !awayNotify.nick().isBlank()) {
-      log.debug(
-          "[{}] parsed away-notify: nick={} state={} msg={}",
-          serverId,
-          awayNotify.nick(),
-          awayNotify.awayState(),
-          awayNotify.message());
-      emit.accept(
-          new ServerIrcEvent(
-              serverId,
-              new IrcEvent.UserAwayStateObserved(
-                  Instant.now(), awayNotify.nick(), awayNotify.awayState(), awayNotify.message())));
+    if (presenceSignals.observeAwayNotifyRawLine(Instant.now(), normalizedRawLine)) {
       return;
     } else if (normalizedRawLine != null
         && normalizedRawLine.contains(" AWAY")
@@ -136,19 +132,7 @@ final class PircbotxUnknownLineFallbackHandler {
       return;
     }
 
-    PircbotxAwayParsers.ParsedAwayConfirmation away =
-        PircbotxAwayParsers.parseRpl305or306Away(normalizedRawLine);
-    if (away != null) {
-      String msg = away.message();
-      if (msg == null || msg.isBlank()) {
-        msg =
-            away.away()
-                ? "You have been marked as being away"
-                : "You are no longer marked as being away";
-      }
-      emit.accept(
-          new ServerIrcEvent(
-              serverId, new IrcEvent.AwayStatusChanged(Instant.now(), away.away(), msg)));
+    if (presenceSignals.observeSelfAwayConfirmationRawLine(Instant.now(), normalizedRawLine)) {
       return;
     }
 
@@ -164,10 +148,9 @@ final class PircbotxUnknownLineFallbackHandler {
       String command = parsed.command().toUpperCase(Locale.ROOT);
       if (!"PRIVMSG".equals(command) && !"NOTICE".equals(command)) return false;
 
-      Map<String, String> ircv3Tags = Ircv3Tags.fromRawLine(lineWithTags);
-      String messageId = PircbotxEventMetadata.ircv3MessageId(ircv3Tags);
-      Instant at = Ircv3ServerTime.parseServerTimeFromRawLine(lineWithTags);
-      if (at == null) at = Instant.now();
+      Map<String, String> ircv3Tags = messageTagsRuntimeSupport.fromRawLine(lineWithTags);
+      String messageId = messageTagsRuntimeSupport.messageId(ircv3Tags);
+      Instant at = serverTimeRuntimeSupport.resolveRawLineOrNow(lineWithTags);
       String from = PircbotxInboundLineParsers.nickFromPrefix(parsed.prefix());
 
       String botNick =

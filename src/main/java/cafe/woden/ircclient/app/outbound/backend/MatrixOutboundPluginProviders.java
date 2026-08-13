@@ -3,7 +3,6 @@ package cafe.woden.ircclient.app.outbound.backend;
 import cafe.woden.ircclient.app.outbound.upload.spi.MatrixOutboundUploadMsgTypeProvider;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.util.PluginServiceLoaderSupport;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -73,22 +72,16 @@ final class MatrixOutboundPluginProviders {
 
   static List<MatrixOutboundUploadMsgTypeProvider> uploadMsgTypeProviders(
       InstalledPluginsPort installedPlugins) {
-    List<MatrixOutboundUploadMsgTypeProvider> providers = applicationClasspathProviders();
+    List<MatrixOutboundUploadMsgTypeProvider> providers =
+        PluginServiceLoaderSupport.dedupeByProviderClass(
+            PluginServiceLoaderSupport.loadApplicationServices(
+                MatrixOutboundUploadMsgTypeProvider.class, MatrixOutboundPluginProviders.class));
     if (installedPlugins == null) {
       return providers;
     }
-    return dedupeByProviderClass(
+    return PluginServiceLoaderSupport.dedupeByProviderClass(
         installedPlugins.loadInstalledServices(
             MatrixOutboundUploadMsgTypeProvider.class, providers));
-  }
-
-  private static List<MatrixOutboundUploadMsgTypeProvider> applicationClasspathProviders() {
-    return PluginServiceLoaderSupport.loadInstalledServices(
-        MatrixOutboundUploadMsgTypeProvider.class,
-        List.of(),
-        PluginServiceLoaderSupport.defaultApplicationClassLoader(
-            MatrixOutboundPluginProviders.class),
-        null);
   }
 
   private static String normalizeAlias(String raw) {
@@ -104,17 +97,5 @@ final class MatrixOutboundPluginProviders {
     if (!token.startsWith("m.")) return "";
     if (token.chars().anyMatch(Character::isWhitespace)) return "";
     return token;
-  }
-
-  private static <T> List<T> dedupeByProviderClass(List<? extends T> services) {
-    LinkedHashSet<String> providerClassNames = new LinkedHashSet<>();
-    ArrayList<T> deduped = new ArrayList<>();
-    for (T service : Objects.requireNonNullElse(services, List.<T>of())) {
-      if (service == null || !providerClassNames.add(service.getClass().getName())) {
-        continue;
-      }
-      deduped.add(service);
-    }
-    return List.copyOf(deduped);
   }
 }

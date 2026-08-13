@@ -15,26 +15,35 @@ import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesBus;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
 import cafe.woden.ircclient.config.PushyPropertiesTestFixtures;
-import cafe.woden.ircclient.config.RuntimeConfigStore;
-import cafe.woden.ircclient.config.api.AppearanceRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ChatAppearanceRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatHistoryRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ClientTranslationRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.DockLayoutRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
 import cafe.woden.ircclient.config.api.EmbedPreviewRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
 import cafe.woden.ircclient.config.api.Ircv3CapabilityConfigPort;
+import cafe.woden.ircclient.config.api.LagIndicatorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.LaunchJvmRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.MemoryUsageRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.NetworkSettingsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.NickColorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.NotificationRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.OutgoingMessageRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.PreferencesRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.PushyRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ServerTreeAppearanceRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.SpellcheckRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ThemeAppearanceRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.TimestampRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.TrayRuntimeConfigPort;
-import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.UpdateNotifierRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UserCommandAliasesConfigPort;
+import cafe.woden.ircclient.config.api.UserLookupRuntimeConfigPort;
 import cafe.woden.ircclient.config.properties.LogProperties;
 import cafe.woden.ircclient.irc.backend.IrcHeartbeatMaintenanceService;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionCatalog;
@@ -285,6 +294,8 @@ class PreferencesDialogFunctionalTest {
             new NotificationSoundSettings(true, "NOTIF_1", true, "sounds/custom.wav"),
             PushyPropertiesTestFixtures.disabled(),
             mock(TrayRuntimeConfigPort.class),
+            mock(UpdateNotifierRuntimeConfigPort.class),
+            mock(LagIndicatorRuntimeConfigPort.class),
             mock(GnomeDbusNotificationBackend.class),
             mock(TrayNotificationService.class),
             mock(NotificationSoundService.class),
@@ -443,12 +454,20 @@ class PreferencesDialogFunctionalTest {
         mock(ThemeTweakSettingsBus.class),
         mock(ChatThemeSettingsBus.class),
         mock(SpellcheckSettingsBus.class),
-        mock(RuntimeConfigStore.class),
+        mock(PreferencesRuntimeConfigPort.class),
+        mock(ClientTranslationRuntimeConfigPort.class),
+        mock(NetworkSettingsRuntimeConfigPort.class),
         mock(LaunchJvmRuntimeConfigPort.class),
-        mock(AppearanceRuntimeConfigPort.class),
+        mock(ThemeAppearanceRuntimeConfigPort.class),
+        mock(ChatAppearanceRuntimeConfigPort.class),
+        mock(ServerTreeAppearanceRuntimeConfigPort.class),
+        mock(DockLayoutRuntimeConfigPort.class),
         mock(ChatBehaviorRuntimeConfigPort.class),
         mock(TrayRuntimeConfigPort.class),
-        mock(UiShellRuntimeConfigPort.class),
+        mock(UpdateNotifierRuntimeConfigPort.class),
+        mock(LagIndicatorRuntimeConfigPort.class),
+        mock(PushyRuntimeConfigPort.class),
+        mock(MemoryUsageRuntimeConfigPort.class),
         mock(ChatLoggingRuntimeConfigPort.class),
         mock(ChatHistoryRuntimeConfigPort.class),
         mock(DiagnosticsRuntimeConfigPort.class),
@@ -463,6 +482,7 @@ class PreferencesDialogFunctionalTest {
         mock(NickColorRuntimeConfigPort.class),
         mock(UserCommandAliasesConfigPort.class),
         mock(NotificationRuntimeConfigPort.class),
+        mock(UserLookupRuntimeConfigPort.class),
         mock(LogProperties.class),
         mock(NickColorSettingsBus.class),
         mock(NickColorService.class),

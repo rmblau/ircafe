@@ -1,11 +1,14 @@
 package cafe.woden.ircclient.util;
 
+import cafe.woden.ircclient.plugin.spi.IrcafePluginManifest;
+import cafe.woden.ircclient.plugin.spi.IrcafePluginServiceDescriptors;
+import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.LinkedHashMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -24,13 +27,32 @@ public final class CompiledPluginJarSupport {
   private CompiledPluginJarSupport() {}
 
   public static Map<String, String> compatibleManifest(String pluginId, String pluginVersion) {
-    LinkedHashMap<String, String> attributes = new LinkedHashMap<>();
-    attributes.put(PluginServiceLoaderSupport.PLUGIN_ID_ATTRIBUTE, pluginId);
-    attributes.put(PluginServiceLoaderSupport.PLUGIN_VERSION_ATTRIBUTE, pluginVersion);
-    attributes.put(
-        PluginServiceLoaderSupport.PLUGIN_API_VERSION_ATTRIBUTE,
-        Integer.toString(PluginServiceLoaderSupport.SUPPORTED_PLUGIN_API_VERSION));
-    return Map.copyOf(attributes);
+    return IrcafePluginManifest.compatibleManifestAttributes(pluginId, pluginVersion);
+  }
+
+  public static Map<String, String> compatibleManifestUsingImplementationVersion(
+      String pluginId, String pluginVersion) {
+    return IrcafePluginManifest.compatibleImplementationVersionManifestAttributes(
+        pluginId, pluginVersion);
+  }
+
+  public static Path writeLibraryJar(Path jarPath, Map<String, String> sourcesByClassName)
+      throws IOException {
+    Path normalizedJarPath = jarPath.toAbsolutePath().normalize();
+    Path baseDirectory =
+        Files.createDirectories(
+            Objects.requireNonNull(normalizedJarPath.getParent(), "jarPath.parent"));
+    Path workRoot = Files.createTempDirectory(baseDirectory, ".compiled-plugin-");
+    Path sourceRoot = Files.createDirectories(workRoot.resolve("src"));
+    Path classesRoot = Files.createDirectories(workRoot.resolve("classes"));
+
+    compileSources(writeSources(sourceRoot, sourcesByClassName), classesRoot, List.of());
+
+    try (JarOutputStream out = new JarOutputStream(Files.newOutputStream(normalizedJarPath))) {
+      writeCompiledClassEntries(out, classesRoot);
+    }
+
+    return normalizedJarPath;
   }
 
   public static Path writePluginJar(
@@ -40,18 +62,40 @@ public final class CompiledPluginJarSupport {
       String serviceTypeName,
       Map<String, String> manifestAttributes)
       throws IOException {
+    return writePluginJar(
+        jarPath,
+        Map.of(providerClassName, providerSource),
+        Map.of(serviceTypeName, List.of(providerClassName)),
+        manifestAttributes);
+  }
+
+  public static Path writePluginJar(
+      Path jarPath,
+      Map<String, String> sourcesByClassName,
+      Map<String, List<String>> serviceProvidersByServiceType,
+      Map<String, String> manifestAttributes)
+      throws IOException {
+    return writePluginJar(
+        jarPath, sourcesByClassName, serviceProvidersByServiceType, manifestAttributes, List.of());
+  }
+
+  public static Path writePluginJar(
+      Path jarPath,
+      Map<String, String> sourcesByClassName,
+      Map<String, List<String>> serviceProvidersByServiceType,
+      Map<String, String> manifestAttributes,
+      List<Path> additionalClasspathEntries)
+      throws IOException {
     Path normalizedJarPath = jarPath.toAbsolutePath().normalize();
     Path baseDirectory =
         Files.createDirectories(
             Objects.requireNonNull(normalizedJarPath.getParent(), "jarPath.parent"));
-    Path sourceRoot = Files.createDirectories(baseDirectory.resolve("src"));
-    Path classesRoot = Files.createDirectories(baseDirectory.resolve("classes"));
+    Path workRoot = Files.createTempDirectory(baseDirectory, ".compiled-plugin-");
+    Path sourceRoot = Files.createDirectories(workRoot.resolve("src"));
+    Path classesRoot = Files.createDirectories(workRoot.resolve("classes"));
 
-    Path sourcePath = sourceRoot.resolve(providerClassName.replace('.', '/') + ".java");
-    Files.createDirectories(Objects.requireNonNull(sourcePath.getParent()));
-    Files.writeString(sourcePath, providerSource, StandardCharsets.UTF_8);
-
-    compileSource(sourcePath, classesRoot);
+    compileSources(
+        writeSources(sourceRoot, sourcesByClassName), classesRoot, additionalClasspathEntries);
 
     Manifest manifest = new Manifest();
     Attributes attributes = manifest.getMainAttributes();
@@ -66,20 +110,43 @@ public final class CompiledPluginJarSupport {
 
     try (JarOutputStream out =
         new JarOutputStream(Files.newOutputStream(normalizedJarPath), manifest)) {
-      out.putNextEntry(new JarEntry("META-INF/services/" + serviceTypeName));
-      out.write((providerClassName + System.lineSeparator()).getBytes(StandardCharsets.UTF_8));
-      out.closeEntry();
-      try (var stream = Files.walk(classesRoot)) {
-        stream
-            .filter(Files::isRegularFile)
-            .forEach(compiledClass -> writeCompiledClassEntry(out, classesRoot, compiledClass));
+      for (Map.Entry<String, List<String>> serviceEntry :
+          Objects.requireNonNullElse(serviceProvidersByServiceType, Map.<String, List<String>>of())
+              .entrySet()) {
+        out.putNextEntry(
+            new JarEntry(
+                IrcafePluginServiceDescriptors.serviceDescriptorPath(serviceEntry.getKey())));
+        out.write(
+            IrcafePluginServiceDescriptors.serviceDescriptorContent(
+                    Objects.requireNonNullElse(serviceEntry.getValue(), List.<String>of()))
+                .getBytes(StandardCharsets.UTF_8));
+        out.closeEntry();
       }
+      writeCompiledClassEntries(out, classesRoot);
     }
 
     return normalizedJarPath;
   }
 
-  private static void compileSource(Path sourcePath, Path classesRoot) throws IOException {
+  private static List<Path> writeSources(Path sourceRoot, Map<String, String> sourcesByClassName)
+      throws IOException {
+    ArrayList<Path> sourcePaths = new ArrayList<>();
+    for (Map.Entry<String, String> sourceEntry :
+        Objects.requireNonNullElse(sourcesByClassName, Map.<String, String>of()).entrySet()) {
+      Path sourcePath = sourceRoot.resolve(sourceEntry.getKey().replace('.', '/') + ".java");
+      Files.createDirectories(Objects.requireNonNull(sourcePath.getParent()));
+      Files.writeString(sourcePath, sourceEntry.getValue(), StandardCharsets.UTF_8);
+      sourcePaths.add(sourcePath);
+    }
+    return List.copyOf(sourcePaths);
+  }
+
+  private static void compileSources(
+      List<Path> sourcePaths, Path classesRoot, List<Path> additionalClasspathEntries)
+      throws IOException {
+    if (sourcePaths == null || sourcePaths.isEmpty()) {
+      throw new IllegalArgumentException("[ircafe] plugin test source set must not be empty");
+    }
     JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
     if (compiler == null) {
       throw new IllegalStateException("[ircafe] JDK compiler is not available for plugin tests");
@@ -90,13 +157,13 @@ public final class CompiledPluginJarSupport {
     try (StandardJavaFileManager fileManager =
         compiler.getStandardFileManager(diagnostics, null, StandardCharsets.UTF_8)) {
       Iterable<? extends JavaFileObject> compilationUnits =
-          fileManager.getJavaFileObjectsFromPaths(List.of(sourcePath));
+          fileManager.getJavaFileObjectsFromPaths(sourcePaths);
       List<String> options =
           List.of(
               "--release",
-              "25",
+              Integer.toString(IrcafePluginManifest.REQUIRED_JAVA_RELEASE),
               "-classpath",
-              System.getProperty("java.class.path"),
+              compilerClasspath(additionalClasspathEntries),
               "-d",
               classesRoot.toString());
       Boolean success =
@@ -116,6 +183,29 @@ public final class CompiledPluginJarSupport {
         .getDiagnostics()
         .forEach(diagnostic -> message.append(System.lineSeparator()).append(diagnostic));
     throw new IllegalStateException(message.toString());
+  }
+
+  private static String compilerClasspath(List<Path> additionalClasspathEntries) {
+    ArrayList<String> entries = new ArrayList<>();
+    for (Path entry : Objects.requireNonNullElse(additionalClasspathEntries, List.<Path>of())) {
+      if (entry != null) {
+        entries.add(entry.toString());
+      }
+    }
+    String javaClassPath = Objects.toString(System.getProperty("java.class.path"), "").trim();
+    if (!javaClassPath.isEmpty()) {
+      entries.add(javaClassPath);
+    }
+    return String.join(File.pathSeparator, entries);
+  }
+
+  private static void writeCompiledClassEntries(JarOutputStream out, Path classesRoot)
+      throws IOException {
+    try (var stream = Files.walk(classesRoot)) {
+      stream
+          .filter(Files::isRegularFile)
+          .forEach(compiledClass -> writeCompiledClassEntry(out, classesRoot, compiledClass));
+    }
   }
 
   private static void writeCompiledClassEntry(

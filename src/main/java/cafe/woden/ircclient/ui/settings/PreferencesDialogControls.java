@@ -3,17 +3,21 @@ package cafe.woden.ircclient.ui.settings;
 import cafe.woden.ircclient.app.api.ActiveTargetPort;
 import cafe.woden.ircclient.app.commands.UserCommandAliasesPort;
 import cafe.woden.ircclient.app.translation.MessageTranslationSettingsBus;
-import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.ChatBehaviorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatHistoryRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ChatLoggingRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.Ircv3CapabilityConfigPort;
+import cafe.woden.ircclient.config.api.LagIndicatorRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.LaunchJvmRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.NetworkSettingsRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.TrayRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.UpdateNotifierRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.UserCommandAliasesConfigPort;
 import cafe.woden.ircclient.config.properties.LogProperties;
 import cafe.woden.ircclient.config.properties.PushyProperties;
 import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionCatalog;
@@ -163,6 +167,8 @@ record PreferencesDialogControls(
             initialNotificationSoundSettings(request),
             initialPushySettings(request),
             request.trayRuntimeConfig(),
+            request.updateNotifierRuntimeConfig(),
+            request.lagIndicatorRuntimeConfig(),
             request.gnomeDbusBackend(),
             request.trayNotificationService(),
             request.notificationSoundService(),
@@ -205,10 +211,10 @@ record PreferencesDialogControls(
         SpellcheckControlsSupport.buildControls(initialSpellcheckSettings(request));
     CtcpAutoReplyControls ctcpAutoReplies =
         CtcpAutoReplySupport.buildControls(
-            request.runtimeConfig().readCtcpAutoRepliesEnabled(true),
-            request.runtimeConfig().readCtcpAutoReplyVersionEnabled(true),
-            request.runtimeConfig().readCtcpAutoReplyPingEnabled(true),
-            request.runtimeConfig().readCtcpAutoReplyTimeEnabled(true));
+            request.ctcpRuntimeConfig().readCtcpAutoRepliesEnabled(true),
+            request.ctcpRuntimeConfig().readCtcpAutoReplyVersionEnabled(true),
+            request.ctcpRuntimeConfig().readCtcpAutoReplyPingEnabled(true),
+            request.ctcpRuntimeConfig().readCtcpAutoReplyTimeEnabled(true));
     JCheckBox typingIndicatorsSendEnabled =
         ChatBehaviorControlsSupport.buildTypingIndicatorsSendCheckbox(request.current());
     JCheckBox typingIndicatorsReceiveEnabled =
@@ -268,7 +274,7 @@ record PreferencesDialogControls(
         NetworkAdvancedControlsSupport.buildControls(
             request.current(),
             request.closeables(),
-            request.runtimeConfig(),
+            request.networkSettingsRuntimeConfig(),
             NetTlsContext.trustAllCertificates(),
             request.defaultGenericBouncerPreferLoginHint(),
             request.defaultGenericBouncerLoginTemplate());
@@ -402,7 +408,7 @@ record PreferencesDialogControls(
   private static boolean unknownCommandAsRawEnabled(BuildRequest request) {
     return request.userCommandAliasesBus() != null
         ? request.userCommandAliasesBus().unknownCommandAsRawEnabled()
-        : request.runtimeConfig().readUnknownCommandAsRawEnabled(false);
+        : request.userCommandAliasesRuntimeConfig().readUnknownCommandAsRawEnabled(false);
   }
 
   private static cafe.woden.ircclient.config.IrcProperties.Client.Translation
@@ -493,9 +499,13 @@ record PreferencesDialogControls(
       ThemeTweakSettingsBus tweakSettingsBus,
       ChatThemeSettingsBus chatThemeSettingsBus,
       SpellcheckSettingsBus spellcheckSettingsBus,
-      RuntimeConfigStore runtimeConfig,
+      CtcpReplyRuntimeConfigPort ctcpRuntimeConfig,
+      UserCommandAliasesConfigPort userCommandAliasesRuntimeConfig,
+      NetworkSettingsRuntimeConfigPort networkSettingsRuntimeConfig,
       LaunchJvmRuntimeConfigPort launchJvmRuntimeConfig,
       TrayRuntimeConfigPort trayRuntimeConfig,
+      UpdateNotifierRuntimeConfigPort updateNotifierRuntimeConfig,
+      LagIndicatorRuntimeConfigPort lagIndicatorRuntimeConfig,
       ChatBehaviorRuntimeConfigPort chatBehaviorRuntimeConfig,
       ChatLoggingRuntimeConfigPort chatLoggingRuntimeConfig,
       ChatHistoryRuntimeConfigPort chatHistoryRuntimeConfig,

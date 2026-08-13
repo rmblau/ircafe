@@ -10,17 +10,13 @@ import cafe.woden.ircclient.app.commands.spi.SlashCommandTargetView;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.jar.Attributes;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
-import java.util.jar.Manifest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -78,6 +74,35 @@ class BackendNamedCommandExecutorCatalogTest {
           catalog.handle(TEST_CONTEXT, new ParsedInput.BackendNamed("backendexec", "hello")));
     } finally {
       catalog.shutdown();
+    }
+  }
+
+  @Test
+  void loadsExecutionProvidersFromApplicationClasspathWithoutSpringSeed() throws Exception {
+    Path classpathJar = tempDir.resolve("backendexec-classpath.jar");
+    CompiledPluginJarSupport.writePluginJar(
+        classpathJar,
+        SPI_PLUGIN_EXECUTOR_CLASS,
+        pluginSpiExecutorSource(),
+        cafe.woden.ircclient.app.commands.spi.BackendNamedCommandExecutor.class.getName(),
+        CompiledPluginJarSupport.compatibleManifest(
+            "backend-named-executor-classpath-test", "1.0.0"));
+    ClassLoader previousContextClassLoader = Thread.currentThread().getContextClassLoader();
+    try (URLClassLoader classLoader =
+        URLClassLoader.newInstance(
+            new URL[] {classpathJar.toUri().toURL()}, previousContextClassLoader)) {
+      Thread.currentThread().setContextClassLoader(classLoader);
+      BackendNamedCommandExecutorCatalog catalog =
+          new BackendNamedCommandExecutorCatalog(
+              new FakeInstalledPluginsPort(List.of()), List.of());
+      try {
+        assertTrue(
+            catalog.handle(TEST_CONTEXT, new ParsedInput.BackendNamed("backendexec", "hello")));
+      } finally {
+        catalog.shutdown();
+      }
+    } finally {
+      Thread.currentThread().setContextClassLoader(previousContextClassLoader);
     }
   }
 
@@ -170,23 +195,13 @@ class BackendNamedCommandExecutorCatalogTest {
         () -> BackendNamedCommandExecutorCatalog.fromExecutors(List.of(first, second)));
   }
 
-  private static void writePluginJar(Path jarPath) throws IOException {
-    Manifest manifest = new Manifest();
-    Attributes attributes = manifest.getMainAttributes();
-    attributes.put(Attributes.Name.MANIFEST_VERSION, "1.0");
-    for (var entry :
-        CompiledPluginJarSupport.compatibleManifest("backend-named-executor-test", "1.0.0")
-            .entrySet()) {
-      attributes.putValue(entry.getKey(), entry.getValue());
-    }
-    try (JarOutputStream out = new JarOutputStream(Files.newOutputStream(jarPath), manifest)) {
-      out.putNextEntry(
-          new JarEntry("META-INF/services/" + BackendNamedCommandExecutor.class.getName()));
-      out.write(
-          (PluginProvidedBackendNamedCommandExecutor.class.getName() + System.lineSeparator())
-              .getBytes(StandardCharsets.UTF_8));
-      out.closeEntry();
-    }
+  private static void writePluginJar(Path jarPath) throws Exception {
+    CompiledPluginJarSupport.writePluginJar(
+        jarPath,
+        SPI_PLUGIN_EXECUTOR_CLASS,
+        pluginSpiExecutorSource(),
+        BackendNamedCommandExecutor.class.getName(),
+        CompiledPluginJarSupport.compatibleManifest("backend-named-executor-test", "1.0.0"));
   }
 
   private static String pluginSpiExecutorSource() {

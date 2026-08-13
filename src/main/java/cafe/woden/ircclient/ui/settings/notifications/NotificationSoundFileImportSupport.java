@@ -1,8 +1,8 @@
 package cafe.woden.ircclient.ui.settings.notifications;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
-import cafe.woden.ircclient.notify.api.CustomSoundFileImportSupport;
-import cafe.woden.ircclient.notify.api.CustomSoundPluginProviders;
+import cafe.woden.ircclient.notify.api.sound.CustomSoundFileImportSupport;
+import cafe.woden.ircclient.notify.api.sound.CustomSoundPluginProviders;
 import cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider;
 import cafe.woden.ircclient.ui.localization.UiMessages;
 import java.io.File;
@@ -35,11 +35,18 @@ public final class NotificationSoundFileImportSupport {
         extensionProviders,
         "notification",
         message("preferences.notifications.sound.import.invalidFileName"),
-        message("preferences.notifications.sound.import.unsupportedType"),
-        message("preferences.notifications.sound.import.unsupportedType"));
+        unsupportedTypeMessage(extensionProviders),
+        unsupportedTypeMessage(extensionProviders));
   }
 
   private static String message(String key, Object... args) {
     return MESSAGES.text(key, args);
+  }
+
+  private static String unsupportedTypeMessage(
+      List<? extends CustomSoundFileExtensionProvider> extensionProviders) {
+    return message(
+        "preferences.notifications.sound.import.unsupportedType",
+        CustomSoundFileImportSupport.supportedExtensionSentence(extensionProviders));
   }
 }

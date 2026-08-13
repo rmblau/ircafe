@@ -7,6 +7,7 @@ import cafe.woden.ircclient.app.outbound.backend.spi.OutboundBackendFeatureAdapt
 import cafe.woden.ircclient.app.outbound.mutation.spi.MessageMutationOutboundCommands;
 import cafe.woden.ircclient.app.outbound.upload.spi.UploadCommandTranslationHandler;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
+import cafe.woden.ircclient.irc.ircv3.Ircv3MessageMutationRuntimeCatalog;
 import jakarta.annotation.PreDestroy;
 import java.util.List;
 import lombok.AccessLevel;
@@ -26,8 +27,17 @@ public final class BackendExtensionCatalog implements AvailableBackendIdsPort {
     return new BackendExtensionCatalog(BackendExtensionCatalogState.installed());
   }
 
-  public static BackendExtensionCatalog fromExtensions(List<BackendExtension> extensions) {
-    return new BackendExtensionCatalog(BackendExtensionCatalogState.fromExtensions(extensions));
+  public static BackendExtensionCatalog fromApplicationClasspath(
+      Ircv3MessageMutationRuntimeCatalog mutationRuntimeCatalog) {
+    return new BackendExtensionCatalog(
+        BackendExtensionCatalogState.fromApplicationClasspath(mutationRuntimeCatalog));
+  }
+
+  public static BackendExtensionCatalog fromExtensions(
+      List<BackendExtension> extensions,
+      Ircv3MessageMutationRuntimeCatalog mutationRuntimeCatalog) {
+    return new BackendExtensionCatalog(
+        BackendExtensionCatalogState.fromExtensions(extensions, mutationRuntimeCatalog));
   }
 
   static BackendExtensionCatalog installed(

@@ -1,0 +1,7 @@
+apply from: rootProject.file('gradle/ircv3-feature-conventions.gradle')
+
+description = 'IRCafe IRCv3 multiline negotiation, payload, and reassembly policy.'
+
+dependencies {
+    api project(':ircafe-feature-ircv3-common')
+}

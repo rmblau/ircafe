@@ -1,15 +1,10 @@
 package cafe.woden.ircclient.config.runtime.ui;
 
-import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.getOrCreateMap;
-
-import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort.LastSelectedTarget;
+import cafe.woden.ircclient.config.api.SelectedTargetRuntimeConfigPort.LastSelectedTarget;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import java.nio.file.Path;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,12 +36,12 @@ public class RuntimeConfigUiSettingsStore {
   public synchronized Optional<String> readStartupThemePending() {
     return uiSection
         .readExistingValue("ui.startupThemePending", "startupThemePending")
-        .map(raw -> Objects.toString(raw, "").trim())
+        .map(RuntimeConfigUiSettingsCodec::normalizeString)
         .filter(theme -> !theme.isEmpty());
   }
 
   public synchronized void rememberStartupThemePending(String theme) {
-    String normalized = Objects.toString(theme, "").trim();
+    String normalized = RuntimeConfigUiSettingsCodec.normalizeString(theme);
     if (normalized.isEmpty()) {
       uiSection.removeExistingValueAndPruneEmptyParents(
           "ui.startupThemePending", "startupThemePending");
@@ -64,12 +59,12 @@ public class RuntimeConfigUiSettingsStore {
     // Persist "disabled" explicitly as an empty string so app defaults don't re-enable the accent
     // on restart.
     // (UiProperties treats blank as "no override".)
-    String normalized = Objects.toString(accentColor, "").trim();
+    String normalized = RuntimeConfigUiSettingsCodec.normalizeString(accentColor);
     rememberUiScalar("accentColor", normalized, "accentColor");
   }
 
   public synchronized void rememberAccentStrength(int strength) {
-    int normalized = Math.max(0, Math.min(100, strength));
+    int normalized = RuntimeConfigUiSettingsCodec.clampPercent(strength);
     rememberUiScalar("accentStrength", normalized, "accentStrength");
   }
 
@@ -104,14 +99,7 @@ public class RuntimeConfigUiSettingsStore {
   public synchronized Optional<LastSelectedTarget> readLastSelectedTarget() {
     Object raw =
         uiSection.readExistingValue("ui.lastSelectedTarget", "lastSelectedTarget").orElse(null);
-    if (!(raw instanceof Map<?, ?> selected)) return Optional.empty();
-
-    LastSelectedTarget out =
-        new LastSelectedTarget(
-            Objects.toString(selected.get("serverId"), ""),
-            Objects.toString(selected.get("target"), ""));
-    if (!out.isValid()) return Optional.empty();
-    return Optional.of(out);
+    return RuntimeConfigUiSettingsCodec.parseLastSelectedTarget(raw);
   }
 
   public synchronized void rememberLastSelectedTarget(String serverId, String target) {
@@ -122,9 +110,9 @@ public class RuntimeConfigUiSettingsStore {
           if (!next.isValid()) {
             ui.remove("lastSelectedTarget");
           } else {
-            Map<String, Object> selected = getOrCreateMap(ui, "lastSelectedTarget");
-            selected.put("serverId", next.serverId());
-            selected.put("target", next.target());
+            ui.put(
+                "lastSelectedTarget",
+                RuntimeConfigUiSettingsCodec.serializeLastSelectedTarget(next));
           }
         });
   }
@@ -145,7 +133,7 @@ public class RuntimeConfigUiSettingsStore {
   }
 
   public synchronized void rememberUiDensity(String density) {
-    String normalized = normalizeDensity(density);
+    String normalized = RuntimeConfigUiSettingsCodec.normalizeDensity(density);
     if (normalized.isEmpty()) {
       removeUiValue("density", "ui.density");
     } else {
@@ -162,12 +150,12 @@ public class RuntimeConfigUiSettingsStore {
   }
 
   public synchronized void rememberUiFontSize(int size) {
-    int normalized = Math.max(8, Math.min(48, size));
+    int normalized = RuntimeConfigUiSettingsCodec.clampUiFontSize(size);
     rememberUiScalar("uiFontSize", normalized, "ui.uiFontSize");
   }
 
   public synchronized void rememberCornerRadius(int cornerRadius) {
-    int normalized = Math.max(0, Math.min(20, cornerRadius));
+    int normalized = RuntimeConfigUiSettingsCodec.clampCornerRadius(cornerRadius);
     rememberUiScalar("cornerRadius", normalized, "ui.cornerRadius");
   }
 
@@ -217,7 +205,7 @@ public class RuntimeConfigUiSettingsStore {
   }
 
   public synchronized void rememberChatMentionStrength(int strength) {
-    int normalized = Math.max(0, Math.min(100, strength));
+    int normalized = RuntimeConfigUiSettingsCodec.clampPercent(strength);
     rememberUiScalar("chatMentionStrength", normalized, "chatMentionStrength");
   }
 
@@ -226,7 +214,7 @@ public class RuntimeConfigUiSettingsStore {
   }
 
   private void rememberOptionalUiString(String key, String value, String label) {
-    String normalized = Objects.toString(value, "").trim();
+    String normalized = RuntimeConfigUiSettingsCodec.normalizeString(value);
     if (normalized.isEmpty()) {
       removeUiValue(key, label);
     } else {
@@ -244,17 +232,5 @@ public class RuntimeConfigUiSettingsStore {
 
   private void removeUiValue(String key, String description) {
     uiSection.removeExistingValueAndPruneEmptyParents(description, key);
-  }
-
-  private static String normalizeDensity(String density) {
-    String normalized = Objects.toString(density, "").trim().toLowerCase(Locale.ROOT);
-    if (normalized.isEmpty()) return "";
-    if (normalized.equals("auto")
-        || normalized.equals("compact")
-        || normalized.equals("cozy")
-        || normalized.equals("spacious")) {
-      return normalized;
-    }
-    return "auto";
   }
 }

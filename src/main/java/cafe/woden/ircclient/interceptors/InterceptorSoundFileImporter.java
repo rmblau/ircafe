@@ -2,7 +2,7 @@ package cafe.woden.ircclient.interceptors;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.InterceptorConfigPort;
-import cafe.woden.ircclient.notify.api.CustomSoundFileImportSupport;
+import cafe.woden.ircclient.notify.api.sound.CustomSoundFileImportSupport;
 import cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider;
 import java.io.File;
 import java.nio.file.Path;

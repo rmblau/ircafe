@@ -7,11 +7,7 @@ import org.jmolecules.architecture.layered.ApplicationLayer;
 /** Runtime-config contract for persisted chat behavior preferences. */
 @SecondaryPort
 @ApplicationLayer
-public interface ChatBehaviorRuntimeConfigPort {
-
-  String DEFAULT_QUIT_MESSAGE = ChatCommandRuntimeConfigPort.DEFAULT_QUIT_MESSAGE;
-
-  String readDefaultQuitMessage();
+public interface ChatBehaviorRuntimeConfigPort extends QuitMessageRuntimeConfigPort {
 
   boolean readNickCompletionCycleWithTabEnabled(boolean defaultValue);
 

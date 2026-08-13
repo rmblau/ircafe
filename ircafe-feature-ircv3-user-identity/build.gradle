@@ -1,0 +1,7 @@
+apply from: rootProject.file('gradle/ircv3-feature-conventions.gradle')
+
+description = 'IRCafe transport-neutral WHOIS/WHOWAS, WHOX, WHO, and USERHOST identity policy.'
+
+dependencies {
+    implementation project(':ircafe-feature-ircv3-common')
+}

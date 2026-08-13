@@ -1,27 +1,6 @@
-apply plugin: 'java-library'
+apply from: rootProject.file('gradle/java-library-subproject-conventions.gradle')
 
-group = rootProject.group
-
-def libsCatalog = extensions.getByType(org.gradle.api.artifacts.VersionCatalogsExtension).named("libs")
-def lib = { String alias -> libsCatalog.findLibrary(alias).get() }
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(rootProject.ext.javaRelease)
-    }
-    withSourcesJar()
-}
-
-tasks.withType(JavaCompile).configureEach {
-    options.release = rootProject.ext.javaRelease
-    options.warnings = false
-    options.compilerArgs.removeAll { it.startsWith('-Xlint') }
-    options.compilerArgs += ['-Xlint:none']
-}
-
-tasks.matching { it.name in ['cyclonedxBom', 'cyclonedxDirectBom'] }.configureEach {
-    dependsOn(':ircafe-plugin-api:compileJava')
-}
+def lib = extensions.extraProperties.get('ircv3Library')
 
 dependencies {
     api project(':ircafe-plugin-api')

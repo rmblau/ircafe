@@ -37,6 +37,7 @@ final class PircbotxInboundCtcpHandler {
   @NonNull private final BiConsumer<String, User> hostmaskObserver;
   @NonNull private final Consumer<ServerIrcEvent> emit;
   @NonNull private final PircbotxCtcpRequestHandler autoReplySender;
+  @NonNull private final Ircv3ServerTimeRuntimeSupport serverTimeRuntimeSupport;
 
   void onGenericCtcp(GenericCTCPEvent event) {
     String command = deriveCommand(event);
@@ -79,7 +80,7 @@ final class PircbotxInboundCtcpHandler {
 
   private CtcpRoute prepareRoute(
       GenericChannelUserEvent event, String commandUpper, String argument) {
-    Instant at = Ircv3ServerTime.orNow(Ircv3ServerTime.fromEvent(event), Instant.now());
+    Instant at = serverTimeRuntimeSupport.resolveEventOrNow(event);
     log.info("CTCP: {}", event);
 
     PircBotX bot = event != null ? event.getBot() : null;

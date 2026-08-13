@@ -3,6 +3,7 @@ package cafe.woden.ircclient.app.api;
 import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MULTILINE;
 
 import cafe.woden.ircclient.app.outbound.backend.OutboundBackendCapabilityPolicy;
+import cafe.woden.ircclient.irc.ircv3.Ircv3MultilineLimitPolicy;
 import cafe.woden.ircclient.irc.port.IrcNegotiatedFeaturePort;
 import java.util.Objects;
 import lombok.NonNull;
@@ -84,25 +85,8 @@ public final class Ircv3MultilineFeatureSupport implements Ircv3FeatureAvailabil
       return negotiationUnavailableMessage();
     }
 
-    int maxLines = negotiatedMaxLines(sid);
-    if (maxLines > 0 && lineCount > maxLines) {
-      return "Message has "
-          + lineCount
-          + " lines; negotiated multiline max-lines is "
-          + maxLines
-          + ".";
-    }
-
-    long maxBytes = negotiatedMaxBytes(sid);
-    if (maxBytes > 0L && payloadUtf8Bytes > maxBytes) {
-      return "Message is "
-          + payloadUtf8Bytes
-          + " UTF-8 bytes; negotiated multiline max-bytes is "
-          + maxBytes
-          + ".";
-    }
-
-    return "";
+    return Ircv3MultilineLimitPolicy.limitReason(
+        lineCount, payloadUtf8Bytes, negotiatedMaxLines(sid), negotiatedMaxBytes(sid));
   }
 
   private static String normalizeServerId(String serverId) {

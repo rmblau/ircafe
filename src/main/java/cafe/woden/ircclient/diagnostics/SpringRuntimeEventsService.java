@@ -2,7 +2,7 @@ package cafe.woden.ircclient.diagnostics;
 
 import cafe.woden.ircclient.config.api.InstalledPluginProblem;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
-import cafe.woden.ircclient.util.InstalledPluginDescriptor;
+import cafe.woden.ircclient.plugin.spi.InstalledPluginDescriptor;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.processors.FlowableProcessor;
 import io.reactivex.rxjava3.processors.PublishProcessor;

@@ -2,8 +2,8 @@ package cafe.woden.ircclient.ui.settings.notifications;
 
 import cafe.woden.ircclient.config.api.NotificationRule;
 import cafe.woden.ircclient.config.api.NotificationRuntimeConfigPort;
+import cafe.woden.ircclient.notify.api.store.NotificationRuleCooldownPolicy;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
-import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
 import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
 import java.awt.Color;
@@ -22,9 +22,18 @@ public final class NotificationRulesControlsSupport {
       UiSettings current,
       List<AutoCloseable> closeables,
       ExecutorService notificationRuleTestExecutor) {
-    int cooldown = current != null ? current.notificationRuleCooldownSeconds() : 15;
+    int cooldown =
+        current != null
+            ? current.notificationRuleCooldownSeconds()
+            : NotificationRuleCooldownPolicy.DEFAULT_COOLDOWN_SECONDS;
+    cooldown = NotificationRuleCooldownPolicy.normalizeCooldownSeconds(cooldown);
     javax.swing.JSpinner cooldownSeconds =
-        PreferencesUiSupport.numberSpinner(cooldown, 0, 3600, 1, closeables);
+        PreferencesUiSupport.numberSpinner(
+            cooldown,
+            NotificationRuleCooldownPolicy.MIN_COOLDOWN_SECONDS,
+            NotificationRuleCooldownPolicy.MAX_COOLDOWN_SECONDS,
+            1,
+            closeables);
 
     NotificationRulesTableModel model =
         new NotificationRulesTableModel(current != null ? current.notificationRules() : List.of());
@@ -120,8 +129,7 @@ public final class NotificationRulesControlsSupport {
   public record NotificationSettings(
       int cooldownSeconds, List<NotificationRule> rules, ValidationError validationError) {
     public NotificationSettings {
-      cooldownSeconds =
-          SettingsRangeSupport.normalizeNotificationRuleCooldownSeconds(cooldownSeconds);
+      cooldownSeconds = NotificationRuleCooldownPolicy.normalizeCooldownSeconds(cooldownSeconds);
       rules = rules != null ? List.copyOf(rules) : List.of();
     }
   }

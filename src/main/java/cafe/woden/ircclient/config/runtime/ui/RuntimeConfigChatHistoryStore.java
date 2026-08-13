@@ -21,31 +21,37 @@ public class RuntimeConfigChatHistoryStore {
 
   public synchronized void rememberInitialLoadLines(int lines) {
     rememberScalarSetting(
-        "chatHistoryInitialLoadLines", Math.max(0, lines), "chat history initial load");
+        "chatHistoryInitialLoadLines",
+        RuntimeConfigChatHistorySettingsCodec.normalizeInitialLoadLines(lines),
+        "chat history initial load");
   }
 
   public synchronized void rememberPageSize(int pageSize) {
-    rememberScalarSetting("chatHistoryPageSize", Math.max(1, pageSize), "chat history page size");
+    rememberScalarSetting(
+        "chatHistoryPageSize",
+        RuntimeConfigChatHistorySettingsCodec.normalizePageSize(pageSize),
+        "chat history page size");
   }
 
   public synchronized void rememberAutoLoadWheelDebounceMs(int debounceMs) {
-    int v = Math.max(100, Math.min(30_000, debounceMs));
+    int v = RuntimeConfigChatHistorySettingsCodec.normalizeAutoLoadWheelDebounceMs(debounceMs);
     rememberScalarSetting("chatHistoryAutoLoadWheelDebounceMs", v, "chat history wheel debounce");
   }
 
   public synchronized void rememberLoadOlderChunkSize(int chunkSize) {
-    int v = Math.max(1, Math.min(500, chunkSize));
+    int v = RuntimeConfigChatHistorySettingsCodec.normalizeLoadOlderChunkSize(chunkSize);
     rememberScalarSetting("chatHistoryLoadOlderChunkSize", v, "chat history load-older chunk-size");
   }
 
   public synchronized void rememberLoadOlderChunkDelayMs(int chunkDelayMs) {
-    int v = Math.max(0, Math.min(1_000, chunkDelayMs));
+    int v = RuntimeConfigChatHistorySettingsCodec.normalizeLoadOlderChunkDelayMs(chunkDelayMs);
     rememberScalarSetting(
         "chatHistoryLoadOlderChunkDelayMs", v, "chat history load-older chunk-delay");
   }
 
   public synchronized void rememberLoadOlderChunkEdtBudgetMs(int chunkEdtBudgetMs) {
-    int v = Math.max(1, Math.min(33, chunkEdtBudgetMs));
+    int v =
+        RuntimeConfigChatHistorySettingsCodec.normalizeLoadOlderChunkEdtBudgetMs(chunkEdtBudgetMs);
     rememberScalarSetting(
         "chatHistoryLoadOlderChunkEdtBudgetMs", v, "chat history load-older EDT budget");
   }
@@ -78,33 +84,30 @@ public class RuntimeConfigChatHistoryStore {
   }
 
   public synchronized void rememberRemoteRequestTimeoutSeconds(int seconds) {
-    int v = Math.max(1, Math.min(120, seconds));
+    int v = RuntimeConfigChatHistorySettingsCodec.normalizeRemoteRequestTimeoutSeconds(seconds);
     rememberScalarSetting(
         "chatHistoryRemoteRequestTimeoutSeconds", v, "chat history remote-timeout");
   }
 
   public synchronized void rememberRemoteZncPlaybackTimeoutSeconds(int seconds) {
-    int v = Math.max(1, Math.min(300, seconds));
+    int v = RuntimeConfigChatHistorySettingsCodec.normalizeRemoteZncPlaybackTimeoutSeconds(seconds);
     rememberScalarSetting(
         "chatHistoryRemoteZncPlaybackTimeoutSeconds", v, "chat history remote ZNC-timeout");
   }
 
   public synchronized void rememberRemoteZncPlaybackWindowMinutes(int minutes) {
-    int v = Math.max(1, Math.min(1440, minutes));
+    int v = RuntimeConfigChatHistorySettingsCodec.normalizeRemoteZncPlaybackWindowMinutes(minutes);
     rememberScalarSetting(
         "chatHistoryRemoteZncPlaybackWindowMinutes", v, "chat history remote ZNC window");
   }
 
   public synchronized void rememberCommandHistoryMaxSize(int maxSize) {
-    int v = maxSize;
-    if (v <= 0) v = 500;
-    if (v > 500) v = 500;
+    int v = RuntimeConfigChatHistorySettingsCodec.normalizeCommandHistoryMaxSize(maxSize);
     rememberScalarSetting("commandHistoryMaxSize", v, "command history max size");
   }
 
   public synchronized void rememberTranscriptMaxLinesPerTarget(int maxLines) {
-    int v = Math.max(0, maxLines);
-    if (v > 200_000) v = 200_000;
+    int v = RuntimeConfigChatHistorySettingsCodec.normalizeTranscriptMaxLinesPerTarget(maxLines);
     rememberScalarSetting(
         "chatTranscriptMaxLinesPerTarget", v, "chat transcript max-lines-per-target");
   }

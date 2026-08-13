@@ -2,6 +2,7 @@ package cafe.woden.ircclient.ui.input;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.ui.input.spi.MessageInputWordSuggestionProvider;
+import cafe.woden.ircclient.util.PluginServiceLoaderSupport;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -27,8 +28,10 @@ final class CompositeMessageInputWordSuggestionProvider
       return builtInProvider;
     }
     List<MessageInputWordSuggestionProvider> loaded =
-        installedPlugins.loadInstalledServices(MessageInputWordSuggestionProvider.class, builtIns);
-    if (loaded == null || loaded.isEmpty()) {
+        PluginServiceLoaderSupport.dedupeByProviderClass(
+            installedPlugins.loadInstalledServices(
+                MessageInputWordSuggestionProvider.class, builtIns));
+    if (loaded.isEmpty()) {
       return builtInProvider;
     }
     if (loaded.size() == 1 && loaded.getFirst() == builtInProvider) {

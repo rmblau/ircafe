@@ -4,6 +4,7 @@ import static cafe.woden.ircclient.util.Ircv3CapabilityNames.READ_MARKER;
 
 import cafe.woden.ircclient.app.outbound.backend.OutboundBackendCapabilityPolicy;
 import cafe.woden.ircclient.config.api.Ircv3CapabilityNameResolverPort;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ReadMarkerTimestamp;
 import cafe.woden.ircclient.irc.port.IrcReadMarkerPort;
 import cafe.woden.ircclient.model.TargetRef;
 import io.reactivex.rxjava3.core.Completable;
@@ -88,40 +89,6 @@ public final class Ircv3ReadMarkerFeatureSupport implements Ircv3FeatureAvailabi
   }
 
   public long parseObservedMarkerEpochMs(String marker, Instant fallbackAt) {
-    Instant fallback = fallbackAt != null ? fallbackAt : Instant.now();
-    String raw = Objects.toString(marker, "").trim();
-    if (raw.isEmpty() || "*".equals(raw)) {
-      return 0L;
-    }
-
-    String value = raw;
-    int eq = raw.indexOf('=');
-    if (eq > 0 && eq < (raw.length() - 1)) {
-      String key = raw.substring(0, eq).trim();
-      if ("timestamp".equalsIgnoreCase(key)) {
-        value = raw.substring(eq + 1).trim();
-      }
-    }
-    if (value.isEmpty() || "*".equals(value)) {
-      return 0L;
-    }
-
-    try {
-      return Instant.parse(value).toEpochMilli();
-    } catch (Exception ignored) {
-    }
-
-    try {
-      long parsed = Long.parseLong(value);
-      if (parsed <= 0L) {
-        return fallback.toEpochMilli();
-      }
-      if (value.length() <= 10) {
-        return Math.multiplyExact(parsed, 1000L);
-      }
-      return parsed;
-    } catch (Exception ignored) {
-      return fallback.toEpochMilli();
-    }
+    return Ircv3ReadMarkerTimestamp.parseEpochMs(marker, fallbackAt);
   }
 }

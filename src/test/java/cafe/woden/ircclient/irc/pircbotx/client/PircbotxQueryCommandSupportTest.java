@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.irc.pircbotx.client;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -35,8 +36,10 @@ class PircbotxQueryCommandSupportTest {
     support.whois(connection, bot, " Alice ");
 
     verify(outputRaw).rawLine("WHOIS Alice");
-    assertEquals(Boolean.FALSE, connection.completeWhoisAwayProbe("alice"));
-    assertEquals(Boolean.FALSE, connection.completeWhoisAccountProbe("alice"));
+    assertTrue(connection.hasPendingWhoisProbe("alice"));
+    var completion = connection.completeWhoisProbe("alice");
+    assertFalse(completion.sawAway());
+    assertFalse(completion.sawAccount());
   }
 
   @Test

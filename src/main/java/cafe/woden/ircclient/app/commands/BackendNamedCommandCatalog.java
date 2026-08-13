@@ -8,13 +8,9 @@ import cafe.woden.ircclient.util.PluginServiceLoaderSupport;
 import jakarta.annotation.PreDestroy;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,21 +24,12 @@ public class BackendNamedCommandCatalog {
 
   private static final Logger log = LoggerFactory.getLogger(BackendNamedCommandCatalog.class);
 
-  private final Map<String, cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler>
-      parseHandlersByCommandName;
-  private final List<SlashCommandDescriptor> autocompleteCommands;
-  private final List<String> generalHelpLines;
-  private final Map<String, List<String>> topicHelpLines;
+  private final BackendNamedCommandHandlerRegistry registry;
   private final List<URLClassLoader> pluginClassLoaders;
 
   @Autowired
-  public BackendNamedCommandCatalog(
-      InstalledPluginsPort installedPluginsPort,
-      List<cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler> builtInHandlers) {
-    this(
-        CommandPluginProviders.backendNamedCommandHandlers(
-            List.copyOf(Objects.requireNonNullElse(builtInHandlers, List.of())),
-            installedPluginsPort));
+  public BackendNamedCommandCatalog(InstalledPluginsPort installedPluginsPort) {
+    this(CommandPluginProviders.backendNamedCommandHandlers(List.of(), installedPluginsPort));
   }
 
   public BackendNamedCommandCatalog(
@@ -98,12 +85,8 @@ public class BackendNamedCommandCatalog {
   private BackendNamedCommandCatalog(
       List<cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler> handlers,
       List<URLClassLoader> pluginClassLoaders) {
-    List<cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler> safeHandlers =
-        List.copyOf(Objects.requireNonNull(handlers, "handlers"));
-    this.parseHandlersByCommandName = indexParseHandlersByCommandName(safeHandlers);
-    this.autocompleteCommands = buildAutocompleteCommands(safeHandlers);
-    this.generalHelpLines = buildGeneralHelpLines(safeHandlers);
-    this.topicHelpLines = buildTopicHelpLines(safeHandlers);
+    this.registry =
+        new BackendNamedCommandHandlerRegistry(List.copyOf(Objects.requireNonNull(handlers)));
     this.pluginClassLoaders =
         List.copyOf(Objects.requireNonNull(pluginClassLoaders, "pluginClassLoaders"));
   }
@@ -115,129 +98,25 @@ public class BackendNamedCommandCatalog {
   }
 
   public ParsedInput parse(String line) {
-    String raw = Objects.toString(line, "").trim();
-    if (raw.isEmpty()) return null;
-    if (!raw.startsWith("/")) return null;
-
-    String commandName = extractCommandName(raw);
-    if (commandName.isEmpty()) return null;
-    cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler handler =
-        parseHandlersByCommandName.get(commandName);
-    if (handler == null) return null;
-    BackendNamedCommandParseResult parsed = handler.parse(raw, commandName);
+    BackendNamedCommandParseResult parsed = registry.parse(line);
     if (parsed == null) return null;
     return new ParsedInput.BackendNamed(parsed.command(), parsed.args());
   }
 
   public List<SlashCommandDescriptor> autocompleteCommands() {
-    return autocompleteCommands;
+    return registry.autocompleteCommands();
   }
 
   public List<String> generalHelpLines() {
-    return generalHelpLines;
+    return registry.generalHelpLines();
   }
 
   public Map<String, List<String>> topicHelpLines() {
-    return topicHelpLines;
-  }
-
-  private static Map<String, cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler>
-      indexParseHandlersByCommandName(
-          List<cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler> handlers) {
-    LinkedHashMap<String, cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler> index =
-        new LinkedHashMap<>();
-    for (cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler handler : handlers) {
-      Set<String> commandNames =
-          Objects.requireNonNullElse(handler.supportedCommandNames(), Set.<String>of());
-      for (String commandName : commandNames) {
-        String normalized =
-            BackendNamedCommandRegistrationSupport.normalizeCommandName(commandName);
-        if (normalized.isEmpty()) continue;
-        if (BackendNamedCommandRegistrationSupport.isReservedCommandName(normalized)) {
-          throw new IllegalStateException(
-              "Backend named command '"
-                  + normalized
-                  + "' collides with a reserved built-in command");
-        }
-        cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler previous =
-            index.putIfAbsent(normalized, handler);
-        if (previous != null && previous != handler) {
-          throw new IllegalStateException(
-              "Duplicate backend named parser handler registered for command '" + normalized + "'");
-        }
-      }
-    }
-    return Map.copyOf(index);
-  }
-
-  private static List<SlashCommandDescriptor> buildAutocompleteCommands(
-      List<cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler> handlers) {
-    LinkedHashMap<String, SlashCommandDescriptor> byCommand = new LinkedHashMap<>();
-    for (cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler handler : handlers) {
-      List<SlashCommandDescriptor> commands =
-          Objects.requireNonNullElse(handler.autocompleteCommands(), List.of());
-      for (SlashCommandDescriptor command : commands) {
-        if (command == null) continue;
-        byCommand.putIfAbsent(command.command().toLowerCase(Locale.ROOT), command);
-      }
-    }
-    return List.copyOf(byCommand.values());
-  }
-
-  private static List<String> buildGeneralHelpLines(
-      List<cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler> handlers) {
-    ArrayList<String> lines = new ArrayList<>();
-    for (cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler handler : handlers) {
-      List<String> handlerLines = Objects.requireNonNullElse(handler.generalHelpLines(), List.of());
-      appendLines(lines, handlerLines);
-    }
-    return List.copyOf(lines);
-  }
-
-  private static Map<String, List<String>> buildTopicHelpLines(
-      List<cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler> handlers) {
-    LinkedHashMap<String, ArrayList<String>> linesByTopic = new LinkedHashMap<>();
-    for (cafe.woden.ircclient.app.commands.spi.BackendNamedCommandHandler handler : handlers) {
-      Map<String, List<String>> handlerLines =
-          Objects.requireNonNullElse(handler.topicHelpLines(), Map.of());
-      for (Map.Entry<String, List<String>> entry : handlerLines.entrySet()) {
-        String topic = normalizeHelpTopic(entry.getKey());
-        if (topic.isEmpty()) continue;
-        ArrayList<String> lines = linesByTopic.computeIfAbsent(topic, __ -> new ArrayList<>());
-        appendLines(lines, entry.getValue());
-      }
-    }
-    LinkedHashMap<String, List<String>> immutable = new LinkedHashMap<>();
-    for (Map.Entry<String, ArrayList<String>> entry : linesByTopic.entrySet()) {
-      immutable.put(entry.getKey(), List.copyOf(entry.getValue()));
-    }
-    return Map.copyOf(immutable);
-  }
-
-  private static void appendLines(List<String> out, List<String> lines) {
-    if (out == null || lines == null) return;
-    for (String line : lines) {
-      String normalized = Objects.toString(line, "").trim();
-      if (!normalized.isEmpty()) {
-        out.add(normalized);
-      }
-    }
+    return registry.topicHelpLines();
   }
 
   static Path resolvePluginDirectory(RuntimeConfigPathPort runtimeConfigPathPort) {
     return PluginServiceLoaderSupport.resolvePluginDirectory(
         runtimeConfigPathPort == null ? null : runtimeConfigPathPort::runtimeConfigPath, log);
-  }
-
-  private static String extractCommandName(String line) {
-    int end = line.indexOf(' ');
-    String token = end < 0 ? line : line.substring(0, end);
-    return BackendNamedCommandRegistrationSupport.normalizeCommandName(token);
-  }
-
-  private static String normalizeHelpTopic(String raw) {
-    String topic = Objects.toString(raw, "").trim().toLowerCase(Locale.ROOT);
-    if (topic.startsWith("/")) topic = topic.substring(1).trim();
-    return topic;
   }
 }

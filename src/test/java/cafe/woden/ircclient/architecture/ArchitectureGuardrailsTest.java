@@ -16,6 +16,7 @@ import cafe.woden.ircclient.irc.pircbotx.client.PircbotxIrcClientService;
 import cafe.woden.ircclient.irc.quassel.control.QuasselCoreControlPort;
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.JavaClass;
+import com.tngtech.archunit.core.domain.JavaMethodCall;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
@@ -75,10 +76,16 @@ class ArchitectureGuardrailsTest {
         @Override
         public boolean test(JavaClass input) {
           String name = input.getName();
-          return name.equals("cafe.woden.ircclient.irc.pircbotx.parse.PircbotxZncParsers")
-              || name.startsWith("cafe.woden.ircclient.irc.pircbotx.parse.PircbotxZncParsers$")
-              || name.equals("cafe.woden.ircclient.irc.soju.PircbotxSojuParsers")
-              || name.startsWith("cafe.woden.ircclient.irc.soju.PircbotxSojuParsers$");
+          return name.equals("cafe.woden.ircclient.irc.ircv3.Ircv3ZncDetector")
+              || name.startsWith("cafe.woden.ircclient.irc.ircv3.Ircv3ZncDetector$");
+        }
+      };
+
+  private static final DescribedPredicate<JavaMethodCall> APPLICATION_CLASSPATH_METHOD_CALL =
+      new DescribedPredicate<>("applicationClasspath runtime bootstrap") {
+        @Override
+        public boolean test(JavaMethodCall input) {
+          return input.getTarget().getName().equals("applicationClasspath");
         }
       };
 
@@ -755,14 +762,14 @@ class ArchitectureGuardrailsTest {
               "ui.nickcolors should persist per-nick override settings via config::api ports, not RuntimeConfigStore directly");
 
   @ArchTest
-  static final ArchRule ui_settings_bus_should_not_depend_on_runtime_config_store_directly =
+  static final ArchRule ui_settings_should_not_depend_on_runtime_config_store_directly =
       noClasses()
           .that()
-          .haveFullyQualifiedName("cafe.woden.ircclient.ui.settings.UiSettingsBus")
+          .resideInAPackage("cafe.woden.ircclient.ui.settings..")
           .should()
           .dependOnClassesThat(RUNTIME_CONFIG_STORE_TYPES)
           .because(
-              "UiSettingsBus should derive persisted UI defaults through config::api ports, not RuntimeConfigStore directly");
+              "preferences and settings UI should use config::api ports, not RuntimeConfigStore directly");
 
   @ArchTest
   static final ArchRule theme_selection_dialog_should_not_depend_on_runtime_config_store_directly =
@@ -1169,4 +1176,44 @@ class ArchitectureGuardrailsTest {
           .resideInAPackage("cafe.woden.ircclient.ui.input..")
           .because(
               "server-tree internals should not depend on message-input internals; interactions belong in UI coordinators");
+
+  @ArchTest
+  static final ArchRule application_services_should_not_open_ircv3_application_classpath_catalogs =
+      noClasses()
+          .that()
+          .resideInAPackage("cafe.woden.ircclient.app..")
+          .should()
+          .callMethodWhere(APPLICATION_CLASSPATH_METHOD_CALL)
+          .because(
+              "application services should receive IRCv3 runtime catalogs from the composition root");
+
+  @ArchTest
+  static final ArchRule pircbotx_transport_should_not_open_application_classpath_runtime_catalogs =
+      noClasses()
+          .that()
+          .resideInAPackage("cafe.woden.ircclient.irc.pircbotx..")
+          .should()
+          .callMethodWhere(APPLICATION_CLASSPATH_METHOD_CALL)
+          .because(
+              "PircBotX production composition should receive IRCv3 runtime catalogs explicitly");
+
+  @ArchTest
+  static final ArchRule quassel_transport_should_not_open_application_classpath_runtime_catalogs =
+      noClasses()
+          .that()
+          .resideInAPackage("cafe.woden.ircclient.irc.quassel..")
+          .should()
+          .callMethodWhere(APPLICATION_CLASSPATH_METHOD_CALL)
+          .because(
+              "Quassel production composition should receive IRCv3 runtime catalogs explicitly");
+
+  @ArchTest
+  static final ArchRule matrix_transport_should_not_open_application_classpath_runtime_catalogs =
+      noClasses()
+          .that()
+          .resideInAPackage("cafe.woden.ircclient.irc.matrix..")
+          .should()
+          .callMethodWhere(APPLICATION_CLASSPATH_METHOD_CALL)
+          .because(
+              "Matrix production composition should receive IRCv3 runtime catalogs explicitly");
 }

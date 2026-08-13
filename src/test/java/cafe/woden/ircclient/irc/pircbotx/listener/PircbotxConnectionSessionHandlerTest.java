@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.irc.pircbotx.listener;
 
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.chatHistoryBatches;
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.serverResponses;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -19,7 +21,6 @@ import cafe.woden.ircclient.irc.ircv3.*;
 import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxChatHistoryBatchCollector;
 import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxServerResponseEmitter;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
-import cafe.woden.ircclient.irc.pircbotx.support.Ircv3MultilineAccumulator;
 import cafe.woden.ircclient.irc.playback.*;
 import java.io.IOException;
 import java.net.SocketException;
@@ -237,9 +238,8 @@ class PircbotxConnectionSessionHandlerTest {
         new PircbotxBouncerDiscoveryCoordinator(
             "libera", conn, false, false, bouncerBackends, bouncerDiscoveryEvents);
     PircbotxChatHistoryBatchCollector chatHistoryBatches =
-        new PircbotxChatHistoryBatchCollector("libera", events::add);
-    PircbotxServerResponseEmitter serverResponses =
-        new PircbotxServerResponseEmitter("libera", events::add);
+        chatHistoryBatches("libera", events::add);
+    PircbotxServerResponseEmitter serverResponses = serverResponses("libera", events::add);
     return new PircbotxConnectionSessionHandler(
         "libera",
         conn,

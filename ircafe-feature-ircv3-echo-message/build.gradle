@@ -1,0 +1,8 @@
+apply from: rootProject.file('gradle/ircv3-feature-conventions.gradle')
+
+description = 'IRCafe IRCv3 echo-message private-target correlation policy.'
+
+dependencies {
+    implementation project(':ircafe-feature-ircv3-channel-context')
+    implementation project(':ircafe-feature-ircv3-message-tags')
+}

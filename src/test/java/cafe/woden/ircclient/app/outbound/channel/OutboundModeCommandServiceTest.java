@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
+import cafe.woden.ircclient.app.outbound.TestIrcv3RuntimeSupport;
 import cafe.woden.ircclient.app.outbound.backend.OutboundBackendCapabilityPolicy;
 import cafe.woden.ircclient.app.outbound.support.CommandTargetPolicy;
 import cafe.woden.ircclient.app.outbound.support.OutboundConnectionStatusSupport;
@@ -46,7 +47,8 @@ class OutboundModeCommandServiceTest {
   private final LabeledResponseRoutingPort labeledResponseRoutingState =
       mock(LabeledResponseRoutingPort.class);
   private final OutboundRawLineCorrelationService rawLineCorrelationService =
-      new OutboundRawLineCorrelationService(backendCapabilityPolicy, labeledResponseRoutingState);
+      TestIrcv3RuntimeSupport.rawLineCorrelation(
+          backendCapabilityPolicy, labeledResponseRoutingState, () -> 1L);
   private final OutboundRawCommandSupport rawCommandSupport =
       new OutboundRawCommandSupport(rawLineCorrelationService);
   private final OutboundConnectionStatusSupport outboundConnectionStatusSupport =
@@ -89,16 +91,10 @@ class OutboundModeCommandServiceTest {
   void opUsesPreparedLabeledRawLineAndRemembersCorrelation() {
     TargetRef status = new TargetRef("libera", "status");
     TargetRef channel = new TargetRef("libera", "#ircafe");
-    LabeledResponseRoutingPort.PreparedRawLine prepared =
-        new LabeledResponseRoutingPort.PreparedRawLine(
-            "@label=req-1 MODE #ircafe +o alice", "req-1", true);
-
     when(targetCoordinator.getActiveTarget()).thenReturn(status);
     when(connectionCoordinator.isConnected("libera")).thenReturn(true);
     when(backendCapabilityPolicy.supportsLabeledResponse("libera")).thenReturn(true);
-    when(labeledResponseRoutingState.prepareOutgoingRaw("libera", "MODE #ircafe +o alice"))
-        .thenReturn(prepared);
-    when(irc.sendRaw("libera", "@label=req-1 MODE #ircafe +o alice"))
+    when(irc.sendRaw("libera", "@label=ircafe-libera-1 MODE #ircafe +o alice"))
         .thenReturn(Completable.complete());
 
     service.handleOp(disposables, "#ircafe", List.of("alice"));
@@ -106,13 +102,13 @@ class OutboundModeCommandServiceTest {
     verify(labeledResponseRoutingState)
         .remember(
             eq("libera"),
-            eq("req-1"),
+            eq("ircafe-libera-1"),
             eq(channel),
             eq("MODE #ircafe +o alice"),
             any(Instant.class));
     verify(ui).ensureTargetExists(channel);
-    verify(ui).appendStatus(channel, "(mode)", "→ MODE #ircafe +o alice {label=req-1}");
-    verify(irc).sendRaw("libera", "@label=req-1 MODE #ircafe +o alice");
+    verify(ui).appendStatus(channel, "(mode)", "→ MODE #ircafe +o alice {label=ircafe-libera-1}");
+    verify(irc).sendRaw("libera", "@label=ircafe-libera-1 MODE #ircafe +o alice");
   }
 
   @Test

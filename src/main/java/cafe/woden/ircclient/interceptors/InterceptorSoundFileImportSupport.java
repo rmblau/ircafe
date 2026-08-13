@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.interceptors;
 
-import cafe.woden.ircclient.notify.api.CustomSoundFileImportSupport;
+import cafe.woden.ircclient.notify.api.sound.CustomSoundFileImportSupport;
 import cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider;
 import java.io.File;
 import java.nio.file.Path;
@@ -21,7 +21,7 @@ final class InterceptorSoundFileImportSupport {
         extensionProviders,
         "interceptor",
         "Invalid file name",
-        "Only .mp3 and .wav are supported",
-        "Unsupported custom sound file type");
+        null,
+        null);
   }
 }

@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.irc.pircbotx.emit;
 
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.chatHistoryBatches;
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.runtime;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.mock;
@@ -9,7 +11,6 @@ import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
 import cafe.woden.ircclient.irc.ircv3.*;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
-import cafe.woden.ircclient.irc.pircbotx.support.Ircv3MultilineAccumulator;
 import cafe.woden.ircclient.irc.playback.*;
 import cafe.woden.ircclient.state.ServerIsupportState;
 import java.time.Instant;
@@ -76,12 +77,19 @@ class PircbotxChannelMessageEmitterTest {
 
   private static PircbotxChannelMessageEmitter newEmitter(
       PircbotxConnectionState conn, List<ServerIrcEvent> events) {
+    var runtime = runtime();
     PircbotxRosterEmitter rosterEmitter =
         new PircbotxRosterEmitter("libera", conn, new ServerIsupportState(), events::add);
-    PircbotxChatHistoryBatchCollector batches =
-        new PircbotxChatHistoryBatchCollector("libera", events::add);
+    PircbotxChatHistoryBatchCollector batches = chatHistoryBatches("libera", events::add);
     return new PircbotxChannelMessageEmitter(
-        "libera", conn, rosterEmitter, batches, new Ircv3MultilineAccumulator(), events::add);
+        "libera",
+        conn,
+        rosterEmitter,
+        batches,
+        new Ircv3MultilineAccumulator(),
+        events::add,
+        runtime.serverTime(),
+        runtime.messageTags());
   }
 
   private static MessageEvent message(String channelName, String nick, String text) {

@@ -1,6 +1,9 @@
 package cafe.woden.ircclient.ui.settings.appearance;
 
-import cafe.woden.ircclient.config.api.AppearanceRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ChatAppearanceRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.DockLayoutRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ServerTreeAppearanceRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ThemeAppearanceRuntimeConfigPort;
 import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
@@ -121,7 +124,7 @@ public final class AppearanceControlsSupport {
   }
 
   public static void rememberTweakSettings(
-      AppearanceRuntimeConfigPort runtimeConfig, ThemeTweakSettings settings) {
+      ThemeAppearanceRuntimeConfigPort runtimeConfig, ThemeTweakSettings settings) {
     runtimeConfig.rememberUiDensity(settings.densityId());
     runtimeConfig.rememberCornerRadius(settings.cornerRadius());
     runtimeConfig.rememberUiFontOverrideEnabled(settings.uiFontOverrideEnabled());
@@ -130,13 +133,13 @@ public final class AppearanceControlsSupport {
   }
 
   public static void rememberAccentSettings(
-      AppearanceRuntimeConfigPort runtimeConfig, ThemeAccentSettings settings) {
+      ThemeAppearanceRuntimeConfigPort runtimeConfig, ThemeAccentSettings settings) {
     runtimeConfig.rememberAccentColor(settings.accentColor());
     runtimeConfig.rememberAccentStrength(settings.strength());
   }
 
   public static void rememberChatThemeSettings(
-      AppearanceRuntimeConfigPort runtimeConfig, ChatThemeSettings settings) {
+      ChatAppearanceRuntimeConfigPort runtimeConfig, ChatThemeSettings settings) {
     runtimeConfig.rememberChatThemePreset(settings.preset().name());
     runtimeConfig.rememberChatTimestampColor(settings.timestampColor());
     runtimeConfig.rememberChatSystemColor(settings.systemColor());
@@ -150,8 +153,11 @@ public final class AppearanceControlsSupport {
   }
 
   public static void rememberServerTreeSettings(
-      AppearanceRuntimeConfigPort runtimeConfig, ServerTreeAppearanceSettings settings) {
-    AppearanceServerTreeControlsFactory.remember(runtimeConfig, settings);
+      ServerTreeAppearanceRuntimeConfigPort serverTreeRuntimeConfig,
+      DockLayoutRuntimeConfigPort dockLayoutRuntimeConfig,
+      ServerTreeAppearanceSettings settings) {
+    AppearanceServerTreeControlsFactory.remember(
+        serverTreeRuntimeConfig, dockLayoutRuntimeConfig, settings);
   }
 
   public record ServerTreeAppearanceSettings(

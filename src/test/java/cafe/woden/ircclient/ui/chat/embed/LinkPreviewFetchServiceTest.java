@@ -1,6 +1,8 @@
 package cafe.woden.ircclient.ui.chat.embed;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
@@ -8,18 +10,43 @@ import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
 import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreview;
 import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttpHeaders;
+import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttpResponse;
 import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 class LinkPreviewFetchServiceTest {
 
+  private static final List<String> NO_ARG_BUILT_IN_RESOLVER_CLASS_NAMES = List.of();
+
   @TempDir Path tempDir;
+
+  @Test
+  void rejectsPrivateHostsBeforeInvokingResolvers() {
+    AtomicBoolean invoked = new AtomicBoolean(false);
+    LinkPreviewResolver resolver =
+        (uri, originalUrl, http) -> {
+          invoked.set(true);
+          return new LinkPreview(originalUrl, "unexpected", null, "Test", null, 0);
+        };
+    LinkPreviewFetchService service = new LinkPreviewFetchService(null, List.of(resolver));
+
+    assertThrows(
+        IllegalArgumentException.class,
+        () -> service.fetch("server-a", "https://127.0.0.1/private").blockingGet());
+
+    assertEquals(false, invoked.get());
+  }
 
   @Test
   void loadsResolversFromInstalledPluginsPort() {
@@ -56,6 +83,17 @@ class LinkPreviewFetchServiceTest {
 
   @Test
   void loadsNoArgBuiltInResolversThroughClasspathServiceLoader() {
+    List<String> resolverClassNames =
+        LinkPreviewPluginProviders.linkPreviewResolvers(List.of(), null).stream()
+            .map(resolver -> resolver.getClass().getName())
+            .toList();
+
+    assertEquals(
+        NO_ARG_BUILT_IN_RESOLVER_CLASS_NAMES, orderedKnownNoArgResolvers(resolverClassNames));
+  }
+
+  @Test
+  void loadsNoArgBuiltInResolversThroughInstalledPluginsPort() {
     RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
 
@@ -64,16 +102,80 @@ class LinkPreviewFetchServiceTest {
             .map(resolver -> resolver.getClass().getName())
             .toList();
 
-    assertTrue(
-        resolverClassNames.contains(
-            "cafe.woden.ircclient.ui.chat.embed.WikipediaLinkPreviewResolver"));
-    assertTrue(
-        resolverClassNames.contains(
-            "cafe.woden.ircclient.ui.chat.embed.GitHubLinkPreviewResolver"));
-    assertTrue(
-        resolverClassNames.contains(
-            "cafe.woden.ircclient.ui.chat.embed.MastodonStatusApiPreviewResolver"));
+    assertEquals(
+        NO_ARG_BUILT_IN_RESOLVER_CLASS_NAMES, orderedKnownNoArgResolvers(resolverClassNames));
     assertTrue(installedPlugins.pluginProblems().isEmpty());
+  }
+
+  @Test
+  void recordsInstalledPluginResolverRuntimeFailureOnce() throws Exception {
+    Path runtimeConfigDirectory = Files.createDirectories(tempDir.resolve("failing-plugin/ircafe"));
+    Path pluginDir = Files.createDirectories(runtimeConfigDirectory.resolve("plugins"));
+    writeThrowingPluginJar(pluginDir.resolve("throwing-link-preview.jar"));
+    RuntimeConfigPathPort runtimeConfigPathPort =
+        () -> runtimeConfigDirectory.resolve("ircafe.yml");
+    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+    LinkPreviewFetchService service =
+        new LinkPreviewFetchService(null, List.of(), installedPlugins);
+
+    assertThrows(
+        RuntimeException.class,
+        () -> service.fetch("server-a", "https://broken-preview.example/item").blockingGet());
+    assertThrows(
+        RuntimeException.class,
+        () -> service.fetch("server-a", "https://broken-preview.example/other").blockingGet());
+
+    assertEquals(1, installedPlugins.pluginProblems().size());
+    assertTrue(
+        installedPlugins.pluginProblems().getFirst().summary().contains("throwing-link-preview"));
+    assertTrue(
+        installedPlugins
+            .pluginProblems()
+            .getFirst()
+            .details()
+            .contains("ThrowingLinkPreviewResolver"));
+    assertTrue(installedPlugins.pluginProblems().getFirst().details().contains("Error type:"));
+    assertTrue(
+        installedPlugins
+            .pluginProblems()
+            .getFirst()
+            .details()
+            .contains("broken-preview.example/item"));
+  }
+
+  @Test
+  void dedupesLinkPreviewResolversByProviderClass() {
+    LinkPreviewResolver builtInResolver = new DuplicateLinkPreviewResolver();
+
+    List<LinkPreviewResolver> resolvers =
+        LinkPreviewPluginProviders.linkPreviewResolvers(
+            List.of(builtInResolver),
+            new FakeInstalledPluginsPort(
+                List.of(new DuplicateLinkPreviewResolver(), new PluginLinkPreviewResolver())));
+
+    assertSame(
+        builtInResolver,
+        resolvers.stream()
+            .filter(DuplicateLinkPreviewResolver.class::isInstance)
+            .findFirst()
+            .orElseThrow());
+    assertEquals(
+        1, resolvers.stream().filter(DuplicateLinkPreviewResolver.class::isInstance).count());
+    assertEquals(1, resolvers.stream().filter(PluginLinkPreviewResolver.class::isInstance).count());
+  }
+
+  private static List<String> orderedKnownNoArgResolvers(List<String> resolverClassNames) {
+    return resolverClassNames.stream()
+        .filter(NO_ARG_BUILT_IN_RESOLVER_CLASS_NAMES::contains)
+        .toList();
+  }
+
+  private static URI redditJsonUri(URI postUri) {
+    String path = postUri.getPath();
+    while (path.endsWith("/")) {
+      path = path.substring(0, path.length() - 1);
+    }
+    return URI.create(postUri.getScheme() + "://" + postUri.getHost() + path + ".json?raw_json=1");
   }
 
   private void writePluginJar(Path jarPath) throws Exception {
@@ -103,6 +205,32 @@ class LinkPreviewFetchServiceTest {
         CompiledPluginJarSupport.compatibleManifest("plugin-link-preview", "1.0.0"));
   }
 
+  private void writeThrowingPluginJar(Path jarPath) throws Exception {
+    String providerClassName = "cafe.woden.ircclient.testplugins.ThrowingLinkPreviewResolver";
+    String providerSource =
+        """
+        package cafe.woden.ircclient.testplugins;
+
+        import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreview;
+        import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewHttp;
+        import cafe.woden.ircclient.ui.chat.embed.spi.LinkPreviewResolver;
+        import java.net.URI;
+
+        public final class ThrowingLinkPreviewResolver implements LinkPreviewResolver {
+          public LinkPreview tryResolve(URI uri, String originalUrl, LinkPreviewHttp http) {
+            if (!"broken-preview.example".equals(uri.getHost())) return null;
+            throw new IllegalStateException("resolver exploded");
+          }
+        }
+        """;
+    CompiledPluginJarSupport.writePluginJar(
+        jarPath,
+        providerClassName,
+        providerSource,
+        LinkPreviewResolver.class.getName(),
+        CompiledPluginJarSupport.compatibleManifest("throwing-link-preview", "1.0.0"));
+  }
+
   private static final class FakeInstalledPluginsPort implements InstalledPluginsPort {
     private final List<?> pluginServices;
 
@@ -124,6 +252,13 @@ class LinkPreviewFetchServiceTest {
     }
   }
 
+  private static final class DuplicateLinkPreviewResolver implements LinkPreviewResolver {
+    @Override
+    public LinkPreview tryResolve(URI uri, String originalUrl, LinkPreviewHttp http) {
+      return null;
+    }
+  }
+
   private static final class PluginLinkPreviewResolver implements LinkPreviewResolver {
     @Override
     public LinkPreview tryResolve(URI uri, String originalUrl, LinkPreviewHttp http) {
@@ -131,6 +266,40 @@ class LinkPreviewFetchServiceTest {
         return null;
       }
       return new LinkPreview(originalUrl, "Plugin preview", "from fake port", "Plugin", null, 0);
+    }
+  }
+
+  private record FakeLinkPreviewHttp(URI expectedUri, String expectedAccept, String body)
+      implements LinkPreviewHttp {
+    @Override
+    public LinkPreviewHttpResponse<InputStream> getStream(URI uri, String accept)
+        throws IOException {
+      throw new IOException("unexpected stream fetch");
+    }
+
+    @Override
+    public LinkPreviewHttpResponse<InputStream> getStream(
+        URI uri, String accept, Map<String, String> extraHeaders) throws IOException {
+      throw new IOException("unexpected stream fetch");
+    }
+
+    @Override
+    public LinkPreviewHttpResponse<String> getString(URI uri) throws IOException {
+      throw new IOException("unexpected string fetch without accept");
+    }
+
+    @Override
+    public LinkPreviewHttpResponse<String> getString(URI uri, Map<String, String> extraHeaders)
+        throws IOException {
+      throw new IOException("unexpected string fetch without accept");
+    }
+
+    @Override
+    public LinkPreviewHttpResponse<String> getString(
+        URI uri, String accept, Map<String, String> extraHeaders) {
+      assertEquals(expectedUri, uri);
+      assertEquals(expectedAccept, accept);
+      return new LinkPreviewHttpResponse<>(200, new LinkPreviewHttpHeaders(Map.of()), body);
     }
   }
 }

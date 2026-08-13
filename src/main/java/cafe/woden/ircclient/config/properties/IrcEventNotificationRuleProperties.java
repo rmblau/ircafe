@@ -1,8 +1,6 @@
 package cafe.woden.ircclient.config.properties;
 
-import cafe.woden.ircclient.model.BuiltInSound;
-import cafe.woden.ircclient.model.IrcEventNotificationRule;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -33,6 +31,8 @@ public record IrcEventNotificationRuleProperties(
     String ctcpValuePattern,
     String channelWhitelist,
     String channelBlacklist) {
+  private static final List<EventType> STATUS_BAR_ANY_COMPANION_EVENTS =
+      List.of(EventType.KICKED, EventType.BANNED, EventType.KLINED);
 
   public enum EventType {
     KICKED,
@@ -96,168 +96,236 @@ public record IrcEventNotificationRuleProperties(
   }
 
   public IrcEventNotificationRuleProperties {
-    if (enabled == null) enabled = false;
-    if (eventType == null) eventType = EventType.INVITE_RECEIVED;
+    EventType normalizedEvent = eventType != null ? eventType : EventType.INVITE_RECEIVED;
 
-    if (sourceMode == null) {
-      sourceMode = SourceMode.ANY;
-    }
-    sourcePattern = trimToNull(sourcePattern);
-    if (sourceMode == SourceMode.ANY
-        || sourceMode == SourceMode.SELF
-        || sourceMode == SourceMode.OTHERS) {
-      sourcePattern = null;
+    SourceMode normalizedSourceMode = sourceMode != null ? sourceMode : SourceMode.ANY;
+    String normalizedSourcePattern = normalizeTextOrNull(sourcePattern);
+    if (!sourcePatternRequired(normalizedSourceMode)) {
+      normalizedSourcePattern = null;
     }
 
-    String includeLegacy = trimToNull(channelWhitelist);
-    String excludeLegacy = trimToNull(channelBlacklist);
-
-    if (channelScope == null) {
+    String includeLegacy = normalizeTextOrNull(channelWhitelist);
+    String excludeLegacy = normalizeTextOrNull(channelBlacklist);
+    ChannelScope normalizedChannelScope = channelScope;
+    if (normalizedChannelScope == null) {
       if (includeLegacy != null) {
-        channelScope = ChannelScope.ONLY;
+        normalizedChannelScope = ChannelScope.ONLY;
       } else if (excludeLegacy != null) {
-        channelScope = ChannelScope.ALL_EXCEPT;
+        normalizedChannelScope = ChannelScope.ALL_EXCEPT;
       } else {
-        channelScope = ChannelScope.ALL;
+        normalizedChannelScope = ChannelScope.ALL;
       }
     }
 
-    channelPatterns = trimToNull(channelPatterns);
-    if (channelPatterns == null) {
-      if (channelScope == ChannelScope.ONLY) {
-        channelPatterns = includeLegacy;
-      } else if (channelScope == ChannelScope.ALL_EXCEPT) {
-        channelPatterns = excludeLegacy;
+    String normalizedChannelPatterns = normalizeTextOrNull(channelPatterns);
+    if (normalizedChannelPatterns == null) {
+      if (normalizedChannelScope == ChannelScope.ONLY) {
+        normalizedChannelPatterns = includeLegacy;
+      } else if (normalizedChannelScope == ChannelScope.ALL_EXCEPT) {
+        normalizedChannelPatterns = excludeLegacy;
       }
     }
-    if (channelScope == ChannelScope.ALL || channelScope == ChannelScope.ACTIVE_TARGET_ONLY) {
-      channelPatterns = null;
+    if (!channelPatternsRequired(normalizedChannelScope)) {
+      normalizedChannelPatterns = null;
     }
 
-    if (toastEnabled == null) toastEnabled = true;
-    if (focusScope == null) {
-      focusScope =
+    boolean normalizedToastEnabled = booleanOrDefault(toastEnabled, true);
+    FocusScope normalizedFocusScope = focusScope;
+    if (normalizedFocusScope == null) {
+      normalizedFocusScope =
           Boolean.TRUE.equals(toastWhenFocused) ? FocusScope.ANY : FocusScope.BACKGROUND_ONLY;
     }
-    if (toastWhenFocused == null) {
-      toastWhenFocused = focusScope != FocusScope.BACKGROUND_ONLY;
-    }
-    if (soundEnabled == null) soundEnabled = false;
-    if (statusBarEnabled == null) {
-      // Backward-compatible default for old configs with no statusBarEnabled field.
-      // Previously status-bar notices were emitted whenever toast or sound delivery ran.
-      statusBarEnabled = Boolean.TRUE.equals(toastEnabled) || Boolean.TRUE.equals(soundEnabled);
-    }
-    if (notificationsNodeEnabled == null) notificationsNodeEnabled = true;
+    boolean normalizedToastWhenFocused =
+        toastWhenFocused != null
+            ? toastWhenFocused
+            : normalizedFocusScope != FocusScope.BACKGROUND_ONLY;
 
-    if (soundId == null || soundId.isBlank())
-      soundId = defaultBuiltInSoundForEvent(eventType).name();
-    if (soundUseCustom == null) soundUseCustom = false;
+    boolean normalizedSoundEnabled = booleanOrDefault(soundEnabled, false);
+    boolean normalizedStatusBarEnabled =
+        statusBarEnabled != null
+            ? statusBarEnabled
+            : normalizedToastEnabled || normalizedSoundEnabled;
+    boolean normalizedNotificationsNodeEnabled = booleanOrDefault(notificationsNodeEnabled, true);
 
-    soundCustomPath = trimToNull(soundCustomPath);
-    if (Boolean.TRUE.equals(soundUseCustom) && soundCustomPath == null) {
-      soundUseCustom = false;
+    String normalizedSoundId = normalizeTextOrNull(soundId);
+    if (normalizedSoundId == null) {
+      normalizedSoundId = defaultBuiltInSoundIdForEvent(normalizedEvent);
     }
-
-    if (scriptEnabled == null) scriptEnabled = false;
-    scriptPath = trimToNull(scriptPath);
-    scriptArgs = trimToNull(scriptArgs);
-    scriptWorkingDirectory = trimToNull(scriptWorkingDirectory);
-    if (Boolean.TRUE.equals(scriptEnabled) && scriptPath == null) {
-      scriptEnabled = false;
+    String normalizedSoundCustomPath = normalizeTextOrNull(soundCustomPath);
+    boolean normalizedSoundUseCustom = Boolean.TRUE.equals(soundUseCustom);
+    if (normalizedSoundUseCustom && normalizedSoundCustomPath == null) {
+      normalizedSoundUseCustom = false;
     }
 
-    if (ctcpCommandMode == null) ctcpCommandMode = CtcpMatchMode.ANY;
-    if (ctcpValueMode == null) ctcpValueMode = CtcpMatchMode.ANY;
-    ctcpCommandPattern = trimToNull(ctcpCommandPattern);
-    ctcpValuePattern = trimToNull(ctcpValuePattern);
-    if (ctcpCommandMode == CtcpMatchMode.ANY) ctcpCommandPattern = null;
-    if (ctcpValueMode == CtcpMatchMode.ANY) ctcpValuePattern = null;
-    if (eventType != EventType.CTCP_RECEIVED) {
-      ctcpCommandMode = CtcpMatchMode.ANY;
-      ctcpCommandPattern = null;
-      ctcpValueMode = CtcpMatchMode.ANY;
-      ctcpValuePattern = null;
+    String normalizedScriptPath = normalizeTextOrNull(scriptPath);
+    boolean normalizedScriptEnabled = Boolean.TRUE.equals(scriptEnabled);
+    if (normalizedScriptEnabled && normalizedScriptPath == null) {
+      normalizedScriptEnabled = false;
+    }
+    String normalizedScriptArgs = normalizeTextOrNull(scriptArgs);
+    String normalizedScriptWorkingDirectory = normalizeTextOrNull(scriptWorkingDirectory);
+
+    boolean ctcpActive = normalizedEvent == EventType.CTCP_RECEIVED;
+    CtcpMatchMode normalizedCtcpCommandMode =
+        ctcpActive && ctcpCommandMode != null ? ctcpCommandMode : CtcpMatchMode.ANY;
+    CtcpMatchMode normalizedCtcpValueMode =
+        ctcpActive && ctcpValueMode != null ? ctcpValueMode : CtcpMatchMode.ANY;
+    String normalizedCtcpCommandPattern =
+        ctcpActive ? normalizeTextOrNull(ctcpCommandPattern) : null;
+    String normalizedCtcpValuePattern = ctcpActive ? normalizeTextOrNull(ctcpValuePattern) : null;
+    if (!ctcpPatternRequired(normalizedCtcpCommandMode)) {
+      normalizedCtcpCommandPattern = null;
+    }
+    if (!ctcpPatternRequired(normalizedCtcpValueMode)) {
+      normalizedCtcpValuePattern = null;
     }
 
+    enabled = Boolean.TRUE.equals(enabled);
+    eventType = normalizedEvent;
+    sourceMode = normalizedSourceMode;
+    sourcePattern = normalizedSourcePattern;
+    channelScope = normalizedChannelScope;
+    channelPatterns = normalizedChannelPatterns;
+    toastEnabled = normalizedToastEnabled;
+    toastWhenFocused = normalizedToastWhenFocused;
+    focusScope = normalizedFocusScope;
+    statusBarEnabled = normalizedStatusBarEnabled;
+    notificationsNodeEnabled = normalizedNotificationsNodeEnabled;
+    soundEnabled = normalizedSoundEnabled;
+    soundId = normalizedSoundId;
+    soundUseCustom = normalizedSoundUseCustom;
+    soundCustomPath = normalizedSoundCustomPath;
+    scriptEnabled = normalizedScriptEnabled;
+    scriptPath = normalizedScriptPath;
+    scriptArgs = normalizedScriptArgs;
+    scriptWorkingDirectory = normalizedScriptWorkingDirectory;
+    ctcpCommandMode = normalizedCtcpCommandMode;
+    ctcpCommandPattern = normalizedCtcpCommandPattern;
+    ctcpValueMode = normalizedCtcpValueMode;
+    ctcpValuePattern = normalizedCtcpValuePattern;
     channelWhitelist = includeLegacy;
     channelBlacklist = excludeLegacy;
   }
 
   public static List<IrcEventNotificationRuleProperties> defaultRules() {
-    List<IrcEventNotificationRuleProperties> out = new ArrayList<>();
-    for (EventType t : EventType.values()) {
-      out.add(
-          new IrcEventNotificationRuleProperties(
-              defaultEnabledForEvent(t),
-              t,
-              defaultSourceModeForEvent(t),
-              null,
-              ChannelScope.ALL,
-              null,
-              true,
-              false,
-              FocusScope.BACKGROUND_ONLY,
-              true,
-              true,
-              false,
-              defaultBuiltInSoundForEvent(t).name(),
-              false,
-              null,
-              false,
-              null,
-              null,
-              null,
-              CtcpMatchMode.ANY,
-              null,
-              CtcpMatchMode.ANY,
-              null,
-              null,
-              null));
-    }
-    for (EventType t : defaultStatusBarAnyCompanionEvents()) {
-      out.add(
-          new IrcEventNotificationRuleProperties(
-              true,
-              t,
-              defaultSourceModeForEvent(t),
-              null,
-              ChannelScope.ALL,
-              null,
-              false,
-              true,
-              FocusScope.ANY,
-              true,
-              true,
-              false,
-              defaultBuiltInSoundForEvent(t).name(),
-              false,
-              null,
-              false,
-              null,
-              null,
-              null,
-              CtcpMatchMode.ANY,
-              null,
-              CtcpMatchMode.ANY,
-              null,
-              null,
-              null));
+    List<IrcEventNotificationRuleProperties> out =
+        Arrays.stream(EventType.values())
+            .map(
+                eventType ->
+                    defaultRule(
+                        defaultEnabledForEvent(eventType),
+                        eventType,
+                        defaultSourceModeForEvent(eventType)))
+            .collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new));
+
+    for (EventType eventType : STATUS_BAR_ANY_COMPANION_EVENTS) {
+      out.add(statusBarAnyCompanionRule(eventType));
     }
     return List.copyOf(out);
   }
 
+  private static IrcEventNotificationRuleProperties defaultRule(
+      boolean enabled, EventType eventType, SourceMode sourceMode) {
+    return new IrcEventNotificationRuleProperties(
+        enabled,
+        eventType,
+        sourceMode,
+        null,
+        ChannelScope.ALL,
+        null,
+        true,
+        false,
+        FocusScope.BACKGROUND_ONLY,
+        true,
+        true,
+        false,
+        defaultBuiltInSoundIdForEvent(eventType),
+        false,
+        null,
+        false,
+        null,
+        null,
+        null,
+        CtcpMatchMode.ANY,
+        null,
+        CtcpMatchMode.ANY,
+        null,
+        null,
+        null);
+  }
+
+  private static IrcEventNotificationRuleProperties statusBarAnyCompanionRule(EventType eventType) {
+    return new IrcEventNotificationRuleProperties(
+        true,
+        eventType,
+        defaultSourceModeForEvent(eventType),
+        null,
+        ChannelScope.ALL,
+        null,
+        false,
+        true,
+        FocusScope.ANY,
+        true,
+        true,
+        false,
+        defaultBuiltInSoundIdForEvent(eventType),
+        false,
+        null,
+        false,
+        null,
+        null,
+        null,
+        CtcpMatchMode.ANY,
+        null,
+        CtcpMatchMode.ANY,
+        null,
+        null,
+        null);
+  }
+
+  private static String defaultBuiltInSoundIdForEvent(EventType eventType) {
+    return switch (eventTypeOrDefault(enumName(eventType))) {
+      case KICKED -> "SOMEBODY_GOT_KICKED";
+      case YOU_KICKED -> "YOU_KICKED_1";
+      case BANNED -> "SOMEBODY_BANNED";
+      case YOU_BANNED -> "YOU_BANNED_1";
+      case VOICED -> "SOMEBODY_GAVE_SOMEBODY_VOICE";
+      case DEVOICED -> "SOMEONE_ELSE_TOOK_VOICE";
+      case OPPED -> "SOMEBODY_OPPED";
+      case DEOPPED -> "SOMEBODY_DEOPPED";
+      case HALF_OPPED -> "SOMEBODY_HALF_OPPED";
+      case DEHALF_OPPED -> "SOMEBODY_LOST_HALFOPS";
+      case YOU_HALF_OPPED -> "YOU_HALF_OPS";
+      case YOU_DEHALF_OPPED -> "YOU_HALF_OPS_REMOVED";
+      case YOU_OPPED -> "YOU_OPS_1";
+      case YOU_DEOPPED -> "YOU_DEOPPED";
+      case YOU_VOICED -> "YOU_VOICE_1";
+      case YOU_DEVOICED -> "YOU_LOST_VOICE_1";
+      case PRIVATE_MESSAGE_RECEIVED -> "PM_RECEIVED_1";
+      case CTCP_RECEIVED -> "SOMEBODY_SENT_CTCP_1";
+      case NOTICE_RECEIVED -> "NOTICE_RECEIVED_1";
+      case WALLOPS_RECEIVED -> "WALLOPS_1";
+      case INVITE_RECEIVED -> "CHANNEL_INVITE_1";
+      case USER_JOINED -> "USER_JOINED";
+      case USER_PARTED -> "USER_LEFT_CHANNEL";
+      case USER_QUIT -> "USER_DISCONNECTED_SERVER";
+      case USER_NICK_CHANGED -> "SOMEBODY_NICK_CHANGED";
+      case TOPIC_CHANGED -> "TOPIC_CHANGED_1";
+      case NETSPLIT_DETECTED -> "NETSPLIT_1";
+      case KLINED -> "USER_KLINED_1";
+      case YOU_KLINED -> "YOU_KLINED";
+    };
+  }
+
   private static boolean defaultEnabledForEvent(EventType eventType) {
-    if (eventType == null) return false;
-    return switch (eventType) {
+    return switch (eventTypeOrDefault(enumName(eventType))) {
       case PRIVATE_MESSAGE_RECEIVED, INVITE_RECEIVED, YOU_KICKED, YOU_BANNED, YOU_KLINED -> true;
       default -> false;
     };
   }
 
   private static SourceMode defaultSourceModeForEvent(EventType eventType) {
-    if (eventType == null) return SourceMode.ANY;
-    return switch (eventType) {
+    return switch (eventTypeOrDefault(enumName(eventType))) {
       case KICKED,
           BANNED,
           VOICED,
@@ -282,23 +350,39 @@ public record IrcEventNotificationRuleProperties(
     };
   }
 
-  private static List<EventType> defaultStatusBarAnyCompanionEvents() {
-    return List.of(EventType.KICKED, EventType.BANNED, EventType.KLINED);
+  private static boolean booleanOrDefault(Boolean value, boolean fallback) {
+    return value != null ? value : fallback;
   }
 
-  private static BuiltInSound defaultBuiltInSoundForEvent(EventType eventType) {
-    if (eventType == null) return BuiltInSound.NOTIF_1;
+  private static boolean sourcePatternRequired(SourceMode sourceMode) {
+    SourceMode mode = sourceMode != null ? sourceMode : SourceMode.ANY;
+    return mode == SourceMode.NICK_LIST || mode == SourceMode.GLOB || mode == SourceMode.REGEX;
+  }
+
+  private static boolean channelPatternsRequired(ChannelScope channelScope) {
+    ChannelScope scope = channelScope != null ? channelScope : ChannelScope.ALL;
+    return scope == ChannelScope.ONLY || scope == ChannelScope.ALL_EXCEPT;
+  }
+
+  private static boolean ctcpPatternRequired(CtcpMatchMode mode) {
+    return mode != null && mode != CtcpMatchMode.ANY;
+  }
+
+  private static EventType eventTypeOrDefault(String value) {
+    if (value == null || value.isBlank()) return EventType.INVITE_RECEIVED;
     try {
-      IrcEventNotificationRule.EventType mapped =
-          IrcEventNotificationRule.EventType.valueOf(eventType.name());
-      return IrcEventNotificationRule.defaultBuiltInSoundForEvent(mapped);
+      return EventType.valueOf(value.trim());
     } catch (Exception ignored) {
-      return BuiltInSound.NOTIF_1;
+      return EventType.INVITE_RECEIVED;
     }
   }
 
-  private static String trimToNull(String raw) {
-    String v = Objects.toString(raw, "").trim();
-    return v.isEmpty() ? null : v;
+  private static String enumName(Enum<?> value) {
+    return value == null ? null : value.name();
+  }
+
+  private static String normalizeTextOrNull(String value) {
+    String normalized = Objects.toString(value, "").trim();
+    return normalized.isEmpty() ? null : normalized;
   }
 }

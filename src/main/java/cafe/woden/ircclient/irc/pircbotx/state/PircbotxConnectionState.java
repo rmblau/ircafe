@@ -1,31 +1,5 @@
 package cafe.woden.ircclient.irc.pircbotx.state;
 
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.BATCH;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.CAP_NOTIFY;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.CHATHISTORY;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.CHGHOST;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_CHATHISTORY;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_EXTENDED_MONITOR;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_MESSAGE_EDIT;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_MESSAGE_REDACTION;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_MULTILINE;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_READ_MARKER;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.ECHO_MESSAGE;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.EXTENDED_MONITOR;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.LABELED_RESPONSE;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MESSAGE_EDIT;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MESSAGE_REDACTION;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MESSAGE_TAGS;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MONITOR;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.MULTILINE;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.READ_MARKER;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.SERVER_TIME;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.SETNAME;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.SOJU_BOUNCER_NETWORKS;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.STANDARD_REPLIES;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.STS;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.ZNC_PLAYBACK;
-
 import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
@@ -33,10 +7,7 @@ import cafe.woden.ircclient.irc.ircv3.*;
 import cafe.woden.ircclient.irc.playback.*;
 import io.reactivex.rxjava3.disposables.Disposable;
 import java.time.Instant;
-import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -71,97 +42,12 @@ public final class PircbotxConnectionState {
   final AtomicReference<Disposable> reconnectDisposable = new AtomicReference<>();
   final AtomicReference<String> disconnectReasonOverride = new AtomicReference<>();
 
-  final Map<String, String> lastHostmaskByNickLower = new ConcurrentHashMap<>();
+  private final Ircv3HostmaskChangeTracker hostmaskChanges = new Ircv3HostmaskChangeTracker();
+  private final Ircv3WhoisProbeTracker whoisProbes = new Ircv3WhoisProbeTracker();
+  private final Ircv3WhoxSchemaTracker whoxSchema = new Ircv3WhoxSchemaTracker();
 
-  final Map<String, Boolean> whoisSawAwayByNickLower = new ConcurrentHashMap<>();
-
-  /**
-   * Tracks WHOIS probes we initiated so we can (optionally) infer LOGGED_OUT when a WHOIS completes
-   * without a 330 (account) numeric.
-   */
-  final Map<String, Boolean> whoisSawAccountByNickLower = new ConcurrentHashMap<>();
-
-  /**
-   * Be conservative: some networks do not expose WHOIS account info at all. We only infer
-   * LOGGED_OUT from a missing 330 after we've observed at least one 330 on this connection.
-   */
-  final AtomicBoolean whoisAccountNumericSupported = new AtomicBoolean(false);
-
-  /**
-   * Tracks whether IRCafe's expected WHOX reply schema appears compatible on this connection.
-   *
-   * <p>Some networks advertise WHOX but return 354 fields in a different order or omit
-   * account/flags. We use this to avoid repeatedly issuing WHOX channel scans that will never yield
-   * account state.
-   */
-  final AtomicBoolean whoxSchemaCompatible = new AtomicBoolean(true);
-
-  /** Ensures we only emit a single "schema incompatible" signal per connection. */
-  final AtomicBoolean whoxSchemaIncompatibleEmitted = new AtomicBoolean(false);
-
-  /** Ensures we only emit a single "schema compatible" confirmation per connection. */
-  final AtomicBoolean whoxSchemaCompatibleEmitted = new AtomicBoolean(false);
-
-  final AtomicBoolean zncPlaybackCapAcked = new AtomicBoolean(false);
+  private final Ircv3CapabilityState capabilities = new Ircv3CapabilityState();
   final ZncPlaybackCaptureCoordinator zncPlaybackCapture = new ZncPlaybackCaptureCoordinator();
-
-  // IRCv3 history support (soju): detect whether the server accepted these capabilities.
-  final AtomicBoolean batchCapAcked = new AtomicBoolean(false);
-  final AtomicBoolean chatHistoryCapAcked = new AtomicBoolean(false);
-  final AtomicBoolean echoMessageCapAcked = new AtomicBoolean(false);
-  final AtomicBoolean capNotifyCapAcked = new AtomicBoolean(false);
-  final AtomicBoolean labeledResponseCapAcked = new AtomicBoolean(false);
-  final AtomicBoolean setnameCapAcked = new AtomicBoolean(false);
-  final AtomicBoolean chghostCapAcked = new AtomicBoolean(false);
-  final AtomicBoolean stsCapAcked = new AtomicBoolean(false);
-  final AtomicBoolean multilineCapAcked = new AtomicBoolean(false);
-  final AtomicBoolean draftMultilineCapAcked = new AtomicBoolean(false);
-  final AtomicLong multilineMaxBytes = new AtomicLong(0L);
-  final AtomicLong multilineMaxLines = new AtomicLong(0L);
-  final AtomicLong draftMultilineMaxBytes = new AtomicLong(0L);
-  final AtomicLong draftMultilineMaxLines = new AtomicLong(0L);
-  final AtomicLong multilineOfferedMaxBytes = new AtomicLong(0L);
-  final AtomicLong multilineOfferedMaxLines = new AtomicLong(0L);
-  final AtomicLong draftMultilineOfferedMaxBytes = new AtomicLong(0L);
-  final AtomicLong draftMultilineOfferedMaxLines = new AtomicLong(0L);
-  final AtomicBoolean draftMessageEditCapAcked = new AtomicBoolean(false);
-  final AtomicBoolean draftMessageRedactionCapAcked = new AtomicBoolean(false);
-  final AtomicBoolean messageTagsCapAcked = new AtomicBoolean(false);
-
-  /**
-   * Whether the server allows the IRCv3 {@code +typing} client-only tag, per RPL_ISUPPORT
-   * CLIENTTAGDENY.
-   *
-   * <p>Default is {@code true} (i.e. allow), which matches the "missing or empty CLIENTTAGDENY"
-   * default.
-   */
-  final AtomicBoolean typingClientTagAllowed = new AtomicBoolean(true);
-
-  final AtomicBoolean typingClientTagPolicyKnown = new AtomicBoolean(false);
-
-  final AtomicBoolean messageTagsFallbackReqSent = new AtomicBoolean(false);
-  final AtomicBoolean batchFallbackReqSent = new AtomicBoolean(false);
-  final AtomicBoolean chatHistoryFallbackReqSent = new AtomicBoolean(false);
-  final AtomicBoolean readMarkerCapAcked = new AtomicBoolean(false);
-  final AtomicBoolean monitorCapAcked = new AtomicBoolean(false);
-  final AtomicBoolean extendedMonitorCapAcked = new AtomicBoolean(false);
-
-  // soju bouncer network discovery (cap: soju.im/bouncer-networks)
-  final AtomicBoolean sojuBouncerNetworksCapAcked = new AtomicBoolean(false);
-
-  // IRCv3 server-time support (canonical message timestamps).
-  final AtomicBoolean serverTimeCapAcked = new AtomicBoolean(false);
-  final AtomicBoolean standardRepliesCapAcked = new AtomicBoolean(false);
-  final AtomicBoolean monitorSupported = new AtomicBoolean(false);
-  final AtomicLong monitorMaxTargets = new AtomicLong(0L);
-  // Warn once per application run if server-time wasn't negotiated on this server.
-  final AtomicBoolean serverTimeMissingWarned = new AtomicBoolean(false);
-
-  // Warn once per connection if typing isn't available.
-  final AtomicBoolean typingMissingWarned = new AtomicBoolean(false);
-
-  // One-time connect log summary of negotiated caps.
-  final AtomicBoolean capSummaryLogged = new AtomicBoolean(false);
 
   // Current connection metadata (used by transport/capability policy helpers).
   final AtomicReference<String> connectedHost = new AtomicReference<>("");
@@ -169,8 +55,8 @@ public final class PircbotxConnectionState {
   final AtomicBoolean registrationComplete = new AtomicBoolean(false);
 
   // Best-effort bridge between InputParser command metadata and PrivateMessageEvent objects.
-  private final PircbotxPrivateTargetHintStore privateTargetHints =
-      new PircbotxPrivateTargetHintStore();
+  private final Ircv3EchoMessageTargetHintStore privateTargetHints =
+      new Ircv3EchoMessageTargetHintStore();
   private final PircbotxChannelMode324Deduper channelMode324Deduper =
       new PircbotxChannelMode324Deduper();
   private final PircbotxBouncerDiscoveryState bouncerDiscovery =
@@ -182,78 +68,6 @@ public final class PircbotxConnectionState {
 
   public String serverId() {
     return serverId;
-  }
-
-  /** Immutable read view over negotiated IRCv3 capability state for one connection. */
-  public record CapabilitySnapshot(
-      boolean zncPlaybackCapAcked,
-      boolean batchCapAcked,
-      boolean chatHistoryCapAcked,
-      boolean echoMessageCapAcked,
-      boolean capNotifyCapAcked,
-      boolean labeledResponseCapAcked,
-      boolean setnameCapAcked,
-      boolean chghostCapAcked,
-      boolean stsCapAcked,
-      boolean multilineCapAcked,
-      boolean draftMultilineCapAcked,
-      long multilineMaxBytes,
-      long multilineMaxLines,
-      long draftMultilineMaxBytes,
-      long draftMultilineMaxLines,
-      boolean draftMessageEditCapAcked,
-      boolean draftMessageRedactionCapAcked,
-      boolean messageTagsCapAcked,
-      boolean typingClientTagAllowed,
-      boolean typingClientTagPolicyKnown,
-      boolean readMarkerCapAcked,
-      boolean monitorCapAcked,
-      boolean extendedMonitorCapAcked,
-      boolean sojuBouncerNetworksCapAcked,
-      boolean serverTimeCapAcked,
-      boolean standardRepliesCapAcked,
-      boolean monitorSupported,
-      long monitorMaxTargets) {
-
-    public boolean multilineAvailable() {
-      return multilineCapAcked || draftMultilineCapAcked;
-    }
-
-    public long negotiatedMultilineMaxBytes() {
-      if (multilineCapAcked) {
-        return Math.max(0L, multilineMaxBytes);
-      }
-      if (draftMultilineCapAcked) {
-        return Math.max(0L, draftMultilineMaxBytes);
-      }
-      return 0L;
-    }
-
-    public long negotiatedMultilineMaxLines() {
-      if (multilineCapAcked) {
-        return Math.max(0L, multilineMaxLines);
-      }
-      if (draftMultilineCapAcked) {
-        return Math.max(0L, draftMultilineMaxLines);
-      }
-      return 0L;
-    }
-
-    public boolean typingAllowedByPolicy() {
-      return !typingClientTagPolicyKnown || typingClientTagAllowed;
-    }
-
-    public boolean typingAvailable() {
-      return messageTagsCapAcked && typingAllowedByPolicy();
-    }
-
-    public boolean chatHistoryAvailable() {
-      return chatHistoryCapAcked && batchCapAcked;
-    }
-
-    public boolean monitorAvailable() {
-      return monitorSupported || monitorCapAcked;
-    }
   }
 
   public PircBotX currentBot() {
@@ -570,230 +384,142 @@ public final class PircbotxConnectionState {
   }
 
   public boolean beginCapabilitySummaryLog() {
-    return !capSummaryLogged.getAndSet(true);
+    return capabilities.beginCapabilitySummaryObservation();
   }
 
-  public CapabilitySnapshot capabilitySnapshot() {
-    return new CapabilitySnapshot(
-        zncPlaybackCapAcked.get(),
-        batchCapAcked.get(),
-        chatHistoryCapAcked.get(),
-        echoMessageCapAcked.get(),
-        capNotifyCapAcked.get(),
-        labeledResponseCapAcked.get(),
-        setnameCapAcked.get(),
-        chghostCapAcked.get(),
-        stsCapAcked.get(),
-        multilineCapAcked.get(),
-        draftMultilineCapAcked.get(),
-        multilineMaxBytes.get(),
-        multilineMaxLines.get(),
-        draftMultilineMaxBytes.get(),
-        draftMultilineMaxLines.get(),
-        draftMessageEditCapAcked.get(),
-        draftMessageRedactionCapAcked.get(),
-        messageTagsCapAcked.get(),
-        typingClientTagAllowed.get(),
-        typingClientTagPolicyKnown.get(),
-        readMarkerCapAcked.get(),
-        monitorCapAcked.get(),
-        extendedMonitorCapAcked.get(),
-        sojuBouncerNetworksCapAcked.get(),
-        serverTimeCapAcked.get(),
-        standardRepliesCapAcked.get(),
-        monitorSupported.get(),
-        monitorMaxTargets.get());
+  public Ircv3CapabilitySnapshot capabilitySnapshot() {
+    return capabilities.snapshot();
   }
 
   public boolean isZncPlaybackCapAcked() {
-    return zncPlaybackCapAcked.get();
+    return capabilities.zncPlaybackCapAcked();
   }
 
   public boolean isBatchCapAcked() {
-    return batchCapAcked.get();
+    return capabilities.batchCapAcked();
   }
 
   public boolean isChatHistoryCapAcked() {
-    return chatHistoryCapAcked.get();
+    return capabilities.chatHistoryCapAcked();
   }
 
   public boolean isMessageTagsCapAcked() {
-    return messageTagsCapAcked.get();
+    return capabilities.messageTagsCapAcked();
   }
 
   public boolean beginMessageTagsFallbackRequest() {
-    return messageTagsFallbackReqSent.compareAndSet(false, true);
+    return capabilities.beginMessageTagsFallbackRequest();
   }
 
   public void clearMessageTagsFallbackRequest() {
-    messageTagsFallbackReqSent.set(false);
+    capabilities.clearMessageTagsFallbackRequest();
   }
 
   public boolean beginBatchFallbackRequest() {
-    return batchFallbackReqSent.compareAndSet(false, true);
+    return capabilities.beginBatchFallbackRequest();
   }
 
   public void clearBatchFallbackRequest() {
-    batchFallbackReqSent.set(false);
+    capabilities.clearBatchFallbackRequest();
   }
 
   public boolean beginChatHistoryFallbackRequest() {
-    return chatHistoryFallbackReqSent.compareAndSet(false, true);
+    return capabilities.beginChatHistoryFallbackRequest();
   }
 
   public void clearChatHistoryFallbackRequest() {
-    chatHistoryFallbackReqSent.set(false);
+    capabilities.clearChatHistoryFallbackRequest();
   }
 
   public void setZncPlaybackCapAcked(boolean acked) {
-    zncPlaybackCapAcked.set(acked);
+    capabilities.setZncPlaybackCapAcked(acked);
   }
 
   public void setBatchCapAcked(boolean acked) {
-    batchCapAcked.set(acked);
+    capabilities.setBatchCapAcked(acked);
   }
 
   public void setChatHistoryCapAcked(boolean acked) {
-    chatHistoryCapAcked.set(acked);
+    capabilities.setChatHistoryCapAcked(acked);
   }
 
   public void setEchoMessageCapAcked(boolean acked) {
-    echoMessageCapAcked.set(acked);
+    capabilities.setEchoMessageCapAcked(acked);
   }
 
   public void setMultilineCapAcked(boolean acked) {
-    multilineCapAcked.set(acked);
+    capabilities.setMultilineCapAcked(acked);
   }
 
   public void setDraftMultilineCapAcked(boolean acked) {
-    draftMultilineCapAcked.set(acked);
+    capabilities.setDraftMultilineCapAcked(acked);
   }
 
   public void setMultilineLimits(long maxBytes, long maxLines) {
-    multilineMaxBytes.set(Math.max(0L, maxBytes));
-    multilineMaxLines.set(Math.max(0L, maxLines));
+    capabilities.setMultilineLimits(maxBytes, maxLines);
   }
 
   public void setDraftMultilineLimits(long maxBytes, long maxLines) {
-    draftMultilineMaxBytes.set(Math.max(0L, maxBytes));
-    draftMultilineMaxLines.set(Math.max(0L, maxLines));
+    capabilities.setDraftMultilineLimits(maxBytes, maxLines);
   }
 
   public void setMessageTagsCapAcked(boolean acked) {
-    messageTagsCapAcked.set(acked);
+    capabilities.setMessageTagsCapAcked(acked);
   }
 
   public void setReadMarkerCapAcked(boolean acked) {
-    readMarkerCapAcked.set(acked);
+    capabilities.setReadMarkerCapAcked(acked);
   }
 
   public long multilineOfferedMaxBytes(boolean draft) {
-    return Math.max(
-        0L, draft ? draftMultilineOfferedMaxBytes.get() : multilineOfferedMaxBytes.get());
+    return capabilities.multilineOfferedMaxBytes(draft);
   }
 
   public long multilineOfferedMaxLines(boolean draft) {
-    return Math.max(
-        0L, draft ? draftMultilineOfferedMaxLines.get() : multilineOfferedMaxLines.get());
+    return capabilities.multilineOfferedMaxLines(draft);
   }
 
   public void setMultilineOfferedMaxBytes(boolean draft, long maxBytes) {
-    long normalized = Math.max(0L, maxBytes);
-    if (draft) {
-      draftMultilineOfferedMaxBytes.set(normalized);
-    } else {
-      multilineOfferedMaxBytes.set(normalized);
-    }
+    capabilities.setMultilineOfferedMaxBytes(draft, maxBytes);
   }
 
   public void setMultilineOfferedMaxLines(boolean draft, long maxLines) {
-    long normalized = Math.max(0L, maxLines);
-    if (draft) {
-      draftMultilineOfferedMaxLines.set(normalized);
-    } else {
-      multilineOfferedMaxLines.set(normalized);
-    }
+    capabilities.setMultilineOfferedMaxLines(draft, maxLines);
   }
 
   public void setNegotiatedMultilineMaxBytes(boolean draft, long maxBytes) {
-    long normalized = Math.max(0L, maxBytes);
-    if (draft) {
-      draftMultilineMaxBytes.set(normalized);
-    } else {
-      multilineMaxBytes.set(normalized);
-    }
+    capabilities.setNegotiatedMultilineMaxBytes(draft, maxBytes);
   }
 
   public void setNegotiatedMultilineMaxLines(boolean draft, long maxLines) {
-    long normalized = Math.max(0L, maxLines);
-    if (draft) {
-      draftMultilineMaxLines.set(normalized);
-    } else {
-      multilineMaxLines.set(normalized);
-    }
+    capabilities.setNegotiatedMultilineMaxLines(draft, maxLines);
   }
 
   public boolean updateTrackedCapability(String capabilityName, boolean enabled) {
-    String normalized = Objects.toString(capabilityName, "").trim().toLowerCase(Locale.ROOT);
-    return switch (normalized) {
-      case ZNC_PLAYBACK -> updateTrackedCapability(zncPlaybackCapAcked, enabled);
-      case BATCH -> updateTrackedCapability(batchCapAcked, enabled);
-      case DRAFT_CHATHISTORY, CHATHISTORY -> updateTrackedCapability(chatHistoryCapAcked, enabled);
-      case SOJU_BOUNCER_NETWORKS -> updateTrackedCapability(sojuBouncerNetworksCapAcked, enabled);
-      case SERVER_TIME -> updateTrackedCapability(serverTimeCapAcked, enabled);
-      case STANDARD_REPLIES -> updateTrackedCapability(standardRepliesCapAcked, enabled);
-      case ECHO_MESSAGE -> updateTrackedCapability(echoMessageCapAcked, enabled);
-      case CAP_NOTIFY -> updateTrackedCapability(capNotifyCapAcked, enabled);
-      case LABELED_RESPONSE -> updateTrackedCapability(labeledResponseCapAcked, enabled);
-      case SETNAME -> updateTrackedCapability(setnameCapAcked, enabled);
-      case CHGHOST -> updateTrackedCapability(chghostCapAcked, enabled);
-      case STS -> updateTrackedCapability(stsCapAcked, enabled);
-      case MULTILINE ->
-          updateTrackedCapabilityWithLimitReset(
-              multilineCapAcked, multilineMaxBytes, multilineMaxLines, enabled);
-      case DRAFT_MULTILINE ->
-          updateTrackedCapabilityWithLimitReset(
-              draftMultilineCapAcked, draftMultilineMaxBytes, draftMultilineMaxLines, enabled);
-      case DRAFT_MESSAGE_EDIT, MESSAGE_EDIT ->
-          updateTrackedCapability(draftMessageEditCapAcked, enabled);
-      case DRAFT_MESSAGE_REDACTION, MESSAGE_REDACTION ->
-          updateTrackedCapability(draftMessageRedactionCapAcked, enabled);
-      case MESSAGE_TAGS -> updateTrackedCapability(messageTagsCapAcked, enabled);
-      case DRAFT_READ_MARKER, READ_MARKER -> updateTrackedCapability(readMarkerCapAcked, enabled);
-      case MONITOR -> updateTrackedCapability(monitorCapAcked, enabled);
-      case EXTENDED_MONITOR, DRAFT_EXTENDED_MONITOR ->
-          updateTrackedCapability(extendedMonitorCapAcked, enabled);
-      default -> false;
-    };
+    return capabilities.updateTrackedCapability(capabilityName, enabled);
   }
 
   public boolean isSojuBouncerNetworksCapAcked() {
-    return sojuBouncerNetworksCapAcked.get();
+    return capabilities.sojuBouncerNetworksCapAcked();
   }
 
   public void setSojuBouncerNetworksCapAcked(boolean acked) {
-    sojuBouncerNetworksCapAcked.set(acked);
+    capabilities.setSojuBouncerNetworksCapAcked(acked);
   }
 
   public boolean updateMonitorSupport(boolean supported, long limit) {
-    boolean normalizedSupported = supported;
-    long normalizedLimit = Math.max(0L, limit);
-    boolean prevSupported = monitorSupported.getAndSet(normalizedSupported);
-    long prevLimit = monitorMaxTargets.getAndSet(normalizedLimit);
-    return prevSupported != normalizedSupported || prevLimit != normalizedLimit;
+    return capabilities.updateMonitorSupport(supported, limit);
   }
 
   public boolean updateTypingClientTagPolicy(boolean allowed) {
-    typingClientTagPolicyKnown.set(true);
-    boolean prev = typingClientTagAllowed.getAndSet(allowed);
-    return prev != allowed;
+    return capabilities.updateTypingClientTagPolicy(allowed);
   }
 
   public void clearSojuDiscoverySession() {
     clearSojuDiscoveredNetworks();
     clearSojuListNetworksRequest();
     clearSojuBouncerNetId();
-    sojuBouncerNetworksCapAcked.set(false);
+    capabilities.setSojuBouncerNetworksCapAcked(false);
   }
 
   public void startZncPlaybackCapture(
@@ -814,51 +540,15 @@ public final class PircbotxConnectionState {
   }
 
   public boolean shouldWarnMissingServerTime() {
-    return serverTimeMissingWarned.compareAndSet(false, true);
+    return capabilities.shouldWarnMissingServerTime();
   }
 
   public boolean shouldWarnUnavailableTyping() {
-    return typingMissingWarned.compareAndSet(false, true);
+    return capabilities.shouldWarnUnavailableTyping();
   }
 
   public void resetNegotiatedCaps() {
-    zncPlaybackCapAcked.set(false);
-    batchCapAcked.set(false);
-    chatHistoryCapAcked.set(false);
-    echoMessageCapAcked.set(false);
-    capNotifyCapAcked.set(false);
-    labeledResponseCapAcked.set(false);
-    setnameCapAcked.set(false);
-    chghostCapAcked.set(false);
-    stsCapAcked.set(false);
-    multilineCapAcked.set(false);
-    draftMultilineCapAcked.set(false);
-    multilineMaxBytes.set(0L);
-    multilineMaxLines.set(0L);
-    draftMultilineMaxBytes.set(0L);
-    draftMultilineMaxLines.set(0L);
-    multilineOfferedMaxBytes.set(0L);
-    multilineOfferedMaxLines.set(0L);
-    draftMultilineOfferedMaxBytes.set(0L);
-    draftMultilineOfferedMaxLines.set(0L);
-    draftMessageEditCapAcked.set(false);
-    draftMessageRedactionCapAcked.set(false);
-    messageTagsCapAcked.set(false);
-    typingClientTagAllowed.set(true);
-    typingClientTagPolicyKnown.set(false);
-    messageTagsFallbackReqSent.set(false);
-    batchFallbackReqSent.set(false);
-    chatHistoryFallbackReqSent.set(false);
-    readMarkerCapAcked.set(false);
-    monitorCapAcked.set(false);
-    extendedMonitorCapAcked.set(false);
-    sojuBouncerNetworksCapAcked.set(false);
-    serverTimeCapAcked.set(false);
-    standardRepliesCapAcked.set(false);
-    monitorSupported.set(false);
-    monitorMaxTargets.set(0L);
-    capSummaryLogged.set(false);
-    typingMissingWarned.set(false);
+    capabilities.resetConnectionSession();
     connectedHost.set("");
     connectedWithTls.set(false);
     registrationComplete.set(false);
@@ -897,69 +587,31 @@ public final class PircbotxConnectionState {
   }
 
   public boolean rememberHostmaskIfChanged(String nick, String hostmask) {
-    String key = normalizedNickKey(nick);
-    if (key == null || hostmask == null || hostmask.isBlank()) {
-      return false;
-    }
-    String prev = lastHostmaskByNickLower.put(key, hostmask);
-    return !Objects.equals(prev, hostmask);
+    return hostmaskChanges.rememberIfChanged(nick, hostmask);
   }
 
   public void beginWhoisProbe(String nick) {
-    String key = normalizedNickKey(nick);
-    if (key == null) {
-      return;
-    }
-    whoisSawAwayByNickLower.putIfAbsent(key, Boolean.FALSE);
-    whoisSawAccountByNickLower.putIfAbsent(key, Boolean.FALSE);
+    whoisProbes.begin(nick);
   }
 
   public void markWhoisAwayObserved(String nick) {
-    String key = normalizedNickKey(nick);
-    if (key != null) {
-      whoisSawAwayByNickLower.computeIfPresent(key, (ignored, prior) -> Boolean.TRUE);
-    }
+    whoisProbes.observeAway(nick);
   }
 
   public void markWhoisAccountObserved(String nick) {
-    String key = normalizedNickKey(nick);
-    if (key != null) {
-      whoisSawAccountByNickLower.computeIfPresent(key, (ignored, prior) -> Boolean.TRUE);
-    }
+    whoisProbes.observeAccount(nick);
   }
 
-  public Boolean completeWhoisAwayProbe(String nick) {
-    String key = normalizedNickKey(nick);
-    return key == null ? null : whoisSawAwayByNickLower.remove(key);
-  }
-
-  public Boolean completeWhoisAccountProbe(String nick) {
-    String key = normalizedNickKey(nick);
-    return key == null ? null : whoisSawAccountByNickLower.remove(key);
-  }
-
-  public void markWhoisAccountNumericSupported() {
-    whoisAccountNumericSupported.set(true);
-  }
-
-  public boolean whoisAccountNumericSupported() {
-    return whoisAccountNumericSupported.get();
+  public Ircv3WhoisProbeTracker.Completion completeWhoisProbe(String nick) {
+    return whoisProbes.complete(nick);
   }
 
   public boolean markWhoxSchemaCompatibleObserved() {
-    if (whoxSchemaCompatibleEmitted.compareAndSet(false, true)) {
-      whoxSchemaCompatible.set(true);
-      return true;
-    }
-    return false;
+    return whoxSchema.observeCompatible();
   }
 
   public boolean markWhoxSchemaIncompatibleObserved() {
-    if (whoxSchemaIncompatibleEmitted.compareAndSet(false, true)) {
-      whoxSchemaCompatible.set(false);
-      return true;
-    }
-    return false;
+    return whoxSchema.observeIncompatible();
   }
 
   public void beginLagProbe(String token, long sentAtMs) {
@@ -1014,35 +666,7 @@ public final class PircbotxConnectionState {
     return zncPlaybackCapture.activeTarget();
   }
 
-  public boolean hasPendingWhoisAwayProbe(String nick) {
-    String key = normalizedNickKey(nick);
-    return key != null && whoisSawAwayByNickLower.containsKey(key);
-  }
-
-  public boolean hasPendingWhoisAccountProbe(String nick) {
-    String key = normalizedNickKey(nick);
-    return key != null && whoisSawAccountByNickLower.containsKey(key);
-  }
-
-  private static String normalizedNickKey(String nick) {
-    if (nick == null || nick.isBlank()) {
-      return null;
-    }
-    return nick.trim().toLowerCase(Locale.ROOT);
-  }
-
-  private static boolean updateTrackedCapability(AtomicBoolean state, boolean enabled) {
-    boolean previous = state.getAndSet(enabled);
-    return previous != enabled;
-  }
-
-  private static boolean updateTrackedCapabilityWithLimitReset(
-      AtomicBoolean state, AtomicLong maxBytes, AtomicLong maxLines, boolean enabled) {
-    boolean previous = state.getAndSet(enabled);
-    if (!enabled) {
-      maxBytes.set(0L);
-      maxLines.set(0L);
-    }
-    return previous != enabled;
+  public boolean hasPendingWhoisProbe(String nick) {
+    return whoisProbes.hasPending(nick);
   }
 }

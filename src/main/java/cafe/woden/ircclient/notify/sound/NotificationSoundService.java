@@ -4,8 +4,16 @@ import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.execution.ExecutorConfig;
 import cafe.woden.ircclient.model.BuiltInSound;
-import cafe.woden.ircclient.notify.api.CustomSoundPluginProviders;
 import cafe.woden.ircclient.notify.api.NotificationSoundPort;
+import cafe.woden.ircclient.notify.api.sound.CustomSoundPlaybackProviderChain;
+import cafe.woden.ircclient.notify.api.sound.CustomSoundPlaybackProviderFailure;
+import cafe.woden.ircclient.notify.api.sound.CustomSoundPlaybackProviderResult;
+import cafe.woden.ircclient.notify.api.sound.CustomSoundPluginProviders;
+import cafe.woden.ircclient.notify.api.sound.NotificationSoundClipPlayback;
+import cafe.woden.ircclient.notify.api.sound.NotificationSoundPathResolver;
+import cafe.woden.ircclient.notify.api.sound.NotificationSoundPlaybackPlan;
+import cafe.woden.ircclient.notify.api.sound.NotificationSoundPlaybackPlanner;
+import cafe.woden.ircclient.notify.api.sound.NotificationSoundPlaybackPolicy;
 import cafe.woden.ircclient.notify.spi.CustomSoundPlaybackProvider;
 import jakarta.annotation.PreDestroy;
 import java.beans.PropertyChangeListener;
@@ -13,15 +21,13 @@ import java.io.BufferedInputStream;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
-import javax.sound.sampled.*;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,11 +41,6 @@ import org.springframework.stereotype.Service;
 public class NotificationSoundService implements NotificationSoundPort {
 
   private static final Logger log = LoggerFactory.getLogger(NotificationSoundService.class);
-
-  private static final Duration MIN_INTERVAL = Duration.ofMillis(500);
-  private static final long CLIP_FINISH_GRACE_MS = 1_500L;
-  private static final long CLIP_WAIT_MIN_MS = 2_000L;
-  private static final long CLIP_WAIT_MAX_MS = 30_000L;
 
   private final ExecutorService executor;
 
@@ -110,58 +111,50 @@ public class NotificationSoundService implements NotificationSoundPort {
 
   /** Play the currently selected built-in notification sound. */
   public void play() {
-    if (!enabled) {
-      return;
-    }
-
-    if (useCustom && customSoundPath != null && Files.exists(customSoundPath)) {
-      playFile(customSoundPath, false, 0L);
-      return;
-    }
-
-    if (selectedSound == null) return;
-    playResource(selectedSound.resourcePath(), false, 0L);
+    Path path = customSoundPath;
+    NotificationSoundPlaybackPlan plan =
+        NotificationSoundPlaybackPlanner.planSelected(
+            enabled, useCustom, fileExists(path), resourcePath(selectedSound));
+    playPlan(plan, path, false, 0L);
   }
 
   /** Play a one-off sound override for a specific notification event. */
   public void playOverride(String soundId, boolean useCustom, String customPath) {
-    if (!enabled) {
-      return;
-    }
-
-    if (useCustom) {
-      Path overridePath = resolveCustomPath(customPath);
-      if (overridePath != null && Files.exists(overridePath)) {
-        playFile(overridePath, false, 0L);
-        return;
-      }
-    }
-
+    Path overridePath = useCustom ? resolveCustomPath(customPath) : null;
     BuiltInSound override = BuiltInSound.fromId(soundId);
-    playResource(override.resourcePath(), false, 0L);
+    NotificationSoundPlaybackPlan plan =
+        NotificationSoundPlaybackPlanner.planOverride(
+            enabled, useCustom, fileExists(overridePath), resourcePath(override));
+    playPlan(plan, overridePath, false, 0L);
   }
 
   /** Play the given sound for preview/testing, even if sounds are disabled. */
   public void preview(BuiltInSound sound) {
-    if (sound == null) return;
+    NotificationSoundPlaybackPlan plan =
+        NotificationSoundPlaybackPlanner.planBuiltInPreview(resourcePath(sound));
+    if (plan.skipPlayback()) return;
     long seq = previewRequestSeq.incrementAndGet();
-    playResource(sound.resourcePath(), true, seq);
+    playPlan(plan, null, true, seq);
   }
 
   /** Play the configured custom file (if any) for preview/testing. */
   public void previewCustom() {
     Path p = this.customSoundPath;
-    if (p == null || !Files.exists(p)) return;
+    NotificationSoundPlaybackPlan plan =
+        NotificationSoundPlaybackPlanner.planCustomPreview(fileExists(p));
+    if (plan.skipPlayback()) return;
     long seq = previewRequestSeq.incrementAndGet();
-    playFile(p, true, seq);
+    playPlan(plan, p, true, seq);
   }
 
   /** Play a specific custom file (relative to the runtime config directory) for preview/testing. */
   public void previewCustom(String relativePath) {
     Path p = resolveCustomPath(relativePath);
-    if (p == null || !Files.exists(p)) return;
+    NotificationSoundPlaybackPlan plan =
+        NotificationSoundPlaybackPlanner.planCustomPreview(fileExists(p));
+    if (plan.skipPlayback()) return;
     long seq = previewRequestSeq.incrementAndGet();
-    playFile(p, true, seq);
+    playPlan(plan, p, true, seq);
   }
 
   private void applySettings(NotificationSoundSettings s) {
@@ -180,31 +173,40 @@ public class NotificationSoundService implements NotificationSoundPort {
   }
 
   private Path resolveCustomPath(String relativePath) {
-    if (relativePath == null || relativePath.isBlank()) return null;
     try {
       Path cfg = runtimeConfig != null ? runtimeConfig.runtimeConfigPath() : null;
-      Path base = cfg != null ? cfg.getParent() : null;
-      if (base == null) return null;
-
-      Path resolved = base.resolve(relativePath).normalize();
-
-      // Prevent path traversal outside the runtime config directory.
-      if (!resolved.startsWith(base.normalize())) {
-        return null;
-      }
-      return resolved;
+      return NotificationSoundPathResolver.resolveCustomSoundPath(cfg, relativePath);
     } catch (Exception e) {
       return null;
     }
   }
 
+  private void playPlan(
+      NotificationSoundPlaybackPlan plan, Path customPath, boolean bypassLimiter, long previewSeq) {
+    if (plan == null || plan.skipPlayback()) {
+      return;
+    }
+    if (plan.usesCustomFile()) {
+      playFile(customPath, bypassLimiter, previewSeq);
+      return;
+    }
+    if (plan.usesBuiltInResource()) {
+      playResource(plan.resourcePath(), bypassLimiter, previewSeq);
+    }
+  }
+
+  private static String resourcePath(BuiltInSound sound) {
+    return sound == null ? null : sound.resourcePath();
+  }
+
+  private static boolean fileExists(Path path) {
+    return path != null && Files.exists(path);
+  }
+
   private void playResource(String resourcePath, boolean bypassLimiter, long previewSeq) {
     executor.submit(
         () -> {
-          if (isStalePreview(previewSeq)) {
-            return;
-          }
-          if (!bypassLimiter && !canPlay()) {
+          if (!shouldStartPlayback(bypassLimiter, previewSeq)) {
             return;
           }
 
@@ -222,7 +224,7 @@ public class NotificationSoundService implements NotificationSoundPort {
               if (isStalePreview(previewSeq)) {
                 return;
               }
-              playDecoded(originalStream);
+              NotificationSoundClipPlayback.play(originalStream);
               lastPlayed.set(Instant.now());
             }
 
@@ -236,10 +238,7 @@ public class NotificationSoundService implements NotificationSoundPort {
   private void playFile(Path path, boolean bypassLimiter, long previewSeq) {
     executor.submit(
         () -> {
-          if (isStalePreview(previewSeq)) {
-            return;
-          }
-          if (!bypassLimiter && !canPlay()) {
+          if (!shouldStartPlayback(bypassLimiter, previewSeq)) {
             return;
           }
 
@@ -256,7 +255,7 @@ public class NotificationSoundService implements NotificationSoundPort {
             if (isStalePreview(previewSeq)) {
               return;
             }
-            playDecoded(originalStream);
+            NotificationSoundClipPlayback.play(originalStream);
             lastPlayed.set(Instant.now());
 
           } catch (Exception e) {
@@ -266,18 +265,20 @@ public class NotificationSoundService implements NotificationSoundPort {
   }
 
   private boolean tryPluginPlayback(Path path, long previewSeq) {
-    for (CustomSoundPlaybackProvider provider : customPlaybackProviders) {
-      if (provider == null || isStalePreview(previewSeq)) continue;
-      try {
-        if (provider.playCustomSound(path)) {
-          if (!isStalePreview(previewSeq)) {
-            lastPlayed.set(Instant.now());
-          }
-          return true;
-        }
-      } catch (Exception e) {
-        log.debug("Custom sound playback provider failed: {}", provider.getClass().getName(), e);
+    CustomSoundPlaybackProviderResult result =
+        CustomSoundPlaybackProviderChain.play(
+            path, customPlaybackProviders, () -> isStalePreview(previewSeq));
+    for (CustomSoundPlaybackProviderFailure failure : result.failures()) {
+      log.debug(
+          "Custom sound playback provider failed: {}",
+          failure.providerClassName(),
+          failure.exception());
+    }
+    if (result.handled()) {
+      if (result.handledWhileFresh()) {
+        lastPlayed.set(Instant.now());
       }
+      return true;
     }
     return false;
   }
@@ -288,79 +289,12 @@ public class NotificationSoundService implements NotificationSoundPort {
   }
 
   private boolean isStalePreview(long previewSeq) {
-    return previewSeq > 0L && previewSeq != previewRequestSeq.get();
+    return NotificationSoundPlaybackPolicy.isStalePreview(previewSeq, previewRequestSeq.get());
   }
 
-  private void playDecoded(AudioInputStream originalStream) throws Exception {
-    AudioFormat baseFormat = originalStream.getFormat();
-
-    boolean needsDecode =
-        baseFormat.getEncoding() != AudioFormat.Encoding.PCM_SIGNED
-            || baseFormat.getSampleSizeInBits() != 16;
-
-    AudioInputStream decodedStream = originalStream;
-
-    if (needsDecode) {
-      AudioFormat decodedFormat =
-          new AudioFormat(
-              AudioFormat.Encoding.PCM_SIGNED,
-              baseFormat.getSampleRate(),
-              16,
-              baseFormat.getChannels(),
-              baseFormat.getChannels() * 2,
-              baseFormat.getSampleRate(),
-              false);
-      decodedStream = AudioSystem.getAudioInputStream(decodedFormat, originalStream);
-    }
-
-    try (AudioInputStream toPlay = decodedStream) {
-      Clip clip = AudioSystem.getClip();
-      CountDownLatch finished = new CountDownLatch(1);
-      LineListener listener =
-          event -> {
-            if (event == null) return;
-            LineEvent.Type t = event.getType();
-            if (t == LineEvent.Type.STOP || t == LineEvent.Type.CLOSE) {
-              finished.countDown();
-            }
-          };
-
-      try {
-        clip.addLineListener(listener);
-        clip.open(toPlay);
-        clip.setFramePosition(0);
-        clip.start();
-
-        long durationMs = TimeUnit.MICROSECONDS.toMillis(Math.max(0L, clip.getMicrosecondLength()));
-        long waitMs =
-            Math.max(
-                CLIP_WAIT_MIN_MS, Math.min(CLIP_WAIT_MAX_MS, durationMs + CLIP_FINISH_GRACE_MS));
-        try {
-          finished.await(waitMs, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException ie) {
-          Thread.currentThread().interrupt();
-        }
-      } finally {
-        try {
-          clip.removeLineListener(listener);
-        } catch (Exception ignored) {
-        }
-        try {
-          if (clip.isRunning()) clip.stop();
-        } catch (Exception ignored) {
-        }
-        try {
-          if (clip.isOpen()) clip.close();
-        } catch (Exception ignored) {
-        }
-      }
-    }
-  }
-
-  private boolean canPlay() {
-    Instant now = Instant.now();
-    Instant last = lastPlayed.get();
-    return Duration.between(last, now).compareTo(MIN_INTERVAL) > 0;
+  private boolean shouldStartPlayback(boolean bypassLimiter, long previewSeq) {
+    return NotificationSoundPlaybackPolicy.shouldStartPlayback(
+        previewSeq, previewRequestSeq.get(), bypassLimiter, lastPlayed.get(), Instant.now());
   }
 
   @PreDestroy

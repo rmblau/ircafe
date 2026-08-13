@@ -10,7 +10,6 @@ import cafe.woden.ircclient.app.api.ChannelMetadataPort;
 import cafe.woden.ircclient.bouncer.BouncerBackendRegistry;
 import cafe.woden.ircclient.bouncer.BouncerDiscoveryEventPort;
 import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.RuntimeConfigChatCommandAdapter;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.properties.SojuProperties;
@@ -23,6 +22,8 @@ import cafe.woden.ircclient.interceptors.InterceptorStore;
 import cafe.woden.ircclient.irc.IrcClientService;
 import cafe.woden.ircclient.irc.IrcEvent;
 import cafe.woden.ircclient.irc.ServerIrcEvent;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionCatalog;
+import cafe.woden.ircclient.irc.ircv3.Ircv3OutboundCommandRuntimeCatalog;
 import cafe.woden.ircclient.irc.ircv3.Ircv3StsPolicyService;
 import cafe.woden.ircclient.irc.pircbotx.listener.PircbotxBridgeListenerFactory;
 import cafe.woden.ircclient.irc.pircbotx.parse.PircbotxInputParserHookInstaller;
@@ -742,15 +743,23 @@ class Ircv3ErgoShowcaseFunctionalTest {
                 null),
             List.copyOf(serversById.values()));
 
-    Ircv3StsPolicyService stsPolicies = new Ircv3StsPolicyService();
+    PircbotxFunctionalRuntimeFixtures.Runtime ircv3Runtime =
+        PircbotxFunctionalRuntimeFixtures.runtime();
+    Ircv3StsPolicyService stsPolicies = ircv3Runtime.stsPolicyService();
     PircbotxInputParserHookInstaller hookInstaller =
-        new PircbotxInputParserHookInstaller(stsPolicies);
+        new PircbotxInputParserHookInstaller(stsPolicies, ircv3Runtime.catalogs());
 
     SojuProperties sojuProps = new SojuProperties(Map.of(), new SojuProperties.Discovery(false));
     ZncProperties zncProps = new ZncProperties(Map.of(), new ZncProperties.Discovery(false));
 
     ServerProxyResolver proxyResolver = new ServerProxyResolver(serverCatalog);
-    PircbotxBotFactory botFactory = new PircbotxBotFactory(proxyResolver, sojuProps, null);
+    PircbotxBotFactory botFactory =
+        new PircbotxBotFactory(
+            proxyResolver,
+            sojuProps,
+            null,
+            Ircv3ExtensionCatalog.builtInCatalog(),
+            ircv3Runtime.catalogs());
 
     BouncerBackendRegistry bouncerBackends = mock(BouncerBackendRegistry.class);
     BouncerDiscoveryEventPort bouncerDiscoveryEvents = mock(BouncerDiscoveryEventPort.class);
@@ -771,7 +780,10 @@ class Ircv3ErgoShowcaseFunctionalTest {
             new NoOpPlaybackCursorProvider(),
             serverIsupportState,
             sojuProps,
-            zncProps);
+            zncProps,
+            ircv3Runtime.catalogs(),
+            ircv3Runtime.serverTime(),
+            ircv3Runtime.messageTags());
 
     PircbotxIrcClientService service =
         new PircbotxIrcClientService(
@@ -781,8 +793,9 @@ class Ircv3ErgoShowcaseFunctionalTest {
             botFactory,
             bridgeListenerFactory,
             (CtcpReplyRuntimeConfigPort) runtimeConfig,
-            new RuntimeConfigChatCommandAdapter(runtimeConfig),
+            runtimeConfig::readDefaultQuitMessage,
             stsPolicies,
+            Ircv3OutboundCommandRuntimeCatalog.applicationClasspath(),
             bouncerBackends,
             bouncerDiscoveryEvents,
             timers,

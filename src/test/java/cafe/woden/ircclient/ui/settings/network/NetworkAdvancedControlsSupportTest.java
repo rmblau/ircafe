@@ -8,7 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.NetworkSettingsRuntimeConfigPort;
 import cafe.woden.ircclient.irc.backend.IrcHeartbeatMaintenanceService;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -108,7 +108,7 @@ class NetworkAdvancedControlsSupportTest {
 
   @Test
   void rememberSettingsPersistsNetworkSettingsAndReschedulesHeartbeats() {
-    RuntimeConfigStore runtimeConfig = mock(RuntimeConfigStore.class);
+    NetworkSettingsRuntimeConfigPort runtimeConfig = mock(NetworkSettingsRuntimeConfigPort.class);
     IrcHeartbeatMaintenanceService heartbeatMaintenance =
         mock(IrcHeartbeatMaintenanceService.class);
     IrcProperties.Proxy proxy =

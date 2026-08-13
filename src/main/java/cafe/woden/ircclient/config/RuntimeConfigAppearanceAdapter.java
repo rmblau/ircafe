@@ -1,6 +1,8 @@
 package cafe.woden.ircclient.config;
 
-import cafe.woden.ircclient.config.api.AppearanceRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ChatAppearanceRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ServerTreeAppearanceRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ThemeAppearanceRuntimeConfigPort;
 import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 import org.springframework.stereotype.Component;
@@ -9,7 +11,10 @@ import org.springframework.stereotype.Component;
 @Component
 @SecondaryAdapter
 @ApplicationLayer
-public final class RuntimeConfigAppearanceAdapter implements AppearanceRuntimeConfigPort {
+public final class RuntimeConfigAppearanceAdapter
+    implements ThemeAppearanceRuntimeConfigPort,
+        ChatAppearanceRuntimeConfigPort,
+        ServerTreeAppearanceRuntimeConfigPort {
   private final RuntimeConfigStore runtimeConfig;
 
   public RuntimeConfigAppearanceAdapter(RuntimeConfigStore runtimeConfig) {
@@ -109,10 +114,5 @@ public final class RuntimeConfigAppearanceAdapter implements AppearanceRuntimeCo
   @Override
   public void rememberServerTreeHighlightChannelColor(String hex) {
     runtimeConfig.rememberServerTreeHighlightChannelColor(hex);
-  }
-
-  @Override
-  public void rememberPreserveDockLayout(boolean preserveDockLayout) {
-    runtimeConfig.rememberPreserveDockLayout(preserveDockLayout);
   }
 }

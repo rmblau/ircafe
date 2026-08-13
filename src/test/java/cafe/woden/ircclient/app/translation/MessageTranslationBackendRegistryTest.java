@@ -2,7 +2,6 @@ package cafe.woden.ircclient.app.translation;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.app.translation.spi.MessageTranslationBackendProvider;
@@ -16,7 +15,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -31,34 +29,31 @@ class MessageTranslationBackendRegistryTest {
   @TempDir Path tempDir;
 
   @Test
-  void resolvesBackendsByNormalizedId() {
-    MessageTranslationBackendProvider backend = new StubBackend(" DeepL ");
-    MessageTranslationBackendRegistry registry =
-        new MessageTranslationBackendRegistry(List.of(backend));
-
-    assertSame(backend, registry.find("deepl").orElseThrow());
-    assertSame(backend, registry.find("  DEEPL ").orElseThrow());
-    assertEquals(Set.of("deepl"), registry.backendIds());
-  }
-
-  @Test
-  void returnsEmptyForUnknownBackend() {
-    MessageTranslationBackendRegistry registry = new MessageTranslationBackendRegistry(List.of());
-
-    assertEquals(Optional.empty(), registry.find("missing"));
-  }
-
-  @Test
   void includesBackendsLoadedThroughInstalledPluginPort() {
     MessageTranslationBackendProvider builtIn = new StubBackend("built-in");
     MessageTranslationBackendProvider plugin = new StubBackend("plugin-extra");
     MessageTranslationBackendRegistry registry =
-        new MessageTranslationBackendRegistry(
-            List.of(builtIn), new RecordingInstalledPluginsPort(List.of(plugin)));
+        registryWithPlugins(List.of(builtIn), new RecordingInstalledPluginsPort(List.of(plugin)));
 
     assertSame(builtIn, registry.find("built-in").orElseThrow());
     assertSame(plugin, registry.find(" PLUGIN-EXTRA ").orElseThrow());
     assertEquals(Set.of("built-in", "plugin-extra"), registry.backendIds());
+  }
+
+  @Test
+  void dedupesTranslationBackendProvidersByClassAndBackendId() {
+    MessageTranslationBackendProvider builtIn = new StubBackend("built-in");
+    MessageTranslationBackendProvider duplicate = new StubBackend("built-in");
+    MessageTranslationBackendProvider sameClassDifferentBackend = new StubBackend("plugin-extra");
+
+    List<MessageTranslationBackendProvider> providers =
+        MessageTranslationPluginProviders.translationBackends(
+            List.of(builtIn),
+            new RecordingInstalledPluginsPort(List.of(duplicate, sameClassDifferentBackend)));
+
+    assertEquals(2, providers.size());
+    assertSame(builtIn, providers.get(0));
+    assertSame(sameClassDifferentBackend, providers.get(1));
   }
 
   @Test
@@ -75,8 +70,7 @@ class MessageTranslationBackendRegistryTest {
         () -> runtimeConfigDirectory.resolve("ircafe.yml");
 
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
-    MessageTranslationBackendRegistry registry =
-        new MessageTranslationBackendRegistry(List.of(), installedPlugins);
+    MessageTranslationBackendRegistry registry = registryWithPlugins(List.of(), installedPlugins);
 
     assertTrue(installedPlugins.pluginProblems().isEmpty());
     MessageTranslationBackendProvider backend = registry.find("PLUGIN-ECHO").orElseThrow();
@@ -100,30 +94,13 @@ class MessageTranslationBackendRegistryTest {
         () -> runtimeConfigDirectory.resolve("ircafe.yml");
 
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
-    MessageTranslationBackendRegistry registry =
-        new MessageTranslationBackendRegistry(List.of(), installedPlugins);
+    MessageTranslationBackendRegistry registry = registryWithPlugins(List.of(), installedPlugins);
 
     assertTrue(installedPlugins.pluginProblems().isEmpty());
     MessageTranslationBackendProvider backend = registry.find("PLUGIN-SPI-ECHO").orElseThrow();
     MessageTranslationResult result = backend.translate(null).toCompletableFuture().get();
     assertEquals("translated by spi plugin", result.translatedText());
     assertEquals("plugin-spi-echo", result.provider());
-  }
-
-  @Test
-  void rejectsDuplicateNormalizedIds() {
-    List<MessageTranslationBackendProvider> backends =
-        List.of(new StubBackend("DeepL"), new StubBackend(" deepl "));
-
-    assertThrows(
-        IllegalStateException.class, () -> new MessageTranslationBackendRegistry(backends));
-  }
-
-  @Test
-  void rejectsBlankBackendIds() {
-    assertThrows(
-        IllegalArgumentException.class,
-        () -> new MessageTranslationBackendRegistry(List.of(new StubBackend(" "))));
   }
 
   private static String pluginBackendSource() {
@@ -178,6 +155,13 @@ class MessageTranslationBackendRegistryTest {
           }
         }
         """;
+  }
+
+  private static MessageTranslationBackendRegistry registryWithPlugins(
+      List<? extends MessageTranslationBackendProvider> builtInBackends,
+      InstalledPluginsPort installedPlugins) {
+    return new MessageTranslationBackendRegistry(
+        MessageTranslationPluginProviders.translationBackends(builtInBackends, installedPlugins));
   }
 
   private static final class RecordingInstalledPluginsPort implements InstalledPluginsPort {

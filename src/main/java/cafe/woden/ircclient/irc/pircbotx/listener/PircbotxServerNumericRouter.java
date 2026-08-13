@@ -9,14 +9,11 @@ import cafe.woden.ircclient.irc.pircbotx.emit.PircbotxWhoEventEmitter;
 import cafe.woden.ircclient.irc.pircbotx.parse.*;
 import cafe.woden.ircclient.irc.playback.*;
 import java.time.Instant;
+import java.util.Objects;
 import java.util.function.Consumer;
-import lombok.AccessLevel;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.pircbotx.hooks.events.ServerResponseEvent;
 
 /** Routes numeric server responses to the appropriate structured IRC event translators. */
-@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
 final class PircbotxServerNumericRouter {
   private static final int ERR_LINKCHANNEL = 470;
   private static final int RPL_MONONLINE = 730;
@@ -25,15 +22,41 @@ final class PircbotxServerNumericRouter {
   private static final int RPL_ENDOFMONLIST = 733;
   private static final int ERR_MONLISTFULL = 734;
 
-  @NonNull private final String serverId;
-  @NonNull private final Consumer<String> rememberSelfNickHint;
-  @NonNull private final Consumer<ServerIrcEvent> emit;
-  @NonNull private final PircbotxSaslFailureHandler saslFailures;
-  @NonNull private final PircbotxMonitorEventEmitter monitorEvents;
-  @NonNull private final PircbotxIsupportObserver isupportObserver;
-  @NonNull private final PircbotxRegistrationLifecycleHandler registrationLifecycle;
-  @NonNull private final PircbotxWhoEventEmitter whoEvents;
-  @NonNull private final PircbotxServerResponseEmitter serverResponses;
+  private final String serverId;
+  private final Consumer<String> rememberSelfNickHint;
+  private final Consumer<ServerIrcEvent> emit;
+  private final PircbotxSaslFailureHandler saslFailures;
+  private final PircbotxMonitorEventEmitter monitorEvents;
+  private final PircbotxIsupportObserver isupportObserver;
+  private final PircbotxRegistrationLifecycleHandler registrationLifecycle;
+  private final PircbotxWhoEventEmitter whoEvents;
+  private final PircbotxServerResponseEmitter serverResponses;
+  private final PircbotxPresenceSignalSupport presenceSignals;
+
+  PircbotxServerNumericRouter(
+      String serverId,
+      Consumer<String> rememberSelfNickHint,
+      Consumer<ServerIrcEvent> emit,
+      PircbotxSaslFailureHandler saslFailures,
+      PircbotxMonitorEventEmitter monitorEvents,
+      PircbotxIsupportObserver isupportObserver,
+      PircbotxRegistrationLifecycleHandler registrationLifecycle,
+      PircbotxWhoEventEmitter whoEvents,
+      PircbotxServerResponseEmitter serverResponses,
+      PircbotxPresenceSignalSupport presenceSignals) {
+    this.serverId = Objects.requireNonNull(serverId, "serverId");
+    this.rememberSelfNickHint =
+        Objects.requireNonNull(rememberSelfNickHint, "rememberSelfNickHint");
+    this.emit = Objects.requireNonNull(emit, "emit");
+    this.saslFailures = Objects.requireNonNull(saslFailures, "saslFailures");
+    this.monitorEvents = Objects.requireNonNull(monitorEvents, "monitorEvents");
+    this.isupportObserver = Objects.requireNonNull(isupportObserver, "isupportObserver");
+    this.registrationLifecycle =
+        Objects.requireNonNull(registrationLifecycle, "registrationLifecycle");
+    this.whoEvents = Objects.requireNonNull(whoEvents, "whoEvents");
+    this.serverResponses = Objects.requireNonNull(serverResponses, "serverResponses");
+    this.presenceSignals = Objects.requireNonNull(presenceSignals, "presenceSignals");
+  }
 
   void onServerResponse(ServerResponseEvent event) {
     int code;
@@ -93,7 +116,9 @@ final class PircbotxServerNumericRouter {
       return;
     }
 
-    emitAwayStatusChanged(code, line);
+    if (!presenceSignals.observeSelfAwayConfirmation(Instant.now(), code, line)) {
+      serverResponses.emitServerResponseLine(event.getBot(), code, line);
+    }
   }
 
   private void rememberSelfNickHintFromLine(String line) {
@@ -130,25 +155,6 @@ final class PircbotxServerNumericRouter {
             serverId,
             new IrcEvent.JoinFailed(
                 Instant.now(), joinFailure.channel(), code, joinFailure.message())));
-  }
-
-  private void emitAwayStatusChanged(int code, String line) {
-    PircbotxAwayParsers.ParsedAwayConfirmation away =
-        PircbotxAwayParsers.parseRpl305or306Away(line);
-    boolean isAway = (code == 306);
-    String message = null;
-    if (away != null) {
-      isAway = away.away();
-      message = away.message();
-    }
-    if (message == null || message.isBlank()) {
-      message =
-          isAway ? "You have been marked as being away" : "You are no longer marked as being away";
-    }
-
-    emit.accept(
-        new ServerIrcEvent(
-            serverId, new IrcEvent.AwayStatusChanged(Instant.now(), isAway, message)));
   }
 
   private static boolean isJoinFailureNumeric(int code) {

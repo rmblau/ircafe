@@ -1,0 +1,12 @@
+apply from: rootProject.file('gradle/java-library-subproject-conventions.gradle')
+
+def lib = extensions.extraProperties.get('ircv3Library')
+def catalogVersion = extensions.extraProperties.get('ircv3CatalogVersion')
+
+dependencies {
+    implementation platform("org.springframework.boot:spring-boot-dependencies:${catalogVersion('springBootPlugin')}")
+
+    testImplementation platform("org.springframework.boot:spring-boot-dependencies:${catalogVersion('springBootPlugin')}")
+    testImplementation lib('springBootStarterTest')
+    testRuntimeOnly lib('junitPlatformLauncher')
+}

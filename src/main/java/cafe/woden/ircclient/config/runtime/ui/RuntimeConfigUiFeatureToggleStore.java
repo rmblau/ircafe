@@ -1,8 +1,8 @@
 package cafe.woden.ircclient.config.runtime.ui;
 
+import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigUiFeatureToggleCodec.Setting;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
-import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,41 +20,37 @@ public class RuntimeConfigUiFeatureToggleStore {
   }
 
   public synchronized boolean readInviteAutoJoinEnabled(boolean defaultValue) {
-    return readSectionBoolean(
-        "invites", "autoJoinOnInvite", defaultValue, "invites.autoJoinOnInvite");
+    return readBoolean(Setting.INVITE_AUTO_JOIN, defaultValue);
   }
 
   public synchronized void rememberInviteAutoJoinEnabled(boolean enabled) {
-    rememberSectionBoolean("invites", "autoJoinOnInvite", enabled, "invites.autoJoinOnInvite");
+    rememberBoolean(Setting.INVITE_AUTO_JOIN, enabled);
   }
 
   public synchronized boolean readUpdateNotifierEnabled(boolean defaultValue) {
-    return readSectionBoolean(
-        "updateNotifier", "enabled", defaultValue, "ui.updateNotifier.enabled");
+    return readBoolean(Setting.UPDATE_NOTIFIER, defaultValue);
   }
 
   public synchronized void rememberUpdateNotifierEnabled(boolean enabled) {
-    rememberSectionBoolean("updateNotifier", "enabled", enabled, "ui.updateNotifier.enabled");
+    rememberBoolean(Setting.UPDATE_NOTIFIER, enabled);
   }
 
   public synchronized boolean readLagIndicatorEnabled(boolean defaultValue) {
-    return readSectionBoolean("lagIndicator", "enabled", defaultValue, "ui.lagIndicator.enabled");
+    return readBoolean(Setting.LAG_INDICATOR, defaultValue);
   }
 
   public synchronized void rememberLagIndicatorEnabled(boolean enabled) {
-    rememberSectionBoolean("lagIndicator", "enabled", enabled, "ui.lagIndicator.enabled");
+    rememberBoolean(Setting.LAG_INDICATOR, enabled);
   }
 
-  private boolean readSectionBoolean(
-      String section, String key, boolean defaultValue, String description) {
+  private boolean readBoolean(Setting setting, boolean defaultValue) {
     return uiSection
-        .readValue(description, section, key)
-        .flatMap(RuntimeConfigYamlSupport::asBoolean)
+        .readValue(setting.description(), setting.section(), setting.key())
+        .map(raw -> RuntimeConfigUiFeatureToggleCodec.readBoolean(raw, defaultValue))
         .orElse(defaultValue);
   }
 
-  private void rememberSectionBoolean(
-      String section, String key, boolean enabled, String description) {
-    uiSection.putValue(description, enabled, section, key);
+  private void rememberBoolean(Setting setting, boolean enabled) {
+    uiSection.putValue(setting.description(), enabled, setting.section(), setting.key());
   }
 }

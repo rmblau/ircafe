@@ -41,11 +41,13 @@ import cafe.woden.ircclient.bouncer.BouncerConnectionPort;
 import cafe.woden.ircclient.bouncer.BouncerNetworkDiscoveryOrchestrator;
 import cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.ApplicationRootVisibilityConfigPort;
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
-import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ChatAppearanceRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ConnectionRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.DockLayoutRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
 import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
 import cafe.woden.ircclient.config.api.IgnoreRulesConfigPort;
@@ -56,14 +58,19 @@ import cafe.woden.ircclient.config.api.Ircv3StsPolicyConfigPort;
 import cafe.woden.ircclient.config.api.MonitorRosterConfigPort;
 import cafe.woden.ircclient.config.api.NickColorOverridesConfigPort;
 import cafe.woden.ircclient.config.api.NotificationRule;
+import cafe.woden.ircclient.config.api.PreferredNickRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.QuitMessageRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
+import cafe.woden.ircclient.config.api.SelectedTargetRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ServerAutoConnectRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ServerTreeAppearanceRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ServerTreeBuiltInVisibilityConfigPort;
 import cafe.woden.ircclient.config.api.ServerTreeChannelStateConfigPort;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort;
 import cafe.woden.ircclient.config.api.ServerTreeRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ThemeAppearanceRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.TrayCloseHintRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
-import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UserCommandAliasesConfigPort;
 import cafe.woden.ircclient.dcc.DccTransferStore;
 import cafe.woden.ircclient.dcc.api.DccTransferCommandPort;
@@ -97,8 +104,67 @@ import cafe.woden.ircclient.irc.adapter.IrcTypingPortAdapter;
 import cafe.woden.ircclient.irc.backend.BackendRoutingIrcClientService;
 import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
 import cafe.woden.ircclient.irc.enrichment.UserInfoEnrichmentService;
+import cafe.woden.ircclient.irc.ircv3.Ircv3AccountNotifySignalParser;
+import cafe.woden.ircclient.irc.ircv3.Ircv3AccountTagTracker;
+import cafe.woden.ircclient.irc.ircv3.Ircv3AwayLineParser;
+import cafe.woden.ircclient.irc.ircv3.Ircv3AwayNotifySignalParser;
 import cafe.woden.ircclient.irc.ircv3.Ircv3CapabilityCatalog;
-import cafe.woden.ircclient.irc.ircv3.Ircv3DraftNormalizer;
+import cafe.woden.ircclient.irc.ircv3.Ircv3CapabilityChangePlanner;
+import cafe.woden.ircclient.irc.ircv3.Ircv3CapabilityRequestBatchSession;
+import cafe.woden.ircclient.irc.ircv3.Ircv3CapabilitySnapshot;
+import cafe.woden.ircclient.irc.ircv3.Ircv3CapabilityState;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ChannelContextPolicy;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ChatHistoryAvailability;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ChatHistoryCommandBuilder;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ChghostParser;
+import cafe.woden.ircclient.irc.ircv3.Ircv3CommandValuePolicy;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ExtendedJoinSignalParser;
+import cafe.woden.ircclient.irc.ircv3.Ircv3HistoryBatchControlParser;
+import cafe.woden.ircclient.irc.ircv3.Ircv3InviteNotifyParser;
+import cafe.woden.ircclient.irc.ircv3.Ircv3IsupportLine;
+import cafe.woden.ircclient.irc.ircv3.Ircv3LabeledResponseRawLinePreparer;
+import cafe.woden.ircclient.irc.ircv3.Ircv3LabeledResponseTagSignal;
+import cafe.woden.ircclient.irc.ircv3.Ircv3LabeledResponseValues;
+import cafe.woden.ircclient.irc.ircv3.Ircv3MessageEditCommandBuilder;
+import cafe.woden.ircclient.irc.ircv3.Ircv3MessageEditTagSignal;
+import cafe.woden.ircclient.irc.ircv3.Ircv3MessageMutationRuntimeCatalog;
+import cafe.woden.ircclient.irc.ircv3.Ircv3MessageMutationRuntimeSupport;
+import cafe.woden.ircclient.irc.ircv3.Ircv3MessageRedactionCommandBuilder;
+import cafe.woden.ircclient.irc.ircv3.Ircv3MessageRedactionTagSignal;
+import cafe.woden.ircclient.irc.ircv3.Ircv3MonitorCommandPlanner;
+import cafe.woden.ircclient.irc.ircv3.Ircv3MonitorParser;
+import cafe.woden.ircclient.irc.ircv3.Ircv3MultilineCommandPlanner;
+import cafe.woden.ircclient.irc.ircv3.Ircv3MultilineLimitPolicy;
+import cafe.woden.ircclient.irc.ircv3.Ircv3MultilinePayload;
+import cafe.woden.ircclient.irc.ircv3.Ircv3OutboundCommandRuntimeCatalog;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ReactionCommandBuilder;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ReactionDraftPolicy;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ReactionTagSignal;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ReadMarkerCommandBuilder;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ReadMarkerTagSignal;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ReadMarkerTimestamp;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ReplyCommandBuilder;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ReplyDraftPolicy;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ReplyTagSignal;
+import cafe.woden.ircclient.irc.ircv3.Ircv3SaslCapabilityOffer;
+import cafe.woden.ircclient.irc.ircv3.Ircv3SaslFailureSignal;
+import cafe.woden.ircclient.irc.ircv3.Ircv3SaslMechanismSelector;
+import cafe.woden.ircclient.irc.ircv3.Ircv3SaslSession;
+import cafe.woden.ircclient.irc.ircv3.Ircv3SaslSessionUpdate;
+import cafe.woden.ircclient.irc.ircv3.Ircv3SetnameParser;
+import cafe.woden.ircclient.irc.ircv3.Ircv3StandardReplyParser;
+import cafe.woden.ircclient.irc.ircv3.Ircv3StsPersistedPolicyNormalizer;
+import cafe.woden.ircclient.irc.ircv3.Ircv3StsPolicy;
+import cafe.woden.ircclient.irc.ircv3.Ircv3StsPolicyDirective;
+import cafe.woden.ircclient.irc.ircv3.Ircv3StsPolicyLearningPlanner;
+import cafe.woden.ircclient.irc.ircv3.Ircv3StsPolicyParser;
+import cafe.woden.ircclient.irc.ircv3.Ircv3StsTransportUpgradePlanner;
+import cafe.woden.ircclient.irc.ircv3.Ircv3TrackedCapability;
+import cafe.woden.ircclient.irc.ircv3.Ircv3TypingCommandBuilder;
+import cafe.woden.ircclient.irc.ircv3.Ircv3TypingTagSignal;
+import cafe.woden.ircclient.irc.ircv3.Ircv3WhoUserhostParser;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ZncDetector;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ZncPlaybackRequestPlanner;
 import cafe.woden.ircclient.irc.matrix.MatrixIrcClientService;
 import cafe.woden.ircclient.irc.playback.IrcBouncerPlaybackPort;
 import cafe.woden.ircclient.irc.playback.PlaybackCursorProvider;
@@ -235,8 +301,10 @@ class SpringModulithIncrementalAdoptionTest {
         configModule,
         "api",
         BouncerDiscoveryConfigPort.class,
+        ChatAppearanceRuntimeConfigPort.class,
         InviteAutoJoinConfigPort.class,
-        ChatCommandRuntimeConfigPort.class,
+        PreferredNickRuntimeConfigPort.class,
+        QuitMessageRuntimeConfigPort.class,
         ConnectionRuntimeConfigPort.class,
         CtcpReplyRuntimeConfigPort.class,
         DiagnosticsRuntimeConfigPort.class,
@@ -250,11 +318,16 @@ class SpringModulithIncrementalAdoptionTest {
         NickColorOverridesConfigPort.class,
         RuntimeConfigPathPort.class,
         ServerAutoConnectRuntimeConfigPort.class,
+        ServerTreeAppearanceRuntimeConfigPort.class,
         ServerTreeBuiltInVisibilityConfigPort.class,
         ServerTreeChannelStateConfigPort.class,
         ServerTreeLayoutConfigPort.class,
         ServerTreeRuntimeConfigPort.class,
-        UiShellRuntimeConfigPort.class,
+        ApplicationRootVisibilityConfigPort.class,
+        DockLayoutRuntimeConfigPort.class,
+        SelectedTargetRuntimeConfigPort.class,
+        ThemeAppearanceRuntimeConfigPort.class,
+        TrayCloseHintRuntimeConfigPort.class,
         UiSettingsRuntimeConfigPort.class,
         UserCommandAliasesConfigPort.class);
 
@@ -333,7 +406,69 @@ class SpringModulithIncrementalAdoptionTest {
     assertNamedInterfaceContains(ircModule, "znc", ZncAutoConnectStore.class);
     assertNamedInterfaceContains(ircModule, "enrichment", UserInfoEnrichmentService.class);
     assertNamedInterfaceContains(
-        ircModule, "ircv3", Ircv3CapabilityCatalog.class, Ircv3DraftNormalizer.class);
+        ircModule,
+        "ircv3",
+        Ircv3CapabilityCatalog.class,
+        Ircv3CapabilityChangePlanner.class,
+        Ircv3CapabilityRequestBatchSession.class,
+        Ircv3CapabilitySnapshot.class,
+        Ircv3CapabilityState.class,
+        Ircv3TrackedCapability.class,
+        Ircv3AccountTagTracker.class,
+        Ircv3AwayLineParser.class,
+        Ircv3AwayNotifySignalParser.class,
+        Ircv3AccountNotifySignalParser.class,
+        Ircv3ExtendedJoinSignalParser.class,
+        Ircv3ChghostParser.class,
+        Ircv3SetnameParser.class,
+        Ircv3InviteNotifyParser.class,
+        Ircv3HistoryBatchControlParser.class,
+        Ircv3IsupportLine.class,
+        Ircv3LabeledResponseRawLinePreparer.class,
+        Ircv3LabeledResponseTagSignal.class,
+        Ircv3LabeledResponseValues.class,
+        Ircv3ZncDetector.class,
+        Ircv3ZncPlaybackRequestPlanner.class,
+        Ircv3MonitorCommandPlanner.class,
+        Ircv3MonitorParser.class,
+        Ircv3WhoUserhostParser.class,
+        Ircv3StandardReplyParser.class,
+        Ircv3ChannelContextPolicy.class,
+        Ircv3ChatHistoryAvailability.class,
+        Ircv3ChatHistoryCommandBuilder.class,
+        Ircv3MultilineCommandPlanner.class,
+        Ircv3MultilineLimitPolicy.class,
+        Ircv3MultilinePayload.class,
+        Ircv3CommandValuePolicy.class,
+        Ircv3ReplyCommandBuilder.class,
+        Ircv3ReplyDraftPolicy.class,
+        Ircv3ReplyTagSignal.class,
+        Ircv3ReactionCommandBuilder.class,
+        Ircv3ReactionDraftPolicy.class,
+        Ircv3ReactionTagSignal.class,
+        Ircv3TypingCommandBuilder.class,
+        Ircv3TypingTagSignal.class,
+        Ircv3ReadMarkerCommandBuilder.class,
+        Ircv3ReadMarkerTagSignal.class,
+        Ircv3ReadMarkerTimestamp.class,
+        Ircv3MessageEditCommandBuilder.class,
+        Ircv3MessageEditTagSignal.class,
+        Ircv3MessageMutationRuntimeCatalog.class,
+        Ircv3MessageMutationRuntimeSupport.class,
+        Ircv3OutboundCommandRuntimeCatalog.class,
+        Ircv3MessageRedactionCommandBuilder.class,
+        Ircv3MessageRedactionTagSignal.class,
+        Ircv3SaslCapabilityOffer.class,
+        Ircv3SaslFailureSignal.class,
+        Ircv3SaslMechanismSelector.class,
+        Ircv3SaslSession.class,
+        Ircv3SaslSessionUpdate.class,
+        Ircv3StsPersistedPolicyNormalizer.class,
+        Ircv3StsPolicy.class,
+        Ircv3StsPolicyDirective.class,
+        Ircv3StsPolicyLearningPlanner.class,
+        Ircv3StsPolicyParser.class,
+        Ircv3StsTransportUpgradePlanner.class);
     assertNamedInterfaceContains(
         ircModule, "roster", UserListPort.class, UserhostQueryService.class);
     assertNamedInterfaceContains(
@@ -430,6 +565,8 @@ class SpringModulithIncrementalAdoptionTest {
             "irc",
             "irc::backend",
             "irc::enrichment",
+            "irc::ircv3",
+            "irc::ircv3-spi",
             "irc::playback",
             "irc::port",
             "irc::quassel-control",
@@ -473,9 +610,16 @@ class SpringModulithIncrementalAdoptionTest {
             "net",
             "notifications::api",
             "notify::api",
+            "notify::api-irc",
+            "notify::api-panel",
+            "notify::api-pushy",
+            "notify::api-sound",
+            "notify::api-store",
+            "notify::api-text",
             "notify::pushy",
             "notify::sound",
             "notify::spi",
+            "plugin::spi",
             "state::api",
             "util");
   }
@@ -499,7 +643,9 @@ class SpringModulithIncrementalAdoptionTest {
     for (Class<?> type :
         new Class<?>[] {
           BouncerDiscoveryConfigPort.class,
-          ChatCommandRuntimeConfigPort.class,
+          ChatAppearanceRuntimeConfigPort.class,
+          PreferredNickRuntimeConfigPort.class,
+          QuitMessageRuntimeConfigPort.class,
           ConnectionRuntimeConfigPort.class,
           CtcpReplyRuntimeConfigPort.class,
           DiagnosticsRuntimeConfigPort.class,
@@ -514,12 +660,17 @@ class SpringModulithIncrementalAdoptionTest {
           NickColorOverridesConfigPort.class,
           RuntimeConfigPathPort.class,
           ServerAutoConnectRuntimeConfigPort.class,
+          ServerTreeAppearanceRuntimeConfigPort.class,
           ServerTreeBuiltInVisibilityConfigPort.class,
           ServerTreeChannelStateConfigPort.class,
           ServerTreeLayoutConfigPort.class,
           ServerTreeRuntimeConfigPort.class,
+          ApplicationRootVisibilityConfigPort.class,
+          DockLayoutRuntimeConfigPort.class,
+          SelectedTargetRuntimeConfigPort.class,
+          ThemeAppearanceRuntimeConfigPort.class,
+          TrayCloseHintRuntimeConfigPort.class,
           UiSettingsRuntimeConfigPort.class,
-          UiShellRuntimeConfigPort.class,
           UserCommandAliasesConfigPort.class
         }) {
       assertThat(type.isAnnotationPresent(SecondaryPort.class)).as(type.getSimpleName()).isTrue();

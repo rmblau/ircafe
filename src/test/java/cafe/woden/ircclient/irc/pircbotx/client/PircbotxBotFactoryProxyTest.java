@@ -8,6 +8,8 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
 import cafe.woden.ircclient.config.properties.SojuProperties;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ExtensionCatalog;
+import cafe.woden.ircclient.irc.ircv3.Ircv3RuntimeTestFixtures;
 import cafe.woden.ircclient.net.DeferredConnectSocksSocketFactory;
 import cafe.woden.ircclient.net.ProxyPlan;
 import cafe.woden.ircclient.net.ServerProxyResolver;
@@ -27,7 +29,12 @@ class PircbotxBotFactoryProxyTest {
     when(proxyResolver.planForServer("libera")).thenReturn(ProxyPlan.from(proxyCfg));
 
     PircbotxBotFactory factory =
-        new PircbotxBotFactory(proxyResolver, new SojuProperties(Map.of(), null), null);
+        new PircbotxBotFactory(
+            proxyResolver,
+            new SojuProperties(Map.of(), null),
+            null,
+            Ircv3ExtensionCatalog.builtInCatalog(),
+            Ircv3RuntimeTestFixtures.catalogs());
 
     Configuration cfg =
         factory

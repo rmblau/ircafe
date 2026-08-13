@@ -21,13 +21,14 @@ import org.pircbotx.PircBotX;
 
 class PircbotxIrcv3InputParserMockVerifyTest {
 
+  private static final Ircv3RuntimeCatalogs DEFAULT_CATALOGS = Ircv3RuntimeTestFixtures.catalogs();
+
   @Test
   void replayedRpl324LineEmitsSnapshotModeObservation() {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     @SuppressWarnings("unchecked")
     Consumer<ServerIrcEvent> sink = mock(Consumer.class);
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(dummyBot(), "libera", conn, sink, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, sink, stsPolicies());
 
     String line = ":osmium.libera.chat 324 me ##politics +CLTcnrt";
     List<String> parsed = List.of("me", "##politics", "+CLTcnrt");
@@ -51,6 +52,20 @@ class PircbotxIrcv3InputParserMockVerifyTest {
     assertTrue(
         observed.provenance() == IrcEvent.ChannelModeProvenance.NUMERIC_324
             || observed.provenance() == IrcEvent.ChannelModeProvenance.NUMERIC_324_FALLBACK);
+  }
+
+  private static Ircv3StsPolicyService stsPolicies() {
+    return Ircv3RuntimeTestFixtures.stsPolicyService(DEFAULT_CATALOGS);
+  }
+
+  private static PircbotxIrcv3InputParser parser(
+      PircBotX bot,
+      String serverId,
+      PircbotxConnectionState conn,
+      Consumer<ServerIrcEvent> sink,
+      Ircv3StsPolicyService stsPolicies) {
+    return new PircbotxInputParserHookInstaller(stsPolicies, DEFAULT_CATALOGS)
+        .createParser(bot, serverId, conn, sink);
   }
 
   private static PircBotX dummyBot() {

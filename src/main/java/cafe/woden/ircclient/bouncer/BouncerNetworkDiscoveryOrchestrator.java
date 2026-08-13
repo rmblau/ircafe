@@ -2,6 +2,7 @@ package cafe.woden.ircclient.bouncer;
 
 import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
 import cafe.woden.ircclient.bouncer.spi.BouncerEphemeralServerSpec;
+import cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingContext;
 import cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy;
 import cafe.woden.ircclient.bouncer.spi.BouncerServerProfile;
 import cafe.woden.ircclient.bouncer.spi.ResolvedBouncerNetwork;
@@ -9,12 +10,8 @@ import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
 import cafe.woden.ircclient.config.servers.EphemeralServerRegistry;
 import cafe.woden.ircclient.config.servers.ServerRegistry;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.jmolecules.architecture.layered.ApplicationLayer;
@@ -37,8 +34,29 @@ public final class BouncerNetworkDiscoveryOrchestrator {
   @NonNull private final BouncerDiscoveryConfigPort runtimeConfig;
   @NonNull private final BouncerConnectionPort connectionPort;
 
-  /** Guard against repeated connect() calls when a bouncer repeats network discovery lines. */
-  private final Set<String> autoConnectQueued = ConcurrentHashMap.newKeySet();
+  private final BouncerDiscoveryRuntimeRules runtimeRules = new BouncerDiscoveryRuntimeRules();
+  private final BouncerNetworkMappingContextFactory mappingContextFactory =
+      new BouncerNetworkMappingContextFactory();
+  private final BouncerServerProfileFactory serverProfileFactory =
+      new BouncerServerProfileFactory();
+  private final BouncerEphemeralServerConfigFactory ephemeralServerConfigFactory =
+      new BouncerEphemeralServerConfigFactory();
+  private final BouncerConfiguredServerTemplateFactory configuredServerTemplateFactory =
+      new BouncerConfiguredServerTemplateFactory();
+  private final BouncerDiscoveredNetworkPreflightPlanner preflightPlanner =
+      new BouncerDiscoveredNetworkPreflightPlanner();
+  private final BouncerOriginDisconnectPlanner originDisconnectPlanner =
+      new BouncerOriginDisconnectPlanner();
+  private final BouncerDiscoveredNetworkResolutionService resolutionService =
+      new BouncerDiscoveredNetworkResolutionService();
+  private final BouncerDiscoveredNetworkApplicationPlanner applicationPlanner =
+      new BouncerDiscoveredNetworkApplicationPlanner();
+  private final BouncerAutoConnectQueueGate autoConnectQueueGate =
+      new BouncerAutoConnectQueueGate();
+  private final BouncerAutoConnectExecutionPlanner autoConnectExecutionPlanner =
+      new BouncerAutoConnectExecutionPlanner(autoConnectQueueGate);
+  private final BouncerNetworkDebugLabelFormatter debugLabelFormatter =
+      new BouncerNetworkDebugLabelFormatter();
 
   public String backendId() {
     return mappingStrategy.backendId();
@@ -50,11 +68,10 @@ public final class BouncerNetworkDiscoveryOrchestrator {
    * <p>Safe to call multiple times; entries are de-duplicated by deterministic server id.
    */
   public void onNetworkDiscovered(BouncerDiscoveredNetwork network) {
-    if (network == null) return;
-    if (!isSameBackend(network.backendId())) return;
+    BouncerDiscoveredNetworkPreflightPlan preflight = preflightPlanner.plan(backendId(), network);
+    if (!preflight.accepts()) return;
 
-    String bouncerId = normalize(network.originServerId());
-    if (bouncerId == null) return;
+    String bouncerId = preflight.originServerId();
 
     Optional<IrcProperties.Server> bouncerOpt = serverRegistry.find(bouncerId);
     if (bouncerOpt.isEmpty()) {
@@ -63,29 +80,27 @@ public final class BouncerNetworkDiscoveryOrchestrator {
     }
 
     IrcProperties.Server bouncer = bouncerOpt.get();
-    BouncerServerProfile bouncerProfile = bouncerProfile(bouncer);
-    ResolvedBouncerNetwork resolved = mappingStrategy.resolveNetwork(bouncerProfile, network);
-    BouncerEphemeralServerSpec serverSpec =
-        mappingStrategy.buildEphemeralServer(
-            bouncerProfile, resolved, autoJoinChannelsFor(resolved.serverId()));
-    IrcProperties.Server server = buildEphemeralServer(bouncer, serverSpec);
+    BouncerDiscoveredNetworkResolution resolution =
+        resolutionService.resolve(
+            mappingStrategy,
+            bouncerProfile(bouncer),
+            network,
+            mappingContext(),
+            this::autoJoinChannelsFor);
+    IrcProperties.Server server = buildEphemeralServer(bouncer, resolution.serverSpec());
 
-    // If the user has chosen to persist this network entry, don't keep an ephemeral duplicate.
-    if (serverRegistry.containsId(server.id())) {
-      ephemeralServers.remove(server.id());
+    BouncerDiscoveredNetworkApplicationPlan plan =
+        applicationPlan(server, bouncerId, resolution.resolvedNetwork());
+    if (plan.removesEphemeralDuplicate()) {
+      ephemeralServers.remove(plan.serverId());
       return;
     }
-
-    Optional<IrcProperties.Server> existingOpt = ephemeralServers.find(server.id());
-    boolean same = existingOpt.isPresent() && existingOpt.get().equals(server);
-    boolean sameOrigin =
-        ephemeralServers.originOf(server.id()).map(o -> o.equals(bouncerId)).orElse(false);
-    if (same && sameOrigin) return;
+    if (plan.keepsExisting()) return;
 
     ephemeralServers.upsert(server, bouncerId);
-    logDiscoveredNetwork(network, resolved, server.id());
+    logDiscoveredNetwork(network, resolution.resolvedNetwork(), plan.serverId());
 
-    maybeAutoConnect(bouncerId, resolved.autoConnectName(), server.id());
+    maybeAutoConnect(bouncerId, plan.autoConnectName(), plan.serverId());
   }
 
   /**
@@ -93,104 +108,138 @@ public final class BouncerNetworkDiscoveryOrchestrator {
    * bouncer-control connection).
    */
   public void onOriginDisconnected(String originServerId) {
-    String origin = normalize(originServerId);
-    if (origin == null) return;
+    BouncerOriginDisconnectPlan plan =
+        originDisconnectPlanner.plan(
+            originServerId, ephemeralServers.entries().stream().map(e -> e.originId()).toList());
+    if (!plan.clearsOrigin()) return;
 
-    long count =
-        ephemeralServers.entries().stream().filter(e -> origin.equals(e.originId())).count();
-    if (count == 0) return;
-
-    ephemeralServers.removeByOrigin(origin);
-    log.info("[{}] Cleared {} ephemeral networks for origin '{}'", backendId(), count, origin);
+    ephemeralServers.removeByOrigin(plan.originServerId());
+    log.info(
+        "[{}] Cleared {} ephemeral networks for origin '{}'",
+        backendId(),
+        plan.ephemeralCount(),
+        plan.originServerId());
 
     // Drop queued-connect guards for this origin so reconnecting the bouncer can re-trigger.
-    autoConnectQueued.removeIf(id -> originMatchesServerId(id, origin));
+    autoConnectQueueGate.clearOrigin(plan.originServerId());
+  }
+
+  private BouncerDiscoveredNetworkApplicationPlan applicationPlan(
+      IrcProperties.Server server, String bouncerId, ResolvedBouncerNetwork resolved) {
+    Optional<IrcProperties.Server> existingOpt = ephemeralServers.find(server.id());
+    boolean same = existingOpt.isPresent() && existingOpt.get().equals(server);
+    boolean sameOrigin =
+        ephemeralServers.originOf(server.id()).map(o -> o.equals(bouncerId)).orElse(false);
+
+    return applicationPlanner.plan(
+        server.id(),
+        resolved.autoConnectName(),
+        serverRegistry.containsId(server.id()),
+        same,
+        sameOrigin);
+  }
+
+  private BouncerNetworkMappingContext mappingContext() {
+    return mappingContextFactory.fromRuntimeSettings(
+        runtimeConfig.readGenericBouncerLoginTemplate(
+            mappingContextFactory.defaultGenericLoginTemplate()),
+        runtimeConfig.readGenericBouncerPreferLoginHint(
+            mappingContextFactory.defaultPreferLoginHint()));
   }
 
   private void maybeAutoConnect(String bouncerId, String networkName, String serverId) {
-    String sid = normalize(serverId);
-    if (sid == null) return;
-
-    if (!autoConnect.isEnabled(bouncerId, networkName)) return;
-    if (!autoConnectQueued.add(sid)) return;
+    BouncerAutoConnectExecutionPlan plan =
+        autoConnectExecutionPlanner.plan(
+            bouncerId, networkName, serverId, () -> autoConnect.isEnabled(bouncerId, networkName));
+    if (!plan.connects()) return;
 
     try {
       var unused =
           connectionPort
-              .connect(sid)
+              .connect(plan.serverId())
               .subscribe(
                   () -> {},
                   err ->
                       log.warn(
                           "[{}] Auto-connect failed for '{}' ({}): {}",
                           backendId(),
-                          networkName,
-                          sid,
+                          plan.networkName(),
+                          plan.serverId(),
                           String.valueOf(err)));
       log.info(
           "[{}] Auto-connect enabled for '{}' on '{}' -> connecting {}",
           backendId(),
-          networkName,
-          bouncerId,
-          sid);
+          plan.networkName(),
+          plan.bouncerId(),
+          plan.serverId());
     } catch (Exception e) {
       log.warn(
           "[{}] Auto-connect threw for '{}' ({}): {}",
           backendId(),
-          networkName,
-          sid,
+          plan.networkName(),
+          plan.serverId(),
           String.valueOf(e));
     }
   }
 
-  private static BouncerServerProfile bouncerProfile(IrcProperties.Server bouncer) {
+  private BouncerServerProfile bouncerProfile(IrcProperties.Server bouncer) {
     IrcProperties.Server.Sasl sasl = bouncer.sasl();
-    return new BouncerServerProfile(
+    return serverProfileFactory.fromConfiguredServer(
         bouncer.id(), bouncer.login(), sasl == null ? null : sasl.username());
   }
 
-  private static IrcProperties.Server buildEphemeralServer(
+  private IrcProperties.Server buildEphemeralServer(
       IrcProperties.Server bouncer, BouncerEphemeralServerSpec spec) {
-    IrcProperties.Server.Sasl sasl = bouncer.sasl();
+    BouncerEphemeralServerConfig config =
+        ephemeralServerConfigFactory.fromConfiguredServer(configuredTemplate(bouncer), spec);
+    BouncerEphemeralServerConfig.Sasl sasl = config.sasl();
 
     IrcProperties.Server.Sasl updatedSasl =
         new IrcProperties.Server.Sasl(
             sasl.enabled(),
-            spec.loginUser(),
+            sasl.username(),
             sasl.password(),
             sasl.mechanism(),
             sasl.disconnectOnFailure());
 
     return new IrcProperties.Server(
-        spec.serverId(),
-        bouncer.host(),
-        bouncer.port(),
-        bouncer.tls(),
-        bouncer.serverPassword(),
-        bouncer.nick(),
-        spec.loginUser(),
-        bouncer.realName(),
+        config.serverId(),
+        config.host(),
+        config.port(),
+        config.tls(),
+        config.serverPassword(),
+        config.nick(),
+        config.login(),
+        config.realName(),
         updatedSasl,
         bouncer.nickserv(),
-        spec.autoJoinChannels(),
+        config.autoJoinChannels(),
         List.of(),
         bouncer.proxy(),
         bouncer.backend());
   }
 
-  private List<String> autoJoinChannelsFor(String serverId) {
-    List<String> channels = runtimeConfig.readKnownChannels(serverId);
-    if (channels == null || channels.isEmpty()) return List.of();
+  private BouncerConfiguredServerTemplate configuredTemplate(IrcProperties.Server bouncer) {
+    IrcProperties.Server.Sasl sasl = bouncer.sasl();
+    return configuredServerTemplateFactory.fromConfiguredServerFields(
+        bouncer.host(),
+        bouncer.port(),
+        bouncer.tls(),
+        bouncer.serverPassword(),
+        bouncer.nick(),
+        bouncer.login(),
+        bouncer.realName(),
+        sasl == null ? null : sasl.enabled(),
+        sasl == null ? null : sasl.username(),
+        sasl == null ? null : sasl.password(),
+        sasl == null ? null : sasl.mechanism(),
+        sasl == null ? null : sasl.disconnectOnFailure());
+  }
 
-    ArrayList<String> out = new ArrayList<>();
-    for (String channel : channels) {
-      String ch = normalize(channel);
-      if (ch == null) continue;
-      if (!runtimeConfig.readServerTreeChannelAutoReattach(serverId, ch, true)) continue;
-      if (containsIgnoreCase(out, ch)) continue;
-      out.add(ch);
-    }
-    return out.isEmpty() ? List.of() : List.copyOf(out);
+  private List<String> autoJoinChannelsFor(String serverId) {
+    return runtimeRules.autoJoinChannels(
+        runtimeConfig.readKnownChannels(serverId),
+        channel -> runtimeConfig.readServerTreeChannelAutoReattach(serverId, channel, true));
   }
 
   private void logUnknownBouncer(BouncerDiscoveredNetwork network, String bouncerId) {
@@ -215,43 +264,6 @@ public final class BouncerNetworkDiscoveryOrchestrator {
   }
 
   private String debugSuffix(BouncerDiscoveredNetwork network) {
-    String debug = normalize(mappingStrategy.networkDebugId(network));
-    return debug == null ? "" : " (" + debug + ")";
-  }
-
-  private boolean isSameBackend(String discoveredBackendId) {
-    String expected = normalize(backendId());
-    String actual = normalize(discoveredBackendId);
-    if (expected == null || actual == null) return false;
-    return expected.equalsIgnoreCase(actual);
-  }
-
-  private static boolean originMatchesServerId(String serverId, String originServerId) {
-    String server = normalize(serverId);
-    String origin = normalize(originServerId);
-    if (server == null || origin == null) return false;
-
-    int firstColon = server.indexOf(':');
-    if (firstColon <= 0 || firstColon + 1 >= server.length()) return false;
-    int secondColon = server.indexOf(':', firstColon + 1);
-    if (secondColon <= firstColon + 1) return false;
-
-    String parsedOrigin = server.substring(firstColon + 1, secondColon).trim();
-    return origin.equals(parsedOrigin);
-  }
-
-  private static boolean containsIgnoreCase(List<String> values, String needle) {
-    if (values == null || values.isEmpty()) return false;
-    String n = normalize(needle);
-    if (n == null) return false;
-    for (String value : values) {
-      if (value != null && value.equalsIgnoreCase(n)) return true;
-    }
-    return false;
-  }
-
-  private static String normalize(String value) {
-    String v = Objects.toString(value, "").trim();
-    return v.isEmpty() ? null : v;
+    return debugLabelFormatter.suffixFor(mappingStrategy, network);
   }
 }

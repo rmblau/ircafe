@@ -44,7 +44,10 @@ public final class BuiltInBouncerNetworkNaming {
     }
   }
 
-  /** Parse ZNC-style usernames such as {@code user}, {@code user/network}, or {@code user@client/network}. */
+  /**
+   * Parse ZNC-style usernames such as {@code user}, {@code user/network}, or {@code
+   * user@client/network}.
+   */
   public static ZncLoginParts parseZncLogin(String login) {
     String s = Objects.toString(login, "").trim();
     if (s.isBlank()) return new ZncLoginParts("", "", "");

@@ -982,7 +982,8 @@ class MatrixSynapseContainerIntegrationTest {
         new MatrixDirectRoomResolver(proxyResolver),
         new MatrixMediaUploadClient(proxyResolver),
         new MatrixRoomMessageSender(proxyResolver),
-        new MatrixSyncClient(proxyResolver));
+        new MatrixSyncClient(proxyResolver),
+        MatrixIrcv3TestSupport.applicationClasspathRuntimeSupport());
   }
 
   private static void deleteRecursively(Path root) {

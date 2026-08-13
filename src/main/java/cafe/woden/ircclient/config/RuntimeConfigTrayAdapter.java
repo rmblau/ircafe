@@ -1,7 +1,6 @@
 package cafe.woden.ircclient.config;
 
 import cafe.woden.ircclient.config.api.TrayRuntimeConfigPort;
-import cafe.woden.ircclient.config.properties.PushyProperties;
 import java.nio.file.Path;
 import org.jmolecules.architecture.hexagonal.SecondaryAdapter;
 import org.jmolecules.architecture.layered.ApplicationLayer;
@@ -21,16 +20,6 @@ public final class RuntimeConfigTrayAdapter implements TrayRuntimeConfigPort {
   @Override
   public Path runtimeConfigPath() {
     return runtimeConfig.runtimeConfigPath();
-  }
-
-  @Override
-  public boolean readUpdateNotifierEnabled(boolean defaultValue) {
-    return runtimeConfig.readUpdateNotifierEnabled(defaultValue);
-  }
-
-  @Override
-  public boolean readLagIndicatorEnabled(boolean defaultValue) {
-    return runtimeConfig.readLagIndicatorEnabled(defaultValue);
   }
 
   @Override
@@ -111,20 +100,5 @@ public final class RuntimeConfigTrayAdapter implements TrayRuntimeConfigPort {
   @Override
   public void rememberTrayNotificationSoundCustomPath(String relativePath) {
     runtimeConfig.rememberTrayNotificationSoundCustomPath(relativePath);
-  }
-
-  @Override
-  public void rememberUpdateNotifierEnabled(boolean enabled) {
-    runtimeConfig.rememberUpdateNotifierEnabled(enabled);
-  }
-
-  @Override
-  public void rememberLagIndicatorEnabled(boolean enabled) {
-    runtimeConfig.rememberLagIndicatorEnabled(enabled);
-  }
-
-  @Override
-  public void rememberPushySettings(PushyProperties settings) {
-    runtimeConfig.rememberPushySettings(settings);
   }
 }

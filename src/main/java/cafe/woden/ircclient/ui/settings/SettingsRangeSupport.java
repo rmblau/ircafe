@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.ui.settings;
 
+import cafe.woden.ircclient.notify.api.store.NotificationRuleCooldownPolicy;
+
 public final class SettingsRangeSupport {
   private SettingsRangeSupport() {}
 
@@ -112,7 +114,7 @@ public final class SettingsRangeSupport {
   }
 
   public static int normalizeNotificationRuleCooldownSeconds(int value) {
-    return SettingsValueSupport.clampInt(value < 0 ? 15 : value, 0, 3600);
+    return NotificationRuleCooldownPolicy.normalizeCooldownSeconds(value);
   }
 
   public static int normalizeMemoryUsageRefreshIntervalMs(int value) {

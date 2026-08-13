@@ -13,7 +13,7 @@ import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.app.outbound.support.CommandTargetPolicy;
 import cafe.woden.ircclient.config.IrcProperties;
 import cafe.woden.ircclient.config.IrcPropertiesTestFixtures;
-import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.IrcSessionRuntimeConfigPort;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
 import cafe.woden.ircclient.irc.backend.IrcBackendRuntimeClientService;
 import cafe.woden.ircclient.irc.port.IrcTargetMembershipPort;
@@ -34,8 +34,7 @@ class OutboundJoinPartCommandServiceTest {
   private final ServerCatalog serverCatalog = mock(ServerCatalog.class);
   private final CommandTargetPolicy commandTargetPolicy =
       cafe.woden.ircclient.app.outbound.TestBackendSupport.commandTargetPolicy(serverCatalog);
-  private final ChatCommandRuntimeConfigPort runtimeConfig =
-      mock(ChatCommandRuntimeConfigPort.class);
+  private final IrcSessionRuntimeConfigPort runtimeConfig = mock(IrcSessionRuntimeConfigPort.class);
   private final JoinRoutingPort joinRoutingState = mock(JoinRoutingPort.class);
   private final PartCommandSupport partCommandSupport =
       new PartCommandSupport(

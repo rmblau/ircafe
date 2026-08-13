@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import cafe.woden.ircclient.irc.ircv3.Ircv3ChatHistoryCommandBuilder;
+import cafe.woden.ircclient.irc.ircv3.Ircv3RuntimeTestFixtures;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
 import java.time.Instant;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,9 @@ import org.pircbotx.output.OutputRaw;
 
 class PircbotxCapabilityCommandSupportTest {
 
-  private final PircbotxCapabilityCommandSupport support = new PircbotxCapabilityCommandSupport();
+  private final Ircv3RuntimeTestFixtures.Runtime runtime = Ircv3RuntimeTestFixtures.runtime();
+  private final PircbotxCapabilityCommandSupport support =
+      new PircbotxCapabilityCommandSupport(runtime.catalogs().outboundCommands());
 
   @Test
   void sendTypingSendsNormalizedTagmsgWhenAvailable() {
@@ -101,6 +104,22 @@ class PircbotxCapabilityCommandSupportTest {
 
     verify(outputRaw)
         .rawLine(Ircv3ChatHistoryCommandBuilder.buildLatest("#ircafe", "timestamp=123", 50));
+  }
+
+  @Test
+  void requestChatHistoryBeforeTimestampUsesRuntimePlan() {
+    PircbotxConnectionState connection = new PircbotxConnectionState("libera");
+    PircBotX bot = mock(PircBotX.class);
+    OutputRaw outputRaw = mock(OutputRaw.class);
+    when(bot.sendRaw()).thenReturn(outputRaw);
+    connection.setBot(bot);
+    connection.setChatHistoryCapAcked(true);
+    connection.setBatchCapAcked(true);
+
+    support.requestChatHistoryBefore(
+        "libera", connection, "#ircafe", Instant.parse("2026-07-13T12:34:56Z"), 500);
+
+    verify(outputRaw).rawLine("CHATHISTORY BEFORE #ircafe timestamp=2026-07-13T12:34:56.000Z 200");
   }
 
   @Test

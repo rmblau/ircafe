@@ -3,7 +3,7 @@ package cafe.woden.ircclient.app.outbound;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
-import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.QuitMessageRuntimeConfigPort;
 import cafe.woden.ircclient.model.TargetRef;
 import java.util.Objects;
 import lombok.AccessLevel;
@@ -21,7 +21,7 @@ final class OutboundConnectionLifecycleCommandService {
   @NonNull private final UiPort ui;
   @NonNull private final ConnectionCoordinator connectionCoordinator;
   @NonNull private final TargetCoordinator targetCoordinator;
-  @NonNull private final ChatCommandRuntimeConfigPort runtimeConfig;
+  @NonNull private final QuitMessageRuntimeConfigPort runtimeConfig;
 
   void handleConnect(String target) {
     ConnectionCommandTarget cmd = parseConnectionCommandTarget(target);
@@ -82,7 +82,7 @@ final class OutboundConnectionLifecycleCommandService {
     String msg = reason == null ? "" : reason.trim();
     if (msg.isEmpty()) {
       String configured = Objects.toString(runtimeConfig.readDefaultQuitMessage(), "").trim();
-      msg = configured.isEmpty() ? ChatCommandRuntimeConfigPort.DEFAULT_QUIT_MESSAGE : configured;
+      msg = configured.isEmpty() ? QuitMessageRuntimeConfigPort.DEFAULT_QUIT_MESSAGE : configured;
     }
     if (containsCrlf(msg)) {
       ui.appendStatus(

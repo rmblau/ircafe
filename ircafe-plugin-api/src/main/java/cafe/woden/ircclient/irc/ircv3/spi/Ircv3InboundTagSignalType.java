@@ -1,0 +1,23 @@
+package cafe.woden.ircclient.irc.ircv3.spi;
+
+/** Transport-neutral signal types produced from IRCv3 tagged messages. */
+public enum Ircv3InboundTagSignalType {
+  CONVERSATION_TARGET,
+  REPLY,
+  REACT,
+  UNREACT,
+  MESSAGE_REDACTION,
+  TYPING,
+  READ_MARKER,
+  MESSAGE_EDIT,
+  ACCOUNT_TAG,
+  ECHO_MESSAGE_TARGET_HINT,
+  ECHO_MESSAGE_KIND,
+  ECHO_MESSAGE_PAYLOAD,
+  HISTORY_BATCH_REFERENCE,
+  HISTORY_BOOTSTRAP_SUPPRESSED,
+  LABELED_RESPONSE,
+  SERVER_TIME,
+  SERVER_TIME_LAG,
+  MESSAGE_ID
+}

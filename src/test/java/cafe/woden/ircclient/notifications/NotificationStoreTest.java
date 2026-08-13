@@ -8,11 +8,7 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.app.api.UiSettingsPort;
 import cafe.woden.ircclient.app.api.UiSettingsSnapshotTestFixtures;
 import cafe.woden.ircclient.model.TargetRef;
-import java.lang.reflect.Field;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 class NotificationStoreTest {
@@ -52,6 +48,20 @@ class NotificationStoreTest {
   }
 
   @Test
+  void boundedHighlightBucketsUseFeaturePolicySafetyFloor() {
+    NotificationStore store = new NotificationStore(2);
+    TargetRef chan = new TargetRef("libera", "#ircafe");
+
+    for (int i = 0; i < 55; i++) {
+      store.recordHighlight(chan, "alice", "message-" + i, "msg-" + i);
+    }
+
+    assertEquals(50, store.listAll("libera").size());
+    assertEquals("message-5", store.listAll("libera").getFirst().snippet());
+    assertEquals("message-54", store.listRecent("libera", 1).getFirst().snippet());
+  }
+
+  @Test
   void defaultRuleMatchCooldownSuppressesDuplicatesUntilChannelCleared() {
     NotificationStore store = new NotificationStore();
     TargetRef chan = new TargetRef("libera", "#ircafe");
@@ -85,31 +95,6 @@ class NotificationStoreTest {
   }
 
   @Test
-  void staleRuleMatchCooldownKeysArePrunedBeforeCooldownCheck() throws Exception {
-    NotificationStore store = new NotificationStore();
-    for (int i = 0; i < 32; i++) {
-      store.recordRuleMatch(
-          new TargetRef("libera", "#chan" + i), "nick" + i, "Rule " + i, "seed " + i);
-    }
-
-    Field field = NotificationStore.class.getDeclaredField("lastRuleMatchAt");
-    field.setAccessible(true);
-    @SuppressWarnings("unchecked")
-    Map<Object, Instant> cooldownMap = (Map<Object, Instant>) field.get(store);
-    cooldownMap.replaceAll((k, v) -> Instant.now().minus(Duration.ofDays(2)));
-    int before = cooldownMap.size();
-    assertTrue(before >= 30);
-
-    TargetRef fresh = new TargetRef("libera", "#fresh");
-    int beforeEvents = store.listAllRuleMatches("libera").size();
-    store.recordRuleMatch(fresh, "alice", "Rule Fresh", "after-prune");
-    store.recordRuleMatch(fresh, "alice", "Rule Fresh", "blocked-by-cooldown");
-
-    assertEquals(beforeEvents + 1, store.listAllRuleMatches("libera").size());
-    assertTrue(cooldownMap.size() <= 2);
-  }
-
-  @Test
   void clearSelectedRemovesOnlyChosenRowsAndClearsRuleCooldownForRemovedRule() {
     NotificationStore store = new NotificationStore();
     TargetRef chan = new TargetRef("libera", "#ircafe");
@@ -130,5 +115,27 @@ class NotificationStoreTest {
     store.recordRuleMatch(chan, "bob", "Rule A", "match after clear", "msg-rule-2");
     assertEquals(1, store.listAllRuleMatches("libera").size());
     assertEquals("msg-rule-2", store.listAllRuleMatches("libera").getFirst().messageId());
+  }
+
+  @Test
+  void storeOperationsUseFeaturePreflightNormalization() {
+    NotificationStore store = new NotificationStore();
+    TargetRef chan = new TargetRef("libera", "#ircafe");
+
+    store.recordHighlight(chan, "alice", "alice: ping", "msg-highlight");
+    store.recordRuleMatch(chan, "bob", "Rule A", "match snippet", "msg-rule");
+    store.recordIrcEvent(
+        "libera", "#ircafe", "carol", "Topic changed", "new topic body", "msg-irc");
+
+    assertEquals(3, store.count(" libera "));
+    assertEquals(1, store.listRecent(" libera ", 1).size());
+    assertTrue(store.listRecent("libera", 0).isEmpty());
+
+    store.clearServer(" libera ");
+
+    assertEquals(0, store.count("libera"));
+    assertTrue(store.listAll("libera").isEmpty());
+    assertTrue(store.listAllRuleMatches("libera").isEmpty());
+    assertTrue(store.listAllIrcEventRules("libera").isEmpty());
   }
 }

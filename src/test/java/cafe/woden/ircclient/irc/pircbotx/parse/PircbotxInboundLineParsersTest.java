@@ -33,21 +33,6 @@ class PircbotxInboundLineParsersTest {
   }
 
   @Test
-  void parseInviteLineExtractsChannelAndReason() {
-    ParsedIrcLine parsed =
-        PircbotxInboundLineParsers.parseIrcLine(
-            ":ChanServ!service@example INVITE chris #ircafe :Join us");
-
-    ParsedInviteLine invite = PircbotxInboundLineParsers.parseInviteLine(parsed);
-
-    assertNotNull(invite);
-    assertEquals("ChanServ", invite.fromNick());
-    assertEquals("chris", invite.inviteeNick());
-    assertEquals("#ircafe", invite.channel());
-    assertEquals("Join us", invite.reason());
-  }
-
-  @Test
   void parseWallopsLineFallsBackToServerPrefix() {
     ParsedIrcLine parsed =
         PircbotxInboundLineParsers.parseIrcLine(":server.example WALLOPS :Maintenance soon");

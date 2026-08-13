@@ -1,0 +1,3 @@
+apply from: rootProject.file('gradle/ircv3-feature-conventions.gradle')
+
+description = 'IRCafe ZNC playback detection, request, and bootstrap suppression policy.'

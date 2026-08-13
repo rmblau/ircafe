@@ -1,16 +1,16 @@
 package cafe.woden.ircclient.config;
 
-import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort.EmbedLoadPolicySnapshot;
 import cafe.woden.ircclient.config.api.Ircv3CapabilityNameResolverPort;
 import cafe.woden.ircclient.config.api.Ircv3StsPolicyConfigPort;
 import cafe.woden.ircclient.config.api.NotificationRule;
+import cafe.woden.ircclient.config.api.QuitMessageRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.SelectedTargetRuntimeConfigPort.LastSelectedTarget;
 import cafe.woden.ircclient.config.api.ServerTreeBuiltInVisibilityConfigPort.ServerTreeBuiltInNodesVisibility;
 import cafe.woden.ircclient.config.api.ServerTreeChannelStateConfigPort.ServerTreeChannelSortMode;
 import cafe.woden.ircclient.config.api.ServerTreeChannelStateConfigPort.ServerTreeChannelState;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeBuiltInLayout;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort.ServerTreeRootSiblingOrder;
-import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort.LastSelectedTarget;
 import cafe.woden.ircclient.config.properties.PushyProperties;
 import cafe.woden.ircclient.config.runtime.RuntimeConfigStoreDelegates;
 import cafe.woden.ircclient.model.FilterRule;
@@ -36,7 +36,7 @@ import org.springframework.stereotype.Component;
 public class RuntimeConfigStore {
 
   public static final String DEFAULT_QUIT_MESSAGE =
-      ChatCommandRuntimeConfigPort.DEFAULT_QUIT_MESSAGE;
+      QuitMessageRuntimeConfigPort.DEFAULT_QUIT_MESSAGE;
 
   private final Path file;
   private final RuntimeConfigStoreDelegates stores;

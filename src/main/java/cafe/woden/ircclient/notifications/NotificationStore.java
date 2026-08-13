@@ -8,18 +8,20 @@ import cafe.woden.ircclient.notifications.api.NotificationChange;
 import cafe.woden.ircclient.notifications.api.NotificationEvent;
 import cafe.woden.ircclient.notifications.api.NotificationStorePort;
 import cafe.woden.ircclient.notifications.api.RuleMatchEvent;
+import cafe.woden.ircclient.notify.api.store.NotificationRuleCooldownPolicy;
+import cafe.woden.ircclient.notify.api.store.NotificationRuleMatchCooldown;
+import cafe.woden.ircclient.notify.api.store.NotificationStoreEventBucketPolicy;
+import cafe.woden.ircclient.notify.api.store.NotificationStoreEventPolicy;
+import cafe.woden.ircclient.notify.api.store.NotificationStoreEventValues;
+import cafe.woden.ircclient.notify.api.store.NotificationStoreOperationPlan;
+import cafe.woden.ircclient.notify.api.store.NotificationStoreOperationPlanner;
 import io.reactivex.rxjava3.core.Flowable;
 import io.reactivex.rxjava3.processors.FlowableProcessor;
 import io.reactivex.rxjava3.processors.PublishProcessor;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,13 +36,13 @@ public class NotificationStore implements NotificationStorePort {
   public static final int DEFAULT_MAX_EVENTS_PER_SERVER = 2000;
 
   /** Default cooldown to avoid spamming rule-match notifications. */
-  public static final int DEFAULT_RULE_MATCH_COOLDOWN_SECONDS = 15;
-
-  private static final Duration RULE_MATCH_KEY_TTL = Duration.ofHours(24);
-  private static final int MAX_RULE_MATCH_KEYS = 50_000;
+  public static final int DEFAULT_RULE_MATCH_COOLDOWN_SECONDS =
+      NotificationRuleCooldownPolicy.DEFAULT_COOLDOWN_SECONDS;
 
   private final int maxEventsPerServer;
   private final UiSettingsPort uiSettingsPort;
+  private final NotificationRuleMatchCooldown ruleMatchCooldown =
+      new NotificationRuleMatchCooldown();
 
   private final ConcurrentHashMap<String, List<HighlightEvent>> eventsByServer =
       new ConcurrentHashMap<>();
@@ -49,11 +51,6 @@ public class NotificationStore implements NotificationStorePort {
       new ConcurrentHashMap<>();
 
   private final ConcurrentHashMap<String, List<IrcEventRuleEvent>> ircEventRuleEventsByServer =
-      new ConcurrentHashMap<>();
-
-  private record RuleMatchKey(String serverId, String channel, String ruleLabel) {}
-
-  private final ConcurrentHashMap<RuleMatchKey, Instant> lastRuleMatchAt =
       new ConcurrentHashMap<>();
 
   private final FlowableProcessor<NotificationChange> changes =
@@ -74,7 +71,8 @@ public class NotificationStore implements NotificationStorePort {
 
   public NotificationStore(UiSettingsPort uiSettingsPort, int maxEventsPerServer) {
     this.uiSettingsPort = uiSettingsPort;
-    this.maxEventsPerServer = Math.max(50, maxEventsPerServer);
+    this.maxEventsPerServer =
+        NotificationStoreEventBucketPolicy.normalizeMaxEventsPerServer(maxEventsPerServer);
   }
 
   /** Emits a signal whenever notifications change for a server. */
@@ -103,30 +101,30 @@ public class NotificationStore implements NotificationStorePort {
     if (channelTarget.isUiOnly()) return;
     if (!channelTarget.isChannel()) return;
 
-    String sid = normalizeServerId(channelTarget.serverId());
-    if (sid.isEmpty()) return;
-
-    String channel = normalizeChannel(channelTarget.target());
-    if (channel.isEmpty()) return;
-
-    String nick = normalizeNick(fromNick);
-    String snip = normalizeSnippet(snippet);
-    String msgId = normalizeMessageId(messageId);
+    NotificationStoreEventValues event =
+        NotificationStoreEventPolicy.highlight(
+            channelTarget.serverId(), channelTarget.target(), fromNick, snippet, messageId);
+    if (!event.valid()) return;
     Instant now = Instant.now();
 
     List<HighlightEvent> list =
-        eventsByServer.computeIfAbsent(sid, k -> Collections.synchronizedList(new ArrayList<>()));
+        eventsByServer.computeIfAbsent(
+            event.serverId(), k -> Collections.synchronizedList(new ArrayList<>()));
 
     synchronized (list) {
-      list.add(new HighlightEvent(sid, channel, nick, snip, now, msgId));
-      // Enforce cap (drop oldest first).
-      int overflow = list.size() - maxEventsPerServer;
-      if (overflow > 0) {
-        list.subList(0, overflow).clear();
-      }
+      NotificationStoreEventBucketPolicy.appendCapped(
+          list,
+          new HighlightEvent(
+              event.serverId(),
+              event.channel(),
+              event.fromNick(),
+              event.snippet(),
+              now,
+              event.messageId()),
+          maxEventsPerServer);
     }
 
-    changes.onNext(new NotificationChange(sid));
+    changes.onNext(new NotificationChange(event.serverId()));
   }
 
   /** Record a new rule match event. */
@@ -148,41 +146,41 @@ public class NotificationStore implements NotificationStorePort {
     if (channelTarget.isUiOnly()) return;
     if (!channelTarget.isChannel()) return;
 
-    String sid = normalizeServerId(channelTarget.serverId());
-    if (sid.isEmpty()) return;
-
-    String channel = normalizeChannel(channelTarget.target());
-    if (channel.isEmpty()) return;
-
-    String nick = normalizeNick(fromNick);
-    String label = normalizeLabel(ruleLabel);
-    String snip = normalizeSnippet(snippet);
-    String msgId = normalizeMessageId(messageId);
+    NotificationStoreEventValues event =
+        NotificationStoreEventPolicy.ruleMatch(
+            channelTarget.serverId(),
+            channelTarget.target(),
+            fromNick,
+            ruleLabel,
+            snippet,
+            messageId);
+    if (!event.valid()) return;
     Instant now = Instant.now();
 
-    RuleMatchKey key =
-        new RuleMatchKey(
-            sid.toLowerCase(Locale.ROOT),
-            channel.toLowerCase(Locale.ROOT),
-            label.toLowerCase(Locale.ROOT));
-
-    if (!allowRuleMatch(key, now)) {
+    if (!ruleMatchCooldown.allow(
+        event.serverId(), event.channel(), event.label(), currentRuleMatchCooldownSeconds(), now)) {
       return;
     }
 
     List<RuleMatchEvent> list =
         ruleEventsByServer.computeIfAbsent(
-            sid, k -> Collections.synchronizedList(new ArrayList<>()));
+            event.serverId(), k -> Collections.synchronizedList(new ArrayList<>()));
 
     synchronized (list) {
-      list.add(new RuleMatchEvent(sid, channel, nick, label, snip, now, msgId));
-      int overflow = list.size() - maxEventsPerServer;
-      if (overflow > 0) {
-        list.subList(0, overflow).clear();
-      }
+      NotificationStoreEventBucketPolicy.appendCapped(
+          list,
+          new RuleMatchEvent(
+              event.serverId(),
+              event.channel(),
+              event.fromNick(),
+              event.label(),
+              event.snippet(),
+              now,
+              event.messageId()),
+          maxEventsPerServer);
     }
 
-    changes.onNext(new NotificationChange(sid));
+    changes.onNext(new NotificationChange(event.serverId()));
   }
 
   /** Record a configured IRC event notification for the Notifications node. */
@@ -201,54 +199,53 @@ public class NotificationStore implements NotificationStorePort {
       String title,
       String body,
       String messageId) {
-    String sid = normalizeServerId(serverId);
-    if (sid.isEmpty()) return;
-
-    String chan = normalizeChannel(target);
-    if (chan.isEmpty()) chan = "status";
-
-    String nick = normalizeNick(fromNick);
-    String normalizedTitle = normalizeLabel(title);
-    String normalizedBody = normalizeSnippet(body);
-    String msgId = normalizeMessageId(messageId);
+    NotificationStoreEventValues event =
+        NotificationStoreEventPolicy.ircEvent(serverId, target, fromNick, title, body, messageId);
+    if (!event.valid()) return;
     Instant now = Instant.now();
 
     List<IrcEventRuleEvent> list =
         ircEventRuleEventsByServer.computeIfAbsent(
-            sid, k -> Collections.synchronizedList(new ArrayList<>()));
+            event.serverId(), k -> Collections.synchronizedList(new ArrayList<>()));
 
     synchronized (list) {
-      list.add(new IrcEventRuleEvent(sid, chan, nick, normalizedTitle, normalizedBody, now, msgId));
-      int overflow = list.size() - maxEventsPerServer;
-      if (overflow > 0) {
-        list.subList(0, overflow).clear();
-      }
+      NotificationStoreEventBucketPolicy.appendCapped(
+          list,
+          new IrcEventRuleEvent(
+              event.serverId(),
+              event.channel(),
+              event.fromNick(),
+              event.label(),
+              event.snippet(),
+              now,
+              event.messageId()),
+          maxEventsPerServer);
     }
 
-    changes.onNext(new NotificationChange(sid));
+    changes.onNext(new NotificationChange(event.serverId()));
   }
 
   /** Returns a defensive copy of all highlight events for a server, oldest to newest. */
   @Override
   public List<HighlightEvent> listAll(String serverId) {
-    String sid = normalizeServerId(serverId);
-    if (sid.isEmpty()) return List.of();
-    List<HighlightEvent> list = eventsByServer.get(sid);
+    NotificationStoreOperationPlan plan = NotificationStoreOperationPlanner.server(serverId);
+    if (!plan.valid()) return List.of();
+    List<HighlightEvent> list = eventsByServer.get(plan.serverId());
     if (list == null) return List.of();
     synchronized (list) {
-      return List.copyOf(list);
+      return NotificationStoreEventBucketPolicy.copyAll(list);
     }
   }
 
   /** Returns a defensive copy of all rule-match events for a server, oldest to newest. */
   @Override
   public List<RuleMatchEvent> listAllRuleMatches(String serverId) {
-    String sid = normalizeServerId(serverId);
-    if (sid.isEmpty()) return List.of();
-    List<RuleMatchEvent> list = ruleEventsByServer.get(sid);
+    NotificationStoreOperationPlan plan = NotificationStoreOperationPlanner.server(serverId);
+    if (!plan.valid()) return List.of();
+    List<RuleMatchEvent> list = ruleEventsByServer.get(plan.serverId());
     if (list == null) return List.of();
     synchronized (list) {
-      return List.copyOf(list);
+      return NotificationStoreEventBucketPolicy.copyAll(list);
     }
   }
 
@@ -258,54 +255,51 @@ public class NotificationStore implements NotificationStorePort {
    */
   @Override
   public List<IrcEventRuleEvent> listAllIrcEventRules(String serverId) {
-    String sid = normalizeServerId(serverId);
-    if (sid.isEmpty()) return List.of();
-    List<IrcEventRuleEvent> list = ircEventRuleEventsByServer.get(sid);
+    NotificationStoreOperationPlan plan = NotificationStoreOperationPlanner.server(serverId);
+    if (!plan.valid()) return List.of();
+    List<IrcEventRuleEvent> list = ircEventRuleEventsByServer.get(plan.serverId());
     if (list == null) return List.of();
     synchronized (list) {
-      return List.copyOf(list);
+      return NotificationStoreEventBucketPolicy.copyAll(list);
     }
   }
 
   /** Returns up to {@code max} most recent highlight events for a server (newest last). */
   @Override
   public List<HighlightEvent> listRecent(String serverId, int max) {
-    if (max <= 0) return List.of();
-    String sid = normalizeServerId(serverId);
-    if (sid.isEmpty()) return List.of();
-    List<HighlightEvent> list = eventsByServer.get(sid);
+    NotificationStoreOperationPlan plan = NotificationStoreOperationPlanner.recent(serverId, max);
+    if (!plan.valid()) return List.of();
+    List<HighlightEvent> list = eventsByServer.get(plan.serverId());
     if (list == null) return List.of();
     synchronized (list) {
-      int n = list.size();
-      int from = Math.max(0, n - max);
-      return List.copyOf(list.subList(from, n));
+      return NotificationStoreEventBucketPolicy.copyRecent(list, plan.max());
     }
   }
 
   @Override
   public int count(String serverId) {
-    String sid = normalizeServerId(serverId);
-    if (sid.isEmpty()) return 0;
+    NotificationStoreOperationPlan plan = NotificationStoreOperationPlanner.server(serverId);
+    if (!plan.valid()) return 0;
     int total = 0;
 
-    List<HighlightEvent> highlights = eventsByServer.get(sid);
+    List<HighlightEvent> highlights = eventsByServer.get(plan.serverId());
     if (highlights != null) {
       synchronized (highlights) {
-        total += highlights.size();
+        total += NotificationStoreEventBucketPolicy.count(highlights);
       }
     }
 
-    List<RuleMatchEvent> rules = ruleEventsByServer.get(sid);
+    List<RuleMatchEvent> rules = ruleEventsByServer.get(plan.serverId());
     if (rules != null) {
       synchronized (rules) {
-        total += rules.size();
+        total += NotificationStoreEventBucketPolicy.count(rules);
       }
     }
 
-    List<IrcEventRuleEvent> ircEvents = ircEventRuleEventsByServer.get(sid);
+    List<IrcEventRuleEvent> ircEvents = ircEventRuleEventsByServer.get(plan.serverId());
     if (ircEvents != null) {
       synchronized (ircEvents) {
-        total += ircEvents.size();
+        total += NotificationStoreEventBucketPolicy.count(ircEvents);
       }
     }
 
@@ -315,118 +309,118 @@ public class NotificationStore implements NotificationStorePort {
   /** Clears all highlight events for a specific channel on a server. */
   @Override
   public void clearChannel(TargetRef channelTarget) {
-    if (channelTarget == null) return;
-    if (channelTarget.isUiOnly()) return;
-    if (!channelTarget.isChannel()) return;
-
-    String sid = normalizeServerId(channelTarget.serverId());
-    if (sid.isEmpty()) return;
-    String channel = normalizeChannel(channelTarget.target());
-    if (channel.isEmpty()) return;
+    NotificationStoreOperationPlan plan =
+        NotificationStoreOperationPlanner.channel(
+            channelTarget != null ? channelTarget.serverId() : null,
+            channelTarget != null ? channelTarget.target() : null,
+            channelTarget != null,
+            channelTarget != null && channelTarget.isUiOnly(),
+            channelTarget != null && channelTarget.isChannel());
+    if (!plan.valid()) return;
 
     boolean changed = false;
 
-    List<HighlightEvent> list = eventsByServer.get(sid);
+    List<HighlightEvent> list = eventsByServer.get(plan.serverId());
     if (list != null) {
       synchronized (list) {
-        changed = list.removeIf(ev -> ev != null && channel.equalsIgnoreCase(ev.channel()));
+        changed =
+            NotificationStoreEventBucketPolicy.removeMatchingChannel(
+                    list, plan.channel(), HighlightEvent::channel)
+                > 0;
       }
     }
-    List<RuleMatchEvent> rules = ruleEventsByServer.get(sid);
+    List<RuleMatchEvent> rules = ruleEventsByServer.get(plan.serverId());
     if (rules != null) {
       synchronized (rules) {
-        changed |= rules.removeIf(ev -> ev != null && channel.equalsIgnoreCase(ev.channel()));
+        changed |=
+            NotificationStoreEventBucketPolicy.removeMatchingChannel(
+                    rules, plan.channel(), RuleMatchEvent::channel)
+                > 0;
       }
     }
 
-    List<IrcEventRuleEvent> ircEvents = ircEventRuleEventsByServer.get(sid);
+    List<IrcEventRuleEvent> ircEvents = ircEventRuleEventsByServer.get(plan.serverId());
     if (ircEvents != null) {
       synchronized (ircEvents) {
-        changed |= ircEvents.removeIf(ev -> ev != null && channel.equalsIgnoreCase(ev.channel()));
+        changed |=
+            NotificationStoreEventBucketPolicy.removeMatchingChannel(
+                    ircEvents, plan.channel(), IrcEventRuleEvent::channel)
+                > 0;
       }
     }
-    clearRuleMatchCooldownForChannel(sid, channel);
+    ruleMatchCooldown.clearChannel(plan.serverId(), plan.channel());
 
     if (changed) {
-      changes.onNext(new NotificationChange(sid));
+      changes.onNext(new NotificationChange(plan.serverId()));
     }
   }
 
   /** Clears all highlight events for a server. */
   @Override
   public void clearServer(String serverId) {
-    String sid = normalizeServerId(serverId);
-    if (sid.isEmpty()) return;
-    List<HighlightEvent> list = eventsByServer.get(sid);
+    NotificationStoreOperationPlan plan = NotificationStoreOperationPlanner.server(serverId);
+    if (!plan.valid()) return;
+    List<HighlightEvent> list = eventsByServer.get(plan.serverId());
     if (list != null) {
       synchronized (list) {
-        list.clear();
+        NotificationStoreEventBucketPolicy.clear(list);
       }
     }
 
-    List<RuleMatchEvent> rules = ruleEventsByServer.get(sid);
+    List<RuleMatchEvent> rules = ruleEventsByServer.get(plan.serverId());
     if (rules != null) {
       synchronized (rules) {
-        rules.clear();
+        NotificationStoreEventBucketPolicy.clear(rules);
       }
     }
 
-    List<IrcEventRuleEvent> ircEvents = ircEventRuleEventsByServer.get(sid);
+    List<IrcEventRuleEvent> ircEvents = ircEventRuleEventsByServer.get(plan.serverId());
     if (ircEvents != null) {
       synchronized (ircEvents) {
-        ircEvents.clear();
+        NotificationStoreEventBucketPolicy.clear(ircEvents);
       }
     }
 
-    clearRuleMatchCooldownForServer(sid);
-    changes.onNext(new NotificationChange(sid));
+    ruleMatchCooldown.clearServer(plan.serverId());
+    changes.onNext(new NotificationChange(plan.serverId()));
   }
 
   @Override
   public int clearSelected(String serverId, List<? extends NotificationEvent> selectedEvents) {
-    String sid = normalizeServerId(serverId);
-    if (sid.isEmpty() || selectedEvents == null || selectedEvents.isEmpty()) return 0;
-
-    IdentityHashMap<NotificationEvent, Boolean> selectedByIdentity = new IdentityHashMap<>();
-    for (NotificationEvent event : selectedEvents) {
-      if (event != null) {
-        selectedByIdentity.put(event, Boolean.TRUE);
-      }
-    }
-    if (selectedByIdentity.isEmpty()) return 0;
+    NotificationStoreOperationPlan plan =
+        NotificationStoreOperationPlanner.selected(
+            serverId, selectedEvents != null ? selectedEvents.size() : 0);
+    if (!plan.valid()) return 0;
 
     int removed = 0;
 
-    List<HighlightEvent> highlights = eventsByServer.get(sid);
+    List<HighlightEvent> highlights = eventsByServer.get(plan.serverId());
     if (highlights != null) {
       synchronized (highlights) {
-        int before = highlights.size();
-        highlights.removeIf(selectedByIdentity::containsKey);
-        removed += before - highlights.size();
+        removed +=
+            NotificationStoreEventBucketPolicy.removeSelectedByIdentity(highlights, selectedEvents);
       }
     }
 
-    List<RuleMatchEvent> rules = ruleEventsByServer.get(sid);
+    List<RuleMatchEvent> rules = ruleEventsByServer.get(plan.serverId());
     if (rules != null) {
       synchronized (rules) {
-        int before = rules.size();
-        rules.removeIf(selectedByIdentity::containsKey);
-        removed += before - rules.size();
+        removed +=
+            NotificationStoreEventBucketPolicy.removeSelectedByIdentity(rules, selectedEvents);
       }
     }
 
-    List<IrcEventRuleEvent> ircEvents = ircEventRuleEventsByServer.get(sid);
+    List<IrcEventRuleEvent> ircEvents = ircEventRuleEventsByServer.get(plan.serverId());
     if (ircEvents != null) {
       synchronized (ircEvents) {
-        int before = ircEvents.size();
-        ircEvents.removeIf(selectedByIdentity::containsKey);
-        removed += before - ircEvents.size();
+        removed +=
+            NotificationStoreEventBucketPolicy.removeSelectedByIdentity(ircEvents, selectedEvents);
       }
     }
 
-    clearRuleMatchCooldownForSelectedRules(sid, selectedEvents);
+    clearRuleMatchCooldownsForSelectedRules(plan.serverId(), selectedEvents);
     if (removed > 0) {
-      changes.onNext(new NotificationChange(sid));
+      changes.onNext(new NotificationChange(plan.serverId()));
     }
     return removed;
   }
@@ -435,140 +429,32 @@ public class NotificationStore implements NotificationStorePort {
     try {
       if (uiSettingsPort == null) return DEFAULT_RULE_MATCH_COOLDOWN_SECONDS;
       int v = uiSettingsPort.get().notificationRuleCooldownSeconds();
-      // Allow 0 to mean "no cooldown".
-      if (v < 0) return DEFAULT_RULE_MATCH_COOLDOWN_SECONDS;
-      if (v > 3600) return 3600;
-      return v;
+      return NotificationRuleCooldownPolicy.normalizeCooldownSeconds(v);
     } catch (Exception ignored) {
       return DEFAULT_RULE_MATCH_COOLDOWN_SECONDS;
     }
   }
 
-  private boolean allowRuleMatch(RuleMatchKey key, Instant now) {
-    if (key == null || now == null) return false;
-    pruneRuleMatchCooldownKeys(now);
-
-    long cooldownMs = (long) currentRuleMatchCooldownSeconds() * 1000L;
-    final boolean[] allowed = new boolean[] {false};
-
-    lastRuleMatchAt.compute(
-        key,
-        (k, prev) -> {
-          if (prev != null && (now.toEpochMilli() - prev.toEpochMilli()) < cooldownMs) {
-            return prev;
-          }
-          allowed[0] = true;
-          return now;
-        });
-
-    return allowed[0];
-  }
-
-  private void pruneRuleMatchCooldownKeys(Instant now) {
-    Instant cutoff = now.minus(RULE_MATCH_KEY_TTL);
-    lastRuleMatchAt
-        .entrySet()
-        .removeIf(
-            e ->
-                e == null
-                    || e.getKey() == null
-                    || e.getValue() == null
-                    || e.getValue().isBefore(cutoff));
-
-    int size = lastRuleMatchAt.size();
-    if (size <= MAX_RULE_MATCH_KEYS) return;
-
-    int toRemove = size - MAX_RULE_MATCH_KEYS;
-    for (int i = 0; i < toRemove; i++) {
-      RuleMatchKey oldestKey = null;
-      Instant oldestAt = null;
-      for (Map.Entry<RuleMatchKey, Instant> e : lastRuleMatchAt.entrySet()) {
-        if (e == null || e.getKey() == null) continue;
-        Instant at = e.getValue();
-        if (at == null || oldestAt == null || at.isBefore(oldestAt)) {
-          oldestAt = at;
-          oldestKey = e.getKey();
-        }
-      }
-      if (oldestKey == null) break;
-      lastRuleMatchAt.remove(oldestKey);
-    }
-  }
-
-  private void clearRuleMatchCooldownForChannel(String serverId, String channel) {
-    String sid = normalizeServerId(serverId);
-    String chan = normalizeChannel(channel);
-    if (sid.isEmpty() || chan.isEmpty()) return;
-
-    String sidKey = sid.toLowerCase(Locale.ROOT);
-    String chanKey = chan.toLowerCase(Locale.ROOT);
-
-    lastRuleMatchAt
-        .keySet()
-        .removeIf(k -> k != null && sidKey.equals(k.serverId()) && chanKey.equals(k.channel()));
-  }
-
-  private void clearRuleMatchCooldownForServer(String serverId) {
-    String sid = normalizeServerId(serverId);
-    if (sid.isEmpty()) return;
-
-    String sidKey = sid.toLowerCase(Locale.ROOT);
-    lastRuleMatchAt.keySet().removeIf(k -> k != null && sidKey.equals(k.serverId()));
-  }
-
-  private void clearRuleMatchCooldownForSelectedRules(
+  private void clearRuleMatchCooldownsForSelectedRules(
       String serverId, List<? extends NotificationEvent> selectedEvents) {
-    String sid = normalizeServerId(serverId);
-    if (sid.isEmpty() || selectedEvents == null || selectedEvents.isEmpty()) return;
+    NotificationStoreOperationPlan plan =
+        NotificationStoreOperationPlanner.selected(
+            serverId, selectedEvents != null ? selectedEvents.size() : 0);
+    if (!plan.valid()) return;
 
-    String sidKey = sid.toLowerCase(Locale.ROOT);
-    lastRuleMatchAt
-        .keySet()
-        .removeIf(
-            key -> {
-              if (key == null || !sidKey.equals(key.serverId())) return false;
-              for (NotificationEvent event : selectedEvents) {
-                if (!(event instanceof RuleMatchEvent ruleMatch)) continue;
-                if (!sid.equalsIgnoreCase(ruleMatch.serverId())) continue;
-                if (!key.channel().equalsIgnoreCase(normalizeChannel(ruleMatch.channel())))
-                  continue;
-                if (!key.ruleLabel().equalsIgnoreCase(normalizeLabel(ruleMatch.ruleLabel())))
-                  continue;
-                return true;
-              }
-              return false;
-            });
-  }
-
-  private static String normalizeServerId(String serverId) {
-    return Objects.toString(serverId, "").trim();
-  }
-
-  private static String normalizeChannel(String channel) {
-    return Objects.toString(channel, "").trim();
-  }
-
-  private static String normalizeNick(String nick) {
-    String s = Objects.toString(nick, "").trim();
-    return s.isEmpty() ? "?" : s;
-  }
-
-  private static String normalizeMessageId(String messageId) {
-    return Objects.toString(messageId, "").trim();
-  }
-
-  private static String normalizeLabel(String label) {
-    String s = Objects.toString(label, "").trim();
-    return s.isEmpty() ? "(rule)" : s;
-  }
-
-  private static String normalizeSnippet(String snippet) {
-    String s = Objects.toString(snippet, "").trim();
-    if (s.isEmpty()) return "";
-    // Keep this conservative; the producer should already truncate.
-    if (s.length() > 400) {
-      return s.substring(0, 399) + "…";
+    List<NotificationStoreEventValues> selectedRuleMatches = new ArrayList<>();
+    for (NotificationEvent event : selectedEvents) {
+      if (!(event instanceof RuleMatchEvent ruleMatch)) continue;
+      selectedRuleMatches.add(
+          NotificationStoreEventPolicy.ruleMatch(
+              ruleMatch.serverId(),
+              ruleMatch.channel(),
+              ruleMatch.fromNick(),
+              ruleMatch.ruleLabel(),
+              ruleMatch.snippet(),
+              ruleMatch.messageId()));
     }
-    return s;
+
+    ruleMatchCooldown.clearSelectedRuleMatches(plan.serverId(), selectedRuleMatches);
   }
 }

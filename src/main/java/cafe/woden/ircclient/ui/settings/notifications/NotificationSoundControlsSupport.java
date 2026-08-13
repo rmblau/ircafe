@@ -2,6 +2,15 @@ package cafe.woden.ircclient.ui.settings.notifications;
 
 import cafe.woden.ircclient.model.BuiltInSound;
 import cafe.woden.ircclient.notify.api.NotificationSoundPort;
+import cafe.woden.ircclient.notify.api.sound.CustomSoundFileImportSupport;
+import cafe.woden.ircclient.notify.api.sound.NotificationSoundClearSelectionPlan;
+import cafe.woden.ircclient.notify.api.sound.NotificationSoundClearSelectionPlanner;
+import cafe.woden.ircclient.notify.api.sound.NotificationSoundControlAvailabilityPlan;
+import cafe.woden.ircclient.notify.api.sound.NotificationSoundControlAvailabilityPlanner;
+import cafe.woden.ircclient.notify.api.sound.NotificationSoundImportSelectionPlan;
+import cafe.woden.ircclient.notify.api.sound.NotificationSoundImportSelectionPlanner;
+import cafe.woden.ircclient.notify.api.sound.NotificationSoundPreviewPlan;
+import cafe.woden.ircclient.notify.api.sound.NotificationSoundPreviewPlanner;
 import cafe.woden.ircclient.notify.spi.CustomSoundFileExtensionProvider;
 import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
@@ -35,11 +44,16 @@ public final class NotificationSoundControlsSupport {
     JButton browseCustom = new JButton(request.browseButtonText());
     JButton clearCustom = new JButton(request.clearButtonText());
     JButton testSound = new JButton(request.testButtonText());
+    String supportedExtensionSentence =
+        CustomSoundFileImportSupport.supportedExtensionSentence(
+            request.soundFileExtensionProviders());
     if (request.buttonStyle() == ButtonStyle.ICON_ONLY) {
       PreferencesUiSupport.configureIconOnlyButton(
           browseCustom,
           "folder-open",
-          MESSAGES.text("preferences.notifications.sound.button.browse.tooltip.icon"));
+          MESSAGES.text(
+              "preferences.notifications.sound.button.browse.tooltip.icon",
+              supportedExtensionSentence));
       PreferencesUiSupport.configureIconOnlyButton(
           clearCustom,
           "close",
@@ -48,7 +62,8 @@ public final class NotificationSoundControlsSupport {
           testSound, "play", MESSAGES.text("preferences.notifications.sound.button.test.tooltip"));
     } else {
       browseCustom.setToolTipText(
-          MESSAGES.text("preferences.notifications.sound.button.browse.tooltip"));
+          MESSAGES.text(
+              "preferences.notifications.sound.button.browse.tooltip", supportedExtensionSentence));
       clearCustom.setToolTipText(
           MESSAGES.text("preferences.notifications.sound.button.clear.tooltip"));
       testSound.setToolTipText(
@@ -286,22 +301,23 @@ public final class NotificationSoundControlsSupport {
       boolean customFileControlsRequireUseCustom) {
     public void refresh() {
       boolean available = availableSupplier == null || availableSupplier.getAsBoolean();
-      enabled.setEnabled(available);
+      NotificationSoundControlAvailabilityPlan plan =
+          NotificationSoundControlAvailabilityPlanner.plan(
+              available,
+              enabled.isSelected(),
+              useCustom.isSelected(),
+              customPathValue(),
+              customPathEditableWhenEnabled,
+              customFileControlsRequireUseCustom);
 
-      boolean soundOn = available && enabled.isSelected();
-      useCustom.setEnabled(soundOn);
-
-      boolean useCustomSelected = useCustom.isSelected();
-      boolean customControlsEnabled =
-          soundOn && (!customFileControlsRequireUseCustom || useCustomSelected);
-      builtInSound.setEnabled(soundOn && !useCustomSelected);
-      customPath.setEnabled(customControlsEnabled);
-      customPath.setEditable(customControlsEnabled && customPathEditableWhenEnabled);
-      browseCustom.setEnabled(customControlsEnabled);
-
-      String custom = customPathValue();
-      clearCustom.setEnabled(customControlsEnabled && !custom.isBlank());
-      testSound.setEnabled(soundOn);
+      enabled.setEnabled(plan.enabledControlEnabled());
+      useCustom.setEnabled(plan.useCustomControlEnabled());
+      builtInSound.setEnabled(plan.builtInSoundControlEnabled());
+      customPath.setEnabled(plan.customPathEnabled());
+      customPath.setEditable(plan.customPathEditable());
+      browseCustom.setEnabled(plan.browseCustomEnabled());
+      clearCustom.setEnabled(plan.clearCustomEnabled());
+      testSound.setEnabled(plan.testSoundEnabled());
     }
 
     public String customPathValue() {
@@ -317,13 +333,17 @@ public final class NotificationSoundControlsSupport {
         File selectedFile =
             SoundFileChooserSupport.chooseSoundFile(
                     dialogOwner(),
-                    MESSAGES.text("preferences.notifications.sound.chooseDialogTitle"),
+                    SoundFileChooserSupport.soundDialogTitle(
+                        MESSAGES.text("preferences.notifications.sound.chooseDialogSubject"),
+                        soundFileExtensionProviders),
                     soundFileExtensionProviders)
                 .orElse(null);
         if (selectedFile == null || soundFileImporter == null) return;
-        String relativePath = soundFileImporter.importFile(selectedFile);
-        if (relativePath != null && !relativePath.isBlank()) {
-          customPath.setText(relativePath);
+        NotificationSoundImportSelectionPlan plan =
+            NotificationSoundImportSelectionPlanner.plan(
+                soundFileImporter.importFile(selectedFile));
+        if (plan.applyCustomSound()) {
+          customPath.setText(plan.customPath());
           useCustom.setSelected(true);
           refresh();
         }
@@ -337,21 +357,23 @@ public final class NotificationSoundControlsSupport {
     }
 
     private void clearCustomSound() {
-      useCustom.setSelected(false);
-      customPath.setText("");
+      NotificationSoundClearSelectionPlan plan = NotificationSoundClearSelectionPlanner.plan();
+      useCustom.setSelected(plan.useCustomSelected());
+      customPath.setText(plan.customPath());
       refresh();
     }
 
     private void previewSound() {
       try {
         if (notificationSoundService == null) return;
-        if (useCustom.isSelected()) {
-          String relativePath = customPathValue();
-          if (!relativePath.isBlank()) {
-            notificationSoundService.previewCustom(relativePath);
+        NotificationSoundPreviewPlan plan =
+            NotificationSoundPreviewPlanner.plan(useCustom.isSelected(), customPathValue());
+        switch (plan.action()) {
+          case CUSTOM_FILE -> notificationSoundService.previewCustom(plan.customPath());
+          case BUILT_IN_SOUND -> notificationSoundService.preview(selectedBuiltInSound(null));
+          case SKIP -> {
+            // Nothing to preview.
           }
-        } else {
-          notificationSoundService.preview(selectedBuiltInSound(null));
         }
       } catch (Throwable ignored) {
       }

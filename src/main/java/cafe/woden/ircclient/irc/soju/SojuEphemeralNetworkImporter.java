@@ -6,9 +6,7 @@ import cafe.woden.ircclient.bouncer.BouncerNetworkDiscoveryOrchestrator;
 import cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler;
 import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
 import cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy;
-import cafe.woden.ircclient.bouncer.spi.BouncerServerProfile;
 import cafe.woden.ircclient.bouncer.spi.BuiltInBouncerBackendIds;
-import cafe.woden.ircclient.bouncer.spi.ResolvedBouncerNetwork;
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
 import cafe.woden.ircclient.config.servers.EphemeralServerRegistry;
 import cafe.woden.ircclient.config.servers.ServerRegistry;
@@ -71,23 +69,7 @@ public class SojuEphemeralNetworkImporter implements BouncerBackendDiscoveryHand
   private static BouncerNetworkMappingStrategy mappingStrategy(
       BouncerBackendRegistry bouncerBackends) {
     return Objects.requireNonNull(bouncerBackends, "bouncerBackends")
-        .mappingStrategy(BuiltInBouncerBackendIds.SOJU)
-        .orElseGet(() -> missingMappingStrategy(BuiltInBouncerBackendIds.SOJU));
-  }
-
-  private static BouncerNetworkMappingStrategy missingMappingStrategy(String backendId) {
-    return new BouncerNetworkMappingStrategy() {
-      @Override
-      public String backendId() {
-        return backendId;
-      }
-
-      @Override
-      public ResolvedBouncerNetwork resolveNetwork(
-          BouncerServerProfile bouncer, BouncerDiscoveredNetwork network) {
-        throw new IllegalStateException("Missing bouncer mapping strategy: " + backendId);
-      }
-    };
+        .mappingStrategyOrMissing(BuiltInBouncerBackendIds.SOJU);
   }
 
   @Override

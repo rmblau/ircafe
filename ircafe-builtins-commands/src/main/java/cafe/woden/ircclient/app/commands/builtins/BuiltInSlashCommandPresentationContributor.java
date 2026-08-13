@@ -144,10 +144,12 @@ public final class BuiltInSlashCommandPresentationContributor
         Map.entry("ignorelist", BuiltInSlashCommandPresentationContributor::appendIgnoreListHelp),
         Map.entry("ignores", BuiltInSlashCommandPresentationContributor::appendIgnoreListHelp),
         Map.entry("softignore", BuiltInSlashCommandPresentationContributor::appendSoftIgnoreHelp),
-        Map.entry("unsoftignore", BuiltInSlashCommandPresentationContributor::appendUnsoftIgnoreHelp),
+        Map.entry(
+            "unsoftignore", BuiltInSlashCommandPresentationContributor::appendUnsoftIgnoreHelp),
         Map.entry(
             "softignorelist", BuiltInSlashCommandPresentationContributor::appendSoftIgnoreListHelp),
-        Map.entry("softignores", BuiltInSlashCommandPresentationContributor::appendSoftIgnoreListHelp),
+        Map.entry(
+            "softignores", BuiltInSlashCommandPresentationContributor::appendSoftIgnoreListHelp),
         Map.entry("topic", BuiltInSlashCommandPresentationContributor::appendTopicHelp),
         Map.entry("kick", BuiltInSlashCommandPresentationContributor::appendKickHelp),
         Map.entry("invite", BuiltInSlashCommandPresentationContributor::appendInviteHelp),
@@ -337,7 +339,8 @@ public final class BuiltInSlashCommandPresentationContributor
       return;
     }
     help.appendLine("Usage: /upload <msgtype> <path> [caption]");
-    help.appendLine("Uploads or sends a media/file payload through the active backend when supported.");
+    help.appendLine(
+        "Uploads or sends a media/file payload through the active backend when supported.");
     help.appendLine("Backend help may add supported msgtypes and shortcuts below.");
   }
 
@@ -534,7 +537,8 @@ public final class BuiltInSlashCommandPresentationContributor
       return;
     }
     help.appendLine("Usage: /markread");
-    help.appendLine("Sets the read marker for the active channel or query and clears unread state.");
+    help.appendLine(
+        "Sets the read marker for the active channel or query and clears unread state.");
   }
 
   private static void appendEditHelpDetails(SlashCommandHelpSink help) {
@@ -542,7 +546,8 @@ public final class BuiltInSlashCommandPresentationContributor
       return;
     }
     help.appendLine("Usage: /edit <msgid> <message>");
-    help.appendLine("Edits one of your recent messages when the backend supports draft/message-edit.");
+    help.appendLine(
+        "Edits one of your recent messages when the backend supports draft/message-edit.");
   }
 
   private static void appendRedactHelpDetails(SlashCommandHelpSink help) {
@@ -551,7 +556,8 @@ public final class BuiltInSlashCommandPresentationContributor
     }
     help.appendLine("Usage: /redact <msgid> [reason]");
     help.appendLine("Alias: /delete <msgid> [reason]");
-    help.appendLine("Redacts one of your recent messages when the backend supports message redaction.");
+    help.appendLine(
+        "Redacts one of your recent messages when the backend supports message redaction.");
   }
 
   private static void appendHelpCommandHelp(SlashCommandHelpSink help) {

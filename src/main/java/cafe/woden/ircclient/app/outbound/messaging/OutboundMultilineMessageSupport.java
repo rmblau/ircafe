@@ -2,9 +2,8 @@ package cafe.woden.ircclient.app.outbound.messaging;
 
 import cafe.woden.ircclient.app.api.Ircv3MultilineFeatureSupport;
 import cafe.woden.ircclient.app.api.UiPort;
+import cafe.woden.ircclient.irc.ircv3.Ircv3MultilinePayload;
 import cafe.woden.ircclient.model.TargetRef;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import lombok.NonNull;
@@ -23,18 +22,19 @@ final class OutboundMultilineMessageSupport {
 
   MultilineSendPlan plan(TargetRef target, String message, String statusPrefix) {
     String payload = Objects.toString(message, "").trim();
-    List<String> lines = normalizeMessageLines(payload);
-    if (target == null || lines.size() <= 1) {
+    Ircv3MultilinePayload analyzed = Ircv3MultilinePayload.from(payload);
+    List<String> lines = analyzed.lines();
+    if (target == null || !analyzed.isMultiline()) {
       return MultilineSendPlan.send(payload);
     }
 
-    int lineCount = lines.size();
-    long payloadUtf8Bytes = multilinePayloadUtf8Bytes(lines);
+    int lineCount = analyzed.lineCount();
+    long payloadUtf8Bytes = analyzed.utf8Bytes();
     String reason =
         multilineFeatureSupport.unavailableOrLimitReason(
             target.serverId(), lineCount, payloadUtf8Bytes);
     if (reason.isBlank()) {
-      return MultilineSendPlan.send(joinMessageLines(lines));
+      return MultilineSendPlan.send(analyzed.joinedText());
     }
 
     boolean sendSplit = false;
@@ -51,45 +51,6 @@ final class OutboundMultilineMessageSupport {
 
     ui.appendStatus(target, statusPrefix, reason + " Sending as " + lineCount + " separate lines.");
     return MultilineSendPlan.split(lines);
-  }
-
-  private static List<String> normalizeMessageLines(String raw) {
-    String input = Objects.toString(raw, "");
-    if (input.isEmpty()) return List.of();
-    String normalized = input.replace("\r\n", "\n").replace('\r', '\n');
-    if (normalized.indexOf('\n') < 0) {
-      return List.of(normalized);
-    }
-    String[] parts = normalized.split("\n", -1);
-    List<String> out = new ArrayList<>(parts.length);
-    for (String part : parts) {
-      out.add(Objects.toString(part, ""));
-    }
-    return out;
-  }
-
-  private static String joinMessageLines(List<String> lines) {
-    if (lines == null || lines.isEmpty()) return "";
-    return String.join("\n", lines);
-  }
-
-  private static long multilinePayloadUtf8Bytes(List<String> lines) {
-    if (lines == null || lines.isEmpty()) return 0L;
-    long total = 0L;
-    for (int i = 0; i < lines.size(); i++) {
-      String line = Objects.toString(lines.get(i), "");
-      total = addSaturated(total, line.getBytes(StandardCharsets.UTF_8).length);
-      if (i < lines.size() - 1) {
-        total = addSaturated(total, 1L);
-      }
-    }
-    return total;
-  }
-
-  private static long addSaturated(long left, long right) {
-    if (right <= 0L) return left;
-    if (left >= Long.MAX_VALUE - right) return Long.MAX_VALUE;
-    return left + right;
   }
 
   record MultilineSendPlan(Decision decision, String payload, List<String> lines) {

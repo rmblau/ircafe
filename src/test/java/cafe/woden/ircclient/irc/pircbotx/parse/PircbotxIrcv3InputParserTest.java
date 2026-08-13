@@ -14,12 +14,15 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
 import cafe.woden.ircclient.irc.ircv3.*;
+import cafe.woden.ircclient.irc.ircv3.spi.*;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
 import cafe.woden.ircclient.irc.playback.*;
 import com.google.common.collect.ImmutableMap;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
 import org.junit.jupiter.api.Test;
 import org.pircbotx.Configuration;
 import org.pircbotx.PircBotX;
@@ -28,13 +31,13 @@ import org.pircbotx.output.OutputCAP;
 
 class PircbotxIrcv3InputParserTest {
 
+  private static final Ircv3RuntimeCatalogs DEFAULT_CATALOGS = Ircv3RuntimeTestFixtures.catalogs();
+
   @Test
   void capAckUpdatesConnectionStateAndEmitsCapabilityEvent() throws Exception {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     parser.processCommand(
         "*",
@@ -61,9 +64,7 @@ class PircbotxIrcv3InputParserTest {
   void capLsEmitsCapabilityAvailabilityEvents() throws Exception {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     parser.processCommand(
         "*",
@@ -91,8 +92,7 @@ class PircbotxIrcv3InputParserTest {
     PircBotX bot = spy(dummyBot());
     OutputCAP outputCap = mock(OutputCAP.class);
     doReturn(outputCap).when(bot).sendCAP();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(bot, "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(bot, "libera", conn, out::add, stsPolicies());
 
     parser.processCommand(
         "*",
@@ -112,8 +112,7 @@ class PircbotxIrcv3InputParserTest {
     PircBotX bot = spy(dummyBot());
     OutputCAP outputCap = mock(OutputCAP.class);
     doReturn(outputCap).when(bot).sendCAP();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(bot, "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(bot, "libera", conn, out::add, stsPolicies());
 
     parser.processCommand(
         "*",
@@ -130,9 +129,7 @@ class PircbotxIrcv3InputParserTest {
   void capNakEmitsCapabilityChangedDisabledEvent() throws Exception {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     parser.processCommand(
         "*",
@@ -157,10 +154,8 @@ class PircbotxIrcv3InputParserTest {
   void capAckForDraftTypingEmitsEventWithoutChangingTrackedState() throws Exception {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
-    PircbotxConnectionState.CapabilitySnapshot before = conn.capabilitySnapshot();
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
+    Ircv3CapabilitySnapshot before = conn.capabilitySnapshot();
 
     parser.processCommand(
         "*",
@@ -186,9 +181,7 @@ class PircbotxIrcv3InputParserTest {
   void capAckTracksStandardRepliesState() throws Exception {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     parser.processCommand(
         "*",
@@ -205,9 +198,7 @@ class PircbotxIrcv3InputParserTest {
   void capAckTracksMonitorAndExtendedMonitorState() throws Exception {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     parser.processCommand(
         "*",
@@ -225,9 +216,7 @@ class PircbotxIrcv3InputParserTest {
   void capDelClearsMonitorAndExtendedMonitorState() throws Exception {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     parser.processCommand(
         "*",
@@ -255,9 +244,7 @@ class PircbotxIrcv3InputParserTest {
   void capAckTracksDraftExtendedMonitorAlias() throws Exception {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     parser.processCommand(
         "*",
@@ -274,9 +261,7 @@ class PircbotxIrcv3InputParserTest {
   void capAckTracksMessageEditAndRedactionState() throws Exception {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     parser.processCommand(
         "*",
@@ -294,9 +279,7 @@ class PircbotxIrcv3InputParserTest {
   void capAckTracksStsAndMultilineState() throws Exception {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     parser.processCommand(
         "*",
@@ -315,9 +298,7 @@ class PircbotxIrcv3InputParserTest {
   void capAckWithMultilineValuesTracksNegotiatedMaxBytes() throws Exception {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     parser.processCommand(
         "*",
@@ -342,9 +323,7 @@ class PircbotxIrcv3InputParserTest {
   void capLsValueIsUsedWhenAckOmitsMultilineValue() throws Exception {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     parser.processCommand(
         "*",
@@ -370,9 +349,7 @@ class PircbotxIrcv3InputParserTest {
   void capDelClearsMultilineMaxBytes() throws Exception {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     parser.processCommand(
         "*",
@@ -399,9 +376,7 @@ class PircbotxIrcv3InputParserTest {
   void finalChathistoryCapAlsoUpdatesChatHistoryState() throws Exception {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     parser.processCommand(
         "*",
@@ -427,9 +402,7 @@ class PircbotxIrcv3InputParserTest {
   void capAckWithCapV3ModifiersStillUpdatesHistoryState() throws Exception {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     parser.processCommand(
         "*",
@@ -447,9 +420,7 @@ class PircbotxIrcv3InputParserTest {
   void draftReadMarkerCapAckUpdatesReadMarkerState() throws Exception {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     parser.processCommand(
         "*",
@@ -475,9 +446,7 @@ class PircbotxIrcv3InputParserTest {
   void capNewEmitsCapabilityAvailabilityEvent() throws Exception {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     parser.processCommand(
         "*",
@@ -501,10 +470,8 @@ class PircbotxIrcv3InputParserTest {
   void capAckForTagOnlyNamesLeavesTrackedStateUnchanged() throws Exception {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
-    PircbotxConnectionState.CapabilitySnapshot before = conn.capabilitySnapshot();
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
+    Ircv3CapabilitySnapshot before = conn.capabilitySnapshot();
 
     parser.processCommand(
         "*",
@@ -542,9 +509,8 @@ class PircbotxIrcv3InputParserTest {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     conn.setConnectedEndpoint("irc.example.net", true);
     List<ServerIrcEvent> out = new ArrayList<>();
-    Ircv3StsPolicyService stsPolicies = new Ircv3StsPolicyService();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(dummyBot(), "libera", conn, out::add, stsPolicies);
+    Ircv3StsPolicyService stsPolicies = stsPolicies();
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies);
 
     parser.processCommand(
         "*",
@@ -561,12 +527,63 @@ class PircbotxIrcv3InputParserTest {
   }
 
   @Test
-  void setnameAndChghostAreEmitted() throws Exception {
+  void taggedCommandUsesSelectedServerTimeProviderForEmittedSignals() throws Exception {
+    Instant pluginTime = Instant.parse("2026-07-12T20:00:00Z");
+    Ircv3InboundTagSignalProvider serverTimeProvider =
+        new Ircv3InboundTagSignalProvider() {
+          @Override
+          public String providerId() {
+            return "test-server-time";
+          }
+
+          @Override
+          public Set<Ircv3InboundTagOperation> inboundTagOperations() {
+            return Set.of(Ircv3InboundTagOperation.SERVER_TIME);
+          }
+
+          @Override
+          public List<Ircv3InboundTagSignal> parse(
+              Ircv3InboundTagOperation operation, Ircv3InboundTagRequest request) {
+            return List.of(
+                Ircv3InboundTagSignal.of(
+                    Ircv3InboundTagSignalType.SERVER_TIME, pluginTime.toString()));
+          }
+        };
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
     PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+        parser(
+            dummyBot(),
+            "libera",
+            conn,
+            out::add,
+            stsPolicies(),
+            Ircv3InboundTagSignalRuntimeCatalog.fromProviders(List.of(serverTimeProvider)),
+            DEFAULT_CATALOGS.inboundCommands());
+
+    parser.processCommand(
+        "#ircafe",
+        source("alice"),
+        "SETNAME",
+        "@time=ignored :alice!u@h SETNAME :Alice Liddell",
+        List.of(":Alice Liddell"),
+        ImmutableMap.of("time", "ignored"));
+
+    IrcEvent.UserSetNameObserved observed =
+        out.stream()
+            .map(ServerIrcEvent::event)
+            .filter(IrcEvent.UserSetNameObserved.class::isInstance)
+            .map(IrcEvent.UserSetNameObserved.class::cast)
+            .findFirst()
+            .orElseThrow();
+    assertEquals(pluginTime, observed.at());
+  }
+
+  @Test
+  void setnameAndChghostAreEmitted() throws Exception {
+    PircbotxConnectionState conn = new PircbotxConnectionState("libera");
+    List<ServerIrcEvent> out = new ArrayList<>();
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     UserHostmask alice = source("alice");
     parser.processCommand(
@@ -619,8 +636,7 @@ class PircbotxIrcv3InputParserTest {
     List<ServerIrcEvent> out = new ArrayList<>();
     PircBotX bot = dummyBot();
     bot.getUserChannelDao().createChannel("#ircafe");
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(bot, "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(bot, "libera", conn, out::add, stsPolicies());
 
     parser.processCommand(
         "#ircafe",
@@ -654,9 +670,7 @@ class PircbotxIrcv3InputParserTest {
   void typingReplyReactAndRedactionTagsAreObservedOnTaggedMessage() throws Exception {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     parser.processCommand(
         "#ircafe",
@@ -714,9 +728,7 @@ class PircbotxIrcv3InputParserTest {
   void unreactTagUsesChannelContextTargetWhenPresent() throws Exception {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     parser.processCommand(
         "me",
@@ -742,12 +754,84 @@ class PircbotxIrcv3InputParserTest {
   }
 
   @Test
+  void selfEchoPrivateMessageStoresFeaturePlannedTargetHint() throws Exception {
+    PircbotxConnectionState conn = new PircbotxConnectionState("libera");
+    conn.setSelfNickHint("me");
+    PircbotxIrcv3InputParser parser =
+        parser(dummyBot(), "libera", conn, ignored -> {}, stsPolicies());
+
+    parser.processCommand(
+        "alice",
+        source("me"),
+        "PRIVMSG",
+        "@msgid=msg-1 :me!u@h PRIVMSG alice :hello there",
+        List.of("alice", ":hello there"),
+        ImmutableMap.of("msgid", "msg-1"));
+
+    assertEquals(
+        "alice",
+        conn.findPrivateTargetHint(
+            "me", "PRIVMSG", "hello there", "msg-1", System.currentTimeMillis()));
+  }
+
+  @Test
+  void selfEchoPrivateMessageUsesRuntimeProviderTargetOverride() throws Exception {
+    PircbotxConnectionState conn = new PircbotxConnectionState("libera");
+    conn.setSelfNickHint("me");
+    Ircv3InboundTagSignalProvider provider =
+        new Ircv3InboundTagSignalProvider() {
+          @Override
+          public String providerId() {
+            return "test-echo-target";
+          }
+
+          @Override
+          public Set<Ircv3InboundTagOperation> inboundTagOperations() {
+            return Set.of(Ircv3InboundTagOperation.ECHO_MESSAGE_TARGET_HINT);
+          }
+
+          @Override
+          public List<Ircv3InboundTagSignal> parse(
+              Ircv3InboundTagOperation operation, Ircv3InboundTagRequest request) {
+            return List.of(
+                new Ircv3InboundTagSignal(
+                    Ircv3InboundTagSignalType.ECHO_MESSAGE_TARGET_HINT,
+                    "plugin-target",
+                    "plugin-msgid"),
+                Ircv3InboundTagSignal.of(Ircv3InboundTagSignalType.ECHO_MESSAGE_KIND, "PRIVMSG"),
+                Ircv3InboundTagSignal.of(
+                    Ircv3InboundTagSignalType.ECHO_MESSAGE_PAYLOAD, "hello there"));
+          }
+        };
+    PircbotxIrcv3InputParser parser =
+        parser(
+            dummyBot(),
+            "libera",
+            conn,
+            ignored -> {},
+            stsPolicies(),
+            Ircv3InboundTagSignalRuntimeCatalog.fromProviders(List.of(provider)),
+            Ircv3InboundCommandSignalRuntimeCatalog.fromProviders(List.of()));
+
+    parser.processCommand(
+        "alice",
+        source("me"),
+        "PRIVMSG",
+        "@msgid=original :me!u@h PRIVMSG alice :hello there",
+        List.of("alice", ":hello there"),
+        ImmutableMap.of("msgid", "original"));
+
+    assertEquals(
+        "plugin-target",
+        conn.findPrivateTargetHint(
+            "me", "PRIVMSG", "hello there", "plugin-msgid", System.currentTimeMillis()));
+  }
+
+  @Test
   void redactCommandEmitsMessageRedactionObserved() throws Exception {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     parser.processCommand(
         "#ircafe",
@@ -772,9 +856,7 @@ class PircbotxIrcv3InputParserTest {
   void markreadWithoutSourceStillEmitsReadMarker() throws Exception {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     parser.processCommand(
         "#ircafe",
@@ -799,9 +881,7 @@ class PircbotxIrcv3InputParserTest {
   void standardReplyCommandEmitsStructuredEventWithIdentityMetadata() throws Exception {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     parser.processCommand(
         "*",
@@ -833,9 +913,7 @@ class PircbotxIrcv3InputParserTest {
   void rpl324WithMissingModeParamDoesNotThrow() {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     String line = "@time=2026-03-01T22:13:38.124Z :osmium.libera.chat 324 me ##politics +CLTcnrt";
     List<String> parsed = List.of("me", "##politics", "+CLTcnrt");
@@ -847,9 +925,7 @@ class PircbotxIrcv3InputParserTest {
   void lateNamesRepliesForMissingChannelDoNotThrow() {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     assertDoesNotThrow(
         () ->
@@ -871,8 +947,7 @@ class PircbotxIrcv3InputParserTest {
     PircBotX bot = dummyBot();
     bot.getUserChannelDao().createChannel("#ircafe");
     bot.getUserChannelDao().createUser(hostmask("alice", "~u", "example.test"));
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(bot, "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(bot, "libera", conn, out::add, stsPolicies());
 
     assertDoesNotThrow(
         () ->
@@ -887,9 +962,7 @@ class PircbotxIrcv3InputParserTest {
   void pongWithServerTimeTagUpdatesPassiveLagSample() throws Exception {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     Instant taggedAt = Instant.now().minusSeconds(10);
     parser.processCommand(
@@ -909,9 +982,7 @@ class PircbotxIrcv3InputParserTest {
   void pingWithServerTimeTagUpdatesPassiveLagSample() throws Exception {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     Instant taggedAt = Instant.now().minusSeconds(8);
     parser.processCommand(
@@ -931,9 +1002,7 @@ class PircbotxIrcv3InputParserTest {
   void lagProbePongPrioritizesProbeRttOverPassiveServerTimeSample() throws Exception {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     String token = "ircafe-lag-testtoken";
     conn.beginLagProbe(token, System.currentTimeMillis() - 700L);
@@ -956,9 +1025,7 @@ class PircbotxIrcv3InputParserTest {
   void numericPongTokenMatchesTransportPingLagProbe() throws Exception {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     List<ServerIrcEvent> out = new ArrayList<>();
-    PircbotxIrcv3InputParser parser =
-        new PircbotxIrcv3InputParser(
-            dummyBot(), "libera", conn, out::add, new Ircv3StsPolicyService());
+    PircbotxIrcv3InputParser parser = parser(dummyBot(), "libera", conn, out::add, stsPolicies());
 
     conn.beginLagProbe("1742097600", System.currentTimeMillis() - 650L);
     parser.processCommand(
@@ -973,6 +1040,39 @@ class PircbotxIrcv3InputParserTest {
     assertTrue(lagMs >= 300L, "transport RTT sample should be recorded from numeric PONG tokens");
     assertTrue(lagMs <= 5_000L, "transport RTT should stay within a sane test range");
     assertEquals("", conn.currentLagProbeToken());
+  }
+
+  private static Ircv3StsPolicyService stsPolicies() {
+    return Ircv3RuntimeTestFixtures.stsPolicyService(DEFAULT_CATALOGS);
+  }
+
+  private static PircbotxIrcv3InputParser parser(
+      PircBotX bot,
+      String serverId,
+      PircbotxConnectionState conn,
+      Consumer<ServerIrcEvent> sink,
+      Ircv3StsPolicyService stsPolicies) {
+    return new PircbotxInputParserHookInstaller(stsPolicies, DEFAULT_CATALOGS)
+        .createParser(bot, serverId, conn, sink);
+  }
+
+  private static PircbotxIrcv3InputParser parser(
+      PircBotX bot,
+      String serverId,
+      PircbotxConnectionState conn,
+      Consumer<ServerIrcEvent> sink,
+      Ircv3StsPolicyService stsPolicies,
+      Ircv3InboundTagSignalRuntimeCatalog inboundTagRuntimeCatalog,
+      Ircv3InboundCommandSignalRuntimeCatalog inboundCommandRuntimeCatalog) {
+    Ircv3RuntimeCatalogs catalogs =
+        new Ircv3RuntimeCatalogs(
+            inboundCommandRuntimeCatalog,
+            inboundTagRuntimeCatalog,
+            DEFAULT_CATALOGS.outboundCommands(),
+            DEFAULT_CATALOGS.messageMutations(),
+            DEFAULT_CATALOGS.messageTags());
+    return new PircbotxInputParserHookInstaller(stsPolicies, catalogs)
+        .createParser(bot, serverId, conn, sink);
   }
 
   private static UserHostmask source(String nick) {

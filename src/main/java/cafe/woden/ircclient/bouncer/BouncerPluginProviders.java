@@ -1,7 +1,9 @@
 package cafe.woden.ircclient.bouncer;
 
+import cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler;
+import cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
-import java.util.ArrayList;
+import cafe.woden.ircclient.util.PluginServiceLoaderSupport;
 import java.util.List;
 import org.jmolecules.architecture.layered.ApplicationLayer;
 import org.springframework.beans.factory.ObjectProvider;
@@ -16,58 +18,34 @@ final class BouncerPluginProviders {
     return installedPluginsProvider == null ? null : installedPluginsProvider.getIfAvailable();
   }
 
-  static List<cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy>
-      networkMappingStrategies(
-          List<? extends cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy>
-              builtInStrategies,
-          InstalledPluginsPort installedPlugins) {
-    List<cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy> strategies =
-        nonNullServices(builtInStrategies);
-    if (installedPlugins == null) {
-      return strategies;
-    }
-    return dedupeByProviderClass(
-        installedPlugins.loadInstalledServices(
-            cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy.class, strategies));
+  static List<BouncerNetworkMappingStrategy> networkMappingStrategies(
+      List<? extends BouncerNetworkMappingStrategy> springManagedStrategies,
+      InstalledPluginsPort installedPlugins) {
+    List<BouncerNetworkMappingStrategy> installedStrategies =
+        installedPlugins == null
+            ? List.of()
+            : installedPlugins.loadInstalledServices(
+                BouncerNetworkMappingStrategy.class, List.of());
+    return BouncerPluginProviderCatalog.mappingStrategies(
+        springManagedStrategies,
+        applicationClasspathNetworkMappingStrategies(),
+        installedStrategies);
   }
 
-  static List<cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler>
-      backendDiscoveryHandlers(
-          List<? extends cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler>
-              builtInHandlers,
-          InstalledPluginsPort installedPlugins) {
-    List<cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler> handlers =
-        nonNullServices(builtInHandlers);
-    if (installedPlugins == null) {
-      return handlers;
-    }
-    return dedupeByProviderClass(
-        installedPlugins.loadInstalledServices(
-            cafe.woden.ircclient.bouncer.spi.BouncerBackendDiscoveryHandler.class, handlers));
+  static List<BouncerBackendDiscoveryHandler> backendDiscoveryHandlers(
+      List<? extends BouncerBackendDiscoveryHandler> springManagedHandlers,
+      InstalledPluginsPort installedPlugins) {
+    List<BouncerBackendDiscoveryHandler> installedHandlers =
+        installedPlugins == null
+            ? List.of()
+            : installedPlugins.loadInstalledServices(
+                BouncerBackendDiscoveryHandler.class, List.of());
+    return BouncerPluginProviderCatalog.discoveryHandlers(springManagedHandlers, installedHandlers);
   }
 
-  private static <T> List<T> nonNullServices(List<? extends T> services) {
-    if (services == null || services.isEmpty()) {
-      return List.of();
-    }
-    ArrayList<T> resolved = new ArrayList<>(services.size());
-    for (T service : services) {
-      if (service != null) {
-        resolved.add(service);
-      }
-    }
-    return List.copyOf(resolved);
-  }
-
-  private static <T> List<T> dedupeByProviderClass(List<? extends T> services) {
-    java.util.LinkedHashSet<String> providerClassNames = new java.util.LinkedHashSet<>();
-    ArrayList<T> deduped = new ArrayList<>();
-    for (T service : nonNullServices(services)) {
-      if (!providerClassNames.add(service.getClass().getName())) {
-        continue;
-      }
-      deduped.add(service);
-    }
-    return List.copyOf(deduped);
+  private static List<BouncerNetworkMappingStrategy>
+      applicationClasspathNetworkMappingStrategies() {
+    return PluginServiceLoaderSupport.loadApplicationServices(
+        BouncerNetworkMappingStrategy.class, BouncerPluginProviders.class);
   }
 }

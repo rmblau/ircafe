@@ -172,6 +172,7 @@ class AppMenuBarMemoryWidgetTest {
         null,
         null,
         null,
+        null,
         runtimeJfrService,
         serverDialogs,
         cafe.woden.ircclient.ui.localization.UiMessages.bundledDefaults(),

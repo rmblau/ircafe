@@ -3,7 +3,7 @@ package cafe.woden.ircclient.config.plugins;
 import cafe.woden.ircclient.config.api.InstalledPluginProblem;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
-import cafe.woden.ircclient.util.InstalledPluginDescriptor;
+import cafe.woden.ircclient.plugin.spi.InstalledPluginDescriptor;
 import cafe.woden.ircclient.util.PluginServiceLoaderSupport;
 import jakarta.annotation.PreDestroy;
 import java.nio.file.Path;
@@ -160,6 +160,13 @@ public final class InstalledPluginServices implements InstalledPluginsPort {
           .append('\n');
     }
     String errorMessage = Objects.toString(error == null ? null : error.getMessage(), "").trim();
+    String errorType = error == null ? "" : error.getClass().getName();
+    if (!errorType.isBlank()) {
+      details.append("Error type: ").append(errorType);
+      if (!errorMessage.isEmpty()) {
+        details.append('\n');
+      }
+    }
     if (!errorMessage.isEmpty()) {
       details.append(errorMessage);
     }

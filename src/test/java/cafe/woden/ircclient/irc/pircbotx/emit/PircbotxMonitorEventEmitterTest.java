@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.irc.pircbotx.emit;
 
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.monitorEvents;
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.runtime;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -7,9 +9,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
 import cafe.woden.ircclient.irc.ircv3.*;
+import cafe.woden.ircclient.irc.ircv3.spi.*;
 import cafe.woden.ircclient.irc.playback.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 class PircbotxMonitorEventEmitterTest {
@@ -17,7 +21,7 @@ class PircbotxMonitorEventEmitterTest {
   @Test
   void maybeEmitNumericEmitsOnlineAndHostmaskEvents() {
     List<ServerIrcEvent> events = new ArrayList<>();
-    PircbotxMonitorEventEmitter emitter = new PircbotxMonitorEventEmitter("libera", events::add);
+    PircbotxMonitorEventEmitter emitter = monitorEvents("libera", events::add);
 
     assertTrue(
         emitter.maybeEmitNumeric(
@@ -36,9 +40,45 @@ class PircbotxMonitorEventEmitterTest {
   }
 
   @Test
+  void maybeEmitNumericUsesRuntimeProviderOutput() {
+    List<ServerIrcEvent> events = new ArrayList<>();
+    Ircv3InboundCommandSignalProvider plugin =
+        new Ircv3InboundCommandSignalProvider() {
+          @Override
+          public String providerId() {
+            return "test-monitor";
+          }
+
+          @Override
+          public Set<Ircv3InboundCommandOperation> inboundCommandOperations() {
+            return Set.of(Ircv3InboundCommandOperation.MONITOR);
+          }
+
+          @Override
+          public List<Ircv3InboundCommandSignal> parse(
+              Ircv3InboundCommandOperation operation, Ircv3InboundCommandRequest request) {
+            return List.of(
+                new Ircv3InboundCommandSignal.MonitorListObserved(List.of("pluginNick")));
+          }
+        };
+    PircbotxMonitorEventEmitter emitter =
+        new PircbotxMonitorEventEmitter(
+            "libera",
+            events::add,
+            Ircv3InboundCommandSignalRuntimeCatalog.fromProviders(List.of(plugin)),
+            runtime().serverTime());
+
+    assertTrue(emitter.maybeEmitNumeric(":server 732 me :ignored", ":server 732 me :ignored"));
+
+    IrcEvent.MonitorListObserved list =
+        assertInstanceOf(IrcEvent.MonitorListObserved.class, events.getFirst().event());
+    assertEquals(List.of("pluginNick"), list.nicks());
+  }
+
+  @Test
   void maybeEmitNumericEmitsMonitorListFull() {
     List<ServerIrcEvent> events = new ArrayList<>();
-    PircbotxMonitorEventEmitter emitter = new PircbotxMonitorEventEmitter("libera", events::add);
+    PircbotxMonitorEventEmitter emitter = monitorEvents("libera", events::add);
 
     assertTrue(
         emitter.maybeEmitNumeric(

@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.ui.input;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -45,6 +46,16 @@ class MessageInputSpellcheckDictionaryProviderPluginTest {
     }
   }
 
+  @Test
+  void dedupesSpellcheckDictionaryProvidersByProviderClass() {
+    MessageInputSpellcheckDictionaryProvider provider = new TestDictionaryProvider();
+    List<MessageInputSpellcheckDictionaryProvider> providers =
+        MessageInputPluginProviders.spellcheckDictionaryProviders(
+            new FakeInstalledPluginsPort(List.of(provider, new TestDictionaryProvider())));
+
+    assertEquals(List.of(provider), providers);
+  }
+
   private void writePluginJar(Path jarPath) throws Exception {
     String providerClassName = "cafe.woden.ircclient.testplugins.PluginSpellcheckDictionary";
     String providerSource =
@@ -77,5 +88,31 @@ class MessageInputSpellcheckDictionaryProviderPluginTest {
             "isCustomDictionaryWord", String.class);
     method.setAccessible(true);
     return (boolean) method.invoke(support, word);
+  }
+
+  private static final class TestDictionaryProvider
+      implements MessageInputSpellcheckDictionaryProvider {
+    @Override
+    public List<String> dictionaryWords() {
+      return List.of("wodencafe");
+    }
+  }
+
+  private record FakeInstalledPluginsPort(
+      List<MessageInputSpellcheckDictionaryProvider> pluginProviders)
+      implements cafe.woden.ircclient.config.api.InstalledPluginsPort {
+    @Override
+    public <T> List<T> loadInstalledServices(Class<T> serviceType, List<T> builtInServices) {
+      if (serviceType != MessageInputSpellcheckDictionaryProvider.class) {
+        return List.copyOf(java.util.Objects.requireNonNullElse(builtInServices, List.of()));
+      }
+      java.util.ArrayList<T> services =
+          new java.util.ArrayList<>(
+              java.util.Objects.requireNonNullElse(builtInServices, List.<T>of()));
+      for (MessageInputSpellcheckDictionaryProvider provider : pluginProviders) {
+        services.add(serviceType.cast(provider));
+      }
+      return List.copyOf(services);
+    }
   }
 }

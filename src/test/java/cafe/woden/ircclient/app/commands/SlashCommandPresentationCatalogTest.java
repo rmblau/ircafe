@@ -112,6 +112,21 @@ class SlashCommandPresentationCatalogTest {
   }
 
   @Test
+  void installedPluginPortConstructorLoadsApplicationClasspathContributorsWithoutSpringSeed() {
+    SlashCommandPresentationCatalog catalog =
+        new SlashCommandPresentationCatalog(
+            List.of(),
+            BackendNamedCommandCatalog.empty(),
+            new RecordingInstalledPluginsPort(List.of()));
+
+    List<String> commands =
+        catalog.autocompleteCommands().stream().map(SlashCommandDescriptor::command).toList();
+
+    assertTrue(commands.contains("/filter"));
+    assertTrue(commands.contains("/join"));
+  }
+
+  @Test
   void includesPresentationContributorsLoadedThroughInstalledPluginPort() {
     SlashCommandPresentationContributor builtInContributor =
         autocompleteContributor("/built-in", "Built-in command");

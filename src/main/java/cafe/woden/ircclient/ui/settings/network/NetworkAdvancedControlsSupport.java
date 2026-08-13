@@ -1,7 +1,7 @@
 package cafe.woden.ircclient.ui.settings.network;
 
 import cafe.woden.ircclient.config.IrcProperties;
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.NetworkSettingsRuntimeConfigPort;
 import cafe.woden.ircclient.irc.backend.IrcHeartbeatMaintenanceService;
 import cafe.woden.ircclient.net.NetHeartbeatContext;
 import cafe.woden.ircclient.net.NetProxyContext;
@@ -20,7 +20,7 @@ public final class NetworkAdvancedControlsSupport {
   public static NetworkAdvancedControls buildControls(
       UiSettings current,
       List<AutoCloseable> closeables,
-      RuntimeConfigStore runtimeConfig,
+      NetworkSettingsRuntimeConfigPort runtimeConfig,
       boolean trustAllTlsCertificates,
       boolean defaultPreferLoginHint,
       String defaultLoginTemplate) {
@@ -140,7 +140,7 @@ public final class NetworkAdvancedControlsSupport {
   }
 
   public static void rememberSettings(
-      RuntimeConfigStore runtimeConfig,
+      NetworkSettingsRuntimeConfigPort runtimeConfig,
       IrcHeartbeatMaintenanceService heartbeatMaintenance,
       NetworkSettings settings) {
     runtimeConfig.rememberClientProxy(settings.proxy());

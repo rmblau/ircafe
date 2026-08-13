@@ -1,6 +1,8 @@
 package cafe.woden.ircclient.bouncer;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.bouncer.spi.BouncerDiscoveredNetwork;
@@ -8,19 +10,13 @@ import cafe.woden.ircclient.bouncer.spi.BouncerNetworkMappingStrategy;
 import cafe.woden.ircclient.bouncer.spi.BouncerServerProfile;
 import cafe.woden.ircclient.bouncer.spi.ResolvedBouncerNetwork;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
-import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
-import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 class BouncerBackendRegistryTest {
-
-  @TempDir Path tempDir;
 
   @Test
   void buildsDescriptorsFromMappingStrategies() {
@@ -48,11 +44,15 @@ class BouncerBackendRegistryTest {
     BouncerBackendRegistry registry =
         new BouncerBackendRegistry(
             List.of(
-                new FakeStrategy("soju", "soju:", "Soju Networks", Set.of(), "one"),
-                new FakeStrategy(" SOJU ", "soju:", "Soju Networks 2", Set.of(), "two")));
+                new FakeStrategy("custom", "custom:", "Custom Networks", Set.of(), "one"),
+                new FakeStrategy(" CUSTOM ", "custom:", "Custom Networks 2", Set.of(), "two")));
 
-    assertEquals(1, registry.descriptors().size());
-    assertTrue(registry.find("soju").isPresent());
+    assertEquals(
+        1,
+        registry.descriptors().stream()
+            .filter(descriptor -> descriptor.backendId().equals("custom"))
+            .count());
+    assertTrue(registry.find("custom").isPresent());
   }
 
   @Test
@@ -83,7 +83,7 @@ class BouncerBackendRegistryTest {
                         Set.of("example.com/plugin-bouncer"),
                         "net-p"))));
 
-    assertEquals(Set.of("generic", "plugin-bouncer"), registry.backendIds());
+    assertTrue(registry.backendIds().containsAll(Set.of("generic", "plugin-bouncer")));
 
     BouncerBackendDescriptor plugin = registry.find("PLUGIN-BOUNCER").orElseThrow();
     assertEquals("plugin:", plugin.ephemeralIdPrefix());
@@ -105,7 +105,7 @@ class BouncerBackendRegistryTest {
                         Set.of("example.com/plugin-spi"),
                         "net-spi"))));
 
-    assertEquals(Set.of("generic", "plugin-spi"), registry.backendIds());
+    assertTrue(registry.backendIds().containsAll(Set.of("generic", "plugin-spi")));
 
     BouncerBackendDescriptor plugin = registry.find("PLUGIN-SPI").orElseThrow();
     assertEquals("plugin-spi:", plugin.ephemeralIdPrefix());
@@ -115,13 +115,24 @@ class BouncerBackendRegistryTest {
 
   @Test
   void loadsNoArgBuiltInMappingStrategiesThroughClasspathServiceLoader() {
-    RuntimeConfigPathPort runtimeConfigPathPort = () -> tempDir.resolve("ircafe.yml");
-    InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
+    BouncerBackendRegistry registry = new BouncerBackendRegistry(List.of());
 
-    BouncerBackendRegistry registry = new BouncerBackendRegistry(List.of(), installedPlugins);
+    assertTrue(registry.backendIds().containsAll(Set.of("generic", "soju", "znc")));
+  }
 
-    assertTrue(installedPlugins.pluginProblems().isEmpty());
-    assertTrue(registry.backendIds().containsAll(Set.of("soju", "znc")));
+  @Test
+  void selectsResolvedOrLazyMissingMappingStrategy() {
+    FakeStrategy strategy =
+        new FakeStrategy("custom", "custom:", "Custom Networks", Set.of(), "one");
+    BouncerBackendRegistry registry = new BouncerBackendRegistry(List.of(strategy));
+
+    assertSame(strategy, registry.mappingStrategyOrMissing(" CUSTOM "));
+
+    BouncerNetworkMappingStrategy missing = registry.mappingStrategyOrMissing(" MISSING ");
+    assertEquals("missing", missing.backendId());
+    IllegalStateException failure =
+        assertThrows(IllegalStateException.class, () -> missing.resolveNetwork(null, null));
+    assertEquals("Missing bouncer mapping strategy: missing", failure.getMessage());
   }
 
   private record FakeStrategy(

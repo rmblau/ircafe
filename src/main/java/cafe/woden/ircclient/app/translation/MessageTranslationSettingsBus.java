@@ -10,7 +10,7 @@ import org.springframework.stereotype.Component;
 /** Holds the current message translation settings for dispatcher and backend adapters. */
 @Component
 @ApplicationLayer
-public class MessageTranslationSettingsBus {
+public class MessageTranslationSettingsBus implements MessageTranslationSettingsProvider {
 
   public static final String PROP_TRANSLATION_SETTINGS = "translationSettings";
 
@@ -23,6 +23,11 @@ public class MessageTranslationSettingsBus {
 
   public IrcProperties.Client.Translation get() {
     return current;
+  }
+
+  @Override
+  public MessageTranslationSettingsSnapshot snapshot() {
+    return snapshot(current);
   }
 
   public void set(IrcProperties.Client.Translation next) {
@@ -44,6 +49,33 @@ public class MessageTranslationSettingsBus {
     if (listener != null) {
       pcs.removePropertyChangeListener(listener);
     }
+  }
+
+  public static MessageTranslationSettingsSnapshot snapshot(
+      IrcProperties.Client.Translation translation) {
+    IrcProperties.Client.Translation safe = sanitize(translation);
+    return new MessageTranslationSettingsSnapshot(
+        safe.enabled(),
+        translationMode(safe.mode()),
+        safe.backendId(),
+        safe.endpoint(),
+        safe.apiKey(),
+        safe.sourceLanguage(),
+        safe.targetLanguage(),
+        safe.translateUnknownMessages(),
+        safe.detectAllLanguages(),
+        safe.detectionLanguages(),
+        safe.requestTimeoutMs(),
+        safe.maxRequestChars(),
+        safe.maxConcurrentRequests());
+  }
+
+  private static MessageTranslationSettingsSnapshot.Mode translationMode(
+      IrcProperties.Client.Translation.Mode mode) {
+    if (mode == IrcProperties.Client.Translation.Mode.MANUAL) {
+      return MessageTranslationSettingsSnapshot.Mode.MANUAL;
+    }
+    return MessageTranslationSettingsSnapshot.Mode.AUTO;
   }
 
   private static IrcProperties.Client.Translation sanitize(IrcProperties.Client.Translation value) {

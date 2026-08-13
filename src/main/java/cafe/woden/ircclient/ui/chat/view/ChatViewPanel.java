@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.ui.chat.view;
 
+import cafe.woden.ircclient.irc.ircv3.Ircv3ReactionCommandBuilder;
+import cafe.woden.ircclient.irc.ircv3.Ircv3ReplyCommandBuilder;
 import cafe.woden.ircclient.net.ProxyPlan;
 import cafe.woden.ircclient.ui.ExternalBrowserLauncher;
 import cafe.woden.ircclient.ui.WrapTextPane;
@@ -414,11 +416,7 @@ public abstract class ChatViewPanel extends JPanel implements Scrollable {
    * <p>Returned text is intended for the input field and should be sent with {@code /quote}.
    */
   protected static String buildReplyPrefillDraft(String ircTarget, String messageId) {
-    String target = Objects.toString(ircTarget, "").trim();
-    String msgId = Objects.toString(messageId, "").trim();
-    if (target.isEmpty() || msgId.isEmpty()) return "";
-    String escapedMsgId = escapeIrcv3TagValue(msgId);
-    return "/quote @+reply=" + escapedMsgId + " PRIVMSG " + target + " :";
+    return Ircv3ReplyCommandBuilder.buildPrefillDraft(ircTarget, messageId);
   }
 
   /**
@@ -428,11 +426,7 @@ public abstract class ChatViewPanel extends JPanel implements Scrollable {
    * default reaction token is {@code :+1:}; users can edit it before sending.
    */
   protected static String buildReactPrefillDraft(String ircTarget, String messageId) {
-    String target = Objects.toString(ircTarget, "").trim();
-    String msgId = Objects.toString(messageId, "").trim();
-    if (target.isEmpty() || msgId.isEmpty()) return "";
-    String escapedMsgId = escapeIrcv3TagValue(msgId);
-    return "/quote @+draft/react=:+1:;+reply=" + escapedMsgId + " TAGMSG " + target;
+    return Ircv3ReactionCommandBuilder.buildReactPrefillDraft(ircTarget, messageId);
   }
 
   /**
@@ -452,24 +446,6 @@ public abstract class ChatViewPanel extends JPanel implements Scrollable {
       if (Character.isWhitespace(msgId.charAt(i))) return "";
     }
     return "/chathistory around msgid=" + msgId;
-  }
-
-  private static String escapeIrcv3TagValue(String value) {
-    String raw = Objects.toString(value, "");
-    if (raw.isEmpty()) return "";
-    StringBuilder out = new StringBuilder(raw.length() + 8);
-    for (int i = 0; i < raw.length(); i++) {
-      char c = raw.charAt(i);
-      switch (c) {
-        case ';' -> out.append("\\:");
-        case ' ' -> out.append("\\s");
-        case '\\' -> out.append("\\\\");
-        case '\r' -> out.append("\\r");
-        case '\n' -> out.append("\\n");
-        default -> out.append(c);
-      }
-    }
-    return out.toString();
   }
 
   protected void setDocument(StyledDocument doc) {

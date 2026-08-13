@@ -2,6 +2,8 @@ package cafe.woden.ircclient.notify.sound;
 
 import cafe.woden.ircclient.config.properties.UiProperties;
 import cafe.woden.ircclient.model.BuiltInSound;
+import cafe.woden.ircclient.notify.api.sound.NotificationSoundSettingsPolicy;
+import cafe.woden.ircclient.notify.api.sound.NotificationSoundSettingsValues;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import org.jmolecules.architecture.layered.ApplicationLayer;
@@ -20,18 +22,17 @@ public class NotificationSoundSettingsBus {
 
   public NotificationSoundSettingsBus(UiProperties props) {
     UiProperties.Tray tray = props != null ? props.tray() : null;
+    NotificationSoundSettingsValues seed =
+        NotificationSoundSettingsPolicy.seed(
+            tray != null ? tray.notificationSoundsEnabled() : null,
+            tray != null ? tray.notificationSound() : null,
+            tray != null ? tray.notificationSoundUseCustom() : null,
+            tray != null ? tray.notificationSoundCustomPath() : null,
+            BuiltInSound.NOTIF_1.name());
 
-    boolean enabled =
-        tray == null
-            || tray.notificationSoundsEnabled() == null
-            || Boolean.TRUE.equals(tray.notificationSoundsEnabled());
-    String id = tray != null ? tray.notificationSound() : BuiltInSound.NOTIF_1.name();
-    if (id == null || id.isBlank()) id = BuiltInSound.NOTIF_1.name();
-
-    boolean useCustom = tray != null && Boolean.TRUE.equals(tray.notificationSoundUseCustom());
-    String customPath = tray != null ? tray.notificationSoundCustomPath() : null;
-
-    this.current = new NotificationSoundSettings(enabled, id, useCustom, customPath);
+    this.current =
+        new NotificationSoundSettings(
+            seed.enabled(), seed.soundId(), seed.useCustom(), seed.customPath());
   }
 
   public NotificationSoundSettings get() {

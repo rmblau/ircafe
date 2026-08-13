@@ -1,0 +1,8 @@
+apply from: rootProject.file('gradle/ircv3-feature-conventions.gradle')
+
+description = 'IRCafe IRCv3 labeled-response command tagging and response-signal policy.'
+
+dependencies {
+    api project(':ircafe-feature-ircv3-common')
+    implementation project(':ircafe-feature-ircv3-message-tags')
+}

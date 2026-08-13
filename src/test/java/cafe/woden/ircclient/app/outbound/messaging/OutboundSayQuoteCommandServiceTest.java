@@ -15,6 +15,7 @@ import cafe.woden.ircclient.app.api.Ircv3MultilineFeatureSupport;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
+import cafe.woden.ircclient.app.outbound.TestIrcv3RuntimeSupport;
 import cafe.woden.ircclient.app.outbound.backend.OutboundBackendCapabilityPolicy;
 import cafe.woden.ircclient.app.outbound.support.OutboundConnectionStatusSupport;
 import cafe.woden.ircclient.app.outbound.support.OutboundRawCommandSupport;
@@ -51,7 +52,8 @@ class OutboundSayQuoteCommandServiceTest {
   private final OutboundConnectionStatusSupport outboundConnectionStatusSupport =
       new OutboundConnectionStatusSupport(ui, connectionCoordinator);
   private final OutboundRawLineCorrelationService rawLineCorrelationService =
-      new OutboundRawLineCorrelationService(backendCapabilityPolicy, labeledResponseRoutingState);
+      TestIrcv3RuntimeSupport.rawLineCorrelation(
+          backendCapabilityPolicy, labeledResponseRoutingState, () -> 1L);
   private final OutboundRawCommandSupport rawCommandSupport =
       new OutboundRawCommandSupport(rawLineCorrelationService);
   private final OutboundMessagingCommandService outboundMessagingCommandService =
@@ -258,20 +260,20 @@ class OutboundSayQuoteCommandServiceTest {
     when(targetCoordinator.getActiveTarget()).thenReturn(chan);
     when(connectionCoordinator.isConnected("libera")).thenReturn(true);
     when(backendCapabilityPolicy.supportsLabeledResponse("libera")).thenReturn(true);
-    when(labeledResponseRoutingState.prepareOutgoingRaw("libera", "MONITOR +nick"))
-        .thenReturn(
-            new LabeledResponseRoutingPort.PreparedRawLine(
-                "@label=req-1 MONITOR +nick", "req-1", true));
-    when(irc.sendRaw("libera", "@label=req-1 MONITOR +nick")).thenReturn(Completable.complete());
+    when(irc.sendRaw("libera", "@label=ircafe-libera-1 MONITOR +nick"))
+        .thenReturn(Completable.complete());
 
     service.handleQuote(disposables, "MONITOR +nick");
 
-    verify(irc).sendRaw("libera", "@label=req-1 MONITOR +nick");
+    verify(irc).sendRaw("libera", "@label=ircafe-libera-1 MONITOR +nick");
     verify(labeledResponseRoutingState)
-        .remember(eq("libera"), eq("req-1"), eq(chan), eq("MONITOR +nick"), any(Instant.class));
+        .remember(
+            eq("libera"), eq("ircafe-libera-1"), eq(chan), eq("MONITOR +nick"), any(Instant.class));
     verify(ui)
         .appendStatus(
-            eq(status), eq("(quote)"), argThat(s -> s != null && s.contains("{label=req-1}")));
+            eq(status),
+            eq("(quote)"),
+            argThat(s -> s != null && s.contains("{label=ircafe-libera-1}")));
   }
 
   @Test
@@ -285,7 +287,6 @@ class OutboundSayQuoteCommandServiceTest {
     service.handleQuote(disposables, "MONITOR +nick");
 
     verify(irc).sendRaw("libera", "MONITOR +nick");
-    verify(labeledResponseRoutingState, never()).prepareOutgoingRaw(any(), any());
     verify(labeledResponseRoutingState, never()).remember(any(), any(), any(), any(), any());
   }
 
@@ -319,19 +320,19 @@ class OutboundSayQuoteCommandServiceTest {
     when(targetCoordinator.getActiveTarget()).thenReturn(status);
     when(connectionCoordinator.isConnected("libera")).thenReturn(true);
     when(backendCapabilityPolicy.supportsLabeledResponse("libera")).thenReturn(true);
-    when(labeledResponseRoutingState.prepareOutgoingRaw("libera", "WHO #ircafe"))
-        .thenReturn(
-            new LabeledResponseRoutingPort.PreparedRawLine(
-                "@label=req-2 WHO #ircafe", "req-2", true));
-    when(irc.sendRaw("libera", "@label=req-2 WHO #ircafe")).thenReturn(Completable.complete());
+    when(irc.sendRaw("libera", "@label=ircafe-libera-1 WHO #ircafe"))
+        .thenReturn(Completable.complete());
 
     service.handleSay(disposables, "WHO #ircafe");
 
-    verify(irc).sendRaw("libera", "@label=req-2 WHO #ircafe");
+    verify(irc).sendRaw("libera", "@label=ircafe-libera-1 WHO #ircafe");
     verify(labeledResponseRoutingState)
-        .remember(eq("libera"), eq("req-2"), eq(status), eq("WHO #ircafe"), any(Instant.class));
+        .remember(
+            eq("libera"), eq("ircafe-libera-1"), eq(status), eq("WHO #ircafe"), any(Instant.class));
     verify(ui)
         .appendStatus(
-            eq(status), eq("(raw)"), argThat(s -> s != null && s.contains("{label=req-2}")));
+            eq(status),
+            eq("(raw)"),
+            argThat(s -> s != null && s.contains("{label=ircafe-libera-1}")));
   }
 }

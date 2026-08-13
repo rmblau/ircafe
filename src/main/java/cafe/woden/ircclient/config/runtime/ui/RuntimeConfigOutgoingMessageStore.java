@@ -3,7 +3,6 @@ package cafe.woden.ircclient.config.runtime.ui;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import java.nio.file.Path;
-import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,7 +24,9 @@ public class RuntimeConfigOutgoingMessageStore {
 
   public synchronized void rememberClientLineColor(String hex) {
     rememberScalarSetting(
-        "clientLineColor", Objects.toString(hex, "").trim(), "outgoing message color");
+        "clientLineColor",
+        RuntimeConfigOutgoingMessageSettingsCodec.normalizeClientLineColor(hex),
+        "outgoing message color");
   }
 
   public synchronized void rememberOutgoingDeliveryIndicatorsEnabled(boolean enabled) {

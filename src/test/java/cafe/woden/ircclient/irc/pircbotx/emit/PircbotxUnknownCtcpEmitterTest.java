@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.irc.pircbotx.emit;
 
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.unknownCtcp;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -21,8 +22,7 @@ class PircbotxUnknownCtcpEmitterTest {
   void maybeEmitPublishesPrivateCtcpRequest() {
     List<ServerIrcEvent> seen = new ArrayList<>();
     PircbotxUnknownCtcpEmitter emitter =
-        new PircbotxUnknownCtcpEmitter(
-            "libera", seen::add, (bot, nick) -> false, (bot, nick) -> false, bot -> "me");
+        unknownCtcp("libera", seen::add, (bot, nick) -> false, (bot, nick) -> false, bot -> "me");
 
     String line = ":alice!ident@host.example PRIVMSG me :\u0001WODEN hello world\u0001";
     UnknownEvent event =
@@ -55,8 +55,7 @@ class PircbotxUnknownCtcpEmitterTest {
   void maybeEmitSuppressesPrivateCtcpNotAddressedToSelf() {
     List<ServerIrcEvent> seen = new ArrayList<>();
     PircbotxUnknownCtcpEmitter emitter =
-        new PircbotxUnknownCtcpEmitter(
-            "libera", seen::add, (bot, nick) -> false, (bot, nick) -> false, bot -> "me");
+        unknownCtcp("libera", seen::add, (bot, nick) -> false, (bot, nick) -> false, bot -> "me");
 
     String line = ":alice!ident@host.example PRIVMSG bob :\u0001WODEN ping\u0001";
     UnknownEvent event =

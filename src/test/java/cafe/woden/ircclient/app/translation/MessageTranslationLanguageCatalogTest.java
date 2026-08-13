@@ -29,7 +29,7 @@ class MessageTranslationLanguageCatalogTest {
     MessageTranslationLanguage pluginLanguage = new MessageTranslationLanguage(" TLH ", "Klingon");
 
     List<MessageTranslationLanguage> languages =
-        MessageTranslationLanguageCatalog.commonTargets(
+        MessageTranslationLanguageCatalogSupport.commonTargets(
             new RecordingInstalledPluginsPort(List.of(pluginLanguage)));
 
     assertTrue(
@@ -59,7 +59,7 @@ class MessageTranslationLanguageCatalogTest {
             2);
 
     List<MessageTranslationLanguage> languages =
-        MessageTranslationLanguageCatalog.availableTargets(
+        MessageTranslationLanguageCatalogSupport.availableTargets(
             translation, new RecordingInstalledPluginsPort(List.of(pluginLanguage)));
 
     assertEquals(List.of(new MessageTranslationLanguage("tlh", "Klingon")), languages);
@@ -71,7 +71,7 @@ class MessageTranslationLanguageCatalogTest {
         new MessageTranslationLanguage("en", "Plugin English");
 
     List<MessageTranslationLanguage> languages =
-        MessageTranslationLanguageCatalog.commonTargets(
+        MessageTranslationLanguageCatalogSupport.commonTargets(
             new RecordingInstalledPluginsPort(List.of(pluginEnglish)));
 
     MessageTranslationLanguage english =
@@ -99,7 +99,7 @@ class MessageTranslationLanguageCatalogTest {
 
     InstalledPluginServices installedPlugins = new InstalledPluginServices(runtimeConfigPathPort);
     List<MessageTranslationLanguage> languages =
-        MessageTranslationLanguageCatalog.commonTargets(installedPlugins);
+        MessageTranslationLanguageCatalogSupport.commonTargets(installedPlugins);
 
     assertTrue(installedPlugins.pluginProblems().isEmpty());
     assertTrue(
@@ -122,6 +122,22 @@ class MessageTranslationLanguageCatalogTest {
             .anyMatch(provider -> provider instanceof CommonMessageTranslationLanguageProvider));
   }
 
+  @Test
+  void dedupesLanguageProviderClassesLoadedFromPlugins() {
+    RecordingLanguageProvider builtInProvider =
+        new RecordingLanguageProvider(List.of(new MessageTranslationLanguage("tlh", "Klingon")));
+    RecordingLanguageProvider duplicatePluginProvider =
+        new RecordingLanguageProvider(
+            List.of(new MessageTranslationLanguage("tlh", "Plugin Klingon")));
+
+    List<MessageTranslationLanguageProvider> providers =
+        MessageTranslationPluginProviders.languageProviders(
+            List.of(builtInProvider),
+            new RecordingLanguageProviderInstalledPluginsPort(List.of(duplicatePluginProvider)));
+
+    assertEquals(List.of(builtInProvider), providers);
+  }
+
   private static String pluginLanguageProviderSource() {
     return """
         package plugin.translation;
@@ -137,6 +153,23 @@ class MessageTranslationLanguageCatalogTest {
           }
         }
         """;
+  }
+
+  private record RecordingLanguageProvider(List<MessageTranslationLanguage> languages)
+      implements MessageTranslationLanguageProvider {}
+
+  private record RecordingLanguageProviderInstalledPluginsPort(
+      List<MessageTranslationLanguageProvider> pluginProviders) implements InstalledPluginsPort {
+    @Override
+    public <T> List<T> loadInstalledServices(Class<T> serviceType, List<T> builtInServices) {
+      ArrayList<T> services = new ArrayList<>(builtInServices);
+      if (serviceType == MessageTranslationLanguageProvider.class) {
+        for (MessageTranslationLanguageProvider provider : pluginProviders) {
+          services.add(serviceType.cast(provider));
+        }
+      }
+      return List.copyOf(services);
+    }
   }
 
   private record RecordingInstalledPluginsPort(List<MessageTranslationLanguage> pluginLanguages)

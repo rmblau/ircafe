@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.config.api;
 
-import cafe.woden.ircclient.util.InstalledPluginDescriptor;
+import cafe.woden.ircclient.plugin.spi.InstalledPluginDescriptor;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;

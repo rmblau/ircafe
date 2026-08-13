@@ -1,80 +1,51 @@
 package cafe.woden.ircclient.irc.pircbotx.listener;
 
-import cafe.woden.ircclient.irc.*;
-import cafe.woden.ircclient.irc.backend.*;
-import cafe.woden.ircclient.irc.ircv3.*;
-import cafe.woden.ircclient.irc.pircbotx.parse.*;
+import cafe.woden.ircclient.irc.IrcEvent;
+import cafe.woden.ircclient.irc.ServerIrcEvent;
+import cafe.woden.ircclient.irc.ircv3.Ircv3SaslFailureSignal;
+import cafe.woden.ircclient.irc.ircv3.Ircv3SaslRuntimeSupport;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
-import cafe.woden.ircclient.irc.playback.*;
 import java.time.Instant;
 import java.util.function.Consumer;
-import lombok.AccessLevel;
-import lombok.RequiredArgsConstructor;
 import org.pircbotx.PircBotX;
 
-/** Handles SASL failure numerics and the resulting disconnect/reconnect policy. */
-@RequiredArgsConstructor(access = AccessLevel.PACKAGE)
+/** Applies feature-owned SASL failure signals to connection and transport state. */
 final class PircbotxSaslFailureHandler {
-  private static final int ERR_SASL_FAIL = 904;
-  private static final int ERR_SASL_TOO_LONG = 905;
-  private static final int ERR_SASL_ABORTED = 906;
-  private static final int ERR_SASL_ALREADY = 907;
 
   private final String serverId;
   private final PircbotxConnectionState conn;
   private final Consumer<ServerIrcEvent> emit;
   private final boolean disconnectOnSaslFailure;
+  private final Ircv3SaslRuntimeSupport runtimeSupport;
+
+  PircbotxSaslFailureHandler(
+      String serverId,
+      PircbotxConnectionState conn,
+      Consumer<ServerIrcEvent> emit,
+      boolean disconnectOnSaslFailure,
+      Ircv3SaslRuntimeSupport runtimeSupport) {
+    this.serverId = serverId;
+    this.conn = conn;
+    this.emit = emit;
+    this.disconnectOnSaslFailure = disconnectOnSaslFailure;
+    this.runtimeSupport = java.util.Objects.requireNonNull(runtimeSupport, "runtimeSupport");
+  }
 
   boolean isFailureCode(int code) {
-    return code == ERR_SASL_FAIL
-        || code == ERR_SASL_TOO_LONG
-        || code == ERR_SASL_ABORTED
-        || code == ERR_SASL_ALREADY;
+    return runtimeSupport.isFailureCode(code);
   }
 
   Integer parseFailureCode(String rawLine) {
-    if (rawLine == null || rawLine.isBlank()) return null;
-    String s = rawLine.trim();
-    String[] parts = s.split("\\s+");
-    if (parts.length == 0) return null;
-
-    int codeIdx = parts[0].startsWith(":") ? 1 : 0;
-    if (parts.length <= codeIdx) return null;
-
-    String codeStr = parts[codeIdx];
-    if (!PircbotxLineParseUtil.looksNumeric(codeStr)) return null;
-
-    int code;
-    try {
-      code = Integer.parseInt(codeStr);
-    } catch (Exception ignored) {
-      return null;
-    }
-
-    return isFailureCode(code) ? code : null;
+    Ircv3SaslFailureSignal signal = runtimeSupport.failure(rawLine);
+    return signal == null ? null : signal.numeric();
   }
 
   void handle(int code, String rawLine) {
-    String msg = extractTrailingMessage(rawLine);
-
-    String base =
-        switch (code) {
-          case ERR_SASL_FAIL -> "SASL authentication failed";
-          case ERR_SASL_TOO_LONG -> "SASL authentication failed (payload too long)";
-          case ERR_SASL_ABORTED -> "SASL authentication aborted";
-          case ERR_SASL_ALREADY -> "SASL authentication already completed";
-          default -> "SASL authentication failed";
-        };
-
-    String detail = base;
-    if (msg != null && !msg.isBlank()) {
-      String trimmed = msg.trim();
-      if (!trimmed.equalsIgnoreCase(base)) {
-        detail = base + ": " + trimmed;
-      }
+    Ircv3SaslFailureSignal signal = runtimeSupport.failure(code, rawLine);
+    if (signal == null) {
+      return;
     }
-
-    String reason = "Login failed — " + detail;
+    String reason = signal.disconnectReason();
     String existing = conn.disconnectReasonOverride();
     if (existing != null && !existing.isBlank()) {
       conn.suppressAutoReconnectOnce();
@@ -97,17 +68,5 @@ final class PircbotxSaslFailureHandler {
         }
       }
     }
-  }
-
-  private static String extractTrailingMessage(String rawLine) {
-    if (rawLine == null) return null;
-    String s = PircbotxLineParseUtil.normalizeIrcLineForParsing(rawLine);
-    if (s == null) return null;
-    int idx = s.indexOf(" :");
-    if (idx < 0) return null;
-    int start = idx + 2;
-    if (start >= s.length()) return null;
-    String trailing = s.substring(start).trim();
-    return trailing.isEmpty() ? null : trailing;
   }
 }

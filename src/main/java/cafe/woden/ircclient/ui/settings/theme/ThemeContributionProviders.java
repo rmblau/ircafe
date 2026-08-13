@@ -17,12 +17,8 @@ import org.jmolecules.architecture.layered.InterfaceLayer;
 @InterfaceLayer
 final class ThemeContributionProviders {
   private static final List<ThemeContributionProvider> BUILT_IN_PROVIDERS =
-      PluginServiceLoaderSupport.loadInstalledServices(
-          ThemeContributionProvider.class,
-          List.of(),
-          PluginServiceLoaderSupport.defaultApplicationClassLoader(
-              ThemeContributionProviders.class),
-          (ClassLoader) null);
+      PluginServiceLoaderSupport.loadApplicationServices(
+          ThemeContributionProvider.class, ThemeContributionProviders.class);
   private static final Set<String> BUILT_IN_PROVIDER_CLASS_NAMES =
       providerClassNames(BUILT_IN_PROVIDERS);
 
@@ -75,8 +71,9 @@ final class ThemeContributionProviders {
     if (installedPlugins == null) {
       return BUILT_IN_PROVIDERS;
     }
-    return installedPlugins.loadInstalledServices(
-        ThemeContributionProvider.class, BUILT_IN_PROVIDERS);
+    return PluginServiceLoaderSupport.dedupeByProviderClass(
+        installedPlugins.loadInstalledServices(
+            ThemeContributionProvider.class, BUILT_IN_PROVIDERS));
   }
 
   private static boolean isBuiltInProvider(ThemeContributionProvider provider) {

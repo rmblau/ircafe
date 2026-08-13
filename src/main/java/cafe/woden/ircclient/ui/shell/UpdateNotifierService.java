@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.shell;
 
-import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.UpdateNotifierRuntimeConfigPort;
 import cafe.woden.ircclient.net.HttpHeaderNames;
 import cafe.woden.ircclient.net.HttpLite;
 import cafe.woden.ircclient.net.NetProxyContext;
@@ -48,7 +48,7 @@ public class UpdateNotifierService {
   private static final Pattern VERSION_PREFIX_PATTERN =
       Pattern.compile("(?i)^v?(\\d+)(?:\\.(\\d+))?(?:\\.(\\d+))?(?:\\.(\\d+))?.*");
 
-  private final UiShellRuntimeConfigPort runtimeConfig;
+  private final UpdateNotifierRuntimeConfigPort runtimeConfig;
   private final StatusBar statusBar;
   private final ScheduledExecutorService scheduler;
   private final ExternalBrowserLauncher externalBrowserLauncher;
@@ -63,7 +63,7 @@ public class UpdateNotifierService {
 
   @Autowired
   public UpdateNotifierService(
-      UiShellRuntimeConfigPort runtimeConfig,
+      UpdateNotifierRuntimeConfigPort runtimeConfig,
       StatusBar statusBar,
       ExternalBrowserLauncher externalBrowserLauncher,
       UiMessages messages) {
@@ -76,7 +76,7 @@ public class UpdateNotifierService {
   }
 
   UpdateNotifierService(
-      UiShellRuntimeConfigPort runtimeConfig,
+      UpdateNotifierRuntimeConfigPort runtimeConfig,
       StatusBar statusBar,
       ExternalBrowserLauncher externalBrowserLauncher) {
     this(runtimeConfig, statusBar, externalBrowserLauncher, UiMessages.bundledDefaults());

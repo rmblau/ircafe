@@ -3,10 +3,10 @@ package cafe.woden.ircclient.ui.input;
 import cafe.woden.ircclient.ui.input.spi.MatrixUploadMsgTypeProvider;
 import cafe.woden.ircclient.ui.input.spi.MatrixUploadMsgTypeRule;
 import cafe.woden.ircclient.ui.localization.UiMessages;
+import cafe.woden.ircclient.util.PluginServiceLoaderSupport;
 import java.io.File;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -56,27 +56,8 @@ final class MatrixMessageInputUploadUxMode implements MessageInputUploadUxMode {
 
   private static List<MatrixUploadMsgTypeProvider> msgTypeProviderChain(
       List<MatrixUploadMsgTypeProvider> providers) {
-    LinkedHashSet<String> providerClassNames = new LinkedHashSet<>();
-    ArrayList<MatrixUploadMsgTypeProvider> chain = new ArrayList<>();
-    addProviders(
-        chain,
-        providerClassNames,
-        MessageInputPluginProviders.builtInMatrixUploadMsgTypeProviders());
-    addProviders(chain, providerClassNames, providers);
-    return List.copyOf(chain);
-  }
-
-  private static void addProviders(
-      ArrayList<MatrixUploadMsgTypeProvider> providers,
-      LinkedHashSet<String> providerClassNames,
-      List<MatrixUploadMsgTypeProvider> candidates) {
-    for (MatrixUploadMsgTypeProvider provider :
-        Objects.requireNonNullElse(candidates, List.<MatrixUploadMsgTypeProvider>of())) {
-      if (provider == null || !providerClassNames.add(provider.getClass().getName())) {
-        continue;
-      }
-      providers.add(provider);
-    }
+    return PluginServiceLoaderSupport.dedupeByProviderClass(
+        MessageInputPluginProviders.builtInMatrixUploadMsgTypeProviders(), providers);
   }
 
   private static final ActionPresentation PRESENTATION =

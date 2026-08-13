@@ -2,7 +2,8 @@ package cafe.woden.ircclient.ui.shell;
 
 import cafe.woden.ircclient.app.ApplicationShutdownCoordinator;
 import cafe.woden.ircclient.app.api.ActiveTargetPort;
-import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.MemoryUsageRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
 import cafe.woden.ircclient.config.properties.UiProperties;
 import cafe.woden.ircclient.diagnostics.RuntimeJfrService;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
@@ -148,7 +149,8 @@ public class AppMenuBar extends JMenuBar {
 
   private final UiProperties uiProps;
   private final UiSettingsBus settingsBus;
-  private final UiShellRuntimeConfigPort runtimeConfig;
+  private final MemoryUsageRuntimeConfigPort memoryUsageRuntimeConfig;
+
   private final TrayNotificationService trayNotificationService;
   private final PushyNotificationPort pushyNotificationService;
   private final NotificationSoundPort notificationSoundService;
@@ -192,7 +194,8 @@ public class AppMenuBar extends JMenuBar {
       ThemeSelectionDialog themeSelectionDialog,
       ThemeManager themeManager,
       UiSettingsBus settingsBus,
-      UiShellRuntimeConfigPort runtimeConfig,
+      MemoryUsageRuntimeConfigPort memoryUsageRuntimeConfig,
+      UiSettingsRuntimeConfigPort uiSettingsRuntimeConfig,
       TrayNotificationService trayNotificationService,
       PushyNotificationPort pushyNotificationService,
       NotificationSoundPort notificationSoundService,
@@ -209,7 +212,8 @@ public class AppMenuBar extends JMenuBar {
 
     this.uiProps = uiProps;
     this.settingsBus = settingsBus;
-    this.runtimeConfig = runtimeConfig;
+    this.memoryUsageRuntimeConfig = memoryUsageRuntimeConfig;
+
     this.trayNotificationService = trayNotificationService;
     this.pushyNotificationService = pushyNotificationService;
     this.notificationSoundService = notificationSoundService;
@@ -624,7 +628,7 @@ public class AppMenuBar extends JMenuBar {
       if (opt == null) continue;
       JRadioButtonMenuItem item = new JRadioButtonMenuItem(opt.label());
       item.addActionListener(
-          e -> applyThemeQuick(opt.id(), themeManager, settingsBus, runtimeConfig));
+          e -> applyThemeQuick(opt.id(), themeManager, settingsBus, uiSettingsRuntimeConfig));
       themeGroup.add(item);
       themeMenu.add(item);
       themeItems.put(opt.id(), item);
@@ -1609,8 +1613,8 @@ public class AppMenuBar extends JMenuBar {
       applyMemoryUsageDisplayMode(mode);
       refreshMemoryUsage();
     }
-    if (runtimeConfig != null) {
-      runtimeConfig.rememberMemoryUsageDisplayMode(mode.token());
+    if (memoryUsageRuntimeConfig != null) {
+      memoryUsageRuntimeConfig.rememberMemoryUsageDisplayMode(mode.token());
     }
   }
 
@@ -1624,8 +1628,8 @@ public class AppMenuBar extends JMenuBar {
       applyMemoryUsageRefreshIntervalMs(normalized);
       refreshMemoryUsage();
     }
-    if (runtimeConfig != null) {
-      runtimeConfig.rememberMemoryUsageRefreshIntervalMs(normalized);
+    if (memoryUsageRuntimeConfig != null) {
+      memoryUsageRuntimeConfig.rememberMemoryUsageRefreshIntervalMs(normalized);
     }
   }
 
@@ -1646,8 +1650,8 @@ public class AppMenuBar extends JMenuBar {
             uiProps != null && uiProps.memoryUsageRefreshIntervalMs() != null
                 ? uiProps.memoryUsageRefreshIntervalMs()
                 : DEFAULT_MEMORY_REFRESH_INTERVAL_MS);
-    if (runtimeConfig != null) {
-      return runtimeConfig.readMemoryUsageRefreshIntervalMs(fallback);
+    if (memoryUsageRuntimeConfig != null) {
+      return memoryUsageRuntimeConfig.readMemoryUsageRefreshIntervalMs(fallback);
     }
     return fallback;
   }
@@ -2464,7 +2468,7 @@ public class AppMenuBar extends JMenuBar {
       String themeId,
       ThemeManager themeManager,
       UiSettingsBus settingsBus,
-      UiShellRuntimeConfigPort runtimeConfig) {
+      UiSettingsRuntimeConfigPort runtimeConfig) {
     String next = ThemeIdUtils.normalizeThemeId(themeId);
     UiSettings cur = settingsBus != null ? settingsBus.get() : null;
     if (cur == null) return;

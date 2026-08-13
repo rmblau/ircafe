@@ -157,7 +157,8 @@ public final class BuiltInAdvancedFeatureSlashCommandParseStrategy
     }
 
     if (BuiltInSlashCommandParsingSupport.matchesCommand(line, "/raw")) {
-      return SlashCommandParseResult.quote(BuiltInSlashCommandParsingSupport.argAfter(line, "/raw"));
+      return SlashCommandParseResult.quote(
+          BuiltInSlashCommandParsingSupport.argAfter(line, "/raw"));
     }
 
     return null;

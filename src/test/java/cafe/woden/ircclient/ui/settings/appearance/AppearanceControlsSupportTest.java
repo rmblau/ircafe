@@ -8,7 +8,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-import cafe.woden.ircclient.config.api.AppearanceRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ChatAppearanceRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.DockLayoutRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ServerTreeAppearanceRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ThemeAppearanceRuntimeConfigPort;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettings;
 import cafe.woden.ircclient.ui.settings.theme.ChatThemeSettingsTestFixtures;
 import cafe.woden.ircclient.ui.settings.theme.ThemeAccentSettings;
@@ -154,7 +157,12 @@ class AppearanceControlsSupportTest {
 
   @Test
   void rememberSettingsPersistsAppearanceValues() {
-    AppearanceRuntimeConfigPort runtimeConfig = mock(AppearanceRuntimeConfigPort.class);
+    ThemeAppearanceRuntimeConfigPort themeRuntimeConfig =
+        mock(ThemeAppearanceRuntimeConfigPort.class);
+    ChatAppearanceRuntimeConfigPort chatRuntimeConfig = mock(ChatAppearanceRuntimeConfigPort.class);
+    ServerTreeAppearanceRuntimeConfigPort serverTreeRuntimeConfig =
+        mock(ServerTreeAppearanceRuntimeConfigPort.class);
+    DockLayoutRuntimeConfigPort dockLayoutRuntimeConfig = mock(DockLayoutRuntimeConfigPort.class);
     var accentSettings = ThemeAppearanceSettingsTestFixtures.accent("#AABBCC", 80);
     ThemeTweakSettings tweakSettings =
         ThemeAppearanceSettingsTestFixtures.tweakBuilder()
@@ -180,31 +188,32 @@ class AppearanceControlsSupportTest {
     AppearanceControlsSupport.ServerTreeAppearanceSettings settings =
         new AppearanceControlsSupport.ServerTreeAppearanceSettings("#112233", "#445566", true);
 
-    AppearanceControlsSupport.rememberAccentSettings(runtimeConfig, accentSettings);
-    AppearanceControlsSupport.rememberTweakSettings(runtimeConfig, tweakSettings);
-    AppearanceControlsSupport.rememberChatThemeSettings(runtimeConfig, chatThemeSettings);
-    AppearanceControlsSupport.rememberServerTreeSettings(runtimeConfig, settings);
+    AppearanceControlsSupport.rememberAccentSettings(themeRuntimeConfig, accentSettings);
+    AppearanceControlsSupport.rememberTweakSettings(themeRuntimeConfig, tweakSettings);
+    AppearanceControlsSupport.rememberChatThemeSettings(chatRuntimeConfig, chatThemeSettings);
+    AppearanceControlsSupport.rememberServerTreeSettings(
+        serverTreeRuntimeConfig, dockLayoutRuntimeConfig, settings);
 
-    verify(runtimeConfig).rememberAccentColor("#AABBCC");
-    verify(runtimeConfig).rememberAccentStrength(80);
-    verify(runtimeConfig).rememberUiDensity("compact");
-    verify(runtimeConfig).rememberCornerRadius(4);
-    verify(runtimeConfig).rememberUiFontOverrideEnabled(true);
-    verify(runtimeConfig).rememberUiFontFamily("Dialog");
-    verify(runtimeConfig).rememberUiFontSize(14);
-    verify(runtimeConfig).rememberChatThemePreset("ACCENTED");
-    verify(runtimeConfig).rememberChatTimestampColor("#111111");
-    verify(runtimeConfig).rememberChatSystemColor("#222222");
-    verify(runtimeConfig).rememberChatMessageColor("#444444");
-    verify(runtimeConfig).rememberChatNoticeColor("#555555");
-    verify(runtimeConfig).rememberChatActionColor("#666666");
-    verify(runtimeConfig).rememberChatErrorColor("#777777");
-    verify(runtimeConfig).rememberChatPresenceColor("#888888");
-    verify(runtimeConfig).rememberChatMentionBgColor("#333333");
-    verify(runtimeConfig).rememberChatMentionStrength(55);
-    verify(runtimeConfig).rememberServerTreeUnreadChannelColor("#112233");
-    verify(runtimeConfig).rememberServerTreeHighlightChannelColor("#445566");
-    verify(runtimeConfig).rememberPreserveDockLayout(true);
+    verify(themeRuntimeConfig).rememberAccentColor("#AABBCC");
+    verify(themeRuntimeConfig).rememberAccentStrength(80);
+    verify(themeRuntimeConfig).rememberUiDensity("compact");
+    verify(themeRuntimeConfig).rememberCornerRadius(4);
+    verify(themeRuntimeConfig).rememberUiFontOverrideEnabled(true);
+    verify(themeRuntimeConfig).rememberUiFontFamily("Dialog");
+    verify(themeRuntimeConfig).rememberUiFontSize(14);
+    verify(chatRuntimeConfig).rememberChatThemePreset("ACCENTED");
+    verify(chatRuntimeConfig).rememberChatTimestampColor("#111111");
+    verify(chatRuntimeConfig).rememberChatSystemColor("#222222");
+    verify(chatRuntimeConfig).rememberChatMessageColor("#444444");
+    verify(chatRuntimeConfig).rememberChatNoticeColor("#555555");
+    verify(chatRuntimeConfig).rememberChatActionColor("#666666");
+    verify(chatRuntimeConfig).rememberChatErrorColor("#777777");
+    verify(chatRuntimeConfig).rememberChatPresenceColor("#888888");
+    verify(chatRuntimeConfig).rememberChatMentionBgColor("#333333");
+    verify(chatRuntimeConfig).rememberChatMentionStrength(55);
+    verify(serverTreeRuntimeConfig).rememberServerTreeUnreadChannelColor("#112233");
+    verify(serverTreeRuntimeConfig).rememberServerTreeHighlightChannelColor("#445566");
+    verify(dockLayoutRuntimeConfig).rememberPreserveDockLayout(true);
   }
 
   private static TweakControls tweakControls(

@@ -2,8 +2,19 @@ package cafe.woden.ircclient.ui.settings.notifications;
 
 import cafe.woden.ircclient.model.BuiltInSound;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
+import cafe.woden.ircclient.notifications.api.IrcEventNotificationRuleAdapters;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationActionSummaryPlan;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationActionSummaryPlanner;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationMatchSummaryPlan;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationMatchSummaryPlanner;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationPresetApplyPlan;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationPresetApplyPlanner;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationRuleEditSeedPlan;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationRuleEditSeedPlanner;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationRuleLabelPlanner;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationTableSummaryDisplayPlan;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationTableSummaryDisplayPlanner;
 import cafe.woden.ircclient.ui.localization.UiMessages;
-import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRowsTableModel;
 import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
 import java.util.ArrayList;
@@ -62,10 +73,11 @@ final class IrcEventNotificationTableModel
         rule.eventType() != null ? SettingsValueSupport.trimmedString(rule.eventType()) : "";
     String source =
         rule.sourceMode() != null ? SettingsValueSupport.trimmedString(rule.sourceMode()) : "";
-    if (event.isEmpty())
-      event = MESSAGES.text("preferences.notifications.ircEvents.summary.eventFallback");
-    if (source.isEmpty()) return event;
-    return event + " (" + source + ")";
+    return IrcEventNotificationRuleLabelPlanner.plan(
+            event,
+            source,
+            MESSAGES.text("preferences.notifications.ircEvents.summary.eventFallback"))
+        .displayLabel();
   }
 
   int addRule(IrcEventNotificationRule rule) {
@@ -84,28 +96,26 @@ final class IrcEventNotificationTableModel
     return moveRowTo(from, to);
   }
 
-  int firstRowForEvent(IrcEventNotificationRule.EventType eventType) {
-    if (eventType == null) return -1;
-    for (int i = 0; i < rows().size(); i++) {
-      MutableRule r = rows().get(i);
-      if (r == null) continue;
-      if (r.eventType == eventType) return i;
-    }
-    return -1;
-  }
+  int applyPreset(List<IrcEventNotificationRule> presetRules) {
+    IrcEventNotificationPresetApplyPlan plan =
+        IrcEventNotificationPresetApplyPlanner.plan(
+            rows().stream().map(MutableRule::eventTypeName).toList(),
+            presetRules != null
+                ? presetRules.stream().map(IrcEventNotificationTableModel::eventTypeName).toList()
+                : List.of());
+    if (!plan.apply()) return -1;
 
-  void applyPreset(List<IrcEventNotificationRule> presetRules) {
-    if (presetRules == null || presetRules.isEmpty()) return;
-    for (IrcEventNotificationRule rule : presetRules) {
-      if (rule == null) continue;
-      int idx = firstRowForEvent(rule.eventType());
-      if (idx >= 0) {
-        rows().set(idx, MutableRule.from(rule));
+    for (IrcEventNotificationPresetApplyPlan.RowOperation operation : plan.operations()) {
+      IrcEventNotificationRule rule = presetRules.get(operation.presetIndex());
+      MutableRule row = MutableRule.from(rule);
+      if (operation.replaceExistingRow()) {
+        rows().set(operation.existingRow(), row);
       } else {
-        rows().add(MutableRule.from(rule));
+        rows().add(row);
       }
     }
     fireTableDataChanged();
+    return plan.firstRowToSelect();
   }
 
   void replaceAll(List<IrcEventNotificationRule> replacement) {
@@ -138,130 +148,132 @@ final class IrcEventNotificationTableModel
 
   private static String summarizeSource(MutableRule r) {
     if (r == null) return "";
+    IrcEventNotificationMatchSummaryPlan plan = matchSummaryPlan(r);
+    IrcEventNotificationTableSummaryDisplayPlan display = tableDisplayPlan(plan, r);
     IrcEventNotificationRule.SourceMode mode =
         r.sourceMode != null ? r.sourceMode : IrcEventNotificationRule.SourceMode.ANY;
     String label = Objects.toString(mode, "");
     String base;
-    if (!sourcePatternAllowed(mode)) {
+    if (!plan.sourcePatternRequired()) {
       base = label;
     } else {
-      String pattern = SettingsValueSupport.trimmedStringOrNull(r.sourcePattern);
+      String pattern = display.sourcePattern();
       base =
           pattern == null
               ? MESSAGES.text("preferences.notifications.ircEvents.summary.value.empty", label)
-              : MESSAGES.text(
-                  "preferences.notifications.ircEvents.summary.value",
-                  label,
-                  PreferencesUiSupport.truncateText(pattern, 56));
+              : MESSAGES.text("preferences.notifications.ircEvents.summary.value", label, pattern);
     }
 
-    String ctcp = summarizeCtcp(r);
+    String ctcp = summarizeCtcp(r, plan, display);
     if (ctcp.isEmpty()) return base;
     if (base.isEmpty()) return ctcp;
     return base + " | " + ctcp;
   }
 
-  private static String summarizeCtcp(MutableRule r) {
-    if (r == null) return "";
-    if (r.eventType != IrcEventNotificationRule.EventType.CTCP_RECEIVED) return "";
+  private static String summarizeCtcp(
+      MutableRule r,
+      IrcEventNotificationMatchSummaryPlan plan,
+      IrcEventNotificationTableSummaryDisplayPlan display) {
+    if (r == null || plan == null || !plan.ctcpFiltersActive()) return "";
     IrcEventNotificationRule.CtcpMatchMode commandMode =
         r.ctcpCommandMode != null ? r.ctcpCommandMode : IrcEventNotificationRule.CtcpMatchMode.ANY;
     IrcEventNotificationRule.CtcpMatchMode valueMode =
         r.ctcpValueMode != null ? r.ctcpValueMode : IrcEventNotificationRule.CtcpMatchMode.ANY;
-    String commandPattern = SettingsValueSupport.trimmedStringOrNull(r.ctcpCommandPattern);
-    String valuePattern = SettingsValueSupport.trimmedStringOrNull(r.ctcpValuePattern);
 
     String commandSummary =
-        commandMode == IrcEventNotificationRule.CtcpMatchMode.ANY
+        !plan.ctcpCommandPatternRequired()
             ? MESSAGES.text("preferences.notifications.ircEvents.summary.ctcp.command.any")
             : MESSAGES.text(
                 "preferences.notifications.ircEvents.summary.ctcp.command",
                 commandMode,
-                PreferencesUiSupport.truncateText(
-                    Objects.toString(
-                        commandPattern,
-                        MESSAGES.text("preferences.notifications.ircEvents.summary.empty")),
-                    24));
+                Objects.toString(
+                    display.ctcpCommandPattern(),
+                    MESSAGES.text("preferences.notifications.ircEvents.summary.empty")));
     String valueSummary =
-        valueMode == IrcEventNotificationRule.CtcpMatchMode.ANY
+        !plan.ctcpValuePatternRequired()
             ? MESSAGES.text("preferences.notifications.ircEvents.summary.ctcp.value.any")
             : MESSAGES.text(
                 "preferences.notifications.ircEvents.summary.ctcp.value",
                 valueMode,
-                PreferencesUiSupport.truncateText(
-                    Objects.toString(
-                        valuePattern,
-                        MESSAGES.text("preferences.notifications.ircEvents.summary.empty")),
-                    24));
+                Objects.toString(
+                    display.ctcpValuePattern(),
+                    MESSAGES.text("preferences.notifications.ircEvents.summary.empty")));
     return MESSAGES.text(
         "preferences.notifications.ircEvents.summary.ctcp.combined", commandSummary, valueSummary);
   }
 
-  private static boolean sourcePatternAllowed(IrcEventNotificationRule.SourceMode mode) {
-    return mode == IrcEventNotificationRule.SourceMode.NICK_LIST
-        || mode == IrcEventNotificationRule.SourceMode.GLOB
-        || mode == IrcEventNotificationRule.SourceMode.REGEX;
-  }
-
-  private static boolean channelPatternAllowed(IrcEventNotificationRule.ChannelScope scope) {
-    return scope == IrcEventNotificationRule.ChannelScope.ONLY
-        || scope == IrcEventNotificationRule.ChannelScope.ALL_EXCEPT;
-  }
-
   private static String summarizeChannel(MutableRule r) {
     if (r == null) return "";
+    IrcEventNotificationMatchSummaryPlan plan = matchSummaryPlan(r);
+    IrcEventNotificationTableSummaryDisplayPlan display = tableDisplayPlan(plan, r);
     IrcEventNotificationRule.ChannelScope scope =
         r.channelScope != null ? r.channelScope : IrcEventNotificationRule.ChannelScope.ALL;
     String label = Objects.toString(scope, "");
-    if (!channelPatternAllowed(scope)) return label;
-    String patterns = SettingsValueSupport.trimmedStringOrNull(r.channelPatterns);
+    if (!plan.channelPatternsRequired()) return label;
+    String patterns = display.channelPatterns();
     return patterns == null
         ? MESSAGES.text("preferences.notifications.ircEvents.summary.value.empty", label)
-        : MESSAGES.text(
-            "preferences.notifications.ircEvents.summary.value",
-            label,
-            PreferencesUiSupport.truncateText(patterns, 56));
+        : MESSAGES.text("preferences.notifications.ircEvents.summary.value", label, patterns);
+  }
+
+  private static IrcEventNotificationMatchSummaryPlan matchSummaryPlan(MutableRule r) {
+    return IrcEventNotificationMatchSummaryPlanner.plan(
+        IrcEventNotificationRuleAdapters.toMatchRule(r.toRule()));
+  }
+
+  private static IrcEventNotificationTableSummaryDisplayPlan tableDisplayPlan(
+      IrcEventNotificationMatchSummaryPlan matchSummary, MutableRule r) {
+    IrcEventNotificationActionSummaryPlan actionSummary =
+        r != null
+            ? IrcEventNotificationActionSummaryPlanner.plan(
+                IrcEventNotificationRuleAdapters.toActionRule(r.toRule()))
+            : null;
+    return IrcEventNotificationTableSummaryDisplayPlanner.plan(matchSummary, actionSummary);
   }
 
   private static String summarizeActions(MutableRule r) {
     if (r == null) return "";
+    IrcEventNotificationActionSummaryPlan plan =
+        IrcEventNotificationActionSummaryPlanner.plan(
+            IrcEventNotificationRuleAdapters.toActionRule(r.toRule()));
+
     List<String> parts = new ArrayList<>();
-    if (r.toastEnabled) {
+    if (plan.toastEnabled()) {
       IrcEventNotificationRule.FocusScope focus =
-          r.focusScope != null ? r.focusScope : IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY;
+          IrcEventNotificationRuleAdapters.toFocusScope(plan.focusScope(), r.focusScope);
       parts.add(MESSAGES.text("preferences.notifications.ircEvents.summary.action.toast", focus));
     }
-    if (r.statusBarEnabled)
+    if (plan.statusBarEnabled())
       parts.add(MESSAGES.text("preferences.notifications.ircEvents.summary.action.statusBar"));
-    if (r.notificationsNodeEnabled)
+    if (plan.notificationsNodeEnabled())
       parts.add(MESSAGES.text("preferences.notifications.ircEvents.summary.action.node"));
-    if (r.soundEnabled) {
-      if (r.soundUseCustom && SettingsValueSupport.trimmedStringOrNull(r.soundCustomPath) != null) {
+    if (plan.soundEnabled()) {
+      if (plan.customSound()) {
         parts.add(MESSAGES.text("preferences.notifications.ircEvents.summary.action.sound.custom"));
       } else {
-        BuiltInSound sound = BuiltInSound.fromId(r.soundId);
+        BuiltInSound sound = BuiltInSound.fromId(plan.soundId());
         parts.add(
             MESSAGES.text(
                 "preferences.notifications.ircEvents.summary.action.sound",
                 sound.displayNameForUi()));
       }
     }
-    if (r.scriptEnabled) {
-      String script = SettingsValueSupport.trimmedStringOrNull(r.scriptPath);
-      if (script == null) {
+    if (plan.scriptEnabled()) {
+      String scriptLeafName = tableDisplayPlan(matchSummaryPlan(r), r).scriptLeafName();
+      if (scriptLeafName == null) {
         parts.add(MESSAGES.text("preferences.notifications.ircEvents.summary.action.script"));
       } else {
-        int slash = Math.max(script.lastIndexOf('/'), script.lastIndexOf('\\'));
-        String leaf =
-            (slash >= 0 && slash < (script.length() - 1)) ? script.substring(slash + 1) : script;
         parts.add(
             MESSAGES.text(
-                "preferences.notifications.ircEvents.summary.action.scriptNamed",
-                PreferencesUiSupport.truncateText(leaf, 26)));
+                "preferences.notifications.ircEvents.summary.action.scriptNamed", scriptLeafName));
       }
     }
     if (parts.isEmpty()) return MESSAGES.text("preferences.notifications.ircEvents.summary.none");
     return String.join(", ", parts);
+  }
+
+  private static String eventTypeName(IrcEventNotificationRule rule) {
+    return rule != null && rule.eventType() != null ? rule.eventType().name() : null;
   }
 
   static final class MutableRule {
@@ -287,6 +299,10 @@ final class IrcEventNotificationTableModel
     String ctcpCommandPattern;
     IrcEventNotificationRule.CtcpMatchMode ctcpValueMode;
     String ctcpValuePattern;
+
+    String eventTypeName() {
+      return eventType != null ? eventType.name() : null;
+    }
 
     IrcEventNotificationRule toRule() {
       return new IrcEventNotificationRule(
@@ -342,57 +358,118 @@ final class IrcEventNotificationTableModel
     }
 
     static MutableRule from(IrcEventNotificationRule r) {
-      MutableRule m = new MutableRule();
-      if (r == null) {
-        m.enabled = false;
-        m.eventType = IrcEventNotificationRule.EventType.INVITE_RECEIVED;
-        m.sourceMode = IrcEventNotificationRule.SourceMode.ANY;
-        m.sourcePattern = null;
-        m.channelScope = IrcEventNotificationRule.ChannelScope.ALL;
-        m.channelPatterns = null;
-        m.toastEnabled = true;
-        m.statusBarEnabled = true;
-        m.focusScope = IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY;
-        m.notificationsNodeEnabled = true;
-        m.soundEnabled = false;
-        m.soundId =
-            IrcEventNotificationPresetSupport.defaultBuiltInSoundForEvent(m.eventType).name();
-        m.soundUseCustom = false;
-        m.soundCustomPath = null;
-        m.scriptEnabled = false;
-        m.scriptPath = null;
-        m.scriptArgs = null;
-        m.scriptWorkingDirectory = null;
-        m.ctcpCommandMode = IrcEventNotificationRule.CtcpMatchMode.ANY;
-        m.ctcpCommandPattern = null;
-        m.ctcpValueMode = IrcEventNotificationRule.CtcpMatchMode.ANY;
-        m.ctcpValuePattern = null;
-        return m;
-      }
+      IrcEventNotificationRuleEditSeedPlan plan =
+          r == null
+              ? IrcEventNotificationRuleEditSeedPlanner.defaultSeed()
+              : IrcEventNotificationRuleEditSeedPlanner.plan(
+                  r.enabled(),
+                  eventName(r.eventType()),
+                  enumName(r.sourceMode()),
+                  r.sourcePattern(),
+                  enumName(r.channelScope()),
+                  r.channelPatterns(),
+                  r.toastEnabled(),
+                  enumName(r.focusScope()),
+                  r.statusBarEnabled(),
+                  r.notificationsNodeEnabled(),
+                  r.soundEnabled(),
+                  r.soundId(),
+                  r.soundUseCustom(),
+                  r.soundCustomPath(),
+                  r.scriptEnabled(),
+                  r.scriptPath(),
+                  r.scriptArgs(),
+                  r.scriptWorkingDirectory(),
+                  enumName(r.ctcpCommandMode()),
+                  r.ctcpCommandPattern(),
+                  enumName(r.ctcpValueMode()),
+                  r.ctcpValuePattern());
+      return fromPlan(plan);
+    }
 
-      m.enabled = r.enabled();
-      m.eventType = r.eventType();
-      m.sourceMode = r.sourceMode();
-      m.sourcePattern = r.sourcePattern();
-      m.channelScope = r.channelScope();
-      m.channelPatterns = r.channelPatterns();
-      m.toastEnabled = r.toastEnabled();
-      m.statusBarEnabled = r.statusBarEnabled();
-      m.focusScope = r.focusScope();
-      m.notificationsNodeEnabled = r.notificationsNodeEnabled();
-      m.soundEnabled = r.soundEnabled();
-      m.soundId = BuiltInSound.fromId(r.soundId()).name();
-      m.soundUseCustom = r.soundUseCustom();
-      m.soundCustomPath = r.soundCustomPath();
-      m.scriptEnabled = r.scriptEnabled();
-      m.scriptPath = r.scriptPath();
-      m.scriptArgs = r.scriptArgs();
-      m.scriptWorkingDirectory = r.scriptWorkingDirectory();
-      m.ctcpCommandMode = r.ctcpCommandMode();
-      m.ctcpCommandPattern = r.ctcpCommandPattern();
-      m.ctcpValueMode = r.ctcpValueMode();
-      m.ctcpValuePattern = r.ctcpValuePattern();
+    private static MutableRule fromPlan(IrcEventNotificationRuleEditSeedPlan plan) {
+      MutableRule m = new MutableRule();
+      m.enabled = plan.enabled();
+      m.eventType =
+          eventTypeValue(plan.eventType(), IrcEventNotificationRule.EventType.INVITE_RECEIVED);
+      m.sourceMode = sourceModeValue(plan.sourceMode(), IrcEventNotificationRule.SourceMode.ANY);
+      m.sourcePattern = plan.sourcePattern();
+      m.channelScope =
+          channelScopeValue(plan.channelScope(), IrcEventNotificationRule.ChannelScope.ALL);
+      m.channelPatterns = plan.channelPatterns();
+      m.toastEnabled = plan.toastEnabled();
+      m.statusBarEnabled = plan.statusBarEnabled();
+      m.focusScope =
+          focusScopeValue(plan.focusScope(), IrcEventNotificationRule.FocusScope.BACKGROUND_ONLY);
+      m.notificationsNodeEnabled = plan.notificationsNodeEnabled();
+      m.soundEnabled = plan.soundEnabled();
+      m.soundId = BuiltInSound.fromId(plan.soundId()).name();
+      m.soundUseCustom = plan.soundUseCustom();
+      m.soundCustomPath = plan.soundCustomPath();
+      m.scriptEnabled = plan.scriptEnabled();
+      m.scriptPath = plan.scriptPath();
+      m.scriptArgs = plan.scriptArgs();
+      m.scriptWorkingDirectory = plan.scriptWorkingDirectory();
+      m.ctcpCommandMode =
+          ctcpMatchModeValue(plan.ctcpCommandMode(), IrcEventNotificationRule.CtcpMatchMode.ANY);
+      m.ctcpCommandPattern = plan.ctcpCommandPattern();
+      m.ctcpValueMode =
+          ctcpMatchModeValue(plan.ctcpValueMode(), IrcEventNotificationRule.CtcpMatchMode.ANY);
+      m.ctcpValuePattern = plan.ctcpValuePattern();
       return m;
+    }
+
+    private static String eventName(IrcEventNotificationRule.EventType value) {
+      return value != null ? value.name() : null;
+    }
+
+    private static String enumName(Enum<?> value) {
+      return value != null ? value.name() : null;
+    }
+
+    private static IrcEventNotificationRule.EventType eventTypeValue(
+        String value, IrcEventNotificationRule.EventType fallback) {
+      try {
+        return IrcEventNotificationRule.EventType.valueOf(Objects.toString(value, "").trim());
+      } catch (Exception ignored) {
+        return fallback;
+      }
+    }
+
+    private static IrcEventNotificationRule.SourceMode sourceModeValue(
+        String value, IrcEventNotificationRule.SourceMode fallback) {
+      try {
+        return IrcEventNotificationRule.SourceMode.valueOf(Objects.toString(value, "").trim());
+      } catch (Exception ignored) {
+        return fallback;
+      }
+    }
+
+    private static IrcEventNotificationRule.ChannelScope channelScopeValue(
+        String value, IrcEventNotificationRule.ChannelScope fallback) {
+      try {
+        return IrcEventNotificationRule.ChannelScope.valueOf(Objects.toString(value, "").trim());
+      } catch (Exception ignored) {
+        return fallback;
+      }
+    }
+
+    private static IrcEventNotificationRule.FocusScope focusScopeValue(
+        String value, IrcEventNotificationRule.FocusScope fallback) {
+      try {
+        return IrcEventNotificationRule.FocusScope.valueOf(Objects.toString(value, "").trim());
+      } catch (Exception ignored) {
+        return fallback;
+      }
+    }
+
+    private static IrcEventNotificationRule.CtcpMatchMode ctcpMatchModeValue(
+        String value, IrcEventNotificationRule.CtcpMatchMode fallback) {
+      try {
+        return IrcEventNotificationRule.CtcpMatchMode.valueOf(Objects.toString(value, "").trim());
+      } catch (Exception ignored) {
+        return fallback;
+      }
     }
   }
 }

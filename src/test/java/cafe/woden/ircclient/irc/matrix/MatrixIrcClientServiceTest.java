@@ -69,7 +69,8 @@ class MatrixIrcClientServiceTest {
           directRoomResolver,
           mediaUploadClient,
           roomMessageSender,
-          syncClient);
+          syncClient,
+          MatrixIrcv3TestSupport.applicationClasspathRuntimeSupport());
 
   @AfterEach
   void tearDown() {

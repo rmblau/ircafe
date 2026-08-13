@@ -19,7 +19,7 @@ final class MessageInputPluginProviders {
     if (installedPlugins == null) {
       return providers;
     }
-    return dedupeByProviderClass(
+    return PluginServiceLoaderSupport.dedupeByProviderClass(
         installedPlugins.loadInstalledServices(MatrixUploadMsgTypeProvider.class, providers));
   }
 
@@ -28,8 +28,9 @@ final class MessageInputPluginProviders {
     if (installedPlugins == null) {
       return List.of();
     }
-    return installedPlugins.loadInstalledServices(
-        MessageInputSpellcheckDictionaryProvider.class, List.of());
+    return PluginServiceLoaderSupport.dedupeByProviderClass(
+        installedPlugins.loadInstalledServices(
+            MessageInputSpellcheckDictionaryProvider.class, List.of()));
   }
 
   static MessageInputWordSuggestionProvider wordSuggestionProvider(
@@ -38,22 +39,8 @@ final class MessageInputPluginProviders {
   }
 
   static List<MatrixUploadMsgTypeProvider> builtInMatrixUploadMsgTypeProviders() {
-    return PluginServiceLoaderSupport.loadInstalledServices(
-        MatrixUploadMsgTypeProvider.class,
-        List.of(),
-        PluginServiceLoaderSupport.defaultApplicationClassLoader(MessageInputPluginProviders.class),
-        null);
-  }
-
-  private static <T> List<T> dedupeByProviderClass(List<? extends T> services) {
-    java.util.LinkedHashSet<String> providerClassNames = new java.util.LinkedHashSet<>();
-    java.util.ArrayList<T> deduped = new java.util.ArrayList<>();
-    for (T service : java.util.Objects.requireNonNullElse(services, List.<T>of())) {
-      if (service == null || !providerClassNames.add(service.getClass().getName())) {
-        continue;
-      }
-      deduped.add(service);
-    }
-    return List.copyOf(deduped);
+    return PluginServiceLoaderSupport.dedupeByProviderClass(
+        PluginServiceLoaderSupport.loadApplicationServices(
+            MatrixUploadMsgTypeProvider.class, MessageInputPluginProviders.class));
   }
 }

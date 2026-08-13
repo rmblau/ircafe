@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
+import cafe.woden.ircclient.app.outbound.TestIrcv3RuntimeSupport;
 import cafe.woden.ircclient.app.outbound.backend.*;
 import cafe.woden.ircclient.app.outbound.support.CommandTargetPolicy;
 import cafe.woden.ircclient.app.outbound.support.OutboundRawCommandSupport;
@@ -59,7 +60,7 @@ class OutboundUploadCommandServiceTest {
   private final LabeledResponseRoutingPort labeledResponseRoutingState =
       mock(LabeledResponseRoutingPort.class);
   private final OutboundRawLineCorrelationService rawLineCorrelationService =
-      new OutboundRawLineCorrelationService(
+      TestIrcv3RuntimeSupport.rawLineCorrelation(
           outboundBackendCapabilityPolicy, labeledResponseRoutingState);
   private final OutboundRawCommandSupport rawCommandSupport =
       new OutboundRawCommandSupport(rawLineCorrelationService);

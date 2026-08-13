@@ -5,7 +5,8 @@ import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
 import cafe.woden.ircclient.app.outbound.support.CommandTargetPolicy;
 import cafe.woden.ircclient.app.outbound.support.OutboundRawCommandSupport;
-import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.InviteAutoJoinConfigPort;
+import cafe.woden.ircclient.config.api.IrcSessionRuntimeConfigPort;
 import cafe.woden.ircclient.ignore.api.IgnoreListCommandPort;
 import cafe.woden.ircclient.ignore.api.IgnoreMaskNormalizer;
 import cafe.woden.ircclient.irc.port.IrcMediatorInteractionPort;
@@ -36,7 +37,8 @@ final class PendingInviteCommandSupport {
   @NonNull private final ConnectionCoordinator connectionCoordinator;
   @NonNull private final TargetCoordinator targetCoordinator;
   @NonNull private final CommandTargetPolicy commandTargetPolicy;
-  @NonNull private final ChatCommandRuntimeConfigPort runtimeConfig;
+  @NonNull private final IrcSessionRuntimeConfigPort sessionRuntimeConfig;
+  @NonNull private final InviteAutoJoinConfigPort inviteAutoJoinConfig;
   @NonNull private final PendingInvitePort pendingInviteState;
   @NonNull private final WhoisRoutingPort whoisRoutingState;
   @NonNull private final IgnoreListCommandPort ignoreListService;
@@ -102,7 +104,7 @@ final class PendingInviteCommandSupport {
     }
 
     if (shouldPersistJoinedChannel(invite.serverId())) {
-      runtimeConfig.rememberJoinedChannel(invite.serverId(), invite.channel());
+      sessionRuntimeConfig.rememberJoinedChannel(invite.serverId(), invite.channel());
       targetCoordinator.syncRuntimeAutoJoinForReconnect(invite.serverId());
     }
     ui.appendStatus(
@@ -193,7 +195,7 @@ final class PendingInviteCommandSupport {
     if ("toggle".equals(raw)) {
       boolean enabled = !pendingInviteState.inviteAutoJoinEnabled();
       pendingInviteState.setInviteAutoJoinEnabled(enabled);
-      runtimeConfig.rememberInviteAutoJoinEnabled(enabled);
+      inviteAutoJoinConfig.rememberInviteAutoJoinEnabled(enabled);
       ui.appendStatus(
           out, "(invite)", "Invite auto-join is now " + (enabled ? "enabled." : "disabled."));
       return;
@@ -218,7 +220,7 @@ final class PendingInviteCommandSupport {
     }
 
     pendingInviteState.setInviteAutoJoinEnabled(enabled);
-    runtimeConfig.rememberInviteAutoJoinEnabled(enabled);
+    inviteAutoJoinConfig.rememberInviteAutoJoinEnabled(enabled);
     ui.appendStatus(
         out, "(invite)", "Invite auto-join is now " + (enabled ? "enabled." : "disabled."));
   }

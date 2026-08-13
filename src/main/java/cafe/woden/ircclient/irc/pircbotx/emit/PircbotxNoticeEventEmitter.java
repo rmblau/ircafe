@@ -5,7 +5,6 @@ import cafe.woden.ircclient.irc.backend.*;
 import cafe.woden.ircclient.irc.ircv3.*;
 import cafe.woden.ircclient.irc.pircbotx.listener.*;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
-import cafe.woden.ircclient.irc.pircbotx.support.Ircv3MultilineAccumulator;
 import cafe.woden.ircclient.irc.pircbotx.support.PircbotxEventMetadata;
 import cafe.woden.ircclient.irc.pircbotx.support.PircbotxUtil;
 import cafe.woden.ircclient.irc.playback.*;
@@ -33,6 +32,8 @@ public final class PircbotxNoticeEventEmitter {
   @NonNull private final Ircv3MultilineAccumulator multilineAccumulator;
   @NonNull private final PircbotxPlaybackCaptureRecorder playbackCaptureRecorder;
   @NonNull private final PircbotxServerResponseEmitter serverResponses;
+  @NonNull private final Ircv3ServerTimeRuntimeSupport serverTimeRuntimeSupport;
+  @NonNull private final Ircv3MessageTagsRuntimeSupport messageTagsRuntimeSupport;
   @NonNull private final Consumer<ServerIrcEvent> emit;
   @NonNull private final Function<Object, String> senderNickResolver;
 
@@ -45,7 +46,9 @@ public final class PircbotxNoticeEventEmitter {
       Ircv3MultilineAccumulator multilineAccumulator,
       PircbotxServerResponseEmitter serverResponses,
       Consumer<ServerIrcEvent> emit,
-      Function<Object, String> senderNickResolver) {
+      Function<Object, String> senderNickResolver,
+      Ircv3ServerTimeRuntimeSupport serverTimeRuntimeSupport,
+      Ircv3MessageTagsRuntimeSupport messageTagsRuntimeSupport) {
     this(
         serverId,
         conn,
@@ -55,18 +58,23 @@ public final class PircbotxNoticeEventEmitter {
         multilineAccumulator,
         new PircbotxPlaybackCaptureRecorder(conn),
         serverResponses,
+        serverTimeRuntimeSupport,
+        messageTagsRuntimeSupport,
         emit,
         senderNickResolver);
   }
 
   public void onNotice(NoticeEvent event) {
     String from = senderNickResolver.apply(event);
-    Optional<String> batchId = Ircv3BatchTag.fromEvent(event);
+    Optional<String> batchId =
+        chatHistoryBatches.batchId(
+            PircbotxEventMetadata.ircv3TagsFromEvent(event, messageTagsRuntimeSupport));
     if (batchId.isPresent()) {
-      Instant at = PircbotxEventMetadata.inboundAt(event);
+      Instant at = PircbotxEventMetadata.inboundAt(event, serverTimeRuntimeSupport);
       String notice = PircbotxUtil.safeStr(event::getNotice, "");
-      Map<String, String> tags = PircbotxEventMetadata.ircv3TagsFromEvent(event);
-      String messageId = PircbotxEventMetadata.ircv3MessageId(tags);
+      Map<String, String> tags =
+          PircbotxEventMetadata.ircv3TagsFromEvent(event, messageTagsRuntimeSupport);
+      String messageId = messageTagsRuntimeSupport.messageId(tags);
       if (chatHistoryBatches.appendIfActive(
           batchId.get(),
           ChatHistoryEntry.Kind.NOTICE,
@@ -80,15 +88,17 @@ public final class PircbotxNoticeEventEmitter {
       }
     }
 
-    Instant at = PircbotxEventMetadata.inboundAt(event);
+    Instant at = PircbotxEventMetadata.inboundAt(event, serverTimeRuntimeSupport);
     String notice = event.getNotice();
     if (PircbotxUtil.isCtcpWrapped(notice) && isFromSelf(event, from)) {
       return;
     }
     Map<String, String> ircv3Tags =
         PircbotxEventMetadata.withObservedHostmaskTag(
-            new HashMap<>(PircbotxEventMetadata.ircv3TagsFromEvent(event)), event.getUser());
-    String messageId = PircbotxEventMetadata.ircv3MessageId(ircv3Tags);
+            new HashMap<>(
+                PircbotxEventMetadata.ircv3TagsFromEvent(event, messageTagsRuntimeSupport)),
+            event.getUser());
+    String messageId = messageTagsRuntimeSupport.messageId(ircv3Tags);
     String foldTarget = null;
     try {
       Channel channel = event.getChannel();
@@ -108,7 +118,7 @@ public final class PircbotxNoticeEventEmitter {
     if (folded.messageId() != null && !folded.messageId().isBlank()) {
       messageId = folded.messageId();
     } else {
-      messageId = PircbotxEventMetadata.ircv3MessageId(ircv3Tags);
+      messageId = messageTagsRuntimeSupport.messageId(ircv3Tags);
     }
 
     boolean recognizedAlisNotice = serverResponses.maybeEmitAlisChannelListEntry(at, from, notice);

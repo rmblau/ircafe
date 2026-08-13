@@ -29,7 +29,12 @@ class PircbotxBotFactoryAuthTest {
     when(proxyResolver.planForServer("libera")).thenReturn(ProxyPlan.direct());
 
     PircbotxBotFactory factory =
-        new PircbotxBotFactory(proxyResolver, new SojuProperties(Map.of(), null), null);
+        new PircbotxBotFactory(
+            proxyResolver,
+            new SojuProperties(Map.of(), null),
+            null,
+            Ircv3ExtensionCatalog.builtInCatalog(),
+            Ircv3RuntimeTestFixtures.catalogs());
 
     IrcProperties.Server server =
         IrcPropertiesTestFixtures.serverBuilder("libera")
@@ -53,7 +58,12 @@ class PircbotxBotFactoryAuthTest {
     when(proxyResolver.planForServer("libera")).thenReturn(ProxyPlan.direct());
 
     PircbotxBotFactory factory =
-        new PircbotxBotFactory(proxyResolver, new SojuProperties(Map.of(), null), null);
+        new PircbotxBotFactory(
+            proxyResolver,
+            new SojuProperties(Map.of(), null),
+            null,
+            Ircv3ExtensionCatalog.builtInCatalog(),
+            Ircv3RuntimeTestFixtures.catalogs());
 
     IrcProperties.Server server =
         IrcPropertiesTestFixtures.serverBuilder("libera")
@@ -67,5 +77,20 @@ class PircbotxBotFactoryAuthTest {
             IllegalStateException.class,
             () -> factory.build(server, "IRCafe test", new ListenerAdapter() {}));
     assertTrue(ex.getMessage().contains("cannot both be enabled"));
+  }
+
+  @Test
+  void explicitRuntimeCatalogDoesNotFallBackToApplicationClasspath() {
+    ServerProxyResolver proxyResolver = mock(ServerProxyResolver.class);
+
+    assertThrows(
+        NullPointerException.class,
+        () ->
+            new PircbotxBotFactory(
+                proxyResolver,
+                new SojuProperties(Map.of(), null),
+                null,
+                Ircv3ExtensionCatalog.builtInCatalog(),
+                (Ircv3InboundCommandSignalRuntimeCatalog) null));
   }
 }

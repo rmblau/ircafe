@@ -1,5 +1,6 @@
 package cafe.woden.ircclient.irc.pircbotx.emit;
 
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.inviteEvents;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.mock;
@@ -9,9 +10,14 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
 import cafe.woden.ircclient.irc.ircv3.*;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundCommandOperation;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundCommandRequest;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundCommandSignal;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundCommandSignalProvider;
 import cafe.woden.ircclient.irc.playback.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.pircbotx.PircBotX;
 import org.pircbotx.User;
@@ -70,9 +76,57 @@ class PircbotxInviteEventEmitterTest {
     assertEquals("join us", invite.reason());
   }
 
+  @Test
+  void onInviteUsesReplacementInviteNotifyRuntimeProvider() {
+    List<ServerIrcEvent> events = new ArrayList<>();
+    PircbotxRosterEmitter rosterEmitter = mock(PircbotxRosterEmitter.class);
+    Ircv3InboundCommandSignalRuntimeCatalog catalog =
+        Ircv3InboundCommandSignalRuntimeCatalog.fromProviders(
+            List.of(
+                new Ircv3InboundCommandSignalProvider() {
+                  @Override
+                  public String providerId() {
+                    return "replacement-invite-notify";
+                  }
+
+                  @Override
+                  public Set<Ircv3InboundCommandOperation> inboundCommandOperations() {
+                    return Set.of(Ircv3InboundCommandOperation.INVITE_NOTIFY);
+                  }
+
+                  @Override
+                  public List<Ircv3InboundCommandSignal> parse(
+                      Ircv3InboundCommandOperation operation, Ircv3InboundCommandRequest request) {
+                    return List.of(
+                        new Ircv3InboundCommandSignal.InviteObserved(
+                            "plugin-source", "plugin-invitee", "#plugin", "plugin reason"));
+                  }
+                }));
+    PircbotxInviteEventEmitter emitter =
+        new PircbotxInviteEventEmitter("libera", rosterEmitter, catalog, events::add);
+    User user = mock(User.class);
+    when(user.getNick()).thenReturn("alice");
+    InviteEvent event =
+        new RawInviteEvent(
+            mock(PircBotX.class),
+            mock(UserHostmask.class),
+            user,
+            "#fallback",
+            ":alice!ident@host INVITE me #ircafe :join us");
+
+    emitter.onInvite(event);
+
+    IrcEvent.InvitedToChannel invite =
+        assertInstanceOf(IrcEvent.InvitedToChannel.class, events.getFirst().event());
+    assertEquals("#plugin", invite.channel());
+    assertEquals("plugin-source", invite.from());
+    assertEquals("plugin-invitee", invite.invitee());
+    assertEquals("plugin reason", invite.reason());
+  }
+
   private static PircbotxInviteEventEmitter newEmitter(
       List<ServerIrcEvent> events, PircbotxRosterEmitter rosterEmitter) {
-    return new PircbotxInviteEventEmitter("libera", rosterEmitter, events::add);
+    return inviteEvents("libera", rosterEmitter, events::add);
   }
 
   private static final class RawInviteEvent extends InviteEvent {

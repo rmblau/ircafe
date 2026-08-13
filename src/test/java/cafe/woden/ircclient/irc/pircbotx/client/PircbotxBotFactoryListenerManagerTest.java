@@ -33,7 +33,12 @@ class PircbotxBotFactoryListenerManagerTest {
     when(proxyResolver.planForServer("libera")).thenReturn(ProxyPlan.direct());
 
     PircbotxBotFactory factory =
-        new PircbotxBotFactory(proxyResolver, new SojuProperties(Map.of(), null), null);
+        new PircbotxBotFactory(
+            proxyResolver,
+            new SojuProperties(Map.of(), null),
+            null,
+            Ircv3ExtensionCatalog.builtInCatalog(),
+            Ircv3RuntimeTestFixtures.catalogs());
 
     IrcProperties.Server server =
         IrcPropertiesTestFixtures.serverBuilder("libera")

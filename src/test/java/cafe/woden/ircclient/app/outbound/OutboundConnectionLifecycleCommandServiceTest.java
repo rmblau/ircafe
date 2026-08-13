@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
-import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.QuitMessageRuntimeConfigPort;
 import cafe.woden.ircclient.model.TargetRef;
 import org.junit.jupiter.api.Test;
 
@@ -18,8 +18,8 @@ class OutboundConnectionLifecycleCommandServiceTest {
   private final UiPort ui = mock(UiPort.class);
   private final ConnectionCoordinator connectionCoordinator = mock(ConnectionCoordinator.class);
   private final TargetCoordinator targetCoordinator = mock(TargetCoordinator.class);
-  private final ChatCommandRuntimeConfigPort runtimeConfig =
-      mock(ChatCommandRuntimeConfigPort.class);
+  private final QuitMessageRuntimeConfigPort runtimeConfig =
+      mock(QuitMessageRuntimeConfigPort.class);
   private final OutboundConnectionLifecycleCommandService service =
       new OutboundConnectionLifecycleCommandService(
           ui, connectionCoordinator, targetCoordinator, runtimeConfig);
@@ -74,12 +74,12 @@ class OutboundConnectionLifecycleCommandServiceTest {
     when(targetCoordinator.getActiveTarget()).thenReturn(chan);
     when(targetCoordinator.safeStatusTarget()).thenReturn(new TargetRef("libera", "status"));
     when(runtimeConfig.readDefaultQuitMessage())
-        .thenReturn(ChatCommandRuntimeConfigPort.DEFAULT_QUIT_MESSAGE);
+        .thenReturn(QuitMessageRuntimeConfigPort.DEFAULT_QUIT_MESSAGE);
 
     service.handleQuit("");
 
     verify(connectionCoordinator)
-        .disconnectOne("libera", ChatCommandRuntimeConfigPort.DEFAULT_QUIT_MESSAGE);
+        .disconnectOne("libera", QuitMessageRuntimeConfigPort.DEFAULT_QUIT_MESSAGE);
   }
 
   @Test
@@ -92,7 +92,7 @@ class OutboundConnectionLifecycleCommandServiceTest {
     service.handleQuit("");
 
     verify(connectionCoordinator)
-        .disconnectOne("libera", ChatCommandRuntimeConfigPort.DEFAULT_QUIT_MESSAGE);
+        .disconnectOne("libera", QuitMessageRuntimeConfigPort.DEFAULT_QUIT_MESSAGE);
   }
 
   @Test

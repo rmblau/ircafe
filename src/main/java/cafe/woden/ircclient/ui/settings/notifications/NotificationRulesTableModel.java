@@ -1,14 +1,16 @@
 package cafe.woden.ircclient.ui.settings.notifications;
 
 import cafe.woden.ircclient.config.api.NotificationRule;
+import cafe.woden.ircclient.notifications.api.NotificationTextRuleAdapters;
+import cafe.woden.ircclient.notify.api.text.NotificationTextRule;
+import cafe.woden.ircclient.notify.api.text.NotificationTextRuleEditPolicy;
+import cafe.woden.ircclient.notify.api.text.NotificationTextRuleSummaryPlan;
+import cafe.woden.ircclient.notify.api.text.NotificationTextRuleSummaryPlanner;
 import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRowsTableModel;
-import cafe.woden.ircclient.ui.settings.SettingsValueSupport;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
 final class NotificationRulesTableModel
     extends SettingsRowsTableModel<NotificationRulesTableModel.MutableRule> {
@@ -49,12 +51,10 @@ final class NotificationRulesTableModel
 
   static String effectiveRuleLabel(NotificationRule rule) {
     if (rule == null) return MESSAGES.text("preferences.notifications.rules.value.unnamed");
-    String label = SettingsValueSupport.trimmedString(rule.label());
-    if (!label.isEmpty()) return label;
-    String pattern = SettingsValueSupport.trimmedString(rule.pattern());
-    return pattern.isEmpty()
-        ? MESSAGES.text("preferences.notifications.rules.value.unnamed")
-        : pattern;
+    NotificationTextRuleSummaryPlan plan =
+        NotificationTextRuleSummaryPlanner.plan(NotificationTextRuleAdapters.toFeatureRule(rule));
+    String label = plan.effectiveLabel();
+    return label.isEmpty() ? MESSAGES.text("preferences.notifications.rules.value.unnamed") : label;
   }
 
   String highlightFgAt(int row) {
@@ -70,25 +70,11 @@ final class NotificationRulesTableModel
   }
 
   List<ValidationError> validationErrors() {
-    List<ValidationError> out = new ArrayList<>();
-    for (int i = 0; i < rows().size(); i++) {
-      MutableRule r = rows().get(i);
-      if (r == null) continue;
-      if (!r.enabled) continue;
-      if (r.type != NotificationRule.Type.REGEX) continue;
-
-      String pat = SettingsValueSupport.trimmedString(r.pattern);
-      if (pat.isEmpty()) continue;
-
-      try {
-        int flags = Pattern.UNICODE_CASE;
-        if (!r.caseSensitive) flags |= Pattern.CASE_INSENSITIVE;
-        Pattern.compile(pat, flags);
-      } catch (Exception ex) {
-        out.add(new ValidationError(i, r.label, pat, ex.getMessage()));
-      }
-    }
-    return out;
+    return NotificationTextRuleEditPolicy.validationErrors(
+            NotificationTextRuleAdapters.toFeatureRules(snapshot()))
+        .stream()
+        .map(ValidationError::from)
+        .toList();
   }
 
   ValidationError firstValidationError() {
@@ -139,12 +125,13 @@ final class NotificationRulesTableModel
 
   private static String summarizeMatch(MutableRule r) {
     if (r == null) return "";
-    String pattern = SettingsValueSupport.trimmedString(r.pattern);
-    if (pattern.isEmpty()) {
-      pattern = MESSAGES.text("preferences.notifications.rules.value.empty");
-    }
+    NotificationTextRuleSummaryPlan plan = summaryPlan(r);
+    String pattern =
+        plan.patternPresent()
+            ? plan.pattern()
+            : MESSAGES.text("preferences.notifications.rules.value.empty");
     String type =
-        r.type == NotificationRule.Type.REGEX
+        plan.type() == NotificationTextRule.Type.REGEX
             ? MESSAGES.text("preferences.notifications.rules.type.regex")
             : MESSAGES.text("preferences.notifications.rules.type.word");
     return MESSAGES.text("preferences.notifications.rules.value.match", type, pattern);
@@ -152,19 +139,25 @@ final class NotificationRulesTableModel
 
   private static String summarizeOptions(MutableRule r) {
     if (r == null) return "";
+    NotificationTextRuleSummaryPlan plan = summaryPlan(r);
     String caseLabel =
-        r.caseSensitive
+        plan.caseSensitive()
             ? MESSAGES.text("preferences.notifications.rules.option.caseSensitive.short")
             : MESSAGES.text("preferences.notifications.rules.option.caseInsensitive.short");
-    if (r.type == NotificationRule.Type.WORD) {
+    if (plan.wordRule()) {
       String wordMode =
-          r.wholeWord
+          plan.wholeWord()
               ? MESSAGES.text("preferences.notifications.rules.option.wholeWord")
               : MESSAGES.text("preferences.notifications.rules.option.substring");
       return MESSAGES.text(
           "preferences.notifications.rules.value.options.word", caseLabel, wordMode);
     }
     return caseLabel;
+  }
+
+  private static NotificationTextRuleSummaryPlan summaryPlan(MutableRule r) {
+    return NotificationTextRuleSummaryPlanner.plan(
+        NotificationTextRuleAdapters.toFeatureRule(r.toRule()));
   }
 
   static final class MutableRule {
@@ -177,7 +170,9 @@ final class NotificationRulesTableModel
     String highlightFg;
 
     NotificationRule toRule() {
-      boolean ww = (type == NotificationRule.Type.WORD) && wholeWord;
+      boolean ww =
+          NotificationTextRuleEditPolicy.normalizeWholeWord(
+              NotificationTextRuleAdapters.toFeatureType(type), wholeWord);
       return new NotificationRule(label, type, pattern, enabled, caseSensitive, ww, highlightFg);
     }
 
@@ -194,26 +189,33 @@ final class NotificationRulesTableModel
     }
 
     static MutableRule from(NotificationRule r) {
+      cafe.woden.ircclient.notify.api.text.NotificationTextRuleEditSeedPlan plan =
+          r == null
+              ? cafe.woden.ircclient.notify.api.text.NotificationTextRuleEditSeedPlanner
+                  .emptyRowSeed()
+              : cafe.woden.ircclient.notify.api.text.NotificationTextRuleEditSeedPlanner.plan(
+                  r.label(),
+                  NotificationTextRuleAdapters.toFeatureType(r.type()),
+                  r.pattern(),
+                  r.enabled(),
+                  r.caseSensitive(),
+                  r.wholeWord(),
+                  r.highlightFg());
       MutableRule m = new MutableRule();
-      if (r == null) {
-        m.enabled = false;
-        m.type = NotificationRule.Type.WORD;
-        m.label = "";
-        m.pattern = "";
-        m.caseSensitive = false;
-        m.wholeWord = true;
-        m.highlightFg = null;
-        return m;
-      }
-
-      m.enabled = r.enabled();
-      m.type = r.type();
-      m.label = Objects.toString(r.label(), "");
-      m.pattern = Objects.toString(r.pattern(), "");
-      m.caseSensitive = r.caseSensitive();
-      m.wholeWord = r.wholeWord();
-      m.highlightFg = r.highlightFg();
+      m.enabled = plan.enabled();
+      m.type = toRootType(plan.type());
+      m.label = plan.label();
+      m.pattern = plan.pattern();
+      m.caseSensitive = plan.caseSensitive();
+      m.wholeWord = plan.wholeWord();
+      m.highlightFg = plan.highlightFg();
       return m;
+    }
+
+    private static NotificationRule.Type toRootType(NotificationTextRule.Type type) {
+      return type == NotificationTextRule.Type.REGEX
+          ? NotificationRule.Type.REGEX
+          : NotificationRule.Type.WORD;
     }
   }
 }

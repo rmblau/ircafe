@@ -1,6 +1,6 @@
 package cafe.woden.ircclient.ui.settings.network;
 
-import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.UserLookupRuntimeConfigPort;
 import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsRangeSupport;
@@ -620,7 +620,7 @@ public final class UserLookupsPanelSupport {
   }
 
   public static void rememberSettings(
-      RuntimeConfigStore runtimeConfig, UserLookupSettings settings) {
+      UserLookupRuntimeConfigPort runtimeConfig, UserLookupSettings settings) {
     runtimeConfig.rememberUserhostDiscoveryEnabled(settings.userhostEnabled());
     runtimeConfig.rememberUserhostMinIntervalSeconds(settings.userhostMinIntervalSeconds());
     runtimeConfig.rememberUserhostMaxCommandsPerMinute(settings.userhostMaxCommandsPerMinute());

@@ -10,8 +10,6 @@ import javax.swing.SwingUtilities;
 
 final class NotificationRuleTestRunner implements AutoCloseable {
   private static final UiMessages MESSAGES = UiMessages.bundledDefaults();
-  private static final int MAX_TEST_CHARS = 800;
-
   private final ExecutorService exec;
   private final AtomicLong seq = new AtomicLong();
 
@@ -23,10 +21,6 @@ final class NotificationRuleTestRunner implements AutoCloseable {
     if (controls == null) return;
 
     String sample = controls.testInput.getText();
-    if (sample == null) sample = "";
-    if (sample.length() > MAX_TEST_CHARS) {
-      sample = sample.substring(0, MAX_TEST_CHARS);
-    }
 
     List<NotificationRule> rules = controls.model.snapshot();
     List<ValidationError> errors = controls.model.validationErrors();

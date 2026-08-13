@@ -3,6 +3,10 @@ package cafe.woden.ircclient.ui.settings.notifications;
 import cafe.woden.ircclient.config.api.NotificationRuntimeConfigPort;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.notifications.api.IrcEventNotificationRulesPort;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationRuleListSelectionPlan;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationRuleListSelectionPlanner;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationRuleToggleSelectionPlan;
+import cafe.woden.ircclient.notify.api.irc.IrcEventNotificationRuleToggleSelectionPlanner;
 import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.PreferencesUiSupport;
 import cafe.woden.ircclient.ui.settings.SettingsTableSupport;
@@ -127,17 +131,9 @@ public final class IrcEventNotificationsTabSupport {
             MESSAGES.text("preferences.notifications.ircEvents.button.down.tooltip"));
 
     Runnable refreshRuleButtons =
-        () -> {
-          NotificationRuleTableSupport.refreshBasicButtonState(
-              controls.table(), controls.model()::getRowCount, edit, duplicate, remove, up, down);
-          int modelRow = SettingsTableSupport.selectedModelRow(controls.table());
-          boolean hasSelection = modelRow >= 0;
-          IrcEventNotificationRule selectedRule =
-              modelRow >= 0 ? controls.model().ruleAt(modelRow) : null;
-          boolean selectedEnabled = selectedRule != null && selectedRule.enabled();
-          enableRule.setEnabled(hasSelection && !selectedEnabled);
-          disableRule.setEnabled(hasSelection && selectedEnabled);
-        };
+        () ->
+            refreshRuleButtonState(
+                controls, edit, enableRule, disableRule, duplicate, remove, up, down);
 
     Runnable openEditRuleDialog =
         () ->
@@ -215,10 +211,11 @@ public final class IrcEventNotificationsTabSupport {
           List<IrcEventNotificationRule> rules =
               IrcEventNotificationPresetSupport.buildPreset(preset);
           if (rules.isEmpty()) return;
-          controls.model().applyPreset(rules);
-          int row = controls.model().firstRowForEvent(rules.getFirst().eventType());
-          if (row < 0) row = 0;
-          SettingsTableSupport.selectModelRow(controls.table(), row);
+          int firstAffectedRow = controls.model().applyPreset(rules);
+          IrcEventNotificationRuleListSelectionPlan selectionPlan =
+              IrcEventNotificationRuleListSelectionPlanner.afterPresetApply(
+                  controls.model().getRowCount(), firstAffectedRow);
+          applyRuleListSelectionPlan(controls.table(), selectionPlan);
           refreshRuleButtons.run();
         });
 
@@ -234,11 +231,10 @@ public final class IrcEventNotificationsTabSupport {
           List<IrcEventNotificationRule> defaults = IrcEventNotificationRule.defaults();
           if (defaults.isEmpty()) return;
           controls.model().replaceAll(defaults);
-          if (controls.table().getRowCount() > 0) {
-            SettingsTableSupport.selectModelRow(controls.table(), 0);
-          } else {
-            controls.table().clearSelection();
-          }
+          applyRuleListSelectionPlan(
+              controls.table(),
+              IrcEventNotificationRuleListSelectionPlanner.afterDefaultReset(
+                  controls.model().getRowCount()));
           refreshRuleButtons.run();
         });
 
@@ -287,6 +283,54 @@ public final class IrcEventNotificationsTabSupport {
     tab.add(rulesPanel, MigConstraints.growPushMinWidth0Wrap());
 
     return tab;
+  }
+
+  static void applyRuleListSelectionPlan(
+      JTable table, IrcEventNotificationRuleListSelectionPlan plan) {
+    if (table == null) return;
+    if (plan != null && plan.selectRow()) {
+      SettingsTableSupport.selectModelRow(table, plan.row());
+    } else {
+      table.clearSelection();
+    }
+  }
+
+  static void refreshRuleButtonState(
+      IrcEventNotificationControls controls,
+      JButton edit,
+      JButton enableRule,
+      JButton disableRule,
+      JButton duplicate,
+      JButton remove,
+      JButton up,
+      JButton down) {
+    if (controls == null) {
+      setEnabled(edit, false);
+      setEnabled(enableRule, false);
+      setEnabled(disableRule, false);
+      setEnabled(duplicate, false);
+      setEnabled(remove, false);
+      setEnabled(up, false);
+      setEnabled(down, false);
+      return;
+    }
+
+    NotificationRuleTableSupport.refreshBasicButtonState(
+        controls.table(), controls.model()::getRowCount, edit, duplicate, remove, up, down);
+    int modelRow = SettingsTableSupport.selectedModelRow(controls.table());
+    IrcEventNotificationRule selectedRule =
+        modelRow >= 0 ? controls.model().ruleAt(modelRow) : null;
+    IrcEventNotificationRuleToggleSelectionPlan togglePlan =
+        IrcEventNotificationRuleToggleSelectionPlanner.plan(
+            modelRow,
+            controls.model().getRowCount(),
+            selectedRule != null && selectedRule.enabled());
+    setEnabled(enableRule, togglePlan.enableRuleEnabled());
+    setEnabled(disableRule, togglePlan.disableRuleEnabled());
+  }
+
+  private static void setEnabled(JButton button, boolean enabled) {
+    if (button != null) button.setEnabled(enabled);
   }
 
   public static IrcEventNotificationSettings readSettings(IrcEventNotificationControls controls) {

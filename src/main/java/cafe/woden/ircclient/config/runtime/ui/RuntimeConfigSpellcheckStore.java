@@ -2,7 +2,6 @@ package cafe.woden.ircclient.config.runtime.ui;
 
 import static cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport.sanitizeStringList;
 
-import cafe.woden.ircclient.config.properties.UiProperties;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import java.nio.file.Path;
@@ -38,36 +37,42 @@ public class RuntimeConfigSpellcheckStore {
   }
 
   public synchronized void rememberCompletionPreset(String preset) {
-    String normalized = UiProperties.normalizeSpellcheckCompletionPreset(preset);
+    String normalized = RuntimeConfigSpellcheckSettingsCodec.normalizeCompletionPreset(preset);
     rememberScalar("spellcheckCompletionPreset", normalized);
   }
 
   public synchronized void rememberCustomMinPrefixCompletionTokenLength(int value) {
     rememberInteger(
-        "spellcheckCustomMinPrefixCompletionTokenLength", Math.max(2, Math.min(6, value)));
+        "spellcheckCustomMinPrefixCompletionTokenLength",
+        RuntimeConfigSpellcheckSettingsCodec.normalizeCustomMinPrefixCompletionTokenLength(value));
   }
 
   public synchronized void rememberCustomMaxPrefixCompletionExtraChars(int value) {
     rememberInteger(
-        "spellcheckCustomMaxPrefixCompletionExtraChars", Math.max(4, Math.min(24, value)));
+        "spellcheckCustomMaxPrefixCompletionExtraChars",
+        RuntimeConfigSpellcheckSettingsCodec.normalizeCustomMaxPrefixCompletionExtraChars(value));
   }
 
   public synchronized void rememberCustomMaxPrefixLexiconCandidates(int value) {
     rememberInteger(
-        "spellcheckCustomMaxPrefixLexiconCandidates", Math.max(16, Math.min(256, value)));
+        "spellcheckCustomMaxPrefixLexiconCandidates",
+        RuntimeConfigSpellcheckSettingsCodec.normalizeCustomMaxPrefixLexiconCandidates(value));
   }
 
   public synchronized void rememberCustomPrefixCompletionBonusScore(int value) {
     rememberInteger(
-        "spellcheckCustomPrefixCompletionBonusScore", Math.max(0, Math.min(400, value)));
+        "spellcheckCustomPrefixCompletionBonusScore",
+        RuntimeConfigSpellcheckSettingsCodec.normalizeCustomPrefixCompletionBonusScore(value));
   }
 
   public synchronized void rememberCustomSourceOrderWeight(int value) {
-    rememberInteger("spellcheckCustomSourceOrderWeight", Math.max(0, Math.min(20, value)));
+    rememberInteger(
+        "spellcheckCustomSourceOrderWeight",
+        RuntimeConfigSpellcheckSettingsCodec.normalizeCustomSourceOrderWeight(value));
   }
 
   public synchronized void rememberLanguageTag(String languageTag) {
-    String normalized = UiProperties.normalizeSpellcheckLanguageTag(languageTag);
+    String normalized = RuntimeConfigSpellcheckSettingsCodec.normalizeLanguageTag(languageTag);
     rememberScalar("spellcheckLanguageTag", normalized);
   }
 

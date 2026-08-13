@@ -66,10 +66,16 @@ class PircbotxAvailabilitySupportTest {
   }
 
   @Test
-  void echoMessageAvailabilityRequiresLiveBot() {
+  void echoMessageAvailabilityRequiresLiveBotAndNegotiatedCapability() {
     PircbotxConnectionState connection = new PircbotxConnectionState("libera");
     connection.setEchoMessageCapAcked(true);
 
+    assertFalse(support.isEchoMessageAvailable(connection));
+
+    connection.setBot(mock(PircBotX.class));
+    assertTrue(support.isEchoMessageAvailable(connection));
+
+    connection.setEchoMessageCapAcked(false);
     assertFalse(support.isEchoMessageAvailable(connection));
   }
 

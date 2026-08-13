@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.irc.pircbotx.listener;
 
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.runtime;
+import static cafe.woden.ircclient.irc.pircbotx.listener.PircbotxListenerRuntimeTestFixtures.isupportObserver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -28,7 +30,7 @@ class PircbotxIsupportObserverTest {
     List<ServerIrcEvent> events = new ArrayList<>();
     AtomicReference<String> sojuNetId = new AtomicReference<>();
     PircbotxIsupportObserver observer =
-        new PircbotxIsupportObserver("libera", conn, state, events::add, sojuNetId::set);
+        isupportObserver("libera", conn, state, events::add, sojuNetId::set, runtime());
 
     observer.observe(
         ":server 005 me PREFIX=(qaohv)!&@%+ CHANTYPES=# MONITOR=250 WHOX "
@@ -53,6 +55,23 @@ class PircbotxIsupportObserverTest {
   }
 
   @Test
+  void observeEmitsWhoxRemovalThroughRuntimeProvider() {
+    PircbotxConnectionState conn = new PircbotxConnectionState("libera");
+    RecordingIsupportState state = new RecordingIsupportState();
+    List<ServerIrcEvent> events = new ArrayList<>();
+    PircbotxIsupportObserver observer =
+        isupportObserver("libera", conn, state, events::add, ignored -> {}, runtime());
+
+    observer.observe(":server 005 me -WHOX :are supported");
+
+    assertEquals(1, events.size());
+    IrcEvent.WhoxSupportObserved whox =
+        assertInstanceOf(IrcEvent.WhoxSupportObserved.class, events.getFirst().event());
+    assertEquals(false, whox.supported());
+    assertNull(state.tokens().get("WHOX"));
+  }
+
+  @Test
   void observeAppliesMonitorRemovalAndTypingDenial() {
     PircbotxConnectionState conn = new PircbotxConnectionState("libera");
     conn.updateMonitorSupport(true, 250L);
@@ -62,7 +81,7 @@ class PircbotxIsupportObserverTest {
 
     List<ServerIrcEvent> events = new ArrayList<>();
     PircbotxIsupportObserver observer =
-        new PircbotxIsupportObserver("libera", conn, state, events::add, ignored -> {});
+        isupportObserver("libera", conn, state, events::add, ignored -> {}, runtime());
 
     observer.observe(":server 005 me -MONITOR CLIENTTAGDENY=typing :are supported");
 

@@ -1,6 +1,7 @@
 package cafe.woden.ircclient.ui.settings.appearance;
 
-import cafe.woden.ircclient.config.api.AppearanceRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.DockLayoutRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ServerTreeAppearanceRuntimeConfigPort;
 import cafe.woden.ircclient.ui.localization.UiMessages;
 import cafe.woden.ircclient.ui.settings.SettingsColorSupport;
 import cafe.woden.ircclient.ui.settings.UiSettings;
@@ -54,10 +55,13 @@ final class AppearanceServerTreeControlsFactory {
   }
 
   static void remember(
-      AppearanceRuntimeConfigPort runtimeConfig,
+      ServerTreeAppearanceRuntimeConfigPort serverTreeRuntimeConfig,
+      DockLayoutRuntimeConfigPort dockLayoutRuntimeConfig,
       AppearanceControlsSupport.ServerTreeAppearanceSettings settings) {
-    runtimeConfig.rememberServerTreeUnreadChannelColor(settings.unreadChannelColor());
-    runtimeConfig.rememberServerTreeHighlightChannelColor(settings.highlightChannelColor());
-    runtimeConfig.rememberPreserveDockLayout(settings.preserveDockLayoutBetweenSessions());
+    serverTreeRuntimeConfig.rememberServerTreeUnreadChannelColor(settings.unreadChannelColor());
+    serverTreeRuntimeConfig.rememberServerTreeHighlightChannelColor(
+        settings.highlightChannelColor());
+    dockLayoutRuntimeConfig.rememberPreserveDockLayout(
+        settings.preserveDockLayoutBetweenSessions());
   }
 }

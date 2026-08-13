@@ -48,6 +48,27 @@ class IrcEventNotificationRuleTest {
   }
 
   @Test
+  void presetAdapterBuildsFeatureOwnedPresetRules() {
+    java.util.List<IrcEventNotificationRule> essential =
+        IrcEventNotificationRule.preset("ESSENTIAL");
+    java.util.List<IrcEventNotificationRule> allEvents =
+        IrcEventNotificationRule.preset("ALL_EVENTS");
+
+    assertEquals(5, essential.size());
+    assertEquals(
+        IrcEventNotificationRule.EventType.PRIVATE_MESSAGE_RECEIVED, essential.get(0).eventType());
+    assertEquals(IrcEventNotificationRule.SourceMode.OTHERS, essential.get(0).sourceMode());
+    assertEquals(BuiltInSound.PM_RECEIVED_1.name(), essential.get(0).soundId());
+    assertFalse(essential.get(0).soundEnabled());
+
+    assertEquals(IrcEventNotificationRule.EventType.values().length, allEvents.size());
+    assertTrue(allEvents.stream().allMatch(IrcEventNotificationRule::enabled));
+    assertTrue(
+        allEvents.stream()
+            .allMatch(rule -> rule.sourceMode() == IrcEventNotificationRule.SourceMode.ANY));
+  }
+
+  @Test
   void sourceAndChannelFiltersAreApplied() {
     IrcEventNotificationRule rule =
         rule()

@@ -3,15 +3,15 @@ package cafe.woden.ircclient.irc.pircbotx.parse;
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
 import cafe.woden.ircclient.irc.ircv3.*;
+import cafe.woden.ircclient.irc.ircv3.Ircv3CapabilityLine;
+import cafe.woden.ircclient.irc.ircv3.spi.*;
 import cafe.woden.ircclient.irc.mode.*;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
-import cafe.woden.ircclient.irc.pircbotx.support.PircbotxUtil;
 import cafe.woden.ircclient.irc.playback.*;
 import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Consumer;
 import org.pircbotx.InputParser;
@@ -42,33 +42,89 @@ final class PircbotxIrcv3InputParser extends InputParser {
   private final PircbotxConnectionState conn;
   private final Ircv3StsPolicyService stsPolicies;
   private final PircbotxCapabilityNegotiationSupport capabilityNegotiationSupport;
-  private final PircbotxMultilineCapStateSupport multilineCapStateSupport =
-      new PircbotxMultilineCapStateSupport();
+  private final PircbotxMultilineCapStateSupport multilineCapStateSupport;
   private final PircbotxAccountTagSupport accountTagSupport;
   private final PircbotxPresenceSignalSupport presenceSignalSupport;
   private final PircbotxStandardReplySupport standardReplySupport;
   private final PircbotxTagSignalSupport tagSignalSupport;
+  private final Ircv3InboundCommandSignalRuntimeCatalog inboundCommandRuntimeCatalog;
+  private final Ircv3MessageMutationRuntimeSupport messageMutationRuntimeSupport;
+  private final Ircv3ReadMarkerRuntimeSupport readMarkerRuntimeSupport;
+  private final Ircv3TypingRuntimeSupport typingRuntimeSupport;
+  private final Ircv3ServerTimeRuntimeSupport serverTimeRuntimeSupport;
+  private final Ircv3EchoMessageRuntimeSupport echoMessageRuntimeSupport;
 
   PircbotxIrcv3InputParser(
       PircBotX bot,
       String serverId,
       PircbotxConnectionState conn,
       Consumer<ServerIrcEvent> sink,
-      Ircv3StsPolicyService stsPolicies) {
+      Ircv3StsPolicyService stsPolicies,
+      Ircv3InboundCommandSignalRuntimeCatalog inboundCommandRuntimeCatalog,
+      Ircv3CapabilityNegotiationRuntimeSupport capabilityNegotiationRuntimeSupport,
+      Ircv3HistoryTransportRuntimeSupport historyTransportRuntimeSupport,
+      Ircv3MessageMutationRuntimeSupport messageMutationRuntimeSupport,
+      Ircv3ReadMarkerRuntimeSupport readMarkerRuntimeSupport,
+      Ircv3TypingRuntimeSupport typingRuntimeSupport,
+      Ircv3AccountTagRuntimeSupport accountTagRuntimeSupport,
+      Ircv3ChannelContextRuntimeSupport channelContextRuntimeSupport,
+      PircbotxMultilineCapStateSupport multilineCapStateSupport,
+      Ircv3StandardReplyRuntimeSupport standardReplyRuntimeSupport,
+      Ircv3ServerTimeRuntimeSupport serverTimeRuntimeSupport,
+      Ircv3EchoMessageRuntimeSupport echoMessageRuntimeSupport) {
     super(bot);
     this.serverId = serverId;
     this.sink = Objects.requireNonNull(sink, "sink");
     this.conn = Objects.requireNonNull(conn, "conn");
     this.stsPolicies = Objects.requireNonNull(stsPolicies, "stsPolicies");
+    this.inboundCommandRuntimeCatalog =
+        Objects.requireNonNull(inboundCommandRuntimeCatalog, "inboundCommandRuntimeCatalog");
+    this.messageMutationRuntimeSupport =
+        Objects.requireNonNull(messageMutationRuntimeSupport, "messageMutationRuntimeSupport");
+    this.readMarkerRuntimeSupport =
+        Objects.requireNonNull(readMarkerRuntimeSupport, "readMarkerRuntimeSupport");
+    this.typingRuntimeSupport =
+        Objects.requireNonNull(typingRuntimeSupport, "typingRuntimeSupport");
+    this.multilineCapStateSupport =
+        Objects.requireNonNull(multilineCapStateSupport, "multilineCapStateSupport");
+    this.serverTimeRuntimeSupport =
+        Objects.requireNonNull(serverTimeRuntimeSupport, "serverTimeRuntimeSupport");
+    this.echoMessageRuntimeSupport =
+        Objects.requireNonNull(echoMessageRuntimeSupport, "echoMessageRuntimeSupport");
     PircbotxCapabilityStateSupport capabilityStateSupport =
         new PircbotxCapabilityStateSupport(this.serverId, this.conn);
     this.capabilityNegotiationSupport =
         new PircbotxCapabilityNegotiationSupport(
-            bot, this.serverId, this.conn, this.sink, capabilityStateSupport);
-    this.accountTagSupport = new PircbotxAccountTagSupport(this.serverId, this.sink);
-    this.presenceSignalSupport = new PircbotxPresenceSignalSupport(this.serverId, this.sink);
-    this.standardReplySupport = new PircbotxStandardReplySupport(this.serverId, this.sink);
-    this.tagSignalSupport = new PircbotxTagSignalSupport(this.serverId, this.sink);
+            bot,
+            this.serverId,
+            this.conn,
+            this.sink,
+            capabilityStateSupport,
+            Objects.requireNonNull(
+                capabilityNegotiationRuntimeSupport, "capabilityNegotiationRuntimeSupport"),
+            Objects.requireNonNull(
+                historyTransportRuntimeSupport, "historyTransportRuntimeSupport"));
+    this.accountTagSupport =
+        new PircbotxAccountTagSupport(
+            this.serverId,
+            this.sink,
+            Objects.requireNonNull(accountTagRuntimeSupport, "accountTagRuntimeSupport"));
+    this.presenceSignalSupport =
+        new PircbotxPresenceSignalSupport(
+            this.serverId, this.sink, this.inboundCommandRuntimeCatalog);
+    this.standardReplySupport =
+        new PircbotxStandardReplySupport(
+            this.serverId,
+            this.sink,
+            Objects.requireNonNull(standardReplyRuntimeSupport, "standardReplyRuntimeSupport"));
+    this.tagSignalSupport =
+        new PircbotxTagSignalSupport(
+            this.serverId,
+            this.sink,
+            Objects.requireNonNull(channelContextRuntimeSupport, "channelContextRuntimeSupport"),
+            this.messageMutationRuntimeSupport,
+            this.readMarkerRuntimeSupport,
+            this.typingRuntimeSupport);
   }
 
   @Override
@@ -80,7 +136,7 @@ final class PircbotxIrcv3InputParser extends InputParser {
       List<String> parsedLine,
       ImmutableMap<String, String> tags)
       throws IOException {
-    Instant now = Instant.now();
+    Instant now = serverTimeRuntimeSupport.resolve(tags, line).orElseGet(Instant::now);
     String sourceNick = source != null ? Objects.toString(source.getNick(), "").trim() : "";
 
     // Capture self-query target hints *before* default dispatch so onPrivateMessage/onAction can
@@ -107,7 +163,8 @@ final class PircbotxIrcv3InputParser extends InputParser {
 
     // Detect CAP state changes for capabilities we care about.
     if ("CAP".equalsIgnoreCase(command) && parsedLine != null && parsedLine.size() >= 2) {
-      ParsedCapLine capLine = ParsedCapLine.parse(parsedLine.get(1), capListFrom(parsedLine));
+      Ircv3CapabilityLine capLine =
+          Ircv3CapabilityLine.parse(parsedLine.get(1), capListFrom(parsedLine));
       if (capLine.hasTokens()) {
         if (capLine.isAction("LS", "NEW", "ACK")) {
           stsPolicies.observeFromCapList(
@@ -121,13 +178,7 @@ final class PircbotxIrcv3InputParser extends InputParser {
       return;
     }
 
-    if ("MARKREAD".equalsIgnoreCase(command)) {
-      String markerTarget = firstParam(parsedLine);
-      String marker = secondParam(parsedLine);
-      String from = source != null ? Objects.toString(source.getNick(), "").trim() : "server";
-      sink.accept(
-          new ServerIrcEvent(
-              serverId, new IrcEvent.ReadMarkerObserved(now, from, markerTarget, marker)));
+    if (emitReadMarkerIfSupported(now, sourceNick, command, line, parsedLine, tags)) {
       return;
     }
 
@@ -135,18 +186,7 @@ final class PircbotxIrcv3InputParser extends InputParser {
       return;
     }
 
-    if ("REDACT".equalsIgnoreCase(command)) {
-      String redactTarget = firstParam(parsedLine);
-      String redactMsgId = secondParam(parsedLine);
-      if (!redactMsgId.isBlank()) {
-        String from = sourceNick.isBlank() ? "server" : sourceNick;
-        String convTarget =
-            PircbotxTagSignalSupport.resolveConversationTarget(redactTarget, sourceNick);
-        sink.accept(
-            new ServerIrcEvent(
-                serverId,
-                new IrcEvent.MessageRedactionObserved(now, from, convTarget, redactMsgId)));
-      }
+    if (emitMessageRedactionIfSupported(now, sourceNick, command, line, parsedLine, tags)) {
       return;
     }
 
@@ -158,32 +198,59 @@ final class PircbotxIrcv3InputParser extends InputParser {
 
     tagSignalSupport.emitObservedSignals(now, nick, target, command, parsedLine, tags);
 
-    if ("SETNAME".equalsIgnoreCase(command)) {
-      String realName = firstParam(parsedLine);
-      sink.accept(
-          new ServerIrcEvent(
-              serverId,
-              new IrcEvent.UserSetNameObserved(
-                  now, nick, realName, IrcEvent.UserSetNameObserved.Source.SETNAME)));
+    if (presenceSignalSupport.observeIdentityChange(now, nick, command, line, parsedLine)) {
       return;
     }
 
-    if ("CHGHOST".equalsIgnoreCase(command)) {
-      String user = firstParam(parsedLine);
-      String host = secondParam(parsedLine);
-      sink.accept(
-          new ServerIrcEvent(serverId, new IrcEvent.UserHostChanged(now, nick, user, host)));
-
-      if (!user.isBlank() && !host.isBlank()) {
-        String hm = nick + "!" + user + "@" + host;
-        sink.accept(
-            new ServerIrcEvent(serverId, new IrcEvent.UserHostmaskObserved(now, "", nick, hm)));
-      }
-      return;
-    }
-
-    if (!presenceSignalSupport.observes(command)) return;
     presenceSignalSupport.observe(now, nick, command, line, parsedLine);
+  }
+
+  private boolean emitReadMarkerIfSupported(
+      Instant at,
+      String sourceNick,
+      String command,
+      String rawLine,
+      List<String> parsedLine,
+      ImmutableMap<String, String> tags) {
+    return readMarkerRuntimeSupport
+        .fromCommand(new Ircv3InboundCommandRequest(sourceNick, command, rawLine, parsedLine, tags))
+        .map(
+            readMarker -> {
+              String from = sourceNick.isBlank() ? "server" : sourceNick;
+              sink.accept(
+                  new ServerIrcEvent(
+                      serverId,
+                      new IrcEvent.ReadMarkerObserved(
+                          at, from, readMarker.target(), readMarker.marker())));
+              return true;
+            })
+        .orElse(false);
+  }
+
+  private boolean emitMessageRedactionIfSupported(
+      Instant at,
+      String sourceNick,
+      String command,
+      String rawLine,
+      List<String> parsedLine,
+      ImmutableMap<String, String> tags) {
+    return messageMutationRuntimeSupport
+        .redactionFromCommand(
+            new Ircv3InboundCommandRequest(sourceNick, command, rawLine, parsedLine, tags))
+        .map(
+            redaction -> {
+              String from = sourceNick.isBlank() ? "server" : sourceNick;
+              String conversationTarget =
+                  Ircv3ChannelContextPolicy.resolveConversationTarget(
+                      redaction.target(), sourceNick);
+              sink.accept(
+                  new ServerIrcEvent(
+                      serverId,
+                      new IrcEvent.MessageRedactionObserved(
+                          at, from, conversationTarget, redaction.messageId())));
+              return true;
+            })
+        .orElse(false);
   }
 
   @Override
@@ -273,22 +340,9 @@ final class PircbotxIrcv3InputParser extends InputParser {
 
   private void observePassiveLagSampleFromServerTime(
       ImmutableMap<String, String> tags, String rawLine) {
-    Instant serverTaggedAt = serverTimeFromTagsOrLine(tags, rawLine);
-    if (serverTaggedAt == null) return;
-    long nowMs = System.currentTimeMillis();
-    conn.observePassiveLagSample(nowMs - serverTaggedAt.toEpochMilli(), nowMs);
-  }
-
-  private static Instant serverTimeFromTagsOrLine(
-      ImmutableMap<String, String> tags, String rawLine) {
-    String tagged = Ircv3Tags.firstTagValue(tags, "time");
-    if (!tagged.isBlank()) {
-      try {
-        return Instant.parse(tagged);
-      } catch (Exception ignored) {
-      }
-    }
-    return Ircv3ServerTime.parseServerTimeFromRawLine(rawLine);
+    serverTimeRuntimeSupport
+        .passiveLag(tags, rawLine, System.currentTimeMillis())
+        .ifPresent(sample -> conn.observePassiveLagSample(sample.lagMs(), sample.observedAtMs()));
   }
 
   private static String extractTrailingParamToken(List<String> parsedLine, String rawLine) {
@@ -323,16 +377,6 @@ final class PircbotxIrcv3InputParser extends InputParser {
     return out.toString().trim();
   }
 
-  private static String firstParam(List<String> parsedLine) {
-    if (parsedLine == null || parsedLine.isEmpty()) return "";
-    return stripLeadingColon(parsedLine.get(0));
-  }
-
-  private static String secondParam(List<String> parsedLine) {
-    if (parsedLine == null || parsedLine.size() < 2) return "";
-    return stripLeadingColon(parsedLine.get(1));
-  }
-
   private static String stripLeadingColon(String raw) {
     String s = Objects.toString(raw, "").trim();
     if (s.startsWith(":")) s = s.substring(1).trim();
@@ -347,79 +391,39 @@ final class PircbotxIrcv3InputParser extends InputParser {
       String rawLine,
       List<String> parsedLine,
       ImmutableMap<String, String> tags) {
-    String cmd = Objects.toString(command, "").trim().toUpperCase(Locale.ROOT);
-    if (!"PRIVMSG".equals(cmd)) return;
-    if (!isSelfNick(fromNick)) return;
-
-    String messageTarget = stripLeadingColon(rawTarget);
-    if (messageTarget.isBlank()) {
-      messageTarget = firstParam(parsedLine);
-    }
-    if (messageTarget.isBlank()
-        || PircbotxTagSignalSupport.isChannelName(messageTarget)
-        || looksLikeSelfTarget(messageTarget)) {
-      return;
-    }
-
-    String first = firstParam(parsedLine);
-    String second = secondParam(parsedLine);
-    String payload = second;
-    if (payload.isBlank() && !first.isBlank() && !first.equalsIgnoreCase(messageTarget)) {
-      payload = first;
-    }
-    if (payload.isBlank()) {
-      payload = trailingParam(rawLine);
-    }
-    String action = PircbotxUtil.parseCtcpAction(payload);
-    String kind = action == null ? "PRIVMSG" : "ACTION";
-    String normalizedPayload = action == null ? payload : action;
-    String msgId =
-        PircbotxTagSignalSupport.firstTag(tags, "msgid", "+msgid", "draft/msgid", "+draft/msgid");
-    conn.rememberPrivateTargetHint(
-        fromNick,
-        messageTarget,
-        kind,
-        normalizedPayload,
-        msgId,
-        at == null ? System.currentTimeMillis() : at.toEpochMilli());
+    Ircv3InboundTagRequest request =
+        new Ircv3InboundTagRequest(
+            command,
+            fromNick,
+            rawTarget,
+            parsedLine,
+            tags,
+            rawLine,
+            at == null ? 0L : at.toEpochMilli(),
+            selfNickAliases());
+    echoMessageRuntimeSupport
+        .targetHint(request)
+        .ifPresent(
+            hint ->
+                conn.rememberPrivateTargetHint(
+                    fromNick,
+                    hint.target(),
+                    hint.kind(),
+                    hint.payload(),
+                    hint.messageId(),
+                    at == null ? System.currentTimeMillis() : at.toEpochMilli()));
   }
 
-  private boolean isSelfNick(String nick) {
-    String n = Objects.toString(nick, "").trim();
-    if (n.isEmpty()) return false;
-
+  private List<String> selfNickAliases() {
     String hinted = Objects.toString(conn.selfNickHint(), "").trim();
-    if (!hinted.isEmpty() && n.equalsIgnoreCase(hinted)) {
-      return true;
-    }
-
+    String fromBot = "";
     try {
       PircBotX liveBot = this.bot;
-      String fromBot = liveBot == null ? "" : Objects.toString(liveBot.getNick(), "").trim();
-      return !fromBot.isEmpty() && n.equalsIgnoreCase(fromBot);
+      fromBot = liveBot == null ? "" : Objects.toString(liveBot.getNick(), "").trim();
     } catch (Exception ignored) {
-      return false;
     }
-  }
-
-  private boolean looksLikeSelfTarget(String target) {
-    String t = Objects.toString(target, "").trim();
-    if (t.isEmpty()) return false;
-    String hinted = Objects.toString(conn.selfNickHint(), "").trim();
-    if (!hinted.isEmpty() && t.equalsIgnoreCase(hinted)) return true;
-    try {
-      PircBotX liveBot = this.bot;
-      String fromBot = liveBot == null ? "" : Objects.toString(liveBot.getNick(), "").trim();
-      return !fromBot.isEmpty() && t.equalsIgnoreCase(fromBot);
-    } catch (Exception ignored) {
-      return false;
-    }
-  }
-
-  private static String trailingParam(String rawLine) {
-    String line = Objects.toString(rawLine, "");
-    int idx = line.indexOf(" :");
-    if (idx < 0 || idx + 2 >= line.length()) return "";
-    return line.substring(idx + 2).trim();
+    if (hinted.isEmpty()) return fromBot.isEmpty() ? List.of() : List.of(fromBot);
+    if (fromBot.isEmpty() || hinted.equalsIgnoreCase(fromBot)) return List.of(hinted);
+    return List.of(hinted, fromBot);
   }
 }

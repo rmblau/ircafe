@@ -62,13 +62,14 @@ import cafe.woden.ircclient.bouncer.BouncerDiscoveryEventPort;
 import cafe.woden.ircclient.bouncer.BouncerNetworkDiscoveryOrchestrator;
 import cafe.woden.ircclient.bouncer.GenericBouncerAutoConnectStore;
 import cafe.woden.ircclient.bouncer.GenericBouncerEphemeralNetworkImporter;
-import cafe.woden.ircclient.bouncer.GenericBouncerNetworkMappingStrategy;
 import cafe.woden.ircclient.config.RuntimeConfigStore;
+import cafe.woden.ircclient.config.api.ApplicationRootVisibilityConfigPort;
 import cafe.woden.ircclient.config.api.BouncerDiscoveryConfigPort;
-import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ChatAppearanceRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ConnectionRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.CtcpReplyRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.DiagnosticsRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.DockLayoutRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.EmbedLoadPolicyConfigPort;
 import cafe.woden.ircclient.config.api.FilterSettingsConfigPort;
 import cafe.woden.ircclient.config.api.IgnoreRulesConfigPort;
@@ -80,14 +81,19 @@ import cafe.woden.ircclient.config.api.Ircv3StsPolicyConfigPort;
 import cafe.woden.ircclient.config.api.MonitorRosterConfigPort;
 import cafe.woden.ircclient.config.api.NickColorOverridesConfigPort;
 import cafe.woden.ircclient.config.api.NotificationRule;
+import cafe.woden.ircclient.config.api.PreferredNickRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.QuitMessageRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
+import cafe.woden.ircclient.config.api.SelectedTargetRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ServerAutoConnectRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ServerTreeAppearanceRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.ServerTreeBuiltInVisibilityConfigPort;
 import cafe.woden.ircclient.config.api.ServerTreeChannelStateConfigPort;
 import cafe.woden.ircclient.config.api.ServerTreeLayoutConfigPort;
 import cafe.woden.ircclient.config.api.ServerTreeRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.ThemeAppearanceRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.TrayCloseHintRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UiSettingsRuntimeConfigPort;
-import cafe.woden.ircclient.config.api.UiShellRuntimeConfigPort;
 import cafe.woden.ircclient.config.api.UserCommandAliasesConfigPort;
 import cafe.woden.ircclient.config.servers.EphemeralServerRegistry;
 import cafe.woden.ircclient.config.servers.ServerCatalog;
@@ -305,8 +311,10 @@ class JmoleculesIncrementalAdoptionTest {
     assertAnnotated(ChannelFlagModeStatePort.class, ApplicationLayer.class);
     assertAnnotated(RecentStatusModePort.class, ApplicationLayer.class);
     assertAnnotated(BouncerDiscoveryConfigPort.class, ApplicationLayer.class);
+    assertAnnotated(ChatAppearanceRuntimeConfigPort.class, ApplicationLayer.class);
     assertAnnotated(InviteAutoJoinConfigPort.class, ApplicationLayer.class);
-    assertAnnotated(ChatCommandRuntimeConfigPort.class, ApplicationLayer.class);
+    assertAnnotated(PreferredNickRuntimeConfigPort.class, ApplicationLayer.class);
+    assertAnnotated(QuitMessageRuntimeConfigPort.class, ApplicationLayer.class);
     assertAnnotated(ConnectionRuntimeConfigPort.class, ApplicationLayer.class);
     assertAnnotated(CtcpReplyRuntimeConfigPort.class, ApplicationLayer.class);
     assertAnnotated(DiagnosticsRuntimeConfigPort.class, ApplicationLayer.class);
@@ -320,11 +328,16 @@ class JmoleculesIncrementalAdoptionTest {
     assertAnnotated(NickColorOverridesConfigPort.class, ApplicationLayer.class);
     assertAnnotated(RuntimeConfigPathPort.class, ApplicationLayer.class);
     assertAnnotated(ServerAutoConnectRuntimeConfigPort.class, ApplicationLayer.class);
+    assertAnnotated(ServerTreeAppearanceRuntimeConfigPort.class, ApplicationLayer.class);
     assertAnnotated(ServerTreeBuiltInVisibilityConfigPort.class, ApplicationLayer.class);
     assertAnnotated(ServerTreeChannelStateConfigPort.class, ApplicationLayer.class);
     assertAnnotated(ServerTreeLayoutConfigPort.class, ApplicationLayer.class);
     assertAnnotated(ServerTreeRuntimeConfigPort.class, ApplicationLayer.class);
-    assertAnnotated(UiShellRuntimeConfigPort.class, ApplicationLayer.class);
+    assertAnnotated(ApplicationRootVisibilityConfigPort.class, ApplicationLayer.class);
+    assertAnnotated(DockLayoutRuntimeConfigPort.class, ApplicationLayer.class);
+    assertAnnotated(SelectedTargetRuntimeConfigPort.class, ApplicationLayer.class);
+    assertAnnotated(ThemeAppearanceRuntimeConfigPort.class, ApplicationLayer.class);
+    assertAnnotated(TrayCloseHintRuntimeConfigPort.class, ApplicationLayer.class);
     assertAnnotated(UiSettingsRuntimeConfigPort.class, ApplicationLayer.class);
     assertAnnotated(UserCommandAliasesConfigPort.class, ApplicationLayer.class);
     assertAnnotated(RuntimeConfigStore.class, ApplicationLayer.class);
@@ -345,7 +358,6 @@ class JmoleculesIncrementalAdoptionTest {
     assertAnnotated(BouncerDiscoveryEventDispatcher.class, ApplicationLayer.class);
     assertAnnotated(BouncerNetworkDiscoveryOrchestrator.class, ApplicationLayer.class);
     assertAnnotated(GenericBouncerAutoConnectStore.class, ApplicationLayer.class);
-    assertAnnotated(GenericBouncerNetworkMappingStrategy.class, ApplicationLayer.class);
     assertAnnotated(GenericBouncerEphemeralNetworkImporter.class, ApplicationLayer.class);
     assertAnnotated(CommandParser.class, ApplicationLayer.class);
     assertAnnotated(FilterCommandParser.class, ApplicationLayer.class);
@@ -750,8 +762,11 @@ class JmoleculesIncrementalAdoptionTest {
         InviteAutoJoinConfigPort.class.isInterface(),
         "InviteAutoJoinConfigPort should remain an interface");
     assertTrue(
-        ChatCommandRuntimeConfigPort.class.isInterface(),
-        "ChatCommandRuntimeConfigPort should remain an interface");
+        PreferredNickRuntimeConfigPort.class.isInterface(),
+        "PreferredNickRuntimeConfigPort should remain an interface");
+    assertTrue(
+        QuitMessageRuntimeConfigPort.class.isInterface(),
+        "QuitMessageRuntimeConfigPort should remain an interface");
     assertTrue(
         ConnectionRuntimeConfigPort.class.isInterface(),
         "ConnectionRuntimeConfigPort should remain an interface");

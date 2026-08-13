@@ -1,5 +1,7 @@
 package cafe.woden.ircclient.irc.pircbotx.emit;
 
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.chatHistoryBatches;
+import static cafe.woden.ircclient.irc.pircbotx.PircbotxRuntimeTestFixtures.runtime;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.mockito.Mockito.mock;
@@ -12,7 +14,6 @@ import cafe.woden.ircclient.irc.backend.*;
 import cafe.woden.ircclient.irc.ircv3.*;
 import cafe.woden.ircclient.irc.pircbotx.listener.*;
 import cafe.woden.ircclient.irc.pircbotx.state.PircbotxConnectionState;
-import cafe.woden.ircclient.irc.pircbotx.support.Ircv3MultilineAccumulator;
 import cafe.woden.ircclient.irc.playback.*;
 import cafe.woden.ircclient.state.ServerIsupportState;
 import java.util.ArrayList;
@@ -95,6 +96,7 @@ class PircbotxNoticeEventEmitterTest {
       PircbotxConnectionState conn,
       List<ServerIrcEvent> events,
       java.util.function.Function<Object, String> senderNickResolver) {
+    var runtime = runtime();
     PircbotxRosterEmitter rosterEmitter =
         new PircbotxRosterEmitter("libera", conn, new ServerIsupportState(), events::add);
     PircbotxBouncerDiscoveryCoordinator bouncerDiscovery =
@@ -105,10 +107,10 @@ class PircbotxNoticeEventEmitterTest {
             true,
             new BouncerBackendRegistry(List.of()),
             BouncerDiscoveryEventPort.noOp());
-    PircbotxChatHistoryBatchCollector batches =
-        new PircbotxChatHistoryBatchCollector("libera", events::add);
-    PircbotxServerResponseEmitter serverResponses =
-        new PircbotxServerResponseEmitter("libera", events::add);
+    PircbotxChatHistoryBatchCollector batches = chatHistoryBatches("libera", events::add);
+    PircbotxServerResponseEmitter serverResponseEmitter =
+        new PircbotxServerResponseEmitter(
+            "libera", events::add, runtime.serverTime(), runtime.messageTags());
     return new PircbotxNoticeEventEmitter(
         "libera",
         conn,
@@ -116,9 +118,11 @@ class PircbotxNoticeEventEmitterTest {
         bouncerDiscovery,
         batches,
         new Ircv3MultilineAccumulator(),
-        serverResponses,
+        serverResponseEmitter,
         events::add,
-        senderNickResolver);
+        senderNickResolver,
+        runtime.serverTime(),
+        runtime.messageTags());
   }
 
   private static NoticeEvent notice(String nick, String text, String channelName) {

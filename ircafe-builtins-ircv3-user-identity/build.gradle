@@ -1,0 +1,7 @@
+apply from: rootProject.file('gradle/builtins-provider-conventions.gradle')
+
+description = 'Built-in IRCafe inbound command runtime provider for richer IRC identity numerics.'
+
+dependencies {
+    implementation project(':ircafe-feature-ircv3-user-identity')
+}

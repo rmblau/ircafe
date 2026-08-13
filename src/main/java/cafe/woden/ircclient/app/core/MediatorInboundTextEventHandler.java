@@ -1,8 +1,5 @@
 package cafe.woden.ircclient.app.core;
 
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_REACT;
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.DRAFT_UNREACT;
-
 import cafe.woden.ircclient.app.api.InterceptorEventType;
 import cafe.woden.ircclient.app.api.IrcEventNotifierPort;
 import cafe.woden.ircclient.app.api.NotificationRuleMatch;
@@ -14,6 +11,9 @@ import cafe.woden.ircclient.app.translation.MessageTranslationDispatcher;
 import cafe.woden.ircclient.ignore.api.InboundIgnorePolicyPort;
 import cafe.woden.ircclient.irc.IrcEvent;
 import cafe.woden.ircclient.irc.enrichment.UserInfoEnrichmentService;
+import cafe.woden.ircclient.irc.ircv3.Ircv3MessageIdRuntimeSupport;
+import cafe.woden.ircclient.irc.ircv3.Ircv3MessageMutationRuntimeSupport;
+import cafe.woden.ircclient.irc.ircv3.spi.Ircv3InboundTagRequest;
 import cafe.woden.ircclient.irc.port.IrcNegotiatedFeaturePort;
 import cafe.woden.ircclient.model.IrcEventNotificationRule;
 import cafe.woden.ircclient.model.TargetRef;
@@ -99,6 +99,8 @@ public class MediatorInboundTextEventHandler {
   private static final long INBOUND_MSGID_DEDUP_DIAG_MIN_EMIT_MS = 10_000L;
 
   private final IrcNegotiatedFeaturePort negotiatedFeaturePort;
+  private final Ircv3MessageMutationRuntimeSupport messageMutationRuntimeSupport;
+  private final Ircv3MessageIdRuntimeSupport messageIdRuntimeSupport;
   private final UiPort ui;
   private final TargetCoordinator targetCoordinator;
   private final UserInfoEnrichmentService userInfoEnrichmentService;
@@ -1149,8 +1151,12 @@ public class MediatorInboundTextEventHandler {
       return false;
     }
 
-    String targetMsgId = firstIrcv3TagValue(ircv3Tags, "draft/edit", "+draft/edit");
-    if (targetMsgId.isBlank()) {
+    String targetMessageId =
+        messageMutationRuntimeSupport
+            .messageEditFromTags(inboundTagRequest(from, target.target(), ircv3Tags))
+            .map(Ircv3MessageMutationRuntimeSupport.MessageEditObservation::messageId)
+            .orElse("");
+    if (targetMessageId.isBlank()) {
       return false;
     }
 
@@ -1158,7 +1164,7 @@ public class MediatorInboundTextEventHandler {
         target,
         at,
         Objects.toString(from, "").trim(),
-        targetMsgId,
+        targetMessageId,
         Objects.toString(text, ""),
         messageId,
         ircv3Tags);
@@ -1262,58 +1268,17 @@ public class MediatorInboundTextEventHandler {
     }
   }
 
-  private static String effectiveMessageIdForDedup(String messageId, Map<String, String> tags) {
-    String direct = Objects.toString(messageId, "").trim();
-    if (!direct.isBlank()) {
-      return direct;
-    }
-    return firstIrcv3TagValue(
-        tags, "msgid", "+msgid", "draft/msgid", "+draft/msgid", "znc.in/msgid", "+znc.in/msgid");
+  private String effectiveMessageIdForDedup(String messageId, Map<String, String> tags) {
+    return messageIdRuntimeSupport.resolve(tags, messageId);
   }
 
-  private static boolean hasMessageMutationTag(Map<String, String> tags) {
-    return !firstIrcv3TagValue(tags, "draft/edit", "+draft/edit").isBlank()
-        || !firstIrcv3TagValue(tags, DRAFT_REACT, "+" + DRAFT_REACT).isBlank()
-        || !firstIrcv3TagValue(tags, DRAFT_UNREACT, "+" + DRAFT_UNREACT).isBlank()
-        || !firstIrcv3TagValue(tags, "draft/delete", "+draft/delete").isBlank()
-        || !firstIrcv3TagValue(tags, "draft/redact", "+draft/redact").isBlank();
+  private boolean hasMessageMutationTag(Map<String, String> tags) {
+    return messageMutationRuntimeSupport.hasNonReplyMutationTag(inboundTagRequest("", "", tags));
   }
 
-  private static String firstIrcv3TagValue(Map<String, String> tags, String... keys) {
-    if (tags == null || tags.isEmpty() || keys == null) {
-      return "";
-    }
-    for (String key : keys) {
-      String wanted = normalizeIrcv3TagKey(key);
-      if (wanted.isEmpty()) {
-        continue;
-      }
-      for (Map.Entry<String, String> entry : tags.entrySet()) {
-        String actual = normalizeIrcv3TagKey(entry.getKey());
-        if (!wanted.equals(actual)) {
-          continue;
-        }
-        String raw = Objects.toString(entry.getValue(), "").trim();
-        if (!raw.isEmpty()) {
-          return raw;
-        }
-      }
-    }
-    return "";
-  }
-
-  private static String normalizeIrcv3TagKey(String rawKey) {
-    String key = Objects.toString(rawKey, "").trim();
-    if (key.startsWith("@")) {
-      key = key.substring(1).trim();
-    }
-    if (key.startsWith("+")) {
-      key = key.substring(1).trim();
-    }
-    if (key.isEmpty()) {
-      return "";
-    }
-    return key.toLowerCase(Locale.ROOT);
+  private static Ircv3InboundTagRequest inboundTagRequest(
+      String sourceNick, String rawTarget, Map<String, String> tags) {
+    return new Ircv3InboundTagRequest("PRIVMSG", sourceNick, rawTarget, java.util.List.of(), tags);
   }
 
   private void clearRemoteTypingIndicatorsForSender(TargetRef target, String fromNick) {

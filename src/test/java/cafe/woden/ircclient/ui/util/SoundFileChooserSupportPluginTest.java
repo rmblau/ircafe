@@ -1,11 +1,12 @@
 package cafe.woden.ircclient.ui.util;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.config.plugins.InstalledPluginServices;
-import cafe.woden.ircclient.notify.api.CustomSoundPluginProviders;
+import cafe.woden.ircclient.notify.api.sound.CustomSoundPluginProviders;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
 import java.io.File;
 import java.nio.file.Files;
@@ -35,6 +36,11 @@ class SoundFileChooserSupportPluginTest {
     assertTrue(filter.accept(new File("alert.wav")));
     assertTrue(filter.accept(new File("alert.ogg")));
     assertFalse(filter.accept(new File("alert.txt")));
+    assertEquals("Audio files (*.mp3, *.ogg, *.wav)", filter.getDescription());
+    assertEquals(
+        "Choose notification sound (MP3, OGG, or WAV)",
+        SoundFileChooserSupport.soundDialogTitle(
+            "notification sound", CustomSoundPluginProviders.extensionProviders(installedPlugins)));
     assertTrue(installedPlugins.pluginProblems().isEmpty());
   }
 

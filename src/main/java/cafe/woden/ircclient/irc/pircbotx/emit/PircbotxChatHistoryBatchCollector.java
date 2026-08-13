@@ -1,25 +1,21 @@
 package cafe.woden.ircclient.irc.pircbotx.emit;
 
-import static cafe.woden.ircclient.util.Ircv3CapabilityNames.CHATHISTORY;
-
 import cafe.woden.ircclient.irc.*;
 import cafe.woden.ircclient.irc.backend.*;
 import cafe.woden.ircclient.irc.ircv3.*;
+import cafe.woden.ircclient.irc.ircv3.spi.*;
 import cafe.woden.ircclient.irc.pircbotx.parse.*;
-import cafe.woden.ircclient.irc.pircbotx.support.PircbotxEventMetadata;
 import cafe.woden.ircclient.irc.pircbotx.support.PircbotxUtil;
 import cafe.woden.ircclient.irc.playback.*;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
-import lombok.AccessLevel;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,65 +26,89 @@ import org.slf4j.LoggerFactory;
  * but this collector owns the batch lifecycle and buffering so the listener no longer manages that
  * state directly.
  */
-@RequiredArgsConstructor(access = AccessLevel.PUBLIC)
 public final class PircbotxChatHistoryBatchCollector {
   private static final Logger log =
       LoggerFactory.getLogger(PircbotxChatHistoryBatchCollector.class);
 
-  @NonNull private final String serverId;
-  @NonNull private final Consumer<ServerIrcEvent> emit;
+  private final String serverId;
+  private final Consumer<ServerIrcEvent> emit;
+  private final Ircv3InboundCommandSignalRuntimeCatalog inboundCommandRuntimeCatalog;
+  private final Ircv3InboundTagSignalRuntimeCatalog inboundTagRuntimeCatalog;
+  private final Ircv3ServerTimeRuntimeSupport serverTimeRuntimeSupport;
+  private final Ircv3MessageTagsRuntimeSupport messageTagsRuntimeSupport;
   private final Map<String, ChatHistoryBatchBuffer> activeBatches = new HashMap<>();
 
+  public PircbotxChatHistoryBatchCollector(
+      String serverId,
+      Consumer<ServerIrcEvent> emit,
+      Ircv3InboundCommandSignalRuntimeCatalog inboundCommandRuntimeCatalog,
+      Ircv3InboundTagSignalRuntimeCatalog inboundTagRuntimeCatalog,
+      Ircv3ServerTimeRuntimeSupport serverTimeRuntimeSupport,
+      Ircv3MessageTagsRuntimeSupport messageTagsRuntimeSupport) {
+    this.serverId = Objects.requireNonNull(serverId, "serverId");
+    this.emit = Objects.requireNonNull(emit, "emit");
+    this.inboundCommandRuntimeCatalog =
+        Objects.requireNonNull(inboundCommandRuntimeCatalog, "inboundCommandRuntimeCatalog");
+    this.inboundTagRuntimeCatalog =
+        Objects.requireNonNull(inboundTagRuntimeCatalog, "inboundTagRuntimeCatalog");
+    this.serverTimeRuntimeSupport =
+        Objects.requireNonNull(serverTimeRuntimeSupport, "serverTimeRuntimeSupport");
+    this.messageTagsRuntimeSupport =
+        Objects.requireNonNull(messageTagsRuntimeSupport, "messageTagsRuntimeSupport");
+  }
+
   public boolean handleBatchControlLine(String normalizedLine) {
-    ParsedIrcLine pl = PircbotxInboundLineParsers.parseIrcLine(normalizedLine);
-    if (pl == null || pl.command() == null) return false;
-    if (!"BATCH".equalsIgnoreCase(pl.command())) return false;
+    List<Ircv3InboundCommandSignal> signals =
+        inboundCommandRuntimeCatalog.parse(
+            Ircv3InboundCommandOperation.HISTORY_BATCH_CONTROL,
+            new Ircv3InboundCommandRequest("", "BATCH", normalizedLine, List.of(), Map.of()));
+    if (signals.isEmpty()) return false;
 
-    java.util.List<String> params = pl.params();
-    String trailing = pl.trailing();
-    if (params == null || params.isEmpty()) {
-      return true;
-    }
-
-    String first = params.getFirst();
-    if (first == null || first.isBlank()) return true;
-    if (first.startsWith("+")) {
-      String id = first.substring(1);
-      String type = (params.size() >= 2) ? params.get(1) : "";
-
-      if (isChatHistoryBatchType(type)) {
-        String target = (params.size() >= 3) ? params.get(2) : "";
-        if ((target == null || target.isBlank()) && trailing != null && !trailing.isBlank()) {
-          target = trailing;
+    for (Ircv3InboundCommandSignal signal : signals) {
+      if (signal instanceof Ircv3InboundCommandSignal.HistoryBatchStarted start) {
+        if (isChatHistoryBatch(start.type())) {
+          activeBatches.put(start.batchId(), new ChatHistoryBatchBuffer(start.target()));
+          log.debug(
+              "[{}] CHATHISTORY BATCH start id={} target={} raw={}",
+              serverId,
+              start.batchId(),
+              start.target(),
+              normalizedLine);
         }
-
-        activeBatches.put(id, new ChatHistoryBatchBuffer(target));
-        log.debug(
-            "[{}] CHATHISTORY BATCH start id={} target={} raw={}",
-            serverId,
-            id,
-            target,
-            normalizedLine);
+        continue;
       }
-      return true;
-    }
-    if (first.startsWith("-")) {
-      String id = first.substring(1);
-      ChatHistoryBatchBuffer buf = activeBatches.remove(id);
-      if (buf != null) {
-        int n = buf.entries.size();
-        log.info(
-            "[{}] CHATHISTORY BATCH end id={} target={} lines={}", serverId, id, buf.target, n);
-        emit.accept(
-            new ServerIrcEvent(
-                serverId,
-                new IrcEvent.ChatHistoryBatchReceived(
-                    Instant.now(), buf.target, id, java.util.List.copyOf(buf.entries))));
-      }
-      return true;
-    }
 
+      if (signal instanceof Ircv3InboundCommandSignal.HistoryBatchEnded end) {
+        ChatHistoryBatchBuffer buf = activeBatches.remove(end.batchId());
+        if (buf != null) {
+          int n = buf.entries.size();
+          log.info(
+              "[{}] CHATHISTORY BATCH end id={} target={} lines={}",
+              serverId,
+              end.batchId(),
+              buf.target,
+              n);
+          emit.accept(
+              new ServerIrcEvent(
+                  serverId,
+                  new IrcEvent.ChatHistoryBatchReceived(
+                      Instant.now(), buf.target, end.batchId(), List.copyOf(buf.entries))));
+        }
+      }
+    }
     return true;
+  }
+
+  public Optional<String> batchId(Map<String, String> ircv3Tags) {
+    Ircv3InboundTagRequest request = new Ircv3InboundTagRequest("", "", "", List.of(), ircv3Tags);
+    for (Ircv3InboundTagSignal signal :
+        inboundTagRuntimeCatalog.parse(Ircv3InboundTagOperation.HISTORY_BATCH_REFERENCE, request)) {
+      if (signal.type() == Ircv3InboundTagSignalType.HISTORY_BATCH_REFERENCE
+          && !signal.primaryValue().isBlank()) {
+        return Optional.of(signal.primaryValue());
+      }
+    }
+    return Optional.empty();
   }
 
   public boolean appendIfActive(
@@ -118,7 +138,8 @@ public final class PircbotxChatHistoryBatchCollector {
   }
 
   public boolean maybeCaptureUnknownLine(String originalLineWithTags, String normalizedLine) {
-    Optional<String> maybeBatchId = Ircv3BatchTag.fromRawLine(originalLineWithTags);
+    Map<String, String> ircv3Tags = messageTagsRuntimeSupport.fromRawLine(originalLineWithTags);
+    Optional<String> maybeBatchId = batchId(ircv3Tags);
     if (maybeBatchId.isEmpty()) return false;
 
     ParsedIrcLine pl = PircbotxInboundLineParsers.parseIrcLine(normalizedLine);
@@ -126,14 +147,12 @@ public final class PircbotxChatHistoryBatchCollector {
     String cmd = pl.command().toUpperCase(Locale.ROOT);
     if (!"PRIVMSG".equals(cmd) && !"NOTICE".equals(cmd)) return false;
 
-    Instant at = Ircv3ServerTime.parseServerTimeFromRawLine(originalLineWithTags);
-    if (at == null) at = Instant.now();
+    Instant at = serverTimeRuntimeSupport.resolveRawLineOrNow(originalLineWithTags);
 
     String from = PircbotxInboundLineParsers.nickFromPrefix(pl.prefix());
     String text = pl.trailing();
     if (text == null) text = "";
-    Map<String, String> ircv3Tags = Ircv3Tags.fromRawLine(originalLineWithTags);
-    String messageId = PircbotxEventMetadata.ircv3MessageId(ircv3Tags);
+    String messageId = messageTagsRuntimeSupport.messageId(ircv3Tags);
     String fallbackTarget =
         pl.params() != null && !pl.params().isEmpty()
             ? Objects.toString(pl.params().getFirst(), "")
@@ -174,14 +193,12 @@ public final class PircbotxChatHistoryBatchCollector {
         ircv3Tags);
   }
 
-  public void clear() {
-    activeBatches.clear();
+  private static boolean isChatHistoryBatch(String type) {
+    return Objects.toString(type, "").toLowerCase(Locale.ROOT).contains("chathistory");
   }
 
-  private static boolean isChatHistoryBatchType(String type) {
-    if (type == null) return false;
-    String t = type.toLowerCase(Locale.ROOT);
-    return t.contains(CHATHISTORY);
+  public void clear() {
+    activeBatches.clear();
   }
 
   private static final class ChatHistoryBatchBuffer {

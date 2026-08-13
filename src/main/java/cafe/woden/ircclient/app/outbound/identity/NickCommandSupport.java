@@ -3,7 +3,7 @@ package cafe.woden.ircclient.app.outbound.identity;
 import cafe.woden.ircclient.app.api.UiPort;
 import cafe.woden.ircclient.app.core.ConnectionCoordinator;
 import cafe.woden.ircclient.app.core.TargetCoordinator;
-import cafe.woden.ircclient.config.api.ChatCommandRuntimeConfigPort;
+import cafe.woden.ircclient.config.api.PreferredNickRuntimeConfigPort;
 import cafe.woden.ircclient.irc.IrcClientService;
 import cafe.woden.ircclient.model.TargetRef;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
@@ -22,7 +22,7 @@ final class NickCommandSupport {
   @NonNull private final UiPort ui;
   @NonNull private final ConnectionCoordinator connectionCoordinator;
   @NonNull private final TargetCoordinator targetCoordinator;
-  @NonNull private final ChatCommandRuntimeConfigPort runtimeConfig;
+  @NonNull private final PreferredNickRuntimeConfigPort runtimeConfig;
 
   void handleNick(CompositeDisposable disposables, String newNick) {
     TargetRef active = targetCoordinator.getActiveTarget();

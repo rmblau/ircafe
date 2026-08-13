@@ -5,7 +5,6 @@ import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,33 +38,37 @@ public class RuntimeConfigAppDiagnosticsStore {
   }
 
   public synchronized int readAssertjSwingFreezeThresholdMs(int defaultValue) {
-    int fallback = clampAssertjFreezeThresholdMs(defaultValue);
+    int fallback =
+        RuntimeConfigAppDiagnosticsSettingsCodec.normalizeAssertjFreezeThresholdMs(defaultValue);
     return readSetting(
             "ui.appDiagnostics.assertjSwing.edtFreezeThresholdMs",
             "assertjSwing",
             "edtFreezeThresholdMs")
         .flatMap(RuntimeConfigYamlSupport::asInt)
-        .map(RuntimeConfigAppDiagnosticsStore::clampAssertjFreezeThresholdMs)
+        .map(RuntimeConfigAppDiagnosticsSettingsCodec::normalizeAssertjFreezeThresholdMs)
         .orElse(fallback);
   }
 
   public synchronized int readAssertjSwingWatchdogPollMs(int defaultValue) {
-    int fallback = clampAssertjWatchdogPollMs(defaultValue);
+    int fallback =
+        RuntimeConfigAppDiagnosticsSettingsCodec.normalizeAssertjWatchdogPollMs(defaultValue);
     return readSetting(
             "ui.appDiagnostics.assertjSwing.edtWatchdogPollMs", "assertjSwing", "edtWatchdogPollMs")
         .flatMap(RuntimeConfigYamlSupport::asInt)
-        .map(RuntimeConfigAppDiagnosticsStore::clampAssertjWatchdogPollMs)
+        .map(RuntimeConfigAppDiagnosticsSettingsCodec::normalizeAssertjWatchdogPollMs)
         .orElse(fallback);
   }
 
   public synchronized int readAssertjSwingFallbackViolationReportMs(int defaultValue) {
-    int fallback = clampAssertjFallbackViolationReportMs(defaultValue);
+    int fallback =
+        RuntimeConfigAppDiagnosticsSettingsCodec.normalizeAssertjFallbackViolationReportMs(
+            defaultValue);
     return readSetting(
             "ui.appDiagnostics.assertjSwing.edtFallbackViolationReportMs",
             "assertjSwing",
             "edtFallbackViolationReportMs")
         .flatMap(RuntimeConfigYamlSupport::asInt)
-        .map(RuntimeConfigAppDiagnosticsStore::clampAssertjFallbackViolationReportMs)
+        .map(RuntimeConfigAppDiagnosticsSettingsCodec::normalizeAssertjFallbackViolationReportMs)
         .orElse(fallback);
   }
 
@@ -83,29 +86,29 @@ public class RuntimeConfigAppDiagnosticsStore {
   }
 
   public synchronized String readJhiccupJarPath(String defaultValue) {
-    String fallback = Objects.toString(defaultValue, "").trim();
+    String fallback = RuntimeConfigAppDiagnosticsSettingsCodec.normalizeString(defaultValue);
     String raw =
         readSetting("ui.appDiagnostics.jhiccup.jarPath", "jhiccup", "jarPath")
-            .map(value -> Objects.toString(value, "").trim())
+            .map(RuntimeConfigAppDiagnosticsSettingsCodec::normalizeString)
             .orElse("");
     return raw.isEmpty() ? fallback : raw;
   }
 
   public synchronized String readJhiccupJavaCommand(String defaultValue) {
-    String fallback = Objects.toString(defaultValue, "").trim();
-    if (fallback.isEmpty()) fallback = "java";
+    String fallback =
+        RuntimeConfigAppDiagnosticsSettingsCodec.normalizeJavaCommandFallback(defaultValue);
     String raw =
         readSetting("ui.appDiagnostics.jhiccup.javaCommand", "jhiccup", "javaCommand")
-            .map(value -> Objects.toString(value, "").trim())
+            .map(RuntimeConfigAppDiagnosticsSettingsCodec::normalizeString)
             .orElse("");
     return raw.isEmpty() ? fallback : raw;
   }
 
   public synchronized List<String> readJhiccupArgs(List<String> defaultValue) {
-    List<String> fallback = RuntimeConfigYamlSupport.sanitizeStringList(defaultValue);
+    List<String> fallback = RuntimeConfigAppDiagnosticsSettingsCodec.normalizeArgs(defaultValue);
     Object argsObj = readSetting("ui.appDiagnostics.jhiccup.args", "jhiccup", "args").orElse(null);
     if (!(argsObj instanceof List<?>)) return fallback;
-    return RuntimeConfigYamlSupport.sanitizeStringList(argsObj);
+    return RuntimeConfigAppDiagnosticsSettingsCodec.normalizeArgs(argsObj);
   }
 
   public synchronized void rememberAssertjSwingEnabled(boolean enabled) {
@@ -117,16 +120,21 @@ public class RuntimeConfigAppDiagnosticsStore {
   }
 
   public synchronized void rememberAssertjSwingFreezeThresholdMs(int ms) {
-    rememberAssertjSwingSetting("edtFreezeThresholdMs", clampAssertjFreezeThresholdMs(ms));
+    rememberAssertjSwingSetting(
+        "edtFreezeThresholdMs",
+        RuntimeConfigAppDiagnosticsSettingsCodec.normalizeAssertjFreezeThresholdMs(ms));
   }
 
   public synchronized void rememberAssertjSwingWatchdogPollMs(int ms) {
-    rememberAssertjSwingSetting("edtWatchdogPollMs", clampAssertjWatchdogPollMs(ms));
+    rememberAssertjSwingSetting(
+        "edtWatchdogPollMs",
+        RuntimeConfigAppDiagnosticsSettingsCodec.normalizeAssertjWatchdogPollMs(ms));
   }
 
   public synchronized void rememberAssertjSwingFallbackViolationReportMs(int ms) {
     rememberAssertjSwingSetting(
-        "edtFallbackViolationReportMs", clampAssertjFallbackViolationReportMs(ms));
+        "edtFallbackViolationReportMs",
+        RuntimeConfigAppDiagnosticsSettingsCodec.normalizeAssertjFallbackViolationReportMs(ms));
   }
 
   public synchronized void rememberAssertjSwingIssuePlaySound(boolean enabled) {
@@ -142,17 +150,24 @@ public class RuntimeConfigAppDiagnosticsStore {
   }
 
   public synchronized void rememberJhiccupJarPath(String jarPath) {
-    rememberSectionSetting("jhiccup", "jarPath", Objects.toString(jarPath, "").trim(), true);
+    rememberSectionSetting(
+        "jhiccup",
+        "jarPath",
+        RuntimeConfigAppDiagnosticsSettingsCodec.normalizeString(jarPath),
+        true);
   }
 
   public synchronized void rememberJhiccupJavaCommand(String javaCommand) {
     rememberSectionSetting(
-        "jhiccup", "javaCommand", Objects.toString(javaCommand, "").trim(), true);
+        "jhiccup",
+        "javaCommand",
+        RuntimeConfigAppDiagnosticsSettingsCodec.normalizeString(javaCommand),
+        true);
   }
 
   public synchronized void rememberJhiccupArgs(List<String> args) {
     rememberSectionSetting(
-        "jhiccup", "args", RuntimeConfigYamlSupport.sanitizeStringList(args), true);
+        "jhiccup", "args", RuntimeConfigAppDiagnosticsSettingsCodec.normalizeArgs(args), true);
   }
 
   private boolean readAssertjSwingBoolean(String key, boolean defaultValue) {
@@ -186,23 +201,5 @@ public class RuntimeConfigAppDiagnosticsStore {
           }
         },
         section);
-  }
-
-  private static int clampAssertjFreezeThresholdMs(int value) {
-    if (value < 500) return 500;
-    if (value > 120_000) return 120_000;
-    return value;
-  }
-
-  private static int clampAssertjWatchdogPollMs(int value) {
-    if (value < 100) return 100;
-    if (value > 10_000) return 10_000;
-    return value;
-  }
-
-  private static int clampAssertjFallbackViolationReportMs(int value) {
-    if (value < 250) return 250;
-    if (value > 120_000) return 120_000;
-    return value;
   }
 }

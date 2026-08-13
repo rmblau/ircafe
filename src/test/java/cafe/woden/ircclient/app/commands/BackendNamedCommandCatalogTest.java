@@ -11,17 +11,11 @@ import cafe.woden.ircclient.app.commands.spi.SlashCommandDescriptor;
 import cafe.woden.ircclient.config.api.InstalledPluginsPort;
 import cafe.woden.ircclient.config.api.RuntimeConfigPathPort;
 import cafe.woden.ircclient.util.CompiledPluginJarSupport;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.jar.Attributes;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
-import java.util.jar.Manifest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
@@ -36,14 +30,27 @@ class BackendNamedCommandCatalogTest {
   void loadsParserProvidersFromInstalledPluginsPort() {
     BackendNamedCommandCatalog catalog =
         new BackendNamedCommandCatalog(
-            new FakeInstalledPluginsPort(List.of(new PluginProvidedBackendNamedCommandHandler())),
-            List.of());
+            new FakeInstalledPluginsPort(List.of(new PluginProvidedBackendNamedCommandHandler())));
 
     ParsedInput parsed = catalog.parse("/backendping hello");
 
     assertTrue(parsed instanceof ParsedInput.BackendNamed);
     assertEquals("backendping", ((ParsedInput.BackendNamed) parsed).command());
     assertEquals("hello", ((ParsedInput.BackendNamed) parsed).args());
+  }
+
+  @Test
+  void installedPluginPortConstructorLoadsApplicationClasspathHandlersWithoutSpringSeed() {
+    BackendNamedCommandCatalog catalog =
+        new BackendNamedCommandCatalog(new FakeInstalledPluginsPort(List.of()));
+
+    ParsedInput parsed = catalog.parse("/qnet list");
+
+    assertTrue(parsed instanceof ParsedInput.BackendNamed);
+    assertEquals(
+        BuiltInBackendNamedCommandNames.QUASSEL_NETWORK,
+        ((ParsedInput.BackendNamed) parsed).command());
+    assertEquals("list", ((ParsedInput.BackendNamed) parsed).args());
   }
 
   @Test
@@ -153,23 +160,13 @@ class BackendNamedCommandCatalogTest {
         () -> BackendNamedCommandCatalog.fromHandlers(List.of(first, second)));
   }
 
-  private static void writePluginJar(Path jarPath) throws IOException {
-    Manifest manifest = new Manifest();
-    Attributes attributes = manifest.getMainAttributes();
-    attributes.put(Attributes.Name.MANIFEST_VERSION, "1.0");
-    for (var entry :
-        CompiledPluginJarSupport.compatibleManifest("backend-named-command-test", "1.0.0")
-            .entrySet()) {
-      attributes.putValue(entry.getKey(), entry.getValue());
-    }
-    try (JarOutputStream out = new JarOutputStream(Files.newOutputStream(jarPath), manifest)) {
-      out.putNextEntry(
-          new JarEntry("META-INF/services/" + BackendNamedCommandHandler.class.getName()));
-      out.write(
-          (PluginProvidedBackendNamedCommandHandler.class.getName() + System.lineSeparator())
-              .getBytes(StandardCharsets.UTF_8));
-      out.closeEntry();
-    }
+  private static void writePluginJar(Path jarPath) throws Exception {
+    CompiledPluginJarSupport.writePluginJar(
+        jarPath,
+        SPI_PLUGIN_HANDLER_CLASS,
+        pluginSpiHandlerSource(),
+        BackendNamedCommandHandler.class.getName(),
+        CompiledPluginJarSupport.compatibleManifest("backend-named-command-test", "1.0.0"));
   }
 
   private static String pluginSpiHandlerSource() {

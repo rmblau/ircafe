@@ -9,9 +9,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 
 /**
- * Spring wiring for link preview resolvers.
+ * Spring wiring for stateful/configured link preview resolvers.
  *
- * <p>Order is significant: earlier resolvers get first shot before fallbacks like OpenGraph.
+ * <p>No-arg resolvers are contributed through ServiceLoader and ordered by {@link
+ * LinkPreviewResolver#sortOrder()}.
  */
 @Configuration
 @InterfaceLayer
@@ -35,7 +36,7 @@ public class LinkPreviewResolverConfig {
   @Bean
   @Order(3)
   LinkPreviewResolver slashdotLinkPreviewResolver() {
-    return new SlashdotLinkPreviewResolver();
+    return new SlashdotLinkPreviewResolver(DEFAULT_MAX_HTML_BYTES);
   }
 
   @Bean

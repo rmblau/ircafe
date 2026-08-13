@@ -1,8 +1,8 @@
 package cafe.woden.ircclient.config.runtime.ui;
 
+import cafe.woden.ircclient.config.runtime.ui.RuntimeConfigCtcpAutoReplySettingsCodec.Setting;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
-import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import java.nio.file.Path;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,45 +20,45 @@ public class RuntimeConfigCtcpAutoReplyStore {
   }
 
   public synchronized boolean readEnabled(boolean defaultValue) {
-    return readBoolean("enabled", defaultValue);
+    return readBoolean(Setting.ENABLED, defaultValue);
   }
 
   public synchronized boolean readVersionEnabled(boolean defaultValue) {
-    return readBoolean("version", defaultValue);
+    return readBoolean(Setting.VERSION, defaultValue);
   }
 
   public synchronized boolean readPingEnabled(boolean defaultValue) {
-    return readBoolean("ping", defaultValue);
+    return readBoolean(Setting.PING, defaultValue);
   }
 
   public synchronized boolean readTimeEnabled(boolean defaultValue) {
-    return readBoolean("time", defaultValue);
+    return readBoolean(Setting.TIME, defaultValue);
   }
 
   public synchronized void rememberEnabled(boolean enabled) {
-    rememberBoolean("enabled", enabled);
+    rememberBoolean(Setting.ENABLED, enabled);
   }
 
   public synchronized void rememberVersionEnabled(boolean enabled) {
-    rememberBoolean("version", enabled);
+    rememberBoolean(Setting.VERSION, enabled);
   }
 
   public synchronized void rememberPingEnabled(boolean enabled) {
-    rememberBoolean("ping", enabled);
+    rememberBoolean(Setting.PING, enabled);
   }
 
   public synchronized void rememberTimeEnabled(boolean enabled) {
-    rememberBoolean("time", enabled);
+    rememberBoolean(Setting.TIME, enabled);
   }
 
-  private boolean readBoolean(String key, boolean defaultValue) {
+  private boolean readBoolean(Setting setting, boolean defaultValue) {
     return ctcpRepliesSection
-        .readExistingValue("ui.ctcpReplies." + key, key)
-        .flatMap(RuntimeConfigYamlSupport::asBoolean)
+        .readExistingValue(setting.description(), setting.key())
+        .flatMap(RuntimeConfigCtcpAutoReplySettingsCodec::readBoolean)
         .orElse(defaultValue);
   }
 
-  private void rememberBoolean(String key, boolean enabled) {
-    ctcpRepliesSection.putValue("ui.ctcpReplies." + key, enabled, key);
+  private void rememberBoolean(Setting setting, boolean enabled) {
+    ctcpRepliesSection.putValue(setting.description(), enabled, setting.key());
   }
 }

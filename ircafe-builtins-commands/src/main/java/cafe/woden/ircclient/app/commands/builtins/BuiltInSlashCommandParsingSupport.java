@@ -122,7 +122,6 @@ final class BuiltInSlashCommandParsingSupport {
     return new ParsedTargetList(channel, List.copyOf(items));
   }
 
-
   static SlashCommandParseResult parseDccInput(String rest) {
     String r = rest == null ? "" : rest.trim();
     if (r.isEmpty()) return SlashCommandParseResult.command("dcc", "", "", "");
@@ -165,7 +164,10 @@ final class BuiltInSlashCommandParsingSupport {
 
     ParsedPathToken pathToken = parsePathToken(remaining);
     return SlashCommandParseResult.command(
-        "upload", msgType, pathToken.path(), pathToken.remainder() == null ? "" : pathToken.remainder());
+        "upload",
+        msgType,
+        pathToken.path(),
+        pathToken.remainder() == null ? "" : pathToken.remainder());
   }
 
   private static ParsedPathToken parsePathToken(String raw) {
@@ -299,7 +301,8 @@ final class BuiltInSlashCommandParsingSupport {
     }
 
     if (idx < toks.length) {
-      if (!isIntegerToken(toks[idx])) return SlashCommandParseResult.command("chat-history-before", "0", "");
+      if (!isIntegerToken(toks[idx]))
+        return SlashCommandParseResult.command("chat-history-before", "0", "");
       lim = parseIntOrZero(toks[idx]);
       idx++;
     }
@@ -331,7 +334,8 @@ final class BuiltInSlashCommandParsingSupport {
     }
 
     if (idx < toks.length) {
-      if (!isIntegerToken(toks[idx])) return SlashCommandParseResult.command("chat-history-latest", "0", "");
+      if (!isIntegerToken(toks[idx]))
+        return SlashCommandParseResult.command("chat-history-latest", "0", "");
       lim = parseIntOrZero(toks[idx]);
       idx++;
     }
@@ -341,7 +345,8 @@ final class BuiltInSlashCommandParsingSupport {
   }
 
   private static SlashCommandParseResult parseChatHistoryAround(String[] toks, int startIdx) {
-    if (toks == null || startIdx >= toks.length) return SlashCommandParseResult.command("chat-history-around", "", "0");
+    if (toks == null || startIdx >= toks.length)
+      return SlashCommandParseResult.command("chat-history-around", "", "0");
 
     int idx = startIdx;
     String selector = normalizeChatHistorySelector(toks[idx]);
@@ -350,7 +355,8 @@ final class BuiltInSlashCommandParsingSupport {
 
     int lim = 50;
     if (idx < toks.length) {
-      if (!isIntegerToken(toks[idx])) return SlashCommandParseResult.command("chat-history-around", "", "0");
+      if (!isIntegerToken(toks[idx]))
+        return SlashCommandParseResult.command("chat-history-around", "", "0");
       lim = parseIntOrZero(toks[idx]);
       idx++;
     }
@@ -373,11 +379,13 @@ final class BuiltInSlashCommandParsingSupport {
 
     int lim = 50;
     if (idx < toks.length) {
-      if (!isIntegerToken(toks[idx])) return SlashCommandParseResult.command("chat-history-between", "", "", "0");
+      if (!isIntegerToken(toks[idx]))
+        return SlashCommandParseResult.command("chat-history-between", "", "", "0");
       lim = parseIntOrZero(toks[idx]);
       idx++;
     }
-    if (idx < toks.length) return SlashCommandParseResult.command("chat-history-between", "", "", "0");
+    if (idx < toks.length)
+      return SlashCommandParseResult.command("chat-history-between", "", "", "0");
 
     return SlashCommandParseResult.command(
         "chat-history-between", startSelector, endSelector, Integer.toString(lim));

@@ -1,10 +1,8 @@
 package cafe.woden.ircclient.state;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import cafe.woden.ircclient.model.TargetRef;
 import cafe.woden.ircclient.state.api.LabeledResponseRoutingPort;
@@ -15,33 +13,6 @@ import org.junit.jupiter.api.Test;
 class LabeledResponseRoutingStateTest {
 
   private final LabeledResponseRoutingState state = new LabeledResponseRoutingState();
-
-  @Test
-  void prepareOutgoingRawInjectsGeneratedLabelWhenMissing() {
-    var prepared = state.prepareOutgoingRaw("libera", "WHO #ircafe");
-
-    assertTrue(prepared.injected());
-    assertTrue(prepared.line().startsWith("@label="));
-    assertTrue(prepared.line().endsWith(" WHO #ircafe"));
-    assertTrue(prepared.label().startsWith("ircafe-libera-"));
-  }
-
-  @Test
-  void prepareOutgoingRawPreservesExistingLabel() {
-    var prepared = state.prepareOutgoingRaw("libera", "@label=req-42 WHO #ircafe");
-
-    assertFalse(prepared.injected());
-    assertEquals("@label=req-42 WHO #ircafe", prepared.line());
-    assertEquals("req-42", prepared.label());
-  }
-
-  @Test
-  void prepareOutgoingRawReadsEscapedLabelValues() {
-    var prepared = state.prepareOutgoingRaw("libera", "@+label=req\\:42 WHO #ircafe");
-
-    assertFalse(prepared.injected());
-    assertEquals("req;42", prepared.label());
-  }
 
   @Test
   void rememberAndFindIfFreshReturnsPendingContext() {

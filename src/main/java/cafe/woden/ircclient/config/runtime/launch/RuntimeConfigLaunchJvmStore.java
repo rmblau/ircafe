@@ -4,10 +4,7 @@ import cafe.woden.ircclient.config.yaml.RuntimeConfigDocumentStore;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSection;
 import cafe.woden.ircclient.config.yaml.RuntimeConfigYamlSupport;
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,66 +21,71 @@ public class RuntimeConfigLaunchJvmStore {
   }
 
   public synchronized String readJavaCommand(String defaultValue) {
-    String fallback = Objects.toString(defaultValue, "").trim();
-    if (fallback.isEmpty()) fallback = "java";
+    String fallback =
+        RuntimeConfigLaunchJvmSettingsCodec.normalizeJavaCommandFallback(defaultValue);
     String raw =
         readValue("launch.jvm.javaCommand", "javaCommand")
-            .map(value -> Objects.toString(value, "").trim())
+            .map(RuntimeConfigLaunchJvmSettingsCodec::normalizeJavaCommandReadValue)
             .orElse("");
     return raw.isEmpty() ? fallback : raw;
   }
 
   public synchronized int readXmsMiB(int defaultValue) {
-    int fallback = clampHeapMiB(defaultValue);
+    int fallback = RuntimeConfigLaunchJvmSettingsCodec.normalizeHeapMiB(defaultValue);
     return readValue("launch.jvm.xmsMiB", "xmsMiB")
         .flatMap(RuntimeConfigYamlSupport::asInt)
-        .map(RuntimeConfigLaunchJvmStore::clampHeapMiB)
+        .map(RuntimeConfigLaunchJvmSettingsCodec::normalizeHeapMiB)
         .orElse(fallback);
   }
 
   public synchronized int readXmxMiB(int defaultValue) {
-    int fallback = clampHeapMiB(defaultValue);
+    int fallback = RuntimeConfigLaunchJvmSettingsCodec.normalizeHeapMiB(defaultValue);
     return readValue("launch.jvm.xmxMiB", "xmxMiB")
         .flatMap(RuntimeConfigYamlSupport::asInt)
-        .map(RuntimeConfigLaunchJvmStore::clampHeapMiB)
+        .map(RuntimeConfigLaunchJvmSettingsCodec::normalizeHeapMiB)
         .orElse(fallback);
   }
 
   public synchronized String readGc(String defaultValue) {
-    String fallback = normalizeGc(defaultValue);
+    String fallback = RuntimeConfigLaunchJvmSettingsCodec.normalizeGc(defaultValue);
     return readValue("launch.jvm.gc", "gc")
-        .map(RuntimeConfigLaunchJvmStore::normalizeGc)
+        .map(RuntimeConfigLaunchJvmSettingsCodec::normalizeGc)
         .orElse(fallback);
   }
 
   public synchronized List<String> readArgs(List<String> defaultValue) {
-    List<String> fallback = RuntimeConfigYamlSupport.sanitizeStringList(defaultValue);
+    List<String> fallback = RuntimeConfigLaunchJvmSettingsCodec.normalizeArgs(defaultValue);
     Object argsObj = readValue("launch.jvm.args", "args").orElse(null);
     if (!(argsObj instanceof List<?> raw)) return fallback;
-    return RuntimeConfigYamlSupport.sanitizeStringList(raw);
+    return RuntimeConfigLaunchJvmSettingsCodec.normalizeArgs(raw);
   }
 
   public synchronized void rememberJavaCommand(String javaCommand) {
-    String cmd = Objects.toString(javaCommand, "").trim();
-    if (cmd.isEmpty() || cmd.equalsIgnoreCase("java")) cmd = "";
+    String cmd = RuntimeConfigLaunchJvmSettingsCodec.normalizeJavaCommandSetting(javaCommand);
     rememberJvmSetting("launch.jvm.javaCommand", "javaCommand", cmd);
   }
 
   public synchronized void rememberXmsMiB(int xmsMiB) {
-    rememberJvmSetting("launch.jvm.xmsMiB", "xmsMiB", clampHeapMiB(xmsMiB));
+    rememberJvmSetting(
+        "launch.jvm.xmsMiB",
+        "xmsMiB",
+        RuntimeConfigLaunchJvmSettingsCodec.normalizeHeapMiB(xmsMiB));
   }
 
   public synchronized void rememberXmxMiB(int xmxMiB) {
-    rememberJvmSetting("launch.jvm.xmxMiB", "xmxMiB", clampHeapMiB(xmxMiB));
+    rememberJvmSetting(
+        "launch.jvm.xmxMiB",
+        "xmxMiB",
+        RuntimeConfigLaunchJvmSettingsCodec.normalizeHeapMiB(xmxMiB));
   }
 
   public synchronized void rememberGc(String gc) {
-    rememberJvmSetting("launch.jvm.gc", "gc", normalizeGc(gc));
+    rememberJvmSetting("launch.jvm.gc", "gc", RuntimeConfigLaunchJvmSettingsCodec.normalizeGc(gc));
   }
 
   public synchronized void rememberArgs(List<String> args) {
     rememberJvmSetting(
-        "launch.jvm.args", "args", RuntimeConfigYamlSupport.sanitizeStringList(args));
+        "launch.jvm.args", "args", RuntimeConfigLaunchJvmSettingsCodec.normalizeArgs(args));
   }
 
   private Optional<Object> readValue(String description, String key) {
@@ -94,7 +96,7 @@ public class RuntimeConfigLaunchJvmStore {
     ircafeSection.mutateMapAndRemoveIfEmpty(
         description,
         jvm -> {
-          if (isEmptyJvmSettingValue(value)) {
+          if (RuntimeConfigLaunchJvmSettingsCodec.isEmptyJvmSettingValue(value)) {
             jvm.remove(key);
           } else {
             jvm.put(key, value);
@@ -102,33 +104,5 @@ public class RuntimeConfigLaunchJvmStore {
         },
         "launch",
         "jvm");
-  }
-
-  private static boolean isEmptyJvmSettingValue(Object value) {
-    if (value == null) return true;
-    if (value instanceof String s) return s.isBlank();
-    if (value instanceof Number n) return n.intValue() <= 0;
-    if (value instanceof Collection<?> c) return c.isEmpty();
-    return false;
-  }
-
-  private static int clampHeapMiB(int value) {
-    if (value < 0) return 0;
-    if (value > 262_144) return 262_144;
-    return value;
-  }
-
-  private static String normalizeGc(Object raw) {
-    String v = Objects.toString(raw, "").trim().toLowerCase(Locale.ROOT);
-    return switch (v) {
-      case "", "default", "auto", "none" -> "";
-      case "g1", "g1gc", "useg1gc", "useg1" -> "g1";
-      case "z", "zgc", "usezgc", "usez" -> "zgc";
-      case "shenandoah", "shenandoahgc", "useshenandoahgc", "useshenandoah" -> "shenandoah";
-      case "parallel", "parallelgc", "useparallelgc", "useparallel" -> "parallel";
-      case "serial", "serialgc", "useserialgc", "useserial" -> "serial";
-      case "epsilon", "epsilongc", "useepsilongc", "useepsilon" -> "epsilon";
-      default -> "";
-    };
   }
 }
