@@ -65,6 +65,27 @@ class TrayNotificationServiceTest {
   }
 
   @Test
+  void macDeepLinkEncodesTheOriginatingTarget() throws Exception {
+    assertEquals(
+        "ircafe://focus/libera/%23ircafe%20general",
+        invokeBuildMacDeepLink("libera|#ircafe general"));
+  }
+
+  @Test
+  void macDeepLinkIsAbsentWithoutAServerAndTarget() throws Exception {
+    assertEquals(null, invokeBuildMacDeepLink("libera|"));
+    assertEquals(null, invokeBuildMacDeepLink("|#ircafe"));
+  }
+
+  @Test
+  void macTargetActivationAcceptsTheActionAndContentClick() throws Exception {
+    String deepLink = "ircafe://focus/libera/%23ircafe";
+    assertTrue(invokeIsMacTargetActivation("Open IRCafe", deepLink));
+    assertTrue(invokeIsMacTargetActivation("@CONTENTCLICKED", deepLink));
+    assertFalse(invokeIsMacTargetActivation("@CLOSED", deepLink));
+  }
+
+  @Test
   void windowsToastIsForcedClosedWhenLibraryTimeoutDoesNotFire() throws Exception {
     TestScheduler computationScheduler = new TestScheduler();
     TrayNotificationService service =
@@ -192,6 +213,21 @@ class TrayNotificationServiceTest {
             "shouldUseNotifySendFallback", boolean.class, NotificationBackendMode.class);
     m.setAccessible(true);
     return (boolean) m.invoke(null, hasClickHandler, mode);
+  }
+
+  private static String invokeBuildMacDeepLink(String targetKey) throws Exception {
+    Method m = TrayNotificationService.class.getDeclaredMethod("buildMacDeepLink", String.class);
+    m.setAccessible(true);
+    return (String) m.invoke(null, targetKey);
+  }
+
+  private static boolean invokeIsMacTargetActivation(String result, String deepLink)
+      throws Exception {
+    Method m =
+        TrayNotificationService.class.getDeclaredMethod(
+            "isMacTargetActivation", String.class, String.class);
+    m.setAccessible(true);
+    return (boolean) m.invoke(null, result, deepLink);
   }
 
   private static void invokeTrackWindowsToast(

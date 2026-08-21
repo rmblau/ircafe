@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -57,8 +58,8 @@ import org.springframework.stereotype.Component;
  * Desktop notifications for tray users.
  *
  * <p>We intentionally avoid hard dependencies here. On Linux we try {@code notify-send}. On macOS
- * we prefer a bundled {@code terminal-notifier}, then fall back to {@code osascript}. If OS-native
- * paths fail, we try {@code two-slices} before a final beep fallback.
+ * we prefer a bundled {@code alerter}, then fall back to {@code osascript}. If OS-native paths
+ * fail, we try {@code two-slices} before a final beep fallback.
  */
 @Component
 @SecondaryAdapter
@@ -74,8 +75,8 @@ public class TrayNotificationService implements TrayNotificationsPort {
   private static final Duration CONTENT_KEY_TTL = Duration.ofMinutes(2);
   private static final int MAX_BODY_LEN = 220;
   private static final String MAC_BUNDLE_ID = "cafe.woden.ircafe";
-  private static final String MAC_TERMINAL_NOTIFIER_RELATIVE =
-      "terminal-notifier.app/Contents/MacOS/terminal-notifier";
+  private static final String MAC_ALERTER_RELATIVE = "alerter";
+  private static final String MAC_OPEN_TARGET_ACTION = "Open IRCafe";
   private static final int TOAST_TIMEOUT_SECONDS = 5;
   private static final Duration TWO_SLICES_FAILURE_COOLDOWN = Duration.ofSeconds(30);
   private static final Duration WINDOWS_TOAST_FORCE_CLOSE_GRACE = Duration.ofSeconds(2);
@@ -96,6 +97,7 @@ public class TrayNotificationService implements TrayNotificationsPort {
   private final Map<String, Long> lastContentAtMs = new ConcurrentHashMap<>();
   private final Map<Long, Runnable> activeWindowsToastClosers = new ConcurrentHashMap<>();
   private final Map<Long, Disposable> activeWindowsToastTimeouts = new ConcurrentHashMap<>();
+  private final Set<Process> activeMacAlerters = ConcurrentHashMap.newKeySet();
   private final AtomicLong windowsToastIds = new AtomicLong();
   private final AtomicLong twoSlicesDisabledUntilMs = new AtomicLong(0L);
   private final Object twoSlicesInitLock = new Object();
@@ -155,6 +157,7 @@ public class TrayNotificationService implements TrayNotificationsPort {
   @PreDestroy
   void shutdown() {
     closeTrackedWindowsToasts();
+    closeActiveMacAlerters();
     try {
       disposables.dispose();
     } catch (Exception ignored) {
@@ -562,7 +565,7 @@ public class TrayNotificationService implements TrayNotificationsPort {
       log.debug("[ircafe] tray notify delivered via linux backend");
       return true;
     }
-    if (tryMacOsascript(title, body, targetKey)) {
+    if (tryMacNotification(title, body, targetKey, onClick)) {
       log.debug("[ircafe] tray notify delivered via macOS backend");
       return true;
     }
@@ -675,6 +678,16 @@ public class TrayNotificationService implements TrayNotificationsPort {
     for (Long toastId : List.copyOf(activeWindowsToastClosers.keySet())) {
       forceCloseWindowsToast(toastId.longValue());
     }
+  }
+
+  private void closeActiveMacAlerters() {
+    for (Process process : List.copyOf(activeMacAlerters)) {
+      try {
+        process.destroy();
+      } catch (Exception ignored) {
+      }
+    }
+    activeMacAlerters.clear();
   }
 
   private void openTarget(TargetRef target) {
@@ -817,16 +830,17 @@ public class TrayNotificationService implements TrayNotificationsPort {
     return effectiveMode == NotificationBackendMode.NATIVE_ONLY;
   }
 
-  private static boolean tryMacOsascript(String title, String body, String targetKey) {
+  private boolean tryMacNotification(
+      String title, String body, String targetKey, Runnable onClick) {
     String os = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
     if (!(os.contains("mac") || os.contains("darwin"))) return false;
 
-    if (tryMacTerminalNotifier(title, body, targetKey)) return true;
+    if (tryMacAlerter(title, body, targetKey, onClick)) return true;
 
     return tryMacAppleScript(title, body);
   }
 
-  private static boolean tryMacTerminalNotifier(String title, String body, String targetKey) {
+  private boolean tryMacAlerter(String title, String body, String targetKey, Runnable onClick) {
     try {
       String appPath = System.getProperty("jpackage.app-path");
       if (appPath == null || appPath.isBlank()) return false;
@@ -836,31 +850,48 @@ public class TrayNotificationService implements TrayNotificationsPort {
       if (macOsDir == null) return false;
 
       File resourcesDir = new File(macOsDir, "../Resources").getCanonicalFile();
-      File notifierBin = new File(resourcesDir, MAC_TERMINAL_NOTIFIER_RELATIVE);
-      if (!notifierBin.isFile()) return false;
-
-      List<String> cmd = new ArrayList<>();
-      cmd.add(notifierBin.getAbsolutePath());
-      cmd.add("-title");
-      cmd.add(sanitizeDesktopText(title));
-      cmd.add("-message");
-      cmd.add(sanitizeDesktopText(body));
-      cmd.add("-group");
-      cmd.add(MAC_BUNDLE_ID);
-      cmd.add("-activate");
-      cmd.add(MAC_BUNDLE_ID);
+      File alerterBin = new File(resourcesDir, MAC_ALERTER_RELATIVE);
+      if (!alerterBin.isFile()) return false;
 
       String deepLink = buildMacDeepLink(targetKey);
+
+      List<String> cmd = new ArrayList<>();
+      cmd.add(alerterBin.getAbsolutePath());
+      cmd.add("--title");
+      cmd.add(sanitizeDesktopText(title));
+      cmd.add("--message");
+      cmd.add(sanitizeDesktopText(body));
+      cmd.add("--sender");
+      cmd.add(MAC_BUNDLE_ID);
+      cmd.add("--group");
+      cmd.add(MAC_BUNDLE_ID);
       if (deepLink != null) {
-        cmd.add("-open");
-        cmd.add(deepLink);
+        // Alerter returns the clicked action on stdout. That response is routed to the target held
+        // by this still-running IRCafe process.
+        cmd.add("--actions");
+        cmd.add(MAC_OPEN_TARGET_ACTION);
       }
 
       ProcessBuilder pb = new ProcessBuilder(cmd);
       pb.redirectErrorStream(true);
       Process p = pb.start();
-      drain(p);
-      return p.waitFor() == 0;
+      activeMacAlerters.add(p);
+      p.onExit()
+          .thenAccept(
+              exited -> {
+                activeMacAlerters.remove(exited);
+                String result = readProcessOutput(exited);
+                if (isMacTargetActivation(result, deepLink)) {
+                  if (onClick != null) {
+                    SwingUtilities.invokeLater(onClick);
+                  }
+                } else if ("@CONTENTCLICKED".equals(result) && onClick != null) {
+                  // Notifications without a route (for example the preferences test) retain the
+                  // original in-process click behavior.
+                  SwingUtilities.invokeLater(onClick);
+                }
+              });
+      return true;
     } catch (Exception ignored) {
       return false;
     }
@@ -882,6 +913,11 @@ public class TrayNotificationService implements TrayNotificationsPort {
     } catch (Exception ignored) {
       return false;
     }
+  }
+
+  private static boolean isMacTargetActivation(String result, String deepLink) {
+    return deepLink != null
+        && (MAC_OPEN_TARGET_ACTION.equals(result) || "@CONTENTCLICKED".equals(result));
   }
 
   private void initializeTwoSlicesSettings() {
@@ -946,6 +982,10 @@ public class TrayNotificationService implements TrayNotificationsPort {
     }
   }
 
+  private static String sanitizeDesktopText(String value) {
+    return Objects.toString(value, "").replace('\n', ' ').replace('\r', ' ').trim();
+  }
+
   private static String buildMacDeepLink(String targetKey) {
     if (targetKey == null) return null;
     int split = targetKey.indexOf('|');
@@ -964,10 +1004,6 @@ public class TrayNotificationService implements TrayNotificationsPort {
         .replace("+", "%20");
   }
 
-  private static String sanitizeDesktopText(String value) {
-    return Objects.toString(value, "").replace('\n', ' ').replace('\r', ' ').trim();
-  }
-
   private static void drain(Process p) {
     try (BufferedReader br =
         new BufferedReader(new InputStreamReader(p.getInputStream(), StandardCharsets.UTF_8))) {
@@ -975,6 +1011,15 @@ public class TrayNotificationService implements TrayNotificationsPort {
         // discard
       }
     } catch (Exception ignored) {
+    }
+  }
+
+  private static String readProcessOutput(Process p) {
+    try (BufferedReader br =
+        new BufferedReader(new InputStreamReader(p.getInputStream(), StandardCharsets.UTF_8))) {
+      return br.lines().collect(java.util.stream.Collectors.joining("\n")).trim();
+    } catch (Exception ignored) {
+      return "";
     }
   }
 
