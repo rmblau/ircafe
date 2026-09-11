@@ -29,17 +29,14 @@ import jakarta.annotation.PreDestroy;
 import java.awt.Frame;
 import java.awt.Toolkit;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
@@ -74,9 +71,6 @@ public class TrayNotificationService implements TrayNotificationsPort {
   private static final int GLOBAL_MAX_PER_WINDOW = 10;
   private static final Duration CONTENT_KEY_TTL = Duration.ofMinutes(2);
   private static final int MAX_BODY_LEN = 220;
-  private static final String MAC_BUNDLE_ID = "cafe.woden.ircafe";
-  private static final String MAC_ALERTER_RELATIVE = "alerter";
-  private static final String MAC_OPEN_TARGET_ACTION = "Open IRCafe";
   private static final int TOAST_TIMEOUT_SECONDS = 5;
   private static final Duration TWO_SLICES_FAILURE_COOLDOWN = Duration.ofSeconds(30);
   private static final Duration WINDOWS_TOAST_FORCE_CLOSE_GRACE = Duration.ofSeconds(2);
@@ -97,7 +91,7 @@ public class TrayNotificationService implements TrayNotificationsPort {
   private final Map<String, Long> lastContentAtMs = new ConcurrentHashMap<>();
   private final Map<Long, Runnable> activeWindowsToastClosers = new ConcurrentHashMap<>();
   private final Map<Long, Disposable> activeWindowsToastTimeouts = new ConcurrentHashMap<>();
-  private final Set<Process> activeMacAlerters = ConcurrentHashMap.newKeySet();
+  private final MacAlerterBackend macAlerter;
   private final AtomicLong windowsToastIds = new AtomicLong();
   private final AtomicLong twoSlicesDisabledUntilMs = new AtomicLong(0L);
   private final Object twoSlicesInitLock = new Object();
@@ -149,6 +143,7 @@ public class TrayNotificationService implements TrayNotificationsPort {
     this.computationScheduler =
         Objects.requireNonNull(computationScheduler, "computationScheduler");
     this.ioScheduler = Objects.requireNonNull(ioScheduler, "ioScheduler");
+    this.macAlerter = new MacAlerterBackend(this.computationScheduler, this.ioScheduler);
 
     this.requests = PublishProcessor.<NotificationRequest>create().toSerialized();
     installRateLimiterPipeline();
@@ -157,7 +152,7 @@ public class TrayNotificationService implements TrayNotificationsPort {
   @PreDestroy
   void shutdown() {
     closeTrackedWindowsToasts();
-    closeActiveMacAlerters();
+    macAlerter.close();
     try {
       disposables.dispose();
     } catch (Exception ignored) {
@@ -520,7 +515,7 @@ public class TrayNotificationService implements TrayNotificationsPort {
       NotificationBackendMode mode = resolveNotificationBackendMode();
       switch (mode) {
         case NATIVE_ONLY -> {
-          if (tryNativeBackends(req.title(), req.body(), req.targetKey(), req.onClick(), mode)) {
+          if (tryNativeBackends(req.title(), req.body(), req.onClick(), mode)) {
             return;
           }
         }
@@ -528,7 +523,7 @@ public class TrayNotificationService implements TrayNotificationsPort {
           if (tryTwoSlicesFallback(req.title(), req.body(), req.onClick())) return;
         }
         case AUTO -> {
-          if (tryNativeBackends(req.title(), req.body(), req.targetKey(), req.onClick(), mode)) {
+          if (tryNativeBackends(req.title(), req.body(), req.onClick(), mode)) {
             return;
           }
           if (tryTwoSlicesFallback(req.title(), req.body(), req.onClick())) return;
@@ -556,7 +551,7 @@ public class TrayNotificationService implements TrayNotificationsPort {
   }
 
   private boolean tryNativeBackends(
-      String title, String body, String targetKey, Runnable onClick, NotificationBackendMode mode) {
+      String title, String body, Runnable onClick, NotificationBackendMode mode) {
     if (tryWindowsToastPopup(title, body, onClick)) {
       log.debug("[ircafe] tray notify delivered via dorkbox popup backend");
       return true;
@@ -565,8 +560,8 @@ public class TrayNotificationService implements TrayNotificationsPort {
       log.debug("[ircafe] tray notify delivered via linux backend");
       return true;
     }
-    if (tryMacNotification(title, body, targetKey, onClick)) {
-      log.debug("[ircafe] tray notify delivered via macOS backend");
+    if (tryMacNotification(title, body, onClick, mode)) {
+      log.debug("[ircafe] tray notify submitted to macOS backend");
       return true;
     }
     return false;
@@ -678,16 +673,6 @@ public class TrayNotificationService implements TrayNotificationsPort {
     for (Long toastId : List.copyOf(activeWindowsToastClosers.keySet())) {
       forceCloseWindowsToast(toastId.longValue());
     }
-  }
-
-  private void closeActiveMacAlerters() {
-    for (Process process : List.copyOf(activeMacAlerters)) {
-      try {
-        process.destroy();
-      } catch (Exception ignored) {
-      }
-    }
-    activeMacAlerters.clear();
   }
 
   private void openTarget(TargetRef target) {
@@ -831,70 +816,22 @@ public class TrayNotificationService implements TrayNotificationsPort {
   }
 
   private boolean tryMacNotification(
-      String title, String body, String targetKey, Runnable onClick) {
+      String title, String body, Runnable onClick, NotificationBackendMode mode) {
     String os = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
     if (!(os.contains("mac") || os.contains("darwin"))) return false;
 
-    if (tryMacAlerter(title, body, targetKey, onClick)) return true;
+    if (macAlerter.tryNotify(
+        title,
+        body,
+        onClick,
+        () -> {
+          if (tryMacAppleScript(title, body)) return;
+          if (mode != NotificationBackendMode.NATIVE_ONLY
+              && tryTwoSlicesFallback(title, body, onClick)) return;
+          Toolkit.getDefaultToolkit().beep();
+        })) return true;
 
     return tryMacAppleScript(title, body);
-  }
-
-  private boolean tryMacAlerter(String title, String body, String targetKey, Runnable onClick) {
-    try {
-      String appPath = System.getProperty("jpackage.app-path");
-      if (appPath == null || appPath.isBlank()) return false;
-
-      File launcher = new File(appPath);
-      File macOsDir = launcher.getParentFile();
-      if (macOsDir == null) return false;
-
-      File resourcesDir = new File(macOsDir, "../Resources").getCanonicalFile();
-      File alerterBin = new File(resourcesDir, MAC_ALERTER_RELATIVE);
-      if (!alerterBin.isFile()) return false;
-
-      String deepLink = buildMacDeepLink(targetKey);
-
-      List<String> cmd = new ArrayList<>();
-      cmd.add(alerterBin.getAbsolutePath());
-      cmd.add("--title");
-      cmd.add(sanitizeDesktopText(title));
-      cmd.add("--message");
-      cmd.add(sanitizeDesktopText(body));
-      cmd.add("--sender");
-      cmd.add(MAC_BUNDLE_ID);
-      cmd.add("--group");
-      cmd.add(MAC_BUNDLE_ID);
-      if (deepLink != null) {
-        // Alerter returns the clicked action on stdout. That response is routed to the target held
-        // by this still-running IRCafe process.
-        cmd.add("--actions");
-        cmd.add(MAC_OPEN_TARGET_ACTION);
-      }
-
-      ProcessBuilder pb = new ProcessBuilder(cmd);
-      pb.redirectErrorStream(true);
-      Process p = pb.start();
-      activeMacAlerters.add(p);
-      p.onExit()
-          .thenAccept(
-              exited -> {
-                activeMacAlerters.remove(exited);
-                String result = readProcessOutput(exited);
-                if (isMacTargetActivation(result, deepLink)) {
-                  if (onClick != null) {
-                    SwingUtilities.invokeLater(onClick);
-                  }
-                } else if ("@CONTENTCLICKED".equals(result) && onClick != null) {
-                  // Notifications without a route (for example the preferences test) retain the
-                  // original in-process click behavior.
-                  SwingUtilities.invokeLater(onClick);
-                }
-              });
-      return true;
-    } catch (Exception ignored) {
-      return false;
-    }
   }
 
   private static boolean tryMacAppleScript(String title, String body) {
@@ -913,11 +850,6 @@ public class TrayNotificationService implements TrayNotificationsPort {
     } catch (Exception ignored) {
       return false;
     }
-  }
-
-  private static boolean isMacTargetActivation(String result, String deepLink) {
-    return deepLink != null
-        && (MAC_OPEN_TARGET_ACTION.equals(result) || "@CONTENTCLICKED".equals(result));
   }
 
   private void initializeTwoSlicesSettings() {
@@ -986,24 +918,6 @@ public class TrayNotificationService implements TrayNotificationsPort {
     return Objects.toString(value, "").replace('\n', ' ').replace('\r', ' ').trim();
   }
 
-  private static String buildMacDeepLink(String targetKey) {
-    if (targetKey == null) return null;
-    int split = targetKey.indexOf('|');
-    if (split <= 0 || split >= targetKey.length() - 1) return null;
-
-    String serverId = targetKey.substring(0, split).trim();
-    String target = targetKey.substring(split + 1).trim();
-    if (serverId.isEmpty() || target.isEmpty()) return null;
-
-    return "ircafe://focus/" + encodeUriPathSegment(serverId) + "/" + encodeUriPathSegment(target);
-  }
-
-  private static String encodeUriPathSegment(String value) {
-    // URLEncoder emits '+' for spaces, but this is a URI path segment.
-    return java.net.URLEncoder.encode(Objects.toString(value, ""), StandardCharsets.UTF_8)
-        .replace("+", "%20");
-  }
-
   private static void drain(Process p) {
     try (BufferedReader br =
         new BufferedReader(new InputStreamReader(p.getInputStream(), StandardCharsets.UTF_8))) {
@@ -1011,15 +925,6 @@ public class TrayNotificationService implements TrayNotificationsPort {
         // discard
       }
     } catch (Exception ignored) {
-    }
-  }
-
-  private static String readProcessOutput(Process p) {
-    try (BufferedReader br =
-        new BufferedReader(new InputStreamReader(p.getInputStream(), StandardCharsets.UTF_8))) {
-      return br.lines().collect(java.util.stream.Collectors.joining("\n")).trim();
-    } catch (Exception ignored) {
-      return "";
     }
   }
 
